@@ -1,0 +1,204 @@
+---
+
+- import_role:
+    name: 'secret'
+
+# Install packages [[[1
+- name: Install required packages
+  package:
+    name: '{{ q("flattened", (etesync__base_packages
+                              + etesync__packages)) }}'
+    state: 'present'
+  register: etesync__register_packages
+  until: etesync__register_packages is succeeded
+
+# Create EteSync system user [[[1
+- name: Create EteSync system group
+  group:
+    name: '{{ etesync__group }}'
+    state: 'present'
+    system: True
+
+- name: Create EteSync system user
+  user:
+    name: '{{ etesync__user }}'
+    group: '{{ etesync__group }}'
+    home: '{{ etesync__home }}'
+    comment: '{{ etesync__gecos }}'
+    shell: '{{ etesync__shell }}'
+    state: 'present'
+    system: True
+
+- name: Create additional directories used by EteSync
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: '{{ etesync__user }}'
+    group: '{{ etesync__group }}'
+    mode: '0755'
+  with_items:
+    - '{{ etesync__etc }}'
+    - '{{ etesync__src }}'
+    - '{{ etesync__git_dest | dirname }}'
+    - '{{ etesync__lib }}'
+    - '{{ etesync__data }}'
+
+# Download EteSync server [[[1
+- name: Clone EteSync source code
+  git:
+    repo: '{{ etesync__git_repo }}'
+    dest: '{{ etesync__git_checkout }}'
+    separate_git_dir: '{{ etesync__git_dest }}'
+    version: '{{ etesync__git_version }}'
+    update: True
+    ## The module cannot hash lock and verify the tag referring to the locked
+    ## commit thus we need to verify the tag in the following task.
+    # verify_commit: True
+  become: True
+  become_user: '{{ etesync__user }}'
+  register: etesync__register_source
+
+- name: Verify git tag signature
+  shell: git verify-tag --raw "$(git describe)"
+  args:
+    chdir: '{{ etesync__git_checkout }}'
+  become: True
+  become_user: '{{ etesync__user }}'
+  changed_when: False
+  ## Always run this to also cover the case where the playbook is interrupted
+  ## before we can verify.
+  # when: etesync__register_source is changed
+
+- name: Install EteSync requirements in virtualenv
+  pip:
+    virtualenv: '{{ etesync__virtualenv }}'
+    virtualenv_python: 'python3'
+    virtualenv_site_packages: True
+    requirements: '{{ etesync__git_checkout + "/requirements.txt" }}'
+    extra_args: '--upgrade'
+  register: etesync__register_pip_install
+  until: etesync__register_pip_install is succeeded
+  become: True
+  become_user: '{{ etesync__user }}'
+  notify: [ 'Restart gunicorn for etesync' ]
+  when: etesync__register_source is changed
+
+- name: Clean up stale Python bytecode
+  command: find . -name '*.pyc' -delete
+  args:
+    chdir: '{{ etesync__git_checkout }}'
+  become: True
+  become_user: '{{ etesync__user }}'
+  when: etesync__register_source is changed
+
+# Configure EteSync server [[[1
+- name: Exclude secret files from etckeeper
+  copy:
+    content: |
+      secret.txt
+    dest: '{{ etesync__etc + "/.gitignore" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
+  tags: [ 'role::etesync:config' ]
+
+- name: Generate EteSync configuration
+  template:
+    src: 'etc/etesync-server/etesync-server.ini.j2'
+    dest: '{{ etesync__etc + "/etesync-server.ini" }}'
+    owner: 'root'
+    group: '{{ etesync__group }}'
+    mode: '0640'
+  register: etesync__register_config
+  notify: [ 'Restart gunicorn for etesync' ]
+  tags: [ 'role::etesync:config' ]
+
+- name: Generate extended EteSync configuration
+  template:
+    src: 'usr/local/lib/etesync/app/etesync_site_settings.py.j2'
+    dest: '{{ etesync__git_checkout + "/etesync_site_settings.py" }}'
+    owner: '{{ etesync__user }}'
+    group: '{{ etesync__group }}'
+    mode: '0640'
+  register: etesync__register_config
+  notify: [ 'Restart gunicorn for etesync' ]
+  tags: [ 'role::etesync:config' ]
+
+- name: Generate EteSync secret.txt file
+  template:
+    src: 'etc/etesync-server/secret.txt.j2'
+    dest: '{{ etesync__config_secret_key_filepath }}'
+    owner: 'root'
+    group: '{{ etesync__group }}'
+    mode: '0640'
+  notify: [ 'Restart gunicorn for etesync' ]
+  tags: [ 'role::etesync:config' ]
+
+- name: Perform database installation or migration
+  shell: |
+    ## -o nounset can be enabled with virtualenv >= 16.2.
+    ## Ref: https://github.com/pypa/virtualenv/pull/922
+    set -o pipefail -o errexit;
+    source {{ etesync__virtualenv }}/bin/activate
+    ./manage.py migrate
+  args:
+    chdir: '{{ etesync__git_checkout }}'
+    executable: 'bash'
+  become: True
+  become_user: '{{ etesync__user }}'
+  changed_when: ("No migrations to apply." not in etesync__register_migration.stdout)
+  when: etesync__register_source is changed or etesync__register_config is changed
+  register: etesync__register_migration
+
+- name: Create superuser account
+  environment:
+    SUPERUSER_NAME: '{{ etesync__superuser_name }}'
+    SUPERUSER_EMAIL: '{{ etesync__superuser_email }}'
+    SUPERUSER_PASSWORD: '{{ etesync__superuser_password }}'
+  shell:
+    ## -o nounset can be enabled with virtualenv >= 16.2.
+    ## Ref: https://github.com/pypa/virtualenv/pull/922
+    set -o pipefail -o errexit;
+    source {{ etesync__virtualenv }}/bin/activate;
+    echo "from django.contrib.auth.models import User;
+          User.objects.create_superuser('${SUPERUSER_NAME}', '${SUPERUSER_EMAIL}', '${SUPERUSER_PASSWORD}')"
+    | ./manage.py shell
+  args:
+    chdir: '{{ etesync__git_checkout }}'
+    executable: 'bash'
+  become: True
+  become_user: '{{ etesync__user }}'
+  when: ("etesync" not in ansible_local)
+  no_log: True
+
+# Send PSK subpath URL to admin if needed [[[1
+- name: Send mail with the full URL of the EteSync server
+  mail:
+    from: 'root@{{ ansible_fqdn }}'
+    subject: '{{ etesync__mail_subject }}'
+    to: '{{ etesync__mail_to|d([]) | list | join(",") }}'
+    charset: 'utf8'
+    body: '{{ etesync__mail_body }}'
+  when: (etesync__http_psk_subpath != "" and etesync__mail_to|d() and "etesync" not in ansible_local)
+
+# Save EteSync local facts [[[1
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save EteSync local facts
+  template:
+    src: 'etc/ansible/facts.d/etesync.fact.j2'
+    dest: '/etc/ansible/facts.d/etesync.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: etesync__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: etesync__register_facts is changed

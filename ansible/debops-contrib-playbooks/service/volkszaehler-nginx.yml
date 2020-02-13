@@ -1,6 +1,8 @@
 ---
 
 - name: Setup and manage volkszaehler with Nginx as webserver
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_volkszaehler_nginx' ]
   become: True
 
@@ -8,39 +10,45 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: debops-contrib.volkszaehler/env
+    - import_role:
+        name: 'volkszaehler'
+        tasks_from: 'main_env'
       tags: [ 'role::volkszaehler', 'role::volkszaehler:env', 'role::mariadb' ]
 
-    - role: debops.php/env
-      tags: [ 'role::php', 'role::php:env', 'role::apt_preferences', 'role::logrotate' ]
+    - import_role:
+        name: 'php'
+        tasks_from: 'main_env'
+      tags: [ 'role::php', 'role::php:env', 'role::logrotate' ]
 
-    - role: debops.apt_preferences
+  roles:
+
+    - role: apt_preferences
       tags: [ 'role::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ nginx__apt_preferences__dependent_list }}'
         - '{{ php__apt_preferences__dependent_list }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ nginx__ferm__dependent_rules }}'
 
-    - role: debops.mariadb
+    - role: mariadb
       tags: [ 'role::mariadb' ]
       mariadb__dependent_databases: '{{ volkszaehler__mariadb__dependent_databases }}'
       mariadb__dependent_users: '{{ volkszaehler__mariadb__dependent_users }}'
       when: (volkszaehler__database == 'mariadb')
 
-    - role: debops.php
+    - role: php
       tags: [ 'role::php' ]
       php__dependent_packages:
         - '{{ volkszaehler__php__dependent_packages }}'
       php__dependent_pools:
         - '{{ volkszaehler__php__dependent_pools }}'
 
-    - role: debops.logrotate
+    - role: logrotate
       tags: [ 'role::logrotate' ]
       logrotate__dependent_config:
         - '{{ php__logrotate__dependent_config }}'
@@ -48,7 +56,7 @@
     - role: geerlingguy.composer
       tags: [ 'role::composer' ]
 
-    - role: debops.nginx
+    - role: nginx
       tags: [ 'role::nginx' ]
       nginx__dependent_upstreams:
         - '{{ volkszaehler__nginx__dependent_upstreams }}'

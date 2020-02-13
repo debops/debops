@@ -20,14 +20,10 @@ DebOps can be installed in different ways depending on your needs:
   UNIX account can use different versions of DebOps by switching to each
   :command:`virtualenv` environment.
 
-- As a set of Ansible roles and playbooks installed from the Ansible Galaxy
-  using the :command:`mazer` content manager. This is a good solution if you
-  are interested only in specific DebOps roles and you don't want to use the
+- As an Ansible Collection installed from the Ansible Galaxy using the
+  :command:`ansible-galaxy` command. This is a good solution if you are
+  interested only in specific DebOps roles and you don't want to use the
   additional scripts to manage your environments.
-
-  .. warning:: Installation using Mazer collections will be available after
-               June 2019 when new functionality is implemented in the Ansible
-               Galaxy website.
 
 In any case, the installation will be performed on a Linux, macOS or Windows
 (WSL) computer which will be called the "Ansible Controller". This machine will
@@ -313,58 +309,50 @@ command:
 Installation from Ansible Galaxy
 --------------------------------
 
-.. note:: This functionality is fully supported since DebOps v0.8.1+.
+.. note:: This functionality is fully supported since DebOps v2.0.0+.
 
 DebOps is available on `Ansible Galaxy`__, a central database of Ansible roles.
-The project is `published there as a multi-repo`__, with Ansible roles and
-playbooks available in one package. To install it on your Ansible Controller,
-you have to use the `Mazer`__ content manager.
+The project is `published there as a set of Ansible Collections`__, with
+Ansible roles and playbooks split into multiple "packages" due to the number of
+available roles. To install them on your Ansible Controller, you have to use
+the :command:`ansible-galaxy` command provided with Ansible.
 
 .. __: https://galaxy.ansible.com/
 .. __: https://galaxy.ansible.com/debops/debops
-.. __: https://galaxy.ansible.com/docs/mazer/index.html
 
-.. warning:: Installation using Mazer collections will be available after
-             June 2019 when new functionality is implemented in the Ansible
-             Galaxy website.
-
-After `installing Mazer using your preferred method`__, you can download the
-DebOps repository by issuing the command:
-
-.. __: https://galaxy.ansible.com/docs/mazer/install.html
+To install the DebOps Collections, run the command:
 
 .. code-block:: console
 
-   mazer install debops.debops
+   ansible-galaxy collection install debops.debops
 
-The DebOps roles will be available in the directory:
+The DebOps Collections will be available in the directory:
 
 .. code-block:: none
 
-   ~/.ansible/content/debops/debops/roles/
+   ~/.ansible/collections/ansible_collections/debops/
 
-To use them in your Ansible playbooks, you should add the path to the roles in
-:file:`ansible.cfg` configuration file:
+The ``debops.debops`` Collection includes the playbooks provided with DebOps
+which can be used to execute roles after setting up the required Ansible
+inventory. Various roles that use custom lookup or filter plugins are modified
+to use them from the Collections as well, but otherwise the roles should have
+the same functionality as those included in the DebOps Python package or in the
+monorepo.
 
-.. code-block:: ini
+Read the `documentation about using Ansible Collections in Playbooks`__ for
+more details and examples.
 
-   [defaults]
-   roles_path = $HOME/.ansible/content/debops/debops/roles:/etc/ansible/roles
+.. __: https://docs.ansible.com/ansible/latest/user_guide/collections_using.html#using-collections-in-a-playbook
 
-Read the `documentation about using Mazer content in Playbooks`__ for more
-details and examples.
+Upgrading installed Collections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. __: https://galaxy.ansible.com/docs/mazer/examples.html#using-mazer-content
-
-Upgrading an existing installation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-To upgrade the existing DebOps installation to the latest release published on
-Ansible Galaxy, you can run the command:
+To upgrade the already installed DebOps Collections to the latest release
+published on Ansible Galaxy, you can run the command:
 
 .. code-block:: console
 
-   mazer install --force debops.debops
+   ansible-galaxy collection install --force debops.debops
 
 
 Installation of the DebOps rolling release

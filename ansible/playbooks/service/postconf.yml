@@ -1,6 +1,8 @@
 ---
 
 - name: Manage Postfix configuration
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_postconf' ]
   become: True
 
@@ -8,29 +10,38 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: debops.postconf/env
+    - import_role:
+        name: 'postconf'
+        tasks_from: 'main_env'
       tags: [ 'role::postconf', 'role::postfix', 'role::ferm' ]
 
-    - role: debops.postfix/env
+    - import_role:
+        name: 'postfix'
+        tasks_from: 'main_env'
+      vars:
+        postfix__dependent_mastercf:
+          - role: 'postconf'
+            config: '{{ postconf__postfix__dependent_mastercf }}'
       tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
-      postfix__dependent_mastercf:
-        - role: 'postconf'
-          config: '{{ postconf__postfix__dependent_mastercf }}'
 
-    - role: debops.secret
+  roles:
+
+    - role: secret
       tags: [ 'role::secret', 'role::postfix' ]
       secret__directories:
         - '{{ postfix__secret__directories }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ postfix__ferm__dependent_rules }}'
 
-    - role: debops.postfix
+    - role: postfix
       tags: [ 'role::postfix', 'skip::postfix' ]
+      postfix__dependent_packages:
+        - '{{ postconf__postfix__dependent_packages }}'
       postfix__dependent_maincf:
         - role: 'postconf'
           config: '{{ postconf__postfix__dependent_maincf }}'
@@ -40,5 +51,5 @@
       postfix__dependent_lookup_tables:
         - '{{ postconf__postfix__dependent_lookup_tables }}'
 
-    - role: debops.postconf
+    - role: postconf
       tags: [ 'role::postconf', 'skip::postconf' ]

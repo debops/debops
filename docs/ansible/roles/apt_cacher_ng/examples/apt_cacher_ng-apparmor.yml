@@ -1,0 +1,47 @@
+---
+
+## Basically the same playbook as the one in DebOps core with the difference
+## that this playbook also uses the debops-contrib.apparmor role to configure
+## AppArmor.
+- name: Install and manage the caching HTTP proxy Apt-Cacher NG.
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_contrib_service_apt_cacher_ng' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: etc_services
+      tags: [ 'role::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ apt_cacher_ng__etc_services__dependent_list }}'
+
+    - role: apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ apt_cacher_ng__apt_preferences__dependent_list }}'
+        - '{{ nginx_apt_preferences_dependent_list }}'
+
+    - role: ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ apt_cacher_ng__ferm__dependent_rules }}'
+        - '{{ nginx_ferm_dependent_rules }}'
+
+    - role: nginx
+      tags: [ 'role::nginx' ]
+      nginx_servers:
+        - '{{ apt_cacher_ng__nginx__servers }}'
+      nginx_upstreams:
+        - '{{ apt_cacher_ng__nginx__upstream }}'
+
+    - role: debops-contrib.apparmor
+      tags: [ 'role::apparmor' ]
+      apparmor__local_dependent_config: '{{ apt_cacher_ng__apparmor__dependent_config }}'
+      apparmor__tunables_dependent: '{{ apt_cacher_ng__apparmor__tunables_dependent }}'
+
+    - role: apt_cacher_ng
+      tags: [ 'role::apt_cacher_ng' ]

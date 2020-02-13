@@ -1,6 +1,8 @@
 ---
 
 - name: Configure apt-listchanges
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_all_hosts', 'debops_service_apt_listchanges' ]
   become: True
 
@@ -10,5 +12,5 @@
 
   roles:
 
-    - role: debops.apt_listchanges
+    - role: apt_listchanges
       tags: [ 'role::apt_listchanges', 'skip::apt_listchanges' ]

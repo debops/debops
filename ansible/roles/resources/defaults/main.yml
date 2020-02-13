@@ -1,0 +1,341 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _resources__ref_defaults:
+
+# debops.resources default variables [[[
+# ======================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Role configuration [[[
+# ----------------------
+
+# .. envvar:: resources__enabled [[[
+#
+# Enable or disable management of custom resources.
+resources__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: resources__src [[[
+#
+# Absolute path to the directory on Ansible Controller where custom resources
+# can be found. You need to create this directory manually.
+#
+# By default, path is relative to the Ansible inventory.
+resources__src: '{{ inventory_dir | realpath + "/../resources/" }}'
+                                                                   # ]]]
+# .. envvar:: resources__time_format [[[
+#
+# Time format to be used for the `Ansible file module`_.
+# This is used for example when the ``access_time`` is specified.
+# It is set here to `ISO 8601`_ because the Ansible
+# default format is hardly human readable
+# (without separators like ``-`` and ``:``).
+# Example: ``2023-05-23T23:42:42``
+resources__time_format: '%Y-%m-%dT%H:%M:%S'
+                                                                   # ]]]
+                                                                   # ]]]
+# Manage parent directories [[[
+# -----------------------------
+
+# This section allows to configure the behavior for non existing parent
+# directories for destination file paths.
+#
+# This applies to the following sections:
+#
+# - `Manage custom remote resources`_
+# - `Manage custom archives`_
+# - `Manage custom files`_
+#
+
+# .. envvar:: resources__parent_dirs_create [[[
+#
+# Should the parent directories be created by the role? Not creating it will
+# cause an Ansible run time error when the directory does not exist.
+# The global setting can be overwritten for individual items using
+# ``item.parent_dirs_create``.
+resources__parent_dirs_create: True
+
+                                                                   # ]]]
+# .. envvar:: resources__parent_dirs_recurse [[[
+#
+# Recursively set the specified file attributes of parent directories when
+# creating them.
+# The global setting can be overwritten for individual items using
+# ``item.parent_dirs_recurse``.
+resources__parent_dirs_recurse: True
+
+                                                                   # ]]]
+# .. envvar:: resources__parent_dirs_owner [[[
+#
+# Unix system user who owns the parent directory.
+# See also :envvar:`resources__parent_dirs_recurse`.
+# The global setting can be overwritten for individual items using
+# ``item.parent_dirs_owner``.
+resources__parent_dirs_owner: '{{ omit }}'
+
+                                                                   # ]]]
+# .. envvar:: resources__parent_dirs_group [[[
+#
+# Unix system group of the parent directory.
+# See also :envvar:`resources__parent_dirs_recurse`.
+# The global setting can be overwritten for individual items using
+# ``item.parent_dirs_group``.
+resources__parent_dirs_group: '{{ omit }}'
+
+                                                                   # ]]]
+# .. envvar:: resources__parent_dirs_mode [[[
+#
+# Unix permissions of the parent directory.
+# See also :envvar:`resources__parent_dirs_recurse`.
+# The global setting can be overwritten for individual items using
+# ``item.parent_dirs_mode``.
+resources__parent_dirs_mode: '{{ omit }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Manage custom templates [[[
+# ---------------------------
+
+# These variables define how the role will manage custom templates on remote
+# hosts. See :ref:`resources__ref_templates` for more details.
+
+# .. envvar:: resources__templates [[[
+#
+# Directory which contains templates that should be generated on all hosts in
+# the Ansible inventory.
+resources__templates: [ '{{ resources__src + "templates/by-group/all" }}' ]
+
+                                                                   # ]]]
+# .. envvar:: resources__group_templates [[[
+#
+# List of paths containing the directories of all the groups the current host is in, based on the content of ``group_names``.
+# See `Ansible - Playbooks Varibles <https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#accessing-information-about-other-hosts-with-magic-variables>`_.
+#
+# For example if the host ``debian1`` is member of ``group-name1`` and ``group-name2``
+# `debops.resources` will then search all template files inside the directories placed here: :file:`ansible/resources/templates/by-group/`.
+# Resulting in: ``[ "ansible/resources/templates/by-group/group-name1", "ansible/resources/templates/by-group/group-name2" ]``.
+#
+# Read the documentation about :ref:`resources__ref_templates` for more details on templating with `debops.resources`.
+resources__group_templates: '{{ group_names | map("regex_replace", "^(.*)$", resources__src + "templates/by-group/\1") | list }}'
+
+                                                                   # ]]]
+# .. envvar:: resources__host_templates [[[
+#
+# Directory which contains templates that should be generated on specific hosts
+# in the Ansible inventory.
+resources__host_templates: [ '{{ resources__src + "templates/by-host/" + inventory_hostname }}' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# Manage custom paths [[[
+# -----------------------
+
+# These lists allow you to manage file and directory paths on remote hosts
+# using `Ansible file module`_. By default role treats specified paths as
+# directory names which should be present on the remote host. You can use all
+# parameters supported by the `Ansible file module`_.
+#
+# See :ref:`resources__ref_paths` for more details.
+
+# .. envvar:: resources__paths [[[
+#
+# Paths managed on all hosts in Ansible inventory.
+resources__paths: []
+
+                                                                   # ]]]
+# .. envvar:: resources__group_paths [[[
+#
+# Paths managed on hosts in a specific group in Ansible inventory.
+resources__group_paths: []
+
+                                                                   # ]]]
+# .. envvar:: resources__host_paths [[[
+#
+# Paths managed on specific hosts in Ansible inventory.
+resources__host_paths: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Manage git repositories [[[
+# ---------------------------
+
+# These lists allow you to manage :command:`git` repositories on remote hosts
+# using the `Ansible git module`_. See :ref:`resources__ref_repositories` for
+# more details.
+
+# .. envvar:: resources__repositories [[[
+#
+# Manage :command:`git` repositories on all hosts in the Ansible inventory.
+resources__repositories: []
+
+                                                                   # ]]]
+# .. envvar:: resources__group_repositories [[[
+#
+# Manage :command:`git` repositories on hosts in a specific Ansible inventory
+# group.
+resources__group_repositories: []
+
+                                                                   # ]]]
+# .. envvar:: resources__host_repositories [[[
+#
+# Manage :command:`git` repositories on specific hosts in the Ansible
+# inventory.
+resources__host_repositories: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Manage custom remote resources [[[
+# ----------------------------------
+
+# These lists allow you to specify remote resources to download to the hosts
+# using the `Ansible get_url module`. You can download files over HTTP, HTTPS,
+# FTP and use all options supported by this module.
+#
+# See :ref:`resources__ref_urls` for more details.
+
+# .. envvar:: resources__urls [[[
+#
+# Manage online resources on all hosts in Ansible inventory.
+resources__urls: []
+
+                                                                   # ]]]
+# .. envvar:: resources__group_urls [[[
+#
+# Manage online resources on hosts in a specific group in Ansible inventory.
+resources__group_urls: []
+
+                                                                   # ]]]
+# .. envvar:: resources__host_urls [[[
+#
+# Manage online resources on specific hosts in Ansible inventory.
+resources__host_urls: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Manage custom archives [[[
+# --------------------------
+
+# These lists allow you to unpack archives stored on Ansible Controller to
+# remote hosts using the `Ansible unarchive module`_. You can use all of the
+# parameters supported by this module.
+#
+# See :ref:`resources__ref_archives` for more details.
+
+# .. envvar:: resources__archives [[[
+#
+# Manage archives on all hosts in Ansible inventory.
+resources__archives: []
+
+                                                                   # ]]]
+# .. envvar:: resources__group_archives [[[
+#
+# Manage archives on hosts in specific group in Ansible inventory.
+resources__group_archives: []
+
+                                                                   # ]]]
+# .. envvar:: resources__host_archives [[[
+#
+# Manage archives on specific hosts in Ansible inventory.
+resources__host_archives: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Manage custom files [[[
+# -----------------------
+
+# These lists allow you to manage file contents on remote hosts, either by
+# copying files from the Ansible Controller, or providing the contents directly in
+# Ansible inventory. You can use all parameters supported by the `Ansible copy
+# module`_.
+#
+# See :ref:`resources__ref_files` for more details.
+
+# .. envvar:: resources__files [[[
+#
+# Manage file contents on all hosts in Ansible inventory.
+resources__files: []
+
+                                                                   # ]]]
+# .. envvar:: resources__group_files [[[
+#
+# Manage file contents on hosts in a specific group in Ansible inventory.
+resources__group_files: []
+
+                                                                   # ]]]
+# .. envvar:: resources__host_files [[[
+#
+# Manage file contents on specific hosts in Ansible inventory.
+resources__host_files: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Manage custom delayed paths [[[
+# -------------------------------
+
+# These lists allow you to manage file and directory paths on remote hosts
+# using the `Ansible file module`_.
+# The lists can be used exactly the same as
+# :regexp:`resources__(?:group_|host_)?paths` from the `Manage custom paths`_ section.
+# The only difference is that the custom delayed paths are handled after all
+# non delayed resources.
+# This allows to create symbolic links to files provided by
+# :regexp:`resources__(?:group_|host_)?files` for example.
+#
+# See :ref:`resources__ref_paths` for more details.
+
+# .. envvar:: resources__delayed_paths [[[
+#
+# Paths managed on all hosts in Ansible inventory.
+resources__delayed_paths: []
+
+                                                                   # ]]]
+# .. envvar:: resources__group_delayed_paths [[[
+#
+# Paths managed on hosts in a specific group in Ansible inventory.
+resources__group_delayed_paths: []
+
+                                                                   # ]]]
+# .. envvar:: resources__host_delayed_paths [[[
+#
+# Paths managed on specific hosts in Ansible inventory.
+resources__host_delayed_paths: []
+                                                                   # ]]]
+# Custom shell commands [[[
+# -------------------------
+
+# The variables below let you define shell commands (or even small shell
+# scripts) to execute on the remote hosts as the ``root`` UNIX account. You
+# need to ensure idempotency by yourself. This is not a replacement for
+# a normal Ansible role.
+#
+# See :ref:`resources__ref_commands` for more details.
+
+# .. envvar:: resources__commands [[[
+#
+# List of shell commands which should be executed on all hosts in the Ansible
+# inventory.
+resources__commands: []
+
+                                                                   # ]]]
+# .. envvar:: resources__group_commands [[[
+#
+# List of shell commands which should be executed on hosts in a specific
+# Ansible inventory group.
+resources__group_commands: []
+
+                                                                   # ]]]
+# .. envvar:: resources__host_commands [[[
+#
+# List of shell commands which should be executed on specific hosts in the
+# Ansible inventory.
+resources__host_commands: []
+
+                                                                   # ]]]
+# .. envvar:: resources__combined_commands [[[
+#
+# Variable which combines all other shell command variables and is used in the
+# role tasks.
+resources__combined_commands: '{{ resources__commands
+                                  + resources__group_commands
+                                  + resources__host_commands }}'
+                                                                   # ]]]
+                                                                   # ]]]

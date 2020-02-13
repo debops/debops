@@ -1,0 +1,307 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _postscreen__ref_defaults:
+
+# debops.postscreen default variables [[[
+# =======================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: postscreen__deploy_state [[[
+#
+# Specify if the Postscreen service should be enabled (``present``) or disabled
+# (``absent``) on a given host.
+postscreen__deploy_state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]
+# Postscreen static whitelist/blacklist [[[
+# -----------------------------------------
+
+# These lists contain IP addresses or CIDR subnets which should be statically
+# whitelisted or blacklisted by the Postscreen service. By default specified
+# entries are whitelisted. See :ref:`postscreen__ref_access` for more details.
+
+# .. envvar:: postscreen__access [[[
+#
+# List of whitelist/blacklist entries that should be present on all hosts in
+# the Ansible inventory.
+postscreen__access: []
+
+                                                                   # ]]]
+# .. envvar:: postscreen__group_access [[[
+#
+# List of whitelist/blacklist entries that should be present on hosts in
+# specific Ansible inventory group.
+postscreen__group_access: []
+
+                                                                   # ]]]
+# .. envvar:: postscreen__host_access [[[
+#
+# List of whitelist/blacklist entries that should be present on specific hosts
+# in the Ansible inventory.
+postscreen__host_access: []
+
+                                                                   # ]]]
+# .. envvar:: postscreen__combined_access [[[
+#
+# Combined list of all whitelist/blacklist entries used in the configuration
+# template.
+postscreen__combined_access: '{{ postscreen__access
+                                 + postscreen__group_access
+                                 + postscreen__host_access }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# DNS blacklist/whitelist [[[
+# ---------------------------
+
+# .. envvar:: postscreen__dnsbl_enabled [[[
+#
+# Enable or disable use of DNS Blacklists by Postscreen to check incoming
+# client IP addresses. The DNS Blacklists will be automatically enabled on
+# hosts with public IP addresses.
+postscreen__dnsbl_enabled: '{{ True
+                               if ((ansible_all_ipv4_addresses|d([])
+                                   + ansible_all_ipv6_addresses|d([]))
+                                   | ipaddr("public"))
+                               else False }}'
+
+                                                                   # ]]]
+# .. envvar:: postscreen__dnsbl_providers [[[
+#
+# Simple list of DNSBL providers, useful to easily enable or disable specific
+# providers as needed. Some providers are not enabled by default due to issues
+# encountered during testing.
+postscreen__dnsbl_providers:
+  - 'spamhaus'
+  #- 'barracuda'
+  - 'cbl'
+  #- 'spameatingmonkey'
+  - 'spamcop'
+  #- 'psbl'
+  - 'mailspike'
+
+                                                                   # ]]]
+# .. envvar:: postscreen__dnsbl_sites [[[
+#
+# List of DNS Blacklists used by Postscreen.
+# See http://www.postfix.org/postconf.5.html#postscreen_dnsbl_sites for more
+# details.
+postscreen__dnsbl_sites:
+
+  # Spamhaus ZEN: https://www.spamhaus.org/zen/
+  # Might require registration.
+  - name: 'zen.spamhaus.org*3'
+    state: '{{ "present"
+               if "spamhaus" in postscreen__dnsbl_providers
+               else "absent" }}'
+
+  # Barracuda Reputation Block List: http://barracudacentral.org/rbl
+  # Requires registration.
+  - name: 'b.barracudacentral.org*2'
+    state: '{{ "present"
+               if "barracuda" in postscreen__dnsbl_providers
+               else "absent" }}'
+
+  # Composite Blocking List: https://www.abuseat.org/
+  - name: 'cbl.abuseat.org*2'
+    state: '{{ "present"
+               if "cbl" in postscreen__dnsbl_providers
+               else "absent" }}'
+
+  # Spam Eating Monkey: http://spameatingmonkey.com/lists.html
+  # Might require registration.
+  - name: 'bl.spameatingmonkey.net*2'
+    state: '{{ "present"
+               if "spameatingmonkey" in postscreen__dnsbl_providers
+               else "absent" }}'
+
+  - name: 'backscatter.spameatingmonkey.net*2'
+    state: '{{ "present"
+               if "spameatingmonkey" in postscreen__dnsbl_providers
+               else "absent" }}'
+
+  # SpamCop Blocking List: https://www.spamcop.net/bl.shtml
+  - name: 'bl.spamcop.net'
+    state: '{{ "present"
+               if "spamcop" in postscreen__dnsbl_providers
+               else "absent" }}'
+
+  # Passive Spam Block List: http://psbl.org/
+  - name: 'psbl.surriel.com'
+    state: '{{ "present"
+               if "psbl" in postscreen__dnsbl_providers
+               else "absent" }}'
+
+  # mailspike: http://mailspike.net/usage.html
+  # Might require contact.
+  - name: 'bl.mailspike.net'
+    state: '{{ "present"
+               if "mailspike" in postscreen__dnsbl_providers
+               else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: postscreen__dnsbl_wl_sites [[[
+#
+# List of DNS Whitelists used by Postscreen.
+# See http://www.postfix.org/postconf.5.html#postscreen_dnsbl_sites for more
+# details.
+postscreen__dnsbl_wl_sites:
+
+  # SpamHaus Whitelist: http://www.spamhauswhitelist.com/en/usage.html
+  # Might require registration. Currently not active.
+  #- 'swl.spamhaus.org*-4'
+
+  # DNS Whitelist: https://dnswl.org/tech
+  # Might require registration.
+  - 'list.dnswl.org=127.[0..255].[0..255].0*-2'
+  - 'list.dnswl.org=127.[0..255].[0..255].1*-3'
+  - 'list.dnswl.org=127.[0..255].[0..255].[2..255]*-4'
+
+                                                                   # ]]]
+# .. envvar:: postscreen__dnsbl_reply_pcre_map [[[
+#
+# List of PCRE regular expressions which are used to match the DNS Blacklist
+# responses and send modified responses to the SMTP clients.
+# See :ref:`postscreen__ref_dnsbl_reply_pcre_map` for more details.
+postscreen__dnsbl_reply_pcre_map:
+  - '/^zen\.spamhaus\.org$/'
+  - '/^b\.barracudacentral\.org$/'
+  - '/^bl\.spameatingmonkey\.net$/'
+  - '/^backscatter\.spameatingmonkey\.net$/'
+  - '/^bl\.spamcop\.net$/'
+  - '/^psbl\.surriel\.com$/'
+  - '/^bl\.mailspike\.net$/'
+
+                                                                   # ]]]
+# .. envvar:: postscreen__dnsbl_default_reply [[[
+#
+# The default reply used if none was configured for a specific DNS Blacklist.
+postscreen__dnsbl_default_reply: 'blocked by RBL, see http://multirbl.valli.org/'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: postscreen__postfix__dependent_packages [[[
+#
+# List of APT packages to install by the :ref:`debops.postfix` Ansible role.
+postscreen__postfix__dependent_packages:
+  - 'postfix-pcre'
+
+                                                                   # ]]]
+# .. envvar:: postscreen__postfix__dependent_maincf [[[
+#
+# The :file:`main.cf` configuration for the :ref:`debops.postfix` Ansible role.
+postscreen__postfix__dependent_maincf:
+
+  - name: 'postscreen_blacklist_action'
+    value: 'drop'
+    state: 'present'
+
+  - name: 'postscreen_greet_action'
+    value: 'enforce'
+    state: 'present'
+
+  - name: 'postscreen_dnsbl_action'
+    value: 'enforce'
+    state: 'present'
+
+  - name: 'postscreen_access_list'
+    value:
+      - 'permit_mynetworks'
+      - 'cidr:${config_directory}/postscreen_access.cidr'
+    state: 'present'
+
+  - name: 'postscreen_dnsbl_sites'
+    value: '{{ postscreen__dnsbl_sites + postscreen__dnsbl_wl_sites }}'
+    state: '{{ "present"
+               if postscreen__dnsbl_enabled|bool
+               else "comment" }}'
+
+  - name: 'postscreen_dnsbl_reply_map'
+    value: [ 'pcre:${config_directory}/postscreen_dnsbl_reply_map.pcre' ]
+    state: '{{ "present"
+               if postscreen__dnsbl_enabled|bool
+               else "comment" }}'
+
+  - name: 'postscreen_dnsbl_threshold'
+    value: 3
+    state: '{{ "present"
+               if postscreen__dnsbl_enabled|bool
+               else "comment" }}'
+
+  - name: 'postscreen_dnsbl_whitelist_threshold'
+    value: -1
+    state: '{{ "present"
+               if postscreen__dnsbl_enabled|bool
+               else "comment" }}'
+
+  - name: 'postscreen_whitelist_interfaces'
+    value: [ 'static:all' ]
+    state: 'present'
+
+  - name: 'postscreen_pipelining_enable'
+    value: True
+    state: 'present'
+
+  - name: 'postscreen_pipelining_action'
+    value: 'enforce'
+    state: 'present'
+
+  - name: 'postscreen_non_smtp_command_enable'
+    value: True
+    state: 'present'
+
+  - name: 'postscreen_non_smtp_command_action'
+    value: 'drop'
+    state: 'present'
+
+  - name: 'postscreen_bare_newline_enable'
+    value: True
+    state: 'present'
+
+  - name: 'postscreen_bare_newline_action'
+    value: 'ignore'
+    state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: postscreen__postfix__dependent_mastercf [[[
+#
+# The :file:`master.cf` configuration for the :ref:`debops.postfix` Ansible role.
+postscreen__postfix__dependent_mastercf:
+
+  - name: 'smtp'
+    state: '{{ "comment"
+               if (postscreen__deploy_state == "present")
+               else "ignore" }}'
+
+  - name: 'postscreen'
+    state: '{{ "present"
+               if (postscreen__deploy_state == "present")
+               else "ignore" }}'
+
+  - name: 'smtpd'
+    state: '{{ "present"
+               if (postscreen__deploy_state == "present")
+               else "ignore" }}'
+
+  - name: 'dnsblog'
+    state: '{{ "present"
+               if (postscreen__deploy_state == "present")
+               else "ignore" }}'
+
+  - name: 'tlsproxy'
+    state: '{{ "present"
+               if (postscreen__deploy_state == "present")
+               else "ignore" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

@@ -1,0 +1,129 @@
+{% extends "default.conf.j2" %}
+{#
+#
+#    ---- nginx server template for PHP websites ----
+#
+# Refer to the documentation in /docs/defaults-detailed.rst
+#
+#}
+{% block nginx_tpl_block_index %}
+        index {{ item.index | default('index.html index.htm index.php') }};
+
+{% endblock %}
+{% block nginx_tpl_block_location_root %}
+                try_files {{ (([ item.try_files ] if item.try_files is string else item.try_files) if item.try_files|d() else ["$uri $uri/ $uri.php"]) | join(' ') }};
+{% endblock %}
+{% block nginx_tpl_block_custom_status_locations %}
+{%   if item.php_status|d()|bool %}
+        location ~ ^/({{ item.php_status_name | d('status.php') }}|{{ item.php_ping_name | d('ping.php') }})$ {
+                access_log off;
+{%     set nginx__tpl_status_allow = [] %}
+{%     if nginx_status_localhost %}
+{%       for address in nginx_status_localhost | unique %}
+{%         set _ = nginx__tpl_status_allow.append(address) %}
+{%       endfor %}
+{%     endif %}
+{%     if nginx_status %}
+{%       for address in nginx_status | unique %}
+{%         set _ = nginx__tpl_status_allow.append(address) %}
+{%       endfor %}
+{%     endif %}
+{%     if item.php_status_allow|d() %}
+{%       for address in ([ item.php_status_allow ] if item.php_status_allow is string else item.php_status_allow) %}
+{%          set _ = nginx__tpl_status_allow.append(address) %}
+{%       endfor %}
+{%     endif %}
+{%     for address in nginx__tpl_status_allow | sort | unique %}
+                allow {{ address }};
+{%     endfor %}
+                deny all;
+                include fastcgi_params;
+                fastcgi_index index.php;
+                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                fastcgi_pass {{ item.php_upstream }};
+        }
+
+{%   endif %}
+{% endblock %}
+{% block nginx_tpl_block_custom_locations %}
+{%   if item.location|d() %}
+{%     if '/' not in item.location.keys() %}
+        location / {
+                try_files {{ (([ item.try_files ] if item.try_files is string else item.try_files) if item.try_files|d() else ["$uri $uri/ $uri.php"]) | join(' ') }};
+        }
+
+{%     endif %}
+{%   endif %}
+{%   if item.php_upstream|d() %}
+
+        # CVE-2019-11043 mitigation (https://security-tracker.debian.org/tracker/CVE-2019-11043)
+        # Based on: https://bugs.php.net/bug.php?id=78599
+        rewrite ^(.*?)\n $1;
+        location ~ ^(?!.+\.php/)(?<script_name>.+\.php)$ {
+{%      if item.php_limit_except|d() %}
+                limit_except {{ item.php_limit_except if item.php_limit_except is string else item.php_limit_except | join(' ') }} { deny all; }
+
+{%     endif %}
+                try_files {{ (([ item.php_try_files ] if item.php_try_files is string else item.php_try_files) if item.php_try_files|d() else ['$script_name', '=404']) | join(' ') }};
+
+{%     if item.php_include|d(True) %}
+{%       if (nginx_version|d() and nginx_version is version_compare('1.6.1','<')) %}
+                include {{ item.php_include | d('fastcgi_params') }};
+{%       else %}
+{%         if nginx_flavor in [ 'passenger', 'nginx.org' ] %}
+                include {{ item.php_include | d('fastcgi_params') }};
+                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+{%         else %}
+                include {{ item.php_include | d('fastcgi.conf') }};
+{%         endif %}
+{%       endif %}
+
+{%     endif %}
+{%     if item.php_options|d() %}
+                {{ item.php_options | indent(16) | regex_replace("(?m)^\s*$", "") }}
+
+{%     endif %}
+                # Mitigate HTTPOXY attacks (https://httpoxy.org/)
+                fastcgi_param HTTP_PROXY "";
+
+                fastcgi_index index.php;
+                fastcgi_pass {{ item.php_upstream }};
+        }
+
+        # CVE-2019-11043 mitigation (https://security-tracker.debian.org/tracker/CVE-2019-11043)
+        # Based on: https://bugs.php.net/bug.php?id=78599
+        rewrite ^(.*?)\n $1;
+        location ~ ^(?<script_name>.+\.php)(?<path_info>/.*)$ {
+{%     if item.php_limit_except|d() %}
+                limit_except {{ item.php_limit_except if item.php_limit_except is string else item.php_limit_except | join(' ') }} { deny all; }
+
+{%     endif %}
+                try_files {{ (([ item.php_try_files ] if item.php_try_files is string else item.php_try_files) if item.php_try_files|d() else ['$script_name', '=404']) | join(' ') }};
+
+{%     if (item.php_include is undefined or item.php_include|d()) %}
+                include {{ item.php_include | default('fastcgi_params') }};
+{%       if (item.php_include is undefined) %}
+                fastcgi_param SCRIPT_FILENAME $document_root$script_name;
+                fastcgi_param PATH_INFO $path_info;
+{# This option doesn't work yet... #}
+                #fastcgi_param PATH_TRANSLATED $document_root$path_info;
+
+{%       endif %}
+{%     endif %}
+{%     if item.php_options|d() %}
+                {{ item.php_options | indent(16) | regex_replace("(?m)^\s*$", "") }}
+
+{%     endif %}
+                # Mitigate HTTPOXY attacks (https://httpoxy.org/)
+                fastcgi_param HTTP_PROXY "";
+
+                fastcgi_index index.php;
+                fastcgi_pass {{ item.php_upstream }};
+        }
+
+{%   else %}
+        location ~ \.php$ {
+                return 403;
+        }
+{%   endif %}
+{% endblock %}

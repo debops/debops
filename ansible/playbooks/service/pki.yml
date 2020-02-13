@@ -1,6 +1,8 @@
 ---
 
 - name: Manage Public Key Infrastructure
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_all_hosts', 'debops_service_pki' ]
   become: True
 
@@ -8,18 +10,22 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: debops.pki/env
+    - import_role:
+        name: 'pki'
+        tasks_from: 'main_env'
       tags: [ 'role::pki', 'role::pki:secret', 'role::secret' ]
 
-    - role: debops.secret
+  roles:
+
+    - role: secret
       tags: [ 'role::secret', 'role::pki', 'role::pki:secret' ]
       secret_directories:
         - '{{ pki_env_secret_directories }}'
 
-    - role: debops.cron
+    - role: cron
       tags: [ 'role::cron', 'skip::cron' ]
 
-    - role: debops.pki
+    - role: pki
       tags: [ 'role::pki', 'skip::pki' ]

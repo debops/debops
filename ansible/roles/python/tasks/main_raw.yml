@@ -1,0 +1,22 @@
+---
+
+- name: Detect the OS release manually, no Ansible facts available
+  raw: grep -E '^VERSION=' /etc/os-release | tr -d '(")' | cut -d" " -f2
+  register: python__register_raw_release
+  changed_when: False
+  check_mode: False
+
+- name: Update APT repositories, install core Python packages
+  raw: |
+    if [ -z "$(find /var/cache/apt/pkgcache.bin -mmin {{ python__raw_apt_cache_valid_time }})" ]; then
+        apt-get -q update
+    fi
+    if [ "{{ python__raw_purge_v2 | bool | lower }}" = "true" ] && [ ! -f "/etc/ansible/facts.d/python.fact" ] ; then
+        LANG=C apt-get --purge -yq remove {{ python__raw_purge_packages2 | join(" ") }}
+    fi
+    LANG=C apt-get --no-install-recommends -yq install {{ python__core_packages | join(" ") }}
+  register: python__register_raw
+  when: python__enabled|bool
+  changed_when: (not python__register_raw.stdout
+                     | regex_search('0 upgraded, 0 newly installed, 0 to remove and \d+ not upgraded\.') or
+                 python__register_raw.stdout | regex_search('.+ set to manually installed\.'))

@@ -69,20 +69,21 @@ trimmed to make the result easier to read):
    │   ├── roles/
    │   │   ├── service1/
    │   │   └── service2/
-   │   └── secret/
-   │       ├── credentials/
-   │       │   ├── host1/
-   │       │   └── host2/
-   │       ├── dhparam/
-   │       │   └── params/
-   │       │       ├── dh2048.pem
-   │       │       └── dh3072.pem
-   │       └── pki/
-   │           ├── authorities/
-   │           ├── ca-certificates/
-   │           ├── lib/
-   │           ├── realms/
-   │           └── requests/
+   │   │── secret/
+   │   │   ├── credentials/
+   │   │   │   ├── host1/
+   │   │   │   └── host2/
+   │   │   ├── dhparam/
+   │   │   │   └── params/
+   │   │   │       ├── dh2048.pem
+   │   │   │       └── dh3072.pem
+   │   │   └── pki/
+   │   │       ├── authorities/
+   │   │       ├── ca-certificates/
+   │   │       ├── lib/
+   │   │       ├── realms/
+   │   │       └── requests/
+   │   └── global-vars.yml
    ├── debops/
    ├── .git/
    ├── playbooks/
@@ -159,6 +160,42 @@ distribute public keys or other information between hosts via Ansible
 Controller.
 
 
+.. _global_vars:
+
+The :file:`ansible/global-vars.yml` file
+----------------------------------------
+
+This is an optional YAML file, not created by default. If the :command:`debops`
+script detects this file, it will be provided to the
+:command:`ansible-playbook` command using the ``--extra-vars`` parameter.
+For Ansible to work correctly, this file has to contain at least one valid
+variable, otherwise Ansible will return with an error.
+
+The :file:`ansible/global-vars.yml` file `can contain global variables`__ which
+will `override`__ any other variables in the inventory, playbooks or roles. In
+DebOps, this file can be used to define variables which affect how playbooks
+are processed by Ansible during initialization. For example, global variables
+can be used to change the role used by the ``import_role`` Ansible module
+without modifying the role/playbook code, which is only possible via the
+``--extra-vars`` parameter since Ansible inventory variables are not available
+at that stage.
+
+.. warning:: Variables defined in the :file:`ansible/global-vars.yml` file
+   should be treated as "global" for the entire environment managed by DebOps
+   and shouldn't be scoped to a particular host or host group, otherwise
+   unexpected things can happen.
+
+If you don't use the :command:`debops` command to run DebOps playbooks, you
+need to specify this file manually on the command line, for example:
+
+.. code-block:: console
+
+   ansible-playbook --extra-vars '@ansible/global-vars.yml' playbook.yml
+
+.. __: https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#passing-variables-on-the-command-line
+.. __: https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#variable-precedence-where-should-i-put-a-variable
+
+
 The :file:`debops/` directory
 -----------------------------
 
@@ -190,3 +227,43 @@ not cause issues in the filesystem.
 This file contains configuration for some of the custom DebOps lookup plugins,
 as well as configuration which should be added to the automatically generated
 :file:`ansible.cfg` configuration file.
+
+
+Overriding the ``site`` playbook
+--------------------------------
+
+:file:`debops/ansible/playbooks/site.yml` connects all debops roles.
+
+By creating a playbook named :file:`ansible/playbooks/site.yml` inside your
+project folder, you can override the debops version of :file:`site.yml`
+and hook your role to the :command:`debops` command instead:
+
+in :file:`ansible/playbooks/site.yml`:
+
+.. code-block:: yaml
+
+  ---
+  - include: '{{ lookup("ENV", "HOME") + "/.local/share/debops/debops/ansible/playbooks/site.yml" }}'
+  - include: your_role.yml
+
+
+in :file:`ansible/playbooks/your_role.yml`:
+
+.. code-block:: yaml
+
+  ---
+  - name: Manage the your specific setup
+    hosts: [ 'debops_all_hosts' ]
+    roles:
+      - role: ansible.your_role
+        tags: [ 'role::your_role' ]
+
+
+.. note::
+
+  Note that the path to :file:`debops/ansible/playbooks/site.yml`
+  can vary per OS and installation method.
+  You can either provide the path to the playbook,
+  or create a symlink to the correct destination in your project folder.
+
+You can override any of the other DebOps playbooks in a similar fashion.

@@ -1,7 +1,9 @@
 ---
 
 - name: Manage users with git-shell accounts
-  hosts: [ 'debops_service_gitusers', 'debops_gitusers' ]
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_gitusers' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -10,11 +12,11 @@
 
   roles:
 
-    - role: debops.system_groups
+    - role: system_groups
       tags: [ 'role::system_groups', 'skip::system_groups' ]
 
-    - role: debops.gitusers
+    - role: gitusers
       tags: [ 'role::gitusers', 'skip::gitusers' ]
 
-    - role: debops.authorized_keys
+    - role: authorized_keys
       tags: [ 'role::authorized_keys', 'skip::authorized_keys' ]

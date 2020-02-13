@@ -1,6 +1,8 @@
 ---
 
 - name: Manage and configure the Apache HTTP Server
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_apache' ]
   become: True
 
@@ -8,15 +10,19 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: debops.apache/env
+    - import_role:
+        name: 'apache'
+        tasks_from: 'main_env'
       tags: [ 'role::apache', 'role::apache:env' ]
 
-    - role: debops.ferm
+  roles:
+
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ apache__ferm__dependent_rules }}'
 
-    - role: debops.apache
+    - role: apache
       tags: [ 'role::apache', 'skip::apache' ]

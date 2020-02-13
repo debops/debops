@@ -17,7 +17,7 @@ clean:          ## Clean up project directory
 clean: clean-tests clean-sdist clean-wheel
 
 .PHONY: collection
-collection:     ## Build collection of Ansible artifacts with Mazer
+collection:     ## Build collection of Ansible artifacts with ansible-galaxy
 collection: make-collection
 
 .PHONY: versions
@@ -31,6 +31,10 @@ docker: test-docker-build
 .PHONY: docs
 docs:           ## Build Sphinx documentation
 docs: test-docs
+
+.PHONY: man
+man:            ## Build manual pages from Sphinx documentation
+man: test-man
 
 .PHONY: links
 links:          ## Check external links in documentation
@@ -62,7 +66,7 @@ yaml: test-yaml
 
 .PHONY: sdist
 sdist:          ## Create Python sdist package
-sdist: clean-sdist
+sdist: clean-sdist man
 	@python3 setup.py sdist
 
 .PHONY: sdist-quiet
@@ -76,7 +80,7 @@ sdist-sign: sdist
 
 .PHONY: make-collection
 make-collection:
-	@lib/mazer/make-collection
+	@lib/ansible-galaxy/make-collection
 
 .PHONY: clean-sdist
 clean-sdist:
@@ -84,7 +88,7 @@ clean-sdist:
 
 .PHONY: wheel
 wheel:          ## Create Python wheel package
-wheel: clean-wheel
+wheel: clean-wheel man
 	@python3 setup.py bdist_wheel
 
 .PHONY: wheel-quiet
@@ -105,7 +109,7 @@ twine-upload:    ## Upload Python packages to PyPI
 	@twine upload dist/*
 
 .PHONY: test-all
-test-all: clean-tests test-pep8 test-debops-tools test-debops-ansible_plugins test-docs test-playbook-syntax test-yaml test-ansible-lint test-shell test-docker-build
+test-all: clean-tests test-pep8 test-debops-tools test-debops-ansible_plugins test-docs test-man test-playbook-syntax test-yaml test-shell
 
 .PHONY: test-pep8
 test-pep8:
@@ -134,6 +138,11 @@ check-versions:
 test-docs:
 	@printf "%s\n" "Testing HTML documentation generation..."
 	@cd docs && sphinx-build -n -W -b html -d _build/doctrees . _build/html
+
+.PHONY: test-man
+test-man:
+	@printf "%s\n" "Testing man documentation generation..."
+	@cd docs && sphinx-build -t manpages -n -W -b man -d _build/doctrees . _build/man
 
 .PHONY: check-links
 check-links:
@@ -165,7 +174,7 @@ test-debops-tools:
 .PHONY: test-debops-ansible_plugins
 test-debops-ansible_plugins:
 	@printf "%s\n" "Testing debops-ansible_plugins using nose2..."
-	@python3 ansible/roles/debops.ansible_plugins/filter_plugins/debops_filter_plugins.py
+	@python3 ansible/roles/ansible_plugins/filter_plugins/debops_filter_plugins.py
 
 .PHONY: fail-if-git-dirty
 fail-if-git-dirty:

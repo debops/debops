@@ -1,7 +1,9 @@
 ---
 
 - name: Manage fail2ban service
-  hosts: [ 'debops_service_fail2ban', 'debops_fail2ban' ]
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_fail2ban' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -10,5 +12,5 @@
 
   roles:
 
-    - role: debops.fail2ban
+    - role: fail2ban
       tags: [ 'role::fail2ban', 'skip::fail2ban' ]

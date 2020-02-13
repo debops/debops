@@ -1,0 +1,47 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+import os
+from json import loads, dumps
+import subprocess
+
+output = loads('''{{ ({
+    "enabled": (owncloud__deploy_state == "present"),
+    "webserver": owncloud__webserver|string,
+    "variant": owncloud__variant|string,
+    "ldap_config_id": (owncloud__register_ldap_config_id.stdout
+                       if (owncloud__register_ldap_config_id|d() and
+                           owncloud__register_ldap_config_id.stdout|d())
+                       else owncloud__ldap_config_id),
+    "auto_security_updates_enabled": (owncloud__auto_security_updates_enabled
+                                      | bool),
+    }) | to_nice_json }}''')
+
+owncloud_deploy_path = loads('''{{ owncloud__deploy_path | to_json }}''')
+
+if os.path.isfile(owncloud_deploy_path + '/config/config.php'):
+    try:
+        config_cmd = subprocess.Popen(
+            ['php', '-r', 'include "' + owncloud_deploy_path
+             + '/config/config.php"; echo json_encode($CONFIG);'],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+    except Exception:
+        pass
+    else:
+        std_out, std_err = config_cmd.communicate()
+
+        if config_cmd.returncode == 0 and len(std_err) == 0:
+            config = loads(std_out)
+            for key in ['instanceid', 'version', 'updatechecker', 'theme',
+                        'maintenance', 'datadirectory', 'trusted_domains']:
+                if key in config:
+                    output[key] = config[key]
+
+if 'version' in output:
+    output['release'] = '.'.join(output['version'].split('.')[:2])
+
+print(dumps(output, sort_keys=True, indent=4))

@@ -1,7 +1,9 @@
 ---
 
 - name: Manage PostgreSQL client
-  hosts: [ 'debops_service_postgresql', 'debops_postgresql' ]
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_postgresql' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -10,22 +12,22 @@
 
   roles:
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::postgresql' ]
       keyring__dependent_apt_keys:
         - '{{ postgresql__keyring__dependent_apt_keys }}'
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ postgresql__apt_preferences__dependent_list }}'
 
-    - role: debops.python
-      tags: [ 'role::python', 'skip::python' ]
+    - role: python
+      tags: [ 'role::python', 'skip::python', 'role::postgresql' ]
       python__dependent_packages3:
         - '{{ postgresql__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ postgresql__python__dependent_packages2 }}'
 
-    - role: debops.postgresql
+    - role: postgresql
       tags: [ 'role::postgresql', 'skip::postgresql' ]

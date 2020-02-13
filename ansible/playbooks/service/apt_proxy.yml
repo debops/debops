@@ -1,6 +1,8 @@
 ---
 
 - name: Configure APT proxy
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_all_hosts', 'debops_service_apt_proxy' ]
   become: True
 
@@ -10,5 +12,5 @@
 
   roles:
 
-    - role: debops.apt_proxy
+    - role: apt_proxy
       tags: [ 'role::apt_proxy', 'skip::apt_proxy' ]

@@ -1,6 +1,8 @@
 ---
 
 - name: Prepare core environment
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_all_hosts', 'debops_service_core' ]
   become: False
 
@@ -10,6 +12,6 @@
 
   roles:
 
-    - role: debops.core
+    - role: core
       tags: [ 'role::core', 'skip::core' ]
       become: True

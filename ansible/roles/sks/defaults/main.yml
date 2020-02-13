@@ -1,0 +1,133 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _sks__ref_defaults:
+
+# debops.sks default variables
+# ============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# SKS configuration [[[
+# ---------------------
+
+# .. envvar:: sks_autoinit [[[
+#
+# Automatically create keyserver database? Database will be empty
+# If you want to seed the database with public GPG keys or connect to public
+# SKS Keyserver network, you should set this variable to "False" and seed the
+# database manually. See: http://keysigning.org/sks/
+sks_autoinit: False
+
+                                                                   # ]]]
+# .. envvar:: sks_contact [[[
+#
+# GPG fingerprint of server administrator
+sks_contact: ''
+
+                                                                   # ]]]
+# .. envvar:: sks_from [[[
+#
+# From header for outgoing mail
+sks_from: 'PGP Key Server <pgp-public-keys@{{ ansible_fqdn }}>'
+
+                                                                   # ]]]
+# .. envvar:: sks_domain [[[
+#
+# DNS domain on which SKS frontend webserver should be configured
+sks_domain: [ 'keyserver.{{ ansible_domain }}' ]
+
+                                                                   # ]]]
+# .. envvar:: sks_cluster [[[
+#
+# Ansible group of hosts which are included in SKS cluster
+sks_cluster: '{{ groups.debops_service_sks }}'
+
+                                                                   # ]]]
+# .. envvar:: sks_frontends [[[
+#
+# List of inventory hosts which provide frontend web service
+sks_frontends: [ '{{ sks_cluster[0] }}' ]
+
+                                                                   # ]]]
+# .. envvar:: sks_hkp_allow [[[
+#
+# List of hosts which can connect to hkp service. If this list is empty,
+# anybody can connect.
+sks_hkp_allow: []
+
+                                                                   # ]]]
+# .. envvar:: sks_public_list [[[
+#
+# List of public SKS keyservers you want to peer with. It's a list of simple
+# lines, which allows you to include custom ports and comments (see sks(8)
+# documentation). It's good etiquette to ask someone for permission before you
+# add their server to this list (and their server needs to have yours for the
+# communication to work).
+# You should probably connect only one of your private keyservers to the public
+# keyserver network, your other servers will propagate the changes between
+# themselves.
+sks_public_list: []
+
+#  - name: 'keyserver.example.org'
+#    port: '{{ sks_recon_port }}'
+#    email: 'Server Administrator <root@example.org'
+#    gpg: '0xDEADBEEF'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: sks__apt_preferences__dependent_list [[[
+#
+# Configuration for the :ref:`debops.apt_preferences` role.
+sks__apt_preferences__dependent_list:
+
+  - package: 'sks'
+    backports: [ 'wheezy' ]
+    reason: [ 'Version from wheezy creates gmon.out files everywhere',
+              'https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=699847' ]
+
+                                                                   # ]]]
+# .. envvar:: sks__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+sks__etc_services__dependent_list:
+
+  - name: '{{ sks_recon_name }}'
+    port: '{{ sks_recon_port }}'
+    comment: 'SKS Keyserver Reconcilliation Service'
+
+  - name: '{{ sks_hkp_frontend_name }}'
+    port: '{{ sks_hkp_frontend_port }}'
+    comment: 'SKS Keyserver Backend Service'
+
+                                                                   # ]]]
+# .. envvar:: sks__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+# FIXME: Move configuration from the template.
+sks__ferm__dependent_rules: []
+
+                                                                   # ]]]
+# .. envvar:: sks__nginx__dependent_servers [[[
+#
+# Server configuration for the :ref:`debops.nginx` Ansible role.
+sks__nginx__dependent_servers:
+
+  - '{{ sks_nginx_frontend }}'
+  - '{{ sks_nginx_ssl_frontend }}'
+
+                                                                   # ]]]
+# .. envvar:: sks__nginx__dependent_upstreams [[[
+#
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
+sks__nginx__dependent_upstreams:
+
+  - '{{ sks_nginx_upstreams }}'
+                                                                   # ]]]
+                                                                   # ]]]

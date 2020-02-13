@@ -1,6 +1,8 @@
 ---
 
 - name: Configure yadm, Yet Another Dotfiles Manager
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_all_hosts', 'debops_service_yadm' ]
   become: True
 
@@ -10,15 +12,15 @@
 
   roles:
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::yadm' ]
       keyring__dependent_gpg_keys:
         - '{{ yadm__keyring__dependent_gpg_keys }}'
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ yadm__apt_preferences__dependent_list }}'
 
-    - role: debops.yadm
+    - role: yadm
       tags: [ 'role::yadm', 'skip::yadm' ]

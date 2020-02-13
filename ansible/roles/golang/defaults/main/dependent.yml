@@ -1,0 +1,47 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Configuration for other Ansible roles
+# =====================================
+
+# .. include:: ../../../../../includes/global.rst
+
+
+# .. envvar:: golang__keyring__dependent_gpg_user [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role (all GPG keys should
+# be imported into a specific UNIX account keyring).
+golang__keyring__dependent_gpg_user: '{{ golang__user }}'
+
+                                                                   # ]]]
+# .. envvar:: golang__keyring__dependent_gpg_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role (list of GPG keys to
+# import to the keyring).
+golang__keyring__dependent_gpg_keys:
+
+  - user:  '{{ golang__user }}'
+    group: '{{ golang__group }}'
+    home:  '{{ golang__home }}'
+    state: '{{ "present"
+               if (q("flattened", golang__combined_packages) | parse_kv_items
+                   | selectattr("gpg", "defined") | selectattr("state", "equalto", "present")
+                   | map(attribute="gpg") | list)
+               else "absent" }}'
+
+  - '{{ q("flattened", golang__combined_packages) | parse_kv_items
+        | selectattr("gpg", "defined") | selectattr("state", "equalto", "present")
+        | map(attribute="gpg") | list }}'
+
+                                                                   # ]]]
+# .. envvar:: golang__apt_preferences__dependent_list [[[
+#
+# Configuration for the :ref:`debops.apt_preferences` role.
+golang__apt_preferences__dependent_list:
+
+  - packages: [ 'golang', 'golang-*', 'dh-golang' ]
+    backports: [ 'wheezy', 'jessie', 'stretch', 'precise', 'trusty' ]
+    reason: 'Closer feature parity with upstream'
+    by_role: 'debops.golang'
+
+                                                                   # ]]]

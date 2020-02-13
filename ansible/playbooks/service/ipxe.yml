@@ -1,7 +1,9 @@
 ---
 
 - name: Manage iPXE configuration files
-  hosts: [ 'debops_service_ipxe', 'debops_ipxe' ]
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_ipxe' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -10,5 +12,5 @@
 
   roles:
 
-    - role: debops.ipxe
+    - role: ipxe
       tags: [ 'role::ipxe', 'skip::ipxe' ]

@@ -1,0 +1,123 @@
+---
+
+# ---- System Account ----
+
+- name: Create Roundcube group
+  group:
+    name: '{{ roundcube__group }}'
+    system: True
+    state: 'present'
+
+- name: Create Roundcube user
+  user:
+    name: '{{ roundcube__user }}'
+    group: '{{ roundcube__group }}'
+    home: '{{ roundcube__home }}'
+    shell: '{{ roundcube__shell }}'
+    comment: '{{ roundcube__comment }}'
+    system: True
+    state: 'present'
+
+
+# ---- Deployment ----
+
+- name: Create required Roundcube directories
+  file:
+    path: '{{ item.path }}'
+    state: 'directory'
+    owner: '{{ roundcube__user }}'
+    group: '{{ roundcube__group }}'
+    mode: '{{ item.mode | d("0755") }}'
+  loop:
+    - { path: '{{ roundcube__src }}' }
+    - { path: '{{ roundcube__git_dir  | dirname }}', mode: "0750" }
+    - { path: '{{ roundcube__git_dest | dirname }}' }
+
+- name: Clone Roundcube source from upstream repository
+  git:
+    repo: '{{ roundcube__git_repo }}'
+    dest: '{{ roundcube__git_dest }}'
+    version: '{{ roundcube__git_version }}'
+    separate_git_dir: '{{ roundcube__git_dir }}'
+    verify_commit: True
+    # FIXME: At the moment GPG whitelisting does not work correctly
+    #gpg_whitelist: '{{ [ roundcube__git_gpg_key ]
+    #                   + roundcube__git_additional_gpg_keys
+    #                   | flatten }}'
+  become: True
+  become_user: '{{ roundcube__user }}'
+  register: roundcube__register_git
+
+- name: Read PHP composer data from upstream
+  slurp:
+    src: '{{ roundcube__git_dest + "/composer.json-dist" }}'
+  register: roundcube__register_composer_dist
+  when: roundcube__register_git is changed
+
+- name: Read currently deployed PHP composer data
+  slurp:
+    src: '{{ roundcube__git_dest + "/composer.json" }}'
+  register: roundcube__register_composer_installed
+  when: (ansible_local|d() and ansible_local.roundcube|d() and
+         (ansible_local.roundcube.installed|d())|bool and
+        roundcube__register_git is changed)
+
+- name: Update PHP composer data
+  template:
+    src: 'srv/www/sites/roundcube/public/composer.json.j2'
+    dest: '{{ roundcube__git_dest + "/composer.json" }}'
+    owner: '{{ roundcube__user }}'
+    group: '{{ roundcube__group }}'
+    mode: '0644'
+  when: roundcube__register_git is changed
+
+# ---- Post deployment ----
+
+- name: Install or upgrade PHP packages via Composer
+  composer:
+    command: '{{ "upgrade"
+                 if (ansible_local|d() and ansible_local.roundcube|d() and
+                     (ansible_local.roundcube.installed|d())|bool)
+                 else "install" }}'
+    working_dir: '{{ roundcube__git_dest }}'
+    no_dev: True
+  become: True
+  become_user: '{{ roundcube__user }}'
+  register: roundcube__register_composer
+  until: roundcube__register_composer is succeeded
+  when: roundcube__register_git is changed
+
+- name: Install Roundcube plugins via Composer
+  composer:
+    command: 'require'
+    arguments: '{{ item }}'
+    working_dir: '{{ roundcube__git_dest }}'
+    no_dev: True
+  loop: '{{ roundcube__combined_plugins | parse_kv_items
+            | selectattr("state", "match", "^(enabled|present)$")
+            | selectattr("package", "defined")
+            | map(attribute="package") | list }}'
+  become: True
+  become_user: '{{ roundcube__user }}'
+  register: roundcube__register_composer_plugins
+  until: roundcube__register_composer_plugins is succeeded
+  tags: [ 'skip::roundcube:plugins' ]
+
+- name: Install Javascript packages
+  command: bin/install-jsdeps.sh
+  args:
+    chdir: '{{ roundcube__git_dest }}'
+  become: True
+  become_user: '{{ roundcube__user }}'
+  # The script does not have any useful status output
+  # FIXME: Find better way to make this task idempotent
+  changed_when: False
+
+- name: Enable cleandb.sh Cron job
+  cron:
+    name: Roundcube daily database housekeeping
+    user: '{{ roundcube__user }}'
+    job: '{{ roundcube__git_dest }}/bin/cleandb.sh'
+    cron_file: 'roundcube'
+    hour: '22'
+    minute: '0'

@@ -1,6 +1,8 @@
 ---
 
 - name: Manage Postfix SMTP service
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_postfix' ]
   become: True
 
@@ -8,27 +10,33 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: debops.etc_aliases/env
+    - import_role:
+        name: 'etc_aliases'
+        tasks_from: 'main_env'
       tags: [ 'role::etc_aliases', 'role::secret', 'role::postfix' ]
 
-    - role: debops.postfix/env
+    - import_role:
+        name: 'postfix'
+        tasks_from: 'main_env'
       tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
 
-    - role: debops.secret
+  roles:
+
+    - role: secret
       tags: [ 'role::secret', 'role::postfix' ]
       secret__directories:
         - '{{ etc_aliases__secret__directories }}'
         - '{{ postfix__secret__directories }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ postfix__ferm__dependent_rules }}'
 
-    - role: debops.etc_aliases
+    - role: etc_aliases
       tags: [ 'role::etc_aliases', 'skip::etc_aliases' ]
 
-    - role: debops.postfix
+    - role: postfix
       tags: [ 'role::postfix', 'skip::postfix' ]

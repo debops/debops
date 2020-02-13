@@ -1,0 +1,18 @@
+---
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save MinIO Client local facts
+  template:
+    src: 'etc/ansible/facts.d/mcli.fact.j2'
+    dest: '/etc/ansible/facts.d/mcli.fact'
+    mode: '0755'
+  register: mcli__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: mcli__register_facts is changed

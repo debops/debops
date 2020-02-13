@@ -1,7 +1,9 @@
 ---
 
 - name: Manage fcgiwrap instances
-  hosts: [ 'debops_service_fcgiwrap', 'debops_fcgiwrap' ]
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_fcgiwrap' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -10,5 +12,5 @@
 
   roles:
 
-    - role: debops.fcgiwrap
+    - role: fcgiwrap
       tags: [ 'role::fcgiwrap', 'skip::fcgiwrap' ]

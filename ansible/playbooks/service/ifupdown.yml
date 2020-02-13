@@ -1,6 +1,8 @@
 ---
 
 - name: Manage network configuration using ifupdown
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_ifupdown' ]
   become: True
 
@@ -8,36 +10,40 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: debops.ifupdown/env
+    - import_role:
+        name: 'ifupdown'
+        tasks_from: 'main_env'
       tags: [ 'role::ifupdown', 'role::kmod', 'role::ferm', 'role::sysctl' ]
 
-    - role: debops.resolvconf
+  roles:
+
+    - role: resolvconf
       tags: [ 'role::resolvconf', 'skip::resolvconf' ]
       resolvconf__enabled: True
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python', 'role::kmod' ]
       python__dependent_packages3:
         - '{{ kmod__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ kmod__python__dependent_packages2 }}'
 
-    - role: debops.kmod
+    - role: kmod
       tags: [ 'role::kmod', 'skip::kmod' ]
       kmod__dependent_load:
         - '{{ ifupdown__env_kmod__dependent_load }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ ifupdown__env_ferm__dependent_rules }}'
 
-    - role: debops.sysctl
+    - role: sysctl
       tags: [ 'role::sysctl', 'skip::sysctl' ]
       sysctl__dependent_parameters:
         - '{{ ifupdown__env_sysctl__dependent_parameters }}'
 
-    - role: debops.ifupdown
+    - role: ifupdown
       tags: [ 'role::ifupdown', 'skip::ifupdown' ]

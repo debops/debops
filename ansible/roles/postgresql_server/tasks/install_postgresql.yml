@@ -1,0 +1,43 @@
+---
+
+- name: Check if database server is installed
+  environment:
+    LC_MESSAGES: 'C'
+  shell: set -o nounset -o pipefail -o errexit &&
+         dpkg-query -W -f='${Version}\n' 'postgresql' 'postgresql-{{ postgresql_server__version }}' | grep -v '^$'
+  args:
+    executable: 'bash'
+  register: postgresql_server__register_installed
+  changed_when: False
+  check_mode: False
+  failed_when: False
+
+- name: Install PostgreSQL packages
+  package:
+    name: '{{ q("flattened", (postgresql_server__base_packages
+                              + postgresql_server__python_packages
+                              + postgresql_server__packages
+                              + ([ "ptop" ]
+                                 if (ansible_distribution_release in [ "wheezy", "precise" ])
+                                 else [ "pgtop" ])
+                              + ([ "autopostgresqlbackup" ]
+                                 if (postgresql_server__autopostgresqlbackup|d())|bool
+                                 else []))) }}'
+    state: 'present'
+  register: postgresql_server__register_packages
+  until: postgresql_server__register_packages is succeeded
+
+- name: Check if default PostgreSQL cluster exists
+  stat:
+    path: '/var/lib/postgresql/{{ postgresql_server__version }}/main/postmaster.opts'
+  register: postgresql_server__register_installed_main
+
+  # Main cluster will be recreated later, with correct encoding
+- name: Remove default PostgreSQL cluster on first install
+  command: pg_dropcluster --stop {{ postgresql_server__version }} main
+  when: ((postgresql_server__register_installed|d() and not postgresql_server__register_installed.stdout) and
+         (postgresql_server__register_installed_main|d() and postgresql_server__register_installed_main.stat.exists) and
+          (ansible_local is undefined or
+           (ansible_local|d() and ansible_local.postgresql is undefined or
+            (ansible_local|d() and ansible_local.postgresql|d() and
+             ansible_local.postgresql.server != 'localhost'))))

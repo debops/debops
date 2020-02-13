@@ -1,8 +1,7 @@
-DebOps development process
-==========================
+Contribution workflow
+=====================
 
-*This is a draft document about how DebOps project is developed internally and
-how you can contribute to it.*
+*This is a quick guide on contributing to the development of the DebOps project.*
 
 How to contribute via GitHub
 ----------------------------
@@ -19,6 +18,9 @@ as an ``upstream`` of your fork.
    cd ~/src/github.com/<username>/debops
    git remote add upstream https://github.com/debops/debops.git
 
+Managing your local fork
+~~~~~~~~~~~~~~~~~~~~~~~~
+
 If you already have a local fork, before starting your work, fetch and rebase
 the latest changes from the ``master`` branch of the upstream repository.
 If you want to work on a different branch, switch to it and do the same.
@@ -29,43 +31,6 @@ If you want to work on a different branch, switch to it and do the same.
    git fetch upstream
    git rebase upstream/master
    git push origin master
-
-Create a new feature branch and start working on your changes. You can commit
-frequently, or use an interactive mode to commit partial changes later. Try to
-keep related changes in separate commits, and separate larger code
-modifications into multiple commits - this helps with finding out the issues
-using :command:`git bisect`. Commits signed by a valid GPG key are preferred.
-
-.. code-block:: console
-
-   git checkout -b new-feature
-   # ... work ...
-   git add -p .
-   # ... pick changes to commit ...
-   git commit
-
-Read the `How to Write a Git Commit Message <https://chris.beams.io/posts/git-commit/>`_
-to learn the best practices about :command:`git` commit messages.
-
-Rewriting history and squashing commits is frowned upon, because this may make
-bisecting harder. Small, focused changes are preferable, unless you are
-creating a completely new feature, for example a new role; in that case putting
-everything in one commit as a starting point is a reasonable approach.
-
-You can add entries about more visible changes or new features to the
-Changelog, but it's not necessary - it will be updated if needed, before your
-pull request is merged.
-
-If you notice that you forgot some changes, you can amend your last commit to
-include it. If you already pushed your changes to the forked repository on
-GitHub, you might need to force push your changes again. However, don't rewrite
-history in branches that are already pending as pull requests.
-
-.. code-block:: console
-
-   # Modify latest commit
-   git add -p .
-   git commit --amend
 
 During development you might notice that the upstream repository has new
 commits. In that case you might want to rebase your feature branch on the
@@ -82,11 +47,55 @@ stash`. After a rebase, you might need to resolve any conflicts manually.
    git fetch upstream
    git rebase upstream/master
    git push origin master
+
    git checkout new-feature
    git rebase master
 
    # Get back stashed changes
    git stash pop
+
+Using git with style
+~~~~~~~~~~~~~~~~~~~~
+
+Create a new feature branch and start working on your changes. You can commit
+frequently, or use an interactive mode to commit partial changes later. Try to
+keep related changes in separate commits, and separate larger code
+modifications into multiple commits - this helps with finding out the issues
+using :command:`git bisect`. Commits signed by a valid GPG key are preferred.
+
+.. code-block:: console
+
+   git checkout -b new-feature
+   # ... work ...
+   git add -p .
+   # ... pick changes to commit ...
+   git commit
+
+Read `How to Write a Git Commit Message <https://chris.beams.io/posts/git-commit/>`_
+to learn the best practices about :command:`git` commit messages.
+
+Rewriting history and squashing commits is frowned upon, because this may make
+bisecting harder. Small, focused changes are preferable, unless you are
+creating a completely new feature, for example a new role; in that case putting
+everything in one commit as a starting point is a reasonable approach.
+
+You can add entries about more visible changes or new features to
+:file:`CHANGELOG.rst`, but it's not necessary - it will be updated if needed,
+before your pull request is merged.
+
+If you notice that you forgot some changes, you can amend your last commit to
+include it. If you already pushed your changes to the forked repository on
+GitHub, you might need to ``--force`` push your changes again. However, *don't
+rewrite history in branches that are already pending as pull requests*.
+
+.. code-block:: console
+
+   # Modify latest commit
+   git add -p .
+   git commit --amend
+
+Pushing your changes
+~~~~~~~~~~~~~~~~~~~~
 
 When your changes are ready, you can push them to your DebOps fork on GitHub.
 
@@ -111,14 +120,22 @@ reflect new commits.
 
 After your pull request is merged, you can fetch the new changes in the
 ``master`` branch or other branches you worked on, rebase your local clone of
-the repository and push them back to your own fork. Then, you can start working
-on another feature, or bugfix.
+the repository and push them back to your own fork, just as you would with any
+other commit from ``upstream``.
+Then, you can start working on another feature or bugfix.
 
-.. code-block:: console
+How to test your changes
+------------------------
 
-   git checkout master
-   git fetch upstream
-   git rebase upstream/master
-   git push origin master
+Once you push your contribution, Travis CI will run a first round of tests,
+mostly related to linting and syntax checking, then will promptly reject your
+contribution for the most pedantic reasons imaginable.
+
+In order to avoid this awkward scenario,
+you can (and should) run :command:`make test` yourself!
+
+See the `Testing guide <https://docs.debops.org/en/master/developer-guide/testing.html>`_
+for more information on installing the tools required
+and making the most out of the test suite.
 
 Happy hacking!

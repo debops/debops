@@ -1,6 +1,8 @@
 ---
 
 - name: Manage Salt Master service
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_salt' ]
   become: True
 
@@ -10,32 +12,32 @@
 
   roles:
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::salt' ]
       keyring__dependent_apt_keys:
         - '{{ salt__keyring__dependent_apt_keys }}'
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ salt__apt_preferences__dependent_list }}'
 
-    - role: debops.etc_services
+    - role: etc_services
       tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services__dependent_list:
         - '{{ salt__etc_services__dependent_list }}'
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python' ]
       python__dependent_packages3:
         - '{{ salt__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ salt__python__dependent_packages2 }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ salt__ferm__dependent_rules }}'
 
-    - role: debops.salt
+    - role: salt
       tags: [ 'role::salt', 'skip::salt' ]

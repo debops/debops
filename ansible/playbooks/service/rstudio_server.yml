@@ -1,6 +1,8 @@
 ---
 
 - name: Manage RStudio Server service
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_rstudio_server' ]
   become: True
 
@@ -10,7 +12,7 @@
 
   roles:
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring',
               'role::cran', 'role::nginx', 'role::rstudio_server' ]
       keyring__dependent_apt_keys:
@@ -19,12 +21,12 @@
       keyring__dependent_gpg_keys:
         - '{{ rstudio_server__keyring__dependent_gpg_keys | d([]) }}'
 
-    - role: debops.etc_services
+    - role: etc_services
       tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services__dependent_list:
         - '{{ rstudio_server__etc_services__dependent_list }}'
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ nginx__apt_preferences__dependent_list }}'
@@ -32,32 +34,32 @@
         - '{{ java__apt_preferences__dependent_list
               if cran__java_integration|bool else [] }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ nginx__ferm__dependent_rules }}'
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python' ]
       python__dependent_packages3:
         - '{{ nginx__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ nginx__python__dependent_packages2 }}'
 
-    - role: debops.nginx
+    - role: nginx
       tags: [ 'role::nginx', 'skip::nginx' ]
       nginx__dependent_servers:
         - '{{ rstudio_server__nginx__dependent_servers }}'
 
-    - role: debops.java
+    - role: java
       tags: [ 'role::java', 'skip::java' ]
       java__install_jdk: True
       when: cran__java_integration|bool
 
-    - role: debops.cran
+    - role: cran
       tags: [ 'role::cran', 'skip::cran' ]
       cran__dependent_packages:
         - '{{ rstudio_server__cran__dependent_packages }}'
 
-    - role: debops.rstudio_server
+    - role: rstudio_server
       tags: [ 'role::rstudio_server', 'skip::rstudio_server' ]

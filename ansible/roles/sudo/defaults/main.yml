@@ -1,0 +1,262 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _sudo__ref_defaults:
+
+# debops.sudo default variables
+# =============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: sudo__enabled [[[
+#
+# Enable or disable support for :command:`sudo` management on a host.
+sudo__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: sudo__base_packages [[[
+#
+# List of base APT packages to install for :command:`sudo` support.
+sudo__base_packages: '{{ [ "sudo-ldap" ]
+                         if (ansible_local|d() and ansible_local.ldap|d() and
+                             (ansible_local.ldap.enabled|d())|bool)
+                         else [ "sudo" ] }}'
+
+                                                                   # ]]]
+# .. envvar:: sudo__packages [[[
+#
+# List of additional APT packages to install with :command:`sudo` command.
+sudo__packages: []
+
+                                                                   # ]]]
+# .. envvar:: sudo__logind_session [[[
+#
+# Enable or disable a workaround for :command:`sudo` login session not having
+# a ``$XDG_RUNTIME_DIR`` environment variable set. This allows control over
+# another user's :command:`systemd` instance.
+sudo__logind_session: '{{ True if (ansible_service_mgr == "systemd") else False }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# LDAP environment [[[
+# --------------------
+
+# .. envvar:: sudo__ldap_base_dn [[[
+#
+# The base Distinguished Name which should be used to create Distinguished
+# Names of the LDAP directory objects, defined as a YAML list.
+sudo__ldap_base_dn: '{{ ansible_local.ldap.base_dn
+                        if (ansible_local|d() and ansible_local.ldap|d() and
+                            ansible_local.ldap.base_dn|d())
+                        else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: sudo__ldap_device_dn [[[
+#
+# The Distinguished Name of the current host LDAP object, defined as a YAML
+# list. It will be used as a base for the :command:`sudo` service account LDAP
+# object. If the list is empty, the role will not create the account LDAP
+# object automatically.
+sudo__ldap_device_dn: '{{ ansible_local.ldap.device_dn
+                          if (ansible_local|d() and ansible_local.ldap|d() and
+                              ansible_local.ldap.device_dn|d())
+                          else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: sudo__ldap_self_rdn [[[
+#
+# The Relative Distinguished Name of the account LDAP object used by the
+# :command:`sudo` service to access the LDAP directory.
+sudo__ldap_self_rdn: 'uid=sudo'
+
+                                                                   # ]]]
+# .. envvar:: sudo__ldap_self_object_classes [[[
+#
+# List of the LDAP object classes which will be used to create the LDAP object
+# used by the :command:`sudo` service to access the LDAP directory.
+sudo__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
+
+                                                                   # ]]]
+# .. envvar:: sudo__ldap_self_attributes [[[
+#
+# YAML dictionary that defines the attributes of the LDAP object used by the
+# :command:`sudo` service to access the LDAP directory.
+sudo__ldap_self_attributes:
+  uid: '{{ sudo__ldap_self_rdn.split("=")[1] }}'
+  userPassword: '{{ sudo__ldap_bindpw }}'
+  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  description: 'Account used by the "sudo" service to access the LDAP directory'
+
+                                                                   # ]]]
+# .. envvar:: sudo__ldap_binddn [[[
+#
+# The Distinguished Name of the account LDAP object used by the
+# :command:`sudo` service to bind to the LDAP directory.
+sudo__ldap_binddn: '{{ ([ sudo__ldap_self_rdn ] + sudo__ldap_device_dn) | join(",") }}'
+
+                                                                   # ]]]
+# .. envvar:: sudo__ldap_bindpw [[[
+#
+# The password stored in the account LDAP object used by the :command:`sudo`
+# service to bind to the LDAP directory.
+sudo__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
+                              + sudo__ldap_binddn | to_uuid + ".password length=32") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Local sudoers configuration [[[
+# -------------------------------
+
+# These lists define what :command:`sudo` configuration will be present in the
+# :file:`/etc/sudoers.d/` directory. See :ref:`sudo__ref_sudoers` for more
+# details.
+
+# .. envvar:: sudo__sudoers [[[
+#
+# Configuration which should be present on all hosts in the Ansible inventory.
+sudo__sudoers: []
+
+                                                                   # ]]]
+# .. envvar:: sudo__group_sudoers [[[
+#
+# Configuration which should be present on hosts in a specific Ansible
+# inventory group.
+sudo__group_sudoers: []
+
+                                                                   # ]]]
+# .. envvar:: sudo__host_sudoers [[[
+#
+# Configuration which should be present on specific hosts in the Ansible
+# inventory.
+sudo__host_sudoers: []
+
+                                                                   # ]]]
+# .. envvar:: sudo__dependent_sudoers [[[
+#
+# List of sudoers configurations defined in other Ansible roles
+sudo__dependent_sudoers: []
+
+                                                                   # ]]]
+# .. envvar:: sudo__combined_sudoers [[[
+#
+# The variable which combines all other ``sudoers`` configuration variables and
+# is used in the role tasks.
+sudo__combined_sudoers: '{{ sudo__sudoers
+                            + sudo__group_sudoers
+                            + sudo__host_sudoers
+                            + sudo__dependent_sudoers }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# LDAP sudoers configuration [[[
+# ------------------------------
+
+# The variables below define the contents of the :file:`/etc/sudo-ldap.conf`
+# configuration file which is used by :command:`sudo` service to access the
+# LDAP directory and retrieve sudoers configuration stored in the directory.
+#
+# The syntax of the ``sudo__ldap_*_configuration`` variables is the same as the
+# :ref:`ldap__ref_configuration` variable syntax. Refer to its documentation
+# for more details. The configuration options supported by :command:`sudo` can
+# be found in the :man:`sudoers.ldap(5)` manual page.
+
+# .. envvar:: sudo__ldap_enabled [[[
+#
+# Enable or disable support for the :file:`/etc/sudo-ldap.conf` configuration
+# file management. If the support is disabled, existing configuration file will
+# not be changed or removed.
+sudo__ldap_enabled: '{{ True
+                        if (ansible_local|d() and ansible_local.ldap|d() and
+                            (ansible_local.ldap.enabled|d())|bool)
+                        else False }}'
+
+                                                                   # ]]]
+# .. envvar:: sudo__ldap_default_configuration [[[
+#
+# The contents of the :file:`/etc/sudo-ldap.conf` configuration file defined by
+# default in the role.
+sudo__ldap_default_configuration:
+
+  - name: 'sudoers_base'
+    comment: 'The base DN to use when performing "sudo" LDAP queries.'
+    value: '{{ ([ "ou=SUDOers" ] + sudo__ldap_base_dn) | join(",") }}'
+
+  - name: 'uri'
+    comment: 'The location at which the LDAP server(s) should be reachable.'
+    value: '{{ ansible_local.ldap.uri
+               if (ansible_local|d() and ansible_local.ldap|d() and
+                   ansible_local.ldap.uri|d())
+               else "" }}'
+
+  - name: 'ssl'
+    comment: 'SSL options'
+    value: '{{ "start_tls"
+               if (ansible_local|d() and ansible_local.ldap|d() and
+                   (ansible_local.ldap.start_tls|d())|bool)
+               else "on" }}'
+
+  - name: 'tls_reqcert'
+    value: 'demand'
+
+  - name: 'tls_cacert'
+    value: '/etc/ssl/certs/ca-certificates.crt'
+
+  - name: 'binddn'
+    comment: 'The "sudo" service LDAP credentials used to bind to the directory.'
+    value: '{{ sudo__ldap_binddn }}'
+
+  - name: 'bindpw'
+    value: '{{ sudo__ldap_bindpw }}'
+
+                                                                   # ]]]
+# .. envvar:: sudo__ldap_configuration [[[
+#
+# The contents of the :file:`/etc/sudo-ldap.conf` configuration file defined on
+# all hosts in the Ansible inventory.
+sudo__ldap_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: sudo__ldap_group_configuration [[[
+#
+# The contents of the :file:`/etc/sudo-ldap.conf` configuration file defined on
+# hosts in a specific Ansible inventory group.
+sudo__ldap_group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: sudo__ldap_host_configuration [[[
+#
+# The contents of the :file:`/etc/sudo-ldap.conf` configuration file defined on
+# specific hosts in the Ansible inventory.
+sudo__ldap_host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: sudo__ldap_combined_configuration [[[
+#
+# Variable which combines :command:`sudo` LDAP configuration from other
+# variables and is used in the role templates.
+sudo__ldap_combined_configuration: '{{ sudo__ldap_default_configuration
+                                       + sudo__ldap_configuration
+                                       + sudo__ldap_group_configuration
+                                       + sudo__ldap_host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: sudo__ldap__dependent_tasks [[[
+#
+# Configuration for the :ref:`debops.ldap` Ansible role.
+sudo__ldap__dependent_tasks:
+
+  - name: 'Create sudo account for {{ sudo__ldap_device_dn | join(",") }}'
+    dn: '{{ sudo__ldap_binddn }}'
+    objectClass: '{{ sudo__ldap_self_object_classes }}'
+    attributes: '{{ sudo__ldap_self_attributes }}'
+    no_log: True
+    state: '{{ "present" if sudo__ldap_device_dn|d() else "ignore" }}'
+                                                                   # ]]]
+                                                                   # ]]]

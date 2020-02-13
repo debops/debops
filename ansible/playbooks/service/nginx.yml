@@ -1,6 +1,8 @@
 ---
 
 - name: Manage nginx webserver
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_nginx' ]
   become: True
 
@@ -10,27 +12,27 @@
 
   roles:
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::nginx' ]
       keyring__dependent_apt_keys:
         - '{{ nginx__keyring__dependent_apt_keys }}'
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ nginx__apt_preferences__dependent_list }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ nginx__ferm__dependent_rules }}'
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python' ]
       python__dependent_packages3:
         - '{{ nginx__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ nginx__python__dependent_packages2 }}'
 
-    - role: debops.nginx
+    - role: nginx
       tags: [ 'role::nginx', 'skip::nginx' ]

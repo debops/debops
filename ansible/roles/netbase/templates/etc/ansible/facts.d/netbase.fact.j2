@@ -1,0 +1,107 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+"""Return information about host FQDN, domain and IP address
+
+This script checks the FQDN and the IP address of the host and returns it in
+JSON format for consumption by Ansible. The data is gathered from the host's
+perspective, because Ansible facts are not sufficient to determine which FQDN
+and IP address the host recognizes as "itself".
+
+Returned JSON keys:
+
+  - "configured"    If True, the role has been correctly appled on the host.
+
+  - "self_fqdn"     The host's FQDN as seen by its operating system, either
+                    defined locally in '/etc/hosts' or resolved by the DNS.
+
+  - "self_domain"   The host's domain extracted from the FQDN name.
+
+  - "self_aliases"  List of additional host aliases (including the primary
+                    hostname) defined in the '/etc/hosts' file.
+
+  - "self_address"  IP address resolved by the host from it's FQDN name.
+
+  - "self_local_hostname"  If True, the script detected the FQDN and IP address
+                           information in local '/etc/hosts' database.
+
+                           If False, the script did not detect the FQDN and IP
+                           address locally, and assumes that it came from the
+                           DNS.
+
+  - "self_domain_source"   What is the source of the domain information?
+                           ' 'dns': the domain exists in the DNS database
+                           - 'localhost': the domain is set in the '/etc/hosts'
+                                          file and may not be defined in the
+                                          DNS database
+                           - 'standalone': there is no DNS domain set, host is
+                                           not part of a domain
+"""
+
+from __future__ import print_function
+from json import dumps
+import socket
+
+
+def get_dns_domain():
+    try:
+        return socket.getfqdn().split('.', 1)[1]
+    except IndexError:
+        return ''
+
+
+output = {'configured': True,
+          'self_address': socket.gethostbyname(socket.getfqdn()),
+          'self_domain': get_dns_domain(),
+          'self_fqdn': socket.getfqdn(),
+          'self_local_hostname': False,
+          'self_domain_source': 'dns'}
+
+# Check if the host address and FQDN are defined locally, to not remove them
+# accidentally
+with open('/etc/hosts', 'r') as hosts:
+    for line in hosts:
+        if (output['self_fqdn'] in line.split()[1:]
+                and output['self_address'] in line.split()[0]):
+            output['self_local_hostname'] = True
+            output['self_domain_source'] = 'standalone'
+            aliases = ([e for e in line.split()
+                       if (e not in ([output['self_fqdn'],
+                                      output['self_address'],
+                                      output['self_domain']]))])
+            if aliases:
+                output['self_aliases'] = aliases
+
+        if (output['self_fqdn'] in line.split()
+                and '.' in output['self_fqdn']
+                and output['self_address'] in line.split()[0]
+                and (output['self_domain'] in
+                     '.'.join(line.split()[1].split('.')[1:]))):
+            output['self_domain_source'] = 'localhost'
+
+    if output['self_domain_source'] == 'localhost':
+        try:
+            import dns.resolver
+            resolver = dns.resolver.Resolver()
+            resolver.timeout = 0.8
+            resolver.lifetime = 0.8
+            try:
+                resolver.query(output['self_fqdn'], 'AAAA')
+                output['self_domain_source'] = 'dns'
+
+            except Exception:
+                pass
+
+            try:
+                resolver.query(output['self_fqdn'], 'A')
+                output['self_domain_source'] = 'dns'
+
+            except Exception:
+                pass
+
+        except Exception:
+            pass
+
+
+print(dumps(output, sort_keys=True, indent=4))

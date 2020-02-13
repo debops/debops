@@ -1,0 +1,30 @@
+# {{ ansible_managed }}
+
+# Configuration for the '{{ item.name }}' MinIO instance
+
+{% if item.comment|d() %}
+{{ item.comment | regex_replace('\n$','') | comment(prefix='',postfix='') }}
+{% endif %}
+MINIO_TYPE="{{ item.type | d('server') }}"
+{% if item.volumes is undefined or item.volumes|d() %}
+MINIO_VOLUMES="{{ (( [ item.volumes ] if (item.volumes is string) else item.volumes) | join(' ')) if item.volumes|d() else (minio__volumes_dir + '/' + item.name) }}"
+{% endif %}
+MINIO_OPTS="{{ '--address ' + (item.bind | d('')) + ':' + item.port|string + ((' ' + item.minio_options) if item.minio_options|d() else '') }}"
+{% if not (item.standalone|d(False))|bool %}
+MINIO_ACCESS_KEY="{{ item.access_key | d(lookup('password', secret + '/minio/distributed/' + item.name + '/access_key length=20 chars=ascii,digits')) }}"
+MINIO_SECRET_KEY="{{ item.secret_key | d(lookup('password', secret + '/minio/distributed/' + item.name + '/secret_key length=32')) }}"
+{% else %}
+MINIO_ACCESS_KEY="{{ item.access_key | d(lookup('password', secret + '/minio/standalone/' + inventory_hostname + '/' + item.name + '/access_key length=20 chars=ascii,digits')) }}"
+MINIO_SECRET_KEY="{{ item.secret_key | d(lookup('password', secret + '/minio/standalone/' + inventory_hostname + '/' + item.name + '/secret_key length=32')) }}"
+{% endif %}
+{% if item.browser is defined %}
+MINIO_BROWSER="{{ 'on' if item.browser|bool else 'off' }}"
+{% endif %}
+{% if item.domain|d() or item.domains|d() %}
+MINIO_DOMAIN="{{ ((([ item.domain ] if (item.domain is string) else item.domain) if item.domain|d() else []) + (([ item.domains ] if (item.domains is string) else item.domains) if item.domains|d() else [])) | join(',') }}"
+{% endif %}
+{% if item.environment|d() %}
+{%   for key, value in item.environment.items() %}
+{{ '{}="{}"'.format(key | upper, (value if (value is string) else (value | join(',')))) }}
+{%   endfor %}
+{% endif %}

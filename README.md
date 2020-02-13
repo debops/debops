@@ -60,7 +60,7 @@ using `debops-init` command.
 
 More quick start tips can be found [in the DebOps quick start guide][quick-start].
 
-[quick-start]: https://docs.debops.org/en/latest/introduction/quick-start.html
+[quick-start]: https://docs.debops.org/en/master/introduction/quick-start.html
 
 
 Installation
@@ -77,18 +77,17 @@ the command:
 [debops-pypi]: https://pypi.org/project/debops/
 
 Alternatively, DebOps roles are available on [Ansible Galaxy][debops-galaxy]
-and can be installed using the [Mazer][mazer] content manager, with the
+as an Ansible Collection which can be installed using the `ansible-galaxy`
 command:
 
-    mazer install debops.debops
+    ansible-galaxy collection install debops.debops
 
 [debops-galaxy]: https://galaxy.ansible.com/debops/debops/
-[mazer]: https://galaxy.ansible.com/docs/mazer/index.html
 
 Read the [installation instructions][install] in the DebOps documentation for
 more details about required software and dependencies.
 
-[install]: https://docs.debops.org/en/master/user-guide/install.html
+[install]: https://docs.debops.org/en/master/introduction/install.html
 
 
 ## Getting started
@@ -153,7 +152,7 @@ You can pull latest changes to the project from the upstream repository:
 Read the [development guide][devel-guide] file for more details about the
 DebOps development process.
 
-[devel-guide]: https://github.com/debops/debops/blob/master/DEVELOPMENT.rst
+[devel-guide]: https://docs.debops.org/en/master/developer-guide/contribution-workflow.html
 
 
 ## Contributing
@@ -171,7 +170,7 @@ GPG-signed `git` commits are preferred to ensure authenticity.
 Read the [contributing guide][contrib-guide] file for more details about how to
 contribute to DebOps.
 
-[contrib-guide]: https://github.com/debops/debops/blob/master/CONTRIBUTING.rst
+[contrib-guide]: https://docs.debops.org/en/master/developer-guide/contributing.html
 
 
 ## Licensing

@@ -1,0 +1,35 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps
+from sys import exit
+from subprocess import Popen, PIPE
+import os
+
+output = {"installed": True}
+
+gunicorn_bin = "/usr/bin/{{ gunicorn__binary }}"
+
+try:
+    if os.path.isfile(gunicorn_bin) and os.access(gunicorn_bin, os.X_OK):
+        process = Popen([gunicorn_bin, '--version'], stdout=PIPE, stderr=PIPE)
+        stdout, stderr = process.communicate()
+
+        # Py2 gunicorn
+        version = stderr
+        # Py3 gunicorn
+        if len(stdout) > 0:
+            version = stdout
+
+        output.update({"version": version.decode('utf-8')
+                                         .split()[2].replace(')', '')})
+
+    else:
+        output.update({"installed": False})
+
+except Exception:
+    pass
+
+print(dumps(output, sort_keys=True, indent=4))

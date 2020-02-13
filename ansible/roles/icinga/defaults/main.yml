@@ -1,0 +1,862 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _icinga__ref_defaults:
+
+# debops.icinga default variables
+# ===============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Upstream configuration, APT packages [[[
+# ----------------------------------------
+
+# .. envvar:: icinga__upstream [[[
+#
+# Enable or disable support for Icinga 2 upstream packages instead of the ones
+# included in a given OS release.
+icinga__upstream: '{{ True
+                      if (ansible_distribution_release in
+                          [ "wheezy", "precise", "trusty" ])
+                      else False }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__upstream_apt_key_id [[[
+#
+# The GPG key id of the upstream Icinga 2 APT repository.
+icinga__upstream_apt_key_id: 'F51A 91A5 EE00 1AA5 D77D 53C4 C6E3 19C3 3441 0682'
+
+                                                                   # ]]]
+# .. envvar:: icinga__upstream_apt_repo [[[
+#
+# The :file:`sources.list` entry of the upstream Icinga 2 APT repository.
+icinga__upstream_apt_repo: 'deb https://packages.icinga.com/{{ icinga__distribution | lower }} icinga-{{ icinga__distribution_release | lower }} main'
+
+                                                                   # ]]]
+# .. envvar:: icinga__distribution [[[
+#
+# Name of the OS distribution used to select the correct upstream APT
+# repository.
+icinga__distribution: '{{ ansible_local.core.distribution
+                          if (ansible_local|d() and ansible_local.core|d() and
+                              ansible_local.core.distribution|d())
+                          else ansible_distribution }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__distribution_release [[[
+#
+# Name of the OS release used to select the correct upstream APT repository.
+icinga__distribution_release: '{{ ansible_local.core.distribution_release
+                                  if (ansible_local|d() and ansible_local.core|d() and
+                                      ansible_local.core.distribution_release|d())
+                                  else ansible_distribution_release }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__version [[[
+#
+# The version of the installed Icinga 2 package, detected by the Ansible local
+# fact script. This variable can be used in conditional Icinga 2 configuration.
+icinga__version: '{{ ansible_local.icinga.version
+                     if (ansible_local|d() and ansible_local.icinga|d() and
+                         ansible_local.icinga.version|d())
+                     else "0.0.0" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__base_packages [[[
+#
+# List of APT packages to install for Icinga 2 support.
+icinga__base_packages:
+  - 'icinga2'
+  - 'ssl-cert'
+  - 'monitoring-plugins'
+  - 'nagios-plugins-contrib'
+
+                                                                   # ]]]
+# .. envvar:: icinga__packages [[[
+#
+# List of additional APT packages to install with Icinga 2.
+icinga__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# User and group configuration [[[
+# --------------------------------
+
+# .. envvar:: icinga__user [[[
+#
+# Name of the UNIX system account which is used to run Icinga 2. This account
+# is created by the APT package and you shouldn't change it here.
+icinga__user: 'nagios'
+
+                                                                   # ]]]
+# .. envvar:: icinga__group [[[
+#
+# Name of the UNIX system group which is used to run Icinga 2. This group is
+# created by the APT package and you shouldn't change it here.
+icinga__group: 'nagios'
+
+                                                                   # ]]]
+# .. envvar:: icinga__additional_groups [[[
+#
+# List of additional UNIX groups which the Icinga 2 user should be a member of.
+icinga__additional_groups:
+  - 'ssl-cert'
+  - '{{ ansible_local.proc_hidepid.group
+        if (ansible_local|d() and ansible_local.proc_hidepid|d() and
+            ansible_local.proc_hidepid.group|d() and
+            (ansible_local.proc_hidepid.enabled|d())|bool)
+        else [] }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Network, DNS configuration, API configuration [[[
+# -------------------------------------------------
+
+# .. envvar:: icinga__fqdn [[[
+#
+# The Fully Qualified Domain Name of this Icinga 2 node. This variable is used
+# during node registration in Icinga 2 Director and in the zone configuration.
+icinga__fqdn: '{{ ansible_local.core.fqdn
+                  if (ansible_local|d() and ansible_local.core|d() and
+                      ansible_local.core.fqdn|d())
+                  else ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__domain [[[
+#
+# The main DNS domain used by the role to configure Icinga 2.
+icinga__domain: '{{ ansible_local.core.domain
+                    if (ansible_local|d() and ansible_local.core|d() and
+                        ansible_local.core.domain|d())
+                    else ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__master_nodes [[[
+#
+# List of ``dig`` Ansible module results that define which Icinga 2 nodes are
+# "master" nodes that manage the monitoring.
+#
+# See :ref:`icinga__ref_dns_config` for details if you want to specify this
+# list manually.
+icinga__master_nodes: '{{ lookup("dig", "_icinga-master._tcp." + icinga__domain + "./SRV",
+                                 "flat=0", wantlist=True) }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__director_nodes [[[
+#
+# List of ``dig`` Ansible module results that define which Icinga 2 nodes are
+# "director" nodes, used for registering the Icinga 2 client nodes. Only the
+# first list entry will be used to register a node.
+#
+# See :ref:`icinga__ref_dns_config` for details if you want to specify this
+# list manually.
+icinga__director_nodes: '{{ lookup("dig", "_icinga-director._tcp." + icinga__domain + "./SRV",
+                                   "flat=0", wantlist=True) }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__node_type [[[
+#
+# Specify the type of this Icinga 2 node, either ``master`` or ``client``.
+#
+# Master nodes are not registered automatically in the Icinga 2 Director, and
+# have the default API user configured automatically.
+#
+# Client nodes are registered in the Icinga 2 Director if one is available.
+icinga__node_type: '{{ "master"
+                       if (icinga__fqdn in (icinga__master_nodes
+                           | selectattr("target", "defined")
+                           | map(attribute="target")
+                           | map("regex_replace", "\.$","")) or
+                           not icinga__director_enabled|bool)
+                       else "client" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__allow [[[
+#
+# List of IP addresses or subnets that are allowed to talk to the Icinga
+# 2 Agent over the network, configured on all hosts in the Ansible inventory.
+# If no entries are specified, access trough the firewall is disabled.
+icinga__allow: []
+
+                                                                   # ]]]
+# .. envvar:: icinga__group_allow [[[
+#
+# List of IP addresses or subnets that are allowed to talk to the Icinga
+# 2 Agent over the network, configured on hosts in a specific Ansible inventory
+# group. If no entries are specified, access trough the firewall is disabled.
+icinga__group_allow: []
+
+                                                                   # ]]]
+# .. envvar:: icinga__host_allow [[[
+#
+# List of IP addresses or subnets that are allowed to talk to the Icinga
+# 2 Agent over the network, configured on specific hosts in the Ansible
+# inventory. If no entries are specified, access trough the firewall is
+# disabled.
+icinga__host_allow: []
+
+                                                                   # ]]]
+# .. envvar:: icinga__api_listen [[[
+#
+# IP address on which the Icinga 2 REST API should listen. Defaults to all IPv4
+# and IPv6 addresses.
+icinga__api_listen: '::'
+
+                                                                   # ]]]
+# .. envvar:: icinga__api_port [[[
+#
+# The TCP port on which the Icinga 2 REST API should listen.
+icinga__api_port: '5665'
+
+                                                                   # ]]]
+# .. envvar:: icinga__api_user [[[
+#
+# The default user account for the REST API with superuser privileges. This
+# account will be defined only on the master Icinga 2 nodes.
+#
+# This account is used by the :ref:`debops.icinga_web` Ansible role to perform
+# the configuration kickstart and to access the Icinga REST API. It should be
+# synchronized with the corresponding :envvar:`icinga_web__icinga_api_user`
+# variable.
+icinga__api_user: 'root'
+
+                                                                   # ]]]
+# .. envvar:: icinga__api_password [[[
+#
+# The password for the Icinga 2 REST API "root" account. It will be generated
+# only on the master Icinga 2 nodes. It should be synchronized with the
+# corresponding :envvar:`icinga_web__icinga_api_password` variable.
+icinga__api_password: '{{ lookup("password", secret + "/icinga/api/"
+                                  + icinga__fqdn + "/credentials/"
+                                  + icinga__api_user + "/password")
+                          if (icinga__node_type == "master")
+                          else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__api_permissions [[[
+#
+# List of the default permissions for the "root" account accessible via the
+# REST API.
+icinga__api_permissions: [ '*' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# Icinga 2 Director options [[[
+# -----------------------------
+
+# .. envvar:: icinga__director_enabled [[[
+#
+# Enable or disable support for the Icinga 2 Director configuration. Support
+# will be automatically enabled of Icinga 2 master and director nodes are
+# configured as the DNS SRV records. See :ref:`icinga__ref_dns_config` for more
+# details.
+icinga__director_enabled: '{{ True
+                              if ((icinga__master_nodes   | selectattr("target", "defined") | list | count > 0) and
+                                  (icinga__director_nodes | selectattr("target", "defined") | list | count > 0))
+                              else False }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__director_register [[[
+#
+# Enable or disable automatic registering of configured hosts in Icinga
+# 2 Director.
+icinga__director_register: '{{ True
+                               if (icinga__director_enabled|bool)
+                               else False }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__director_register_api_fqdn [[[
+#
+# The Fully Qualified Domain Name of the Icinga 2 Director host where a given
+# host will be registered. The address will be found using DNS SRV records by
+# default. See :ref:`icinga__ref_dns_config` for more details.
+icinga__director_register_api_fqdn: '{{ icinga__director_nodes
+                                        | selectattr("target", "defined")
+                                        | map(attribute="target")
+                                        | map("regex_replace","\.$","")
+                                        | first }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__director_register_api_url [[[
+#
+# The URL of the Icinga 2 Director REST API which will be used to register the
+# host in Icinga 2 Director.
+icinga__director_register_api_url: 'https://{{ icinga__director_register_api_fqdn }}/director/host'
+
+                                                                   # ]]]
+# .. envvar:: icinga__director_register_api_user [[[
+#
+# The user account in the Icinga 2 Director REST API which will be used for
+# host registration. This variable corresponds to the
+# :envvar:`icinga_web__director_api_user` variable.
+icinga__director_register_api_user: 'director-api'
+
+                                                                   # ]]]
+# .. envvar:: icinga__director_register_api_password [[[
+#
+# The password of the Icinga 2 Director REST API user used to register the host
+# in Icinga. This variable corresponds to the
+# :envvar:`icinga_web__director_api_password` variable.
+icinga__director_register_api_password: '{{ lookup("password", secret + "/icinga_web/api/"
+                                            + icinga__director_register_api_fqdn + "/credentials/"
+                                            + icinga__director_register_api_user + "/password") }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__director_register_default_templates [[[
+#
+# List of default host templates to use for a given host during registration.
+# The templates need to be prepared beforehand in the Icinga 2 Director.
+icinga__director_register_default_templates:
+  - 'generic-host'
+
+                                                                   # ]]]
+# .. envvar:: icinga__director_register_templates [[[
+#
+# List of host templates to use for a given host during registration. These
+# templates are used for all hosts in the Ansible inventory. The templates
+# need to be prepared beforehand in the Icinga 2 Director.
+icinga__director_register_templates: []
+
+                                                                   # ]]]
+# .. envvar:: icinga__director_register_group_templates [[[
+#
+# List of host templates to use for a given host during registration. These
+# templates are used for hosts in a specific Ansible inventory group.
+# The templates need to be prepared beforehand in the Icinga 2 Director.
+icinga__director_register_group_templates: []
+
+                                                                   # ]]]
+# .. envvar:: icinga__director_register_host_templates [[[
+#
+# List of host templates to use for a given host during registration. These
+# templates are used for specific hosts in the Ansible inventory.
+# The templates need to be prepared beforehand in the Icinga 2 Director.
+icinga__director_register_host_templates: []
+
+                                                                   # ]]]
+# .. envvar:: icinga__director_register_default_vars [[[
+#
+# YAML dictionary that contains default environment variables defined for
+# a given host during registration. The key is the variable name, and the value
+# is the variable value.
+icinga__director_register_default_vars:
+  'ansible_managed': True
+
+                                                                   # ]]]
+# .. envvar:: icinga__director_register_vars [[[
+#
+# YAML dictionary that contains environment variables defined for a given host
+# during registration. These variables will be set for all hosts in the Ansible
+# inventory. The key is the variable name, and the value is the variable value.
+icinga__director_register_vars: {}
+
+                                                                   # ]]]
+# .. envvar:: icinga__director_register_group_vars [[[
+#
+# YAML dictionary that contains environment variables defined for a given host
+# during registration. These variables will be set for hosts in a specific
+# Ansible inventory group. The key is the variable name, and the value is the
+# variable value.
+icinga__director_register_group_vars: {}
+
+                                                                   # ]]]
+# .. envvar:: icinga__director_register_host_vars [[[
+#
+# YAML dictionary that contains environment variables defined for a given host
+# during registration. These variables will be set for specific hosts in the
+# Ansible inventory. The key is the variable name, and the value is the
+# variable value.
+icinga__director_register_host_vars: {}
+
+                                                                   # ]]]
+# .. envvar:: icinga__director_register_host_object [[[
+#
+# The host object data passed to the Icinga 2 Director via the REST API during
+# host registration.
+icinga__director_register_host_object:
+  object_type: 'object'
+  object_name: '{{ icinga__fqdn }}'
+  address: '{{ icinga__fqdn }}'
+  imports: '{{ lookup("flattened",
+               (icinga__director_register_default_templates
+                + icinga__director_register_templates
+                + icinga__director_register_group_templates
+                + icinga__director_register_host_templates),
+               wantlist=True) }}'
+  vars: '{{ icinga__director_register_default_vars
+            | combine(icinga__director_register_vars,
+                      icinga__director_register_group_vars,
+                      icinga__director_register_host_vars) }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__director_deploy [[[
+#
+# Enable or disable automatic deployment of new Icinga configuration via Icinga
+# 2 Director. The deployment will be triggered only once if any host on the
+# current run is registered in Icinga.
+icinga__director_deploy: '{{ True
+                             if (icinga__director_register|bool)
+                             else False }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__director_deploy_api_fqdn [[[
+#
+# The Fully Qualified Domain Name of the Icinga 2 Director host where the
+# deployment will be performed. The address will be found using DNS SRV records
+# by default. See :ref:`icinga__ref_dns_config` for more details.
+icinga__director_deploy_api_fqdn: '{{ icinga__director_nodes
+                                      | selectattr("target", "defined")
+                                      | map(attribute="target")
+                                      | map("regex_replace","\.$","")
+                                      | first }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__director_deploy_api_url [[[
+#
+# The REST API URL used to execute new configuration deployment.
+icinga__director_deploy_api_url: 'https://{{ icinga__director_deploy_api_fqdn }}/director/config/deploy'
+
+                                                                   # ]]]
+# .. envvar:: icinga__director_deploy_api_user [[[
+#
+# The user account in the Icinga 2 Director REST API which will be used for
+# configuration deployment. This variable corresponds to the
+# :envvar:`icinga_web__director_api_user` variable.
+icinga__director_deploy_api_user: 'director-api'
+
+                                                                   # ]]]
+# .. envvar:: icinga__director_deploy_api_password [[[
+#
+# The password of the Icinga 2 Director REST API user used to perform the
+# configuration deployment. This variable corresponds to the
+# :envvar:`icinga_web__director_api_password` variable.
+icinga__director_deploy_api_password: '{{ lookup("password", secret + "/icinga_web/api/"
+                                            + icinga__director_deploy_api_fqdn + "/credentials/"
+                                            + icinga__director_deploy_api_user + "/password") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# DebOps PKI support [[[
+# ----------------------
+
+# .. envvar:: icinga__pki_enabled [[[
+#
+# Enable or disable support for DebOps PKI. If disabled, Icinga will be
+# configured with the default certificate and key paths, but no further
+# configuration will be done to create the internal PKI.
+icinga__pki_enabled: '{{ True
+                         if (ansible_local|d() and ansible_local.pki|d() and
+                             (ansible_local.pki.enabled|d())|bool)
+                         else False }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__pki_path [[[
+#
+# The base path where the PKI realms are located.
+icinga__pki_path: '{{ ansible_local.pki.path
+                      if (ansible_local|d() and ansible_local.pki|d() and
+                          ansible_local.pki.path|d())
+                      else "/etc/pki/realms" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__pki_realm [[[
+#
+# Name of the PKI realm to use for Icinga REST API.
+icinga__pki_realm: '{{ ansible_local.pki.realm
+                       if (ansible_local|d() and ansible_local.pki|d() and
+                           ansible_local.pki.realm|d())
+                       else "domain" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__pki_ca [[[
+#
+# Name of the file which contains the Root Certificate Authority certificate.
+icinga__pki_ca: '{{ ansible_local.pki.ca
+                    if (ansible_local|d() and ansible_local.pki|d() and
+                        ansible_local.pki.ca|d())
+                    else "CA.crt" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__pki_crt [[[
+#
+# Name of the file which contains the server certificate.
+icinga__pki_crt: '{{ ansible_local.pki.crt
+                     if (ansible_local|d() and ansible_local.pki|d() and
+                         ansible_local.pki.crt|d())
+                     else "default.crt" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__pki_key [[[
+#
+# Name of the file which contains the private key.
+icinga__pki_key: '{{ ansible_local.pki.key
+                     if (ansible_local|d() and ansible_local.pki|d() and
+                         ansible_local.pki.key|d())
+                     else "default.key" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__pki_cert_path [[[
+#
+# Absolute path of the X.509 server certificate used by Icinga.
+icinga__pki_cert_path: '{{ icinga__pki_path + "/" + icinga__pki_realm
+                           + "/" + icinga__pki_crt }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__pki_key_path [[[
+#
+# Absolute path of the X.509 private key used by Icinga.
+icinga__pki_key_path: '{{ icinga__pki_path + "/" + icinga__pki_realm
+                          + "/" + icinga__pki_key }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__pki_ca_path [[[
+#
+# Absolute path of the Root Certificate Authority used by Icinga.
+icinga__pki_ca_path: '{{ icinga__pki_path + "/" + icinga__pki_realm
+                         + "/" + icinga__pki_ca }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Icinga configuration files [[[
+# ------------------------------
+
+# These lists manage the files and directories stored in the
+# :file:`/etc/icinga2/` directory. See the :ref:`icinga__ref_configuration` for
+# more details.
+
+# .. envvar:: icinga__default_configuration [[[
+#
+# The default Icinga configuration files defined by the role.
+icinga__default_configuration:
+
+  - name: 'icinga2.conf'
+    divert: True
+    comment: |
+      Icinga 2 configuration file
+      - this is where you define settings for the Icinga application including
+      which hosts/services to check.
+
+      For an overview of all available configuration options please refer
+      to the documentation that is distributed as part of Icinga 2.
+    options:
+
+      - name: 'constants'
+        comment: 'The constant.conf defines global constants.'
+        value: |
+          include "constants.conf"
+        state: 'present'
+
+      - name: 'zones'
+        comment: |
+          The zones.conf defines zones for a cluster setup.
+          Not required for single instance setups.
+        value: |
+          include "zones.conf"
+        state: 'present'
+
+      - name: 'itl'
+        comment: |
+          The Icinga Template Library (ITL) provides a number of useful templates
+          and command definitions.
+          Common monitoring plugin command definitions are included separately.
+        value: |
+          include <itl>
+          include <plugins>
+          include <plugins-contrib>
+          include <manubulon>
+        state: 'present'
+
+      - name: 'windows_plugins'
+        comment: |
+          This includes the Icinga 2 Windows plugins. These command definitions
+          are required on a master node when a client is used as command endpoint.
+        value: |
+          include <windows-plugins>
+        state: 'present'
+
+      - name: 'nscp'
+        comment: |
+          This includes the NSClient++ check commands. These command definitions
+          are required on a master node when a client is used as command endpoint.
+        value: |
+          include <nscp>
+        state: 'present'
+
+      - name: 'features_enabled'
+        comment: |
+          The features-available directory contains a number of configuration
+          files for features which can be enabled and disabled using the
+          icinga2 feature enable / icinga2 feature disable CLI commands.
+          These commands work by creating and removing symbolic links in
+          the features-enabled directory.
+        value: |
+          include "features-enabled/*.conf"
+        state: 'present'
+
+      - name: 'repository.d'
+        comment: |
+          The repository.d directory contains all configuration objects
+          managed by the 'icinga2 repository' CLI commands.
+        value: |
+          include_recursive "repository.d"
+        state: '{{ "absent"
+                   if (ansible_distribution_release == "wheezy" or
+                       icinga__version is version("2.8.0", ">="))
+                   else "present" }}'
+
+      - name: 'conf.d'
+        comment: |
+          Although in theory you could define all your objects in this file
+          the preferred way is to create separate directories and files in the conf.d
+          directory. Each of these files must have the file extension ".conf".
+        value: |
+          include_recursive "conf.d"
+        state: '{{ "absent" if (icinga__director_enabled|bool) else "present" }}'
+
+      - name: 'api_users'
+        comment: |
+          Read the API User objects on master node.
+        value: |
+          include "conf.d/api-users.conf"
+        state: '{{ "present"
+                   if (icinga__director_enabled|bool and
+                       icinga__node_type == "master")
+                   else "absent" }}'
+
+  - name: 'zones.conf'
+    divert: True
+    comment: |
+      Endpoint and Zone configuration for a cluster setup
+      This local example requires 'NodeName' defined in
+      constants.conf
+    options:
+
+      - name: 'object_master'
+        value: |
+          {% for record in icinga__master_nodes %}
+          {% if record.target|d() %}
+          object Endpoint "{{ record.target | regex_replace('\.$','') }}" {
+            host = "{{ record.target | regex_replace('\.$','') }}"
+            port = "{{ record.port }}"
+          }
+
+          {% endif %}
+          {% endfor %}
+          object Zone "master" {
+            endpoints = [ "{{ icinga__master_nodes | selectattr('target', 'defined') | map(attribute='target') | map('regex_replace', '\.$','') | join('", "') }}" ]
+          }
+        state: '{{ "present"
+                   if (icinga__node_type != "master" and
+                       icinga__master_nodes | selectattr("target", "defined") | list | count > 0)
+                   else "absent" }}'
+
+      - name: 'object_node'
+        value: |
+          object Endpoint NodeName {
+            host = NodeName
+          }
+
+          object Zone ZoneName {
+            endpoints = [ NodeName ]
+          {% if (icinga__director_enabled|bool and icinga__node_type != 'master') %}
+            parent = "master"
+          {% endif %}
+          }
+        state: 'present'
+
+      - name: 'object_global_templates'
+        value: |
+          object Zone "global-templates" {
+            global = true
+          }
+        state: 'present'
+
+      - name: 'object_director_global'
+        value: |
+          object Zone "director-global" {
+            global = true
+          }
+        state: '{{ "present" if (icinga__director_enabled|bool) else "absent" }}'
+
+  - name: 'conf.d/api-users.conf'
+    comment: 'The APIUser objects are used for authentication against the API.'
+    group: '{{ icinga__group }}'
+    mode: '0640'
+    no_log: True
+    state: '{{ "present"
+               if (icinga__node_type == "master")
+               else "absent" }}'
+    options:
+
+      - name: 'api_user_root'
+        value: |
+          object ApiUser "{{ icinga__api_user }}" {
+            password = "{{ icinga__api_password }}"
+
+            permissions = [ "{{ icinga__api_permissions | join('", "') }}" ]
+          }
+        state: 'present'
+
+  - name: 'features-available/api.conf'
+    divert: True
+    comment: 'The API listener is used for distributed monitoring setups.'
+    value: |
+      object ApiListener "api" {
+        bind_host = "{{ icinga__api_listen }}"
+        bind_port = {{ icinga__api_port }}
+
+      {% if icinga__pki_enabled|bool %}
+        cert_path = "{{ icinga__pki_cert_path }}"
+        key_path  = "{{ icinga__pki_key_path }}"
+        ca_path   = "{{ icinga__pki_ca_path }}"
+      {% else %}
+        cert_path = SysconfDir + "/icinga2/pki/" + NodeName + ".crt"
+        key_path = SysconfDir + "/icinga2/pki/" + NodeName + ".key"
+        ca_path = SysconfDir + "/icinga2/pki/ca.crt"
+      {% endif %}
+
+        accept_config   = {{ 'false' if (icinga__director_enabled|bool and icinga__node_type == 'master') else 'true' }}
+        accept_commands = {{ 'false' if (icinga__director_enabled|bool and icinga__node_type == 'master') else 'true' }}
+
+        ticket_salt = TicketSalt
+      }
+    state: 'present'
+    feature_name: 'api'
+    feature_state: 'present'
+
+  - name: 'features-available/notification.conf'
+    divert: True
+    state: '{{ "init" if (icinga__node_type == "master") else "feature" }}'
+    feature_name: 'notification'
+    feature_state: '{{ "present" if (icinga__node_type == "master") else "absent" }}'
+
+  - name: 'features-available/checker.conf'
+    divert: True
+    state: '{{ "init" if (icinga__node_type == "master") else "feature" }}'
+    feature_name: 'checker'
+    feature_state: '{{ "present" if (icinga__node_type == "master") else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__configuration [[[
+#
+# List of the Icinga configuration files managed on all hosts in the Ansible
+# inventory.
+icinga__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: icinga__group_configuration [[[
+#
+# List of the Icinga configuration files managed on hosts in a specific Ansible
+# inventory group.
+icinga__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: icinga__host_configuration [[[
+#
+# List of the Icinga configuration files managed on specific hosts in the
+# Ansible inventory.
+icinga__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: icinga__dependent_configuration [[[
+#
+# List of the Icinga configuration files defined by other Ansible roles using
+# role-dependent variables. See :ref:`icinga__ref_dependency` for more details
+# about the usage.
+icinga__dependent_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: icinga__dependent_configuration_filter [[[
+#
+# Variable which contains the parsed list of Icinga configuration files defined
+# by other Ansible roles.
+icinga__dependent_configuration_filter: '{{ lookup("template",
+                                             "lookup/icinga__dependent_configuration_filter.j2")
+                                             | from_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__combined_configuration [[[
+#
+# Variable which combines all of the other Icinga configuration lists and is
+# used in the role tasks.
+icinga__combined_configuration: '{{ icinga__default_configuration
+                                    + icinga__dependent_configuration_filter
+                                    + icinga__configuration
+                                    + icinga__group_configuration
+                                    + icinga__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Custom files managed with Icinga [[[
+# ------------------------------------
+
+# These lists can be used to manage custom files (by default scripts) on the
+# hosts along with Icinga. See :ref:`icinga__ref_custom_files` for more
+# details.
+
+# .. envvar:: icinga__custom_files [[[
+#
+# List of custom files managed on all hosts in the Ansible inventory.
+icinga__custom_files: []
+
+                                                                   # ]]]
+# .. envvar:: icinga__group_custom_files [[[
+#
+# List of custom files managed on hosts in a specific Ansible inventory group.
+icinga__group_custom_files: []
+
+                                                                   # ]]]
+# .. envvar:: icinga__host_custom_files [[[
+#
+# List of custom files managed on specific hosts in the Ansible inventory.
+icinga__host_custom_files: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: icinga__apt_preferences__dependent_list [[[
+#
+# Configuration for the :ref:`debops.apt_preferences` Ansible role.
+icinga__apt_preferences__dependent_list:
+
+  - packages: [ 'icinga2', 'icinga2*', 'icingaweb2', 'icingaweb2*', 'libicinga2',
+                'monitoring-plugins', 'monitoring-plugins*',
+                'nagios-plugins', 'nagios-plugins*' ]
+    backports: [ 'jessie' ]
+    reason: 'Parity with Debian Stretch release'
+    by_role: 'debops_icinga'
+
+                                                                   # ]]]
+# .. envvar:: icinga__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+icinga__etc_services__dependent_list:
+
+  - name: 'icinga-api'
+    port: '{{ icinga__api_port }}'
+    comment: 'Icinga 2 REST API'
+
+                                                                   # ]]]
+# .. envvar:: icinga__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+icinga__keyring__dependent_apt_keys:
+
+  - id: '{{ icinga__upstream_apt_key_id }}'
+    repo: '{{ icinga__upstream_apt_repo }}'
+    state: '{{ "present" if icinga__upstream|bool else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+icinga__ferm__dependent_rules:
+
+  - type: 'accept'
+    dport: [ 'icinga-api' ]
+    saddr: '{{ icinga__allow + icinga__group_allow + icinga__host_allow }}'
+    accept_any: False
+    weight: '40'
+    by_role: 'icinga'
+    name: 'icinga_api'
+                                                                   # ]]]
+                                                                   # ]]]

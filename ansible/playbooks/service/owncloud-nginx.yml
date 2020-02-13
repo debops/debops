@@ -1,6 +1,8 @@
 ---
 
 - name: Install and manage ownCloud instances with Nginx as webserver
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_owncloud', 'debops_service_owncloud_nginx' ]
   become: True
 
@@ -8,42 +10,51 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: debops.keyring
+    - import_role:
+        name: 'keyring'
+      vars:
+        keyring__dependent_apt_keys:
+          - '{{ php__keyring__dependent_apt_keys }}'
+          - '{{ mariadb__keyring__dependent_apt_keys if (owncloud__database == "mariadb") else [] }}'
+          - '{{ postgresql__keyring__dependent_apt_keys if (owncloud__database == "postgresql") else [] }}'
+          - '{{ nginx__keyring__dependent_apt_keys }}'
+          - '{{ owncloud__keyring__dependent_apt_keys }}'
+        keyring__dependent_gpg_keys:
+          - '{{ owncloud__keyring__dependent_gpg_keys }}'
       tags: [ 'role::keyring', 'skip::keyring', 'role::php',
               'role::mariadb', 'role::postgresql',
               'role::nginx', 'role::owncloud' ]
-      keyring__dependent_apt_keys:
-        - '{{ php__keyring__dependent_apt_keys }}'
-        - '{{ mariadb__keyring__dependent_apt_keys if (owncloud__database == "mariadb") else [] }}'
-        - '{{ postgresql__keyring__dependent_apt_keys if (owncloud__database == "postgresql") else [] }}'
-        - '{{ nginx__keyring__dependent_apt_keys }}'
-        - '{{ owncloud__keyring__dependent_apt_keys }}'
-      keyring__dependent_gpg_keys:
-        - '{{ owncloud__keyring__dependent_gpg_keys }}'
 
-    - role: debops.php/env
-      tags: [ 'role::php', 'role::php:env', 'role::apt_preferences', 'role::logrotate' ]
+    - import_role:
+        name: 'php'
+        tasks_from: 'main_env'
+      tags: [ 'role::php', 'role::php:env', 'role::logrotate' ]
 
-    - role: debops.owncloud/env
+    - import_role:
+        name: 'owncloud'
+        tasks_from: 'main_env'
       tags: [ 'role::owncloud', 'role::owncloud:env', 'role::nginx' ]
 
-    - role: debops.apt_preferences
+  roles:
+
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences', 'role::nginx', 'role::php' ]
       apt_preferences__dependent_list:
         - '{{ nginx__apt_preferences__dependent_list }}'
         - '{{ owncloud__apt_preferences__dependent_list }}'
         - '{{ php__apt_preferences__dependent_list }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm', 'role::nginx' ]
       ferm__dependent_rules:
         - '{{ nginx__ferm__dependent_rules }}'
 
-    - role: debops.python
-      tags: [ 'role::python', 'skip::python' ]
+    - role: python
+      tags: [ 'role::python', 'skip::python', 'role::ldap', 'role::mariadb', 'role::postgresql' ]
       python__dependent_packages3:
+        - '{{ ldap__python__dependent_packages3 }}'
         - '{{ mariadb__python__dependent_packages3
               if (owncloud__database == "mariadb")
               else [] }}'
@@ -52,6 +63,7 @@
               else [] }}'
         - '{{ nginx__python__dependent_packages3 }}'
       python__dependent_packages2:
+        - '{{ ldap__python__dependent_packages2 }}'
         - '{{ mariadb__python__dependent_packages2
               if (owncloud__database == "mariadb")
               else [] }}'
@@ -60,24 +72,29 @@
               else [] }}'
         - '{{ nginx__python__dependent_packages2 }}'
 
-    - role: debops.mariadb
+    - role: ldap
+      tags: [ 'role::ldap', 'skip::ldap' ]
+      ldap__dependent_tasks:
+        - '{{ owncloud__ldap__dependent_tasks }}'
+
+    - role: mariadb
       tags: [ 'role::mariadb', 'skip::mariadb' ]
       mariadb__dependent_databases: '{{ owncloud__mariadb__dependent_databases }}'
       mariadb__dependent_users: '{{ owncloud__mariadb__dependent_users }}'
       when: (owncloud__database == 'mariadb')
 
-    - role: debops.postgresql
+    - role: postgresql
       tags: [ 'role::postgresql', 'skip::postgresql' ]
       postgresql__dependent_roles: '{{ owncloud__postgresql__dependent_roles }}'
       postgresql__dependent_groups: '{{ owncloud__postgresql__dependent_groups }}'
       postgresql__dependent_databases: '{{ owncloud__postgresql__dependent_databases }}'
       when: (owncloud__database == 'postgresql')
 
-    - role: debops.unattended_upgrades
+    - role: unattended_upgrades
       tags: [ 'role::unattended_upgrades', 'skip::unattended_upgrades' ]
       unattended_upgrades__dependent_origins: '{{ owncloud__unattended_upgrades__dependent_origins }}'
 
-    - role: debops.php
+    - role: php
       tags: [ 'role::php', 'skip::php' ]
       php__dependent_packages:
         - '{{ owncloud__php__dependent_packages }}'
@@ -86,18 +103,18 @@
       php__dependent_pools:
         - '{{ owncloud__php__dependent_pools }}'
 
-    - role: debops.logrotate
+    - role: logrotate
       tags: [ 'role::logrotate', 'skip::logrotate' ]
       logrotate__dependent_config:
         - '{{ php__logrotate__dependent_config }}'
         - '{{ owncloud__logrotate__dependent_config }}'
 
-    - role: debops.nginx
+    - role: nginx
       tags: [ 'role::nginx', 'skip::nginx' ]
       nginx__dependent_servers:
         - '{{ owncloud__nginx__dependent_servers }}'
       nginx__dependent_upstreams:
         - '{{ owncloud__nginx__dependent_upstreams }}'
 
-    - role: debops.owncloud
+    - role: owncloud
       tags: [ 'role::owncloud', 'skip::owncloud' ]

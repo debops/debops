@@ -1,0 +1,204 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _users__ref_defaults:
+
+# debops.users default variables
+# ==============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Global defaults [[[
+# -------------------
+
+# .. envvar:: users__enabled [[[
+#
+# Should Ansible manage local user accounts? Set to False to disable.
+users__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: users__acl_enabled [[[
+#
+# Enable or disable support for filesystem ACL management.
+users__acl_enabled: '{{ True if ("acl" in users__base_packages) else False }}'
+
+                                                                   # ]]]
+# .. envvar:: users__default_shell [[[
+#
+# Specify absolute path of the shell which should be configured on all user
+# accounts managed by this role, if not overriden by the user configuration. If
+# not specified, the shell won't be changed, but new accounts will not have
+# a defined shell either.
+users__default_shell: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: users__shell_package_map [[[
+#
+# YAML dictionary that maps known shells used in the :file:`/etc/passwd`
+# database to the APT packages with these shells. The role will install missing
+# shell packages if any users have them as their login shells.
+users__shell_package_map:
+  '/bin/bash':     'bash'
+  '/bin/csh':      'csh'
+  '/usr/bin/fish': 'fish'
+  '/bin/ksh':      'ksh'
+  '/bin/zsh':      'zsh'
+
+                                                                   # ]]]
+# .. envvar:: users__base_packages [[[
+#
+# List of base APT packages to install.
+users__base_packages: [ 'acl' ]
+
+                                                                   # ]]]
+# .. envvar:: users__shell_packages [[[
+#
+# List of login shell APT packages expected on the host.
+users__shell_packages: '{{ lookup("template", "lookup/users__shell_packages.j2") }}'
+
+                                                                   # ]]]
+# .. envvar:: users__packages [[[
+#
+# List of custom packages to install.
+users__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Home directories [[[
+# --------------------
+
+# .. envvar:: users__default_home_mode [[[
+#
+# The default set of permissions for the home directories, specified in octal.
+# It can be overridden on a per-account basis with the ``item.home_mode``
+# parameter.
+users__default_home_mode: '0751'
+                                                                   # ]]]
+                                                                   # ]]]
+# Chroot account status [[[
+# -------------------------
+
+# .. envvar:: users__chroot_groups [[[
+#
+# List of UNIX groups in which a chrooted UNIX account should be included. This
+# depends on the configuration of the OpenSSH service, see :ref:`debops.sshd`
+# for more details.
+users__chroot_groups: [ 'sftponly' ]
+
+                                                                   # ]]]
+# .. envvar:: users__chroot_shell [[[
+#
+# The shell used for chrooted UNIX accounts if none is specified.
+users__chroot_shell: '/usr/sbin/nologin'
+                                                                   # ]]]
+                                                                   # ]]]
+# User configuration files (dotfiles) [[[
+# ---------------------------------------
+
+# These variables are used to manage the user configuration files (dotfiles).
+
+# .. envvar:: users__dotfiles_enabled [[[
+#
+# Enable or disable management of user dotfiles via :command:`yadm` script. See
+# the :ref:`debops.yadm` role for script installation and dotfile mirroring.
+users__dotfiles_enabled: False
+
+                                                                   # ]]]
+# .. envvar:: users__dotfiles_repo [[[
+#
+# An URL or an absolute path on the remote host to the :command:`git` dotfiles
+# repository. The repository will be used by default if the dotfiles management
+# is enabled without specifying a custom repository for the user.
+users__dotfiles_repo: '{{ ansible_local.yadm.dotfiles
+                          if (ansible_local|d() and ansible_local.yadm|d() and
+                              ansible_local.yadm.dotfiles|d())
+                          else "" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Lists of managed UNIX groups and accounts [[[
+# ---------------------------------------------
+
+# These lists can be used to manage UNIX groups as well as UNIX accounts
+# through the Ansible inventory. See :ref:`users__ref_accounts` for more
+# details.
+
+# .. envvar:: users__groups [[[
+#
+# List of UNIX groups to manage on all hosts in Ansible inventory.
+users__groups: []
+
+                                                                   # ]]]
+# .. envvar:: users__group_groups [[[
+#
+# List of UNIX groups to manage on hosts in specific Ansible inventory group.
+users__group_groups: []
+
+                                                                   # ]]]
+# .. envvar:: users__host_groups [[[
+#
+# List of UNIX groups to manage on specific hosts in Ansible inventory.
+users__host_groups: []
+
+                                                                   # ]]]
+# .. envvar:: users__dependent_groups [[[
+#
+# List of UNIX groups to manage on the current playbook host. This variable is
+# meant to be used from a role dependency in :file:`role/meta/main.yml` or in
+# a playbook.
+users__dependent_groups: []
+
+                                                                   # ]]]
+# .. envvar:: users__default_accounts [[[
+#
+# List of default UNIX user accounts managed by Ansible.
+users__default_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: users__accounts [[[
+#
+# List of user accounts to manage on all hosts in Ansible inventory.
+users__accounts: []
+
+                                                                   # ]]]
+# .. envvar:: users__group_accounts [[[
+#
+# List of UNIX user accounts to manage on hosts in specific Ansible inventory
+# group.
+users__group_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: users__host_accounts [[[
+#
+# List of UNIX user accounts to manage on specific hosts in Ansible inventory.
+users__host_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: users__dependent_accounts [[[
+#
+# List of user accounts to manage on the current playbook host. This variable
+# is meant to be used from a role dependency in :file:`role/meta/main.yml` or
+# in a playbook.
+users__dependent_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: users__combined_accounts [[[
+#
+# This variable combines other group and account variables together and is used
+# in the role tasks and templates.
+users__combined_accounts: '{{ users__groups
+                              + users__group_groups
+                              + users__host_groups
+                              + users__dependent_groups
+                              + users__default_accounts
+                              + users__accounts
+                              + users__group_accounts
+                              + users__host_accounts
+                              + users__dependent_accounts }}'
+                                                                   # ]]]
+                                                                   # ]]]

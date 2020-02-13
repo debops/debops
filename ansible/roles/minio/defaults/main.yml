@@ -1,0 +1,516 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _minio__ref_defaults:
+
+# debops.minio default variables
+# ==============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# UNIX environment [[[
+# --------------------
+
+# .. envvar:: minio__user [[[
+#
+# The name of the UNIX system account used by the MinIO service.
+minio__user: 'minio'
+
+                                                                   # ]]]
+# .. envvar:: minio__group [[[
+#
+# The name of the UNIX system group used by the MinIO service.
+minio__group: 'minio'
+
+                                                                   # ]]]
+# .. envvar:: minio__additional_groups [[[
+#
+# List of additional UNIX groups to add to the MinIO UNIX account, required for
+# access to additional resources.
+minio__additional_groups: '{{ [ "ssl-cert" ] if minio__pki_enabled|bool else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: minio__home [[[
+#
+# The absolute path of the MinIO UNIX account home directory.
+minio__home: '{{ (ansible_local.root.home
+                  if (ansible_local|d() and ansible_local.root|d() and
+                      ansible_local.root.home|d())
+                  else "/var/local") + "/" + minio__user }}'
+
+                                                                   # ]]]
+# .. envvar:: minio__shell [[[
+#
+# The UNIX shell used by the MinIO account.
+minio__shell: '/usr/sbin/nologin'
+
+                                                                   # ]]]
+# .. envvar:: minio__comment [[[
+#
+# The GECOS field set on the MinIO UNIX account.
+minio__comment: 'MinIO'
+                                                                   # ]]]
+                                                                   # ]]]
+# Go application deployment [[[
+# -----------------------------
+
+# These variables control how the :command:`minio` binary is installed on the
+# host. The installation is performed by the :ref:`debops.golang` role, refer
+# to its documentation for details. The installation definition can be found in
+# the :envvar:`minio__golang__dependent_packages` variable.
+
+# .. envvar:: minio__upstream_gpg_key [[[
+#
+# The fingerprint of the GPG key which is used to sign the MinIO releases. It
+# will be used to verify the downloaded signature file as well as the
+# :command:`git` tags in the source repository.
+minio__upstream_gpg_key: '4405 F3F0 DDBA 1B9E 68A3  1D25 12C7 4390 F9AA C728'
+
+                                                                   # ]]]
+# .. envvar:: minio__upstream_type [[[
+#
+# Specify the method which should be used to install MinIO binary. Either
+# ``url`` to download the configured binary directly and virify it using the
+# specified GPG key, or ``git`` to clone the MinIO :command:`git` repository
+# and build the specified version from source.
+minio__upstream_type: 'url'
+
+                                                                   # ]]]
+# .. envvar:: minio__upstream_upgrade [[[
+#
+# Enable or disable automatic upgrades of MinIO downloaded from upstream.
+# This does not affect installations built from the :command:`git` repository.
+#
+# MinIO is updated quite freqently. Remember that already downloaded MinIO
+# releases are not removed automatically; check the download directory (by
+# default :file:`/var/local/_golang/go/src/releases/linux-amd64/minio/` ) and
+# remove old releases.
+minio__upstream_upgrade: False
+
+                                                                   # ]]]
+# .. envvar:: minio__upstream_url_mirror [[[
+#
+# The base URL of the MinIO download page, should end with the ``/`` character.
+minio__upstream_url_mirror: 'https://dl.min.io/server/minio/release/'
+
+                                                                   # ]]]
+# .. envvar:: minio__upstream_platform [[[
+#
+# Specify the OS type and platform architecture to use for installation. The
+# list of supported architectures and OS types can be found on the
+# https://dl.min.io/server/minio/release/ page.
+minio__upstream_platform: 'linux-amd64'
+
+                                                                   # ]]]
+# .. envvar:: minio__upstream_url_release [[[
+#
+# The version of MinIO to download from upstream on a given host. You should
+# specify the ``RELEASE.YYYY-MM-DDTHH-MM-SSZ`` tagged release number.
+#
+# Available MinIO releases: https://github.com/minio/minio/releases
+minio__upstream_url_release: '{{ minio__env_upstream_url_release }}'
+
+                                                                   # ]]]
+# .. envvar:: minio__upstream_url_binary [[[
+#
+# The path to the MinIO binary on the upstream HTTPS server, relative to the OS
+# type and platform directory.
+minio__upstream_url_binary: '{{ "archive/minio." + minio__upstream_url_release }}'
+
+                                                                   # ]]]
+# .. envvar:: minio__upstream_git_repository [[[
+#
+# The URL of the upstream :command:`git` repository which contains MinIO source
+# code.
+minio__upstream_git_repository: 'https://github.com/minio/minio'
+
+                                                                   # ]]]
+# .. envvar:: minio__upstream_git_release [[[
+#
+# The version of MinIO to build from source on a given host. The build version
+# depends on the availability of a specific Golang version and other factors.
+# Latest MinIO versions which can be built on a given OS distribution release
+# are preferable.
+minio__upstream_git_release: '{{ "RELEASE.2019-03-27T22-35-21Z"
+                                 if (ansible_distribution_release in
+                                     [ "stretch", "buster", "xenial", "bionic" ])
+                                     else ("RELEASE.2019-09-05T23-24-38Z"
+                                       if (ansible_distribution_release in
+                                           [ "bullseye" ])
+                                       else minio__upstream_url_release) }}'
+
+                                                                   # ]]]
+# .. envvar:: minio__binary [[[
+#
+# Absolute path to the :command:`minio` Go binary installed on the host.
+# See the :ref:`debops.golang` role for more details.
+minio__binary: '{{ ansible_local.golang.binaries["minio"]
+                   if (ansible_local|d() and ansible_local.golang|d() and
+                       ansible_local.golang.binaries|d() and
+                       ansible_local.golang.binaries.minio|d())
+                   else "" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Filesystem layout [[[
+# ---------------------
+
+# .. envvar:: minio__config_dir [[[
+#
+# The directory which contains MinIO tenant configuration files with
+# environment variables for each MinIO instance.
+minio__config_dir: '/etc/minio'
+
+                                                                   # ]]]
+# .. envvar:: minio__volumes_dir [[[
+#
+# The directory which contains MinIO volumes. If not specified otherwise, each
+# MinIO tenant will have its volume subdirectory created in this directory.
+minio__volumes_dir: '/srv/minio'
+
+                                                                   # ]]]
+# .. envvar:: minio__volumes [[[
+#
+# List of directories in the filesystem which should be created to contain
+# MinIO volumes, defined on all hosts in the Ansible inventory.
+# You can specify a relative path which will be created under
+# the :envvar:`minio__volumes_dir` directory, or an absolute filesystem path.
+minio__volumes: []
+
+                                                                   # ]]]
+# .. envvar:: minio__group_volumes [[[
+#
+# List of directories in the filesystem which should be created to contain
+# MinIO volumes, defined on hosts in a specific Ansible inventory group.
+# You can specify a relative path which will be created under
+# the :envvar:`minio__volumes_dir` directory, or an absolute filesystem path.
+minio__group_volumes: []
+
+                                                                   # ]]]
+# .. envvar:: minio__host_volumes [[[
+#
+# List of directories in the filesystem which should be created to contain
+# MinIO volumes, defined on specific hosts in the Ansible inventory.
+# You can specify a relative path which will be created under
+# the :envvar:`minio__volumes_dir` directory, or an absolute filesystem path.
+minio__host_volumes: []
+                                                                   # ]]]
+                                                                   # ]]]
+# DNS configuration [[[
+# ---------------------
+
+# .. envvar:: minio__fqdn [[[
+#
+# The Fully Qualified Domain Name of a host on which MinIO is installed. This
+# variable is used in the :command:`nginx` configuration to point the upstream
+# to the local MinIO service when TLS support is enabled, due to the X.509
+# certificate requirements. If you want to change the FQDN on which
+# a particular MinIO instance is accessible via :command:`nginx`, use the
+# ``item.fqdn`` parameter instead.
+minio__fqdn: '{{ ansible_local.core.fqdn
+                 if (ansible_local|d() and ansible_local.core|d() and
+                     ansible_local.core.fqdn|d())
+                 else ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: minio__domain [[[
+#
+# This variable is used in the :command:`nginx` configuration to generate the
+# FQDN of the MinIO service based on the MinIO instance name and DNS domain
+# specified here.
+minio__domain: '{{ ansible_local.core.domain
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.domain|d())
+                   else ansible_domain }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Transport Layer Security (TLS) support [[[
+# ------------------------------------------
+
+# These variables are used to configure the `TLS support in MinIO`__.
+# The :ref:`debops.pki` Ansible is used to manage the private keys and X.509
+# certificates.
+#
+# .. __: https://docs.min.io/docs/how-to-secure-access-to-minio-server-with-tls.html
+
+# .. envvar:: minio__pki_enabled [[[
+#
+# Enable or disable support for encrypted communication between MinIO instances
+# via TLS. The support will be enabled in the :ref:`debops.pki` Ansible role is
+# configured on a host.
+minio__pki_enabled: '{{ ansible_local.pki.enabled
+                        if (ansible_local|d() and ansible_local.pki|d() and
+                            ansible_local.pki.enabled is defined)
+                        else False }}'
+
+                                                                   # ]]]
+# .. envvar:: minio__pki_base_path [[[
+#
+# The absolute path to the directory which contains the PKI realm
+# subdirectories.
+minio__pki_base_path: '{{ ansible_local.pki.base_path
+                          if (ansible_local|d() and ansible_local.pki|d() and
+                              ansible_local.pki.base_path|d())
+                          else "/etc/pki/realms" }}'
+
+                                                                   # ]]]
+# .. envvar:: minio__pki_realm [[[
+#
+# Name of the PKI realm to use by the MinIO service.
+minio__pki_realm: '{{ ansible_local.pki.realm
+                      if (ansible_local|d() and ansible_local.pki|d() and
+                          ansible_local.pki.realm|d())
+                      else "domain" }}'
+
+                                                                   # ]]]
+# .. envvar:: minio__pki_key [[[
+#
+# The name of the file which contains the private key used by the X.509
+# certificate, relative to the PKI realm directory.
+minio__pki_key: '{{ ansible_local.pki.key
+                    if (ansible_local|d() and ansible_local.pki|d() and
+                        ansible_local.pki.key|d())
+                    else "default.key" }}'
+
+                                                                   # ]]]
+# .. envvar:: minio__pki_crt [[[
+#
+# The name of the file which contains the X.509 certificate chain used by
+# MinIO, relative to the PKI realm directory.
+#
+# MinIO requires a full X.509 chain with the intermediate CA and the Root
+# Certificate Authority included. Otherwise you will see the error message
+# "Unable to load the TLS configuration: Invalid TLS certificate".
+minio__pki_crt: 'public/full.pem'
+
+                                                                   # ]]]
+# .. envvar:: minio__tls_certs_dir [[[
+#
+# Absolute path to the directory where the :ref:`debops.minio` role will create
+# symlinks to the private key and X.509 certificate chain used by MinIO for TLS
+# connections.
+minio__tls_certs_dir: '{{ minio__home + "/.minio/certs" }}'
+
+                                                                   # ]]]
+# .. envvar:: minio__tls_private_key [[[
+#
+# Absolute path to the private key used by MinIO which will be symlinked as the
+# :file:`private.key` file inside of the :file:`certs/` directory.
+minio__tls_private_key: '{{ minio__pki_base_path + "/" + minio__pki_realm + "/" + minio__pki_key }}'
+
+                                                                   # ]]]
+# .. envvar:: minio__tls_public_crt [[[
+#
+# Absolute path to the X.509 certificate chain used by MinIO which will be
+# symlinked as the :file:`public.crt` file inside of the :file:`certs/`
+# directory.
+minio__tls_public_crt: '{{ minio__pki_base_path + "/" + minio__pki_realm + "/" + minio__pki_crt }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# MinIO instance configuration [[[
+# --------------------------------
+
+# The variables below define a list of MinIO instances to manage on
+# a particular host. See :ref:`minio__ref_instances` for more details.
+
+# .. envvar:: minio__default_instances [[[
+#
+# The list of the default MinIO instances defined by the role.
+minio__default_instances:
+
+  # This instance configuration overrides the nginx configuration to use the
+  # host's FQDN instead of the instance name. It also supports using host
+  # subdomains as the bucket names.
+  - name: 'main'
+    port: '9000'
+    fqdn: '{{ minio__fqdn }}'
+    domain: '{{ minio__fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: minio__instances [[[
+#
+# The list of the MinIO instances which should be defined on all hosts in the
+# Ansible inventory.
+minio__instances: []
+
+                                                                   # ]]]
+# .. envvar:: minio__group_instances [[[
+#
+# The list of the MinIO instances which should be defined on hosts in
+# a specific Ansible inventory group.
+minio__group_instances: []
+
+                                                                   # ]]]
+# .. envvar:: minio__host_instances [[[
+#
+# The list of the MinIO instances which should be defined on specific hosts in
+# the Ansible inventory.
+minio__host_instances: []
+
+                                                                   # ]]]
+# .. envvar:: minio__combined_instances [[[
+#
+# The variable which combines all other MinIO instance variables and is used in
+# the role tasks and templates.
+minio__combined_instances: '{{ minio__default_instances
+                               + minio__instances
+                               + minio__group_instances
+                               + minio__host_instances }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: minio__golang__dependent_packages [[[
+#
+# Configuration for the :ref:`debops.golang` Ansible role.
+minio__golang__dependent_packages:
+
+  - name: 'minio'
+    upstream_type: '{{ minio__upstream_type }}'
+    gpg: '{{ minio__upstream_gpg_key }}'
+    url:
+
+      - src: '{{ minio__upstream_url_mirror + minio__upstream_platform + "/" + minio__upstream_url_binary }}'
+        dest: 'releases/{{ minio__upstream_platform }}/minio/minio.{{ minio__upstream_url_release }}'
+        checksum: 'sha256:{{ minio__upstream_url_mirror + minio__upstream_platform + "/" + minio__upstream_url_binary }}.sha256sum'
+
+      - src: '{{ minio__upstream_url_mirror + minio__upstream_platform + "/" + minio__upstream_url_binary + ".asc" }}'
+        dest: 'releases/{{ minio__upstream_platform }}/minio/minio.{{ minio__upstream_url_release }}.asc'
+        gpg_verify: True
+
+    url_binaries:
+      - src: 'releases/{{ minio__upstream_platform }}/minio/minio.{{ minio__upstream_url_release }}'
+        dest: 'minio'
+        notify: 'Restart minio'
+    git:
+      - repo: '{{ minio__upstream_git_repository }}'
+        version: '{{ minio__upstream_git_release }}'
+        build_script: |
+          make clean build
+    git_binaries:
+      - src: '{{ minio__upstream_git_repository.split("://")[1] + "/minio" }}'
+        dest: 'minio'
+        notify: 'Restart minio'
+
+                                                                   # ]]]
+# .. envvar:: minio__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role, generated
+# dynamically based on the MinIO instance configuration.
+minio__etc_services__dependent_list: '{{ minio__env_etc_services_dependent_list }}'
+
+                                                                   # ]]]
+# .. envvar:: minio__sysctl__dependent_parameters [[[
+#
+# Configuration for the :ref:`debops.sysctl` Ansible role.
+minio__sysctl__dependent_parameters:
+
+  # Ref: https://github.com/minio/minio/tree/master/docs/deployment/kernel-tuning
+  - name: 'minio'
+    weight: '80'
+    options:
+
+      - name: 'net.ipv4.tcp_fin_timeout'
+        comment: |
+          A socket left in memory takes approximately 1.5Kb of memory. It makes
+          sense to close the unused sockets preemptively to ensure no memory
+          leakage. This way, even if a peer doesn't close the socket due to
+          some reason, the system itself closes it after a timeout.
+
+          The "tcp_fin_timeout" variable defines this timeout and tells kernel
+          how long to keep sockets in the state FIN-WAIT-2. We recommend
+          setting it to 30.
+        value: 30
+
+      - name: 'net.ipv4.tcp_keepalive_probes'
+        comment: |
+          This variable defines the number of unacknowledged probes to be sent
+          before considering a connection dead.
+        value: 5
+
+      - name: 'net.core.wmem_max'
+        comment: |
+          This parameter sets the max OS send buffer size for all types of
+          connections.
+        value: 540000
+
+      - name: 'net.core.rmem_max'
+        comment: |
+          This parameter sets the max OS receive buffer size for all types of
+          connections.
+        value: 540000
+
+      - name: 'vm.swappiness'
+        comment: |
+          This parameter controls the relative weight given to swapping out
+          runtime memory, as opposed to dropping pages from the system page
+          cache. It takes values from 0 to 100, both inclusive. We recommend
+          setting it to 10.
+        value: 10
+
+      - name: 'vm.dirty_background_ratio'
+        comment: |
+          This is the percentage of system memory that can be filled with dirty
+          pages, i.e. memory pages that still need to be written to disk. We
+          recommend writing the data to the disk as soon as possible. To do
+          this, set the dirty_background_ratio to 1.
+        value: 1
+
+      - name: 'vm.dirty_ratio'
+        comment: |
+          This defines is the absolute maximum amount of system memory that can
+          be filled with dirty pages before everything must get committed to
+          disk.
+        value: 1
+
+      - name: 'kernel.sched_min_granularity_ns'
+        comment: |
+          This parameter decides the minimum time a task will be be allowed to
+          run on CPU before being pre-empted out. We recommend setting it to
+          10ms.
+        value: 10000000
+
+      - name: 'kernel.sched_wakeup_granularity_ns'
+        comment: |
+          Lowering this parameter improves wake-up latency and throughput for
+          latency critical tasks, particularly when a short duty cycle load
+          component must compete with CPU bound components.
+        value: 15000000
+
+                                                                   # ]]]
+# .. envvar:: minio__sysfs__dependent_attributes [[[
+#
+# Configuration for the :ref:`debops.sysfs` Ansible role.
+minio__sysfs__dependent_attributes:
+
+  - role: 'minio'
+    config:
+      - name: 'transparent_hugepages'
+        state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: minio__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role, generated dynamically
+# based on the MinIO instance configuration.
+minio__ferm__dependent_rules: '{{ minio__env_ferm_dependent_rules }}'
+
+                                                                   # ]]]
+# .. envvar:: minio__nginx__dependent_upstreams [[[
+#
+# Upstream configuration for the :ref:`debops.nginx` Ansible role, generated
+# dynamically based on the MinIO instance configuration.
+minio__nginx__dependent_upstreams: '{{ minio__env_nginx_dependent_upstreams }}'
+
+                                                                   # ]]]
+# .. envvar:: minio__nginx__dependent_servers [[[
+#
+# Server configuration for the :ref:`debops.nginx` Ansible role, generated
+# dynamically based on the MinIO instance configuration.
+minio__nginx__dependent_servers: '{{ minio__env_nginx_dependent_servers }}'
+                                                                   # ]]]
+                                                                   # ]]]

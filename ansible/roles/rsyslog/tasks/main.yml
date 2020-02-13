@@ -1,0 +1,195 @@
+---
+
+- name: Install required packages
+  apt:
+    name: '{{ (rsyslog__base_packages
+             + (rsyslog__tls_packages if (rsyslog__pki|bool) else [])
+             + rsyslog__packages)
+               | flatten }}'
+    state: 'present'
+    install_recommends: False
+  register: rsyslog__register_packages
+  until: rsyslog__register_packages is succeeded
+  when: rsyslog__enabled|bool
+
+- name: Create required system group
+  group:
+    name: '{{ rsyslog__group }}'
+    state: 'present'
+    system: True
+  when: rsyslog__unprivileged|bool and rsyslog__group != 'root'
+
+- name: Create required system user
+  user:
+    name: '{{ rsyslog__user }}'
+    group: '{{ rsyslog__group }}'
+    groups: '{{ rsyslog__append_groups | join(",") | default(omit) }}'
+    append: True
+    home: '{{ rsyslog__home }}'
+    shell: '/bin/false'
+    state: 'present'
+    createhome: False
+    system: True
+  when: rsyslog__unprivileged|bool and rsyslog__user != 'root'
+
+- name: Fix directory permissions if needed
+  file:
+    path: '/var/spool/rsyslog'
+    owner: '{{ rsyslog__user }}'
+    group: '{{ rsyslog__file_group }}'
+    mode: '0700'
+  register: rsyslog__register_unprivileged_files
+  when: rsyslog__unprivileged|bool and rsyslog__user != 'root'
+
+- name: Update directory and file permissions
+  shell: |
+    [ ! -d {{ rsyslog__home }} ] \
+      || ( [ "$(stat -c '%G' {{ rsyslog__home }})" = "{{ rsyslog__group }}" ] \
+             || chown -v root:{{ rsyslog__group }} {{ rsyslog__home }} ; \
+           [ "$(stat -c '%a' {{ rsyslog__home }})" = "775" ] \
+             || chmod -v 775 {{ rsyslog__home }} )
+    for i in {{ rsyslog__default_logfiles | join(" ") }} ; do
+      [ ! -f ${i} ] || \
+        ( [ "$(stat -c '%U' ${i})" = "{{ rsyslog__file_owner }}" ] \
+        || chown -v {{ rsyslog__file_owner }}:{{ rsyslog__file_group }} ${i} )
+    done
+  register: rsyslog__register_file_permissions
+  when: rsyslog__unprivileged|bool
+  changed_when: rsyslog__register_file_permissions.stdout|d()
+  notify: [ 'Restart rsyslogd' ]
+
+- name: Create systemd-tmpfiles override
+  copy:
+    dest: '/etc/tmpfiles.d/rsyslog-var-log.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+    content: 'z {{ rsyslog__home }} 0775 root {{ rsyslog__group }} -'
+  when: ansible_service_mgr == "systemd" and rsyslog__unprivileged|bool and ansible_distribution == "Debian"
+
+- name: Divert main rsyslog configuration
+  command: dpkg-divert --quiet --local --divert /etc/rsyslog.conf.dpkg-divert --rename /etc/rsyslog.conf
+  args:
+    creates: '/etc/rsyslog.conf.dpkg-divert'
+  when: rsyslog__enabled|bool
+  notify: [ 'Restart rsyslogd' ]
+
+- name: Generate main rsyslog configuration
+  template:
+    src: 'etc/rsyslog.conf.j2'
+    dest: '/etc/rsyslog.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart rsyslogd' ]
+  when: rsyslog__enabled|bool
+
+- name: Revert the default configuration file
+  shell: rm -f /etc/rsyslog.conf ; dpkg-divert --quiet --local --rename --remove /etc/rsyslog.conf
+  args:
+    removes: '/etc/rsyslog.conf.dpkg-divert'
+    warn: False
+  when: not rsyslog__enabled|bool
+
+- name: Divert the custom rsyslog configuration
+  environment:
+    LC_ALL: 'C'
+  command: dpkg-divert --local --divert /etc/rsyslog.d/{{ item.divert_to | d(item.filename + ".dpkg-divert") }}
+                       --rename /etc/rsyslog.d/{{ item.filename }}
+  args:
+    creates: '/etc/rsyslog.d/{{ item.divert_to | d(item.filename + ".dpkg-divert") }}'
+  register: rsyslog__register_divert_rules
+  with_flattened:
+    - '{{ rsyslog_pools | d([]) }}'
+    - '{{ rsyslog__default_rules }}'
+    - '{{ rsyslog__rules }}'
+    - '{{ rsyslog__group_rules }}'
+    - '{{ rsyslog__host_rules }}'
+    - '{{ rsyslog__dependent_rules }}'
+  when: (rsyslog__enabled|bool and item.filename|d() and
+         (item.state is undefined or item.state != 'absent') and
+         (item.divert|d() and item.divert|bool))
+  changed_when: rsyslog__register_divert_rules.stdout.startswith("Adding 'local diversion of ")
+  notify: [ 'Restart rsyslogd' ]
+
+- name: Generate rsyslog configuration rules
+  template:
+    src: 'etc/rsyslog.d/rules.conf.j2'
+    dest: '/etc/rsyslog.d/{{ item.filename
+                             | d((item.weight if item.weight|d() else rsyslog__weight_map[item.type|d("rules")])
+                                 + "-" + (item.name|d("rules")) + "." + (item.suffix |d ("conf"))) }}'
+    owner: '{{ item.owner | d("root") }}'
+    group: '{{ item.group | d("root") }}'
+    mode:  '{{ item.mode  | d("0644") }}'
+  with_flattened:
+    - '{{ rsyslog_pools | d([]) }}'
+    - '{{ rsyslog__default_rules }}'
+    - '{{ rsyslog__rules }}'
+    - '{{ rsyslog__group_rules }}'
+    - '{{ rsyslog__host_rules }}'
+    - '{{ rsyslog__dependent_rules }}'
+  when: (rsyslog__enabled|bool and (item.filename|d() or item.name|d()) and
+         (item.state is undefined or item.state != 'absent') and
+         (item.options|d() or item.sections|d()))
+  notify: [ 'Restart rsyslogd' ]
+
+- name: Remove custom config files when requested
+  file:
+    path: '/etc/rsyslog.d/{{ item.filename
+                             | d((item.weight if item.weight|d() else rsyslog__weight_map[item.type|d("rules")])
+                                 + "-" + (item.name|d("rules")) + "." + (item.suffix | d("conf"))) }}'
+    state: 'absent'
+  with_flattened:
+    - '{{ rsyslog_pools | d([]) }}'
+    - '{{ rsyslog__default_rules }}'
+    - '{{ rsyslog__rules }}'
+    - '{{ rsyslog__group_rules }}'
+    - '{{ rsyslog__host_rules }}'
+    - '{{ rsyslog__dependent_rules }}'
+  when: (not rsyslog__enabled|bool or
+         ((item.filename|d() or item.name|d()) and
+          (item.state|d() and item.state == 'absent')) and
+         (item.options|d() or item.sections|d())) and
+        (item.divert is undefined or not item.divert|bool)
+  notify: [ 'Restart rsyslogd' ]
+
+- name: Revert original rsyslog config rules
+  shell: rm -f /etc/rsyslog.d/{{ item.filename }} ;
+         dpkg-divert --quiet --local --rename --remove /etc/rsyslog.d/{{ item.filename }}
+  args:
+    removes: '/etc/rsyslog.d/{{ item.divert_to | d(item.filename + ".dpkg-divert") }}'
+    warn: False
+  with_flattened:
+    - '{{ rsyslog_pools | d([]) }}'
+    - '{{ rsyslog__default_rules }}'
+    - '{{ rsyslog__rules }}'
+    - '{{ rsyslog__group_rules }}'
+    - '{{ rsyslog__host_rules }}'
+    - '{{ rsyslog__dependent_rules }}'
+  when: ((not rsyslog__enabled|bool or
+          (item.filename|d() and (item.state|d() and item.state == 'absent'))) and
+         (item.divert|d() and item.divert|bool))
+  notify: [ 'Restart rsyslogd' ]
+
+- name: Remove template files if requested
+  file:
+    dest: '/etc/rsyslog.d/{{ item.name }}.template'
+    state: 'absent'
+  with_flattened:
+    - '{{ rsyslog__conf_additional_templates }}'
+  when: (item.name|d() and item.options|d() and
+         (item.state|d() and item.state == 'absent'))
+  notify: [ 'Restart rsyslogd' ]
+
+- name: Create template files if defined
+  template:
+    src: 'etc/rsyslog.d/template.conf.j2'
+    dest: '/etc/rsyslog.d/{{ item.name }}.template'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_flattened:
+    - '{{ rsyslog__conf_additional_templates }}'
+  when: (item.name|d() and item.options|d() and
+         item.state|d('present') != 'absent')
+  notify: [ 'Restart rsyslogd' ]

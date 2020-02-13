@@ -1,7 +1,7 @@
 .. _role_index:
 
-DebOps role index
-=================
+Roles (by category)
+===================
 
 This is a curated index of DebOps roles, categorized by their type and purpose.
 Roles that are not linked don't have complete documentation available, or are
@@ -30,6 +30,7 @@ etc.
 - :ref:`debops.mailman`
 - :ref:`debops.netbox`
 - :ref:`debops.owncloud`
+- :ref:`debops.etesync`
 - :ref:`debops.prosody`
 - :ref:`debops.roundcube`
 - :ref:`debops.rstudio_server`
@@ -38,6 +39,7 @@ etc.
 - ``debops-contrib.foodsoft``
 - ``debops-contrib.homeassistant``
 - ``debops-contrib.kodi``
+- ``debops-contrib.volkszaehler``
 
 
 Application environments
@@ -79,17 +81,19 @@ are not accessed directly by end users.
 - :ref:`debops.freeradius`
 - :ref:`debops.gunicorn`
 - :ref:`debops.ldap`
+- :ref:`debops.mcli`
 - :ref:`debops.memcached`
+- :ref:`debops.minio`
 - :ref:`debops.mosquitto`
 - :ref:`debops.nscd`
 - :ref:`debops.rabbitmq_management`
 - :ref:`debops.rabbitmq_server`
 - :ref:`debops.salt`
+- :ref:`debops.tinyproxy`
 - ``debops.reprepro``
 - ``debops.sks``
 - ``debops.smstools``
 - ``debops-contrib.bitcoind``
-- ``debops-contrib.volkszaehler``
 - ``debops-contrib.x2go_server``
 
 
@@ -155,6 +159,8 @@ other hosts.
 - :ref:`debops.cryptsetup`
 - :ref:`debops.iscsi`
 - :ref:`debops.lvm`
+- :ref:`debops.mcli`
+- :ref:`debops.minio`
 - :ref:`debops.mount`
 - :ref:`debops.nfs`
 - :ref:`debops.nfs_server`
@@ -190,6 +196,7 @@ Logging
 -------
 
 - :ref:`debops.elasticsearch`
+- :ref:`debops.journald`
 - :ref:`debops.kibana`
 - :ref:`debops.logrotate`
 - :ref:`debops.rsyslog`
@@ -205,6 +212,7 @@ Mail services
 - :ref:`debops.opendkim`
 - :ref:`debops.postconf`
 - :ref:`debops.postfix`
+- :ref:`debops.postldap`
 - :ref:`debops.postscreen`
 - :ref:`debops.postwhite`
 - :ref:`debops.roundcube`
@@ -272,6 +280,7 @@ Security
 - :ref:`debops.ferm`
 - :ref:`debops.freeradius`
 - :ref:`debops.keyring`
+- :ref:`debops.libuser`
 - :ref:`debops.pam_access`
 - :ref:`debops.proc_hidepid`
 - :ref:`debops.sshd`
@@ -324,6 +333,7 @@ Web services
 - :ref:`debops.apache`
 - :ref:`debops.fcgiwrap`
 - :ref:`debops.gunicorn`
+- :ref:`debops.minio`
 - :ref:`debops.nginx`
 - :ref:`debops.nodejs`
 - :ref:`debops.php`
@@ -339,6 +349,7 @@ Virtualization
 - :ref:`debops.libvirtd`
 - :ref:`debops.libvirtd_qemu`
 - :ref:`debops.lxc`
+- :ref:`debops.lxd`
 
 
 Ansible internals

@@ -1,0 +1,158 @@
+---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
+
+- import_role:
+    name: 'ansible_plugins'
+
+- import_role:
+    name: 'secret'
+
+- name: Create /etc/default/grub.d directory
+  file:
+    path: '/etc/default/grub.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Generate GRUB configuration file
+  template:
+    src: 'etc/default/grub.d/ansible.cfg.j2'
+    dest: '/etc/default/grub.d/ansible.cfg'
+    owner:  'root'
+    group:  'root'
+    mode:   '0644'
+  notify: [ 'Update GRUB' ]
+
+# Security and users [[[
+
+- name: Ensure secrets directories exist
+  file:
+    path: '{{ secret + "/credentials/" + inventory_hostname + "/grub/" + item.name }}'
+    state: 'directory'
+    mode: '0750'
+  become: False
+  delegate_to: 'localhost'
+  no_log: True
+  when: item.name|d()
+  with_items: '{{ grub__combined_users }}'
+
+- name: Save plaintext password in secrets
+  copy:
+    content: "{{ item.password + '\n' }}"
+    dest: '{{ secret + "/credentials/" + inventory_hostname + "/grub/" + item.name + "/password" }}'
+    mode: '0640'
+  register: grub__register_pw_plain
+  with_items: '{{ grub__combined_users }}'
+  become: False
+  delegate_to: 'localhost'
+  when: item.name|d()
+  no_log: True
+
+## There seems to be no way to specify the salt (except using a custom script).
+## Only generating the hashed password when the plaintext password has changed
+## is the workaround to make it idempotent.
+## This is not too bad because depending on the iteration count chosen this operation could take a while ;)
+- name: Generate salted hash from user password
+  shell: set -o nounset -o pipefail -o errexit &&
+         echo '{{ item.0.password }}\n{{ item.0.password }}' | LANG=C LC_ALL=C grub-mkpasswd-pbkdf2
+         {{ "" if grub__iter_time|d()   == "default" else ("--iteration-count=" + grub__iter_time) }}
+         {{ "" if grub__salt_length|d() == "default" else ("--salt=" + grub__salt_length) }}
+         {{ "" if grub__hash_length|d() == "default" else ("--buflen=" + grub__hash_length) }}
+         | perl -ne 's/^(:?Your PBKDF2|PBKDF2 hash of your password) is //ms && print'
+  args:
+    executable: 'bash'
+  register: grub__register_pw_hashes
+  with_together:
+    - '{{ grub__combined_users }}'
+    - '{{ grub__register_pw_plain.results|d({}) }}'
+  become: False
+  delegate_to: 'localhost'
+  changed_when: False
+  when: (item.0.name|d() and item.1 is changed)
+  no_log: True
+
+- name: Save hashed password in secrets
+  copy:
+    content: "{{ item.1.stdout_lines.0 + '\n' }}"
+    dest: '{{ secret + "/credentials/" + inventory_hostname + "/grub/" + item.0.name + "/password_hash" }}'
+    mode: '0640'
+  with_together:
+    - '{{ grub__combined_users }}'
+    - '{{ grub__register_pw_hashes.results|d({}) }}'
+  become: False
+  delegate_to: 'localhost'
+  when: (item.1 is not skipped)
+  no_log: True
+
+- name: Configure users and passwords
+  template:
+    src: 'etc/grub.d/01_users.j2'
+    dest: '/etc/grub.d/01_users'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: (not ansible_check_mode and grub__combined_users|length > 0)
+  notify: [ 'Update GRUB' ]
+
+- name: Remove users and passwords
+  file:
+    path: '/etc/grub.d/01_users'
+    state: 'absent'
+  when: (grub__combined_users|length == 0)
+  notify: [ 'Update GRUB' ]
+
+## FIXME: Remove when patched upstream has reached Debian stable.
+## Currently unlikely because the patch was not accepted upstream.
+## It has been decided to not divert this script because there is a chance that
+## security fixes could affect this file.
+- name: Divert original /etc/grub.d/10_linux
+  command: dpkg-divert --quiet --local --divert /etc/grub.d/10_linux.dpkg-divert
+           --rename /etc/grub.d/10_linux
+  args:
+    creates: '/etc/grub.d/10_linux.dpkg-divert'
+  when: (grub__combined_users|length > 0)
+  register: grub__register_linux_divert
+
+- name: Copy /etc/grub.d/10_linux.dpkg-divert to its original location
+  command: cp /etc/grub.d/10_linux.dpkg-divert /etc/grub.d/10_linux
+  when: grub__register_linux_divert is changed
+
+- name: Apply patch to allow to configure the default menu entry parameters
+  replace:
+    dest: '/etc/grub.d/10_linux'
+    regexp: "^CLASS=(?:\\$\\{[A-Z_]+:-)?([\"'][\\w _-]+)([\"'])\\}?"
+    replace: 'CLASS=${GRUB_LINUX_MENUENTRY_CLASS:-\1 ${GRUB_LINUX_MENUENTRY_CLASS_ADDITIONAL:-}\2}'
+  notify: [ 'Update GRUB' ]
+  when: (grub__combined_users|length > 0)
+
+- name: Remove patch to allow to configure the default menu entry parameters
+  shell: rm -f /etc/grub.d/10_linux ; dpkg-divert --quiet --local --rename --remove /etc/grub.d/10_linux
+  args:
+    warn: False
+    removes: '/etc/grub.d/10_linux.dpkg-divert'
+  notify: [ 'Update GRUB' ]
+  when: (grub__combined_users|length == 0)
+
+# ]]]
+
+- name: Make sure that local fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save local GRUB facts
+  template:
+    src: 'etc/ansible/facts.d/grub.fact.j2'
+    dest: '/etc/ansible/facts.d/grub.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: grub__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: grub__register_facts is changed

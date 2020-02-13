@@ -1,0 +1,727 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _gitlab_runner__ref_defaults:
+
+# debops.gitlab_runner default variables [[[
+# ==========================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Package installation [[[
+# ------------------------
+
+# .. envvar:: gitlab_runner__apt_upstream [[[
+#
+# Enable configuration of upstream GitLab Runner repository. Currently it's the
+# only source of the required packages, but if you have downloaded them into
+# your own APT repository, you can disable upstream using this variable.
+gitlab_runner__apt_upstream: True
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__apt_key [[[
+#
+# GPG key which signs the upstream APT repository package list.
+gitlab_runner__apt_key: '1A4C919DB987D435939638B914219A96E15E78F4'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__apt_repo [[[
+#
+# APT ``sources.list`` configuration of the upstream GitLab Runner repository.
+gitlab_runner__apt_repo: 'deb https://packages.gitlab.com/runner/gitlab-runner/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} main'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__base_packages [[[
+#
+# List of APT packages which will be installed by the role.
+gitlab_runner__base_packages:
+  - 'gitlab-runner'
+  - '{{ [ "vagrant-libvirt", "libguestfs-tools", "busybox", "patch" ]
+        if gitlab_runner__vagrant_libvirt|bool
+        else [] }}'
+  - '{{ "vagrant-lxc" if gitlab_runner__vagrant_lxc|bool else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__packages [[[
+#
+# List of additional APT packages to install with GitLab Runner.
+gitlab_runner__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# User, group, home directory [[[
+# -------------------------------
+
+# .. envvar:: gitlab_runner__user [[[
+#
+# System user account which will be used to run GitLab Runner jobs.
+gitlab_runner__user: 'gitlab-runner'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__group [[[
+#
+# System group which will be used to run GitLab Runner jobs.
+gitlab_runner__group: 'gitlab-runner'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__additional_groups [[[
+#
+# List of additional groups to which add the GitLab Runner user account,
+# specified as dictionaries. Missing groups will be added automatically.
+# Dictionary keys used by this variable:
+#
+# - ``name``: required, name of the group.
+#
+# - ``system``: optional, bool. If ``True``, the group will be a system group.
+#
+# System groups have GID < 1000. If ``system`` key is not specified, the value
+# of :envvar:`gitlab_runner__system` is used instead.
+gitlab_runner__additional_groups: []
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__system [[[
+#
+# If ``True``, the created user and groups will have UID and GID < 1000 and
+# will be considered "local" user and groups.
+gitlab_runner__system: True
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__home [[[
+#
+# Home directory of the GitLab Runner user.
+gitlab_runner__home: '{{ (ansible_local.root.home
+	                  if (ansible_local|d() and ansible_local.root|d() and
+	                      ansible_local.root.home|d())
+	                  else "/var/local") + "/" + gitlab_runner__user }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__comment [[[
+#
+# Comment or GECOS field set on the GitLab Runner account.
+gitlab_runner__comment: 'GitLab Runner'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__shell [[[
+#
+# Default shell used by the GitLab Runner user account.
+gitlab_runner__shell: '/bin/bash'
+                                                                   # ]]]
+                                                                   # ]]]
+# Global configuration [[[
+# ------------------------
+
+# .. envvar:: gitlab_runner__concurrent [[[
+#
+# Global number of jobs that can run concurrently on all configured runners.
+gitlab_runner__concurrent: '{{ ansible_processor_vcpus
+                               if (ansible_local|d() and
+                                   ansible_local.docker_server|d() and
+                                   (ansible_local.docker_server.installed|d()) | bool)
+                               else "1" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__domain [[[
+#
+# The default domain used in different places of the role.
+gitlab_runner__domain: '{{ ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__fqdn [[[
+#
+# The Fully Qualified Domain Name of the GitLab Runner host.
+gitlab_runner__fqdn: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__gitlab_srv_rr [[[
+#
+# List which contains the result of the :command:`dig` query for Gitlab server
+# ``SRV`` resource records in the host's domain. See :rfc:`6186` for details.
+gitlab_runner__gitlab_srv_rr: '{{ q("dig", "_gitlab._tcp."
+                                    + gitlab_runner__domain
+                                    + "./SRV", "flat=0") }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__api_fqdn [[[
+#
+# The Fully Qualified Domain Name (FQDN) of the GitLab CI host which will control the
+# runner operation.
+#
+# By default the host is located using DNS SRV resource records; if there are none,
+# role checks if a local Gitlab installation is present and uses the host FQDN as
+# the Gitlab API server address. Finally, the static ``code.<domain>`` is used.
+#
+# Use of FQDN instead of ``localhost`` is required for X.509 certificate
+# verification and for correct information in system logs.
+gitlab_runner__api_fqdn: '{{ (gitlab_runner__gitlab_srv_rr | selectattr("target", "defined")
+                              | map(attribute="target")
+                              | map("regex_replace", "\.$","")
+                              | list | first)
+                              if ("NXDOMAIN" not in gitlab_runner__gitlab_srv_rr and
+                                  gitlab_runner__gitlab_srv_rr[0])
+                              else (ansible_fqdn
+                                    if (ansible_local|d() and ansible_local.gitlab|d() and
+                                       (ansible_local.gitlab.installed|d())|bool)
+                                    else ("code." + gitlab_runner__domain)) }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__api_url [[[
+#
+# The HTTP API endpoint of the GitLab CI server.
+# The role will check if the API server is available before trying to use it.
+gitlab_runner__api_url: 'https://{{ gitlab_runner__api_fqdn }}/'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__api_token [[[
+#
+# The personal GitLab API access token used for API operations, for example
+# removal of existing Runners. This is not a Runner registration token. You can
+# generate an access token in GitLab "User Settings", "Access Tokens"
+# configuration page.
+gitlab_runner__api_token: ''
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__executor [[[
+#
+# Default "executor" used by the runners.
+gitlab_runner__executor: 'shell'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__token [[[
+#
+# The GitLab CI registration token used to register the runners in GitLab.
+# See :ref:`gitlab_runner__token` for more details.
+gitlab_runner__token: '{{ lookup("env", "GITLAB_RUNNER_TOKEN") }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__metrics_server [[[
+#
+# The embedded Prometheus metrics server listener configuration in format:
+# ``[host]:<port>``.
+gitlab_runner__metrics_server: ''
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__environment [[[
+#
+# A set of custom environment variables added to each GitLab Runner.
+# See :ref:`gitlab_runner__environment` for more details.
+gitlab_runner__environment: {}
+                                                                   # ]]]
+                                                                   # ]]]
+# GitLab Runner tags [[[
+# ----------------------
+
+# .. envvar:: gitlab_runner__shell_tags [[[
+#
+# List of tags automatically generated by the role, based on Ansible facts.
+# These tags are used with shell executors.
+gitlab_runner__shell_tags: '{{ lookup("template",
+                               "lookup/gitlab_runner__shell_tags.j2") }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__default_tags [[[
+#
+# List of default tags applied to the Runner at registration in GitLab CI.
+gitlab_runner__default_tags: [ 'managed-by-debops' ]
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__tags [[[
+#
+# List of global tags applied to the Runner at registration in GitLab CI.
+gitlab_runner__tags: []
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__group_tags [[[
+#
+# List of tags applied to the Runner at registration in GitLab CI based on an
+# inventory group.
+gitlab_runner__group_tags: []
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__host_tags [[[
+#
+# List of per-host tags applied to the Runner at registration in GitLab CI.
+gitlab_runner__host_tags: []
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__combined_tags [[[
+#
+# Combined list of system-wide tags for easier use in the role tasks.
+gitlab_runner__combined_tags: '{{ gitlab_runner__default_tags
+                                  + gitlab_runner__tags
+                                  + gitlab_runner__group_tags
+                                  + gitlab_runner__host_tags }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# GitLab Runner instances [[[
+# ---------------------------
+
+# GitLab Runner instances are configured as separate dictionary entries. Each
+# entry supports keys of the same name as most of the default variables with
+# ``gitlab_runner__`` stripped, for example ``item.docker_volumes`` instead of
+# :envvar:`gitlab_runner__docker_volumes`. If a key is not specified, a default value
+# will be used if configured on the role level.
+
+# An instance requires at least an ``item.name`` key, which is used as the
+# Runner instance description. The ``item.state`` key can be used to delete an
+# instance, when it's set to ``absent``.
+
+# .. envvar:: gitlab_runner__default_instances [[[
+#
+# List of default GitLab Runner instances.
+gitlab_runner__default_instances:
+
+  - name: '{{ ansible_hostname + "-shell" }}'
+    executor: 'shell'
+    run_untagged: False
+    state: '{{ "absent"
+               if (ansible_local|d() and ansible_local.docker_server|d() and
+                   (ansible_local.docker_server.installed|d()) | bool)
+               else "present" }}'
+
+  - name: '{{ ansible_hostname + "-docker" }}'
+    executor: 'docker'
+    tags: [ 'docker' ]
+    state: '{{ "present"
+               if (ansible_local|d() and ansible_local.docker_server|d() and
+                   (ansible_local.docker_server.installed|d()) | bool)
+               else "absent" }}'
+
+  - name: '{{ ansible_hostname + "-docker-root" }}'
+    executor: 'docker'
+    concurrent: '{{ ansible_processor_vcpus }}'
+    docker_privileged: True
+    run_untagged: False
+    tags: [ 'docker-privileged' ]
+    state: '{{ "present"
+               if (ansible_local|d() and ansible_local.docker_server|d() and
+                   (ansible_local.docker_server.installed|d()) | bool)
+               else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__instances [[[
+#
+# Global list of GitLab Runner instances.
+gitlab_runner__instances: []
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__group_instances [[[
+#
+# List of GitLab Runner instances in Ansible host group.
+gitlab_runner__group_instances: []
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__host_instances [[[
+#
+# List of GitLab Runner instances on a particular host.
+gitlab_runner__host_instances: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Custom file upload [[[
+# ----------------------
+
+# .. envvar:: gitlab_runner__custom_files [[[
+#
+# List of custom files to upload to GitLab Runner host. Each entry is
+# a dictionary with keys the same as the ``copy`` module options.
+# This list is meant to be configured for all hosts.
+gitlab_runner__custom_files: []
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__group_custom_files [[[
+#
+# List of custom files to upload to GitLab Runner host. Each entry is
+# a dictionary with keys the same as the ``copy`` module options.
+# This list is meant to be configured for a group of hosts.
+gitlab_runner__group_custom_files: []
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__host_custom_files [[[
+#
+# List of custom files to upload to GitLab Runner host. Each entry is
+# a dictionary with keys the same as the ``copy`` module options.
+# This list is meant to be configured for specific hosts.
+gitlab_runner__host_custom_files: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Shell executor configuration [[[
+# --------------------------------
+
+# These variables control what features are configured on the GitLab Runner
+# host to use by the shell executor.
+
+# .. envvar:: gitlab_runner__vagrant_libvirt [[[
+#
+# Enable or disable support for Vagrant libvirt plugin (configuration of this
+# support also implies installation of :command:`vagrant` on the GitLab Runner
+# host).
+#
+# Enabling Vagrant libvirt will add the ``gitlab-runner`` UNIX account to the
+# ``libvirt`` and ``kvm`` UNIX groups, required for libvirt access by Vagrant.
+gitlab_runner__vagrant_libvirt: '{{ True
+                                    if (ansible_local|d() and ansible_local.libvirtd|d() and
+                                        (ansible_local.libvirtd.installed|d())|bool and
+                                        (ansible_distribution_release not in
+                                         [ "wheezy", "jessie", "precise", "trusty" ]))
+                                    else False }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__vagrant_libvirt_patch [[[
+#
+# Patch ``vagrant-libvirt`` source code to fix an issue with removed SSH host
+# keys that prevent interaction with Vagrant VMs.
+# See the patch file in :file:`files/patches/` directory for more details.
+gitlab_runner__vagrant_libvirt_patch: '{{ True
+                                          if (gitlab_runner__vagrant_libvirt|bool)
+                                          else False }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__vagrant_lxc [[[
+#
+# Enable or disable support for Vagrant LXC plugin (configuration of this
+# support also implies installation of :command:`vagrant` on the GitLab Runner
+# host). Enabling Vagrant LXC will give limited :command:`sudo` access for the
+# GitLab Runner UNIX account to allow access to LXC commands.
+gitlab_runner__vagrant_lxc: '{{ True
+                                if (ansible_local|d() and ansible_local.lxc|d() and
+                                    (ansible_local.lxc.installed|d())|bool and
+                                    (ansible_distribution_release not in
+                                     [ "wheezy", "jessie", "precise", "trusty" ]))
+                                else False }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# SSH key and host management [[[
+# -------------------------------
+
+# .. envvar:: gitlab_runner__ssh_generate [[[
+#
+# Generate ``~/.ssh/id_rsa`` SSH private and public key if it doesn't exist.
+# The generated SSH key does not contain a passhprase so that it can be used
+# non-interactively by ``gitlab-runner`` daemon.
+gitlab_runner__ssh_generate: False
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__ssh_generate_bits [[[
+#
+# Size of the generated SSH key.
+gitlab_runner__ssh_generate_bits: '4096'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__ssh_install_to [[[
+#
+# List of hosts which should have the ``gitlab-runner`` SSH key installed using
+# a ``delegate_to`` Ansible mechanism and ``authorized_key`` module. Ansible
+# will use connection informations available in inventory to reach hosts. Each entry
+# is a dictionary with keys:
+#
+# - ``host``: the host address, it should be accessible to Ansible Controller
+#
+# - ``user``: user account which should will have the SSH key installed
+#
+# - ``options``: SSH ``authorized_keys`` options to set for a given key
+#
+# - ``become``: whether or not to use become once connected
+#
+gitlab_runner__ssh_install_to: []
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__ssh_known_hosts [[[
+#
+# List of host names which SSH host fingerprints should be scanned and added to
+# the ``~/.ssh/known_hosts`` file of the ``gitlab-runner`` account. This should
+# allow ``git clone`` commands over SSH.
+gitlab_runner__ssh_known_hosts: [ '{{ gitlab_runner__fqdn }}' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# SSH executor configuration [[[
+# ------------------------------
+
+# You should refer to `SSH executor documentation <https://gitlab.com/gitlab-org/gitlab-runner/blob/master/docs/configuration/advanced-configuration.md#the-runnersssh-section>`_
+# for information about what can be configured and the required syntax.
+
+# .. envvar:: gitlab_runner__ssh_host [[[
+#
+# FQDN host where SSH executor should connect to, unless overridden in the
+# runner instance configuration.
+gitlab_runner__ssh_host: ''
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__ssh_port [[[
+#
+# Port to use by the SSH executor.
+gitlab_runner__ssh_port: '22'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__ssh_user [[[
+#
+# Username which the SSH executor should use to connect to the remote host.
+gitlab_runner__ssh_user: ''
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__ssh_identity_file [[[
+#
+# Absolute path to the SSH identity file stored on the remote host which should
+# be used by the SSH executor to connect to the ssh host.
+gitlab_runner__ssh_identity_file: ''
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__ssh_password [[[
+#
+# Password which should be used by the SSH executor to connect to the host.
+# This password is only used for SSH authentication, normally you should use an
+# identity file instead.
+gitlab_runner__ssh_password: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Docker executor configuration [[[
+# ---------------------------------
+
+# You should refer to the `Docker executor documentation <https://gitlab.com/gitlab-org/gitlab-runner/blob/master/docs/configuration/advanced-configuration.md#the-runnersdocker-section>`_
+# for information about what can be configured and what's the specific syntax
+# of each option.
+
+# .. envvar:: gitlab_runner__docker_host [[[
+#
+# Specify the FQDN hostname of the remote Docker host. If nothing is specified,
+# local Docker instance is used.
+gitlab_runner__docker_host: ''
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__docker_tls_cert_path [[[
+#
+# Path to a directory with X.509 certificate, private key and CA certificate
+# used to authenticate to a remote Docker instance.
+gitlab_runner__docker_tls_cert_path: ''
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__docker_image [[[
+#
+# Name of the Docker image to use for containers.
+gitlab_runner__docker_image: 'debian'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__docker_privileged [[[
+#
+# Enable or disable execution of Docker containers in privileged mode.
+gitlab_runner__docker_privileged: False
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__docker_disable_cache [[[
+#
+# Enable or disable use of cache by Docker.
+gitlab_runner__docker_disable_cache: False
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__docker_cache_dir [[[
+#
+# Directory with Docker cache data.
+gitlab_runner__docker_cache_dir: ''
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__docker_cap_add [[[
+#
+# Specify list of POSIX capabilities to add to a container.
+gitlab_runner__docker_cap_add: []
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__docker_cap_drop [[[
+#
+# Specify list of POSIX capabilities to drop from a container.
+gitlab_runner__docker_cap_drop: [ 'NET_ADMIN', 'SYS_ADMIN', 'DAC_OVERRIDE' ]
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__docker_devices [[[
+#
+# List of devices to add to a Docker container.
+gitlab_runner__docker_devices: []
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__docker_extra_hosts [[[
+#
+# List of additional :file:`/etc/hosts` entries to set in a Docker container.
+gitlab_runner__docker_extra_hosts: []
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__docker_links [[[
+#
+# List of other containers to link to a given container.
+gitlab_runner__docker_links: []
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__docker_services [[[
+#
+# List of other services enabled in a container.
+gitlab_runner__docker_services: []
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__docker_volumes [[[
+#
+# List of volumes mounted in a container.
+gitlab_runner__docker_volumes: []
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__docker_allowed_images [[[
+#
+# Specify a wildcard list of images which can be listed in a :file:`.gitlab-ci.yml`
+# file and are allowed to be used.
+gitlab_runner__docker_allowed_images: []
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__docker_allowed_services [[[
+#
+# Specify a wildcard list of services which can be listed in
+# a :file:`.gitlab-ci.yml` file and are allowed to be used.
+gitlab_runner__docker_allowed_services: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Docker Machine and autoscaling [[[
+# ----------------------------------
+
+# You should refer to the `GitLab Runner autoscaling documentation <https://gitlab.com/gitlab-org/gitlab-runner/blob/master/docs/configuration/advanced-configuration.md#the-runnersmachine-section>`_
+# for information about what can be configured and what's the specific syntax
+# of each option.
+
+# .. envvar:: gitlab_runner__machine_idle_count [[[
+#
+# Number of machines, that need to be created and waiting in Idle state.
+gitlab_runner__machine_idle_count: '{{ ansible_processor_cores }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__machine_idle_time [[[
+#
+# Time (in seconds) for machine to be in Idle state before it is removed.
+gitlab_runner__machine_idle_time: '600'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__machine_max_builds [[[
+#
+# Builds count after which machine will be removed.
+gitlab_runner__machine_max_builds: '100'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__machine_name [[[
+#
+# Name of the machine. It must contain ``%s``, which will be replaced with
+# a unique machine identifier.
+gitlab_runner__machine_name: 'auto-scale-%s.{{ gitlab_runner__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__machine_driver [[[
+#
+# Docker Machine "driver" to use. You should refer to `Docker Machine
+# documentation <https://docs.docker.com/machine/drivers/>`_ for more
+# information about supported drivers.
+gitlab_runner__machine_driver: 'generic'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__machine_offpeakperiods [[[
+#
+# Autoscale can be configured with the support for Off Peak time mode periods.
+# Time periods when the scheduler is in the OffPeak mode.You should refer
+# to `Gitlab Runner Advanced configuration documentation
+# <https://docs.gitlab.com/runner/configuration/advanced-configuration.html#offpeakperiods-syntax>`_ for more
+# information about OffPeakPeriods syntax.
+gitlab_runner__machine_offpeakperiods: ["* * 0-7,19-23 * * mon-fri *", "* * * * * sat,sun *"]
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__machine_offpeakidlecount [[[
+#
+# Like IdleCount, but for Off Peak time periods.
+gitlab_runner__machine_offpeakidlecount: 0
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__machine_offpeakidletime [[[
+#
+# Like IdleTime, but for Off Peak time mperiods.
+gitlab_runner__machine_offpeakidletime: 1200
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__machine_options [[[
+#
+# List of options to pass to Docker Machine. See the GitLab Runner autoscaling
+# documentation for more details.
+gitlab_runner__machine_options: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Distributed cache configuration [[[
+# -----------------------------------
+
+# You should refer to the `GitLab Runner cache documentation <https://gitlab.com/gitlab-org/gitlab-runner/blob/master/docs/configuration/advanced-configuration.md#the-runnerscache-section>`_
+# for information about what can be configured and what's the specific syntax
+# of each option.
+
+# .. envvar:: gitlab_runner__cache [[[
+#
+# Enable the support for distributed cache.
+gitlab_runner__cache: False
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__cache_type [[[
+#
+# Select the cache type. Currently only ``s3`` is supported.
+gitlab_runner__cache_type: 's3'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__cache_server_address [[[
+#
+# Specify the cache server address.
+gitlab_runner__cache_server_address: ''
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__cache_access_key [[[
+#
+# Specify the cache access key.
+gitlab_runner__cache_access_key: ''
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__cache_secret_key [[[
+#
+# Specify the cache secret key.
+gitlab_runner__cache_secret_key: ''
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__cache_bucket_name [[[
+#
+# Name of the S3 bucket to use for the cache.
+gitlab_runner__cache_bucket_name: ''
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__cache_bucket_location [[[
+#
+# Cache bucket location
+gitlab_runner__cache_bucket_location: ''
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__cache_insecure [[[
+#
+# Enable or disable connections to the S3 service over HTTP instead of HTTPS.
+gitlab_runner__cache_insecure: False
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__cache_shared [[[
+#
+# Enables cache sharing between runners.
+gitlab_runner__cache_shared: False
+
+                                                                   # ]]]
+# .. envvar:: gitlab_runner__run_untagged [[[
+#
+# Enable or disable running untagged jobs.
+gitlab_runner__run_untagged: True
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: gitlab_runner__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+gitlab_runner__keyring__dependent_apt_keys:
+
+  - id: '{{ gitlab_runner__apt_key }}'
+    repo: '{{ gitlab_runner__apt_repo }}'
+    state: '{{ "present" if gitlab_runner__apt_upstream|bool else "absent" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

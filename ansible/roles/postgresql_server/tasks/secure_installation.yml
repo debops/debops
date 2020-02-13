@@ -1,0 +1,49 @@
+---
+
+- name: Update default admin password
+  postgresql_user:
+    name: '{{ item.user | d(postgresql_server__user) }}'
+    password: '{{ item.admin_password | d(postgresql_server__admin_password) }}'
+    encrypted: True
+    port: '{{ item.port }}'
+    state: 'present'
+  with_flattened:
+    - '{{ postgresql_server__clusters }}'
+  become: True
+  become_user: '{{ item.user | d(postgresql_server__user) }}'
+  when:
+    - item.name|d()
+    - item.standby is not defined
+  no_log: True
+
+- name: Grant connect on postgres to PUBLIC
+  postgresql_privs:
+    database: 'postgres'
+    port: '{{ item.port }}'
+    role: 'PUBLIC'
+    type: 'database'
+    privs: 'CONNECT'
+    state: 'present'
+  with_flattened:
+    - '{{ postgresql_server__clusters }}'
+  become: True
+  become_user: '{{ item.user | d(postgresql_server__user) }}'
+  when:
+    - item.name|d()
+    - item.standby is not defined
+
+- name: Revoke temporary on postgres from PUBLIC
+  postgresql_privs:
+    database: 'postgres'
+    port: '{{ item.port }}'
+    role: 'PUBLIC'
+    type: 'database'
+    privs: 'TEMPORARY'
+    state: 'absent'
+  with_flattened:
+    - '{{ postgresql_server__clusters }}'
+  become: True
+  become_user: '{{ item.user | d(postgresql_server__user) }}'
+  when:
+    - item.name|d()
+    - item.standby is not defined

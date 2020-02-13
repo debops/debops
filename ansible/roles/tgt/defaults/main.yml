@@ -1,0 +1,99 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _tgt__ref_defaults:
+
+# debops.tgt default variables
+# ============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# TGT configuration [[[
+# ---------------------
+
+# .. envvar:: tgt_packages [[[
+#
+# List of packages installed for iSCSI Target support.
+tgt_packages: [ 'tgt' ]
+
+                                                                   # ]]]
+# .. envvar:: tgt_iqn_date [[[
+#
+# Year and month when the Naming Authority of this iSCSI host was estabilished.
+tgt_iqn_date: '{{ ansible_date_time.year + "-" + ansible_date_time.month }}'
+
+                                                                   # ]]]
+# .. envvar:: tgt_iqn_authority [[[
+#
+# DNS domain name of the Naming Authority responsible for this iSCSI Target.
+tgt_iqn_authority: '{{ ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: tgt_iqn_base [[[
+#
+# iSCSI Qualified Name of this iSCSI Target host, will be saved in Ansible
+# local facts to prevent changes related to the default date field.
+tgt_iqn_base: '{{ (ansible_local.tgt.iqn_base
+                   if (ansible_local|d() and ansible_local.tgt|d() and
+                       ansible_local.tgt.iqn_base|d())
+                   else ("iqn." + tgt_iqn_date + "." +
+                         tgt_iqn_authority.split(".")[::-1] | join("."))) }}'
+
+                                                                   # ]]]
+# .. envvar:: tgt_allow [[[
+#
+# List of IP addresses or CIDR networks which will be allowed to connect to
+# ``iscsi-target`` service through the firewall. If none are specified,
+# connections can be initiated from anywhere.
+tgt_allow: []
+
+                                                                   # ]]]
+# .. envvar:: tgt_options [[[
+#
+# Global ``tgt`` options specified as a YAML text block
+tgt_options: ''
+
+                                                                   # ]]]
+# .. envvar:: tgt_targets [[[
+#
+# List of iSCSI Targets configured on this host. See :ref:`tgt_targets` for
+# more details.
+tgt_targets: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: tgt__apt_preferences__dependent_list [[[
+#
+# Configuration for the :ref:`debops.apt_preferences` role.
+tgt__apt_preferences__dependent_list:
+
+  - package: 'librdmacm1'
+    backports: [ 'wheezy' ]
+    reason:  'Required by tgt packages from wheezy-backports'
+    by_role: 'debops.tgt'
+
+  - package: 'tgt tgt-*'
+    backports: [ 'wheezy' ]
+    reason:  'Many bugfixes and improvements since original Wheezy release'
+    by_role: 'debops.tgt'
+
+                                                                   # ]]]
+# .. envvar:: tgt__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+tgt__ferm__dependent_rules:
+
+  - type: 'accept'
+    dport: [ 'iscsi-target' ]
+    saddr: '{{ tgt_allow }}'
+    accept_any: True
+    filename: 'tgt_dependency_accept'
+    weight: '50'
+                                                                   # ]]]
+                                                                   # ]]]

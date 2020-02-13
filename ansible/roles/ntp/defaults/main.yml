@@ -1,0 +1,311 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _ntp__ref_defaults:
+
+# debops.ntp default variables [[[
+# ================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Global options [[[
+# ------------------
+
+# .. envvar:: ntp__daemon_enabled [[[
+#
+# If ``True``, role will install and configure an NTP daemon. The daemon is not
+# required in containerized environments, where the host takes care for setting
+# time accurately.
+ntp__daemon_enabled: '{{ "True" if (ntp__daemon|d() and ansible_local|d() and
+                                    (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
+                                     (ansible_local.cap12s.enabled | bool and
+                                      "cap_sys_time" in ansible_local.cap12s.list))))
+                                else "False" }}'
+
+                                                                   # ]]]
+# .. envvar:: ntp__daemon [[[
+#
+# Which clock management daemon/program should be setup?
+#
+# Choices (string):
+#
+# - chrony
+# - ntpdate
+# - ntpd
+# - openntpd
+# - systemd-timesyncd
+#
+# Set to ``False`` to disable clock management.
+ntp__daemon: '{{ (ansible_local.ntp.daemon
+                  if (ansible_local|d() and ansible_local.ntp|d() and
+                      ansible_local.ntp.daemon|d())
+                  else ("systemd-timesyncd"
+                        if (ansible_distribution == "Ubuntu" and
+                            ansible_service_mgr == "systemd")
+                        else "openntpd")) }}'
+
+                                                                   # ]]]
+# .. envvar:: ntp__ignore_ntpdate [[[
+#
+# Don't uninstall ``ntpdate`` package if it's installed. Be aware that
+# ``ntpdate-debian`` script is executed each time a network interface is
+# brought up. This might result in unexpected time jumps forward or backward.
+ntp__ignore_ntpdate: False
+
+                                                                   # ]]]
+# .. envvar:: ntp__servers [[[
+#
+# List of NTP servers to synchronize with
+# If you use :program:`ntpd`, you can add server options in server strings, for example::
+#
+#     ntp__servers:
+#       - '0.debian.pool.ntp.org iburst minpoll 6 maxpoll 10'
+#
+# If you're syncing against local servers, recommended options are:
+# 'burst iburst minpoll 4 maxpoll 4', where:
+#
+# ``burst`` and ``iburst``:
+#   Get a time sync as fast as possible by sending 8 sync queries with 2 second
+#   interval. (Beware though, this is considered as an abuse on public servers!)
+#
+# ``minpoll``, ``maxpoll``:
+#   Min/max interval for sync queries to be sent in normal operation mode. It's
+#   defined in seconds as a power of two:
+#
+#   * 4 -- 16 seconds (minimal allowed)
+#   * 5 -- 32 seconds
+#   * 6 -- 64 seconds
+#
+#   and so on.
+#
+ntp__servers: '{{ (ntp__servers_map[ansible_distribution][1]
+                   | d(ntp__servers_map["default"][1]))
+                   if (ntp__daemon in ["chrony"])
+                   else ntp__servers_map[ansible_distribution]
+                        | d(ntp__servers_map["default"]) }}'
+
+                                                                   # ]]]
+# .. envvar:: ntp__servers_map [[[
+#
+# YAML dictionary with different NTP server lists depending on OS distribution.
+ntp__servers_map:
+  'Debian':  [ '0.debian.pool.ntp.org', '1.debian.pool.ntp.org',
+               '2.debian.pool.ntp.org', '3.debian.pool.ntp.org' ]
+  'Ubuntu':  [ '0.ubuntu.pool.ntp.org', '1.ubuntu.pool.ntp.org',
+               '2.ubuntu.pool.ntp.org', '3.ubuntu.pool.ntp.org' ]
+  'default': [ '0.pool.ntp.org', '1.pool.ntp.org',
+               '2.pool.ntp.org', '3.pool.ntp.org' ]
+
+                                                                   # ]]]
+# .. envvar:: ntp__fudge [[[
+#
+# :program:`ntpd` specific.
+# Fudge local clock if time servers is not available.
+ntp__fudge: True
+
+                                                                   # ]]]
+# .. envvar:: ntp__servers_as_pool [[[
+#
+# Treat NTP server addresses as pool addresses. The server name is expected
+# to resolve to multiple IP addresses which might change over time. This is
+# currently only supported by :program:`chrony`. Other NTP servers will
+# ignore this setting.
+ntp__servers_as_pool: '{{ False if ansible_distribution == "Debian"
+                                   and ansible_distribution_release == "jessie"
+                          else True }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: ntp__base_packages [[[
+#
+# List of APT packages to install for NTP support.
+ntp__base_packages:
+  - '{{ "chrony"   if (ntp__daemon == "chrony")   else [] }}'
+  - '{{ "ntp"      if (ntp__daemon == "ntpd")     else [] }}'
+  - '{{ "openntpd" if (ntp__daemon == "openntpd") else [] }}'
+  - '{{ "ntpdate"  if (ntp__daemon == "ntpdate")  else [] }}'
+
+
+                                                                   # ]]]
+# .. envvar:: ntp__packages [[[
+#
+# List of additional APT packages to install with NTP support.
+ntp__packages: []
+
+                                                                   # ]]]
+# .. envvar:: ntp__purge_packages [[[
+#
+# List of APT packages to purge during NTP configuration to avoid issues with
+# conflicting services.
+ntp__purge_packages:
+  - '{{ "chrony"   if (ntp__daemon != "chrony")                  else [] }}'
+  - '{{ "ntp"      if (ntp__daemon not in [ "ntpd", "openntpd"]) else [] }}'
+  - '{{ "openntpd" if (ntp__daemon != "openntpd")                else [] }}'
+  - '{{ "ntpdate"  if (ntp__daemon != "ntpdate" and
+                       not ntp__ignore_ntpdate|bool)             else [] }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Timezone configuration [[[
+# --------------------------
+
+# .. envvar:: ntp__timezone [[[
+#
+# Specify timezone in the format of 'Area/Zone'. Use :command:`timedatectl
+# list-timezones` to see a list of possible values. To set the UTC timezone,
+# specify it as 'Etc/UTC'.
+# If this variable is empty or set to ``False``, the timezone won't be changed.
+ntp__timezone: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# OpenNTPd configuration [[[
+# --------------------------
+
+# .. envvar:: ntp__openntpd_options [[[
+#
+# Set the ``openntpd`` daemon options.
+ntp__openntpd_options: '-f /etc/openntpd/ntpd.conf -s'
+                                                                   # ]]]
+                                                                   # ]]]
+# Network accessibility [[[
+# -------------------------
+
+# .. envvar:: ntp__listen [[[
+#
+# List of interfaces :program:`ntpd` should listen on.
+# Specify ``ntp__listen: '*'`` to listen on all interfaces.
+#
+# The :program:`chrony` service only supports one listen interface for each of
+# the IPv4 and IPv6 protocols. It must be specified as an IP address.
+ntp__listen: []
+
+                                                                   # ]]]
+# .. envvar:: ntp__firewall_access [[[
+#
+# Enable or disable access to NTP through the firewall.
+ntp__firewall_access: False
+
+                                                                   # ]]]
+# .. envvar:: ntp__allow [[[
+#
+# List of hosts/networks in CIDR format to allow access to the NTP port by the
+# firewall. If this list is set to ``False``, access will be allowed from
+# anywhere. You should probably define a list of networks allowed access to
+# mitigate NTP amplification attacks.
+ntp__allow: []
+
+                                                                   # ]]]
+# .. envvar:: ntp__ferm_chain [[[
+#
+# Name of the :command:`iptables` chain to use for filtering NTP connections.
+ntp__ferm_chain: 'filter-ntp'
+
+                                                                   # ]]]
+# .. envvar:: ntp__ferm_weight [[[
+#
+# Weight of the ``debops.ntp`` firewall rules, determines the order of the
+# configuration files.
+ntp__ferm_weight: '40'
+
+                                                                   # ]]]
+# .. envvar:: ntp__ferm_recent_seconds [[[
+#
+# Time window which firewall checks to filter too many connections, specified
+# in seconds.
+ntp__ferm_recent_seconds: '{{ (60 * 60) }}'
+
+                                                                   # ]]]
+# .. envvar:: ntp__ferm_recent_hitcount [[[
+#
+# Maximum number of new connections from a host in the specified time window.
+ntp__ferm_recent_hitcount: 5
+
+                                                                   # ]]]
+# .. envvar:: ntp__ferm_recent_target [[[
+#
+# Specify what the firewall should do with packets that exceed the allowed
+# limits. You can use ``DROP`` (recommended), ``REJECT`` (high risk of
+# reflection attacks) or specify name of an :command:`iptables` chain to
+# further process the packet(s).
+ntp__ferm_recent_target: 'DROP'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: ntp__ferm__dependent_rules [[[
+#
+# Configuration of the Linux firewall using :ref:`debops.ferm`.
+ntp__ferm__dependent_rules:
+
+  - type: 'accept'
+    dport: [ 'ntp' ]
+    protocol: 'udp'
+    weight: '{{ ntp__ferm_weight }}'
+    role: 'ntp'
+    role_weight: '10'
+    name: 'jump-filter-ntp'
+    target: '{{ ntp__ferm_chain }}'
+    rule_state: '{{ "present" if (
+                      ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
+                      ntp__firewall_access|bool)
+                    else "absent" }}'
+
+  - chain: '{{ ntp__ferm_chain }}'
+    type: 'recent'
+    dport: [ 'ntp' ]
+    protocol: 'udp'
+    saddr: '{{ ntp__allow }}'
+    weight: '{{ ntp__ferm_weight }}'
+    role: 'ntp'
+    role_weight: '20'
+    name: 'mark'
+    subchain: False
+    recent_set_name: 'ntp-new'
+    recent_log: False
+    rule_state: '{{ "present" if (
+                      ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
+                      ntp__firewall_access|bool)
+                    else "absent" }}'
+
+  - chain: '{{ ntp__ferm_chain }}'
+    type: 'recent'
+    dport: [ 'ntp' ]
+    protocol: [ 'udp' ]
+    weight: '{{ ntp__ferm_weight }}'
+    role: 'ntp'
+    role_weight: '30'
+    name: 'filter'
+    subchain: False
+    recent_name: 'ntp-new'
+    recent_update: True
+    recent_seconds: '{{ ntp__ferm_recent_seconds }}'
+    recent_hitcount: '{{ ntp__ferm_recent_hitcount }}'
+    recent_target: '{{ ntp__ferm_recent_target }}'
+    recent_log_prefix: 'ipt-recent-ntp: '
+    rule_state: '{{ "present" if (
+                      ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
+                      ntp__firewall_access|bool)
+                    else "absent" }}'
+
+  - chain: '{{ ntp__ferm_chain }}'
+    type: 'accept'
+    dport: [ 'ntp' ]
+    protocol: 'udp'
+    state: 'NEW'
+    saddr: '{{ ntp__allow }}'
+    weight: '{{ ntp__ferm_weight }}'
+    role: 'ntp'
+    role_weight: '40'
+    rule_state: '{{ "present" if (
+                      ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
+                      ntp__firewall_access|bool)
+                    else "absent" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

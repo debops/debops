@@ -1,0 +1,55 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+import os
+import subprocess
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+output = loads("""{{ ({'enabled':  python__enabled | bool,
+                       'enabled2': python__v2      | bool,
+                       'enabled3': python__v3      | bool,
+                       'configured': (True
+                                      if (ansible_local|d() and
+                                          ansible_local.python|d() and
+                                          (ansible_local.python.configured
+                                           is defined))
+                                      else False)
+                     }) | to_nice_json }}""")
+
+output['installed2'] = cmd_exists('python2')
+output['installed3'] = cmd_exists('python3')
+
+if output['installed2']:
+    try:
+        # If this hack breaks in any way, switch to the platform module.
+        # Check the git log for an implementation.
+        output['version2'] = subprocess.check_output(
+            ['python2', '--version'],
+            stderr=subprocess.STDOUT
+        ).strip().split(' ')[-1]
+    except Exception:
+        pass
+
+if output['installed3']:
+    try:
+        # If this hack breaks in any way, switch to the platform module.
+        # Check the git log for an implementation.
+        output['version3'] = subprocess.check_output(
+            ['python3', '--version'],
+            stderr=subprocess.STDOUT
+        ).strip().split(' ')[-1]
+    except Exception:
+        pass
+
+print(dumps(output, sort_keys=True, indent=4))

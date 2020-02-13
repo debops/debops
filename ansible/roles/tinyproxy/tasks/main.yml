@@ -1,0 +1,59 @@
+---
+
+- import_role:
+    name: 'ansible_plugins'
+
+- name: Install required APT packages
+  package:
+    name: '{{ q("flattened", tinyproxy__base_packages
+                             + tinyproxy__packages) }}'
+    state: 'present'
+  register: tinyproxy__register_packages
+  until: tinyproxy__register_packages is succeeded
+  notify: [ 'Restart tinyproxy' ]
+
+- name: Create required UNIX system group
+  group:
+    name: '{{ tinyproxy__group }}'
+    state: 'present'
+    system: True
+
+- name: Make sure that required UNIX account exists
+  user:
+    name: '{{ tinyproxy__user }}'
+    group: '{{ tinyproxy__group }}'
+    home: '{{ tinyproxy__home }}'
+    comment: 'Tinyproxy daemon'
+    shell: '/bin/false'
+    state: 'present'
+    system: True
+
+- name: Divert the original tinyproxy configuration file
+  dpkg_divert:
+    path: '{{ tinyproxy__configuration_file }}'
+    state: 'present'
+    delete: True
+
+- name: Generate tinyproxy configuration
+  template:
+    src: 'etc/tinyproxy/tinyproxy.conf.j2'
+    dest: '{{ tinyproxy__configuration_file }}'
+    mode: '0644'
+  notify: [ 'Restart tinyproxy' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save Tinyproxy local facts
+  template:
+    src: 'etc/ansible/facts.d/tinyproxy.fact.j2'
+    dest: '/etc/ansible/facts.d/tinyproxy.fact'
+    mode: '0755'
+  register: tinyproxy__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: tinyproxy__register_facts is changed

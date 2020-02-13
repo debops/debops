@@ -1,0 +1,64 @@
+---
+
+- name: Manage LXD service
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_lxd' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: resolvconf
+      tags: [ 'role::resolvconf', 'skip::resolvconf' ]
+      resolvconf__enabled: True
+
+    - role: root_account
+      tags: [ 'role::root_account', 'skip::root_account' ]
+
+    - role: keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::golang' ]
+      keyring__dependent_gpg_user: '{{ golang__keyring__dependent_gpg_user }}'
+      keyring__dependent_gpg_keys:
+        - '{{ golang__keyring__dependent_gpg_keys }}'
+      golang__dependent_packages:
+        - '{{ lxd__golang__dependent_packages }}'
+
+    - role: apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ golang__apt_preferences__dependent_list }}'
+
+    - role: golang
+      tags: [ 'role::golang', 'skip::golang' ]
+      golang__dependent_packages:
+        - '{{ lxd__golang__dependent_packages }}'
+
+    - role: logrotate
+      tags: [ 'role::logrotate', 'skip::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ lxd__logrotate__dependent_config }}'
+
+    - role: sysctl
+      tags: [ 'role::sysctl', 'skip::sysctl' ]
+      sysctl__dependent_parameters:
+        - '{{ lxd__sysctl__dependent_parameters }}'
+
+    - role: lxd
+      tags: [ 'role::lxd', 'skip::lxd' ]
+
+# If a host has 'debops.dnsmasq' or 'debops.unbound' roles configured, execute
+# its playbook in case that configuration applied by the 'lxd' role needs to be
+# applied to 'dnsmasq' or 'unbound' services. This should ensure that the
+# '*.lxd' subdomain for internal LXD containers is resolvable on the LXD host.
+#
+# If the host is not in the Ansible inventory groups required by the
+# 'dnsmasq.yml' or the 'unbound.yml' playbooks, this should not impact
+# anything.
+
+- import_playbook: 'dnsmasq.yml'
+
+- import_playbook: 'unbound.yml'

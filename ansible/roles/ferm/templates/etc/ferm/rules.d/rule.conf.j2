@@ -1,0 +1,602 @@
+# {{ ansible_managed }}
+{% import 'templates/import/debops__tpl_macros.j2' as debops__tpl_macros with context %}
+
+{% macro print_list(elements, prefix='', postfix='') %}{% if elements | length == 1 %}{{ ((prefix + ' ') if prefix else '') + elements | join(' ') + ((' ' + postfix) if postfix else '') }}{% else %}{{ ((prefix + ' ') if prefix else '') + '(' + (elements | join(' ')) + ')' + ((' ' + postfix) if postfix else '') }}{% endif %}{% endmacro %}
+{% macro print_rule(config) %}
+{#   Domain, table, chain #}
+{#   ==================== #}
+{%   set ferm__tpl_config = {
+  'type': 'accept',
+  'domain_args': [],
+  'target': 'ACCEPT',
+  'hashlimit_target': 'RETURN',
+  'recent_target': 'NOP',
+  'reject_with': 'icmp-admin-prohibited',
+  'saddr': [],
+  'daddr': [],
+  'sport': [],
+  'dport': []
+} %}
+{%   if config.comment|d() %}
+{%     set _ = ferm__tpl_config.update({'comment': config.comment }) %}
+{%   endif %}
+{%   if config.type|d() %}
+{%     set _ = ferm__tpl_config.update({'type': config.type }) %}
+{%   endif %}
+{%   set _ = ferm__tpl_config.update({'domain': (debops__tpl_macros.flattened(config.domain|d(config.domains|d(ferm__domains))) | from_json) }) %}
+{%   if ferm__tpl_config['type'] != 'dmz' %}
+{%     set _ = ferm__tpl_config.update({'table': (debops__tpl_macros.flattened(config.table|d(config.tables|d('filter'))) | from_json) }) %}
+{%     set _ = ferm__tpl_config.update({'chain': (debops__tpl_macros.flattened(config.chain|d(config.chains|d('INPUT'))) | from_json) }) %}
+{%   endif %}
+{%   if ferm__tpl_config['domain']|d() %}
+{%     set _ = ferm__tpl_config['domain_args'].append(print_list(ferm__tpl_config['domain'], prefix='domain')) %}
+{%   endif %}
+{%   if ferm__tpl_config['table']|d() %}
+{%     set _ = ferm__tpl_config['domain_args'].append(print_list(ferm__tpl_config['table'], prefix='table')) %}
+{%   endif %}
+{%   if ferm__tpl_config['chain']|d() %}
+{%     set _ = ferm__tpl_config['domain_args'].append(print_list(ferm__tpl_config['chain'], prefix='chain')) %}
+{%   endif %}
+{#   Rule arguments #}
+{#   ============== #}
+{%   if config.saddr|d() %}
+{%     set _ = ferm__tpl_config['saddr'].extend(([ config.saddr ] if config.saddr is string else config.saddr)) %}
+{%   endif %}
+{%   if config.daddr|d() %}
+{%       set _ = ferm__tpl_config['daddr'].extend(([ config.daddr ] if config.daddr is string else config.daddr)) %}
+{%   endif %}
+{%   if config.sport|d() %}
+{%       set _ = ferm__tpl_config['sport'].extend(([ config.sport ] if config.sport is string else config.sport)) %}
+{%   endif %}
+{%   if config.dport|d() %}
+{%       set _ = ferm__tpl_config['dport'].extend(([ config.dport ] if config.dport is string else config.dport)) %}
+{%   endif %}
+{%   if config.recent_name|d() %}
+{%     set _ = ferm__tpl_config.update({'recent_name': config.recent_name}) %}
+{%   elif config.recent_set_name|d() %}
+{%     set _ = ferm__tpl_config.update({'recent_set_name': config.recent_set_name}) %}
+{%   endif %}
+{%   if config.recent_update|d() and config.recent_update | bool %}
+{%     set _ = ferm__tpl_config.update({'recent_update': True}) %}
+{%   endif %}
+{%   if config.recent_remove|d() and config.recent_remove | bool %}
+{%     set _ = ferm__tpl_config.update({'recent_remove': True}) %}
+{%   endif %}
+{%   if config.recent_seconds|d() %}
+{%     set _ = ferm__tpl_config.update({'recent_seconds': config.recent_seconds | string}) %}
+{%   endif %}
+{%   if config.recent_hitcount|d() %}
+{%     set _ = ferm__tpl_config.update({'recent_hitcount': config.recent_hitcount | string}) %}
+{%   endif %}
+{%   if config.recent_target|d() %}
+{%     set _ = ferm__tpl_config.update({'recent_target': config.recent_target}) %}
+{%   endif %}
+{%   if config.snat_ip|d() %}
+{%     set _ = ferm__tpl_config.update({'snat_ip': config.snat_ip}) %}
+{%   endif %}
+{%   if config.subchain|d() %}
+{%     set _ = ferm__tpl_config.update({'subchain': (ferm__tpl_config['type'] + "-" + config.name | d((ferm__tpl_config['dport'][0] if ferm__tpl_config['dport']|d() else "rules")))}) %}
+{%   endif %}
+{%   set _ = ferm__tpl_config.update({'interface': (debops__tpl_macros.flattened(config.interface|d(config.interfaces)) | from_json) }) %}
+{%   if ferm__tpl_config['type'] == 'connection_tracking' %}
+{%     set _ = ferm__tpl_config.update({'tracking_invalid_target': (config.tracking_invalid_target | d('DROP'))}) %}
+{%     set _ = ferm__tpl_config.update({'tracking_active_target':  (config.tracking_active_target  | d('ACCEPT'))}) %}
+{%     set _ = ferm__tpl_config.update({'tracking_module': (config.tracking_module | d('conntrack'))}) %}
+{%     if ferm__tpl_config['tracking_module'] == 'state' %}
+{%       set _ = ferm__tpl_config.update({'tracking_module_command': 'mod state state'}) %}
+{%     else %}
+{%       set _ = ferm__tpl_config.update({'tracking_module_command': 'mod conntrack ctstate'}) %}
+{%     endif %}
+{%   endif %}
+{%   if ferm__tpl_config['type'] == 'dmz' %}
+{%     if config.public_ip|d() %}
+{%       set _ = ferm__tpl_config.update({'public_ip': ([ config.public_ip ] if config.public_ip is string else config.public_ip) }) %}
+{%     endif %}
+{%     if config.private_ip|d() %}
+{%       set _ = ferm__tpl_config.update({'private_ip': ([ config.private_ip ] if config.private_ip is string else config.private_ip) }) %}
+{%     endif %}
+{%     if config.port|d() or config.ports|d() %}
+{%       set _ = ferm__tpl_config.update({'dmz_ports': (debops__tpl_macros.flattened(config.port|d(config.ports))) | from_json }) %}
+{%       if ferm__tpl_config['dport'] == [] %}
+{%          set _ = ferm__tpl_config['dport'].extend(ferm__tpl_config['dmz_ports']) %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{%   for interface in (debops__tpl_macros.flattened(config.interface_present|d(config.interfaces_present)) | from_json) %}
+{%     if hostvars[inventory_hostname]["ansible_" + interface]|d() %}
+{%       set _ = ferm__tpl_config.update({'interface_present': [ interface ] }) %}
+{%     endif %}
+{%   endfor %}
+{%   if config.outerface|d() or config.outerfaces|d() %}
+{%     set _ = ferm__tpl_config.update({'outerface': (debops__tpl_macros.flattened(config.outerface|d(config.outerfaces)) | from_json) }) %}
+{%   endif %}
+{%   for outerface in (debops__tpl_macros.flattened(config.outerface_present|d(config.outerfaces_present)) | from_json) %}
+{%     if hostvars[inventory_hostname]["ansible_" + outerface]|d() %}
+{%       set _ = ferm__tpl_config.update({'outerface_present': [ outerface ] }) %}
+{%     endif %}
+{%   endfor %}
+{%   if config.protocol|d() or config.protocols|d() %}
+{%     set _ = ferm__tpl_config.update({'protocol': (debops__tpl_macros.flattened(config.protocol|d(config.protocols)) | from_json) }) %}
+{%   endif %}
+{%   if config.protocol_syn|d() %}
+{%     if config.protocol_syn | bool %}
+{%       set _ = ferm__tpl_config.update({'protocol_syn': [ 'syn' ] }) %}
+{%     elif not config.protocol_syn | bool %}
+{%       set _ = ferm__tpl_config.update({'protocol_syn': [ '! syn' ] }) %}
+{%     endif %}
+{%   endif %}
+{%   if ferm__tpl_config['type'] == 'ansible_controller' %}
+{%     set ferm__tpl_ansible_controllers = [] %}
+{%     if ansible_local|d() and ansible_local.core|d() and ansible_local.core.ansible_controllers|d() %}
+{%       set _ = ferm__tpl_ansible_controllers.extend(ansible_local.core.ansible_controllers) %}
+{%     endif %}
+{%     if ansible_local|d() and ansible_local.ferm|d() and ansible_local.ferm.ansible_controllers|d() %}
+{%       set _ = ferm__tpl_ansible_controllers.extend(ansible_local.ferm.ansible_controllers) %}
+{%     endif %}
+{%     if ferm__ansible_controllers|d() %}
+{%       set _ = ferm__tpl_ansible_controllers.extend(([ ferm__ansible_controllers ] if ferm__ansible_controllers is string else ferm__ansible_controllers)) %}
+{%     endif %}
+{%     if config.ansible_controller|d() %}
+{%       set _ = ferm__tpl_ansible_controllers.extend(([ config.ansible_controller ] if config.ansible_controller is string else config.ansible_controller)) %}
+{%     elif config.ansible_controllers|d() %}
+{%       set _ = ferm__tpl_ansible_controllers.extend(([ config.ansible_controllers ] if config.ansible_controllers is string else config.ansible_controllers)) %}
+{%     endif %}
+{%     if ferm__tpl_ansible_controllers %}
+{%       set _ = ferm__tpl_config['saddr'].extend(ferm__tpl_ansible_controllers) %}
+{%     endif %}
+{%   endif %}
+{%   if config.state|d() %}
+{%       set _ = ferm__tpl_config.update({'state': ([ config.state ] if config.state is string else config.state) }) %}
+{%   endif %}
+{%   if config.target|d() %}
+{%     set _ = ferm__tpl_config.update({'target': config.target}) %}
+{%   endif %}
+{%   if config.hashlimit_target|d() %}
+{%     set _ = ferm__tpl_config.update({'hashlimit_target': config.hashlimit_target}) %}
+{%   endif %}
+{%   if config.reject_with|d() %}
+{%     set _ = ferm__tpl_config.update({'reject_with': config.reject_with}) %}
+{%   endif %}
+{%   if config.subchain is defined %}
+{%     if config.subchain | bool %}
+{%       set _ = ferm__tpl_config.update({'subchain': config.subchain}) %}
+{%     else %}
+{%       if config.hashlimit|d() %}
+{%         set _ = ferm__tpl_config.update({'subchain': (ferm__tpl_config['type'] + "-" + config.hashlimit_name | d(config.name | d(rule_name)))}) %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{%   if config.hashlimit|d() %}
+{%     set _ = ferm__tpl_config.update({'subchain': (ferm__tpl_config['type'] + "-" + config.hashlimit_name | d(config.name | d(rule_name)))}) %}
+{%   endif %}
+{%   if config.limit|d() %}
+{%     set _ = ferm__tpl_config.update({'limit': config.limit}) %}
+{%     if config.limit_burst|d() %}
+{%       set _ = ferm__tpl_config.update({'limit_burst': config.limit_burst}) %}
+{%     endif %}
+{%   endif %}
+{%   if ferm__tpl_config['type'] == 'log' %}
+{%     set _ = ferm__tpl_config.update({'log_target': 'LOG'}) %}
+{%   endif %}
+{%   if config.log_target|d() %}
+{%     set _ = ferm__tpl_config.update({'log_target': config.log_target}) %}
+{%   endif %}
+{%   if config.log_limit|d() %}
+{%     set _ = ferm__tpl_config.update({'limit': config.log_limit}) %}
+{%   endif %}
+{%   if config.log_burst|d() %}
+{%     set _ = ferm__tpl_config.update({'limit_burst': config.log_burst}) %}
+{%   endif %}
+{%   if config.log_ip_options|d() %}
+{%     set _ = ferm__tpl_config.update({'log_ip_options': config.log_ip_options | bool}) %}
+{%   endif %}
+{%   if config.log_tcp_options|d() %}
+{%     set _ = ferm__tpl_config.update({'log_tcp_options': config.log_tcp_options | bool}) %}
+{%   endif %}
+{%   if config.log_tcp_sequence|d() %}
+{%     set _ = ferm__tpl_config.update({'log_tcp_sequence': config.log_tcp_sequence | bool}) %}
+{%   endif %}
+{%   if config.log_prefix|d() %}
+{%     set _ = ferm__tpl_config.update({'log_prefix': config.log_prefix}) %}
+{%   endif %}
+{%   if config.log_level|d() %}
+{%     set _ = ferm__tpl_config.update({'log_level': config.log_level}) %}
+{%   endif %}
+{%   set ferm__tpl_log_args = [] %}
+{%   if ferm__tpl_config['type'] == 'log' %}
+{%     if ferm__tpl_config['log_target'] == 'LOG' %}
+{%       if ferm__tpl_config['log_ip_options']|d() and ferm__tpl_config['log_ip_options']|bool %}
+{%         set _ = ferm__tpl_log_args.append('log-ip-options') %}
+{%       endif %}
+{%       if ferm__tpl_config['log_tcp_options']|d() and ferm__tpl_config['log_tcp_options']|bool %}
+{%         set _ = ferm__tpl_log_args.append('log-tcp-options') %}
+{%       endif %}
+{%       if ferm__tpl_config['log_tcp_sequence']|d() and ferm__tpl_config['log_tcp_sequence']|bool %}
+{%         set _ = ferm__tpl_log_args.append('log-tcp-sequence') %}
+{%       endif %}
+{%       if ferm__tpl_config['log_level']|d() %}
+{%         set _ = ferm__tpl_log_args.append('log-level ' + ferm__tpl_config['log_level']) %}
+{%       endif %}
+{%       if ferm__tpl_config['log_prefix']|d() %}
+{%         set _ = ferm__tpl_log_args.append('log-prefix "' + ferm__tpl_config['log_prefix'] + '"') %}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{%   set ferm__tpl_recent_args = [] %}
+{%   if ferm__tpl_config['recent_name']|d() %}
+{%     set _ = ferm__tpl_recent_args.append('name "' + ferm__tpl_config['recent_name'] + '"') %}
+{%   elif ferm__tpl_config['recent_set_name']|d() %}
+{%     set _ = ferm__tpl_recent_args.append('set name "' + ferm__tpl_config['recent_set_name'] + '"') %}
+{%   endif %}
+{%   if (ferm__tpl_config['recent_update']|d(False)) | bool %}
+{%     set _ = ferm__tpl_recent_args.append('update') %}
+{%   endif %}
+{%   if (ferm__tpl_config['recent_remove']|d(False)) | bool %}
+{%     set _ = ferm__tpl_recent_args.append('remove') %}
+{%   endif %}
+{%   if ferm__tpl_config['recent_seconds']|d() %}
+{%     set _ = ferm__tpl_recent_args.append('seconds ' + ferm__tpl_config['recent_seconds']) %}
+{%   endif %}
+{%   if ferm__tpl_config['recent_hitcount']|d() %}
+{%     set _ = ferm__tpl_recent_args.append('hitcount ' + ferm__tpl_config['recent_hitcount']) %}
+{%   endif %}
+{%   set ferm__tpl_arguments = [] %}
+{%   if ferm__tpl_config['interface']|d() %}
+{%     set _ = ferm__tpl_arguments.append(print_list(ferm__tpl_config['interface'], prefix='interface')) %}
+{%   elif ferm__tpl_config['interface_present']|d() %}
+{%     set _ = ferm__tpl_arguments.append(print_list(ferm__tpl_config['interface_present'], prefix='interface')) %}
+{%   endif %}
+{%   if ferm__tpl_config['outerface']|d() %}
+{%     set _ = ferm__tpl_arguments.append(print_list(ferm__tpl_config['outerface'], prefix='outerface')) %}
+{%   elif ferm__tpl_config['outerface_present']|d() %}
+{%     set _ = ferm__tpl_arguments.append(print_list(ferm__tpl_config['outerface_present'], prefix='outerface')) %}
+{%   endif %}
+{%   if ferm__tpl_config['protocol']|d() %}
+{%     set _ = ferm__tpl_arguments.append(print_list(ferm__tpl_config['protocol'], prefix='protocol')) %}
+{%   elif not ferm__tpl_config['protocol']|d() and (ferm__tpl_config['sport']|d() or ferm__tpl_config['dport']|d()) %}
+{%     set _ = ferm__tpl_arguments.append("protocol tcp") %}
+{%   endif %}
+{%   if ferm__tpl_config['protocol_syn']|d() %}
+{%     set _ = ferm__tpl_arguments.extend(ferm__tpl_config['protocol_syn']) %}
+{%   endif %}
+{%   if ferm__tpl_config['sport']|d() %}
+{%     if config.multiport|d() and config.multiport | bool %}
+{%       if ferm__tpl_config['sport'] | length == 1 %}
+{%         set _ = ferm__tpl_arguments.append("sport " +  ferm__tpl_config['sport'] | join(" ")) %}
+{%       else %}
+{%         set _ = ferm__tpl_arguments.append("mod multiport source-ports (" + ferm__tpl_config['sport'] | join(" ") + ")") %}
+{%       endif %}
+{%     else %}
+{%       set _ = ferm__tpl_arguments.append(print_list(ferm__tpl_config['sport'], prefix='sport')) %}
+{%     endif %}
+{%   endif %}
+{%   if ferm__tpl_config['dport']|d() %}
+{%     if config.multiport|d() and config.multiport | bool %}
+{%       if ferm__tpl_config['dport'] | length == 1 %}
+{%         set _ = ferm__tpl_arguments.append("dport " +  ferm__tpl_config['dport'] | join(" ")) %}
+{%       else %}
+{%         set _ = ferm__tpl_arguments.append("mod multiport destination-ports (" + ferm__tpl_config['dport'] | join(" ") + ")") %}
+{%       endif %}
+{%     else %}
+{%       set _ = ferm__tpl_arguments.append(print_list(ferm__tpl_config['dport'], prefix='dport')) %}
+{%     endif %}
+{%   endif %}
+{%   if ferm__tpl_config['state']|d() %}
+{%       set _ = ferm__tpl_arguments.append(print_list(ferm__tpl_config['state'], prefix='mod state state')) %}
+{%   endif %}
+{%   if ferm__tpl_arguments and ((ferm__tpl_config['saddr']|d([])) | length > 3 or config.hashlimit|d()) %}
+{%     if ferm__tpl_config['subchain']|d() %}
+{%       set _ = ferm__tpl_arguments.append('@subchain "' + ferm__tpl_config['subchain'] + '"') %}
+{%     endif %}
+{%   endif %}
+{%   if ferm__tpl_config['limit']|d() %}
+{%     set _ = ferm__tpl_arguments.append("mod limit limit " + ferm__tpl_config['limit']) %}
+{%     if ferm__tpl_config['limit_burst']|d() %}
+{%       set _ = ferm__tpl_arguments.append("limit-burst " + ferm__tpl_config['limit_burst']) %}
+{%     endif %}
+{%   endif %}
+{# This is where the configuration begins
+   ====================================== #}
+{%   if ferm__tpl_config['comment']|d() %}
+{{ (ferm__tpl_config['comment'] if ferm__tpl_config['comment'] is string else ferm__tpl_config['comment'] | join('\n'))  | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
+{%   endif %}
+{%   if ferm__tpl_config['type'] != 'dmz' %}
+{%     if ferm__tpl_config['domain_args'] %}{{ ferm__tpl_config['domain_args'] | join(" ") }} {% endif %}{
+{%   endif %}
+{%   if ferm__tpl_config['type'] in [ 'policy', 'default_policy' ] %}
+    policy {{ config.policy }};
+{%   elif ferm__tpl_config['type'] == 'include' %}
+    @include "{{ config.include }}";
+{%   elif ferm__tpl_config['type'] == 'connection_tracking' %}
+    {% if ferm__tpl_arguments %}{{ ferm__tpl_arguments | join(" ") }} {% endif %}{
+        {{ ferm__tpl_config['tracking_module_command'] }} INVALID {{ ferm__tpl_config['tracking_invalid_target'] }};
+        {{ ferm__tpl_config['tracking_module_command'] }} (ESTABLISHED RELATED) {{ ferm__tpl_config['tracking_active_target'] }};
+    }
+{%   elif ferm__tpl_config['type'] == 'log' %}
+    {% if ferm__tpl_arguments %}{{ ferm__tpl_arguments | join(" ") }} {% endif %}{
+{% if ferm__tpl_log_args %}
+        {{ ferm__tpl_config['log_target'] }} {{ ferm__tpl_log_args | join(' ') }};
+{% else %}
+        {{ ferm__tpl_config['log_target'] }};
+{% endif %}
+    }
+{%   elif ferm__tpl_config['type'] == 'recent' %}
+    {% if ferm__tpl_arguments %}{{ ferm__tpl_arguments | join(" ") }} {% endif %}{
+
+        mod recent {{ ferm__tpl_recent_args | join(" ") }} {
+{%     if ((config.recent_log is undefined or config.recent_log | bool) and ferm__log | bool) %}
+
+            &log("{{ config.recent_log_prefix | d('ipt-recent-' + config.recent_name | d(config.recent_set_name) + ': ') }}");
+{%     endif %}
+{%     if ferm__tpl_config['recent_target'] %}
+{%       if ferm__tpl_config['recent_target'] not in [ 'ACCEPT', 'DROP', 'REJECT', 'RETURN', 'NOP' ] %}
+{%         if config.include|d() %}
+
+            @include "{{ config.include }}";
+{%         elif config.realgoto is undefined or not config.realgoto | bool %}
+
+            jump "{{ ferm__tpl_config['recent_target'] }}";
+{%         elif config.realgoto|d() and config.realgoto | bool %}
+
+            realgoto "{{ ferm__tpl_config['recent_target'] }}";
+{%         endif %}
+{%       elif ferm__tpl_config['recent_target'] in [ 'REJECT' ] %}
+
+            REJECT reject-with {{ ferm__tpl_config['reject_with'] }};
+{%       else %}
+
+            {{ ferm__tpl_config['recent_target'] }};
+{%       endif %}
+{%     endif %}
+        }
+    }
+{%   elif ferm__tpl_config['type'] == 'reject' %}
+    protocol udp REJECT reject-with icmp-port-unreachable;
+    protocol tcp REJECT reject-with tcp-reset;
+    @if @eq($DOMAIN, ip) {
+        REJECT reject-with icmp-proto-unreachable;
+    }
+    @if @eq($DOMAIN, ip6) {
+        REJECT;
+    }
+{%   elif ferm__tpl_config['type'] in [ 'custom', 'raw' ] %}
+{%     if ferm__tpl_config['domain_args'] %}{{ ferm__tpl_config['domain_args'] | join(" ") + " {" }}
+{%     endif %}
+{%     if config.rules|d() %}
+{%       if ferm__tpl_config['domain_args'] %}
+{{ config.rules | indent(4,true) }}
+{%       else %}
+{{ config.rules }}
+{%       endif %}
+{%     endif %}
+{%     if ferm__tpl_config['domain_args'] %}}{% endif %}
+{%   elif ferm__tpl_config['type'] == 'dmz' %}
+{%     if ferm__tpl_config['domain_args'] %}{{ ferm__tpl_config['domain_args'] | join(" ") }} {% endif %}{
+{%       if ferm__tpl_config['interface']|d() %}
+    @def $PUBLIC_IF  = ({{ ferm__tpl_config['interface']  | unique | join(' ') }});
+{%       endif %}
+{%       if ferm__tpl_config['public_ip']|d() %}
+    @def $PUBLIC_IP  = ( @ipfilter( ({{ ferm__tpl_config['public_ip']  | unique | join(' ') }}) ) );
+{%       endif %}
+    @def $PRIVATE_IP = ( @ipfilter( ({{ ferm__tpl_config['private_ip'] | unique | join(' ') }}) ) );
+
+{%       if ferm__tpl_config['public_ip']|d() %}
+    @def $PUBLIC_IPV4 = "{{ ferm__tpl_config['public_ip'] | unique | ipv4 | first | d('') }}";
+    @def $PUBLIC_IPV6 = "{{ ferm__tpl_config['public_ip'] | unique | ipv6 | first | d('') }}";
+
+{%       endif %}
+    @def $PRIVATE_IPV4 = "{{ ferm__tpl_config['private_ip'] | unique | ipv4 | first | d('') }}";
+    @def $PRIVATE_IPV6 = "{{ ferm__tpl_config['private_ip'] | unique | ipv6 | first | d('') }}";
+
+    {% if ferm__tpl_config['interface']|d() %}@if @ne($PUBLIC_IF,""){% endif %}{% if ferm__tpl_config['public_ip']|d() %} @if @ne($PUBLIC_IP,""){% endif %} @if @ne($PRIVATE_IP,"") {
+        table filter chain FORWARD {
+{%     if ferm__tpl_config['dmz_ports']|d() %}
+            protocol ({{ ferm__tpl_config['protocol']|d([ 'tcp' ]) | join(" ") }}) {
+{%       if ferm__tpl_config['dport'] | length > 1 %}
+                mod multiport destination-ports ({{ ferm__tpl_config['dport'] | join(" ") }}) {
+{%       else %}
+                dport ({{ ferm__tpl_config['dport'] | join(" ") }}) {
+{%       endif %}
+                    destination $PRIVATE_IP ACCEPT;
+                }
+            }
+{%     else %}
+            destination $PRIVATE_IP ACCEPT;
+{%     endif %}
+        }
+
+        table nat {
+            chain PREROUTING {
+{%     if ferm__tpl_config['dmz_ports']|d() %}
+                protocol ({{ ferm__tpl_config['protocol']|d([ 'tcp' ]) | join(" ") }}) {
+{%       if ferm__tpl_config['dmz_ports'] | length > 1 %}
+                    mod multiport destination-ports ({{ ferm__tpl_config['dmz_ports'] | join(" ") }}) {
+{%       else %}
+                    dport ({{ ferm__tpl_config['dmz_ports'] | join(" ") }}) {
+{%       endif %}
+{%       if ferm__tpl_config['dport']|d() %}
+                        @if @eq($DOMAIN, ip)  @if @ne($PRIVATE_IPV4,"") {% if ferm__tpl_config['interface']|d() %}interface $PUBLIC_IF {% endif %}{% if ferm__tpl_config['public_ip']|d() %}destination $PUBLIC_IPV4 {% endif %}DNAT to @cat($PRIVATE_IPV4, ":{{ ferm__tpl_config['dport'][0] }}");
+                        @if @eq($DOMAIN, ip6) @if @ne($PRIVATE_IPV6,"") {% if ferm__tpl_config['interface']|d() %}interface $PUBLIC_IF {% endif %}{% if ferm__tpl_config['public_ip']|d() %}destination $PUBLIC_IPV6 {% endif %}DNAT to @cat("[",$PRIVATE_IPV6, "]:{{ ferm__tpl_config['dport'][0] }}");
+{%       else %}
+                        {% if ferm__tpl_config['interface']|d() %}interface $PUBLIC_IF {% endif %}{% if ferm__tpl_config['public_ip']|d() %}destination $PUBLIC_IP {% endif %}DNAT to $PRIVATE_IP;
+{%       endif %}
+                    }
+                }
+{%     else %}
+                {% if ferm__tpl_config['interface']|d() %}interface $PUBLIC_IF {% endif %}{% if ferm__tpl_config['public_ip']|d() %}destination $PUBLIC_IP {% endif %}DNAT to $PRIVATE_IP;
+{%     endif %}
+            }
+{%     if ferm__tpl_config['snat_ip']|d() %}
+            chain POSTROUTING {
+                destination $PRIVATE_IP SNAT to {{ ferm__tpl_config['snat_ip'] }};
+            }
+{%     endif %}
+        }
+    }
+}
+{%   else %}
+    {% if ferm__tpl_arguments %}{{ ferm__tpl_arguments | join(" ") }} {% endif %}{
+{%     if config.hashlimit|d() %}
+
+        mod hashlimit    hashlimit {{ config.hashlimit }}
+{%       if config.hashlimit_burst|d() %}
+                         hashlimit-burst {{ config.hashlimit_burst }}
+{%       endif %}
+                         hashlimit-mode {{ config.hashlimit_mode | d("srcip") }}
+                         hashlimit-name {{ config.hashlimit_name | d(config.name | d(rule_name)) }}
+{%       if config.hashlimit_expire is undefined or config.hashlimit_expire %}
+                         hashlimit-htable-expire {{ ((config.hashlimit_expire|d("1800")) | int * 1000) }}
+{%       endif %}
+{%       if ferm__tpl_config['hashlimit_target'] not in [ 'ACCEPT', 'DROP', 'REJECT', 'RETURN', 'NOP' ] %}
+{%         if config.include|d() %}
+
+            @include "{{ config.include }}";
+{%         elif config.realgoto is undefined or not config.realgoto | bool %}
+
+            jump "{{ ferm__tpl_config['target'] }}";
+{%         elif config.realgoto|d() and config.realgoto | bool %}
+
+            realgoto "{{ ferm__tpl_config['target'] }}";
+{%         endif %}
+{%       elif ferm__tpl_config['hashlimit_target'] in [ 'REJECT' ] %}
+
+            REJECT reject-with {{ ferm__tpl_config['reject_with'] }};
+{%       else %}
+
+            {{ ferm__tpl_config['hashlimit_target'] }};
+{%       endif %}
+{%       if ((config.log is undefined or config.log | bool) and (ferm__log | bool)) %}
+
+        &log("{{ config.log_prefix | d('ipt-hashlimit-' + config.hashlimit_name | d(config.name | d(rule_name)) + ': ') }}");
+
+{%       endif %}
+{%     endif %}
+{%     if ferm__tpl_config['saddr']|d() and ferm__tpl_config['daddr']|d() %}
+        @def $SITEMS = ( @ipfilter( ({{ ferm__tpl_config['saddr'] | unique | join(" ") }}) ) );
+        @def $DITEMS = ( @ipfilter( ({{ ferm__tpl_config['daddr'] | unique | join(" ") }}) ) );
+        @if @ne($SITEMS,"") {
+            @if  @ne($DITEMS,"") {
+{%       if ferm__tpl_config['target'] not in [ 'ACCEPT', 'DROP', 'REJECT', 'RETURN', 'NOP' ] %}
+{%         if config.include|d() %}
+                @include "{{ config.include }}";
+{%         elif config.realgoto is undefined or not config.realgoto | bool %}
+                saddr $SITEMS daddr $DITEMS jump "{{ ferm__tpl_config['target'] }}";
+{%         elif config.realgoto|d() and config.realgoto | bool %}
+                saddr $SITEMS daddr $DITEMS realgoto "{{ ferm__tpl_config['target'] }}";
+{%         endif %}
+{%       elif ferm__tpl_config['target'] in [ 'REJECT' ] %}
+                saddr $SITEMS daddr $DITEMS REJECT reject-with {{ ferm__tpl_config['reject_with'] }};
+{%       else %}
+                saddr $SITEMS daddr $DITEMS {{ ferm__tpl_config['target'] }};
+{%       endif %}
+            }
+        }
+{%     elif ferm__tpl_config['saddr']|d() %}
+        @def $SITEMS = ( @ipfilter( ({{ ferm__tpl_config['saddr'] | unique | join(" ") }}) ) );
+        @if @ne($SITEMS,"") {
+{%       if ferm__tpl_config['target'] not in [ 'ACCEPT', 'DROP', 'REJECT', 'RETURN', 'NOP' ] %}
+{%         if config.include|d() %}
+            @include "{{ config.include }}";
+{%         elif config.realgoto is undefined or not config.realgoto | bool %}
+            saddr $SITEMS jump "{{ ferm__tpl_config['target'] }}";
+{%         elif config.realgoto|d() and config.realgoto | bool %}
+            saddr $SITEMS realgoto "{{ ferm__tpl_config['target'] }}";
+{%         endif %}
+{%       elif ferm__tpl_config['target'] in [ 'REJECT' ] %}
+            saddr $SITEMS REJECT reject-with {{ ferm__tpl_config['reject_with'] }};
+{%       else %}
+            saddr $SITEMS {{ ferm__tpl_config['target'] }};
+{%       endif %}
+        }
+{%     elif ferm__tpl_config['daddr']|d() %}
+        @def $DITEMS = ( @ipfilter( ({{ ferm__tpl_config['daddr'] | unique | join(" ") }}) ) );
+        @if @ne($DITEMS,"") {
+{%       if ferm__tpl_config['target'] not in [ 'ACCEPT', 'DROP', 'REJECT', 'RETURN', 'NOP' ] %}
+{%         if config.include|d() %}
+            @include "{{ config.include }}";
+{%         elif config.realgoto is undefined or not config.realgoto | bool %}
+            daddr $DITEMS jump "{{ ferm__tpl_config['target'] }}";
+{%         elif config.realgoto|d() and config.realgoto | bool %}
+            daddr $DITEMS realgoto "{{ ferm__tpl_config['target'] }}";
+{%         endif %}
+{%       elif ferm__tpl_config['target'] in [ 'REJECT' ] %}
+            daddr $DITEMS REJECT reject-with {{ ferm__tpl_config['reject_with'] }};
+{%       else %}
+            daddr $DITEMS {{ ferm__tpl_config['target'] }};
+{%       endif %}
+        }
+{%     else %}
+{%       if config.accept_any is defined %}
+{%         if config.accept_any | bool %}
+{%           if ferm__tpl_config['target'] not in [ 'ACCEPT', 'DROP', 'REJECT', 'RETURN', 'NOP' ] %}
+{%             if config.include|d() %}
+        @include "{{ config.include }}";
+{%             elif config.realgoto is undefined or not config.realgoto | bool %}
+        jump "{{ ferm__tpl_config['target'] }}";
+{%             elif config.realgoto|d() and config.realgoto | bool %}
+        realgoto "{{ ferm__tpl_config['target'] }}";
+{%             endif %}
+{%           elif ferm__tpl_config['target'] in [ 'REJECT' ] %}
+        REJECT reject-with {{ ferm__tpl_config['reject_with'] }};
+{%           else %}
+        {{ ferm__tpl_config['target'] }};
+{%           endif %}
+{%         elif not config.accept_any | bool %}
+        # Connections from any IP address not allowed
+{%         endif %}
+{%       else %}
+{%         if ferm__tpl_config['target'] not in [ 'ACCEPT', 'DROP', 'REJECT', 'RETURN', 'NOP' ] %}
+{%           if config.include|d() %}
+        @include "{{ config.include }}";
+{%           elif config.realgoto is undefined or not config.realgoto | bool %}
+        jump "{{ ferm__tpl_config['target'] }}";
+{%           elif config.realgoto|d() and config.realgoto | bool %}
+        realgoto "{{ ferm__tpl_config['target'] }}";
+{%           endif %}
+{%         elif ferm__tpl_config['target'] in [ 'REJECT' ] %}
+        REJECT reject-with {{ ferm__tpl_config['reject_with'] }};
+{%         else %}
+{%           if ferm__tpl_arguments %}
+        {{ ferm__tpl_config['target'] }};
+{%           else %}
+        # No rule parameters specified
+{%           endif %}
+{%         endif %}
+{%       endif %}
+{%     endif %}
+    }
+{%   endif %}
+{%   if ferm__tpl_config['type'] != 'dmz' %}
+}
+{%   endif %}
+{% endmacro %}
+{% set rule_name = (item.value.name | d(item.key)) %}
+{% set rule = item.value %}
+{% if rule.by_role|d() %}
+{{ ("This firewall rule was generated by: " + (rule.by_role if rule.by_role is string else rule.by_role | join('\n')))  | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
+{% endif %}
+{% if rule.comment|d() %}
+{{ (rule.comment if rule.comment is string else rule.comment | join('\n'))  | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
+{% endif %}
+{% if rule.rules|d() %}
+{%   if rule.rules is string %}
+{{ rule.rules -}}
+{%   elif rule.rules is mapping %}
+{{ print_rule(rule.rules) -}}
+{%   elif rule.rules is not string and rule.rules is not mapping %}
+{%     for element in rule.rules %}{% if not loop.first %}
+
+{% endif %}
+{%       if element is string %}
+{{ element -}}
+{%       elif element is mapping %}
+{{ print_rule(element) -}}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{% endif %}
+{% if rule.debug|d() | bool or (ansible_local|d() and ansible_local.tags|d() and 'debug' in ansible_local.tags) %}
+
+{{ ("rule_name: " + (rule_name | to_nice_json)) | replace('\n$','') | comment(prefix='',postfix='') -}}
+{{ ("rule: " + (rule | to_nice_json)) | replace('\n$','') | comment(prefix='',postfix='') -}}
+{% endif %}

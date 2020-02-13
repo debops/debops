@@ -1,0 +1,284 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _unbound__ref_defaults:
+
+# debops.unbound default variables [[[
+# ====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: unbound__base_packages [[[
+#
+# List of default APT packages to install for Unbound support.
+unbound__base_packages: [ 'unbound' ]
+
+                                                                   # ]]]
+# .. envvar:: unbound__packages [[[
+#
+# List of additional APT packages to install with Unbound.
+unbound__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Server (main) configuration [[[
+# -------------------------------
+
+# These variables can be used to configure main :command:`unbound`
+# configuration options. See :ref:`unbound__ref_server` for more details.
+
+# .. envvar:: unbound__default_server [[[
+#
+# The default Unbound 'server' configuration defined by the role.
+unbound__default_server:
+
+  - name: 'localhost-allow_snoop'
+    option: 'access-control'
+    comment: |
+      By default unbound blocks non-recursive queries to prevent abuse; this
+      prevents commands like 'dig +trace' from working correctly. Since query
+      tracing is a useful debugging and diagnostic tool, non-recursive queries
+      will be allowed when the host is managed locally with assumption that
+      this is an administrator's machine.
+    value:
+
+      - name: '127.0.0.0/8'
+        args: 'allow_snoop'
+
+      - name: '::1/128'
+        args: 'allow_snoop'
+
+    state: '{{ "present"
+               if (unbound__fact_ansible_connection == "local")
+               else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: unbound__server [[[
+#
+# The Unbound 'server' configuration which should be present on all hosts in
+# the Ansible inventory.
+unbound__server: []
+
+                                                                   # ]]]
+# .. envvar:: unbound__group_server [[[
+#
+# The Unbound 'server' configuration which should be present on hosts in
+# a specific Ansible inventory group.
+unbound__group_server: []
+
+                                                                   # ]]]
+# .. envvar:: unbound__host_server [[[
+#
+# The Unbound 'server' configuration which should be present on specific hosts
+# in the Ansible inventory.
+unbound__host_server: []
+
+                                                                   # ]]]
+# .. envvar:: unbound__combined_server [[[
+#
+# This variable combines the 'server' configuration from other variables and
+# passes it to the configuration file template.
+unbound__combined_server: '{{ unbound__default_server
+                              + unbound__server
+                              + unbound__group_server
+                              + unbound__host_server }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Remote control configuration [[[
+# --------------------------------
+
+# These variables can be used to configure :command:`unbound-control`
+# configuration options. The syntax is the same as the 'server' configuration.
+# See :ref:`unbound__ref_server` for more details.
+
+# .. envvar:: unbound__default_remote_control [[[
+#
+# The default 'remote-control' configuration defined by the role.
+unbound__default_remote_control:
+
+  # On Debian Buster, remote control is disabled by default
+  - name: 'control-enable'
+    comment: |
+      Enable remote control of the 'unbound' daemon by default. This is needed
+      for the 'systemctl reload unbound.service' command to work correctly.
+    value: True
+
+                                                                   # ]]]
+# .. envvar:: unbound__remote_control [[[
+#
+# The Unbound 'remote-control' configuration which should be present on all
+# hosts in the Ansible inventory.
+unbound__remote_control: []
+
+                                                                   # ]]]
+# .. envvar:: unbound__group_remote_control [[[
+#
+# The Unbound 'remote-control' configuration which should be present on hosts
+# in a specific Ansible inventory group.
+unbound__group_remote_control: []
+
+                                                                   # ]]]
+# .. envvar:: unbound__host_remote_control [[[
+#
+# The Unbound 'remote-control' configuration which should be present on
+# specific hosts in the Ansible inventory.
+unbound__host_remote_control: []
+
+                                                                   # ]]]
+# .. envvar:: unbound__combined_remote_control [[[
+#
+# This variable combines the 'remote-control' configuration from other
+# variables and passes it to the configuration file template.
+unbound__combined_remote_control: '{{ unbound__default_remote_control
+                                      + unbound__remote_control
+                                      + unbound__group_remote_control
+                                      + unbound__host_remote_control }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Custom forward/stub DNS zones [[[
+# ---------------------------------
+
+# These variables configure custom 'forward' or 'stub' DNS zones served by
+# Unbound. See :ref:`unbound__ref_zones` for more details.
+
+# .. envvar:; unbound__default_zones [[[
+#
+# List of forward or stub DNS zones defined by the role.
+unbound__default_zones:
+
+  - name: 'block-dns-over-https'
+    comment: |
+      Blocking the 'use-application-dns.net' domain instructs the applications
+      that support DNS over HTTPS to not use it and rely on the system resolver
+      instead. This might be required for certain applications to support
+      access to internal services, resolve split-DNS correctly, etc.
+
+      Ref: https://support.mozilla.org/en-US/kb/canary-domain-use-application-dnsnet
+    zone: 'use-application-dns.net.'
+    type: 'local'
+    local_zone_type: 'always_nxdomain'
+
+  - name: 'lxc-net'
+    comment: |
+      Support for resolving LXC container hosts that use the 'lxc-net' bridge
+      configuration
+    zone: '{{ (ansible_local.lxc.net_domain + ".")
+              if (ansible_local|d() and ansible_local.lxc|d() and
+                  ansible_local.lxc.net_domain|d())
+              else "" }}'
+    revdns: '{{ ansible_local.lxc.net_subnet
+                if (ansible_local|d() and ansible_local.lxc|d() and
+                    ansible_local.lxc.net_subnet|d())
+                else "" }}'
+    nameserver: '{{ ansible_local.lxc.net_address
+                    if (ansible_local|d() and ansible_local.lxc|d() and
+                        ansible_local.lxc.net_address|d())
+                    else "" }}'
+    state: '{{ "present"
+               if (ansible_local|d() and ansible_local.lxc|d() and
+                   ansible_local.lxc.net_domain|d())
+               else "absent" }}'
+
+  # Ref: https://learn.hashicorp.com/consul/security-networking/forwarding#unbound-setup
+  - name: 'consul'
+    comment: |
+      Support for Consul Agent DNS service on localhost
+      Ref: https://www.consul.io/docs/agent/dns.html
+    zone: 'consul.'
+    type: 'stub'
+    options:
+      - 'stub-addr': '127.0.0.1@8600'
+    server_options:
+      - 'do-not-query-localhost': False
+      - 'domain-insecure': 'consul.'
+    state: '{{ "present"
+               if (ansible_local|d() and ansible_local.consul|d() and
+                   (ansible_local.consul.installed|d())|bool)
+               else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: unbound__zones [[[
+#
+# List of forward or stub DNS zones which should be defined on all hosts in the
+# Ansible inventory.
+unbound__zones: []
+
+                                                                   # ]]]
+# .. envvar:: unbound__group_zones [[[
+#
+# List of forward or stub DNS zones which should be defined on hosts in
+# specific Ansible inventory group.
+unbound__group_zones: []
+
+                                                                   # ]]]
+# .. envvar:: unbound__host_zones [[[
+#
+# List of forward or stub DNS zones which should be defined on specific hosts
+# in the Ansible inventory.
+unbound__host_zones: []
+
+                                                                   # ]]]
+# .. envvar:: unbound__combined_zones [[[
+#
+# The variable that combines the zone configuration from other variables.
+unbound__combined_zones: '{{ unbound__default_zones
+                             + unbound__zones
+                             + unbound__group_zones
+                             + unbound__host_zones }}'
+
+                                                                   # ]]]
+# .. envvar:: unbound__parsed_zones [[[
+#
+# The variable that parses the combined zone configuration and is used in the
+# Ansible tasks to manage the DNS zone files.
+unbound__parsed_zones: '{{ unbound__combined_zones
+                                | parse_kv_items(merge_keys=["server_options"]) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: unbound__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+unbound__python__dependent_packages3:
+
+  - 'python3-unbound'
+
+                                                                   # ]]]
+# .. envvar:: unbound__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+unbound__python__dependent_packages2:
+
+  - 'python-unbound'
+
+                                                                   # ]]]
+# .. envvar:: unbound__apt_preferences__dependent_list [[[
+#
+# Configuration for the :ref:`debops.apt_preferences`.
+unbound__apt_preferences__dependent_list:
+
+  - packages:  [ 'unbound', 'unbound-*', 'libunbound*' ]
+    backports: [ 'wheezy', 'jessie' ]
+    reason:    'Feature parity with the next Debian release'
+    by_role:   'debops.unbound'
+
+                                                                   # ]]]
+# .. envvar:: unbound__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services`.
+unbound__etc_services__dependent_list:
+
+  - name: 'unbound-ctrl'
+    port: '8953'
+    comment: 'Unbound control service'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

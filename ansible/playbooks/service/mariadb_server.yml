@@ -1,7 +1,9 @@
 ---
 
 - name: Manage MariaDB server
-  hosts: [ 'debops_service_mariadb_server', 'debops_mariadb_server' ]
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_mariadb_server' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -10,27 +12,27 @@
 
   roles:
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::mariadb_server' ]
       keyring__dependent_apt_keys:
         - '{{ mariadb_server__keyring__dependent_apt_keys }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ mariadb_server__ferm__dependent_rules }}'
 
-    - role: debops.tcpwrappers
+    - role: tcpwrappers
       tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
       tcpwrappers__dependent_allow:
         - '{{ mariadb_server__tcpwrappers__dependent_allow }}'
 
-    - role: debops.python
-      tags: [ 'role::python', 'skip::python' ]
+    - role: python
+      tags: [ 'role::python', 'skip::python', 'role::mariadb_server' ]
       python__dependent_packages3:
         - '{{ mariadb_server__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ mariadb_server__python__dependent_packages2 }}'
 
-    - role: debops.mariadb_server
+    - role: mariadb_server
       tags: [ 'role::mariadb_server', 'skip::mariadb_server' ]

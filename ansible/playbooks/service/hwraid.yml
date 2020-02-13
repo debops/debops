@@ -1,7 +1,9 @@
 ---
 
 - name: Configure HWRaid support
-  hosts: [ 'debops_service_hwraid', 'debops_hwraid' ]
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_hwraid' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -10,10 +12,10 @@
 
   roles:
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::hwraid' ]
       keyring__dependent_apt_keys:
         - '{{ hwraid__keyring__dependent_apt_keys }}'
 
-    - role: debops.hwraid
+    - role: hwraid
       tags: [ 'role::hwraid', 'skip::hwraid' ]

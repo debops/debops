@@ -1,6 +1,8 @@
 ---
 
 - name: Manage OpenSSH Server
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_all_hosts', 'debops_service_sshd' ]
   become: True
 
@@ -8,42 +10,46 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: debops.sshd/env
+    - import_role:
+        name: 'sshd'
+        tasks_from: 'main_env'
       tags: [ 'role::sshd', 'role::ldap' ]
 
-    - role: debops.apt_preferences
+  roles:
+
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ sshd__apt_preferences__dependent_list }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ sshd__ferm__dependent_rules }}'
 
-    - role: debops.tcpwrappers
+    - role: tcpwrappers
       tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
       tcpwrappers_dependent_allow:
         - '{{ sshd__tcpwrappers__dependent_allow }}'
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python', 'role::ldap' ]
       python__dependent_packages3:
         - '{{ ldap__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ ldap__python__dependent_packages2 }}'
 
-    - role: debops.ldap
+    - role: ldap
       tags: [ 'role::ldap', 'skip::ldap' ]
       ldap__dependent_tasks:
         - '{{ sshd__ldap__dependent_tasks }}'
 
-    - role: debops.pam_access
+    - role: pam_access
       tags: [ 'role::pam_access', 'skip::pam_access' ]
       pam_access__dependent_rules:
         - '{{ sshd__pam_access__dependent_rules }}'
 
-    - role: debops.sshd
+    - role: sshd
       tags: [ 'role::sshd', 'skip::sshd' ]

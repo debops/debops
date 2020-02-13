@@ -1,6 +1,8 @@
 ---
 
 - name: Initialize new LDAP directory
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_slapd' ]
   become: True
 
@@ -48,8 +50,8 @@
     # don't care at this point
     ldap__configured: True
 
-    # Run the 'debops.ldap' role in dependent mode; don't configure anything
-    # related to LDAP on the host iself, perform only LDAP tasks
+    # Run the 'ldap' role in dependent mode; don't configure anything related
+    # to LDAP on the host iself, perform only LDAP tasks
     ldap__dependent_play: True
 
     # Override the list of LDAP servers detected automatically by the role
@@ -72,10 +74,6 @@
         state: 'absent'
         entry_state: 'absent'
 
-      - name: 'Create the {{ ldap__system_groups_rdn }} object'
-        dn: '{{ [ ldap__system_groups_rdn ] + ldap__base_dn }}'
-        objectClass: 'organizationalUnit'
-
       - name: 'Create the {{ ldap__groups_rdn }} object'
         dn: '{{ [ ldap__groups_rdn ] + ldap__base_dn }}'
         objectClass: 'organizationalUnit'
@@ -90,6 +88,10 @@
 
       - name: 'Create the {{ ldap__people_rdn }} object'
         dn: '{{ [ ldap__people_rdn ] + ldap__base_dn }}'
+        objectClass: 'organizationalUnit'
+
+      - name: 'Create the {{ ldap__roles_rdn }} object'
+        dn: '{{ [ ldap__roles_rdn ] + ldap__base_dn }}'
         objectClass: 'organizationalUnit'
 
       - name: 'Create the {{ ldap__services_rdn }} object'
@@ -143,30 +145,34 @@
           loginShell:    '{{ ldap__shell }}'
 
           # Other attributes
-          authorizedService: '*'
-          host: '*'
+          authorizedService: 'all'
+          host: 'posix:all'
           sshPublicKey: '{{ admin_sshkeys }}'
 
-      - name: 'Create cn=LDAP Administrators group'
-        dn: '{{ [ "cn=LDAP Administrators", ldap__system_groups_rdn ] + ldap__base_dn }}'
-        objectClass: 'groupOfNames'
+      - name: 'Create cn=LDAP Administrator role'
+        dn: '{{ [ "cn=LDAP Administrator", ldap__roles_rdn ] + ldap__base_dn }}'
+        objectClass: 'organizationalRole'
         attributes:
-          cn: 'LDAP Administrators'
-          member: '{{ admin_dn }}'
-          owner: '{{ admin_dn }}'
+          cn: 'LDAP Administrator'
+          roleOccupant: '{{ admin_dn }}'
           description: 'People responsible for LDAP infrastructure'
 
-      - name: 'Create cn=LDAP Editors group'
-        dn: '{{ [ "cn=LDAP Editors", ldap__system_groups_rdn ] + ldap__base_dn }}'
-        objectClass: 'groupOfNames'
+      - name: 'Create cn=LDAP Replicator role'
+        dn: '{{ [ "cn=LDAP Replicator", ldap__roles_rdn ] + ldap__base_dn }}'
+        objectClass: 'organizationalRole'
         attributes:
-          cn: 'LDAP Editors'
-          member: '{{ admin_dn }}'
-          owner: '{{ admin_dn }}'
+          cn: 'LDAP Replicator'
+          description: 'Service accounts used for LDAP replication'
+
+      - name: 'Create cn=LDAP Editor role'
+        dn: '{{ [ "cn=LDAP Editor", ldap__roles_rdn ] + ldap__base_dn }}'
+        objectClass: 'organizationalRole'
+        attributes:
+          cn: 'LDAP Editor'
           description: 'People responsible for LDAP contents'
 
       - name: 'Create cn=UNIX Administrators group'
-        dn: '{{ [ "cn=UNIX Administrators", ldap__system_groups_rdn ] + ldap__base_dn }}'
+        dn: '{{ [ "cn=UNIX Administrators", ldap__groups_rdn ] + ldap__base_dn }}'
         objectClass: [ 'groupOfNames', 'posixGroup', 'posixGroupId',
                        'authorizedServiceObject', 'hostObject' ]
         attributes:
@@ -176,20 +182,51 @@
           member: '{{ admin_dn }}'
           owner: '{{ admin_dn }}'
           description: 'People responsible for UNIX-like infrastructure'
-          authorizedService: '*'
-          host: '*'
+          host: 'posix:all'
 
-      - name: 'Create cn=Account Administrators group'
-        dn: '{{ [ "cn=Account Administrators", ldap__system_groups_rdn ] + ldap__base_dn }}'
-        objectClass: 'groupOfNames'
+      - name: 'Create cn=Account Administrator role'
+        dn: '{{ [ "cn=Account Administrator", ldap__roles_rdn ] + ldap__base_dn }}'
+        objectClass: 'organizationalRole'
         attributes:
-          cn: 'Account Administrators'
-          member: '{{ admin_dn }}'
-          owner: '{{ admin_dn }}'
+          cn: 'Account Administrator'
           description: 'People responsible for personal accounts'
 
+      - name: 'Create cn=Password Reset Agent role'
+        dn: '{{ [ "cn=Password Reset Agent", ldap__roles_rdn ] + ldap__base_dn }}'
+        objectClass: 'organizationalRole'
+        attributes:
+          cn: 'Password Reset Agent'
+          description: 'Services that can perform password changes on behalf of users'
+
+      - name: 'Create cn=SMS Gateway role'
+        dn: '{{ [ "cn=SMS Gateway", ldap__roles_rdn ] + ldap__base_dn }}'
+        objectClass: 'organizationalRole'
+        attributes:
+          cn: 'SMS Gateway'
+          description: 'Devices which send SMS messages to mobile numbers'
+
+      - name: 'Create cn=Hidden Object Viewer role'
+        dn: '{{ [ "cn=Hidden Object Viewer", ldap__roles_rdn ] + ldap__base_dn }}'
+        objectClass: 'organizationalRole'
+        attributes:
+          cn: 'Hidden Object Viewer'
+          memberOf: '{{ ([ "cn=Hidden Objects", ldap__groups_rdn ] + ldap__base_dn) | join(",") }}'
+          description: 'LDAP objects which can see hidden objects'
+
+      - name: 'Create cn=Hidden Objects group'
+        dn: '{{ [ "cn=Hidden Objects", ldap__groups_rdn ] + ldap__base_dn }}'
+        objectClass: 'groupOfNames'
+        attributes:
+          cn: 'Hidden Objects'
+          member:
+            - '{{ ([ "cn=Hidden Objects", ldap__groups_rdn ] + ldap__base_dn) | join(",") }}'
+            - '{{ ([ "cn=Hidden Object Viewer", ldap__roles_rdn ] + ldap__base_dn) | join(",") }}'
+          memberOf: '{{ ([ "cn=Hidden Objects", ldap__groups_rdn ] + ldap__base_dn) | join(",") }}'
+          owner: '{{ admin_dn }}'
+          description: 'LDAP objects which are accessible only by privileged accounts'
+
       - name: 'Create cn=UNIX SSH users group'
-        dn: '{{ [ "cn=UNIX SSH users", ldap__system_groups_rdn ] + ldap__base_dn }}'
+        dn: '{{ [ "cn=UNIX SSH users", ldap__groups_rdn ] + ldap__base_dn }}'
         objectClass: [ 'groupOfNames', 'posixGroup', 'posixGroupId',
                        'authorizedServiceObject', 'hostObject' ]
         attributes:
@@ -199,8 +236,7 @@
           owner: '{{ admin_dn }}'
           member: '{{ admin_dn }}'
           description: 'People who can connect to UNIX-like infrastructure via SSH'
-          authorizedService: '*'
-          host: '*'
+          host: 'posix:all'
 
       - name: 'Create SUDOers container'
         dn: '{{ [ "ou=SUDOers" ] + ldap__base_dn }}'
@@ -251,5 +287,5 @@
 
   roles:
 
-    - role: 'debops.ldap'
+    - role: 'ldap'
       tags: [ 'role::ldap', 'skip::ldap' ]

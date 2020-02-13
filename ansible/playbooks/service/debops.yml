@@ -1,8 +1,9 @@
 ---
 
 - name: Install DebOps recursively
-  hosts: [ 'debops_service_debops', 'debops_service_recursively',
-           'debops_recursively' ]
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_debops' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -11,25 +12,25 @@
 
   roles:
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::ansible' ]
       keyring__dependent_apt_keys:
         - '{{ ansible__keyring__dependent_apt_keys }}'
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ ansible__apt_preferences__dependent_list }}'
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python', 'role::debops' ]
       python__dependent_packages3:
         - '{{ debops__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ debops__python__dependent_packages2 }}'
 
-    - role: debops.ansible
+    - role: ansible
       tags: [ 'role::ansible', 'skip::ansible' ]
 
-    - role: debops.debops
+    - role: debops
       tags: [ 'role::debops', 'skip::debops' ]

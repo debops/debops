@@ -4,5 +4,5 @@ set -o nounset -o pipefail -o errexit
 
 make clean-tests
 make check
-make sdist-quiet
+make test-man sdist-quiet
 pip3 install dist/*

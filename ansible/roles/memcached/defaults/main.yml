@@ -1,0 +1,116 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _memcached__ref_defaults:
+
+# debops.memcached default variables
+# ==================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Installation and packages [[[
+# -----------------------------
+
+# .. envvar:: memcached__base_packages [[[
+#
+# List of required APT packages to install for :command:`memcached` service.
+memcached__base_packages: [ 'memcached' ]
+
+                                                                   # ]]]
+# .. envvar:: memcached__packages [[[
+#
+# List of additional APT packages to install with :command:`memcached`.
+memcached__packages: []
+
+                                                                   # ]]]
+# .. envvar:: memcached__version [[[
+#
+# The installed :command:`memcached` version. This variable is autodetected
+# using Ansible local facts.
+memcached__version: '{{ ansible_local.memcached.version
+                        if (ansible_local|d() and ansible_local.memcached|d() and
+                            ansible_local.memcached.version|d())
+                        else "0.0.0" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Memcached configuration [[[
+# ---------------------------
+
+# .. envvar:: memcached__bind [[[
+#
+# IP address on which ``memcached`` listens for new connections. To listen on
+# all interfaces, set it to ``0.0.0.0``.
+memcached__bind: '127.0.0.1'
+
+                                                                   # ]]]
+# .. envvar:: memcached__allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to this
+# ``memcached``. If the list is empty, remote connections are denied.
+memcached__allow: []
+
+                                                                   # ]]]
+# .. envvar:: memcached__memory [[[
+#
+# Maximum amount of RAM ``memcached`` is allowed to use.
+memcached__memory: '{{ (memcached__memory_available  | float *
+                        memcached__memory_multiplier | float) | int }}'
+
+                                                                   # ]]]
+# .. envvar:: memcached__memory_available [[[
+#
+# Amount of RAM which ``debops.memcached`` takes into account while calculating
+# ``memcached__memory`` variable.
+memcached__memory_available: '{{ ansible_memtotal_mb }}'
+
+                                                                   # ]]]
+# .. envvar:: memcached__memory_multiplier [[[
+#
+# Value which is multiplied by amount of available RAM to limit memory
+# accessible to ``memcached``. 1.0 will allow access to all available memory,
+# values bigger than 1.0 don't make much sense.
+memcached__memory_multiplier: '0.3'
+
+                                                                   # ]]]
+# .. envvar:: memcached__connections [[[
+#
+# Maximum number of allowed connections.
+memcached__connections: '1024'
+
+                                                                   # ]]]
+# .. envvar:: memcached__options [[[
+#
+# Additional ``memcached`` options, specified as YAML text block.
+memcached__options: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: memcached__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+memcached__etc_services__dependent_list:
+
+  - name: 'memcache'
+    port: '11211'
+
+                                                                   # ]]]
+# .. envvar:: memcached__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+memcached__ferm__dependent_rules:
+
+  - type: 'accept'
+    dport: [ 'memcache' ]
+    protocol: [ 'tcp', 'udp' ]
+    saddr: '{{ memcached__allow }}'
+    accept_any: False
+    weight: '50'
+    role: 'memcached'
+                                                                   # ]]]
+                                                                   # ]]]

@@ -1,0 +1,236 @@
+---
+
+- name: 'Check if {{ build.name }} APT packages are available'
+  shell: set -o nounset -o pipefail -o errexit &&
+         apt-cache madison \
+           {{ ([ build.apt_packages ] if build.apt_packages is string else build.apt_packages) | join(' ') }} \
+           | awk '{print $1}' | sort | uniq
+  args:
+    executable: '/bin/bash'
+  register: golang__register_build_apt_packages
+  when: build.apt_packages|d()
+  changed_when: False
+  check_mode: False
+
+- name: 'Install {{ build.name }} APT packages'
+  package:
+    name: '{{ build.apt_packages }}'
+    state: 'present'
+  register: golang__register_install_apt_packages
+  until: golang__register_install_apt_packages is succeeded
+  when: (not (build.upstream|d())|bool and
+         (build.apt_packages is defined and
+          (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
+           | intersect(golang__register_build_apt_packages.stdout_lines))))
+
+- name: Prepare Go UNIX environment
+  when: ((build.git|d() or build.url|d()) and ((build.upstream|d())|bool or
+         (build.apt_packages is undefined or
+          (not (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
+                | intersect(golang__register_build_apt_packages.stdout_lines))))))
+  block:
+
+    - name: Ensure that the UNIX group for Go environment exists
+      group:
+        name: '{{ golang__group }}'
+        state: 'present'
+        system: True
+
+    - name: Ensure that the UNIX account for Go environment exists
+      user:
+        name: '{{ golang__user }}'
+        group: '{{ golang__group }}'
+        home: '{{ golang__home }}'
+        comment: '{{ golang__comment }}'
+        shell: '{{ golang__shell }}'
+        state: 'present'
+        system: True
+
+- name: 'Install {{ build.name }} required APT packages'
+  package:
+    name: '{{ q("flattened", (build.apt_required_packages|d([]))) }}'
+    state: 'present'
+  register: golang__register_install_apt_required_packages
+  until: golang__register_install_apt_required_packages is succeeded
+  when: (build.url|d() and build.upstream_type|d('git') == 'url' and (((build.upstream|d())|bool or
+         (build.apt_packages is undefined or
+          (not (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
+                | intersect(golang__register_build_apt_packages.stdout_lines)))))))
+
+- name: Download Go binaries directly
+  when: (build.url|d() and build.upstream_type|d('git') == 'url' and ((build.upstream|d())|bool or
+         (build.apt_packages is undefined or
+          (not (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
+                | intersect(golang__register_build_apt_packages.stdout_lines))))))
+  become: True
+  become_user: '{{ golang__user }}'
+  block:
+
+    - name: 'Create the required directories for {{ build.name }} files'
+      file:
+        dest: '{{ (golang__gosrc + "/" + url_item.dest) | dirname }}'
+        state: 'directory'
+      loop: '{{ build.url }}'
+      loop_control:
+        loop_var: 'url_item'
+
+    - name: 'Download {{ build.name }} files'
+      get_url:
+        url: '{{ url_item.src }}'
+        dest: '{{ golang__gosrc + "/" + url_item.dest }}'
+        checksum: '{{ url_item.checksum | d(omit) }}'
+      loop: '{{ build.url }}'
+      loop_control:
+        loop_var: 'url_item'
+      register: golang__register_get_url
+      until: golang__register_get_url is succeeded
+
+    - name: 'Extract {{ build.name }} files from archive'
+      unarchive:
+        src: '{{ golang__gosrc + "/" + url_item.dest }}'
+        dest: '{{ golang__gosrc + "/" + (url_item.unarchive_dest | d(url_item.dest | dirname)) }}'
+        remote_src: True
+        creates: '{{ golang__gosrc + "/" + url_item.unarchive_creates }}'
+      loop: '{{ build.url }}'
+      loop_control:
+        loop_var: 'url_item'
+      when: (url_item.unarchive|d())|bool
+
+    - name: 'Verify {{ build.name }} files with GnuPG'
+      command: gpg --verify {{ golang__gosrc + "/" + url_item.dest }}
+      args:
+        chdir: '{{ (golang__gosrc + "/" + url_item.dest) | dirname }}'
+      loop: '{{ build.url }}'
+      loop_control:
+        loop_var: 'url_item'
+      register: golang__register_verify
+      changed_when: False
+      failed_when: golang__register_verify.rc != 0
+      when: (url_item.gpg_verify|d())|bool
+
+- name: 'Install downloaded {{ build.name }} binaries'
+  copy:
+    src: '{{ (""
+              if ((binary_item.src | d(binary_item)).startswith("/"))
+              else (golang__gosrc + "/"))
+             + (binary_item.src | d(binary_item)) }}'
+    dest: '{{ ((binary_item.dest | dirname)
+               if (binary_item.dest|d() and "/" in binary_item.dest)
+               else "/usr/local/bin") + "/"
+              + ((binary_item.dest | d(binary_item.src | d(binary_item))) | basename) }}'
+    remote_src: True
+    mode: '{{ binary_item.mode | d("0755") }}'
+  register: golang__register_download_install
+  notify: '{{ binary_item.notify if binary_item.notify|d() else omit }}'
+  loop: '{{ build.url_binaries | d([]) }}'
+  loop_control:
+    loop_var: 'binary_item'
+  when: (build.url_binaries|d() and build.upstream_type|d('git') == 'url' and ((build.upstream|d())|bool or
+         (build.apt_packages is undefined or
+          (not (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
+                | intersect(golang__register_build_apt_packages.stdout_lines))))))
+
+- name: 'Install {{ build.name }} APT dev packages'
+  package:
+    name: '{{ q("flattened", (golang__apt_dev_packages + (build.apt_dev_packages|d([])))) }}'
+    state: 'present'
+  register: golang__register_install_apt_dev_packages
+  until: golang__register_install_apt_dev_packages is succeeded
+  when: (build.git|d() and build.upstream_type|d('git') == 'git' and (((build.upstream|d())|bool or
+         (build.apt_packages is undefined or
+          (not (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
+                | intersect(golang__register_build_apt_packages.stdout_lines)))))))
+
+- name: Build Go applications from source
+  when: (build.git|d() and build.upstream_type|d('git') == 'git' and (((build.upstream|d())|bool or
+         (build.apt_packages is undefined or
+          (not (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
+                | intersect(golang__register_build_apt_packages.stdout_lines)))))))
+  become: True
+  become_user: '{{ golang__user }}'
+  block:
+
+    - name: 'Clone {{ build.name }} source code'
+      git:
+        repo: '{{ git_item.repo }}'
+        dest: '{{ golang__gosrc + "/" + (git_item.dest | d(git_item.repo.split("://")[1])) }}'
+        version: '{{ git_item.version | d(git_item.branch | d(omit)) }}'
+        depth: '{{ git_item.depth | d(golang__git_depth | d(omit)) }}'
+        verify_commit: '{{ True if build.gpg|d() else omit }}'
+      loop: '{{ build.git }}'
+      loop_control:
+        loop_var: 'git_item'
+      register: golang__register_build_source
+
+    - name: 'Build {{ build.name }} binaries'
+      environment:
+        GOPATH: '{{ golang__env_gopath }}'
+        GOCACHE: '{{ golang__env_gocache }}'
+        PATH: '{{ golang__env_path }}'
+      shell: set -o nounset -o pipefail -o errexit &&
+             {{ git_item.build_script }}
+      args:
+        executable: '/bin/bash'
+        chdir: '{{ golang__gosrc + "/" + (git_item.dest | d(git_item.repo.split("://")[1])) }}'
+      loop: '{{ build.git }}'
+      loop_control:
+        loop_var: 'git_item'
+      when: git_item.build_script|d() and
+            golang__register_build_source is changed
+      register: golang__register_build
+
+- name: 'Install built {{ build.name }} binaries'
+  copy:
+    src: '{{ (""
+              if ((binary_item.src | d(binary_item)).startswith("/"))
+              else (golang__gosrc + "/"))
+             + (binary_item.src | d(binary_item)) }}'
+    dest: '{{ ((binary_item.dest | dirname)
+               if (binary_item.dest|d() and "/" in binary_item.dest)
+               else "/usr/local/bin") + "/"
+              + ((binary_item.dest | d(binary_item.src | d(binary_item))) | basename) }}'
+    remote_src: True
+    mode: '{{ binary_item.mode | d("0755") }}'
+  register: golang__register_build_install
+  notify: '{{ binary_item.notify if binary_item.notify|d() else omit }}'
+  loop: '{{ build.git_binaries | d([]) }}'
+  loop_control:
+    loop_var: 'binary_item'
+  when: (build.git_binaries|d() and build.upstream_type|d('git') == 'git' and ((build.upstream|d())|bool or
+         (build.apt_packages is undefined or
+          (not (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
+                | intersect(golang__register_build_apt_packages.stdout_lines))))))
+
+- name: Create the initial Go binaries database file
+  copy:
+    content: |
+      # This is a database of the applications installed by the 'debops.golang'
+      # Ansible role and used by the '/etc/ansible/facts.d/golang.fact' script
+      # to provide paths to the correct binaries.
+    dest: '{{ golang__bin_database }}'
+    mode: '0644'
+    force: False
+  when: build.url_binaries|d() or build.git_binaries|d()
+
+- name: 'Register {{ build.name }} in database of the local Go binaries'
+  lineinfile:
+    path: '{{ golang__bin_database }}'
+    regexp: "{{ '^' + (((binary_item.dest | d(binary_item.src | d(binary_item))) | basename)
+                       | regex_replace('-', '\\-')
+                       | regex_replace('\\.', '\\\\.')) + '$' }}"
+    line: '{{ (binary_item.dest | d(binary_item.src | d(binary_item))) | basename }}'
+    state: 'present'
+    mode: '0644'
+  loop: '{{ build.url_binaries | d([]) + build.git_binaries | d([]) }}'
+  loop_control:
+    loop_var: 'binary_item'
+  register: golang__register_build_database
+  when: build.url_binaries|d() or build.git_binaries|d()
+
+- name: Update Ansible local facts if they were modified
+  action: setup
+  when: (ansible_local|d() and ansible_local.golang|d() and
+         (ansible_local.golang.configured|d())|bool and
+         (golang__register_build_database is changed or
+          golang__register_download_install is changed or
+          golang__register_build_install is changed))

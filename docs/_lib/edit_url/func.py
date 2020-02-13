@@ -74,11 +74,12 @@ def get_source_file_to_url_map(start_dir='.', skip_patterns=[]):
             relative_pagename = 'INSTALL.rst'
 
         relative_path = re.match(
-                r'docs/ansible/roles/(.*)/defaults(?:\.rst)$',
+                r'docs/ansible/roles/(.*)/defaults/(.+)\.rst$',
                 relative_pagename, flags=re.I)
         if relative_path:
             relative_pagename = ('ansible/roles/' + relative_path.group(1)
-                                 + '/defaults/main.yml')
+                                 + '/defaults/' + relative_path.group(2)
+                                 + '.yml')
 
         pagename_source_file = re.sub(r'\.rst$', '', pagename_source_file)
         source_file_to_url_map[pagename_source_file] = {

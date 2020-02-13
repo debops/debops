@@ -1,0 +1,732 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _mosquitto__ref_defaults:
+
+# debops.mosquitto default variables [[[
+# ======================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: mosquitto__upstream [[[
+#
+# If enabled, the role will install Mosquitto APT packages from the upstream
+# repository. On older OS releases, using the upstream package might enable
+# websocket support. The upstream repository is enabled automatically on OS
+# releases with unsuitable Mosquitto version.
+mosquitto__upstream: '{{ True if ansible_distribution_release in
+                         [ "wheezy", "precise", "trusty" ] else False }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__upstream_key_id [[[
+#
+# GPG fingerprint of the upstream APT repository signing key.
+mosquitto__upstream_key_id: '8277 CCB4 9EC5 B595 F2D2 C713 6161 1AE4 3099 3623'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__upstream_repository [[[
+#
+# APT URLs of the upstream Mosquitto repositories based on the OS distribution.
+mosquitto__upstream_repository:
+  Debian:   'deb http://repo.mosquitto.org/debian {{ ansible_distribution_release }} main'
+  Raspbian: 'deb http://repo.mosquitto.org/debian {{ ansible_distribution_release }} main'
+  Ubuntu:   'ppa:mosquitto-dev/mosquitto-ppa'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__base_packages [[[
+#
+# List of base APT packages to install for Mosquitto support.
+mosquitto__base_packages: [ 'mosquitto', 'mosquitto-clients', 'python-pip', 'python-setuptools' ]
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__packages [[[
+#
+# List of additional APT packages to install with Mosquitto.
+mosquitto__packages: []
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__version [[[
+#
+# The variable that contains the version number of the Mosquitto server,
+# checked dynamically during role execution.
+mosquitto__version: '{{ mosquitto__register_version.stdout | d("0.0.0") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# PyPI packages [[[
+# -----------------
+
+# The ``paho-mqtt`` Python module is required by Ansible ``mqtt`` module, and
+# it's not available in Debian repositories, therefore it's installed by
+# default from PyPI. This allows usage of the ``mqtt`` module in Ansible roles
+# after checking if Mosquitto is installed via Ansible local facts.
+# To disable this, make the PyPI package list empty.
+
+# .. envvar:: mosquitto__pip_packages [[[
+#
+# List of PyPI packages to install system-wide using :command:`pip` package
+# manager.
+mosquitto__pip_packages: [ 'paho-mqtt' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# User, group, additional groups [[[
+# ----------------------------------
+
+# .. envvar:: mosquitto__user [[[
+#
+# Name of the UNIX system account used by the Mosquitto service.
+mosquitto__user: 'mosquitto'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__group [[[
+#
+# Name of the UNIX system group used by the Mosquitto service.
+mosquitto__group: 'mosquitto'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__append_groups [[[
+#
+# List of additional UNIX groups that the Mosquitto system account should
+# belong to. The ``ssl-cert`` UNIX group is required for access to the PKI
+# private keys to the TLS certificates.
+mosquitto__append_groups: '{{ [ "ssl-cert" ] if mosquitto__pki|bool else [] }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Network configuration [[[
+# -------------------------
+
+# .. envvar:: mosquitto__network [[[
+#
+# Enable or disable access to the Mosquitto service over the network. If set to
+# ``False``, only local clients will be able to connect to the service.
+# WebSockets connections are still possible if enabled.
+mosquitto__network: True
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__allow [[[
+#
+# List of IP addresses or CIDR subnets that are allowed to connect to the
+# Mosquitto service over plaintext TCP connection. If it's empty, no host other
+# than ``localhost`` can connect over plaintext. This list also affects what
+# hosts are allowed to connect to the ``mosquitto`` daemon by TCP Wrappers.
+mosquitto__allow: []
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__allow_tls [[[
+#
+# List of IP addresses or CIDR subnets that are allowed to connect to the
+# Mosquitto service over TLS. If it's empty, any host can connect to the
+# service over TLS (depending on authentication, which by default is not
+# enabled). This list also affects what hosts are allowed to connect to the
+# ``mosquitto`` daemon by TCP Wrappers.
+mosquitto__allow_tls: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Websocket support [[[
+# ---------------------
+
+# Support for WebSockets is not available in older OS releases, it should work
+# properly on Debian Stretch and newer OS releases that provide the required
+# version of ``libwebsockets`` package.
+
+# You can test support for WebSockets in Mosquitto using:
+# http://www.hivemq.com/blog/full-featured-mqtt-client-browser
+
+# .. envvar:: mosquitto__websockets [[[
+#
+# Enable or disable support for WebSockets if the required packages are
+# available.
+mosquitto__websockets: '{{ True
+                           if (mosquitto__register_websockets.stdout|d() and
+                               mosquitto__register_websockets.stdout != "")
+                           else False }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__websockets_package [[[
+#
+# Specify a list of the APT packages which will be checked for existence.
+# If the packages are available, the WebSockets support will be enabled on this
+# host.
+mosquitto__websockets_packages: [ 'libwebsockets8' ]
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__websockets_allow [[[
+#
+# List of IP addresses or CIDR subnets which will be allowed to connect to the
+# Mosquitto WebSocket service by the webserver. If this list is empty, any
+# hosts can connect over WebSockets.
+mosquitto__websockets_allow: []
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__fqdn [[[
+#
+# The FQDN address of the WebSocket Mosquitto service, configured in the
+# webserver.
+mosquitto__fqdn: 'mqtt.{{ mosquitto__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__domain [[[
+#
+# The DNS domain used by Mosquitto WebSockets service, configured in the
+# webserver.
+mosquitto__domain: '{{ ansible_local.core.domain
+                       if (ansible_local|d() and ansible_local.core|d() and
+                           ansible_local.core.domain|d())
+                       else ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__http_dir_path [[[
+#
+# Absolute path of the directory with static files which will be served by the
+# Mosquitto server over HTTP. This directory will be created by the role if it
+# doesn't exist.
+mosquitto__http_dir_path: '{{ (ansible_local.root.data
+                               if (ansible_local|d() and ansible_local.root|d() and
+                                   ansible_local.root.data|d())
+                               else "/srv") + "/mosquitto/www/public" }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__http_dir_owner [[[
+#
+# The UNIX system account which will be an owner of the public HTTP server
+# directory.
+mosquitto__http_dir_owner: 'root'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__http_dir_group [[[
+#
+# The UNIX system group which will be the group of the public HTTP server
+# directory.
+mosquitto__http_dir_group: 'www-data'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__http_dir_mode [[[
+#
+# The UNIX permissions of the public HTTP server directory.
+mosquitto__http_dir_mode: '0755'
+                                                                   # ]]]
+                                                                   # ]]]
+# Global Mosquitto configuration [[[
+# ----------------------------------
+
+# The variables specify Mosquitto global configuration options.
+# See :ref:`mosquitto__ref_options` for more details.
+
+# .. envvar:: mosquitto__default_options [[[
+#
+# The YAML dictionary with default Mosquitto options.
+mosquitto__default_options:
+  password_file:   '{{ mosquitto__password_file if mosquitto__password|bool else "" }}'
+  acl_file:        '{{ mosquitto__acl_file if mosquitto__acl|bool else "" }}'
+  allow_anonymous: '{{ mosquitto__allow_anonymous }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__options [[[
+#
+# The YAML dictionary with custom Mosquitto options configured in the Ansible
+# inventory. This variable can be used to override the default options.
+mosquitto__options: {}
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__combined_options [[[
+#
+# The YAML dictionary that holds the combined global options and is used in the
+# configuration template.
+mosquitto__combined_options: '{{ mosquitto__default_options
+                                 | combine(mosquitto__options) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Mosquitto listeners [[[
+# -----------------------
+
+# The variables configure what ports the Mosquitto is listening for
+# connections. See :ref:`mosquitto__ref_listeners` for more details.
+
+# .. envvar:: mosquitto__default_listeners [[[
+#
+# The YAML dictionary that configures default Mosquitto listeners.
+mosquitto__default_listeners:
+
+  '1883':
+    comment:     'The default listener for local clients'
+    listener:    '{{ "1883" + ("" if mosquitto__allow|d() else " localhost") }}'
+    avahi_state: '{{ "present" if (mosquitto__network|bool and mosquitto__allow|d()) else "absent" }}'
+    avahi_type:  '_mqtt._tcp'
+    avahi_port:  '1883'
+
+  '1884':
+    comment:     'The websocket listener behind a webserver'
+    listener:    '1884 127.0.0.1'
+    protocol:    'websockets'
+    http_dir:    '{{ mosquitto__http_dir_path }}'
+    state:       '{{ "present" if mosquitto__websockets|bool else "absent" }}'
+
+  '8883':
+    comment:     'The default listener for remote clients over TLS'
+    listener:    '{{ "8883" + ("" if mosquitto__network|bool else " localhost") }}'
+    state:       '{{ "present" if mosquitto__pki|bool else "absent" }}'
+    cafile:      '{{ mosquitto__broker_cafile }}'
+    certfile:    '{{ mosquitto__broker_certfile }}'
+    keyfile:     '{{ mosquitto__broker_keyfile }}'
+    tls_version: '{{ mosquitto__tls_version }}'
+    ciphers:     '{{ mosquitto__ciphers }}'
+    avahi_state: '{{ "present" if (mosquitto__network|bool and mosquitto__pki|bool) else "absent" }}'
+    avahi_type:  '_secure-mqtt._tcp'
+    avahi_port:  '8883'
+    avahi_txt:   'tls-version={{ mosquitto__tls_version }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__listeners [[[
+#
+# The YAML dictionary with custom Mosquitto listeners defined in Ansible
+# inventory. This variable can be used to modify the default listeners.
+mosquitto__listeners: {}
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__combined_listeners [[[
+#
+# The YAML dictionary that combines the other listener variables and is used in
+# the configuration template.
+mosquitto__combined_listeners: '{{ mosquitto__default_listeners
+                                   | combine(mosquitto__listeners) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Mosquitto bridges [[[
+# ---------------------
+
+# The variables define configuration of bridge connections between MQTT
+# services. See :ref:`mosquitto__ref_bridges` for more details.
+
+# .. envvar:: mosquitto__bridges [[[
+#
+# The YAML dictionary that defines MQTT bridges which should be configured on
+# all hosts in the Ansible inventory.
+mosquitto__bridges: {}
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__group_bridges [[[
+#
+# The YAML dictionary that defines MQTT bridges which should be configured on
+# hosts in specific Ansible inventory group.
+mosquitto__group_bridges: {}
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__host_bridges [[[
+#
+# The YAML dictionary that defines MQTT bridges which should be configured on
+# specific hosts in Ansible inventory.
+mosquitto__host_bridges: {}
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__combined_bridges [[[
+#
+# The YAML dictionary that combines all of the bridge variables and is used in
+# the configuration template.
+mosquitto__combined_bridges: '{{ mosquitto__bridges
+                                 | combine(mosquitto__group_bridges)
+                                 | combine(mosquitto__host_bridges) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Public Key Infrastructure [[[
+# -----------------------------
+
+# The ``debops.mosquitto`` role uses the PKI infrastructure maintained by the
+# :ref:`debops.pki` Ansible role. See its documentation for more details.
+
+# .. envvar:: mosquitto__pki [[[
+#
+# Enable or disable support for the PKI infrastructe and connections over TLS,
+# depending on the presence of the :ref:`debops.pki` environment.
+mosquitto__pki: '{{ (ansible_local.pki.enabled
+                     if (ansible_local|d() and ansible_local.pki|d() and
+                         ansible_local.pki.enabled|d())
+                     else False) | bool }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__pki_path [[[
+#
+# Absolute path to the directory that contains PKI realms.
+mosquitto__pki_path: '{{ ansible_local.pki.path
+                         if (ansible_local|d() and ansible_local.pki|d() and
+                             ansible_local.pki.path|d())
+                         else "/etc/pki/realms" }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__pki_client_realm [[[
+#
+# Name of the PKI realm used by MQTT clients for connections over TLS.
+mosquitto__pki_client_realm: 'domain'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__pki_bridge_realm [[[
+#
+# Name of the PKI realm used by the MQTT bridge connections over TLS.
+mosquitto__pki_bridge_realm: 'domain'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__pki_broker_realm [[[
+#
+# Name of the PKI realm used by the Mosquitto TLS listener.
+mosquitto__pki_broker_realm: 'domain'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__pki_ca [[[
+#
+# Name of the file with the Root CA certificate of a given PKI realm.
+mosquitto__pki_ca: '{{ ansible_local.pki.ca
+                       if (ansible_local|d() and ansible_local.pki|d() and
+                           ansible_local.pki.ca|d())
+                       else "CA.crt" }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__pki_crt [[[
+#
+# Name of the file with the certificate of a given PKI realm.
+mosquitto__pki_crt: '{{ ansible_local.pki.crt
+                        if (ansible_local|d() and ansible_local.pki|d() and
+                            ansible_local.pki.crt|d())
+                        else "default.crt" }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__pki_key [[[
+#
+# Name of the file with the private key of a given PKI realm.
+mosquitto__pki_key: '{{ ansible_local.pki.key
+                        if (ansible_local|d() and ansible_local.pki|d() and
+                            ansible_local.pki.key|d())
+                        else "default.key" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# PKI inventory variables [[[
+# ---------------------------
+
+# These variables define paths to the CA, private key and certificate files
+# depending on the specified PKI realm. They are defined for convenience and
+# can be used in the Ansible inventory for listener/bridge definitions that
+# configure TLS connections.
+
+# .. envvar:: mosquitto__client_cafile [[[
+#
+# Absolute path to the Root CA certificate of the PKI client realm.
+mosquitto__client_cafile: '{{ mosquitto__pki_path + "/" +
+                              mosquitto__pki_client_realm + "/" +
+                              mosquitto__pki_ca }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__client_certfile [[[
+#
+# Absolute path to the certificate of the PKI client realm.
+mosquitto__client_certfile: '{{ mosquitto__pki_path + "/" +
+                                mosquitto__pki_client_realm + "/" +
+                                mosquitto__pki_crt }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__client_keyfile [[[
+#
+# Absolute path to the private key of the PKI client realm.
+mosquitto__client_keyfile: '{{ mosquitto__pki_path + "/" +
+                               mosquitto__pki_client_realm + "/" +
+                               mosquitto__pki_key }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__bridge_cafile [[[
+#
+# Absolute path to the Root CA certificate of the PKI bridge realm.
+mosquitto__bridge_cafile: '{{ mosquitto__pki_path + "/" +
+                              mosquitto__pki_bridge_realm + "/" +
+                              mosquitto__pki_ca }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__bridge_certfile [[[
+#
+# Absolute path to the certificate of the PKI bridge realm.
+mosquitto__bridge_certfile: '{{ mosquitto__pki_path + "/" +
+                                mosquitto__pki_bridge_realm + "/" +
+                                mosquitto__pki_crt }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__bridge_keyfile [[[
+#
+# Absolute path to the private key of the PKI bridge realm.
+mosquitto__bridge_keyfile: '{{ mosquitto__pki_path + "/" +
+                               mosquitto__pki_bridge_realm + "/" +
+                               mosquitto__pki_key }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__broker_cafile [[[
+#
+# Absolute path to the Root CA certificate of the PKI broker realm.
+mosquitto__broker_cafile: '{{ mosquitto__pki_path + "/" +
+                              mosquitto__pki_broker_realm + "/" +
+                              mosquitto__pki_ca }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__broker_certfile [[[
+#
+# Absolute path to the certificate of the PKI broker realm.
+mosquitto__broker_certfile: '{{ mosquitto__pki_path + "/" +
+                                mosquitto__pki_broker_realm + "/" +
+                                mosquitto__pki_crt }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__broker_keyfile [[[
+#
+# Absolute path to the private key of the PKI broker realm.
+mosquitto__broker_keyfile: '{{ mosquitto__pki_path + "/" +
+                               mosquitto__pki_broker_realm + "/" +
+                               mosquitto__pki_key }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__ciphers [[[
+#
+# String which contains a list of OpenSSL ciphers to use for TLS connections.
+# This list is based on the recommended cipher list according to the Applied
+# Crypto Hardening guide (https://bettercrypto.org/).
+mosquitto__ciphers: 'DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-CAMELLIA256-SHA:DHE-RSA-AES256-SHA:DHE-RSA-CAMELLIA128-SHA:DHE-RSA-AES128-SHA:CAMELLIA256-SHA:AES256-SHA:CAMELLIA128-SHA:AES128-SHA'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__tls_version [[[
+#
+# Specify the TLS version to use for encrypted connections.
+mosquitto__tls_version: 'tlsv1.2'
+                                                                   # ]]]
+                                                                   # ]]]
+# Avahi/ZeroConf support [[[
+# --------------------------
+
+# .. envvar:: mosquitto__avahi [[[
+#
+# Enable or disable Avahi support. See :ref:`mosquitto__ref_avahi_support` for
+# more details.
+mosquitto__avahi: '{{ True
+                      if (ansible_local|d() and ansible_local.avahi|d() and
+                          ansible_local.avahi.installed|bool)
+                      else False }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__avahi_name [[[
+#
+# Description of the Mosquitto service in Avahi, visible to other hosts.
+mosquitto__avahi_name: 'Mosquitto MQTT server on %h'
+                                                                   # ]]]
+                                                                   # ]]]
+# Password file configuration [[[
+# -------------------------------
+
+# Automatic creation of user/password entries is available in Mosquitto 1.4+.
+# On older OS releases it will work only with upstream Mosquitto version, on
+# Debian Stretch it should work out of the box.
+
+# .. envvar:: mosquitto__password [[[
+#
+# Enable password file configuration when there users defined in the Ansible
+# inventory.
+mosquitto__password: '{{ True
+                         if (mosquitto__auth_users or
+                             mosquitto__auth_group_users or
+                             mosquitto__auth_host_users)
+                         else False }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__password_file [[[
+#
+# Absolute path of the file which contains user/password entries.
+mosquitto__password_file: '/etc/mosquitto/passwd'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__password_secret_path [[[
+#
+# Path to the :file:`secret/` directory on the Ansible Controller where the
+# autogenerated user passwords will be stored. See :ref:`debops.secret` Ansible role
+# documentation for more details.
+mosquitto__password_secret_path: '{{ secret + "/mosquitto/passwd" }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__allow_anonymous [[[
+#
+# If any user accounts are defined in the Ansible inventory (password support
+# is enabled), anonymous access to the Mosquitto broker will be disabled.
+# Otherwise anonymous connections are allowed.
+mosquitto__allow_anonymous: '{{ "false" if mosquitto__password|bool else "true" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Access Control List support [[[
+# -------------------------------
+
+# .. envvar:: mosquitto__acl [[[
+#
+# Enable Access Control List support if any users are defined in the Ansible
+# inventory, and/or anonymous or pattern configuration is present.
+mosquitto__acl: '{{ True
+                    if (mosquitto__auth_anonymous or
+                        mosquitto__auth_users or
+                        mosquitto__auth_group_users or
+                        mosquitto__auth_host_users or
+                        mosquitto__auth_patterns)
+                    else False }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__acl_file [[[
+#
+# Absolute path to the file which contains ACL entries.
+mosquitto__acl_file: '/etc/mosquitto/acl'
+                                                                   # ]]]
+                                                                   # ]]]
+# User authentication, ACL configuration [[[
+# ------------------------------------------
+
+# .. envvar:: mosquitto__auth_anonymous [[[
+#
+# A YAML text block or a YAML list of ACL entries that define access control
+# for anonymous connections. See :ref:`mosquitto__ref_auth_anonymous` for more
+# details.
+mosquitto__auth_anonymous: []
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__auth_users [[[
+#
+# A YAML list of user accunts configured on all hosts in Ansible inventory.
+# See :ref:`mosquitto__ref_auth_users` for more details.
+mosquitto__auth_users: []
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__auth_group_users [[[
+#
+# A YAML list of user accunts configured on hosts in specifc Ansible inventory
+# group. See :ref:`mosquitto__ref_auth_users` for more details.
+mosquitto__auth_group_users: []
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__auth_host_users [[[
+#
+# A YAML list of user accunts configured on specific hosts in Ansible
+# inventory. See :ref:`mosquitto__ref_auth_users` for more details.
+mosquitto__auth_host_users: []
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__auth_patterns [[[
+#
+# A YAML text block or YAML list of ACL entries based on topic patterns.
+# See :ref:`mosquitto__ref_auth_patterns` for more details.
+mosquitto__auth_patterns: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: mosquitto__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+mosquitto__etc_services__dependent_list:
+
+  - name: 'mqtt'
+    port: '1883'
+    comment: 'Message Queuing Telemetry Transport Protocol'
+
+  - name: 'ws-mqtt'
+    port: '1884'
+    comment: 'WebSocket MQTT'
+
+  - name: 'secure-mqtt'
+    port: '8883'
+    comment: 'Secure MQTT'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+mosquitto__keyring__dependent_apt_keys:
+
+  - id: '{{ mosquitto__upstream_key_id }}'
+    repo: '{{ mosquitto__upstream_repository[ansible_distribution] }}'
+    state: '{{ "present" if mosquitto__upstream|bool else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__tcpwrappers__dependent_allow [[[
+#
+# Configuration for the :ref:`debops.tcpwrappers` Ansible role.
+mosquitto__tcpwrappers__dependent_allow:
+
+  - daemon: 'mosquitto'
+    client: '{{ mosquitto__allow }}'
+    accept_any: False
+    weight: '50'
+    filename: 'mosquitto_dependent_allow'
+    comment: 'Allow remote connections to Mosquitto server'
+    state: '{{ "present"
+               if mosquitto__network|bool
+               else "absent" }}'
+
+  - daemon: 'mosquitto'
+    client: '{{ mosquitto__allow_tls }}'
+    accept_any: True
+    weight: '50'
+    filename: 'mosquitto-tls_dependent_allow'
+    comment: 'Allow remote connections to Mosquitto server over TLS'
+    state: '{{ "present"
+               if (mosquitto__network|bool and
+                   mosquitto__pki|bool)
+               else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+mosquitto__ferm__dependent_rules:
+
+  - type: 'accept'
+    dport: [ 'mqtt' ]
+    weight: '40'
+    saddr: '{{ mosquitto__allow }}'
+    accept_any: False
+    by_role: 'debops.mosquitto'
+    rule_state: '{{ "present"
+                    if mosquitto__network|bool
+                    else "absent" }}'
+
+  - type: 'accept'
+    dport: [ 'secure-mqtt' ]
+    weight: '40'
+    saddr: '{{ mosquitto__allow + mosquitto__allow_tls }}'
+    accept_any: True
+    by_role: 'debops.mosquitto'
+    rule_state: '{{ "present"
+                    if (mosquitto__network|bool and
+                        mosquitto__pki|bool)
+                    else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__nginx__dependent_servers [[[
+#
+# Server configuration for the :ref:`debops.nginx` Ansible role.
+mosquitto__nginx__dependent_servers:
+  - name: '{{ mosquitto__fqdn }}'
+    filename: 'mosquitto-websocket'
+    by_role: 'debops.mosquitto'
+    root: '{{ mosquitto__http_dir_path }}'
+    webroot_create: False
+    allow: '{{ mosquitto__websockets_allow }}'
+    type: 'proxy'
+    proxy_pass: 'http://mosquitto_websocket'
+    proxy_redirect: 'default'
+    proxy_options: |
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+
+# ]]]
+# .. envvar:: mosquitto__nginx__dependent_upstreams [[[
+#
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
+mosquitto__nginx__dependent_upstreams:
+  - name: 'mosquitto_websocket'
+    server: '127.0.0.1:1884'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

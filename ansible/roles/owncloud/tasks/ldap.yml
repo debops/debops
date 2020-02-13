@@ -1,0 +1,48 @@
+---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
+
+- name: Check default ldap config exists
+  command: php --file "{{ owncloud__app_home }}/occ" ldap:show-config "{{ owncloud__ldap_config_id }}"
+  changed_when: False
+  when: (not ansible_check_mode)
+  register: owncloud__register_ldap_default_config_exits
+  become: True
+  become_user: '{{ owncloud__app_user }}'
+
+- name: Create empty LDAP configuration
+  environment:
+    LC_ALL: 'C'
+  shell: set -o nounset -o pipefail -o errexit &&
+         php --file "{{ owncloud__app_home }}/occ" ldap:create-empty-config | awk '{print $NF}'
+  args:
+    executable: 'bash'
+  become: True
+  become_user: '{{ owncloud__app_user }}'
+  register: owncloud__register_ldap_config_id
+  when: ((not ansible_check_mode) and 'Invalid configID' in owncloud__register_ldap_default_config_exits.stdout|d(""))
+
+- name: Update ownCloud local facts
+  template:
+    src: 'etc/ansible/facts.d/owncloud.fact.j2'
+    dest: '/etc/ansible/facts.d/owncloud.fact'
+    mode: '0755'
+  register: owncloud__register_local_facts_ldap
+
+- name: Gather facts if they were modified
+  action: setup
+  when: owncloud__register_local_facts_ldap is changed
+
+- name: Configure LDAP parameters
+  command: php --file '{{ owncloud__app_home }}/occ' ldap:set-config '{{ owncloud__ldap_config_id }}' '{{ item.name }}' '{{ item.value }}'
+  changed_when: False
+  become: True
+  become_user: '{{ owncloud__app_user }}'
+  loop: '{{ q("flattened", owncloud__ldap_combined_config) | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"option": item.name, "value": item.value} }}'
+  no_log: '{{ item.no_log | d(True
+                              if (item.name in [ "ldapAgentPassword" ])
+                              else False) }}'
+  when: ((not ansible_check_mode) and item.state|d('present') not in [ 'absent', 'ignore' ] and
+         ('Invalid configID' in owncloud__register_ldap_default_config_exits.stdout|d("") or
+         owncloud_ldap_update_settings|bool))

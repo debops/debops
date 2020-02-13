@@ -1,6 +1,8 @@
 ---
 
 - name: Setup and manage the server-side of X2Go
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_x2go_server' ]
   become: True
 
@@ -10,7 +12,7 @@
 
   roles:
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::x2go_server' ]
       keyring__dependent_apt_keys:
         - '{{ x2go_server__keyring__dependent_apt_keys }}'

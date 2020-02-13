@@ -1,6 +1,8 @@
 ---
 
 - name: Install and manage libvirtd QEMU configuration
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_libvirtd_qemu' ]
   become: True
 
@@ -10,10 +12,10 @@
 
   roles:
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ libvirtd_qemu__ferm__dependent_rules }}'
 
-    - role: debops.libvirtd_qemu
+    - role: libvirtd_qemu
       tags: [ 'role::libvirtd_qemu', 'skip::libvirtd_qemu' ]

@@ -1,0 +1,22 @@
+# {{ ansible_managed }}
+{#
+
+This file follows the upstream default configuration except for the parts
+that are configurable via DebOps variables. If you need a more customized
+setup, you can provide your own template via lookup mechanism.
+
+#}
+{% import 'dovecot_macros.j2' as macros with context %}
+
+##
+## Settings for the Sieve interpreter
+##
+
+plugin {
+{% if dovecot_managesieve_config_map is defined and dovecot_managesieve_config_map %}
+{%   if 'plugin' in dovecot_managesieve_config_map %}
+{%     set dovecot_tpl_sieve_plugin_map = dovecot_managesieve_config_map['plugin'] %}
+{%   endif %}
+{% endif %}
+{{ macros.dovecot_properties(dovecot_tpl_sieve_plugin_map|default({})) }}
+}

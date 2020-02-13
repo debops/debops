@@ -1,0 +1,58 @@
+---
+
+# Configuration of SKS reconcilliation service port
+sks_recon_name: 'sks'
+sks_recon_port: 11370
+
+# Configuration of SKS keyserver service on a frontend host
+sks_hkp_frontend_name: 'hkp-backend'
+sks_hkp_frontend_port: '11372'
+
+# Configuration for HTTP web frontend
+sks_nginx_frontend:
+  by_role: 'debops.sks'
+  enabled: True
+  default: False
+  name: '{{ ["default_sks"] + sks_domain }}'
+  root: '{{ "/srv/www/sites/" + sks_domain[0] + "/public" }}'
+  webroot_create: False
+  ssl: False
+  listen: [ '[::]:80', '[::]:11371' ]
+  location:
+    '/': |
+      try_files $uri $uri/ =404;
+      index index.html;
+    '/pks': |
+      proxy_pass http://sks_servers/pks;
+      proxy_pass_header Server;
+      add_header Via "1.1 {{ ansible_fqdn }} (nginx)";
+      proxy_ignore_client_abort on;
+
+# Configuration for HTTPS web frontend
+sks_nginx_ssl_frontend:
+  by_role: 'debops.sks'
+  enabled: True
+  default: False
+  state: '{{ "present"
+             if (ansible_local|d() and ansible_local.pki|d() and
+                 (ansible_local.pki.enabled|d())|bool)
+             else "absent" }}'
+  name: '{{ sks_domain }}'
+  listen: False
+  location:
+    '/': |
+      try_files $uri $uri/ =404;
+      index index.html;
+    '/pks': |
+      proxy_pass http://sks_servers/pks;
+      proxy_pass_header Server;
+      add_header Via "1.1 {{ ansible_fqdn }} (nginx)";
+      proxy_ignore_client_abort on;
+
+# SKS server upstreams
+sks_nginx_upstreams:
+  enabled: True
+  name: 'sks_servers'
+  server: 'localhost:{{ sks_hkp_frontend_port }}'
+  cluster: '{{ sks_cluster | difference(sks_frontends) }}'
+  port: '11371'

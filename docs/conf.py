@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # DebOps documentation build configuration file
-# Copyright (C) 2014-2018 DebOps Project https://debops.org/
+# Copyright (C) 2014-2020 DebOps Project https://debops.org/
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -116,8 +116,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'DebOps'
-author = u'Maciej Delmanowski, Nick Janetakis, Robin Schneider'
-copyright = u'2014-2019, {}'.format(author)
+author = u'Maciej Delmanowski, Nick Janetakis, Robin Schneider and others'
+copyright = u'2014-2020, {}'.format(author)
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -140,7 +140,9 @@ version = release
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build', 'includes']
+exclude_patterns = ['_build', 'includes', 'ansible/roles/*/man_*']
+if tags.has('manpages'):
+    exclude_patterns = ['_build', 'includes']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -227,6 +229,9 @@ html_favicon = '_static/favicon.ico'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# Generate :manpage: URLs
+manpages_url = 'https://manpages.debian.org/{path}'
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -328,13 +333,43 @@ latex_logo = '_static/images/debops-small.png'
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    ('index', 'debops', u'DebOps Documentation',
-     [author], 1)
-]
+# General-purpose man pages are not ready yet
+man_pages = []
+# man_pages = [
+#     ('index', 'debops', u'DebOps Documentation',
+#      [author], 1)
+# ]
+
+# Convert Ansible role defaults files written in YAML to manual pages
+for element in os.listdir(rst_ansible_roles):
+
+    role_description = ''
+    role_authors = []
+    if os.path.isfile(yml_ansible_roles + element + '/COPYRIGHT'):
+        with open(yml_ansible_roles + element + '/COPYRIGHT', 'r') as f:
+            for line in f:
+
+                if (not role_description and
+                        (line.startswith(element) or
+                         line.startswith('debops.' + element))):
+                    description = line.strip().split()[2:]
+                    role_description = ' '.join(description)
+
+                if (line.startswith('Copyright (C)') and '@' in line):
+                    authors = line.strip().split()[3:-1]
+                    role_authors.append(' '.join(authors))
+
+    if os.path.isfile(rst_ansible_roles + element + '/man_index.rst'):
+        man_pages.append((rst_ansible_roles + element + '/man_index',
+                          'debops.' + element, role_description,
+                          role_authors, 5))
+    elif os.path.isfile(rst_ansible_roles + element + '/index.rst'):
+        man_pages.append((rst_ansible_roles + element + '/index',
+                          'debops.' + element, role_description,
+                          role_authors, 5))
 
 # If true, show URL addresses after external links.
-# man_show_urls = False
+man_show_urls = True
 
 
 # -- Options for Texinfo output -------------------------------------------

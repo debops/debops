@@ -1,6 +1,8 @@
 ---
 
 - name: Manage Postwhite service
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_postwhite' ]
   become: True
 
@@ -8,21 +10,25 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: debops.postfix/env
-      tags: [ 'role::postfix', 'role::secret' ]
+    - import_role:
+        name: 'postfix'
+        tasks_from: 'main_env'
       when: (ansible_local|d() and ansible_local.postfix|d() and
              (ansible_local.postfix.installed|d())|bool)
+      tags: [ 'role::postfix', 'role::secret' ]
 
-    - role: debops.secret
+  roles:
+
+    - role: secret
       tags: [ 'role::secret', 'role::postfix' ]
       secret__directories:
         - '{{ postfix__secret__directories }}'
       when: (ansible_local|d() and ansible_local.postfix|d() and
              (ansible_local.postfix.installed|d())|bool)
 
-    - role: debops.postfix
+    - role: postfix
       tags: [ 'role::postfix', 'skip::postfix' ]
       postfix__dependent_maincf:
         - role: 'postwhite'
@@ -30,5 +36,5 @@
       when: (ansible_local|d() and ansible_local.postfix|d() and
              (ansible_local.postfix.installed|d())|bool)
 
-    - role: debops.postwhite
+    - role: postwhite
       tags: [ 'role::postwhite', 'skip::postwhite' ]

@@ -1,6 +1,8 @@
 ---
 
 - name: Manage Docker server
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_docker_server' ]
   become: True
 
@@ -10,31 +12,31 @@
 
   roles:
 
-    - role: debops.resolvconf
+    - role: resolvconf
       tags: [ 'role::resolvconf', 'skip::resolvconf' ]
       resolvconf__enabled: True
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::docker_server' ]
       keyring__dependent_apt_keys:
         - '{{ docker_server__keyring__dependent_apt_keys }}'
 
-    - role: debops.etc_services
+    - role: etc_services
       tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services__dependent_list:
         - '{{ docker_server__etc_services__dependent_list }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ docker_server__ferm__dependent_rules }}'
 
-    - role: debops.python
-      tags: [ 'role::python', 'skip::python' ]
+    - role: python
+      tags: [ 'role::python', 'skip::python', 'role::docker_server' ]
       python__dependent_packages3:
         - '{{ docker_server__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ docker_server__python__dependent_packages2 }}'
 
-    - role: debops.docker_server
+    - role: docker_server
       tags: [ 'role::docker_server', 'skip::docker_server' ]

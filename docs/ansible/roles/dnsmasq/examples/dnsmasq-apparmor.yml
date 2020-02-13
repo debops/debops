@@ -1,0 +1,47 @@
+---
+
+## Basically the same playbook as the one in DebOps core with the difference
+## that this playbook also uses the debops-contrib.apparmor role to configure
+## AppArmor.
+
+- name: Configure AppArmor for dnsmasq
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_contrib_service_dnsmasq' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  pre_tasks:
+
+    - import_role:
+        name: 'dnsmasq'
+        tasks_from: 'main_env'
+      tags: [ 'role::dnsmasq', 'role::ferm', 'role::tcpwrappers' ]
+
+  roles:
+
+    - role: debops-contrib.apparmor
+      tags: [ 'role::apparmor' ]
+      apparmor__local_dependent_config: '{{ dnsmasq__apparmor__local_dependent_config }}'
+
+
+- name: Configure dnsmasq
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_contrib_service_dnsmasq' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ dnsmasq__ferm__dependent_rules }}'
+
+    - role: dnsmasq
+      tags: [ 'role::dnsmasq' ]

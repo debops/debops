@@ -1,0 +1,56 @@
+{% set nullmailer__tpl_remotes = [] %}
+{% for entry in (nullmailer__default_remotes + nullmailer__remotes) %}
+{%   set nullmailer__tpl_entry = [] %}
+{%   if entry is string %}
+{%     set _ = nullmailer__tpl_remotes.append(entry) %}
+{%   elif entry is mapping and entry.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%     if entry.host|d() %}
+{%       set _ = nullmailer__tpl_entry.append(entry.host) %}
+{%       set _ = nullmailer__tpl_entry.append(entry.protocol|d('smtp')) %}
+{%       if ((entry.starttls|d(nullmailer__starttls)|bool) and (not entry.ssl|d()|bool) and (not entry.options|d())) %}
+{%         set _ = nullmailer__tpl_entry.append('--starttls') %}
+{%       endif %}
+{%       if entry.ssl|d()|bool %}
+{%         set _ = nullmailer__tpl_entry.append('--ssl') %}
+{%       endif %}
+{%       if entry.insecure|d()|bool %}
+{%         set _ = nullmailer__tpl_entry.append('--insecure') %}
+{%       endif %}
+{%       if entry.x509fmtder|d()|bool %}
+{%         set _ = nullmailer__tpl_entry.append('--x509fmtder') %}
+{%       endif %}
+{%       if entry.x509cafile|d() %}
+{%         set _ = nullmailer__tpl_entry.append('--x509cafile=' + entry.x509cafile) %}
+{%       endif %}
+{%       if entry.x509certfile|d() %}
+{%         set _ = nullmailer__tpl_entry.append('--x509certfile=' + entry.x509certfile) %}
+{%       endif %}
+{%       if entry.x509crlfile|d() %}
+{%         set _ = nullmailer__tpl_entry.append('--x509crlfile=' + entry.x509crlfile) %}
+{%       endif %}
+{%       if entry.port|d() %}
+{%         set _ = nullmailer__tpl_entry.append('--port=' + entry.port|string) %}
+{%       endif %}
+{%       if ((entry.auth|d()|bool) or (entry.auth_login|d()|bool)) %}
+{%         set _ = nullmailer__tpl_entry.append('--auth-login') %}
+{%       endif %}
+{%       if entry.user|d() %}
+{%         set _ = nullmailer__tpl_entry.append('--user=' + entry.user) %}
+{%       endif %}
+{%       if entry.password|d() or entry.pass|d() %}
+{%         set _ = nullmailer__tpl_entry.append('--pass=' + (entry.password | d(entry.pass))) %}
+{%       endif %}
+{%       if entry.options|d() %}
+{%         set _ = nullmailer__tpl_entry.append(entry.options if entry.options is string else entry.options|join(' ')) %}
+{%       endif %}
+{%       set _ = nullmailer__tpl_remotes.append(nullmailer__tpl_entry | join(' ')) %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+{% if nullmailer__tpl_remotes %}
+{%   for entry in nullmailer__tpl_remotes %}
+- '{{ entry }}'
+{%   endfor %}
+{% else %}
+- ''
+{% endif %}

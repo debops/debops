@@ -1,7 +1,9 @@
 ---
 
 - name: Configure Router Advertisement Daemon
-  hosts: [ 'debops_service_radvd', 'debops_radvd' ]
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_radvd' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -10,5 +12,5 @@
 
   roles:
 
-    - role: debops.radvd
+    - role: radvd
       tags: [ 'role::radvd', 'skip::radvd' ]

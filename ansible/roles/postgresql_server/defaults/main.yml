@@ -1,0 +1,693 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _postgresql_server__ref_defaults:
+
+# debops.postgresql_server default variables [[[
+# ==============================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# PostgreSQL installation, packages [[[
+# -------------------------------------
+
+# .. envvar:: postgresql_server__upstream [[[
+#
+# Enable PostgreSQL Global Development Group APT repository?
+# More information: https://wiki.postgresql.org/wiki/Apt
+postgresql_server__upstream: False
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__upstream_key_id [[[
+#
+# The GPG fingerprint of the upstream APT repository key.
+postgresql_server__upstream_key_id: 'B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__upstream_apt_repo [[[
+#
+# The upstream APT repository URL in the ``sources.list`` format.
+postgresql_server__upstream_apt_repo: 'deb http://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release }}-pgdg main'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__base_packages [[[
+#
+# List of base PostgreSQL packages to install.
+postgresql_server__base_packages: [ 'postgresql', 'postgresql-client',
+                                    'postgresql-contrib' ]
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__python_packages [[[
+#
+# List of Python packages to install with PostgreSQL.
+postgresql_server__python_packages: []
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__packages [[[
+#
+# Install additional packages with PostgreSQL.
+postgresql_server__packages: []
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__preferred_version [[[
+#
+# Specify preferred version of the PostgreSQL packages to install. Only makes
+# sense when multiple PostgreSQL versions are available as APT packages, for
+# example when the upstream APT repository is enabled. See the
+# :ref:`postgresql_server__ref_preferred_version` for more details.
+postgresql_server__preferred_version: ''
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__user [[[
+#
+# System user which manages PostgreSQL clusters.
+postgresql_server__user: 'postgres'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__group [[[
+#
+# System group which manages PostgreSQL clusters.
+postgresql_server__group: 'postgres'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__delegate_to [[[
+#
+# This is a counterpart variable to the one in :ref:`debops.postgresql` role, it
+# should point to the FQDN hostname of the server so that other role can
+# correctly delegate Ansible tasks.
+postgresql_server__delegate_to: '{{ inventory_hostname }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Network connections, firewall [[[
+# ---------------------------------
+
+# .. envvar:: postgresql_server__listen_addresses [[[
+#
+# List of IP addresses on which PostgreSQL clusters will listen for TCP
+# connections by default.
+postgresql_server__listen_addresses: [ 'localhost' ]
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__allow [[[
+#
+# List of IP addresses or CIDR subnets that can connect to all PostgreSQL
+# clusters. If it's empty, remote connections are blocked, but individual
+# clusters can add their own firewall rules.
+postgresql_server__allow: []
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__max_connections [[[
+#
+# Default maximum number of connections to a PostgreSQL cluster.
+postgresql_server__max_connections: '100'
+                                                                   # ]]]
+                                                                   # ]]]
+# Database admin and trusted roles [[[
+# ------------------------------------
+
+# .. envvar:: postgresql_server__admins [[[
+#
+# List of local UNIX accounts which will be allowed to login to any database
+# as ``postgres`` role with peer authentication. The special ``*postgres*``
+# account name is replaced with username of the cluster system user.
+postgresql_server__admins: '{{ [ "root", "*postgres*" ] +
+                               (ansible_local.core.admin_users
+                                if (ansible_local|d() and ansible_local.core|d() and
+                                    ansible_local.core.admin_users|d())
+                                else []) }}'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__admin_password [[[
+#
+# The default password for the PostgreSQL admin account (not the ``postgres``
+# UNIX system account).
+postgresql_server__admin_password: "{{ lookup('password', secret + '/credentials/' +
+                                       inventory_hostname + '/postgresql/default/' +
+                                       postgresql_server__user + '/password length=' +
+                                       postgresql_server__password_length +
+                                       ' chars=' + postgresql_server__password_characters) }}"
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__password_length [[[
+#
+# Length of the autogenerated ``postgres`` password.
+postgresql_server__password_length: '64'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__password_characters [[[
+#
+# Characters allowed in the autogenerated ``postgres`` password.
+postgresql_server__password_characters: 'ascii,digits,.-_~&()*;='
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__trusted [[[
+#
+# List of local UNIX accounts that are implicitly trusted by PostgreSQL server
+# and can login to their own roles without password.
+postgresql_server__trusted: '{{ ansible_local.core.admin_users
+                                if (ansible_local|d() and ansible_local.core|d() and
+                                    ansible_local.core.admin_users|d())
+                                else [] }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Cluster configuration [[[
+# -------------------------
+
+# .. envvar:: postgresql_server__log_destination [[[
+#
+# Where to log system/error messages.
+# Options: ``stderr``, ``csvlog``, ``syslog``, and ``eventlog``.
+postgresql_server__log_destination: 'syslog'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__locale [[[
+#
+# Default localization settings. This locale will be used at cluster creation
+# to set default database encoding.
+postgresql_server__locale: 'en_US.UTF-8'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__locale_messages [[[
+#
+# Separate locale settings for server messages in PostgreSQL logs.
+postgresql_server__locale_messages: 'C'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__timezone [[[
+#
+# Timezone configured in PostgreSQL clusters.
+postgresql_server__timezone: '{{ ansible_local.timezone
+                                 if (ansible_local|d() and ansible_local.timezone|d())
+                                 else "Etc/UTC" }}'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__start_conf [[[
+#
+# Specify default startup behaviour for PostgreSQL clusters:
+#
+# - ``auto``: cluster will be started on boot
+#
+# - ``manual``: cluster will not be started on boot
+#
+postgresql_server__start_conf: 'auto'
+                                                                   # ]]]
+                                                                   # ]]]
+# Public Key Infrastructure configuration [[[
+# -------------------------------------------
+
+# .. envvar:: postgresql_server__pki [[[
+#
+# Enable or disable support for PKI infrastructure managed by :ref:`debops.pki`.
+postgresql_server__pki: '{{ (True
+                             if (ansible_local|d() and ansible_local.pki|d() and
+                                 ansible_local.pki.enabled|d() | bool)
+                             else False) | bool }}'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__pki_path [[[
+#
+# Base path of PKI infrastructure, managed by :ref:`debops.pki` role.
+postgresql_server__pki_path: '{{ ansible_local.pki.path
+                                 if (ansible_local|d() and ansible_local.pki|d() and
+                                     ansible_local.pki.path|d())
+                                 else "/etc/pki/realms" }}'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__pki_realm [[[
+#
+# PKI realm used by PostgreSQL role.
+postgresql_server__pki_realm: '{{ ansible_local.pki.realm
+                                  if (ansible_local|d() and ansible_local.pki|d() and
+                                      ansible_local.pki.realm|d())
+                                  else "domain" }}'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__pki_ca [[[
+#
+# Default Root CA certificate used by PostgreSQL clusters, relative to
+# :envvar:`postgresql_server__pki_realm` path.
+postgresql_server__pki_ca: 'CA.crt'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__pki_crt [[[
+#
+# Certificate file used by PostgreSQL server, relative to
+# :envvar:`postgresql_server__pki_realm` path.
+postgresql_server__pki_crt: 'default.crt'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__pki_key [[[
+#
+# Private key used by PostgreSQL server, relative to
+# :envvar:`postgresql_server__pki_realm` path.
+postgresql_server__pki_key: 'default.key'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__pki_crl [[[
+#
+# Certificate Revocation List file used by PostgreSQL server, relative to
+# :envvar:`postgresql_server__pki_realm` path.
+postgresql_server__pki_crl: 'default.crl'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__ssl_ciphers [[[
+#
+# Default SSL ciphers enabled in PostgreSQL clusters.
+postgresql_server__ssl_ciphers: 'ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH'
+                                                                   # ]]]
+                                                                   # ]]]
+# Global cluster resources [[[
+# ----------------------------
+
+# .. envvar:: postgresql_server__shmmax_limiter [[[
+#
+# Percentage of maximum shared memory segment to use for shared buffer
+# calculations.
+postgresql_server__shmmax_limiter: '0.8'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__shm_memory_limiter [[[
+#
+# Percentage of available RAM to use for shared buffer calculations, in case
+# that maximum shared buffers are not defined correctly.
+postgresql_server__shm_memory_limiter: '0.4'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__wal_level [[[
+#
+# Default Write Ahead Log level to use: ``minimal``, ``archive``,
+# ``hot_standby``. Modes other than ``minimal`` may require additional
+# configuration.
+postgresql_server__wal_level: 'minimal'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__archive_command [[[
+#
+# Command executed by ``postgres`` user when WAL mode is set to ``archive``.
+postgresql_server__archive_command: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Host Based Authentication configuration [[[
+# -------------------------------------------
+
+# Host-Based Authentication is used to filter and restrict local and remote
+# connections to the PostgreSQL databases. See :ref:`postgresql_server__ref_hba` for
+# more details.
+
+# .. envvar:: postgresql_server__hba_system [[[
+#
+# Host Based Authentication - system accounts.
+postgresql_server__hba_system:
+
+  - comment:  'Database superuser account, do not disable'
+    type:     'local'
+    database: 'all'
+    user:     '*postgres*'
+    method:   'peer'
+    options:  'map=system'
+
+  - comment:  'Block remote connections to admin account'
+    type:     'host'
+    database: 'all'
+    user:     '*postgres*'
+    address:  'all'
+    method:   'reject'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__hba_replication [[[
+#
+# Host Based Authentication - replication connections.
+postgresql_server__hba_replication:
+
+  - comment:  'Remote replication connections'
+    type:     'hostssl'
+    database: 'replication'
+    user:     'replication'
+    address:  'samenet'
+    method:   'md5'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__hba_public [[[
+#
+# Host Based Authentication - public connections to ``postgres`` database,
+# needed by some applications.
+postgresql_server__hba_public:
+
+  - comment:  'Allow public connections to postgres database'
+    type:     'local'
+    database: 'postgres'
+    user:     'all'
+    method:   'md5'
+
+  - comment:  'Allow public connections to postgres database'
+    type:     'hostssl'
+    database: 'postgres'
+    user:     'all'
+    address:  'samenet'
+    method:   'md5'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__hba_trusted [[[
+#
+# Host Based Authentication - trusted connections from ``localhost``.
+postgresql_server__hba_trusted:
+
+  - comment:  'Access through local UNIX socket'
+    type:     'local'
+    database: 'samerole'
+    user:     '@trusted'
+    method:   'peer'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__hba_local [[[
+#
+# Host Based Authentication - connections from ``localhost``.
+postgresql_server__hba_local:
+
+  - comment:  'Access through local UNIX socket with password'
+    type:     'local'
+    database: 'samerole'
+    user:     'all'
+    method:   'md5'
+
+  - comment:  'Access from localhost over IPv6'
+    type:     'host'
+    database: 'samerole'
+    user:     'all'
+    address:  '::1/128'
+    method:   'md5'
+
+  - comment:  'Access from localhost over IPv4'
+    type:     'host'
+    database: 'samerole'
+    user:     'all'
+    address:  '127.0.0.1/32'
+    method:   'md5'
+
+  - comment:  'Access from localhost'
+    type:     'host'
+    database: 'samerole'
+    user:     'all'
+    address:  'localhost'
+    method:   'md5'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__hba_remote [[[
+#
+# Host Based Authentication - remote connections.
+postgresql_server__hba_remote:
+
+  - comment:  'Remote connections from local networks'
+    type:     'hostssl'
+    database: 'samerole'
+    user:     'all'
+    address:  'samenet'
+    method:   'md5'
+                                                                   # ]]]
+                                                                   # ]]]
+# Ident map configuration [[[
+# ---------------------------
+
+# Ident map in :file:`pg_ident.conf` is used to map local UNIX accounts to
+# PostgreSQL roles. See :ref:`postgresql_server__ref_ident` for more details.
+
+# .. envvar:: postgresql_server__ident_system [[[
+#
+# UNIX account to PostgreSQL role mapping - 'system' map.
+postgresql_server__ident_system:
+
+  - map:  'system'
+    user: '{{ postgresql_server__admins }}'
+    role: '*postgres*'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__ident_trusted [[[
+#
+# UNIX account to PostgreSQL role mapping - 'trusted' map.
+postgresql_server__ident_trusted: []
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__ident_local [[[
+#
+# UNIX account to PostgreSQL role mapping - 'local' map.
+postgresql_server__ident_local: []
+                                                                   # ]]]
+                                                                   # ]]]
+# PostgreSQL cluster configuration [[[
+# ------------------------------------
+
+# .. envvar:: postgresql_server__data_directory [[[
+#
+# the base directory for the postgresql create cluster
+postgresql_server__data_directory: '/var/lib/postgresql'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__clusters [[[
+#
+# List of PostgreSQL clusters to manage. Each entry should have at least a name
+# and a port on which to bind the cluster. You can also specify configuration
+# from :file:`postgresql.conf` as the cluster parameters.
+# See :ref:`postgresql_server__ref_clusters` for more details.
+postgresql_server__clusters: [ '{{ postgresql_server__cluster_main }}' ]
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__cluster_main [[[
+#
+# Configuration for default "main" cluster.
+postgresql_server__cluster_main:
+  name: 'main'
+  port: '5432'
+                                                                   # ]]]
+                                                                   # ]]]
+# AutoPostgreSQLBackup configuration [[[
+# --------------------------------------
+
+# .. envvar:: postgresql_server__autopostgresqlbackup [[[
+#
+# Global toggle to enable/disable support for local ``autopostgresqlbackup``
+# snapshots.
+postgresql_server__autopostgresqlbackup: True
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__auto_backup [[[
+#
+# Enable or disable automatic daily snapshots in all clusters.
+postgresql_server__auto_backup: True
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__auto_backup_dir [[[
+#
+# Directory where automatic backups will be stored.
+postgresql_server__auto_backup_dir: '/var/lib/autopostgresqlbackup'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__auto_backup_pg_opts [[[
+#
+# Extra options to be passed to the psql command line when running backup.
+postgresql_server__auto_backup_pg_opts: ''
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__auto_backup_mail [[[
+#
+# Configure backup mail notification. Available options:
+#
+# - ``log``: send only the log file
+#
+# - ``files``: send the log file and sql files as attachments
+#
+# - ``stdout``: output the log to the screen if run manually
+#
+# - ``quiet``: only send logs if an error occurs
+#
+postgresql_server__auto_backup_mail: 'quiet'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__auto_backup_mail_size [[[
+#
+# The maximum allowed size of the e-mail, 4000 = about 5 MB.
+postgresql_server__auto_backup_mail_size: 4000
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__auto_backup_mail_to [[[
+#
+# Who should receive the backup mails?
+postgresql_server__auto_backup_mail_to: 'backup@{{ ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__auto_backup_create_database [[[
+#
+# Include ``CREATE DATABASE`` in the backup?
+postgresql_server__auto_backup_create_database: True
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__auto_backup_isolate_databases [[[
+#
+# Use a separate backup directory and file for each database?
+postgresql_server__auto_backup_isolate_databases: True
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__auto_backup_weekly [[[
+#
+# Which day of the week do you want to perform weekly backups?
+# 1 = Monday , ... , 7 = Sunday.
+postgresql_server__auto_backup_weekly: '6'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__auto_backup_encryption [[[
+#
+# Should the dumps be encrypted?
+postgresql_server__auto_backup_encryption: False
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__auto_backup_encryption_key [[[
+#
+# Specify :command:`openssl` encryption key to use.
+postgresql_server__auto_backup_encryption_key: ''
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__auto_backup_encryption_cipher [[[
+#
+# Specify :command:`openssl` encryption cipher.
+postgresql_server__auto_backup_encryption_cipher: 'aes256'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__auto_backup_encryption_suffix [[[
+#
+# Suffix appended to encrypted filenames.
+postgresql_server__auto_backup_encryption_suffix: '.enc'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__auto_backup_compression [[[
+#
+# Specify compression method to use for snapshots. The special value
+# ``pg_dump`` causes pg_dump to compress the backup internally without
+# writing an uncompress dump first and compressing it afterwards.
+postgresql_server__auto_backup_compression: 'gzip'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__auto_backup_pre_script [[[
+#
+# Path to the script which should be executed before snapshotting.
+postgresql_server__auto_backup_pre_script: ''
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__auto_backup_post_script [[[
+#
+# Path to the script which should be executed after snapshotting.
+postgresql_server__auto_backup_post_script: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Role-dependent configuration [[[
+# --------------------------------
+
+# .. envvar:: postgresql_server__apt_preferences__dependent_list [[[
+#
+# Configuration for :ref:`debops.apt_preferences` role. PostgreSQL from backports
+# will be preferred on specified Debian releases.
+postgresql_server__apt_preferences__dependent_list:
+
+  - package: 'postgresql postgresql-* libpq5'
+    backports: [ 'wheezy' ]
+    reason: 'Version parity with Debian Jessie'
+    role: 'debops.postgresql_server'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__etc_services__dependent_list [[[
+#
+# Configuration for :ref:`debops.etc_services` role. It will set up custom
+# :file:`/etc/services` entries for additional PostgreSQL clusters.
+postgresql_server__etc_services__dependent_list:
+  name: 'postgresql'
+  custom: |
+    {% for item in postgresql_server__clusters %}
+    {% if item.port is defined and item.port != "5432" %}
+    postgresql-{{ (item.port|int - 5430) }}    {{ item.port }}/tcp
+    {% endif %}
+    {% endfor %}
+
+# ]]]
+# .. envvar:: postgresql_server__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+postgresql_server__keyring__dependent_apt_keys:
+
+  - id: '{{ postgresql_server__upstream_key_id }}'
+    repo: '{{ postgresql_server__upstream_apt_repo }}'
+    state: '{{ "present" if postgresql_server__upstream|bool else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__locales__dependent_list [[[
+#
+# Configuration for the :ref:`debops.locales` Ansible role.
+postgresql_server__locales__dependent_list:
+  - name: '{{ postgresql_server__locale }}'
+    state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__ferm__dependent_rules [[[
+#
+# Configuration for :command:`ferm` firewall. It should be added when
+# :ref:`debops.ferm` role is used to configure PostgreSQL firewall rules.
+postgresql_server__ferm__dependent_rules:
+  type: 'custom'
+  by_role: 'debops.postgresql_server'
+  name: 'postgresql_custom_rules'
+  weight_class: 'default'
+  rules: |
+    {% set postgresql_server__tpl_ports = [] %}
+    {% for cluster in postgresql_server__clusters %}
+    {% set _ = postgresql_server__tpl_ports.append(cluster.port) %}
+    {% endfor %}
+    {% if postgresql_server__tpl_ports|d() and postgresql_server__allow|d() %}
+    domain $domains table filter chain INPUT {
+        protocol tcp dport ({{ postgresql_server__tpl_ports | unique | join(" ") }}) {
+            @def $ITEMS = ( @ipfilter( ({{ postgresql_server__allow | unique | join(" ") }}) ) );
+            @if @ne($ITEMS,"") {
+                    saddr $ITEMS ACCEPT;
+            }
+        }
+    }
+
+    {% endif %}
+    {% for cluster in postgresql_server__clusters %}
+    {% if cluster.name|d() and cluster.port|d() and cluster.allow|d() %}
+    domain $domains table filter chain INPUT {
+        protocol tcp dport ({{ cluster.port }}) {
+            @def $ITEMS = ( @ipfilter( ({{ cluster.allow | unique | join(" ") }}) ) );
+            @if @ne($ITEMS,"") {
+                    saddr $ITEMS ACCEPT;
+            }
+        }
+    }
+    {% endif %}
+    {% endfor %}
+
+# ]]]
+# ]]]
+# ]]]
+
+
+# Configuration for other Ansible roles [[[
+# ----------------------------------------
+
+# .. envvar:: postgresql_server__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+postgresql_server__python__dependent_packages3:
+
+  - 'python3-psycopg2'
+
+                                                                   # ]]]
+# .. envvar:: postgresql_server__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+postgresql_server__python__dependent_packages2:
+
+  - 'python-psycopg2'
+
+                                                                   # ]]]
+                                                                   # ]]]

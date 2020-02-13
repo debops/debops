@@ -1,11 +1,15 @@
 ---
 
 - name: Bootstrap Python environment
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_all_hosts', 'debops_service_python' ]
   become: True
   gather_facts: False
 
-  roles:
+  tasks:
 
-    - role: debops.python/raw
+    - import_role:
+        name: 'python'
+        tasks_from: 'main_raw'
       tags: [ 'role::python_raw', 'skip::python_raw' ]

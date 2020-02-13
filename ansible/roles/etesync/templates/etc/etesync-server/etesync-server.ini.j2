@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+
+[global]
+secret_file = {{ etesync__config_secret_key_filepath }}
+debug = false
+
+[allowed_hosts]
+{% for host in ([ etesync__config_allowed_hosts ]
+				if etesync__config_allowed_hosts is string
+				else etesync__config_allowed_hosts) %}
+allowed_host{{ loop.index }} = {{ host }}
+{% endfor %}
+
+[database]
+engine = django.db.backends.sqlite3
+name = {{ etesync__data }}/db.sqlite3

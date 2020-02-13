@@ -1,0 +1,250 @@
+# eduperson.schema - eduPerson & eduOrg schema definition
+
+# Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2019 DebOps project https://debops.org/
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+
+# Based on:                https://www.internet2.edu/products-services/trust-identity/eduperson-eduorg/
+# Based on Debian package: fusiondirectory-plugin-supann-schema
+# eduPerson definition:    https://software.internet2.edu/eduperson/internet2-mace-dir-eduperson-201602.html
+# eduOrg definition:       https://www.internet2.edu/media/medialibrary/2013/09/04/internet2-mace-dir-eduOrg-200210.pdf
+
+
+# Object namespace definitions
+# ----------------------------
+
+# The Private Enterprise Number of the Internet2 project registered at IANA
+# https://www.iana.org/assignments/enterprise-numbers/enterprise-numbers
+objectIdentifier Internet2 1.3.6.1.4.1.5923
+
+# The eduPerson attribute namespace
+objectIdentifier eduPersonAttribute Internet2:1.1.1
+
+# The eduPerson object namespace
+objectIdentifier eduPersonObject Internet2:1.1.2
+
+# The eduOrg attribute namespace
+objectIdentifier eduOrgAttribute Internet2:1.2.1
+
+# The eduOrg object namespace
+objectIdentifier eduOrgObject Internet2:1.2.2
+
+
+# eduPerson attribute definitions
+# -------------------------------
+
+attributeType ( eduPersonAttribute:1
+                NAME 'eduPersonAffiliation'
+                DESC 'Specifies the person\27s relationship(s) to the
+                      institution in broad categories such as student,
+                      faculty, staff, alum, etc.'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributeType ( eduPersonAttribute:7
+                NAME 'eduPersonEntitlement'
+                DESC 'URI (either URN or URL) that indicates a set
+                      of rights to specific resources.'
+                EQUALITY caseExactMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributeType ( eduPersonAttribute:2
+                NAME 'eduPersonNickname'
+                DESC 'Person\27s nickname, or the informal name
+                      by which they are accustomed to be hailed.'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributeType ( eduPersonAttribute:3
+                NAME 'eduPersonOrgDN'
+                DESC 'The distinguished name (DN) of the directory entry
+                      representing the institution with which the person
+                      is associated.'
+                EQUALITY distinguishedNameMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' SINGLE-VALUE )
+
+attributeType ( eduPersonAttribute:4
+                NAME 'eduPersonOrgUnitDN'
+                DESC 'The distinguished name(s) (DN) of the directory entries
+                      representing the person\27s Organizational Unit(s).'
+                EQUALITY distinguishedNameMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' )
+
+attributeType ( eduPersonAttribute:5
+                NAME 'eduPersonPrimaryAffiliation'
+                DESC 'Specifies the person\27s primary relationship to the
+                      institution in broad categories such as student,
+                      faculty, staff, alum, etc.'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' SINGLE-VALUE )
+
+attributeType ( eduPersonAttribute:8
+                NAME 'eduPersonPrimaryOrgUnitDN'
+                DESC 'The distinguished name (DN) of the directory entry
+                      representing the person\27s primary Organizational Unit(s).'
+                EQUALITY distinguishedNameMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.12' SINGLE-VALUE )
+
+attributeType ( eduPersonAttribute:6
+                NAME 'eduPersonPrincipalName'
+                DESC 'A scoped identifier for a person. It should be represented
+                      in the form "user@scope" where "user" is a name-based
+                      identifier for the person and where the "scope" portion MUST be
+                      the administrative domain of the identity system where
+                      the identifier was created and assigned.
+
+                      Each value of "scope" defines a namespace within which
+                      the assigned identifiers MUST be unique. Given this rule,
+                      if two eduPersonPrincipalName (ePPN) values are the same
+                      at a given point in time, they refer to the same person.
+                      There must be one and only one "@" sign in valid values
+                      of eduPersonPrincipalName.'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' SINGLE-VALUE )
+
+attributeType ( eduPersonAttribute:12
+                NAME 'eduPersonPrincipalNamePrior'
+                DESC 'Each value of this multi-valued attribute represents
+                      an ePPN (eduPersonPrincipalName) value that was previously
+                      associated with the entry. The values MUST NOT include
+                      the currently valid ePPN value. There is no implied
+                      or assumed order to the values.
+
+                      This attribute MUST NOT be populated if ePPN values are ever
+                      reassigned to a different entry (after, for example, a period
+                      of dormancy). That is, they MUST be unique in space and over time.'
+                EQUALITY caseIgnoreMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributeType ( eduPersonAttribute:9
+                NAME 'eduPersonScopedAffiliation'
+                DESC 'Specifies the person\27s affiliation within a particular
+                      security domain in broad categories such as student,
+                      faculty, staff, alum, etc.
+
+                      The values consist of a left and right component separated
+                      by an "@" sign. The left component is one of the values
+                      from the eduPersonAffiliation controlled vocabulary. This
+                      right-hand side syntax of eduPersonScopedAffiliation
+                      intentionally matches that used for the right-hand side
+                      values for eduPersonPrincipalName. The "scope" portion
+                      MUST be the administrative domain to which the affiliation applies.'
+                EQUALITY caseIgnoreMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributeType ( eduPersonAttribute:10
+                NAME 'eduPersonTargetedID'
+                DESC 'A persistent, non-reassigned, opaque identifier for a principal.'
+                EQUALITY caseIgnoreMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributeType ( eduPersonAttribute:11
+                NAME 'eduPersonAssurance'
+                DESC 'Set of URIs that assert compliance with specific standards for identity assurance.'
+                EQUALITY caseIgnoreMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributeType ( eduPersonAttribute:13
+                NAME 'eduPersonUniqueId'
+                DESC 'A long-lived, non re-assignable, omnidirectional identifier
+                      suitable for use as a principal identifier by authentication
+                      providers or as a unique external key by applications.'
+                EQUALITY caseIgnoreMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributeType ( eduPersonAttribute:16
+                NAME 'eduPersonOrcid'
+                DESC 'ORCID iDs are persistent digital identifiers for individual
+                      researchers. Their primary purpose is to unambiguously and
+                      definitively link them with their scholarly work products.
+                      ORCID iDs are assigned, managed and maintained by the
+                      ORCID organization.'
+                EQUALITY caseIgnoreMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+
+# eduPerson object definitions
+# ----------------------------
+
+objectClass ( eduPersonObject
+              NAME 'eduPerson' AUXILIARY
+              MAY ( eduPersonAffiliation $ eduPersonNickname $
+                    eduPersonOrgDN $ eduPersonOrgUnitDN $
+                    eduPersonPrimaryAffiliation $ eduPersonPrincipalName $
+                    eduPersonPrincipalNamePrior $ eduPersonEntitlement $
+                    eduPersonPrimaryOrgUnitDN $ eduPersonScopedAffiliation $
+                    eduPersonTargetedID $ eduPersonAssurance $
+                    eduPersonUniqueId $ eduPersonOrcid ) )
+
+
+# eduOrg attribute definitions
+# ----------------------------
+
+attributeType ( eduOrgAttribute:2
+                NAME 'eduOrgHomePageURI'
+                DESC 'The URL for the organization\27s top level home page.'
+                EQUALITY caseExactMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributeType ( eduOrgAttribute:3
+                NAME 'eduOrgIdentityAuthNPolicyURI'
+                DESC 'An URI pointing to the location of the organization\27s
+                      policy regarding identification and authentication
+                      (the issuance and use of digital credentials). Most often
+                      an URL, but with appropriate resolution mechanisms in place,
+                      could be an URN.'
+                EQUALITY caseExactMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributeType ( eduOrgAttribute:4
+                NAME 'eduOrgLegalName'
+                DESC 'The organization\27s legal corporate name.'
+                EQUALITY caseIgnoreMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributeType ( eduOrgAttribute:5
+                NAME 'eduOrgSuperiorURI'
+                DESC 'LDAP URL for the organization object one level
+                      superior to this entry.'
+                EQUALITY caseExactMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributeType ( eduOrgAttribute:6
+                NAME 'eduOrgWhitePagesURI'
+                DESC 'The URL of the open white pages directory service
+                      for the university, predominantly LDAP these days.'
+                EQUALITY caseExactMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+
+# eduOrg object definitions
+# -------------------------
+
+objectClass ( eduOrgObject
+              NAME 'eduOrg'
+              AUXILIARY
+              MAY ( cn $ eduOrgHomePageURI $
+                    eduOrgIdentityAuthNPolicyURI $ eduOrgLegalName $
+                    eduOrgSuperiorURI $ eduOrgWhitePagesURI ) )

@@ -1,0 +1,34 @@
+# {{ ansible_managed }}
+{#
+
+This file follows the upstream default configuration except for the parts
+that are configurable via DebOps variables. If you need a more customized
+setup, you can provide your own template via lookup mechanism.
+
+#}
+
+##
+## Mailbox locations and namespaces
+##
+
+{% if dovecot__ldap_enabled|d(False) %}
+# The vmail home directory is a per-user directory where Dovecot can save user-specific files.
+mail_home = {{ dovecot_vmail_home }}
+{% endif %}
+{% if dovecot_mail_location is defined and dovecot_mail_location %}
+# Mailbox location.
+mail_location = {{ dovecot_mail_location }}
+{% else %}
+# The default is empty, which means that Dovecot tries to find the mailboxes
+# automatically.
+#
+#mail_location = mbox:~/mail:INBOX=/var/mail/%u
+{% endif %}
+
+namespace inbox {
+  inbox = yes
+}
+{% if dovecot_mail_dotlock is defined and not dovecot_mail_dotlock %}
+dotlock_use_excl = no
+mbox_write_locks = fcntl
+{% endif %}

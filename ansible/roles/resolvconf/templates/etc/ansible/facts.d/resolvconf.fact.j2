@@ -1,0 +1,90 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+def read_resolv_file(resolv_file):
+    try:
+        with open(resolv_file, 'r') as f:
+            nameservers = []
+            domain = ''
+            search = []
+            for line in f:
+                if line.startswith('nameserver'):
+                    nameservers.append(line.strip().split()[1])
+                elif line.startswith('domain'):
+                    domain = line.strip().split()[1]
+                elif line.startswith('search'):
+                    for element in line.strip().split()[1:]:
+                        search.append(element.rstrip('.'))
+
+            return nameservers, domain, search
+
+    except Exception:
+        pass
+
+
+output = loads('''{{ {"configured": True,
+                      "deploy_state": resolvconf__deploy_state
+                     } | to_nice_json }}''')
+
+output['installed'] = cmd_exists('resolvconf')
+
+if not output['installed']:
+    output['deploy_state'] = 'absent'
+
+# Get the primary resolver configuration
+nameservers, domain, search = read_resolv_file('/etc/resolv.conf')
+
+if nameservers:
+    output['nameservers'] = nameservers
+if domain:
+    output['domain'] = domain
+if search:
+    output['search'] = search
+
+# Get the upstream resolver configuration
+upstream_nameservers = []
+resolvconf_files = []
+resolvconf_path = '/run/resolvconf/interface'
+systemdresolved_path = '/run/systemd/resolve/resolv.conf'
+if os.path.isdir(resolvconf_path):
+    resolvconf_files = ([os.path.join(resolvconf_path, f)
+                         for f in os.listdir(resolvconf_path)
+                         if os.path.isfile(os.path.join(resolvconf_path, f))])
+
+if os.path.isfile(systemdresolved_path):
+    resolvconf_files.append(systemdresolved_path)
+
+for element in resolvconf_files:
+    try:
+        nameservers, domain, search = read_resolv_file(element)
+
+        for server in nameservers:
+            if not server.startswith('127.'):
+                upstream_nameservers.append(server)
+
+    except Exception:
+        pass
+
+# If nameservers contains a localhost address, and we've found some
+# upstream nameservers, then output the upstream nameservers.
+# - 127.0.0.1 is the stub address used by resolvconf
+# - 127.0.0.53 is the stub address used by systemd-resolved
+if (('127.0.0.1' in output['nameservers'] or
+        '127.0.0.53' in output['nameservers']) and
+        upstream_nameservers):
+    output['upstream_nameservers'] = upstream_nameservers
+
+print(dumps(output, sort_keys=True, indent=4))

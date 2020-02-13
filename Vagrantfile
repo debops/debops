@@ -21,8 +21,14 @@
 #     VAGRANT_NODE_BOX="debian/buster64"
 #         Specify the box to use for nodes.
 #
-#     ANSIBLE_FROM="debian" / ANSIBLE_FROM="pypi" / ANSIBLE_FROM="devel"
+#     VAGRANT_NODES=0
+#         Specify the number of additional nodes. Default: 0.
+#
+#     ANSIBLE_FROM="debian" (default) / ANSIBLE_FROM="pypi" / ANSIBLE_FROM="devel"
 #         Specify the way to install ansible.
+#
+#     DEBOPS_FROM="devel" / DEBOPS_FROM="pypi"
+#         Specify the way to install debops.
 #
 #     VAGRANT_HOSTNAME="buster"
 #         Set a custom hostname after the box boots up.
@@ -184,6 +190,7 @@ readonly PROVISION_APT_HTTP_PROXY="#{ENV['APT_HTTP_PROXY']}"
 readonly PROVISION_APT_HTTPS_PROXY="#{ENV['APT_HTTPS_PROXY']}"
 readonly PROVISION_APT_FORCE_NETWORK="#{ENV['APT_FORCE_NETWORK']}"
 readonly PROVISION_ANSIBLE_FROM="#{ENV['ANSIBLE_FROM'] || 'debian'}"
+readonly PROVISION_DEBOPS_FROM="#{ENV['DEBOPS_FROM'] || 'devel'}"
 readonly VAGRANT_PREPARE_BOX="#{ENV['VAGRANT_PREPARE_BOX']}"
 
 # Install the Jane script
@@ -329,6 +336,14 @@ else
     ansible_from_devel="${PROVISION_ANSIBLE_FROM}"
 fi
 
+debops_from_pypi=""
+debops_from_devel=""
+if [ "${PROVISION_DEBOPS_FROM}" == "pypi" ] || ! [ -d "/vagrant" ] ; then
+    debops_from_pypi="debops"
+else
+    debops_from_devel="true"
+fi
+
 # Configure Ansible
 if ! type ansible > /dev/null 2>&1 ; then
     jane notify warning "Ansible not found"
@@ -463,15 +478,17 @@ if [ -z "${JANE_BOX_INIT:-}" ] ; then
     # vagrant-libvirt executes virt-sysprep during box packaging.
     # virt-sysprep zeroes out files in /usr/local/*, apparently.
     # So we need to install PyPI packages on the real box, not the template.
-    jane notify install "Installing test requirements via PyPI..."
+    jane notify install "Installing requirements via PyPI..."
 
-    pip3 install netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi}
-    mkdir /tmp/build
-    rsync -a --exclude '.vagrant' /vagrant/ /tmp/build
-    cd /tmp/build
-    make sdist > /dev/null
-    pip3 install dist/*
-    cd - > /dev/null
+    pip3 install netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi} ${debops_from_pypi}
+    if [ -n "${debops_from_devel}" ] ; then
+        mkdir /tmp/build
+        rsync -a --exclude '.vagrant' /vagrant/ /tmp/build
+        cd /tmp/build
+        make sdist-quiet > /dev/null
+        pip3 install dist/*
+        cd - > /dev/null
+    fi
 
     jane notify cache "Cleaning up cache directories..."
     rm -rf /root/.cache/* /tmp/*
@@ -557,6 +574,7 @@ $provision_controller = <<SCRIPT
 set -o nounset -o pipefail -o errexit
 
 readonly PROVISION_ANSIBLE_FROM="#{ENV['ANSIBLE_FROM'] || 'debian'}"
+readonly PROVISION_DEBOPS_FROM="#{ENV['DEBOPS_FROM'] || 'devel'}"
 
 jane notify info "Configuring Ansible Controller host..."
 
@@ -569,22 +587,33 @@ if [ "${PROVISION_ANSIBLE_FROM}" == "pypi" ] ; then
     ansible_from_pypi="ansible"
 fi
 
-jane notify install "Installing test requirements via PyPI..."
+debops_from_pypi=""
+debops_from_devel=""
+if [ "${PROVISION_DEBOPS_FROM}" == "pypi" ] || ! [ -d "/vagrant" ] ; then
+    debops_from_pypi="debops"
+else
+    debops_from_devel="true"
+fi
 
-sudo pip3 install netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi}
-mkdir /tmp/build
-rsync -a --exclude '.vagrant' /vagrant/ /tmp/build
-cd /tmp/build
-make sdist > /dev/null
-sudo pip3 install dist/*
-cd - > /dev/null
+jane notify install "Installing requirements via PyPI..."
+
+sudo pip3 install netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi} ${debops_from_pypi}
+
+if [ -n "${debops_from_devel}" ] ; then
+    mkdir /tmp/build
+    rsync -a --exclude '.vagrant' /vagrant/ /tmp/build
+    cd /tmp/build
+    make sdist-quiet > /dev/null
+    sudo pip3 install dist/*
+    cd - > /dev/null
+fi
 
 jane notify cache "Cleaning up cache directories..."
 sudo rm -rf /root/.cache/* /tmp/*
 
 if ! [ -e .local/share/debops/debops ] ; then
     mkdir -p src .local/share/debops
-    if [ -d "/vagrant" ] ; then
+    if [ -n "${debops_from_devel}" ] ; then
         jane notify info "Symlinking '/vagrant' to '~vagrant/.local/share/debops/debops'"
         ln -s /vagrant .local/share/debops/debops
     else
@@ -800,7 +829,7 @@ Vagrant.configure("2") do |config|
                                       rsync__exclude: ['.git/', 'build/', 'docs/', '*.box' ]
 
             libvirt.random_hostname = true
-            libvirt.memory = ENV['VAGRANT_MASTER_MEMORY'] || '1024'
+            libvirt.memory = ENV['VAGRANT_MASTER_MEMORY'] || '2048'
             libvirt.cpus =   ENV['VAGRANT_MASTER_CPUS']   || '2'
 
             if ENV['GITLAB_CI'] != "true"

@@ -1,0 +1,1200 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _nginx__ref_defaults:
+
+# debops.nginx default variables [[[
+# ==================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# .. envvar:: nginx_allow [[[
+#
+# List of IP addresses or CIDR networks allowed to connect to HTTP or HTTPS
+# service. It will be configured in iptables firewall via 'ferm' role. If there
+# are no entries, nginx will accept connections from any IP address or network.
+# If you have multiple web services on a host, you might want to control access
+# using 'item.location_allow' option instead.
+nginx_allow: []
+
+                                                                   # ]]]
+# .. envvar:: nginx_group_allow [[[
+#
+nginx_group_allow: []
+
+                                                                   # ]]]
+# .. envvar:: nginx_host_allow [[[
+#
+nginx_host_allow: []
+
+                                                                   # ]]]
+# .. envvar:: nginx__deploy_state [[[
+#
+# What is the desired state which this role should achieve? Possible options:
+#
+# ``present``
+#   Default. Ensure that Nginx is installed and configured as requested.
+#
+# ``absent``
+#   Ensure that Nginx is uninstalled and it's configuration is removed.
+#
+#   .. warning:: The roles is currently not able to dismantle from ``present``
+#      state. This needs to be implemented. This state can only be achieved
+#      currently when ``present`` has never been set before on a host.
+#
+nginx__deploy_state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: nginx_base_packages [[[
+#
+# List of Debian packages installed by this role
+nginx_base_packages: []
+
+                                                                   # ]]]
+# .. envvar:: nginx_flavor [[[
+#
+# What type of nginx server to install (see 'nginx_flavor_package_map')
+nginx_flavor: 'full'
+
+                                                                   # ]]]
+# .. envvar:: nginx__flavor_distribution_release [[[
+#
+# Specify the OS distribution release to use in falvored repositories.
+nginx__flavor_distribution_release: '{{ ansible_local.core.distribution_release
+                                        if (ansible_local|d() and ansible_local.core|d() and
+                                            ansible_local.core.distribution_release|d())
+                                        else ansible_distribution_release }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx__flavor_apt_key_id [[[
+#
+nginx__flavor_apt_key_id: '{{ nginx__flavor_apt_key_id_map[nginx_flavor]|d() }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx__flavor_apt_repository [[[
+#
+nginx__flavor_apt_repository: '{{ nginx__flavor_apt_repository_map[nginx_flavor]|d() }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx__flavor_apt_key_id_map [[[
+#
+nginx__flavor_apt_key_id_map:
+  'nginx.org': '573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62'
+  'passenger': '16378A33A6EF16762922526E561F9B9CAC40B2F7'
+
+                                                                   # ]]]
+# .. envvar:: nginx__flavor_apt_repository_map [[[
+#
+nginx__flavor_apt_repository_map:
+  'nginx.org': 'deb https://nginx.org/packages/{{ ansible_distribution | lower }}/ {{ nginx__flavor_distribution_release }} nginx'
+  'passenger': 'deb https://oss-binaries.phusionpassenger.com/apt/passenger {{ nginx__flavor_distribution_release }} main'
+
+                                                                   # ]]]
+# .. envvar:: nginx__flavor_packages [[[
+#
+nginx__flavor_packages: '{{ nginx_flavor_package_map[nginx_flavor] }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx_flavor_package_map [[[
+#
+# There are many versions of nginx server to choose from, but only 1 can be
+# installed at a time. This is a list of APT packages which will be installed
+# for a specific flavor.
+nginx_flavor_package_map:
+
+  # Default version from Debian
+  'full': [ 'nginx-full' ]
+
+  # Extras version from Debian
+  'extras': [ 'nginx-extras' ]
+
+  # nginx with support for Phusion Passenger compiled in. Requires external APT
+  # repository. See https://phusionpassenger.com/ for more details.
+  'passenger':
+    - 'nginx-extras'
+    - 'ruby'
+    - '{{ "passenger"
+          if (nginx__flavor_distribution_release in
+              [ "wheezy", "jessie", "precise", "trusty", "xenial" ])
+          else "libnginx-mod-http-passenger" }}'
+
+  # Upstream version from https://nginx.org/ packaged for Debian
+  'nginx.org': [ 'nginx' ]
+
+                                                                   # ]]]
+# .. envvar:: nginx_user [[[
+#
+# System user used by nginx
+nginx_user: 'www-data'
+
+                                                                   # ]]]
+# .. envvar:: nginx_www [[[
+#
+# nginx base path for website directories
+# It is exposed using Ansible local facts as 'ansible_local.nginx.www'
+nginx_www: '/srv/www'
+
+                                                                   # ]]]
+# .. envvar:: nginx_public_dir_name [[[
+#
+# public folder foreach website
+# It cat be overwritten per servers
+nginx_public_dir_name: 'public'
+                                                                   # ]]]
+# .. envvar:: nginx_etc_path [[[
+#
+# Directory where :program:`nginx` configuration is stored.
+nginx_etc_path: '/etc/nginx'
+
+                                                                   # ]]]
+# .. envvar:: nginx_private_path [[[
+#
+# Directory where private files used by :program:`nginx` are stored (for example
+# htpasswd files).
+nginx_private_path: '{{ nginx_etc_path + "/private" }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx_run_path [[[
+#
+# Directory where runtime :program:`nginx` files are stored.
+nginx_run_path: '/run'
+
+                                                                   # ]]]
+# .. envvar:: nginx_log_path [[[
+#
+# Directory where :program:`nginx` log files are stored.
+nginx_log_path: '/var/log/nginx'
+
+                                                                   # ]]]
+# ---- Phusion Passenger support ----
+
+# .. envvar:: nginx_passenger_root [[[
+#
+# Specify Phusion Passenger root paths manually (by default this variable is
+# detected automatically at Ansible run time).
+nginx_passenger_root: ''
+
+                                                                   # ]]]
+# .. envvar:: nginx_passenger_ruby [[[
+#
+# Specify path to Ruby executable for Phusion Passenger manually (by default
+# this variable is detected automatically at Ansible run time).
+nginx_passenger_ruby: ''
+
+                                                                   # ]]]
+# .. envvar:: nginx_passenger_max_pool_size [[[
+#
+# Maximum number of Passenger processes.
+nginx_passenger_max_pool_size: '{{ (ansible_processor_cores | int * 5) }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx_passenger_options [[[
+#
+# Additional Phusion Passenger global options.
+nginx_passenger_options: False
+
+                                                                   # ]]]
+# .. envvar:: nginx_passenger_default_min_instances [[[
+#
+# Minimum Passenger instances per nginx server.
+nginx_passenger_default_min_instances: '{{ ansible_processor_cores }}'
+
+                                                                   # ]]]
+# ---- Global server access and authentication ----
+
+# .. envvar:: nginx_http_allow [[[
+#
+# List of IP addresses or CIDR networks which can access this server. If the
+# list is empty, access is allowed from anywhere.
+nginx_http_allow: []
+
+                                                                   # ]]]
+# .. envvar:: nginx_http_auth_basic [[[
+#
+# Enable or disable HTTP Basic Auth for all nginx servers on this host.
+# By default it depends on the contents of 'nginx_http_auth_users' variable, if
+# the list is not empty, authorization is automatically enabled.
+nginx_http_auth_basic: '{{ nginx_http_auth_users }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx_http_auth_basic_name [[[
+#
+# Name of the htpasswd file in '/etc/nginx/private/' with list of global
+# HTTP Basic Auth accounts.
+nginx_http_auth_basic_name: 'nginx_http'
+
+                                                                   # ]]]
+# .. envvar:: nginx_http_auth_users [[[
+#
+# List of HTTP Basic Auth accounts which need to login before accessing this
+# server. Passwords are generated automatically and stored in 'secret/'
+# directory (see :ref:`debops.secret` role). If this list empty, access is not
+# restricted.
+nginx_http_auth_users: []
+
+                                                                   # ]]]
+# .. envvar:: nginx__http_auth_htpasswd [[[
+#
+# Default htpasswd file used for global HTTP Basic Auth accounts.
+nginx__http_auth_htpasswd:
+  name: '{{ nginx_http_auth_basic_name }}'
+  users: '{{ nginx_http_auth_users }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx_http_server_names_hash_bucket_size [[[
+#
+# The default value of 'server_names_hash_bucket_size' depends on the size
+# of the processor’s cache line. If a large number of server names are
+# defined, or unusually long server names are defined,
+# tuning the 'server_names_hash_max_size' and
+# 'server_names_hash_bucket_size' directives at the http level may
+# become necessary.
+# More information can be found at:
+#
+# - http://nginx.org/en/docs/http/ngx_http_core_module.html#server_names_hash_bucket_size
+#
+nginx_http_server_names_hash_bucket_size: 64
+
+                                                                   # ]]]
+# .. envvar:: nginx_http_server_names_hash_max_size [[[
+#
+# Sets the maximum size of the server names hash tables.
+# More information can be found at:
+#
+# - http://nginx.org/en/docs/http/ngx_http_core_module.html#server_names_hash_max_size
+#
+nginx_http_server_names_hash_max_size: 512
+
+                                                                   # ]]]
+# .. envvar:: nginx_http_options [[[
+#
+# Default http { } options.
+nginx_http_options: |
+  ssl_session_cache shared:SSL:10m;
+  ssl_session_timeout 5m;
+  sendfile on;
+  tcp_nopush on;
+  tcp_nodelay on;
+  types_hash_max_size 2048;
+  gzip on;
+  gzip_disable "msie6";
+  gzip_comp_level    5;
+  gzip_min_length    256;
+  gzip_proxied       any;
+  gzip_vary          on;
+  gzip_types
+    application/atom+xml
+    application/javascript
+    application/json
+    application/ld+json
+    application/manifest+json
+    application/rss+xml
+    application/vnd.geo+json
+    application/vnd.ms-fontobject
+    application/x-font-ttf
+    application/x-web-app-manifest+json
+    application/xhtml+xml
+    application/xml
+    font/opentype
+    image/bmp
+    image/svg+xml
+    image/x-icon
+    text/cache-manifest
+    text/css
+    text/plain
+    text/vcard
+    text/vnd.rim.location.xloc
+    text/vtt
+    text/x-component
+    text/x-cross-domain-policy;
+
+# ]]]
+# .. envvar:: nginx_http_extra_options [[[
+#
+# A string or YAML text block with additional nginx options placed in the
+# :file:`/etc/nginx/nginx.conf` inside of the "http" block.
+nginx_http_extra_options: ''
+
+                                                                   # ]]]
+# .. envvar:: nginx_extra_options [[[
+#
+# A string or YAML text block with additional nginx options placed in the
+# :file:`/etc/nginx/nginx.conf` outside of the "http" block.
+nginx_extra_options: ''
+
+                                                                   # ]]]
+# .. envvar:: nginx_manage_ipv6only [[[
+#
+# If this variable is enabled, ``debops.nginx`` role will automatically add
+# ``ipv6only=false`` to the default nginx server configuration. You can disable
+# it and manage IPv4 and IPv6 listen directives yourself. nginx daemon needs to
+# be restarted when this variable changes. More information can be found at:
+#
+# - https://github.com/debops/ansible-nginx/issues/86
+#
+# - http://stefanchrist.eu/blog/2015_01_21/Using%20ipv6only%20in%20Nginx.xhtml
+#
+nginx_manage_ipv6only: True
+
+                                                                   # ]]]
+# .. envvar:: nginx_listen_port [[[
+#
+# Default listen port for HTTP connections.
+nginx_listen_port: [ '[::]:80' ]
+
+                                                                   # ]]]
+# .. envvar:: nginx_listen_ssl_port [[[
+#
+# Default listen port for HTTPS connections.
+nginx_listen_ssl_port: [ '[::]:443' ]
+
+                                                                   # ]]]
+# .. envvar:: nginx_listen_socket [[[
+#
+# Default listen socket for HTTP connections.
+nginx_listen_socket: []
+
+                                                                   # ]]]
+# .. envvar:: nginx_listen_ssl_socket [[[
+#
+# Default listen socket for HTTPS connections.
+nginx_listen_ssl_socket: []
+
+                                                                   # ]]]
+# .. envvar:: nginx_real_ip_from [[[
+#
+# List of IP addresses or CIDR subnets that the server should trust about real
+# IP addresses of clients. If this list is specified, :program:`nginx` will read the
+# client IP address from the specified header. This is useful when :program:`nginx`
+# server is used behind another proxy server (local or remote).
+nginx_real_ip_from: []
+
+                                                                   # ]]]
+# .. envvar:: nginx_real_ip_header [[[
+#
+# Specify the header used to lookup client IP addresses given by another
+# server.
+nginx_real_ip_header: 'X-Forwarded-For'
+
+                                                                   # ]]]
+# .. envvar:: nginx_real_ip_recursive [[[
+#
+# If this variable is enabled, :program:`nginx` will ignore client IP addresses that
+# match the ones from list of trusted upstream servers. This is useful when the
+# upstream server is also a proxy.
+nginx_real_ip_recursive: False
+
+                                                                   # ]]]
+# .. envvar:: nginx_default_keepalive_timeout [[[
+#
+nginx_default_keepalive_timeout: 60
+
+                                                                   # ]]]
+
+# .. envvar:: nginx_multi_accept [[[
+#
+# If enabled a worker proccess will accept all new connections at a time,
+# instead of a new connection at a time.
+nginx_multi_accept: 'off'
+
+                                                                   # ]]]
+
+# .. envvar:: nginx_pki [[[
+#
+# Enable or disable support for PKI/SSL/TLS in nginx.
+# Defaults to ``True`` if :ref:`debops.pki` is enabled on the remote host.
+nginx_pki: '{{ ansible_local|d() and ansible_local.pki|d() and
+               (ansible_local.pki.enabled|d() | bool) }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx_pki_path [[[
+#
+# Directory path where PKI realm live.
+nginx_pki_path: '{{ ansible_local.pki.path
+                    if (ansible_local|d() and ansible_local.pki|d() and
+                        ansible_local.pki.path|d())
+                    else "/etc/pki/realms" }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx_pki_realm [[[
+#
+# Default PKI realm to use.
+nginx_pki_realm: '{{ ansible_local.pki.realm
+                     if (ansible_local|d() and ansible_local.pki|d() and
+                         ansible_local.pki.realm|d())
+                     else "domain" }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx_pki_ca_realm [[[
+#
+# PKI realm to use for client CA.
+nginx_pki_ca_realm: '{{ ansible_local.pki.ca_realm
+                        if (ansible_local|d() and ansible_local.pki|d() and
+                            ansible_local.pki.ca_realm|d())
+                        else "domain" }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx_pki_crt [[[
+#
+# Path to default certificate, key and DH parameters file used by all nginx
+# servers if not specified otherwise in server configuration. Relative to
+# 'nginx_pki_realm' variable.
+nginx_pki_crt: 'default.crt'
+
+                                                                   # ]]]
+# .. envvar:: nginx_pki_key [[[
+#
+nginx_pki_key: 'default.key'
+
+                                                                   # ]]]
+# .. envvar:: nginx_pki_ca [[[
+#
+nginx_pki_ca:  'CA.crt'
+
+                                                                   # ]]]
+# .. envvar:: nginx_pki_trusted [[[
+#
+nginx_pki_trusted: 'trusted.crt'
+
+                                                                   # ]]]
+# .. envvar:: nginx_pki_hook_name [[[
+#
+# Name of the hook script which will be stored in hook directory.
+nginx_pki_hook_name: 'nginx'
+
+                                                                   # ]]]
+# .. envvar:: nginx_pki_hook_path [[[
+#
+# Directory with PKI hooks.
+nginx_pki_hook_path: '{{ ansible_local.pki.hooks
+                         if (ansible_local|d() and ansible_local.pki|d() and
+                             ansible_local.pki.hooks|d())
+                         else "/etc/pki/hooks" }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx_pki_hook_action [[[
+#
+# Specify how changes in PKI should affect nginx, either 'reload' or 'restart'.
+nginx_pki_hook_action: 'reload'
+
+                                                                   # ]]]
+# .. envvar:: nginx_ssl_dhparam [[[
+#
+# Path to the file with Diffie-Hellman parameters to use by the webserver.
+nginx_ssl_dhparam: '{{ (ansible_local.dhparam[nginx_ssl_dhparam_set]
+                        if (ansible_local|d() and ansible_local.dhparam|d() and
+                            ansible_local.dhparam[nginx_ssl_dhparam_set]|d())
+                        else "") }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx_ssl_dhparam_set [[[
+#
+# Name of the ``dhparam`` set to use.
+nginx_ssl_dhparam_set: 'default'
+
+                                                                   # ]]]
+# .. envvar:: nginx_default_ssl_ciphers [[[
+#
+# Default set of cipher suites to use.
+# Refer to ``nginx_ssl_ciphers`` for details.
+nginx_default_ssl_ciphers: 'bettercrypto_org__set_b_pfs'
+
+                                                                   # ]]]
+# .. envvar:: nginx_default_tls_protocols [[[
+#
+nginx_default_tls_protocols: [ 'TLSv1', 'TLSv1.1', 'TLSv1.2' ]
+
+                                                                   # ]]]
+# .. envvar:: nginx_default_ssl_curve [[[
+#
+# Default SSL ECDH curve used on servers, to see a list of supported curves, run:
+#
+# .. code-block:: console
+#
+#    openssl ecparam -list_curves
+#
+# See also: https://security.stackexchange.com/questions/31772/
+# Set to ``False`` to disable ECC.
+nginx_default_ssl_curve: 'secp384r1'
+
+                                                                   # ]]]
+# .. envvar:: nginx_default_ssl_verify_client [[[
+#
+# Default ssl verify client
+nginx_default_ssl_verify_client: False
+
+                                                                   # ]]]
+# .. envvar:: nginx_default_ssl_client_certificate [[[
+#
+# Default ssl client certificate
+nginx_default_ssl_client_certificate: ''
+
+                                                                   # ]]]
+# .. envvar:: nginx_default_ssl_crl [[[
+#
+# Default ssl revocation client certificate
+nginx_default_ssl_crl: ''
+
+                                                                   # ]]]
+# .. envvar:: nginx_ocsp [[[
+#
+# Enable or disable OCSP Stapling.
+nginx_ocsp: True
+
+                                                                   # ]]]
+# .. envvar:: nginx_ocsp_verify [[[
+#
+# Verify OCSP responses from the server which requires chained intermediate and
+# Root CA certificates.
+nginx_ocsp_verify: '{{ nginx_ocsp | bool }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx_ocsp_resolvers [[[
+#
+# List of DNS servers used to resolve OCSP stapling. If it's empty, nginx role
+# will try to use the nameservers from /etc/resolv.conf
+# Currently only the first nameserver is used
+nginx_ocsp_resolvers: []
+
+                                                                   # ]]]
+# .. envvar:: nginx_hsts_age [[[
+#
+# HTTP Strict-Transport-Security
+# https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security
+# Maximum age in seconds for which clients should remember to only make secure
+# connections.
+# Defaults to six earth months.
+nginx_hsts_age: '15768000'
+
+                                                                   # ]]]
+# .. envvar:: nginx_hsts_subdomains [[[
+#
+# Should HSTS_ also include subdomains?
+# Note that all subdomains have to support HTTPS if you use this!
+nginx_hsts_subdomains: True
+
+                                                                   # ]]]
+# .. envvar:: nginx_hsts_preload [[[
+#
+# Should the ``preload`` parameter be added to the HSTS header?
+# Refer to the `HSTS Preload List Submission`_ page to make use of this
+# feature.
+# It is disabled by default because setting this to ``True`` alone does
+# nothing, it is just one requirement to get included in the preloading list.
+# Please feel encouraged to get to know HSTS preloading and enable it when you
+# are ready!
+nginx_hsts_preload: False
+
+                                                                   # ]]]
+# .. envvar:: nginx_enable_http2 [[[
+#
+# Enable HTTP/2 (formerly HTTP QUICK) on nginx.
+# HTTP/2 enables a server to pre‑emptively push resources to a remote client,
+# anticipating that the client may soon request those resource, hence
+# reducing the number of RTTs (Round Trip Times).
+# Available with nginx version >= 1.9.5
+nginx_enable_http2: True
+
+                                                                   # ]]]
+# .. envvar:: nginx_enable_sdpy [[[
+#
+# Enables experimental support for .. _SPDY: https://www.chromium.org/spdy/spdy-protocol HTTP protocol.
+# Available with nginx version >= 1.4 && < 1.9.5
+nginx_enable_sdpy: False
+
+                                                                   # ]]]
+# .. envvar:: nginx__http_csp_append [[[
+#
+# CSP directives to append to all policies. This can be used to set the
+# ``report-uri`` globally.
+# The string MUST end with a semicolon but MUST NOT begin with one.
+# Refer :ref:`nginx__ref_servers_http_security_headers` for details.
+nginx__http_csp_append: ''
+
+                                                                   # ]]]
+# .. envvar:: nginx_default_name [[[
+#
+# Specify HTTP server name which will be marked as default_server.
+nginx_default_name: ''
+
+                                                                   # ]]]
+# .. envvar:: nginx_default_ssl_name [[[
+#
+# Specify HTTPS server name which will be marked as default_server.
+nginx_default_ssl_name: ''
+
+                                                                   # ]]]
+# .. envvar:: nginx_default_type [[[
+#
+# Default server template used if no type is selected
+nginx_default_type: 'default'
+
+                                                                   # ]]]
+# .. envvar:: nginx_webroot_create [[[
+#
+# Create global webroot directories?
+# Path: :file:`/srv/www/sites/*/public`.
+nginx_webroot_create: True
+
+                                                                   # ]]]
+# .. envvar:: nginx_webroot_owner [[[
+#
+nginx_webroot_owner: 'root'
+
+                                                                   # ]]]
+# .. envvar:: nginx_webroot_group [[[
+#
+nginx_webroot_group: 'root'
+
+                                                                   # ]]]
+# .. envvar:: nginx_webroot_mode [[[
+#
+nginx_webroot_mode: '0755'
+
+                                                                   # ]]]
+# .. envvar:: nginx_welcome_template [[[
+#
+# Name of the Jinja2 template used as a welcome page
+nginx_welcome_template: 'srv/www/sites/welcome/public/index.html.j2'
+
+                                                                   # ]]]
+# .. envvar:: nginx_welcome_domain [[[
+#
+# The domain used on the default welcome page
+nginx_welcome_domain: '{{ ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx_acme [[[
+#
+# Enable or disable support for Automated Certificate Management Environment
+# (ACME) on all servers. This can be overridden per server using ``item.acme``
+# variable.
+nginx_acme: True
+
+                                                                   # ]]]
+# .. envvar:: nginx_acme_root [[[
+#
+# Global directory where ACME challenges will be served from. It's not created
+# by the role automatically and left to be managed by other Ansible roles.
+nginx_acme_root: '{{ nginx_www + "/sites/acme/public" }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx_acme_server [[[
+#
+# Enable or disable custom ACME challenge server configuration. It will answer
+# queries on a specified domain, from ``nginx_acme_root`` directory. It can be
+# used for other things as well, for example to serve certificates to
+# other hosts.
+nginx_acme_server: False
+
+                                                                   # ]]]
+# .. envvar:: nginx_acme_domain [[[
+#
+# Specifies the DNS domain to which ACME challenge queries will be redirected if
+# they are not found on the host. The domain must exist in the DNS and a web
+# server needs to be configured to answer the queries.
+# Set to ``False`` to disable the redirect.
+nginx_acme_domain: 'acme.{{ ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx__hostname_domains [[[
+#
+# Specify the domains which will be used as a base domains for automatic short
+# name generation. It will not be used if it's defined on the server level.
+# First domain from the list that matches, wins.
+nginx__hostname_domains: [ '{{ ansible_local.core.domain
+                               if (ansible_local|d() and ansible_local.core|d() and
+                                   ansible_local.core.domain|d())
+                               else ansible_domain }}' ]
+
+                                                                   # ]]]
+# .. envvar:: nginx_status [[[
+#
+# List of IP addresses or CIDR ranges to allow access to the status page
+nginx_status: []
+
+                                                                   # ]]]
+# .. envvar:: nginx_status_localhost [[[
+#
+# By default allow access to the status page from webserver itself
+nginx_status_localhost: '{{ [ "127.0.0.1/32", "::1/128" ] + ansible_all_ipv4_addresses|d([]) +
+                            (ansible_all_ipv6_addresses|d([]) |
+                             difference(ansible_all_ipv6_addresses|d([]) | ipaddr("link-local"))) }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx_status_name [[[
+#
+# Name of the nginx status page location
+nginx_status_name: '/nginx_status'
+
+                                                                   # ]]]
+# .. envvar:: nginx_local_servers [[[
+#
+# Hash of symlinks to local server definitions stored in /etc/nginx/sites-local/
+# Entries with empty values or False will be removed
+# Symlinks will be created in /etc/nginx/sites-enabled/
+nginx_local_servers: {}
+  #'symlink': 'file'
+  #'other-symlink.conf': 'sub/directory/file.conf'
+  #'removed-file': False
+  #'also-removed':
+  #'symlink\ with\ spaces.conf': 'other-file.conf'
+
+                                                                   # ]]]
+# .. envvar:: nginx_default_satisfy [[[
+#
+# Default "satisfy" mode used if not specified, choices: any, all
+nginx_default_satisfy: 'any'
+
+                                                                   # ]]]
+# .. envvar:: nginx_default_auth_basic_realm [[[
+#
+# Default HTTP Basic Auth "realm" presented to the user
+nginx_default_auth_basic_realm: 'Access to this website is restricted'
+
+                                                                   # ]]]
+# .. envvar:: nginx_htpasswd_secret_path [[[
+#
+# Path on the Ansible Controller used to lookup htpasswd passwords (see
+# debops.secret_ role). You can change this to for example share a set of
+# passwords between different hosts in case you use nginx in a HA setup
+nginx_htpasswd_secret_path: '{{ secret + "/credentials/" + inventory_hostname + "/nginx/htpasswd" }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx__htpasswd_crypt_scheme [[[
+#
+# The encryption scheme used by the ``htpasswd`` Ansible module to generate
+# password hashes. You should use schemes supported by ``passlib`` library.
+nginx__htpasswd_crypt_scheme: 'sha512_crypt'
+
+                                                                   # ]]]
+# .. envvar:: nginx__htpasswd [[[
+#
+# List of htpasswd files with user accounts managed by ``debops.nginx``. Example
+# entries below
+nginx__htpasswd: []
+
+                                                                   # ]]]
+# .. envvar:: nginx__default_htpasswd [[[
+#
+nginx__default_htpasswd:
+  - '{{ nginx__http_auth_htpasswd }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx__dependent_htpasswd [[[
+#
+nginx__dependent_htpasswd: []
+
+                                                                   # ]]]
+  # Create specified user accounts
+  #- name: 'server_domain'
+  #  users: [ 'username1', 'username2@domain' ]
+
+  # Delete specified user accounts
+  #- name: 'server_domain'
+  #  users: [ 'username1', 'username2@domain' ]
+  #  delete: True
+
+  # Delete htpasswd file
+  #- name: 'server_domain'
+  #  users: []
+  #  state: 'absent'
+
+
+# ---- nginx server access policy ----
+
+# Using the dicts below you can define a named "access policy" consisting of a list
+# of allowed hosts/CIDR networks and/or a name of a htpasswd file in
+# '/etc/nginx/private/' with a list of user accounts to allow access. You can
+# also define if any or all restrictions need to be met to gain access to
+# a website. In website configuration dict, you can define an
+# 'item.access_policy' key with a name of a particular policy. The nginx role
+# will then use this information to generate a proper config file with given
+# restrictions in place.
+
+# .. envvar:: nginx_access_policy_allow_map [[[
+#
+# List of IP addresses or CIDR networks which can access a particular site
+nginx_access_policy_allow_map: {}
+
+  #'my_policy': [ '192.0.2.0/24', '2002:db8::/64' ]
+
+                                                                   # ]]]
+# .. envvar:: nginx_access_policy_auth_basic_map [[[
+#
+# Name of an HTTP Basic Auth htpasswd file in '/etc/nginx/private/' directory
+nginx_access_policy_auth_basic_map: {}
+
+  #'my_policy': 'htpasswd_file'
+
+                                                                   # ]]]
+# .. envvar:: nginx_access_policy_satisfy_map [[[
+#
+# Should all or any restrictions be met to gain access?
+nginx_access_policy_satisfy_map: {}
+
+  #'my_policy': 'any' or 'all'
+
+                                                                   # ]]]
+# .. envvar:: nginx__maps [[[
+#
+# List of nginx map definitions
+# Each map should be defined in it's own hash variable, similar to upstreams
+# and servers
+# https://nginx.org/en/docs/http/ngx_http_map_module.html
+nginx__maps: []
+
+                                                                   # ]]]
+# .. envvar:: nginx__default_maps [[[
+#
+# List of default nginx map definitions
+nginx__default_maps:
+
+  # Extract the subdomain from the '*.local' domain managed by Avahi and expose
+  # it as a variable which can be used to redirect the HTTP clients to websites
+  - name: 'host_without_local'
+    map: '$host $host_without_local'
+    mapping: '~*^(?<subdomain>[a-zA-Z0-9\-\_\.]+)\.local$ $subdomain;'
+
+  # Support WebSocket connection upgrade as a proxy
+  # Documentation: https://nginx.org/en/docs/http/websocket.html
+  - name: 'connection_upgrade'
+    map: '$http_upgrade $connection_upgrade'
+    mapping: |
+      ''      Close;
+    default: 'Upgrade'
+
+                                                                   # ]]]
+# .. envvar:: nginx__dependent_maps [[[
+#
+# List of nginx maps defined in Ansible roles
+nginx__dependent_maps: []
+
+                                                                   # ]]]
+# .. envvar:: nginx__upstreams [[[
+#
+# List of nginx upstream definitions
+nginx__upstreams: []
+
+                                                                   # ]]]
+# .. envvar:: nginx__default_upstreams [[[
+#
+# List of default nginx upstream definitions
+nginx__default_upstreams:
+  - '{{ nginx_upstream_php5_www_data }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx__dependent_upstreams [[[
+#
+# List of nginx upstreams defined in Ansible roles
+nginx__dependent_upstreams: []
+
+                                                                   # ]]]
+# .. envvar:: nginx_upstream_php5_www_data [[[
+#
+# Upstream for default php5-fpm configuration
+# Legacy.
+nginx_upstream_php5_www_data:
+  state: 'absent'
+  name: 'php5_www-data'
+  type: 'php5'
+  php5: 'www-data'
+
+                                                                   # ]]]
+# Nginx servers [[[
+# -----------------
+
+# .. envvar:: nginx__servers [[[
+#
+# List of nginx server definitions
+#
+# Refer to the :ref:`documentation of all options <nginx__ref_servers>` for
+# more details.
+nginx__servers: []
+
+                                                                   # ]]]
+# .. envvar:: nginx__default_servers [[[
+#
+nginx__default_servers:
+  - '{{ nginx_server_welcome }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx__internal_servers [[[
+#
+# List of internal nginx servers
+nginx__internal_servers:
+  - '{{ nginx_server_localhost }}'
+  - '{{ nginx_server_acme }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx__dependent_servers [[[
+#
+# List of nginx servers defined in Ansible roles
+nginx__dependent_servers: []
+
+                                                                   # ]]]
+# .. envvar:: nginx_server_welcome [[[
+#
+# Default nginx site
+# List and description of available parameters can be found in nginx server
+# templates :file:`templates/etc/nginx/sites-available/*.conf.j2`.
+nginx_server_welcome:
+  enabled: True
+  name: [ 'welcome' ]
+  welcome: True
+  welcome_domain: '{{ nginx_welcome_domain }}'
+  csp: "default-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self';"
+  csp_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: nginx_server_localhost [[[
+#
+# Default nginx ``localhost`` server. It can be used to access :program:`nginx` status
+# page by other services.
+nginx_server_localhost:
+  enabled: True
+  name: [ 'localhost', '127.0.0.1', '[::1]' ]
+  acme: False
+  ssl: False
+  welcome: True
+  welcome_css: False
+
+                                                                   # ]]]
+# .. envvar:: nginx_server_acme [[[
+#
+# Custom server for ACME challenge queries
+nginx_server_acme:
+  enabled: '{{ nginx_acme_server | bool }}'
+  delete: '{{ not nginx_acme_server | bool }}'
+  name: [ '{{ nginx_acme_domain }}' ]
+  filename: 'acme-challenge'
+  root: '{{ nginx_acme_root }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx_default_try_files [[[
+#
+# Checks for the existence of files in order, and returns the
+# first file that is found for location /.
+# http://wiki.nginx.org/NginxHttpCoreModule#try_files
+nginx_default_try_files:
+  - '$uri'
+  - '$uri/'
+  - '$uri.html'
+  - '$uri.htm'
+  - '/index.html'
+  - '/index.htm'
+
+                                                                   # ]]]
+# .. envvar:: nginx__log_format [[[
+#
+# log_format nginx configuration in /etc/nginx/conf.d/
+nginx__log_format: []
+
+  #- name: 'main'
+  #  log_format: '$remote_addr - $remote_user [$time_local] "$request_method $scheme://$host$request_uri $server_protocol" $status $body_bytes_sent "$http_referer" "$http_user_agent" "$http_x_forwarded_for"'
+                                                                   # ]]]
+# .. envvar:: nginx__dependent_log_format [[[
+#
+# log_format nginx configuration in /etc/nginx/conf.d/
+nginx__dependent_log_format: []
+                                                                   # ]]]
+# .. envvar:: nginx__custom_config [[[
+#
+# Custom nginx configuration in /etc/nginx/conf.d/
+nginx__custom_config: []
+
+  #- name: 'other_config'
+  #  custom: |
+  #    text block {
+  #    }
+
+                                                                   # ]]]
+# .. envvar:: nginx__http_xss_protection [[[
+#
+# Default value for :ref:`xss_protection
+# <nginx__ref_http_xss_protection>`.
+nginx__http_xss_protection: '1; mode=block'
+
+                                                                   # ]]]
+# .. envvar:: nginx__http_referrer_policy [[[
+#
+# Default value for :ref:`http_referrer_policy
+# <nginx__ref_http_referrer_policy>`.
+nginx__http_referrer_policy: 'same-origin'
+
+                                                                   # ]]]
+# .. envvar:: nginx__http_permitted_cross_domain_policies [[[
+#
+# Default value for :ref:`permitted_cross_domain_policies
+# <nginx__ref_permitted_cross_domain_policies>`.
+nginx__http_permitted_cross_domain_policies: '{{ omit }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx__http_robots_tag [[[
+#
+# Default value for :ref:`robots_tag
+# <nginx__ref_http_robots_tag>`.
+nginx__http_robots_tag: '{{ omit }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# .. envvar:: nginx_apt_preferences_dependent_list [[[
+#
+# Configuration of custom APT preferences.
+nginx_apt_preferences_dependent_list: '{{ nginx__apt_preferences__dependent_list }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx__apt_preferences__dependent_list [[[
+#
+nginx__apt_preferences__dependent_list:
+
+  - package: 'nginx nginx-*'
+    backports: [ 'wheezy' ]
+    reason: 'Support for SPDY, OCSP stapling'
+    by_role: 'debops.nginx'
+    state: '{{ ((nginx__deploy_state in [ "present" ]) and (nginx_flavor not in [ "passenger" ])) | ternary("present", "absent") }}'
+
+  - package: 'nginx nginx-*'
+    pin: 'release o=Phusion'
+    reason: 'Support for Phusion Passenger'
+    priority: '600'
+    suffix: '_passenger'
+    by_role: 'debops.nginx'
+    state: '{{ ((nginx__deploy_state in [ "present" ]) and (nginx_flavor in [ "passenger" ])) | ternary("present", "absent") }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx_ferm_dependent_rules [[[
+#
+# Configuration of the :command:`iptables` firewall using :program:`ferm`.
+nginx_ferm_dependent_rules: '{{ nginx__ferm__dependent_rules }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx__ferm__dependent_rules [[[
+#
+nginx__ferm__dependent_rules:
+
+  - type: 'accept'
+    dport: [ 'http', 'https' ]
+    saddr: '{{ nginx_allow + nginx_group_allow + nginx_host_allow }}'
+    accept_any: True
+    weight: '40'
+    by_role: 'nginx'
+    name: 'http_https'
+    multiport: True
+    delete: '{{ nginx__deploy_state != "present" }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx_php5_status [[[
+#
+# Name of the php5 fpm status page location
+nginx_php5_status: False
+
+                                                                   # ]]]
+# .. envvar:: nginx_php5_status_name [[[
+#
+nginx_php5_status_name: 'php5_status'
+
+                                                                   # ]]]
+# .. envvar:: nginx_php5_ping_name [[[
+#
+nginx_php5_ping_name: 'php5_ping'
+
+                                                                   # ]]]
+# .. envvar:: nginx_privileged_group [[[
+#
+# What system group has privileged access to :program:`nginx` service.
+nginx_privileged_group: 'webadmins'
+
+                                                                   # ]]]
+# .. envvar:: nginx_ssl_ciphers [[[
+#
+# Hash of SSL ciphers available to use in nginx server definitions
+# You can select a set of ciphers using 'ssl_ciphers' variable
+# Default set of ciphers is set in nginx_default_ssl_ciphers variable
+nginx_ssl_ciphers:
+
+  # https://bettercrypto.org/
+  # https://git.bettercrypto.org/ach-master.git/blob/HEAD:/src/theory/cipher_suites/recommended.tex
+  # This will come at a certain cost of excluding many clients!
+  # If you want even higher security then the default values of this role then
+  # consider to use a preset for this role maintained by ypid:
+  # https://github.com/ypid/ypid-ansible-inventory
+  bettercrypto_org__set_a: 'EDH+aRSA+AES256:EECDH+aRSA+AES256:!SSLv3'
+
+  # https://bettercrypto.org/
+  # https://git.bettercrypto.org/ach-master.git/blob/HEAD:/src/configuration/Webservers/nginx/default-ec
+  bettercrypto_org__set_b: 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA256:EECDH:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH:CAMELLIA128-SHA:AES128-SHA'
+
+  # https://bettercrypto.org/
+  # https://git.bettercrypto.org/ach-master.git/blob/HEAD:/src/configuration/Webservers/nginx/default-ec
+  # But only cipher suites which support PFS. Only drops support for Android 2.3.7 which is negligible.
+  bettercrypto_org__set_b_pfs: 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA256:EECDH:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH'
+
+  # https://cipherli.st/
+  cipherli_st: 'EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH'
+
+  # Perfect Forward Secrecy (https://community.qualys.com/blogs/securitylabs/2013/08/05/configuring-apache-nginx-and-openssl-for-forward-secrecy)
+  # String taken on 2014-04-11
+  pfs: 'EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EECDH+aRSA+SHA256:EECDH+aRSA+RC4:EECDH:EDH+aRSA:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4'
+
+  # Perfect Forward Secrecy + RC4
+  # String taken on 2014-04-11
+  pfs_rc4: 'EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EECDH+aRSA+SHA256:EECDH+aRSA+RC4:EECDH:EDH+aRSA:RC4:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS'
+
+  # Hardened SSL cipher list (https://hynek.me/articles/hardening-your-web-servers-ssl-ciphers/)
+  # String taken on 2014-04-11
+  hardened: 'ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+3DES:!aNULL:!MD5:!DSS'
+
+  # TLS recommendations from Mozilla Foundation (https://wiki.mozilla.org/Security/Server_Side_TLS)
+  # String taken on 2014-04-11
+  mozilla: 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:ECDHE-RSA-RC4-SHA:ECDHE-ECDSA-RC4-SHA:AES128:AES256:RC4-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!3DES:!MD5:!PSK'
+
+  # FIPS 140-2 compliant (https://en.wikipedia.org/wiki/FIPS_140-2)
+  # https://community.qualys.com/thread/12182
+  fips: 'FIPS@STRENGTH:!aNULL:!eNULL'
+
+  # NCSC-NL 'good' cipher suite from IT Security Guidelines for Transport Layer Security v2.0
+  # https://www.ncsc.nl/english/current-topics/factsheets/it-security-guidelines-for-transport-layer-security-tls.html
+  ncsc_nl: 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-RSA-AES128-GCM-SHA256'
+
+  # This cipher set disables the 'ssl_ciphers' option in 'nginx' and the
+  # default set of SSL ciphers for a given platform will be used.
+  default: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# ----------------------------------------
+
+# .. envvar:: nginx__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.nginx` Ansible role.
+nginx__keyring__dependent_apt_keys:
+
+  - id: '{{ nginx__flavor_apt_key_id }}'
+    repo: '{{ nginx__flavor_apt_repository }}'
+    state: '{{ "present"
+               if (nginx_flavor in [ "nginx.org", "passenger" ] and
+                   nginx__deploy_state == "present")
+               else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+nginx__python__dependent_packages3:
+
+  - 'python3-passlib'
+
+                                                                   # ]]]
+# .. envvar:: nginx__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+nginx__python__dependent_packages2:
+
+  - 'python-passlib'
+
+                                                                   # ]]]
+                                                                   # ]]]

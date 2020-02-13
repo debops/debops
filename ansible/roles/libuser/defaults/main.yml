@@ -1,0 +1,302 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# debops.libuser default variables
+# ================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+# Installation, Apt packages [[[
+# ------------------------------
+
+# .. envvar:: libuser__enabled [[[
+#
+# Should Ansible use ``libuser`` library to manage UNIX accounts and groups?
+libuser__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: libuser__base_packages [[[
+#
+# List of APT base packages which are required by the Libuser service.
+libuser__base_packages: [ 'libuser' ]
+
+                                                                   # ]]]
+# .. envvar:: libuser__packages [[[
+#
+# List of APT packages which are required by the Libuser service.
+libuser__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Libuser configuration file [[[
+# ------------------------------
+
+# The variables below define the contents of the
+# :file:`/etc/libuser.conf` configuration file.
+# See :ref:`libuser__ref_configuration` for more details.
+
+# .. envvar:: libuser__original_configuration [[[
+#
+# The default configuration options which should be present in the main
+# configuration file.
+libuser__original_configuration:
+
+  - name: 'import'
+    options:
+
+      - name: 'login_defs'
+        comment: |
+          Data from these files is used when libuser.conf does not define a value.
+          The mapping is documented in the man page.
+        value: '/etc/login.defs'
+        state: 'present'
+
+      - name: 'default_useradd'
+        value: '/etc/default/useradd'
+        state: 'present'
+
+  - name: 'defaults'
+    options:
+
+      - name: 'moduledir'
+        comment: 'The default (/usr/lib*/libuser) is usually correct'
+        value: '/your/custom/directory'
+        state: 'comment'
+
+      - name: 'skeleton'
+        comment: 'The following variables are usually imported:'
+        value: '/etc/skel'
+        state: 'comment'
+        separator: True
+
+      - name: 'mailspooldir'
+        value: '/var/mail'
+        state: 'comment'
+
+      - name: 'crypt_style'
+        value: 'sha512'
+        state: 'present'
+        separator: True
+
+      - name: 'modules'
+        value: 'files shadow'
+        state: 'present'
+
+      - name: 'create_modules'
+        value: 'files shadow'
+        state: 'present'
+
+      - name: 'modules_with_ldap'
+        option: 'modules'
+        value: 'files shadow ldap'
+        state: 'comment'
+
+      - name: 'create_modules_with_ldap'
+        option: 'create_modules'
+        value: 'ldap'
+        state: 'comment'
+
+  - name: 'userdefaults'
+    options:
+
+      - name: 'LU_USERNAME'
+        value: '%n'
+        state: 'present'
+
+      - name: 'LU_UIDNUMBER'
+        comment: 'This is better imported from /etc/login.defs:'
+        value: '500'
+        state: 'comment'
+
+      - name: 'LU_GIDNUMBER'
+        value: '%u'
+        state: 'present'
+
+      - name: 'LU_USERPASSWORD'
+        value: '!!'
+        state: 'comment'
+
+      - name: 'LU_GECOS'
+        value: '%n'
+        state: 'comment'
+
+      - name: 'LU_HOMEDIRECTORY'
+        value: '/home/%n'
+        state: 'comment'
+
+      - name: 'LU_LOGINSHELL'
+        value: '/bin/bash'
+        state: 'comment'
+
+      - name: 'LU_SHADOWNAME'
+        value: '%n'
+        state: 'comment'
+        separator: True
+
+      - name: 'LU_SHADOWPASSWORD'
+        value: '!!'
+        state: 'comment'
+
+      - name: 'LU_SHADOWLASTCHANGE'
+        value: '%d'
+        state: 'comment'
+
+      - name: 'LU_SHADOWMIN'
+        value: '0'
+        state: 'comment'
+
+      - name: 'LU_SHADOWMAX'
+        value: '99999'
+        state: 'comment'
+
+      - name: 'LU_SHADOWWARNING'
+        value: '7'
+        state: 'comment'
+
+      - name: 'LU_SHADOWINACTIVE'
+        value: '-1'
+        state: 'comment'
+
+      - name: 'LU_SHADOWEXPIRE'
+        value: '-1'
+        state: 'comment'
+
+      - name: 'LU_SHADOWFLAG'
+        value: '-1'
+        state: 'comment'
+
+  - name: 'groupdefaults'
+    options:
+
+      - name: 'LU_GROUPNAME'
+        value: '%n'
+        state: 'present'
+
+      - name: 'LU_GIDNUMBER'
+        comment: 'This is better imported from /etc/login.defs:'
+        value: '500'
+        state: 'comment'
+
+      - name: 'LU_GROUPPASSWORD'
+        value: '!!'
+        state: 'comment'
+        separator: True
+
+      - name: 'LU_MEMBERUID'
+        state: 'comment'
+
+      - name: 'LU_ADMINISTRATORUID'
+        state: 'comment'
+
+  - name: 'files'
+    options:
+
+      - name: 'directory'
+        comment: |
+          This is useful for the case where some master files are used to
+          populate a different NSS mechanism which this workstation uses.
+        value: '/etc'
+        state: 'comment'
+
+  - name: 'shadow'
+    options:
+
+      - name: 'directory'
+        comment: |
+          This is useful for the case where some master files are used to
+          populate a different NSS mechanism which this workstation uses.
+        value: '/etc'
+        state: 'comment'
+
+  - name: 'ldap'
+    options:
+
+      - name: 'server'
+        comment: 'Setting these is always necessary.'
+        value: 'ldap'
+        state: 'comment'
+
+      - name: 'basedn'
+        value: 'dc=example,dc=com'
+        state: 'comment'
+
+      - name: 'userBranch'
+        comment: "Setting these is rarely necessary, since it's usually correct."
+        value: 'ou=People'
+        state: 'comment'
+        separator: True
+
+      - name: 'groupBranch'
+        value: 'ou=Group'
+        state: 'comment'
+
+      - name: 'binddn'
+        comment: |
+          Set only if your administrative user uses simple bind operations to
+          connect to the server.
+        value: 'cn=Manager,dc=example,dc=com'
+        state: 'comment'
+        separator: True
+
+      - name: 'user'
+        comment: |
+          Set this only if the default user (as determined by SASL) is incorrect
+          for SASL bind operations.  Usually, it's correct, so you'll rarely need
+          to set these.
+        value: 'Manager'
+        state: 'comment'
+        separator: True
+
+      - name: 'authuser'
+        value: 'Manager'
+        state: 'comment'
+
+  - name: 'sasl'
+    options:
+
+      - name: 'appname'
+        comment: |
+          Set these only if your sasldb is only used by a particular application, and
+          in a particular domain.  The default (all applications, all domains) is
+          probably correct for most installations.
+        value: 'imap'
+        state: 'comment'
+
+      - name: 'domain'
+        value: 'EXAMPLE.COM'
+        state: 'comment'
+
+                                                                   # ]]]
+# .. envvar:: libuser__configuration [[[
+#
+# The configuration which should be present on all hosts in the Ansible
+# inventory.
+libuser__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: libuser__group_configuration [[[
+#
+# The configuration which should be present on hosts in a specific Ansible
+# inventory group.
+libuser__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: libuser__host_configuration [[[
+#
+# The configuration which should be present on specific hosts in the Ansible
+# inventory.
+libuser__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: libuser__combined_configuration [[[
+#
+# The variable which combines all of the other configuration variables and is
+# used in the Ansible tasks.
+libuser__combined_configuration: '{{ libuser__original_configuration
+                                     + libuser__configuration
+                                     + libuser__group_configuration
+                                     + libuser__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]

@@ -1,0 +1,246 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _python__ref_defaults:
+
+# debops.python default variables
+# ===============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: python__enabled [[[
+#
+# Enable or disable Python management via the :ref:`debops.python` role.
+python__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: python__raw_apt_cache_valid_time [[[
+#
+# During Python bootstrapping, check if the APT cache was modified X minutes
+# ago (must be a negative number), by default 12h. If the APT cache is older
+# than the specified time in minutes, the role will automatically refresh it.
+# Set to ``0`` to refresh the APT cache on each Ansible run.
+python__raw_apt_cache_valid_time: '-{{ 60 * 60 * 12 }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Python 3 management [[[
+# -----------------------
+
+# .. envvar:: python__v3 [[[
+#
+# Enable or disable support for Python 3 management. Python 3 will be
+# automatically disabled on some OS releases due to missing or outdated Python
+# 3 packages.
+python__v3: '{{ False
+                if (ansible_distribution_release|d() in
+                    [ "wheezy", "precise" ])
+                else True }}'
+
+                                                                   # ]]]
+# .. envvar:: python__core_packages3 [[[
+#
+# List of core Python 3 APT packages to install. These packages will be
+# installed in the "raw" mode as well as during normal role operation.
+python__core_packages3:
+  - 'python3'
+  - 'python3-apt'
+
+                                                                   # ]]]
+# .. envvar:: python__base_packages3 [[[
+#
+# List of base Python 3 packges to install via APT. These packages should allow
+# creation of Python 3 virtual environments and installation of Python packages
+# via the :command:`pip3` command from the PyPI repository, as well as Ansible
+# opration on the remote host.
+python__base_packages3:
+  - 'python3-httplib2'
+  - 'python3-pip'
+  - 'python3-setuptools'
+  - 'python3-pycurl'
+  - 'python3-virtualenv'
+  - 'python3-wheel'
+  - 'virtualenv'
+
+                                                                   # ]]]
+# .. envvar:: python__packages3 [[[
+#
+# List of Python 3 APT packages which should be installed on all hosts in the
+# Ansible inventory.
+python__packages3: []
+
+                                                                   # ]]]
+# .. envvar:: python__group_packages3 [[[
+#
+# List of Python 3 APT packages which should be installed on hosts in
+# a specific Ansible inventory group.
+python__group_packages3: []
+
+                                                                   # ]]]
+# .. envvar:: python__host_packages3 [[[
+#
+# List of Python 3 APT packages which should be installed on specific hosts in
+# the Ansible inventory.
+python__host_packages3: []
+
+                                                                   # ]]]
+# .. envvar:: python__dependent_packages3 [[[
+#
+# List of Python 3 APT packages defined by other Ansible roles via role
+# dependent variables.
+python__dependent_packages3: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Python 2 management [[[
+# -----------------------
+
+# .. envvar:: python__v2 [[[
+#
+# Enable or disable support for Python 2.7 management. Python 2.7 support will
+# be automatically disabled if the ``ansible_python_interpreter`` inventory
+# variable is set to ``/usr/bin/python3``, or Ansible detects the Python 3.x
+# interpreter dynamically, otherwise it will be enabled by default on older OS
+# releases.
+#
+# On Debian Buster and beyond, Python 2.7 support is disabled by default to
+# configure a Python 3.x-only environment. If the role detects an installed
+# Python 2.7 environment with Ansible local facts during normal operation, the
+# 2.7 environment will be enabled.
+#
+# If Python 2.7 support is disabled, using the role in the "raw" mode will
+# purge Python 2.7 packages automatically. This can be controlled by the
+# :envvar:`python__raw_purge_v2` variable.
+python__v2: '{{ ansible_local.python.installed2
+                if (ansible_local|d() and ansible_local.python|d() and
+                    ansible_local.python.installed2 is defined)
+                else (True
+                      if ((ansible_python_interpreter|d("")).endswith("python") or
+                          (discovered_interpreter_python|d("")).endswith("python") or
+                           (python__register_raw_release|d() and
+                            (python__register_raw_release.stdout|d("")).strip() in
+                            [ "wheezy", "jessie", "stretch",
+                              "precise", "trusty", "xenial" ]))
+                      else False) }}'
+
+                                                                   # ]]]
+# .. envvar:: python__core_packages2 [[[
+#
+# List of core Python 2 APT packages to install. These packages will be
+# installed in the "raw" mode as well as during normal role operation.
+python__core_packages2:
+  - 'python'
+  - 'python-apt'
+
+                                                                   # ]]]
+# .. envvar:: python__base_packages2 [[[
+#
+# List of base Python 2 packges to install via APT. These packages should allow
+# creation of Python 2 virtual environments and installation of Python packages
+# via the :command:`pip` command from the PyPI repository, as well as Ansible
+# opration on the remote host.
+python__base_packages2:
+  - 'python-httplib2'
+  - 'python-pip'
+  - 'python-setuptools'
+  - 'python-pycurl'
+  - 'python-virtualenv'
+  - '{{ [] if (ansible_distribution_release in
+               [ "wheezy", "precise" ])
+           else "python-wheel" }}'
+
+                                                                   # ]]]
+# .. envvar:: python__packages2 [[[
+#
+# List of Python 2 APT packages which should be installed on all hosts in the
+# Ansible inventory.
+python__packages2: []
+
+                                                                   # ]]]
+# .. envvar:: python__group_packages2 [[[
+#
+# List of Python 2 APT packages which should be installed on hosts in
+# a specific Ansible inventory group.
+python__group_packages2: []
+
+                                                                   # ]]]
+# .. envvar:: python__host_packages2 [[[
+#
+# List of Python 2 APT packages which should be installed on specific hosts in
+# the Ansible inventory.
+python__host_packages2: []
+
+                                                                   # ]]]
+# .. envvar:: python__dependent_packages2 [[[
+#
+# List of Python 2 APT packages defined by other Ansible roles via role
+# dependent variables.
+python__dependent_packages2: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Python 2/3 package installation [[[
+# -----------------------------------
+
+# .. envvar:: python__core_packages [[[
+#
+# List of APT packages that contains core Python packages selected by the role
+# for installation. These packages will be installed in the "raw" mode as well
+# as during normal operation. This variable is used in the role tasks.
+python__core_packages: '{{ (python__core_packages3
+                            if (python__v3|bool) else [])
+                           + (python__core_packages2
+                              if (python__v2|bool) else []) }}'
+
+                                                                   # ]]]
+# .. envvar:: python__combined_packages [[[
+#
+# List of APT packages that contains Python packages selected by the role for
+# installation. This variable is used in the role tasks.
+python__combined_packages: '{{ python__core_packages
+                               + ((python__base_packages3
+                                   + python__packages3
+                                   + python__group_packages3
+                                   + python__host_packages3
+                                   + python__dependent_packages3)
+                                  if python__v3|bool else [])
+                               + ((python__base_packages2
+                                   + python__packages2
+                                   + python__group_packages2
+                                   + python__host_packages2
+                                   + python__dependent_packages2)
+                                  if python__v2|bool else []) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Python 2 package purging [[[
+# ----------------------------
+
+# .. envvar:: python__raw_purge_v2 [[[
+#
+# Enable or disable purging of the Python 2.7 packages in the "raw" mode. This
+# is useful if you want to completely remove Python 2.7 environment during host
+# bootstrapping, and will be enabled by default if the
+# ``ansible_python_interpreter`` inventory variable is set to
+# ``/usr/bin/python3``.
+#
+# The packages will not be purged if the role detects the presence of the
+# :file:`/etc/ansible/facts.d/python.fact` script.
+python__raw_purge_v2: '{{ False
+                          if (python__v2|bool)
+                          else True }}'
+
+                                                                   # ]]]
+# .. envvar:: python__raw_purge_packages2 [[[
+#
+# List of Python 2.7 APT packages which will be purged by the role in the "raw"
+# mode.
+python__raw_purge_packages2:
+  - 'python'
+  - 'python2.7'
+  - 'libpython2.7-minimal'
+                                                                   # ]]]
+                                                                   # ]]]

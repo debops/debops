@@ -1,0 +1,137 @@
+---
+
+slapd__group_allow: [ '192.0.2.0/24' ]
+
+slapd__group_tasks:
+
+  - name: 'Configure ServerID values'
+    dn: 'cn=config'
+    attributes:
+      olcServerID:
+        - '001 ldap://slapd-server1.example.org/'
+        - '002 ldap://slapd-server2.example.org/'
+        - '003 ldap://slapd-server3.example.org/'
+    state: 'exact'
+
+  - name: 'Configure replication of the cn=config database'
+    dn: 'olcDatabase={0}config,cn=config'
+    attributes:
+      olcSyncrepl:
+
+        - |-
+          {0}rid=000
+             provider="ldap://slapd-server1.example.org/"
+             binddn="{{ slapd__config_rootdn }}"
+             bindmethod="simple"
+             credentials="{{ slapd__config_rootpw }}"
+             searchbase="cn=config"
+             type="refreshAndPersist"
+             retry="20 5 300 5"
+             timeout="4"
+             starttls="critical"
+             tls_cacert="{{ slapd__tls_ca_certificate }}"
+             tls_cert="{{ slapd__tls_certificate }}"
+             tls_key="{{ slapd__tls_private_key }}"
+             tls_cipher_suite="{{ slapd__tls_cipher_suite }}"
+
+        - |-
+          {1}rid=001
+             provider="ldap://slapd-server2.example.org/"
+             binddn="{{ slapd__config_rootdn }}"
+             bindmethod="simple"
+             credentials="{{ slapd__config_rootpw }}"
+             searchbase="cn=config"
+             type="refreshAndPersist"
+             retry="20 5 300 5"
+             timeout="4"
+             starttls="critical"
+             tls_cacert="{{ slapd__tls_ca_certificate }}"
+             tls_cert="{{ slapd__tls_certificate }}"
+             tls_key="{{ slapd__tls_private_key }}"
+             tls_cipher_suite="{{ slapd__tls_cipher_suite }}"
+
+        - |-
+          {2}rid=002
+             provider="ldap://slapd-server3.example.org/"
+             binddn="{{ slapd__config_rootdn }}"
+             bindmethod="simple"
+             credentials="{{ slapd__config_rootpw }}"
+             searchbase="cn=config"
+             type="refreshAndPersist"
+             retry="20 5 300 5"
+             timeout="4"
+             starttls="critical"
+             tls_cacert="{{ slapd__tls_ca_certificate }}"
+             tls_cert="{{ slapd__tls_certificate }}"
+             tls_key="{{ slapd__tls_private_key }}"
+             tls_cipher_suite="{{ slapd__tls_cipher_suite }}"
+
+      olcMirrorMode: 'TRUE'
+    state: 'exact'
+
+  - name: 'Configure time and size limits in the main database'
+    dn: 'olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcLimits:
+        - |-
+          dn.exact="{{ slapd__data_rootdn }}"
+          time="unlimited"
+          size="unlimited"
+    ordered: True
+    state: 'exact'
+
+  - name: 'Configure replication of the main database'
+    dn: 'olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcSyncrepl:
+
+        - |-
+          {0}rid=010
+             provider="ldap://slapd-server1.example.org/"
+             binddn="{{ slapd__data_rootdn }}"
+             bindmethod="simple"
+             credentials="{{ slapd__data_rootpw }}"
+             searchbase="{{ slapd__basedn }}"
+             type="refreshAndPersist"
+             retry="20 5 300 5"
+             timeout="4"
+             starttls="critical"
+             tls_cacert="{{ slapd__tls_ca_certificate }}"
+             tls_cert="{{ slapd__tls_certificate }}"
+             tls_key="{{ slapd__tls_private_key }}"
+             tls_cipher_suite="{{ slapd__tls_cipher_suite }}"
+
+        - |-
+          {1}rid=011
+             provider="ldap://slapd-server2.example.org/"
+             binddn="{{ slapd__data_rootdn }}"
+             bindmethod="simple"
+             credentials="{{ slapd__data_rootpw }}"
+             searchbase="{{ slapd__basedn }}"
+             type="refreshAndPersist"
+             retry="20 5 300 5"
+             timeout="4"
+             starttls="critical"
+             tls_cacert="{{ slapd__tls_ca_certificate }}"
+             tls_cert="{{ slapd__tls_certificate }}"
+             tls_key="{{ slapd__tls_private_key }}"
+             tls_cipher_suite="{{ slapd__tls_cipher_suite }}"
+
+        - |-
+          {2}rid=012
+             provider="ldap://slapd-server3.example.org/"
+             binddn="{{ slapd__data_rootdn }}"
+             bindmethod="simple"
+             credentials="{{ slapd__data_rootpw }}"
+             searchbase="{{ slapd__basedn }}"
+             type="refreshAndPersist"
+             retry="20 5 300 5"
+             timeout="4"
+             starttls="critical"
+             tls_cacert="{{ slapd__tls_ca_certificate }}"
+             tls_cert="{{ slapd__tls_certificate }}"
+             tls_key="{{ slapd__tls_private_key }}"
+             tls_cipher_suite="{{ slapd__tls_cipher_suite }}"
+
+      olcMirrorMode: 'TRUE'
+    state: 'exact'

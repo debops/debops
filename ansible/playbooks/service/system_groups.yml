@@ -1,6 +1,8 @@
 ---
 
 - name: Configure UNIX system groups
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_all_hosts', 'debops_service_system_groups' ]
   become: True
 
@@ -10,20 +12,20 @@
 
   roles:
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python', 'role::ldap' ]
       python__dependent_packages3:
         - '{{ ldap__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ ldap__python__dependent_packages2 }}'
 
-    - role: debops.ldap
+    - role: ldap
       tags: [ 'role::ldap', 'skip::ldap' ]
       ldap__dependent_tasks:
         - '{{ sudo__ldap__dependent_tasks }}'
 
-    - role: debops.sudo
+    - role: sudo
       tags: [ 'role::sudo', 'skip::sudo' ]
 
-    - role: debops.system_groups
+    - role: system_groups
       tags: [ 'role::system_groups', 'skip::system_groups' ]

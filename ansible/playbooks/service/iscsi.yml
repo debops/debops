@@ -1,7 +1,9 @@
 ---
 
 - name: Configure iSCSI Initiator
-  hosts: [ 'debops_service_iscsi', 'debops_iscsi' ]
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_iscsi' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -10,12 +12,12 @@
 
   roles:
 
-    - role: debops.unattended_upgrades
+    - role: unattended_upgrades
       tags: [ 'role::unattended_upgrades', 'skip::unattended_upgrades' ]
       unattended_upgrades__dependent_blacklist: '{{ iscsi__unattended_upgrades__dependent_blacklist }}'
 
-    - role: debops.lvm
+    - role: lvm
       tags: [ 'role::lvm', 'skip::lvm' ]
 
-    - role: debops.iscsi
+    - role: iscsi
       tags: [ 'role::iscsi', 'skip::iscsi' ]

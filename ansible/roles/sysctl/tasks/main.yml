@@ -1,0 +1,112 @@
+---
+
+# The 'sysctl' Ansible module was used previously, however using a template and
+# 'sysctl --system' command is faster and doesn't create accidental idempotency
+# loops when kernel parameters are modified in other configuration files.
+#
+# Check the role commit history for details.
+
+- import_role:
+    name: 'ansible_plugins'
+
+- name: Pre hooks
+  include: '{{ lookup("task_src", "sysctl/pre_main.yml") }}'
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save sysctl local facts
+  template:
+    src: 'etc/ansible/facts.d/sysctl.fact.j2'
+    dest: '/etc/ansible/facts.d/sysctl.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: sysctl__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: sysctl__register_facts is changed
+
+- name: Check current sysctl diversions
+  environment:
+    LC_ALL: 'C'
+  shell: set -o nounset -o pipefail -o errexit &&
+         dpkg-divert --list '/etc/sysctl.d/*.dpkg-divert' | awk '{print $NF}' || true
+  args:
+    executable: 'bash'
+  register: sysctl__register_diversions
+  check_mode: False
+  changed_when: False
+
+- name: Divert the custom sysctl configuration
+  command: dpkg-divert --quiet --local
+           --divert /etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}.dpkg-divert
+           --rename /etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}
+  with_items: '{{ sysctl__combined_parameters | parse_kv_items }}'
+  when: (item.name|d() and item.options|d() and
+         item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
+         (item.divert|d())|bool and
+          ('/etc/sysctl.d/' + (item.filename | d(item.weight|string + "-" + item.name + ".conf"))
+           + '.dpkg-divert') not in sysctl__register_diversions.stdout_lines)
+
+- name: Remove sysctl configuration files if requested
+  file:
+    path: '/etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}'
+    state: 'absent'
+  with_items: '{{ sysctl__combined_parameters | parse_kv_items }}'
+  register: sysctl__register_config_removed
+  when: item.name|d() and item.state|d('present') == 'absent'
+
+- name: Generate sysctl configuration files
+  template:
+    src: 'etc/sysctl.d/parameters.conf.j2'
+    dest: '/etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: '{{ sysctl__combined_parameters | parse_kv_items }}'
+  register: sysctl__register_config_created
+  when: item.name|d() and item.options|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
+
+- name: Revert original sysctl configuration
+  shell: rm -f /etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}
+         ; dpkg-divert --quiet --local --rename --remove /etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}
+  args:
+    warn: False
+  with_items: '{{ sysctl__combined_parameters | parse_kv_items }}'
+  when: (item.name|d() and item.state|d('present') == 'absent' and (item.divert|d())|bool and
+          ('/etc/sysctl.d/' + item.filename | d(item.weight|string + "-" + item.name + ".conf")
+           + '.dpkg-divert') in sysctl__register_diversions.stdout_lines)
+
+- name: Check sysctl command capabilities
+  shell: set -o nounset -o pipefail -o errexit &&
+         sysctl --help | grep -E '^\s+\-\-system\s+' || true
+  args:
+    executable: 'bash'
+  register: sysctl__register_system
+  when: sysctl__register_config_created is changed or
+        sysctl__register_config_removed is changed
+  check_mode: False
+
+- name: Apply kernel parameters if they were modified
+  shell: |
+    set -o nounset -o pipefail -o errexit &&
+    {% if (sysctl__register_system.stdout|d()) %}
+    sysctl --system
+    {% else %}
+    sysctl -e -p $(find /etc/sysctl.d -mindepth 1 -maxdepth 1 -name '*.conf' -print0 | sort -z | xargs -r0)
+                 /etc/sysctl.conf
+    {% endif %}
+  args:
+    executable: 'bash'
+  when: sysctl__register_config_created is changed or
+        sysctl__register_config_removed is changed
+
+- name: Post hooks
+  include: '{{ lookup("task_src", "sysctl/post_main.yml") }}'

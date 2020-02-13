@@ -1,6 +1,8 @@
 ---
 
 - name: Install and manage PHP environment
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_php' ]
   become: True
 
@@ -8,25 +10,31 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
+  pre_tasks:
+
+    - import_role:
+        name: 'keyring'
+      vars:
+        keyring__dependent_apt_keys:
+          - '{{ php__keyring__dependent_apt_keys }}'
+      tags: [ 'role::keyring', 'skip::keyring', 'role::php' ]
+
+    - import_role:
+        name: 'php'
+        tasks_from: 'main_env'
+      tags: [ 'role::php', 'role::php:env', 'role::logrotate' ]
+
   roles:
 
-    - role: debops.keyring
-      tags: [ 'role::keyring', 'skip::keyring', 'role::php' ]
-      keyring__dependent_apt_keys:
-        - '{{ php__keyring__dependent_apt_keys }}'
-
-    - role: debops.php/env
-      tags: [ 'role::php', 'role::logrotate' ]
-
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ php__apt_preferences__dependent_list }}'
 
-    - role: debops.logrotate
+    - role: logrotate
       tags: [ 'role::logrotate', 'skip::logrotate' ]
       logrotate__dependent_config:
         - '{{ php__logrotate__dependent_config }}'
 
-    - role: debops.php
+    - role: php
       tags: [ 'role::php', 'skip::php' ]

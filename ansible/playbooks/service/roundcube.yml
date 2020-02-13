@@ -1,6 +1,8 @@
 ---
 
 - name: Install and manage Roundcube Web mail
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_roundcube' ]
   become: True
 
@@ -8,58 +10,79 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
+  pre_tasks:
+
+    - import_role:
+        name: 'keyring'
+      vars:
+        keyring__dependent_apt_keys:
+          - '{{ php__keyring__dependent_apt_keys }}'
+          - '{{ nodejs__keyring__dependent_apt_keys }}'
+          - '{{ nginx__keyring__dependent_apt_keys }}'
+          - '{{ mariadb__keyring__dependent_apt_keys }}'
+        keyring__dependent_gpg_user: '{{ roundcube__keyring__dependent_gpg_user }}'
+        keyring__dependent_gpg_keys:
+          - '{{ roundcube__keyring__dependent_gpg_keys }}'
+      tags: [ 'role::keyring', 'skip::keyring',
+              'role::php', 'role::nodejs', 'role::nginx', 'role::mariadb',
+              'role::roundcube' ]
+
+    - import_role:
+        name: 'php'
+        tasks_from: 'main_env'
+      tags: [ 'role::php', 'role::php:env', 'role::logrotate' ]
+
   roles:
 
-    - role: debops.keyring
-      tags: [ 'role::keyring', 'skip::keyring', 'role::php', 'role::nginx', 'role::mariadb' ]
-      keyring__dependent_apt_keys:
-        - '{{ php__keyring__dependent_apt_keys }}'
-        - '{{ nginx__keyring__dependent_apt_keys }}'
-        - '{{ mariadb__keyring__dependent_apt_keys }}'
-
-    - role: debops.php/env
-      tags: [ 'role::php', 'role::php:env', 'role::apt_preferences', 'role::logrotate' ]
-
-    - role: debops.apt_preferences
-      tags: [ 'role::apt_preferences', 'skip::apt_preferences', 'role::nginx', 'role::php' ]
+    - role: apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences',
+              'role::nginx', 'role::php', 'role::nodejs' ]
       apt_preferences__dependent_list:
         - '{{ nginx__apt_preferences__dependent_list }}'
         - '{{ php__apt_preferences__dependent_list }}'
+        - '{{ nodejs__apt_preferences__dependent_list }}'
 
-    - role: debops.logrotate
+    - role: logrotate
       tags: [ 'role::logrotate', 'skip::logrotate' ]
       logrotate__dependent_config:
         - '{{ php__logrotate__dependent_config }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm', 'role::nginx' ]
       ferm__dependent_rules:
         - '{{ nginx__ferm__dependent_rules }}'
 
-    - role: debops.python
-      tags: [ 'role::python', 'skip::python' ]
+    - role: python
+      tags: [ 'role::python', 'skip::python', 'role::mariadb', 'role::postgresql' ]
       python__dependent_packages3:
         - '{{ mariadb__python__dependent_packages3 if roundcube__database_map[roundcube__database].dbtype == "mysql" else [] }}'
         - '{{ nginx__python__dependent_packages3 }}'
+        - '{{ postgresql__python__dependent_packages3 if roundcube__database_map[roundcube__database].dbtype == "postgresql" else [] }}'
       python__dependent_packages2:
         - '{{ mariadb__python__dependent_packages2 if roundcube__database_map[roundcube__database].dbtype == "mysql" else [] }}'
         - '{{ nginx__python__dependent_packages2 }}'
+        - '{{ postgresql__python__dependent_packages2 if roundcube__database_map[roundcube__database].dbtype == "postgresql" else [] }}'
 
-    - role: debops.php
+    - role: php
       tags: [ 'role::php', 'skip::php' ]
       php__dependent_packages:
         - '{{ roundcube__php__dependent_packages }}'
       php__dependent_pools:
         - '{{ roundcube__php__dependent_pools }}'
 
-    - role: debops.nginx
+    - role: nodejs
+      tags: [ 'role::nodejs', 'skip::nodejs' ]
+      nodejs__npm_dependent_packages:
+        - '{{ roundcube__nodejs__npm_dependent_packages }}'
+
+    - role: nginx
       tags: [ 'role::nginx', 'skip::nginx' ]
       nginx__dependent_servers:
         - '{{ roundcube__nginx__dependent_servers }}'
       nginx__dependent_upstreams:
         - '{{ roundcube__nginx__dependent_upstreams }}'
 
-    - role: debops.mariadb
+    - role: mariadb
       tags: [ 'role::mariadb', 'skip::mariadb' ]
       mariadb__dependent_users:
         - database: '{{ roundcube__database_map[roundcube__database].dbname }}'
@@ -73,5 +96,16 @@
       mariadb__server: '{{ roundcube__database_map[roundcube__database].dbhost }}'
       when: roundcube__database_map[roundcube__database].dbtype == 'mysql'
 
-    - role: debops.roundcube
+    - role: postgresql
+      tags: [ 'role::postgresql', 'skip::postgresql' ]
+      postgresql__dependent_roles:
+        - db: '{{ roundcube__database_map[roundcube__database].dbname }}'
+          role: '{{ roundcube__database_map[roundcube__database].dbuser }}'
+          password: '{{ roundcube__database_map[roundcube__database].dbpass }}'
+      postgresql__server: '{{ roundcube__database_map[roundcube__database].dbhost
+                              if roundcube__database_map[roundcube__database].dbhost != "localhost"
+                              else "" }}'
+      when: roundcube__database_map[roundcube__database].dbtype == 'postgresql'
+
+    - role: roundcube
       tags: [ 'role::roundcube', 'skip::roundcube' ]

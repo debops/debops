@@ -1,6 +1,8 @@
 ---
 
 - name: Configure Mosquitto service
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_mosquitto' ]
   become: True
 
@@ -10,25 +12,25 @@
 
   roles:
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::mosquitto' ]
       keyring__dependent_apt_keys:
         - '{{ mosquitto__keyring__dependent_apt_keys }}'
 
-    - role: debops.etc_services
+    - role: etc_services
       tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services__dependent_list:
         - '{{ mosquitto__etc_services__dependent_list }}'
 
-    - role: debops.tcpwrappers
+    - role: tcpwrappers
       tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
       tcpwrappers__dependent_allow:
         - '{{ mosquitto__tcpwrappers__dependent_allow }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ mosquitto__ferm__dependent_rules }}'
 
-    - role: debops.mosquitto
+    - role: mosquitto
       tags: [ 'role::mosquitto', 'skip::mosquitto' ]

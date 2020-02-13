@@ -1,0 +1,103 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps, loads
+import os
+
+try:
+    import ldap
+except ImportError:
+    pass
+
+
+config_file = '/etc/ldap/ldap.conf'
+
+output = loads('''{{ {"configured": False,
+                      "enabled": ldap__enabled|bool,
+                      "system_groups_rdn": ldap__system_groups_rdn,
+                      "groups_rdn": ldap__groups_rdn,
+                      "hosts_rdn": ldap__hosts_rdn,
+                      "machines_rdn": ldap__machines_rdn,
+                      "people_rdn": ldap__people_rdn,
+                      "roles_rdn": ldap__roles_rdn,
+                      "services_rdn": ldap__services_rdn,
+                      "device_dn": (ldap__device_dn
+                                    if ldap__device_enabled|bool
+                                    else []),
+                      "uid_gid_min": ldap__uid_gid_min,
+                      "groupid_min": ldap__groupid_min,
+                      "groupid_max": ldap__groupid_max,
+                      "uid_gid_max": ldap__uid_gid_max,
+                      "home": ldap__home,
+                      "shell": ldap__shell,
+                      "urn_patterns": (ldap__combined_urn_patterns
+                                       | flatten)
+                     } | to_nice_json }}''')
+
+if os.path.exists(config_file) and os.path.isfile(config_file):
+
+    try:
+        conf = []
+        with open(config_file, 'r') as f:
+            for line in f:
+                if not line.startswith('#') and line.strip():
+
+                    line = line.strip().split()
+                    key = line[0].lower()
+                    value = line[1]
+                    raw_value = line[1]
+
+                    if key in ['uri', 'host']:
+                        value = line[1:]
+                        raw_value = ' '.join(line[1:])
+                    elif key in ['base']:
+                        value = ' '.join(line[1:])
+                        raw_value = ' '.join(line[1:])
+                    elif key in ['referrals', 'gssapi_sign', 'gssapi_encrypt',
+                                 'gssapi_allow_remote_principal']:
+                        if line[1].lower() in ['on', 'true', 'yes']:
+                            value = True
+                        elif line[1].lower() in ['off', 'false', 'no']:
+                            value = False
+
+                    conf.append({key: raw_value})
+
+                    if key == 'base':
+                        output['base_dn'] = (
+                                ldap.dn.explode_dn(value.encode()))
+                        output['basedn'] = (
+                                ldap.dn.dn2str(
+                                    ldap.dn.str2dn(value.encode())))
+
+                    elif key == 'uri':
+                        hosts = []
+                        for url in value:
+                            parts = url.split('://', 1)
+                            output['protocol'] = parts[0]
+                            if output['protocol'] == 'ldap':
+                                output['port'] = '389'
+                            elif output['protocol'] == 'ldaps':
+                                output['port'] = '636'
+
+                            hosts.append(parts[1].split('/', 1)[0])
+                        output['uri'] = value
+                        output['hosts'] = hosts
+
+                    else:
+                        output.update({key: value})
+
+            if output['protocol'] == 'ldap':
+                output['start_tls'] = True
+            elif output['protocol'] == 'ldaps':
+                output['start_tls'] = False
+
+        if output['enabled']:
+            output['configured'] = True
+            output['conf'] = conf
+
+    except Exception:
+        pass
+
+print(dumps(output, sort_keys=True, indent=4))

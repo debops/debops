@@ -27,6 +27,15 @@ SCRIPTS = [os.path.join('bin', n) for n in [
     'debops', 'debops-init', 'debops-task',
     'debops-defaults', 'debops-padlock', 'debops-update']]
 
+MANPAGES_5 = []
+if os.path.exists('docs/_build/man'):
+    for manpage in os.listdir('docs/_build/man'):
+        if (os.path.isfile(os.path.join('docs/_build/man', manpage)) and
+                manpage.endswith('.5')):
+            MANPAGES_5.append(os.path.join('docs/_build/man', manpage))
+else:
+    print('Warning: manual pages not built')
+
 # Retrieve the project version from 'git describe' command and store it in the
 # VERSION file, needed for correct installation of the Python package
 try:
@@ -68,6 +77,7 @@ try:
             },
 
         scripts=SCRIPTS,
+        data_files=[('share/man/man5', MANPAGES_5)],
         packages=find_packages(exclude=['tests']),
         include_package_data=True,
 

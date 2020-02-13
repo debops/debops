@@ -30,20 +30,23 @@
 
 
 - name: Bootstrap Python support on a host
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_all_hosts', 'debops_service_bootstrap' ]
   gather_facts: False
   become: True
 
-  roles:
+  tasks:
 
-    - role: debops.python/raw
+    - import_role:
+        name: 'python'
+        tasks_from: 'main_raw'
       tags: [ 'role::python_raw', 'skip::python_raw', 'role::python' ]
 
 
-- import_playbook: 'service/core.yml'
-
-
-- name: Bootstrap host for Ansible management
+- name: Bootstrap APT configuration on a host
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_all_hosts', 'debops_service_bootstrap' ]
   become: True
 
@@ -53,30 +56,49 @@
 
   roles:
 
-    - role: debops.python
+    - role: apt_proxy
+      tags: [ 'role::apt_proxy', 'skip::apt_proxy' ]
+
+    - role: apt
+      tags: [ 'role::apt', 'skip::apt' ]
+
+
+- import_playbook: 'service/core.yml'
+
+
+- name: Bootstrap host for Ansible management
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_all_hosts', 'debops_service_bootstrap' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: python
       tags: [ 'role::python', 'skip::python', 'role::netbase' ]
       python__dependent_packages3:
         - '{{ netbase__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ netbase__python__dependent_packages2 }}'
 
-    - role: debops.resolvconf
+    - role: resolvconf
       tags: [ 'role::resolvconf', 'skip::resolvconf' ]
 
-    - role: debops.netbase
+    - role: netbase
       tags: [ 'role::netbase', 'skip::netbase' ]
 
-    - role: debops.apt_proxy
-      tags: [ 'role::apt_proxy', 'skip::apt_proxy' ]
-
-    - role: debops.apt
-      tags: [ 'role::apt', 'skip::apt' ]
-
-    - role: debops.sudo
+    - role: sudo
       tags: [ 'role::sudo', 'skip::sudo', 'role::system_groups' ]
 
-    - role: debops.system_groups
+    - role: libuser
+      tags: [ 'role::libuser', 'skip::libuser' ]
+
+    - role: system_groups
       tags: [ 'role::system_groups', 'skip::system_groups' ]
 
-    - role: debops.system_users
+    - role: system_users
       tags: [ 'role::system_users', 'skip::system_users' ]

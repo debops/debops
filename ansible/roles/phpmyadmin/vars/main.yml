@@ -1,0 +1,52 @@
+---
+
+phpmyadmin_control_user: 'phpmyadmin'
+phpmyadmin_control_database: 'phpmyadmin'
+
+phpmyadmin_nginx_server:
+  by_role: 'debops.phpmyadmin'
+  enabled: True
+  default: False
+  type: 'php5'
+  name: '{{ phpmyadmin_domain }}'
+  root: '/usr/share/phpmyadmin'
+  webroot_create: False
+
+  options: |
+    client_max_body_size  {{ phpmyadmin_upload_size }};
+
+  location:
+
+    # Required for location_allow to work
+    '/': 'try_files $uri $uri/ =404;'
+
+    '~ ^/(setup|libraries)': 'deny all;'
+
+  location_allow:
+    '/': '{{ phpmyadmin_allow }}'
+
+  php5: 'php5_phpmyadmin'
+
+  php5_options: |
+    {% if phpmyadmin_allow is defined and phpmyadmin_allow %}
+    {% for address in phpmyadmin_allow %}
+    allow {{ address }};
+    {% endfor %}
+    deny all;
+    {% endif %}
+
+phpmyadmin_nginx_upstream_php5:
+  enabled: True
+  name: 'php5_phpmyadmin'
+  type: 'php5'
+  php5: 'phpmyadmin'
+
+phpmyadmin_php5_pool:
+  enabled: True
+  name: 'phpmyadmin'
+  user: 'www-data'
+  group: 'www-data'
+  pm_max_children: '{{ phpmyadmin_php5_max_children }}'
+  php_value:
+    post_max_size: '{{ phpmyadmin_upload_size }}'
+    upload_max_filesize: '{{ phpmyadmin_upload_size }}'

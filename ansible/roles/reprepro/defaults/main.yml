@@ -1,0 +1,892 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _reprepro__ref_defaults:
+
+# debops.reprepro default variables
+# =================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# ---- General repository layout ----
+
+# .. envvar:: reprepro_distribution [[[
+#
+# Linux distribution managed by this reprepro instance
+reprepro_distribution: '{{ ansible_distribution }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_distribution_release [[[
+#
+# Linux release managed by this reprepro instance
+reprepro_distribution_release: '{{ ansible_distribution_release }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_codenames [[[
+#
+# List of codenames enabled in this repository, filtered by distribution
+reprepro_codenames: '{{ reprepro_distributions | map(attribute="Codename") | list | sort | unique }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_architectures [[[
+#
+# List of architectures supported by this repository
+reprepro_architectures: [ 'amd64', 'i386', 'source' ]
+
+                                                                   # ]]]
+# .. envvar:: reprepro_components [[[
+#
+# List of components defined for local repositories
+reprepro_components: [ 'main' ]
+
+                                                                   # ]]]
+# .. envvar:: reprepro_fqdn [[[
+#
+# The base FQDN used by reprepro
+reprepro_fqdn: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_domain [[[
+#
+# The base domain used by reprepro
+reprepro_domain: '{{ ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_origin [[[
+#
+# Origin: field added to the repository configuration files
+reprepro_origin: '{{ reprepro_domain.split(".")[0] | capitalize }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_admin_email [[[
+#
+# List of mail addresses to where reprepro should send mail about changes in
+# selected repositories
+reprepro_admin_email: [ 'root@{{ reprepro_domain }}' ]
+
+                                                                   # ]]]
+# ---- Webserver configuration ----
+
+# .. envvar:: reprepro_domains [[[
+#
+# List of domains for this APT repository
+reprepro_domains: [ '{{ "apt." + reprepro_domain }}' ]
+
+                                                                   # ]]]
+# .. envvar:: reprepro_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# webserver with the repository. If empty, everyone can access the repository.
+reprepro_allow: []
+
+                                                                   # ]]]
+# .. envvar:: reprepro_allow_upload [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to upload packages
+# using WebDAV to /upload location. If empty, you can upload from anywhere.
+reprepro_allow_upload: []
+
+                                                                   # ]]]
+# .. envvar:: reprepro_max_body_size [[[
+#
+# Maximum size of upload in MB
+reprepro_max_body_size: '20'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_nginx_auth_realm [[[
+#
+# Webserver authentication realm
+reprepro_nginx_auth_realm: 'APT access is restricted'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_nginx_access_policy [[[
+#
+# Name of webserver access policy to enable (see 'debops.nginx' role)
+reprepro_nginx_access_policy: ''
+
+                                                                   # ]]]
+# ---- Internal reprepro configuration ----
+
+# .. envvar:: reprepro_home [[[
+#
+# Path where reprepro home directory is stored
+reprepro_home: '/var/lib/reprepro'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_user [[[
+#
+# System user which manages reprepro repository
+reprepro_user: 'reprepro'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_group [[[
+#
+# System group which manages reprepro repository and upload account
+reprepro_group: 'reprepro'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_spool [[[
+#
+# Directory for reprepro spool files
+reprepro_spool: '{{ (ansible_local.root.spool
+                      if (ansible_local|d() and ansible_local.root|d() and
+                          ansible_local.root.spool|d())
+                      else "/var/spool") + "/reprepro" }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_upload [[[
+#
+# Directory where uploaded packages are stored
+reprepro_upload: '{{ reprepro_spool + "/incoming" }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_enable_inoticoming [[[
+#
+# Whether to configure Nginx with DAV and inoticoming for uploads
+reprepro_enable_inoticoming: True
+
+                                                                   # ]]]
+# .. envvar:: reprepro_repository_path [[[
+#
+# Directory where reprepro will create its repository structure.
+# It will be served publicly by a HTTP/HTTPS webserver.
+reprepro_repository_path: '/srv/www/sites/{{ reprepro_domains[0] }}/public'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_repository_components [[[
+#
+# List of default components used in specific distribution. These lists will be
+# used if components are not specified for a given repository.
+reprepro_repository_components:
+  'debian': [ 'main', 'contrib', 'non-free' ]
+  'ubuntu': [ 'main', 'restricted', 'universe', 'multiverse' ]
+
+                                                                   # ]]]
+# ---- GnuPG key configuration ----
+
+# .. envvar:: reprepro_gpg_key_type [[[
+#
+# Settings for GPG key used to sign reprepro repository
+reprepro_gpg_key_type: 'RSA'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_gpg_key_length [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
+reprepro_gpg_key_length: '4096'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_gpg_name [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
+reprepro_gpg_name: '{{ reprepro_domain.split(".")[0] | capitalize + " Automatic Signing Key" }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_gpg_email [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
+reprepro_gpg_email: '{{ reprepro_distribution | lower + "-packages@" + reprepro_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_gpg_expire_days [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
+reprepro_gpg_expire_days: '{{ (365 * 5) }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_installer_jessie_compatibility [[[
+#
+# The debian-installer version in jessie (and before) does not support GPG keys signatures
+# using SHA512 or SHA384 digests. This variable configures GnuPG to not use these algorithms
+# This is ONLY relevant if you want to install using your repository. The GnuPG and APT in
+# an installed system support SHA512 and SHA384.
+reprepro_installer_jessie_compatibility: False
+
+                                                                   # ]]]
+# .. envvar:: reprepro_gpg_snapshot_name [[[
+#
+# Name of the snapshot file which contains reprepro GnuPG key
+reprepro_gpg_snapshot_name: 'gnupg.tar'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_gpg_snapshot_path [[[
+#
+# Directory on Ansible Controller where reprepro GnuPG key will be archived
+reprepro_gpg_snapshot_path: '{{ secret + "/reprepro/" + reprepro_domain + "/snapshots/" +
+                                reprepro_fqdn + "/" + reprepro_distribution | lower }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_signwith [[[
+#
+# Sign the Release files with default GPG key
+reprepro_signwith: 'default'
+
+                                                                   # ]]]
+# ---- conf/distributions ----
+
+# .. envvar:: reprepro_distributions [[[
+#
+# List of enabled distributions filtered by repository (debian | ubuntu)
+reprepro_distributions: '{{ reprepro_distributions_local +
+                            reprepro_distributions_local_backports }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_distributions_local [[[
+#
+# Repositories for local packages
+# By default, debops.reprepro configures two repositories for staging and
+# production. You can only push packages to -staging repository, from which
+# they can be promoted to -production using 'reprepro pull' on the specific
+# user account.
+reprepro_distributions_local:
+
+  - Distribution: 'debian'
+    Description: '{{ reprepro_origin }} staging repository for Debian {{ reprepro_debian_previous[reprepro_distribution_release]|d() | capitalize }}'
+    Origin: '{{ reprepro_origin }}'
+    Label: '{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+    Codename: '{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_previous[reprepro_distribution_release]|d()]|d() | join(" ") }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_debian_previous[reprepro_distribution_release]|d()]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+    Uploaders: 'uploaders/{{ reprepro_origin | lower }}'
+    Components: '{{ reprepro_components | join(" ") }}'
+    UDebComponents: False
+    Tracking: 'keep'
+    NotAutomatic: 'yes'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+  - Distribution: 'debian'
+    Description: '{{ reprepro_origin }} staging repository for Debian {{ reprepro_distribution_release | capitalize }}'
+    Origin: '{{ reprepro_origin }}'
+    Label: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+    Codename: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_distribution_release]|d() | join(" ") }}'
+    Uploaders: 'uploaders/{{ reprepro_origin | lower }}'
+    Components: '{{ reprepro_components | join(" ") }}'
+    UDebComponents: False
+    Tracking: 'keep'
+    NotAutomatic: 'yes'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+  - Distribution: 'debian'
+    Description: '{{ reprepro_origin }} staging repository for Debian {{ reprepro_debian_next[reprepro_distribution_release]|d() | capitalize }}'
+    Origin: '{{ reprepro_origin }}'
+    Label: '{{ reprepro_debian_next[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+    Codename: '{{ reprepro_debian_next[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_debian_next[reprepro_distribution_release]|d()]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_next[reprepro_distribution_release]|d()]|d() | join(" ") }}'
+    Uploaders: 'uploaders/{{ reprepro_origin | lower }}'
+    Components: '{{ reprepro_components | join(" ") }}'
+    UDebComponents: False
+    Tracking: 'keep'
+    NotAutomatic: 'yes'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+  - Distribution: 'ubuntu'
+    Description: '{{ reprepro_origin }} staging repository for Ubuntu {{ reprepro_distribution_release | capitalize }}'
+    Origin: '{{ reprepro_origin }}'
+    Label: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+    Codename: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+    Uploaders: 'uploaders/{{ reprepro_origin | lower }}'
+    Components: '{{ reprepro_components | join(" ") }}'
+    UDebComponents: False
+    Tracking: 'keep'
+    NotAutomatic: 'yes'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+  - Distribution: 'debian'
+    Description: '{{ reprepro_origin }} production repository for Debian {{ reprepro_debian_previous[reprepro_distribution_release]|d() | capitalize }}'
+    Origin: '{{ reprepro_origin }}'
+    Label: '{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower }}'
+    Codename: '{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_previous[reprepro_distribution_release]|d()]|d() | join(" ") }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_debian_previous[reprepro_distribution_release]|d()]|d() + "-" + reprepro_origin | lower }}'
+    Uploaders: 'uploaders/{{ reprepro_origin | lower }}'
+    Components: '{{ reprepro_components | join(" ") }}'
+    UDebComponents: False
+    Tracking: 'keep'
+    Pull: '{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "_" + reprepro_origin | lower + "_from_staging" }}'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+  - Distribution: 'debian'
+    Description: '{{ reprepro_origin }} production repository for Debian {{ reprepro_distribution_release | capitalize }}'
+    Origin: '{{ reprepro_origin }}'
+    Label: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower }}'
+    Codename: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_distribution_release]|d() | join(" ") }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower }}'
+    Uploaders: 'uploaders/{{ reprepro_origin | lower }}'
+    Components: '{{ reprepro_components | join(" ") }}'
+    UDebComponents: False
+    Tracking: 'keep'
+    Pull: '{{ reprepro_distribution_release + "_" + reprepro_origin | lower + "_from_staging" }}'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+  - Distribution: 'debian'
+    Description: '{{ reprepro_origin }} production repository for Debian {{ reprepro_debian_next[reprepro_distribution_release]|d() | capitalize }}'
+    Origin: '{{ reprepro_origin }}'
+    Label: '{{ reprepro_debian_next[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower }}'
+    Codename: '{{ reprepro_debian_next[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_next[reprepro_distribution_release]|d()]|d() | join(" ") }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_debian_next[reprepro_distribution_release]|d()]|d() + "-" + reprepro_origin | lower }}'
+    Uploaders: 'uploaders/{{ reprepro_origin | lower }}'
+    Components: '{{ reprepro_components | join(" ") }}'
+    UDebComponents: False
+    Tracking: 'keep'
+    Pull: '{{ reprepro_debian_next[reprepro_distribution_release]|d() + "_" + reprepro_origin | lower + "_from_staging" }}'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+  - Distribution: 'ubuntu'
+    Description: '{{ reprepro_origin }} production repository for Ubuntu {{ reprepro_distribution_release | capitalize }}'
+    Origin: '{{ reprepro_origin }}'
+    Label: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower }}'
+    Codename: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower }}'
+    Components: '{{ reprepro_components | join(" ") }}'
+    UDebComponents: False
+    Tracking: 'keep'
+    Pull: '{{ reprepro_distribution_release + "_" + reprepro_origin | lower + "_from_staging" }}'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+# ]]]
+# .. envvar:: reprepro_distributions_local_backports [[[
+#
+# Repository for backports created locally for currently supported distributions
+reprepro_distributions_local_backports:
+
+    # Repository for previous Debian release backports
+  - Distribution: 'debian'
+    Description: 'Packages for {{ reprepro_distribution }} backported by {{ reprepro_origin }}'
+    Codename: '{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "-backports" }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_debian_previous[reprepro_distribution_release]|d()]|d() + "-backports" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_previous[reprepro_distribution_release]|d()]|d() | join(" ") }}'
+    Uploaders: '{{ "uploaders/" + reprepro_debian_previous[reprepro_distribution_release]|d() + "-backports" }}'
+    Label: '{{ reprepro_distribution }}'
+    Origin: '{{ reprepro_origin }}'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+    # Repository for current Debian release backports
+  - Distribution: 'debian'
+    Description: 'Packages for {{ reprepro_distribution }} backported by {{ reprepro_origin }}'
+    Codename: '{{ reprepro_distribution_release + "-backports" }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_distribution_release]|d() + "-backports" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_distribution_release]|d() | join(" ") }}'
+    Uploaders: '{{ "uploaders/" + reprepro_distribution_release + "-backports" }}'
+    Label: '{{ reprepro_distribution }}'
+    Origin: '{{ reprepro_origin }}'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+    # Repository for next Debian release backports
+  - Distribution: 'debian'
+    Description: 'Packages for {{ reprepro_distribution }} backported by {{ reprepro_origin }}'
+    Codename: '{{ reprepro_debian_next[reprepro_distribution_release]|d() + "-backports" }}'
+    Suite: '{{ reprepro_debian_suites[reprepro_debian_next[reprepro_distribution_release]|d()]|d() + "-backports" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_next[reprepro_distribution_release]|d()]|d() | join(" ") }}'
+    Uploaders: '{{ "uploaders/" + reprepro_debian_next[reprepro_distribution_release]|d() + "-backports" }}'
+    Label: '{{ reprepro_distribution }}'
+    Origin: '{{ reprepro_origin }}'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+    # Repository for Ubuntu backports for current release
+  - Distribution: 'ubuntu'
+    Description: 'Packages for {{ reprepro_distribution }} backported by {{ reprepro_origin }}'
+    Codename: '{{ reprepro_distribution_release }}-backports'
+    Uploaders: '{{ "uploaders/" + reprepro_distribution_release + "-backports" }}'
+    Label: '{{ reprepro_distribution }}'
+    Origin: '{{ reprepro_origin }}'
+    Scripts: |
+      {% if reprepro_admin_email %}
+      --type=dsc email-changes.sh
+      {% endif %}
+
+# ]]]
+# .. envvar:: reprepro_distributions_mirror_debian [[[
+#
+# Mirror repositories for Debian GNU/Linux (not enabled by default)
+reprepro_distributions_mirror_debian:
+
+  - Distribution: 'debian'
+    Description: 'Debian GNU/Linux 7 Wheezy'
+    Codename: 'wheezy'
+    Architectures: '{{ reprepro_debian_architectures["wheezy"] | join(" ") }}'
+    Label: 'Debian'
+    Suite: 'oldstable'
+    Origin: 'Debian'
+    Tracking: 'minimal'
+    Update: 'debian-wheezy'
+
+  - Distribution: 'debian'
+    Description: 'Debian GNU/Linux 7 Wheezy Updates'
+    Codename: 'wheezy-updates'
+    Architectures: '{{ reprepro_debian_architectures["wheezy"] | join(" ") }}'
+    Label: 'Debian'
+    Suite: 'oldstable-updates'
+    Origin: 'Debian'
+    Tracking: 'minimal'
+    Update: 'debian-wheezy-updates'
+
+  - Distribution: 'debian'
+    Description: 'Debian GNU/Linux 8 Jessie'
+    Codename: 'jessie'
+    Architectures: '{{ reprepro_debian_architectures["jessie"] | join(" ") }}'
+    Label: 'Debian'
+    Suite: 'stable'
+    Origin: 'Debian'
+    Tracking: 'minimal'
+    Update: 'debian-jessie'
+
+  - Distribution: 'debian'
+    Description: 'Debian GNU/Linux 8 Jessie Updates'
+    Codename: 'jessie-updates'
+    Architectures: '{{ reprepro_debian_architectures["jessie"] | join(" ") }}'
+    Label: 'Debian'
+    Suite: 'stable-updates'
+    Origin: 'Debian'
+    Tracking: 'minimal'
+    Update: 'debian-jessie-updates'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_distributions_mirror_ubuntu [[[
+#
+# Mirror repositories for Ubuntu Linux (not enabled by default)
+reprepro_distributions_mirror_ubuntu:
+
+  - Distribution: 'ubuntu'
+    Codename: 'trusty'
+    Label: 'Ubuntu'
+    Origin: 'Ubuntu'
+    Suite: 'trusty'
+    Version: '14.04'
+    Tracking: 'minimal'
+    Update: 'ubuntu-trusty'
+    Description: 'Ubuntu Trusty 14.04 LTS'
+
+  - Distribution: 'ubuntu'
+    Codename: 'trusty-updates'
+    Label: 'Ubuntu'
+    Origin: 'Ubuntu'
+    Suite: 'trusty-updates'
+    Version: '14.04'
+    Tracking: 'minimal'
+    Update: 'ubuntu-trusty-updates'
+    Description: 'Ubuntu Trusty 14.04 LTS Updates'
+
+                                                                   # ]]]
+# ---- conf/incoming ----
+
+# .. envvar:: reprepro_incoming [[[
+#
+# FIXME(yaml4rst): Describe what this variable is doing.
+reprepro_incoming:
+
+  - Distribution: '{{ reprepro_distribution | lower }}'
+    Name: 'incoming'
+    Allow: '{{ reprepro_incoming_allow | join(" ") }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_incoming_allow [[[
+#
+# List of incoming Allow rules enabled by default
+reprepro_incoming_allow: '{{ reprepro_incoming_allow_local[reprepro_distribution | lower] +
+                             reprepro_incoming_allow_distribution[reprepro_distribution | lower] }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_incoming_allow_local [[[
+#
+# Incoming configuration for local repositories
+reprepro_incoming_allow_local:
+
+  'debian':
+
+    # <prev_release>-<origin>-staging
+    - '{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+
+    # <prev_suite>-<origin>-staging><prev_release>-<origin>-staging
+    - '{{ reprepro_debian_suites[reprepro_debian_previous[reprepro_distribution_release]|d()]|d() + "-" + reprepro_origin | lower + "-staging" }}>{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+
+    # <release>-<origin>-staging
+    - '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+
+    # <suite>-<origin>-staging><release>-<origin>-staging
+    - '{{ reprepro_debian_suites[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}>{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+
+    # <next_release>-<origin>-staging
+    - '{{ reprepro_debian_next[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+
+    # <next_suite>-<origin>-staging><next_release>-<origin>-staging
+    - '{{ reprepro_debian_suites[reprepro_debian_next[reprepro_distribution_release]|d()]|d() + "-" + reprepro_origin | lower + "-staging" }}>{{ reprepro_debian_next[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+
+  'ubuntu':
+
+    # <release>-<origin>-staging
+    - '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_incoming_allow_distribution [[[
+#
+# Incoming configuration for backport repositories
+reprepro_incoming_allow_distribution:
+
+  'debian':
+
+    # <prev_release>-backports
+    - '{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "-backports" }}'
+
+    # <prev_suite>-backports><prev_release>-backports
+    - '{{ reprepro_debian_suites[reprepro_debian_previous[reprepro_distribution_release]|d()]|d() + "-backports>" + reprepro_debian_previous[reprepro_distribution_release]|d() + "-backports" }}'
+
+    # <release>-backports
+    - '{{ reprepro_distribution_release + "-backports" }}'
+
+    # <suite>-backports><release>-backports
+    - '{{ reprepro_debian_suites[reprepro_distribution_release]|d() + "-backports>" + reprepro_distribution_release + "-backports" }}'
+
+    # <next_release>-backports
+    - '{{ reprepro_debian_next[reprepro_distribution_release]|d() + "-backports" }}'
+
+    # <next_suite>-backports><next_release>-backports
+    - '{{ reprepro_debian_suites[reprepro_debian_next[reprepro_distribution_release]|d()]|d() + "-backports>" + reprepro_debian_next[reprepro_distribution_release]|d() + "-backports" }}'
+
+  'ubuntu':
+
+    # <release>-backports
+    - '{{ reprepro_distribution_release + "-backports" }}'
+
+                                                                   # ]]]
+# ---- conf/uploaders ----
+
+# .. envvar:: reprepro_uploaders [[[
+#
+# Configuration of uploaders files for each repository (Name relative to the
+# 'conf/' directory)
+reprepro_uploaders: '{{ reprepro_uploaders_local +
+                        reprepro_uploaders_distribution[reprepro_distribution | lower] }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_uploaders_local [[[
+#
+# Definition of uploaders for local repositories
+reprepro_uploaders_local:
+
+  - Filename: '{{ reprepro_origin | lower }}'
+    Contents: |
+      {{ reprepro_uploaders_default_rules }}
+
+# ]]]
+# .. envvar:: reprepro_uploaders_distribution [[[
+#
+# Definition of uploaders for backport repositories
+reprepro_uploaders_distribution:
+
+  'debian':
+
+    # <prev_release>-backports
+    - Filename: '{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "-backports" }}'
+      Contents: |
+        {{ reprepro_uploaders_default_rules }}
+
+    # <release>-backports
+    - Filename: '{{ reprepro_distribution_release + "-backports" }}'
+      Contents: |
+        {{ reprepro_uploaders_default_rules }}
+
+    # <next_release>-backports
+    - Filename: '{{ reprepro_debian_next[reprepro_distribution_release]|d() + "-backports" }}'
+      Contents: |
+        {{ reprepro_uploaders_default_rules }}
+
+  'ubuntu':
+
+    # <release>-backports
+    - Filename: '{{ reprepro_distribution_release + "-backports" }}'
+      Contents: |
+        {{ reprepro_uploaders_default_rules }}
+
+# ]]]
+# .. envvar:: reprepro_uploaders_default_rules [[[
+#
+# By default use the same rules for all repositories
+reprepro_uploaders_default_rules: |
+  allow * by any key
+
+# ]]]
+# ---- conf/pulls ----
+
+# .. envvar:: reprepro_pulls [[[
+#
+# List of pull configurations enabled per distribution
+reprepro_pulls: '{{ reprepro_pulls_local }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_pulls_local [[[
+#
+# Pull configuration for local -staging and -production repositories, packages
+# from -staging are pulled to -production
+reprepro_pulls_local:
+
+  - Distribution: 'debian'
+    Name: '{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "_" + reprepro_origin | lower + "_from_staging" }}'
+    From: '{{ reprepro_debian_previous[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_previous[reprepro_distribution_release]|d()]|d() | join(" ") }}'
+
+  - Distribution: 'debian'
+    Name: '{{ reprepro_distribution_release + "_" + reprepro_origin | lower + "_from_staging" }}'
+    From: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_distribution_release]|d() | join(" ") }}'
+
+  - Distribution: 'debian'
+    Name: '{{ reprepro_debian_next[reprepro_distribution_release]|d() + "_" + reprepro_origin | lower + "_from_staging" }}'
+    From: '{{ reprepro_debian_next[reprepro_distribution_release]|d() + "-" + reprepro_origin | lower + "-staging" }}'
+    Architectures: '{{ reprepro_debian_architectures[reprepro_debian_next[reprepro_distribution_release]|d()]|d() | join(" ") }}'
+
+  - Distribution: 'ubuntu'
+    Name: '{{ reprepro_distribution_release + "_" + reprepro_origin | lower + "_from_staging" }}'
+    From: '{{ reprepro_distribution_release + "-" + reprepro_origin | lower + "-staging" }}'
+
+                                                                   # ]]]
+# ---- conf/updates ----
+
+# .. envvar:: reprepro_updates [[[
+#
+# List of repository mirrors per distribution (not enabled by default)
+reprepro_updates: '{{ reprepro_updates_debian +
+                      reprepro_updates_ubuntu }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_updates_debian [[[
+#
+# Mirrors for Debian GNU/Linux distribution
+reprepro_updates_debian:
+
+  - Distribution: 'debian'
+    Name: 'debian-wheezy'
+    Method: 'http://httpredir.debian.net/debian'
+    Fallback: 'http://ftp.us.debian.org/debian'
+    Suite: 'wheezy'
+    VerifyRelease: '46925553'
+
+  - Distribution: 'debian'
+    Name: 'debian-wheezy-updates'
+    Method: 'http://httpredir.debian.net/debian'
+    Fallback: 'http://ftp.us.debian.org/debian'
+    Suite: 'wheezy-updates'
+    VerifyRelease: '46925553'
+
+  - Distribution: 'debian'
+    Name: 'debian-jessie'
+    Method: 'http://httpredir.debian.net/debian'
+    Fallback: 'http://ftp.us.debian.org/debian'
+    Suite: 'jessie'
+    VerifyRelease: '2B90D010'
+
+  - Distribution: 'debian'
+    Name: 'debian-jessie-updates'
+    Method: 'http://httpredir.debian.net/debian'
+    Fallback: 'http://ftp.us.debian.org/debian'
+    Suite: 'jessie-updates'
+    VerifyRelease: '2B90D010'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_updates_ubuntu [[[
+#
+# Mirrors for Ubuntu Linux distribution
+reprepro_updates_ubuntu:
+
+  - Distribution: 'ubuntu'
+    Name: 'ubuntu-trusty'
+    Method: 'http://us.archive.ubuntu.com/ubuntu'
+    Fallback: 'http://archive.ubuntu.com/ubuntu'
+    Suite: 'trusty'
+    VerifyRelease: '437D05B5'
+
+  - Distribution: 'ubuntu'
+    Name: 'ubuntu-trusty-updates'
+    Method: 'http://us.archive.ubuntu.com/ubuntu'
+    Fallback: 'http://archive.ubuntu.com/ubuntu'
+    Suite: 'trusty-updates'
+    VerifyRelease: '437D05B5'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_nginx_server_http [[[
+#
+# Configuration for HTTP server
+reprepro_nginx_server_http:
+  by_role: 'debops.reprepro'
+  enabled: True
+  ssl: False
+  redirect_to_ssl: '{{ reprepro_nginx_access_policy }}'
+  filename: '{{ reprepro_domains[0] + "_http" }}'
+  name: '{{ reprepro_domains }}'
+  root: '{{ reprepro_repository_path }}'
+  webroot_create: False
+
+  location:
+    '/': |
+      try_files $uri $uri/ =404;
+      autoindex on;
+      autoindex_exact_size off;
+      autoindex_localtime on;
+
+  location_allow:
+    '/': '{{ reprepro_allow }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_nginx_server_https [[[
+#
+# Configuration for HTTPS server
+reprepro_nginx_server_https:
+  by_role: 'debops.reprepro'
+  enabled: True
+  listen: False
+  filename: '{{ reprepro_domains[0] + "_https" }}'
+  name: '{{ reprepro_domains }}'
+  root: '{{ reprepro_repository_path }}'
+  webroot_create: False
+  state: '{{ "present"
+             if (ansible_local|d() and ansible_local.pki|d() and
+                 (ansible_local.pki.enabled|d())|bool)
+             else "absent" }}'
+
+  access_policy: '{{ reprepro_nginx_access_policy }}'
+  auth_basic_realm: '{{ reprepro_nginx_auth_realm }}'
+
+  options: |
+    client_max_body_size {{ reprepro_max_body_size }}M;
+
+  location_list:
+    - pattern: '/'
+      options: |
+        try_files $uri $uri/ =404;
+        autoindex on;
+        autoindex_exact_size off;
+        autoindex_localtime on;
+      allow: '{{ reprepro_allow }}'
+
+    - pattern: '/upload'
+      options: |
+        alias {{ reprepro_upload }};
+        dav_access all:rw;
+        dav_methods PUT;
+        limit_except PUT {
+                deny all;
+        }
+      allow: '{{ reprepro_allow_upload }}'
+      enabled: '{{ reprepro_enable_inoticoming }}'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_debian_previous [[[
+#
+# Debian previous releases
+#
+# .. Redundant in the following places, please update all copies:
+#
+#    * ansible/roles/debops.apt/defaults/main.yml
+#    * ansible/roles/debops.apt_preferences/defaults/main.yml
+#    * ansible/roles/debops.reprepro/defaults/main.yml
+#    * ansible/playbooks/tools/dist-upgrade.yml
+#
+reprepro_debian_previous:
+  'wheezy': 'squeeze'
+  'jessie': 'wheezy'
+  'stretch': 'jessie'
+  'buster': 'stretch'
+  'bullseye': 'buster'
+  'bookworm': 'bullseye'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_debian_next [[[
+#
+# Debian next releases
+#
+# .. Redundant in the following places, please update all copies:
+#
+#    * ansible/roles/debops.apt/defaults/main.yml
+#    * ansible/roles/debops.apt_preferences/defaults/main.yml
+#    * ansible/roles/debops.reprepro/defaults/main.yml
+#    * ansible/playbooks/tools/dist-upgrade.yml
+#
+reprepro_debian_next:
+  'wheezy': 'jessie'
+  'jessie': 'stretch'
+  'stretch': 'buster'
+  'buster': 'bullseye'
+  'bullseye': 'bookworm'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_debian_releases [[[
+#
+# Debian releases by suite
+reprepro_debian_releases:
+  'oldoldstable': 'jessie'
+  'oldstable': 'stretch'
+  'stable': 'buster'
+  'testing': 'bullseye'
+
+                                                                   # ]]]
+# .. envvar:: reprepro_debian_suites [[[
+#
+# Debian suites by release
+reprepro_debian_suites:
+  'jessie': 'oldoldstable'
+  'stretch': 'oldstable'
+  'buster': 'stable'
+  'bullseye': 'testing'
+                                                                   # ]]]
+# .. envvar:: reprepro_debian_architectures [[[
+#
+# List of Debian architectures by release
+reprepro_debian_architectures:
+  'squeeze': [ 'source', 'amd64', 'armel', 'i386' ]
+  'wheezy': [ 'source', 'amd64', 'armel', 'armhf', 'i386' ]
+  'jessie': [ 'source', 'amd64', 'arm64', 'armel', 'armhf', 'i386' ]
+  'stretch': [ 'source', 'amd64', 'arm64', 'armel', 'armhf', 'i386' ]
+  'buster': [ 'source', 'amd64', 'arm64', 'armel', 'armhf', 'i386' ]
+  'bullseye': [ 'source', 'amd64', 'arm64', 'armel', 'armhf', 'i386' ]
+
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: reprepro__nginx__dependent_servers [[[
+#
+# Server configuration for the :ref:`debops.nginx` Ansible role.
+reprepro__nginx__dependent_servers:
+
+  - '{{ reprepro_nginx_server_http }}'
+  - '{{ reprepro_nginx_server_https }}'

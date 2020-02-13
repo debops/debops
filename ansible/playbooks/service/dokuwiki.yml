@@ -1,60 +1,75 @@
 ---
 
 - name: Manage DokuWiki
-  hosts: [ 'debops_service_dokuwiki', 'debops_dokuwiki' ]
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_dokuwiki' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
+  pre_tasks:
+
+    - import_role:
+        name: 'keyring'
+      vars:
+        keyring__dependent_apt_keys:
+          - '{{ php__keyring__dependent_apt_keys }}'
+          - '{{ nginx__keyring__dependent_apt_keys }}'
+      tags: [ 'role::keyring', 'skip::keyring', 'role::php', 'role::nginx' ]
+
+    - import_role:
+        name: 'php'
+        tasks_from: 'main_env'
+      tags: [ 'role::php', 'role::php:env', 'role::logrotate' ]
+
   roles:
 
-    - role: debops.keyring
-      tags: [ 'role::keyring', 'skip::keyring', 'role::php', 'role::nginx' ]
-      keyring__dependent_apt_keys:
-        - '{{ php__keyring__dependent_apt_keys }}'
-        - '{{ nginx__keyring__dependent_apt_keys }}'
-
-    - role: debops.php/env
-      tags: [ 'role::php', 'role::logrotate' ]
-
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ php__apt_preferences__dependent_list }}'
         - '{{ nginx__apt_preferences__dependent_list }}'
 
-    - role: debops.logrotate
+    - role: logrotate
       tags: [ 'role::logrotate', 'skip::logrotate' ]
       logrotate__dependent_config:
         - '{{ php__logrotate__dependent_config }}'
 
-    - role: debops.php
+    - role: php
       tags: [ 'role::php', 'skip::php' ]
       php__dependent_packages:
         - '{{ dokuwiki__php__dependent_packages }}'
       php__dependent_pools:
         - '{{ dokuwiki__php__dependent_pools }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ nginx__ferm__dependent_rules }}'
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python' ]
       python__dependent_packages3:
+        - '{{ ldap__python__dependent_packages3 }}'
         - '{{ nginx__python__dependent_packages3 }}'
       python__dependent_packages2:
+        - '{{ ldap__python__dependent_packages2 }}'
         - '{{ nginx__python__dependent_packages2 }}'
 
-    - role: debops.nginx
+    - role: ldap
+      tags: [ 'role::ldap', 'skip::ldap' ]
+      ldap__dependent_tasks:
+        - '{{ dokuwiki__ldap__dependent_tasks }}'
+
+    - role: nginx
       tags: [ 'role::nginx', 'skip::nginx' ]
       nginx__dependent_upstreams:
         - '{{ dokuwiki__nginx__dependent_upstreams }}'
       nginx__dependent_servers:
         - '{{ dokuwiki__nginx__dependent_servers }}'
 
-    - role: debops.dokuwiki
+    - role: dokuwiki
       tags: [ 'role::dokuwiki', 'skip::dokuwiki' ]

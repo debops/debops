@@ -1,0 +1,34 @@
+---
+
+- name: Manage application
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_service_kibana_application' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  pre_tasks:
+
+    - import_role:
+        name: 'kibana'
+        tasks_from: 'main_env'
+      tags: [ 'role::kibana', 'role::secret', 'role::kibana:config' ]
+
+  roles:
+
+    - role: secret
+      tags: [ 'role::secret', 'role::kibana', 'role::kibana:config' ]
+      secret__directories:
+        - '{{ kibana__secret__directories }}'
+
+    - role: kibana
+      tags: [ 'role::kibana' ]
+      kibana__dependent_role: 'application'
+      kibana__dependent_state: '{{ application__deploy_state }}'
+      kibana__dependent_configuration:
+        - '{{ application__kibana__dependent_configuration }}'
+
+    - role: application
+      tags: [ 'role::application' ]

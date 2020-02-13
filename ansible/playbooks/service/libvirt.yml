@@ -1,7 +1,9 @@
 ---
 
 - name: Manage libvirt hosts
-  hosts: [ 'debops_service_libvirt', 'debops_libvirt' ]
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_libvirt' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -10,12 +12,12 @@
 
   roles:
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python' ]
       python__dependent_packages3:
         - '{{ libvirt__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ libvirt__python__dependent_packages2 }}'
 
-    - role: debops.libvirt
+    - role: libvirt
       tags: [ 'role::libvirt', 'skip::libvirt' ]

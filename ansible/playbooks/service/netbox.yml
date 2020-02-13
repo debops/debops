@@ -1,6 +1,8 @@
 ---
 
 - name: Manage NetBox IPAM/DCIM application
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_netbox' ]
   become: True
 
@@ -10,7 +12,7 @@
 
   roles:
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring',
               'role::postgresql', 'role::nginx', 'role::netbox' ]
       keyring__dependent_apt_keys:
@@ -19,25 +21,25 @@
       keyring__dependent_gpg_keys:
         - '{{ netbox__keyring__dependent_gpg_keys }}'
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ gunicorn__apt_preferences__dependent_list }}'
         - '{{ postgresql__apt_preferences__dependent_list }}'
         - '{{ nginx__apt_preferences__dependent_list }}'
 
-    - role: debops.logrotate
+    - role: logrotate
       tags: [ 'role::logrotate', 'skip::logrotate' ]
       logrotate__dependent_config:
         - '{{ gunicorn__logrotate__dependent_config }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ nginx__ferm__dependent_rules }}'
 
-    - role: debops.python
-      tags: [ 'role::python', 'skip::python', 'role::gunicorn', 'role::netbox' ]
+    - role: python
+      tags: [ 'role::python', 'skip::python', 'role::postgresql', 'role::gunicorn', 'role::netbox' ]
       python__dependent_packages3:
         - '{{ gunicorn__python__dependent_packages3 }}'
         - '{{ netbox__python__dependent_packages3 }}'
@@ -49,7 +51,7 @@
         - '{{ nginx__python__dependent_packages2 }}'
         - '{{ postgresql__python__dependent_packages2 }}'
 
-    - role: debops.postgresql
+    - role: postgresql
       tags: [ 'role::postgresql', 'skip::postgresql' ]
       postgresql__dependent_roles:
         - '{{ netbox__postgresql__dependent_roles }}'
@@ -60,17 +62,17 @@
       postgresql__dependent_pgpass:
         - '{{ netbox__postgresql__dependent_pgpass }}'
 
-    - role: debops.gunicorn
+    - role: gunicorn
       tags: [ 'role::gunicorn', 'skip::gunicorn' ]
       gunicorn__dependent_applications:
         - '{{ netbox__gunicorn__dependent_applications }}'
 
-    - role: debops.nginx
+    - role: nginx
       tags: [ 'role::nginx', 'skip::nginx' ]
       nginx__dependent_upstreams:
         - '{{ netbox__nginx__dependent_upstreams }}'
       nginx__dependent_servers:
         - '{{ netbox__nginx__dependent_servers }}'
 
-    - role: debops.netbox
+    - role: netbox
       tags: [ 'role::netbox', 'skip::netbox' ]

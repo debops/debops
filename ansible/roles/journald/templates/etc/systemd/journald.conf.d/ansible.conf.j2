@@ -1,0 +1,32 @@
+# {{ ansible_managed }}
+
+# See journald.conf(5) for details.
+
+[Journal]
+{% for element in journald__combined_configuration | parse_kv_config %}
+{%   if element.name|d() and element.value is defined and element.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%     set element_comment = ('#' if (element.state|d('present') in [ 'init', 'comment' ]) else '') %}
+{%     if element.value is string and not element.value | bool %}
+{%       set element_value = element.value %}
+{%     elif element.value | bool and element.value is not iterable %}
+{%       if element.value | string == '1' %}
+{%         set element_value = element.value %}
+{%       else %}
+{%         set element_value = 'yes' %}
+{%       endif %}
+{%     elif not element.value | bool and element.value is not iterable %}
+{%       if element.value is not none %}
+{%         if element.value | int %}
+{%           set element_value = element.value %}
+{%         else %}
+{%           if element.value | string == '0' %}
+{%             set element_value = element.value %}
+{%           else %}
+{%             set element_value = 'no' %}
+{%           endif %}
+{%         endif %}
+{%       endif %}
+{%     endif %}
+{{     '{}{}={}'.format(element_comment, element.name, element_value) }}
+{%   endif %}
+{% endfor %}

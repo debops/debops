@@ -1,6 +1,8 @@
 ---
 
 - name: Configure Icinga service
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_icinga' ]
   become: True
 
@@ -8,35 +10,39 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
+  pre_tasks:
+
+    - import_role:
+        name: 'icinga'
+        tasks_from: 'main_env'
+      tags: [ 'role::icinga', 'role::secret' ]
+
   roles:
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::icinga' ]
       keyring__dependent_apt_keys:
         - '{{ icinga__keyring__dependent_apt_keys }}'
 
-    - role: debops.icinga/env
-      tags: [ 'role::icinga', 'role::secret' ]
-
-    - role: debops.secret
+    - role: secret
       tags: [ 'role::secret', 'role::icinga' ]
       secret__directories:
         - '{{ icinga__secret__directories | d([]) }}'
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ icinga__apt_preferences__dependent_list }}'
 
-    - role: debops.etc_services
+    - role: etc_services
       tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services__dependent_list:
         - '{{ icinga__etc_services__dependent_list }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ icinga__ferm__dependent_rules }}'
 
-    - role: debops.icinga
+    - role: icinga
       tags: [ 'role::icinga', 'skip::icinga' ]

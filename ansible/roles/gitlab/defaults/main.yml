@@ -1,0 +1,1320 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _gitlab__ref_defaults:
+
+# debops.gitlab default variables [[[
+# ===================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# GitLab version configuration [[[
+# --------------------------------
+
+# These variables define what GitLab release branch will be used to install
+# GitLab. The :envvar:`gitlab_version` variable is used to enable/disable
+# specific features dependent on the GitLab version, but does not correspond to
+# the actual specific version number.
+#
+# Both of these variables should be kept in sync.
+
+# .. envvar:: gitlab__release_map [[[
+#
+# This is the dictionary that keeps track of supported GitLab releases per OS
+# distribution/release. Older OS releases might not have the required
+# environment support, for example old Ruby or Go version.
+gitlab__release_map:
+
+  # OS releases with Ruby 2.1
+  'wheezy': '8-17-stable'
+  'jessie': '8-17-stable'
+  'trusty': '8-17-stable'
+
+  # OS releases with Ruby 2.3
+  'stretch': '10-8-stable'
+  'xenial':  '10-8-stable'
+
+  # OS releases with Ruby 2.5
+  'buster':  '12-2-stable'
+  'bionic':  '12-2-stable'
+
+  # OS releases with Ruby 2.6+ (future)
+  'bullseye': '12-2-stable'
+  'eoan':     '12-2-stable'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__distribution_release [[[
+#
+# Specify the OS release which is used to select the version of GitLab to
+# install and APT package names.
+gitlab__distribution_release: '{{ ansible_local.core.distribution_release
+                                  if (ansible_local|d() and ansible_local.core|d() and
+                                      ansible_local.core.distribution_release|d())
+                                  else ansible_distribution_release }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__release [[[
+#
+# Specify the GitLab release to install or manage. The role checks what release
+# is currently installed and can perform automatic upgrade if the installed
+# release is older than the specified. Downgrades are not supported.
+gitlab__release: '{{ gitlab__release_map[gitlab__distribution_release] }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_version [[[
+#
+# Specify the GitLab version to install or manage. The role checks what version
+# is currently installed and can perform automatic upgrade if the installed
+# version is older than the specified. Downgrades are not supported.
+gitlab_version: '{{ gitlab__release | replace("-stable","") | replace("-",".") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Application features [[[
+# ------------------------
+
+# .. envvar:: gitlab__database [[[
+#
+# What database to use for GitLab instance? Supported options:
+#
+# - ``postgresql``: use PostgreSQL database
+#
+# The role expects the selected database server to be configured. See the
+# documentation of the :ref:`debops.postgresql_server` role for information about
+# its features.
+gitlab__database: '{{ ansible_local.gitlab.database
+                      if (ansible_local|d() and ansible_local.gitlab|d() and
+                          ansible_local.gitlab.database|d())
+                      else ("postgresql"
+                            if (ansible_local|d() and ansible_local.postgresql is defined)
+                            else ("mariadb-is-deprecated"
+                                  if (ansible_local|d() and ansible_local.mariadb is defined)
+                                  else "no-database-detected")) }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_use_systemd [[[
+#
+# Enable or disable use of the :command:`systemd` units instead of the upstream
+# init script provided by GitLab. By default the init script will be used on
+# non-systemd hosts.
+gitlab_use_systemd: '{{ (ansible_local.gitlab.systemd_services
+                         if (ansible_local|d() and ansible_local.gitlab|d() and
+                             ansible_local.gitlab.systemd_services|d())
+                         else (False
+                               if (ansible_local|d() and ansible_local.gitlab|d() and
+                                   ansible_local.gitlab.installed|d())
+                               else (True if ansible_service_mgr == "systemd" else False))) }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_enable_pages [[[
+#
+# Whether to enable ``gitlab-pages``. Available in Gitlab 8.17 and newer.
+gitlab_enable_pages: '{{ gitlab_version is version_compare("8.17",
+                         operator="ge", strict=True) and gitlab_pages_domain != "" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Application FQDN and DNS addresses [[[
+# --------------------------------------
+
+# .. envvar:: gitlab__fqdn [[[
+#
+# The Fully Qualified Domain Name of the GitLab application. This address is
+# used to configure the webserver frontend.
+gitlab__fqdn: 'code.{{ gitlab_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_domain [[[
+#
+# Domain which will be used for nginx server and gitlab-shell access
+# GitLab will be configured with HTTPS enabled by default
+gitlab_domain: '{{ ansible_local.core.domain
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.domain|d())
+                   else ansible_domain }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: gitlab__base_packages [[[
+#
+# List of base APT packages required by GitLab.
+gitlab__base_packages: [ 'build-essential', 'cmake', 'git', 'pkg-config',
+                         'unzip', 'acl', 'ssl-cert',
+                         'libgdbm-dev', 'libreadline-dev', 'libncurses5-dev', 'libffi-dev',
+                         'libxml2-dev', 'libxslt1-dev', 'libcurl4-openssl-dev', 'libkrb5-dev',
+                         'libicu-dev', 'zlib1g-dev', 'libyaml-dev' ]
+
+                                                                   # ]]]
+# .. envvar:: gitlab__release_packages [[[
+#
+# List of base APT packages required by GitLab depending on the distribution release.
+gitlab__release_packages:
+  jessie:  [ 'libssl-dev' ]
+  stretch: [ 'libssl1.0-dev', 'libre2-dev' ]
+  buster:  [ 'libssl-dev', 'libre2-dev' ]
+  precise: [ 'libssl-dev' ]
+  trusty:  [ 'libssl-dev' ]
+  xenial:  [ 'libssl-dev', 'libre2-dev' ]
+  bionic:  [ 'libssl-dev', 'libre2-dev' ]
+
+                                                                   # ]]]
+# .. envvar:: gitlab__database_packages [[[
+#
+# YAML dictionary which contains list of APT packages required by a particular
+# database server.
+gitlab__database_packages:
+  jessie:
+    postgresql: [ 'libpq-dev', 'ruby-pg' ]
+  stretch:
+    postgresql: [ 'libpq-dev', 'ruby-pg' ]
+  buster:
+    postgresql: [ 'libpq-dev', 'ruby-pg' ]
+  precise:
+    postgresql: [ 'libpq-dev', 'ruby-pg' ]
+  trusty:
+    postgresql: [ 'libpq-dev', 'ruby-pg' ]
+  xenial:
+    postgresql: [ 'libpq-dev', 'ruby-pg' ]
+  bionic:
+    postgresql: [ 'libpq-dev', 'ruby-pg' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# GitLab Pages configuration [[[
+# ------------------------------
+
+# .. envvar:: gitlab_pages_domain [[[
+#
+# The main domain served by Gitlab Pages. Set this to your domain to enable
+# Gitlab Pages.
+#
+# This should be a different one than :envvar:`gitlab_domain` to prevent cross
+# domain cookie attacks.
+gitlab_pages_domain: ''
+
+                                                                   # ]]]
+# .. envvar:: gitlab_pages_port [[[
+#
+# Port the ``gitlab-pages`` HTTP server listens to.
+gitlab_pages_port: '8090'
+                                                                   # ]]]
+                                                                   # ]]]
+# nginx webserver options [[[
+# ---------------------------
+
+# .. envvar:: gitlab_nginx_auth_realm [[[
+#
+# Webserver authentication realm.
+gitlab_nginx_auth_realm: 'GitLab access is restricted'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_nginx_access_policy [[[
+#
+# Name of webserver access policy to enable. Refer to :ref:`debops.nginx` for
+# details.
+gitlab_nginx_access_policy: ''
+
+                                                                   # ]]]
+# .. envvar:: gitlab_nginx_client_max_body_size [[[
+#
+# nginx client_max_body_size value.
+gitlab_nginx_client_max_body_size: '0'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_nginx_proxy_timeout [[[
+#
+# nginx - gitlab proxy timeout in seconds
+gitlab_nginx_proxy_timeout: '300'
+                                                                   # ]]]
+                                                                   # ]]]
+# E-mail configuration [[[
+# ------------------------
+
+# .. envvar:: gitlab_email_display_name [[[
+#
+# E-mail sender name used by GitLab
+gitlab_email_display_name: 'GitLab'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_email_from [[[
+#
+# E-mail address used by GitLab application.
+gitlab_email_from: 'git@{{ gitlab__fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_email_reply_to [[[
+#
+# E-mail Reply-To address added to GitLab mails.
+gitlab_email_reply_to: 'admin+gitlab@{{ gitlab_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_admin_email [[[
+#
+# Default admin account e-mail address.
+gitlab_admin_email: 'admin@{{ gitlab_domain }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# New user configuration [[[
+# --------------------------
+
+# .. envvar:: gitlab_default_can_create_group [[[
+#
+# Should new users be able to create groups?
+gitlab_default_can_create_group: 'true'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_username_changing_enabled [[[
+#
+# Can users change their own username?
+gitlab_username_changing_enabled: 'false'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_default_theme [[[
+#
+# Default GitLab theme to use
+gitlab_default_theme: '2'
+                                                                   # ]]]
+                                                                   # ]]]
+# Database configuration [[[
+# --------------------------
+
+# .. envvar:: gitlab_database_server [[[
+#
+# FQDN of the database server. It will be configured by the :ref:`debops.postgresql`
+# role.
+gitlab_database_server: '{{ ansible_local[gitlab__database].server }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_database_port [[[
+#
+# Port the database is listening on.
+gitlab_database_port: '{{ ansible_local[gitlab__database].port }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_database_user [[[
+#
+# Name of the database account to use for the GitLab application.
+gitlab_database_user: 'gitlab'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_database_name [[[
+#
+# Name of the database to use for the GitLab data.
+gitlab_database_name: 'gitlabhq_production'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_database_password_path [[[
+#
+# Path to database password file located on the Ansible Controller. See the
+# :ref:`debops.secret` role for more details.
+gitlab_database_password_path: '{{ secret + "/" + gitlab__database + "/" +
+                                   ansible_local[gitlab__database].delegate_to }}{%
+                                     if gitlab__database=="postgresql" %}/{{ ansible_local[gitlab__database].port }}{% endif
+                                   %}{{ "/credentials/" + gitlab_database_user +
+                                   "/password" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_database_password [[[
+#
+# Database password for GitLab.
+gitlab_database_password: "{{ lookup('password', gitlab_database_password_path
+                              + ' length=48 chars=ascii_letters,digits,.:-_') }}"
+
+                                                                   # ]]]
+# .. envvar:: gitlab_postgresql_database_connection [[[
+#
+# Connection type for PostgreSQL database (choices: socket, port)
+# FIXME: not supported yet
+gitlab_postgresql_database_connection: 'socket'
+                                                                   # ]]]
+                                                                   # ]]]
+# GitLab backup options [[[
+# -------------------------
+
+# .. envvar:: gitlab_backup_enabled [[[
+#
+# Enable or disable Gitlab backup.
+gitlab_backup_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: gitlab_backup_frequency [[[
+#
+# Backup frequency (daily, weekly, monthly)
+gitlab_backup_frequency: 'daily'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_backup_keep_time [[[
+#
+# How long to store backups for, in seconds
+gitlab_backup_keep_time: '{{ (60 * 60 * 24 * 7) }}'
+                                                                   # ]]]
+# .. envvar:: gitlab_backup_exclude [[[
+#
+# Choose what should be excluded from the backup. An empty list means that
+# nothing will be excluded from the backup.
+# Valid options can be found at;
+# https://docs.gitlab.com/ee/raketasks/backup_restore.html#excluding-specific-directories-from-the-backup
+gitlab_backup_exclude: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Redis configuration [[[
+# -----------------------
+
+# .. envvar:: gitlab_redis_host [[[
+#
+# Define hostname of redis server to use.
+gitlab_redis_host: '{{ ansible_local.redis_server.host
+                       if (ansible_local|d() and ansible_local.redis_server|d() and
+                           ansible_local.redis_server.host|d())
+                       else "localhost" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_redis_port [[[
+#
+# Define port of redis server to use.
+gitlab_redis_port: '{{ ansible_local.redis_server.port
+                       if (ansible_local|d() and ansible_local.redis_server|d() and
+                           ansible_local.redis_server.port|d())
+                       else "6379" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_redis_password [[[
+#
+# Define the Redis authentication password to use
+gitlab_redis_password: '{{ ansible_local.redis_server.password
+                           if (ansible_local|d() and ansible_local.redis_server|d() and
+                               ansible_local.redis_server.password|d())
+                           else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_redis_resque [[[
+#
+# Connection string used in the configuration file.
+gitlab_redis_resque: 'redis://{{ ((":" + gitlab_redis_password + "@")
+                                  if gitlab_redis_password else "") +
+                      gitlab_redis_host + ":" + gitlab_redis_port }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_redis_database [[[
+#
+# Specify which Redis database to use for GitLab
+gitlab_redis_database: '0'
+                                                                   # ]]]
+                                                                   # ]]]
+# GitLab directory layout [[[
+# ---------------------------
+
+# .. envvar:: gitlab_home [[[
+#
+# Home directory
+gitlab_home: '{{ (ansible_local.root.home
+                  if (ansible_local|d() and ansible_local.root|d() and
+                      ansible_local.root.home|d())
+                  else "/var/local") + "/" + gitlab_user }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_app_root_path [[[
+#
+# Application installation directory
+gitlab_app_root_path: '{{ (ansible_local.root.app
+                           if (ansible_local|d() and ansible_local.root|d() and
+                               ansible_local.root.app|d())
+                           else "/var/local") + "/" + gitlab_user }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_repositories_path [[[
+#
+# GitLab repositories
+gitlab_repositories_path: '{{ (ansible_local.root.data
+                               if (ansible_local|d() and ansible_local.root|d() and
+                                   ansible_local.root.data|d())
+                               else "/srv") + "/gitlab/repositories" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_satellites_path [[[
+#
+# GitLab satellites
+gitlab_satellites_path: '{{ (ansible_local.root.data
+                             if (ansible_local|d() and ansible_local.root|d() and
+                                 ansible_local.root.data|d())
+                             else "/srv") + "/gitlab/satellites" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_backup_path [[[
+#
+# Backup path
+gitlab_backup_path: '{{ (ansible_local.root.backup
+                         if (ansible_local|d() and ansible_local.root|d() and
+                             ansible_local.root.backup|d())
+                         else "/var/backups") + "/gitlab" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_src_path [[[
+#
+# GitLab sources root path
+gitlab_src_path: '{{ (ansible_local.root.src
+                      if (ansible_local|d() and ansible_local.root|d() and
+                          ansible_local.root.src|d())
+                      else "/usr/local/src") + "/gitlab" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_lfs_path [[[
+#
+# Gitlab path for lfs objects
+gitlab_lfs_path: '{{ (ansible_local.root.data
+                      if (ansible_local|d() and ansible_local.root|d() and
+                          ansible_local.root.data|d())
+                      else "/srv") + "/gitlab/shared/lfs-objects" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_shared_path [[[
+#
+# Gitlab path for shared files
+gitlab_shared_path: '{{ (ansible_local.root.data
+                         if (ansible_local|d() and ansible_local.root|d() and
+                             ansible_local.root.data|d())
+                         else "/srv") + "/gitlab/shared" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_artifacts_path [[[
+#
+# Gitlab path for artifacts files
+gitlab_artifacts_path: '{{ (ansible_local.root.data
+                            if (ansible_local|d() and ansible_local.root|d() and
+                                ansible_local.root.data|d())
+                            else "/srv") + "/gitlab/shared/artifacts" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_pages_path [[[
+#
+# Path where GitLab Pages are stored in the filesystem.
+gitlab_pages_path: '{{ (ansible_local.root.data
+                        if (ansible_local|d() and ansible_local.root|d() and
+                            ansible_local.root.data|d())
+                        else "/srv") + "/gitlab/shared/pages" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# System user, group, additional groups [[[
+# -----------------------------------------
+
+# .. envvar:: gitlab_user [[[
+#
+# System UNIX account used by the GitLab application. It will be visible in the
+# :command:`git+ssh` remote URLs.
+gitlab_user: 'git'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_group [[[
+#
+# System UNIX group used by the Gitlab application.
+gitlab_group: 'git'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_user_append_groups [[[
+#
+# List of additional system groups to add to the GitLab user account.
+# The ``sshusers`` UNIX group is used in DebOps to limit SSH access. See the
+# :ref:`debops.system_groups` role for more details.
+gitlab_user_append_groups: [ 'sshusers', 'ssl-cert' ]
+
+                                                                   # ]]]
+# .. envvar:: gitlab__shell [[[
+#
+# The default shell used by the GitLab UNIX account.
+gitlab__shell: '/bin/bash'
+                                                                   # ]]]
+                                                                   # ]]]
+# Internal application options [[[
+# --------------------------------
+
+# .. envvar:: gitlab_time_zone [[[
+#
+# The timezone used by GitLab.
+gitlab_time_zone: 'UTC'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_git_max_size [[[
+#
+# Max :command:`git` upload size in bytes.
+gitlab_git_max_size: '{{ (1024 * 1024 * 20) }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_git_timeout [[[
+#
+# The :command:`git` connection timeout in seconds.
+gitlab_git_timeout: '10'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_unicorn_port [[[
+#
+# Unicorn port on ``localhost`` interface.
+gitlab_unicorn_port: '18082'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_unicorn_timeout [[[
+#
+# Unicorn connection timeout in seconds.
+gitlab_unicorn_timeout: '60'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_passenger_options [[[
+#
+# Additional options for Phusion Passenger as text block.
+gitlab_passenger_options: ''
+
+                                                                   # ]]]
+# .. envvar:: gitlab_shell_ssh_port [[[
+#
+# SSH port for GitLab Shell (does not affect sshd port setting).
+gitlab_shell_ssh_port: '22'
+                                                                   # ]]]
+# .. envvar:: gitlab__gravatar_enabled [[[
+#
+# Enable/Disable gitlab gravatar feature.
+gitlab__gravatar_enabled: True
+                                                                   # ]]]
+# .. envvar:: gitlab__gravatar_plain_url [[[
+#
+# Gravatar (HTTP) URL used by gitlab.
+gitlab__gravatar_plain_url: ''
+                                                                   # ]]]
+# .. envvar:: gitlab__gravatar_ssl_url [[[
+#
+# Gravatar SSL (HTTPS) URL used by gitlab.
+gitlab__gravatar_ssl_url: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Compatibility workarounds [[[
+# -----------------------------
+
+# .. envvar:: gitlab_support_filesystem_acl [[[
+#
+# Enable or disable ACL configuration for the webserver
+gitlab_support_filesystem_acl: True
+                                                                   # ]]]
+                                                                   # ]]]
+# gitlab-shell source code [[[
+# ----------------------------
+
+# .. envvar:: gitlab_shell_git_repo [[[
+#
+# URL of the ``gitlab-shell`` repository.
+gitlab_shell_git_repo: 'https://gitlab.com/gitlab-org/gitlab-shell.git'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_shell_git_dest [[[
+#
+# Path where the ``gitlab-shell`` source code will be cloned into a bare
+# repository.
+gitlab_shell_git_dest: '{{ gitlab_src_path + "/" + gitlab_shell_git_repo.split("://")[1] }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_shell_git_checkout [[[
+#
+# Path where the ``gitlab-shell`` source code will be checked out.
+gitlab_shell_git_checkout: '{{ gitlab_app_root_path + "/gitlab-shell" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# GitLab CE source code [[[
+# -------------------------
+
+# .. envvar:: gitlab_ce_git_repo [[[
+#
+# URL of the GitLab CE repository.
+gitlab_ce_git_repo: 'https://gitlab.com/gitlab-org/gitlab-foss.git'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_ce_git_dest [[[
+#
+# Path where the GitLab CE source code will be cloned into a bare repository.
+gitlab_ce_git_dest: '{{ gitlab_src_path + "/" + gitlab_ce_git_repo.split("://")[1] }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_ce_git_checkout [[[
+#
+# Path where the GitLab CE source code will be checked out.
+gitlab_ce_git_checkout: '{{ gitlab_app_root_path + "/gitlab" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# GitLab git HTTP server source code [[[
+# --------------------------------------
+
+# .. envvar:: gitlab_git_http_server_repo [[[
+#
+# URL of the git HTTP server repository.
+gitlab_git_http_server_repo: 'https://gitlab.com/gitlab-org/gitlab-git-http-server.git'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_git_http_server_dest [[[
+#
+# Path where the git HTTP server source code will be cloned into a bare
+# repository.
+gitlab_git_http_server_dest: '{{ gitlab_src_path + "/" + gitlab_git_http_server_repo.split("://")[1] }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_git_http_server_checkout [[[
+#
+# Path where the git HTTP server source code will be checked out.
+gitlab_git_http_server_checkout: '{{ gitlab_app_root_path + "/gitlab-git-http-server" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# GitLab Workhorse source code [[[
+# --------------------------------
+
+# .. envvar:: gitlab_workhorse_repo [[[
+#
+# URL of the GitLab Workhorse repository.
+gitlab_workhorse_repo: 'https://gitlab.com/gitlab-org/gitlab-workhorse.git'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_workhorse_dest [[[
+#
+# Path where the GitLab Workhorse source code will be cloned into a bare
+# repository.
+gitlab_workhorse_dest: '{{ gitlab_src_path + "/" + gitlab_workhorse_repo.split("://")[1] }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_workhorse_checkout [[[
+#
+# Path where the GitLab Workhorse source code will be checked out.
+gitlab_workhorse_checkout: '{{ gitlab_app_root_path + "/gitlab-workhorse" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# GitLab Pages source code [[[
+# ----------------------------
+
+# .. envvar:: gitlab_pages_repo [[[
+#
+# URL of the GitLab Pages repository.
+gitlab_pages_repo: 'https://gitlab.com/gitlab-org/gitlab-pages.git'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_pages_dest [[[
+#
+# Path where the GitLab Pages source code will be cloned into a bare
+# repository.
+gitlab_pages_dest: '{{ gitlab_src_path + "/" + gitlab_pages_repo.split("://")[1] }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_pages_checkout [[[
+#
+# Path where the GitLab Pages source code will be checked out.
+gitlab_pages_checkout: '{{ gitlab_app_root_path + "/gitlab-pages" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Gitaly source code [[[
+# ----------------------
+
+# .. envvar:: gitlab__gitaly_repo [[[
+#
+# URL of the Gitaly repository.
+gitlab__gitaly_repo: 'https://gitlab.com/gitlab-org/gitaly.git'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__gitaly_dest [[[
+#
+# Path where the Gitaly source code will be cloned into a bare repository.
+gitlab__gitaly_dest: '{{ gitlab_src_path + "/" + gitlab__gitaly_repo.split("://")[1] }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__gitaly_checkout [[[
+#
+# Path where the Gitaly source code will be checked out.
+gitlab__gitaly_checkout: '{{ gitlab_app_root_path + "/gitaly" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Build and deployment commands [[[
+# Different versions of GitLab might require different command parameters to
+# build and deploy the service. The variables below define the commands
+# according to the selected version or feature.
+
+# .. envvar:: gitlab_assets_clean [[[
+#
+# Rake task which cleans GitLab static assets during upgrades.
+gitlab_assets_clean: '{{ "gitlab:assets:clean"
+                         if (gitlab_version is version_compare("8.17", operator="ge", strict=True))
+                         else "assets:clean" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_assets_compile [[[
+#
+# Rake task which builds or rebuilds GitLab assets during installation or
+# upgrades.
+gitlab_assets_compile: '{{ "gitlab:assets:compile"
+                           if (gitlab_version is version_compare("8.17", operator="ge", strict=True))
+                           else "assets:precompile" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab_ce_bundle_install_without [[[
+#
+# YAML dictionary which maps Bundler parameters to the selected database
+# backend.
+gitlab_ce_bundle_install_without:
+  'postgresql': 'development test aws mysql'
+                                                                   # ]]]
+                                                                   # ]]]
+# LDAP Authentication configuration [[[
+# -------------------------------------
+
+# More information about LDAP support in GitLab can be found at
+# https://gitlab.com/help/administration/auth/ldap.md
+
+# .. envvar:: gitlab__ldap_enabled [[[
+#
+# Enable or disable LDAP support.
+gitlab__ldap_enabled: '{{ True
+                          if (ansible_local|d() and ansible_local.ldap|d() and
+                              (ansible_local.ldap.enabled|d())|bool)
+                          else False }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_base_dn [[[
+#
+# The base Distinguished Name which should be used to create Distinguished
+# Names of the LDAP directory objects, defined as a YAML list. If this variable
+# is empty, LDAP configuration will not be generated.
+gitlab__ldap_base_dn: '{{ ansible_local.ldap.base_dn
+                          if (ansible_local|d() and ansible_local.ldap|d() and
+                              ansible_local.ldap.base_dn|d())
+                          else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_device_dn [[[
+#
+# The Distinguished Name of the current host LDAP object, defined as a YAML
+# list. It will be used as a base for the GitLab service account LDAP object.
+# If the list is empty, the role will not create the account LDAP object
+# automatically.
+gitlab__ldap_device_dn: '{{ ansible_local.ldap.device_dn
+                            if (ansible_local|d() and ansible_local.ldap|d() and
+                                ansible_local.ldap.device_dn|d())
+                            else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_self_rdn [[[
+#
+# The Relative Distinguished Name of the account LDAP object used by the
+# GitLab service to access the LDAP directory.
+gitlab__ldap_self_rdn: 'uid=gitlab'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_self_object_classes [[[
+#
+# List of the LDAP object classes which will be used to create the LDAP object
+# used by the Gitlab service to access the LDAP directory.
+gitlab__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_self_attributes [[[
+#
+# YAML dictionary that defines the attributes of the LDAP object used by the
+# GitLab service to access the LDAP directory.
+gitlab__ldap_self_attributes:
+  uid: '{{ gitlab__ldap_self_rdn.split("=")[1] }}'
+  userPassword: '{{ gitlab__ldap_bindpw }}'
+  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  description: 'Account used by the "GitLab" service to access the LDAP directory'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_binddn [[[
+#
+# The Distinguished Name of the account LDAP object used by the
+# GitLab service to bind to the LDAP directory.
+gitlab__ldap_binddn: '{{ ([ gitlab__ldap_self_rdn ] + gitlab__ldap_device_dn) | join(",") }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_bindpw [[[
+#
+# The password stored in the account LDAP object used by the GitLab service to
+# bind to the LDAP directory.
+gitlab__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
+                                + gitlab__ldap_binddn | to_uuid + ".password length=32") }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_sync_time [[[
+#
+# Specify the time in seconds between LDAP permission checks. The checks will
+# be performed on the next GitLab interaction after the timeout.
+gitlab__ldap_sync_time: '3600'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_label [[[
+#
+# Specify the name of the LDAP server displayed on the login page.
+gitlab__ldap_label: 'LDAP'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_host [[[
+#
+# FQDN address of the LDAP server to connect to.
+gitlab__ldap_host: '{{ (ansible_local.ldap.hosts
+                        if (ansible_local|d() and ansible_local.ldap|d() and
+                            ansible_local.ldap.hosts|d())
+                        else [""]) | first }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_port [[[
+#
+# The LDAP service port to use for connections.
+gitlab__ldap_port: '{{ ansible_local.ldap.port
+                       if (ansible_local|d() and ansible_local.ldap|d() and
+                           ansible_local.ldap.port|d())
+                       else "389" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_encryption [[[
+#
+# The encryption method that should be used to connect to the LDAP server.
+# Available methods: ``start_tls``, ``simple_tls``, ``plain``.
+gitlab__ldap_encryption: '{{ "start_tls"
+                             if (ansible_local|d() and ansible_local.ldap|d() and
+                                 (ansible_local.ldap.start_tls|d())|bool)
+                             else "simple_tls" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_timeout [[[
+#
+# Set timeout in seconds for LDAP queries.
+gitlab__ldap_timeout: '10'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_activedirectory [[[
+#
+# Enable or disable support for ActiveDirectory servers.
+gitlab__ldap_activedirectory: False
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_account_attribute [[[
+#
+# Name of the LDAP attribute to use for account lookups. On plain LDAP servers
+# it's usually ``uid``, on older ActiveDirectory installations it could be
+# ``sAMAccountName``.
+gitlab__ldap_account_attribute: '{{ "sAMAccountName"
+                                    if (gitlab__ldap_activedirectory|bool)
+                                    else "uid" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_user_filter [[[
+#
+# LDAP search query which will be used by the GitLab service to filter the
+# available user accounts.
+gitlab__ldap_user_filter: '(&
+                             (objectClass=inetOrgPerson)
+                             (|
+                               (authorizedService=all)
+                               (authorizedService=gitlab)
+                               (authorizedService=web:public)
+                             )
+                           )'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_username_or_email_login [[[
+#
+# If this variable is enabled, GitLab will ignore everything
+# after the first '@' in the LDAP username submitted by the user on login.
+#
+# Example:
+# - the user enters 'jane.doe@example.com' and 'p@ssw0rd' as LDAP credentials;
+# - GitLab queries the LDAP server with 'jane.doe' and 'p@ssw0rd'.
+#
+# If you are using "uid: 'userPrincipalName'" on ActiveDirectory you need to
+# disable this setting, because the userPrincipalName contains an '@'.
+gitlab__ldap_username_or_email_login: '{{ True
+                                          if (gitlab__ldap_account_attribute in
+                                              [ "uid", "sAMAccountName" ])
+                                          else False }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_block_auto_created_users [[[
+#
+# Enable this setting to keep new LDAP users blocked until they have been
+# cleared by the admin.
+gitlab__ldap_block_auto_created_users: False
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap_lowercase_usernames [[[
+#
+# If enabled, GitLab will convert usernames to lowercase before searching the
+# for the LDAP user accounts.
+gitlab__ldap_lowercase_usernames: True
+                                                                   # ]]]
+                                                                   # ]]]
+# Piwik configuration [[[
+# -----------------------
+
+# .. envvar:: gitlab__piwik_url [[[
+#
+# The URL (ex.: analytics.example.com) on which Piwik analytics responds
+# (default to disabled). Please note that the visit requests from GitLab to the
+# Piwik URL will be pushed with the same http scheme that the GitLab is
+# hosted with. So, the URL variable must not contain the http scheme, but may
+# contain a port or subdirectories.
+gitlab__piwik_url: ''
+
+                                                                   # ]]]
+# .. envvar:: gitlab__piwik_site_id [[[
+#
+# The ID of the GitLab website in Piwik analytics.
+gitlab__piwik_site_id: '0'
+                                                                   # ]]]
+                                                                   # ]]]
+# Gitlab Container Registry configuration [[[
+# -------------------------------------------
+
+# It is possible to integrate the Docker Container Registry into GitLab,
+# enabling each project to store its Docker images. For this to work,
+# a separate Docker Registry needs to be installed, either on the same host as
+# GitLab, or on a different host.
+#
+# The ``debops.docker_registry`` role can be used to set up a Registry service;
+# if the service is configured on the same host as GitLab service, the roles
+# will automatically integrate their services.
+
+# .. envvar:: gitlab__registry_enabled [[[
+#
+# Enable or disable support for GitLab Container Registry.
+gitlab__registry_enabled: '{{ True
+                              if (ansible_local|d() and ansible_local.docker_registry|d() and
+                                  (ansible_local.docker_registry.installed|d())|bool)
+                              else False }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__registry_host_fqdn [[[
+#
+# The Fully Qualified Domain Name of the Docker Registry, displayed to the
+# GitLab users when configuring the Container Registry for their projects in
+# the Gitlab UI. The Docker Registry needs to be reachable on a separate DNS
+# subdomain, because GitLab does not proxy the connections to the service.
+gitlab__registry_host_fqdn: '{{ ansible_local.docker_registry.host_fqdn
+                                if (ansible_local|d() and ansible_local.docker_registry|d() and
+                                    ansible_local.docker_registry.host_fqdn|d())
+                                else ("registry." + gitlab_domain) }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__registry_host_port [[[
+#
+# If the Docker Registry is available on TCP port other than 443, you can
+# specify the port number here; it will be displayed in the GitLab Container
+# Registry section of the GitLab interface. Docker Registry published behind
+# a HTTPS reverse proxy does not need to advertise its port, 443 (HTTPS) will
+# be used automatically by Docker clients.
+gitlab__registry_host_port: '{{ ansible_local.docker_registry.host_port
+                                if (ansible_local|d() and ansible_local.docker_registry|d() and
+                                    ansible_local.docker_registry.host_port|d())
+                                else "5005" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__registry_api_url [[[
+#
+# The internal URL to the Docker Registry API endpoint.
+# Will be used by GitLab to directly communicate with the Registry API.
+gitlab__registry_api_url: '{{ ansible_local.docker_registry.api_url
+                              if (ansible_local|d() and ansible_local.docker_registry|d() and
+                                  ansible_local.docker_registry.api_url|d())
+                              else "http://localhost:5000" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__registry_path [[[
+#
+# The absolute path of the Docker Registry filesystem storage. This directory
+# needs to be readable by the Gitlab UNIX account and the webserver.
+gitlab__registry_path: '{{ ansible_local.docker_registry.storage_path
+                           if (ansible_local|d() and ansible_local.docker_registry|d() and
+                               (ansible_local.docker_registry.storage_type|d()) == "filesystem")
+                           else "shared/registry" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__registry_token_realm_url [[[
+#
+# The URL of the GitLab Container Registry API endpoint where Docker clients
+# request authentication tokens required to access the Docker Registry.
+gitlab__registry_token_realm_url: '{{ "https://" + gitlab__fqdn + "/jwt/auth" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__registry_token_issuer [[[
+#
+# The name of the issuer of the authentication token. This value is included in
+# the issued tokens, and needs to be specified in the Docker Registry
+# configuration as well.
+gitlab__registry_token_issuer: '{{ gitlab__fqdn + "-issuer" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__registry_token_service [[[
+#
+# Name of the internal GitLab API service that manages the token
+# authentication.
+gitlab__registry_token_service: 'container_registry'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__registry_pki_path [[[
+#
+# The base path of the PKI managed by the :ref:`debops.pki` Ansible role.
+gitlab__registry_pki_path: '{{ ansible_local.pki.path
+                               if (ansible_local|d() and ansible_local.pki|d() and
+                                   ansible_local.pki.path|d())
+                               else "/etc/pki/realms" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__registry_pki_realm [[[
+#
+# The name of the PKI realm which should be used to sign the GitLab Container
+# Registry tokens. The Docker Registry will use the certificate in a given PKI
+# realm to authenticate the signatures.
+gitlab__registry_pki_realm: '{{ ansible_local.pki.realm
+                                if (ansible_local|d() and ansible_local.pki|d() and
+                                    ansible_local.pki.realm|d())
+                                else "domain" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__registry_pki_key [[[
+#
+# Name of the file in the PKI realm directory which contains the private key
+# used by the GitLab Container Registry service to sign the authentication
+# tokens.
+gitlab__registry_pki_key: 'default.key'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__registry_private_key [[[
+#
+# The absolute path of the private key used by the GitLab Container Registry
+# service to sign authentication tokens for Docker clients.
+gitlab__registry_private_key: '{{ gitlab__registry_pki_path + "/" +
+                                  gitlab__registry_pki_realm + "/" +
+                                  gitlab__registry_pki_key }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: gitlab__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+gitlab__python__dependent_packages3:
+
+  - 'python3-docutils'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+gitlab__python__dependent_packages2:
+
+  - 'python-docutils'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__etc_services__dependent_list [[[
+#
+# List of custom :file:`/etc/services` to configure for the :ref:`debops.etc_services`
+# Ansible role.
+gitlab__etc_services__dependent_list:
+
+  - name: 'gitlab'
+    port: '{{ gitlab_unicorn_port }}'
+    comment: 'GitLab'
+
+  - name: 'gitlab-pages'
+    port: '{{ gitlab_pages_port }}'
+    comment: 'GitLab Pages'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__apt_preferences__dependent_list [[[
+#
+# Configuration for the :ref:`debops.apt_preferences` role.
+gitlab__apt_preferences__dependent_list:
+
+  - package: 'git git-*'
+    backports: [ 'jessie' ]
+    reason:  'Meet version requirement of GitLab 8.17 (Git version >= 2.7.3) on Debian Jessie.'
+    by_role: 'debops.gitlab'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__logrotate__dependent_config [[[
+#
+# Configuration for the :ref:`debops.logrotate` Ansible role.
+gitlab__logrotate__dependent_config:
+
+  - filename: 'gitlab'
+    sections:
+
+      - log: '{{ gitlab_home }}/gitlab/log/*.log'
+        comment: |
+          GitLab logrotate settings
+          based on: https://stackoverflow.com/a/4883967
+        options: |
+          daily
+          missingok
+          rotate 90
+          compress
+          notifempty
+          copytruncate
+        state: 'present'
+
+      - log: '{{ gitlab_home }}/gitlab-shell/gitlab-shell.log'
+        options: |
+          daily
+          missingok
+          rotate 90
+          compress
+          notifempty
+          copytruncate
+        state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__postgresql__dependent_roles [[[
+#
+# Configuration of PostgreSQL roles for :ref:`debops.postgresql` Ansible role.
+gitlab__postgresql__dependent_roles:
+
+  # Owner of the ``gitlabhq_production`` database
+  - name: '{{ gitlab_database_name }}'
+    flags: [ 'NOLOGIN' ]
+
+  # GitLab user account role
+  - name: '{{ gitlab_database_user }}'
+    password: '{{ gitlab_database_password }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__postgresql__dependent_databases [[[
+#
+# Configuration of PostgreSQL databases for the :ref:`debops.postgresql` Ansible
+# role.
+gitlab__postgresql__dependent_databases:
+
+  - name:  '{{ gitlab_database_name }}'
+    owner: '{{ gitlab_database_name }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__postgresql__dependent_groups [[[
+#
+# Configuration of PostgreSQL groups for the :ref:`debops.postgresql` Ansible role.
+gitlab__postgresql__dependent_groups:
+
+  - roles:  [ '{{ gitlab_database_user }}' ]
+    groups: [ '{{ gitlab_database_name }}' ]
+    database: '{{ gitlab_database_name }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__postgresql__dependent_extensions [[[
+#
+# Configuration of PostgreSQL extensions for the :ref:`debops.postgresql` Ansible
+# role.
+gitlab__postgresql__dependent_extensions:
+
+  - database: '{{ gitlab_database_name }}'
+    extension: 'pg_trgm'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__postgresql__dependent_pgpass [[[
+#
+# The ``~/.pgpass`` configuration for :ref:`debops.postgresql` Ansible role.
+gitlab__postgresql__dependent_pgpass:
+
+  - owner: '{{ gitlab_user }}'
+    home: '{{ gitlab_home }}'
+    database: '{{ gitlab_database_name }}'
+    role: '{{ gitlab_database_user }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ldap__dependent_tasks [[[
+#
+# Configuration for the :ref:`debops.ldap` Ansible role.
+gitlab__ldap__dependent_tasks:
+
+  - name: 'Create GitLab account for {{ gitlab__ldap_device_dn | join(",") }}'
+    dn: '{{ gitlab__ldap_binddn }}'
+    objectClass: '{{ gitlab__ldap_self_object_classes }}'
+    attributes: '{{ gitlab__ldap_self_attributes }}'
+    no_log: True
+    state: '{{ "present" if gitlab__ldap_device_dn|d() else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__nginx__dependent_upstreams [[[
+#
+# List of :command:`nginx` upstreams for the :ref:`debops.nginx` Ansible role.
+gitlab__nginx__dependent_upstreams:
+
+  # Upstream configuration for the ``gitlab-workhorse`` used in GitLab 8.2+
+  - name: 'gitlab-workhorse'
+    server: 'unix:{{ gitlab_ce_git_checkout }}/tmp/sockets/gitlab-workhorse.socket'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__nginx__dependent_servers [[[
+#
+# List of :command:`nginx` servers for the :ref:`debops.nginx` Ansible role.
+gitlab__nginx__dependent_servers:
+
+  - '{{ gitlab__nginx_server }}'
+  - '{{ gitlab__nginx_pages_server }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__nginx_server [[[
+#
+# Configuration of the GitLab :command:`nginx` proxy for the :ref:`debops.nginx`
+# Ansible role.
+gitlab__nginx_server:
+  by_role: 'debops.gitlab'
+  enabled: True
+  type: 'rails'
+  name: '{{ gitlab__fqdn }}'
+  root: '{{ gitlab_ce_git_checkout }}/public'
+  webroot_create: False
+
+  deny_hidden: False
+
+  access_policy: '{{ gitlab_nginx_access_policy }}'
+  auth_basic_realm: '{{ gitlab_nginx_auth_realm }}'
+
+  error_pages:
+    '404': '/404.html'
+    '422': '/422.html'
+    '500': '/500.html'
+    '502': '/502.html'
+
+  # Phusion Passenger options
+  passenger_user: '{{ gitlab_user }}'
+  passenger_group: '{{ gitlab_group }}'
+  passenger_options: '{{ gitlab_passenger_options }}'
+
+  options: |
+    client_max_body_size {{ gitlab_nginx_client_max_body_size }};
+
+  location_list:
+    - pattern: '/'
+      options: |
+        client_max_body_size 0;
+        gzip off;
+
+        ## https://github.com/gitlabhq/gitlabhq/issues/694
+        ## Some requests take more than 30 seconds.
+        proxy_read_timeout      300;
+        proxy_connect_timeout   300;
+        proxy_redirect          off;
+
+        proxy_http_version 1.1;
+
+        proxy_set_header    Host                $http_host;
+        proxy_set_header    X-Real-IP           $remote_addr;
+        proxy_set_header    X-Forwarded-For     $proxy_add_x_forwarded_for;
+        proxy_set_header    X-Forwarded-Proto   $scheme;
+
+        proxy_pass http://gitlab-workhorse;
+
+# ]]]
+# .. envvar:: gitlab__nginx_pages_server [[[
+#
+# Configuration of the GitLab Pages :command:`nginx` proxy for the
+# :ref:`debops.nginx` role.
+gitlab__nginx_pages_server:
+  by_role: 'debops.gitlab'
+  enabled: '{{ gitlab_enable_pages }}'
+  type: 'proxy'
+  name: [ '{{ gitlab_pages_domain }}', '*.{{ gitlab_pages_domain }}' ]
+  filename: 'gitlab-pages'
+  proxy_pass: 'http://localhost:{{ gitlab_pages_port }}'
+  state: '{{ "present" if gitlab_pages_domain|d() else "absent" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

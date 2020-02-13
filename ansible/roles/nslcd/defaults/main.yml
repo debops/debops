@@ -1,0 +1,296 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _nslcd__ref_defaults:
+
+# debops.nslcd default variables
+# ==============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: nslcd__base_packages [[[
+#
+# List of APT packages required for LDAP lookups via NSS and PAM.
+nslcd__base_packages:
+  - [ 'libpam-ldapd', 'libnss-ldapd', 'nslcd', 'openssl', 'ca-certificates' ]
+  - '{{ "nslcd-utils"
+        if (ansible_local|d() and ansible_local.python|d() and
+            (ansible_local.python.installed2|d())|bool)
+        else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: nslcd__packages [[[
+#
+# List of additional APT packages to install with :command:`nslcd` package.
+nslcd__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# UNIX environment [[[
+# --------------------
+
+# .. envvar:: nslcd__user [[[
+#
+# Name of the UNIX system account which will be used to perform LDAP lookups
+# via the :command:`nslcd` service.
+nslcd__user: 'nslcd'
+
+                                                                   # ]]]
+# .. envvar:: nslcd__group [[[
+#
+# Name of the UNIX system group which will be used to perform LDAP lookups via
+# the :command:`nslcd` service.
+nslcd__group: 'nslcd'
+
+                                                                   # ]]]
+# .. envvar:: nslcd__mkhomedir_umask [[[
+#
+# Default umask for new home directories created by the ``pam_mkhomedir`` PAM
+# module.
+nslcd__mkhomedir_umask: '{{ ansible_local.core.homedir_umask
+                            if (ansible_local|d() and ansible_local.core|d() and
+                                ansible_local.core.homedir_umask|d())
+                            else "0027" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# LDAP environment [[[
+# --------------------
+
+# .. envvar:: nslcd__ldap_base_dn [[[
+#
+# The base Distinguished Name which should be used to create Distinguished
+# Names of the LDAP directory objects, defined as a YAML list. If this variable
+# is empty, :file:`/etc/nslcd.conf` configuration file will not be generated.
+nslcd__ldap_base_dn: '{{ ansible_local.ldap.base_dn
+                         if (ansible_local|d() and ansible_local.ldap|d() and
+                             ansible_local.ldap.base_dn|d())
+                         else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: nslcd__ldap_device_dn [[[
+#
+# The Distinguished Name of the current host LDAP object, defined as a YAML
+# list. It will be used as a base for the :command:`nslcd` service account LDAP
+# object. If the list is empty, the role will not create the account LDAP
+# object automatically.
+nslcd__ldap_device_dn: '{{ ansible_local.ldap.device_dn
+                         if (ansible_local|d() and ansible_local.ldap|d() and
+                             ansible_local.ldap.device_dn|d())
+                         else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: nslcd__ldap_self_rdn [[[
+#
+# The Relative Distinguished Name of the account LDAP object used by the
+# :command:`nslcd` service to access the LDAP directory.
+nslcd__ldap_self_rdn: '{{ "uid=" + nslcd__user }}'
+
+                                                                   # ]]]
+# .. envvar:: nslcd__ldap_self_object_classes [[[
+#
+# List of the LDAP object classes which will be used to create the LDAP object
+# used by the :command:`nslcd` service to access the LDAP directory.
+nslcd__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
+
+                                                                   # ]]]
+# .. envvar:: nslcd__ldap_self_attributes [[[
+#
+# YAML dictionary that defines the attributes of the LDAP object used by the
+# :command:`nslcd` service to access the LDAP directory.
+nslcd__ldap_self_attributes:
+  uid: '{{ nslcd__ldap_self_rdn.split("=")[1] }}'
+  userPassword: '{{ nslcd__ldap_bindpw }}'
+  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  description: 'Account used by the "nslcd" service to access the LDAP directory'
+
+                                                                   # ]]]
+# .. envvar:: nslcd__ldap_binddn [[[
+#
+# The Distinguished Name of the account LDAP object used by the
+# :command:`nslcd` service to bind to the LDAP directory.
+nslcd__ldap_binddn: '{{ ([ nslcd__ldap_self_rdn ] + nslcd__ldap_device_dn) | join(",") }}'
+
+                                                                   # ]]]
+# .. envvar:: nslcd__ldap_bindpw [[[
+#
+# The password stored in the account LDAP object used by the :command:`nslcd`
+# service to bind to the LDAP directory.
+nslcd__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
+                               + nslcd__ldap_binddn | to_uuid + ".password length=32") }}'
+
+                                                                   # ]]]
+# .. envvar:: nslcd__ldap_posix_urns [[[
+#
+# List of LDAP search filters which are derived from URN-like patterns defined
+# for a given host in the :ref:`debops.ldap` role.
+# See :ref:`ldap__ref_ldap_access_host` for more details.
+nslcd__ldap_posix_urns: '{{ (ansible_local.ldap.urn_patterns
+                             if (ansible_local|d() and ansible_local.ldap|d() and
+                                 ansible_local.ldap.urn_patterns|d())
+                             else [])
+                            | map("regex_replace", "^(.*)$", "(host=posix:urn:\1)")
+                            | list }}'
+
+                                                                   # ]]]
+# .. envvar:: nslcd__ldap_host_filter [[[
+#
+# The LDAP filter used in ``passwd``, ``shadow`` and ``group`` filters to
+# control the access to UNIX environment on specific hosts or domains. See the
+# ``filter_passwd_group`` parameter in :command:`nslcd` configuration for its
+# default usage.
+nslcd__ldap_host_filter: '(|
+                            (host=posix:all)
+                            (host=posix:{{ ansible_fqdn }})
+                            (host=posix:\2a.{{ ansible_domain }})
+                            {{ nslcd__ldap_posix_urns | join(" ") }}
+                          )'
+                                                                   # ]]]
+                                                                   # ]]]
+# Service configuration [[[
+# -------------------------
+
+# These variables define the contents of the :file:`/etc/nslcd.conf`
+# configuration file. See :ref:`nslcd__ref_configuration` for more details, and
+# :man:`nslcd.conf(5)` for possible configuration parameters.
+
+# .. envvar:: nslcd__default_configuration [[[
+#
+# The default :command:`nslcd` configuration options defined by the role.
+nslcd__default_configuration:
+
+  - name: 'uid'
+    comment: 'The user and group nslcd should run as.'
+    value: '{{ nslcd__user }}'
+
+  - name: 'gid'
+    value: '{{ nslcd__group }}'
+
+  - name: 'uri'
+    comment: 'The location at which the LDAP server(s) should be reachable.'
+    value: '{{ ansible_local.ldap.uri
+               if (ansible_local|d() and ansible_local.ldap|d() and
+                   ansible_local.ldap.uri|d())
+               else "" }}'
+
+  - name: 'base'
+    comment: 'The search base that will be used for all queries.'
+    value: '{{ nslcd__ldap_base_dn | join(",") }}'
+
+  - name: 'ldap_version'
+    comment: 'The LDAP protocol version to use.'
+    value: '3'
+    state: 'comment'
+
+  - name: 'binddn'
+    comment: 'The DN to bind with for normal lookups.'
+    value: '{{ nslcd__ldap_binddn }}'
+
+  - name: 'bindpw'
+    value: '{{ nslcd__ldap_bindpw }}'
+
+  - name: 'rootpwmoddn'
+    comment: 'The DN used for password modifications by root.'
+    value: 'cn=admin,dc=example,dc=com'
+    state: 'comment'
+
+  - name: 'ssl'
+    comment: 'SSL options'
+    value: '{{ "start_tls"
+               if (ansible_local|d() and ansible_local.ldap|d() and
+                   (ansible_local.ldap.start_tls|d())|bool)
+               else "on" }}'
+
+  - name: 'tls_reqcert'
+    value: 'demand'
+
+  - name: 'tls_cacertfile'
+    value: '/etc/ssl/certs/ca-certificates.crt'
+
+  - name: 'scope'
+    comment: 'The search scope.'
+    value: 'sub'
+    state: 'comment'
+
+  - name: 'nss_min_uid'
+    comment: |
+      First valid UID/GID number expected to be in the LDAP directory.
+      UIDs/GIDs lower than this value will be ignored.
+    value: '{{ ansible_local.ldap.uid_gid_min
+               if (ansible_local|d() and ansible_local.ldap|d() and
+                   ansible_local.ldap.uid_gid_min|d())
+               else "10000" }}'
+
+  - name: 'map_group_id'
+    comment: |
+      Use the 'gid' attribute instead of 'cn' as the POSIX group name.
+    option: 'map'
+    map: 'group'
+    value: 'cn gid'
+
+  - name: 'filter_passwd_group'
+    raw: |
+      filter passwd (& (objectClass=posixAccount) {{ nslcd__ldap_host_filter }} )
+      filter group  (& (objectClass=posixGroupId) {{ nslcd__ldap_host_filter }} )
+      filter shadow (& (objectClass=shadowAccount) {{ nslcd__ldap_host_filter }} )
+    comment: 'Limit which UNIX accounts and groups are present on a host'
+
+                                                                   # ]]]
+# .. envvar:: nslcd__configuration [[[
+#
+# The :command:`nslcd` configuration options defined on all hosts in the
+# Ansible inventory.
+nslcd__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: nslcd__group_configuration [[[
+#
+# The :command:`nslcd` configuration options defined on hosts in a specific
+# Ansible inventory group.
+nslcd__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: nslcd__host_configuration [[[
+#
+# The :command:`nslcd` configuration options defined on specific hosts in the
+# Ansible inventory.
+nslcd__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: nslcd__combined_configuration [[[
+#
+# The variable that combines other :command:`nslcd` configuration options and
+# is used in the role template.
+nslcd__combined_configuration: '{{ nslcd__default_configuration
+                                   + nslcd__configuration
+                                   + nslcd__group_configuration
+                                   + nslcd__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: nslcd__ldap__dependent_tasks [[[
+#
+# Configuration for the :ref:`debops.ldap` Ansible role.
+nslcd__ldap__dependent_tasks:
+
+  - name: 'Create nslcd account for {{ nslcd__ldap_device_dn | join(",") }}'
+    dn: '{{ nslcd__ldap_binddn }}'
+    objectClass: '{{ nslcd__ldap_self_object_classes }}'
+    attributes: '{{ nslcd__ldap_self_attributes }}'
+    no_log: True
+    state: '{{ "present" if nslcd__ldap_device_dn|d() else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: nslcd__nsswitch__dependent_services [[[
+#
+# Configuration for the :ref:`debops.nsswitch` Ansible role.
+nslcd__nsswitch__dependent_services: [ 'ldap' ]
+                                                                   # ]]]
+                                                                   # ]]]

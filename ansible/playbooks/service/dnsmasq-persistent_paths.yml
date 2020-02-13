@@ -1,6 +1,8 @@
 ---
 
 - name: Configure dnsmasq and ensure persistence
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_dnsmasq_persistent_paths' ]
   become: True
 
@@ -8,29 +10,33 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: debops.dnsmasq/env
+    - import_role:
+        name: 'dnsmasq'
+        tasks_from: 'main_env'
       tags: [ 'role::dnsmasq', 'role::ferm', 'role::tcpwrappers' ]
 
-    - role: debops.resolvconf
+  roles:
+
+    - role: resolvconf
       tags: [ 'role::resolvconf', 'skip::resolvconf' ]
       resolvconf__dependent_services:
         - 'dnsmasq'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ dnsmasq__ferm__dependent_rules }}'
 
-    - role: debops.tcpwrappers
+    - role: tcpwrappers
       tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
       tcpwrappers__dependent_allow:
         - '{{ dnsmasq__env_tcpwrappers__dependent_allow }}'
 
-    - role: debops.dnsmasq
+    - role: dnsmasq
       tags: [ 'role::dnsmasq', 'skip::dnsmasq' ]
 
-    - role: debops.persistent_paths
+    - role: persistent_paths
       tags: [ 'role::persistent_paths', 'skip::persistent_paths' ]
       persistent_paths__dependent_paths: '{{ dnsmasq__persistent_paths__dependent_paths }}'

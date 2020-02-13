@@ -1,6 +1,8 @@
 ---
 
 - name: Manage local users and groups
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_all_hosts', 'debops_service_system_users' ]
   become: True
 
@@ -10,5 +12,8 @@
 
   roles:
 
-    - role: debops.system_users
+    - role: libuser
+      tags: [ 'role::libuser', 'skip::libuser' ]
+
+    - role: system_users
       tags: [ 'role::system_users', 'skip::system_users' ]

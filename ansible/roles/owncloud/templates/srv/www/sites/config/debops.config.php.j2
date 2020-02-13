@@ -1,0 +1,28 @@
+{# vim: foldmarker=[[[,]]]:foldmethod=marker
+#}
+<?php
+/* {{ ansible_managed }} */
+
+{% macro get_value(item) %}{# [[[ #}
+{% set filtered_item = item|to_yaml|from_yaml %}{# Copy dict #}
+{% if item is mapping %}
+{%   for k, v in item.items() if v == omit %}
+{%     set _ = filtered_item.pop(k, None) %}
+{%   endfor %}
+{% endif %}
+{{ filtered_item | to_yaml }}
+{% endmacro %}{# ]]]
+#}
+{% set owncloud__tpl_active_config_dict = {} %}
+{% for config_key, config_item in owncloud__combined_config.items() %}
+{%   if config_item is mapping and "state" in config_item and config_item.state and "value" in config_item %}
+{%     if config_item.state == "present" and config_item.value %}
+{%       set _ = owncloud__tpl_active_config_dict.update({config_key: (get_value(config_item.value) | from_yaml) }) %}
+{%     endif %}
+{%   elif config_item != omit %}
+{#     Assume it is not a control structure for Ansible but the raw value for ownCloud #}
+{%     set _ = owncloud__tpl_active_config_dict.update({config_key: config_item}) %}
+{%   endif %}
+{% endfor %}
+$CONFIG = json_decode('{{ owncloud__tpl_active_config_dict | to_nice_json }}', true);
+?>

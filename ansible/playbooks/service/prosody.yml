@@ -1,6 +1,8 @@
 ---
 
 - name: Manage Prosody
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_prosody' ]
   become: True
 
@@ -10,10 +12,10 @@
 
   roles:
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ prosody__ferm__dependent_rules }}'
 
-    - role: debops.prosody
+    - role: prosody
       tags: [ 'role::prosody', 'skip::prosody' ]

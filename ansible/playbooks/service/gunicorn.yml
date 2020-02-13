@@ -1,6 +1,8 @@
 ---
 
 - name: Manage Green Unicorn service
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_gunicorn' ]
   become: True
 
@@ -10,22 +12,22 @@
 
   roles:
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ gunicorn__apt_preferences__dependent_list }}'
 
-    - role: debops.logrotate
+    - role: logrotate
       tags: [ 'role::logrotate', 'skip::logrotate' ]
       logrotate__dependent_config:
         - '{{ gunicorn__logrotate__dependent_config }}'
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python', 'role::gunicorn' ]
       python__dependent_packages3:
         - '{{ gunicorn__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ gunicorn__python__dependent_packages2 }}'
 
-    - role: debops.gunicorn
+    - role: gunicorn
       tags: [ 'role::gunicorn', 'skip::gunicorn' ]

@@ -1,0 +1,405 @@
+---
+
+- import_role:
+    name: 'ansible_plugins'
+
+- import_role:
+    name: 'secret'
+
+- name: Gather local Ansible user details
+  script: 'script/getent_passwd.py{{ "2" if (ansible_python_version is version_compare("3.5", "<"))
+                                     else "3" }} {{ system_users__self_name }}'
+  register: system_users__register_passwd
+  delegate_to: 'localhost'
+  become: False
+  changed_when: False
+  check_mode: False
+  run_once: True
+
+- name: Remember local Ansible user details
+  set_fact:
+    system_users__fact_self_comment: '{{ (system_users__register_passwd.stdout|from_json)[system_users__self_name][3] }}'
+    system_users__fact_self_shell: '{{ (system_users__register_passwd.stdout|from_json)[system_users__self_name][5] }}'
+
+- name: Ensure that required packages are installed
+  package:
+    name: '{{ q("flattened", (system_users__base_packages
+                              + system_users__shell_packages
+                              + system_users__packages)) }}'
+    state: 'present'
+  register: system_users__register_packages
+  until: system_users__register_packages is succeeded
+  when: system_users__enabled|bool
+
+- name: Create UNIX groups for system users
+  group:
+    name:   '{{ (item.prefix | d(system_users__prefix)) + (item.group | d(item.name)) }}'
+    system: '{{ item.system | d(False if (item.user|d(True))|bool else True) }}'
+    gid:    '{{ item.gid    | d(omit) }}'
+    state:  'present'
+    local: '{{ True if (item.user|d(True))|bool else False }}'
+  loop: '{{ system_users__combined_accounts | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": (item.prefix | d(system_users__prefix)) + (item.group | d(item.name)),
+                "state": item.state|d("present")} }}'
+  when: (system_users__enabled|bool and item.name|d() and item.name != 'root' and
+         item.state|d('present') not in [ 'absent', 'ignore' ] and
+         (item.private_group|d(True))|bool)
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
+
+- name: Gather information about existing remote users
+  getent:
+    database: 'passwd'
+
+- name: Manage UNIX accounts for system users
+  user:
+    name:               '{{ (item.prefix | d(system_users__prefix)) + item.name }}'
+    group:              '{{ ((item.prefix | d(system_users__prefix)) + (item.group | d(item.name))) }}'
+    home:               '{{ item.home
+                            | d(((getent_passwd[(item.prefix | d(system_users__prefix)) + item.name][4])
+                                 if (getent_passwd[(item.prefix | d(system_users__prefix)) + item.name]|d())
+                                 else (system_users__home_root + "/" + ((item.prefix | d(system_users__prefix)) + item.name)))
+                                if ((item.create_home|d(True))|bool)
+                                else omit) }}'
+    uid:                '{{ item.uid                | d(omit) }}'
+    state:              '{{ item.state              | d("present") }}'
+    comment:            '{{ item.comment            | d(omit) }}'
+    password:           '{{ item.password           | d("*") }}'
+    update_password:    '{{ item.update_password    | d("on_create") }}'
+    system:             '{{ item.system             | d(omit) }}'
+    shell:              '{{ item.shell              | d(system_users__default_shell
+                                                        if system_users__default_shell|d()
+                                                        else omit) }}'
+    createhome:         '{{ item.createhome         | d(omit) }}'
+    move_home:          '{{ item.move_home          | d(omit) }}'
+    skeleton:           '{{ item.skeleton           | d(omit) }}'
+    expires:            '{{ item.expires            | d(omit) }}'
+    remove:             '{{ item.remove             | d(omit) }}'
+    force:              '{{ item.force              | d(omit) }}'
+    non_unique:         '{{ item.non_unique         | d(omit) }}'
+    generate_ssh_key:   '{{ item.generate_ssh_key   | d(omit) }}'
+    ssh_key_bits:       '{{ item.ssh_key_bits       | d(omit) }}'
+    ssh_key_comment:    '{{ item.ssh_key_comment    | d(omit) }}'
+    ssh_key_file:       '{{ item.ssh_key_file       | d(omit) }}'
+    ssh_key_passphrase: '{{ item.ssh_key_passphrase | d(omit) }}'
+    ssh_key_type:       '{{ item.ssh_key_type       | d(omit) }}'
+    local:              '{{ item.local              | d(True) }}'
+  loop: '{{ system_users__combined_accounts | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
+                "state": item.state|d("present"), "gecos": item.comment|d()} }}'
+  when: (system_users__enabled|bool and item.name|d() and item.name != 'root' and
+         item.state|d('present') not in [ 'ignore' ] and (item.user|d(True))|bool)
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
+
+- name: Gather information about existing remote groups
+  getent:
+    database: 'group'
+
+  # libuser does not support supplemental groups
+  # Ref: https://github.com/ansible/ansible/issues/48722
+- name: Manage additional UNIX groups for system users
+  user:
+    name:   '{{ (item.prefix | d(system_users__prefix)) + item.name }}'
+    groups: '{{ (( (([ item.groups ]
+                     if (item.groups is string)
+                     else item.groups)
+                    if (item.groups is defined)
+                    else [])
+                    + (system_users__admin_groups
+                       if ((item.admin|d())|bool)
+                       else []) )
+                   | intersect(getent_group.keys()) )
+                if (item.groups is defined or (item.admin|d())|bool)
+                else omit }}'
+    append: '{{ item.append | d(True) }}'
+    state:  '{{ item.state  | d("present") }}'
+  loop: '{{ system_users__combined_accounts | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
+                "state": item.state|d("present"), "gecos": item.comment|d(),
+                "groups": item.groups|d()} }}'
+  when: (system_users__enabled|bool and item.name|d() and item.name != 'root' and
+         item.state|d('present') not in [ 'ignore' ] and
+         (item.groups|d() or (item.admin|d())|bool) and
+         (item.user|d(True))|bool)
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
+
+- name: Manage system users home directories
+  file:
+    path: '{{ item.home
+              | d(((getent_passwd[(item.prefix | d(system_users__prefix)) + item.name][4])
+                   if (getent_passwd[(item.prefix | d(system_users__prefix)) + item.name]|d())
+                   else (system_users__home_root + "/" + ((item.prefix | d(system_users__prefix)) + item.name)))
+                  if ((item.create_home|d(True))|bool)
+                  else omit) }}'
+    state: 'directory'
+    owner: '{{ item.home_owner | d(omit) }}'
+    group: '{{ item.home_group | d(omit) }}'
+    mode:  '{{ item.home_mode  | d(system_users__default_home_mode if (item.local|d(True))|bool else omit) }}'
+  loop: '{{ system_users__combined_accounts | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
+                "state": item.state|d("present"),
+                "home": (item.home | d(((getent_passwd[(item.prefix | d(system_users__prefix)) + item.name][4])
+                                        if (getent_passwd[(item.prefix | d(system_users__prefix)) + item.name]|d())
+                                        else (system_users__home_root + "/" + ((item.prefix | d(system_users__prefix)) + item.name)))
+                                       if ((item.create_home|d(True))|bool)
+                                       else ""))} }}'
+  when: (system_users__enabled|bool and item.name|d() and item.name != 'root' and
+         item.state|d('present') not in [ 'absent', 'ignore' ] and (item.create_home|d(True))|bool and
+         (item.home_owner|d() or item.home_group|d() or item.home_mode|d() or (item.local|d(True))|bool) and
+         (item.user|d(True))|bool)
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
+
+- name: Manage system users home directory ACLs
+  acl:
+    path:        '{{ item.0.home
+                     | d(((getent_passwd[(item.0.prefix | d(system_users__prefix)) + item.0.name][4])
+                          if (getent_passwd[(item.0.prefix | d(system_users__prefix)) + item.0.name]|d())
+                          else (system_users__home_root + "/" + ((item.0.prefix | d(system_users__prefix)) + item.0.name)))
+                         if ((item.0.create_home|d(True))|bool)
+                         else omit) }}'
+    default:     '{{ item.1.default     | d(omit) }}'
+    entity:      '{{ item.1.entity      | d(omit) }}'
+    entry:       '{{ item.1.entry       | d(omit) }}'
+    etype:       '{{ item.1.etype       | d(omit) }}'
+    permissions: '{{ item.1.permissions | d(omit) }}'
+    follow:      '{{ item.1.follow      | d(omit) }}'
+    recursive:   '{{ item.1.recursive   | d(omit) }}'
+    state:       '{{ item.1.state       | d("present") }}'
+  loop: '{{ system_users__combined_accounts | parse_kv_items
+            | selectattr("home_acl", "defined") | list
+            | subelements("home_acl") }}'
+  loop_control:
+    label: '{{ {"name": (item.0.prefix | d(system_users__prefix)) + item.0.name,
+                "state": item.0.state | d("present"), "home_acl": item.1} }}'
+  when: (system_users__enabled|bool and system_users__home_acl_enabled|bool and
+         item.0.name|d() and item.0.name != 'root' and
+         item.0.state|d('present') not in [ 'absent', 'ignore' ] and (item.0.create_home|d(True))|bool and
+         item.0.home_acl|d() and (item.user|d(True))|bool)
+  no_log: '{{ item.0.no_log | d(True if item.0.password|d() else False) }}'
+  tags: [ 'role::system_users:home_acl', 'skip::system_users:home_acl', 'skip::check' ]
+
+- name: Allow specified system UNIX accounts to linger when not logged in
+  command: loginctl enable-linger {{ (item.prefix | d(system_users__prefix)) + item.name }}
+  args:
+    creates: '/var/lib/systemd/linger/{{ (item.prefix | d(system_users__prefix)) + item.name }}'
+  loop: '{{ system_users__combined_accounts | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
+                "state": item.state | d("present"), "linger": item.linger|d(False)} }}'
+  when: (system_users__enabled|bool and ansible_service_mgr == 'systemd' and
+         item.name|d() and item.name != 'root' and
+         item.state|d('present') not in [ 'absent', 'ignore' ] and
+         item.linger is defined and item.linger|bool and (item.user|d(True))|bool)
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
+
+- name: Disallow specified UNIX accounts to linger when not logged in
+  command: loginctl disable-linger {{ (item.prefix | d(system_users__prefix)) + item.name }}
+  args:
+    removes: '/var/lib/systemd/linger/{{ (item.prefix | d(system_users__prefix)) + item.name }}'
+  loop: '{{ system_users__combined_accounts | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
+                "state": item.state | d("present"), "linger": item.linger|d(False)} }}'
+  when: (system_users__enabled|bool and ansible_service_mgr == 'systemd' and
+         item.name|d() and item.name != 'root' and
+         item.state|d('present') not in [ 'absent', 'ignore' ] and
+         item.linger is defined and not item.linger|bool and (item.user|d(True))|bool)
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
+
+- name: Configure SSH authorized keys for system users
+  authorized_key:
+    key: "{{ (item.sshkeys if item.sshkeys is string else '\n'.join(item.sshkeys)) | string }}"
+    state: 'present'
+    user: '{{ (item.prefix | d(system_users__prefix)) + item.name }}'
+    exclusive: '{{ item.sshkeys_exclusive | d(omit) }}'
+  loop: '{{ system_users__combined_accounts | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
+                "state": item.state | d("present"), "sshkeys": item.sshkeys|d()} }}'
+  when: (system_users__enabled|bool and item.name|d() and item.name != 'root' and
+         item.state|d('present') not in [ 'absent', 'ignore' ] and (item.create_home|d(True))|bool and
+         item.sshkeys|d() and item.sshkeys_state|d('present') != 'absent' and (item.user|d(True))|bool)
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
+  tags: [ 'role::system_users:authorized_keys', 'skip::system_users:authorized_keys', 'skip::check' ]
+
+- name: Remove SSH authorized keys from system user accounts if requested
+  file:
+    path: '~{{ (item.prefix | d(system_users__prefix)) + item.name }}/.ssh/authorized_keys'
+    state: 'absent'
+  loop: '{{ system_users__combined_accounts | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
+                "state": item.state | d("present"),
+                "sshkeys_state": item.sshkeys_state|d("present")} }}'
+  when: (system_users__enabled|bool and item.name|d() and item.name != 'root' and
+         item.state|d('present') not in [ 'absent', 'ignore' ] and (item.create_home|d(True))|bool and
+         item.sshkeys|d() and item.sshkeys_state|d('present') == 'absent' and (item.user|d(True))|bool)
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
+
+- name: Configure system user mail forwarding
+  lineinfile:
+    dest: '~/.forward'
+    regexp: "{{ '^' + (item.forward if item.forward is string else item.forward[0]) }}"
+    line: '{{ item.forward if item.forward is string else item.forward | join(", ") }}'
+    state: '{{ item.forward_state | d("present") }}'
+    create: True
+  become: True
+  become_user: '{{ (item.prefix | d(system_users__prefix)) + item.name }}'
+  loop: '{{ system_users__combined_accounts | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
+                "state": item.state | d("present"),
+                "forward": item.forward|d()} }}'
+  when: (system_users__enabled|bool and item.name|d() and item.name != 'root' and
+         item.state|d('present') not in [ 'absent', 'ignore' ] and
+         item.create_home|d(True) and item.forward|d() and (item.user|d(True))|bool)
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
+  tags: [ 'role::system_users:forward', 'skip::system_users:forward', 'skip::check' ]
+
+- name: Manage system users dotfiles
+  shell: |
+    if ! [ -e "$HOME/.yadm/repo.git" ] ; then
+        yadm clone --bootstrap "{{ item.dotfiles_repo | d(system_users__dotfiles_repo) }}"
+    else
+        yadm pull
+    fi
+  loop: '{{ system_users__combined_accounts | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
+                "state": item.state|d("present"),
+                "dotfiles": (item.dotfiles | d(item.dotfiles_enabled | d(system_users__dotfiles_enabled))),
+                "dotfiles_repo": ((item.dotfiles_repo | d(system_users__dotfiles_repo))
+                                  if ((item.dotfiles|d(item.dotfiles_enabled|d(system_users__dotfiles_enabled)))|bool)
+                                  else "")} }}'
+  become: True
+  become_user: '{{ (item.prefix | d(system_users__prefix)) + item.name }}'
+  check_mode: False
+  register: system_users__register_dotfiles
+  changed_when: ('Already up to date.' not in system_users__register_dotfiles.stdout_lines|regex_replace('-', ' '))
+  when: (system_users__enabled|bool and item.name|d() and item.name != 'root' and
+         item.state|d('present') not in [ 'absent', 'ignore' ] and (item.create_home|d(True))|bool and
+         (ansible_local|d() and ansible_local.yadm|d() and (ansible_local.yadm.installed|d())|bool) and
+         (item.dotfiles | d(item.dotfiles_enabled | d(system_users__dotfiles_enabled))) | bool and
+         (item.dotfiles_repo | d(system_users__dotfiles_repo)) and (item.user|d(True))|bool)
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
+  tags: [ 'role::system_users:dotfiles', 'skip::system_users:dotfiles', 'skip::check' ]
+
+- name: Manage system user resource directories
+  file:
+    path:    '{{ "~" + (item.0.prefix | d(system_users__prefix)) + item.0.name + "/" + (item.1.path | d(item.1.dest | d(item.1))) }}'
+    src:     '{{ item.1.src     | d(omit) }}'
+    state:   '{{ item.1.state   | d("directory") }}'
+    owner:   '{{ item.1.owner   | d((item.0.prefix | d(system_users__prefix)) + item.0.name) }}'
+    group:   '{{ item.1.group   | d((item.0.prefix | d(system_users__prefix)) + (item.0.group | d(item.0.name))) }}'
+    mode:    '{{ item.1.mode    | d(omit) }}'
+    force:   '{{ item.1.force   | d(omit) }}'
+    recurse: '{{ item.1.recurse | d(omit) }}'
+  loop: '{{ system_users__combined_accounts | parse_kv_items
+            | selectattr("resources", "defined") | list
+            | subelements("resources") }}'
+  loop_control:
+    label: '{{ {"name": ((item.0.prefix | d(system_users__prefix)) + item.0.name),
+                "state": item.0.state | d("present"), "resources": item.1} }}'
+  when: (system_users__enabled|bool and
+         item.0.name|d() and item.0.name != 'root' and
+         item.0.state|d('present') not in [ 'absent', 'ignore' ] and
+         item.0.create_home|d(True) and item.0.resources|d() and (item.0.user|d(True))|bool and
+         item.1.state|d('directory') in [ 'directory', 'link', 'touch' ] and
+         item.1.content is undefined)
+  no_log: '{{ item.0.no_log | d(True if item.0.password|d() else False) }}'
+
+- name: Manage system user resource parent directories
+  file:
+    path:    '{{ ("~" + (item.0.prefix | d(system_users__prefix)) + item.0.name + "/" + (item.1.path | d(item.1.dest))) | dirname }}'
+    state:   'directory'
+    owner:   '{{ item.1.parent_owner   | d((item.0.prefix | d(system_users__prefix)) + item.0.name) }}'
+    group:   '{{ item.1.parent_group   | d((item.0.prefix | d(system_users__prefix)) + (item.0.group | d(item.0.name))) }}'
+    mode:    '{{ item.1.parent_mode    | d(omit) }}'
+    force:   '{{ item.1.force          | d(omit) }}'
+    recurse: '{{ item.1.parent_recurse | d(omit) }}'
+  loop: '{{ system_users__combined_accounts | parse_kv_items
+            | selectattr("resources", "defined") | list
+            | subelements("resources") }}'
+  loop_control:
+    label: '{{ {"name": ((item.0.prefix | d(system_users__prefix)) + item.0.name),
+                "state": item.0.state | d("present"), "resources": item.1} }}'
+  when: (system_users__enabled|bool and
+         item.0.name|d() and item.0.name != 'root' and
+         item.0.state|d('present') not in [ 'absent', 'ignore' ] and
+         item.0.create_home|d(True) and item.0.resources|d() and (item.0.user|d(True))|bool and
+         item.1.state|d('directory') in [ 'present', 'file' ])
+  no_log: '{{ item.0.no_log | d(True if item.0.password|d() else False) }}'
+
+- name: Manage system user resource files
+  copy:
+    dest:    '{{ "~" + (item.0.prefix | d(system_users__prefix)) + item.0.name + "/" + (item.1.path | d(item.1.dest)) }}'
+    src:     '{{ item.1.src     | d(omit) }}'
+    content: '{{ item.1.content | d(omit) }}'
+    owner:   '{{ item.1.owner   | d((item.0.prefix | d(system_users__prefix)) + item.0.name) }}'
+    group:   '{{ item.1.group   | d((item.0.prefix | d(system_users__prefix)) + (item.0.group | d(item.0.name))) }}'
+    mode:    '{{ item.1.mode    | d(omit) }}'
+    force:   '{{ item.1.force   | d(omit) }}'
+  loop: '{{ system_users__combined_accounts | parse_kv_items
+            | selectattr("resources", "defined") | list
+            | subelements("resources") }}'
+  loop_control:
+    label: '{{ {"name": ((item.0.prefix | d(system_users__prefix)) + item.0.name),
+                "state": item.0.state | d("present"), "resources": item.1} }}'
+  when: (system_users__enabled|bool and
+         item.0.name|d() and item.0.name != 'root' and
+         item.0.state|d('present') not in [ 'absent', 'ignore' ] and
+         item.0.create_home|d(True) and item.0.resources|d() and (item.0.user|d(True))|bool and
+         item.1.state|d('directory') in [ 'present', 'file' ] and
+         (item.1.dest|d() or item.1.path|d()) and (item.1.src|d() or item.1.content|d()))
+  no_log: '{{ item.0.no_log | d(True if item.0.password|d() else False) }}'
+
+- name: Remove system user resources if requested
+  file:
+    path:  '{{ "~" + (item.0.prefix | d(system_users__prefix)) + item.0.name + "/" + (item.1.path | d(item.1.dest | d(item.1))) }}'
+    state: 'absent'
+  loop: '{{ system_users__combined_accounts | parse_kv_items
+            | selectattr("resources", "defined") | list
+            | subelements("resources") }}'
+  loop_control:
+    label: '{{ {"name": ((item.0.prefix | d(system_users__prefix)) + item.0.name),
+                "state": item.0.state | d("present"), "resources": item.1} }}'
+  when: (system_users__enabled|bool and
+         item.0.name|d() and item.0.name != 'root' and
+         item.0.state|d('present') not in [ 'absent', 'ignore' ] and
+         item.0.create_home|d(True) and item.0.resources|d() and (item.0.user|d(True))|bool and
+         item.1.state|d('directory') == 'absent')
+  no_log: '{{ item.0.no_log | d(True if item.0.password|d() else False) }}'
+
+- name: Remove user groups if requested
+  group:
+    name:  '{{ (item.prefix | d(system_users__prefix)) + (item.group | d(item.name)) }}'
+    state: 'absent'
+    local: '{{ item.local | d(True if (item.user|d(True))|bool else False) }}'
+  loop: '{{ system_users__combined_accounts | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
+                "state": item.state | d("present")} }}'
+  when: (system_users__enabled|bool and item.name|d() and item.name != 'root' and
+         item.state|d('present') == 'absent' and
+         (item.private_group|d(True))|bool)
+  no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save system users local facts
+  template:
+    src: 'etc/ansible/facts.d/system_users.fact.j2'
+    dest: '/etc/ansible/facts.d/system_users.fact'
+    mode: '0755'
+  register: system_users__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: system_users__register_facts is changed

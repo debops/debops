@@ -1,0 +1,208 @@
+# {{ ansible_managed }}
+
+{% set unbound__tpl_ipv4_revdns_zones = [] %}
+{% set unbound__tpl_local_zones = [] %}
+{% set unbound__tpl_nameservers = [] %}
+{% if item.revdns|d() %}
+{%   for entry in ([ item.revdns ] if item.revdns is string else item.revdns) | ipv4('subnet') %}
+{#
+ # This currently doesn't work properly for subnet sizes < 16
+ # due to netaddr library always returning /24 revdns delegation
+#}
+{%     if (entry | ipaddr('prefix') | int <= 15) %}
+{%       set subnet_prefix = '16' %}
+{%     elif (entry | ipaddr('prefix') | int <= 24) %}
+{%       set subnet_prefix = '24' %}
+{%     else %}
+{%       set subnet_prefix = '24' %}
+{%     endif %}
+{%     for i in range(0, (entry | ipsubnet(subnet_prefix)|int)) %}
+{%       set _ = unbound__tpl_ipv4_revdns_zones.append((entry | ipsubnet(subnet_prefix, i) | ipaddr('revdns')).split('.')[1:-1] | join('.')) %}
+{%     endfor %}
+{%   endfor %}
+{%   set unbound__tpl_local_zones = item.revdns | ipaddr("private") %}
+{% endif %}
+{% if item.nameserver|d() %}
+{%   for entry in ([ item.nameserver ] if item.nameserver is string else item.nameserver) %}
+{%     set _ = unbound__tpl_nameservers.append(entry) %}
+{%   endfor %}
+{% endif %}
+{% if item.nameservers|d() %}
+{%   for entry in ([ item.nameservers ] if item.nameservers is string else item.nameservers) %}
+{%     set _ = unbound__tpl_nameservers.append(entry) %}
+{%   endfor %}
+{% endif %}
+{% macro print_private_domain(config) %}
+{%   set real_zone_name = (config.zone | d(config.name)) %}
+{%   set zone_name = (real_zone_name + ('.' if not real_zone_name.endswith('.') else '')) %}
+    private-domain: "{{ zone_name }}"
+{% endmacro %}
+{% macro print_domain_insecure(config) %}
+{%   set real_zone_name = (config.zone | d(config.name)) %}
+{%   set zone_name = (real_zone_name + ('.' if not real_zone_name.endswith('.') else '')) %}
+    domain-insecure: "{{ zone_name }}"
+{% endmacro %}
+{% macro print_local_zone(config) %}
+{%   set real_zone_name = (config.zone | d(config.name)) %}
+{%   set zone_name = (real_zone_name + ('.' if not real_zone_name.endswith('.') else '')) %}
+    local-zone: "{{ zone_name }}" {{ item.local_zone_type | d('transparent') }}
+{% endmacro %}
+{% macro print_zone(config) %}
+{%   set real_zone_name = (config.zone | d(config.name)) %}
+{%   set zone_name = (real_zone_name + ('.' if not real_zone_name.endswith('.') else '')) %}
+{%   if config.type|d('forward') == 'local' %}
+server:
+    local-zone: "{{ (zone_name | regex_replace('\n$','') | regex_replace('\.$','')) + '.' }}" {{ config.local_zone_type | d('static') }}
+{%     if config.local_zone_data|d() %}
+{%       for record in ([ config.local_zone_data ] if (config.local_zone_data is string) else config.local_zone_data) %}
+    local-data: "{{ ((zone_name | regex_replace('\n$','') | regex_replace('\.$','')) + '. ') + record | regex_replace('\n$','') }}"
+{%       endfor %}
+{%     endif %}
+{%   else %}
+{{ config.type | d('forward') }}-zone:
+    name: "{{ zone_name }}"
+{%   endif %}
+{%   if unbound__tpl_nameservers %}
+{%     for entry in unbound__tpl_nameservers %}
+    {{ config.type | d('forward') }}-addr: {{ entry }}
+{%     endfor %}
+{%   endif %}
+{%   if config.options|d() %}
+{%     for element in config.options %}
+{%       set element_name = (element.option | d(element.name)) %}
+{%       set element_state = (element.state | d('present')) %}
+{%       if element.value is defined %}
+{%         if element.value | bool and element.value is not iterable %}
+{%           if element.value | int and element.value | string != 'True' %}
+{%             set element_value = element.value %}
+{%           else %}
+{%             set element_value = 'yes' %}
+{%           endif %}
+{%         elif not element.value | bool and element.value is not iterable %}
+{%           if element.value is not none %}
+{%             if element.value | int or element.value | string == '0' %}
+{%               set element_value = element.value %}
+{%             else %}
+{%               set element_value = 'no' %}
+{%             endif %}
+{%           endif %}
+{%         elif element.value is not string and element.value is not mapping and element.value is iterable %}
+{%           set element_value = [] %}
+{%           for option in element.value %}
+{%             if option.state|d('present') != 'absent' %}
+{%               set _ = element_value.append(option.name) %}
+{%             endif %}
+{%           endfor %}
+{%         else %}
+{%           set element_value = element.value %}
+{%         endif %}
+{%       else %}
+{%         set element_value = [] %}
+{%       endif %}
+{%       if element_state != 'absent' %}
+{%         if element_value is not string and element_value is not mapping and element_value is iterable %}
+{%           for thing in element_value %}
+{{ '    {} {}'.format(element_name + ':', thing) }}
+{%           endfor %}
+{%         else %}
+{{ '    {} {}'.format(element_name + ':', element_value) }}
+{%         endif %}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{%   if config.server_options|d() %}
+
+server:
+{%     for element in config.server_options %}
+{%       set element_name = (element.option | d(element.name)) %}
+{%       set element_state = (element.state | d('present')) %}
+{%       if element.value is defined %}
+{%         if element.value | bool and element.value is not iterable %}
+{%           if element.value | int and element.value | string != 'True' %}
+{%             set element_value = element.value %}
+{%           else %}
+{%             set element_value = 'yes' %}
+{%           endif %}
+{%         elif not element.value | bool and element.value is not iterable %}
+{%           if element.value is not none %}
+{%             if element.value | int or element.value | string == '0' %}
+{%               set element_value = element.value %}
+{%             else %}
+{%               set element_value = 'no' %}
+{%             endif %}
+{%           endif %}
+{%         elif element.value is not string and element.value is not mapping and element.value is iterable %}
+{%           set element_value = [] %}
+{%           for option in element.value %}
+{%             if option.state|d('present') != 'absent' %}
+{%               set _ = element_value.append(option.name) %}
+{%             endif %}
+{%           endfor %}
+{%         else %}
+{%           set element_value = element.value %}
+{%         endif %}
+{%       else %}
+{%         set element_value = [] %}
+{%       endif %}
+{%       if element_state != 'absent' %}
+{%         if element_value is not string and element_value is not mapping and element_value is iterable %}
+{%           for thing in element_value %}
+{{ '    {} {}'.format(element_name + ':', thing) }}
+{%           endfor %}
+{%         else %}
+{{ '    {} {}'.format(element_name + ':', element_value) }}
+{%         endif %}
+{%       endif %}
+{%     endfor %}
+{%   endif %}
+{% endmacro %}
+{% if item.comment|d() %}
+{{ item.comment | regex_replace('\n$','') | comment(prefix='', postfix='') }}
+{% endif %}
+{% if unbound__tpl_local_zones %}
+{%   if (item.private_domain | d(True)) | bool %}
+server:
+{{ print_private_domain(item) -}}
+{%     if unbound__tpl_ipv4_revdns_zones %}
+{%       for zone in unbound__tpl_ipv4_revdns_zones %}
+{%         set mangled_zone = item.copy() %}
+{%         set _ = mangled_zone.update({'zone': zone}) %}
+{{ print_private_domain(mangled_zone) -}}
+{%       endfor %}
+{%     endif %}
+
+{%   endif %}
+{%   if (item.domain_insecure | d(True)) | bool %}
+server:
+{{ print_domain_insecure(item) -}}
+{%     if unbound__tpl_ipv4_revdns_zones %}
+{%       for zone in unbound__tpl_ipv4_revdns_zones %}
+{%         set mangled_zone = item.copy() %}
+{%         set _ = mangled_zone.update({'zone': zone}) %}
+{{ print_domain_insecure(mangled_zone) -}}
+{%       endfor %}
+{%     endif %}
+
+{%   endif %}
+{%   if (item.local_zone | d(True)) | bool %}
+server:
+{{ print_local_zone(item) -}}
+{%     if unbound__tpl_ipv4_revdns_zones %}
+{%       for zone in unbound__tpl_ipv4_revdns_zones %}
+{%         set mangled_zone = item.copy() %}
+{%         set _ = mangled_zone.update({'zone': zone}) %}
+{{ print_local_zone(mangled_zone) -}}
+{%       endfor %}
+{%     endif %}
+
+{%   endif %}
+{% endif %}
+{{ print_zone(item) -}}
+{% if unbound__tpl_ipv4_revdns_zones %}
+{%   for zone in unbound__tpl_ipv4_revdns_zones %}
+{%     set mangled_zone = item.copy() %}
+{%     set _ = mangled_zone.update({'zone': zone}) %}
+
+{{ print_zone(mangled_zone) -}}
+{%   endfor %}
+{% endif %}

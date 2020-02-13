@@ -1,0 +1,296 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _resolvconf__ref_defaults:
+
+# debops.resolvconf default variables
+# ===================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Role configuration [[[
+# ----------------------
+
+# .. envvar:: resolvconf__enabled [[[
+#
+# Enable or disable the :ref:`debops.resolvconf` Ansible role configuration.
+# This can be used to disable the role without removing it from the
+# :file:`common.yml` playbook.
+resolvconf__enabled: '{{ ansible_local.resolvconf.installed
+                         if (ansible_local|d() and ansible_local.resolvconf|d() and
+                             ansible_local.resolvconf.installed is defined)
+                         else (True
+                               if (ansible_interfaces | count > 2 or
+                                   resolvconf__combined_services|d())
+                               else False) }}'
+
+                                                                   # ]]]
+# .. envvar:: resolvconf__deploy_state [[[
+#
+# If ``present``, the role will apply its own DNS resolver configuration. If
+# ``absent``, the role will restore the original configuration from the
+# ``resolvconf`` package.
+resolvconf__deploy_state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: resolvconf__base_packages [[[
+#
+# List of APT packages to install for ``resolvconf`` support.
+resolvconf__base_packages: [ 'resolvconf' ]
+
+                                                                   # ]]]
+# .. envvar:: resolvconf__packages [[[
+#
+# List of additional APT packages to install with ``resolvconf``.
+resolvconf__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Static DNS configuration [[[
+# ----------------------------
+
+# .. envvar:: resolvconf__static_enabled [[[
+#
+# Enable or disable support for static DNS configuration.
+resolvconf__static_enabled: False
+
+                                                                   # ]]]
+# .. envvar:: resolvconf__static_filename [[[
+#
+# Name of the file in the :file:`/run/resolvconf/interface/` directory which
+# contains static DNS configuration. The role will not clean up old files if
+# this name is changed when the configuration is already applied on the host.
+#
+# You can change the interface name "prefix" to affect the order of the search
+# domains in the generated :file:`/etc/resolv.conf` configuration file.
+resolvconf__static_filename: 'lo.static'
+
+                                                                   # ]]]
+# .. envvar:: resolvconf__static_content [[[
+#
+# String or YAML text block with static :man:`resolv.conf(5)` configuration
+# which should be merged into the generated :file:`/etc/resolv.conf`
+# configuration file.
+resolvconf__static_content: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Network interface order [[[
+# ---------------------------
+
+# These variables define the order of the network interfaces in the
+# :file:`/etc/resolvconf/interface-order` configuration file. See
+# :ref:`resolvconf__ref_interface_order` for more details.
+
+# .. envvar:: resolvconf__original_interface_order [[[
+#
+# The original contents of the :file:`/etc/resolvconf/interface-order`
+# configuration file that come with the APT package.
+resolvconf__original_interface_order:
+
+  - name: 'loopback-interface'
+    value: |
+      lo.inet6
+      lo.inet
+      lo.@(dnsmasq|pdnsd)
+      lo.!(pdns|pdns-recursor)
+      lo
+
+  - name: 'vpn-interfaces'
+    value: |
+      tun*
+      tap*
+
+  - name: 'wwan-interfaces'
+    value: 'hso*'
+
+  - name: 'ethernet-interfaces'
+    value: |
+      em+([0-9])?(_+([0-9]))*
+      p+([0-9])p+([0-9])?(_+([0-9]))*
+      @(br|eth)*([^.]).inet6
+      @(br|eth)*([^.]).ip6.@(dhclient|dhcpcd|pump|udhcpc)
+      @(br|eth)*([^.]).inet
+      @(br|eth)*([^.]).@(dhclient|dhcpcd|pump|udhcpc)
+      @(br|eth)*
+
+  - name: 'wireless-interfaces'
+    value: |
+      @(ath|wifi|wlan)*([^.]).inet6
+      @(ath|wifi|wlan)*([^.]).ip6.@(dhclient|dhcpcd|pump|udhcpc)
+      @(ath|wifi|wlan)*([^.]).inet
+      @(ath|wifi|wlan)*([^.]).@(dhclient|dhcpcd|pump|udhcpc)
+      @(ath|wifi|wlan)*
+
+  - name: 'ppp-interfaces'
+    value: 'ppp*'
+
+  - name: 'all-interfaces'
+    value: '*'
+
+                                                                   # ]]]
+# .. envvar:: resolvconf__default_interface_order [[[
+#
+# The modifications in the :file:`/etc/resolvconf/interface-order`
+# configuration file set by the role conditionally.
+resolvconf__default_interface_order:
+
+  # Place configuration from NetworkManager between Ethernet and Wireless
+  # interface configuration
+  - name: 'network-manager-interfaces'
+    copy_id_from: 'ethernet-interfaces'
+    value: 'NetworkManager'
+
+  # Add missing Predictable Network Interface Names definitions
+  # Ref: https://bugs.debian.org/877695, https://bugs.debian.org/905907
+  - name: 'wwan-interfaces'
+    value: '@(hso|ww)*'
+
+  # Add missing Predictable Network Interface Names definitions
+  # Ref: https://bugs.debian.org/877695, https://bugs.debian.org/905907
+  - name: 'ethernet-interfaces'
+    value: |
+      em+([0-9])?(_+([0-9]))*
+      p+([0-9])p+([0-9])?(_+([0-9]))*
+      @(br|en|eth)*([^.]).inet6
+      @(br|en|eth)*([^.]).ip6.@(dhclient|dhcpcd|pump|udhcpc)
+      @(br|en|eth)*([^.]).inet
+      @(br|en|eth)*([^.]).@(dhclient|dhcpcd|pump|udhcpc)
+      @(br|en|eth)*
+
+  # Add missing Predictable Network Interface Names definitions
+  # Ref: https://bugs.debian.org/877695, https://bugs.debian.org/905907
+  - name: 'wireless-interfaces'
+    value: |
+      @(ath|wifi|wl|wlan)*([^.]).inet6
+      @(ath|wifi|wl|wlan)*([^.]).ip6.@(dhclient|dhcpcd|pump|udhcpc)
+      @(ath|wifi|wl|wlan)*([^.]).inet
+      @(ath|wifi|wl|wlan)*([^.]).@(dhclient|dhcpcd|pump|udhcpc)
+      @(ath|wifi|wl|wlan)*
+
+  # Add missing Predictable Network Interface Names definitions
+  # Ref: https://bugs.debian.org/877695, https://bugs.debian.org/905907
+  - name: 'ppp-interfaces'
+    value: '@(ppp|sl)*'
+
+  # When a local DNS resolver is present, the VPN interface configuration
+  # received via DHCP should be pushed after the Enternet configuration to not
+  # disrupt the local host DNS domain configuration.
+  # Ref: https://bugs.debian.org/612351
+  - name: 'vpn-interfaces'
+    copy_id_from: 'ppp-interfaces'
+    state: '{{ "present"
+               if ("unbound" in resolvconf__combined_services or
+                   "dnsmasq" in resolvconf__combined_services or
+                   "bind"    in resolvconf__combined_services)
+               else "ignore" }}'
+
+  # Add the 'vlan*' and 'vxlan*' interfaces before the tunnel interfaces
+  - name: 'vlan-interfaces'
+    value: |
+      @(vlan|vxlan)*([^.]).inet6
+      @(vlan|vxlan)*([^.]).ip6.@(dhclient|dhcpcd|pump|udhcpc)
+      @(vlan|vxlan)*([^.]).inet
+      @(vlan|vxlan)*([^.]).@(dhclient|dhcpcd|pump|udhcpc)
+      @(vlan|vxlan)*
+    copy_id_from: 'vpn-interfaces'
+    weight: -10
+
+  # Add the 'mesh*' interfaces for mesh-like VPNs before the tunnel interfaces
+  - name: 'mesh-interfaces'
+    value: |
+      @(mesh)*([^.]).inet6
+      @(mesh)*([^.]).ip6.@(dhclient|dhcpcd|pump|udhcpc)
+      @(mesh)*([^.]).inet
+      @(mesh)*([^.]).@(dhclient|dhcpcd|pump|udhcpc)
+      @(mesh)*
+    copy_id_from: 'vpn-interfaces'
+    weight: -5
+
+                                                                   # ]]]
+# .. envvar:: resolvconf__interface_order [[[
+#
+# List of :file:`/etc/resolvconf/interface-order` configuration file entries
+# defined on all hosts in the Ansible inventory.
+resolvconf__interface_order: []
+
+                                                                   # ]]]
+# .. envvar:: resolvconf__group_interface_order [[[
+#
+# List of :file:`/etc/resolvconf/interface-order` configuration file entries
+# defined on hosts in a specific Ansible inventory group.
+resolvconf__group_interface_order: []
+
+                                                                   # ]]]
+# .. envvar:: resolvconf__host_interface_order [[[
+#
+# List of :file:`/etc/resolvconf/interface-order` configuration file entries
+# defined on specific hosts in the Ansible inventory.
+resolvconf__host_interface_order: []
+
+                                                                   # ]]]
+# .. envvar:: resolvconf__combined_interface_order [[[
+#
+# The variable that conbines interface order configuration from other variables
+# and is used in the role tasks and templates.
+resolvconf__combined_interface_order: '{{ resolvconf__original_interface_order
+                                          + resolvconf__default_interface_order
+                                          + resolvconf__interface_order
+                                          + resolvconf__group_interface_order
+                                          + resolvconf__host_interface_order }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Local DNS services [[[
+# ----------------------
+
+# These variables define what DNS services are present on a host. This
+# information is used to modify the interface order conditionally during role
+# execution.
+
+# .. envvar:: resolvconf__default_services [[[
+#
+# List of local DNS services present on a host that uses Ansible local facts to
+# detect their presence.
+resolvconf__default_services:
+
+  - '{{ "dnsmasq"
+        if (ansible_local|d() and ansible_local.dnsmasq|d() and
+            (ansible_local.dnsmasq.installed|d())|bool)
+        else [] }}'
+
+  - '{{ "unbound"
+        if (ansible_local|d() and ansible_local.unbound|d() and
+            (ansible_local.unbound.installed|d())|bool)
+        else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: resolvconf__services [[[
+#
+# List of local DNS services specified via the Ansible inventory.
+resolvconf__services: []
+
+                                                                   # ]]]
+# .. envvar:: resolvconf__dependent_services [[[
+#
+# List of local DNS services specified via the role dependent variables. This
+# variable can be used in the Ansible playbook to "prime" the
+# :ref:`debops.resolvconf` role configuration for presence of a given DNS
+# service before it is installed on a host.
+resolvconf__dependent_services: []
+
+                                                                   # ]]]
+# .. envvar:: resolvconf__combined_services [[[
+#
+# The variable that combines other lists of local DNS services and is used in
+# the role tasks and templates.
+resolvconf__combined_services: '{{ q("flattened",
+                                     (resolvconf__default_services
+                                      + resolvconf__services
+                                      + resolvconf__dependent_services)) }}'
+                                                                   # ]]]
+                                                                   # ]]]

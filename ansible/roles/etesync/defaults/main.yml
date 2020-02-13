@@ -1,0 +1,488 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _etesync__ref_defaults:
+
+# debops.etesync default variables [[[
+# ===================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Domain name configuration [[[
+# -----------------------------
+
+# .. envvar:: etesync__domain [[[
+#
+# The DNS domain used by other variables in the ``debops.etesync`` role.
+etesync__domain: '{{ ansible_local.core.domain
+                     if (ansible_local|d() and ansible_local.core|d() and
+                         ansible_local.core.domain|d())
+                     else ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: etesync__fqdn [[[
+#
+# String of the Fully Qualified domain names on which the EteSync application
+# will be available, used by the webserver.
+etesync__fqdn: 'etesync.{{ etesync__domain }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: etesync__base_packages [[[
+#
+# List of APT packages which are required by the EteSync server.
+etesync__base_packages:
+  - 'git'
+                                                                   # ]]]
+                                                                   #
+# .. envvar:: etesync__packages [[[
+#
+# List of additional APT packages to install with EteSync.
+etesync__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Application user, group, home [[[
+# ---------------------------------
+
+# .. envvar:: etesync__user [[[
+#
+# Name of the UNIX system account used to manage EteSync.
+etesync__user: 'etesync'
+
+                                                                   # ]]]
+# .. envvar:: etesync__group [[[
+#
+# Name of the UNIX primary group used to manage EteSync.
+etesync__group: 'etesync'
+
+                                                                   # ]]]
+# .. envvar:: etesync__gecos [[[
+#
+# Contents of the GECOS field set for the EteSync account.
+etesync__gecos: 'EteSync'
+
+                                                                   # ]]]
+# .. envvar:: etesync__shell [[[
+#
+# The default shell set on the EteSync account.
+etesync__shell: '/usr/sbin/nologin'
+                                                                   # ]]]
+                                                                   # ]]]
+# Directory paths [[[
+# -------------------
+
+# .. envvar:: etesync__home [[[
+#
+# The EteSync account home directory.
+etesync__home: '{{ (ansible_local.root.home
+                   if (ansible_local|d() and ansible_local.root|d() and
+                       ansible_local.root.home|d())
+                   else "/var/local") + "/" + etesync__user }}'
+
+                                                                   # ]]]
+# .. envvar:: etesync__etc [[[
+#
+# Directory where the role stores EteSync configuration.
+etesync__etc: '/etc/etesync-server'
+
+                                                                   # ]]]
+# .. envvar:: etesync__src [[[
+#
+# Directory where the role stores EteSync version control sources.
+etesync__src: '{{ (ansible_local.root.src
+                  if (ansible_local|d() and ansible_local.root|d() and
+                      ansible_local.root.src|d())
+                  else "/usr/local/src") + "/" + etesync__user }}'
+
+                                                                   # ]]]
+# .. envvar:: etesync__lib [[[
+#
+# Directory where the EteSync server directory is located.
+etesync__lib: '{{ (ansible_local.root.lib
+                  if (ansible_local|d() and ansible_local.root|d() and
+                      ansible_local.root.lib|d())
+                  else "/usr/local/lib") + "/" + etesync__user }}'
+
+                                                                   # ]]]
+# .. envvar:: etesync__data [[[
+#
+# Directory where EteSync data is stored.
+etesync__data: '{{ (ansible_local.root.data
+                   if (ansible_local|d() and ansible_local.root|d() and
+                       ansible_local.root.data|d())
+                   else "/srv") + "/" + etesync__user }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Application sources and deployment [[[
+# --------------------------------------
+
+# .. envvar:: etesync__git_gpg_key_id [[[
+#
+# The GPG ID of the key used for signing EteSync releases.
+etesync__git_gpg_key_id: '9E21 F091 FC39 5F36 6A47  43E2 D2E5 84C3 7C47 7933'
+
+                                                                   # ]]]
+# .. envvar:: etesync__git_repo [[[
+#
+# The URI of the EteSync :command:`git` source repository.
+etesync__git_repo: 'https://github.com/etesync/server.git'
+
+                                                                   # ]]]
+# .. envvar:: etesync__git_version [[[
+#
+# The :command:`git` branch or tag which will be installed.
+# git commit hash lock to release 0.2.2.
+# Note that this hash locking is not very effective because the main
+# implementation of EteSync is in additional Python packages.
+etesync__git_version: 'b026643cceae07b039942bf0c990ccf917eb072a'
+
+
+                                                                   # ]]]
+# .. envvar:: etesync__git_dest [[[
+#
+# Path where the :command:`git` source bare repository will be stored.
+etesync__git_dest: '{{ etesync__src + "/" + etesync__git_repo.split("://")[1] }}'
+
+                                                                   # ]]]
+# .. envvar:: etesync__git_checkout [[[
+#
+# Path where EteSync sources will be checked out (installation path).
+etesync__git_checkout: '{{ etesync__lib + "/app" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Python virtualenv configuration [[[
+# -----------------------------------
+
+# .. envvar:: etesync__virtualenv [[[
+#
+# Path where the EteSync ``virtualenv`` directory will be stored.
+etesync__virtualenv: '{{ etesync__lib + "/virtualenv" }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# EteSync configuration options [[[
+# --------------------------------
+
+# .. envvar:: etesync__config_allowed_hosts [[[
+#
+# List of domain names under which the EteSync server will accept
+# connections. Specify ``*`` to accept connections to any domain name.
+etesync__config_allowed_hosts:
+  - '{{ ansible_hostname }}'
+  - '{{ ansible_fqdn }}'
+  - '{{ etesync__fqdn }}'
+  - 'localhost'
+  - '[::1]'
+  - '127.0.0.1'
+
+                                                                   # ]]]
+# .. envvar:: etesync__config_secret_key [[[
+#
+# The Django secret key used by the EteSync server. It will be shared by
+# all hosts on the same domain.
+etesync__config_secret_key: '{{ lookup("password", secret + "/etesync/" +
+                                etesync__domain + "/config/secret_key length=64") }}'
+
+                                                                   # ]]]
+# .. envvar:: etesync__config_secret_key_filepath [[[
+#
+# File path where the Django secret key will be stored on the remote host.
+etesync__config_secret_key_filepath: '{{ etesync__etc + "/secret.txt" }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Initial superuser account [[[
+# -----------------------------
+
+# .. envvar:: etesync__superuser_name [[[
+#
+# Name of the initial admin account created by the role.
+etesync__superuser_name: '{{ ansible_local.core.admin_users[0]
+                             if (ansible_local|d() and ansible_local.core|d() and
+                                 ansible_local.core.admin_users|d())
+                             else "admin" }}'
+
+                                                                   # ]]]
+# .. envvar:: etesync__superuser_email [[[
+#
+# E-mail address of the initial admin account created by the role.
+etesync__superuser_email: '{{ ansible_local.core.admin_private_email[0]
+                              if (ansible_local|d() and ansible_local.core|d() and
+                                  ansible_local.core.admin_private_email|d())
+                              else ("root@" + etesync__domain) }}'
+
+                                                                   # ]]]
+# .. envvar:: etesync__superuser_password [[[
+#
+# Password set for the initial admin account created by the role.
+etesync__superuser_password: '{{ lookup("password", secret + "/etesync/" +
+                                 inventory_hostname + "/superuser/" +
+                                 etesync__superuser_name + "/password") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Internal application settings [[[
+# ---------------------------------
+
+# .. envvar:: etesync__app_name [[[
+#
+# Name of the EteSync server processes (workers) set by the master process.
+etesync__app_name: '{{ etesync__user }}'
+
+                                                                   # ]]]
+# .. envvar:: etesync__app_runtime_dir [[[
+#
+# Name of the subdirectory in the :file:`/run/` directory where the EteSync
+# application will bind its UNIX socket. The default is selected so that
+# configuration of the ``gunicorn`` service is idempotent.
+etesync__app_runtime_dir: '{{ "gunicorn"
+                              if (ansible_distribution_release in
+                                  [ "wheezy", "jessie", "precise", "trusty", "xenial" ])
+                              else "gunicorn-etesync" }}'
+
+                                                                   # ]]]
+# .. envvar:: etesync__app_bind [[[
+#
+# Specify either an UNIX or TCP socket on which the EteSync server should
+# bind and listen for connections.
+etesync__app_bind: 'unix:/run/{{ etesync__app_runtime_dir }}/etesync.sock'
+
+                                                                   # ]]]
+# .. envvar:: etesync__app_workers [[[
+#
+# Number of worker threads to start for EteSync server.
+etesync__app_workers: '{{ ansible_processor_vcpus|int + 1 }}'
+
+                                                                   # ]]]
+# .. envvar:: etesync__app_timeout [[[
+#
+# Number of seconds after which non-responsive worker threads will be killed
+# and restarted. EteSync installations with lots of objects might require longer
+# timeouts for API access.
+etesync__app_timeout: '900'
+
+                                                                   # ]]]
+# .. envvar:: etesync__app_params [[[
+#
+# List of parameters passed to the ``gunicorn`` process manager.
+etesync__app_params:
+  - '--name={{ etesync__app_name }}'
+  - '--bind={{ etesync__app_bind }}'
+  - '--workers={{ etesync__app_workers }}'
+  - '--timeout={{ etesync__app_timeout }}'
+  - 'etesync_server.wsgi'
+                                                                   # ]]]
+                                                                   # ]]]
+# Other variables [[[
+# -------------------
+
+# .. envvar:: etesync__max_file_size [[[
+#
+# Maximum upload size, in MB.
+etesync__max_file_size: '5'
+
+                                                                   # ]]]
+# .. envvar:: etesync__python_version [[[
+#
+# Python version, needed to refer to static files as installed by Python modules.
+etesync__python_version: '{{ ansible_local.python.version3
+                             if (ansible_local|d() and ansible_local.python|d() and
+                                 ansible_local.python.version3|d())
+                             else "3.x" }}'
+
+                                                                   # ]]]
+# .. envvar:: etesync__http_psk_subpath_enabled [[[
+#
+# Whether EteSync should be deployed on a random subpath that acts as a
+# protection of the web app/API from people not knowing this PSK.
+# For a discussion in which scenarios this can make sense, refer to
+# `RFC: Support subpath/subdir hosting for additional security`__.
+#
+# .. __: https://github.com/debops/debops/issues/1233
+etesync__http_psk_subpath_enabled: False
+
+                                                                   # ]]]
+# .. envvar:: etesync__http_psk_subpath [[[
+#
+# PSK used as subpath that acts as the first layer of defense in a security in
+# depth concept if enabled.
+etesync__http_psk_subpath: '{{ lookup("password", secret + "/etesync/" +
+                                 inventory_hostname + "/config/subpath chars=ascii_letters,digits length=23")
+                               if etesync__http_psk_subpath_enabled|bool
+                               else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: etesync__url [[[
+#
+# The URL where the EteSync server will be reachable. Exposed as variable here
+# as you might want to use it in your custom user password lookup for
+# integrating into your password manager.
+etesync__url: '{{ "https://" + etesync__fqdn + "/" + etesync__http_psk_subpath }}'
+
+                                                                   # ]]]
+# .. envvar:: etesync__admin_auth_basic_realm [[[
+#
+# A string which will be displayed as the realm in the browser user/password
+# dialog box during HTTP Basic Authentication for the admin interface.
+etesync__admin_auth_basic_realm: 'Access to EteSync admin interface is restricted'
+
+                                                                   # ]]]
+# .. envvar:: etesync__admin_auth_basic_filename [[[
+#
+# Absolute path to the file that contains usernames and passwords for HTTP
+# Basic Authentication for the admin interface.
+etesync__admin_auth_basic_filename: ''
+
+                                                                   # ]]]
+# .. envvar:: etesync__mail_to [[[
+#
+# List of recipients to which a mail will be send with the full URL of the
+# EteSync server in case :envvar:`etesync__http_psk_subpath` is set.
+etesync__mail_to: [ 'root@{{ ansible_domain }}' ]
+
+                                                                   # ]]]
+# .. envvar:: etesync__mail_subject [[[
+#
+# Subject of the Email to be send with the full service URL.
+etesync__mail_subject: 'PSK subpath URL to EteSync on {{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: etesync__mail_body [[[
+#
+# Body of the Email to be send with the full service URL.
+etesync__mail_body: |
+  EteSync has been deployed for the first time on {{ ansible_fqdn }}.
+  You have chosen to deploy the service on a random subpath thus the URL is
+  needed to access the service.
+
+  URL: {{ etesync__url }}
+
+  You can continue the user setup in the Django administration interface of EteSync over at:
+  {{ etesync__url }}/admin
+
+  Have a nice day :)
+
+# ]]]
+# ]]]
+# Configuration variables for other Ansible roles [[[
+# ---------------------------------------------------
+
+# .. envvar:: etesync__keyring__dependent_gpg_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+etesync__keyring__dependent_gpg_keys:
+
+  - user: '{{ etesync__user }}'
+    group: '{{ etesync__group }}'
+    home: '{{ etesync__home }}'
+    id: '{{ etesync__git_gpg_key_id }}'
+
+                                                                   # ]]]
+# .. envvar:: etesync__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+etesync__python__dependent_packages3:
+
+  - 'python3-setproctitle'
+
+  - 'python3-dev'
+
+  ## Django>=2.1.7,<2.1.999 is required which is currently only in Debian sid.
+  ## We install this with pip in a virtualenv for now.
+  # - 'python3-django'
+
+  - 'python3-tz'
+
+                                                                   # ]]]
+# .. envvar:: etesync__gunicorn__dependent_applications [[[
+#
+# Configuration for the :ref:`debops.gunicorn` Ansible role.
+etesync__gunicorn__dependent_applications:
+  - name: 'etesync'
+    mode: 'wsgi'
+    working_dir: '{{ etesync__git_checkout }}'
+    python: '{{ etesync__virtualenv + "/bin/python3" }}'
+    user: '{{ etesync__user }}'
+    group: '{{ etesync__group }}'
+    home: '{{ etesync__home }}'
+    system: True
+    timeout: '{{ etesync__app_timeout }}'
+    workers: '{{ etesync__app_workers }}'
+    args: '{{ etesync__app_params }}'
+
+                                                                   # ]]]
+# .. envvar:: etesync__nginx__dependent_upstreams [[[
+#
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
+etesync__nginx__dependent_upstreams:
+  - name: 'etesync'
+    server: '{{ etesync__app_bind }}'
+
+                                                                   # ]]]
+# .. envvar:: etesync__nginx__dependent_servers [[[
+#
+# Server configuration for the :ref:`debops.nginx` Ansible role.
+etesync__nginx__dependent_servers:
+  - name: '{{ etesync__fqdn }}'
+    by_role: 'debops.etesync'
+    filename: 'debops.etesync'
+    favicon: False
+    http_referrer_policy: 'same-origin'
+    options: |
+      client_max_body_size {{ etesync__max_file_size }}M;
+
+    location_list:
+
+      - pattern: '/'
+        options: |-
+          deny all;
+        enabled: '{{ etesync__http_psk_subpath_enabled|bool }}'
+
+      - pattern: '/static/admin/'
+        options: |-
+          alias {{ etesync__virtualenv + "/lib/python" + (etesync__python_version.split('.')[:2] | join('.')) }}/site-packages/django/contrib/admin/static/admin/;
+
+      - pattern: '/static/rest_framework/'
+        options: |-
+          alias {{ etesync__virtualenv + "/lib/python" + (etesync__python_version.split('.')[:2] | join('.')) }}/site-packages/rest_framework/static/rest_framework/;
+
+      - pattern: '/{{ etesync__http_psk_subpath }}'
+        options: |-
+          proxy_pass http://etesync;
+          proxy_set_header X-Forwarded-Host $server_name;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          {% if etesync__http_psk_subpath != "" %}
+          proxy_set_header SCRIPT_NAME /{{ etesync__http_psk_subpath }};
+          {% endif %}
+          proxy_connect_timeout {{ etesync__app_timeout }};
+          proxy_send_timeout {{ etesync__app_timeout }};
+          proxy_read_timeout {{ etesync__app_timeout }};
+
+      - pattern: '{{ (("/" + etesync__http_psk_subpath)
+                      if (etesync__http_psk_subpath != "")
+                      else "") + "/admin" }}'
+        options: |-
+          proxy_pass http://etesync;
+          proxy_set_header X-Forwarded-Host $server_name;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          {% if etesync__http_psk_subpath != "" %}
+          proxy_set_header SCRIPT_NAME /{{ etesync__http_psk_subpath }};
+          {% endif %}
+          proxy_connect_timeout {{ etesync__app_timeout }};
+          proxy_send_timeout {{ etesync__app_timeout }};
+          proxy_read_timeout {{ etesync__app_timeout }};
+
+          auth_basic "{{ etesync__admin_auth_basic_realm }}";
+          auth_basic_user_file {{ etesync__admin_auth_basic_filename }};
+        enabled: '{{ True if etesync__admin_auth_basic_filename|d() else False }}'
+# ]]]
+# ]]]
+# ]]]

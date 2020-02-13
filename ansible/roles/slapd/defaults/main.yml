@@ -1,0 +1,1249 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _slapd__ref_defaults:
+
+# Default variables
+# =================
+#
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# LDAP schemas [[[
+# ----------------
+
+# These variables define what additional LDAP schemas will be imported by
+# the :ref:`debops.slapd` role to the managed OpenLDAP server.
+# See :ref:`custom LDAP schemas <slapd__ref_ldap_schemas>` for more details.
+
+# .. envvar:: slapd__rfc2307bis_enabled [[[
+#
+# Enable or disable support for an upgraded ``nis`` schema defined as
+# ``rfc2307bis``, that changes the ``posixGroup`` object type from
+# ``STRUCTURAL`` to ``AUXILIARY``. This allows better management of UNIX groups
+# in the LDAP directory, but may require additional changes in existing
+# databases. See :ref:`the rfc2307bis schema <slapd__ref_rfc2307bis>` for more
+# details.
+slapd__rfc2307bis_enabled: '{{ ansible_local.slapd.rfc2307bis
+                               if (ansible_local|d() and ansible_local.slapd|d() and
+                                   (ansible_local.slapd.rfc2307bis|d())|bool)
+                               else True }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__debops_schema_path [[[
+#
+# Absolute path to the directory that contains custom DebOps schema definitions
+# on the remote host.
+slapd__debops_schema_path: '/etc/ldap/schema/debops'
+
+                                                                   # ]]]
+# .. envvar:: slapd__default_schemas [[[
+#
+# List of the default LDAP schemas imported into the OpenLDAP server, defined
+# by the role.
+slapd__default_schemas:
+
+  # Custom DebOps schema that defines the missing 'gid' posixGroup attribute
+  - '{{ slapd__debops_schema_path + "/posixgroupid.schema" }}'
+
+  # Password Policy schema, included in the 'slapd' APT package
+  - '/etc/ldap/schema/ppolicy.schema'
+
+  # Support for 'host' and 'authorizedService' attributes, useful for granular
+  # access control to services and machines
+  - '/etc/ldap/schema/fusiondirectory/ldapns.schema'
+
+  # Support for SSH public keys in LDAP directory
+  - '/etc/ldap/schema/fusiondirectory/openssh-lpk.schema'
+
+  # Support for 'sudo' rules in LDAP directory
+  - '/etc/ldap/schema/fusiondirectory/sudo.schema'
+
+  # Support for 'eduPerson' and 'eduOrg' schema, included in DebOps
+  - '{{ slapd__debops_schema_path + "/eduperson.schema" }}'
+
+  # Support for 'nextcloud' schema, included in DebOps
+  - '{{ slapd__debops_schema_path + "/nextcloud.schema" }}'
+
+  # Custom DebOps schema that defines mail-related LDAP objects and attributes
+  - '{{ slapd__debops_schema_path + "/mailservice.schema" }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__schemas [[[
+#
+# Lisf of LDAP schemas imported into the OpenLDAP server on all hosts in the
+# Ansible inventory.
+slapd__schemas: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__group_schemas [[[
+#
+# List of LDAP schemas imported into the OpenLDAP server on hosts in a specific
+# Ansible inventory group.
+slapd__group_schemas: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__host_schemas [[[
+#
+# List of LDAP schemas imported into the OpenLDAP server on specific hosts in
+# the Ansible inventory.
+slapd__host_schemas: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__combined_schemas [[[
+#
+# Variable which combines all of the schema lists together and is used in the
+# role tasks. The list is not merged intelligently and is only additive.
+slapd__combined_schemas: '{{ slapd__default_schemas
+                             + slapd__schemas
+                             + slapd__group_schemas
+                             + slapd__host_schemas }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: slapd__base_packages [[[
+#
+# List of required APT packages for OpenLDAP service.
+slapd__base_packages: [ 'slapd', 'ldap-utils', 'ssl-cert' ]
+
+                                                                   # ]]]
+# .. envvar:: slapd__rfc2307bis_packages [[[
+#
+# List of APT packages to install in preparation to use ``rfc2307bis`` schema
+# instead of the ``nis`` schema.
+slapd__rfc2307bis_packages: [ 'fusiondirectory-schema' ]
+
+                                                                   # ]]]
+# .. envvar:: slapd__schema_packages [[[
+#
+# List of APT packages that contain LDAP schemas loaded into the directory by
+# the server. Debian has multiple ``fusiondirectory-*-schema`` and
+# ``gosa-*-schema`` packages that conflict with each other, therefore the list
+# of packages should be synchronized.
+slapd__schema_packages:
+
+  # Support for 'openssh-lpk' (SSH public keys in LDAP)
+  - 'fusiondirectory-plugin-ssh-schema'
+
+  # Support for 'sudo' rules in LDAP
+  - 'fusiondirectory-plugin-sudo-schema'
+
+                                                                   # ]]]
+# .. envvar:: slapd__packages [[[
+#
+# List of additional APT packages to install with OpenLDAP service.
+slapd__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# OpenLDAP UNIX environment [[[
+# -----------------------------
+
+# .. envvar:: slapd__user [[[
+#
+# Name of the UNIX account used by the OpenLDAP service.
+slapd__user: 'openldap'
+
+                                                                   # ]]]
+# .. envvar:: slapd__group [[[
+#
+# Name of the UNIX group used by the OpenLDAP service.
+slapd__group: 'openldap'
+
+                                                                   # ]]]
+# .. envvar:: slapd__additional_groups [[[
+#
+# List of additional UNIX groups the OpenLDAP account should have access to.
+slapd__additional_groups: [ 'ssl-cert' ]
+
+                                                                   # ]]]
+# .. envvar:: slapd__additional_database_dirs [[[
+#
+# The default "main" OpenLDAP database is stored in the :file:`/var/lib/ldap/`
+# directory. This variable contains a list of additional database directories
+# which should be present on the host, specified as absolute paths. These
+# directories will be owned by the OpenLDAP UNIX account and can be used to
+# store additional OpenLDAP databases.
+slapd__additional_database_dirs: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__log_dir [[[
+#
+# Absolute path to the directory which contains OpenLDAP logs.
+slapd__log_dir: '/var/log/slapd'
+                                                                   # ]]]
+                                                                   # ]]]
+# LDAP database environment [[[
+# -----------------------------
+
+# .. envvar:: slapd__domain [[[
+#
+# DNS domain name which will be used for OpenLDAP BaseDN. This value is also
+# defined in the :command:`debconf` database before OpenLDAP installation to
+# create the BaseDN LDAP object in the initialized database.
+slapd__domain: '{{ ansible_local.core.domain
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.domain|d())
+                   else ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__base_dn [[[
+#
+# BaseDN value of the main OpenLDAP server that contains the LDAP data, defined
+# as a YAML list.
+slapd__base_dn: '{{ slapd__domain.split(".")
+                    | map("regex_replace", "^(.*)$", "dc=\1")
+                    | list }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__basedn [[[
+#
+# BaseDN value of the main OpenLDAP server that contains the LDAP data, defined
+# as a string.
+slapd__basedn: '{{ slapd__base_dn | join(",") }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__superuser_config_password [[[
+#
+# The hashed password defined for the superuser of the ``cn=config`` LDAP database.
+slapd__superuser_config_password: '{{ "{CRYPT}" + lookup("password", secret
+                                                         + "/slapd/credentials/"
+                                                         + slapd__config_rootdn | to_uuid + ".password"
+                                                         + " encrypt=sha512_crypt length=32") }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__config_rootdn [[[
+#
+# The Distinguished Name of the ``cn=config`` database root account.
+slapd__config_rootdn: 'cn=admin,cn=config'
+
+                                                                   # ]]]
+# .. envvar:: slapd__config_rootpw [[[
+#
+# The plaintext password of the ``cn=config`` database root account, useful for
+# Sync Replication authentication.
+slapd__config_rootpw: '{{ lookup("file", secret + "/slapd/credentials/"
+                                         + slapd__config_rootdn | to_uuid
+                                         + ".password").split()[0] }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__superuser_data_password [[[
+#
+# The password defined for the superuser of the main LDAP database.
+slapd__superuser_data_password: '{{ "{CRYPT}" + lookup("password", secret
+                                                       + "/slapd/credentials/"
+                                                       + slapd__data_rootdn | to_uuid + ".password"
+                                                       + " encrypt=sha512_crypt length=32") }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__data_rootdn [[[
+#
+# The Distinguished Name of the main database root account.
+slapd__data_rootdn: '{{ ([ "cn=admin" ] + slapd__base_dn) | join(",") }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__data_rootpw [[[
+#
+# The plaintext password of the ``cn=config`` database root account, useful for
+# Sync Replication authentication.
+slapd__data_rootpw: '{{ lookup("file", secret + "/slapd/credentials/"
+                                       + slapd__data_rootdn | to_uuid
+                                       + ".password").split()[0] }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# LDAP database tuning [[[
+# ------------------------
+
+# .. envvar:: slapd__data_max_size [[[
+#
+# Specify the maximum size of the main database, in bytes, default is 10 GB.
+# The value shouldn't be smaller than the size of the existing data; increasing
+# the existing size should be safe.
+slapd__data_max_size: '{{ (1024 * 1024 * 1024) * 10 }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Support for DebOps PKI and TLS [[[
+# ----------------------------------
+
+# .. envvar:: slapd__pki [[[
+#
+# Enable or disable support for X.509 certificates using the :ref:`debops.pki`
+# Ansible role.
+slapd__pki: '{{ (ansible_local.pki.enabled
+                 if (ansible_local|d() and ansible_local.pki|d() and
+                     ansible_local.pki.enabled|d())
+                 else False) | bool }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__pki_path [[[
+#
+# Absolute path to the directory that contains PKI realms.
+slapd__pki_path: '{{ (ansible_local.pki.base_path
+                      if (ansible_local|d() and ansible_local.pki|d() and
+                          ansible_local.pki.base_path|d())
+                      else "/etc/pki/realms") }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__pki_realm [[[
+#
+# Default PKI realm used by the OpenLDAP server. In a multi-master clustered
+# setup the configuration is shared, therefore all cluster nodes should use the
+# same PKI realm name.
+slapd__pki_realm: '{{ slapd__domain
+                      if (ansible_local|d() and ansible_local.pki|d() and
+                          slapd__domain in ansible_local.pki.known_realms|d([]))
+                      else (ansible_local.pki.realm
+                            if (ansible_local|d() and ansible_local.pki|d() and
+                                ansible_local.pki.realm|d())
+                            else "domain") }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__pki_ca [[[
+#
+# Name of the Root CA certificate file used by the OpenLDAP server, relative to
+# the PKI realm directory.
+slapd__pki_ca: 'CA.crt'
+
+                                                                   # ]]]
+# .. envvar:: slapd__pki_crt [[[
+#
+# Name of the X.509 certificate file used by the OpenLDAP server, relative to
+# the PKI realm directory.
+slapd__pki_crt: 'default.crt'
+
+                                                                   # ]]]
+# .. envvar:: slapd__pki_key [[[
+#
+# Name of the private key used by the OpenLDAP server, relative to the PKI
+# realm directory.
+slapd__pki_key: 'default.key'
+
+                                                                   # ]]]
+# .. envvar:: slapd__dhparam_set [[[
+#
+# Specify the Diffie-Hellman parameter set to use by the OpenLDAP server.
+# See :ref:`debops.dhparam` Ansible role for more details.
+slapd__dhparam_set: 'default'
+
+                                                                   # ]]]
+# .. envvar:: slapd__dhparam_file [[[
+#
+# Absolute path to the file with Diffie-Hellman parameters used by the OpenLDAP
+# server. If it's empty, the custom Diffie-Hellman parameters will not be
+# configured.
+slapd__dhparam_file: '{{ (ansible_local.dhparam[slapd__dhparam_set]
+                          if (ansible_local|d() and ansible_local.dhparam|d() and
+                              ansible_local.dhparam[slapd__dhparam_set]|d())
+                          else "") }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__tls_ca_certificate [[[
+#
+# Absolute path to the Root CA certificate used by the OpenLDAP server to
+# authenticate TLS client certificates.
+slapd__tls_ca_certificate: '{{ slapd__pki_path + "/" + slapd__pki_realm + "/" + slapd__pki_ca }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__tls_certificate [[[
+#
+# Absolute path to the X.509 certificate used by the OpenLDAP server.
+slapd__tls_certificate: '{{ slapd__pki_path + "/" + slapd__pki_realm + "/" + slapd__pki_crt }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__tls_private_key [[[
+#
+# Absolute path to the private key used by the OpenLDAP server.
+slapd__tls_private_key: '{{ slapd__pki_path + "/" + slapd__pki_realm + "/" + slapd__pki_key }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__tls_cipher_suite [[[
+#
+# TLS cipher suite required by the server. On Debian, you need to use the
+# GnuTLS cipher suite names, because :command:`slapd` daemon is compiled
+# against GnuTLS instead of OpenSSL.
+slapd__tls_cipher_suite: 'SECURE256:PFS:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.2:-SHA1:-ARCFOUR-128'
+                                                                   # ]]]
+                                                                   # ]]]
+# OpenLDAP configuration tasks [[[
+# --------------------------------
+
+# These variables define a dynamic set of tasks to perform in the OpenLDAP
+# server ``cn=config`` database. See :ref:`slapd__ref_tasks` for more details.
+
+# .. envvar:: slapd__default_tasks [[[
+#
+# List of the default tasks performed on the OpenLDAP server, defined by the
+# role.
+slapd__default_tasks:
+
+  - name: 'Load dynamic OpenLDAP modules'
+    dn: 'cn=module{0},cn=config'
+    attributes:
+      olcModuleLoad:
+        - '{0}back_mdb'
+        - '{1}syncprov'
+        - '{2}ppolicy'
+        - '{3}unique'
+        - '{4}memberof'
+        - '{5}refint'
+        - '{6}auditlog'
+        - '{7}constraint'
+        - '{8}back_monitor'
+        - '{9}lastbind'
+    ordered: True
+
+  - name: 'Enable Sync Provider overlay in the cn=config database'
+    dn: 'olcOverlay={0}syncprov,olcDatabase={0}config,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcSyncProvConfig' ]
+    attributes:
+      olcOverlay: '{0}syncprov'
+
+  - name: 'Enable Sync Provider overlay in the main database'
+    dn: 'olcOverlay={0}syncprov,olcDatabase={1}mdb,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcSyncProvConfig' ]
+    attributes:
+      olcOverlay: '{0}syncprov'
+
+  - name: 'Enable Password Policy overlay in the main database'
+    dn: 'olcOverlay={1}ppolicy,olcDatabase={1}mdb,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcPPolicyConfig' ]
+    attributes:
+      olcOverlay: '{1}ppolicy'
+
+  - name: 'Enable Unique overlay in the main database'
+    dn: 'olcOverlay={2}unique,olcDatabase={1}mdb,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcUniqueConfig' ]
+    attributes:
+      olcOverlay: '{2}unique'
+
+  - name: 'Enable memberOf overlay in the main database'
+    dn: 'olcOverlay={3}memberof,olcDatabase={1}mdb,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcMemberOf' ]
+    attributes:
+      olcOverlay: '{3}memberof'
+
+  - name: 'Enable Referential Integrity overlay in the main database'
+    dn: 'olcOverlay={4}refint,olcDatabase={1}mdb,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcRefintConfig' ]
+    attributes:
+      olcOverlay: '{4}refint'
+
+  - name: 'Enable Audit Logging overlay in the main database'
+    dn: 'olcOverlay={5}auditlog,olcDatabase={1}mdb,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcAuditLogConfig' ]
+    attributes:
+      olcOverlay: '{5}auditlog'
+
+  - name: 'Enable Constraint overlay in the main database'
+    dn: 'olcOverlay={6}constraint,olcDatabase={1}mdb,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcConstraintConfig' ]
+    attributes:
+      olcOverlay: '{6}constraint'
+
+  - name: 'Enable LastBind overlay in the main database'
+    dn: 'olcOverlay={7}lastbind,olcDatabase={1}mdb,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcLastBindConfig' ]
+    attributes:
+      olcOverlay: '{7}lastbind'
+
+  - name: 'Configure Password Policy overlay in the main database'
+    dn: 'olcOverlay={1}ppolicy,olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcPPolicyDefault: 'cn=Default Password Policy,ou=Password Policies,{{ slapd__basedn }}'
+      olcPPolicyHashCleartext: 'TRUE'
+      olcPPolicyUseLockout: 'FALSE'
+      olcPPolicyForwardUpdates: 'FALSE'
+    state: 'exact'
+
+  - name: 'Configure Unique overlay in the main database'
+    dn: 'olcOverlay={2}unique,olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcUniqueURI:
+        - 'ldap:///{{ slapd__basedn }}?uidNumber?sub'
+        - 'ldap:///{{ slapd__basedn }}?gidNumber?sub'
+        - 'ldap:///{{ slapd__basedn }}?mail?sub'
+        - 'ldap:///{{ slapd__basedn }}?mailAddress,mailAlternateAddress?sub'
+        - 'ldap:///ou=People,{{ slapd__basedn }}?employeeNumber?sub'
+        - 'ldap:///ou=People,{{ slapd__basedn }}?uid?sub'
+        - 'ldap:///ou=People,{{ slapd__basedn }}?gid?sub'
+    state: 'exact'
+
+  - name: 'Configure memberOf overlay in the main database'
+    dn: 'olcOverlay={3}memberof,olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcMemberOfDangling: 'ignore'
+      olcMemberOfRefInt: 'TRUE'
+      olcMemberOfGroupOC: 'groupOfNames'
+      olcMemberOfMemberAD: 'member'
+      olcMemberOfMemberOfAD: 'memberOf'
+    state: 'exact'
+
+  - name: 'Configure Referential Integrity overlay in the main database'
+    dn: 'olcOverlay={4}refint,olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcRefintAttribute:
+        - 'member'
+        - 'memberOf'
+        - 'uniqueMember'
+        - 'manager'
+        - 'owner'
+        - 'roleOccupant'
+        - 'seeAlso'
+        - 'secretary'
+        - 'documentAuthor'
+    state: 'exact'
+
+  - name: 'Configure Audit Logging overlay in the main database'
+    dn: 'olcOverlay={5}auditlog,olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcAuditlogFile: '{{ slapd__log_dir + "/slapd-auditlog-main.ldif" }}'
+    state: 'exact'
+
+  - name: 'Configure Constraint overlay in the main database'
+    dn: 'olcOverlay={6}constraint,olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcConstraintAttribute:
+        - 'jpegPhoto size 524288'  # 512 KiB
+        - 'userPassword count 5'
+        - 'employeeNumber regex ^[[:digit:]]+$'
+        - 'uidNumber regex ^[[:digit:]]+$'
+        - 'gidNumber regex ^[[:digit:]]+$'
+        - 'macAddress regex ^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$'
+        - 'mailAddress set "this/mailAddress & this/mail"'
+        - 'mailAlternateAddress set "this/mailAlternateAddress & this/mail"'
+    state: 'exact'
+
+  - name: 'Configure LastBind overlay in the main database'
+    dn: 'olcOverlay={7}lastbind,olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcLastBindPrecision: '{{ (60 * 60 * 24) }}'
+    state: 'exact'
+
+  - name: 'Configure the OpenLDAP server log level'
+    dn: 'cn=config'
+    attributes:
+      olcLogLevel: 'stats'
+    state: 'exact'
+
+  - name: 'Define the default password hashing method'
+    dn: [ 'olcDatabase={-1}frontend', 'cn=config' ]
+    attributes:
+      olcPasswordHash: '{CRYPT}'
+    state: 'exact'
+
+  - name: 'Configure password salt format used by the crypt(3) hash function'
+    dn: 'cn=config'
+    attributes:
+      olcPasswordCryptSaltFormat: '$6$rounds=100001$%.16s'
+    state: 'exact'
+
+  - name: 'Set the cn=config database root credentials'
+    dn: [ 'olcDatabase={0}config', 'cn=config' ]
+    attributes:
+      olcRootDN: '{{ slapd__config_rootdn }}'
+      olcRootPW: '{{ slapd__superuser_config_password }}'
+    state: 'exact'
+    no_log: True
+
+  - name: 'Set the main database root credentials'
+    dn: [ 'olcDatabase={1}mdb', 'cn=config' ]
+    attributes:
+      olcRootDN: '{{ slapd__data_rootdn }}'
+      olcRootPW: '{{ slapd__superuser_data_password }}'
+    state: 'exact'
+    no_log: True
+
+  - name: 'Configure idle and write timeouts'
+    dn: 'cn=config'
+    attributes:
+      olcIdleTimeout: '900'
+      olcWriteTimeout: '900'
+    state: 'exact'
+
+  - name: 'Configure TLS certificates'
+    dn: 'cn=config'
+    attributes:
+      olcTLSCACertificateFile:  '{{ slapd__tls_ca_certificate }}'
+      olcTLSCertificateFile:    '{{ slapd__tls_certificate }}'
+      olcTLSCertificateKeyFile: '{{ slapd__tls_private_key }}'
+    state: '{{ "exact" if slapd__pki|bool else "init" }}'
+
+  - name: 'Configure Diffie-Hellman parameters'
+    dn: 'cn=config'
+    attributes:
+      olcTLSDHParamFile: '{{ slapd__dhparam_file }}'
+    state: '{{ "exact" if (slapd__pki|bool and slapd__dhparam_file|d()) else "init" }}'
+
+  - name: 'Configure TLS cipher suites'
+    dn: 'cn=config'
+    attributes:
+      olcTLSCipherSuite: '{{ slapd__tls_cipher_suite }}'
+    state: '{{ "exact" if slapd__pki|bool else "init" }}'
+
+  - name: 'Set default Security Strength Factors enforced by the server'
+    dn: 'cn=config'
+    attributes:
+      olcLocalSSF: '128'
+      olcSecurity: 'ssf=128 update_ssf=128 simple_bind=128'
+    state: '{{ "exact" if slapd__pki|bool else "init" }}'
+
+  - name: 'Configure supported SASL authentication methods'
+    dn: 'cn=config'
+    attributes:
+      olcSaslSecProps: 'noanonymous,minssf={{ "128" if slapd__pki|bool else "0" }}'
+    state: 'exact'
+
+    # Warning: changes in this attribute require slapd restart
+  - name: 'Define SASL regex matching rules'
+    dn: 'cn=config'
+    attributes:
+      olcAuthzRegexp:
+        - '{0}uid=([^,]*),cn=[^,]*,cn=auth uid=$1,ou=People,{{ slapd__basedn }}'
+        - '{1}uid=([^,]*),cn=([^,]*),cn=[^,]*,cn=auth ldap:///ou=Hosts,{{ slapd__basedn }}??sub?(&(objectClass=account)(uid=$1)(host=$2))'
+    state: 'exact'
+
+  - name: 'Define the maximum size of the main database'
+    dn: [ 'olcDatabase={1}mdb', 'cn=config' ]
+    attributes:
+      olcDbMaxSize: '{{ slapd__data_max_size }}'
+    state: 'exact'
+
+  - name: 'Define indexes present in the main database'
+    dn: [ 'olcDatabase={1}mdb', 'cn=config' ]
+    attributes:
+      olcDbIndex:
+        - 'cn,uid eq'
+        - 'member,memberUid eq'
+        - 'objectClass eq'
+        - 'sn eq,pres'
+        - 'gn eq,pres'
+        - 'gecos eq,pres'
+        - 'homeDirectory,loginShell eq'
+        - 'uidNumber,gidNumber eq'
+        - 'entryCSN,entryUUID eq'
+        - 'sudoUser eq,sub'
+        - 'authorizedService eq'
+        - 'host eq,sub'
+        - 'gid eq'
+        - 'mail eq,sub'
+        - 'mailAddress eq,sub'
+        - 'mailAlternateAddress eq,sub'
+
+  - name: 'Enable the monitor database'
+    dn: 'olcDatabase={2}monitor,cn=config'
+    objectClass: [ 'olcDatabaseConfig', 'olcMonitorConfig' ]
+    attributes:
+      olcDatabase: '{2}monitor'
+      olcAccess:
+        - |-
+          {0}to dn.subtree="cn=Monitor"
+             by group/groupOfNames/member.exact="cn=LDAP Administrators, ou=System Groups,{{ slapd__basedn }}" read
+             by group/groupOfNames/member.exact="cn=LDAP Monitors,       ou=System Groups,{{ slapd__basedn }}" read
+             by * none
+    state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: slapd__acl_tasks [[[
+#
+# Separate list of tasks performed on the OpenLDAP server, defined by the role,
+# meant for the Access Control List configuration. Check the
+# :ref:`slapd__ref_acl` documentation for more details.
+slapd__acl_tasks:
+
+  - name: 'Configure Access Control List'
+    dn: 'olcDatabase={1}mdb,cn=config'
+    ordered: True
+    attributes:
+      olcAccess:
+
+        - |-
+          to dn.subtree="{{ slapd__basedn }}"
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Administrator, ou=Roles,{{ slapd__basedn }}" manage
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Replicator,    ou=Roles,{{ slapd__basedn }}" read
+          by group/groupOfNames/member.exact="cn=LDAP Administrators, ou=System Groups,{{ slapd__basedn }}" manage
+          by group/groupOfNames/member.exact="cn=LDAP Replicators,    ou=System Groups,{{ slapd__basedn }}" read
+          by * break
+
+        - |-
+          to dn.subtree="{{ slapd__basedn }}" filter="(memberOf=cn=Hidden Objects, ou=Groups,{{ slapd__basedn }})"
+             attrs="children,entry"
+          by self break
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Administrator,    ou=Roles,{{ slapd__basedn }}" break
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor,           ou=Roles,{{ slapd__basedn }}" break
+          by group/organizationalRole/roleOccupant.exact="cn=Hidden Object Viewer,  ou=Roles,{{ slapd__basedn }}" break
+          by group/groupOfNames/member.exact="cn=LDAP Administrators,    ou=System Groups,{{ slapd__basedn }}" break
+          by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" break
+          by * none
+
+        - |-
+          to filter="(| (objectClass=posixAccount) (objectClass=posixGroup) (objectClass=posixGroupId) )"
+             attrs="uid,uidNumber,gid,gidNumber,homeDirectory"
+          by group/groupOfNames/member="cn=UNIX Administrators, ou=Groups,{{ slapd__basedn }}"        write
+          by group/groupOfNames/member="cn=UNIX Administrators, ou=System Groups,{{ slapd__basedn }}" write
+          by users read
+
+        - |-
+          to dn.subtree="ou=SUDOers,{{ slapd__basedn }}"
+          by group/groupOfNames/member="cn=UNIX Administrators, ou=Groups,{{ slapd__basedn }}"        write
+          by group/groupOfNames/member="cn=UNIX Administrators, ou=System Groups,{{ slapd__basedn }}" write
+          by users read
+
+        - |-
+          to dn.subtree="ou=People,{{ slapd__basedn }}"
+             attrs="shadowLastChange"
+          by self write
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor,           ou=Roles,{{ slapd__basedn }}" write
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" write
+          by group/organizationalRole/roleOccupant.exact="cn=Password Reset Agent,  ou=Roles,{{ slapd__basedn }}" =w
+          by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" write
+          by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" write
+          by group/groupOfNames/member.exact="cn=Password Reset Agents,  ou=System Groups,{{ slapd__basedn }}" =w
+          by users read
+
+        - |-
+          to dn.subtree="ou=People,{{ slapd__basedn }}"
+             attrs="userPassword"
+          by self =w
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor,           ou=Roles,{{ slapd__basedn }}" =w
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" =w
+          by group/organizationalRole/roleOccupant.exact="cn=Password Reset Agent,  ou=Roles,{{ slapd__basedn }}" =w
+          by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" =w
+          by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" =w
+          by group/groupOfNames/member.exact="cn=Password Reset Agents,  ou=System Groups,{{ slapd__basedn }}" =w
+          by anonymous auth
+          by * none
+
+        - |-
+          to attrs="userPassword"
+          by self      =w
+          by anonymous auth
+          by *         none
+
+        - |-
+          to dn.regex="^cn=(LDAP Administrator|LDAP Replicator), ou=Roles,{{ slapd__basedn }}$"
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor,           ou=Roles,{{ slapd__basedn }}" read
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" read
+          by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" read
+          by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" read
+          by * break
+
+        - |-
+          to dn.subtree="cn=UNIX Administrators, ou=Groups,{{ slapd__basedn }}"
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor,           ou=Roles,{{ slapd__basedn }}" read
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" read
+          by group/groupOfNames/member.exact="cn=LDAP Editors,           ou=System Groups,{{ slapd__basedn }}" read
+          by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" read
+          by * break
+
+        - |-
+          to dn.subtree="ou=System Groups,{{ slapd__basedn }}"
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor, ou=Roles,{{ slapd__basedn }}" read
+          by group/groupOfNames/member.exact="cn=LDAP Editors, ou=System Groups,{{ slapd__basedn }}" read
+          by * break
+
+        - |-
+          to dn.subtree="{{ slapd__basedn }}"
+          by group/organizationalRole/roleOccupant.exact="cn=LDAP Editor, ou=Roles,{{ slapd__basedn }}" write
+          by group/groupOfNames/member.exact="cn=LDAP Editors, ou=System Groups,{{ slapd__basedn }}" write
+          by * break
+
+        - |-
+          to dn.regex="^cn=[^,]+,ou=(System Groups|Groups),{{ slapd__basedn }}$"
+             attrs="member"
+          by dnattr="owner" write
+          by * break
+
+        - |-
+          to dn.regex="^([^,]+,)?ou=(People|Groups|Machines),{{ slapd__basedn }}$"
+             attrs="children,entry"
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" write
+          by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" write
+          by * break
+
+        - |-
+          to dn.regex="^[^,]+,ou=(People|Groups|Machines),{{ slapd__basedn }}$"
+          by group/organizationalRole/roleOccupant.exact="cn=Account Administrator, ou=Roles,{{ slapd__basedn }}" write
+          by group/groupOfNames/member.exact="cn=Account Administrators, ou=System Groups,{{ slapd__basedn }}" write
+          by * break
+
+        - |-
+          to attrs="carLicense,homePhone,homePostalAddress"
+          by self write
+          by * none
+
+        - |-
+          to attrs="mobile"
+          by self write
+          by group/organizationalRole/roleOccupant.exact="cn=SMS Gateway, ou=Roles,{{ slapd__basedn }}" read
+          by * none
+
+        - |-
+          to *
+          by users read
+          by * none
+
+    state: 'exact'
+
+                                                                   # ]]]
+# .. envvar:: slapd__tasks [[[
+#
+# List of the tasks performed on the OpenLDAP server, defined on all hosts in
+# the Ansible inventory.
+slapd__tasks: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__group_tasks [[[
+#
+# List of the tasks performed on the OpenLDAP server, defined on hosts in
+# a specific Ansible inventory group.
+slapd__group_tasks: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__host_tasks [[[
+#
+# List of the tasks performed on the OpenLDAP server, defined on specific hosts
+# in the Ansible inventory.
+slapd__host_tasks: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__combined_tasks [[[
+#
+# Variable which combines all of the OpenLDAP task variables and is used in the
+# role tasks and templates.
+slapd__combined_tasks: '{{ slapd__default_tasks
+                           + slapd__acl_tasks
+                           + slapd__tasks
+                           + slapd__group_tasks
+                           + slapd__host_tasks }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Backup snapshots [[[
+# --------------------
+
+# These variables configure periodic backup snapshots of the OpenLDAP
+# databases. See :ref:`slapd__ref_backup_restore` for more details.
+
+# .. envvar:: slapd__snapshot_deploy_state [[[
+#
+# If ``present``, the snapshot :command:`cron` jobs will be configured to run
+# the :command:`slapd-snapshot` script periodically to create snapshots of
+# known OpenLDAP databases. If ``absent``, the :command:`cron` jobs will be
+# removed.
+slapd__snapshot_deploy_state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: slapd__snapshot_cron_jobs [[[
+#
+# List of :command:`cron` periods during which the :command:`slapd-snapshot`
+# script should be executed to create OpenLDAP snapshots.
+slapd__snapshot_cron_jobs: [ 'daily', 'weekly', 'monthly' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# Network access to OpenLDAP server [[[
+# -------------------------------------
+
+# .. envvar:: slapd__services [[[
+#
+# List of the service URLs on which OpenLDAP should listen for new connections.
+# Network access is controlled using the firewall rules defined below.
+slapd__services:
+
+  # Listen for plaintext and StartTLS connections
+  - 'ldap:///'
+
+  # Listen for encrypted SSL connections (deprecated)
+  - '{{ "ldaps:///" if slapd__pki|bool else [] }}'
+
+  # Listen for connections on local UNIX domain socket
+  - 'ldapi:///'
+
+                                                                   # ]]]
+# .. envvar:: slapd__ports [[[
+#
+# List of TCP service names of the ports on which OpenLDAP listens for network
+# connections. These ports will be opened in the firewall so that other hosts
+# can contact the LDAP service.
+slapd__ports:
+
+  # Plaintext and StartTLS connections on port 389/tcp
+  - 'ldap'
+
+  # Encrypted SSL connections on port 636/tcp (deprecated)
+  - '{{ "ldaps" if slapd__pki|bool else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__accept_any [[[
+#
+# If ``True``, the role will configure the firewall and TCP Wrappers to accept
+# connections to the OpenLDAP service from any network, specific IP addresses
+# or subnets can be blocked using the ``slapd__*_deny`` variables.
+#
+# If ``False``, the role will block connections to the OpenLDAP via the system
+# firewall and TCP Wrappers from any host; hosts that can connect must be
+# specified via the ``slapd__*_allow`` variables.
+slapd__accept_any: False
+
+                                                                   # ]]]
+# .. envvar:: slapd__deny [[[
+#
+# List of IP addresses or CIDR subnets which should be blocked from access to
+# the OpenLDAP server, defined on all hosts in the Ansible inventory.
+slapd__deny: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__group_deny [[[
+#
+# List of IP addresses or CIDR subnets which should be blocked from access to
+# the OpenLDAP server, defined on hosts in a specific Ansible inventory group.
+slapd__group_deny: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__host_deny [[[
+#
+# List of IP addresses or CIDR subnets which should be blocked from access to
+# the OpenLDAP server, defined on specific hosts in the Ansible inventory.
+slapd__host_deny: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__allow [[[
+#
+# List of IP addresses or CIDR subnets which should have access to the OpenLDAP
+# server, defined on all hosts in the Ansible inventory.
+slapd__allow: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__group_allow [[[
+#
+# List of IP addresses or CIDR subnets which should have access to the OpenLDAP
+# server, defined on hosts in a specific Ansible inventory group.
+slapd__group_allow: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__host_allow [[[
+#
+# List of IP addresses or CIDR subnets which should have access to the OpenLDAP
+# server, defined on specific hosts in the Ansible inventory.
+slapd__host_allow: []
+                                                                   # ]]]
+                                                                   # ]]]
+# LDAP Access Control List tests [[[
+# ----------------------------------
+
+# These variables control the ACL rule testing using a generated
+# :command:`bash` script. See :ref:`slapd__ref_acl_tests` for more details
+# about the ACL testing, and the :ref:`slapd__ref_slapacl_tests` for details
+# about test definition.
+
+# .. envvar:: slapd__slapacl_deploy_state [[[
+#
+# If ``present``, the :command:`slapacl` test suite script will be generated on
+# the host. If ``absent``, the script will be removed.
+slapd__slapacl_deploy_state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: slapd__slapacl_run_tests [[[
+#
+# When enabled, the :command:`slapacl` test suite will be run on each
+# :ref:`debops.slapd` role execution to test any changes in the ACL rules. You
+# can use this variable to temporarily disable the ACL tests using the
+# ``--extra-vars`` Ansible option, or permanently via the Ansible inventory.
+# The script still will be generated and can be used independently on the
+# OpenLDAP servers to test the ACLs.
+slapd__slapacl_run_tests: True
+
+                                                                   # ]]]
+# .. envvar:: slapd__slapacl_script [[[
+#
+# Absolute path of the :command:`slapacl` test suite script generated by the
+# role.
+slapd__slapacl_script: '/etc/ldap/slapacl-test-suite'
+
+                                                                   # ]]]
+# .. envvar:: slapd__slapacl_test_rdn_map [[[
+#
+# Some of the :command:`slapacl` tests require existing LDAP objects to work
+# correctly. This variable defines a YAML dictionary with Relative
+# Distinguished Names of various object types used in the default ACL test
+# cases. You should define any number of these in the inventory and point them
+# to real user accounts or service accounts - the more you define, the more
+# tests will be active.
+slapd__slapacl_test_rdn_map:
+
+  # LDAP Administrator (see everything, write access to all)
+  ldap_admin_rdn:    'uid=<user>'
+
+  # LDAP Editor (see most things, write access to most things)
+  ldap_editor_rdn:   'uid=<user>'
+
+  # UNIX Administrator (manages UNIX environment)
+  unix_admin_rdn:    'uid=<user>'
+
+  # Account Administrator (write access to personal objects)
+  account_admin_rdn: 'uid=<user>'
+
+  # An unprivileged user account
+  person_rdn:        'uid=<user>'
+
+  # Distinguished Name of a LDAP Replicator
+  ldap_replicator_dn: ''
+
+  # Distinguished Name of a Password Reset Agent
+  password_reset_dn: ''
+
+  # Distinguished Name of a SMS Gateway object
+  sms_gateway_dn: ''
+
+                                                                   # ]]]
+# .. envvar:: slapd__slapacl_default_tests [[[
+#
+# The list of the OpenLDAP ACL test rules for the :man:`slapacl(8)` command
+# defined by the role. See :ref:`slapd__ref_slapacl_tests` for more details.
+slapd__slapacl_default_tests:
+
+  - name: 'Deny anonymous access to cn=config'
+    dn: 'cn=config'
+    authdn: ''
+    policy: '=0'
+    dry_run: True
+
+  - name: 'Allow administrator access to cn=config'
+    dn: 'cn=config'
+    authdn: 'cn=admin,cn=config'
+    policy: 'manage(=mwrscxd)'
+    dry_run: True
+
+  - name: 'Deny regular user access to cn=config'
+    dn: 'cn=config'
+    authdn: '{{ slapd__slapacl_test_rdn_map["person_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
+    policy: '=0'
+    dry_run: True
+    state: '{{ "present"
+               if (slapd__slapacl_test_rdn_map["person_rdn"]|d("uid=<user>") != "uid=<user>")
+               else "init" }}'
+
+  - name: 'Deny direct admin access to cn=config'
+    dn: 'cn=config'
+    authdn: '{{ slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
+    policy: '=0'
+    dry_run: True
+    state: '{{ "present"
+               if (slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d("uid=<user>") != "uid=<user>")
+               else "init" }}'
+
+  - name: 'Deny anonymous access to cn=Monitor'
+    dn: 'cn=Monitor'
+    authdn: ''
+    query: 'entry'
+    policy: 'none(=0)'
+    dry_run: True
+
+  - name: 'Deny anonymous access to base DN'
+    dn: '{{ slapd__basedn }}'
+    authdn: ''
+    policy: 'none(=0)'
+
+  - name: "Allow authentication by anonymous users"
+    dn: '{{ slapd__slapacl_test_rdn_map["person_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
+    authdn: ''
+    query: 'userPassword'
+    policy: 'auth(=xd)'
+    state: '{{ "present"
+               if (slapd__slapacl_test_rdn_map["person_rdn"]|d("uid=<user>") != "uid=<user>")
+               else "init" }}'
+
+  - name: "Deny password read access by anonymous users"
+    dn: '{{ slapd__slapacl_test_rdn_map["person_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
+    authdn: ''
+    query: 'userPassword/read'
+    policy: 'denied'
+    state: '{{ "present"
+               if (slapd__slapacl_test_rdn_map["person_rdn"]|d("uid=<user>") != "uid=<user>")
+               else "init" }}'
+
+  - name: 'Deny anonymous access to ou=People'
+    dn: 'ou=People,{{ slapd__basedn }}'
+    authdn: ''
+    queries:
+
+      - name: 'entry'
+        result: 'entry: none(=0)'
+
+      - name: 'children'
+        result: 'children: none(=0)'
+
+    state: '{{ "present"
+               if (slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d("uid=<user>") != "uid=<user>")
+               else "init" }}'
+
+  - name: 'Deny write access to ou=People by unprivileged users'
+    dn: 'ou=People,{{ slapd__basedn }}'
+    authdn: '{{ slapd__slapacl_test_rdn_map["person_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
+    query: 'entry/write'
+    policy: 'denied'
+    state: '{{ "present"
+               if (slapd__slapacl_test_rdn_map["person_rdn"]|d("uid=<user>") != "uid=<user>")
+               else "init" }}'
+
+  - name: 'Allow write access to ou=People by administrators'
+    dn: 'ou=People,{{ slapd__basedn }}'
+    authdn: '{{ slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
+    query: 'entry/write'
+    policy: 'allowed'
+    state: '{{ "present"
+               if (slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d("uid=<user>") != "uid=<user>")
+               else "init" }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__slapacl_tests [[[
+#
+# The list of the OpenLDAP ACL test rules for the :man:`slapacl(8)` command
+# defined on all hosts in the Ansible inventory.
+# See :ref:`slapd__ref_slapacl_tests` for more details.
+slapd__slapacl_tests: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__slapacl_group_tests [[[
+#
+# The list of the OpenLDAP ACL test rules for the :man:`slapacl(8)` command
+# defined on hosts in a specific Ansible inventory group.
+# See :ref:`slapd__ref_slapacl_tests` for more details.
+slapd__slapacl_group_tests: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__slapacl_host_tests [[[
+#
+# The list of the OpenLDAP ACL test rules for the :man:`slapacl(8)` command
+# defined on specific hosts in the Ansible inventory.
+# See :ref:`slapd__ref_slapacl_tests` for more details.
+slapd__slapacl_host_tests: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__slapacl_combined_tests [[[
+#
+# The variable which combines all of the ACL test rule lists and is used in
+# role tasks and templates.
+slapd__slapacl_combined_tests: '{{ slapd__slapacl_default_tests
+                                   + slapd__slapacl_tests
+                                   + slapd__slapacl_group_tests
+                                   + slapd__slapacl_host_tests }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration variables for other Ansible roles [[[
+# ---------------------------------------------------
+
+# .. envvar:: slapd__logrotate__dependent_config [[[
+#
+# Configuration for the :ref:`debops.logrotate` Ansible role.
+slapd__logrotate__dependent_config:
+
+  - filename: 'slapd'
+    sections:
+
+      - logs: '{{ slapd__log_dir + "/*.log" }}'
+        options: |
+          notifempty
+          missingok
+          weekly
+          maxsize 256M
+          rotate 120
+          compress
+        comment: 'OpenLDAP server logs'
+
+      - logs: '{{ slapd__log_dir + "/*.ldif" }}'
+        options: |
+          notifempty
+          missingok
+          monthly
+          maxsize 256M
+          rotate 120
+          compress
+        comment: 'OpenLDAP audit logs'
+
+                                                                   # ]]]
+# .. envvar:: slapd__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+slapd__python__dependent_packages3:
+
+  - '{{ []
+        if (ansible_distribution_release in
+            ([ "wheezy", "jessie", "stretch",
+               "precise", "trusty", "xenial" ]))
+        else "python3-ldap" }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+slapd__python__dependent_packages2:
+
+  - 'python-ldap'
+
+                                                                   # ]]]
+# .. envvar:: slapd__ferm__dependent_rules [[[
+#
+# Firewall configuration managed by the :ref:`debops.ferm` Ansible role.
+slapd__ferm__dependent_rules:
+
+  - name: 'reject_slapd'
+    type: 'accept'
+    protocol: 'tcp'
+    dport: '{{ q("flattened", slapd__ports) }}'
+    multiport: True
+    saddr: '{{ slapd__deny + slapd__group_deny + slapd__host_deny }}'
+    weight: '45'
+    by_role: 'debops.slapd'
+    target: 'REJECT'
+    rule_state: '{{ "present"
+                    if (slapd__deny + slapd__group_deny + slapd__host_deny)
+                    else "absent" }}'
+
+  - name: 'accept_slapd'
+    type: 'accept'
+    protocol: 'tcp'
+    dport: '{{ q("flattened", slapd__ports) }}'
+    multiport: True
+    saddr: '{{ slapd__allow + slapd__group_allow + slapd__host_allow }}'
+    accept_any: '{{ slapd__accept_any }}'
+    weight: '50'
+    by_role: 'debops.slapd'
+
+                                                                   # ]]]
+# .. envvar:: slapd__tcpwrappers__dependent_allow [[[
+#
+# Configuration of TCP Wrappers through the :ref:`debops.tcpwrappers` Ansible
+# role.
+slapd__tcpwrappers__dependent_allow:
+
+  - daemon: 'slapd'
+    client: '{{ slapd__allow + slapd__group_allow + slapd__host_allow }}'
+    default: 'ALL'
+    accept_any: '{{ slapd__accept_any }}'
+    weight: '50'
+    filename: 'slapd_dependent_allow'
+    comment: 'Allow connections to OpenLDAP service'
+
+                                                                   # ]]]
+# .. envvar:: slapd__saslauthd__dependent_instances [[[
+#
+# Configuration for the :ref:`debops.saslauthd` Ansible role.
+slapd__saslauthd__dependent_instances:
+
+  - name: 'slapd'
+    group: '{{ slapd__group }}'
+    description: 'OpenLDAP SASL Authentication Daemon'
+    config_path: '/etc/ldap/sasl2/slapd.conf'
+    config_group: '{{ slapd__group }}'
+    config_raw: |
+      pwcheck_method: saslauthd
+      mech_list: PLAIN LOGIN EXTERNAL
+      saslauthd_path: /var/lib/slapd/saslauthd/mux
+    socket_path: '/var/lib/slapd/saslauthd'
+    socket_group: '{{ slapd__group }}'
+    ldap_profile: 'slapd'
+                                                                   # ]]]
+                                                                   # ]]]

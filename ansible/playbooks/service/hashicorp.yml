@@ -1,6 +1,8 @@
 ---
 
 - name: Install HashiCorp applications
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_hashicorp' ]
   become: True
 
@@ -10,10 +12,10 @@
 
   roles:
 
-    - role: debops.keyring
+    - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::hashicorp' ]
       keyring__dependent_gpg_keys:
         - '{{ hashicorp__keyring__dependent_gpg_keys }}'
 
-    - role: debops.hashicorp
+    - role: hashicorp
       tags: [ 'role::hashicorp', 'skip::hashicorp' ]

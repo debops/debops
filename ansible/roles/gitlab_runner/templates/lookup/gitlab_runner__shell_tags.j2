@@ -1,0 +1,52 @@
+{% set output = [ 'shell' ] %}
+{% set _ = output.append(ansible_pkg_mgr) %}
+{% set _ = output.append(ansible_service_mgr) %}
+{% set _ = output.append(ansible_system | lower) %}
+{% if (ansible_local|d() and ansible_local.tags|d()) %}
+{%   set _ = output.extend(ansible_local.tags) %}
+{% endif %}
+{% if (ansible_local|d() and ansible_local.docker_server|d() and
+       (ansible_local.docker_server.installed|d()) | bool) %}
+{%   set _ = output.append('docker-host') %}
+{% endif %}
+{% if (ansible_local|d() and ansible_local.lxc|d() and
+       (ansible_local.lxc.installed|d()) | bool) %}
+{%   set _ = output.append('lxc-host') %}
+{% endif %}
+{% if gitlab_runner__vagrant_libvirt|bool %}
+{%   set _ = output.extend([ 'vagrant', 'vagrant-vm', 'vagrant-libvirt' ]) %}
+{% endif %}
+{% if gitlab_runner__vagrant_lxc|bool %}
+{%   set _ = output.extend([ 'vagrant', 'vagrant-lxc' ]) %}
+{% endif %}
+{% set _ = output.append((ansible_local.core.distribution
+                          if (ansible_local|d() and ansible_local.core|d() and
+                              ansible_local.core.distribution|d())
+                          else ansible_distribution) | lower) %}
+{% set _ = output.append((ansible_local.core.distribution_release
+                          if (ansible_local|d() and ansible_local.core|d() and
+                              ansible_local.core.distribution_release|d())
+                          else ansible_distribution_release) | lower) %}
+{% if ansible_virtualization_type not in [ 'NA' ] %}
+{%   set _ = output.append(ansible_virtualization_type + '-' + ansible_virtualization_role) %}
+{% endif %}
+{% if (ansible_local|d() and ansible_local.libvirtd|d() and (ansible_local.libvirtd.hw_virt|d())|bool) %}
+{%   set _ = output.append('hw-virt') %}
+{% endif %}
+{% if (ansible_memtotal_mb|int > 2048) %}
+{%   set _ = output.append('mem-2GB') %}
+{% endif %}
+{% if (ansible_memtotal_mb|int > 3072) %}
+{%   set _ = output.append('mem-3GB') %}
+{% endif %}
+{% if (ansible_memtotal_mb|int > 4096) %}
+{%   set _ = output.append('mem-4GB') %}
+{% endif %}
+{% if (ansible_memtotal_mb|int > 6144) %}
+{%   set _ = output.append('mem-6GB') %}
+{% endif %}
+{% if (ansible_memtotal_mb|int > 8192) %}
+{%   set _ = output.append('mem-8GB') %}
+{% endif %}
+{% set _ = output.append('amd64' if (ansible_architecture == 'x86_64') else ansible_architecture) %}
+{{ output | unique }}

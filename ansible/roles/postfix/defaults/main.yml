@@ -1,0 +1,1361 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _postfix__ref_defaults:
+
+# debops.postfix default variables [[[
+# ====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# APT packages, version [[[
+# -------------------------
+
+# .. envvar:: postfix__base_packages [[[
+#
+# List of the default APT packages to install for Postfix support.
+postfix__base_packages: [ 'postfix', 'postfix-pcre', 'bsd-mailx', 'make',
+                          'ssl-cert', 'ca-certificates' ]
+
+                                                                   # ]]]
+# .. envvar:: postfix__dependent_packages [[[
+#
+# List of additional APT packages requested by other Ansible roles via role
+# dependent variables.
+postfix__dependent_packages: []
+
+                                                                   # ]]]
+# .. envvar:: postfix__packages [[[
+#
+# List of additional APT packages to install with Postfix.
+postfix__packages: []
+
+                                                                   # ]]]
+# .. envvar:: postfix__purge_packages [[[
+#
+# List of APT packages to purge when Postfix is installed, to remove the
+# remnants of other SMTP services.
+postfix__purge_packages: [ 'exim4-base', 'exim4-config',
+                           'exim4-daemon-light', 'nullmailer' ]
+
+                                                                   # ]]]
+# .. envvar:: postfix__version [[[
+#
+# The currently installed Postfix version. This variable is defined by the
+# Ansible local facts and it's here for convenience, shouldn't be set manually.
+postfix__version: '{{ ansible_local.postfix.version
+                      if (ansible_local|d() and ansible_local.postfix|d() and
+                          ansible_local.postfix.version|d())
+                      else "0.0.0" }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__doc_installed [[[
+#
+# The ``postfix-doc`` APT package modifies the :file:`/etc/postfix/main.cf`
+# configuration file directly, therefore the role takes its presence into
+# account during configuration. The package presence is checked by the Ansible
+# local facts.
+postfix__doc_installed: '{{ ansible_local.postfix.doc_installed
+                            if (ansible_local|d() and ansible_local.postfix|d() and
+                                ansible_local.postfix.doc_installed is defined)
+                            else False }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# DNS, mail next-hop configuration [[[
+# ------------------------------------
+
+# .. envvar:: postfix__fqdn [[[
+#
+# The host's Fully Qualified Domain Name used in the Postfix configuration.
+postfix__fqdn: '{{ ansible_local.core.fqdn
+                   if (ansible_local|d() and ansible_local.core|d() and
+                       ansible_local.core.fqdn|d())
+                   else ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__domain [[[
+#
+# The host's DNS domain name used in the Postfix configuration.
+postfix__domain: '{{ ansible_local.core.domain
+                     if (ansible_local|d() and ansible_local.core|d() and
+                         ansible_local.core.domain|d())
+                     else ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__relayhost [[[
+#
+# Next-hop destination of non-local mail.
+postfix__relayhost: ''
+
+                                                                   # ]]]
+# .. envvar:: postfix__mailname [[[
+#
+# The name of this mail system, configured in :file:`/etc/mailname` file. This
+# name is used as the domain part in sender mail addresses that don't have one.
+# See https://wiki.debian.org/EtcMailName for more details.
+postfix__mailname: '{{ postfix__fqdn }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Firewall configuration [[[
+# --------------------------
+
+# .. envvar:: postfix__accept_any [[[
+#
+# Specofy the default firewall policy for Postfix services.
+#
+# If ``True``, any host can connect to the Postfix services unless allow
+# restrictions are defined using the variables below.
+#
+# If ``False``, no hosts can connect to the Postfix services by default. You
+# need to specify IP addresses or subnets that can access the services using
+# the variables below.
+postfix__accept_any: True
+
+                                                                   # ]]]
+# .. envvar:: postfix_allow_smtp [[[
+#
+# List of hosts/networks that can access the ``smtp`` port (25).
+postfix__allow_smtp: []
+
+                                                                   # ]]]
+# .. envvar:: postfix_allow_submission [[[
+#
+# List of hosts/networks that can access the ``submission`` port (587).
+postfix__allow_submission: []
+
+                                                                   # ]]]
+# .. envvar:: postfix_allow_smtps [[[
+#
+# List of hosts/networks that can access the ``smtps`` port (465).
+postfix__allow_smtps: []
+                                                                   # ]]]
+                                                                   # ]]]
+# PKI / TLS configuration [[[
+# ---------------------------
+
+# .. envvar:: postfix__pki [[[
+#
+# Enable or disable support for TLS in Postfix, managed by the :ref:`debops.pki`
+# Ansible role.
+postfix__pki: '{{ (True
+                   if (ansible_local|d() and ansible_local.pki|d() and
+                       ansible_local.pki.enabled|d() | bool)
+                   else False) | bool }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__pki_path [[[
+#
+# Absolute path to the directory where PKI realms are located.
+postfix__pki_path: '{{ ansible_local.pki.path
+                       if (ansible_local|d() and ansible_local.pki|d() and
+                           ansible_local.pki.path|d())
+                       else "/etc/pki/realms" }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__pki_realm [[[
+#
+# Name of the default PKI realm used by Postfix.
+postfix__pki_realm: '{{ ansible_local.pki.realm
+                        if (ansible_local|d() and ansible_local.pki|d() and
+                            ansible_local.pki.realm|d())
+                        else "domain" }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__pki_ca [[[
+#
+# Name of the Root Certificate Authority certificate file used by Postfix,
+# relative to the PKI realm directory.
+postfix__pki_ca: '{{ ansible_local.pki.ca
+                     if (ansible_local|d() and ansible_local.pki|d() and
+                         ansible_local.pki.ca|d())
+                     else "CA.crt" }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__pki_crt [[[
+#
+# Name of the certificate file used by Postfix, relative to the PKI realm
+# directory.
+postfix__pki_crt: '{{ ansible_local.pki.crt
+                      if (ansible_local|d() and ansible_local.pki|d() and
+                          ansible_local.pki.crt|d())
+                      else "default.crt" }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__pki_key [[[
+#
+# Name of the private key file used by Postfix, relative to the PKI realm
+# directory.
+postfix__pki_key: '{{ ansible_local.pki.key
+                      if (ansible_local|d() and ansible_local.pki|d() and
+                          ansible_local.pki.key|d())
+                      else "default.key" }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__tls_ca_file [[[
+#
+# Absolute path of the Root Certificate Authority certificate file used in the
+# Postfix configuration. This file should also be present in the Postfix chroot
+# directory.
+postfix__tls_ca_file: '/etc/ssl/certs/ca-certificates.crt'
+
+                                                                   # ]]]
+# .. envvar:: postfix__tls_cert_file [[[
+#
+# Absolute path of the certificate file used in the Postfix configuration.
+postfix__tls_cert_file: '{{ (postfix__pki_path + "/" + postfix__pki_realm + "/" + postfix__pki_crt)
+                            if postfix__pki|bool else "/etc/ssl/certs/ssl-cert-snakeoil.pem" }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__tls_key_file [[[
+#
+# Absolute path of the private key file used in the Postfix configuration.
+postfix__tls_key_file: '{{ (postfix__pki_path + "/" + postfix__pki_realm + "/" + postfix__pki_key)
+                           if postfix__pki|bool else "/etc/ssl/private/ssl-cert-snakeoil.key" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Diffie-Hellman parameters [[[
+# -----------------------------
+
+# .. envvar:: postfix__dhparam [[[
+#
+# Enable or disable support for custom Diffie-Hellman parameters managed by the
+# :ref:`debops.dhparam` Ansible role.
+postfix__dhparam: '{{ ansible_local.dhparam.enabled
+                      if (ansible_local|d() and ansible_local.dhparam|d() and
+                          ansible_local.dhparam.enabled is defined)
+                      else False }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__dhparam_set [[[
+#
+# Name of the Diffie-Hellman parameter set to use in Postfix configuration. See
+# :ref:`debops.dhparam` Ansible role for more details.
+postfix__dhparam_set: 'default'
+
+                                                                   # ]]]
+# .. envvar:: postfix__tls_dh1024_param_file [[[
+#
+# Absolute path to Diffie-Hellman parameters file which should be used for
+# non-export grade connections.
+postfix__tls_dh1024_param_file: '{{ ansible_local.dhparam[postfix__dhparam_set]
+                                    if (ansible_local|d() and ansible_local.dhparam|d() and
+                                        ansible_local.dhparam[postfix__dhparam_set]|d())
+                                    else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__tls_dh512_param_file [[[
+#
+# Absolute path to Diffie-Hellman parameters file which should be used for
+# export grade connections.
+postfix__tls_dh512_param_file: '{{ ansible_local.dhparam[postfix__dhparam_set]
+                                   if (ansible_local|d() and ansible_local.dhparam|d() and
+                                       ansible_local.dhparam[postfix__dhparam_set]|d())
+                                   else "" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Postfix 'main.cf' configuration [[[
+# -----------------------------------
+
+# These variables define the contents of the :file:`/etc/postfix/main.cf`
+# configuration file. See :ref:`postfix__ref_maincf` for more details.
+
+# .. envvar:: postfix__original_maincf [[[
+#
+# List of options defined by the Debian ``postfix`` package when the default
+# "Internet Site" configuration type is selected during installation. This list
+# is used as the base configuration.
+postfix__original_maincf:
+
+  - name: 'myorigin_example'
+    option: 'myorigin'
+    value: '/etc/mailname'
+    comment: |
+      Debian specific:  Specifying a file name will cause the first
+      line of that file to be used as the name.  The Debian default
+      is /etc/mailname.
+    state: 'comment'
+    section: 'base'
+
+  - name: 'smtpd_banner'
+    value: '$myhostname ESMTP $mail_name (Debian/GNU)'
+    section: 'base'
+
+  - name: 'biff'
+    value: False
+    section: 'base'
+
+  - name: 'append_dot_mydomain'
+    value: False
+    comment: "appending .domain is the MUA's job."
+    section: 'base'
+
+  - name: 'delay_warning_time'
+    value: '4h'
+    comment: 'Uncomment the next line to generate "delayed mail" warnings'
+    state: 'comment'
+    section: 'base'
+
+  - name: 'readme_directory'
+    value: '{{ "/usr/share/doc/postfix"
+               if postfix__doc_installed|bool
+               else False }}'
+    section: 'base'
+
+  - name: 'compatibility_level'
+    value: 2
+    comment: |
+      See http://www.postfix.org/COMPATIBILITY_README.html -- default to 2 on
+      fresh installs.
+    section: 'base'
+    state: '{{ "present"
+               if (postfix__version is version_compare("3.0.0", ">="))
+               else "ignore" }}'
+
+  - name: 'smtpd_tls_cert_file'
+    value: '{{ postfix__tls_cert_file }}'
+    comment: 'TLS parameters'
+    section: 'base'
+
+  - name: 'smtpd_tls_key_file'
+    value: '{{ postfix__tls_key_file }}'
+    section: 'base'
+
+  - name: 'smtpd_use_tls'
+    value: True
+    section: 'base'
+
+  - name: 'smtpd_tls_session_cache_database'
+    value: 'btree:${data_directory}/smtpd_scache'
+    section: 'base'
+
+  - name: 'smtp_tls_session_cache_database'
+    value: 'btree:${data_directory}/smtp_scache'
+    section: 'base'
+
+  - name: 'smtp_tls_client_comment'
+    comment: |
+      See /usr/share/doc/postfix/TLS_README.gz in the postfix-doc package for
+      information on enabling SSL in the smtp client.
+    state: 'hidden'
+    section: 'base'
+
+  - name: 'smtpd_relay_restrictions'
+    section: 'base'
+    state: '{{ "present"
+               if (postfix__version is version_compare("2.10.0", ">="))
+               else "ignore" }}'
+    value:
+
+      - name: 'permit_mynetworks'
+        weight: -300
+
+      - name: 'permit_sasl_authenticated'
+        weight: -200
+
+      - name: 'defer_unauth_destination'
+        weight: -100
+
+  - name: 'myhostname'
+    value: '{{ postfix__fqdn }}'
+    section: 'base'
+
+  - name: 'alias_maps'
+    value: [ 'hash:/etc/aliases' ]
+    section: 'base'
+
+  - name: 'alias_database'
+    value: [ 'hash:/etc/aliases' ]
+    section: 'base'
+
+  - name: 'myorigin'
+    value: '/etc/mailname'
+    section: 'base'
+
+  - name: 'mydestination'
+    section: 'base'
+    value:
+
+      - '{{ postfix__fqdn }}'
+
+      - name: 'localhost.{{ postfix__domain }}'
+        weight: 190
+
+      - name: 'localhost'
+        weight: 200
+
+  - name: 'relayhost'
+    value: '{{ postfix__relayhost }}'
+    section: 'base'
+
+  - name: 'mynetworks'
+    section: 'base'
+    value:
+
+      - name: '127.0.0.0/8'
+        weight: 100
+
+      - name: '::ffff:127.0.0.0/104'
+        weight: 100
+
+      - name: '::1/128'
+        weight: 100
+
+  - name: 'mailbox_size_limit'
+    value: 0
+    section: 'base'
+
+  - name: 'recipient_delimiter'
+    value: '+'
+    section: 'base'
+
+  - name: 'inet_interfaces'
+    value: 'all'
+    section: 'base'
+
+  - name: 'inet_protocols'
+    value: 'all'
+    section: 'base'
+    state: '{{ "present"
+               if (ansible_distribution_release == "stretch")
+               else "ignore" }}'
+
+  - name: 'html_directory'
+    value: '{{ "/usr/share/doc/postfix/html"
+               if postfix__doc_installed|bool
+               else False }}'
+    section: 'base'
+
+                                                                   # ]]]
+# .. envvar:: postfix__default_maincf [[[
+#
+# The list of Postfix :file:`/etc/postfix/main.cf` configuration file options
+# defined by default by the ``debops.postfix`` Ansible role.
+postfix__default_maincf:
+
+  - name: 'smtpd_banner'
+    value: '$myhostname ESMTP'
+
+  - name: 'enable_long_queue_ids'
+    value: True
+    section: 'base'
+    state: '{{ "present"
+               if (postfix__version is version_compare("2.9.0", ">="))
+               else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__tls_maincf [[[
+#
+# The list of Postfix :file:`/etc/postfix/main.cf` configuration file options
+# defined by default by the ``debops.postfix`` Ansible role which configure
+# TLS/SSL encryption.
+postfix__tls_maincf:
+
+  - name: 'smtp_tls_client_comment'
+    state: 'absent'
+
+  - name: 'smtpd_use_tls'
+    section: 'smtpd-tls'
+    weight: -500
+
+  - name: 'smtpd_tls_cert_file'
+    section: 'smtpd-tls'
+    comment: ''
+
+  - name: 'smtpd_tls_key_file'
+    section: 'smtpd-tls'
+
+  - name: 'smtpd_tls_CAfile'
+    value: '{{ postfix__tls_ca_file }}'
+    section: 'smtpd-tls'
+
+  - name: 'smtp_tls_CAfile'
+    value: '{{ postfix__tls_ca_file }}'
+    section: 'smtp-tls'
+
+  - name: 'lmtp_tls_CAfile'
+    value: '{{ postfix__tls_ca_file }}'
+    section: 'lmtp-tls'
+
+  - name: 'smtpd_tls_session_cache_database'
+    section: 'smtpd-tls'
+
+  - name: 'smtp_tls_session_cache_database'
+    section: 'smtp-tls'
+
+  - name: 'lmtp_tls_session_cache_database'
+    value: 'btree:${data_directory}/lmtp_scache'
+    section: 'lmtp-tls'
+
+  - name: 'smtpd_tls_dh1024_param_file'
+    value: '{{ postfix__tls_dh1024_param_file }}'
+    state: '{{ "present" if postfix__dhparam|bool else "ignore" }}'
+    section: 'smtpd-tls'
+
+  - name: 'smtpd_tls_dh512_param_file'
+    value: '{{ postfix__tls_dh512_param_file }}'
+    state: '{{ "present" if postfix__dhparam|bool else "ignore" }}'
+    section: 'smtpd-tls'
+
+  - name: 'smtpd_tls_loglevel'
+    value: 1
+    section: 'smtpd-tls'
+
+  - name: 'smtp_tls_loglevel'
+    value: 1
+    section: 'smtp-tls'
+
+  - name: 'lmtp_tls_loglevel'
+    value: 1
+    section: 'lmtp-tls'
+
+  - name: 'smtpd_tls_security_level'
+    value: 'may'
+    section: 'smtpd-tls'
+    weight: -500
+
+  - name: 'smtp_tls_security_level'
+    value: 'may'
+    section: 'smtp-tls'
+    weight: -500
+
+  - name: 'lmtp_tls_security_level'
+    value: 'may'
+    section: 'lmtp-tls'
+    weight: -500
+
+  - name: 'smtpd_tls_auth_only'
+    value: True
+    section: 'smtpd-tls'
+
+  - name: 'smtpd_tls_protocols'
+    value: [ '!SSLv2', '!SSLv3', '!TLSv1', 'TLSv1.1', 'TLSv1.2' ]
+    section: 'smtpd-tls'
+
+  - name: 'smtp_tls_protocols'
+    value: [ '!SSLv2', '!SSLv3', '!TLSv1', 'TLSv1.1', 'TLSv1.2' ]
+    section: 'smtp-tls'
+
+  - name: 'lmtp_tls_protocols'
+    value: [ '!SSLv2', '!SSLv3', '!TLSv1', 'TLSv1.1', 'TLSv1.2' ]
+    section: 'lmtp-tls'
+
+  - name: 'smtpd_tls_mandatory_protocols'
+    value: [ '!SSLv2', '!SSLv3', '!TLSv1', 'TLSv1.1', 'TLSv1.2' ]
+    section: 'smtpd-tls'
+
+  - name: 'smtp_tls_mandatory_protocols'
+    value: [ '!SSLv2', '!SSLv3', '!TLSv1', 'TLSv1.1', 'TLSv1.2' ]
+    section: 'smtp-tls'
+
+  - name: 'lmtp_tls_mandatory_protocols'
+    value: [ '!SSLv2', '!SSLv3', '!TLSv1', 'TLSv1.1', 'TLSv1.2' ]
+    section: 'lmtp-tls'
+
+  - name: 'smtpd_tls_ciphers'
+    value: 'high'
+    section: 'smtpd-tls'
+
+  - name: 'smtp_tls_ciphers'
+    value: 'high'
+    section: 'smtp-tls'
+
+  - name: 'lmtp_tls_ciphers'
+    value: 'high'
+    section: 'lmtp-tls'
+
+  - name: 'smtpd_tls_mandatory_ciphers'
+    value: 'high'
+    section: 'smtpd-tls'
+
+  - name: 'smtp_tls_mandatory_ciphers'
+    value: 'high'
+    section: 'smtp-tls'
+
+  - name: 'lmtp_tls_mandatory_ciphers'
+    value: 'high'
+    section: 'lmtp-tls'
+
+  - name: 'smtpd_tls_exclude_ciphers'
+    value: [ 'aNULL', 'RC4', 'MD5', 'DES', '3DES', 'RSA', 'SHA' ]
+    section: 'smtpd-tls'
+
+  - name: 'smtp_tls_exclude_ciphers'
+    value: [ 'aNULL', 'RC4', 'MD5', 'DES', '3DES', 'RSA', 'SHA' ]
+    section: 'smtp-tls'
+
+  - name: 'lmtp_tls_exclude_ciphers'
+    value: [ 'aNULL', 'RC4', 'MD5', 'DES', '3DES', 'RSA', 'SHA' ]
+    section: 'lmtp-tls'
+
+  - name: 'smtpd_tls_eecdh_grade'
+    value: 'ultra'
+    section: 'smtpd-tls'
+
+  - name: 'smtpd_tls_received_header'
+    value: True
+    section: 'smtpd-tls'
+
+  - name: 'smtp_tls_note_starttls_offer'
+    value: True
+    section: 'smtp-tls'
+
+  - name: 'lmtp_tls_note_starttls_offer'
+    value: True
+    section: 'lmtp-tls'
+
+  - name: 'tls_preempt_cipherlist'
+    value: True
+    section: 'tls'
+
+  - name: 'tls_ssl_options'
+    value: 'NO_COMPRESSION'
+    section: 'tls'
+    state: '{{ "present"
+              if (postfix__version is version_compare("2.11.0", ">="))
+              else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__restrictions_maincf [[[
+#
+# The list of Postfix :file:`/etc/postfix/main.cf` configuration file options
+# defined by default by the ``debops.postfix`` Ansible role which configure
+# mail relay and delivery restrictions.
+postfix__restrictions_maincf:
+
+  - name: 'smtpd_helo_required'
+    value: True
+    section: 'restrictions'
+
+  - name: 'strict_rfc821_envelopes'
+    value: True
+    section: 'restrictions'
+
+  - name: 'smtpd_reject_unlisted_sender'
+    value: True
+    section: 'restrictions'
+
+  - name: 'disable_vrfy_command'
+    value: True
+    section: 'restrictions'
+
+  - name: 'smtpd_client_restrictions'
+    section: 'restrictions'
+    weight: 10
+    separator: True
+
+  - name: 'smtpd_helo_restrictions'
+    section: 'restrictions'
+    weight: 20
+    value:
+
+      - name: 'permit_mynetworks'
+        weight: -400
+
+      - name: 'reject_invalid_helo_hostname'
+        weight: -300
+
+      - name: 'reject_non_fqdn_helo_hostname'
+        weight: -200
+
+      - name: 'reject_unknown_helo_hostname'
+        weight: -100
+
+  - name: 'smtpd_sender_restrictions'
+    section: 'restrictions'
+    weight: 30
+    value:
+
+      - name: 'reject_non_fqdn_sender'
+        weight: -200
+
+      - name: 'reject_unknown_sender_domain'
+        weight: -100
+
+  - name: 'smtpd_relay_restrictions'
+    section: 'restrictions'
+    copy_id_from: 'smtpd_sender_restrictions'
+    weight: 40
+    state: '{{ "present"
+               if (postfix__version is version_compare("2.10.0", ">="))
+               else "ignore" }}'
+
+  - name: 'smtpd_recipient_restrictions'
+    section: 'restrictions'
+    weight: 50
+    value:
+
+      - name: 'reject_non_fqdn_recipient'
+        weight: -200
+      - name: 'reject_unknown_recipient_domain'
+        weight: -100
+
+  - name: 'smtpd_data_restrictions'
+    section: 'restrictions'
+    weight: 60
+    value:
+
+      - name: 'reject_unauth_pipelining'
+        weight: -200
+      - name: 'reject_multi_recipient_bounce'
+        weight: -100
+
+                                                                   # ]]]
+# .. envvar:: postfix__maincf [[[
+#
+# The list of Postfix :file:`/etc/postfix/main.cf` configuration file options
+# which should be present on all hosts in the Ansible inventory.
+postfix__maincf: []
+
+                                                                   # ]]]
+# .. envvar:: postfix__group_maincf [[[
+#
+# The list of Postfix :file:`/etc/postfix/main.cf` configuration file options
+# which should be present on hosts in the specific Ansible inventory group.
+postfix__group_maincf: []
+
+                                                                   # ]]]
+# .. envvar:: postfix__host_maincf [[[
+#
+# The list of Postfix :file:`/etc/postfix/main.cf` configuration file options
+# which should be present on specific hosts in the Ansible inventory.
+postfix__host_maincf: []
+
+                                                                   # ]]]
+# .. envvar:: postfix__dependent_maincf [[[
+#
+# List of the :file:`/etc/postfix/main.cf` configuration options defined by
+# other roles through role dependent variables. The configuration syntax
+# differs from a normal :file:`main.cf` configuration,
+# see :ref:`postfix__ref_dependency` for more details.
+postfix__dependent_maincf: []
+
+                                                                   # ]]]
+# .. envvar:: postfix__dependent_maincf_filter [[[
+#
+# The filtered configuration from other roles passed via role dependent
+# variables. This variable should be included in the combined list of
+# :file:`main.cf` configuration options. See :ref:`postfix__ref_dependency`
+# for more details.
+postfix__dependent_maincf_filter: '{{ lookup("template",
+                                              "lookup/postfix__dependent_maincf_filter.j2")
+                                              | from_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__combined_maincf [[[
+#
+# List which combines all of the :file:`main.cf`-related variables and is used
+# in the configuration template.
+postfix__combined_maincf: '{{ postfix__original_maincf
+                              + postfix__default_maincf
+                              + postfix__tls_maincf
+                              + postfix__restrictions_maincf
+                              + postfix__dependent_maincf_filter
+                              + postfix__maincf
+                              + postfix__group_maincf
+                              + postfix__host_maincf }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__init_maincf [[[
+#
+# This variable contains initial state of :file:`main.cf` configuration options
+# based on the contents of `:envvar:`postfix__combined_maincf` variable. It's
+# used to dynamically assign Postfix options to configuration file sections in
+# case that a section is not specified.
+postfix__init_maincf: '{{ lookup("template",
+                          "lookup/postfix__init_maincf.j2") }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__maincf_sections [[[
+#
+# List of configuration sections which are defined in the
+# :file:`/etc/postfix/main.cf` configuration file.
+# See :ref:`postfix__ref_maincf_sections` for more details.
+postfix__maincf_sections:
+
+  - name: 'base'
+
+  - name: 'auth'
+    title: 'Authentication and authorization'
+
+  - name: 'route'
+    title: 'Message routing'
+
+  - name: 'virtual'
+    title: 'Virtual mail configuration'
+
+  - name: 'tls'
+    title: 'TLS/SSL configuration'
+
+  - name: 'smtpd-tls'
+    title: 'SMTP Server (smtpd) TLS configuration'
+
+  - name: 'smtp-tls'
+    title: 'SMTP Client (smtp) TLS configuration'
+
+  - name: 'lmtp-tls'
+    title: 'Local Mail Transfer Protocol (lmtp) TLS configuration'
+
+  - name: 'postscreen'
+    title: 'postscreen options'
+
+  - name: 'restrictions'
+    title: 'SMTP Server (smtpd) restrictions'
+
+  - name: 'filter'
+    title: 'Mail filtering configuration'
+
+  - name: 'limit'
+    title: 'Rate limits'
+
+  - name: 'unknown'
+    title: 'Other options'
+                                                                   # ]]]
+                                                                   # ]]]
+# Postfix 'master.cf' configuration [[[
+# -------------------------------------
+
+# These variables define the contents of the :file:`/etc/postfix/master.cf`
+# configuration file. See :ref:`postfix__ref_mastercf` for more details.
+
+# .. envvar:: postfix__original_mastercf [[[
+#
+# List of options defined by the Debian ``postfix`` package when the default
+# "Internet Site" configuration type is selected during installation. This list
+# is used as the base configuration.
+postfix__original_mastercf:
+
+  - name: 'smtp'
+    type: 'inet'
+    private: False
+    chroot: True
+    command: 'smtpd'
+
+  - name: 'postscreen'
+    service: 'smtp'
+    type: 'inet'
+    private: False
+    chroot: True
+    maxproc: 1
+    command: 'postscreen'
+    state: 'comment'
+
+  - name: 'smtpd'
+    type: 'pass'
+    chroot: True
+    state: 'comment'
+
+  - name: 'dnsblog'
+    type: 'unix'
+    chroot: True
+    maxproc: 0
+    state: 'comment'
+
+  - name: 'tlsproxy'
+    type: 'unix'
+    chroot: True
+    maxproc: 0
+    state: 'comment'
+
+  - name: 'submission'
+    type: 'inet'
+    private: False
+    chroot: True
+    command: 'smtpd'
+    state: 'comment'
+    options:
+
+      - syslog_name: 'postfix/submission'
+      - smtpd_tls_security_level: 'encrypt'
+      - smtpd_sasl_auth_enable: True
+      - smtpd_reject_unlisted_recipient: False
+
+      - name: 'smtpd_client_restrictions'
+        value: '$mua_client_restrictions'
+        state: 'comment'
+
+      - name: 'smtpd_helo_restrictions'
+        value: '$mua_helo_restrictions'
+        state: 'comment'
+
+      - name: 'smtpd_sender_restrictions'
+        value: '$mua_sender_restrictions'
+        state: 'comment'
+
+      - smtpd_recipient_restrictions: ''
+
+      - name: 'smtpd_relay_restrictions'
+        value: [ 'permit_sasl_authenticated', 'reject' ]
+        state: '{{ "present"
+                  if (postfix__version is version_compare("2.10.0", ">="))
+                  else "ignore" }}'
+
+      - milter_macro_daemon_name: 'ORIGINATING'
+
+  - name: 'smtps'
+    type: 'inet'
+    private: False
+    chroot: True
+    command: 'smtpd'
+    state: 'comment'
+    options:
+
+      - syslog_name: 'postfix/smtps'
+      - smtpd_tls_wrappermode: True
+      - smtpd_sasl_auth_enable: True
+      - smtpd_reject_unlisted_recipient: False
+
+      - name: 'smtpd_client_restrictions'
+        value: '$mua_client_restrictions'
+        state: 'comment'
+
+      - name: 'smtpd_helo_restrictions'
+        value: '$mua_helo_restrictions'
+        state: 'comment'
+
+      - name: 'smtpd_sender_restrictions'
+        value: '$mua_sender_restrictions'
+        state: 'comment'
+
+      - smtpd_recipient_restrictions: ''
+
+      - name: 'smtpd_relay_restrictions'
+        value: [ 'permit_sasl_authenticated', 'reject' ]
+        state: '{{ "present"
+                  if (postfix__version is version_compare("2.10.0", ">="))
+                  else "ignore" }}'
+
+      - milter_macro_daemon_name: 'ORIGINATING'
+
+  - name: 'qmqp'
+    service: '628'
+    type: 'inet'
+    private: False
+    chroot: True
+    command: 'qmqpd'
+    state: 'comment'
+
+  - name: 'pickup'
+    type: 'unix'
+    private: False
+    chroot: True
+    wakeup: 60
+    maxproc: 1
+
+  - name: 'cleanup'
+    type: 'unix'
+    private: False
+    chroot: True
+    maxproc: 0
+
+  - name: 'qmgr'
+    type: 'unix'
+    private: False
+    chroot: False
+    wakeup: 300
+    maxproc: 1
+
+  - name: 'oqmgr'
+    service: 'qmgr'
+    type: 'unix'
+    private: False
+    chroot: False
+    wakeup: 300
+    maxproc: 1
+    command: 'oqmgr'
+    state: 'comment'
+
+  - name: 'tlsmgr'
+    type: 'unix'
+    chroot: True
+    wakeup: '1000?'
+    maxproc: 1
+
+  - name: 'rewrite'
+    type: 'unix'
+    chroot: True
+    command: 'trivial-rewrite'
+
+  - name: 'bounce'
+    type: 'unix'
+    chroot: True
+    maxproc: 0
+
+  - name: 'defer'
+    type: 'unix'
+    chroot: True
+    maxproc: 0
+    command: 'bounce'
+
+  - name: 'trace'
+    type: 'unix'
+    chroot: True
+    maxproc: 0
+    command: 'bounce'
+
+  - name: 'verify'
+    type: 'unix'
+    chroot: True
+    maxproc: 1
+
+  - name: 'flush'
+    type: 'unix'
+    private: False
+    chroot: True
+    wakeup: '1000?'
+    maxproc: 0
+
+  - name: 'proxymap'
+    type: 'unix'
+    chroot: False
+
+  - name: 'proxywrite'
+    type: 'unix'
+    chroot: False
+    maxproc: 1
+    command: 'proxymap'
+
+  - name: 'smtp_unix'
+    service: 'smtp'
+    type: 'unix'
+    chroot: True
+    command: 'smtp'
+
+  - name: 'relay'
+    type: 'unix'
+    chroot: True
+    command: 'smtp'
+    options:
+
+      - name: 'smtp_helo_timeout'
+        value: 5
+        state: 'comment'
+
+      - name: 'smtp_connect_timeout'
+        value: 5
+        state: 'comment'
+
+  - name: 'showq'
+    type: 'unix'
+    chroot: True
+    private: False
+
+  - name: 'error'
+    type: 'unix'
+    chroot: True
+
+  - name: 'retry'
+    type: 'unix'
+    chroot: True
+    command: 'error'
+
+  - name: 'discard'
+    type: 'unix'
+    chroot: True
+
+  - name: 'local'
+    type: 'unix'
+    unpriv: False
+    chroot: False
+
+  - name: 'virtual'
+    type: 'unix'
+    unpriv: False
+    chroot: False
+
+  - name: 'lmtp'
+    type: 'unix'
+    chroot: True
+
+  - name: 'anvil'
+    type: 'unix'
+    chroot: True
+    maxproc: 1
+
+  - name: 'scache'
+    type: 'unix'
+    chroot: True
+    maxproc: 1
+
+  - name: 'non-postfix-sftware'
+    comment: |
+      ====================================================================
+      Interfaces to non-Postfix software. Be sure to examine the manual
+      pages of the non-Postfix software to find out what options it wants.
+
+      Many of the following services use the Postfix pipe(8) delivery
+      agent.  See the pipe(8) man page for information about ${recipient}
+      and other message envelope options.
+      ====================================================================
+    state: 'hidden'
+
+  - name: 'maildrop'
+    comment: |
+      maildrop. See the Postfix MAILDROP_README file for details.
+      Also specify in main.cf: maildrop_destination_recipient_limit=1
+    type: 'unix'
+    unpriv: False
+    chroot: False
+    command: 'pipe'
+    args: 'flags=DRhu user=vmail argv=/usr/bin/maildrop -d ${recipient}'
+
+  - name: 'cyrus-lmtp-note'
+    comment: |
+      ====================================================================
+
+      Recent Cyrus versions can use the existing "lmtp" master.cf entry.
+
+      Specify in cyrus.conf:
+        lmtp    cmd="lmtpd -a" listen="localhost:lmtp" proto=tcp4
+
+      Specify in main.cf one or more of the following:
+       mailbox_transport = lmtp:inet:localhost
+       virtual_transport = lmtp:inet:localhost
+
+      ====================================================================
+    state: 'hidden'
+
+  - name: 'cyrus'
+    comment: |
+      Cyrus 2.1.5 (Amos Gouaux)
+      Also specify in main.cf: cyrus_destination_recipient_limit=1
+    type: 'unix'
+    unpriv: False
+    chroot: False
+    command: 'pipe'
+    args: 'user=cyrus argv=/cyrus/bin/deliver -e -r ${sender} -m ${extension} ${user}'
+    state: 'comment'
+
+  - name: 'old-cyrus'
+    comment: |
+      ====================================================================
+      Old example of delivery via Cyrus.
+    type: 'unix'
+    unpriv: False
+    chroot: False
+    command: 'pipe'
+    args: 'flags=R user=cyrus argv=/cyrus/bin/deliver -e -m ${extension} ${user}'
+    state: 'comment'
+
+  - name: 'uucp'
+    comment: |
+      ====================================================================
+
+      See the Postfix UUCP_README file for configuration details.
+    type: 'unix'
+    unpriv: False
+    chroot: False
+    command: 'pipe'
+    args: 'flags=Fqhu user=uucp argv=uux -r -n -z -a$sender - $nexthop!rmail ($recipient)'
+
+  - name: 'other-delivery-methods'
+    comment: 'Other external delivery methods.'
+    state: 'hidden'
+
+  - name: 'ifmail'
+    type: 'unix'
+    unpriv: False
+    chroot: False
+    command: 'pipe'
+    args: 'flags=F user=ftn argv=/usr/lib/ifmail/ifmail -r $nexthop ($recipient)'
+
+  - name: 'bsmtp'
+    type: 'unix'
+    unpriv: False
+    chroot: False
+    command: 'pipe'
+    args: 'flags=Fq. user=bsmtp argv=/usr/lib/bsmtp/bsmtp -t$nexthop -f$sender $recipient'
+
+  - name: 'scalemail-backend'
+    type: 'unix'
+    unpriv: False
+    chroot: False
+    maxproc: 2
+    command: 'pipe'
+    args: 'flags=R user=scalemail argv=/usr/lib/scalemail/bin/scalemail-store ${nexthop} ${user} ${extension}'
+
+  - name: 'mailman'
+    type: 'unix'
+    unpriv: False
+    chroot: False
+    args: |
+      flags=FR user=list argv=/usr/lib/mailman/bin/postfix-to-mailman.py
+      ${nexthop} ${user}
+    command: 'pipe'
+
+                                                                   # ]]]
+# .. envvar:: postfix__default_mastercf [[[
+#
+# The list of Postfix :file:`/etc/postfix/master.cf` configuration file options
+# defined by default by the ``debops.postfix`` Ansible role.
+postfix__default_mastercf: []
+
+                                                                   # ]]]
+# .. envvar:: postfix__tls_mastercf [[[
+#
+# The list of Postfix :file:`/etc/postfix/master.cf` configuration file options
+# defined by default by the ``debops.postfix`` Ansible role which configure
+# TLS/SSL encryption.
+postfix__tls_mastercf:
+
+  - name: 'submission'
+    options:
+      - tls_preempt_cipherlist: True
+
+  - name: 'smtps'
+    options:
+      - tls_preempt_cipherlist: True
+
+                                                                   # ]]]
+# .. envvar:: postfix__mastercf [[[
+#
+# The list of Postfix :file:`/etc/postfix/master.cf` configuration file options
+# which should be present on all hosts in the Ansible inventory.
+postfix__mastercf: []
+
+                                                                   # ]]]
+# .. envvar:: postfix__group_mastercf [[[
+#
+# The list of Postfix :file:`/etc/postfix/master.cf` configuration file options
+# which should be present on hosts in the specific Ansible inventory group.
+postfix__group_mastercf: []
+
+                                                                   # ]]]
+# .. envvar:: postfix__host_mastercf [[[
+#
+# The list of Postfix :file:`/etc/postfix/master.cf` configuration file options
+# which should be present on specific hosts in the Ansible inventory.
+postfix__host_mastercf: []
+
+                                                                   # ]]]
+# .. envvar:: postfix__dependent_mastercf [[[
+#
+# List of the :file:`/etc/postfix/master.cf` configuration options defined by
+# other roles through role dependent variables. The configuration syntax
+# differs from a normal :file:`master.cf` configuration,
+# see :ref:`postfix__ref_dependency` for more details.
+postfix__dependent_mastercf: []
+
+                                                                   # ]]]
+# .. envvar:: postfix__dependent_mastercf_filter [[[
+#
+# The filtered configuration from other roles passed via role dependent
+# variables. This variable should be included in the combined list of
+# :file:`master.cf` configuration options. See :ref:`postfix__ref_dependency`
+# for more details.
+postfix__dependent_mastercf_filter: '{{ lookup("template",
+                                               "lookup/postfix__dependent_mastercf_filter.j2")
+                                               | from_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__combined_mastercf [[[
+#
+# List which combines all of the :file:`master.cf`-related variables and is used
+# in the configuration template.
+postfix__combined_mastercf: '{{ postfix__original_mastercf
+                                + postfix__default_mastercf
+                                + postfix__tls_mastercf
+                                + postfix__dependent_mastercf_filter
+                                + postfix__mastercf
+                                + postfix__group_mastercf
+                                + postfix__host_mastercf }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Postfix lookup tables [[[
+# -------------------------
+
+# These variables define the contents of the various Postfix lookup tables
+# which will be placed in the :file:`/etc/postfix/` directory.
+# See :ref:`postfix__ref_lookup_tables` for more details.
+
+# .. envvar:: postfix__lookup_tables [[[
+#
+# List of lookup tables which will be managed on all hosts in the Ansible
+# inventory.
+postfix__lookup_tables: []
+
+                                                                   # ]]]
+# .. envvar:: postfix__group_lookup_tables [[[
+#
+# List of lookup tables which will be managed on hosts in specific Ansible
+# inventory group.
+postfix__group_lookup_tables: []
+
+                                                                   # ]]]
+# .. envvar:: postfix__host_lookup_tables [[[
+#
+# List of lookup tables which will be managed on specific hosts in the Ansible
+# inventory.
+postfix__host_lookup_tables: []
+
+                                                                   # ]]]
+# .. envvar:: postfix__dependent_lookup_tables [[[
+#
+# List of lookup tables which are defined by other Ansible roles through role
+# dependent variables.
+postfix__dependent_lookup_tables: []
+
+                                                                   # ]]]
+# .. envvar:: postfix__dependent_lookup_tables_filter [[[
+#
+# This variable filters the configuration defined by other Ansible roles to be
+# usable with the rest of the lookup tables configuration.
+postfix__dependent_lookup_tables_filter: '{{ lookup("flattened",
+                                             postfix__dependent_lookup_tables) }}'
+
+                                                                   # ]]]
+# .. envvar:: postfix__combined_lookup_tables [[[
+#
+# Variable which combines all lookup table lists and passes them to the Ansible
+# tasks. It also defines the order in which the entries are processed.
+postfix__combined_lookup_tables: '{{ ([ postfix__dependent_lookup_tables_filter ]
+                                      if postfix__dependent_lookup_tables_filter is mapping
+                                      else postfix__dependent_lookup_tables_filter)
+                                     + postfix__lookup_tables
+                                     + postfix__group_lookup_tables
+                                     + postfix__host_lookup_tables }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: postfix__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+postfix__ferm__dependent_rules:
+
+  - name: 'postfix_smtp'
+    type: 'accept'
+    by_role: 'debops.postfix'
+    dport: [ 'smtp' ]
+    saddr: '{{ postfix__allow_smtp }}'
+    accept_any: '{{ postfix__accept_any }}'
+    rule_state: '{{ "present"
+                    if ("smtp" in postfix__env_active_services|d([]))
+                    else "absent" }}'
+
+  - name: 'postfix_smtps'
+    type: 'accept'
+    by_role: 'debops.postfix'
+    dport: [ 'smtps' ]
+    saddr: '{{ postfix__allow_smtps }}'
+    accept_any: '{{ postfix__accept_any }}'
+    rule_state: '{{ "present"
+                    if ("smtps" in postfix__env_active_services|d([]))
+                    else "absent" }}'
+
+  - name: 'postfix_submission'
+    type: 'accept'
+    by_role: 'debops.postfix'
+    dport: [ 'submission' ]
+    saddr: '{{ postfix__allow_submission }}'
+    accept_any: '{{ postfix__accept_any }}'
+    rule_state: '{{ "present"
+                    if ("submission" in postfix__env_active_services|d([]))
+                    else "absent" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

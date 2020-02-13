@@ -1,6 +1,8 @@
 ---
 
 - name: Manage Avahi service
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_avahi' ]
   become: True
 
@@ -10,20 +12,20 @@
 
   roles:
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python', 'role::avahi' ]
       python__dependent_packages3:
         - '{{ avahi__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ avahi__python__dependent_packages2 }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ avahi__ferm__dependent_rules }}'
 
-    - role: debops.avahi
+    - role: avahi
       tags: [ 'role::avahi', 'skip::avahi' ]
 
-    - role: debops.nsswitch
+    - role: nsswitch
       tags: [ 'role::nsswitch', 'skip::nsswitch' ]

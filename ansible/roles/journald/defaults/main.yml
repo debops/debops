@@ -1,0 +1,253 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _journald__ref_defaults:
+
+# debops.journald default variables
+# =================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+# General options [[[
+# -------------------
+
+# .. envvar:: journald__enabled [[[
+#
+# Enable or disable management of the :command:`systemd-journald` service by
+# the role.
+journald__enabled: '{{ True
+                       if (ansible_service_mgr == "systemd")
+                       else False }}'
+
+                                                                   # ]]]
+# .. envvar:: journald__version [[[
+#
+# The version of the :command:`systemd-journald` service installed on the host.
+# It will be automatically defined by the Ansible local fact script.
+journald__version: '{{ ansible_local.journald.version | d("0") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Journal storage configuration [[[
+# ---------------------------------
+
+# .. envvar:: journald__storage [[[
+#
+# Select the storage type of the journal logs. Supported types: ``auto``,
+# ``persistent``, ``volatile``, ``none``.
+journald__storage: 'auto'
+
+                                                                   # ]]]
+# .. envvar:: journal__persisten_state [[[
+#
+# Set the desired state of the persistent journal storage directory
+# (:file:`/var/log/journal/`). If set to ``absent``, the directory will be
+# removed by the role.
+journald__persistent_state: '{{ "absent"
+                                if (journald__storage == "none")
+                                else "present" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Forward Secure Sealing [[[
+# --------------------------
+
+# .. envvar:: journald__fss_enabled [[[
+#
+# Enable or disable Forward Secure Sealing done by the
+# :command:`systemd-journald` service. If enabled, the role will create the
+# sealing keys if they are not already present on the hosts, and will save the
+# verification keys in the :file:`secret/journal/fss/` directory on the Ansible
+# Controller. See :ref:`journald__ref_fss` for more details.
+journald__fss_enabled: '{{ True
+                           if (journald__persistent_state == "present")
+                           else False }}'
+
+                                                                   # ]]]
+# .. envvar:: journald__fss_interval [[[
+#
+# Specify the interval between log sealing as well as the sealing key rotation.
+# The default is 15 minutes; shorter times may incur more host resource usage.
+journald__fss_interval: '15min'
+
+                                                                   # ]]]
+# .. envvar:: journald__fss_verify_key_path [[[
+#
+# Directory on the Ansible Host where the FSS verification key will be stored.
+# By default it's stored relative to the :file:`secret/` directory in the
+# DebOps project directory. See :ref:`debops.secret` role for more details.
+journald__fss_verify_key_path: '{{ "journald/fss/" + inventory_hostname + "/verify_key" }}'
+
+                                                                   # ]]]
+# .. envvar:: journald__fss_verify_key [[[
+#
+# The contents of the FSS verification key file stored on the Ansible
+# Controller, used by the log verification task (not run by the role by
+# default).
+journald__fss_verify_key: '{{ lookup("file", secret + "/" + journald__fss_verify_key_path) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Main :command:`systemd-journald` configuration [[[
+# --------------------------------------------------
+
+# These variables define the contents of the
+# :file:`/etc/systemd/journald.conf.d/ansible.conf` which controls the
+# :command:`systemd-journald` operation. See :ref:`journald__ref_configuration`
+# for more details.
+
+# .. envvar:: journald__default_configuration [[[
+#
+# The :command:`systemd-journald` configuration defined by the role.
+journald__default_configuration:
+
+  - name: 'Storage'
+    value: '{{ journald__storage }}'
+    state: '{{ "init"
+               if (journald__storage == "auto")
+               else "present" }}'
+
+  - name: 'Compress'
+    value: True
+    state: 'init'
+
+  - name: 'Seal'
+    value: '{{ journald__fss_enabled }}'
+    state: '{{ "init" if journald__fss_enabled|bool else "present" }}'
+
+  - name: 'SplitMode'
+    value: 'uid'
+    state: 'init'
+
+  - name: 'SyncIntervalSec'
+    value: '5m'
+    state: 'init'
+
+  - name: 'RateLimitIntervalSec'
+    value: '30s'
+    state: 'init'
+
+  - name: 'RateLimitBurst'
+    value: 10000
+    state: 'init'
+
+  - name: 'SystemMaxUse'
+    value: ''
+    state: 'init'
+
+  - name: 'SystemKeepFree'
+    value: ''
+    state: 'init'
+
+  - name: 'SystemMaxFileSize'
+    value: ''
+    state: 'init'
+
+  - name: 'SystemMaxFiles'
+    value: 100
+    state: 'init'
+
+  - name: 'RuntimeMaxUse'
+    value: ''
+    state: 'init'
+
+  - name: 'RuntimeKeepFree'
+    value: ''
+    state: 'init'
+
+  - name: 'RuntimeMaxFileSize'
+    value: ''
+    state: 'init'
+
+  - name: 'RuntimeMaxFiles'
+    value: 100
+    state: 'init'
+
+  - name: 'MaxRetentionSec'
+    value: ''
+    state: 'init'
+
+  - name: 'MaxFileSec'
+    value: '1month'
+    state: 'init'
+
+  - name: 'ForwardToSyslog'
+    value: True
+    state: 'init'
+
+  - name: 'ForwardToKMsg'
+    value: False
+    state: 'init'
+
+  - name: 'ForwardToConsole'
+    value: False
+    state: 'init'
+
+  - name: 'ForwardToWall'
+    value: True
+    state: 'init'
+
+  - name: 'TTYPath'
+    value: '/dev/console'
+    state: 'init'
+
+  - name: 'MaxLevelStore'
+    value: 'debug'
+    state: 'init'
+
+  - name: 'MaxLevelSyslog'
+    value: 'debug'
+    state: 'init'
+
+  - name: 'MaxLevelKMsg'
+    value: 'notice'
+    state: 'init'
+
+  - name: 'MaxLevelConsole'
+    value: 'info'
+    state: 'init'
+
+  - name: 'MaxLevelWall'
+    value: 'emerg'
+    state: 'init'
+
+  - name: 'LineMax'
+    value: '48K'
+    state: 'init'
+
+  - name: 'ReadKMsg'
+    value: True
+    state: 'init'
+
+                                                                   # ]]]
+# .. envvar:: journald__configuration [[[
+#
+# The :command:`systemd-journald` configuration defined on all hosts in the
+# Ansible inventory.
+journald__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: journald__group_configuration [[[
+#
+# The :command:`systemd-journald` configuration defined on hosts in a specific
+# Ansible inventory group.
+journald__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: journald__host_configuration [[[
+#
+# The :command:`systemd-journald` configuration defined on specific hosts in
+# the Ansible inventory.
+journald__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: journald__combined_configuration [[[
+#
+# The variable which combines all other :command:`systemd-journald`
+# configuration variables and is used in the role tasks and templates.
+journald__combined_configuration: '{{ journald__default_configuration
+                                      + journald__configuration
+                                      + journald__group_configuration
+                                      + journald__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]

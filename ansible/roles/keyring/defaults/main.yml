@@ -1,0 +1,111 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _keyring__ref_defaults:
+
+# debops.keyring default variables
+# ================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Global configuration [[[
+# ------------------------
+
+# .. envvar:: keyring__enabled [[[
+#
+# Enable or disable support for managing APT and GPG keyrings for other roles.
+keyring__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: keyring__local_path [[[
+#
+# The path to the directory that contains GPG keys available locally on the
+# Ansible Controller. A non-absolute path is relative to the :file:`files/`
+# directory of the :ref:`debops.keyring` Ansible role; you can also specify an
+# absolute path to a directory on the Ansible Controller.
+#
+# Key files are expected to be named in the format: :file:`0xFINGERPRINT.asc`.
+keyring__local_path: ''
+
+                                                                   # ]]]
+# .. envvar:: keyring__keybase_api [[[
+#
+# The URL of the Keybase API which should be used to lookup GPG keys not
+# available in the local keyring.
+keyring__keybase_api: 'https://keybase.io/'
+
+                                                                   # ]]]
+# .. envvar:: keyring__keyserver [[[
+#
+# The URL of the GPG keyserver to use to retrieve keys that are not
+# available in the local keyring.
+keyring__keyserver: 'hkp://pool.sks-keyservers.net'
+
+                                                                   # ]]]
+# .. envvar:: keyring__gpg_version [[[
+#
+# The version of the :command:`gpg` command in use. This variable is defined
+# via Ansible local facts and can be used for conditional code execution.
+keyring__gpg_version: '{{ ansible_local.keyring.gpg_version
+                          if (ansible_local|d() and ansible_local.keyring|d() and
+                              ansible_local.keyring.gpg_version|d())
+                          else "0.0.0" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: keyring__base_packages [[[
+#
+# List of the default APT packages to install for keyring support.
+keyring__base_packages:
+  - 'curl'
+  - 'ca-certificates'
+  - 'gnupg'
+  - '{{ "apt-transport-https"
+        if (ansible_distribution_release in
+            [ "wheezy", "jessie", "stretch",
+              "precise", "trusty", "xenial" ])
+        else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: keyring__packages [[[
+#
+# List of additional APT packages to install for keyring support.
+keyring__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Dependent configuration variables [[[
+# -------------------------------------
+
+# .. envvar:: keyring__dependent_gpg_user [[[
+#
+# Specify the UNIX account on which GPG keys will be managed if the ``user``
+# parameter is not specified. If the variable is empty, ``root`` GPG keyring
+# will be used by default. This variable can be set to manage many GPG keys on
+# an unprivileged UNIX account at once.
+keyring__dependent_gpg_user: ''
+
+                                                                   # ]]]
+# .. envvar:: keyring__dependent_apt_keys [[[
+#
+# The variable which can be used by other Ansible roles to define what GPG keys
+# should be present in the APT keyring. If you want to define the APT keys via
+# the Ansible inventory, use the :ref:`debops.apt` role instead.
+# See :ref:`keyring__ref_dependent_apt_keys` for more details.
+keyring__dependent_apt_keys: []
+
+                                                                   # ]]]
+# .. envvar:: keyring__dependent_gpg_keys [[[
+#
+# The variable which can be used by other Ansible roles to define what GPG keys
+# should be present in an unprivileged UNIX account GPG keyrings. The usage via
+# the Ansible inventory is not supported.
+# See :ref:`keyring__ref_dependent_gpg_keys` for more details.
+keyring__dependent_gpg_keys: []
+                                                                   # ]]]
+                                                                   # ]]]

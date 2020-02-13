@@ -1,0 +1,77 @@
+# Welcome to the chrony configuration file. See chrony.conf(5) for more
+# information about usable directives.
+{% if ntp__servers is defined and ntp__servers %}
+# NTP servers to synchronize with
+{% if ntp__servers is string %}
+pool {{ ntp__servers }} iburst
+{% else %}
+{% for address in ntp__servers %}
+{{ ntp__servers_as_pool | ternary('pool', 'server') }} {{ address }} iburst
+{% endfor %}
+{% endif %}
+
+{% endif %}
+{% if ntp__listen and ntp__listen != '*' %}
+# Only listen on these interfaces for incoming connections
+{% for address in ntp__listen %}
+bindaddress {{ address }}
+{% endfor %}
+
+{% endif %}
+# Only listen on localhost for command connections
+bindcmdaddress 127.0.0.1
+
+# Do not listen on udp control port on loopback. chronyc can still talk to chronyd via Unix sockets.
+cmdport 0
+
+{% if ntp__allow == False %}
+# Allow all hosts to connect to the server
+allow all
+
+{% else %}
+# Default is to restrict all access to everybody
+deny all
+
+{%   if ntp__allow is string %}
+allow {{ ntp__allow }}
+{%   else %}
+{%     for address in ntp__allow %}
+allow {{ address }}
+{%     endfor %}
+{%   endif %}
+
+{% endif %}
+
+{% if ntp__fudge is defined and ntp__fudge %}
+# Fudge local clock if time servers is not available
+local stratum 10
+{% endif %}
+
+# This directive specify the location of the file containing ID/key pairs for
+# NTP authentication.
+keyfile /etc/chrony/chrony.keys
+
+# This directive specify the file into which chronyd will store the rate
+# information.
+driftfile /var/lib/chrony/chrony.drift
+
+# Uncomment the following line to turn logging on.
+#log tracking measurements statistics
+
+# Log files location.
+logdir /var/log/chrony
+
+# Stop bad estimates upsetting machine clock.
+maxupdateskew 100.0
+
+# This directive tells 'chronyd' to parse the 'adjtime' file to find out if the
+# real-time clock keeps local time or UTC. It overrides the 'rtconutc' directive.
+hwclockfile /etc/adjtime
+
+# This directive enables kernel synchronisation (every 11 minutes) of the
+# real-time clock. Note that it can’t be used along with the 'rtcfile' directive.
+rtcsync
+
+# Step the system clock instead of slewing it if the adjustment is larger than
+# one second, but only in the first three clock updates.
+makestep 1 3

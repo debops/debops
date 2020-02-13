@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+# {{ ansible_managed }}
+
+# Reload or restart MinIO instances on a certificate state change
+
+set -o nounset -o pipefail -o errexit
+
+pki_script_realm="${PKI_SCRIPT_REALM:-}"
+minio_pki_realm="{{ minio__pki_realm }}"
+
+# Get list of current realm states
+read -r -a states <<< "$(echo "${PKI_SCRIPT_STATE:-}" | tr "," " ")"
+
+if [ -n "${pki_script_realm}" ] && [ -n "${minio_pki_realm}" ] \
+        && [ "${pki_script_realm}" = "${minio_pki_realm}" ] \
+        && [[ ${states[*]} ]] ; then
+
+    for state in "${states[@]}" ; do
+
+        if [ "${state}" = "changed-certificate" ] || [ "${state}" = "changed-dhparam" ] ; then
+
+            # Check if current init is systemd
+            if pidof systemd > /dev/null 2>&1 ; then
+
+                minio_state="$(systemctl is-active minio.service)"
+                if [ "${minio_state}" = "active" ] ; then
+                    systemctl restart minio.service
+                fi
+
+            else
+
+                printf "Warning: sysvinit is not supported\\n"
+
+            fi
+
+            break
+        fi
+
+    done
+
+fi

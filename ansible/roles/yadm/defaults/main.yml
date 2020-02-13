@@ -1,0 +1,234 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _yadm__ref_defaults:
+
+# debops.yadm default variables
+# =============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: yadm__enabled [[[
+#
+# Enable or disable support for Yet Another Dotfiles Manager.
+yadm__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: yadm__dotfiles_enabled [[[
+#
+# Enable or disable download of the custom dotfiles to a local centralized
+# directory. The dotfiles will be cloned using the ``root`` account, but no
+# code will be executed at this point. See below for the configuration of the
+# custom dotfile lists.
+yadm__dotfiles_enabled: False
+
+                                                                   # ]]]
+# .. envvar:: yadm__dotfiles_root [[[
+#
+# Absolute path to the directory where the role will clone dotfile
+# repositories. The repositories will be cloned in subdirectories based on the
+# URL path. Users can then install the dotfiles from a local mirror of the
+# repository instead of directly from the Internet.
+yadm__dotfiles_root: '{{ (ansible_local.root.src
+                          if (ansible_local|d() and ansible_local.root|d() and
+                              ansible_local.root.src|d())
+                          else "/usr/local/src") + "/yadm" }}'
+
+                                                                   # ]]]
+# .. envvar:: yadm__dotfiles_host [[[
+#
+# The host of the default dotfiles defined in the Ansible local facts.
+yadm__dotfiles_host: 'github.com'
+
+                                                                   # ]]]
+# .. envvar:: yadm__dotfiles_owner [[[
+#
+# The owner of the default dotfiles defined in the Ansible local facts; usually
+# a GitHub account which owns a ``dotfiles`` repository.
+# The current owner is temporary, until DebOps will have its own set of default
+# dotfiles available.
+yadm__dotfiles_owner: 'drybjed'
+
+                                                                   # ]]]
+# .. envvar:: yadm__dotfiles_path [[[
+#
+# Absolute path of the default dotfiles to use, exposed in Ansible local facts.
+# If custom dotfiles are not enabled, the fact will be empty.
+# The role clones the dotfiles as a bare repository with the ``.git`` extension
+# in the directory name; be sure to include it in the inventory definition.
+yadm__dotfiles_path: '{{ (yadm__dotfiles_root + "/" + yadm__dotfiles_host + "/"
+                          + yadm__dotfiles_owner + "/dotfiles.git")
+                         if yadm__dotfiles_enabled|bool
+                         else "" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: yadm__base_packages [[[
+#
+# List of the default APT packages installed with yadm. Including shells here
+# ensures that users with login shells other than :command:`/bin/bash` will be
+# able to login to the host regardless of their dotfiles configuration.
+yadm__base_packages:
+  - 'git'
+  - 'less'
+  - 'ncurses-term'
+  - 'tmux'
+  - '{{ [] if yadm__upstream_enabled|bool else "yadm" }}'
+
+                                                                   # ]]]
+# .. envvar:: yadm__packages [[[
+#
+# List of additional APT packages to install on all hosts in the Ansible
+# inventory.
+yadm__packages: []
+
+                                                                   # ]]]
+# .. envvar:: yadm__group_packages [[[
+#
+# List of additional APT packages to install on hosts in a specific Ansible
+# inventory group.
+yadm__group_packages: []
+
+                                                                   # ]]]
+# .. envvar:: yadm__host_packages [[[
+#
+# List of additional APT packages to install on specific hosts in the Ansible
+# inventory.
+yadm__host_packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Upstream yadm installation [[[
+# ------------------------------
+
+# .. envvar:: yadm__upstream_enabled [[[
+#
+# Enable or disable installation of the :command:`yadm` script from upstream
+# :command:`git` repository.
+yadm__upstream_enabled: '{{ True
+                            if (ansible_distribution_release in
+                                [ "wheezy", "jessie", "precise", "trusty", "xenial" ])
+                            else False }}'
+
+                                                                   # ]]]
+# .. envvar:: yadm__upstream_gpg_id [[[
+#
+# The GPG fingerprint of the key used to sign the :command:`yadm` releases.
+yadm__upstream_gpg_id: '31B9 62F7 CC57 473B 0329  CB9A 6CBE 24C2 FD8C F76E'
+
+                                                                   # ]]]
+# .. envvar:: yadm__upstream_repo [[[
+#
+# The URL of the yadm upstream :command:`git` repository.
+yadm__upstream_repo: 'https://github.com/TheLocehiliosan/yadm'
+
+                                                                   # ]]]
+# .. envvar:: yadm__upstream_dest [[[
+#
+# Absolute path to the directory where the yadm upstream :command:`git`
+# repository will be cloned into.
+yadm__upstream_dest: '{{ (ansible_local.root.src
+                          if (ansible_local|d() and ansible_local.root|d() and
+                              ansible_local.root.src|d())
+                          else "/usr/local/src") + "/yadm/"
+                          + yadm__upstream_repo.split("://")[1] }}'
+
+                                                                   # ]]]
+# .. envvar:: yadm__upstream_version [[[
+#
+# The version of the upstream :command:`git` repository to check out.
+yadm__upstream_version: '1.12.0'
+
+                                                                   # ]]]
+# .. envvar:: yadm__upstream_link [[[
+#
+# The absolute path of the symlink created to expose the :command:`yadm` binary
+# in the ``$PATH`` environment.
+yadm__upstream_link: '/usr/local/bin/yadm'
+                                                                   # ]]]
+                                                                   # ]]]
+# Custom dotfiles [[[
+# -------------------
+
+# These variables define custom dotfile repositories to clone to the host, so
+# that they are available locally to users. See :ref:`yadm__ref_dotfiles` for
+# more details.
+
+# .. envvar:: yadm__default_dotfiles [[[
+#
+# List of the custom dotfile repositories defined by the role.
+yadm__default_dotfiles:
+
+  - name: 'drybjed'
+    gpg: '2706 7A91 D620 EE91 D503  09D9 2DCC F53E 9BC7 4BEC'
+    git: 'https://github.com/drybjed/dotfiles'
+
+                                                                   # ]]]
+# .. envvar:: yadm__dotfiles [[[
+#
+# List of the custom dotfile repositories defined on all hosts in the Ansible
+# inventory.
+yadm__dotfiles: []
+
+                                                                   # ]]]
+# .. envvar:: yadm__group_dotfiles [[[
+#
+# List of the custom dotfile repositories defined on hosts in a specific
+# Ansible inventory group.
+yadm__group_dotfiles: []
+
+                                                                   # ]]]
+# .. envvar:: yadm__host_dotfiles [[[
+#
+# List of the custom dotfile repositories defined on specific hosts in the
+# Ansible inventory.
+yadm__host_dotfiles: []
+
+                                                                   # ]]]
+# .. envvar:: yadm__combined_dotfiles [[[
+#
+# Variable which combines custom dotfile lists and is used in the role tasks.
+yadm__combined_dotfiles: '{{ yadm__default_dotfiles
+                             + yadm__dotfiles
+                             + yadm__group_dotfiles
+                             + yadm__host_dotfiles }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: yadm__apt_preferences__dependent_list [[[
+#
+# Configuration for the :ref:`debops.apt_preferences` Ansible role.
+yadm__apt_preferences__dependent_list:
+
+  - package: 'yadm'
+    backports: [ 'stretch' ]
+    reason:  'Version parity with Debian Buster'
+    by_role: 'debops.yadm'
+
+                                                                   # ]]]
+# .. envvar:: yadm__keyring__dependent_gpg_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+yadm__keyring__dependent_gpg_keys:
+
+  - id: '{{ yadm__upstream_gpg_id }}'
+    state: '{{ "present" if yadm__upstream_enabled|bool else "absent" }}'
+
+  # Extract a list of GPG keys from the dotfile configuration; they will be
+  # added to the 'root' GPG keyring.
+  - '{{ (yadm__combined_dotfiles | parse_kv_items
+         | selectattr("gpg", "defined") | selectattr("state", "equalto", "present")
+         | map(attribute="gpg") | list)
+        if yadm__dotfiles_enabled|bool else [] }}'
+                                                                   # ]]]
+                                                                   # ]]]

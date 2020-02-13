@@ -1,0 +1,777 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _postldap__ref_defaults:
+
+# debops.postldap default variables [[[
+# =====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: postldap__postfix__dependent_packages [[[
+#
+# List of additional APT packages needed for the LDAP support.
+postldap__postfix__dependent_packages: '{{ [ "postfix-ldap" ]
+                                           if postldap__ldap_enabled else [] }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# DNS / PKI / TLS configuration [[[
+# ---------------------------------
+
+# .. envvar:: postldap__domain [[[
+#
+# The DNS domain used to generate a :man:`ldap_table(5)` pattern for LDAP
+# search queries.
+postldap__domain: '{{ ansible_local.core.domain
+                      if (ansible_local|d() and ansible_local.core|d() and
+                          ansible_local.core.domain|d())
+                      else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: postldap__domain_rev_pattern [[[
+#
+# The search pattern based on the primary DNS domain of the host, with entries
+# defined in reverse order, for example ``%3.%2.%1``, depending on the number
+# of levels in the domain with maximum of 9. See :man:`ldap_table(5)` manual
+# page for more details about usage of this pattern.
+#
+# This pattern may be used in LDAP search queries which look for the host DNS
+# domain or its subdomains. If multiple DNS domains are used in LDAP with
+# different levels (number of domain parts), each level needs to be defined
+# separately in the LDAP search query.
+postldap__domain_rev_pattern: |-
+  {% set reversed = [] %}
+  {% for element in postldap__domain.split(".") %}
+  {% set _ = reversed.append("%" + loop.index|string) %}
+  {% endfor %}
+  {% if reversed | length == 1 %}
+  {{ "%d" }}{% else %}
+  {{ reversed[0:9][::-1] | join(".") }}{% endif %}
+
+# ]]]
+# .. envvar:: postldap__tls_ca_cert_dir [[[
+#
+# Directory containing X509 Certification  Authority  certificates
+# in  PEM  format  which  are  to  be  recognized by the client in
+# SSL/TLS connections. The files each contain one CA  certificate.
+postldap__tls_ca_cert_dir: '/etc/ssl/certs/'
+                                                                   # ]]]
+                                                                   # ]]]
+# Secrets [[[
+# -----------
+
+# .. envvar:: postldap__no_log [[[
+#
+# This variable can be used in the Ansible tasks to set the ``no_log``
+# parameter. Changing it to ``False`` can help with debugging issues with the
+# roles, but otherwise it should be set to ``True`` to ensure that Ansible
+# doesn't leak sensitive data in its logs.
+postldap__no_log: True
+                                                                   # ]]]
+                                                                   # ]]]
+# Virtual Mail [[[
+# ----------------
+#
+# The settings below help to configure to enable Postfix to host multiple
+# (virtual) domains, and thus provide email to several domains with just one
+# "mail server".  Currently the Virtual Mail support works only with LDAP
+# enabled, in the future MariaDB support could be added as well.
+
+# .. envvar:: postldap__vmail_posix_user [[[
+#
+# Virtual Mail POSIX username
+# For the accesses to the mailbox directories a separate user `vmail` (`Virtual Mail`) is created,
+# under which the accesses of Postfix, Dovecot and other components of the mail server should take place.
+# On the one hand this prevents mail server components from accessing sensitive system directories,
+# on the other hand it protects the mailboxes from external access.
+# Only vmail (and root) are allowed to access the mailboxes.
+postldap__vmail_posix_user: 'vmail'
+
+                                                                   # ]]]
+# .. envvar:: postldap__vmail_posix_uidnumber [[[
+#
+# Virtual Mail POSIX uidNumber
+postldap__vmail_posix_uidnumber: '{{ ansible_local.postldap.vmail_posix_uidnumber
+                                     if (ansible_local|d() and ansible_local.postldap|d() and
+                                         ansible_local.postldap.vmail_posix_uidnumber|d())
+                                     else None }}'
+
+                                                                   # ]]]
+# .. envvar:: postldap__vmail_posix_group [[[
+#
+# Virtual Mail POSIX group
+postldap__vmail_posix_group: 'vmail'
+
+                                                                   # ]]]
+# .. envvar:: postldap__vmail_posix_gidnumber [[[
+#
+# Virtual Mail POSIX gidNumber
+postldap__vmail_posix_gidnumber: '{{ ansible_local.postldap.vmail_posix_gidnumber
+                                     if (ansible_local|d() and ansible_local.postldap|d() and
+                                       ansible_local.postldap.vmail_posix_gidnumber|d())
+                                     else None }}'
+
+                                                                   # ]]]
+# .. envvar:: postldap__mailbox_base [[[
+#
+# All mailboxes are stored directly in the file system of the server.
+#
+# This setting describes the prefix that the virtual delivery agent prepends to all pathname results from
+# `$virtual_mailbox_maps` table lookups.
+# The directories under this base contain the users MailDirs.
+# This directory must be created in advance and must be writeable by all potential mail users.
+# To achieve this, either use the same GID across all mail users and set group ownership to that GID,
+# or make the directory world writable.
+postldap__mailbox_base: '/var/vmail'
+
+                                                                   # ]]]
+# .. envvar:: postldap__virtual_alias_maps [[[
+#
+# Optional lookup tables that alias specific mail addresses or domains
+# to other local or remote address.
+# The default option, when using Virtual Mail with LDAP, will first go over the
+# alisaes set by :ref:`debops.etc_aliases` and if no match is found query
+# the LDAP for the email address.
+#
+# Specify zero or more `type:name` lookup tables, separated by whitespace or comma.
+# Tables will be searched in the specified order until a match is found.
+# Note: these lookups are recursive.
+postldap__virtual_alias_maps:
+  - '$alias_maps'
+  - 'ldap:/etc/postfix/ldap_virtual_alias_maps.cf'
+                                                                   # ]]]
+                                                                   # ]]]
+# Postfix 'main.cf' configuration [[[
+# -----------------------------------
+
+# These variables define the contents of the :file:`/etc/postfix/main.cf`
+# configuration file. See :ref:`postfix__ref_maincf` for more details.
+
+# .. envvar:: postldap__postfix__dependent_maincf [[[
+#
+# List of options needed by `postfix` for the Virtual Mail configuration
+postldap__postfix__dependent_maincf:
+
+  # Postfix is final destination for the specified list of domains; mail is delivered
+  # via the $virtual_transport mail delivery transport
+  - name: 'virtual_mailbox_domains'
+    value: 'ldap:/etc/postfix/ldap_virtual_mailbox_domains.cf'
+    section: 'virtual'
+    state: '{{ "present"
+            if (postldap__ldap_enabled|bool and
+                postfix__version is version_compare("2.0", ">="))
+            else "absent" }}'
+
+  # Optional lookup tables that alias specific mail addresses or domains to other local or remote address.
+  - name: 'virtual_alias_maps'
+    value: '{{ postldap__virtual_alias_maps | join(",") }}'
+    section: 'virtual'
+    state: '{{ "present"
+            if (postldap__ldap_enabled|bool and
+                postfix__version is version_compare("2.0", ">="))
+            else "absent" }}'
+
+  #A prefix that the virtual delivery agent prepends to all pathname results from $virtual_mailbox_maps table lookups.
+  # This is a safety measure to ensure that an out of control map doesn't litter the file system with mailboxes.
+  - name: 'virtual_mailbox_base'
+    value: '{{ postldap__mailbox_base }}'
+    section: 'virtual'
+    state: '{{ "present"
+            if (postldap__ldap_enabled|bool and
+                postfix__version is version_compare("2.0", ">="))
+            else "absent" }}'
+
+  # Optional lookup tables with all valid addresses in the domains that match $virtual_mailbox_domains.
+  - name: 'virtual_mailbox_maps'
+    value: 'ldap:/etc/postfix/ldap_virtual_mailbox_maps.cf'
+    section: 'virtual'
+    state: '{{ "present"
+            if (postldap__ldap_enabled|bool and
+                postfix__version is version_compare("2.0", ">="))
+            else "absent" }}'
+
+  # Lookup tables with the per-recipient user ID that the virtual delivery agent uses while writing
+  # to the recipient's mailbox.
+  - name: 'virtual_uid_maps'
+    value: 'static:{{ postldap__vmail_posix_uidnumber|mandatory }}'
+    section: 'virtual'
+    state: '{{ "present"
+            if (postldap__ldap_enabled|bool and
+                postfix__version is version_compare("2.0", ">="))
+            else "absent" }}'
+
+  # Lookup tables with the per-recipient group ID for virtual mailbox delivery.
+  - name: 'virtual_gid_maps'
+    value: 'static:{{ postldap__vmail_posix_gidnumber|mandatory }}'
+    section: 'virtual'
+    state: '{{ "present"
+            if (postldap__ldap_enabled|bool and
+                postfix__version is version_compare("2.0", ">="))
+            else "absent" }}'
+
+  # The minimum user ID value that the virtual delivery agent accepts as a result from $virtual_uid_maps table lookup
+  # FIXME: problems while parsing number.
+  - name: 'virtual_minimum_uid'
+    value: '{{ postldap__vmail_posix_uidnumber|mandatory }}'
+    section: 'virtual'
+    state: 'absent'
+
+  # Optional lookup table with the SASL login names that own the sender (MAIL FROM) addresses.
+  - name: 'smtpd_sender_login_maps'
+    value: [ 'ldap:/etc/postfix/ldap_smtpd_sender_login_maps.cf' ]
+    section: 'base'
+    state: '{{ "present"
+            if (postldap__ldap_enabled|bool)
+            else "absent" }}'
+
+  - name: 'smtpd_sender_restrictions'
+    value:
+      - name: 'check_sasl_access ldap:${config_directory}/ldap_known_sender_relays.cf'
+        copy_id_from: 'permit_mynetworks'
+        weight: 5
+      - name: 'check_sender_access ldap:${config_directory}/ldap_unauth_sender_access.cf'
+        copy_id_from: 'permit_sasl_authenticated'
+        weight: 10
+      - name: 'check_sender_access ldap:${config_directory}/ldap_unauth_domain_access.cf'
+        copy_id_from: 'permit_sasl_authenticated'
+        weight: 15
+    state: '{{ "present"
+            if (postldap__ldap_enabled|bool)
+            else "ignore" }}'
+
+  - name: 'smtpd_relay_restrictions'
+    value:
+      - name: 'check_sasl_access ldap:${config_directory}/ldap_known_sender_relays.cf'
+        copy_id_from: 'permit_mynetworks'
+        weight: 5
+    state: '{{ "present"
+            if (postldap__ldap_enabled|bool)
+            else "ignore" }}'
+
+  - name: 'smtpd_restriction_classes'
+    value: [ 'smtpd_permit_known_sender_relays' ]
+    state: '{{ "present"
+            if (postldap__ldap_enabled|bool)
+            else "ignore" }}'
+
+  - name: 'smtpd_permit_known_sender_relays'
+    value:
+      # FIXME: Needs a better check, empty result doesn't block spoofed e-mail
+      # senders passed through a known relay
+      - 'reject_unlisted_sender'
+      - 'permit_sasl_authenticated'
+      - 'reject'
+    state: '{{ "present"
+            if (postldap__ldap_enabled|bool)
+            else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: postldap__postfix_ldap_connection [[[
+#
+# The header of the lookup table containing the settings to connect to the LDAP server
+postldap__postfix_ldap_connection:
+  server_host: '{{ postldap__ldap_uri }}'
+  start_tls: '{{ "yes"
+                  if (postldap__ldap_start_tls|bool)
+                  else "no" }}'
+  version: '3'
+  tls_ca_cert_dir: '{{ postldap__tls_ca_cert_dir }}'
+  bind: 'yes'
+  bind_dn: '{{ postldap__ldap_binddn }}'
+  bind_pw: '{{ postldap__ldap_bindpw }}'
+  scope: 'sub'
+
+                                                                   # ]]]
+# .. envvar:: postldap__postfix__dependent_lookup_tables [[[
+#
+# The Virtual Mail lookup tables for postfix
+postldap__postfix__dependent_lookup_tables:
+
+  - name: 'ldap_virtual_alias_maps.cf'
+    state: 'present'
+    comment: |
+      The virtual_alias_maps setting is used to find the target mailbox
+      (configured in the attribute mail, aka the mailbox or maildrop).
+    no_log: '{{ postldap__no_log|d(True) }}'
+    connection: '{{ postldap__postfix_ldap_connection }}'
+    search_base: '{{ postldap__ldap_people_dn|join(",") }}'
+    query_filter: '(&
+                    (objectClass=inetOrgPerson)
+                    (|
+                      (mail=%s)
+                      (mailAlias=%s)
+                    )
+                    (|
+                      (authorizedService=all)
+                      (authorizedService=mail:receive)
+                    )
+                  )'
+    result_attribute: 'mail'
+
+  - name: 'ldap_virtual_mailbox_maps.cf'
+    state: 'present'
+    comment: |
+      As we only want to accept mail, where we know the recipients
+      (and are responsible for them), the virtual_mailbox_maps configuration is used.
+    no_log: '{{ postldap__no_log|d(True) }}'
+    connection: '{{ postldap__postfix_ldap_connection }}'
+    search_base: '{{ postldap__ldap_people_dn|join(",") }}'
+    query_filter: '(&
+                    (objectClass=inetOrgPerson)
+                    (|
+                      (mail=%s)
+                      (mailAlias=%s)
+                    )
+                    (|
+                      (authorizedService=all)
+                      (authorizedService=mail:receive)
+                    )
+                  )'
+    result_attribute: 'mail'
+    result_format: '/%d/%u/Maildir/'
+
+  - name: 'ldap_virtual_mailbox_domains.cf'
+    state: 'present'
+    comment: |
+      The virtual_mailbox_domains configurations performs a lookup,
+      if the postfix is responsible for the given domain.
+    no_log: '{{ postldap__no_log|d(True) }}'
+    connection: '{{ postldap__postfix_ldap_connection }}'
+    search_base: '{{ postldap__ldap_domains_dn|join(",") }}'
+    query_filter: '(&
+                    (objectClass=dNSDomain)
+                    (dc=%s)
+                   )'
+    result_attribute: 'dc'
+
+  - name: 'ldap_smtpd_sender_login_maps.cf'
+    state: 'present'
+    comment: |
+      The smtpd_sender_login_maps configurations performs a lookup from an incoming
+      email-sender to a username. Postfix first performs a full lookup
+      on user@domain, then user and then @domain.
+      The later one is also used for catchalls where the mailAlias
+      is set to e.g. @foobar.com
+    no_log: '{{ postldap__no_log|d(True) }}'
+    connection: '{{ postldap__postfix_ldap_connection }}'
+    search_base: '{{ postldap__ldap_base_dn|join(",") }}'
+    query_filter: '(|
+                    (&
+                      (objectClass=inetOrgPerson)
+                      (|
+                        (mail=%s)
+                        (mailAlias=%s)
+                      )
+                      (|
+                        (authorizedService=all)
+                        (authorizedService=mail:send)
+                      )
+                    )
+                    (&
+                      (objectClass=account)
+                      (uid=%u)
+                      (host=%d)
+                      (|
+                        (authorizedService=all)
+                        (authorizedService=mail:send)
+                      )
+                    )
+                  )'
+    result_attribute: 'uid, mail, mailAlias'
+    size_limit: 1
+
+  - name: 'ldap_known_sender_relays.cf'
+    state: 'present'
+    comment: |
+      This lookup table checks if a given SASL authenticated login specified as
+      'user@fqdn' is a service account which can be used to relay e-mails from
+      other hosts through Postfix. If such service account is found, the lookup
+      table tells Postfix to use a relaxed sender and relay restrictions which
+      don't check for sender <-> login mismatch. This is required for accepting
+      e-mail messages from trusted SMTP services, for example nullmailer, which
+      can send e-mail messages on behalf of other users but cannot authenticate
+      as them.
+    no_log: '{{ postldap__no_log|d(True) }}'
+    connection: '{{ postldap__postfix_ldap_connection }}'
+    search_base: '{{ postldap__ldap_base_dn|join(",") }}'
+    query_filter: '(&
+                    (objectClass=account)
+                    (uid=%u)
+                    (host=%d)
+                    (|
+                      (authorizedService=all)
+                      (authorizedService=mail:send)
+                    )
+                  )'
+    result_attribute: 'uid'
+    result_format: 'smtpd_permit_known_sender_relays'
+    size_limit: 1
+
+  - name: 'ldap_unauth_sender_access.cf'
+    state: 'present'
+    comment: |
+      This lookup table is used to check if a sender exists after authenticated
+      sender has been accepted. If a sender exists, it means that the sender has
+      not been authenticated properly, or perhaps somebody tries to send e-mail
+      as one of our own users which is not allowed without authentication. In
+      such cases, the mail will be rejected with a sensible response indicating
+      that the sender needs to enable SMTP authentication.
+    no_log: '{{ postldap__no_log|d(True) }}'
+    connection: '{{ postldap__postfix_ldap_connection }}'
+    search_base: '{{ postldap__ldap_base_dn|join(",") }}'
+    query_filter: '(|
+                    (&
+                      (objectClass=inetOrgPerson)
+                      (|
+                        (mail=%s)
+                        (mailAlias=%s)
+                      )
+                    )
+                    (&
+                      (objectClass=account)
+                      (uid=%u)
+                      (host=%d)
+                    )
+                  )'
+    result_attribute: 'uid, mail, mailAlias'
+    result_format: '550 Authentication Required'
+
+  - name: 'ldap_unauth_domain_access.cf'
+    state: 'present'
+    comment: |
+      This lookup table is used to check if a sender domain is one of our own
+      domains. This check is performed after authenticated senders have been
+      accepted, and if the domain is one of our own domains, it means that
+      somebody tries to send an e-mail with our own DNS domain which is not
+      allowed. The e-mail will be rejected with a message suggesting that the
+      SMTP authentication needs to be enabled.
+    no_log: '{{ postldap__no_log|d(True) }}'
+    connection: '{{ postldap__postfix_ldap_connection }}'
+    search_base: '{{ postldap__ldap_base_dn|join(",") }}'
+    query_filter: '(|
+                     (&
+                       (objectClass=dNSDomain)
+                       (|
+                         (dc=%d)
+                         (dc={{ postldap__domain_rev_pattern }})
+                       )
+                     )
+                     (&
+                       (objectClass=domainRelatedObject)
+                       (|
+                         (associatedDomain=%d)
+                         (associatedDomain={{ postldap__domain_rev_pattern }})
+                       )
+                     )
+                   )'
+    result_attribute: 'dc, associatedDomain'
+    result_format: '550 Domain Authentication Required'
+                                                                   # ]]]
+                                                                   # ]]]
+# LDAP [[[
+# --------
+
+# LDAP authentication [[[
+# ^^^^^^^^^^^^^^^^^^^^^^^
+
+# .. envvar:: postldap__ldap_enabled [[[
+#
+# In order to enable Virtual Mail support LDAP authentication needs to be enabled.
+# When enabled, `postfix` will configure mail-boxes locally and allow LDAP authenticated users to
+# send email over this instance.
+postldap__ldap_enabled: '{{ True
+                            if (ansible_local|d() and ansible_local.ldap|d() and
+                               (ansible_local.ldap.enabled|d())|bool)
+                            else False }}'
+
+                                                                   # ]]]
+# .. envvar:: postldap__ldap_base_dn [[[
+#
+# The base Distinguished Name which should be used to create Distinguished
+# Names of the LDAP directory objects, defined as a YAML list. If this variable
+# is empty, automated Postfix LDAP configuration will not be performed.
+postldap__ldap_base_dn: '{{ ansible_local.ldap.base_dn
+                            if (ansible_local|d() and ansible_local.ldap|d() and
+                                ansible_local.ldap.base_dn|d())
+                            else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: postldap__ldap_device_dn [[[
+#
+# The Distinguished Name of the current host LDAP object, defined as a YAML
+# list. It will be used as a base for the Postfix service account LDAP
+# object. If the list is empty, the role will not create the account LDAP
+# object automatically.
+postldap__ldap_device_dn: '{{ ansible_local.ldap.device_dn
+                              if (ansible_local|d() and ansible_local.ldap|d() and
+                                  ansible_local.ldap.device_dn|d())
+                              else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: postldap__ldap_self_rdn [[[
+#
+# The Relative Distinguished Name of the account LDAP object used by the
+# Postfix service to access the LDAP directory.
+postldap__ldap_self_rdn: 'uid=postfix'
+
+                                                                   # ]]]
+# .. envvar:: postldap__ldap_self_object_classes [[[
+#
+# List of the LDAP object classes which will be used to create the LDAP object
+# used by the `postfix` service to access the LDAP directory.
+postldap__ldap_self_object_classes: [ 'account', 'simpleSecurityObject',
+                                      'authorizedServiceObject' ]
+
+                                                                   # ]]]
+# .. envvar:: postldap__ldap_self_attributes [[[
+#
+# YAML dictionary that defines the attributes of the LDAP object used by the
+# Postfix service to access the LDAP directory.
+postldap__ldap_self_attributes:
+  uid: '{{ postldap__ldap_self_rdn.split("=")[1] }}'
+  userPassword: '{{ postldap__ldap_bindpw }}'
+  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  description: 'Account used by the "Postfix" service to access the LDAP directory'
+  authorizedService: 'mail:send'
+
+                                                                   # ]]]
+# .. envvar:: postldap__ldap_binddn [[[
+#
+# The Distinguished Name of the account LDAP object used by the
+# Postfix service to bind to the LDAP directory.
+postldap__ldap_binddn: '{{ ([ postldap__ldap_self_rdn ]
+                              + postldap__ldap_device_dn) | join(",") }}'
+
+                                                                   # ]]]
+# .. envvar:: postldap__ldap_bindpw [[[
+#
+# The password stored in the account LDAP object used by the Postfix service
+# to bind to the LDAP directory.
+postldap__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
+                           + postldap__ldap_binddn | to_uuid + ".password length=32 "
+                           + "chars=alpha,digits,!@_#$%^&*") }}'
+
+                                                                   # ]]]
+# .. envvar:: postldap__ldap_people_rdn [[[
+#
+# The Relative Distinguished Name of the LDAP object which contains the user
+# accounts stored in LDAP.
+postldap__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn
+                               if (ansible_local|d() and ansible_local.ldap|d() and
+                                   ansible_local.ldap.people_rdn|d())
+                               else "ou=People" }}'
+
+                                                                   # ]]]
+# .. envvar:: postldap__ldap_people_dn [[[
+#
+# The Distinguished Name of the LDAP object which contains the user accounts
+# used by Postfix.
+postldap__ldap_people_dn: '{{ [ postldap__ldap_people_rdn ]
+                                + postldap__ldap_base_dn }}'
+
+                                                                   # ]]]
+# .. envvar:: postldap__ldap_uri [[[
+#
+# List of LDAP URIs that point to the directory servers which should be used by
+# `postfix virtual`.
+postldap__ldap_uri: '{{ ansible_local.ldap.uri
+                        if (ansible_local|d() and ansible_local.ldap|d() and
+                            ansible_local.ldap.uri|d())
+                        else [""] }}'
+
+                                                                   # ]]]
+# .. envvar:: postldap__ldap_private_subtree [[[
+#
+# When this variable is enabled, the :ref:`debops.ldap` role will create
+# separate LDAP objects that manage the Postfix groups as subtree of the
+# Postfix service LDAP object. If you set this parameter to ``False``, the
+# role will use the **global** ``ou=Groups,dc=example,dc=org`` subtree instead.
+#
+# This setting can be used to scale the Postfix server vertically.
+postldap__ldap_private_subtree: False
+
+                                                                   # ]]]
+# .. envvar:: postldap__ldap_groups_rdn [[[
+#
+# The Relative Distinguished Name of the LDAP object which contains the groups
+# stored in LDAP.
+postldap__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn
+                               if (ansible_local|d() and ansible_local.ldap|d() and
+                                   ansible_local.ldap.groups_rdn|d())
+                               else "ou=Groups" }}'
+
+                                                                   # ]]]
+# .. envvar:: postldap__ldap_domains_rdn [[[
+#
+# The Relative Distinguished Name of the LDAP object which contains the (virtual mail)
+# domains stored in LDAP.
+postldap__ldap_domains_rdn: '{{ ansible_local.ldap.domains_rdn
+                                if (ansible_local|d() and ansible_local.ldap|d() and
+                                    ansible_local.ldap.domains_rdn|d())
+                                else "ou=Domains" }}'
+
+                                                                   # ]]]
+# .. envvar:: postldap__ldap_groups_dn [[[
+#
+# The Distinguished Name of the LDAP object which contains the groups used by
+# Postfix. If private groups are enabled, this object will be created
+# automatically.
+postldap__ldap_groups_dn: '{{ ([ postldap__ldap_groups_rdn, postldap__ldap_self_rdn ]
+                                 + postldap__ldap_device_dn)
+                                  if postldap__ldap_private_subtree|bool
+                                  else ([ postldap__ldap_groups_rdn ]
+                                        + postldap__ldap_base_dn) }}'
+
+                                                                   # ]]]
+# .. envvar:: postldap__ldap_domains_dn [[[
+#
+# The Distinguished Name of the LDAP object which contains the (virtual mail) domains used by
+# Postfix. If private groups are enabled, this object will be created
+# automatically.
+postldap__ldap_domains_dn: '{{ ([ postldap__ldap_domains_rdn, postldap__ldap_self_rdn ]
+                                  + postldap__ldap_device_dn)
+                                    if postldap__ldap_private_subtree|bool
+                                    else ([ postldap__ldap_domains_rdn ]
+                                          + postldap__ldap_base_dn) }}'
+                                                                   # ]]]
+# .. envvar:: postldap__ldap_default_virtual_domain_rdn [[[
+#
+# The rdn of the default virtual mail domain used by Postfix.
+# This is usually the same domain used by the LDAP.
+postldap__ldap_default_virtual_domain_rdn: '{{ ansible_domain }}'
+                                                                   # ]]]
+# .. envvar:: postldap__ldap_default_virtual_domain_dn [[[
+#
+# The dn of the default virtual mail domain used by Postfix.
+postldap__ldap_default_virtual_domain_dn: '{{ (["dc="
+                                               + postldap__ldap_default_virtual_domain_rdn]
+                                               + postldap__ldap_domains_dn) | join(",") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# LDAP connection options [[[
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+# .. envvar:: postldap__ldap_server_uri [[[
+#
+# The URI address of the LDAP server used by Postfix.
+postldap__ldap_server_uri: '{{ (ansible_local.ldap.uri
+                                            if (ansible_local|d() and ansible_local.ldap|d() and
+                                                ansible_local.ldap.uri|d())
+                                            else [""]) | first }}'
+
+                                                                   # ]]]
+# .. envvar:: postldap__ldap_server_port [[[
+#
+# The TCP port which should be used for connections to the LDAP server.
+postldap__ldap_server_port: '{{ ansible_local.ldap.port
+                                            if (ansible_local|d() and ansible_local.ldap|d() and
+                                                ansible_local.ldap.port|d())
+                                            else ("389" if postldap__ldap_start_tls|bool else "636") }}'
+
+                                                                   # ]]]
+# .. envvar:: postldap__ldap_start_tls [[[
+#
+# If ``True``, Postfix will use STARTTLS extension to make encrypted
+# connections to the LDAP server.
+postldap__ldap_start_tls: '{{ ansible_local.ldap.start_tls
+                                          if (ansible_local|d() and ansible_local.ldap|d() and
+                                              (ansible_local.ldap.start_tls|d())|bool)
+                                          else True }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# LDAP settings [[[
+# ^^^^^^^^^^^^^^^^^
+
+# .. envvar:: postldap__ldap_default_config [[[
+#
+# The LDAP configuration options defined by default.
+postldap__ldap_default_config: []
+
+                                                                   # ]]]
+# .. envvar:: postldap__ldap_config [[[
+#
+# List of custom LDAP configuration options defined for all hosts
+# in the Ansible inventory.
+postldap__ldap_config: []
+
+                                                                   # ]]]
+# .. envvar:: postldap__group_ldap_config [[[
+#
+# List of custom LDAP configuration options defined on hosts in
+# a specific Ansible inventory group.
+postldap__group_ldap_config: []
+
+                                                                   # ]]]
+# .. envvar:: postldap__host_ldap_config [[[
+#
+# List of custom LDAP configuration options defined on specific
+# hosts in the Ansible inventory.
+postldap__host_ldap_config: []
+
+                                                                   # ]]]
+# .. envvar:: postldap__ldap_combined_config [[[
+#
+# The variable that combines default and user LDAP configuration and is used in
+# the role tasks and templates.
+postldap__ldap_combined_config: '{{ postldap__ldap_default_config
+                                    + postldap__ldap_config
+                                    + postldap__group_ldap_config
+                                    + postldap__host_ldap_config }}'
+
+                                                                   # ]]]
+# .. envvar:: postldap__ldap__dependent_tasks [[[
+#
+# Configuration for the :ref:`debops.ldap` Ansible role.
+postldap__ldap__dependent_tasks:
+  - name: 'Create Postfix account for {{ postldap__ldap_device_dn | join(",") }}'
+    dn: '{{ postldap__ldap_binddn }}'
+    objectClass: '{{ postldap__ldap_self_object_classes }}'
+    attributes: '{{ postldap__ldap_self_attributes }}'
+    no_log: '{{ postldap__no_log|d(True) }}'
+    state: '{{ "present"
+                if (postldap__ldap_enabled|bool and
+                    postldap__ldap_device_dn|d())
+                else "ignore" }}'
+
+  - name: 'Create Postfix group container for {{ postldap__ldap_device_dn | join(",") }}'
+    dn: '{{ postldap__ldap_groups_dn }}'
+    objectClass: 'organizationalUnit'
+    attributes:
+      ou: '{{ postldap__ldap_groups_rdn.split("=")[1] }}'
+      description: 'User groups used in Postfix'
+    state: '{{ "present"
+               if (postldap__ldap_enabled|bool and
+                   postldap__ldap_device_dn|d() and
+                   postldap__ldap_private_subtree|bool)
+               else "ignore" }}'
+
+  - name: 'Create Postfix domains container for {{ postldap__ldap_device_dn | join(",") }}'
+    dn: '{{ postldap__ldap_domains_dn }}'
+    objectClass: 'organizationalUnit'
+    attributes:
+      ou: '{{ postldap__ldap_domains_rdn.split("=")[1] }}'
+      description: 'Virtual Mail Domains used in Postfix'
+    state: '{{ "present"
+               if (postldap__ldap_enabled|bool and
+                   postldap__ldap_device_dn|d() and
+                   postldap__ldap_private_subtree|bool)
+               else "ignore" }}'
+
+  - name: 'Create Postfix Default Virtual Mail Domain for {{ postldap__ldap_default_virtual_domain_dn }}'
+    dn: '{{ postldap__ldap_default_virtual_domain_dn }}'
+    objectClass: 'dNSDomain'
+    state: '{{ "present"
+               if (postldap__ldap_enabled|bool and
+                   postldap__ldap_device_dn|d() and
+                   postldap__ldap_private_subtree|bool)
+               else "ignore" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

@@ -1,0 +1,380 @@
+#!/usr/bin/env bash
+
+# Build an Ansible Galaxy collection tarball with Ansible artifacts
+# Usage: run "make collection" in the root of the repository
+
+# Copyright (C) 2019-2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2019-2020 DebOps https://debops.org/
+
+
+set -o nounset -o pipefail -o errexit
+
+repository_root="$(git rev-parse --show-toplevel)"
+debops_version="${DEBOPS_VERSION:-$(git describe | tr -d 'v')}"
+
+declare -A debops_role_map
+declare -A role_collection_map
+declare -A collection_name_map
+declare -A collection_floor_map
+declare -A workdir_map
+
+collections=( debops roles01 roles02 roles03 )
+
+for i in "${!collections[@]}" ; do
+    collection_name_map[${collections[${i}]}]="${i}"
+done
+
+collection_floor_map[${collections[0]}]=100000
+collection_floor_map[${collections[1]}]=600
+collection_floor_map[${collections[2]}]=300
+collection_floor_map[${collections[3]}]=10
+
+# Check if we are in the correct directory
+if ! [ -f lib/ansible-galaxy/make-collection ] ; then
+    printf "%s\\n" "Error: this script needs to be executed in the root of the DebOps repository"
+    exit 1
+fi
+
+# Check if ansible-galaxy is installed
+if ! type ansible-galaxy > /dev/null 2>&1 ; then
+    printf "%s\\n" "Error: ansible-galaxy not found"
+    exit 1
+fi
+
+# Check if the repository is in a consistent state
+if ! git diff --quiet && git diff --cached --quiet ; then
+    printf "%s\\n" "Warning: there are uncommitted changes in the repository"
+    git status --short
+fi
+
+printf "Creating DebOps Collections\\nVersion: %s\\nCalculating role distribution...\\n" "${debops_version}"
+
+cd "${repository_root}"
+
+for role in ansible/roles/* ; do
+    if [ -d "${role}" ] ; then
+        debops_role_map["$(basename "${role}")"]=0
+    fi
+done
+
+# Count the number of times a given role is present in a playbook
+for role in "${!debops_role_map[@]}" ; do
+    number_in_playbooks="$(git grep -h --word-regexp -e "role::${role}" --and -e "skip::${role}" ansible/playbooks | wc -l)" || true
+    if [ "${number_in_playbooks}" -gt 0 ] ; then
+        debops_role_map["${role}"]=$(( collection_floor_map[${collections[-1]}] + debops_role_map["${role}"] + number_in_playbooks ))
+    fi
+done
+
+# Count the number of times a given role is present in common and bootstrap playbooks
+for role in "${!debops_role_map[@]}" ; do
+    number_in_commons="$(git grep -h --word-regexp -e "role::${role}" --and -e "skip::${role}" ansible/playbooks/*.yml | wc -l)" || true
+    if [ "${number_in_commons}" -gt 0 ] ; then
+        debops_role_map["${role}"]=$(( collection_floor_map[${collections[0]}] + debops_role_map["${role}"] + number_in_commons ))
+    fi
+done
+
+# Count the number of times a given role facts are referenced
+for role in "${!debops_role_map[@]}" ; do
+    number_of_facts="$(git grep -l -e "ansible_local\\.${role}\\." ansible/roles | wc -l)" || true
+    if [ "${number_of_facts}" -gt 0 ] ; then
+        debops_role_map["${role}"]=$(( collection_floor_map[${collections[2]}] + debops_role_map["${role}"] + (number_of_facts * 80) ))
+    fi
+done
+
+# Check what role dependencies are defined in the playbook of a given role.
+# For each dependency, add the weight of the current role.
+for role in "${!debops_role_map[@]}" ; do
+
+    if [ -f "ansible/playbooks/service/${role}.yml" ] ; then
+        read -r -a dependencies_in_playbooks <<<"$(git grep -h --word-regexp -e "role::.*" \
+                                                            --and --not -e "role::${role}" \
+                                                            ansible/playbooks/service/${role}.yml \
+                                                   | sed -e "s/^.*role:://" -e "s/'.*$//" \
+                                                   | tr '\n' ' ')" || true
+        if [ -n "${dependencies_in_playbooks[*]}" ] ; then
+            for dependency in "${dependencies_in_playbooks[@]}" ; do
+                if [[ -v "debops_role_map[${dependency}]" ]] ; then
+                    if [ "${debops_role_map[${dependency}]}" -eq 0 ] ; then
+                        debops_role_map["${dependency}"]=$(( collection_floor_map[${collections[-1]}] ))
+                    fi
+                fi
+                debops_role_map["${dependency}"]=$(( debops_role_map["${dependency}"] + debops_role_map["${role}"] + 200 ))
+            done
+        fi
+    fi
+
+done
+
+# Check what dependent variables a given role defines and add weight to the
+# dependent roles based on the current role weight. Number of references is
+# not important.
+for role in "${!debops_role_map[@]}" ; do
+
+    read -r -a role_dependencies <<<"$(git grep -h -e "^${role}__[a-zA-Z0-9]*__.*:" \
+                                                ansible/roles/*/defaults \
+                                       | sed -e "s/${role}__//" -e "s/__.*$//" \
+                                       | tr '\n' ' ' \
+                                       | sort | uniq)" || true
+    if [ -n "${role_dependencies[*]}" ] ; then
+        for dependency in "${role_dependencies[@]}" ; do
+            if [[ -v "debops_role_map[${dependency}]" ]] ; then
+                if [ "${debops_role_map[${dependency}]}" -eq 0 ] ; then
+                    debops_role_map["${dependency}"]=$(( collection_floor_map[${collections[-1]}] ))
+                fi
+            fi
+            debops_role_map["${dependency}"]=$(( debops_role_map["${role}"] + debops_role_map["${dependency}"] + 200 ))
+        done
+    fi
+
+done
+
+# Give bonus points for roles related to the same service
+for role in "${!debops_role_map[@]}" ; do
+    if [ "${role}" != "${role%_*}" ] && [[ -v "debops_role_map[${role%_*}]" ]] && [ "${role%_*}" != "debops" ] ; then
+        debops_role_map["${role}"]=$(( debops_role_map["${role}"] + debops_role_map["${role%_*}"] + 200 ))
+    fi
+done
+for role in "${!debops_role_map[@]}" ; do
+    if [ "${role}" != "${role%d}" ] && [[ -v "debops_role_map[${role%d}]" ]] ; then
+        debops_role_map["${role}"]=$(( debops_role_map["${role}"] + debops_role_map["${role%d}"] + 200 ))
+    fi
+done
+for role in "${!debops_role_map[@]}" ; do
+    if [ "${role}" != "${role}d" ] && [[ -v "debops_role_map[${role}d]" ]] ; then
+        debops_role_map["${role}"]=$(( debops_role_map["${role}d"] + debops_role_map["${role}"] + 200 ))
+    fi
+done
+
+# Give bonus points for roles that are dependencies of a given role
+for role in "${!debops_role_map[@]}" ; do
+    read -r -a dependency_of_roles <<<"$(git grep -l --word-regexp -e "role::${role}" \
+                                         --and -e "skip::${role}" \
+                                         ansible/playbooks/service/*.yml \
+                                         | sed -e "s#ansible/playbooks/service/##" \
+                                               -e "s/\\.yml//" \
+                                         | tr '\n' ' ')" || true
+    if [ -n "${dependency_of_roles[*]}" ] ; then
+        for dependency in "${dependency_of_roles[@]}" ; do
+            if [ "${role}" != "${dependency}" ] && [[ -v "debops_role_map[${dependency}]" ]] ; then
+                if [ "${debops_role_map[${role}]}" -le "${collection_floor_map[${collections[0]}]}" ] ; then
+                    debops_role_map["${role}"]=$(( debops_role_map["${role}"] + debops_role_map["${dependency}"] + 200 ))
+                fi
+            fi
+        done
+    fi
+done
+
+# Ensure that selected roles are always in the first Ansible Collection
+for role in ansible_plugins core secret keyring python ; do
+    debops_role_map["${role}"]=$(( collection_floor_map[${collections[0]}] + debops_role_map["${role}"] ))
+done
+
+buffer=""
+for role in "${!debops_role_map[@]}" ; do
+    buffer+="$(printf "%10s %s;" "${debops_role_map[${role}]}" "${role}")"
+done
+printf "%s" "${buffer}" | tr ";" "\\n" | sort -rn
+printf '\n'
+
+# Generate list of roles separated by collection
+roles_not_included=""
+for role in "${!debops_role_map[@]}" ; do
+    weight="${debops_role_map[${role}]}"
+    if [ "${weight}" -ge "${collection_floor_map[${collections[0]}]}" ] ; then
+        role_collection_map[${collections[0]}]+=" ${role}"
+    elif [ "${weight}" -lt "${collection_floor_map[${collections[0]}]}" ] && [ "${weight}" -ge "${collection_floor_map[${collections[1]}]}" ] ; then
+        role_collection_map[${collections[1]}]+=" ${role}"
+    elif [ "${weight}" -lt "${collection_floor_map[${collections[1]}]}" ] && [ "${weight}" -ge "${collection_floor_map[${collections[2]}]}" ] ; then
+        role_collection_map[${collections[2]}]+=" ${role}"
+    elif [ "${weight}" -lt "${collection_floor_map[${collections[2]}]}" ] && [ "${weight}" -ge "${collection_floor_map[${collections[-1]}]}" ] ; then
+        role_collection_map[${collections[-1]}]+=" ${role}"
+    else
+        roles_not_included+=" ${role}"
+    fi
+done
+
+for collection in "${collections[@]}" ; do
+    if [[ -v "role_collection_map[${collection}]" ]] ; then
+        read -r -a collection_array <<<"${role_collection_map[${collection}]}"
+        readarray -t sorted_array < <(printf '%s\0' "${collection_array[@]}" | sort -z | xargs -0n1)
+        printf "Roles included in '%s' collection (%s):\\n" "debops.${collection}" "$(printf "%s\\n" "${sorted_array[@]}" | tr ' ' '\n' | wc -l)"
+        printf "%s\\n" "${sorted_array[@]}" | tr ' ' '\n' | column
+        printf '\n'
+    fi
+done
+
+if [ -n "${roles_not_included}" ] ; then
+    read -r -a not_included <<<"${roles_not_included}"
+    printf "Roles not included in any collection (%s):\\n" "$(printf "%s\\n" "${not_included[@]}" | tr ' ' '\n' | wc -l)"
+    printf "%s\\n" "${not_included[@]}" | tr ' ' '\n' | column
+    printf '\n'
+fi
+
+workdir_path="$(mktemp -d "/tmp/debops-collections.XXXXXXXX")"
+for collection in "${collections[@]}" ; do
+    workdir_map[${collection}]="$(mktemp -d "${workdir_path}/debops-$$.${collection}.XXXXXXXX")"
+done
+
+file_list=(
+    README.md
+    LICENSE
+    INSTALL.rst
+    CHANGELOG.rst
+)
+
+mkdir -p "${workdir_map[${collections[0]}]}/playbooks" \
+         "${workdir_map[${collections[0]}]}/roles" \
+         "${workdir_map[${collections[0]}]}/plugins/callback" \
+         "${workdir_map[${collections[0]}]}/plugins/connection" \
+         "${workdir_map[${collections[0]}]}/plugins/filter" \
+         "${workdir_map[${collections[0]}]}/plugins/lookup" \
+         "${workdir_map[${collections[0]}]}/plugins/modules" \
+         "${workdir_map[${collections[1]}]}/roles" \
+         "${workdir_map[${collections[2]}]}/roles" \
+         "${workdir_map[${collections[3]}]}/roles"
+
+# Copy DebOps roles to the Ansible Collection build directory.
+# Omit specific DebOps roles from Ansible Collections.
+pushd ansible/roles > /dev/null
+for collection in "${collections[@]}" ; do
+    printf "Creating collection 'debops.%s'\\n" "${collection}"
+    read -r -a collection_roles <<<"${role_collection_map[${collection}]}"
+    for role in * ; do
+        if [[ ${role} != debops-contrib.* ]] \
+            && [[ ${role} != boxbackup ]] \
+            && [[ ${role} != rails_deploy ]] ; then
+            for role_in_collection in "${collection_roles[@]}" ; do
+                if [[ "${role}" = "${role_in_collection}" ]] ; then
+                    cp -r "${role}" "${workdir_map[${collection}]}/roles/${role}"
+                fi
+            done
+        fi
+    done
+done
+popd > /dev/null
+
+# Copy DebOps playbooks into the collection
+cp -r ansible/playbooks/* "${workdir_map[${collections[0]}]}/playbooks"
+
+# Copy various Ansible plugins to the directories where collection expects them
+cp ansible/plugins/callback_plugins/*.py "${workdir_map[${collections[0]}]}/plugins/callback"
+cp ansible/plugins/connection_plugins/*.py "${workdir_map[${collections[0]}]}/plugins/connection"
+cp ansible/roles/ansible_plugins/filter_plugins/*.py "${workdir_map[${collections[0]}]}/plugins/filter"
+cp ansible/roles/ansible_plugins/lookup_plugins/*.py "${workdir_map[${collections[0]}]}/plugins/lookup"
+cp ansible/roles/ansible_plugins/library/*.py "${workdir_map[${collections[0]}]}/plugins/modules"
+
+for collection in "${collections[@]}" ; do
+
+    for filename in "${file_list[@]}" ; do
+        cp "${filename}" "${workdir_map[${collection}]}/"
+    done
+
+    files_to_modify=()
+
+    # Convert Ansible plugin use to Ansible Collection format
+    for plugin in task_src template_src parse_kv_config parse_kv_items ; do
+
+        printf "%s " "Searching in 'debops.${collection}'"
+        counter=0
+        while read -r in ; do
+            if grep -q "${plugin}" "${in}" ; then
+                files_to_modify+=("${in}")
+                counter=$(( counter + 1 ))
+                counter_state=$(( counter % 5 ))
+                if [ ${counter_state} -eq 0 ] ; then
+                    printf "%s" "."
+                fi
+            fi
+        done < <(find "${workdir_map[${collection}]}/roles" -type f \
+            -not -wholename "./${workdir_map[${collection}]}/roles/ansible_plugins")
+        printf " %s\\n" "found ${#files_to_modify[@]} '${plugin}' uses, replacing..."
+        sed -i "s/${plugin}/debops.${collections[0]}.${plugin}/" "${files_to_modify[@]}"
+    done
+
+    # Generate the 'galaxy.yml' file
+    if [ "${collection}" == "${collections[0]}" ] ; then
+        cat <<EOF > "${workdir_map[${collection}]}/galaxy.yml"
+---
+
+# Configuration file used by Ansible Galaxy to build a collection of Ansible artifacts.
+
+namespace: "debops"
+name: "${collections[${collection_name_map[${collection}]}]}"
+version: "${debops_version}"
+description: "Your Debian-based data center in a box"
+
+authors:
+  - "Maciej Delmanowski <drybjed@gmail.com>"
+  - "DebOps Developers <debops-users@lists.debops.org>"
+
+repository: "https://github.com/debops/debops"
+documentation: "https://docs.debops.org/en/master/ansible/role-index.html"
+homepage: "https://debops.org/"
+issues: "https://github.com/debops/debops/issues"
+
+readme: "README.md"
+license:
+  - "GPL-3.0-only"
+license_file: "LICENSE"
+
+tags:
+  - "debian"
+  - "ubuntu"
+  - "debops"
+  - "sysadmin"
+  - "cluster"
+  - "datacenter"
+
+dependencies:
+EOF
+        for collection_dep in "${collections[@]}" ; do
+            if [[ -v "collection_name_map[${collection_dep}]" ]] && [ "${collection_dep}" != "${collections[0]}" ] ; then
+                cat <<EOF >> "${workdir_map[${collection}]}/galaxy.yml"
+  "debops.${collection_dep}": "${debops_version}"
+EOF
+            fi
+        done
+    else
+        cat <<EOF >> "${workdir_map[${collection}]}/galaxy.yml"
+---
+
+# Configuration file used by Ansible Galaxy to build a collection of Ansible artifacts.
+
+namespace: "debops"
+name: "${collections[${collection_name_map[${collection}]}]}"
+version: "${debops_version}"
+description: "Additional roles included in the DebOps Collection"
+
+authors:
+  - "Maciej Delmanowski <drybjed@gmail.com>"
+  - "DebOps Developers <debops-users@lists.debops.org>"
+
+repository: "https://github.com/debops/debops"
+documentation: "https://docs.debops.org/en/master/ansible/role-index.html"
+homepage: "https://debops.org/"
+issues: "https://github.com/debops/debops/issues"
+
+readme: "README.md"
+license:
+  - "GPL-3.0-only"
+license_file: "LICENSE"
+
+tags:
+  - "debops"
+
+dependencies: {}
+EOF
+    fi
+done
+
+for collection in "${collections[@]}" ; do
+    if [ -d "${workdir_map[${collection}]}" ] ; then
+        pushd "${workdir_map[${collection}]}" > /dev/null
+        ansible-galaxy collection build
+        cp debops-*.tar.gz ../
+        popd > /dev/null
+    fi
+done
+
+# Show the file sizes of collection tarballs
+du -h "${workdir_path}"/*.tar.gz

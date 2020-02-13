@@ -1,0 +1,266 @@
+---
+
+- import_role:
+    name: 'ansible_plugins'
+
+- import_role:
+    name: 'secret'
+
+- name: DebOps pre_tasks hook
+  include: '{{ lookup("task_src", "nginx/pre_main.yml") }}'
+  when: (nginx__deploy_state in [ 'present' ])
+
+- name: Assert that no legacy options are used
+  assert:
+    that:
+      - '((item.csp is defined and item.csp is string) or item.csp is undefined)'
+      - '(item.csp_policy is undefined)'
+  run_once: True
+  delegate_to: 'localhost'
+  with_flattened:
+    - '{{ nginx__servers }}'
+    - '{{ nginx__default_servers }}'
+    - '{{ nginx__internal_servers }}'
+    - '{{ nginx__dependent_servers }}'
+    - '{{ nginx_servers | d([]) }}'
+    - '{{ nginx_default_servers | d([]) }}'
+    - '{{ nginx_internal_servers | d([]) }}'
+    - '{{ nginx_dependent_servers | d([]) }}'
+
+- name: Check if nginx is installed
+  stat:
+    path: '/usr/sbin/nginx'
+  register: nginx_register_installed
+
+- name: Ensure base packages are installed
+  package:
+    name: '{{ q("flattened", nginx_base_packages) }}'
+    state: 'present'
+  when: (nginx__deploy_state in [ 'present' ])
+  register: nginx__register_packages_present
+  until: nginx__register_packages_present is succeeded
+
+- name: Ensure Nginx packages are in their desired state
+  package:
+    name: '{{ q("flattened", nginx__flavor_packages) }}'
+    state: '{{ "present" if (nginx__deploy_state == "present") else "absent" }}'
+  register: nginx__register_packages_flavor
+  until: nginx__register_packages_flavor is succeeded
+
+- name: Create default nginx directories
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_items:
+    - '/etc/nginx/sites-default.d'
+    - '/etc/nginx/sites-available'
+    - '/etc/nginx/sites-enabled'
+    - '/etc/nginx/snippets'
+  when: (nginx__deploy_state in [ 'present' ])
+
+- name: Divert default.conf in case nginx nginx.org flavor is used
+  command: dpkg-divert --quiet --local --divert /etc/nginx/conf.d/default.conf.dpkg-divert
+           --rename /etc/nginx/conf.d/default.conf
+  args:
+    creates: '/etc/nginx/conf.d/default.conf.dpkg-divert'
+  when: (nginx_flavor == 'nginx.org' and nginx__deploy_state in [ 'present' ])
+
+- include: 'passenger_config.yml'
+  when: (nginx_flavor == 'passenger' and nginx__deploy_state in [ 'present' ])
+
+- name: Restart nginx on first install to bypass missing pid bug
+  service:
+    name: 'nginx'
+    state: 'restarted'
+  when: (nginx_register_installed|d() and not nginx_register_installed.stat.exists and
+         nginx__deploy_state in [ 'present' ])
+
+- name: Get list of nameservers configured in /etc/resolv.conf
+  shell: awk '$1=="nameserver" {if(/%/){sub(/[0-9a-fA-F:]+/, "[&]", $2)}; print $2}' /etc/resolv.conf
+  args:
+    executable: 'sh'
+  register: nginx_register_nameservers
+  changed_when: False
+  check_mode: False
+  when: (nginx__deploy_state in [ 'present' ])
+  tags: [ 'role::nginx:servers' ]
+
+- name: Convert list of nameservers to Ansible list
+  set_fact:
+    nginx_ocsp_resolvers: "{{ nginx_register_nameservers.stdout_lines }}"
+  when: ((nginx_register_nameservers.stdout is defined and nginx_register_nameservers.stdout) and
+         (nginx_ocsp_resolvers is undefined or
+         (nginx_ocsp_resolvers is defined and not nginx_ocsp_resolvers)) and
+         (nginx__deploy_state in [ 'present' ]))
+  tags: [ 'role::nginx:servers' ]
+
+- name: Ensure that webadmins privileged group exists
+  group:
+    name: '{{ nginx_privileged_group }}'
+    state: 'present'
+    system: True
+  when: (nginx__deploy_state in [ 'present' ])
+
+- name: Create directory for webadmins configuration
+  file:
+    path: '/etc/nginx/sites-local'
+    state: 'directory'
+    owner: 'root'
+    group: '{{ nginx_privileged_group }}'
+    mode: '0775'
+  when: (nginx__deploy_state in [ 'present' ])
+
+- name: Allow webadmins to control nginx system service using sudo
+  template:
+    src: 'etc/sudoers.d/nginx_webadmins.j2'
+    dest: '/etc/sudoers.d/nginx_webadmins'
+    owner: 'root'
+    group: 'root'
+    mode: '0440'
+  when: (ansible_local|d() and ansible_local.sudo|d() and
+         (ansible_local.sudo.installed|d())|bool and
+         nginx__deploy_state in [ 'present' ])
+
+- name: Divert original /etc/nginx/nginx.conf
+  command: dpkg-divert --quiet --local --divert /etc/nginx/nginx.conf.dpkg-divert
+           --rename /etc/nginx/nginx.conf
+  args:
+    creates: '/etc/nginx/nginx.conf.dpkg-divert'
+  when: (nginx__deploy_state in [ 'present' ])
+
+- name: Setup /etc/nginx/nginx.conf
+  template:
+    src: 'etc/nginx/nginx.conf.j2'
+    dest: '/etc/nginx/nginx.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Test nginx and reload' ]
+  when: (nginx__deploy_state in [ 'present' ])
+
+- name: Generate custom nginx snippets
+  template:
+    src: 'etc/nginx/snippets/{{ item }}.conf.j2'
+    dest: '/etc/nginx/snippets/{{ item }}.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: [ 'acme-challenge', 'ssl' ]
+  when: (nginx__deploy_state in [ 'present' ])
+  notify: [ 'Test nginx and reload' ]
+
+- name: Disable default nginx site
+  file:
+    path: '/etc/nginx/sites-enabled/default'
+    state: 'absent'
+  notify: [ 'Test nginx and reload' ]
+  when: (nginx__deploy_state in [ 'present' ])
+
+- name: Manage local server definitions - create symlinks
+  file:
+    src: '/etc/nginx/sites-local/{{ item.value }}'
+    path: '/etc/nginx/sites-enabled/{{ item.key }}'
+    state: 'link'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: (item.value and nginx__deploy_state in [ 'present' ])
+  with_dict: '{{ nginx_local_servers|d({}) }}'
+  notify: [ 'Test nginx and reload' ]
+
+- name: Manage local server definitions - remove symlinks
+  file:
+    path: '/etc/nginx/sites-enabled/{{ item.key }}'
+    state: 'absent'
+  when: ((not item.value|d()) and nginx__deploy_state in [ 'present' ])
+  with_dict: '{{ nginx_local_servers|d({}) }}'
+  notify: [ 'Test nginx and reload' ]
+
+  # If nginx local facts are not present, assume that configuration
+  # is being reset and move all symlinks out of the way to prevent
+  # accidental failures because of old wrong configuration files
+- name: Remove all configuration symlinks during config reset
+  shell: rm -f /etc/nginx/sites-enabled/*
+  args:
+    executable: 'sh'
+    creates: '/etc/ansible/facts.d/nginx.fact'
+    warn: False
+  when: (nginx__deploy_state in [ 'present' ])
+
+- name: Make sure that Ansible local facts directory is present
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: (nginx__deploy_state in [ 'present' ])
+
+- name: Save nginx local facts
+  template:
+    src: 'etc/ansible/facts.d/nginx.fact.j2'
+    dest: '/etc/ansible/facts.d/nginx.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: nginx_register_local_facts
+  when: (nginx__deploy_state in [ 'present' ])
+
+- name: Gather facts if they were modified
+  action: setup
+  when: (nginx_register_local_facts is changed and nginx__deploy_state in [ 'present' ])
+
+- include: 'nginx_htpasswd.yml'
+  when: (nginx__deploy_state in [ 'present' ])
+
+- include: 'nginx_configs.yml'
+  tags: [ 'role::nginx:servers' ]
+  when: (nginx__deploy_state in [ 'present' ])
+
+- include: 'nginx_servers.yml'
+  tags: [ 'role::nginx:servers' ]
+  when: (nginx__deploy_state in [ 'present' ])
+
+- name: Make sure that PKI hook directory exists
+  file:
+    path: '{{ nginx_pki_hook_path }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: (nginx_pki|bool and nginx__deploy_state in [ 'present' ])
+
+- name: Manage PKI nginx hook
+  template:
+    src: 'etc/pki/hooks/nginx.j2'
+    dest: '{{ nginx_pki_hook_path + "/" + nginx_pki_hook_name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: (nginx_pki|bool and nginx__deploy_state in [ 'present' ])
+
+- name: Ensure the PKI nginx hook is absent
+  file:
+    path: '{{ nginx_pki_hook_path }}'
+    state: 'absent'
+  when: (nginx__deploy_state in [ 'absent' ])
+
+- name: Save nginx local facts
+  template:
+    src: 'etc/ansible/facts.d/nginx.fact.j2'
+    dest: '/etc/ansible/facts.d/nginx.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: nginx_register_local_facts
+
+- name: Gather facts if they were modified
+  action: setup
+  when: (nginx_register_local_facts is changed and nginx__deploy_state in [ 'present' ])
+
+- name: DebOps post_tasks hook
+  include: '{{ lookup("task_src", "nginx/post_main.yml") }}'
+  when: (nginx__deploy_state in [ 'present' ])

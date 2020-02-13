@@ -1,0 +1,63 @@
+---
+
+- name: Install required packages
+  package:
+    name: '{{ q("flattened", (nfs_server__base_packages
+                              + nfs_server__packages)) }}'
+    state: 'present'
+  register: nfs_server__register_packages
+  until: nfs_server__register_packages is succeeded
+
+- name: Configure NFS server
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items:
+    - 'etc/default/nfs-common'
+    - 'etc/default/nfs-kernel-server'
+    - 'etc/modprobe.d/nfs-server.conf'
+  notify:
+    - 'Restart nfs-common service'
+    - 'Restart nfs-kernel-server service'
+
+- name: Create /etc/exports.d/ directory
+  file:
+    path: '/etc/exports.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Ensure exported directories exist
+  file:
+    path: '{{ item.path }}'
+    state: 'directory'
+    owner: '{{ item.owner | d("root") }}'
+    group: '{{ item.group | d("root") }}'
+    mode:  '{{ item.mode  | d("0755") }}'
+  with_flattened:
+    - '{{ nfs_server__combined_exports }}'
+  when: item.path|d() and item.state|d('present') != 'absent' and item.acl|d()
+
+- name: Bind mount requested directories
+  mount:
+    name: '{{ item.path }}'
+    src: '{{ item.bind.src | d(item.bind) }}'
+    opts: '{{ ( [ "bind" ] + item.bind.options | d([]) ) | join(",") }}'
+    fstype: 'none'
+    state: 'mounted'
+  with_flattened:
+    - '{{ nfs_server__combined_exports }}'
+  when: item.path|d() and item.state|d('present') != 'absent' and item.acl|d() and item.bind|d()
+
+- name: Configure NFS exports
+  template:
+    src: 'etc/exports.d/ansible.exports.j2'
+    dest: '/etc/exports.d/ansible.exports'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Reload NFS exports' ]

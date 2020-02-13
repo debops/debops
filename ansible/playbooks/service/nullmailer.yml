@@ -1,6 +1,8 @@
 ---
 
 - name: Manage nullmailer SMTP server
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_all_hosts', 'debops_service_nullmailer' ]
   become: True
 
@@ -8,20 +10,36 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: debops.nullmailer/env
+    - import_role:
+        name: 'nullmailer'
+        tasks_from: 'main_env'
       tags: [ 'role::nullmailer', 'role::ferm', 'role::tcpwrappers' ]
 
-    - role: debops.ferm
+  roles:
+
+    - role: python
+      tags: [ 'role::python', 'skip::python', 'role::ldap' ]
+      python__dependent_packages3:
+        - '{{ ldap__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ ldap__python__dependent_packages2 }}'
+
+    - role: ldap
+      tags: [ 'role::ldap', 'skip::ldap' ]
+      ldap__dependent_tasks:
+        - '{{ nullmailer__ldap__dependent_tasks }}'
+
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ nullmailer__ferm__dependent_rules }}'
 
-    - role: debops.tcpwrappers
+    - role: tcpwrappers
       tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
       tcpwrappers__dependent_allow:
         - '{{ nullmailer__tcpwrappers__dependent_allow }}'
 
-    - role: debops.nullmailer
+    - role: nullmailer
       tags: [ 'role::nullmailer', 'skip::nullmailer' ]

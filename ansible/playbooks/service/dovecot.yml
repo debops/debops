@@ -1,6 +1,8 @@
 ---
 
 - name: Manage Dovecot service
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_dovecot' ]
   become: True
 
@@ -8,22 +10,31 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: debops.postfix/env
+    - import_role:
+        name: 'dovecot'
+        tasks_from: 'main_env'
+      tags: [ 'role::dovecot', 'role::secret', 'role::ferm' ]
+
+    - import_role:
+        name: 'postfix'
+        tasks_from: 'main_env'
       tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
 
-    - role: debops.secret
+  roles:
+
+    - role: secret
       tags: [ 'role::secret', 'role::postfix' ]
       secret__directories:
         - '{{ postfix__secret__directories }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
-        - '{{ postfix__ferm__dependent_rules }}'
+        - '{{ dovecot__ferm__dependent_rules }}'
 
-    - role: debops.postfix
+    - role: postfix
       tags: [ 'role::postfix', 'skip::postfix' ]
       postfix__dependent_maincf:
         - role: 'dovecot'
@@ -32,5 +43,10 @@
         - role: 'dovecot'
           config: '{{ dovecot__postfix__dependent_mastercf }}'
 
-    - role: debops.dovecot
+    - role: ldap
+      tags: [ 'role::ldap', 'skip::ldap' ]
+      ldap__dependent_tasks:
+        - '{{ dovecot__ldap__dependent_tasks }}'
+
+    - role: dovecot
       tags: [ 'role::dovecot', 'skip::dovecot' ]

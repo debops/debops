@@ -1,0 +1,700 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _docker_registry__ref_defaults:
+
+# debops.docker_registry default variables
+# ========================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: docker_registry__base_packages [[[
+#
+# List of APT packages required for Docker Registry service.
+docker_registry__base_packages: '{{ [ "docker-registry" ]
+                                    if (not docker_registry__upstream|bool)
+                                    else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__packages [[[
+#
+# List of additional APT packages to install with Docker Registry.
+docker_registry__packages: []
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__version [[[
+#
+# The version of the installed Docker Registry. This variable is defined
+# automatically by the Ansible local facts and doesn't have to be set manually.
+# You can use this variable in conditional configuration.
+docker_registry__version: '{{ ansible_local.docker_registry.version
+                              if (ansible_local|d() and ansible_local.docker_registry|d() and
+                                  ansible_local.docker_registry.version|d())
+                              else "0.0.0" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# UNIX environment [[[
+# --------------------
+
+# .. envvar:: docker_registry__user [[[
+#
+# Name of the UNIX account which will be used by the Docker Registry service.
+docker_registry__user: 'docker-registry'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__group [[[
+#
+# Name of the UNIX group which will be used as the primary group of the Docker
+# Registry service.
+docker_registry__group: 'docker-registry'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__additional_groups [[[
+#
+# List of additional UNIX groups to which the Docker Registry UNIX account
+# should belong.
+docker_registry__additional_groups:
+  - '{{ ansible_local.redis_server.auth_group
+        if (docker_registry__redis_enabled|bool and
+            ansible_local|d() and ansible_local.redis_server|d() and
+            ansible_local.redis_server.auth_group|d())
+        else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__home [[[
+#
+# Path of the UNIX home directory of the Docker Registry service. This is the
+# default path used by the Debian ``docker-registry`` APT package.
+docker_registry__home: '/var/lib/docker-registry'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__comment [[[
+#
+# The GECOS field of the Docker Registry UNIX account.
+docker_registry__comment: 'Docker Registry'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__shell [[[
+#
+# The default shell used by the Docker Registry UNIX account.
+docker_registry__shell: '/usr/sbin/nologin'
+                                                                   # ]]]
+                                                                   # ]]]
+# Docker Registry upstream installation [[[
+# -----------------------------------------
+
+# .. envvar:: docker_registry__distribution_release [[[
+#
+# This variable defines the OS release used to determine if an upstream Docker
+# Registry needs to be installed.
+docker_registry__distribution_release: '{{ ansible_local.core.distribution_release
+                                           if (ansible_local|d() and ansible_local.core|d() and
+                                               ansible_local.core.distribution_release|d())
+                                           else ansible_distribution_release }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__upstream [[[
+#
+# Enable or disable installation of the :command:`docker-registry` command from
+# the upstream :command:`git` repository.
+docker_registry__upstream: '{{ True
+                               if (docker_registry__distribution_release in
+                                   [ "wheezy", "jessie", "stretch",
+                                     "precise", "trusty", "xenial" ])
+                               else False }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__src [[[
+#
+# Path where source repositories will be stored.
+docker_registry__src: '{{ docker_registry__home + "/src" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__gopath [[[
+#
+# Path where Go package builds and cache will be stored.
+docker_registry__gopath: '{{ docker_registry__home + "/go" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__git_dest [[[
+#
+# Path where the Docker Registry upstream repository will be checked out.
+docker_registry__git_dest: '{{ docker_registry__gopath + "/src/"
+                               + docker_registry__git_repo.split("://")[1] }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__git_dir [[[
+#
+# Path where the Docker Registry :file:`.git/` directory will be stored.
+docker_registry__git_dir: '{{ docker_registry__src + "/" + docker_registry__git_repo.split("://")[1] }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__git_gpg_key [[[
+#
+# The fingerprint of the GPG key used to sign Docker Registry upstream
+# releases.
+docker_registry__git_gpg_key: '8C7A 111C 2110 5794 B0E8  A27B F58C 5D0A 4405 ACDB'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__git_repo [[[
+#
+# The URL of the upstream Docker Registry :command:`git` repository.
+docker_registry__git_repo: 'https://github.com/docker/distribution'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__git_version [[[
+#
+# The branch/tag of the Docker Registry :command:`git` repository to check out.
+docker_registry__git_version: 'v2.7.1'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__binary [[[
+#
+# The absolute path where the Docker Registry upstream binary will be installed
+# to; alternatively, the path of the Docker Registry binary installed by the
+# APT package.
+docker_registry__binary: '{{ "/usr/local/bin/docker-registry"
+                             if docker_registry__upstream|bool
+                             else "/usr/bin/docker-registry" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Web server configuration [[[
+# ----------------------------
+
+# .. envvar:: docker_registry__fqdn [[[
+#
+# The Fully Qualified Domain Name of the Docker Registry service.
+docker_registry__fqdn: 'registry.{{ docker_registry__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__domain [[[
+#
+# The DNS domain used as a base for the Docker Registry FQDN address.
+docker_registry__domain: '{{ ansible_local.core.domain
+                             if (ansible_local|d() and ansible_local.core|d() and
+                                 ansible_local.core.domain|d())
+                             else ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__backend_port [[[
+#
+# The TCP port on which the Docker Registry backend service listens for
+# connections.
+docker_registry__backend_port: '5070'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# Docker Registry service by the webserver. If this list is empty, anybody can
+# connect and access the service.
+docker_registry__allow: []
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__max_upload_size [[[
+#
+# Specify maximum size of an upload allowed by the webserver. If set to ``0``,
+# the maximum limit is disabled.
+docker_registry__max_upload_size: '4G'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__basic_auth [[[
+#
+# Enable or disable HTTP Basic Authentication in the webserver frontend. If the
+# GitLab Container Registry integration is enabled, the internal HTTP Basic
+# Auth is disabled.
+docker_registry__basic_auth: '{{ False
+                                 if docker_registry__token_enabled|bool
+                                 else True }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__hasic_auth_realm [[[
+#
+# The HTTP Basic Auth realm used by Docker Registry service.
+docker_registry__basic_auth_realm: 'Docker Registry'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__basic_auth_name [[[
+#
+# Name of the :command:`htpasswd` file stored in the
+# :file:`/etc/nginx/private/` directory which contains HTTP Basic Auth
+# credentials.
+docker_registry__basic_auth_name: 'docker-registry'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__basic_auth_users [[[
+#
+# List of user accounts which will be allowed access to the Docker Registry
+# service via HTTP Basic Auth. The passwords will be automatically generated by
+# the :ref:`debops.nginx` role and stored in the :file:`secret/` directory on
+# Ansible Controller. See :ref:`debops.secret` role for more details.
+docker_registry__basic_auth_users: '{{ ansible_local.core.admin_users
+                                       if (ansible_local|d() and ansible_local.core|d() and
+                                           ansible_local.core.admin_users|d())
+                                       else [] }}'
+                                                                   # ]]]
+# .. envvar:: docker_registry__basic_auth_except_get [[[
+#
+# If true, GET requests will not require authentication.
+# Even with successful authentication, Docker images can only be pushed to a
+# path that includes the machines hostname thus having some audit chain to the
+# build server that build the image.
+docker_registry__basic_auth_except_get: False
+                                                                   # ]]]
+                                                                   # ]]]
+# Filesystem storage configuration [[[
+# ------------------------------------
+
+# .. envvar:: docker_registry__storage_dir [[[
+#
+# Absolute path of the local filesystem storage directory used by the Docker
+# Registry service.
+docker_registry__storage_dir: '{{ (ansible_local.root.data
+                                   if (ansible_local|d() and ansible_local.root|d() and
+                                       ansible_local.root.data|d())
+                                   else "/srv") + "/" + docker_registry__user + "/storage" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__storage_mode [[[
+#
+# The UNIX permissions of the local filesystem storage directory.
+docker_registry__storage_mode: '0755'
+                                                                   # ]]]
+                                                                   # ]]]
+# Redis Server integration [[[
+# ----------------------------
+
+# .. envvar:: docker_registry__redis_enabled [[[
+#
+# Enable or disable support for Redis Server cache.
+docker_registry__redis_enabled: '{{ True
+                                    if (ansible_local|d() and ansible_local.redis_server|d() and
+                                        (ansible_local.redis_server.installed|d())|bool)
+                                    else False }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__redis_host [[[
+#
+# The FQDN address of the Redis Server instance to use by Docker Registry.
+docker_registry__redis_host: '127.0.0.1'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__redis_port [[[
+#
+# The TCP port of the Redis Server instance which should be used by Docker
+# Registry.
+docker_registry__redis_port: '{{ ansible_local.redis_server.port
+                                 if (ansible_local|d() and ansible_local.redis_server|d() and
+                                     ansible_local.redis_server.port|d())
+                                 else "6379" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__redis_password [[[
+#
+# The password of the Redis Server instance which should be used by Docker
+# Registry.
+docker_registry__redis_password: '{{ ansible_local.redis_server.password
+                                     if (ansible_local|d() and ansible_local.redis_server|d() and
+                                         ansible_local.redis_server.password|d())
+                                     else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__redis_db [[[
+#
+# The Redis Server database ID to use by the Docker Registry.
+docker_registry__redis_db: 0
+                                                                   # ]]]
+                                                                   # ]]]
+# Token-based authentication [[[
+# ------------------------------
+
+# The Docker Registry supports token-based authentication, which allows
+# external services to authenticate Docker clients to the Registry.
+
+# .. envvar:; docker_registry__token_provider [[[
+#
+# By default GitLab is used as an authentication service, but other roles that
+# implement the needed Ansible local facts can be used as well. Specify the
+# role name in this variable to use its facts as a data source.
+docker_registry__token_provider: 'gitlab'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__token_enabled [[[
+#
+# Enable or disable support for token-based authentication.
+docker_registry__token_enabled: '{{ True
+                                    if (ansible_local|d() and ansible_local[docker_registry__token_provider]|d() and
+                                        (ansible_local[docker_registry__token_provider].registry|d())|bool)
+                                    else False }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__token_fqdn [[[
+#
+# The Fully Qualified Domain Name of the authentication service website. This
+# will be used to redirect HTTP clients that open the main page of Docker
+# Registry to point them to an useful user interface instead.
+docker_registry__token_fqdn: '{{ ansible_local[docker_registry__token_provider].fqdn
+                                 if (ansible_local|d() and ansible_local[docker_registry__token_provider]|d() and
+                                     ansible_local[docker_registry__token_provider].fqdn|d())
+                                 else ("code." + docker_registry__domain) }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__token_realm_url [[[
+#
+# The URL of the authentication service API endpoint, passed to the Docker
+# clients. The clients can use this URL to request signed authentication tokens
+# from the authentication service.
+docker_registry__token_realm_url: '{{ ansible_local[docker_registry__token_provider].registry_token_realm_url
+                                      if (ansible_local|d() and ansible_local[docker_registry__token_provider]|d() and
+                                          ansible_local[docker_registry__token_provider].registry_token_realm_url|d())
+                                      else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__token_issuer [[[
+#
+# The authentication service token issuer string, included in the issued
+# tokens. This value needs to be the same in the authentication service
+# configuration file.
+docker_registry__token_issuer: '{{ ansible_local[docker_registry__token_provider].registry_token_issuer
+                                   if (ansible_local|d() and ansible_local[docker_registry__token_provider]|d() and
+                                       ansible_local[docker_registry__token_provider].registry_token_issuer|d())
+                                   else "" }}'
+                                                                   # ]]]
+# .. envvar:: docker_registry__token_service [[[
+#
+# Name of the authentication service in Docker Registry, used in the URLs
+# passed to the authentication source API endpoint.
+docker_registry__token_service: '{{ ansible_local[docker_registry__token_provider].registry_token_service
+                                    if (ansible_local|d() and ansible_local[docker_registry__token_provider]|d() and
+                                        ansible_local[docker_registry__token_provider].registry_token_service|d())
+                                    else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__token_pki_path [[[
+#
+# The absolute path to the root of the PKI infrastructure, managed by the
+# :ref:`debops.pki` Ansible role.
+docker_registry__token_pki_path: '{{ ansible_local.pki.path
+                                     if (ansible_local|d() and ansible_local.pki|d() and
+                                         ansible_local.pki.path|d())
+                                     else "/etc/pki/realms" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__token_pki_realm [[[
+#
+# Name of the PKI realm used by the authentication service to sign the
+# authentication tokens that provide access to the Docker Registry.
+docker_registry__token_pki_realm: '{{ ansible_local[docker_registry__token_provider].registry_pki_realm
+                                      if (ansible_local|d() and ansible_local[docker_registry__token_provider]|d() and
+                                          ansible_local[docker_registry__token_provider].registry_pki_realm|d())
+                                      else "domain" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__token_pki_crt [[[
+#
+# The name of the file in the PKI realm which contains the X.509 certificate.
+docker_registry__token_pki_crt: 'default.crt'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__token_certificate [[[
+#
+# Absolute path of the file which contains the X.509 certificate that can be
+# used by Docker Registry to authenticate the tokens signed by the
+# authentication service, sent by the Docker clients.
+docker_registry__token_certificate: '{{ docker_registry__token_pki_path + "/"
+                                        + docker_registry__token_pki_realm + "/"
+                                        + docker_registry__token_pki_crt }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Docker Registry configuration [[[
+# ---------------------------------
+
+# The variables below define configuration of the Docker Registry service.
+# See :ref:`docker_registry__ref_config` for more details.
+
+# .. envvar:: docker_registry__config_file [[[
+#
+# Absolute path of the Docker Registry configuration file.
+docker_registry__config_file: '/etc/docker/registry/config.yml'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__original_config [[[
+#
+# The original configuration of the Docker Registry service.
+# Based on: https://github.com/docker/distribution/blob/master/cmd/registry/config-example.yml
+docker_registry__original_config:
+
+  - name: 'original-config'
+    config:
+      version: '0.1'
+      log:
+        fields:
+          service: 'registry'
+      storage:
+        cache:
+          blobdescriptor: 'inmemory'
+      http:
+        addr: ':5000'
+        headers:
+          'X-Content-Type-Options': [ 'nosniff' ]
+      health:
+        storagedriver:
+          enabled: True
+          interval: '10s'
+          threshold: 3
+
+  - name: 'original-storage'
+    config:
+      storage:
+        filesystem:
+          rootdirectory: '/var/lib/registry'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__default_config [[[
+#
+# Default configuration for Docker Registry defined by the role.
+docker_registry__default_config:
+
+  - name: 'default-http'
+    config:
+      http:
+        addr: '127.0.0.1:{{ docker_registry__backend_port }}'
+
+  - name: 'original-storage'
+    state: 'absent'
+
+  - name: 'default-storage'
+    config:
+      storage:
+        filesystem:
+          rootdirectory: '{{ docker_registry__storage_dir }}'
+        delete:
+          enabled: True
+
+  - name: 'default-redis'
+    state: '{{ "present" if docker_registry__redis_enabled|bool else "absent" }}'
+    config:
+      redis:
+        addr: '{{ docker_registry__redis_host + ":" + docker_registry__redis_port }}'
+        password: '{{ docker_registry__redis_password }}'
+        db: '{{ docker_registry__redis_db }}'
+      storage:
+        cache:
+          blobdescriptor: 'redis'
+
+  - name: 'default-token'
+    state: '{{ "present" if docker_registry__token_enabled|bool else "absent" }}'
+    config:
+      auth:
+        token:
+          realm: '{{ docker_registry__token_realm_url }}'
+          issuer: '{{ docker_registry__token_issuer }}'
+          service: '{{ docker_registry__token_service }}'
+          rootcertbundle: '{{ docker_registry__token_certificate }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__config [[[
+#
+# The Docker Registry configuration defined on all hosts in the Ansible
+# inventory.
+docker_registry__config: []
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__group_config [[[
+#
+# The Docker Registry configuration defined on hosts in a specific Ansible
+# inventory group.
+docker_registry__group_config: []
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__host_config [[[
+#
+# The Docker Registry configuration defined on specific hosts in the Ansible
+# inventory.
+docker_registry__host_config: []
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__combined_config [[[
+#
+# The variable which combines all of the other Docker Registry configuration
+# variables and is used in the configuration template.
+docker_registry__combined_config: '{{ docker_registry__original_config
+                                      + docker_registry__default_config
+                                      + docker_registry__config
+                                      + docker_registry__group_config
+                                      + docker_registry__host_config }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Garbage collector configuration [[[
+# -----------------------------------
+
+# .. envvar:: docker_registry__garbage_collector_enabled [[[
+#
+# Enable or disable support for Docker Registry garbage collector script.
+docker_registry__garbage_collector_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__garbage_collector_interval [[[
+#
+# Specify the interval in which the Docker Registry UNIX account will perform
+# garbage collection using a :command:`cron` script. Supported intervals:
+# ``hourly``, ``daily``, ``weekly``, ``monthly``.
+docker_registry__garbage_collector_interval: 'daily'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: docker_registry__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+docker_registry__etc_services__dependent_list:
+
+  - name: 'docker-registry'
+    port: '{{ docker_registry__backend_port }}'
+    comment: 'Docker Registry'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__keyring__dependent_gpg_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+docker_registry__keyring__dependent_gpg_keys:
+
+  - user: '{{ docker_registry__user }}'
+    group: '{{ docker_registry__group }}'
+    home: '{{ docker_registry__home }}'
+    id: '{{ docker_registry__git_gpg_key }}'
+    state: '{{ "present" if docker_registry__upstream|bool else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+docker_registry__python__dependent_packages3:
+
+  - 'python3-yaml'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+docker_registry__python__dependent_packages2:
+
+  - 'python-yaml'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__nginx__dependent_maps [[[
+#
+# Map configuration for the :ref:`debops.nginx` Ansible role.
+docker_registry__nginx__dependent_maps:
+
+  - name: 'docker_registry_headers'
+    map: '$upstream_http_docker_distribution_api_version $docker_distribution_api_version'
+    mapping: |
+      ''     'registry/2.0';
+    state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__nginx__dependent_upstreams [[[
+#
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
+docker_registry__nginx__dependent_upstreams:
+
+  - name: 'docker-registry'
+    server: '127.0.0.1:{{ docker_registry__backend_port }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__nginx__dependent_htpasswd [[[
+#
+# HTTP Basic Auth password configuration for the :ref:`debops.nginx` Ansible
+# role.
+docker_registry__nginx__dependent_htpasswd:
+  name: '{{ docker_registry__basic_auth_name }}'
+  users: '{{ docker_registry__basic_auth_users }}'
+
+                                                                   # ]]]
+# .. envvar:: docker_registry__nginx__dependent_servers [[[
+#
+# Server configuration for the :ref:`debops.nginx` Ansible role.
+docker_registry__nginx__dependent_servers:
+
+  - name: '{{ docker_registry__fqdn }}'
+    filename: 'debops.docker_registry'
+    allow: '{{ docker_registry__allow }}'
+    auth_basic: '{{ False
+                    if (docker_registry__basic_auth_except_get|bool)
+                    else (docker_registry__basic_auth | bool) }}'
+    auth_basic_realm: '{{ docker_registry__basic_auth_realm }}'
+    auth_basic_name: '{{ docker_registry__basic_auth_name }}'
+
+    options: |
+      client_max_body_size {{ docker_registry__max_upload_size }};
+
+      # required to avoid error HTTP 411: see Issue #1486 (https://github.com/moby/moby/issues/1486)
+      chunked_transfer_encoding on;
+
+    location_list:
+
+      - pattern: '/'
+        options: |
+          {% if docker_registry__token_enabled|bool %}
+          return 307 $scheme://{{ docker_registry__token_fqdn }}/;
+          {% else %}
+          return 307 /v2/;
+          {% endif %}
+
+      - pattern: '/v2/'
+        options: |
+          # Do not allow connections from docker 1.5 and earlier
+          # docker pre-1.6.0 did not properly set the user agent on ping, catch "Go *" user agents
+          if ($http_user_agent ~ "^(docker\/1\.(3|4|5(?!\.[0-9]-dev))|Go ).*$" ) {
+            return 404;
+          }
+
+          {% if docker_registry__basic_auth_except_get|bool %}
+          set $auth_basic "{{ docker_registry__basic_auth_realm }}";
+          if ($request_method ~* "^(GET|HEAD)$") {
+              set $auth_basic "off";
+          }
+          if ($force_authentication) {
+              set $auth_basic "{{ docker_registry__basic_auth_realm }}";
+          }
+          auth_basic $auth_basic;
+          auth_basic_user_file {{ nginx_private_path + "/" + docker_registry__basic_auth_name }};
+
+          set $auth_status "deny";
+          if ($request_uri ~* "^/v2/([^/]+)/") {
+              set $user_path $1;
+          }
+          if ($remote_user = $user_path) {
+              set $auth_status "grant";
+          }
+          if ($request_method ~* "^(GET|HEAD)$") {
+              set $auth_status "grant";
+          }
+          if ($auth_status != "grant") {
+              return 401;
+          }
+          {% endif %}
+
+          # If $docker_distribution_api_version is empty, the header will not be added.
+          # See the map directive above where this variable is defined.
+          add_header 'Docker-Distribution-Api-Version' $docker_distribution_api_version always;
+
+          proxy_pass http://docker-registry;
+          proxy_set_header Host              $http_host;
+          proxy_set_header X-Real-IP         $remote_addr;
+          proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Host  $server_name;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_read_timeout 900;
+        state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]

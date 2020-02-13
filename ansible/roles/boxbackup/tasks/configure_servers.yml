@@ -1,0 +1,45 @@
+---
+
+- name: Install Box Backup server packages
+  apt: pkg=boxbackup-server state=present install_recommends=no
+  register: boxbackup__register_server_packages
+  until: boxbackup__register_server_packages is succeeded
+
+- name: Make sure that boxbackup server directories exists
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: 'bbstored'
+    group: 'bbstored'
+    mode: '0700'
+  with_items: [ '/etc/boxbackup', '/etc/boxbackup/bbstored',
+                '{{ boxbackup_storage }}', '{{ boxbackup_storage }}/backup' ]
+
+- name: Check block size of storage device
+  shell: "set -o nounset -o pipefail -o errexit &&
+          dumpe2fs -h $(df {{ boxbackup_storage }} | tail -n 1 \
+          | awk '{ print $1 }') | grep 'Block size' | awk '{ print $3 }'"
+  args:
+    executable: 'bash'
+  register: boxbackup_storage_blocksize
+  changed_when: False
+
+- name: Make sure accounts.txt file exists
+  copy:
+    force: false
+    dest: /etc/boxbackup/bbstored/accounts.txt
+    content: ''
+    owner: bbstored
+    group: bbstored
+    mode: '0600'
+
+- name: Configure boxbackup server
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'bbstored'
+    group: 'bbstored'
+    mode: '0640'
+  with_items: [ 'etc/boxbackup/raidfile.conf', 'etc/boxbackup/bbstored.conf' ]
+  notify:
+    - Restart boxbackup-server

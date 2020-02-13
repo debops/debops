@@ -1,6 +1,8 @@
 ---
 
 - name: Manage LXC hosts
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_lxc' ]
   become: True
 
@@ -10,38 +12,37 @@
 
   roles:
 
-    - role: debops.resolvconf
+    - role: resolvconf
       tags: [ 'role::resolvconf', 'skip::resolvconf' ]
       resolvconf__enabled: True
 
-    - role: debops.root_account
+    - role: root_account
       tags: [ 'role::root_account', 'skip::root_account' ]
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ lxc__apt_preferences__dependent_list }}'
 
-    - role: debops.ferm
+    - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ lxc__ferm__dependent_rules }}'
 
-    - role: debops.python
+    - role: python
       tags: [ 'role::python', 'skip::python', 'role::lxc' ]
       python__dependent_packages3:
         - '{{ lxc__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ lxc__python__dependent_packages2 }}'
 
-    - role: debops.lxc
+    - role: lxc
       tags: [ 'role::lxc', 'skip::lxc' ]
 
 # If a host has 'debops.dnsmasq' or 'debops.unbound' roles configured, execute
-# its playbook in case that configuration applied by the 'debops.lxc' role
-# needs to be applied to 'dnsmasq' or 'unbound' services. This should ensure
-# that the '*.lxc' subdomain for internal LXC containers is resolvable on the
-# LXC host.
+# its playbook in case that configuration applied by the 'lxc' role needs to be
+# applied to 'dnsmasq' or 'unbound' services. This should ensure that the
+# '*.lxc' subdomain for internal LXC containers is resolvable on the LXC host.
 #
 # If the host is not in the Ansible inventory groups required by the
 # 'dnsmasq.yml' or the 'unbound.yml' playbooks, this should not impact

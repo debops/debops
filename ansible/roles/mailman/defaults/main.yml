@@ -1,0 +1,385 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _mailman__ref_defaults:
+
+# debops.mailman default variables [[[
+# ====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: mailman__packages [[[
+#
+# List of APT packages to install.
+mailman__packages: [ 'mailman', 'gettext', 'patch' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# Language and localization [[[
+# -----------------------------
+
+# .. envvar:: mailman__default_languages [[[
+#
+# List of default language packs enabled in Mailman, specified as two letter
+# names. First element is used as the site language.
+mailman__default_languages: [ 'en' ]
+
+                                                                   # ]]]
+# .. envvar:: mailman__languages [[[
+#
+# List of additional language packs to enable in Mailman, specified as two
+# letter names.
+mailman__languages: []
+
+                                                                   # ]]]
+# .. envvar:: mailman__site_language [[[
+#
+# Default language used for new mailing lists and in the web interface.
+mailman__site_language: '{{ mailman__default_languages[0] }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Mailing list domains [[[
+# ------------------------
+
+# .. envvar:: mailman__fqdn [[[
+#
+# A fully qualified domain name of the host that manages the mailing lists.
+mailman__fqdn: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman__domain [[[
+#
+# A DNS domain name of the host that manages the default mailing lists.
+mailman__domain: '{{ ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman__site_domain [[[
+#
+# The primary domain used by the Mailing List Manager to serve its Web
+# interface and host the default mailing lists.
+mailman__site_domain: '{{ ("lists." + mailman__domain) }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman__virtual_domains [[[
+#
+# List of additional virtual domains which are used by Mailman.
+mailman__virtual_domains: []
+
+                                                                   # ]]]
+# .. envvar:: mailman__site_admin [[[
+#
+# Site administrator e-mail address.
+mailman__site_admin: 'listmaster@{{ mailman__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman__site_postmaster [[[
+#
+# Postmaster address, required by '`postfix-to-mailman.py`' script.
+mailman__site_postmaster: 'postmaster@{{ mailman__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman__site_list [[[
+#
+# Default site mailing list, usually ``mailman``.
+mailman__site_list: 'mailman'
+
+                                                                   # ]]]
+# .. envvar:: mailman__site_list_notify [[[
+#
+# Enable or disable sending a notification e-mail about creation of the site
+# mailing list.
+mailman__site_list_notify: True
+                                                                   # ]]]
+                                                                   # ]]]
+# Mail messages and SMTP configuration [[[
+# ----------------------------------------
+
+# .. envvar:: mailman__max_message_size [[[
+#
+# Maximum message size enforced by Mailman by default, in kilobytes. Can be
+# changed for each list independently in the web interface.
+mailman__max_message_size: '100'
+
+                                                                   # ]]]
+# .. envvar:: mailman__postfix_integration_type [[[
+#
+# Select how the role should configure Postfix to interface with Mailman:
+#
+# - ``virtual``: use virtual transport to pass messages to Mailman;
+#
+# - ``local``: use local mail aliases to pass messages to Mailman;
+#
+# See :ref:`mailman__ref_postfix_integration` for more details.
+mailman__postfix_integration_type: 'virtual'
+
+                                                                   # ]]]
+# .. envvar:: mailman__smtp_max_recipients [[[
+#
+# Maximum number of recipients in each SMTP session.
+mailman__smtp_max_recipients: '500'
+                                                                   # ]]]
+                                                                   # ]]]
+# Web interface and archives [[[
+# ------------------------------
+
+# .. envvar:: mailman__allow [[[
+#
+# List of hosts or CIDR networks to allow access to Mailman web interface.
+# If the list is empty, allow access from all hosts/networks.
+mailman__allow: []
+
+                                                                   # ]]]
+# .. envvar:: mailman__public_mbox [[[
+#
+# Should Mailman offer .mbox file in public list archives?
+mailman__public_mbox: True
+                                                                   # ]]]
+                                                                   # ]]]
+# Password configuration [[[
+# --------------------------
+
+# .. envvar:: mailman__site_password_length [[[
+#
+# Length of generated passwords for site administrator and list creator access.
+mailman__site_password_length: '40'
+
+                                                                   # ]]]
+# .. envvar:: mailman__admin_password_length [[[
+#
+# Length of generated passwords for mailing list owner/admin access.
+mailman__admin_password_length: '30'
+
+                                                                   # ]]]
+# .. envvar:: mailman__member_password_length [[[
+#
+# Length of generated passwords for list members.
+mailman__member_password_length: '20'
+
+                                                                   # ]]]
+# .. envvar:: mailman__user_friendly_passwords [[[
+#
+# Should Mailman generate user-friendly passwords?
+mailman__user_friendly_passwords: False
+                                                                   # ]]]
+                                                                   # ]]]
+# Spam and backscatter prevention [[[
+# -----------------------------------
+
+# .. envvar:: mailman__default_forward_auto_discards [[[
+#
+# Should auto-discarded messages from non-members be automatically sent to list
+# moderators/admins? Setting this to ``False`` will reduce spammy messages to
+# moderators.
+mailman__default_forward_auto_discards: False
+
+                                                                   # ]]]
+# .. envvar:: mailman__response_include_level [[[
+#
+# How much of the original message should be included in auto-responses?
+mailman__response_include_level: '0'
+
+                                                                   # ]]]
+# .. envvar:: mailman__default_generic_nomember_action [[[
+#
+# What should be done with mail messages from non-members by default?
+# 3 = Discard
+mailman__default_generic_nonmember_action: '3'
+
+                                                                   # ]]]
+# .. envvar:: mailman__referers [[[
+#
+# List of domains allowed as referers.
+mailman__referers: '{{ ([ mailman__site_domain ] + mailman__virtual_domains +
+                        [ mailman__fqdn, "*." + mailman__domain, mailman__domain ]) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Other options [[[
+# -----------------
+
+# .. envvar:: mailman__custom_options [[[
+#
+# Additional Mailman options in a text block format.
+# You can find more options in :file:`/usr/lib/mailman/Mailman/Defaults.py`
+mailman__custom_options: ''
+
+                                                                   # ]]]
+# .. envvar:: mailman__lists [[[
+#
+# List of mailing lists to create or remove. See :ref:`mailman__lists` for more
+# details.
+mailman__lists: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Mailman source code patches [[[
+# -------------------------------
+
+# .. envvar:: mailman__patch [[[
+#
+# Enable or disable patching of the Mailman source code.
+mailman__patch: True
+
+                                                                   # ]]]
+# .. envvar:: mailman__patch_list [[[
+#
+# List of patches applied to Mailman source code.
+mailman__patch_list:
+
+  # Add direct link to moderation page
+  - 'add-moderator-link'
+
+  # Remove automatic capitalization of list names
+  - 'remove-upper-list-name'
+
+  # Ignore commands from non-members (reduces backscatter, but blocks mail
+  # registration)
+  - 'ignore-commands-from-nonmembers'
+
+  # Remove extra aliases that are not needed (reduces backscatter)
+  - 'prune-alias-list'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: mailman__apt_preferences__dependent_list [[[
+#
+# Configuration of custom :ref:`debops.apt_preferences` role.
+mailman__apt_preferences__dependent_list:
+
+  - package: 'mailman'
+    backports: [ 'wheezy' ]
+    reason: 'Version parity with Debian Jessie'
+    role: 'debops.mailman'
+
+                                                                   # ]]]
+# .. envvar:: mailman__unattended_upgrades__dependent_blacklist [[[
+#
+# Configuration of the :ref:`debops.unattended_upgrades` role.
+mailman__unattended_upgrades__dependent_blacklist:
+
+  # Don't upgrade ``mailman`` package automatically if patches are enabled.
+  - name: 'mailman'
+    state: '{{ "present" if mailman__patch | bool else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman__fcgiwrap__instance [[[
+#
+# Configure ``fcgiwrap`` instance for Mailman using :ref:`debops.fcgiwrap` role.
+mailman__fcgiwrap__instance:
+  name: 'mailman'
+  user: 'list'
+  group: 'list'
+
+                                                                   # ]]]
+# .. envvar:: mailman__postfix__dependent_maincf [[[
+#
+# Configuration of Postfix ``main.cf`` in :ref:`debops.postfix` role.
+mailman__postfix__dependent_maincf:
+
+  - name: 'alias_maps'
+    value: [ 'hash:/var/lib/mailman/data/aliases' ]
+    state: '{{ "present"
+               if (mailman__postfix_integration_type == "local")
+               else "ignore" }}'
+
+  - name: 'mydestination'
+    value: [ '{{ mailman__site_domain }}' ]
+    state: '{{ "present"
+               if (mailman__postfix_integration_type == "local")
+               else "ignore" }}'
+
+  - name: 'virtual_alias_domains'
+    value: [ '{{ mailman__virtual_domains }}' ]
+    state: '{{ "present"
+               if (mailman__postfix_integration_type == "local" and
+                   mailman__virtual_domains)
+               else "ignore" }}'
+
+  - name: 'virtual_alias_maps'
+    value: [ 'hash:/var/lib/mailman/data/virtual-mailman' ]
+    state: '{{ "present"
+               if (mailman__postfix_integration_type == "local")
+               else "ignore" }}'
+
+  - name: 'mailman_destination_recipient_limit'
+    value: 1
+    state: '{{ "present"
+               if (mailman__postfix_integration_type == "virtual")
+               else "absent" }}'
+
+  - name: 'relay_domains'
+    value: '{{ [ mailman__site_domain ] + mailman__virtual_domains }}'
+    state: '{{ "present"
+               if (mailman__postfix_integration_type == "virtual")
+               else "ignore" }}'
+
+  - name: 'relay_recipient_maps'
+    value: [ 'hash:/var/lib/mailman/data/virtual-mailman' ]
+    state: '{{ "present"
+               if (mailman__postfix_integration_type == "virtual")
+               else "ignore" }}'
+
+  - name: 'transport_maps'
+    value: [ 'hash:/etc/mailman/postfix_transport' ]
+    state: '{{ "present"
+               if (mailman__postfix_integration_type == "virtual")
+               else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman__nginx_server_options [[[
+#
+# Set custom options for Mailman nginx server
+mailman__nginx_server_options: |
+  referer_hash_bucket_size 128;
+
+# ]]]
+# .. envvar:: mailman__nginx__servers [[[
+#
+# Configuration of :program:`nginx` server to access Mailman web interface, using
+# :ref:`debops.nginx` Ansible role.
+mailman__nginx__servers:
+  - by_role: 'debops.mailman'
+    enabled: True
+    name: '{{ [ mailman__site_domain ] + mailman__virtual_domains }}'
+    filename: 'debops.mailman'
+    root: '/usr/lib/cgi-bin/mailman'
+    webroot_create: False
+    options: '{{ mailman__nginx_server_options }}'
+
+    location:
+
+      '~ ^/(mailman/?)?$': |
+        rewrite ^ /mailman/listinfo permanent;
+
+      '~ ^/mailman/.': |
+        gzip off;
+        root /usr/lib/cgi-bin/mailman;
+        fastcgi_split_path_info       ^/mailman(/[^/]*)(.*)$;
+        fastcgi_param SCRIPT_FILENAME  /usr/lib/cgi-bin/mailman$fastcgi_script_name;
+        fastcgi_param PATH_INFO       $fastcgi_path_info;
+        include       fastcgi_params;
+        fastcgi_pass  unix:/run/fcgiwrap-mailman.socket;
+
+      '/images/mailman': |
+        alias /var/lib/mailman/icons;
+
+      '/pipermail': |
+        alias /var/lib/mailman/archives/public;
+        autoindex on;
+
+    location_allow:
+      '~ ^/mailman/.':   '{{ mailman__allow }}'
+      '/images/mailman': '{{ mailman__allow }}'
+      '/pipermail':      '{{ mailman__allow }}'
+
+    location_referers:
+      '~ ^/mailman/.': '{{ mailman__referers }}'
+# ]]]
+# ]]]
+# ]]]

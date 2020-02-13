@@ -1,6 +1,8 @@
 ---
 
 - name: Configure sysfs options
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_sysfs' ]
   become: True
 
@@ -8,15 +10,19 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  roles:
+  pre_tasks:
 
-    - role: debops.sysfs/env
+    - import_role:
+        name: 'sysfs'
+        tasks_from: 'main_env'
       tags: [ 'role::sysfs', 'role::secret' ]
 
-    - role: debops.secret
+  roles:
+
+    - role: secret
       tags: [ 'role::secret', 'role::sysfs' ]
       secret__directories:
         - '{{ sysfs__secret__directories | d([]) }}'
 
-    - role: debops.sysfs
+    - role: sysfs
       tags: [ 'role::sysfs', 'skip::sysfs' ]

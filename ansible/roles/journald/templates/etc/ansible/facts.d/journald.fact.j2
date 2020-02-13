@@ -1,0 +1,48 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+import subprocess
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+output = {'installed': cmd_exists('journalctl'),
+          'persistent': False,
+          'sealed': False,
+          'enabled': loads('''{{ journald__enabled
+                                 | bool | to_json }}''')}
+
+if (os.path.exists('/var/log/journal') and
+        os.path.isdir('/var/log/journal')):
+    output['persistent'] = True
+
+if (os.path.exists('/etc/machine-id') and
+        os.path.isfile('/etc/machine-id')):
+    with open('/etc/machine-id', 'r') as idfile:
+        machine_id = idfile.readline().strip()
+        seal = os.path.join('/var/log/journal/', machine_id, 'fss')
+        if os.path.exists(seal) and os.path.isfile(seal):
+            output['sealed'] = True
+
+try:
+    journald_version_stdout = subprocess.check_output(
+            ["journalctl", "--version"]
+            ).decode('utf-8').strip()
+
+    for line in journald_version_stdout.split('\n'):
+        if line.lower().startswith('systemd '):
+            output['version'] = line.split()[1]
+
+except Exception:
+    pass
+
+print(dumps(output, sort_keys=True, indent=4))

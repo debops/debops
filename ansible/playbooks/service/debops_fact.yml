@@ -1,6 +1,8 @@
 ---
 
 - name: Manage Ansible local facts for other roles
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_all_hosts', 'debops_service_debops_fact' ]
   become: True
 
@@ -10,5 +12,5 @@
 
   roles:
 
-    - role: debops.debops_fact
+    - role: debops_fact
       tags: [ 'role::debops_fact', 'skip::debops_fact' ]

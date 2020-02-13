@@ -1,7 +1,9 @@
 ---
 
 - name: Configure Logical Volume Manager
-  hosts: [ 'debops_service_lvm', 'debops_lvm' ]
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_lvm' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -10,5 +12,5 @@
 
   roles:
 
-    - role: debops.lvm
+    - role: lvm
       tags: [ 'role::lvm', 'skip::lvm' ]

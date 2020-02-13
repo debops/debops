@@ -1,0 +1,127 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _gunicorn__ref_defaults:
+
+# debops.gunicorn default variables [[[
+# =====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Default configuration [[[
+# -------------------------
+
+# .. envvar:: gunicorn__binary [[[
+#
+# The default binary to start the service. Set to "gunicorn3" for Python 3
+# applications.
+# This may be defined per application as well.
+gunicorn__binary: '{{ "gunicorn3"
+                      if (ansible_local|d() and ansible_local.python|d() and
+                          (ansible_local.python.installed3|d())|bool)
+                      else "gunicorn" }}'
+
+                                                                   # ]]]
+# .. envvar:: gunicorn__workers [[[
+#
+# The default number of worker threads used by Green Unicorn applications if
+# not specified otherwise.
+gunicorn__workers: '{{ ansible_processor_vcpus|int + 1 }}'
+
+                                                                   # ]]]
+# .. envvar:: gunicorn__user [[[
+#
+# The default UNIX account used by the Green Unicorn process if it's not
+# specified in the configuration.
+gunicorn__user: 'www-data'
+
+                                                                   # ]]]
+# .. envvar:: gunicorn__group [[[
+#
+# The default UNIX group used by the Green Unicorn process if it's not
+# specified in the configuration.
+gunicorn__group: 'www-data'
+
+                                                                   # ]]]
+# .. envvar:: gunicorn__systemd_timeout [[[
+#
+# Define the default timeout in :command:`systemd` for Green Unicorn services.
+gunicorn__systemd_timeout: '90'
+                                                                   # ]]]
+                                                                   # ]]]
+# Managed applications [[[
+# ------------------------
+
+# .. envvar:: gunicorn__applications [[[
+#
+# List of WSGI applications which are managed by the role, defined in the
+# Ansible inventory. See :ref:`gunicorn__ref_applications` for more details.
+gunicorn__applications: []
+
+                                                                   # ]]]
+# .. envvar:: gunicorn__dependent_applications [[[
+#
+# List of WSGI applications which are managed by the role, defined by other
+# Ansible roles using dependent variables.
+# See :ref:`gunicorn__ref_applications` for more details.
+gunicorn__dependent_applications: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: gunicorn__apt_preferences__dependent_list [[[
+#
+# Configuration for the :ref:`debops.apt_preferences` Ansible role.
+gunicorn__apt_preferences__dependent_list:
+
+  - packages: [ 'gunicorn', 'gunicorn-*' ]
+    backports: [ 'jessie' ]
+    reason: 'Feature parity with Debian Stretch'
+    by_role: 'debops.gunicorn'
+
+# .. envvar:: gunicorn__logrotate__dependent_config [[[
+#
+# Configuration for the :ref:`debops.logrotate` Ansible role.
+gunicorn__logrotate__dependent_config:
+
+  - filename: 'gunicorn'
+    logs: [ '/var/log/gunicorn/*.log' ]
+    divert: True
+    options: |
+      rotate 4
+      compress
+      delaycompress
+      missingok
+      notifempty
+      weekly
+      sharedscripts
+      su {{ gunicorn__user }} {{ gunicorn__group }}
+    postrotate: |
+      invoke-rc.d --quiet gunicorn reload >/dev/null
+    comment: 'Log rotation for Green Unicorn logs'
+                                                                   # ]]]
+# .. envvar:: gunicorn__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+gunicorn__python__dependent_packages3:
+
+  - 'gunicorn3'
+  - 'python3-setproctitle'
+
+                                                                   # ]]]
+# .. envvar:: gunicorn__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+gunicorn__python__dependent_packages2:
+
+  - 'gunicorn'
+  - 'python-setproctitle'
+
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

@@ -1,7 +1,9 @@
 ---
 
 - name: Manage docker-gen service
-  hosts: [ 'debops_service_docker_gen', 'debops_docker_gen' ]
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_docker_gen' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -10,5 +12,5 @@
 
   roles:
 
-    - role: debops.docker_gen
+    - role: docker_gen
       tags: [ 'role::docker_gen', 'skip::docker_gen' ]

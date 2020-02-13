@@ -1,0 +1,233 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _debops_api__ref_defaults:
+
+# debops.debops_api default variables [[[
+# =======================================
+#
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: debops_api__python_version [[[
+#
+# Python version to use. The Python 3 modules are not available in older
+# distribution releases. The Python 2 modules on the other hand are.
+# The primary testing and deployment environment is Python 3 but Python 2
+# should also work (at least to get the CI test passing).
+debops_api__python_version: '{{
+    3 if (ansible_distribution == "Debian" and ansible_distribution_major_version|int >= 8)
+    else 2 }}'
+
+                                                                   # ]]]
+# .. envvar:: debops_api__python3_packages [[[
+#
+# List of Python 3 packaged modules to install.
+debops_api__python3_packages:
+  - 'python3-yaml'
+  - 'python3-git'
+  - 'python3-docutils'
+
+                                                                   # ]]]
+# .. envvar:: debops_api__python2_packages [[[
+#
+# List of Python 2 packaged modules to install.
+debops_api__python2_packages:
+  - 'python-yaml'
+  - 'python-git'
+  - 'python-docutils'
+
+                                                                   # ]]]
+# .. envvar:: debops_api__deploy_state [[[
+#
+# What is the desired state which this role should achieve? Possible options:
+#
+# ``present``
+#   Default. Ensure that the DebOps API is installed and configured as requested..
+#
+# ``absent``
+#   Ensure that the DebOps API is uninstalled and it's configuration is removed.
+#   Currently not fully supported.
+#
+debops_api__deploy_state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]
+# DebOps API installation [[[
+# ---------------------------
+
+# .. envvar:: debops_api__user [[[
+#
+# System user of the DebOps API server.
+debops_api__user: 'debops-api'
+
+                                                                   # ]]]
+# .. envvar:: debops_api__group [[[
+#
+# System group of the DebOps API server.
+debops_api__group: 'debops-api'
+
+                                                                   # ]]]
+# .. envvar:: debops_api__home [[[
+#
+# Home directory of the DebOps API user.
+debops_api__home: '{{ (ansible_local.nginx.www
+                      if (ansible_local|d() and ansible_local.nginx|d() and
+                          ansible_local.nginx.www|d())
+                      else "/srv/www") + "/" + debops_api__user }}'
+
+                                                                   # ]]]
+# .. envvar:: debops_api__public_api_dir [[[
+#
+# Public API data directory which is going to be served by ``nginx``.
+debops_api__public_api_dir: '{{ debops_api__home + "/sites/public" }}'
+
+                                                                   # ]]]
+# .. envvar:: debops_api__app_repo_url [[[
+#
+# Source from where the DebOps API script will be installed.
+# TODO: Verified using debops-keyring.
+debops_api__app_repo_url: 'https://github.com/debops/debops-api.git'
+
+                                                                   # ]]]
+# .. envvar:: debops_api__app_repo_path [[[
+#
+# Directory path where the DebOps API script repository will be installed.
+debops_api__app_repo_dest: '{{ (ansible_local.root.src
+                                if (ansible_local|d() and ansible_local.root|d() and
+                                    ansible_local.root.src|d())
+                                else "/usr/local/src") + "/debops-api" }}'
+
+                                                                   # ]]]
+# .. envvar:: debops_api__input_data_repo_update [[[
+#
+# When enables, input data repository will be updated on each Ansible run
+# (might take some time).
+debops_api__input_data_repo_update: False
+
+                                                                   # ]]]
+# .. envvar:: debops_api__input_data_repo_url [[[
+#
+# Repository containing all DebOps roles as ``git`` submodules.
+debops_api__input_data_repo_url: 'https://github.com/debops/docs.git'
+
+                                                                   # ]]]
+# .. envvar:: debops_api__input_data_dir [[[
+#
+# Input data directory of the DebOps API.
+debops_api__input_data_dir: '{{ (ansible_local.root.var
+                                if (ansible_local|d() and ansible_local.root|d() and
+                                    ansible_local.root.var|d())
+                                else "/var/local") + "/debops-api" }}'
+
+                                                                   # ]]]
+# .. envvar:: debops_api__input_data_repo_dest [[[
+#
+# Directory where :envvar:`debops_api__input_data_repo_url` gets cloned to.
+debops_api__input_data_repo_dest: '{{ debops_api__input_data_dir + "/docs" }}'
+
+                                                                   # ]]]
+# .. envvar:: debops_api__input_data_role_path [[[
+#
+# Role directory used as input for the DebOps API script.
+debops_api__input_data_role_path: '{{ debops_api__input_data_repo_dest + "/docs/ansible/roles/" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# DebOps API configuration [[[
+# ----------------------------
+
+# .. envvar:: debops_api__app_parameters [[[
+#
+# List of additional parameters passed to the DebOps API script.
+#
+# Useful when the API should be setup for another project then DebOps.
+# In this case, you can put something like this:
+#
+# .. code-block:: yaml
+#   :linenos:
+#
+#   debops_api__app_parameters:
+#     - [ '--docs-url-pattern', 'https://docs.example.org/en/latest/ansible/roles/ansible-{role_name}/docs/index.html', 'linebreak' ]
+#     - [ '--changelog-url-pattern', 'https://docs.example.org/en/latest/ansible/roles/ansible-{role_name}/docs/changelog.html', 'linebreak' ]
+#     - [ '--role-owner', 'example', 'linebreak' ]
+#
+# in your inventory.
+debops_api__app_parameters:
+  - [ '--no-strict', 'linebreak' ]
+
+                                                                   # ]]]
+# .. envvar:: debops_api__domain [[[
+#
+# Public domain of the DebOps API.
+debops_api__domain: 'api.{{ ansible_domain }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# DebOps API update [[[
+# ---------------------
+
+# .. envvar:: debops_api__app_update [[[
+#
+# Before invoking the DebOps API script, pull the latest version of the DebOps
+# API script via ``git``.
+debops_api__app_update: False
+
+                                                                   # ]]]
+# .. envvar:: debops_api__cron_script [[[
+#
+# File path of the script setup by this role intended to be run by cron.
+debops_api__cron_script: '{{ debops_api__home + "/bin/debops-api-update" }}'
+
+                                                                   # ]]]
+# .. envvar:: debops_api__cron_entries [[[
+#
+# Before invoking the DebOps API script, pull the latest version of the DebOps
+# API script via ``git``.
+debops_api__cron_entries:
+  - name: 'debops-api-update'
+    cron_file: 'debops-api-update'
+    minute: '23'
+                                                                   # ]]]
+                                                                   # ]]]
+# Role-dependent configuration [[[
+# --------------------------------
+
+# .. envvar:: debops_api__nginx__servers [[[
+#
+# :program:`nginx` server configuration managed by the ``debops.debops_api``
+# role.
+debops_api__nginx__servers:
+
+  - by_role: 'debops.debops_api'
+    filename: 'debops.debops_api'
+    state: '{{ debops_api__deploy_state }}'
+    type: 'default'
+    name: '{{ debops_api__domain }}'
+    root: '{{ debops_api__public_api_dir }}'
+    webroot_create: False
+
+    location_list:
+      - pattern: '= /robots.txt'
+        options: |
+          log_not_found off;
+
+      - pattern: '/'
+        options: |
+          ## Allow directory listings for easy "browsing" of the API.
+          autoindex on;
+
+          default_type text/plain;
+
+          ## Allow browsers to use API responses regardless which website makes
+          ## use of the API.
+          ## Without this, browsers will not allow websites to use data
+          ## returned by this API for their own use.
+          ## Refer to: https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
+          add_header 'Access-Control-Allow-Origin' '*';
+# ]]]
+# ]]]
+# ]]]

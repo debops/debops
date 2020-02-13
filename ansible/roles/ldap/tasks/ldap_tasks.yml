@@ -1,0 +1,43 @@
+---
+
+- name: '{{ item.name }}'
+  ldap_entry:
+    dn:          '{{ item.dn if (item.dn is string) else item.dn | join(",") }}'
+    objectClass: '{{ item.objectClass | d(omit) }}'
+    attributes:  '{{ item.attributes | d(omit) }}'
+    state:       '{{ item.entry_state | d(item.state) }}'
+    server_uri:  '{{ ldap__admin_server_uri }}'
+    start_tls:   '{{ ldap__start_tls }}'
+    bind_dn:     '{{ ldap__admin_binddn }}'
+    bind_pw:     '{{ ldap__fact_admin_bindpw }}'
+  become:      '{{ ldap__admin_become }}'
+  become_user: '{{ ldap__admin_become_user if ldap__admin_become_user|d() else omit }}'
+  delegate_to: '{{ ldap__admin_delegate_to if ldap__admin_delegate_to|d() else omit }}'
+  run_once:    '{{ item.run_once | d(False) }}'
+  when: (item.objectClass|d() or item.entry_state|d()) and item.state not in [ 'init', 'ignore' ]
+  tags: [ 'role::ldap:tasks', 'skip::ldap:tasks' ]
+  no_log: '{{ item.no_log | d(True
+                              if ("userPassword" in (item.attributes|d({})).keys() or
+                                  "olcRootPW"    in (item.attributes|d({})).keys())
+                              else False) }}'
+
+- name: '{{ item.name }}'
+  ldap_attrs:
+    dn:         '{{ item.dn if (item.dn is string) else item.dn | join(",") }}'
+    attributes: '{{ item.attributes | d({}) }}'
+    ordered:    '{{ item.ordered | d(False) }}'
+    state:      '{{ item.state }}'
+    server_uri: '{{ ldap__admin_server_uri }}'
+    start_tls:  '{{ ldap__start_tls }}'
+    bind_dn:    '{{ ldap__admin_binddn }}'
+    bind_pw:    '{{ ldap__fact_admin_bindpw }}'
+  become:      '{{ ldap__admin_become }}'
+  become_user: '{{ ldap__admin_become_user if ldap__admin_become_user|d() else omit }}'
+  delegate_to: '{{ ldap__admin_delegate_to if ldap__admin_delegate_to|d() else omit }}'
+  run_once:    '{{ item.run_once | d(False) }}'
+  when: not item.objectClass|d() and not item.entry_state|d() and item.state not in [ 'init', 'ignore' ]
+  tags: [ 'role::ldap:tasks', 'skip::ldap:tasks' ]
+  no_log: '{{ item.no_log | d(True
+                              if ("userPassword" in (item.attributes|d({})).keys() or
+                                  "olcRootPW"    in (item.attributes|d({})).keys())
+                              else False) }}'
