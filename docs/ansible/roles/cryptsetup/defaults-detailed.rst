@@ -190,6 +190,11 @@ Each item of those lists is a dictionary with the following documented keys:
      When the header gets corrupted, the plaintext data might be inaccessible!
      Thus it is recommended to have a header backup on hand.
 
+     Debian buster and newer ship with Cryptsetup >2.0 which defaults to the LUKS2 format that provides redudancy of metadata.
+     For security reasons, there is no redundancy in keyslots binary data
+     (encrypted keys) but the format allows adding such a feature in future.
+     Thus it is still recommended to have a header backup on hand.
+
   Set to ``False`` to disable header backup creation and to ensure that the
   header backup is absent on the remote system.
   This option only has an effect in ``luks`` :ref:`item.mode <cryptsetup__devices_mode>`.
@@ -451,24 +456,24 @@ against :ref:`fstype <cryptsetup__devices_fstype>`.
 
 .. _cryptsetup__ref_devices_add_boot_disk_to_fde_system:
 
-Example for adding another boot disk to a FDE system
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Example for adding another boot disk to a FDE system with a different passphrase for both
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In case you installed a FDE system on one disk and want to create a redundant
 setup afterwards by adding another disk, encrypting it and re-balancing a SOTA_
-filesystem (Btrfs or ZFS) or growing a legacy raid setup to it you can follow
+filesystem (Btrfs or ZFS) or growing a legacy RAID setup to it you can follow
 this example.
 
 For this setup it is required that the added disk can be decrypted in the
 initramfs to assemble the root filesystem. To make this easier a passphrase
 will be used as keyfile instead of the default binary keyfile.
 
-Using a passphrase also allows/makes it easier automated the key input at boot
+Using a passphrase also makes it easier to automate the key input at boot
 using FDEunlock_ which is also described in this example. You can ignore/remove
 the custom :ref:`keyfile <cryptsetup__devices_keyfile>` setting if you don’t
 use FDEunlock_.
 
-The :ref:`keyfile <cryptsetup__devices_keyfile>` is generated/place in the
+The :ref:`keyfile <cryptsetup__devices_keyfile>` is generated in the
 :file:`keys` directory of the default ``FileVault`` implementation of FDEunlock_.
 Refer to FDEunlock_ for details.
 
@@ -539,6 +544,54 @@ You should now be left with a decrypted ``sdb4_crypt`` `plaintext device mapper
 target` for which the key only exists in
 :file:`/home/user/.config/fdeunlock/keys/{{ inventory_hostname }}-initramfs_dev_disk_by-partuuid_3b014afe-1581-11e7-b65d-00163e5e6c0f.key`
 on the Ansible controller.
+
+
+Example for adding another boot disk to a FDE system with the same passphrase for both
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This section is very similar to the previous example and you are expected to have understood it to not have to repeat everything here. Compared to the previous section which configured two disks for automated decryption using external network tools, this example configures multiple disks for manual passphrase entering by a human. The idea therefore is to use the same passphrase for the disks.
+
+There are two options to provide the passphrase. Either :command:`cryptsetup luksFormat` the disks manually and then open the crypto layer with the expected name. Alternatively provide the passphrase on the Ansible controller in :file:`{{ cryptsetup__secret_path }}/sdX5_crypt_passphrase.txt` for example.
+
+If you provided the passphrase on the Ansible controller, you will need the workaround as in the previous example by making use of the
+:ref:`ansible_controller_mounted state <cryptsetup__devices_state_ansible_controller_mounted>`. The role will need to be run two times with slightly changed configuration. For
+the first run, use something like this to ensure that the crypto layer is present and opened:
+
+.. code:: yaml
+
+   cryptsetup__devices:
+
+     - name: 'sdb4_crypt'
+       ciphertext_block_device: '/dev/disk/by-partuuid/6114134e-4796-11ea-8ec1-00163e5e6c00'
+       manage_filesystem: False
+       keyfile: '{{ cryptsetup__secret_path }}/sdX5_crypt_passphrase.txt'
+
+       ## Disable for initial setup else enable it:
+       # remote_keyfile: 'root_fs'
+       # crypttab_options: '{{ ["keyscript=decrypt_keyctl"] + (cryptsetup__crypttab_options|d([]) | list) }}'
+
+       ## Enable for initial setup else disable it:
+       state: 'ansible_controller_mounted'
+
+Now we will need the role to fix the entry in :file:`/etc/crypttab` so that the
+passphrase is asked only once on boot.
+The ``keyfile`` parameter does nothing at this point with ``remote_keyfile`` specified so if you don’t want to store the passphrase on the Ansible controller and did :command:`cryptsetup luksFormat` manually, then feel free to omit ``keyfile``.
+
+.. code:: yaml
+
+   cryptsetup__devices:
+
+     - name: 'sdb4_crypt'
+       ciphertext_block_device: '/dev/disk/by-partuuid/6114134e-4796-11ea-8ec1-00163e5e6c00'
+       manage_filesystem: False
+       keyfile: '{{ cryptsetup__secret_path }}/sdX5_crypt_passphrase.txt'
+
+       ## Disable for initial setup else enable it:
+       remote_keyfile: 'root_fs'
+       crypttab_options: '{{ ["keyscript=decrypt_keyctl"] + (cryptsetup__crypttab_options|d([]) | list) }}'
+
+       ## Enable for initial setup else disable it:
+       # state: 'ansible_controller_mounted'
 
 
 .. _cryptsetup__ref_devices_chaining_multiple_ciphers:
@@ -627,7 +680,7 @@ in any way with VeraCrypt. You don’t need to install it on hosts you run this 
 
 You will need to use VeraCrypt for creation as :command:`cryptsetup` and this role do
 not support this.
-Note that currently only a password is supported which can be passed in the
+Note that currently only a passphrase is supported which can be passed in the
 usual manner by writing it into the :ref:`keyfile
 <cryptsetup__devices_keyfile>` on the Ansible controller.
 The keyfile should not contain newline characters (``\n``), see

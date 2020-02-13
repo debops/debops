@@ -35,6 +35,12 @@ New DebOps roles
   Sealing and configures persistent storage of the log files. The role is
   included by default in the :file:`common.yml` playbook.
 
+:ref:`debops.resources` role
+''''''''''''''''''''''''''''
+
+- Add support for the ``access_time`` and ``modification_time`` parameters of
+  the Ansible file module to the role.
+
 :ref:`debops.roundcube` role
 ''''''''''''''''''''''''''''
 
@@ -112,7 +118,7 @@ General
 :ref:`debops.docker_server` role
 ''''''''''''''''''''''''''''''''
 
-- Add `docker_server__install_virtualenv` setting to disable python virtualvenv installation.
+- Add `docker_server__install_virtualenv` setting to disable python virtualenv installation.
 
 :ref:`debops.gitlab_runner` role
 ''''''''''''''''''''''''''''''''

@@ -105,6 +105,14 @@ details for certain parameters:
 ``item.acl``
   Optional. Please take a look :ref:`resources__ref_acl` section.
 
+``item.access_time`` and ``item.modification_time``
+  Optional. As documented by the `Ansible file module`_ except that DebOps
+  defines a more human readable and standard compliant format.
+  Example: ``2023-05-23T23:42:42``
+
+``item.access_time_format`` and ``item.modification_time_format``
+  Optional. If not defined, it defaults to :envvar:`resources__time_format`.
+
 Examples
 ~~~~~~~~
 
