@@ -21,6 +21,11 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+:ref:`debops.postgresql_server` role
+''''''''''''''''''''''''''''''''''''
+
+- The role can now manage PostgreSQL log files in a separate, custom directory.
+
 :ref:`debops.resources` role
 ''''''''''''''''''''''''''''
 
