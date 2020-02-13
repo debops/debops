@@ -75,7 +75,7 @@
     recurse: yes
   with_flattened:
     - '{{ postgresql_server__clusters }}'
-  when: item.log_directory is abs
+  when: item.log_directory|d() and item.log_directory is abs
   tags: [ 'role::postgresql_server:config' ]
 
 - name: Ensure that conf.d directories exist
