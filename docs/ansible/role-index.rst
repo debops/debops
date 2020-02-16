@@ -361,5 +361,6 @@ additional functions to other roles.
 - :ref:`debops.ansible_plugins`
 - :ref:`debops.core`
 - :ref:`debops.debops_fact`
+- :ref:`debops.dpkg_cleanup`
 - :ref:`debops.keyring`
 - :ref:`debops.secret`

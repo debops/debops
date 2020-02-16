@@ -35,6 +35,11 @@ New DebOps roles
   Sealing and configures persistent storage of the log files. The role is
   included by default in the :file:`common.yml` playbook.
 
+- The :ref:`debops.dpkg_cleanup` role can create :command:`dpkg` hooks that
+  help clean up custom and diverted files created by other roles when a given
+  Debian package is removed. This should aid in cases of multiple roles
+  managing services that provide the same functionality.
+
 :ref:`debops.resources` role
 ''''''''''''''''''''''''''''
 
@@ -70,6 +75,16 @@ General
   The ``debops.debops`` collection will install additional ``debops.rolesXY``
   collections automatically via collection dependencies. The playbooks have
   been updated to include new Collections.
+
+Removed
+~~~~~~~
+
+:ref:`debops.nullmailer` role
+'''''''''''''''''''''''''''''
+
+- The script and :command:`dpkg` hook that cleaned up the additional files
+  maintained by the role has been removed; the :ref:`debops.dpkg_cleanup` role
+  will be used for this purpose instead.
 
 Fixed
 ~~~~~
