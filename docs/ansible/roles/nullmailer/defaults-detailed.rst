@@ -144,13 +144,6 @@ the list is a YAML dictionary with parameters:
   Optional. If not specified or ``present``, the configuration file will be
   created. If ``absent``, the configuration file will be removed.
 
-``purge``
-  Optional, boolean. If not specified, file will be added to the list of files
-  to be purged when the ``nullmailer`` package is purged. If set and ``False``,
-  file will not be purged with other files.
-
-  See :ref:`nullmailer__ref_purge_files` for more details.
-
 ``owner``
   Optional. Specify an user account which should be the owner of the
   configuration file. The user account must already exist.
@@ -165,22 +158,3 @@ the list is a YAML dictionary with parameters:
 
 You can find the usage examples of these lists in the role
 :file:`defaults/main.yml` file.
-
-
-.. _nullmailer__ref_purge_files:
-
-nullmailer__purge_files
------------------------
-
-The ``debops.nullmailer`` role supports easy switch to a different SMTP server
-by creating a :command:`dpkg` hook script that removes the additional files and custom
-services configured by the role when the ``nullmailer`` package is removed or
-purged.  This ensures that the new SMTP server can be correctly installed by
-the package manager without the need for the ``debops.nullmailer`` role to be
-involved in the process.
-
-The :envvar:`nullmailer__purge_files` and :envvar:`nullmailer__purge_default_files` lists
-specify which files should be purged by the hook script. In addition, all
-configuration files mentioned in :envvar:`nullmailer__configuration_files` and
-:envvar:`nullmailer__private_configuration_files` will be purged as well, unless the
-``item.purge`` parameter is present and set to ``False``.

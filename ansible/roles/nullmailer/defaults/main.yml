@@ -339,7 +339,6 @@ nullmailer__configuration_files:
 
   - dest: '/etc/mailname'
     content: '{{ nullmailer__mailname }}'
-    purge: False
 
   - dest: '/etc/nullmailer/adminaddr'
     content: '{{ nullmailer__adminaddr
@@ -393,25 +392,6 @@ nullmailer__private_configuration_files:
     owner: 'mail'
     group: 'mail'
     mode: '0600'
-
-                                                                   # ]]]
-# .. envvar:: nullmailer__purge_default_files [[[
-#
-# Absolute paths to files which should be purged by the cleanup script when the
-# ``nullmailer`` APT package configuration is purged. See
-# :ref:`nullmailer__ref_purge_files` for more details.
-nullmailer__purge_default_files:
-  - '/etc/ferm/ferm.d/50_debops.nullmailer_accept_25.conf'
-  - '/etc/hosts.allow.d/50_nullmailer_dependent_allow'
-  - '/etc/dpkg/dpkg.cfg.d/debops-nullmailer'
-  - '/usr/local/lib/debops-nullmailer-dpkg-cleanup'
-
-                                                                   # ]]]
-# .. envvar:: nullmailer__purge_files [[[
-#
-# Additional list of files which should be purged when the ``nullmailer`` APT
-# package is purged. See :ref:`nullmailer__ref_purge_files` for more details.
-nullmailer__purge_files: []
                                                                    # ]]]
                                                                    # ]]]
 # Nullmailer SMTPD service [[[
@@ -506,6 +486,29 @@ nullmailer__tcpwrappers__dependent_allow:
     state: '{{ "present"
                if (nullmailer__deploy_state|d("present") != "absent" and
                    nullmailer__smtpd|bool) else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: nullmailer__dpkg_cleanup__dependent_packages [[[
+#
+# Configuration for the :ref:`debops.dpkg_cleanup` Ansible role.
+nullmailer__dpkg_cleanup__dependent_packages:
+
+  - name: 'nullmailer'
+    remove_files:
+      - '{{ (nullmailer__configuration_files
+             | selectattr("dest", "defined")
+             | map(attribute="dest") | list)
+            | difference("/etc/mailname") }}'
+      - '{{ nullmailer__private_configuration_files
+            | selectattr("dest", "defined")
+            | map(attribute="dest") | list }}'
+      - '/etc/ferm/ferm.d/50_debops.nullmailer_accept_25.conf'
+      - '/etc/hosts.allow.d/50_nullmailer_dependent_allow'
+      - '/etc/xinetd.d/nullmailer-smtpd'
+    reload_services:
+      - 'xinetd'
+    restart_services:
+      - 'ferm'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

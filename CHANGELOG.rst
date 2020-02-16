@@ -76,6 +76,16 @@ General
   collections automatically via collection dependencies. The playbooks have
   been updated to include new Collections.
 
+Removed
+~~~~~~~
+
+:ref:`debops.nullmailer` role
+'''''''''''''''''''''''''''''
+
+- The script and :command:`dpkg` hook that cleaned up the additional files
+  maintained by the role has been removed; the :ref:`debops.dpkg_cleanup` role
+  will be used for this purpose instead.
+
 Fixed
 ~~~~~
 

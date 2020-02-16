@@ -93,14 +93,20 @@
   when: ((nullmailer__deploy_state|d() and nullmailer__deploy_state == 'absent') or
          not nullmailer__smtpd|bool)
 
-- name: Configure cleanup hook in dpkg
-  template:
-    src: '{{ item.template + ".j2" }}'
-    dest: '{{ "/" + item.template }}'
-    owner: 'root'
-    group: 'root'
-    mode: '{{ item.mode }}'
-  with_items:
-    - { template: 'etc/dpkg/dpkg.cfg.d/debops-nullmailer',        mode: '0644' }
-    - { template: 'usr/local/lib/debops-nullmailer-dpkg-cleanup', mode: '0755' }
+- name: Remove old dpkg cleanup hook and script
+  file:
+    path: '{{ item }}'
+    state: 'absent'
+  loop:
+    - '/etc/dpkg/dpkg.cfg.d/debops-nullmailer'
+    - '/usr/local/lib/debops-nullmailer-dpkg-cleanup'
   when: nullmailer__deploy_state|d('present') != 'absent'
+
+- import_role:
+    name: 'dpkg_cleanup'
+  vars:
+    dpkg_cleanup__dependent_packages:
+      - '{{ nullmailer__dpkg_cleanup__dependent_packages }}'
+  when: nullmailer__deploy_state|d('present') != 'absent'
+  tags: [ 'role::dpkg_cleanup', 'skip::dpkg_cleanup',
+          'role::nullmailer:dpkg_cleanup' ]
