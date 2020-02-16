@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+
+# {{ ansible_managed }}
+
+# Copyright (C) 2020 DebOps https://debops.org/
+# Clean up Ansible modifications on the '{{ item.name }}' package removal
+# The script is executed by dpkg pre-invoke hook
+
+
+set -o nounset -o pipefail -o errexit
+
+# Name of the package which will trigger the hook script
+apt_package="{{ item.name }}"
+
+# List of files which should be reverted via the dpkg-divert script
+readarray -t revert_files << EOF
+{% if item.revert_files|d() %}
+{%   for path in (([ item.revert_files ]
+                   if (item.revert_files is string)
+                   else item.revert_files)
+                 | flatten) %}
+{%     if path.startswith("/") %}
+{{       path }}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+EOF
+
+# List of files which should be removed
+readarray -t remove_files << EOF
+{% if item.remove_files|d() %}
+{%   for path in (([ item.remove_files ]
+                   if (item.remove_files is string)
+                   else item.remove_files)
+                 | flatten) %}
+{%     if path.startswith("/") %}
+{{       path }}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{{ dpkg_cleanup__facts_path + "/" + (item.ansible_fact | d(item.name)) + ".fact" }}
+{{ dpkg_cleanup__scripts_path + "/" + item.name }}
+{{ dpkg_cleanup__hooks_path + "/dpkg-cleanup-" + item.name }}
+EOF
+
+# List of directories which should be removed
+readarray -t remove_directories << EOF
+{% if item.remove_directories|d() %}
+{%   for path in (([ item.remove_directories ]
+                   if (item.remove_directories is string)
+                   else item.remove_directories)
+                 | flatten) %}
+{%     if path.startswith("/") %}
+{{       path }}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+EOF
+
+# List of service names which should be reloaded via 'systemctl' command
+readarray -t reload_services << EOF
+{% if item.reload_services|d() %}
+{%   for service in (([ item.reload_services ]
+                      if (item.reload_services is string)
+                      else item.reload_services)
+                    | flatten) %}
+{{     service }}
+{%   endfor %}
+{% endif %}
+EOF
+
+# List of service names which should be restarted via 'systemctl' command
+readarray -t restart_services << EOF
+{% if item.restart_services|d() %}
+{%   for service in (([ item.restart_services ]
+                      if (item.restart_services is string)
+                      else item.restart_services)
+                    | flatten) %}
+{{     service }}
+{%   endfor %}
+{% endif %}
+EOF
+
+
+divert_cleanup () {
+    for revert_file in "${revert_files[@]}" ; do
+        if [ -f "${revert_file}.dpkg-divert" ] ; then
+            rm -fv "${revert_file}"
+            dpkg-divert --local --rename --remove "${revert_file}"
+        fi
+    done
+}
+
+file_cleanup () {
+    for remove_file in "${remove_files[@]}" ; do
+        test ! -f "${remove_file}" || rm -fv "${remove_file}"
+    done
+}
+
+directory_cleanup () {
+    for remove_directory in "${remove_directories[@]}" ; do
+        test ! -d "${remove_directory}" || rm -rfv "${remove_directory}"
+    done
+}
+
+service_reload () {
+    for service in "${reload_services[@]}" ; do
+        if pidof systemd > /dev/null 2>&1 ; then
+            if systemctl is-active "${service}" > /dev/null 2>&1 ; then
+                printf "Reloading %s service ...\\n" "${service}"
+                systemctl reload "${service}.service"
+            fi
+        fi
+    done
+}
+
+service_restart () {
+    for service in "${restart_services[@]}" ; do
+        if pidof systemd > /dev/null 2>&1 ; then
+            if systemctl is-active "${service}" > /dev/null 2>&1 ; then
+                printf "Restarting %s service ...\\n" "${service}"
+                systemctl restart "${service}.service"
+            fi
+        fi
+    done
+}
+
+
+# Get the PID of the parent 'dpkg' process and check its command line arguments
+# to get the list of packages currently being worked on
+dpkg_pid="$(ps -o ppid= ${PPID} | tr -d '[:space:]')"
+IFS=' ' read -r -a arguments <<< "$(tr '\0' ' ' < "/proc/${dpkg_pid}/cmdline")"
+
+if [ -n "${DPKG_HOOK_ACTION:-}" ] ; then
+    case ${DPKG_HOOK_ACTION} in
+        purge|remove)
+            for x in "${arguments[@]}"; do
+                case ${x} in
+                    ${apt_package}:*)
+
+                        if [ -n "${revert_files[*]}" ] ; then
+                            divert_cleanup
+                        fi
+                        if [ -n "${remove_files[*]}" ] ; then
+                            file_cleanup
+                        fi
+                        if [ -n "${remove_directories[*]}" ] ; then
+                            directory_cleanup
+                        fi
+                        if [ -n "${reload_services[*]}" ] ; then
+                            service_reload
+                        fi
+                        if [ -n "${restart_services[*]}" ] ; then
+                            service_restart
+                        fi
+
+                    ;;
+                esac
+            done
+        ;;
+    esac
+fi

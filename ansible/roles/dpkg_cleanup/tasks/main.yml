@@ -1,0 +1,50 @@
+---
+
+- name: Ensure that the cleanup script directory exists
+  file:
+    path: '{{ dpkg_cleanup__scripts_path }}'
+    state: 'directory'
+    mode: '0755'
+  when: dpkg_cleanup__enabled|bool
+
+- name: Remove cleanup scripts if requested
+  file:
+    path: '{{ dpkg_cleanup__scripts_path + "/" + item.name }}'
+    state: 'absent'
+  loop: '{{ q("flattened", dpkg_cleanup__dependent_packages) }}'
+  loop_control:
+    label: '{{ {"package": item.name} }}'
+  when: dpkg_cleanup__enabled|bool and item.name|d() and
+        item.state|d('present') == 'absent'
+
+- name: Remove cleanup hooks if requested
+  file:
+    path: '{{ dpkg_cleanup__hooks_path + "/dpkg-cleanup-" + item.name }}'
+    state: 'absent'
+  loop: '{{ q("flattened", dpkg_cleanup__dependent_packages) }}'
+  loop_control:
+    label: '{{ {"package": item.name} }}'
+  when: dpkg_cleanup__enabled|bool and item.name|d() and
+        item.state|d('present') == 'absent'
+
+- name: Generate cleanup scripts
+  template:
+    src: 'usr/local/lib/dpkg-cleanup/package.j2'
+    dest: '{{ dpkg_cleanup__scripts_path + "/" + item.name }}'
+    mode: '0755'
+  loop: '{{ q("flattened", dpkg_cleanup__dependent_packages) }}'
+  loop_control:
+    label: '{{ {"package": item.name} }}'
+  when: dpkg_cleanup__enabled|bool and item.name|d() and
+        item.state|d('present') != 'absent'
+
+- name: Generate cleanup hooks
+  template:
+    src: 'etc/dpkg/dpkg.cfg.d/dpkg-cleanup-package.j2'
+    dest: '{{ dpkg_cleanup__hooks_path + "/dpkg-cleanup-" + item.name }}'
+    mode: '0644'
+  loop: '{{ q("flattened", dpkg_cleanup__dependent_packages) }}'
+  loop_control:
+    label: '{{ {"package": item.name} }}'
+  when: dpkg_cleanup__enabled|bool and item.name|d() and
+        item.state|d('present') != 'absent'
