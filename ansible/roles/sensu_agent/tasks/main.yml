@@ -14,6 +14,10 @@
   register: sensu_agent__register_install_status
   until: sensu_agent__register_install_status is succeeded
 
+- name: Install Python packages
+  pip:
+    name: '{{ sensu_agent__pip_packages }}'
+
 - name: Add sensu agent user to specified groups
   user:
     name: 'sensu'
