@@ -123,8 +123,7 @@ telegraf__default_configuration:
 
   - name: inputs.net
     options:
-      - interfaces: [ 'eth0' ]
-        fielddrop: [ 'icmp*', 'ip*', 'tcp*', 'udp*' ]
+      - interfaces: [ 'eth*' ]
 
   # Get the number of processes and group them by status
   - name: inputs.processes
@@ -160,13 +159,29 @@ telegraf__default_configuration:
 telegraf__configuration: []
 
                                                                    # ]]]
+# .. envvar:: telegraf__group_configuration [[[
+#
+# List of configuration options defined on on hosts in a specific Ansible
+# inventory group.
+telegraf__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: telegraf__host_configuration [[[
+#
+# List of configuration options defined on specific hosts in the Ansible
+# inventory.
+telegraf__host_configuration: []
+
+                                                                   # ]]]
 # .. envvar:: telegraf__combined_configuration [[[
 #
 # Actual list of Telegraf configuration options passed to the
 # configuration template. This list defines the order in which the options from
 # different variables are processed.
-telegraf__combined_configuration: '{{ telegraf__default_configuration + telegraf__configuration }}'
+telegraf__combined_configuration: '{{ telegraf__default_configuration
+                                      + telegraf__configuration
+                                      + telegraf__group_configuration
+                                      + telegraf__host_configuration }}'
 
                                                                    # ]]]
                                                                    # ]]]
-
