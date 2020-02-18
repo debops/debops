@@ -56,6 +56,19 @@ General
   facts. It's also added to the :file:`bootstrap-ldap.yml` playbook for
   completeness.
 
+Fixed
+~~~~~
+
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- Move the Private Enterprise Number and LDAP namespace OIDs of the DebOps
+  organization to a separate :file:`debops.schema` file to avoid duplicated
+  OIDs in the ``cn=schema`` LDAP subtree.
+
+  Existing installations might need to be recreated to avoid warnings about
+  duplicate OIDs emitted during OpenLDAP operations.
+
 
 `debops v2.0.1`_ - 2020-02-03
 -----------------------------

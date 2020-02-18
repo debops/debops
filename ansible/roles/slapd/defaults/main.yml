@@ -46,6 +46,10 @@ slapd__debops_schema_path: '/etc/ldap/schema/debops'
 # by the role.
 slapd__default_schemas:
 
+  # Base schema for LDAP schemas developed in DebOps, other custom schemas will
+  # depend on object identifiers defined here
+  - '{{ slapd__debops_schema_path + "/debops.schema" }}'
+
   # Custom DebOps schema that defines the missing 'gid' posixGroup attribute
   - '{{ slapd__debops_schema_path + "/posixgroupid.schema" }}'
 
