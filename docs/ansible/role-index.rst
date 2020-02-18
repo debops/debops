@@ -238,6 +238,7 @@ Networking
 ----------
 
 - :ref:`debops.avahi`
+- :ref:`debops.consul`
 - :ref:`debops.dhcp_probe`
 - :ref:`debops.dhcpd`
 - :ref:`debops.dnsmasq`
