@@ -55,6 +55,7 @@ methods.
 - :ref:`debops.elastic_co` - `Elastic`_ applications
 - :ref:`debops.golang`
 - :ref:`debops.hashicorp` - `HashiCorp`_ applications
+- :ref:`debops.influxdata` - `InfluxData`_ applications
 - :ref:`debops.java`
 - :ref:`debops.neurodebian`
 - :ref:`debops.nodejs`
