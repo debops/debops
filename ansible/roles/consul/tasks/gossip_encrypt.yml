@@ -1,0 +1,41 @@
+---
+
+- name: Check if the dependent config file exists
+  stat:
+    path: '{{ secret + "/consul/dependent_config/" + consul__cluster_name + "/encrypt.key" }}'
+  register: consul__register_dependent_config_file
+  become: False
+  delegate_to: 'localhost'
+
+- name: Load the dependent configuration from Ansible Controller
+  slurp:
+    src: '{{ secret + "/consul/dependent_config/" + consul__cluster_name + "/encrypt.key" }}'
+  register: consul__register_dependent_config
+  become: False
+  delegate_to: 'localhost'
+  when: consul__register_dependent_config_file.stat.exists|bool
+
+- block:
+
+  - name: Generate gossip encryption key
+    shell: 'PATH={{ consul__binary }}:$PATH consul keygen'
+    register: consul__register_keygen
+
+  - name: Write key locally to share with other nodes
+    copy:
+      content: '{{ consul__register_keygen.stdout }}'
+      dest: '{{ secret + "/consul/dependent_config/" + consul__cluster_name + "/encrypt.key" }}'
+    become: False
+    delegate_to: localhost
+
+  run_once: true
+  when:
+    - not consul__register_dependent_config_file.stat.exists|bool
+
+- name: Read gossip encryption key for servers that require it
+  set_fact:
+    consul__raw_key: '{{ lookup("file", secret + "/consul/dependent_config/"
+                        + consul__cluster_name + "/encrypt.key") }}'
+  no_log: true
+  when:
+    - consul__raw_key is not defined

@@ -1,0 +1,101 @@
+---
+
+- import_role:
+    name: 'ansible_plugins'
+
+- import_role:
+    name: 'secret'
+
+- include_tasks: asserts.yml
+
+- include_tasks: gossip_encrypt.yml
+  when:
+    - consul__raw_key is not defined
+
+- name: Create required UNIX system group
+  group:
+    name: '{{ consul__group }}'
+    state: 'present'
+    system: True
+
+- name: Create required UNIX system account
+  user:
+    name: '{{ consul__user }}'
+    group: '{{ consul__group }}'
+    groups: '{{ consul__additional_groups }}'
+    append: True
+    home: '{{ consul__home }}'
+    comment: '{{ consul__comment }}'
+    shell: '{{ consul__shell }}'
+    skeleton: '/dev/null'
+    state: 'present'
+    system: True
+
+- name: Create required application directories
+  file:
+    path: '{{ item.path }}'
+    state: 'directory'
+    owner: '{{ consul__user }}'
+    group: '{{ consul__group }}'
+    mode: '{{ item.mode }}'
+  loop:
+
+    - path: '{{ consul__config_dir }}'
+      mode: '0750'
+
+    - path: '{{ consul__data_dir }}'
+      mode: '0750'
+
+    - path: '{{ consul__run_dir }}'
+      mode: '0750'
+
+    - path: '{{ consul__log_dir }}'
+      mode: '0750'
+
+- name: Generate consul configuration
+  template:
+    src: 'etc/consul.d/config.json.j2'
+    dest: '{{ consul__config_dir + "config.json" }}'
+    owner: '{{ consul__user }}'
+    group: '{{ consul__group }}'
+    mode: '0640'
+  notify: [ 'Restart consul' ]
+
+- name: Install systemd configuration files
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    mode: '0644'
+  loop:
+    - 'etc/systemd/system/consul.service'
+  register: consul__register_systemd
+
+- name: Reload systemd daemon if required
+  systemd:
+    daemon_reload: True
+  when: ansible_service_mgr == 'systemd' and
+        consul__register_systemd is changed
+
+- name: Start and enable Consul service
+  systemd:
+    name: 'consul.service'
+    state: 'started'
+    enabled: True
+  when: ansible_service_mgr == 'systemd'
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save Consul local facts
+  template:
+    src: 'etc/ansible/facts.d/consul.fact.j2'
+    dest: '/etc/ansible/facts.d/consul.fact'
+    mode: '0755'
+  register: consul__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: consul__register_facts is changed

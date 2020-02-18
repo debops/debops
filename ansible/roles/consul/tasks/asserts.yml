@@ -1,0 +1,7 @@
+---
+
+- name: Fail if no servers are defined
+  fail:
+    msg: '{{ "Eigher you add _consul._tcp." + consul__domain + "./SRV dns entry or you manually configure the consul__server_nodes" }}'
+  when:
+    - consul__server_nodes | length == 0
