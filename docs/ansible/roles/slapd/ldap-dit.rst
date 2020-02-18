@@ -48,6 +48,8 @@ Directory structure
 
         - :ref:`inetorgperson.schema <slapd__ref_initial_schemas>`
 
+        - :ref:`debops.schema <slapd__ref_debops_schema>`
+
         - :ref:`posixgroupid.schema <slapd__ref_posixgroupid>`
 
         - :ref:`ppolicy.schema <slapd__ref_ppolicy_schema>`
