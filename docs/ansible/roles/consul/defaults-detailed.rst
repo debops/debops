@@ -29,3 +29,16 @@ Examples
 To see the examples of the configuration, you can look at the
 :envvar:`consul__default_configuration` variable which defines the
 :command:`consul` default configuration set by the role.
+
+Syntax
+~~~~~~
+
+The variables are YAML lists, each list entry is a YAML dictionary that uses
+specific parameters:
+
+``state``
+  Optional. If not specified or ``present``, a given dotfile repository will be
+  cloned or updated by the role. If ``absent``, a given repository and GPG keys
+  will be removed from the host, or will not be imported and cloned. If
+  ``ignore``, a given configuration entry will be ignored during evaluation by
+  the role.
