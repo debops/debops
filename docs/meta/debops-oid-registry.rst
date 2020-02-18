@@ -40,12 +40,15 @@ The DebOps namespace is split into child namespaces depending on their purpose:
 ===== =========== ====================================================
  OID   Namespace   Description
 ----- ----------- ----------------------------------------------------
-42    LDAP        Object definitions for LDAP databases (LDAP schemas)
+42    DebOpsLDAP  Object definitions for LDAP databases (LDAP schemas)
 ===== =========== ====================================================
 
+The DebOps namespace is defined in the :ref:`debops.schema
+<slapd__ref_debops_schema>`. All other LDAP schemas created in the DebOps
+project depend on this schema to be present in the LDAP directory.
 
-enterprise.DebOps.LDAP / 1.3.6.1.4.1.53622.42
----------------------------------------------
+enterprise.DebOps.DebOpsLDAP / 1.3.6.1.4.1.53622.42
+---------------------------------------------------
 
 The Object identifiers for LDAP objects managed by DebOps are defined in the
 ``42`` namespace.
@@ -54,6 +57,8 @@ The Object identifiers for LDAP objects managed by DebOps are defined in the
  OID   LDAP schema                                          Ansible role
 ----- ---------------------------------------------------- --------------------
 1     :ref:`posixgroupid.schema <slapd__ref_posixgroupid>`  :ref:`debops.slapd`
+----- ---------------------------------------------------- --------------------
+2     :ref:`mailservice.schema <slapd__ref_mailservice>`    :ref:`debops.slapd`
 ===== ==================================================== ====================
 
 References
