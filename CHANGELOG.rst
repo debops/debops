@@ -43,6 +43,16 @@ Fixed
 - Correctly refresh the :man:`pam_mkhomedir(8)` configuration on changes by
   removing and installing the snippet again.
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- Move the Private Enterprise Number and LDAP namespace OIDs of the DebOps
+  organization to a separate :file:`debops.schema` file to avoid duplicated
+  OIDs in the ``cn=schema`` LDAP subtree.
+
+  Existing installations might need to be recreated to avoid warnings about
+  duplicate OIDs emitted during OpenLDAP operations.
+
 
 `debops v1.0.16`_ - 2020-01-30
 ------------------------------
