@@ -18,9 +18,25 @@
 
 - name: Divert the original telegraf configuration file
   dpkg_divert:
-    path: '/etc/telegraf/influxdb.conf'
+    path: '/etc/telegraf/telegraf.conf'
     state: 'present'
     delete: True
+
+- name: Create required UNIX system group
+  group:
+    name: '{{ telegraf__group }}'
+    state: 'present'
+    system: True
+
+- name: Make sure that required UNIX account exists
+  user:
+    name: '{{ telegraf__user }}'
+    group: '{{ telegraf__group }}'
+    groups: '{{ (telegraf__additional_groups + telegraf__dependent_groups) | join(",") }}'
+    home: '{{ telegraf__home }}'
+    shell: '{{ telegraf__shell }}'
+    state: 'present'
+    system: True
 
 - name: Allow 'telegraf' user access to /proc if needed
   user:

@@ -9,6 +9,48 @@
 #
 # .. include:: ../../../../includes/global.rst
 
+# UNIX environment [[[
+# --------------------
+
+# .. envvar:: telegraf__user [[[
+#
+# The name of the UNIX system account used by the Telegraf agent.
+telegraf__user: 'telegraf'
+
+                                                                   # ]]]
+# .. envvar:: telegraf__group [[[
+#
+# The name of the UNIX system group used by the Telegraf agent.
+telegraf__group: 'telegraf'
+
+                                                                   # ]]]
+# .. envvar:: telegraf__additional_groups [[[
+#
+# List of additional UNIX groups to add to the Telegraf UNIX account, required for
+# access to additional resources.
+telegraf__additional_groups: '{{ [ telegraf__proc_hidepid_group ] if telegraf__proc_hidepid|bool
+                                 else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: telegraf__dependent_groups [[[
+#
+# List of dependent UNIX groups to add to the Telegraf UNIX account.
+# Useful when other roles needs to allow the Telegraf user to access resources.
+telegraf__dependent_groups: []
+
+                                                                   # ]]]
+# .. envvar:: telegraf__home [[[
+#
+# The absolute path of the Telegraf UNIX account home directory.
+telegraf__home: '/etc/telegraf'
+
+                                                                   # ]]]
+# .. envvar:: telegraf__shell [[[
+#
+# The UNIX shell used by the Telegraf account.
+telegraf__shell: '/bin/false'
+                                                                   # ]]]
+                                                                   # ]]]
 
 # Telegraf server configuration [[[
 # --------------------------------
@@ -48,8 +90,7 @@ telegraf__deploy_type: "upstream"
                                                                    # ]]]
 # .. envvar:: telegraf__proc_hidepid [[[
 #
-# Should the ``debops.telegraf`` add the ``telegraf`` user account to a group that has
-# access to the ``/proc`` filesystem?
+# Allow ``telegraf`` user account access to the ``/proc`` filesystem
 telegraf__proc_hidepid: '{{ True
                         if (ansible_local|d() and ansible_local.proc_hidepid|d() and
                             (ansible_local.proc_hidepid.enabled|d())|bool)
