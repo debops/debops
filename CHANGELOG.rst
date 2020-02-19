@@ -40,6 +40,12 @@ New DebOps roles
   Debian package is removed. This should aid in cases of multiple roles
   managing services that provide the same functionality.
 
+- The :ref:`debops.influxdata` role configures the APT repository and
+  repository GPG keys of `InfluxData`__ company, creator of InfluxDB, Telegraf
+  and other metric and time series tools.
+
+  .. __: https://influxdata.com/
+
 :ref:`debops.resources` role
 ''''''''''''''''''''''''''''
 

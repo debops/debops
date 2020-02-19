@@ -67,11 +67,11 @@ a given InfluxData application is installed:
 
 .. code-block:: yaml
 
-   application__es_present: '{{ True
-                                if (ansible_local|d() and ansible_local.influxdata|d() and
-                                    ansible_local.influxdata.packages|d() and
-                                    "influxdb" in ansible_local.influxdata.packages.keys())
-                                else False }}'
+   application__present: '{{ True
+                             if (ansible_local|d() and ansible_local.influxdata|d() and
+                                 ansible_local.influxdata.packages|d() and
+                                 "influxdb" in ansible_local.influxdata.packages.keys())
+                             else False }}'
 
 
 Example inventory
