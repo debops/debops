@@ -1127,6 +1127,7 @@
 .. Prefer the last one.
 
 .. _Elastic: https://www.elastic.co/
+.. _InfluxData: https://www.influxdata.com/
 .. _OpenPGP Best Practices: https://help.riseup.net/en/security/message-security/openpgp/best-practices
 .. _HashiCorp: https://en.wikipedia.org/wiki/HashiCorp
 .. _HashiCorp Security Policy: https://www.hashicorp.com/security.html

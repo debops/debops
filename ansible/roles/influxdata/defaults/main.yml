@@ -1,0 +1,73 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _influxdata__ref_defaults:
+
+# debops.influxdata default variables [[[
+# =======================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# APT repository configuration [[[
+# --------------------------------
+
+# .. envvar:: influxdata__key_id [[[
+#
+# The fingerprint of the APT repository GPG key to configure.
+influxdata__key_id: '05CE 1508 5FC0 9D18 E99E FB22 684A 14CF 2582 E0C5'
+
+                                                                   # ]]]
+# .. envvar:: influxdata__repository [[[
+#
+# APT repository entry to configure for InfluxData repository.
+influxdata__repository: 'deb https://repos.influxdata.com/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} stable'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: influxdata__packages [[[
+#
+# List of InfluxData APT packages to install on all hosts in the Ansible
+# inventory.
+influxdata__packages: []
+
+                                                                   # ]]]
+# .. envvar:: influxd ata__group_packages [[[
+#
+# List of InfluxData APT packages to install on hosts in specific Ansible
+# inventory group.
+influxdata__group_packages: []
+
+                                                                   # ]]]
+# .. envvar:: influxdata__host_packages [[[
+#
+# List of InfluxData APT packages to install on specific hosts in the Ansible
+# inventory.
+influxdata__host_packages: []
+
+                                                                    # ]]]
+# .. envvar:: influxdata__dependent_packages [[[
+#
+# List of InfluxData APT packages requested for installation by other Ansible
+# roles through role dependent variables.
+influxdata__dependent_packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: influxdata__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+influxdata__keyring__dependent_apt_keys:
+
+  - id: '{{ influxdata__key_id }}'
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

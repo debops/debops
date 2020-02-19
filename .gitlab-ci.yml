@@ -723,6 +723,15 @@ stages:
     JANE_LOG_PATTERN: '\[debops\.ifupdown\]'
   tags: [ 'shell', 'vagrant-vm' ]
 
+'influxdata role':
+  <<: *test_role_1st_deps
+  variables:
+    JANE_TEST_FACT: 'influxdata.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/influxdata.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_influxdata'
+    JANE_DIFF_PATTERN: '.*/roles/influxdata/.*'
+    JANE_LOG_PATTERN: '\[debops\.influxdata\]'
+
 'ipxe role':
   <<: *test_role_no_deps
   variables:
