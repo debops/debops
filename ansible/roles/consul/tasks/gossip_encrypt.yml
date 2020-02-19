@@ -29,13 +29,11 @@
     delegate_to: localhost
 
   run_once: true
-  when:
-    - not consul__register_dependent_config_file.stat.exists|bool
+  when: not consul__register_dependent_config_file.stat.exists|bool
 
 - name: Read gossip encryption key for servers that require it
   set_fact:
     consul__raw_key: '{{ lookup("file", secret + "/consul/dependent_config/"
                         + consul__cluster_name + "/encrypt.key") }}'
   no_log: true
-  when:
-    - consul__raw_key is not defined
+  when: consul__raw_key is not defined
