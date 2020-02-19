@@ -1,0 +1,45 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+import subprocess
+import signal
+import os
+
+output = loads('''{{ ({
+    "configured": true
+}) | to_nice_json }}''')
+
+# List of InfluxData APT packages recognized by this fact
+package_list = [
+  'chronograf',
+  'kapacitor',
+  'telegraf',
+  'influxdb',
+]
+
+
+def dpkg_query(packages):
+
+    command = ['dpkg-query', '--show',
+               '--showformat="${Package}": "${Version}",\n'] + packages
+
+    FNULL = open('/dev/null', 'w')
+    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=FNULL)
+    (stdoutdata, _) = proc.communicate()
+
+    stdout_clean = stdoutdata.strip()
+    stdout_last = stdout_clean.decode('utf-8').rstrip(',')
+    stdout_wrap = '{\n' + stdout_last + '\n}'
+
+    proc_output = loads(str(stdout_wrap))
+    return proc_output
+
+
+package_version = dpkg_query(package_list)
+output.update({"packages": package_version})
+
+print(dumps(output, sort_keys=True, indent=4))

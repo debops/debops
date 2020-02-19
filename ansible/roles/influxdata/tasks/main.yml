@@ -1,0 +1,39 @@
+---
+
+- name: Configure InfluxData APT repository
+  apt_repository:
+    repo: '{{ influxdata__repository }}'
+    state: 'present'
+    update_cache: True
+
+- name: Install InfluxData packages
+  package:
+    name: '{{ q("flattened", (influxdata__packages
+                              + influxdata__group_packages
+                              + influxdata__host_packages
+                              + influxdata__dependent_packages)) }}'
+    state: 'present'
+  register: influxdata__register_install
+  until: influxdata__register_install is succeeded
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save InfluxData local facts
+  template:
+    src: 'etc/ansible/facts.d/influxdata.fact.j2'
+    dest: '/etc/ansible/facts.d/influxdata.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: influxdata__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: (influxdata__register_facts is changed or
+         influxdata__register_install is changed)
