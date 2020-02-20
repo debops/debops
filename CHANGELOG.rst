@@ -61,6 +61,17 @@ Fixed
 - Correctly refresh the :man:`pam_mkhomedir(8)` configuration on changes by
   removing and installing the snippet again.
 
+:ref:`debops.postgresql_server` role
+''''''''''''''''''''''''''''''''''''
+
+- In the :command:`autopostgresqlbackup` script, use the
+  :command:`su  - postgres` command instead of the :command:`su postgres`
+  command to start a login shell and switch to the correct home directory of
+  the ``postgres`` user instead of staying in the :file:`/root/` home
+  directory.  This avoids the issue during execution of the script via
+  :command:`cron` where it would emit errors about not being able to change to
+  the :file:`/root/` home directory due to the permissions.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
