@@ -264,9 +264,9 @@ dbdump () {
   for db in $1 ; do
     if [ -n "$SU_USERNAME" ]; then
       if [ "$db" = "$GLOBALS_OBJECTS" ]; then
-        su "$SU_USERNAME" -c "pg_dumpall $PGHOST --globals-only" >> "$2"
+        su - "$SU_USERNAME" -c "pg_dumpall $PGHOST --globals-only" >> "$2"
       else
-        su "$SU_USERNAME" -c "pg_dump $PGHOST $OPT $db" >> "$2"
+        su - "$SU_USERNAME" -c "pg_dump $PGHOST $OPT $db" >> "$2"
       fi
     else
       if [ "$db" = "$GLOBALS_OBJECTS" ]; then
@@ -358,7 +358,7 @@ fi
 if [ "$DBNAMES" = "all" ]; then
   if [ -n "$SU_USERNAME" ]; then
     # shellcheck disable=SC2086
-    DBNAMES="$(su "$SU_USERNAME" -c "LANG=C psql -U $USERNAME $PGHOST $PSQLOPT -l -A -F: | sed -ne '/:/ { /Name:Owner/d; /template0/d; s/:.*$//; p }'")"
+    DBNAMES="$(su - "$SU_USERNAME" -c "LANG=C psql -U $USERNAME $PGHOST $PSQLOPT -l -A -F: | sed -ne '/:/ { /Name:Owner/d; /template0/d; s/:.*$//; p }'")"
   else
     # shellcheck disable=SC2086
     DBNAMES="$(LANG=C psql -U "$USERNAME" "$PGHOST" $PSQLOPT -l -A -F: | sed -ne "/:/ { /Name:Owner/d; /template0/d; s/:.*$//; p }")"
