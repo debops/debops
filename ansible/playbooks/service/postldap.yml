@@ -15,6 +15,14 @@
     - import_role:
         name: 'postfix'
         tasks_from: 'main_env'
+      vars:
+        postfix__dependent_packages:
+          - '{{ postldap__postfix__dependent_packages }}'
+        postfix__dependent_lookup_tables:
+          - '{{ postldap__postfix__dependent_lookup_tables }}'
+        postfix__dependent_maincf:
+          - role: 'postldap'
+            config: '{{ postldap__postfix__dependent_maincf }}'
       tags: [ 'role::postfix:env', 'role::postfix', 'role::postldap', 'role::secret', 'role::ferm' ]
 
   roles:
