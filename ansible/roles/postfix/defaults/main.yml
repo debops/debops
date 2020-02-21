@@ -731,18 +731,9 @@ postfix__host_maincf: []
 # other roles through role dependent variables. The configuration syntax
 # differs from a normal :file:`main.cf` configuration,
 # see :ref:`postfix__ref_dependency` for more details.
+# This variable will be merged with the persistent configuration stored on the
+# Ansible Controller at runtime.
 postfix__dependent_maincf: []
-
-                                                                   # ]]]
-# .. envvar:: postfix__dependent_maincf_filter [[[
-#
-# The filtered configuration from other roles passed via role dependent
-# variables. This variable should be included in the combined list of
-# :file:`main.cf` configuration options. See :ref:`postfix__ref_dependency`
-# for more details.
-postfix__dependent_maincf_filter: '{{ lookup("template",
-                                              "lookup/postfix__dependent_maincf_filter.j2")
-                                              | from_yaml }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__combined_maincf [[[
@@ -753,7 +744,7 @@ postfix__combined_maincf: '{{ postfix__original_maincf
                               + postfix__default_maincf
                               + postfix__tls_maincf
                               + postfix__restrictions_maincf
-                              + postfix__dependent_maincf_filter
+                              + postfix__env_persistent_maincf
                               + postfix__maincf
                               + postfix__group_maincf
                               + postfix__host_maincf }}'
@@ -1237,18 +1228,9 @@ postfix__host_mastercf: []
 # other roles through role dependent variables. The configuration syntax
 # differs from a normal :file:`master.cf` configuration,
 # see :ref:`postfix__ref_dependency` for more details.
+# This variable will be merged with the persistent configuration stored on the
+# Ansible Controller at runtime.
 postfix__dependent_mastercf: []
-
-                                                                   # ]]]
-# .. envvar:: postfix__dependent_mastercf_filter [[[
-#
-# The filtered configuration from other roles passed via role dependent
-# variables. This variable should be included in the combined list of
-# :file:`master.cf` configuration options. See :ref:`postfix__ref_dependency`
-# for more details.
-postfix__dependent_mastercf_filter: '{{ lookup("template",
-                                               "lookup/postfix__dependent_mastercf_filter.j2")
-                                               | from_yaml }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__combined_mastercf [[[
@@ -1258,7 +1240,7 @@ postfix__dependent_mastercf_filter: '{{ lookup("template",
 postfix__combined_mastercf: '{{ postfix__original_mastercf
                                 + postfix__default_mastercf
                                 + postfix__tls_mastercf
-                                + postfix__dependent_mastercf_filter
+                                + postfix__env_persistent_mastercf
                                 + postfix__mastercf
                                 + postfix__group_mastercf
                                 + postfix__host_mastercf }}'

@@ -1,4 +1,4 @@
-{% if postfix__env_persistent_mastercf %}
+{% if (ansible_local.postfix.installed|d())|bool %}
 {% set postfix__tpl_persistent_mastercf = (
      lookup("file", secret + "/postfix/dependent_config/" + inventory_hostname + "/mastercf.json",
             errors="ignore") | d("{}", True) | from_json) %}
@@ -20,4 +20,8 @@
 {%     endif %}
 {%   endfor %}
 {% endif %}
-{{ postfix__tpl_persistent_mastercf | to_nice_json }}
+{% set postfix__tpl_output_mastercf = [] %}
+{% for role, config in postfix__tpl_persistent_mastercf.items() %}
+{%   set _ = postfix__tpl_output_mastercf.extend(config) %}
+{% endfor %}
+{{ postfix__tpl_output_mastercf | to_yaml }}
