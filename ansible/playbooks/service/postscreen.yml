@@ -15,6 +15,15 @@
     - import_role:
         name: 'postfix'
         tasks_from: 'main_env'
+      vars:
+        postfix__dependent_packages:
+          - '{{ postscreen__postfix__dependent_packages }}'
+        postfix__dependent_maincf:
+          - role: 'postscreen'
+            config: '{{ postscreen__postfix__dependent_maincf }}'
+        postfix__dependent_mastercf:
+          - role: 'postscreen'
+            config: '{{ postscreen__postfix__dependent_mastercf }}'
       tags: [ 'role::postfix', 'role::secret' ]
 
   roles:

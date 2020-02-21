@@ -65,6 +65,13 @@ postconf__combined_capabilities: '{{ postconf__autodetect_capabilities
 # Postfix configuration variables [[[
 # -----------------------------------
 
+# .. envvar:: postconf__deploy_state [[[
+#
+# Select the state of the :ref:`debops.postconf` configuration options in
+# Postfix configuration.
+postconf__deploy_state: 'present'
+
+                                                                   # ]]]
 # .. envvar:: postconf__fqdn [[[
 #
 # The Fully Qualified Domain Name of this SMTP host.
@@ -130,8 +137,11 @@ postconf__default_lookup_tables:
       - '/^X-Mailer:/':   'IGNORE'
       - '/^User-Agent:/': 'IGNORE'
     state: '{{ "present"
-               if ("authcleanup" in postconf__combined_capabilities)
-               else "ignore" }}'
+               if (postconf__deploy_state == "present" and
+                   "authcleanup" in postconf__combined_capabilities)
+               else ("absent"
+                     if (postconf__deploy_state == "absent")
+                     else "ignore") }}'
 
   - name: 'mx_access.cidr'
     by_role: 'debops.postconf'
@@ -161,8 +171,11 @@ postconf__default_lookup_tables:
       - 'fe80::/10':       'REJECT Domain MX in Link-local unicast network'
       - 'fec0::/10':       'REJECT Domain MX in Site-local unicast network'
     state: '{{ "present"
-               if ("public-mx-required" in postconf__combined_capabilities)
-               else "ignore" }}'
+               if (postconf__deploy_state == "present" and
+                   "public-mx-required" in postconf__combined_capabilities)
+               else ("absent"
+                     if (postconf__deploy_state == "absent")
+                     else "ignore") }}'
 
   - name: 'unauth_sender_access.in'
     by_role: 'debops.postconf'
@@ -175,9 +188,12 @@ postconf__default_lookup_tables:
     default_action: '{{ postconf__unauth_sender_default_action }}'
     content: '{{ postconf__unauth_sender_domains }}'
     state: '{{ "present"
-               if ("auth" in postconf__combined_capabilities and
+               if (postconf__deploy_state == "present" and
+                   "auth" in postconf__combined_capabilities and
                    "unauth-sender" in postconf__combined_capabilities)
-               else "ignore" }}'
+               else ("absent"
+                     if (postconf__deploy_state == "absent")
+                     else "ignore") }}'
 
   - name: 'overhead_checks.pcre'
     by_role: 'debops.postconf'
@@ -190,8 +206,11 @@ postconf__default_lookup_tables:
       - '/^X-Clacks-Overhead:/': 'IGNORE'
       - '/^To:/': 'PREPEND X-Clacks-Overhead: GNU Terry Pratchett'
     state: '{{ "present"
-               if ("overhead" in postconf__combined_capabilities)
-               else "ignore" }}'
+               if (postconf__deploy_state == "present" and
+                   "overhead" in postconf__combined_capabilities)
+               else ("absent"
+                     if (postconf__deploy_state == "absent")
+                     else "ignore") }}'
 
                                                                    # ]]]
 # .. envvar:: postconf__lookup_tables [[[

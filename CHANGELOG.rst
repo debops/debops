@@ -46,6 +46,13 @@ New DebOps roles
 
   .. __: https://influxdata.com/
 
+:ref:`debops.postconf` role
+'''''''''''''''''''''''''''
+
+- The additional Postfix configuration managed by the role can now be added or
+  removed conditionally, controlled by the :envvar:`postconf__deploy_state`
+  variable.
+
 :ref:`debops.resources` role
 ''''''''''''''''''''''''''''
 
@@ -81,6 +88,12 @@ General
   The ``debops.debops`` collection will install additional ``debops.rolesXY``
   collections automatically via collection dependencies. The playbooks have
   been updated to include new Collections.
+
+:ref:`debops.postfix` role
+''''''''''''''''''''''''''
+
+- The persistent configuration stored on the Ansible Controller has been
+  refactored and does not use multiple separate tasks to handle the JSON files.
 
 Removed
 ~~~~~~~

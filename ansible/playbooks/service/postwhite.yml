@@ -15,6 +15,10 @@
     - import_role:
         name: 'postfix'
         tasks_from: 'main_env'
+      vars:
+        postfix__dependent_maincf:
+          - role: 'postwhite'
+            config: '{{ postwhite__postfix__dependent_maincf }}'
       when: (ansible_local|d() and ansible_local.postfix|d() and
              (ansible_local.postfix.installed|d())|bool)
       tags: [ 'role::postfix', 'role::secret' ]
