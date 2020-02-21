@@ -46,6 +46,13 @@ New DebOps roles
 
   .. __: https://influxdata.com/
 
+:ref:`debops.postconf` role
+'''''''''''''''''''''''''''
+
+- The additional Postfix configuration managed by the role can now be added or
+  removed conditionally, controlled by the :envvar:`postconf__deploy_state`
+  variable.
+
 :ref:`debops.resources` role
 ''''''''''''''''''''''''''''
 

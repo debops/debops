@@ -3,9 +3,12 @@
 # {{ ansible_managed }}
 
 from __future__ import print_function
-from json import dumps
+from json import dumps, loads
 from sys import exit
 
-output = {'installed': True}
+output = loads("""{{ {'installed': (True
+                                    if (postconf__deploy_state == "present")
+                                    else False)}
+                     | to_nice_json }}""")
 
 print(dumps(output, sort_keys=True, indent=4))
