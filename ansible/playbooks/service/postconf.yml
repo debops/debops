@@ -10,6 +10,30 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
+  vars:
+
+    secret__directories:
+      - '{{ postfix__secret__directories }}'
+
+    ferm__dependent_rules:
+      - '{{ postfix__ferm__dependent_rules }}'
+
+    postfix__dependent_packages:
+      - '{{ postconf__postfix__dependent_packages }}'
+
+    postfix__dependent_maincf:
+      - role: 'postconf'
+        config: '{{ postconf__postfix__dependent_maincf }}'
+        state: '{{ postconf__deploy_state }}'
+
+    postfix__dependent_mastercf:
+      - role: 'postconf'
+        config: '{{ postconf__postfix__dependent_mastercf }}'
+        state: '{{ postconf__deploy_state }}'
+
+    postfix__dependent_lookup_tables:
+      - '{{ postconf__postfix__dependent_lookup_tables }}'
+
   pre_tasks:
 
     - import_role:
@@ -20,38 +44,18 @@
     - import_role:
         name: 'postfix'
         tasks_from: 'main_env'
-      vars:
-        postfix__dependent_mastercf:
-          - role: 'postconf'
-            config: '{{ postconf__postfix__dependent_mastercf }}'
       tags: [ 'role::postfix', 'role::secret', 'role::ferm' ]
 
   roles:
 
     - role: secret
       tags: [ 'role::secret', 'role::postfix' ]
-      secret__directories:
-        - '{{ postfix__secret__directories }}'
 
     - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
-      ferm__dependent_rules:
-        - '{{ postfix__ferm__dependent_rules }}'
 
     - role: postfix
       tags: [ 'role::postfix', 'skip::postfix' ]
-      postfix__dependent_packages:
-        - '{{ postconf__postfix__dependent_packages }}'
-      postfix__dependent_maincf:
-        - role: 'postconf'
-          config: '{{ postconf__postfix__dependent_maincf }}'
-          state: '{{ postconf__deploy_state }}'
-      postfix__dependent_mastercf:
-        - role: 'postconf'
-          config: '{{ postconf__postfix__dependent_mastercf }}'
-          state: '{{ postconf__deploy_state }}'
-      postfix__dependent_lookup_tables:
-        - '{{ postconf__postfix__dependent_lookup_tables }}'
 
     - role: postconf
       tags: [ 'role::postconf', 'skip::postconf' ]
