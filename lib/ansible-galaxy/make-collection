@@ -223,6 +223,10 @@ file_list=(
     CHANGELOG.rst
 )
 
+directory_list=(
+    LICENSES
+)
+
 mkdir -p "${workdir_map[${collections[0]}]}/playbooks" \
          "${workdir_map[${collections[0]}]}/roles" \
          "${workdir_map[${collections[0]}]}/plugins/callback" \
@@ -268,6 +272,10 @@ for collection in "${collections[@]}" ; do
 
     for filename in "${file_list[@]}" ; do
         cp "${filename}" "${workdir_map[${collection}]}/"
+    done
+
+    for directory in "${directory_list[@]}" ; do
+        cp -r "${directory}" "${workdir_map[${collection}]}/"
     done
 
     files_to_modify=()
