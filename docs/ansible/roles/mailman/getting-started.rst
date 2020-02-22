@@ -1,5 +1,5 @@
-.. Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2014-2017 DebOps <https://debops.org/>
+.. Copyright (C) 2014-2020 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2014-2020 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 Getting started
@@ -10,104 +10,94 @@ Getting started
    .. contents::
       :local:
 
+
+Important installation steps
+----------------------------
+
+The default installation will configure the Mailman service under
+``lists.<example.org>`` DNS domain. This can be changed using the
+:envvar:`mailman__fqdn` variable.
+
+On installation, if the LDAP support is not enabled, the role will create an
+initial superuser account with a random password. The default superuser account
+will use the login name specified in the :envvar:`mailman__superuser_name`
+variable and e-mail address specified in the :envvar:`mailman__superuser_email`
+variable. They are based on the facts defined by the :ref:`debops.core` role,
+but uou might want to redefine them beforehand in the inventory to be sure that
+the validation e-mail is sent to the correct e-mail account.
+
+After the role configures Mailman, you should go to the
+https://lists.example.org/ website (make sure that the DNS record is
+configured). The default superuser account has a random password assigned to
+it, so the first step is to request a password change by specifying your admin
+e-mail address. When you get the e-mail, you will be able to specify your own
+password. After logging in again, you will receive another e-mail request to
+confirm the authenticity of the account - when you confirm that you are who you
+say you are in the web interface, you will be able to login as the site
+administrator.
+
+The Postorius/HyperKitty web interface uses ``example.com`` as the default
+"website" defined in the Django framework. You will have to change that to your
+preferred domain using the https://lists.example.org/admin/ interface. In the
+Django admin page, in the "Pages" section, click "Modify", "example.com" and
+change the default site domain to your preferred one. After this you can create
+a new domain for the mailing lists, and a new mailing list in the Postorius web
+interface.
+
+
+LDAP integration
+----------------
+
+If the :ref:`LDAP environment <debops.ldap>` is configured on the host, the
+role will configure the LDAP support in the Django framework to allow the users
+in the :ref:`slapd__ref_acl_group_unix_admins` group to login as superuser
+accounts. You should be able to login with your username and password defined
+in LDAP directory, and the confirmation e-mail should be sent to your e-mail
+account.
+
+
 .. _mailman__ref_postfix_integration:
 
 SMTP service integration
 ------------------------
 
-The :ref:`debops.mailman` role provides configuration variable for
+The :ref:`debops.mailman` role provides the configuration for
 :ref:`debops.postfix` Ansible role which are used in the example playbook. The
-role supports two modes of integration:
+configuration is defined in the :envvar:`mailman__postfix__dependent_maincf`
+variable and is passed to the role via role dependent variables.
 
-- ``virtual``: messages to Mailman are passed using a Postfix transport, entire
-  installation uses virtual mail.
-
-- ``local``: messages to Mailman are passed using local mail aliases.
-
-The ``virtual`` mode is used by default. Role does not support changing the
-mode after a deployment.
-
-Refer to :ref:`debops.postfix` documentation for more details.
 
 HTTP service integration
 ------------------------
 
 The role provides configuration for :ref:`debops.nginx` role which will configure
-the Mailman web interface using :program:`nginx` and ``fcgiwrap`` instance (using
-:ref:`debops.fcgiwrap` Ansible role). The webserver will be configured with
-a restricted list of allowed referers, to prevent hijacking of the web
-interface forms by other sites.
-
-Backscatter prevention
-----------------------
-
-The default Mailman installation is very prone to `backscatter <https://en.wikipedia.org/wiki/Backscatter_(email)>`_
-attacks. Therefore, :ref:`debops.mailman` will try to reduce this possibility by
-taking a few measures:
-
-- some of the mailing list aliases will be disabled by a patch, only
-  ``-bounces``, ``-confirm``, ``-owner`` and ``-request`` aliases will be
-  present.
-
-- commands from somebody not on the list sent by e-mail will be silently
-  discarded using a patch. Unfortunately, this prevents registration via e-mail
-  subscribe message, but it was determined that the benefits outweigh the lost
-  functionality. Please, use the webinterface for subscription.
-
-- monthly reminders about the mailing list membership are disabled.
-
-Mailman source code modifications
----------------------------------
-
-This role will configure GNU Mailman on the host using the APT ``mailman``
-package. The version provided in Debian Wheezy and Debian Jessie packages
-requires some additional modifications that are provided as source code
-patches. They will be applied automatically in the source code located in
-:file:`/usr/lib/mailman/` directory (this can be disabled by setting the
-:envvar:`mailman__patch` variable to ``False``).
-
-Modification of the package source code might cause issues during updates,
-therefore automatic upgrades of the ``mailman`` package will be disabled in the
-``unattended-upgrades`` package using :ref:`debops.unattended_upgrades` Ansible
-role, if patching is enabled.
-
-To apply the patches manually after an upgrade, you can use the provided
-Ansible tags, for example:
-
-.. code-block:: console
-
-   user@controller:~$ debops service/mailman --tags role::mailman:patch
-
-The above command will check the status of the patches in Mailman source code
-and apply them if necessary.
-
-Language pack support
----------------------
-
-The role contains a Bash language pack conversion script which will be executed
-on changes in language pack configuration. Some of the language packs provided
-by Debian are stored in wrong encoding (on Debian Wheezy) or contain incorrect
-encoding information. The script will try to fix that in the enabled languages
-after language packs are generated; however subsequent ``mailman`` package
-updates will most likely override these changes. To apply them again you can
-use the provided Ansible tags:
-
-.. code-block:: console
-
-   user@controller:~$ debops service/mailman --tags role::mailman:lang
-
-This will re-configure the language pack support in ``mailman`` package and
-apply the conversion script changes if necessary.
+the Mailman web interface using :program:`nginx` service.
 
 Example inventory
 -----------------
 
 To configure Mailman on a host, you need to add it to
-``[debops_service_mailman]`` Ansible inventory group. Example inventory::
+``[debops_service_mailman]`` Ansible inventory group. Some other services will
+also need to be configured as well. The role integrates with the Postfix service using
+the :ref:`debops.postfix` role. A database is needed; role can use either
+PostgreSQL or MariaDB service, depending on which one is available. If none of
+them are installed, a fallback to SQLite3 database will happen automatically.
 
-    # inventory/hosts
-    [debops_service_mailman]
-    hostname
+An example inventory configuration:
+
+.. code-block:: none
+
+   [debops_all_hosts]
+   hostname    ansible_host=hostname.example.org
+
+   [debops_service_postgresql_server]
+   hostname
+
+   [debops_service_postfix]
+   hostname
+
+   [debops_service_mailman]
+   hostname
 
 Example playbook
 ----------------
@@ -118,4 +108,4 @@ required DebOps services:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/mailman.yml
    :language: yaml
-   :lines: 1,5-
+   :lines: 1,6-

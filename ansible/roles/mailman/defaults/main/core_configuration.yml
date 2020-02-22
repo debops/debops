@@ -1,0 +1,521 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2014-2020 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2014-2020 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# Mailman Core configuration options
+# ==================================
+
+# These variables define the contents of the :file:`/etc/mailman3/mailman.cfg`
+# configuration file. See :ref:`mailman__ref_core_configuration` for more
+# details.
+
+# .. envvar:: mailman__core_original_configuration [[[
+#
+# The original contents of the :file:`/etc/mailman3/mailman.cfg` configuration
+# file defined in YAML format. The options are changed in subsequent variables.
+mailman__core_original_configuration:
+
+  - name: 'mailman'
+    options:
+
+      - name: 'site_owner'
+        comment: |
+          This address is the "site owner" address.  Certain messages which must be
+          delivered to a human, but which can't be delivered to a list owner (e.g. a
+          bounce from a list owner), will be sent to this address.  It should point to
+          a human.
+        value: 'changeme@example.com'
+
+      - name: 'noreply_address'
+        comment: |
+          This is the local-part of an email address used in the From field whenever a
+          message comes from some entity to which there is no natural reply recipient.
+          Mailman will append '@' and the host name of the list involved.  This
+          address must not bounce and it must not point to a Mailman process.
+        value: 'noreply'
+
+      - name: 'default_language'
+        comment: 'The default language for this server.'
+        value: 'en'
+
+      - name: 'sender_headers'
+        comment: |
+          Membership tests for posting purposes are usually performed by looking at a
+          set of headers, passing the test if any of their values match a member of
+          the list.  Headers are checked in the order given in this variable.  The
+          value From_ means to use the envelope sender.  Field names are case
+          insensitive.  This is a space separate list of headers.
+        value: [ 'from', 'from_', 'reply-to', 'sender' ]
+
+      - name: 'email_commands_max_lines'
+        comment: 'Mail command processor will ignore mail command lines after designated max.'
+        value: 10
+
+      - name: 'pending_request_life'
+        comment: |
+          Default length of time a pending request is live before it is evicted from
+          the pending database.
+        value: '3d'
+
+      - name: 'cache_life'
+        comment: 'How long should files be saved before they are evicted from the cache?'
+        value: '7d'
+
+      - name: 'pre_hook'
+        comment: |
+          A callable to run with no arguments early in the initialization process.
+          This runs before database initialization.
+        value: ''
+
+      - name: 'post_hook'
+        comment: |
+          A callable to run with no arguments late in the initialization process.
+          This runs after adapters are initialized.
+        value: ''
+
+      - name: 'layout'
+        comment: |
+          Which paths.* file system layout to use.
+          You should not change this variable.
+        value: 'debian'
+
+      - name: 'filtered_messages_are_preservable'
+        comment: 'Can MIME filtered messages be preserved by list owners?'
+        value: False
+
+      - name: 'html_to_plain_text_command'
+        comment: |
+          How should text/html parts be converted to text/plain when the mailing list
+          is set to convert HTML to plaintext?  This names a command to be called,
+          where the substitution variable $filename is filled in by Mailman, and
+          contains the path to the temporary file that the command should read from.
+          The command should print the converted text to stdout.
+        value: '/usr/bin/lynx -dump $filename'
+
+      - name: 'listname_chars'
+        comment: |
+          Specify what characters are allowed in list names.  Characters outside of
+          the class [-_.+=!$*{}~0-9a-z] matched case insensitively are never allowed,
+          but this specifies a subset as the only allowable characters.  This must be
+          a valid character class regexp or the effect on list creation is
+          unpredictable.
+        value: '[-_.0-9a-z]'
+
+  - name: 'shell'
+    separator: True
+    comment: |
+      `mailman shell` (also `withlist`) gives you an interactive prompt that you
+      can use to interact with an initialized and configured Mailman system.  Use
+      --help for more information.  This section allows you to configure certain
+      aspects of this interactive shell.
+    options:
+
+      - name: 'prompt'
+        comment: 'Customize the interpreter prompt.'
+        value: '>>>'
+        separator: True
+
+      - name: 'banner'
+        comment: 'Banner to show on startup.'
+        value: 'Welcome to the GNU Mailman shell'
+
+      - name: 'use_ipython'
+        comment: |
+          Use IPython as the shell, which must be found on the system.  Valid values
+          are `no`, `yes`, and `debug` where the latter is equivalent to `yes` except
+          that any import errors will be displayed to stderr.
+        value: False
+
+      - name: 'history_file'
+        comment: |
+          Set this to allow for command line history if readline is available.  This
+          can be as simple as $var_dir/history.py to put the file in the var directory.
+        value: ''
+
+  - name: 'paths.debian'
+    separator: True
+    comment: |
+      Important directories for Mailman operation.  These are defined here so that
+      different layouts can be supported.   For example, a developer layout would
+      be different from a FHS layout.  Most paths are based off the var_dir, and
+      often just setting that will do the right thing for all the other paths.
+      You might also have to set spool_dir though.
+
+      Substitutions are allowed, but must be of the form $var where 'var' names a
+      configuration variable in the paths.* section.  Substitutions are expanded
+      recursively until no more $-variables are present.  Beware of infinite
+      expansion loops!
+    options:
+
+      - name: 'var_dir'
+        comment: |
+          This is the root of the directory structure that Mailman will use to store
+          its run-time data.
+        value: '/var/lib/mailman3'
+
+      - name: 'queue_dir'
+        comment: 'This is where the Mailman queue files directories will be created.'
+        value: '$var_dir/queue'
+        separator: False
+
+      - name: 'bin_dir'
+        comment: |
+          This is the directory containing the Mailman 'runner' and 'master' commands
+          if set to the string '$argv', it will be taken as the directory containing
+          the 'mailman' command.
+        value: '/usr/lib/mailman3/bin'
+
+      - name: 'list_data_dir'
+        comment: 'All list-specific data.'
+        value: '$var_dir/lists'
+
+      - name: 'log_dir'
+        comment: 'Directory where log files go.'
+        value: '/var/log/mailman3'
+
+      - name: 'lock_dir'
+        comment: 'Directory for system-wide locks.'
+        value: '$var_dir/locks'
+
+      - name: 'data_dir'
+        comment: 'Directory for system-wide data.'
+        value: '$var_dir/data'
+
+      - name: 'cache_dir'
+        comment: 'Cache files.'
+        value: '$var_dir/cache'
+
+      - name: 'etc_dir'
+        comment: 'Directory for configuration files and such.'
+        value: '/etc/mailman3'
+
+      - name: 'ext_dir'
+        comment: 'Directory containing Mailman plugins.'
+        value: '$var_dir/ext'
+
+      - name: 'messages_dir'
+        comment: 'Directory where the default IMessageStore puts its messages.'
+        value: '$var_dir/messages'
+
+      - name: 'archive_dir'
+        comment: |
+          Directory for archive backends to store their messages in.  Archivers should
+          create a subdirectory in here to store their files.
+        value: '$var_dir/archives'
+
+      - name: 'template_dir'
+        comment: 'Root directory for site-specific template override files.'
+        value: '$var_dir/templates'
+
+      - name: 'pid_file'
+        comment: |
+          There are also a number of paths to specific file locations that can be
+          defined.  For these, the directory containing the file must already exist,
+          or be one of the directories created by Mailman as per above.
+
+          This is where PID file for the master runner is stored.
+        value: '/run/mailman3/master.pid'
+
+      - name: 'lock_file'
+        comment: 'Lock file.'
+        value: '$lock_dir/master.lck'
+
+  - name: 'database'
+    separator: True
+    options:
+
+      - name: 'class_sqlite'
+        option: 'class'
+        comment: 'The class implementing the IDatabase.'
+        value: 'mailman.database.sqlite.SQLiteDatabase'
+        state: 'comment'
+
+      - name: 'class_mysql'
+        option: 'class'
+        value: 'mailman.database.mysql.MySQLDatabase'
+        state: 'comment'
+
+      - name: 'class_postgresql'
+        option: 'class'
+        value: 'mailman.database.postgresql.PostgreSQLDatabase'
+        state: 'comment'
+
+      - name: 'url_sqlite'
+        option: 'url'
+        comment: |
+          Use this to set the Storm database engine URL.  You generally have one
+          primary database connection for all of Mailman.  List data and most rosters
+          will store their data in this database, although external rosters may access
+          other databases in their own way.  This string supports standard
+          'configuration' substitutions.
+        value: 'sqlite:///$DATA_DIR/mailman.db'
+        state: 'comment'
+
+      - name: 'url_mysql'
+        option: 'url'
+        value: 'mysql+pymysql://mailman3:mmpass@localhost/mailman3?charset=utf8&use_unicode=1'
+        state: 'comment'
+
+      - name: 'url_postgresql'
+        option: 'url'
+        value: 'postgres://mailman3:mmpass@localhost/mailman3'
+        state: 'comment'
+
+      - name: 'debug'
+        value: False
+        separator: True
+
+  - name: 'logging.debian'
+    separator: True
+    comment: |
+      This defines various log settings.  The options available are:
+
+      - level     -- Overrides the default level; this may be any of the
+                     standard Python logging levels, case insensitive.
+      - format    -- Overrides the default format string
+      - datefmt   -- Overrides the default date format string
+      - path      -- Overrides the default logger path.  This may be a relative
+                     path name, in which case it is relative to Mailman's LOG_DIR,
+                     or it may be an absolute path name.  You cannot change the
+                     handler class that will be used.
+      - propagate -- Boolean specifying whether to propagate log message from this
+                     logger to the root "mailman" logger.  You cannot override
+                     settings for the root logger.
+
+      In this section, you can define defaults for all loggers, which will be
+      prefixed by 'mailman.'.  Use subsections to override settings for specific
+      loggers.  The names of the available loggers are:
+
+      - archiver        --  All archiver output
+      - bounce          --  All bounce processing logs go here
+      - config          --  Configuration issues
+      - database        --  Database logging (SQLAlchemy and Alembic)
+      - debug           --  Only used for development
+      - error           --  All exceptions go to this log
+      - fromusenet      --  Information related to the Usenet to Mailman gateway
+      - http            --  Internal wsgi-based web interface
+      - locks           --  Lock state changes
+      - mischief        --  Various types of hostile activity
+      - runner          --  Runner process start/stops
+      - smtp            --  Successful SMTP activity
+      - smtp-failure    --  Unsuccessful SMTP activity
+      - subscribe       --  Information about leaves/joins
+      - vette           --  Message vetting information
+    options:
+
+      - name: 'format'
+        value: '%(asctime)s (%(process)d) %(message)s'
+
+      - name: 'datefmt'
+        value: '%b %d %H:%M:%S %Y'
+
+      - name: 'propagate'
+        value: False
+
+      - name: 'level'
+        value: 'info'
+
+      - name: 'path'
+        value: 'mailman.log'
+
+  - name: 'webservice'
+    options:
+
+      - name: 'hostname'
+        comment: 'The hostname at which admin web service resources are exposed.'
+        value: 'localhost'
+
+      - name: 'port'
+        comment: 'The port at which the admin web service resources are exposed.'
+        value: 8001
+
+      - name: 'use_https'
+        comment: 'Whether or not requests to the web service are secured through SSL.'
+        value: False
+
+      - name: 'show_tracebacks'
+        comment: |
+          Whether or not to show tracebacks in an HTTP response for a request that
+          raised an exception.
+        value: True
+
+      - name: 'api_version'
+        comment: 'The API version number for the current (highest) API.'
+        value: '3.1'
+
+      - name: 'admin_user'
+        comment: 'The administrative username.'
+        value: 'restadmin'
+
+      - name: 'admin_pass'
+        comment: 'The administrative password.'
+        value: 'restpass'
+
+  - name: 'mta'
+    options:
+
+      - name: 'incoming_exim'
+        option: 'incoming'
+        comment: 'The class defining the interface to the incoming mail transport agent.'
+        value: 'mailman.mta.exim4.LMTP'
+        state: 'comment'
+
+      - name: 'incoming'
+        value: 'mailman.mta.postfix.LMTP'
+
+      - name: 'outgoing'
+        comment: |
+          The callable implementing delivery to the outgoing mail transport agent.
+          This must accept three arguments, the mailing list, the message, and the
+          message metadata dictionary.
+        value: 'mailman.mta.deliver.deliver'
+
+      - name: 'smtp_host'
+        comment: |
+          How to connect to the outgoing MTA.  If smtp_user and smtp_pass is given,
+          then Mailman will attempt to log into the MTA when making a new connection.
+        value: 'localhost'
+
+      - name: 'smtp_port'
+        value: 25
+
+      - name: 'smtp_user'
+        value: ''
+
+      - name: 'smtp_pass'
+        value: ''
+
+      - name: 'lmtp_host'
+        comment: |
+          Where the LMTP server listens for connections.  Use 127.0.0.1 instead of
+          localhost for Postfix integration, because Postfix only consults DNS
+          (e.g. not /etc/hosts).
+        value: '127.0.0.1'
+
+      - name: 'lmtp_port'
+        value: 8024
+
+      - name: 'configuration_exim'
+        option: 'configuration'
+        comment: |
+          Where can we find the mail server specific configuration file?  The path can
+          be either a file system path or a Python import path.  If the value starts
+          with python: then it is a Python import path, otherwise it is a file system
+          path.  File system paths must be absolute since no guarantees are made about
+          the current working directory.  Python paths should not include the trailing
+          .cfg, which the file must end with.
+        value: 'python:mailman.config.exim4'
+        state: 'comment'
+
+      - name: 'configuration'
+        comment: |
+        value: 'python:mailman.config.postfix'
+
+  - name: 'archiver.hyperkitty'
+    comment: |
+      The following lines are specific to mailing lists archiving using
+      HyperKitty. They require 'python3-mailman-hyperkitty' to be installed
+      and will produce errors otherwise.
+
+      If you don't want to use HyperKitty, please comment them out.
+    options:
+
+      - name: 'class'
+        value: 'mailman_hyperkitty.Archiver'
+
+      - name: 'enable'
+        value: True
+
+      - name: 'configuration'
+        value: '/etc/mailman3/mailman-hyperkitty.cfg'
+
+                                                                   # ]]]
+# .. envvar:: mailman__core_default_configuration [[[
+#
+# Mailman Core configuration options defined by the role.
+mailman__core_default_configuration:
+
+  - name: 'mailman'
+    options:
+
+      - name: 'site_owner'
+        value: '{{ "root@" + mailman__domain }}'
+
+  - name: 'database'
+    options:
+
+      - name: 'class_sqlite'
+        state: '{{ "present"
+                   if ((ansible_local.mailman.database_class|d("")).endswith("SQLiteDatabase"))
+                   else "ignore" }}'
+
+      - name: 'class_mysql'
+        state: '{{ "present"
+                   if ((ansible_local.mailman.database_class|d("")).endswith("MySQLDatabase"))
+                   else "ignore" }}'
+
+      - name: 'class_postgresql'
+        state: '{{ "present"
+                   if ((ansible_local.mailman.database_class|d("")).endswith("PostgreSQLDatabase"))
+                   else "ignore" }}'
+
+      - name: 'url_sqlite'
+        value: '{{ ansible_local.mailman.database_url|d() }}'
+        state: '{{ "present"
+                   if ((ansible_local.mailman.database_class|d("")).endswith("SQLiteDatabase"))
+                   else "ignore" }}'
+
+      - name: 'url_mysql'
+        value: '{{ ansible_local.mailman.database_url|d() }}'
+        state: '{{ "present"
+                   if ((ansible_local.mailman.database_class|d("")).endswith("MySQLDatabase"))
+                   else "ignore" }}'
+
+      - name: 'url_postgresql'
+        value: '{{ ansible_local.mailman.database_url|d() }}'
+        state: '{{ "present"
+                   if ((ansible_local.mailman.database_class|d("")).endswith("PostgreSQLDatabase"))
+                   else "ignore" }}'
+
+  - name: 'webservice'
+    options:
+
+      - name: 'admin_pass'
+        value: '{{ ansible_local.mailman.webservice_admin_pass | d("restpass") }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman__core_configuration [[[
+#
+# Mailman Core configuration options defined on all hosts in the Ansible
+# inventory.
+mailman__core_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: mailman__core_group_configuration [[[
+#
+# Mailman Core configuration options defined on hosts in a specific Ansible
+# inventory group.
+mailman__core_group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: mailman__core_host_configuration [[[
+#
+# Mailman Core configuration options defined on specific hosts in the Ansible
+# inventory.
+mailman__core_host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: mailman__core_combined_configuration [[[
+#
+# Variable which combines all of the Mailman Core configuration variables and
+# is used in the role tasks and templates.
+mailman__core_combined_configuration: '{{ mailman__core_original_configuration
+                                          + mailman__core_default_configuration
+                                          + mailman__core_configuration
+                                          + mailman__core_group_configuration
+                                          + mailman__core_host_configuration }}'
+
+                                                                   # ]]]

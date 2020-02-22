@@ -1,0 +1,105 @@
+{# Copyright (C) 2014-2020 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2014-2020 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+# This file is imported by the Mailman Suite. It is used to override
+# the default settings from /usr/share/mailman3-web/settings.py.
+
+{% for element in mailman__web_combined_configuration | parse_kv_items %}
+{%   if element.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%     set element_name = (element.option | d(element.name)) %}
+{%     set option_comment = ('# ' if (element.state|d('present') == 'comment') else '') %}
+{%     if ((element.comment|d() or (element.separator|d()|bool)) and not loop.first) %}
+
+{%     endif %}
+{%     if element.comment|d() %}
+{{       element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%     endif %}
+{%     if element.raw|d() %}
+{%       if element.state|d('present') == 'comment' %}
+{{         ('{}'.format(element.raw | regex_replace('\n$', ''))) | comment(prefix='', postfix='') }}
+{%       else %}
+{{         '{}'.format(element.raw | regex_replace('\n$', '')) }}
+{%       endif %}
+{%     elif element.value|d() %}
+{%       if element.value | bool and element.value is not iterable %}
+{%         if element.value | int and element.value | string != 'True' %}
+{{           '{}{} = {}'.format(option_comment, element_name | upper, element.value) }}
+{%         else %}
+{{           '{}{} = True'.format(option_comment, element_name | upper) }}
+{%         endif %}
+{%       elif not element.value | bool and element.value is not iterable %}
+{%         if element.value is not none %}
+{%           if element.value | int or element.value | string == '0' %}
+{{             '{}{} = {}'.format(option_comment, element_name | upper, element.value) }}
+{%           else %}
+{{             '{}{} = False'.format(option_comment, element_name | upper) }}
+{%           endif %}
+{%         endif %}
+{%       else %}
+{%         if element.type|d() == 'tuple' %}
+{%           if element.value | count == 2 %}
+{{             "{}{} = ('{}')".format(option_comment, element_name | upper, element.value | join("', '")) }}
+{%           else %}
+{{             '{}{} = ('.format(option_comment, element_name | upper) }}
+{%             for tuple_value in element.value %}
+{%               if tuple_value is string %}
+{{                 (option_comment + "'" + tuple_value + "',") | indent(4, true) }}
+{%               else %}
+{{                 (option_comment + "('" + tuple_value | join("', '") + "'),") | indent(4, true) }}
+{%               endif %}
+{%             endfor %}
+{{             (option_comment + ')') }}
+{%           endif %}
+{%         elif element.type|d() == 'raw' %}
+{%           if element.state|d('present') == 'comment' %}
+{{             ('{} = {}'.format(element_name | upper, element.value)) | comment(prefix='', postfix='') }}
+{%           else %}
+{{             '{} = {}'.format(element_name | upper, element.value) }}
+{%           endif %}
+{%         else %}
+{%           if element.state|d('present') == 'comment' %}
+{{             ('{} = {}'.format(element_name | upper, element.value | to_nice_json)) | comment(prefix='', postfix='') }}
+{%           else %}
+{{             '{} = {}'.format(element_name | upper, element.value | to_nice_json) }}
+{%           endif %}
+{%         endif %}
+{%       endif %}
+{%     elif element.options|d() %}
+{%       if element.type|d() == 'tuple' %}
+{{         '{}{} = ('.format(option_comment, element_name | upper) }}
+{%         for entry in element.options %}
+{%           if entry.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%             set entry_comment = ('#' if (entry.state|d('present') == 'comment') else '') %}
+{%             if entry.comment|d() %}
+{{               (entry.comment | regex_replace('\n$','') | comment(prefix='', postfix=''))| indent(4, true) -}}
+{%             endif %}
+{{             (option_comment + entry_comment + "'" + entry.name + "',") | indent(4, true) }}
+{%           endif %}
+{%         endfor %}
+{{         (option_comment + ')') }}
+{%       else %}
+{{         '{}{} = ['.format(option_comment, element_name | upper) }}
+{%         for entry in element.options %}
+{%           if entry.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%             set entry_comment = ('#' if (entry.state|d('present') == 'comment') else '') %}
+{%             if entry.comment|d() %}
+{{               (entry.comment | regex_replace('\n$','') | comment(prefix='', postfix=''))| indent(4, true) -}}
+{%             endif %}
+{{             (option_comment + entry_comment + "'" + entry.name + ("'," if not loop.last else "'")) | indent(4, true) }}
+{%           endif %}
+{%         endfor %}
+{{         (option_comment + ']') }}
+{%       endif %}
+{%     elif element.config is defined %}
+{{       '{}{} = '.format(option_comment, element_name | upper) -}}
+{%       if element.state|d('present') == 'comment' %}
+{{         '{}'.format(((element.config | to_nice_json) | comment(prefix='', postfix=''))) | regex_replace('^# {', '{') -}}
+{%       else %}
+{{         '{}'.format(element.config | to_nice_json) }}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{% endfor %}

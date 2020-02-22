@@ -1,0 +1,124 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2014-2020 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2020      CipherMail B.V. <https://www.ciphermail.com/>
+# .. Copyright (C) 2014-2020 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# Configuration for other Ansible roles
+# =====================================
+
+# .. envvar:: mailman__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+mailman__python__dependent_packages3:
+
+  - '{{ [ "python3-django-auth-ldap" ]
+        if mailman__ldap_enabled|bool
+        else [] }}'
+
+  - '{{ [ "python3-psycopg2" ]
+        if (mailman__database_type == "postgresql")
+        else [] }}'
+
+  - '{{ [ "python3-pymysql", "python3-mysqldb" ]
+        if (mailman__database_type == "mysql")
+        else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+mailman__python__dependent_packages2:
+
+  - '{{ [ "python-django-auth-ldap" ]
+        if mailman__ldap_enabled|bool
+        else [] }}'
+
+  - '{{ [ "python-psycopg2" ]
+        if (mailman__database_type == "postgresql")
+        else [] }}'
+
+  - '{{ [ "python-pymysql", "python-mysqldb" ]
+        if (mailman__database_type == "mysql")
+        else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman__ldap_dependent_tasks [[[
+#
+# Configuration for the :ref:`debops.ldap` role.
+mailman__ldap__dependent_tasks:
+
+  - name: '{{ "Create Mailman 3 account for "
+              + mailman__ldap_device_dn | join(",") }}'
+    dn: '{{ mailman__ldap_bind_dn }}'
+    objectClass: '{{ mailman__ldap_self_object_classes }}'
+    attributes: '{{ mailman__ldap_self_attributes }}'
+    no_log: '{{ secret__no_log|d(True) }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman__postfix__dependent_maincf [[[
+#
+# Configuration for the :ref:`debops.postfix` Ansible role.
+mailman__postfix__dependent_maincf:
+
+  - name: 'owner_request_special'
+    value: False
+    state: 'present'
+
+  - name: 'transport_maps'
+    value: [ 'hash:/var/lib/mailman3/data/postfix_lmtp' ]
+    state: 'present'
+
+  - name: 'local_recipient_maps'
+    value:
+      - 'proxy:unix:passwd.byname'
+      - '$alias_maps'
+      - 'hash:/var/lib/mailman3/data/postfix_lmtp'
+    state: 'present'
+
+  - name: 'relay_domains'
+    value: [ 'hash:/var/lib/mailman3/data/postfix_domains' ]
+    state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: mailman__nginx__dependent_upstreams [[[
+#
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
+mailman__nginx__dependent_upstreams:
+
+  - name: 'mailman3'
+    server: 'unix:/run/mailman3-web/uwsgi.sock fail_timeout=0'
+
+                                                                   # ]]]
+# .. envvar:: mailman__nginx__dependent_servers [[[
+#
+# Server configuration for the :ref:`debops.nginx` Ansible role.
+mailman__nginx__dependent_servers:
+
+  - by_role: 'debops.mailman'
+    enabled: True
+    name: '{{ [ mailman__fqdn ] + mailman__additional_domains }}'
+    redirect_from: True
+    filename: 'debops.mailman'
+
+    location_list:
+
+      - pattern: '/'
+        options: |
+          uwsgi_pass mailman3;
+          include /etc/nginx/uwsgi_params;
+        state: 'present'
+
+      - pattern: '/mailman3/static'
+        options: |
+          alias /var/lib/mailman3/web/static;
+        state: 'present'
+
+      - pattern: '/mailman3/static/favicon.ico'
+        options: |
+          alias /var/lib/mailman3/web/static/postorius/img/favicon.ico;
+        state: 'present'
+
+                                                                   # ]]]

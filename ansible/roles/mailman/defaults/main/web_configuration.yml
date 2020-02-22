@@ -1,0 +1,504 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2014-2020 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2014-2020 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# Mailman Web configuration options
+# =================================
+
+# These variables define the contents of the
+# :file:`/etc/mailman3/mailman-web.py` configuration file.
+# See :ref:`mailman__ref_web_configuration` for more details.
+
+# .. envvar:: mailman__web_original_configuration [[[
+#
+# The original contents of the :file:`/etc/mailman3/mailman-web.py`
+# configuration file. They configuration options are changed by the subsequent
+# variables.
+mailman__web_original_configuration:
+
+  - name: 'secret_key'
+    comment: 'SECURITY WARNING: keep the secret key used in production secret!'
+    value: 'secretkey'
+
+  - name: 'admins'
+    value:
+      - [ 'Mailman Suite Admin', 'root@localhost' ]
+    type: 'tuple'
+    separator: True
+    state: 'present'
+
+  - name: 'allowed_hosts'
+    comment: |
+      Hosts/domain names that are valid for this site; required if DEBUG is False
+      See https://docs.djangoproject.com/en/1.8/ref/settings/#allowed-hosts
+      Set to '*' per default in the Deian package to allow all hostnames. Mailman3
+      is meant to run behind a webserver reverse proxy anyway.
+    options:
+
+      - name: 'localhost'
+        comment: 'Archiving API from Mailman, keep it.'
+        state: 'comment'
+
+      - name: 'lists.your-domain.org'
+        state: 'comment'
+
+      - name: '*'
+        comment: 'Add here all production URLs you may have.'
+        state: 'present'
+
+  - name: 'mailman_rest_api_url'
+    comment: 'Mailman API credentials'
+    value: 'http://localhost:8001'
+
+  - name: 'mailman_rest_api_user'
+    value: 'restadmin'
+
+  - name: 'mailman_rest_api_pass'
+    value: 'restpass'
+
+  - name: 'mailman_archiver_key'
+    value: 'keypass'
+
+  - name: 'mailman_archiver_from'
+    value: [ '127.0.0.1', '::1' ]
+    type: 'tuple'
+
+  - name: 'installed_apps'
+    comment: 'Application definition'
+    type: 'tuple'
+    options:
+
+      - 'hyperkitty'
+      - 'postorius'
+      - 'django_mailman3'
+
+      - name: 'django.contrib.admin'
+        comment: 'Uncomment the next line to enable the admin:'
+        state: 'present'
+
+      - name: 'django.contrib.admindocs'
+        comment: 'Uncomment the next line to enable admin documentation:'
+        state: 'comment'
+
+      - 'django.contrib.auth'
+      - 'django.contrib.contenttypes'
+      - 'django.contrib.sessions'
+      - 'django.contrib.sites'
+      - 'django.contrib.messages'
+      - 'django.contrib.staticfiles'
+      - 'rest_framework'
+      - 'django_gravatar'
+      - 'compressor'
+      - 'haystack'
+      - 'django_extensions'
+      - 'django_q'
+      - 'allauth'
+      - 'allauth.account'
+      - 'allauth.socialaccount'
+      - 'django_mailman3.lib.auth.fedora'
+
+      - name: 'allauth.socialaccount.providers.openid'
+        state: 'comment'
+
+      - name: 'allauth.socialaccount.providers.github'
+        state: 'comment'
+
+      - name: 'allauth.socialaccount.providers.gitlab'
+        state: 'comment'
+
+      - name: 'allauth.socialaccount.providers.google'
+        state: 'comment'
+
+      - name: 'allauth.socialaccount.providers.facebook'
+        state: 'comment'
+
+      - name: 'allauth.socialaccount.providers.twitter'
+        state: 'comment'
+
+      - name: 'allauth.socialaccount.providers.stackexchange'
+        state: 'comment'
+
+  - name: 'database_sqlite'
+    option: 'databases'
+    comment: |
+      Database
+      https://docs.djangoproject.com/en/1.8/ref/settings/#databases
+    state: '{{ "present" if (mailman__database_type == "sqlite") else "ignore" }}'
+    config:
+      'default':
+        'ENGINE': 'django.db.backends.sqlite3'
+        'NAME': '/var/lib/mailman3/web/mailman3web.db'
+        'USER': ''
+        'PASSWORD': ''
+        'HOST': ''
+        'PORT': ''
+        'OPTIONS': {}
+
+  - name: 'databases_mysql'
+    option: 'databases'
+    comment: |
+      Database
+      https://docs.djangoproject.com/en/1.8/ref/settings/#databases
+    state: '{{ "present" if (mailman__database_type == "mysql") else "ignore" }}'
+    config:
+      'default':
+        'ENGINE': 'django.db.backends.mysql'
+        'NAME': 'mailman3web'
+        'USER': 'mailman3web'
+        'PASSWORD': 'password'
+        'HOST': 'localhost'
+        'PORT': ''
+        'OPTIONS':
+          'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+
+  - name: 'use_x_forwarded_host'
+    comment: |
+      If you're behind a proxy, use the X-Forwarded-Host header
+      See https://docs.djangoproject.com/en/1.8/ref/settings/#use-x-forwarded-host
+    value: True
+
+  - name: 'secure_proxy_ssl_header_proto'
+    option: 'secure_proxy_ssl_header'
+    comment: |
+      And if your proxy does your SSL encoding for you, set SECURE_PROXY_SSL_HEADER
+      https://docs.djangoproject.com/en/1.8/ref/settings/#secure-proxy-ssl-header
+    value: [ 'HTTP_X_FORWARDED_PROTO', 'https' ]
+    type: 'tuple'
+    state: 'comment'
+
+  - name: 'secure_proxy_ssl_header_scheme'
+    option: 'secure_proxy_ssl_header'
+    value: [ 'HTTP_X_FORWARDED_SCHEME', 'https' ]
+    type: 'tuple'
+    state: 'comment'
+
+  - name: 'secure_ssl_redirect'
+    comment: 'Other security settings'
+    value: True
+    state: 'comment'
+
+  - name: 'secure_redirect_exempt'
+    comment: |
+      If you set SECURE_SSL_REDIRECT to True, make sure the SECURE_REDIRECT_EXEMPT
+      contains at least this line:
+    value: [ 'archives/api/mailman/.*' ]
+    state: 'comment'
+
+  - name: 'session_cookie_secure'
+    value: True
+    state: 'comment'
+
+  - name: 'secure_content_type_nosniff'
+    value: True
+    state: 'comment'
+
+  - name: 'secure_browser_xss_filter'
+    value: True
+    state: 'comment'
+
+  - name: 'csrf_cookie_secure'
+    value: True
+    state: 'comment'
+
+  - name: 'csrf_cookie_httponly'
+    value: True
+    state: 'comment'
+
+  - name: 'x_frame_options'
+    value: 'DENY'
+    state: 'comment'
+
+  - name: 'language_code'
+    comment: |
+      Internationalization
+      https://docs.djangoproject.com/en/1.8/topics/i18n/
+    value: 'en-us'
+
+  - name: 'time_zone'
+    value: 'UTC'
+
+  - name: 'use_i18n'
+    value: True
+
+  - name: 'use_l10n'
+    value: True
+
+  - name: 'use_tz'
+    value: True
+
+  - name: 'emailname'
+    comment: 'Set default domain for email addresses.'
+    value: 'localhost.local'
+
+  - name: 'default_from_email'
+    comment: |
+      If you enable internal authentication, this is the address that the emails
+      will appear to be coming from. Make sure you set a valid domain name,
+      otherwise the emails may get rejected.
+      https://docs.djangoproject.com/en/1.8/ref/settings/#default-from-email
+      DEFAULT_FROM_EMAIL = "mailing-lists@you-domain.org"
+    value: "'postorius@{}'.format(EMAILNAME)"
+    type: 'raw'
+
+  - name: 'server_email'
+    comment: |
+      If you enable email reporting for error messages, this is where those emails
+      will appear to be coming from. Make sure you set a valid domain name,
+      otherwise the emails may get rejected.
+      https://docs.djangoproject.com/en/1.8/ref/settings/#std:setting-SERVER_EMAIL
+      SERVER_EMAIL = 'root@your-domain.org'
+    value: "'root@{}'.format(EMAILNAME)"
+    type: 'raw'
+
+  - name: 'account_default_http_protocol'
+    comment: 'Django Allauth'
+    value: 'https'
+
+  - name: 'socialaccount_providers'
+    comment: 'Social auth'
+    state: 'comment'
+    config:
+      'openid':
+        'SERVERS':
+          - id: 'yahoo'
+            name: 'Yahoo'
+            openid_url: 'http://me.yahoo.com/'
+      'google':
+        'SCOPE': [ 'profile', 'email' ]
+        'AUTH_PARAMS':
+          access_type: 'online'
+      'facebook':
+        'METHOD': 'oauth2'
+        'SCOPE': [ 'email' ]
+        'FIELDS':
+          - 'email'
+          - 'name'
+          - 'first_name'
+          - 'last_name'
+          - 'locale'
+          - 'timezone'
+        'VERSION': 'v2.4'
+
+  - name: 'compress_offline'
+    comment: |
+      On a production setup, setting COMPRESS_OFFLINE to True will bring a
+      significant performance improvement, as CSS files will not need to be
+      recompiled on each requests. It means running an additional "compress"
+      management command after each code upgrade.
+      http://django-compressor.readthedocs.io/en/latest/usage/#offline-compression
+    value: True
+
+  - name: 'postorius_template_base_url'
+    value: 'http://localhost/mailman3/'
+
+                                                                   # ]]]
+# .. envvar:: mailman__web_default_configuration [[[
+#
+# The default Mailman Web configuration defined by the role.
+mailman__web_default_configuration:
+
+  - name: 'installed_apps'
+    options:
+
+      # Disable the Fedora social login enabled by default
+      - name: 'django_mailman3.lib.auth.fedora'
+        state: 'comment'
+
+  - name: 'admins'
+    value:
+      - [ 'Mailman Suite Admin', 'root@{{ mailman__domain }}' ]
+
+  - name: 'secret_key'
+    value: '{{ ansible_local.mailman.secret_key | d("secretkey") }}'
+
+  - name: 'mailman_archiver_key'
+    value: '{{ ansible_local.mailman.archiver_key | d("restadmin") }}'
+
+  - name: 'emailname'
+    value: '{{ mailman__fqdn }}'
+
+  - name: 'mailman_rest_api_pass'
+    value: '{{ ansible_local.mailman.webservice_admin_pass | d("restpass") }}'
+
+  - name: 'databases_mysql'
+    option: 'databases'
+    copy_id_from: 'installed_apps'
+    state: '{{ "present" if (mailman__database_type == "mysql") else "ignore" }}'
+    config:
+      'default':
+        'ENGINE':   'django.db.backends.mysql'
+        'NAME':     '{{ ansible_local.mailman.web_db_name     | d("mailman3web") }}'
+        'USER':     '{{ ansible_local.mailman.web_db_user     | d("mailman3web") }}'
+        'PASSWORD': '{{ ansible_local.mailman.web_db_password | d("password") }}'
+        'HOST':     '{{ ansible_local.mailman.web_db_host     | d("localhost") }}'
+        'PORT':     '{{ ansible_local.mailman.web_db_port     | d("") }}'
+        'OPTIONS':
+          'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+
+  - name: 'databases_postgresql'
+    option: 'databases'
+    copy_id_from: 'installed_apps'
+    state: '{{ "present" if (mailman__database_type == "postgresql") else "ignore" }}'
+    config:
+      'default':
+        'ENGINE':   'django.db.backends.postgresql_psycopg2'
+        'NAME':     '{{ ansible_local.mailman.web_db_name     | d("mailman3web") }}'
+        'USER':     '{{ ansible_local.mailman.web_db_user     | d("mailman3web") }}'
+        'PASSWORD': '{{ ansible_local.mailman.web_db_password | d("password") }}'
+        'HOST':     '{{ ansible_local.mailman.web_db_host     | d("localhost") }}'
+        'PORT':     '{{ ansible_local.mailman.web_db_port     | d("") }}'
+        'OPTIONS': {}
+
+    # Reset the variable to make sure it is empty by default
+  - name: 'socialaccount_providers'
+    comment: 'Social auth'
+    state: 'present'
+    config: {}
+
+  - name: 'gravatar_secure_url'
+    value: 'https://seccdn.libravatar.org/'
+
+  - name: 'gravatar_default_image'
+    value: '{{ [ "mm", "identicon", "monsterid", "wavatar", "retro", "robohash", "pagan" ]
+               | random(seed=inventory_hostname) }}'
+
+  - name: 'gravatar_default_rating'
+    value: 'g'
+
+  - name: 'gravatar_default_secure'
+    value: True
+
+  - name: 'time_zone'
+    value: '{{ "UTC"
+               if (ansible_local.timezone == "Etc/UTC")
+               else ansible_local.timezone }}'
+
+  - name: 'postorius_template_base_url'
+    value: '{{ "https://" + mailman__fqdn + "/" }}'
+
+  - name: 'mailman_archiver_from'
+    value: '{{ ([ "127.0.0.1", "::1" ]
+                + ansible_all_ipv4_addresses|d([])
+                + ((ansible_all_ipv4_addresses | map("regex_replace", "^","::ffff:") | list)
+                   if ansible_all_ipv4_addresses|d([]) else [])
+                + (ansible_all_ipv6_addresses|d([])
+                   | difference(ansible_all_ipv6_addresses|d([]) | ipaddr("link-local"))))
+               | sort | unique }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman__web_ldap_configuration [[[
+#
+# Additional configuration options specific to the LDAP integration.
+mailman__web_ldap_configuration:
+
+  - name: 'ldap_import'
+    comment: 'Enable LDAP authentication support in Django'
+    raw: |
+      import ldap
+      from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
+    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+    copy_id_from: 'secret_key'
+    weight: -200
+
+  - name: 'auth_ldap_server_uri'
+    comment: |
+      Integration with the 'django-auth-ldap' library
+      https://django-auth-ldap.readthedocs.io/en/latest/reference.html
+    value: '{{ mailman__ldap_uri | join(" ") }}'
+    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+
+  - name: 'auth_ldap_start_tls'
+    value: '{{ mailman__ldap_starttls }}'
+    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+
+  - name: 'auth_ldap_bind_dn'
+    value: '{{ mailman__ldap_bind_dn }}'
+    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+
+  - name: 'auth_ldap_bind_password'
+    value: '{{ mailman__ldap_bind_password }}'
+    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+
+  - name: 'auth_ldap_user_search'
+    raw: |
+      AUTH_LDAP_USER_SEARCH = LDAPSearch(
+          '{{ mailman__ldap_people_dn }}',
+          ldap.SCOPE_SUBTREE,
+          '{{ mailman__ldap_people_filter }}',
+      )
+    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+
+  - name: 'auth_ldap_group_search'
+    raw: |
+      AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
+          '{{ mailman__ldap_groups_dn }}',
+          ldap.SCOPE_SUBTREE,
+          '{{ mailman__ldap_groups_filter }}',
+      )
+      AUTH_LDAP_GROUP_TYPE = GroupOfNamesType(name_attr='cn')
+    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+
+  - name: 'auth_ldap_user_attr_map'
+    config:
+      'first_name': 'givenName'
+      'last_name': 'sn'
+      'email': 'mail'
+    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+
+  - name: 'auth_ldap_user_flags_by_group'
+    config:
+      'is_staff':     '{{ mailman__ldap_superusers_group + "," + mailman__ldap_groups_dn }}'
+      'is_superuser': '{{ mailman__ldap_superusers_group + "," + mailman__ldap_groups_dn }}'
+    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+
+  - name: 'auth_ldap_find_group_perms'
+    value: True
+    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+
+  - name: 'auth_ldap_cache_timeout'
+    value: 3600
+    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+
+  - name: 'authentication_backends'
+    value:
+      - 'django_auth_ldap.backend.LDAPBackend'
+      - 'django.contrib.auth.backends.ModelBackend'
+    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman__web_configuration [[[
+#
+# The configuration of the Mailman 3 Web interface defined on all hosts in the
+# Ansible inventory.
+mailman__web_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: mailman__web_group_configuration [[[
+#
+# The configuration of the Mailman 3 Web interface defined on hosts in
+# a specific Ansible inventory group.
+mailman__web_group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: mailman__web_host_configuration [[[
+#
+# The configuration of the Mailman 3 Web interface defined on specific hosts in
+# the Ansible inventory.
+mailman__web_host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: mailman__web_combined_configuration [[[
+#
+# The variable which combines all other Mailman 3 Web configuration variables
+# and is used in the role tasks and templates.
+mailman__web_combined_configuration: '{{ mailman__web_original_configuration
+                                         + mailman__web_default_configuration
+                                         + mailman__web_ldap_configuration
+                                         + mailman__web_configuration
+                                         + mailman__web_group_configuration
+                                         + mailman__web_host_configuration }}'
+
+                                                                   # ]]]

@@ -1,5 +1,5 @@
-.. Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2014-2017 DebOps <https://debops.org/>
+.. Copyright (C) 2014-2020 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2014-2020 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 .. _debops.mailman:
@@ -14,8 +14,16 @@ debops.mailman
    :maxdepth: 2
 
    getting-started
-   defaults/main
+   mailman2-migration
+   defaults/main/environment
+   defaults/main/core_configuration
+   defaults/main/web_configuration
+   defaults/main/hyperkitty_configuration
+   defaults/main/ldap
+   defaults/main/templates
+   defaults/main/dependent
    defaults-detailed
+   ldap-dit
 
 Copyright
 ---------

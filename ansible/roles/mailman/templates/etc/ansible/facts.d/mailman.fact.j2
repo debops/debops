@@ -1,15 +1,84 @@
 #!{{ ansible_python['executable'] }}
 
-# Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2014-2017 DebOps <https://debops.org/>
+# Copyright (C) 2014-2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2014-2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 # {{ ansible_managed }}
 
 from __future__ import print_function
-from json import loads, dumps
-from sys import exit
+from json import dumps, loads
+import subprocess
+import os
+import sys
 
-output = {'installed': True}
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+def get_vars_from_file(filename):
+    import imp
+    f = open(filename)
+    global data
+    data = imp.load_source('data', '', f)
+    f.close()
+
+
+core_config_file = '/etc/mailman3/mailman.cfg'
+web_config_file = '/etc/mailman3/mailman-web.py'
+
+output = {'installed': cmd_exists('mailman')}
+
+if output['installed'] is True:
+
+    try:
+        mailman_version_stdout = subprocess.check_output(
+                ["mailman", "--version"]
+                ).decode('utf-8').strip().split()[2]
+        output['version'] = mailman_version_stdout
+
+    except Exception:
+        pass
+
+    if os.path.exists(core_config_file) and os.path.isfile(core_config_file):
+        try:
+            with open(core_config_file, 'r') as f:
+                for line in f:
+                    if not line.startswith('#') and ':' in line:
+                        line = line.strip().split(':', 1)
+                        key = line[0].strip()
+                        value = line[1].strip()
+
+                        if (key == 'class' and
+                                value.startswith('mailman.database.')):
+                            output['database_class'] = value
+
+                        elif key == 'url':
+                            output['database_url'] = value
+
+                        elif key == 'admin_pass':
+                            output['webservice_admin_pass'] = value
+
+        except Exception:
+            pass
+
+    if os.path.exists(web_config_file) and os.path.isfile(web_config_file):
+        try:
+            exec(open(web_config_file).read())
+            output['secret_key'] = SECRET_KEY
+            output['archiver_key'] = MAILMAN_ARCHIVER_KEY
+            output['web_db_name'] = DATABASES['default']['NAME']
+            output['web_db_user'] = DATABASES['default']['USER']
+            output['web_db_password'] = DATABASES['default']['PASSWORD']
+            output['web_db_host'] = DATABASES['default']['HOST']
+            output['web_db_port'] = DATABASES['default']['PORT']
+
+        except Exception:
+            pass
+
 
 print(dumps(output, sort_keys=True, indent=4))

@@ -1,6 +1,7 @@
 ---
-# Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2014-2017 DebOps <https://debops.org/>
+# Copyright (C) 2014-2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020      CipherMail B.V. <https://www.ciphermail.com/>
+# Copyright (C) 2014-2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Manage Mailman service
@@ -36,33 +37,33 @@
       secret__directories:
         - '{{ postfix__secret__directories }}'
 
-    - role: fcgiwrap
-      tags: [ 'role::fcgiwrap', 'skip::fcgiwrap' ]
-      fcgiwrap__instances:
-        - '{{ mailman__fcgiwrap__instance }}'
-
-    - role: unattended_upgrades
-      tags: [ 'role::unattended_upgrades', 'skip::unattended_upgrades' ]
-      unattended_upgrades__dependent_blacklist: '{{ mailman__unattended_upgrades__dependent_blacklist }}'
-
     - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
-        - '{{ mailman__apt_preferences__dependent_list }}'
         - '{{ nginx__apt_preferences__dependent_list }}'
 
     - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
-        - '{{ postfix__ferm__dependent_rules }}'
         - '{{ nginx__ferm__dependent_rules }}'
+        - '{{ postfix__ferm__dependent_rules }}'
 
     - role: python
       tags: [ 'role::python', 'skip::python' ]
       python__dependent_packages3:
+        - '{{ ldap__python__dependent_packages3 | d([]) }}'
         - '{{ nginx__python__dependent_packages3 }}'
+        - '{{ mailman__python__dependent_packages3 }}'
       python__dependent_packages2:
+        - '{{ ldap__python__dependent_packages2 | d([]) }}'
         - '{{ nginx__python__dependent_packages2 }}'
+        - '{{ mailman__python__dependent_packages2 }}'
+
+    - role: ldap
+      tags: [ 'role::ldap', 'skip::ldap' ]
+      ldap__dependent_tasks:
+        - '{{ mailman__ldap__dependent_tasks }}'
+      when: mailman__ldap_enabled|bool
 
     - role: postfix
       tags: [ 'role::postfix', 'skip::postfix' ]
@@ -72,7 +73,10 @@
 
     - role: nginx
       tags: [ 'role::nginx', 'skip::nginx' ]
-      nginx__servers: '{{ mailman__nginx__servers }}'
+      nginx__dependent_servers:
+        - '{{ mailman__nginx__dependent_servers }}'
+      nginx__dependent_upstreams:
+        - '{{ mailman__nginx__dependent_upstreams }}'
 
     - role: mailman
       tags: [ 'role::mailman', 'skip::mailman' ]
