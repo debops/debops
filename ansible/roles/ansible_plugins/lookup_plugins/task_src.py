@@ -1,6 +1,7 @@
 # (c) 2015, Robert Chady <rchady@sitepen.com>
 # Based on `runner/lookup_plugins/file.py` for Ansible
 #   (c) 2012, Michael DeHaan <michael.dehaan@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
 # This file is part of Debops.
 # This file is NOT part of Ansible yet.

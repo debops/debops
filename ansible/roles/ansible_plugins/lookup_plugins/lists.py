@@ -1,6 +1,7 @@
-# (c) 2015, Hartmut Goebel <h.goebel@crazy-compilers.com>
+# Copyright (C) 2012 Michael DeHaan <michael.dehaan@gmail.com>
+# Copyright (C) 2015 Hartmut Goebel <h.goebel@crazy-compilers.com>
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Based on `runner/lookup_plugins/items.py` for Ansible
-#   (c) 2012, Michael DeHaan <michael.dehaan@gmail.com>
 #
 # This file is part of Debops.
 # This file is NOT part of Ansible yet.

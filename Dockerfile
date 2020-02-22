@@ -1,7 +1,8 @@
 # Set up an Ansible Controller with DebOps support as a Docker container
 #
 # Copyright (C) 2017-2019 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2017-2019 DebOps project https://debops.org/
+# Copyright (C) 2017-2019 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 
 # Basic usage:

@@ -1,6 +1,7 @@
 # profile_tasks.py: an Ansible plugin for timing tasks
 
 # Copyright (C) 2014 Jharrod LaFon <jharrod.lafon@gmail.com>
+# SPDX-License-Identifier: MIT
 # https://github.com/jlafon/ansible-profile/
 # Included with permission
 
