@@ -1,3 +1,9 @@
+.. Copyright (C) 2017-2020 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2019      Imre Jonk <mail@imrejonk.nl>
+.. Copyright (C) 2019      Alin Alexandru <alin.alexandru@innobyte.com>
+.. Copyright (C) 2017-2020 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _install:
 
 DebOps installation

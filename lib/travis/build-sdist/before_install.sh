@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Copyright (C) 2018 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2018 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 set -o nounset -o pipefail -o errexit
 
 # Prepare environment for building the Python packages

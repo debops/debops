@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2018 DebOps project <https://debops.org/>
+# Copyright (C) 2018 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from docutils import nodes

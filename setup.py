@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+# Copyright (C) 2014-2019 Hartmut Goebel <h.goebel@crazy-compilers.com>
+# Copyright (C) 2014-2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2016      Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2014-2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from setuptools import setup, find_packages
 import os
 import re
