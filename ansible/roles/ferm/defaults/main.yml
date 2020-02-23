@@ -533,8 +533,10 @@ ferm__default_rules:
     rule_state: '{{ "present"
                     if ((ansible_local|d() and ansible_local.nsswitch|d() and
                          ansible_local.nsswitch.conf|d() and
-                         "mdns4_minimal" in q("flattened",
-                                              ansible_local.nsswitch.conf.hosts|d([]))) and
+                         ("mdns4_minimal" in q("flattened",
+                                               ansible_local.nsswitch.conf.hosts|d([])) or
+                          "mdns_minimal" in q("flattened",
+                                              ansible_local.nsswitch.conf.hosts|d([])))) and
                         (ansible_local|d(True) and ansible_local.avahi|d(True) and
                          ((ansible_local["avahi"]|d({})).enabled|d(True))|bool))
                     else "absent" }}'
