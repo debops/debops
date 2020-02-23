@@ -48,6 +48,12 @@ General
 Fixed
 ~~~~~
 
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- Fixed incorrect removal of the ferm rule set by :ref:`debops.avahi` on
+  IPv6-enabled systems.
+
 :ref:`debops.netbase` role
 ''''''''''''''''''''''''''
 
