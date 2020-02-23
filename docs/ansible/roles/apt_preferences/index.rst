@@ -9,7 +9,7 @@ debops.apt_preferences
 ======================
 
 .. include:: man_description.rst
-   :start-line: 9
+   :start-line: 8
 
 .. toctree::
    :maxdepth: 2

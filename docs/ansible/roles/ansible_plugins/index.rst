@@ -8,7 +8,7 @@ debops.ansible_plugins
 ======================
 
 .. include:: man_description.rst
-   :start-line: 8
+   :start-line: 7
 
 .. toctree::
    :maxdepth: 3
