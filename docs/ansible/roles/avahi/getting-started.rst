@@ -1,3 +1,7 @@
+.. Copyright (C) 2017-2019 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2017-2019 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -58,6 +62,7 @@ service directly in your own role, for example:
 
 .. literalinclude:: examples/avahi-tasks.yml
    :language: yaml
+   :lines: 1,5-
 
 Avahi daemon automatically detects changes in the :file:`/etc/avahi/services/`
 directory and reloads all files, therefore service restart is not necessary.
@@ -86,3 +91,4 @@ that uses the ``debops.avahi`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/avahi.yml
    :language: yaml
+   :lines: 1,5-
