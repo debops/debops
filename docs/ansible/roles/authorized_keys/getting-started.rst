@@ -1,3 +1,7 @@
+.. Copyright (C) 2016-2017 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2016-2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -100,3 +104,4 @@ that uses the ``debops.authorized_keys`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/authorized_keys.yml
    :language: yaml
+   :lines: 1,5-
