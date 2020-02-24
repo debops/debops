@@ -90,6 +90,12 @@ Fixed
   :command:`cron` where it would emit errors about not being able to change to
   the :file:`/root/` home directory due to the permissions.
 
+:ref:`debops.prosody` role
+''''''''''''''''''''''''''
+
+- In the :ref:`debops.pki` hook script, use the correct configuration file name
+  and check the Prosody configuration using the :command:`prosodyctl` command.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
