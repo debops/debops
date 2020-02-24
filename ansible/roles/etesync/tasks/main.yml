@@ -62,6 +62,7 @@
   shell: git verify-tag --raw "$(git describe)"
   args:
     chdir: '{{ etesync__git_checkout }}'
+    warn: False
   become: True
   become_user: '{{ etesync__user }}'
   changed_when: False
@@ -179,7 +180,7 @@
     to: '{{ etesync__mail_to|d([]) | list | join(",") }}'
     charset: 'utf8'
     body: '{{ etesync__mail_body }}'
-  when: (etesync__http_psk_subpath != "" and etesync__mail_to|d() and "etesync" not in ansible_local)
+  when: (etesync__http_psk_subpath|d() and etesync__mail_to|d() and "etesync" not in ansible_local)
 
 # Save EteSync local facts [[[1
 - name: Make sure that Ansible local facts directory exists
