@@ -707,6 +707,48 @@ postfix__restrictions_maincf:
       - name: 'reject_multi_recipient_bounce'
         weight: -100
 
+  - name: 'smtpd_restriction_classes'
+    section: 'restrictions'
+    weight: 70
+    value:
+
+       - name: 'mua_sender_restrictions'
+         weight: -300
+       - name: 'mua_client_restrictions,'
+         weight: -200
+       - name: 'mua_helo_restrictions'
+         weight: -100
+
+  - name: 'mua_client_restrictions'
+    section: 'restrictions'
+    weight: 80
+    value:
+
+       - name: 'permit_sasl_authenticated'
+         weight: -200
+       - name: 'reject'
+         weight: -100
+
+
+  - name: 'mua_sender_restrictions'
+    section: 'restrictions'
+    weight: 90
+    value:
+
+       - name: 'permit_sasl_authenticated'
+         weight: -200
+       - name: 'reject'
+         weight: -100
+
+  - name: 'mua_helo_restrictions'
+    section: 'restrictions'
+    weight: 100
+    value:
+
+       - name: 'permit'
+         weight: -100
+
+
                                                                    # ]]]
 # .. envvar:: postfix__maincf [[[
 #
@@ -870,15 +912,12 @@ postfix__original_mastercf:
 
       - name: 'smtpd_client_restrictions'
         value: '$mua_client_restrictions'
-        state: 'comment'
 
       - name: 'smtpd_helo_restrictions'
         value: '$mua_helo_restrictions'
-        state: 'comment'
 
       - name: 'smtpd_sender_restrictions'
         value: '$mua_sender_restrictions'
-        state: 'comment'
 
       - smtpd_recipient_restrictions: ''
 
