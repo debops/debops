@@ -65,6 +65,19 @@
   loop_control:
     label: '{{ item.item }}'
 
+- name: Log directory path
+  file:
+    name: "{{item.log_directory}}"
+    mode: '0750'
+    owner: '{{ item.user | d(postgresql_server__user) }}'
+    group: '{{ item.group | d(postgresql_server__group) }}'
+    state: directory
+    recurse: yes
+  with_flattened:
+    - '{{ postgresql_server__clusters }}'
+  when: item.log_directory|d() and item.log_directory is abs
+  tags: [ 'role::postgresql_server:config' ]
+
 - name: Ensure that conf.d directories exist
   file:
     path: '/etc/postgresql/{{ item.version | d(postgresql_server__version) }}/{{ item.name }}/conf.d'
