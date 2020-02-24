@@ -43,8 +43,19 @@
     state: 'directory'
     owner: '{{ postgresql_server__user }}'
     group: '{{ postgresql_server__group }}'
-    mode: '0755'
+    mode: '0750'
   when: postgresql_server__data_directory != '/var/lib/postgresql'
+
+
+- name: Make sure that custom PostgreSQL Log directory exists
+  file:
+    path: '{{ postgresql_server__log_directory }}'
+    state: 'directory'
+    owner: '{{ postgresql_server__user }}'
+    group: '{{ postgresql_server__group }}'
+    mode: '0750'
+  when: postgresql_server__log_directory != '/var/lib/postgresql'
+
 
 - name: Count number of currently configured clusters
   set_fact:
