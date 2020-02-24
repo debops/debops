@@ -6,7 +6,7 @@
 
 set -o nounset -o pipefail -o errexit
 
-prosody_config="/etc/prosody/prosody.conf.lua"
+prosody_config="/etc/prosody/prosody.cfg.lua"
 prosody_action="{{ prosody__pki_hook_action }}"
 
 # Check if current PKI realm is used by the 'prosody' webserver
@@ -26,7 +26,7 @@ if [ -n "${certificate}" ] && [[ ${states[*]} ]] ; then
 
                 prosody_state="$(systemctl is-active prosody.service)"
                 if [ "${prosody_state}" = "active" ] ; then
-                    if /usr/sbin/prosody -c "${prosody_config}" -t > /dev/null 2>&1 ; then
+                    if prosodyctl check > /dev/null 2>&1 ; then
                         systemctl "${prosody_action}" prosody.service
                     fi
                 fi
