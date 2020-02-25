@@ -1,3 +1,7 @@
+.. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -65,6 +69,7 @@ Here's an example playbook that uses the ``debops-contrib.dropbear_initramfs`` r
 
 .. literalinclude:: playbooks/dropbear_initramfs.yml
    :language: yaml
+   :lines: 1,5-
 
 The playbook is shipped with this role under
 :file:`./docs/playbooks/dropbear_initramfs.yml` from which you can symlink it
