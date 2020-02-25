@@ -1,5 +1,9 @@
 :orphan:
 
+.. Copyright (C) 2015-2020 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2015-2020 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 debops.cryptsetup
 =================
 
