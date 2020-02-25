@@ -1,3 +1,7 @@
+.. Copyright (C) 2016 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2016 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -26,6 +30,7 @@ hosts:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/debops_api.yml
    :language: yaml
+   :lines: 1,5-
 
 Ansible tags
 ------------
