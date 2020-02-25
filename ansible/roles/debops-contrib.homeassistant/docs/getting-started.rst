@@ -1,3 +1,7 @@
+.. Copyright (C) 2017 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _homeassistant__ref_getting_started:
 
 Getting started
@@ -29,12 +33,14 @@ setup a reverse proxy:
 
 .. literalinclude:: playbooks/homeassistant-plain.yml
    :language: yaml
+   :lines: 1,5-
 
 Ansible playbook that uses the ``debops-contrib.homeassistant`` role together
 with debops.nginx_ as reverse proxy:
 
 .. literalinclude:: playbooks/homeassistant-nginx.yml
    :language: yaml
+   :lines: 1,5-
 
 These playbooks are shipped with this role under
 :file:`./docs/playbooks/` from which you can symlink them to your
