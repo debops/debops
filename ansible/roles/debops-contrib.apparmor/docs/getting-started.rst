@@ -1,3 +1,7 @@
+.. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2015-2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -25,6 +29,7 @@ Here's an example playbook that can be used to install and configure AppArmor:
 
 .. literalinclude:: playbooks/apparmor.yml
    :language: yaml
+   :lines: 1,5-
 
 The playbooks is shipped with this role under
 :file:`docs/playbooks/apparmor.yml` from which you can symlink it to your
