@@ -1,3 +1,8 @@
+.. Copyright (C) 2015      Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
+.. Copyright (C) 2017-2020 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015-2020 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -39,6 +44,7 @@ Here's an example playbook which uses ``debops.dovecot`` role to install Dovecot
 
 .. literalinclude:: ../../../../ansible/playbooks/service/dovecot.yml
    :language: yaml
+   :lines: 1,6-
 
 Ansible tags
 ------------
