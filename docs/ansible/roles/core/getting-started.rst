@@ -1,3 +1,7 @@
+.. Copyright (C) 2015-2016 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015-2016 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -61,6 +65,7 @@ This is a playbook that is used to run the role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/core.yml
    :language: yaml
+   :lines: 1,5-
 
 If you use your own set of custom playbooks, you can either copy the above
 playbook, or, if you have the DebOps playbooks installed in the default location,
