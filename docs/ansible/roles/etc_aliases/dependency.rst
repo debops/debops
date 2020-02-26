@@ -98,7 +98,7 @@ Example role default variables
 
 .. literalinclude:: examples/application-defaults.yml
    :language: yaml
-   :ines: 1,5-
+   :lines: 1,5-
 
 
 Example role playbook
@@ -106,4 +106,4 @@ Example role playbook
 
 .. literalinclude:: examples/application-playbook.yml
    :language: yaml
-   :ines: 1,5-
+   :lines: 1,5-
