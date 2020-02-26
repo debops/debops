@@ -1,3 +1,8 @@
+.. Copyright (C) 2015-2017 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2015-2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _ifupdown__ref_upgrade_notes:
 
 Upgrade notes
@@ -28,6 +33,7 @@ A few variable names can be updated using this script:
 
 .. literalinclude:: scripts/upgrade-from-v0.2.X-to-v0.3.X
    :language: shell
+   :lines: 1,7-
 
 The script is bundled with this role under
 :file:`./docs/scripts/upgrade-from-v0.2.X-to-v0.3.X` and can be invoked from
