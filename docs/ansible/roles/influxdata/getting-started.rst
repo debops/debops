@@ -1,3 +1,8 @@
+.. Copyright (C) 2020 Patryk Ściborek <patryk@sciborek.com>
+.. Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2020 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -98,3 +103,4 @@ that uses the ``debops.influxdata`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/influxdata.yml
    :language: yaml
+   :lines: 1,6-
