@@ -1,3 +1,9 @@
+.. Copyright (C) 2014-2016 Nick Janetakis <nick.janetakis@gmail.com>
+.. Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2016      Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
+.. Copyright (C) 2014-2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _elasticsearch__ref_dependency:
 
 Usage as a role dependency
@@ -66,6 +72,7 @@ uses the ``debops.elasticsearch`` role as a dependency:
 
 .. literalinclude:: examples/application-defaults.yml
    :language: yaml
+   :lines: 1,7-
 
 Example role playbook
 ---------------------
@@ -75,3 +82,4 @@ This file shows an example playbook for a role that uses the
 
 .. literalinclude:: examples/application-playbook.yml
    :language: yaml
+   :lines: 1,7-
