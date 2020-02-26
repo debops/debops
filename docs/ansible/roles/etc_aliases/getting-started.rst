@@ -1,3 +1,7 @@
+.. Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -72,6 +76,7 @@ Here's a minimal example playbook that can be used to manage the
 
 .. literalinclude:: ../../../../ansible/playbooks/service/etc_aliases.yml
    :language: yaml
+   :lines: 1,5-
 
 The playbook is shipped with this role under
 :file:`docs/playbooks/etc_aliases.yml` from which you can symlink it to your
