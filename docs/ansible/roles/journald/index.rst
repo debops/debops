@@ -25,7 +25,7 @@ Copyright
 .. seealso::
 
    .. include:: man_seealso.rst
-      :start-line: 3
+      :start-line: 7
 
 ..
  Local Variables:
