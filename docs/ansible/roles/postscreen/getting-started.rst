@@ -1,3 +1,7 @@
+.. Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -36,6 +40,7 @@ that uses the ``debops.postscreen`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/postscreen.yml
    :language: yaml
+   :lines: 1,5-
 
 Keep in mind that the default Postscreen playbook does not configure firewall
 access for Postfix. You still need to use the Postfix playbook to configure the
