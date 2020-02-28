@@ -1,3 +1,9 @@
+.. Copyright (C) 2015-2016 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015      Hartmut Goebel <h.goebel@crazy-compilers.com>
+.. Copyright (C) 2015-2019 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2015-2019 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _owncloud__ref_upgrade_nodes:
 
 Upgrade notes
@@ -18,6 +24,7 @@ This script can come in handy to do this:
 
 .. literalinclude:: scripts/upgrade-from-v0.3.X-to-v0.4.X
    :language: shell
+   :lines: 1,8-
 
 The script is bundled with this role under
 :file:`./docs/scripts/upgrade-from-v0.3.X-to-v0.4.X` and can be invoked from
@@ -38,6 +45,7 @@ This script can come in handy to do this:
 
 .. literalinclude:: scripts/upgrade-from-v0.2.X-to-v0.3.X
    :language: shell
+   :lines: 1,8-
 
 The script is bundled with this role under
 :file:`./docs/scripts/upgrade-from-v0.2.X-to-v0.3.X` and can be invoked from
