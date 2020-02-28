@@ -10,7 +10,7 @@ debops.owncloud
 ===============
 
 .. include:: man_description.rst
-   :start-line: 10
+   :start-line: 9
 
 .. toctree::
    :maxdepth: 2
