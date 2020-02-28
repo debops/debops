@@ -1,3 +1,8 @@
+.. Copyright (C) 2013-2018 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2014-2018 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -110,6 +115,7 @@ special ``debops.pki/env`` role provided within the main role.
 
 .. literalinclude:: ../../../../ansible/playbooks/service/pki.yml
    :language: yaml
+   :lines: 1,6-
 
 
 .. _pki__ref_realm_renewal:
