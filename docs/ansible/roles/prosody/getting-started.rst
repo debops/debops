@@ -1,3 +1,7 @@
+.. Copyright (C) 2018 Norbert Summer <git@o-g.at>
+.. Copyright (C) 2018 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -56,6 +60,7 @@ that uses the ``debops.prosody`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/prosody.yml
    :language: yaml
+   :lines: 1,5-
 
 
 Ansible tags
