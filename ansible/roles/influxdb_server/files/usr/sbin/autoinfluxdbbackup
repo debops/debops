@@ -226,7 +226,7 @@ done
 
 # Include extra config file if specified on commandline, e.g. for backuping several remote dbs from central server
 # shellcheck source=/dev/null
-[ ! -z "$1" ] && [ -f "$1" ] && source ${1}
+[ -n "$1" ] && [ -f "$1" ] && source "${1}"
 
 #=====================================================================
 
@@ -274,15 +274,16 @@ exec 2> "$LOGERR"     # stderr replaced with file $LOGERR.
 
 # Database dump function
 dbdump () {
-    influxd backup -portable -host $DBHOST:$DBPORT $OPT $BACKUPDIR/tmp
+    COMMAND="influxd backup -portable -host $DBHOST:$DBPORT $OPT $BACKUPDIR/tmp"
+    $COMMAND
     INFLUXDBBACKUPSTATUS=$?
     if [ $INFLUXDBBACKUPSTATUS -ne 0 ]; then
         echo "ERROR: influxd backup failed: $1" >&2
         return 1
     fi
-    echo Tar backup to $1
+    echo Tar backup to "$1"
     cd "$BACKUPDIR/tmp" || return 1
-    tar cf "$1" *
+    tar cf "$1" -- *
     cd - >/dev/null || return 1
     echo Cleaning up folder at "$BACKUPDIR/tmp"
     rm "$BACKUPDIR/tmp/"*
