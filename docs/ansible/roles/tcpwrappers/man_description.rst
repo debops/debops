@@ -1,3 +1,7 @@
+.. Copyright (C) 2014-2016 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2014-2016 DebOps <http://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Description
 ===========
 
