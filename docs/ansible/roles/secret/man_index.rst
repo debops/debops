@@ -1,5 +1,9 @@
 :orphan:
 
+.. Copyright (C) 2013-2016 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2014-2016 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 debops.secret
 =============
 
