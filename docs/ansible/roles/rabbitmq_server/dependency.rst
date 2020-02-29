@@ -1,3 +1,7 @@
+.. Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _rabbitmq_server__ref_dependency:
 
 Usage as a role dependency
@@ -63,6 +67,7 @@ Example role default variables
 
 .. literalinclude:: examples/application-defaults.yml
    :language: yaml
+   :lines: 1,5-
 
 
 Example role playbook
@@ -70,3 +75,4 @@ Example role playbook
 
 .. literalinclude:: examples/application-playbook.yml
    :language: yaml
+   :lines: 1,5-
