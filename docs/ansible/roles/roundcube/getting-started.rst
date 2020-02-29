@@ -1,3 +1,7 @@
+.. Copyright (C) 2016-2018 Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
+.. Copyright (C) 2016-2018 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _roundcube__ref_getting_started:
 
 Getting started
@@ -171,6 +175,7 @@ without DebOps you might need to adapt them to make them work in your setup.
 
 .. literalinclude:: ../../../../ansible/playbooks/service/roundcube.yml
    :language: yaml
+   :lines: 1,5-
 
 This playbook is also shipped with DebOps at :file:`ansible/playbooks/service/roundcube.yml`.
 
