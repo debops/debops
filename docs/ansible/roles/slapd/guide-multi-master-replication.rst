@@ -1,3 +1,7 @@
+.. Copyright (C) 2016-2019 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2016-2019 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _slapd__ref_syncrepl_multi_master:
 
 Guide: N-Way Multi-Master replication
@@ -142,6 +146,7 @@ The example OpenLDAP configuration for 3 master nodes, each replicating the
 
 .. literalinclude:: examples/multi-master-replication.yml
    :language: yaml
+   :lines: 1,5-
 
 The above configuration is available as a convenience in a separate
 :file:`examples/multi-master-replication.yml` file in the :ref:`debops.slapd`

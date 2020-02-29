@@ -1,3 +1,7 @@
+.. Copyright (C) 2016-2019 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2016-2019 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _slapd__ref_backup_restore:
 
 Backup and restore procedures
