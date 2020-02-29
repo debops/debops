@@ -63,7 +63,7 @@
                        secret + "/influxdb/" + influxdb__delegate_to +
                        "/credentials/" + item.user | d(item.name) + "/password " +
                        "length=" + influxdb__password_length)) }}'
-    grants: '{{ item.grants }}'
+    grants: '{{ item.grants | d(omit) }}'
     admin: '{{ item.admin | d(False) }}'
     state: 'present'
     hostname: '{{ influxdb__server }}'
