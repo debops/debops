@@ -274,6 +274,45 @@ influxdb_server__root_password: '{{ lookup("password", secret + "/influxdb/" + a
 
                                                                    # ]]]
                                                                    # ]]]
+# AutoInfluxDBBackup configuration [[[
+# ---------------------------------
+
+# .. envvar:: influxdb_server__backup [[[
+#
+# Enable or disable support for daily, weekly and monthly snapshots of the
+# database using :program:`autoinfluxdbbackup`.
+influxdb_server__backup: True
+
+                                                                   # ]]]
+# .. envvar:: influxdb_server__backup_mailaddr [[[
+#
+# Mail address to send messages to (account or alias name will be properly
+# routed by the Postfix SMTP server).
+influxdb_server__backup_mailaddr: 'backup@{{ ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: influxdb_server__backup_doweekly [[[
+#
+# Specify the day of the week to create weekly backups
+# (1 - Monday, 7 - Sunday).
+influxdb_server__backup_doweekly: '6'
+
+                                                                   # ]]]
+# .. envvar:: influxdb_server__backup_latest [[[
+#
+# Don't keep copies of most recent backups by default.
+influxdb_server__backup_latest: 'no'
+
+                                                                   # ]]]
+# .. envvar:: influxdb_server__backup_directory [[[
+#
+# Base directory where :program:`autoinfluxdbbackup` stores the database backups.
+# The directory will be created automatically by :program:`autoinfluxdbbackup`, if it
+# does not exist.
+influxdb_server__backup_directory: '/var/lib/autoinfluxdbbackup'
+
+                                                                   # ]]]
+                                                                   # ]]]
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 

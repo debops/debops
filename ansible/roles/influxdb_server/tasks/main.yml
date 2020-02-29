@@ -82,6 +82,11 @@
   when: not (ansible_local|d() and ansible_local.influxdb_server|d()
              and ansible_local.influxdb_server.installed|d(false)|bool)
 
+- name: Configure autoinfluxdbbackup
+  include: 'autoinfluxdbbackup.yml'
+  when: influxdb_server__backup|bool
+  tags: [ 'role::influxdb_server:autoinfluxdbbackup' ]
+
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'
