@@ -38,24 +38,37 @@ influxdb_server__packages: []
 influxdb_server__allow: []
 
                                                                    # ]]]
-# .. envvar:: influxdb_server__reporting_disabled [[[
+# .. envvar:: influxdb_server__bind [[[
 #
-# InfluxData uses voluntarily reported data from running InfluxDB nodes
-# primarily to track the adoption rates of different InfluxDB versions.
-# This data helps InfluxData support the continuing development of InfluxDB.
-#
-# The reporting-disabled option toggles the reporting of data every 24 hours
-# to usage.influxdata.com. Each report includes a randomly-generated
-# identifier, OS, architecture, InfluxDB version, and the number of databases,
-# measurements, and unique series. Setting this option to true will disable
-# reporting.
-influxdb_server__reporting_disabled: 'true'
+# The ip address on which this InfluxDB listens on.
+# Leave empty to bind on all interfaces.
+influxdb_server__bind: ''
 
                                                                    # ]]]
-# .. envvar:: influxdb_server__bind_address [[[
+# .. envvar:: influxdb_server__port [[[
 #
-# The bind address to use for the RPC service for backup and restore.
-influxdb_server__bind_address: '127.0.0.1:8088'
+# Port number on which this InfluxDB listens on.
+influxdb_server__port: '8086'
+
+                                                                   # ]]]
+# .. envvar:: influxdb_server__rpc_allow [[[
+#
+# List of IP addresses or CIDR subnets which will be permitted to access the
+# InfluxDB RPC. If the list is empty, nobody can access the service.
+influxdb_server__rpc_allow: []
+
+                                                                   # ]]]
+# .. envvar:: influxdb_server__rpc_bind [[[
+#
+# The ip address used by the RPC service for RPC calls made by the CLI for backup and restore operations.
+# Leave empty to bind on all interfaces.
+influxdb_server__rpc_bind: '127.0.0.1'
+
+                                                                   # ]]]
+# .. envvar:: influxdb_server__rpc_port [[[
+#
+# Port number used by the RPC service for RPC calls made by the CLI for backup and restore operations.
+influxdb_server__rpc_port: '8088'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__default_directory [[[
@@ -74,632 +87,94 @@ influxdb_server__directory: '{{ influxdb_server__default_directory }}'
 #
 # Hostname of the server to which Ansible roles will delegate tasks. It should
 # point to "this server", using a FQDN hostname known to Ansible.
-influxdb_server__delegate_to: '{{ inventory_hostname }}'
-                                                                   # ]]]
-                                                                   # ]]]
-# Metastore configuration [[[
-# -----------------------
+influxdb_server__delegate_to: '{{ ansible_fqdn }}'
 
-# .. envvar:: influxdb_server__meta_directory [[[
+                                                                   # ]]]
+                                                                   # ]]]
+# InfluxDB configuration file [[[
+# -------------------------------
+
+# The variables below define the contents of the
+# :file:`/etc/influxdb/influxdb.conf` configuration file.
+
+# .. envvar:: influxdb_server__default_configuration [[[
 #
-# The directory where the metadata/raft database is stored. Files in the
-# meta directory include meta.db, the InfluxDB metastore file.
-influxdb_server__meta_directory: '{{ influxdb_server__directory }}/meta'
+# The default configuration options which should be present in the main
+# configuration file.
+influxdb_server__default_configuration:
 
-                                                                   # ]]]
-# .. envvar:: influxdb_server__meta_retention_autocreate [[[
-#
-# Enables the automatic creation of the DEFAULT retention policy autogen
-# when a database is created. The retention policy autogen has an
-# infinite duration and is also set as the database’s DEFAULT retention
-# policy, which is used when a write or query does not specify a
-# retention policy. Disable this setting to prevent the creation of this
-# retention policy when creating databases.
-influxdb_server__meta_retention_autocreate: 'true'
+  - name: 'global'
+    options:
+      - reporting-disabled: 'true'
+      - bind-address: '"{{ influxdb_server__rpc_bind }}:{{ influxdb_server__rpc_port }}"'
 
-                                                                   # ]]]
-# .. envvar:: influxdb_server__meta_logging_enabled [[[
-#
-# Enables the logging of messages from the meta service.
-influxdb_server__meta_logging_enabled: 'true'
+  - name: 'meta'
+    options:
+      - dir: '"{{ influxdb_server__directory }}/meta"'
 
-                                                                   # ]]]
-                                                                   # ]]]
-# Data configuration [[[
-# -----------------------
+  - name: 'data'
+    options:
+      - dir: '"{{ influxdb_server__directory }}/data"'
+      - wal-dir: '"{{ influxdb_server__directory }}/wal"'
 
-# .. envvar:: influxdb_server__data_directory [[[
-#
-# The InfluxDB directory where the TSM engine stores TSM files. This
-# directory may be changed.
-influxdb_server__data_directory: '{{ influxdb_server__directory }}/data'
+  - name: 'coordinator'
+    options: []
 
-                                                                   # ]]]
-# .. envvar:: influxdb_server__data_wal_directory [[[
-#
-# The location of the directory for write ahead log (WAL) files.
-influxdb_server__data_wal_directory: '{{ influxdb_server__directory }}/wal'
+  - name: 'retention'
+    options: []
 
-                                                                   # ]]]
-# .. envvar:: influxdb_server__data_wal_fsync_delay [[[
-#
-# The amount of time that a write waits before fsyncing. Use a duration
-# greater than 0 to batch up multiple fsync calls. This is useful for
-# slower disks or when experiencing WAL write contention. The default
-# value of 0s fsyncs every write to the WAL.
-influxdb_server__data_wal_fsync_delay: '0s'
+  - name: 'shard-precreation'
+    options: []
 
-                                                                   # ]]]
-# .. envvar:: influxdb_server__data_index_version [[[
-#
-# The type of shard index to use for new shards. The default (inmem)
-# index is an in-memory index that is recreated at startup. To enable
-# the Time Series Index (TSI) disk-based index, set the value to tsi1.
-influxdb_server__data_index_version: 'inmem'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__data_trace_logging_enabled [[[
-#
-# Enables verbose logging of additional debug information within the
-# TSM engine and WAL. The trace logging provide more useful output for
-# debugging TSM engine issues.
-influxdb_server__data_trace_logging_enabled: 'false'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__data_query_log_enabled [[[
-#
-# Enables the logging of parsed queries before execution. The query
-# log can be useful for troubleshooting, but logs any sensitive data
-# contained within a query.
-influxdb_server__data_query_log_enabled: 'false'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__data_validate_keys [[[
-#
-# Validates incoming writes to ensure keys only have valid Unicode
-# characters. This setting will incur a small overhead because every
-# key must be checked.
-influxdb_server__data_validate_keys: 'false'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__tsm_cache_max_memory_size [[[
-#
-# The maximum size that a shard cache can reach before it starts
-# rejecting writes.
-#
-# Valid memory size suffixes are: k, m, or g (case-insensitive, 1024 = 1k).
-# Values without a size suffix are in bytes.
-influxdb_server__tsm_cache_max_memory_size: '1g'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__tsm_cache_snapshot_memory_size [[[
-#
-# The size at which the engine will snapshot the cache and write it to
-# a TSM file, freeing up memory.
-#
-# Valid memory size suffixes are: k, m, or g (case-insensitive, 1024 = 1k).
-# Values without a size suffix are in bytes.
-influxdb_server__tsm_cache_snapshot_memory_size: '25m'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__tsm_cache_snapshot_write_cold_duration [[[
-#
-# The time interval at which the engine will snapshot the cache and
-# write it to a new TSM file if the shard hasn’t received writes or
-# deletes.
-influxdb_server__tsm_cache_snapshot_write_cold_duration: '10m'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__tsm_compact_full_write_cold_duration [[[
-#
-# The time interval at which the TSM engine will compact all TSM
-# files in a shard if it hasn’t received a write or delete.
-influxdb_server__tsm_compact_full_write_cold_duration: '4h'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__tsm_max_concurrent_compactions [[[
-#
-# The maximum number of concurrent full and level compactions that can
-# run at one time. The default value of 0 results in 50% of the CPU
-# cores being used at runtime for compactions. If explicitly set, the
-# number of cores used for compaction is limited to the specified value.
-# This setting does not apply to cache snapshotting. For more
-# information on GOMAXPROCS environment variable, see GOMAXPROCS
-# environment variable on this page.
-influxdb_server__tsm_max_concurrent_compactions: 0
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__tsm_compact_throughput [[[
-#
-# The rate limit, in bytes per second, that we will allow TSM
-# compactions to write to disk. Note that short bursts are allowed
-# to happen at a possibly larger value, set by compact-throughput-burst.
-influxdb_server__tsm_compact_throughput: '48m'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__tsm_compact_throughput_burst [[[
-#
-# The rate limit, in bytes per second, that we allow TSM compactions
-# to write to disk.
-influxdb_server__tsm_compact_throughput_burst: '48m'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__tsm_use_madv_willneed [[[
-#
-# If true, then the MMap Advise value MADV_WILLNEED advises the kernel
-# about how to handle the mapped memory region in terms of input/output
-# paging and to expect access to the mapped memory region in the near
-# future, with respect to TSM files. Because this setting has been
-# problematic on some kernels (including CentOS and RHEL ), the default
-# is false. Changing the value to true might help users who have slow
-# disks in some cases.
-influxdb_server__tsm_use_madv_willneed: 'false'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__inmem_max_series_per_database [[[
-#
-# The maximum number of series allowed per database before writes are
-# dropped. The default setting is 1000000 (one million). Change the
-# setting to 0 to allow an unlimited number of series per database.
-influxdb_server__inmem_max_series_per_database: 1000000
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__inmem_max_values_per_tag [[[
-#
-# The maximum number of tag values allowed per tag key. The default
-# value is 100000 (one hundred thousand). Change the setting to 0 to
-# allow an unlimited number of tag values per tag key. If a tag value
-# causes the number of tag values of a tag key to exceed max-values-per-tag,
-# then InfluxDB will not write the point, and it returns a partial
-# write error.
-#
-# Any existing tag keys with tag values that exceed max-values-per-tag
-# will continue to accept writes, but writes that create a new tag
-# value will fail.
-influxdb_server__inmem_max_values_per_tag: 100000
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__tsi1_max_index_log_file_size [[[
-#
-# The threshold, in bytes, when an index write-ahead log (WAL) file
-# will compact into an index file. Lower sizes will cause log files to
-# be compacted more quickly and result in lower heap usage at the
-# expense of write throughput. Higher sizes will be compacted less
-# frequently, store more series in-memory, and provide higher write
-# throughput. Valid size suffixes are k, m, or g (case-insensitive, 1024 = 1k).
-# Values without a size suffix are in bytes.
-influxdb_server__tsi1_max_index_log_file_size: '1m'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__tsi1_series_id_set_cache_size [[[
-#
-# The size of the internal cache used in the TSI index to store previously
-# calculated series results. Cached results will be returned quickly from
-# the cache rather than needing to be recalculated when a subsequent query
-# with a matching tag key-value predicate is executed. Setting this value
-# to 0 will disable the cache, which may lead to query performance issues.
-# This value should only be increased if it is known that the set of
-# regularly used tag key-value predicates across all measurements for a
-# database is larger than 100. An increase in cache size may lead to an
-# increase in heap usage.
-influxdb_server__tsi1_series_id_set_cache_size: 100
-
-                                                                   # ]]]
-                                                                   # ]]]
-# Coordinator configuration [[[
-# -----------------------
-
-# .. envvar:: influxdb_server__coordinator_write_timeout [[[
-#
-# The duration a write request waits until a “timeout” error is returned
-# to the caller. The default value is 10 seconds.
-influxdb_server__coordinator_write_timeout: '10s'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__coordinator_max_concurrent_queries [[[
-#
-# The maximum number of running queries allowed on your instance. The
-# default setting (0) allows for an unlimited number of queries.
-influxdb_server__coordinator_max_concurrent_queries: 0
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__coordinator_query_timeout [[[
-#
-# The maximum duration that a query is allowed to execute before
-# InfluxDB kills the query. The default setting (0) allows queries
-# to run with no time restrictions. This setting is a duration.
-influxdb_server__coordinator_query_timeout: '0s'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__coordinator_log_queries_after [[[
-#
-# The maximum duration that a query can until InfluxDB logs the
-# query with a Detected slow query message. The default setting ("0")
-# will never tell InfluxDB to log the query. This setting is a duration.
-influxdb_server__coordinator_log_queries_after: '0s'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__coordinator_max_select_point [[[
-#
-# The maximum number of points that a SELECT statement can process.
-# The default setting (0) allows the SELECT statement to process an
-# unlimited number of points.
-influxdb_server__coordinator_max_select_point: 0
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__coordinator_max_select_series [[[
-#
-# The maximum number of series that a SELECT statement can process.
-# The default setting (0) allows the SELECT statement to process an
-# unlimited number of series.
-influxdb_server__coordinator_max_select_series: 0
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__coordinator_max_select_buckets [[[
-#
-# The maximum number of GROUP BY time() buckets that a query can process.
-# The default setting (0) allows a query to process an unlimited number of buckets.
-influxdb_server__coordinator_max_select_buckets: 0
-
-                                                                   # ]]]
-                                                                   # ]]]
-# Retention configuration [[[
-# -----------------------
-
-# .. envvar:: influxdb_server__retention_enabled [[[
-#
-# Set to false to prevent InfluxDB from enforcing retention policies.
-influxdb_server__retention_enabled: 'true'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__retention_check_interval [[[
-#
-# The time interval at which InfluxDB checks to enforce a retention policy.
-influxdb_server__retention_check_interval: '30m'
-
-                                                                   # ]]]
-                                                                   # ]]]
-# Shard precreation configuration [[[
-# -----------------------
-
-# .. envvar:: influxdb_server__shard_precreation_enabled [[[
-#
-# Determines whether the shard precreation service is enabled.
-influxdb_server__shard_precreation_enabled: 'true'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__shard_precreation_check_interval [[[
-#
-# The time interval when the check to precreate new shards runs.
-influxdb_server__shard_precreation_check_interval: '10m'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__shard_precreation_advance_period [[[
-#
-# The maximum period in the future for which InfluxDB precreates shards.
-# The 30m default should work for most systems. Increasing this setting
-# too far in the future can cause inefficiencies.
-influxdb_server__shard_precreation_advance_period: '30m'
-
-                                                                   # ]]]
-                                                                   # ]]]
-# Monitor configuration [[[
-# -----------------------
-
-# .. envvar:: influxdb_server__monitor_store_enabled [[[
-#
-# Set to false to disable recording statistics internally. If set to false
-# it will make it substantially more difficult to diagnose issues with your
-# installation.
-influxdb_server__monitor_store_enabled: 'true'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__monitor_store_database [[[
-#
-# The destination database for recorded statistics.
-influxdb_server__monitor_store_database: '_internal'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__monitor_store_interval [[[
-#
-# The time interval at which InfluxDB records statistics. The default
-# value is every ten seconds (10s).
-influxdb_server__monitor_store_interval: '10s'
-
-                                                                   # ]]]
-                                                                   # ]]]
-# Logging configuration [[[
-# -----------------------
-
-# .. envvar:: influxdb_server__logging_format [[[
-#
-# Determines which log encoder to use for logs. Valid values are auto(default),
-# logfmt, and json. With the default auto option, if the output is to a TTY
-# device (e.g., a terminal), a more user-friendly console encoding is used.
-# If the output is to files, the auto option uses the logfmt encoding. The
-# logfmt and json options are useful for integration with external tools.
-influxdb_server__logging_format: 'auto'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__logging_level [[[
-#
-# The log level to be emitted. Valid values are error, warn, info(default),
-# and debug. Logs that are equal to, or above, the specified level will be
-# emitted.
-influxdb_server__logging_level: 'info'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__logging_suppress_logo [[[
-#
-# Suppresses the logo output that is printed when the program is started.
-# The logo is always suppressed if STDOUT is not a TTY.
-influxdb_server__logging_suppress_logo: 'false'
-
-                                                                   # ]]]
-                                                                   # ]]]
-# Subscriber configuration [[[
-# -----------------------
-
-# .. envvar:: influxdb_server__subscriber_enabled [[[
-#
-# Determines whether the subscriber service is enabled. To disable the
-# subscriber service, set the value to false.
-influxdb_server__subscriber_enabled: 'true'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__subscriber_http_timeout [[[
-#
-# The duration that an HTTP write to a subscriber runs until it times out.
-influxdb_server__subscriber_http_timeout: '30s'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__subscriber_insecure_skip_verify [[[
-#
-# Determines whether to allow insecure HTTPS connections to subscribers.
-# This is useful when testing with self-signed certificates.
-influxdb_server__subscriber_insecure_skip_verify: 'false'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__subscriber_ca_certs [[[
-#
-# The path to the PEM-encoded CA certs file. If the value is an empty
-# string (""), the default system certs will be used.
-influxdb_server__subscriber_ca_certs: '{{ influxdb_server__pki_path + "/" + influxdb_server__pki_realm +
-                                          "/" + influxdb_server__pki_ca }}'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__subscriber_write_concurrency [[[
-#
-# The number of writer goroutines processing the write channel.
-influxdb_server__subscriber_write_concurrency: 40
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__subscriber_write_buffer_size [[[
-#
-# The number of in-flight writes buffered in the write channel.
-influxdb_server__subscriber_write_buffer_size: 1000
-
-                                                                   # ]]]
-                                                                   # ]]]
-# Endpoints configuration [[[
-# -----------------------
-
-# .. envvar:: influxdb_server__http_endpoint_port [[[
-#
-# HTTP endpoint port
-influxdb_server__http_endpoint_port: '8086'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__default_endpoint_ports [[[
-#
-# Default endpoint ports for getting data into and out of InfluxDB
-influxdb_server__default_endpoint_ports: [ '{{ influxdb_server__http_endpoint_port }}' ]
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__endpoint_ports [[[
-#
-# Endpoint ports for getting data into and out of InfluxDB
-influxdb_server__endpoint_ports: []
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__combined_endpoint_ports [[[
-#
-# Combined endpoint ports for getting data into and out of InfluxDB
-influxdb_server__combined_endpoint_ports: '{{ influxdb_server__default_endpoint_ports + influxdb_server__endpoint_ports }}'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__default_endpoints [[[
-#
-# Default endpoints mechanism for getting data into and out of InfluxDB
-influxdb_server__default_endpoints:
+  - name: 'monitor'
+    options: []
 
   - name: 'http'
-    comment: |
-      ###
-      ### Controls how the HTTP endpoints are configured. These are the primary
-      ### mechanism for getting data into and out of InfluxDB.
-      ###
-
     options:
+      - bind-address: '"{{ influxdb_server__bind }}:{{ influxdb_server__port }}"'
+      - https-enabled: '{{ "true" if influxdb_server__pki else "false" }}'
+      - auth-enabled: 'true'
 
-      - name: 'enabled'
-        value: 'true'
-        comment: '# Determines whether HTTP endpoint is enabled.'
+  - name: 'logging'
+    options: []
 
-      - name: 'flux-enabled'
-        value: 'false'
-        comment: '# Determines whether the Flux query endpoint is enabled.'
+  - name: 'subscriber'
+    options: []
 
-      - name: 'flux-log-enabled'
-        value: 'false'
-        comment: '# Determines whether the Flux query logging is enabled.'
+  - name: 'graphite'
+    options: []
 
-      - name: 'bind-address'
-        value: ':{{ influxdb_server__http_endpoint_port }}'
-        comment: '# The bind address used by the HTTP service.'
+  - name: 'collectd'
+    options: []
 
-      - name: 'auth-enabled'
-        value: 'true'
-        comment: '# Determines whether user authentication is enabled over HTTP/HTTPS.'
+  - name: 'opentsdb'
+    options: []
 
-      - name: 'realm'
-        value: 'InfluxDB'
-        comment: '# The default realm sent back when issuing a basic auth challenge.'
+  - name: 'udp'
+    options: []
 
-      - name: 'log-enabled'
-        value: 'false'
-        comment: '# Determines whether HTTP request logging is enabled.'
+  - name: 'continuous_queries'
+    options: []
 
-      - name: 'suppress-write-log'
-        value: 'false'
-        comment: '# Determines whether the HTTP write request logs should be suppressed when the log is enabled.'
-
-      - name: 'access-log-path'
-        value: ''
-        comment: |
-          # When HTTP request logging is enabled, this option specifies the path where
-          # log entries should be written. If unspecified, the default is to write to stderr, which
-          # intermingles HTTP logs with internal InfluxDB logging.
-          #
-          # If influxd is unable to access the specified path, it will log an error and fall back to writing
-          # the request log to stderr.
-
-      - name: 'access-log-status-filters'
-        value: []
-        comment: |
-          # Filters which requests should be logged. Each filter is of the pattern NNN, NNX, or NXX where N is
-          # a number and X is a wildcard for any number. To filter all 5xx responses, use the string 5xx.
-          # If multiple filters are used, then only one has to match. The default is to have no filters which
-          # will cause every request to be printed.
-
-      - name: 'write-tracing'
-        value: 'false'
-        comment: '# Determines whether detailed write logging is enabled.'
-
-      - name: 'pprof-enabled'
-        value: 'true'
-        comment: |
-          # Determines whether the pprof endpoint is enabled.  This endpoint is used for
-          # troubleshooting and monitoring.
-
-      - name: 'pprof-auth-enabled'
-        value: 'false'
-        comment: |
-          # Enables authentication on pprof endpoints. Users will need admin permissions
-          # to access the pprof endpoints when this setting is enabled. This setting has
-          # no effect if either auth-enabled or pprof-enabled are set to false.
-
-      - name: 'debug-pprof-enabled'
-        value: 'false'
-        comment: |
-          # Enables a pprof endpoint that binds to localhost:6060 immediately on startup.
-          # This is only needed to debug startup issues.
-
-      - name: 'ping-auth-enabled'
-        value: 'false'
-        comment: |
-          # Enables authentication on the /ping, /metrics, and deprecated /status
-          # endpoints. This setting has no effect if auth-enabled is set to false.
-
-      - name: 'https-enabled'
-        value: '{{ "true" if influxdb_server__pki else "false" }}'
-        comment: '# Determines whether HTTPS is enabled.'
-
-      - name: 'https-certificate'
-        value: '{{ influxdb_server__pki_path + "/" + influxdb_server__pki_realm +
-                   "/" + influxdb_server__pki_crt }}'
-        comment: '# The SSL certificate to use when HTTPS is enabled.'
-
-      - name: 'https-private-key'
-        value: '{{ influxdb_server__pki_path + "/" + influxdb_server__pki_realm +
-                   "/" + influxdb_server__pki_key }}'
-        comment: '# Use a separate private key location.'
-
-      - name: 'shared-secret'
-        value: ''
-        comment: '# The JWT auth shared secret to validate requests using JSON web tokens.'
-
-      - name: 'max-row-limit'
-        value: 0
-        comment: '# The default chunk size for result sets that should be chunked.'
-
-      - name: 'max-connection-limit'
-        value: 0
-        comment: |
-          # The maximum number of HTTP connections that may be open at once.  New connections that
-          # would exceed this limit are dropped. Setting this value to 0 disables the limit.
-
-      - name: 'unix-socket-enabled'
-        value: 'false'
-        comment: '# Enable http service over unix domain socket'
-
-      - name: 'bind-socket'
-        value: '/var/run/influxdb.sock'
-        comment: '# The path of the unix domain socket.'
-
-      - name: 'max-body-size'
-        value: 25000000
-        comment: '# The maximum size of a client request body, in bytes. Setting this value to 0 disables the limit.'
-
-      - name: 'max-concurrent-write-limit'
-        value: 0
-        comment: '# The maximum number of writes processed concurrently.'
-
-      - name: 'max-enqueued-write-limit'
-        value: 0
-        comment: |
-          # The maximum number of writes queued for processing.
-          # Setting this to 0 disables the limit.
-
-      - name: 'enqueued-write-timeout'
-        value: 0
-        comment: |
-          # The maximum duration for a write to wait in the queue to be processed.
-          # Setting this to 0 or setting max-concurrent-write-limit to 0 disables the limit.
-#
-                                                                   # ]]]
-# .. envvar:: influxdb_server__endpoints [[[
-#
-# Endpoints mechanism for getting data into and out of InfluxDB
-# Documentation: https://docs.influxdata.com/influxdb/v1.7/administration/config
-influxdb_server__endpoints: []
+  - name: 'tls'
+    options:
+      - min-version: '"tls1.2"'
 
                                                                    # ]]]
-# .. envvar:: influxdb_server__combined_endpoints [[[
+# .. envvar:: influxdb_server__configuration [[[
 #
-# Combined endpoints mechanism for getting data into and out of InfluxDB
-influxdb_server__combined_endpoints: '{{ influxdb_server__default_endpoints + influxdb_server__endpoints }}'
+# List of configuration options defined on all hosts in the InfluxDB inventory.
+influxdb_server__configuration: []
 
                                                                    # ]]]
-                                                                   # ]]]
-# Continuous queries configuration [[[
-# -----------------------
-
-# .. envvar:: influxdb_server__continuous_queries_enabled [[[
+# .. envvar:: influxdb_server__combined_configuration [[[
 #
-# Set to false to disable CQs.
-influxdb_server__continuous_queries_enabled: 'true'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__continuous_queries_log_enabled [[[
-#
-# Set to false to disable logging for CQ events.
-influxdb_server__continuous_queries_log_enabled: 'true'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__continuous_queries_query_stats_enabled [[[
-#
-# When set to true, continuous query execution statistics are written to
-# the default monitor store.
-influxdb_server__continuous_queries_query_stats_enabled: 'false'
-
-                                                                   # ]]]
-# .. envvar:: influxdb_server__continuous_queries_run_interval [[[
-#
-# The interval at which InfluxDB checks to see if a CQ needs to run. Set
-# this option to the lowest interval at which your CQs run. For example,
-# if your most frequent CQ runs every minute, set run-interval to 1m.
-influxdb_server__continuous_queries_run_interval: '1s'
+# Actual list of InfluxDB configuration options passed to the
+# configuration template. This list defines the order in which the options from
+# different variables are processed.
+influxdb_server__combined_configuration: '{{ influxdb_server__default_configuration +
+                                             influxdb_server__configuration +
+                                             influxdb_server__pki_options }}'
 
                                                                    # ]]]
                                                                    # ]]]
@@ -713,64 +188,52 @@ influxdb_server__continuous_queries_run_interval: '1s'
 influxdb_server__append_groups: [ 'ssl-cert' ]
 
                                                                    # ]]]
-# .. envvar:: influxdb_server__tls_ciphers [[[
+# .. envvar:: influxdb__pki_options [[[
 #
-# Specifies the set of cipher suite IDs to negotiate. If not specified,
-# ciphers supports all existing cipher suite IDs listed in the Go
-# crypto/tls package. This is consistent with the behavior within previous
-# releases. In this example, only the two specified cipher suite IDs
-# would be supported.
-influxdb_server__tls_ciphers: [ 'TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305', 'TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256' ]
+# Configuration of SSL support in :program:`influxdb`, managed by :ref:`debops.pki` role.
+influxdb_server__pki_options:
 
-                                                                   # ]]]
-# .. envvar:: influxdb_server__tls_min_version [[[
-#
-# Minimum version of the TLS protocol that will be negotiated. Valid
-# values include: tls1.0, tls1.1, and tls1.2. If not specified,
-# min-version is the minimum TLS version specified in the Go crypto/tls
-# package. In this example, tls1.0 specifies the minimum version as
-# TLS 1.0, which is consistent with the behavior of previous InfluxDB
-# releases.
-influxdb_server__tls_min_version: 'tls1.2'
+  - name: 'http'
+    state: '{{ "present" if influxdb_server__pki|bool else "absent" }}'
+    options:
+      - https-certificate: '"{{ influxdb_server__pki_path + "/" + influxdb_server__pki_realm +
+                                "/" + influxdb_server__pki_crt }}"'
+      - https-private-key: '"{{ influxdb_server__pki_path + "/" + influxdb_server__pki_realm +
+                                "/" + influxdb_server__pki_key }}"'
 
-                                                                   # ]]]
-# .. envvar:: influxdb_server__tls_max_version [[[
-#
-# The maximum version of the TLS protocol that will be negotiated.
-# Valid values include: tls1.0, tls1.1, and tls1.2. If not specified,
-# max-version is the maximum TLS version specified in the Go crypto/tls
-# package. In this example, tls1.2 specifies the maximum version as
-# TLS 1.2, which is consistent with the behavior of previous InfluxDB
-# releases.
-influxdb_server__tls_max_version: 'tls1.2'
+  - name: 'subscriber'
+    state: '{{ "present" if influxdb_server__pki|bool else "absent" }}'
+    options:
+      - ca-certs: '"{{ influxdb_server__pki_path + "/" + influxdb_server__pki_realm +
+                       "/" + influxdb_server__pki_ca }}"'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__pki [[[
 #
 # Enable or disable support for SSL in InfluxDB (using :ref:`debops.pki`).
 influxdb_server__pki: '{{ (True
-                        if (ansible_local|d() and ansible_local.pki|d() and
-                            ansible_local.pki.enabled|d() and
-                            influxdb_server__pki_realm in ansible_local.pki.known_realms)
-                        else False) | bool }}'
+                          if (ansible_local|d() and ansible_local.pki|d() and
+                              ansible_local.pki.enabled|d() and
+                              influxdb_server__pki_realm in ansible_local.pki.known_realms)
+                          else False) | bool }}'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__pki_path [[[
 #
 # Base path for PKI directory.
 influxdb_server__pki_path: '{{ (ansible_local.pki.base_path
-                             if (ansible_local|d() and ansible_local.pki|d() and
-                                 ansible_local.pki.base_path|d())
-                             else "/etc/pki") }}'
+                               if (ansible_local|d() and ansible_local.pki|d() and
+                                   ansible_local.pki.base_path|d())
+                               else "/etc/pki") }}'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__pki_realm [[[
 #
 # Default PKI realm used by InfluxDB server.
 influxdb_server__pki_realm: '{{ ansible_local.pki.realm
-                             if (ansible_local|d() and ansible_local.pki|d() and
-                                 ansible_local.pki.realm|d())
-                             else "domain" }}'
+                                if (ansible_local|d() and ansible_local.pki|d() and
+                                    ansible_local.pki.realm|d())
+                                else "domain" }}'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__pki_ca [[[
@@ -814,14 +277,12 @@ influxdb_server__root_password: '{{ lookup("password", secret + "/influxdb/" + a
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
-# .. envvar:: influxdb_server__keyring__dependent_apt_keys [[[
+# .. envvar:: influxdb_server__influxdata__dependent_packages [[[
 #
-# Configuration for the :ref:`debops.keyring` Ansible role.
-influxdb_server__keyring__dependent_apt_keys:
-
-  - id: '05CE 1508 5FC0 9D18 E99E  FB22 684A 14CF 2582 E0C5'
-    url: 'https://repos.influxdata.com/influxdb.key'
-    repo: 'deb https://repos.influxdata.com/debian {{ ansible_distribution_release }} stable'
+# Configuration for the :ref:`debops.influxdata` Ansible role.
+influxdb_server__influxdata__dependent_packages:
+  - '{{ influxdb_server__base_packages }}'
+  - '{{ influxdb_server__packages }}'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__ferm__dependent_rules [[[
@@ -829,11 +290,33 @@ influxdb_server__keyring__dependent_apt_keys:
 # Configuration for the :ref:`debops.ferm` Ansible role.
 influxdb_server__ferm__dependent_rules:
 
-  - name: 'influxdb-endpoints'
+  - name: 'influxdb_http'
     type: 'accept'
     saddr: '{{ influxdb_server__allow }}'
-    dport: [ '{{ influxdb_server__combined_endpoint_ports }}' ]
+    dport: [ 'influxdb-http' ]
     accept_any: False
+    role: 'influxdb_server'
+
+  - name: 'influxdb_rpc'
+    type: 'accept'
+    saddr: '{{ influxdb_server__rpc_allow }}'
+    dport: [ 'influxdb-rpc' ]
+    accept_any: False
+    role: 'influxdb_server'
+    state: '{{ "absent" if influxdb_server__rpc_bind == "127.0.0.1" else "present" }}'
+
+                                                                   # ]]]
+# .. envvar:: influxdb_server__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+influxdb_server__etc_services__dependent_list:
+
+  - name: 'influxdb-http'
+    port: '{{ influxdb_server__port }}'
+
+  - name: 'influxdb-rpc'
+    port: '{{ influxdb_server__rpc_port }}'
+    state: '{{ "absent" if influxdb_server__rpc_bind == "127.0.0.1" else "present" }}'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__python__dependent_packages3 [[[

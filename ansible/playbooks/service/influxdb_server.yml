@@ -12,9 +12,14 @@
   roles:
 
     - role: keyring
-      tags: [ 'role::keyring', 'skip::keyring', 'role::nginx', 'role::influxdb_server' ]
+      tags: [ 'role::keyring', 'skip::keyring', 'role::influxdata' ]
       keyring__dependent_apt_keys:
-        - '{{ influxdb_server__keyring__dependent_apt_keys }}'
+        - '{{ influxdata__keyring__dependent_apt_keys }}'
+
+    - role: etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ influxdb_server__etc_services__dependent_list }}'
 
     - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
@@ -27,6 +32,11 @@
         - '{{ influxdb_server__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ influxdb_server__python__dependent_packages2 }}'
+
+    - role: influxdata
+      tags: [ 'role::influxdata', 'skip::influxdata' ]
+      influxdata__dependent_packages:
+        - '{{ influxdb_server__influxdata__dependent_packages }}'
 
     - role: influxdb_server
       tags: [ 'role::influxdb_server', 'skip::influxdb_server' ]

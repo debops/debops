@@ -3,9 +3,6 @@
 - import_role:
     name: 'secret'
 
-# Ansible does not support management of multiple InfluxDB from one user
-# account, so if a database server is installed locally, we will avoid messing
-# with local root account to not lose the control over it.
 - name: Check if database server is installed
   environment:
     LC_MESSAGES: 'C'
@@ -21,7 +18,7 @@
 
 - name: Override configuration if local server is detected
   set_fact:
-    influxdb__server: 'localhost'
+    influxdb__server: '{{ influxdb__delegate_to if influxdb__pki else "localhost" }}'
   when: (influxdb__register_version.stdout|d(False))
 
 - name: Make sure that local fact directory exists

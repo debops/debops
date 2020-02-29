@@ -6,39 +6,18 @@
 - import_role:
     name: 'secret'
 
-- name: Check if influxdb server is installed
-  environment:
-    LC_MESSAGES: 'C'
-  shell: set -o nounset -o pipefail -o errexit &&
-         dpkg-query -W -f='${Version}\n' 'influxdb'
-         | grep -v '^$'
-  args:
-    executable: 'bash'
-  register: influxdb_server__register_version
-  check_mode: False
-  changed_when: False
-  failed_when: False
-
-- name: Install InfluxDB Server packages
-  package:
-    name: '{{ q("flattened", (influxdb_server__base_packages
-                              + influxdb_server__packages)) }}'
-    state: 'present'
-  register: influxdb_server__register_install_status
-  until: influxdb_server__register_install_status is succeeded
-
 - name: Restart database server on first install (influx bug)
   service:
     name: 'influxdb'
     state: 'restarted'
-  when: ((influxdb_server__register_version|d() and not influxdb_server__register_version.stdout) and
-         (influxdb_server__register_install_status|d() and influxdb_server__register_install_status is changed))
+  when: not (ansible_local|d() and ansible_local.influxdb_server|d()
+             and ansible_local.influxdb_server.installed|d(false)|bool)
 
 - name: Wait for HTTP endpoint port to become open on the host on first install
   wait_for:
-    port: '{{ influxdb_server__http_endpoint_port }}'
-  when: ((influxdb_server__register_version|d() and not influxdb_server__register_version.stdout) and
-         (influxdb_server__register_install_status|d() and influxdb_server__register_install_status is changed))
+    port: '{{ influxdb_server__port }}'
+  when: not (ansible_local|d() and ansible_local.influxdb_server|d()
+             and ansible_local.influxdb_server.installed|d(false)|bool)
 
 - name: Create default admin user on first install
   influxdb_user:
@@ -46,15 +25,15 @@
     user_password: '{{ influxdb_server__root_password }}'
     state: 'present'
     admin: 'yes'
-  when: ((influxdb_server__register_version|d() and not influxdb_server__register_version.stdout) and
-         (influxdb_server__register_install_status|d() and influxdb_server__register_install_status is changed))
+  when: not (ansible_local|d() and ansible_local.influxdb_server|d()
+             and ansible_local.influxdb_server.installed|d(false)|bool)
 
 - name: Stop database server on first install
   service:
     name: 'influxdb'
     state: 'stopped'
-  when: ((influxdb_server__register_version|d() and not influxdb_server__register_version.stdout) and
-         (influxdb_server__register_install_status|d() and influxdb_server__register_install_status is changed))
+  when: not (ansible_local|d() and ansible_local.influxdb_server|d()
+             and ansible_local.influxdb_server.installed|d(false)|bool)
 
 - name: Add InfluxDB server user to specified groups
   user:
@@ -75,9 +54,16 @@
 - name: Move InfluxDB data files to data directory
   shell:
     'mv {{ influxdb_server__default_directory }}/* {{ influxdb_server__directory }}'
-  when: ((influxdb_server__register_version|d() and not influxdb_server__register_version.stdout) and
-         (influxdb_server__register_install_status|d() and influxdb_server__register_install_status is changed) and
-         (influxdb_server__directory != influxdb_server__default_directory))
+  when: (not (ansible_local|d() and ansible_local.influxdb_server|d()
+              and ansible_local.influxdb_server.installed|d(false)|bool) and
+         influxdb_server__directory != influxdb_server__default_directory)
+
+- name: Divert the original influxdb configuration file
+  dpkg_divert:
+    path: '/etc/influxdb/influxdb.conf'
+    state: 'present'
+    delete: True
+  tags: [ 'role::influxdb_server:config' ]
 
 - name: Configure InfluxDB server
   template:
@@ -93,8 +79,8 @@
   service:
     name: 'influxdb'
     state: 'started'
-  when: ((influxdb_server__register_version|d() and not influxdb_server__register_version.stdout) and
-         (influxdb_server__register_install_status|d() and influxdb_server__register_install_status is changed))
+  when: not (ansible_local|d() and ansible_local.influxdb_server|d()
+             and ansible_local.influxdb_server.installed|d(false)|bool)
 
 - name: Make sure that Ansible local facts directory exists
   file:
@@ -104,13 +90,23 @@
 
 - name: Save InfluxDB server local facts
   template:
+    src: 'etc/ansible/facts.d/influxdb_server.fact.j2'
+    dest: '/etc/ansible/facts.d/influxdb_server.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: influxdb_server__register_local_facts
+
+- name: Save InfluxDB local facts
+  template:
     src: 'etc/ansible/facts.d/influxdb.fact.j2'
     dest: '/etc/ansible/facts.d/influxdb.fact'
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: influxdb_server__register_local_facts
+  register: influxdb__register_local_facts
 
 - name: Re-read local facts if they have been modified
   action: setup
-  when: influxdb_server__register_local_facts is changed
+  when: influxdb_server__register_local_facts is changed or
+        influxdb__register_local_facts is changed

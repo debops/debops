@@ -4,7 +4,7 @@
   influxdb_database:
     database_name: '{{ item.database | d(item.name) }}'
     state: 'absent'
-    hostname: '{{ influxdb__delegate_to if influxdb__pki else "localhost" }}'
+    hostname: '{{ influxdb__server }}'
     port: '{{ influxdb__port }}'
     ssl: '{{ influxdb__pki }}'
     password: '{{ lookup("password",
@@ -21,7 +21,7 @@
   influxdb_database:
     database_name: '{{ item.database | d(item.name) }}'
     state: 'present'
-    hostname: '{{ influxdb__delegate_to if influxdb__pki else "localhost" }}'
+    hostname: '{{ influxdb__server }}'
     port: '{{ influxdb__port }}'
     ssl: '{{ influxdb__pki }}'
     password: '{{ lookup("password",
@@ -38,7 +38,7 @@
   influxdb_user:
     user_name: '{{ item.user | d(item.name) }}'
     state: 'absent'
-    hostname: '{{ influxdb__delegate_to if influxdb__pki else "localhost" }}'
+    hostname: '{{ influxdb__server }}'
     port: '{{ influxdb__port }}'
     ssl: '{{ influxdb__pki }}'
     password: '{{ lookup("password",
@@ -61,7 +61,7 @@
     grants: '{{ item.grants }}'
     admin: '{{ item.admin | d(False) }}'
     state: 'present'
-    hostname: '{{ influxdb__delegate_to if influxdb__pki else "localhost" }}'
+    hostname: '{{ influxdb__server }}'
     port: '{{ influxdb__port }}'
     ssl: '{{ influxdb__pki }}'
     password: '{{ lookup("password",
