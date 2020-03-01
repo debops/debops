@@ -93,6 +93,14 @@ General
   collections automatically via collection dependencies. The playbooks have
   been updated to include new Collections.
 
+- The DebOps repository is now compliant with the `REUSE Specification`__. The
+  `SPDX License Identifiers`__ have been added to the files contained in the
+  repository and a valid copyright and license information will be required to
+  pass the test suite.
+
+  .. __: https://reuse.software/spec/
+  .. __: https://spdx.org/ids
+
 :ref:`debops.postfix` role
 ''''''''''''''''''''''''''
 
