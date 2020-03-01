@@ -24,6 +24,10 @@ clean: clean-tests clean-sdist clean-wheel
 collection:     ## Build collection of Ansible artifacts with ansible-galaxy
 collection: make-collection
 
+.PHONY: spdx
+spdx:          ## Check copyright and license information (REUSE, SPDX)
+spdx: test-spdx
+
 .PHONY: versions
 versions:       ## Check versions of upstream software
 versions: check-versions
@@ -113,7 +117,7 @@ twine-upload:    ## Upload Python packages to PyPI
 	@twine upload dist/*
 
 .PHONY: test-all
-test-all: clean-tests test-pep8 test-debops-tools test-debops-ansible_plugins test-docs test-man test-playbook-syntax test-yaml test-shell
+test-all: clean-tests test-spdx test-pep8 test-debops-tools test-debops-ansible_plugins test-docs test-man test-playbook-syntax test-yaml test-shell
 
 .PHONY: test-pep8
 test-pep8:
@@ -129,6 +133,10 @@ test-shell:
 .PHONY: test-docker-build
 test-docker-build:
 	@./lib/tests/check-docker-build
+
+.PHONY: test-spdx
+test-spdx:
+	@reuse lint
 
 .PHONY: clean-tests
 clean-tests:
