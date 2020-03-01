@@ -117,7 +117,7 @@ twine-upload:    ## Upload Python packages to PyPI
 	@twine upload dist/*
 
 .PHONY: test-all
-test-all: clean-tests test-spdx test-pep8 test-debops-tools test-debops-ansible_plugins test-docs test-man test-playbook-syntax test-yaml test-shell
+test-all: clean-tests test-pep8 test-debops-tools test-debops-ansible_plugins test-docs test-man test-playbook-syntax test-yaml test-shell
 
 .PHONY: test-pep8
 test-pep8:
