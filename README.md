@@ -5,12 +5,14 @@
 [![Travis CI][travis-ci]](https://travis-ci.org/debops/debops)
 [![GitLab CI][gitlab-ci]](https://gitlab.com/debops/debops/pipelines)
 [![CII Best Practices][cii-best-practices]](https://bestpractices.coreinfrastructure.org/en/projects/237)
+[![REUSE status][reuse-status]](https://api.reuse.software/info/github.com/debops/debops)
 [![RSS commits][rss-commits]](https://github.com/debops/debops/commits/master.atom)
 
 [debops-logo]: https://raw.githubusercontent.com/debops/debops/master/lib/images/debops-small.png
 [travis-ci]: https://img.shields.io/travis/debops/debops.svg?style=flat
 [gitlab-ci]: https://gitlab.com/debops/debops/badges/master/pipeline.svg
 [cii-best-practices]: https://bestpractices.coreinfrastructure.org/projects/237/badge
+[reuse-status]: https://api.reuse.software/badge/github.com/debops/debops
 [rss-commits]: https://img.shields.io/badge/RSS-commits-orange.svg
 
 
@@ -178,5 +180,14 @@ contribute to DebOps.
 The DebOps project is licensed under the [GNU General Public License 3.0][gpl-3.0].
 You can find full text of the license in the [LICENSE][license] file.
 
+Some files included with the DebOps project use a different license.
+The licenses are marked in these files using the [SPDX license identifiers][spdx-ids]
+and can be found in the `LICENSES/` subdirectory. They are also included in the
+project tarballs, Ansible Collections and Python packages. The project uses the
+[REUSE Specification][reuse-specification] and its associated tool to check and
+verify copyright and license information in all files.
+
 [gpl-3.0]: https://www.gnu.org/licenses/gpl-3.0
 [license]: https://github.com/debops/debops/blob/master/LICENSE
+[spdx-ids]: https://spdx.org/ids
+[reuse-specification]: https://reuse.software/spec/
