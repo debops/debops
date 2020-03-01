@@ -1,3 +1,8 @@
+.. Copyright (C) 2014-2019 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2014-2019 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -53,18 +58,21 @@ that uses the ``debops.dnsmasq`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/dnsmasq-plain.yml
    :language: yaml
+   :lines: 1,6-
 
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses ``debops.dnsmasq`` together with the :ref:`debops.persistent_paths`:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/dnsmasq-persistent_paths.yml
    :language: yaml
+   :lines: 1,6-
 
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses ``debops.dnsmasq`` together with the ``debops-contrib.apparmor`` role:
 
 .. literalinclude:: examples/dnsmasq-apparmor.yml
    :language: yaml
+   :lines: 1,6-
 
 
 :ref:`debops.persistent_paths` support

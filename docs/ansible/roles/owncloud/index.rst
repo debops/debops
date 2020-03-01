@@ -1,10 +1,16 @@
+.. Copyright (C) 2015-2016 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015      Hartmut Goebel <h.goebel@crazy-compilers.com>
+.. Copyright (C) 2015-2019 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2015-2019 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _debops.owncloud:
 
 debops.owncloud
 ===============
 
 .. include:: man_description.rst
-   :start-line: 3
+   :start-line: 9
 
 .. toctree::
    :maxdepth: 2

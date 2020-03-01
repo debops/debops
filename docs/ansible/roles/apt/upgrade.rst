@@ -1,3 +1,8 @@
+.. Copyright (C) 2013-2018 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2014-2018 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _apt__ref_upgrade_notes:
 
 Upgrade notes
@@ -20,6 +25,7 @@ of the changed variables in your inventory:
 
 .. literalinclude:: scripts/upgrade-from-v0.3.x-to-v0.4.x
    :language: shell
+   :lines: 1,7-
 
 The script is bundled with this role under
 :file:`./docs/scripts/upgrade-from-v0.3.x-to-v0.4.x` and can be invoked from
@@ -65,6 +71,7 @@ inventory accordingly:
 
 .. literalinclude:: scripts/upgrade-proxy-from-v0.2.x-to-v0.3.x
    :language: shell
+   :lines: 1,7-
 
 The script is bundled with this role under
 :file:`./docs/scripts/upgrade-proxy-from-v0.2.x-to-v0.3.x` and can be invoked from

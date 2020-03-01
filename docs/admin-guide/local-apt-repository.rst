@@ -1,3 +1,7 @@
+.. Copyright (C) 2015      Nick Janetakis <nickjanetakis@gmail.com>
+.. Copyright (C) 2015-2019 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Creating a local apt server
 ===========================
 

@@ -1,3 +1,7 @@
+.. Copyright (C) 2016 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2016 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -101,3 +105,4 @@ that uses the ``debops.debops_fact`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/debops_fact.yml
    :language: yaml
+   :lines: 1,5-

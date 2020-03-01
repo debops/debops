@@ -1,3 +1,7 @@
+.. Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Default variable details
 ========================
 
@@ -58,6 +62,7 @@ Examples
 
 .. literalinclude:: examples/example-config-sections.yml
    :language: yaml
+   :lines: 1,5-
 
 
 .. _rabbitmq_server__ref_config_options:
@@ -92,6 +97,7 @@ are used as option values. You can specify simple options this way:
 
 .. literalinclude:: examples/simple-options.yml
    :language: yaml
+   :lines: 1,5-
 
 If a given dictionary contains a ``name`` parameter, the configuration template
 will switch to a more verbose option interpretation, using known parameters:
@@ -170,6 +176,7 @@ Examples
 
 .. literalinclude:: examples/verbose-options.yml
    :language: yaml
+   :lines: 1,5-
 
 
 .. _rabbitmq_server__ref_plugins:

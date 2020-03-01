@@ -1,3 +1,7 @@
+.. Copyright (C) 2016-2019 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2016-2019 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -91,6 +95,7 @@ that uses the ``debops.slapd`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/slapd.yml
    :language: yaml
+   :lines: 1,5-
 
 The included :ref:`debops.ferm` and :ref:`debops.tcpwrappers` Ansible roles are
 optional. They can be used for managing firewall and access rules to the LDAP

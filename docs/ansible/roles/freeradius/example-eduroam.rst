@@ -1,3 +1,7 @@
+.. Copyright (C) 2018 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2018 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Example eduroam setup
 =====================
 
@@ -28,6 +32,7 @@ FreeRADIUS configuration
 
 .. literalinclude:: examples/eduroam/freeradius.yml
    :language: yaml
+   :lines: 1,5-
 
 
 Additional resources
@@ -40,3 +45,4 @@ over the network.
 
 .. literalinclude:: examples/eduroam/resources.yml
    :language: yaml
+   :lines: 1,5-

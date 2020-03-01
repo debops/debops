@@ -1,3 +1,7 @@
+.. Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Default variable details
 ========================
 
@@ -76,6 +80,7 @@ After that, you can use this variable in a playbook as a dependent variable:
 
 .. literalinclude:: examples/dependent-nsswitch.yml
    :language: yaml
+   :lines: 1,5-
 
 Make sure that the ``debops.nsswitch`` role is used after your application
 role, or the one that configures a specific NSS service, that way it can

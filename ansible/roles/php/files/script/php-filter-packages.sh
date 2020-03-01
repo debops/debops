@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# Copyright (C) 2016      Mariano Barcia <mariano.barcia@gmail.com>
+# Copyright (C) 2016-2019 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2016-2019 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # Filter specified PHP package names to the corresponding APT package names
 # available on the system.
 # Homepage: https://github.com/debops/ansible-php/

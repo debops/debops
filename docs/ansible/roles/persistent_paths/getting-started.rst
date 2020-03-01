@@ -1,3 +1,7 @@
+.. Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2016-2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -35,6 +39,7 @@ that uses the ``debops.persistent_paths`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/persistent_paths.yml
    :language: yaml
+   :lines: 1,5-
 
 
 Qubes OS

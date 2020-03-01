@@ -1,3 +1,7 @@
+.. Copyright (C) 2015-2019 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015-2019 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -44,6 +48,7 @@ that uses the ``debops.tftpd`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/tftpd.yml
    :language: yaml
+   :lines: 1,5-
 
 
 Ansible tags

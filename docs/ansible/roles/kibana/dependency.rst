@@ -1,3 +1,7 @@
+.. Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _kibana__ref_dependency:
 
 Usage as a role dependency
@@ -66,6 +70,7 @@ uses the ``debops.kibana`` role as a dependency:
 
 .. literalinclude:: examples/application-defaults.yml
    :language: yaml
+   :lines: 1,5-
 
 Example role playbook
 ---------------------
@@ -75,3 +80,4 @@ This file shows an example playbook for a role that uses the
 
 .. literalinclude:: examples/application-playbook.yml
    :language: yaml
+   :lines: 1,5-

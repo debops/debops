@@ -1,3 +1,7 @@
+.. Copyright (C) 2017 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _tor__ref_getting_started:
 
 Getting started
@@ -38,6 +42,7 @@ variables of other roles:
 
 .. literalinclude:: inventory/debops_service_tor_global_role_vars.yml
    :language: yaml
+   :lines: 1,7-
 
 Example playbook
 ----------------
@@ -47,6 +52,7 @@ that uses the ``debops-contrib.tor`` role:
 
 .. literalinclude:: playbooks/tor.yml
    :language: yaml
+   :lines: 1,5-
 
 The playbook is shipped with this role under
 :file:`./docs/playbooks/tor.yml` from which you can symlink it to your

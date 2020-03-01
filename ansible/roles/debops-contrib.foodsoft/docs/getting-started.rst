@@ -1,3 +1,7 @@
+.. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2016-2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _foodsoft__ref_getting_started:
 
 Getting started
@@ -60,6 +64,7 @@ with debops.nginx_:
 
 .. literalinclude:: playbooks/foodsoft-nginx.yml
    :language: yaml
+   :lines: 1,5-
 
 The playbook is shipped with this role under
 :file:`./docs/playbooks/` from which you can symlink it to your

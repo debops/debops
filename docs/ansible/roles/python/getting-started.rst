@@ -1,3 +1,7 @@
+.. Copyright (C) 2018 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2018 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -47,6 +51,7 @@ that uses the ``debops.python`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/python.yml
    :language: yaml
+   :lines: 1,5-
 
 There's a separate Ansible playbook that allows usage of the ``debops.python``
 role in a "raw" mode, without fact gathering. This can be used to bootstrap
@@ -55,6 +60,7 @@ afterwards:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/python_raw.yml
    :language: yaml
+   :lines: 1,5-
 
 
 Ansible tags

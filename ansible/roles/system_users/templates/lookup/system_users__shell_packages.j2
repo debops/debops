@@ -1,3 +1,7 @@
+{# Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2019 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
 {% set system_users__tpl_shells = [] %}
 {% for shell in (system_users__combined_accounts | parse_kv_items | selectattr("state", "equalto", "present") | selectattr("shell", "defined") | map(attribute="shell") | unique | list) %}
 {%   if shell in system_users__shell_package_map.keys() %}

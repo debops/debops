@@ -1,3 +1,7 @@
+.. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Default variable details
 ========================
 
@@ -55,6 +59,7 @@ Configure ``eth0`` with a global IPv6 address.
 
 .. literalinclude:: examples/dropbear_initramfs__interfaces.yml
    :language: yaml
+   :lines: 1,5-
 
 
 .. _dropbear_initramfs__ref_authorized_keys:
@@ -107,8 +112,10 @@ remote initramfs login:
 
 .. literalinclude:: examples/dropbear_initramfs__authorized_keys.yml
    :language: yaml
+   :lines: 1,5-
 
 Ensure that given SSH public keys are allowed for remote initramfs login:
 
 .. literalinclude:: examples/dropbear_initramfs__group_authorized_keys.yml
    :language: yaml
+   :lines: 1,5-

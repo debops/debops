@@ -1,3 +1,7 @@
+.. Copyright (C) 2015-2016 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015-2016 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _docker_gen__ref_upgrade_nodes:
 
 Upgrade notes
@@ -16,6 +20,7 @@ This script can come in handy to do this:
 
 .. literalinclude:: scripts/upgrade-from-v0.1.x-to-v0.2.x
    :language: shell
+   :lines: 1,6-
 
 The script is bundled with this role under
 :file:`docs/scripts/upgrade-from-v0.1.x-to-v0.2.x` and can be invoked from

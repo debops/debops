@@ -1,3 +1,8 @@
+.. Copyright (C) 2016-2017 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2016-2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -29,6 +34,7 @@ that uses the ``debops.apt_proxy`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/apt_proxy.yml
    :language: yaml
+   :lines: 1,6-
 
 
 Ansible tags

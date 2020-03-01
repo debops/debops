@@ -1,3 +1,7 @@
+.. Copyright (C) 2015-2016 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015-2016 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -67,3 +71,4 @@ Here's an example playbook that can be used to manage :command:`docker-gen`:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/docker_gen.yml
    :language: yaml
+   :lines: 1,5-

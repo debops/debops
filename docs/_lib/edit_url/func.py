@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016-2018 DebOps project https://debops.org/
+# Copyright (C) 2016-2018 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 from __future__ import print_function
 import os

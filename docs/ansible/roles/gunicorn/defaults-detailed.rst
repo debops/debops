@@ -1,3 +1,7 @@
+.. Copyright (C) 2016 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2016 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _gunicorn__ref_defaults_detailed:
 
 Default variable details
@@ -139,3 +143,4 @@ Examples
 
 .. literalinclude:: examples/gunicorn-applications.yml
    :language: yaml
+   :lines: 1,5-

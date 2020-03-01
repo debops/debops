@@ -1,3 +1,7 @@
+.. Copyright (C) 2014-2020 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2014-2020 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _postfix__ref_maincf:
 
 Default variable details: postfix__maincf

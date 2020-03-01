@@ -1,3 +1,7 @@
+.. Copyright (C) 2016 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2016 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -38,6 +42,7 @@ variables of other roles:
 
 .. literalinclude:: inventory/debops_service_x2go_server_global_role_vars.yml
    :language: yaml
+   :lines: 1,7-
 
 Example playbook
 ----------------
@@ -46,6 +51,7 @@ Here's an example playbook that can be used to setup and manage X2Go server:
 
 .. literalinclude:: playbooks/x2go_server.yml
    :language: yaml
+   :lines: 1,5-
 
 This playbooks is shipped with this role under
 :file:`docs/playbooks/x2go_server.yml` from which you can symlink it to your

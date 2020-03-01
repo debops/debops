@@ -1,3 +1,8 @@
+.. Copyright (C) 2014-2016 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2016 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2014-2016 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -65,6 +70,7 @@ Here's a minimal example playbook that can be used to manage the
 
 .. literalinclude:: ../../../../ansible/playbooks/service/etc_services.yml
    :language: yaml
+   :lines: 1,6-
 
 This playbooks is shipped with this role under
 :file:`docs/playbooks/etc_services.yml` from which you can symlink it to your

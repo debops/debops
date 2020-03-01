@@ -1,3 +1,7 @@
+.. Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2019 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Default variable details
 ========================
 
@@ -29,12 +33,15 @@ Examples
 
 .. literalinclude:: examples/manage-groups.yml
    :language: yaml
+   :lines: 1,5-
 
 .. literalinclude:: examples/manage-accounts.yml
    :language: yaml
+   :lines: 1,5-
 
 .. literalinclude:: examples/manage-resources.yml
    :language: yaml
+   :lines: 1,5-
 
 Syntax
 ~~~~~~

@@ -1,3 +1,7 @@
+.. Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2016-2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -7,6 +11,7 @@ Getting started
       :local:
 
 .. include:: includes/role.rst
+   :start-line: 6
 
 Example inventory
 -----------------
@@ -27,6 +32,7 @@ that uses the ``debops.apache`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/apache.yml
    :language: yaml
+   :lines: 1,5-
 
 Ansible tags
 ------------

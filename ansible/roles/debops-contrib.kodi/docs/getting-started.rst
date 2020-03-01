@@ -1,3 +1,7 @@
+.. Copyright (C) 2017 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _kodi__ref_getting_started:
 
 Getting started
@@ -36,6 +40,7 @@ that uses the ``debops-contrib.kodi`` role:
 
 .. literalinclude:: playbooks/kodi.yml
    :language: yaml
+   :lines: 1,5-
 
 The playbook is shipped with this role under
 :file:`./docs/playbooks/kodi.yml` from which you can symlink it to your

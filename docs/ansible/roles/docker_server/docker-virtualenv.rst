@@ -1,3 +1,8 @@
+.. Copyright (C) 2015-2019 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2019      Imre Jonk <mail@imrejonk.nl>
+.. Copyright (C) 2015-2019 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _docker_server__ref_virtualenv:
 
 Docker virtualenv support
@@ -57,6 +62,7 @@ Here's an example playbook that uses a Python interpreter from the Docker
 
 .. literalinclude:: examples/docker-redis.yml
    :language: yaml
+   :lines: 1,6-
 
 Keep in mind that more extensive playbooks that use Ansible roles or modules
 other than the Docker-related ones might need to be executed in their own

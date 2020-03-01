@@ -1,3 +1,7 @@
+.. Copyright (C) 2018 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2018 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Default variable details
 ========================
 
@@ -37,11 +41,13 @@ Define multiple Redis Server instances:
 
 .. literalinclude:: examples/multiple_instances.yml
    :language: yaml
+   :lines: 1,5-
 
 Modify existing instance configuration:
 
 .. literalinclude:: examples/modify_main_instance.yml
    :language: yaml
+   :lines: 1,5-
 
 Syntax
 ~~~~~~
@@ -136,6 +142,7 @@ Define additional instance configuration:
 
 .. literalinclude:: examples/instance_configuration.yml
    :language: yaml
+   :lines: 1,5-
 
 Syntax
 ~~~~~~

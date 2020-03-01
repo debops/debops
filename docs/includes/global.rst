@@ -1,3 +1,6 @@
+.. Copyright (C) 2015-2019 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2015-2019 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
 
 .. vim: foldmarker=[[[,]]]:foldmethod=marker
 

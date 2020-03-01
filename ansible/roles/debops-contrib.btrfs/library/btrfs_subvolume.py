@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# (c) 2014, Ilya Barsukov <barsukov@selectel.ru>, Selectel LLC
+# Copyright (c) 2014, Ilya Barsukov <barsukov@selectel.ru>, Selectel LLC
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
 # This file is part of Ansible
 #

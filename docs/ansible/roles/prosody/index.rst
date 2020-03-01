@@ -1,10 +1,14 @@
+.. Copyright (C) 2018 Norbert Summer <git@o-g.at>
+.. Copyright (C) 2018 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _debops.prosody:
 
 debops.prosody
 ==============
 
 .. include:: man_description.rst
-   :start-line: 3
+   :start-line: 7
 
 .. toctree::
    :maxdepth: 2
