@@ -2,6 +2,7 @@
 # https://github.com/timraasveld/ansible-string-split-filter/
 # (c) 2014 Maciej Delmanowski <drybjed@gmail.com>
 # https://debops.org/
+# SPDX-License-Identifier: CC0-1.0
 
 
 # License: CC0 1.0 Universal

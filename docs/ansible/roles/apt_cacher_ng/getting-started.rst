@@ -1,3 +1,7 @@
+.. Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2016-2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _apt_cacher_ng__ref_getting_started:
 
 Getting started
@@ -59,12 +63,14 @@ that uses the ``debops.apt_cacher_ng`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/apt_cacher_ng.yml
    :language: yaml
+   :lines: 1,5-
 
 If you make extensive use of the flexibility of this role and are using
 AppArmor you might need to use the following playbook instead:
 
 .. literalinclude:: examples/apt_cacher_ng-apparmor.yml
    :language: yaml
+   :lines: 1,5-
 
 The playbook is shipped with this role under
 :file:`./docs/playbooks/apt_cacher_ng-apparmor.yml` from which you can symlink it to your

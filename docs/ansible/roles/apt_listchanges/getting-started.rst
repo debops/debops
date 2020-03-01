@@ -1,3 +1,7 @@
+.. Copyright (C) 2016 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2016 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -29,3 +33,4 @@ that uses the ``debops.apt_listchanges`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/apt_listchanges.yml
    :language: yaml
+   :lines: 1,5-

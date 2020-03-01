@@ -1,3 +1,7 @@
+.. Copyright (C) 2015-2017 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015-2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -40,6 +44,7 @@ Here's an example playbook that installs DebOps support on a host:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/debops.yml
    :language: yaml
+   :lines: 1,5-
 
 The playbooks is shipped with this role under
 :file:`docs/playbooks/debops.yml` from which you can symlink it to your

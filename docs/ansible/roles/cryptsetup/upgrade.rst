@@ -1,3 +1,7 @@
+.. Copyright (C) 2015-2020 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2015-2020 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _cryptsetup__ref_upgrade_nodes:
 
 Upgrade notes
@@ -19,6 +23,7 @@ This script can come in handy to do this:
 
 .. literalinclude:: scripts/upgrade-from-v0.3.X-to-v0.4.X
    :language: shell
+   :lines: 1,6-
 
 The script is bundled with DebOps documentation under
 :file:`docs/ansible/roles/cryptsetup/scripts/upgrade-from-v0.3.X-to-v0.4.X` and can be invoked from

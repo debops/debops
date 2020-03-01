@@ -3,7 +3,8 @@
 Support functions for command line utilities (scripts).
 """
 # Copyright (C) 2014-2015 Hartmut Goebel <h.goebel@crazy-compilers.com>
-# Part of the DebOps - https://debops.org/
+# Copyright (C) 2014-2015 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 # This program is free software; you can redistribute
 # it and/or modify it under the terms of the

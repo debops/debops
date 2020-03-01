@@ -1,3 +1,8 @@
+.. Copyright (C) 2016-2018 Robin Schneider <ypid@riseup.net>
+.. Copyright (C)      2018 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2016-2018 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -63,6 +68,7 @@ Here's an example playbook that uses the ``debops.etckeeper`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/etckeeper.yml
    :language: yaml
+   :lines: 1,6-
 
 
 Ansible tags

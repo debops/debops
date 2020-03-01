@@ -1,5 +1,7 @@
 # Makefile for Sphinx documentation
 #
+# Copyright (C) 2014-2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 # You can set these variables from the command line.
 SPHINXOPTS    =

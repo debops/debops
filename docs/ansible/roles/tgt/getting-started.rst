@@ -1,3 +1,7 @@
+.. Copyright (C) 2015 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -26,3 +30,4 @@ Here's an example playbook which uses ``debops.tgt`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/tgt.yml
    :language: yaml
+   :lines: 1,5-

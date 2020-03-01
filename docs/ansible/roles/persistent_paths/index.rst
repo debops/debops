@@ -1,10 +1,14 @@
+.. Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2016-2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _debops.persistent_paths:
 
 debops.persistent_paths
 =======================
 
 .. include:: man_description.rst
-   :start-line: 3
+   :start-line: 7
 
 .. toctree::
    :maxdepth: 2

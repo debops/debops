@@ -1,3 +1,7 @@
+.. Copyright (C) 2018 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2018 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _redis_sentinel__ref_config_pipeline:
 
 Redis Sentinel configuration pipeline

@@ -4,7 +4,8 @@
 # Usage: run "make collection" in the root of the repository
 
 # Copyright (C) 2019-2020 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2019-2020 DebOps https://debops.org/
+# Copyright (C) 2019-2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 
 set -o nounset -o pipefail -o errexit
@@ -222,6 +223,10 @@ file_list=(
     CHANGELOG.rst
 )
 
+directory_list=(
+    LICENSES
+)
+
 mkdir -p "${workdir_map[${collections[0]}]}/playbooks" \
          "${workdir_map[${collections[0]}]}/roles" \
          "${workdir_map[${collections[0]}]}/plugins/callback" \
@@ -267,6 +272,10 @@ for collection in "${collections[@]}" ; do
 
     for filename in "${file_list[@]}" ; do
         cp "${filename}" "${workdir_map[${collection}]}/"
+    done
+
+    for directory in "${directory_list[@]}" ; do
+        cp -r "${directory}" "${workdir_map[${collection}]}/"
     done
 
     files_to_modify=()

@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2016-2017 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 ## Upgrade inventory variables for migration from debops.apt_cacher_ng v0.1.X to v0.2.X.
 ## The script is idempotent.
 

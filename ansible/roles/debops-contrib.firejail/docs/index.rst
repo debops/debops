@@ -1,3 +1,7 @@
+.. Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2016-2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _debops-contrib.firejail:
 
 Ansible role: debops-contrib.firejail

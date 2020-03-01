@@ -1,3 +1,9 @@
+.. Copyright (C) 2015-2016 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015      Hartmut Goebel <h.goebel@crazy-compilers.com>
+.. Copyright (C) 2015-2019 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2015-2019 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _owncloud__ref_getting_started:
 
 Getting started
@@ -217,11 +223,13 @@ Ansible playbook that uses the ``debops.owncloud`` role together with :ref:`debo
 
 .. literalinclude:: ../../../../ansible/playbooks/service/owncloud-nginx.yml
    :language: yaml
+   :lines: 1,7-
 
 Ansible playbook that uses the ``debops.owncloud`` role together with :ref:`debops.apache`:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/owncloud-apache.yml
    :language: yaml
+   :lines: 1,7-
 
 These playbooks are shipped with DebOps and are also contained in this role under
 :file:`docs/playbooks/`.

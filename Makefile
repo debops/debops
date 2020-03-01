@@ -1,3 +1,7 @@
+# Copyright (C) 2017-2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2017-2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # DebOps Makefile
 
 .PHONY: all
@@ -19,6 +23,10 @@ clean: clean-tests clean-sdist clean-wheel
 .PHONY: collection
 collection:     ## Build collection of Ansible artifacts with ansible-galaxy
 collection: make-collection
+
+.PHONY: spdx
+spdx:          ## Check copyright and license information (REUSE, SPDX)
+spdx: test-spdx
 
 .PHONY: versions
 versions:       ## Check versions of upstream software
@@ -125,6 +133,10 @@ test-shell:
 .PHONY: test-docker-build
 test-docker-build:
 	@./lib/tests/check-docker-build
+
+.PHONY: test-spdx
+test-spdx:
+	@reuse lint
 
 .PHONY: clean-tests
 clean-tests:

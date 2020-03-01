@@ -1,6 +1,11 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# Copyright (C) 2016      Mariano Barcia <mariano.barcia@gmail.com>
+# Copyright (C) 2016-2019 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2016-2019 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 - name: Ensure older PHP packages are absent on reset for given PHP version
   apt:
     name: '{{ item is search("php.*-")|ternary(item, php__version_absent + "-" + item) }}'

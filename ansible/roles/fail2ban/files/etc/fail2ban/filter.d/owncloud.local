@@ -1,13 +1,15 @@
 # Fail2Ban filter for ownCloud
 #
 
+# Copyright (C) 2015 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015 Patryk Ściborek <patryk.sciborek@comp.com.pl>
+# Copyright (C) 2015 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Based on: http://www.rojtberg.net/711/secure-owncloud-server/
+
 [Definition]
 
 failregex = ^{"app":"core","message":"Login failed: user '.*' , wrong password, IP:<HOST>","level":2,"time":".*"}$
             ^{"app":"core","message":"Login failed: '.*' \(Remote IP: '<HOST>', X-Forwarded-For: '.*'\)","level":2,"time":".*"}$
             ^{"reqId":".*","remoteAddr":"<HOST>","app":"core","message":"Login failed: .*","level":2,"time":".*"}$
 ignoreregex = 
-
-#
-# Rule Author: Patryk Ściborek
-# Base on: http://www.rojtberg.net/711/secure-owncloud-server/

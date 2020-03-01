@@ -1,3 +1,8 @@
+.. Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@drybjed.net>
+.. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2014-2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -26,6 +31,7 @@ that uses the ``debops.nginx`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/nginx.yml
    :language: yaml
+   :lines: 1,6-
 
 Ansible tags
 ------------

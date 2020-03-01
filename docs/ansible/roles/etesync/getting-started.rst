@@ -1,3 +1,7 @@
+.. Copyright (C) 2020 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2020 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -25,6 +29,7 @@ Here's an example playbook that can be used to manage EteSync:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/etesync.yml
    :language: yaml
+   :lines: 1,5-
 
 
 Ansible tags

@@ -1,10 +1,14 @@
+.. Copyright (C) 2015-2020 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2015-2020 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _debops.cryptsetup:
 
 debops.cryptsetup
 =================
 
 .. include:: man_description.rst
-   :start-line: 3
+   :start-line: 7
 
 .. toctree::
    :maxdepth: 2

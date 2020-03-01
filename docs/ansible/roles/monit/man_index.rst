@@ -1,5 +1,10 @@
 :orphan:
 
+.. Copyright (C) 2014      Nick Janetakis <nick.janetakis@gmail.com>
+.. Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2014-2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 debops.monit
 ============
 

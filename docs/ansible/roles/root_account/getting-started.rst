@@ -1,3 +1,7 @@
+.. Copyright (C) 2017 Fabio Bonelli <fb@fabiobonelli.it>
+.. Copyright (C) 2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -48,3 +52,4 @@ that uses the ``debops.root_account`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/root_account.yml
    :language: yaml
+   :lines: 1,5-

@@ -1,3 +1,7 @@
+.. Copyright (C) 2015-2020 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2015-2020 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _cryptsetup__ref_getting_started:
 
 Getting started
@@ -53,12 +57,14 @@ that uses the ``debops.cryptsetup`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/cryptsetup-plain.yml
    :language: yaml
+   :lines: 1,5-
 
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses ``debops.cryptsetup`` together with the debops.persistent_paths_ role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/cryptsetup-persistent_paths.yml
    :language: yaml
+   :lines: 1,5-
 
 Ansible tags
 ------------

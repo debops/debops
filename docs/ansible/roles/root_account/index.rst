@@ -1,10 +1,14 @@
+.. Copyright (C) 2017 Fabio Bonelli <fb@fabiobonelli.it>
+.. Copyright (C) 2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _debops.root_account:
 
 debops.root_account
 ===================
 
 .. include:: man_description.rst
-   :start-line: 3
+   :start-line: 7
 
 .. toctree::
    :maxdepth: 2

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 #
 # DebOps documentation build configuration file
-# Copyright (C) 2014-2020 DebOps Project https://debops.org/
+# Copyright (C) 2014-2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.

@@ -1,4 +1,5 @@
 # Copyright (C) 2015 Maciej Delmanowski <drybjed@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
 # This file is part of Ansible
 #

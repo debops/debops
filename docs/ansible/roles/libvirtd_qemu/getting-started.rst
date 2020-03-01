@@ -1,3 +1,7 @@
+.. Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -41,6 +45,7 @@ that uses the ``debops.libvirtd_qemu`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/libvirtd_qemu.yml
    :language: yaml
+   :lines: 1,5-
 
 
 Ansible tags

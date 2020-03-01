@@ -1,3 +1,7 @@
+.. Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2014-2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -114,3 +118,4 @@ required DebOps services:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/mailman.yml
    :language: yaml
+   :lines: 1,5-

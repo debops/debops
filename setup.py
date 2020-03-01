@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 
+# Copyright (C) 2014-2019 Hartmut Goebel <h.goebel@crazy-compilers.com>
+# Copyright (C) 2014-2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2016      Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2014-2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from setuptools import setup, find_packages
+from glob import glob
 import os
 import re
 import subprocess
@@ -86,7 +93,8 @@ try:
         author_email="debops-users@lists.debops.org",
         description="Your Debian-based data center in a box",
         long_description=README,
-        license="GPL-3.0-only",
+        license="GPL-3.0-or-later",
+        license_files=glob("LICENSES/*.txt"),
         keywords="ansible debian sysadmin",
         url="https://debops.org/",
         python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, '

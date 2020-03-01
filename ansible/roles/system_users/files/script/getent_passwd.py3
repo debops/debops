@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+# Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2019 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # Get the specified user information from the system password database.
 # This solution should work on all platforms; Ansible 'getent' module does not
 # work correctly on Apple macOS.

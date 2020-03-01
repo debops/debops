@@ -1,10 +1,14 @@
+.. Copyright (C) 2015-2019 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015-2019 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _debops.rsnapshot:
 
 debops.rsnapshot
 ================
 
 .. include:: man_description.rst
-   :start-line: 3
+   :start-line: 7
 
 .. toctree::
    :maxdepth: 2

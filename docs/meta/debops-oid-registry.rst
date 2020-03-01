@@ -1,3 +1,7 @@
+.. Copyright (C) 2019-2020 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2019-2020 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _debops_oid_registry:
 
 DebOps OID Registry

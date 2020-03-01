@@ -1,3 +1,7 @@
+.. Copyright (C) 2017-2020 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2017-2020 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _changelog:
 
 Changelog
@@ -88,6 +92,14 @@ General
   The ``debops.debops`` collection will install additional ``debops.rolesXY``
   collections automatically via collection dependencies. The playbooks have
   been updated to include new Collections.
+
+- The DebOps repository is now compliant with the `REUSE Specification`__. The
+  `SPDX License Identifiers`__ have been added to the files contained in the
+  repository and a valid copyright and license information will be required to
+  pass the test suite.
+
+  .. __: https://reuse.software/spec/
+  .. __: https://spdx.org/ids
 
 :ref:`debops.postfix` role
 ''''''''''''''''''''''''''

@@ -1,3 +1,7 @@
+.. Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _unbound__ref_defaults_detailed:
 
 Default variable details
@@ -109,6 +113,7 @@ Forward all queries to external Google DNS servers:
 
 .. literalinclude:: examples/forward-all-to-google.yml
    :language: yaml
+   :lines: 1,5-
 
 Create custom forward zone for internal network:
 

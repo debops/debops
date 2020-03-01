@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Copyright (C) 2015-2016 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2016 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # Upgrade inventory variables for migration from debops.docker_gen v0.1.x to v0.2.x.
 # The script is idempotent.
 

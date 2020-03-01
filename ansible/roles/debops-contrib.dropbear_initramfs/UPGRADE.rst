@@ -1,3 +1,7 @@
+.. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _dropbear_initramfs__ref_upgrade_nodes:
 
 Upgrade notes
@@ -46,6 +50,7 @@ A subset of them can be automatically updated using this script:
 
 .. literalinclude:: scripts/migrate-from-systemli.rootcrypto-to-debops-contrib.dropbear_initramfs
    :language: shell
+   :lines: 1,6-
 
 The script is bundled with this role under
 :file:`./docs/scripts/migrate-from-systemli.rootcrypto-to-debops-contrib.dropbear_initramfs`

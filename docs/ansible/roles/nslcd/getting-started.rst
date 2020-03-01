@@ -1,3 +1,7 @@
+.. Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2019 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 Getting started
 ===============
 
@@ -52,6 +56,7 @@ that uses the ``debops.nslcd`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/nslcd.yml
    :language: yaml
+   :lines: 1,5-
 
 
 Ansible tags

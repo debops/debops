@@ -1,3 +1,7 @@
+.. Copyright (C) 2017 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2017 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-or-later
+
 .. _volkszaehler__ref_getting_started:
 
 Getting started
@@ -71,12 +75,14 @@ with debops.apache_:
 
 .. literalinclude:: playbooks/volkszaehler-apache.yml
    :language: yaml
+   :lines: 1,5-
 
 Ansible playbook that uses the ``debops-contrib.volkszaehler`` role together
 with debops.nginx_:
 
 .. literalinclude:: playbooks/volkszaehler-nginx.yml
    :language: yaml
+   :lines: 1,5-
 
 These playbooks are shipped with this role under
 :file:`./docs/playbooks/` from which you can symlink them to your
