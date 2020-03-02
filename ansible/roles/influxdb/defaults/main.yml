@@ -25,7 +25,8 @@
 #
 # FQDN hostname of the InfluxDB server. If a local InfluxDB server is detected, it
 # will override this variable automatically. Only one server at a time is
-# currently supported per host.
+# currently supported per host. DNS name is required because this access is via a
+# HTTP(S) API
 influxdb__server: ''
 
                                                                    # ]]]
@@ -42,9 +43,9 @@ influxdb__port: '8086'
 # correct host. This variable controls the task delegation to the correct
 # database server.
 #
-# If the InfluxDB server is run locally, this should point to the inventory name
-# of the current host, NOT ``localhost`` because that would delegate the tasks
-# to the Ansible Controller.
+# If the InfluxDB server is run locally, this should point to the FQDN hostname
+# known to Ansible of the current host, NOT ``localhost`` because that would
+# delegate the tasks to the Ansible Controller.
 influxdb__delegate_to: '{{ influxdb__server
                            if (influxdb__server|d() and
                                influxdb__server != "localhost")

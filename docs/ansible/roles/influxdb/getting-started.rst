@@ -37,10 +37,10 @@ you need to set a variable in the inventory:
 
    influxdb__server: 'influxdb.example.org'
 
-This needs to be a FQDN address or an IP address of a host with InfluxDB server
-installed. This host will be accessed by Ansible using task delegation, so it
-needs to be accessible and managed by Ansible. Currently only 1 server at
-a time is supported by the role.
+This needs to be a FQDN address of a host with InfluxDB server installed. DNS
+name is required because this access is via a HTTP(S) API. This host will be
+accessed by Ansible using task delegation, so it needs to be accessible and
+managed by Ansible. Currently only 1 server at a time is supported by the role.
 
 If :ref:`debops.pki` role is used to configure a PKI environment, with default
 ``domain`` PKI realm enabled, ``debops.influxdb_server`` role will configure
