@@ -16,6 +16,11 @@ check: fail-if-git-dirty
 clean:          ## Clean up project directory
 clean: clean-tests clean-sdist clean-wheel
 
+.PHONY: clean-git
+clean-git:      ## Clean up directories and files ignored by git
+clean-git:
+	@git clean -X -d -f
+
 .PHONY: collection
 collection:     ## Build collection of Ansible artifacts with ansible-galaxy
 collection: make-collection
@@ -79,7 +84,7 @@ sdist-sign: sdist
 	@gpg --detach-sign --armor dist/debops-*.tar.gz
 
 .PHONY: make-collection
-make-collection:
+make-collection: clean clean-git
 	@lib/ansible-galaxy/make-collection
 
 .PHONY: clean-sdist
