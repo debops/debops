@@ -158,27 +158,6 @@ if ! [ -f "/etc/avahi/services/debops-cluster.service" ] ; then
 EOF
 fi
 
-# When external DHCP server is providing networking, its DNS may contain
-# a record for the inital hostname of the Vagrant box, sent by default by the
-# DHCP client. To avoid name resolution issues, release the current DHCP lease
-# and obtain it again, with the new hostname. Hopefully, the DHCP server is
-# configured to keep the lease for the same IP for a short time; otherwise
-# Vagrant might lose track of the box network configuration.
-printf "%s\n" "Restarting network services to get the correct hostname in the DHCP lease..."
-if [ -d /run/systemd/system ] ; then
-    if [ "$(systemctl is-active systemd-networkd.service)" == "active" ] ; then
-        printf "%s\n" "Restarting systemd-networkd.service"
-        systemctl restart systemd-networkd.service
-    else
-        printf "%s\n" "Detecting primary network interface"
-        primary_interface="$(/sbin/ip -o -0 addr | grep -v LOOPBACK | head -n1 | awk '{print $2}' | sed 's/://')"
-        printf "%s\n" "Restarting ifup@${primary_interface}.service"
-        systemctl stop "ifup@${primary_interface}.service" ; systemctl start "ifup@${primary_interface}.service"
-    fi
-else
-    printf "%s\n" "Restarting networking init script"
-    /etc/init.d/networking restart
-fi
 SCRIPT
 
 $provision_box = <<SCRIPT
