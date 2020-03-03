@@ -84,6 +84,13 @@ Updates of upstream application versions
 - In the :ref:`debops.roundcube` role, the Roundcube version installed by
   default has been updated to ``v1.4.2``.
 
+Continuous Integration
+''''''''''''''''''''''
+
+- The Vagrant provisioning script will install Ansible from PyPI by default.
+  The version included in the current Debian Stable (Buster) is too old for the
+  DebOps playbooks and roles.
+
 General
 '''''''
 
