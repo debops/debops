@@ -24,7 +24,7 @@
 #     VAGRANT_NODES=0
 #         Specify the number of additional nodes. Default: 0.
 #
-#     ANSIBLE_FROM="debian" (default) / ANSIBLE_FROM="pypi" / ANSIBLE_FROM="devel"
+#     ANSIBLE_FROM="pypi" (default) / ANSIBLE_FROM="debian" / ANSIBLE_FROM="devel"
 #         Specify the way to install ansible.
 #
 #     DEBOPS_FROM="devel" / DEBOPS_FROM="pypi"
@@ -189,7 +189,7 @@ readonly PROVISION_VAGRANT_HOSTNAME="#{ENV['VAGRANT_HOSTNAME']}"
 readonly PROVISION_APT_HTTP_PROXY="#{ENV['APT_HTTP_PROXY']}"
 readonly PROVISION_APT_HTTPS_PROXY="#{ENV['APT_HTTPS_PROXY']}"
 readonly PROVISION_APT_FORCE_NETWORK="#{ENV['APT_FORCE_NETWORK']}"
-readonly PROVISION_ANSIBLE_FROM="#{ENV['ANSIBLE_FROM'] || 'debian'}"
+readonly PROVISION_ANSIBLE_FROM="#{ENV['ANSIBLE_FROM'] || 'pypi'}"
 readonly PROVISION_DEBOPS_FROM="#{ENV['DEBOPS_FROM'] || 'devel'}"
 readonly VAGRANT_PREPARE_BOX="#{ENV['VAGRANT_PREPARE_BOX']}"
 
@@ -573,7 +573,7 @@ SCRIPT
 $provision_controller = <<SCRIPT
 set -o nounset -o pipefail -o errexit
 
-readonly PROVISION_ANSIBLE_FROM="#{ENV['ANSIBLE_FROM'] || 'debian'}"
+readonly PROVISION_ANSIBLE_FROM="#{ENV['ANSIBLE_FROM'] || 'pypi'}"
 readonly PROVISION_DEBOPS_FROM="#{ENV['DEBOPS_FROM'] || 'devel'}"
 
 jane notify info "Configuring Ansible Controller host..."
