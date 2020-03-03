@@ -96,27 +96,28 @@ current_default_ip="$(ip route \
                       | uniq)"
 
 # Fix for https://github.com/hashicorp/vagrant/issues/7263
-if grep "127.0.0.1" /etc/hosts | grep "${current_fqdn}" > /dev/null ; then
-    printf "Updating the box IP address to '%s' in /etc/hosts...\n" "${current_default_ip}"
-    sed -i -e "/^127\.0\.0\.1.*$(hostname -f | sed -e 's/\./\\\./g')/d" /etc/hosts
+printf "Updating the box IP address to '%s' in /etc/hosts...\n" "${current_default_ip}"
+sed -i -e "/^127\.0\.0\.1.*$(hostname -f | sed -e 's/\./\\\./g')/d" /etc/hosts
 
-    # The upstream Vagrant box image contains 'buster' as an alias of
-    # 'localhost', let's remove it to avoid potential issues.
-    sed -i -r -e 's/^127\.0\.0\.1\\s+localhost.*$/127.0.0.1\\tlocalhost/' /etc/hosts
+# Remove static IP address based on the hostname
+sed -i '/^127\.0\.1\.1/d' /etc/hosts
 
-    # This provisioning script is executed on all nodes in the cluster,
-    # the "master" node does not have a suffix to extract.
-    if printf "${current_hostname}\n" | grep -E '^.*\-.*\-node[0-9]{1,3}$' ; then
-        node_short="$(printf "${current_hostname}" | awk -F'-' '{print $3}')"
-    else
-        node_short="master"
-    fi
+# The upstream Vagrant box image contains 'buster' as an alias of
+# 'localhost', let's remove it to avoid potential issues.
+sed -i -r -e 's/^127\.0\.0\.1\\s+localhost.*$/127.0.0.1\\tlocalhost/' /etc/hosts
 
-    # Add an '/etc/hosts' entry for the current host. The rest of the cluster
-    # will be defined later by the master node.
-    printf "%s\t%s %s %s\n" "${current_default_ip:-127.0.1.1}" "${current_fqdn}" \
-           "${current_hostname}" "${node_short}" >> /etc/hosts
+# This provisioning script is executed on all nodes in the cluster,
+# the "master" node does not have a suffix to extract.
+if printf "${current_hostname}\n" | grep -E '^.*\-.*\-node[0-9]{1,3}$' ; then
+    node_short="$(printf "${current_hostname}" | awk -F'-' '{print $3}')"
+else
+    node_short="master"
 fi
+
+# Add an '/etc/hosts' entry for the current host. The rest of the cluster
+# will be defined later by the master node.
+printf "%s\t%s %s %s\n" "${current_default_ip:-127.0.1.1}" "${current_fqdn}" \
+       "${current_hostname}" "${node_short}" >> /etc/hosts
 
 # Install Avahi and configure a custom service to help the master host detct
 # other nodes in the cluster. Avahi might be blocked later by the firewall, but
