@@ -358,7 +358,7 @@ published on Ansible Galaxy, you can run the command:
 
 .. code-block:: console
 
-   ansible-galaxy collection install --force debops.debops
+   ansible-galaxy collection install --force-with-deps debops.debops
 
 
 Installation of the DebOps rolling release
