@@ -18,6 +18,16 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.2: https://github.com/debops/debops/compare/v1.2.0...stable-1.2
 
+Changed
+~~~~~~~
+
+Continuous Integration
+''''''''''''''''''''''
+
+- The Vagrant provisioning script will install Ansible from PyPI by default.
+  The version included in the current Debian Stable (Buster) is too old for the
+  DebOps playbooks and roles.
+
 
 `debops v1.2.3`_ - 2020-02-24
 -----------------------------
