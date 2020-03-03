@@ -18,6 +18,20 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.0: https://github.com/debops/debops/compare/v2.0.0...stable-2.0
 
+Fixed
+~~~~~
+
+General
+'''''''
+
+- Fix `an issue with Ansible Collections`__ where roles used via the
+  ``include_role`` Ansible module broke due to the split into multiple
+  collections. All roles will now have the ``debops.debops`` collection
+  included by default in the :file:`meta/main.yml` file to tell Ansible where
+  to look for dependent roles.
+
+  .. __: https://github.com/ansible/ansible/issues/67723
+
 
 `debops v2.0.2`_ - 2020-02-24
 -----------------------------
