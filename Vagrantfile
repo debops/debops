@@ -18,7 +18,19 @@
 #     VAGRANT_BOX="debian/stretch64"
 #         Specify the box to use.
 #
-#     VAGRANT_HOSTNAME="stretch"
+#     VAGRANT_NODE_BOX="debian/buster64"
+#         Specify the box to use for nodes.
+#
+#     VAGRANT_NODES=0
+#         Specify the number of additional nodes. Default: 0.
+#
+#     ANSIBLE_FROM="pypi" (default) / ANSIBLE_FROM="debian" / ANSIBLE_FROM="devel"
+#         Specify the way to install ansible.
+#
+#     DEBOPS_FROM="devel" / DEBOPS_FROM="pypi"
+#         Specify the way to install debops.
+#
+#     VAGRANT_HOSTNAME="buster"
 #         Set a custom hostname after the box boots up.
 #
 #     CONTROLLER=false
@@ -147,7 +159,8 @@ readonly PROVISION_VAGRANT_HOSTNAME="#{ENV['VAGRANT_HOSTNAME']}"
 readonly PROVISION_APT_HTTP_PROXY="#{ENV['APT_HTTP_PROXY']}"
 readonly PROVISION_APT_HTTPS_PROXY="#{ENV['APT_HTTPS_PROXY']}"
 readonly PROVISION_APT_FORCE_NETWORK="#{ENV['APT_FORCE_NETWORK']}"
-readonly PROVISION_ANSIBLE_FROM="#{ENV['ANSIBLE_FROM'] || 'debian'}"
+readonly PROVISION_ANSIBLE_FROM="#{ENV['ANSIBLE_FROM'] || 'pypi'}"
+readonly PROVISION_DEBOPS_FROM="#{ENV['DEBOPS_FROM'] || 'devel'}"
 readonly VAGRANT_PREPARE_BOX="#{ENV['VAGRANT_PREPARE_BOX']}"
 
 # Install the Jane script
@@ -461,7 +474,8 @@ SCRIPT
 $provision_controller = <<SCRIPT
 set -o nounset -o pipefail -o errexit
 
-readonly PROVISION_ANSIBLE_FROM="#{ENV['ANSIBLE_FROM'] || 'debian'}"
+readonly PROVISION_ANSIBLE_FROM="#{ENV['ANSIBLE_FROM'] || 'pypi'}"
+readonly PROVISION_DEBOPS_FROM="#{ENV['DEBOPS_FROM'] || 'devel'}"
 
 jane notify info "Configuring Ansible Controller host..."
 
