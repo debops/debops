@@ -477,6 +477,14 @@ fi
 if [ -n "${VAGRANT_PREPARE_BOX}" ] ; then
     jane notify info "Removing host entry from '/etc/hosts' for CI environment"
     sed -i -e "/$(hostname --fqdn)/d" /etc/hosts
+
+    jane notify info "Removing machine-id information for CI environment"
+    rm -f /var/lib/dbus/machine-id
+    truncate -s 0 /etc/machine-id
+
+    jane notify info "Removing random seed for CI environment"
+    systemctl stop systemd-random-seed
+    rm -f /var/lib/systemd/random-seed
 fi
 
 jane notify success "Vagrant box provisioning complete"
