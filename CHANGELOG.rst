@@ -120,6 +120,17 @@ Removed
 Fixed
 ~~~~~
 
+General
+'''''''
+
+- Fix `an issue with Ansible Collections`__ where roles used via the
+  ``include_role`` Ansible module broke due to the split into multiple
+  collections. All roles will now have the ``debops.debops`` collection
+  included by default in the :file:`meta/main.yml` file to tell Ansible where
+  to look for dependent roles.
+
+  .. __: https://github.com/ansible/ansible/issues/67723
+
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
