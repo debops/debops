@@ -798,6 +798,9 @@ Vagrant.configure("2") do |config|
 
         subconfig.vm.network "forwarded_port", guest: 22, host: "#{master_ssh_port}", id: 'ssh', auto_correct: true
 
+        # Vagrant should generate a random MAC address for a box
+        subconfig.vm.base_mac = nil
+
         subconfig.vm.provision "shell", inline: $setup_eatmydata,  keep_color: true
         subconfig.vm.provision "shell", inline: $fix_hostname_dns, keep_color: true
         subconfig.vm.provision "shell", inline: $provision_box,    keep_color: true, run: "always"
