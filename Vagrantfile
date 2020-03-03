@@ -748,6 +748,19 @@ else
     VAGRANT_NODES = ENV['VAGRANT_NODES'] || 0
 end
 IO.write( VAGRANT_NODE_NUMBER, VAGRANT_NODES )
+
+# Randomize forwarded SSH port to avoid clashes with multiple Vagrant instances
+# started at the same time
+r = Random.new
+VAGRANT_SSH_PORT_MASTER = (ENV['VAGRANT_DOTFILE_PATH'] || '.vagrant') + '/vagrant_ssh_port_master'
+if File.exist? VAGRANT_SSH_PORT_MASTER
+    master_ssh_port = IO.read( VAGRANT_SSH_PORT_MASTER ).strip
+else
+    master_ssh_port = r.rand(2300..2800)
+    IO.write( VAGRANT_SSH_PORT_MASTER, master_ssh_port )
+end
+master_fqdn = master_hostname + '.' + VAGRANT_DOMAIN
+
 VAGRANT_NODE_BOX = ENV['VAGRANT_NODE_BOX'] || 'debian/buster64'
 
 # Vagrant removed the atlas.hashicorp.com to vagrantcloud.com
@@ -803,6 +816,8 @@ Vagrant.configure("2") do |config|
     config.vm.define "master", primary: true do |subconfig|
         subconfig.vm.box = ENV['VAGRANT_BOX'] || 'debian/buster64'
         subconfig.vm.hostname = master_fqdn
+
+        subconfig.vm.network "forwarded_port", guest: 22, host: "#{master_ssh_port}", id: 'ssh', auto_correct: true
 
         subconfig.vm.provision "shell", inline: $setup_eatmydata,  keep_color: true
         subconfig.vm.provision "shell", inline: $fix_hostname_dns, keep_color: true
