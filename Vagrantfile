@@ -283,7 +283,7 @@ else
 fi
 
 # Configure Ansible
-if ! type ansible > /dev/null 2>&1 ; then
+if ! type ansible > /dev/null 2>&1 && [ ! -f /home/vagrant/.local/bin/ansible ] ; then
     jane notify warning "Ansible not found"
 
     tee "/etc/apt/sources.list" > "/dev/null" <<EOF
@@ -346,9 +346,6 @@ EOF
     find /var/lib/apt/lists -maxdepth 1 -type f ! -name 'lock' -delete
     find /var/cache/apt/archives -maxdepth 1 -name '*.deb' -delete
     rm -rf /root/.cache/* /tmp/*
-else
-    jane notify ok "Ansible found at '$(which ansible)'"
-    ansible --version
 fi
 
 # Update APT cache on the first boot after provisioning so that APT packages
@@ -356,22 +353,6 @@ fi
 if [ -z "${JANE_BOX_INIT:-}" ] ; then
     jane notify cache "Refreshing APT cache"
     apt-get update
-
-    # vagrant-libvirt executes virt-sysprep during box packaging.
-    # virt-sysprep zeroes out files in /usr/local/*, apparently.
-    # So we need to install PyPI packages on the real box, not the template.
-    jane notify install "Installing test requirements via PyPI..."
-
-    pip install netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi}
-    mkdir /tmp/build
-    rsync -a --exclude '.vagrant' /vagrant/ /tmp/build
-    cd /tmp/build
-    make sdist > /dev/null
-    pip install dist/*
-    cd - > /dev/null
-
-    jane notify cache "Cleaning up cache directories..."
-    rm -rf /root/.cache/* /tmp/*
 fi
 
 if [ -n "${VAGRANT_PREPARE_BOX}" ] ; then
@@ -458,6 +439,58 @@ fi
 jane notify info "Vagrant node provisioning complete"
 SCRIPT
 
+$provision_ansible = <<SCRIPT
+set -o nounset -o pipefail -o errexit
+
+readonly PROVISION_ANSIBLE_FROM="#{ENV['ANSIBLE_FROM'] || 'pypi'}"
+readonly PROVISION_DEBOPS_FROM="#{ENV['DEBOPS_FROM'] || 'devel'}"
+
+if ! type ansible > /dev/null 2>&1 ; then
+    jane notify warning "Ansible not found"
+
+    jane notify info "Provisioning Ansible ..."
+
+    # Ensure that the Ansible Controller host has up to date APT cache to be able
+    # to install the packages without friction.
+    sudo apt-get -q update
+
+    ansible_from_pypi=""
+    if [ "${PROVISION_ANSIBLE_FROM}" == "pypi" ] ; then
+        ansible_from_pypi="ansible"
+    fi
+
+    debops_from_pypi=""
+    debops_from_devel=""
+    if [ "${PROVISION_DEBOPS_FROM}" == "pypi" ] || ! [ -d "/vagrant" ] ; then
+        debops_from_pypi="debops"
+    else
+        debops_from_devel="true"
+    fi
+
+    jane notify install "Installing Ansible requirements via PyPI..."
+
+    pip3 install --user netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi} ${debops_from_pypi}
+
+    if [ -n "${debops_from_devel}" ] ; then
+        mkdir /tmp/build
+        rsync -a --exclude '.vagrant' /vagrant/ /tmp/build
+        cd /tmp/build
+        make sdist-quiet > /dev/null
+        pip3 install --user dist/*
+        cd - > /dev/null
+    fi
+
+    jane notify cache "Cleaning up cache directories..."
+    rm -rf ~/.cache/*
+    sudo rm -rf /root/.cache/* /tmp/*
+
+    jane notify info "Ansible provisioning complete"
+else
+    jane notify ok "Ansible found at '$(which ansible)'"
+    ansible --version
+fi
+SCRIPT
+
 $provision_controller = <<SCRIPT
 set -o nounset -o pipefail -o errexit
 
@@ -475,17 +508,21 @@ if [ "${PROVISION_ANSIBLE_FROM}" == "pypi" ] ; then
     ansible_from_pypi="ansible"
 fi
 
-jane notify install "Installing test requirements via PyPI..."
+jane notify install "Installing requirements via PyPI..."
 
-sudo pip install netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi}
-mkdir /tmp/build
-rsync -a --exclude '.vagrant' /vagrant/ /tmp/build
-cd /tmp/build
-make sdist > /dev/null
-sudo pip install dist/*
-cd - > /dev/null
+pip3 install --user netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi} ${debops_from_pypi}
+
+if [ -n "${debops_from_devel}" ] ; then
+    mkdir /tmp/build
+    rsync -a --exclude '.vagrant' /vagrant/ /tmp/build
+    cd /tmp/build
+    make sdist-quiet > /dev/null
+    pip3 install --user dist/*
+    cd - > /dev/null
+fi
 
 jane notify cache "Cleaning up cache directories..."
+rm -rf ~/.cache/*
 sudo rm -rf /root/.cache/* /tmp/*
 
 if ! [ -e .local/share/debops/debops ] ; then
@@ -678,6 +715,7 @@ Vagrant.configure("2") do |config|
 
         subconfig.vm.provision "shell", inline: $fix_hostname_dns, keep_color: true
         subconfig.vm.provision "shell", inline: $provision_box,    keep_color: true, run: "always"
+        subconfig.vm.provision "shell", inline: $provision_ansible, keep_color: true, privileged: false
 
         # Inject the insecure Vagrant SSH key into the master node so it can be
         # used by Ansible and cluster detection to connect to the other nodes.
