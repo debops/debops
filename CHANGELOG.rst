@@ -84,6 +84,13 @@ Updates of upstream application versions
 - In the :ref:`debops.roundcube` role, the Roundcube version installed by
   default has been updated to ``v1.4.2``.
 
+Continuous Integration
+''''''''''''''''''''''
+
+- The Vagrant provisioning script will install Ansible from PyPI by default.
+  The version included in the current Debian Stable (Buster) is too old for the
+  DebOps playbooks and roles.
+
 General
 '''''''
 
@@ -136,6 +143,20 @@ General
 
 - Fixed incorrect removal of the ferm rule set by :ref:`debops.avahi` on
   IPv6-enabled systems.
+
+:ref:`debops.gitlab_runner` role
+''''''''''''''''''''''''''''''''
+
+- Don't re-create removed :file:`/etc/machine-id` contents during Vagrant box
+  creation. This should fix issues with IP addresses received from DHCP by the
+  Vagrant machines.
+
+  .. warning:: This fix is applied using the :command:`patch` command on the
+               files packaged by APT. Existing installations will have to be
+               updated manually, alternatively the changes applied previously
+               should be removed from the affected files before the role is
+               applied. See the patch files in the role :file:`files/patches/`
+               directory for more information.
 
 :ref:`debops.netbase` role
 ''''''''''''''''''''''''''

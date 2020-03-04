@@ -3,8 +3,8 @@
 
 # Set up an Ansible Controller host with DebOps support using Vagrant
 #
-# Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2017 DebOps <https://debops.org/>
+# Copyright (C) 2017-2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2017-2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -25,7 +25,7 @@
 #     VAGRANT_NODES=0
 #         Specify the number of additional nodes. Default: 0.
 #
-#     ANSIBLE_FROM="debian" (default) / ANSIBLE_FROM="pypi" / ANSIBLE_FROM="devel"
+#     ANSIBLE_FROM="pypi" (default) / ANSIBLE_FROM="debian" / ANSIBLE_FROM="devel"
 #         Specify the way to install ansible.
 #
 #     DEBOPS_FROM="devel" / DEBOPS_FROM="pypi"
@@ -97,27 +97,28 @@ current_default_ip="$(ip route \
                       | uniq)"
 
 # Fix for https://github.com/hashicorp/vagrant/issues/7263
-if grep "127.0.0.1" /etc/hosts | grep "${current_fqdn}" > /dev/null ; then
-    printf "Updating the box IP address to '%s' in /etc/hosts...\n" "${current_default_ip}"
-    sed -i -e "/^127\.0\.0\.1.*$(hostname -f | sed -e 's/\./\\\./g')/d" /etc/hosts
+printf "Updating the box IP address to '%s' in /etc/hosts...\n" "${current_default_ip}"
+sed -i -e "/^127\.0\.0\.1.*$(hostname -f | sed -e 's/\./\\\./g')/d" /etc/hosts
 
-    # The upstream Vagrant box image contains 'buster' as an alias of
-    # 'localhost', let's remove it to avoid potential issues.
-    sed -i -r -e 's/^127\.0\.0\.1\\s+localhost.*$/127.0.0.1\\tlocalhost/' /etc/hosts
+# Remove static IP address based on the hostname
+sed -i '/^127\.0\.1\.1/d' /etc/hosts
 
-    # This provisioning script is executed on all nodes in the cluster,
-    # the "master" node does not have a suffix to extract.
-    if printf "${current_hostname}\n" | grep -E '^.*\-.*\-node[0-9]{1,3}$' ; then
-        node_short="$(printf "${current_hostname}" | awk -F'-' '{print $3}')"
-    else
-        node_short="master"
-    fi
+# The upstream Vagrant box image contains 'buster' as an alias of
+# 'localhost', let's remove it to avoid potential issues.
+sed -i -r -e 's/^127\.0\.0\.1\\s+localhost.*$/127.0.0.1\\tlocalhost/' /etc/hosts
 
-    # Add an '/etc/hosts' entry for the current host. The rest of the cluster
-    # will be defined later by the master node.
-    printf "%s\t%s %s %s\n" "${current_default_ip:-127.0.1.1}" "${current_fqdn}" \
-           "${current_hostname}" "${node_short}" >> /etc/hosts
+# This provisioning script is executed on all nodes in the cluster,
+# the "master" node does not have a suffix to extract.
+if printf "${current_hostname}\n" | grep -E '^.*\-.*\-node[0-9]{1,3}$' ; then
+    node_short="$(printf "${current_hostname}" | awk -F'-' '{print $3}')"
+else
+    node_short="master"
 fi
+
+# Add an '/etc/hosts' entry for the current host. The rest of the cluster
+# will be defined later by the master node.
+printf "%s\t%s %s %s\n" "${current_default_ip:-127.0.1.1}" "${current_fqdn}" \
+       "${current_hostname}" "${node_short}" >> /etc/hosts
 
 # Install Avahi and configure a custom service to help the master host detct
 # other nodes in the cluster. Avahi might be blocked later by the firewall, but
@@ -157,27 +158,6 @@ if ! [ -f "/etc/avahi/services/debops-cluster.service" ] ; then
 EOF
 fi
 
-# When external DHCP server is providing networking, its DNS may contain
-# a record for the inital hostname of the Vagrant box, sent by default by the
-# DHCP client. To avoid name resolution issues, release the current DHCP lease
-# and obtain it again, with the new hostname. Hopefully, the DHCP server is
-# configured to keep the lease for the same IP for a short time; otherwise
-# Vagrant might lose track of the box network configuration.
-printf "%s\n" "Restarting network services to get the correct hostname in the DHCP lease..."
-if [ -d /run/systemd/system ] ; then
-    if [ "$(systemctl is-active systemd-networkd.service)" == "active" ] ; then
-        printf "%s\n" "Restarting systemd-networkd.service"
-        systemctl restart systemd-networkd.service
-    else
-        printf "%s\n" "Detecting primary network interface"
-        primary_interface="$(/sbin/ip -o -0 addr | grep -v LOOPBACK | head -n1 | awk '{print $2}' | sed 's/://')"
-        printf "%s\n" "Restarting ifup@${primary_interface}.service"
-        systemctl stop "ifup@${primary_interface}.service" ; systemctl start "ifup@${primary_interface}.service"
-    fi
-else
-    printf "%s\n" "Restarting networking init script"
-    /etc/init.d/networking restart
-fi
 SCRIPT
 
 $provision_box = <<SCRIPT
@@ -190,7 +170,7 @@ readonly PROVISION_VAGRANT_HOSTNAME="#{ENV['VAGRANT_HOSTNAME']}"
 readonly PROVISION_APT_HTTP_PROXY="#{ENV['APT_HTTP_PROXY']}"
 readonly PROVISION_APT_HTTPS_PROXY="#{ENV['APT_HTTPS_PROXY']}"
 readonly PROVISION_APT_FORCE_NETWORK="#{ENV['APT_FORCE_NETWORK']}"
-readonly PROVISION_ANSIBLE_FROM="#{ENV['ANSIBLE_FROM'] || 'debian'}"
+readonly PROVISION_ANSIBLE_FROM="#{ENV['ANSIBLE_FROM'] || 'pypi'}"
 readonly PROVISION_DEBOPS_FROM="#{ENV['DEBOPS_FROM'] || 'devel'}"
 readonly VAGRANT_PREPARE_BOX="#{ENV['VAGRANT_PREPARE_BOX']}"
 
@@ -346,7 +326,7 @@ else
 fi
 
 # Configure Ansible
-if ! type ansible > /dev/null 2>&1 ; then
+if ! type ansible > /dev/null 2>&1 && [ ! -f /home/vagrant/.local/bin/ansible ] ; then
     jane notify warning "Ansible not found"
 
     os_release="$(grep -E '^VERSION=' /etc/os-release | tr -d '(")' | cut -d' ' -f2 | tr -d '\n')"
@@ -465,9 +445,6 @@ EOF
     find /var/lib/apt/lists -maxdepth 1 -type f ! -name 'lock' -delete
     find /var/cache/apt/archives -maxdepth 1 -name '*.deb' -delete
     rm -rf /root/.cache/* /tmp/*
-else
-    jane notify ok "Ansible found at '$(which ansible)'"
-    ansible --version
 fi
 
 # Update APT cache on the first boot after provisioning so that APT packages
@@ -475,29 +452,19 @@ fi
 if [ -z "${JANE_BOX_INIT:-}" ] ; then
     jane notify cache "Refreshing APT cache"
     apt-get update
-
-    # vagrant-libvirt executes virt-sysprep during box packaging.
-    # virt-sysprep zeroes out files in /usr/local/*, apparently.
-    # So we need to install PyPI packages on the real box, not the template.
-    jane notify install "Installing requirements via PyPI..."
-
-    pip3 install netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi} ${debops_from_pypi}
-    if [ -n "${debops_from_devel}" ] ; then
-        mkdir /tmp/build
-        rsync -a --exclude '.vagrant' /vagrant/ /tmp/build
-        cd /tmp/build
-        make sdist-quiet > /dev/null
-        pip3 install dist/*
-        cd - > /dev/null
-    fi
-
-    jane notify cache "Cleaning up cache directories..."
-    rm -rf /root/.cache/* /tmp/*
 fi
 
 if [ -n "${VAGRANT_PREPARE_BOX}" ] ; then
     jane notify info "Removing host entry from '/etc/hosts' for CI environment"
     sed -i -e "/$(hostname --fqdn)/d" /etc/hosts
+
+    jane notify info "Removing machine-id information for CI environment"
+    rm -f /var/lib/dbus/machine-id
+    truncate -s 0 /etc/machine-id
+
+    jane notify info "Removing random seed for CI environment"
+    systemctl stop systemd-random-seed
+    rm -f /var/lib/systemd/random-seed
 fi
 
 jane notify success "Vagrant box provisioning complete"
@@ -571,10 +538,62 @@ fi
 jane notify info "Vagrant node provisioning complete"
 SCRIPT
 
+$provision_ansible = <<SCRIPT
+set -o nounset -o pipefail -o errexit
+
+readonly PROVISION_ANSIBLE_FROM="#{ENV['ANSIBLE_FROM'] || 'pypi'}"
+readonly PROVISION_DEBOPS_FROM="#{ENV['DEBOPS_FROM'] || 'devel'}"
+
+if ! type ansible > /dev/null 2>&1 ; then
+    jane notify warning "Ansible not found"
+
+    jane notify info "Provisioning Ansible ..."
+
+    # Ensure that the Ansible Controller host has up to date APT cache to be able
+    # to install the packages without friction.
+    sudo apt-get -q update
+
+    ansible_from_pypi=""
+    if [ "${PROVISION_ANSIBLE_FROM}" == "pypi" ] ; then
+        ansible_from_pypi="ansible"
+    fi
+
+    debops_from_pypi=""
+    debops_from_devel=""
+    if [ "${PROVISION_DEBOPS_FROM}" == "pypi" ] || ! [ -d "/vagrant" ] ; then
+        debops_from_pypi="debops"
+    else
+        debops_from_devel="true"
+    fi
+
+    jane notify install "Installing Ansible requirements via PyPI..."
+
+    pip3 install --user netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi} ${debops_from_pypi}
+
+    if [ -n "${debops_from_devel}" ] ; then
+        mkdir /tmp/build
+        rsync -a --exclude '.vagrant' /vagrant/ /tmp/build
+        cd /tmp/build
+        make sdist-quiet > /dev/null
+        pip3 install --user dist/*
+        cd - > /dev/null
+    fi
+
+    jane notify cache "Cleaning up cache directories..."
+    rm -rf ~/.cache/*
+    sudo rm -rf /root/.cache/* /tmp/*
+
+    jane notify info "Ansible provisioning complete"
+else
+    jane notify ok "Ansible found at '$(which ansible)'"
+    ansible --version
+fi
+SCRIPT
+
 $provision_controller = <<SCRIPT
 set -o nounset -o pipefail -o errexit
 
-readonly PROVISION_ANSIBLE_FROM="#{ENV['ANSIBLE_FROM'] || 'debian'}"
+readonly PROVISION_ANSIBLE_FROM="#{ENV['ANSIBLE_FROM'] || 'pypi'}"
 readonly PROVISION_DEBOPS_FROM="#{ENV['DEBOPS_FROM'] || 'devel'}"
 
 jane notify info "Configuring Ansible Controller host..."
@@ -598,18 +617,19 @@ fi
 
 jane notify install "Installing requirements via PyPI..."
 
-sudo pip3 install netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi} ${debops_from_pypi}
+pip3 install --user netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi} ${debops_from_pypi}
 
 if [ -n "${debops_from_devel}" ] ; then
     mkdir /tmp/build
     rsync -a --exclude '.vagrant' /vagrant/ /tmp/build
     cd /tmp/build
     make sdist-quiet > /dev/null
-    sudo pip3 install dist/*
+    pip3 install --user dist/*
     cd - > /dev/null
 fi
 
 jane notify cache "Cleaning up cache directories..."
+rm -rf ~/.cache/*
 sudo rm -rf /root/.cache/* /tmp/*
 
 if ! [ -e .local/share/debops/debops ] ; then
@@ -748,6 +768,19 @@ else
     VAGRANT_NODES = ENV['VAGRANT_NODES'] || 0
 end
 IO.write( VAGRANT_NODE_NUMBER, VAGRANT_NODES )
+
+# Randomize forwarded SSH port to avoid clashes with multiple Vagrant instances
+# started at the same time
+r = Random.new
+VAGRANT_SSH_PORT_MASTER = (ENV['VAGRANT_DOTFILE_PATH'] || '.vagrant') + '/vagrant_ssh_port_master'
+if File.exist? VAGRANT_SSH_PORT_MASTER
+    master_ssh_port = IO.read( VAGRANT_SSH_PORT_MASTER ).strip
+else
+    master_ssh_port = r.rand(2300..2800)
+    IO.write( VAGRANT_SSH_PORT_MASTER, master_ssh_port )
+end
+master_fqdn = master_hostname + '.' + VAGRANT_DOMAIN
+
 VAGRANT_NODE_BOX = ENV['VAGRANT_NODE_BOX'] || 'debian/buster64'
 
 # Vagrant removed the atlas.hashicorp.com to vagrantcloud.com
@@ -804,9 +837,15 @@ Vagrant.configure("2") do |config|
         subconfig.vm.box = ENV['VAGRANT_BOX'] || 'debian/buster64'
         subconfig.vm.hostname = master_fqdn
 
+        subconfig.vm.network "forwarded_port", guest: 22, host: "#{master_ssh_port}", id: 'ssh', auto_correct: true
+
+        # Vagrant should generate a random MAC address for a box
+        subconfig.vm.base_mac = nil
+
         subconfig.vm.provision "shell", inline: $setup_eatmydata,  keep_color: true
         subconfig.vm.provision "shell", inline: $fix_hostname_dns, keep_color: true
         subconfig.vm.provision "shell", inline: $provision_box,    keep_color: true, run: "always"
+        subconfig.vm.provision "shell", inline: $provision_ansible, keep_color: true, privileged: false
 
         # Inject the insecure Vagrant SSH key into the master node so it can be
         # used by Ansible and cluster detection to connect to the other nodes.
