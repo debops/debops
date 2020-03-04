@@ -18,6 +18,14 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.0: https://github.com/debops/debops/compare/v2.0.0...stable-2.0
 
+Added
+~~~~~
+
+:ref:`debops.gitlab_runner` role
+''''''''''''''''''''''''''''''''
+
+- The custom patches applied by the role can now be reverted conditionally.
+
 Changed
 ~~~~~~~
 

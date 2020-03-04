@@ -231,6 +231,7 @@
     src: '{{ "patches/package_domain-keep-ssh-host-keys-"
              + (item | basename | replace("vagrant-libvirt-","")) + ".patch" }}'
     basedir: '{{ item }}'
+    state: '{{ gitlab_runner__vagrant_libvirt_patch_state }}'
   with_items: '{{ gitlab_runner__register_libvirt_source.stdout_lines }}'
   when: gitlab_runner__vagrant_libvirt_patch|bool
   tags: [ 'role::gitlab_runner:patch' ]
