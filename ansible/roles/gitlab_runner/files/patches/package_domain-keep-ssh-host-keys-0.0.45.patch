@@ -1,18 +1,22 @@
-# Copyright (C) 2016 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2016 DebOps <https://debops.org/>
+# Copyright (C) 2016-2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2016-2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # During 'vagrant package' operation, 'virt-sysprep' command removes existing
 # SSH host keys. However, at the next boot of the packaged box, they are not
 # regenerated automatically, and this breaks Vagrant provisioning as well as
-# the 'vagrant ssh' command.
+# the 'vagrant ssh' command. Another problem is re-creation of the existing
+# '/etc/machine-id' file if it has been zeroed out, which breaks DHCP and VM
+# networking during operation of multiple Vagrant machines at once.
 #
-# This patch is hopefully a temporary solution to this problem until a better
-# one is found. It will disable the removal of existing SSH host keys by
-# the 'virt-sysprep' command. This is not advisable in a production
-# environment, however can be sufficient for a temporary, test environment.
+# This patch is hopefully a temporary solution to these problems until a better
+# one is found. It will disable the removal of existing SSH host keys and VM
+# customization by the 'virt-sysprep' command. This is not advisable in
+# a production environment, however can be sufficient for a temporary, test
+# environment.
 #
 # See also: https://github.com/vagrant-libvirt/vagrant-libvirt/issues/759
+# See also: https://github.com/vagrant-libvirt/vagrant-libvirt/issues/851#issuecomment-520799720
 #
 # Work directory: /usr/share/rubygems-integration/all/gems/vagrant-libvirt-*
 
@@ -23,7 +27,7 @@
            # remove hw association with interface
            # working for centos with lvs default disks
 -          `virt-sysprep --no-logfile --operations defaults,-ssh-userdir -a #{@tmp_img}`
-+          `virt-sysprep --no-logfile --operations defaults,-ssh-userdir,-ssh-hostkeys -a #{@tmp_img}`
++          `virt-sysprep --no-logfile --operations defaults,-ssh-userdir,-ssh-hostkeys,-customize -a #{@tmp_img}`
            # add any user provided file
            extra = ''
            @tmp_include = @tmp_dir + '/_include'
