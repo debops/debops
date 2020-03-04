@@ -39,17 +39,10 @@ influxdb__port: '8086'
                                                                    # ]]]
 # .. envvar:: influxdb__delegate_to [[[
 #
-# When the InfluxDB server is used remotely, Ansible needs to run tasks on the
-# correct host. This variable controls the task delegation to the correct
-# database server.
-#
-# If the InfluxDB server is run locally, this should point to the FQDN hostname
-# known to Ansible of the current host, NOT ``localhost`` because that would
-# delegate the tasks to the Ansible Controller.
-influxdb__delegate_to: '{{ influxdb__server
-                           if (influxdb__server|d() and
-                               influxdb__server != "localhost")
-                           else ansible_fqdn }}'
+# When the InfluxDB server is used remotely, this variable allows to control
+# the task delegation to the database server. Defaults to `inventory_hostname`,
+# the calls to the API are done from the host where runs `influxdb` playbook.
+influxdb__delegate_to: '{{ inventory_hostname }}'
                                                                    # ]]]
                                                                    # ]]]
 # SSL configuration [[[

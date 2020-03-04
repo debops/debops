@@ -13,7 +13,7 @@
     port: '{{ influxdb__port }}'
     ssl: '{{ influxdb__pki }}'
     password: '{{ lookup("password",
-                  secret + "/influxdb/" + influxdb__delegate_to +
+                  secret + "/influxdb/" + influxdb__server +
                   "/credentials/root/password " +
                   "length=" + influxdb__password_length) }}'
     proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'
@@ -31,7 +31,7 @@
     port: '{{ influxdb__port }}'
     ssl: '{{ influxdb__pki }}'
     password: '{{ lookup("password",
-                  secret + "/influxdb/" + influxdb__delegate_to +
+                  secret + "/influxdb/" + influxdb__server +
                   "/credentials/root/password " +
                   "length=" + influxdb__password_length) }}'
     proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'
@@ -49,7 +49,7 @@
     port: '{{ influxdb__port }}'
     ssl: '{{ influxdb__pki }}'
     password: '{{ lookup("password",
-                  secret + "/influxdb/" + influxdb__delegate_to +
+                  secret + "/influxdb/" + influxdb__server +
                   "/credentials/root/password " +
                   "length=" + influxdb__password_length) }}'
     proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'
@@ -63,7 +63,7 @@
   influxdb_user:
     user_name: '{{ item.user | d(item.name) }}'
     user_password: '{{ item.password | d(lookup("password",
-                       secret + "/influxdb/" + influxdb__delegate_to +
+                       secret + "/influxdb/" + influxdb__server +
                        "/credentials/" + item.user | d(item.name) + "/password " +
                        "length=" + influxdb__password_length)) }}'
     grants: '{{ item.grants | d(omit) }}'
@@ -73,7 +73,7 @@
     port: '{{ influxdb__port }}'
     ssl: '{{ influxdb__pki }}'
     password: '{{ lookup("password",
-                  secret + "/influxdb/" + influxdb__delegate_to +
+                  secret + "/influxdb/" + influxdb__server +
                   "/credentials/root/password " +
                   "length=" + influxdb__password_length) }}'
     proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'

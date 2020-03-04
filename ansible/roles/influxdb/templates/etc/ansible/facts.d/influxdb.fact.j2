@@ -8,8 +8,7 @@
 {% set influxdb__tpl_port        = ansible_local.influxdb.port        if (ansible_local|d() and ansible_local.influxdb|d() and ansible_local.influxdb.port|d())        else influxdb__port %}
 {% set influxdb__tpl_server      = ansible_local.influxdb.server      if (ansible_local|d() and ansible_local.influxdb|d() and ansible_local.influxdb.server|d())      else influxdb__server %}
 {% if influxdb__register_version.stdout %}
-{% set influxdb__tpl_delegate_to = influxdb__delegate_to %}
-{% set influxdb__tpl_server      = influxdb__delegate_to if influxdb__pki else "localhost" %}
+{% set influxdb__tpl_server      = ansible_fqdn if influxdb__pki else "localhost" %}
 {% endif %}
 {
 "delegate_to": "{{ influxdb__tpl_delegate_to }}",
