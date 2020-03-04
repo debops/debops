@@ -31,6 +31,15 @@ Each database is defined as a YAML dict with the following keys:
   Optional. If value is ``present``, the database will be created; if ``absent``,
   the database will be removed. It is defaulted to ``present``.
 
+``proxies``
+  Optional. Defaults to ``{{ omit }}``. Dict of HTTP(S) proxy to use for Requests
+  to connect to InfluxDB server. Overrides ``influxdb__proxies``.
+
+``validate_certs``
+  Optional, boolean. Defaults to ``True``. If set to ``False``, the SSL certificates
+  will not be validated. This should only set to no used on personally controlled
+  sites using self-signed certificates. Overrides ``influxdb__validate_certs``.
+
 Examples
 ~~~~~~~~
 
@@ -76,6 +85,15 @@ User account parameters
 ``state``
   Optional. If value is ``present``, the database will be created; if ``absent``,
   the database will be removed. It is defaulted to ``present``.
+
+``proxies``
+  Optional. Defaults to ``{{ omit }}``. Dict of HTTP(S) proxy to use for Requests
+  to connect to InfluxDB server. Overrides ``influxdb__proxies``.
+
+``validate_certs``
+  Optional, boolean. Defaults to ``True``. If set to ``False``, the SSL certificates
+  will not be validated. This should only set to no used on personally controlled
+  sites using self-signed certificates. Overrides ``influxdb__validate_certs``.
 
 Examples
 ~~~~~~~~

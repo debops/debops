@@ -30,6 +30,9 @@
     user_password: '{{ influxdb_server__root_password }}'
     state: 'present'
     admin: 'yes'
+    proxies:
+      http:
+      https:
   when: not (ansible_local|d() and ansible_local.influxdb_server|d()
              and ansible_local.influxdb_server.installed|d(false)|bool)
 

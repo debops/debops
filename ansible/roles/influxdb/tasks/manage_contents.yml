@@ -16,11 +16,12 @@
                   secret + "/influxdb/" + influxdb__delegate_to +
                   "/credentials/root/password " +
                   "length=" + influxdb__password_length) }}'
+    proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'
+    validate_certs: '{{ item.validate_certs | d(influxdb__validate_certs | d(True)) }}'
   with_flattened: '{{ influxdb__databases + influxdb__dependent_databases|d([]) }}'
   delegate_to: '{{ influxdb__delegate_to }}'
   when: ((item.database|d(False) or item.name|d(False)) and
          (item.state is defined and item.state == 'absent'))
-  no_log: True
 
 - name: Create databases
   influxdb_database:
@@ -33,11 +34,12 @@
                   secret + "/influxdb/" + influxdb__delegate_to +
                   "/credentials/root/password " +
                   "length=" + influxdb__password_length) }}'
+    proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'
+    validate_certs: '{{ item.validate_certs | d(influxdb__validate_certs | d(True)) }}'
   with_flattened: '{{ influxdb__databases + influxdb__dependent_databases|d([]) }}'
   delegate_to: '{{ influxdb__delegate_to }}'
   when: ((item.database|d(False) or item.name|d(False)) and
          (item.state is undefined or item.state != 'absent'))
-  no_log: True
 
 - name: Drop user accounts if requested
   influxdb_user:
@@ -50,11 +52,12 @@
                   secret + "/influxdb/" + influxdb__delegate_to +
                   "/credentials/root/password " +
                   "length=" + influxdb__password_length) }}'
+    proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'
+    validate_certs: '{{ item.validate_certs | d(influxdb__validate_certs | d(True)) }}'
   with_flattened: '{{ influxdb__users + influxdb__dependent_users|d([]) }}'
   delegate_to: '{{ influxdb__delegate_to }}'
   when: ((item.user|d(False) or item.name|d(False)) and
          (item.state is defined and item.state == "absent"))
-  no_log: True
 
 - name: Create user accounts
   influxdb_user:
@@ -73,8 +76,9 @@
                   secret + "/influxdb/" + influxdb__delegate_to +
                   "/credentials/root/password " +
                   "length=" + influxdb__password_length) }}'
+    proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'
+    validate_certs: '{{ item.validate_certs | d(influxdb__validate_certs | d(True)) }}'
   with_flattened: '{{ influxdb__users + influxdb__dependent_users }}'
   delegate_to: '{{ influxdb__delegate_to }}'
   when: ((item.user|d(False) or item.name|d(False)) and
          (item.state is undefined or item.state != "absent"))
-  no_log: True
