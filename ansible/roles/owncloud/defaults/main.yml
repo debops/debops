@@ -423,9 +423,11 @@ owncloud__variant_name_map:
 #
 # Supported releases:
 #
-# * ownCloud ``10.0``
+# * ownCloud ``10.3``
 #
 # * Nextcloud ``16.0``
+# * Nextcloud ``17.0``
+# * Nextcloud ``18.0``
 #
 # For Nextcloud refer to the `Nextcloud Maintenance and Release Schedule <https://github.com/nextcloud/server/wiki/Maintenance-and-Release-Schedule>`_.
 # and the `Nextcloud Server Changelog <https://nextcloud.com/changelog/>`_.
@@ -434,7 +436,7 @@ owncloud__variant_name_map:
 # and the `package index <https://download.owncloud.org/download/repositories/>`_ for more details.
 owncloud__release: '{{ "10.3"
                        if (owncloud__variant == "owncloud")
-                       else "16.0" }}'
+                       else "17.0" }}'
 
 
 # .. envvar:: owncloud__distribution
@@ -2152,7 +2154,7 @@ owncloud__apache__dependent_vhosts:
 # :program:`nginx` server configuration managed by the :ref:`debops.nginx` role.
 owncloud__nginx__dependent_servers:
 
-  ## https://docs.nextcloud.com/server/13/admin_manual/installation/nginx.html
+  ## https://docs.nextcloud.com/server/latest/admin_manual/installation/nginx.html
   - type: 'default'
     enabled: True
     by_role: 'debops.owncloud'
@@ -2161,16 +2163,18 @@ owncloud__nginx__dependent_servers:
     root: '{{ owncloud__deploy_path }}'
     webroot_create: False
     deny_hidden: False
-    ## Nextcloud has it's own maintenance page
+    ## Nextcloud has its own maintenance page
     maintenance: '{{ False if (owncloud__variant == "nextcloud") else True }}'
 
-    ## https://doc.owncloud.org/server/9.0/admin_manual/issues/general_troubleshooting.html#common-problems-error-messages
+    ## https://docs.nextcloud.com/server/latest/admin_manual/issues/general_troubleshooting.html#common-problems-error-messages
     ## DebOps default should be fine.
     # keepalive: '3600'
 
     robots_tag: [ 'none' ]
     permitted_cross_domain_policies: 'none'
-    frame_options: '{{ omit if (owncloud__variant in ["nextcloud"] and owncloud__release is version_compare("12.0", ">=")) else "SAMEORIGIN" }}'
+    frame_options: '{{ omit if (owncloud__variant == "nextcloud" and
+                                owncloud__release is version("17.0", "<"))
+                            else "SAMEORIGIN" }}'
 
     options: |
       add_header X-Download-Options noopen;
@@ -2187,7 +2191,7 @@ owncloud__nginx__dependent_servers:
       rewrite ^/.well-known/host-meta.json /public.php?service=host-meta-json last;
       {% endif %}
 
-      {% if (owncloud__variant in ["nextcloud"] and owncloud__release is version_compare("13.0", ">=")) %}
+      {% if owncloud__variant == "nextcloud" %}
       # Enable gzip but do not remove ETag headers
       gzip on;
       gzip_vary on;
@@ -2256,7 +2260,11 @@ owncloud__nginx__dependent_servers:
           # Enable pretty urls
           fastcgi_param front_controller_active true;
           fastcgi_intercept_errors on;
-          {% if (ansible_local.nginx.version if (ansible_local|d() and ansible_local.nginx|d() and ansible_local.nginx.version|d()) else "0.0") is version_compare("1.7.11",'>=') %}
+          {% if (ansible_local.nginx.version
+                 if (ansible_local|d() and ansible_local.nginx|d() and
+                     ansible_local.nginx.version|d())
+                 else "0.0")
+                is version_compare("1.7.11",'>=') %}
           fastcgi_request_buffering off;
           {% endif %}
 
@@ -2279,7 +2287,8 @@ owncloud__nginx__dependent_servers:
 
           add_header X-Content-Type-Options nosniff;
           add_header X-Download-Options noopen;
-          {% if not (owncloud__variant in ["nextcloud"] and owncloud__release is version_compare("12.0", ">=")) %}
+          {% if not (owncloud__variant == "nextcloud" and
+                     owncloud__release is version("17.0", "<")) %}
           add_header X-Frame-Options "SAMEORIGIN";
           {% endif %}
           add_header X-Permitted-Cross-Domain-Policies none;

@@ -81,6 +81,9 @@ Updates of upstream application versions
   installer versions have been updated to their next point releases, 9.11 and
   10.3 respectively.
 
+- In the :ref:`debops.owncloud` role, the Nextcloud version installed by
+  default has been updated to ``v17.0``.
+
 - In the :ref:`debops.roundcube` role, the Roundcube version installed by
   default has been updated to ``v1.4.2``.
 
@@ -107,6 +110,11 @@ General
 
   .. __: https://reuse.software/spec/
   .. __: https://spdx.org/ids
+
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Support has been added for Nextcloud 17.0 and 18.0.
 
 :ref:`debops.postfix` role
 ''''''''''''''''''''''''''
