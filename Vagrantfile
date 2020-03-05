@@ -467,16 +467,23 @@ if ! type ansible > /dev/null 2>&1 ; then
         debops_from_devel="true"
     fi
 
-    jane notify install "Installing Ansible requirements via PyPI..."
+    # Use Python 2.7 environment on older OS releases
+    os_release="$(grep -E '^VERSION=' /etc/os-release | tr -d '(")' | cut -d' ' -f2 | tr -d '\n')"
+    if [ "${os_release}" == "wheezy" ] || [ "${os_release}" == "jessie" ] || [ "${os_release}" == "stretch" ] ; then
+        pipwrap="pip"
+    else
+        pipwrap="pip3"
+    fi
+    jane notify install "Installing Ansible requirements via PyPI using ${pipwrap}..."
 
-    pip3 install --user netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi} ${debops_from_pypi}
+    "${pipwrap}" install --user netaddr python-ldap dnspython passlib future testinfra ${ansible_from_pypi} ${debops_from_pypi}
 
     if [ -n "${debops_from_devel}" ] ; then
         mkdir /tmp/build
         rsync -a --exclude '.vagrant' /vagrant/ /tmp/build
         cd /tmp/build
         make sdist-quiet > /dev/null
-        pip3 install --user dist/*
+        "${pipwrap}" install --user dist/*
         cd - > /dev/null
     fi
 
