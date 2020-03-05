@@ -586,6 +586,17 @@ if ! type ansible > /dev/null 2>&1 ; then
         cd - > /dev/null
     fi
 
+    # Add ~/.local/bin to PATH on older OS releases
+    if ! grep -q "HOME/.local/bin" ~/.profile ; then
+        cat << EOF >> "${HOME}/.profile"
+
+# set PATH so it includes user's private bin if it exists
+if [ -d "\\$HOME/.local/bin" ] ; then
+    PATH="\\$HOME/.local/bin:\\$PATH"
+fi
+EOF
+    fi
+
     jane notify cache "Cleaning up cache directories..."
     rm -rf ~/.cache/*
     sudo rm -rf /root/.cache/* /tmp/*
