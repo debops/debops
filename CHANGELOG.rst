@@ -44,6 +44,11 @@ Fixed
 
 - Fix idempotency issue in the :file:`/etc/crontab` file.
 
+:ref:`debops.nsswitch` role
+'''''''''''''''''''''''''''
+
+- Fix idempotency issue in the role fact script.
+
 
 `debops v1.2.3`_ - 2020-02-24
 -----------------------------
