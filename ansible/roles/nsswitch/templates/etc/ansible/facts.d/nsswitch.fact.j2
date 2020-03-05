@@ -10,7 +10,7 @@ import os
 nsswitch_conf = '/etc/nsswitch.conf'
 
 nss_databases = loads('''{{ nsswitch__combined_database_map
-                            | list | to_nice_json }}''')
+                            | list | sort | to_nice_json }}''')
 
 output = loads('''{{ ({
     "enabled": nsswitch__enabled | bool
