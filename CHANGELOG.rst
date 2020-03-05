@@ -36,6 +36,14 @@ Continuous Integration
   The version included in the current Debian Stable (Buster) is too old for the
   DebOps playbooks and roles.
 
+Fixed
+~~~~~
+
+:ref:`debops.cron` role
+'''''''''''''''''''''''
+
+- Fix idempotency issue in the :file:`/etc/crontab` file.
+
 
 `debops v2.0.3`_ - 2020-03-03
 -----------------------------
