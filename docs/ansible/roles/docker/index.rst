@@ -24,7 +24,7 @@ role to manage the Docker host itself.
 Copyright
 ---------
 
-.. literalinclude:: ../../../../ansible/roles/debops.docker/COPYRIGHT
+.. literalinclude:: ../../../../ansible/roles/docker/COPYRIGHT
 
 ..
  Local Variables:
