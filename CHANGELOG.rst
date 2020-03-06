@@ -44,6 +44,11 @@ Continuous Integration
 
 - The Ansible fact script has been updated to new MinIO Client version syntax.
 
+:ref:`debops.minio` role
+''''''''''''''''''''''''
+
+- The Ansible fact script has been updated to new MinIO Server version syntax.
+
 Fixed
 ~~~~~
 

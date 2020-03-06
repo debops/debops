@@ -19,18 +19,26 @@ output = {'installed': cmd_exists('minio')}
 
 try:
     minio_version_stdout = subprocess.check_output(
-            ["minio", "version"]
+            ["minio", "--version"]
             ).decode('utf-8').strip()
+except Exception:
+    try:
+        minio_version_stdout = subprocess.check_output(
+                ["minio", "version"]
+                ).decode('utf-8').strip()
+    except Exception:
+        pass
 
+if minio_version_stdout:
     for line in minio_version_stdout.split('\n'):
-        if line.lower().startswith('version: '):
+        if line.lower().startswith('minio version '):
+            output['version'] = line.split()[2]
+            output['release_tag'] = line.split()[2]
+        elif line.lower().startswith('version: '):
             output['version'] = line.split()[1]
         elif line.lower().startswith('release-tag: '):
             output['release_tag'] = line.split()[1]
         elif line.lower().startswith('commit-id: '):
             output['commit_id'] = line.split()[1]
-
-except Exception:
-    pass
 
 print(dumps(output, sort_keys=True, indent=4))
