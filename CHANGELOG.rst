@@ -39,6 +39,11 @@ Continuous Integration
 - Various improvements in the Vagrant box environment have been backported from
   the ``master`` branch.
 
+:ref:`debops.mcli` role
+'''''''''''''''''''''''
+
+- The Ansible fact script has been updated to new MinIO Client version syntax.
+
 Fixed
 ~~~~~
 
