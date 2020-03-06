@@ -36,6 +36,9 @@ Continuous Integration
   The version included in the current Debian Stable (Buster) is too old for the
   DebOps playbooks and roles.
 
+- Various improvements in the Vagrant box environment have been backported from
+  the ``master`` branch.
+
 Fixed
 ~~~~~
 
