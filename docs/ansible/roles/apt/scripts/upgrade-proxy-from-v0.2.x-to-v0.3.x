@@ -3,7 +3,7 @@
 # Copyright (C) 2013-2018 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
 # Copyright (C) 2014-2018 DebOps <https://debops.org/>
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: GPL-3.0-only
 
 # Upgrade inventory variables related to APT proxy settings for migration from
 # debops.apt v0.2.x to v0.3.x.

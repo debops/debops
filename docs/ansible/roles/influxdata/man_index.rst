@@ -3,7 +3,7 @@
 .. Copyright (C) 2020 Patryk Ściborek <patryk@sciborek.com>
 .. Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2020 DebOps <https://debops.org/>
-.. SPDX-License-Identifier: GPL-3.0-or-later
+.. SPDX-License-Identifier: GPL-3.0-only
 
 debops.influxdata
 =================
