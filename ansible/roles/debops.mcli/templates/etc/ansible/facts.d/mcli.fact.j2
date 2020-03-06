@@ -19,18 +19,26 @@ output = {'installed': cmd_exists('mcli')}
 
 try:
     mcli_version_stdout = subprocess.check_output(
-            ["mcli", "version"]
+            ["mcli", "--version"]
             ).decode('utf-8').strip()
+except Exception:
+    try:
+        mcli_version_stdout = subprocess.check_output(
+                ["mcli", "version"]
+                ).decode('utf-8').strip()
+    except Exception:
+        pass
 
+if mcli_version_stdout:
     for line in mcli_version_stdout.split('\n'):
-        if line.lower().startswith('version: '):
+        if line.lower().startswith('mcli version '):
+            output['version'] = line.split()[2]
+            output['release_tag'] = line.split()[2]
+        elif line.lower().startswith('version: '):
             output['version'] = line.split()[1]
         elif line.lower().startswith('release-tag: '):
             output['release_tag'] = line.split()[1]
         elif line.lower().startswith('commit-id: '):
             output['commit_id'] = line.split()[1]
-
-except Exception:
-    pass
 
 print(dumps(output, sort_keys=True, indent=4))
