@@ -57,6 +57,15 @@ Fixed
 
 - Fix idempotency issue in the :file:`/etc/crontab` file.
 
+:ref:`debops.minio` role
+''''''''''''''''''''''''
+
+- Fix an issue during installation of recent MinIO releases, where during an
+  initial restart the MinIO service would switch into "safe mode" when
+  a problem with configuration is detected; this would prevent the service to
+  be restarted correctly. Now the service should be properly stopped by
+  :command:`systemd` after a stop timeout.
+
 :ref:`debops.nsswitch` role
 '''''''''''''''''''''''''''
 
