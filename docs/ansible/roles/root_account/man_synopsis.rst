@@ -1,6 +1,6 @@
 .. Copyright (C) 2017 Fabio Bonelli <fb@fabiobonelli.it>
 .. Copyright (C) 2017 DebOps <https://debops.org/>
-.. SPDX-License-Identifier: GPL-3.0-or-later
+.. SPDX-License-Identifier: GPL-3.0-only
 
 Synopsis
 ========

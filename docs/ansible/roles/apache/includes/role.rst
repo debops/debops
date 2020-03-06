@@ -2,7 +2,7 @@
 
 .. Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
 .. Copyright (C) 2016-2017 DebOps <https://debops.org/>
-.. SPDX-License-Identifier: GPL-3.0-or-later
+.. SPDX-License-Identifier: GPL-3.0-only
 
 .. _Apache module index: https://httpd.apache.org/docs/2.4/mod/
 .. _Apache configuration sections documentation: https://httpd.apache.org/docs/2.4/sections.html
