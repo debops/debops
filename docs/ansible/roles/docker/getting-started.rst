@@ -38,10 +38,6 @@ certificate on the Docker host through the :ref:`debops.pki` role.
 This role does not support switching from Docker CE to Docker EE on an already
 installed machine. The minimum supported Docker API version is 1.20.
 
-``debops.docker`` relies on configuration managed by
-:ref:`debops.apt_preferences`, :ref:`debops.environment`
-and :ref:`debops.python` Ansible roles.
-
 Example inventory
 -----------------
 
