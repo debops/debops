@@ -42,8 +42,8 @@ owncloud__base_packages:
 
   # There are no Debian packages for Nextcloud yet unfortunately.
 
-  ## https://doc.owncloud.org/server/9.0/admin_manual/installation/source_installation.html
-  ## https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/collaborative_documents_configuration.html
+  ## https://doc.owncloud.org/server/10.3/admin_manual/installation/source_installation.html
+  ## FIXME: Collaborative document editing in ownCloud is now done with Collabora Online.
   ## FIXME: Is it necessary to install all LibreOffice packages? https://github.com/owncloud/documents#known-issues
   ## Upstream documentation does not specify it more clearly. Installing ``libreoffice`` just to be sure.
   - '{{ [ "libreoffice" ] if (owncloud__app_documents_libreoffice_enabled|bool) else [] }}'
@@ -56,7 +56,7 @@ owncloud__base_packages:
 # .. envvar:: owncloud__required_php_packages
 #
 # List of PHP packages required by Nextcloud.
-# Refer to the `official Nextcloud documentation <https://docs.nextcloud.com/server/stable/admin_manual/installation/source_installation.html#prerequisites-for-manual-installation>`__ for details.
+# Refer to the `official Nextcloud documentation <https://docs.nextcloud.com/server/17/admin_manual/installation/source_installation.html#prerequisites-for-manual-installation>`__ for details.
 owncloud__required_php_packages:
   # Included in base install:
   # - 'ctype'
@@ -79,7 +79,7 @@ owncloud__required_php_packages:
 # .. envvar:: owncloud__recommended_php_packages
 #
 # List of PHP packages recommended by Nextcloud.
-# Refer to the `official Nextcloud documentation <https://docs.nextcloud.com/server/stable/admin_manual/installation/source_installation.html#prerequisites-for-manual-installation>`__ for details.
+# Refer to the `official Nextcloud documentation <https://docs.nextcloud.com/server/17/admin_manual/installation/source_installation.html#prerequisites-for-manual-installation>`__ for details.
 owncloud__recommended_php_packages:
   - 'curl'
   - 'bz2'
@@ -270,7 +270,7 @@ owncloud__keyserver: '{{ ansible_local.core.keyserver
 # The ownCloud package maintainers have not automated this setup so that even
 # security upgrades can not be installed unattended.
 #
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/maintenance/package_upgrade.html#upgrade-quickstart>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/maintenance/package_upgrade.html#upgrade-quickstart>`__ for details.
 #
 # When this option is set to ``True``, the role enables a hook script for
 # :command:`dpkg` so that when :command:`dpkg` upgrades ownCloud, the database upgrade is
@@ -298,7 +298,7 @@ owncloud__dpkg_hook_script: '{{
 #
 # Whether database schema migration should be simulated before upgrading the production database.
 # For Nextcloud it cannot be configured and this variable is ignored.
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/maintenance/upgrade.html#migration-test>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/maintenance/upgrade.html#migration-test>`__ for details.
 owncloud__auto_database_upgrade_migration_test: True
 
 
@@ -568,12 +568,12 @@ owncloud__deploy_path_mode: '0750'
 #   In memory caching
 # ---------------------
 #
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/configuration/server/caching_configuration.html>`__ for details.
 
 # .. envvar:: owncloud__apcu_enabled
 #
 # Whether ``APCu`` should be used for local caching.
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html#id2>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/configuration/server/caching_configuration.html#apcu-configuration>`__ for details.
 owncloud__apcu_enabled: True
 
 
@@ -585,7 +585,7 @@ owncloud__apcu_enabled: True
 # Note that ownCloud requires version 2.2.5+ of the ``redis`` PHP package. This
 # requirement is not meet for Ubuntu trusty (neither in the release repos nor
 # in backports) thus Redis will not be enabled automatically by the role.
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/caching_configuration.html#id4>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/configuration/server/caching_configuration.html#redis-configuration>`__ for details.
 owncloud__redis_enabled: '{{ ansible_local|d() and ansible_local.redis_server|d() and
                              ansible_local.redis_server.installed|d() | bool and
                              (not (ansible_distribution == "Ubuntu" and ansible_distribution_release == "trusty")) }}'
@@ -627,7 +627,7 @@ owncloud__redis_password: '{{ ansible_local.redis_server.password
 #
 # ownCloud recommends MySQL or MariaDB as database management system.
 # Set to ``False`` to use SQLite.
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_database/linux_database_configuration.html>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/configuration/database/linux_database_configuration.html>`__ for details.
 # See the :envvar:`owncloud__database_map` for the databases support by this role.
 owncloud__database: 'mariadb'
 
@@ -776,14 +776,14 @@ owncloud__domain: '{{ ansible_local.core.domain
 #
 # Max upload size set in :program:`nginx` and PHP, with amount as M or G.
 # Before you change this be sure to understand
-# `Uploading big files > 512MB of the official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/big_file_upload_configuration.html>`__.
+# `Uploading big files > 512MB of the official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/configuration/files/big_file_upload_configuration.html>`__.
 owncloud__upload_size: '2G'
 
 
 # .. envvar:: owncloud__cron_minute
 #
 # At what time cron should execute background jobs
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/developer_manual/app/backgroundjobs.html>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/developer_manual/app/fundamentals/backgroundjobs.html>`__ for details.
 owncloud__cron_minute: '*/15'
 
 
@@ -791,7 +791,7 @@ owncloud__cron_minute: '*/15'
 #
 # Timeouts in seconds for application requests.
 #
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/big_file_upload_configuration.html>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/configuration/files/big_file_upload_configuration.html>`__ for details.
 owncloud__timeout: 3600
 
 
@@ -959,7 +959,7 @@ owncloud__combined_config: '{{ owncloud__role_config
 #      federation:
 #        autoAddServers: '0'
 #
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/occ_command.html#config-commands-label>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/configuration/server/occ_command.html#config-commands-label>`__ for details.
 
 # .. envvar:: owncloud__optional_apps_config
 #
@@ -1094,7 +1094,7 @@ owncloud__smb_support: False
 #                       inventory_hostname + '/owncloud/users/' + 'user' +
 #                       '/password length=' + owncloud__password_length) }}"
 #
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/occ_command.html>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/configuration/server/occ_command.html>`__ for details.
 
 # .. envvar:: owncloud__role_occ_cmd_list
 #
@@ -1194,7 +1194,7 @@ owncloud__user_files_host: []
 #   LDAP authentication
 # -----------------------
 #
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/go.php?to=admin-ldap>`__
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/configuration/user/user_auth_ldap.html>`__
 # and to the :ref:`owncloud__ref_external_users` section for more details.
 
 # .. envvar:: owncloud__ldap_enabled
@@ -1313,14 +1313,14 @@ owncloud__ldap_port: '{{ 636 if (owncloud__ldap_method in ["ssl"]) else 389 }}'
 # .. envvar:: owncloud__ldap_user_display_name
 #
 # The attribute that should be used as display name in ownCloud.
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#directory-settings>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/configuration/user/user_auth_ldap.html#directory-settings>`__ for details.
 owncloud__ldap_user_display_name: 'cn'
 
 
 # .. envvar:: owncloud__ldap_user_filter
 #
 # Use this to control which LDAP users are listed as ownCloud users on your ownCloud server.
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#user-filter>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/configuration/user/user_auth_ldap.html#user-filter>`__ for details.
 owncloud__ldap_user_filter: '(|
                                (objectclass=inetOrgPerson)
                              )'
@@ -1328,13 +1328,13 @@ owncloud__ldap_user_filter: '(|
 
 # .. envvar:: owncloud__ldap_user_filter_objectclass
 #
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#user-filter>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/configuration/user/user_auth_ldap.html#user-filter>`__ for details.
 owncloud__ldap_user_filter_objectclass: 'inetOrgPerson'
 
 
 # .. envvar:: owncloud__ldap_group_filter
 #
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#group-filter>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/configuration/user/user_auth_ldap.html#group-filter>`__ for details.
 owncloud__ldap_group_filter: '(&
                                 (objectClass=groupOfNames)
                                 (nextcloudEnabled=true)
@@ -1343,13 +1343,13 @@ owncloud__ldap_group_filter: '(&
 
 # .. envvar:: owncloud__ldap_group_filter_groups
 #
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#group-filter>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/configuration/user/user_auth_ldap.html#group-filter>`__ for details.
 owncloud__ldap_group_filter_groups: ''
 
 
 # .. envvar:: owncloud__ldap_group_filter_objectclass
 #
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#group-filter>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/configuration/user/user_auth_ldap.html#group-filter>`__ for details.
 owncloud__ldap_group_filter_objectclass: 'posixGroup'
 
 
@@ -1384,7 +1384,7 @@ owncloud__ldap_login_filter: '(&
 
 # .. envvar:: owncloud__ldap_login_filter_attributes
 #
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#login-filter>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/configuration/user/user_auth_ldap.html#login-filter>`__ for details.
 owncloud__ldap_login_filter_attributes: ''
 
 
@@ -1410,7 +1410,7 @@ owncloud__ldap_group_assoc_attribute: 'member'
 # .. envvar:: owncloud__home_folder_naming_rule
 #
 # By default, the ownCloud server creates the user directory in your ownCloud data directory and gives it the ownCloud username, .e.g :file:`/var/www/owncloud/data/alice`. You may want to override this setting and name it after an LDAP attribute value. The attribute can also return an absolute path, e. g. :file:`/mnt/storage43/alice`. Leave it empty for default behavior.
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#special-attributes>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/configuration/user/user_auth_ldap.html#special-attributes>`__ for details.
 owncloud__home_folder_naming_rule: 'attr:uid'
 
 # .. Advanced settings [[[
@@ -1425,7 +1425,7 @@ owncloud__home_folder_naming_rule: 'attr:uid'
 #
 # Note that almost every PHP request requires a new connection to the LDAP server. If you require fresh PHP requests we recommend defining a minimum lifetime of 15s or so, rather than completely eliminating the cache.
 #
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_user/user_auth_ldap.html#caching>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/configuration/user/user_auth_ldap.html#caching>`__ for details.
 owncloud__ldap_cache_ttl: '600'
 
 # .. ]]]
@@ -1488,13 +1488,13 @@ owncloud__ldap_config_id: '{{ ansible_local.owncloud.ldap_config_id
 #
 # Set the LDAP attribute value to be read by Owncloud/Nextcloud in order to get the user quota.
 # Any quota set in LDAP overrides quotas set on the Nextcloud user management page.
-# Refer to the `official ownCloud documentation <https://docs.nextcloud.com/server/15/admin_manual/configuration_user/user_auth_ldap.html#special-attributes>`__ for details.
+# Refer to the `official ownCloud documentation <https://docs.nextcloud.com/server/17/admin_manual/configuration_user/user_auth_ldap.html#special-attributes>`__ for details.
 owncloud__ldap_quota_attribute: 'nextcloudQuota'
 
 # .. envvar:: owncloud__ldap_quota_default
 #
 # User default LDAP quota. Use human-readable values, e.g. "2 GB".
-# Refer to the `official ownCloud documentation <https://docs.nextcloud.com/server/15/admin_manual/configuration_user/user_auth_ldap.html#special-attributes>`__ for details.
+# Refer to the `official ownCloud documentation <https://docs.nextcloud.com/server/17/admin_manual/configuration_user/user_auth_ldap.html#special-attributes>`__ for details.
 owncloud__ldap_quota_default: '10 GB'
 
 # .. envvar:: owncloud__ldap_default_config [[[
@@ -1615,7 +1615,7 @@ owncloud__ldap_combined_config: '{{ owncloud__ldap_default_config
 #   ownCloud Mail configuration
 # -------------------------------
 #
-# Refer to the `official ownCloud documentation about config.php <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/config_sample_php_parameters.html#mail-parameters>`__ and the `official ownCloud documentation about email configuration <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/email_configuration.html>`__ for details.
+# Refer to the `official ownCloud documentation about config.php <https://doc.owncloud.org/server/10.3/admin_manual/configuration/server/config_sample_php_parameters.html#mail-parameters>`__ and the `official ownCloud documentation about email configuration <https://doc.owncloud.org/server/10.3/admin_manual/configuration/server/email_configuration.html>`__ for details.
 
 # .. envvar:: owncloud__mail_domain
 #
@@ -1686,7 +1686,7 @@ owncloud__mail_conf_map:
 #   Theming ownCloud
 # --------------------
 #
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/developer_manual/core/theming.html>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/developer_manual/core/theming.html>`__ for details.
 # See also `ownCloud Trademark Guidelines <https://owncloud.org/trademarks/>`_.
 
 # .. envvar:: owncloud__theme_active
@@ -1847,7 +1847,7 @@ owncloud__theme_copy_files_host: {}
 #
 # This configuration ends up in :file:`theme.config.php` and override the
 # values from :file:`config.php`.
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/config_sample_php_parameters.html>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/configuration/server/config_sample_php_parameters.html>`__ for details.
 owncloud__theme_conf_map:
   theme: '{{ owncloud__theme_active }}'
 
@@ -1921,7 +1921,7 @@ owncloud__php_temp_path: ''
 # .. envvar:: owncloud__php_output_buffering [[[
 #
 # Output buffering set in PHP, with amount set in megabytes.
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/configuration_files/big_file_upload_configuration.html#configuring-php>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/configuration/files/big_file_upload_configuration.html#configuring-php>`__ for details.
 owncloud__php_output_buffering: '0'
 
 
@@ -2154,7 +2154,7 @@ owncloud__apache__dependent_vhosts:
 # :program:`nginx` server configuration managed by the :ref:`debops.nginx` role.
 owncloud__nginx__dependent_servers:
 
-  ## https://docs.nextcloud.com/server/latest/admin_manual/installation/nginx.html
+  ## https://docs.nextcloud.com/server/17/admin_manual/installation/nginx.html
   - type: 'default'
     enabled: True
     by_role: 'debops.owncloud'
@@ -2166,7 +2166,7 @@ owncloud__nginx__dependent_servers:
     ## Nextcloud has its own maintenance page
     maintenance: '{{ False if (owncloud__variant == "nextcloud") else True }}'
 
-    ## https://docs.nextcloud.com/server/latest/admin_manual/issues/general_troubleshooting.html#common-problems-error-messages
+    ## https://docs.nextcloud.com/server/17/admin_manual/issues/general_troubleshooting.html#common-problems-error-messages
     ## DebOps default should be fine.
     # keepalive: '3600'
 
@@ -2359,7 +2359,7 @@ owncloud__php__dependent_configuration:
                if (owncloud__variant in ["nextcloud"] and owncloud__release is version_compare("12.0", ">="))
                else "absent" }}'
     options: |
-      ; https://docs.nextcloud.com/server/13/admin_manual/configuration_server/server_tuning.html#enable-php-opcache
+      ; https://docs.nextcloud.com/server/17/admin_manual/installation/server_tuning.html#enable-php-opcache
 
       [opcache]
 
@@ -2385,7 +2385,7 @@ owncloud__php__dependent_configuration:
 # .. envvar:: owncloud__php__dependent_pools
 #
 # PHP pools managed by the :ref:`debops.php` role.
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/9.0/admin_manual/installation/source_installation.html#php-ini-configuration-notes>`__ for details.
+# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/installation/source_installation.html#php-ini-configuration-notes>`__ for details.
 owncloud__php__dependent_pools:
   name: 'owncloud'
   by_role: 'debops.owncloud'
