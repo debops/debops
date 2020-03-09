@@ -2155,6 +2155,8 @@ owncloud__apache__dependent_vhosts:
 owncloud__nginx__dependent_servers:
 
   ## https://docs.nextcloud.com/server/17/admin_manual/installation/nginx.html
+  ## Corresponds to 65ff129d27a912a27c0b4ebe42b2c59df262b72a
+  ## from https://github.com/nextcloud/documentation.git
   - type: 'default'
     enabled: True
     by_role: 'debops.owncloud'
@@ -2251,9 +2253,10 @@ owncloud__nginx__dependent_servers:
         options: |
           include fastcgi_params;
           fastcgi_split_path_info ^(.+?\.php)(\/.*|)$;
+          set $path_info $fastcgi_path_info;
           try_files $fastcgi_script_name =404;
           fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-          fastcgi_param PATH_INFO $fastcgi_path_info;
+          fastcgi_param PATH_INFO $path_info;
           fastcgi_param HTTPS on;
           #Avoid sending the security headers twice
           fastcgi_param modHeadersAvailable true;
@@ -2299,7 +2302,7 @@ owncloud__nginx__dependent_servers:
           access_log off;
           {% endif %}
 
-      - pattern: '~ \.(?:png|html|ttf|ico|jpg|jpeg|bcmap)$'
+      - pattern: '~ \.(?:png|html|ttf|ico|jpg|jpeg|bcmap|mp4|webm)$'
         options: |
           try_files $uri /index.php$request_uri;
 
