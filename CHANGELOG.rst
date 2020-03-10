@@ -71,6 +71,12 @@ Fixed
 
 - Fix idempotency issue in the role fact script.
 
+:ref:`debops.nullmailer` role
+'''''''''''''''''''''''''''''
+
+- Don't lookup the ``_smtp._tcp`` SRV resource records using the ``dig``
+  Ansible lookup plugin if the ``ansible_domain`` variable is empty.
+
 
 `debops v2.0.3`_ - 2020-03-03
 -----------------------------

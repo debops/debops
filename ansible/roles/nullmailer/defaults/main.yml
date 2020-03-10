@@ -237,7 +237,8 @@ nullmailer__starttls: True
 # List which contains the result of the :command:`dig` query for SMTP
 # server ``SRV`` resource records in the host's domain. See
 # :rfc:`6186` for details.
-nullmailer__smtp_srv_rr: '{{ q("dig", "_smtp._tcp." + nullmailer__domain + "./SRV", "flat=0") }}'
+nullmailer__smtp_srv_rr: '{{ q("dig", "_smtp._tcp." + nullmailer__domain + "./SRV", "flat=0")
+                             if nullmailer__domain|d() else [] }}'
 
                                                                    # ]]]
 # .. envvar:: nullmailer__smtp_port [[[
