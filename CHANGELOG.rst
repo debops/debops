@@ -77,6 +77,12 @@ Fixed
 - Don't lookup the ``_smtp._tcp`` SRV resource records using the ``dig``
   Ansible lookup plugin if the ``ansible_domain`` variable is empty.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- The ``file`` Ansible module does not support the ``validate`` parameter; it
+  seems that this was a copying mistake and has been removed.
+
 
 `debops v2.0.3`_ - 2020-03-03
 -----------------------------
