@@ -52,6 +52,12 @@ Fixed
 
 - Fix idempotency issue in the role fact script.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- The ``file`` Ansible module does not support the ``validate`` parameter; it
+  seems that this was a copying mistake and has been removed.
+
 
 `debops v1.1.9`_ - 2020-02-24
 -----------------------------
