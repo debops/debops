@@ -26,6 +26,11 @@ Added
 
 - The custom patches applied by the role can now be reverted conditionally.
 
+:ref:`debops.postgresql_server` role
+''''''''''''''''''''''''''''''''''''
+
+- Allow selection of the day of the month for monthly backups.
+
 Changed
 ~~~~~~~
 
