@@ -217,11 +217,11 @@ influxdb_server__pki_options:
 # .. envvar:: influxdb_server__pki [[[
 #
 # Enable or disable support for SSL in InfluxDB (using :ref:`debops.pki`).
-influxdb_server__pki: '{{ (True
+influxdb_server__pki: '{{ True
                           if (ansible_local|d() and ansible_local.pki|d() and
-                              ansible_local.pki.enabled|d() and
+                              ansible_local.pki.enabled|d()|bool and
                               influxdb_server__pki_realm in ansible_local.pki.known_realms)
-                          else False) | bool }}'
+                          else False }}'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__pki_path [[[
