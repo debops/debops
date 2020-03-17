@@ -182,6 +182,12 @@ General
   in case that the DNS infrastructure is not configured. This avoids 60s
   timeouts during Ansible fact gathering in such cases.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The role now always sets the HTTP Strict Transport Security header when it is
+  enabled, regardless of the response code.
+
 :ref:`debops.postgresql_server` role
 ''''''''''''''''''''''''''''''''''''
 
