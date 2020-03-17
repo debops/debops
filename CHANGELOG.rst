@@ -54,6 +54,11 @@ Continuous Integration
 
 - The Ansible fact script has been updated to new MinIO Server version syntax.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- TLSv1.3 is now enabled by default for nginx version 1.13.0 and up.
+
 Fixed
 ~~~~~
 
