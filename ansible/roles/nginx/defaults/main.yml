@@ -506,7 +506,13 @@ nginx_default_ssl_ciphers: 'bettercrypto_org__set_b_pfs'
                                                                    # ]]]
 # .. envvar:: nginx_default_tls_protocols [[[
 #
-nginx_default_tls_protocols: [ 'TLSv1', 'TLSv1.1', 'TLSv1.2' ]
+# Default set of TLS protocols to use. TLSv1.3 is only supported on nginx
+# version 1.13.0 and up.
+#
+# See also: https://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_protocols
+nginx_default_tls_protocols: '{{ [ "TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3" ]
+                                 if ansible_local.nginx.version|d("0.0.0") is version("1.13.0", ">=")
+                                 else [ "TLSv1", "TLSv1.1", "TLSv1.2" ] }}'
 
                                                                    # ]]]
 # .. envvar:: nginx_default_ssl_curve [[[
