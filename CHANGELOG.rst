@@ -57,6 +57,12 @@ Fixed
 
 - Fix idempotency issue in the :file:`/etc/crontab` file.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The role now always sets the HTTP Strict Transport Security header when it is
+  enabled, regardless of the response code.
+
 :ref:`debops.nsswitch` role
 '''''''''''''''''''''''''''
 
