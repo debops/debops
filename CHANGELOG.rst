@@ -76,6 +76,12 @@ Fixed
   be restarted correctly. Now the service should be properly stopped by
   :command:`systemd` after a stop timeout.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The role now always sets the HTTP Strict Transport Security header when it is
+  enabled, regardless of the response code.
+
 :ref:`debops.nsswitch` role
 '''''''''''''''''''''''''''
 
