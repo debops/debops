@@ -44,6 +44,11 @@ Continuous Integration
 - Various improvements in the Vagrant box environment have been backported from
   the ``master`` branch.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- TLSv1.3 is now enabled by default for nginx version 1.13.0 and up.
+
 Fixed
 ~~~~~
 
