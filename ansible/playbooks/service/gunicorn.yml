@@ -13,7 +13,19 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
+  pre_tasks:
+
+    - import_role:
+        name: 'gunicorn'
+        tasks_from: 'main_env'
+      tags: [ 'role::gunicorn', 'role::gunicorn:secret', 'role::secret' ]
+
   roles:
+
+    - role: secret
+      tags: [ 'role::secret', 'role::gunicorn', 'role::gunicorn:secret' ]
+      secret_directories:
+        - '{{ gunicorn__secret__directories }}'
 
     - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
