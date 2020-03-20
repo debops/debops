@@ -41,7 +41,8 @@
     mode: '0644'
   with_items: '{{ prometheus_exporter__combined_exporters }}'
   delegate_to: '{{ prometheus_exporter__delegate_to }}'
-  when: prometheus_exporter__server is defined and prometheus_exporter__server
+  when: prometheus_exporter__server is defined and prometheus_exporter__server and
+        prometheus_exporter__server_file_based_discovery_service
 
 - name: Make sure that Ansible local facts directory exists
   file:

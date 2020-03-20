@@ -40,6 +40,13 @@ prometheus_exporter__delegate_to: '{{ prometheus_exporter__server
                                       if (prometheus_exporter__server|d() and
                                           prometheus_exporter__server != "localhost")
                                       else inventory_hostname }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__server_file_based_discovery_service [[[
+#
+# Use file-based discovery service in server
+prometheus_exporter__server_file_based_discovery_service: True
+
                                                                    # ]]]
                                                                    # ]]]
 # Basic configuration [[[
@@ -57,12 +64,28 @@ prometheus_exporter__default_exporters: [ 'node' ]
 prometheus_exporter__exporters: []
 
                                                                    # ]]]
+# .. envvar:: prometheus_exporter__group_exporters [[[
+#
+# Prometheus exporters to install and configure in specific Ansible
+# inventory group.
+prometheus_exporter__group_exporters: []
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__group_exporters [[[
+#
+# Prometheus exporters to install and configure in specific Ansible
+# inventory host.
+prometheus_exporter__host_exporters: []
+
+                                                                   # ]]]
 # .. envvar:: prometheus_exporter__combined_exporters [[[
 #
 # The variable which combines all other Prometheus exporters
 # configuration variables and is used in the role tasks and templates.
 prometheus_exporter__combined_exporters: '{{ prometheus_exporter__default_exporters
-                                             + prometheus_exporter__exporters }}'
+                                             + prometheus_exporter__exporters
+                                             + prometheus_exporter__group_exporters
+                                             + prometheus_exporter__host_exporters }}'
 
                                                                    # ]]]
 # .. envvar:: prometheus_exporter__allow [[[
