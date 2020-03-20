@@ -26,6 +26,11 @@ Added
 
 - The custom patches applied by the role can now be reverted conditionally.
 
+:ref:`debops.php` role
+''''''''''''''''''''''
+
+- Ensure that the PHP support works on Ubuntu Focal.
+
 :ref:`debops.postgresql_server` role
 ''''''''''''''''''''''''''''''''''''
 
