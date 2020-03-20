@@ -1,0 +1,166 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2020 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+# .. Copyright (C) 2020 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-or-later
+
+# .. _prometheus_server__ref_defaults:
+
+# debops.prometheus_exporter default variables
+# ========================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Prometheus server configuration [[[
+# --------------------------------
+
+# .. envvar:: prometheus_exporter__server [[[
+#
+# FQDN hostname of the Prometheus server. If a local Prometheus server is detected, it
+# will override this variable automatically. Only one server at a time is
+# currently supported per host.
+prometheus_exporter__server: ''
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__delegate_to [[[
+#
+# When the Prometheus server is used remotely, Ansible needs to run tasks on the
+# correct host. This variable controls the task delegation to the correct
+# database server.
+#
+# If the Prometheus server is run locally, this should point to the inventory name
+# of the current host, NOT ``localhost`` because that would delegate the tasks
+# to the Ansible Controller.
+prometheus_exporter__delegate_to: '{{ prometheus_exporter__server
+                                      if (prometheus_exporter__server|d() and
+                                          prometheus_exporter__server != "localhost")
+                                      else inventory_hostname }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Basic configuration [[[
+# -----------------------
+
+# .. envvar:: prometheus_exporter__default_exporters [[[
+#
+# Default Prometheus exporters to install and configure.
+prometheus_exporter__default_exporters: [ 'node' ]
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__exporters [[[
+#
+# Prometheus exporters to install and configure.
+prometheus_exporter__exporters: []
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__combined_exporters [[[
+#
+# The variable which combines all other Prometheus exporters
+# configuration variables and is used in the role tasks and templates.
+prometheus_exporter__combined_exporters: '{{ prometheus_exporter__default_exporters
+                                             + prometheus_exporter__exporters }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__allow [[[
+#
+# List of IP addresses or CIDR subnets which will be permitted to access the
+# Prometheus exporters. If the list is empty, nobody can access the service.
+prometheus_exporter__allow: []
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__bind [[[
+#
+# A valid string consisting of a hostname or IP. To allow connections from
+# remote hosts you need to change this to ````, the default.
+prometheus_exporter__bind: '{{ "localhost" if prometheus_exporter__server == "localhost" else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__ports_map [[[
+#
+# Port number map on which this Prometheus exporters listens on.
+prometheus_exporter__ports_map:
+  apache:  '9117'
+  bind: '9119'
+  bird: '9324'
+  blackbox: '9110'
+  haproxy: '9101'
+  mongodb: '9216'
+  mysqld: '9104'
+  nginx: '9113'
+  node: '9100'
+  pgbouncer: '9127'
+  postgres: '9187'
+  process: '9256'
+  snmp: '9116'
+  sql: '9237'
+  squid: '9301'
+  trafficserver: '9548'
+  varnish: '9131'
+                                                                   # ]]]
+                                                                   # ]]]
+# Prometheus default file [[[
+# -------------------------------
+
+# The variables below define the contents of the
+# :file:`/etc/default/prometheus-*-exporter` configuration files.
+
+# .. envvar:: prometheus_exporter__args [[[
+#
+# The default configuration options which should be present in the exporters
+# configuration files.
+# :ref:`prometheus_exporter__args` for more details.
+prometheus_exporter__default_args:
+
+  - name: 'common'
+    options:
+      - web.listen-address: '{{ prometheus_exporter__bind + ":" + prometheus_exporter__ports_map[item] }}'
+      - web.telemetry-path: '/metrics'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__args [[[
+#
+# The configuration options which should be present in the exporters
+# configuration files.
+# :ref:`prometheus_exporter__args` for more details.
+prometheus_exporter__args: []
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__combined_args [[[
+#
+# The variable which combines all other Prometheus exporters
+# configuration options and is used in the role tasks and templates.
+prometheus_exporter__combined_args: '{{ prometheus_exporter__default_args
+                                        + prometheus_exporter__args }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: prometheus_exporter__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+prometheus_exporter__etc_services__dependent_list: '{{ lookup("template",
+                                                       "lookup/prometheus_exporter__etc_services__dependent_list.j2") }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+prometheus_exporter__ferm__dependent_rules:
+
+  - name: 'prometheus_exporter'
+    type: 'accept'
+    saddr: '{{ prometheus_exporter__allow }}'
+    dport: '{{ lookup("template",
+               "lookup/prometheus_exporter__ferm__dependent_rules_dport.j2") }}'
+    accept_any: False
+    role: 'prometheus_exporter'
+    state: '{{ "absent" if prometheus_exporter__server == "localhost" else "present" }}'
+
+                                                                   # ]]]
+                                                                   # ]]]

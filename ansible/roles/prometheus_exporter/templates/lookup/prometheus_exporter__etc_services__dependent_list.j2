@@ -1,0 +1,12 @@
+{# Copyright (C) 2020 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+ # Copyright (C) 2017 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+{% set prometheus_exporter__tpl_etc_services = [] %}
+{% for exporter in prometheus_exporter__combined_exporters %}
+{%   set _ = prometheus_exporter__tpl_etc_services.append({
+   'name': 'prometheus-' + exporter + '-exporter',
+   'port': prometheus_exporter__ports_map[exporter]
+}) %}
+{% endfor %}
+{{ prometheus_exporter__tpl_etc_services }}

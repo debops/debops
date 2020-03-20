@@ -1,0 +1,20 @@
+# Copyright (C) 2020 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# {{ ansible_managed }}
+
+# Set the command-line arguments to pass to the server.
+ARGS="
+{% for element in prometheus_exporter__combined_args | parse_kv_items %}
+{%   if element.name|d() and element.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%     if element.name in [ 'common', item ] and element.options|d() %}
+{%       for thing in element.options %}
+{%         if thing.name|d() and thing.value|d() and thing.state|d('present') != 'absent' %}
+{{ '--{}={}'.format(thing.name, thing.value) }}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+"

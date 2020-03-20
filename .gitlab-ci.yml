@@ -1368,6 +1368,24 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/python/.*'
     JANE_LOG_PATTERN: '\[debops\.python\]'
 
+'prometheus_server role':
+  <<: *test_role_1st_deps
+  variables:
+    JANE_TEST_FACT: 'prometheus_server.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/prometheus_server.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_prometheus_server'
+    JANE_DIFF_PATTERN: '.*/roles/prometheus_server/.*'
+    JANE_LOG_PATTERN: '\[debops\.prometheus_server\]'
+
+'prometheus_exporter role':
+  <<: *test_role_1st_deps
+  variables:
+    JANE_TEST_FACT: 'prometheus_exporter.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/prometheus_exporter.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_prometheus_exporter'
+    JANE_DIFF_PATTERN: '.*/roles/prometheus_exporter/.*'
+    JANE_LOG_PATTERN: '\[debops\.prometheus_exporter\]'
+
 
 # --- r --- [[[2
 
