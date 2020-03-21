@@ -4,17 +4,17 @@
 
 # {{ ansible_managed }}
 
-# Set the command-line arguments to pass to the server.
-ARGS="
+{% set prometheus_exporter__tpl_args = [] %}
 {% for element in prometheus_exporter__combined_args | parse_kv_items %}
 {%   if element.name|d() and element.state|d('present') not in [ 'absent', 'ignore' ] %}
 {%     if element.name in [ 'common', item ] and element.options|d() %}
 {%       for thing in element.options %}
 {%         if thing.name|d() and thing.value|d() and thing.state|d('present') != 'absent' %}
-{{ '--{}={}'.format(thing.name, thing.value) }}
+{%           set _ = prometheus_exporter__tpl_args.append('--{}={}'.format(thing.name, thing.value)) %}
 {%         endif %}
 {%       endfor %}
 {%     endif %}
 {%   endif %}
 {% endfor %}
-"
+# Set the command-line arguments to pass to the server.
+ARGS="{{ prometheus_exporter__tpl_args | join(' ') }}"
