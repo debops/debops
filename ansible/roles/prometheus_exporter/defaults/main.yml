@@ -163,6 +163,20 @@ prometheus_exporter__combined_args: '{{ prometheus_exporter__default_args
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
+# .. envvar:: prometheus_exporter__apt_preferences__dependent_list [[[
+#
+# Configuration of the :ref:`debops.apt_preferences` role.
+prometheus_exporter__apt_preferences__dependent_list:
+
+  - packages: [ 'prometheus-*-exporter' ]
+    pin: 'release o=Debian Backports,n={{ ansible_distribution_release }}-backports'
+    priority: '500'
+    reason: 'Prefer Prometheus exporter packages from the stretch backports for metrics naming consistency'
+    role: 'debops.prometheus_exporter'
+    suffix: '_backports'
+    state: '{{ "present" if ansible_distribution_release == "stretch" else "absent" }}'
+
+                                                                   # ]]]
 # .. envvar:: prometheus_exporter__etc_services__dependent_list [[[
 #
 # Configuration for the :ref:`debops.etc_services` Ansible role.
