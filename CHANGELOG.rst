@@ -31,6 +31,13 @@ Added
 
 - Ensure that the PHP support works on Ubuntu Focal.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- The role can now instruct acme-tiny to register an ACME account with one or
+  more contact URLs. Let's Encrypt for example uses this information to notify
+  you about expiring certificates and emergency revocation.
+
 :ref:`debops.postgresql_server` role
 ''''''''''''''''''''''''''''''''''''
 
