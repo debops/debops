@@ -180,6 +180,8 @@ initialize_environment () {
 
     config["acme_ca_api"]="${acme_ca_api_map[${config['acme_ca']}]}"
 
+    config["acme_contacts"]=""
+
     config["acme_expiration_days"]="30"
 
     # shellcheck disable=SC2154
@@ -1080,20 +1082,24 @@ request_acme_tiny_certificate () {
 
         if ! ( check_expiration_time acme/cert.pem "${config['acme_expiration_seconds']}" && check_openssl_key_crt_match private/key.pem acme/cert.pem ) ; then
 
+            local acme_tiny_request_params="--account-key acme/account_key.pem \
+                    --directory-url \"${config['acme_ca_api']}\" --csr acme/request.pem \
+                    --acme-dir \"${config['acme_challenge_dir']}\""
+
+            if [ ! -z "${config['acme_contacts']}" ]; then
+                acme_tiny_request_params+=(" --contact \"${config['acme_contacts']//,/\" \"}\"")
+            fi
+
             if [ "$EUID" -eq 0 ] ; then
 
                 set +e
-                su --shell /bin/sh -c "umask 0022 ; ${config['acme_client_script']} --account-key acme/account_key.pem \
-                    --directory-url \"${config['acme_ca_api']}\" --csr acme/request.pem \
-                    --acme-dir \"${config['acme_challenge_dir']}\" > acme/cert.pem.tmp 2>acme/error.log" "${config['acme_user']}"
+                su --shell /bin/sh -c "umask 0022 ; ${config['acme_client_script']} ${acme_tiny_request_params[*]} > acme/cert.pem.tmp 2>acme/error.log" "${config['acme_user']}"
                 set -e
 
             else
 
                 set +e
-                "${config['acme_client_script']}" --account-key acme/account_key.pem \
-                    --directory-url "${config['acme_ca_api']}" --csr acme/request.pem \
-                    --acme-dir "${config['acme_challenge_dir']}" > acme/cert.pem.tmp 2>acme/error.log
+                "${config['acme_client_script']}" "${acme_tiny_request_params[*]}" > acme/cert.pem.tmp 2>acme/error.log
                 set -e
 
             fi
@@ -2298,6 +2304,12 @@ sub_init () {
                         ;;
                     acme-ca-api=*)
                         args["acme_ca_api"]=${OPTARG#*=}
+                        ;;
+                    acme-contacts)
+                        args["acme_contacts"]="${!OPTIND}"; OPTIND=$(( OPTIND + 1 ))
+                        ;;
+                    acme-contacts=*)
+                        args["acme_contacts"]=${OPTARG#*=}
                         ;;
                     acme-default-subdomains)
                         args["acme_default_subdomains"]="${!OPTIND}"; OPTIND=$(( OPTIND + 1 ))

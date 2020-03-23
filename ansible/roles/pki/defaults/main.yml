@@ -231,6 +231,19 @@ pki_acme_ca_api_map:
   'le-staging-v2': 'https://acme-staging-v02.api.letsencrypt.org/directory'
 
                                                                    # ]]]
+# .. envvar:: pki_acme_contacts [[[
+#
+# List of (mailto:) URLs that the ACME server can use to contact you for issues
+# related to your account. For example, the server may wish to notify you about
+# server-initiated revocation or certificate expiration.
+pki_acme_contacts: [ 'mailto:{{ ansible_local.core.admin_public_email[0]
+                                if (ansible_local|d() and
+                                    ansible_local.core|d() and
+                                    ansible_local.core.admin_public_email|d() and
+                                    ansible_local.core.admin_public_email[0]|d())
+                                else "root@" + ansible_domain }}' ]
+
+                                                                   # ]]]
 # .. envvar:: pki_acme_challenge_dir [[[
 #
 # Directory where the ACME client should store responses to ACME CA challenges.
