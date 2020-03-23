@@ -130,6 +130,12 @@ List of parameters related to the entire PKI realm:
   needed, but support for ACME needs to be present on the remote host for it to
   work (see :envvar:`pki_acme_install` variable).
 
+``acme_contacts``
+  Optional, list of (mailto:) URLs that the ACME server can use to contact you
+  for issues related to your account. For example, the server may wish to
+  notify you about server-initiated revocation or certificate expiration. If
+  not specified, the list defined in :envvar:`pki_acme_contacts` will be used.
+
 ``internal``
   Optional, boolean. Enable or disable support for internal CA certificates in
   a given realm. If you disable internal CA support, an alternative,
