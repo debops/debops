@@ -24,7 +24,7 @@ List of databases that should be present or absent on a given InfluxDB server.
 Each database is defined as a YAML dict with the following keys:
 
 ``database`` or ``name``
-  Required. Name of the database, required. Names of databases can contain any
+  Required. Name of the database. Names of databases can contain any
   unicode character
 
 ``state``
@@ -50,6 +50,61 @@ Create databases, remove some of the existing ones:
    influxdb__databases:
 
      - name: 'dbname'
+
+
+.. _influxdb__retention_policies:
+
+influxdb__retention_policies
+----------------------------
+
+List of retention policies that should be present on a given InfluxDB server database.
+Each retention policy is defined as a YAML dict with the following keys:
+
+``policy`` or ``name``
+  Required. Name of the retention policy.
+
+``database``
+  Required. Name of the database. Names of databases can contain any
+  unicode character
+
+``duration``
+   Required. Determines how long InfluxDB keeps the data. The ``duration`` is a
+   duration literal or ``INF`` (infinite). The minimum duration for a retention
+   policy is one hour and the maximum duration is INF.
+
+``replication``
+   Required. Determines how many independent copies of each point are stored in
+   the cluster. If the replication factor is set to 2, each series is stored on
+   2 separate nodes. If the replication factor is equal to the number of data
+   nodes, data is replicated on each node in the cluster.
+
+``default``
+   Optional. Defaults to ``False``. Sets the new retention policy as the default
+   retention policy for the database.
+
+``proxies``
+  Optional. Defaults to ``{{ omit }}``. Dict of HTTP(S) proxy to use for Requests
+  to connect to InfluxDB server. Overrides ``influxdb__proxies``.
+
+``validate_certs``
+  Optional, boolean. Defaults to ``True``. If set to ``False``, the SSL certificates
+  will not be validated. This should only set to no used on personally controlled
+  sites using self-signed certificates. Overrides ``influxdb__validate_certs``.
+
+Examples
+~~~~~~~~
+
+Create retention policies:
+
+.. code-block:: yaml
+
+   influxdb__retention_policies:
+
+     - name: 'fourweeks'
+       database: 'dbname'
+       duration: '4w'
+       replication: 1
+       default: True
 
 
 .. _influxdb__users:
