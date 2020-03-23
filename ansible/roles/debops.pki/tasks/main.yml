@@ -158,6 +158,7 @@
     --private-file-acl-groups "{{ (item.private_file_acl_groups | d(pki_private_file_acl_groups)) | join('/') }}"
     --acme-ca "{{ item.acme_ca | d(pki_acme_ca) }}"
     --acme-ca-api "{{ item.acme_ca_api | d(pki_acme_ca_api_map[item.acme_ca|d(pki_acme_ca)]) }}"
+    --acme-contacts "{{ item.acme_contacts | d(pki_acme_contacts) | join(',') }}"
     --acme-default-subdomains "{{ (item.acme_default_subdomains | d(pki_acme_default_subdomains)) | join('/') }}"
     --acme-challenge-dir "{{ item.acme_challenge_dir | d(pki_acme_challenge_dir) }}"
     --default-domain "{{ item.default_domain | d(pki_default_domain) }}"
