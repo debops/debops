@@ -1052,7 +1052,7 @@ request_acme_tiny_certificate () {
                     --directory-url \"${config['acme_ca_api']}\" --csr acme/request.pem \
                     --acme-dir \"${config['acme_challenge_dir']}\""
 
-            if [ ! -z "${config['acme_contacts']}" ]; then
+            if [ -n "${config['acme_contacts']}" ]; then
                 acme_tiny_request_params+=(" --contact \"${config['acme_contacts']//,/\" \"}\"")
             fi
 
