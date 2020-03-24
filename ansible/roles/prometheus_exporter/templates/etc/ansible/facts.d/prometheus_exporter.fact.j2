@@ -10,5 +10,5 @@
 {
 "delegate_to": "{{ prometheus_exporter__tpl_delegate_to }}",
 "server": "{{ prometheus_exporter__tpl_server }}",
-"exporters": {{ prometheus_exporter__combined_exporters | to_json }}
+"exporters": {{ prometheus_exporter__combined_exporters | union(prometheus_exporter__combined_go_exporters | map(attribute="name") | list) | to_json }}
 }

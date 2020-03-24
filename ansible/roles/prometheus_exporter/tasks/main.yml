@@ -16,6 +16,57 @@
   register: prometheus_exporter__register_install_status
   until: prometheus_exporter__register_install_status is succeeded
 
+- name: Create Prometheus system group
+  group:
+    name: 'prometheus'
+    state: 'present'
+    system: True
+
+- name: Create Prometheus system user
+  user:
+    name: 'prometheus'
+    group: 'prometheus'
+    home: '/var/lib/prometheus'
+    comment: 'Prometheus daemon,,,'
+    shell: '/bin/false'
+    state: 'present'
+    system: True
+
+- name: Create additional directories used by Prometheus
+  file:
+    path: '{{ prometheus_exporter__src }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: prometheus_exporter__combined_go_exporters|length > 0
+
+- name: Clone Go Prometheus exporters source code
+  git:
+    repo: '{{ item.git_repo }}'
+    dest: '{{ prometheus_exporter__src + "/" + item.git_repo.split("://")[1] }}'
+    version: '{{ item.git_version | d(omit) }}'
+  with_items: '{{ prometheus_exporter__combined_go_exporters }}'
+  when: item.name is defined and item.name and
+        item.git_repo is defined and item.git_repo
+
+- name: Compile Go Prometheus exporters
+  command: '{{ "go build -o /usr/local/bin/prometheus-" + item.name + "-exporter ." }}'
+  args:
+    chdir: '{{ prometheus_exporter__src + "/" + item.git_repo.split("://")[1] }}'
+    creates: '{{ "/usr/local/bin/prometheus-" + item.name + "-exporter" }}'
+  with_items: '{{ prometheus_exporter__combined_go_exporters }}'
+  when: item.name is defined and item.name and
+        item.git_repo is defined and item.git_repo
+  register: prometheus_exporter__register_compile
+
+- name: Discard local changes in Go Prometheus exporters source code
+  command: 'git reset --hard'
+  args:
+    chdir: '{{ prometheus_exporter__src + "/" + item.item.git_repo.split("://")[1] }}'
+  with_items: '{{ prometheus_exporter__register_compile.results }}'
+  when: prometheus_exporter__register_compile is change and item.changed
+
 - name: Divert the original prometheus exporters configuration files
   dpkg_divert:
     path: '/etc/default/prometheus-{{ item }}-exporter'
@@ -31,7 +82,9 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: '{{ prometheus_exporter__combined_exporters }}'
+  with_items:
+    - '{{ prometheus_exporter__combined_exporters }}'
+    - '{{ prometheus_exporter__combined_go_exporters | map(attribute="name") | list }}'
   tags: [ 'role::prometheus_exporter:config' ]
   notify: restart prometheus exporters
 
@@ -42,10 +95,38 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: '{{ prometheus_exporter__combined_exporters }}'
+  with_items:
+    - '{{ prometheus_exporter__combined_exporters }}'
+    - '{{ prometheus_exporter__combined_go_exporters | map(attribute="name") | list }}'
   delegate_to: '{{ prometheus_exporter__delegate_to }}'
   when: prometheus_exporter__server is defined and prometheus_exporter__server and
         prometheus_exporter__server_file_based_discovery_service
+
+- name: Generate systemd service unit
+  template:
+    src: 'etc/systemd/system/prometheus-exporter.service.j2'
+    dest: '/etc/systemd/system/prometheus-{{ item }}-exporter.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: prometheus_exporter__register_systemd
+  with_items: '{{ prometheus_exporter__combined_go_exporters | map(attribute="name") | list }}'
+  notify: restart prometheus exporters
+
+- name: Reload systemd configuration
+  systemd:
+    daemon_reload: True
+  when: (ansible_service_mgr == 'systemd' and
+         prometheus_exporter__register_systemd is changed)
+
+- name: Enable and start Go Prometheus exporters
+  service:
+    name: 'prometheus-{{ item }}-exporter'
+    state: 'started'
+    enabled: True
+  with_items: '{{ prometheus_exporter__combined_go_exporters | map(attribute="name") | list }}'
+  when: ansible_service_mgr == 'systemd' and
+        prometheus_exporter__register_systemd is changed
 
 - name: Make sure that Ansible local facts directory exists
   file:

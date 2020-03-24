@@ -49,6 +49,19 @@ prometheus_exporter__server_file_based_discovery_service: True
 
                                                                    # ]]]
                                                                    # ]]]
+# Directory paths [[[
+# -------------------
+
+# .. envvar:: prometheus_exporter__src [[[
+#
+# Directory where the role stores Prometheus exporter sources from GitHub.
+prometheus_exporter__src: '{{ (ansible_local.root.src
+                              if (ansible_local|d() and ansible_local.root|d() and
+                                  ansible_local.root.src|d())
+                              else "/usr/local/src") + "/prometheus" }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
 # Basic configuration [[[
 # -----------------------
 
@@ -88,6 +101,36 @@ prometheus_exporter__combined_exporters: '{{ prometheus_exporter__default_export
                                              + prometheus_exporter__host_exporters }}'
 
                                                                    # ]]]
+# .. envvar:: prometheus_exporter__go_exporters [[[
+#
+# Prometheus exporters in Go git repo to install and configure.
+# :ref:`prometheus_exporter__go_exporters` for more details.
+prometheus_exporter__go_exporters: []
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__group_go_exporters [[[
+#
+# Prometheus exporters in Go git repo to install and configure in specific Ansible
+# inventory group.
+prometheus_exporter__group_go_exporters: []
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__host_go_exporters [[[
+#
+# Prometheus exporters in Go git repo to install and configure in specific Ansible
+# inventory host.
+prometheus_exporter__host_go_exporters: []
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__combined_go_exporters [[[
+#
+# The variable which combines all other Prometheus exporters in Go git repo
+# configuration variables and is used in the role tasks and templates.
+prometheus_exporter__combined_go_exporters: '{{ prometheus_exporter__go_exporters
+                                                + prometheus_exporter__group_go_exporters
+                                                + prometheus_exporter__host_go_exporters }}'
+
+                                                                   # ]]]
 # .. envvar:: prometheus_exporter__allow [[[
 #
 # List of IP addresses or CIDR subnets which will be permitted to access the
@@ -102,10 +145,10 @@ prometheus_exporter__allow: []
 prometheus_exporter__bind: '{{ "localhost" if prometheus_exporter__server == "localhost" else "" }}'
 
                                                                    # ]]]
-# .. envvar:: prometheus_exporter__ports_map [[[
+# .. envvar:: prometheus_exporter__default_ports_map [[[
 #
-# Port number map on which this Prometheus exporters listens on.
-prometheus_exporter__ports_map:
+# Default port number map on which this Prometheus exporters listens on.
+prometheus_exporter__default_ports_map:
   apache:  '9117'
   bind: '9119'
   bird: '9324'
@@ -124,6 +167,34 @@ prometheus_exporter__ports_map:
   trafficserver: '9548'
   varnish: '9131'
                                                                    # ]]]
+# .. envvar:: prometheus_exporter__ports_map [[[
+#
+# Port number map on which this Prometheus exporters listens on.
+prometheus_exporter__ports_map: {}
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__group_ports_map [[[
+#
+# Port number map on which this Prometheus exporters listens on in specific Ansible
+# inventory group.
+prometheus_exporter__group_ports_map: {}
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__host_ports_map [[[
+#
+# Port number map on which this Prometheus exporters listens on in specific Ansible
+# inventory host.
+prometheus_exporter__host_ports_map: {}
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__combined_ports_map [[[
+#
+# The variable which combines all other Prometheus exporters
+# port maps and is used in the role tasks and templates.
+prometheus_exporter__combined_ports_map: '{{ prometheus_exporter__default_ports_map |
+                                             combine(prometheus_exporter__ports_map) |
+                                             combine(prometheus_exporter__group_ports_map) |
+                                             combine(prometheus_exporter__host_ports_map) }}'
+                                                                   # ]]]
                                                                    # ]]]
 # Prometheus default file [[[
 # -------------------------------
@@ -140,7 +211,7 @@ prometheus_exporter__default_args:
 
   - name: 'common'
     options:
-      - web.listen-address: '{{ prometheus_exporter__bind + ":" + prometheus_exporter__ports_map[item] }}'
+      - web.listen-address: '{{ prometheus_exporter__bind + ":" + prometheus_exporter__combined_ports_map[item] }}'
 
                                                                    # ]]]
 # .. envvar:: prometheus_exporter__args [[[

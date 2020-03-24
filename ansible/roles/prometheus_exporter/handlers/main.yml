@@ -7,4 +7,6 @@
   service:
     name: 'prometheus-{{ item }}-exporter'
     state: 'restarted'
-  with_items: '{{ prometheus_exporter__combined_exporters }}'
+  with_items:
+    - '{{ prometheus_exporter__combined_exporters }}'
+    - '{{ prometheus_exporter__combined_go_exporters | map(attribute="name") | list }}'

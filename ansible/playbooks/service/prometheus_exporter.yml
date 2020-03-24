@@ -25,6 +25,9 @@
     - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
+        - '{{ golang__apt_preferences__dependent_list if
+              prometheus_exporter__combined_go_exporters|length > 0 else
+              [] }}'
         - '{{ prometheus_exporter__apt_preferences__dependent_list }}'
 
     - role: etc_services
@@ -36,6 +39,10 @@
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ prometheus_exporter__ferm__dependent_rules_env }}'
+
+    - role: golang
+      tags: [ 'role::golang', 'skip::golang' ]
+      when: prometheus_exporter__combined_go_exporters|length > 0
 
     - role: prometheus_exporter
       tags: [ 'role::prometheus_exporter', 'skip::prometheus_exporter' ]
