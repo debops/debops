@@ -10,7 +10,13 @@
 {%     if element.name in [ 'common', item ] and element.options|d() %}
 {%       for thing in element.options %}
 {%         if thing.name|d() and thing.value|d() and thing.state|d('present') != 'absent' %}
-{%           set _ = prometheus_exporter__tpl_args.append('--{}={}'.format(thing.name, thing.value)) %}
+{%           if thing.value is iterable and thing.value is not string %}
+{%             for value in thing.value %}
+{%               set _ = prometheus_exporter__tpl_args.append('--{}={}'.format(thing.name, value.name)) %}
+{%             endfor %}
+{%           else %}
+{%             set _ = prometheus_exporter__tpl_args.append('--{}={}'.format(thing.name, thing.value)) %}
+{%           endif %}
 {%         endif %}
 {%       endfor %}
 {%     endif %}

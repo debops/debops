@@ -26,6 +26,7 @@
   user:
     name: 'prometheus'
     group: 'prometheus'
+    groups: '{{ prometheus_exporter__append_groups | join(",") | default(omit) }}'
     home: '/var/lib/prometheus'
     comment: 'Prometheus daemon,,,'
     shell: '/bin/false'
@@ -50,8 +51,18 @@
   when: item.name is defined and item.name and
         item.git_repo is defined and item.git_repo
 
+- name: Get dependencies Go prometheus exporters
+  command: 'go get -d ./...'
+  args:
+    chdir: '{{ prometheus_exporter__src + "/" + item.git_repo.split("://")[1] }}'
+  with_items: '{{ prometheus_exporter__combined_go_exporters }}'
+  changed_when: False
+  when: item.name is defined and item.name and
+        item.git_repo is defined and item.git_repo
+
 - name: Compile Go Prometheus exporters
-  command: '{{ "go build -o /usr/local/bin/prometheus-" + item.name + "-exporter ." }}'
+  command: '{{ "go build -o /usr/local/bin/prometheus-" + item.name + "-exporter" +
+               (" " + item.compile_args if item.compile_args is defined else "") }}'
   args:
     chdir: '{{ prometheus_exporter__src + "/" + item.git_repo.split("://")[1] }}'
     creates: '{{ "/usr/local/bin/prometheus-" + item.name + "-exporter" }}'
