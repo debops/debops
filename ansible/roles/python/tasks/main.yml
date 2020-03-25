@@ -28,6 +28,18 @@
   until: python__register_packages is succeeded
   when: python__enabled|bool
 
+- name: Install requested modules
+  pip:
+    name: '{{ item }}'
+    state: 'present'
+  with_flattened:
+    - '{{ python__modules }}'
+    - '{{ python__group_modules }}'
+    - '{{ python__host_modules }}'
+  register: python__register_pip_install
+  until: python__register_pip_install is succeeded
+  when: python__enabled|bool
+
 - name: Update the role status in local facts
   template:
     src: 'etc/ansible/facts.d/python.fact.j2'
