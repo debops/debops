@@ -664,7 +664,7 @@ server {
 {%         endif                                                %}
 {%     endif                                                    %}
 {%     if item.hsts_enabled|d(True) | bool                      %}
-        add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age }}{{ "; includeSubDomains" if nginx_hsts_subdomains|bool else "" }}{{ "; preload" if ((item.hsts_preload | d(nginx_hsts_preload)) | bool) else "" }}";
+        add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age }}{{ "; includeSubDomains" if nginx_hsts_subdomains|bool else "" }}{{ "; preload" if ((item.hsts_preload | d(nginx_hsts_preload)) | bool) else "" }}" always;
 {% endif                                                    %}
 {% if item.csp_enabled|d(False) | bool %}
         add_header                Content-Security-Policy "{{ item.csp|d("default-src https: ;") + (" " + item.csp_append|d(nginx__http_csp_append) if (item.csp_append|d(nginx__http_csp_append)) else "") }}";
