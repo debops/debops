@@ -47,6 +47,29 @@
   register: nginx__register_packages_flavor
   until: nginx__register_packages_flavor is succeeded
 
+- name: Make sure that Ansible local facts directory is present
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: (nginx__deploy_state in [ 'present' ])
+
+- name: Save nginx local facts
+  template:
+    src: 'etc/ansible/facts.d/nginx.fact.j2'
+    dest: '/etc/ansible/facts.d/nginx.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: nginx_register_local_facts
+  when: (nginx__deploy_state in [ 'present' ])
+
+- name: Gather facts if they were modified
+  action: setup
+  when: (nginx_register_local_facts is changed and nginx__deploy_state in [ 'present' ])
+
 - name: Create default nginx directories
   file:
     path: '{{ item }}'
@@ -189,29 +212,6 @@
     creates: '/etc/ansible/facts.d/nginx.fact'
     warn: False
   when: (nginx__deploy_state in [ 'present' ])
-
-- name: Make sure that Ansible local facts directory is present
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  when: (nginx__deploy_state in [ 'present' ])
-
-- name: Save nginx local facts
-  template:
-    src: 'etc/ansible/facts.d/nginx.fact.j2'
-    dest: '/etc/ansible/facts.d/nginx.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  register: nginx_register_local_facts
-  when: (nginx__deploy_state in [ 'present' ])
-
-- name: Gather facts if they were modified
-  action: setup
-  when: (nginx_register_local_facts is changed and nginx__deploy_state in [ 'present' ])
 
 - include: 'nginx_htpasswd.yml'
   when: (nginx__deploy_state in [ 'present' ])

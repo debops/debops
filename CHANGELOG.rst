@@ -100,6 +100,9 @@ Fixed
 - The role now always sets the HTTP Strict Transport Security header when it is
   enabled, regardless of the response code.
 
+- The role tasks have been reordered to fix an idempotency issue in the
+  :command:`nginx` configuration files.
+
 :ref:`debops.nsswitch` role
 '''''''''''''''''''''''''''
 
