@@ -391,7 +391,7 @@ if [ "$SEPDIR" = "yes" ]; then
 echo "Backup Start Time $(date)"
 echo ======================================================================
   # Monthly Full Backup of all Databases
-  if [ "$DOM" = "01" ]; then
+  if [ "$DOM" = "$DOMONTHLY" ]; then
     for MDB in $MDBNAMES
     do
 
@@ -467,7 +467,7 @@ else # One backup file for all DBs
 echo "Backup Start $(date)"
 echo ======================================================================
   # Monthly Full Backup of all Databases
-  if [ "$DOM" = "01" ]; then
+  if [ "$DOM" = "$DOMONTHLY" ]; then
     echo "Monthly full Backup of \\( $MDBNAMES \\)..."
       dbdump "$MDBNAMES" "$BACKUPDIR/monthly/$DATE.$M.all-databases.$EXT"
       compression "$BACKUPDIR/monthly/$DATE.$M.all-databases.$EXT"
