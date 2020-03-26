@@ -26,6 +26,12 @@ Added
 
 - The custom patches applied by the role can now be reverted conditionally.
 
+:ref:`debops.gunicorn` role
+'''''''''''''''''''''''''''
+
+- Add the :ref:`debops.secret` role as a dependency to allow usage of the
+  confidential values.
+
 :ref:`debops.php` role
 ''''''''''''''''''''''
 
