@@ -111,6 +111,11 @@ General
   .. __: https://reuse.software/spec/
   .. __: https://spdx.org/ids
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- TLSv1.3 is now enabled by default for nginx version 1.13.0 and up.
+
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
 
