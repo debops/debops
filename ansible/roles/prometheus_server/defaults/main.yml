@@ -188,7 +188,7 @@ prometheus_server__default_server_scrape_config_configuration:
                        prometheus_server__bind) + ":" + prometheus_server__port }}' ]
     relabel_configs:
       - target_label:  'instance'
-        replacement:   '{{ ansible_hostname }}'
+        replacement:   '{{ ansible_hostname }}:{{ prometheus_server__port }}'
 
                                                                    # ]]]
 # .. envvar:: prometheus_server__default_scrape_configs_configuration [[[
@@ -204,9 +204,9 @@ prometheus_server__default_scrape_configs_configuration:
     relabel_configs:
       - source_labels: ['__address__']
         separator:     ':'
-        regex:         '([^.:]*)[.:].*' # Get hostname from address
+        regex:         '([^.:]*)[.].*:(.*)' # Get hostname from address
         target_label:  'instance'
-        replacement:   '${1}'
+        replacement:   '${1}:${2}'
 
                                                                    # ]]]
 # .. envvar:: prometheus_server__scrape_configs_configuration [[[
