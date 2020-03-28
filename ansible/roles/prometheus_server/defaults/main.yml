@@ -62,7 +62,7 @@ prometheus_server__allow: []
 # .. envvar:: prometheus_server__bind [[[
 #
 # A valid string consisting of a hostname or IP.
-prometheus_server__bind: '0.0.0.0'
+prometheus_server__bind: 'localhost'
 
                                                                    # ]]]
 # .. envvar:: prometheus_server__port [[[
@@ -117,10 +117,10 @@ prometheus_server__basic_auth_users: '{{ ansible_local.core.admin_users
 prometheus_server__args:
 
   - name: 'config.file'
-    value: '"/etc/prometheus/prometheus.yml"'
+    value: '/etc/prometheus/prometheus.yml'
 
   - name: 'web.listen-address'
-    value: '{{ """" + prometheus_server__bind + ":" + prometheus_server__port + """" }}'
+    value: '{{ prometheus_server__bind + ":" + prometheus_server__port }}'
 
   - name: 'web.external-url'
     value: '{{ "https://" + prometheus_server__fqdn + "/" }}'
@@ -186,6 +186,9 @@ prometheus_server__default_server_scrape_config_configuration:
     static_configs:
       - targets: [ '{{ ("localhost" if prometheus_server__bind == "0.0.0.0" else
                        prometheus_server__bind) + ":" + prometheus_server__port }}' ]
+    relabel_configs:
+      - target_label:  'instance'
+        replacement:   '{{ ansible_hostname }}'
 
                                                                    # ]]]
 # .. envvar:: prometheus_server__default_scrape_configs_configuration [[[
@@ -197,7 +200,13 @@ prometheus_server__default_scrape_configs_configuration:
   - job_name: 'node'
     file_sd_configs:
       - files:
-        - '/etc/prometheus/node.*.json'
+        - '/etc/prometheus/file_sd_configs.d/node.*.json'
+    relabel_configs:
+      - source_labels: ['__address__']
+        separator:     ':'
+        regex:         '([^.:]*)[.:].*' # Get hostname from address
+        target_label:  'instance'
+        replacement:   '${1}'
 
                                                                    # ]]]
 # .. envvar:: prometheus_server__scrape_configs_configuration [[[

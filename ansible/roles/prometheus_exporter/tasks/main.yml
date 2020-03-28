@@ -55,8 +55,8 @@
   command: 'go get -d ./...'
   args:
     chdir: '{{ prometheus_exporter__src + "/" + item.git_repo.split("://")[1] }}'
+    creates: '{{ "/usr/local/bin/prometheus-" + item.name + "-exporter" }}'
   with_items: '{{ prometheus_exporter__combined_go_exporters }}'
-  changed_when: False
   when: item.name is defined and item.name and
         item.git_repo is defined and item.git_repo
 
@@ -91,8 +91,8 @@
     src: 'etc/default/prometheus-exporter.j2'
     dest: '/etc/default/prometheus-{{ item }}-exporter'
     owner: 'root'
-    group: 'root'
-    mode: '0644'
+    group: 'prometheus'
+    mode: '0640'
   with_items:
     - '{{ prometheus_exporter__combined_exporters }}'
     - '{{ prometheus_exporter__combined_go_exporters | map(attribute="name") | list }}'
@@ -101,8 +101,8 @@
 
 - name: Configure discovery files for Prometheus server
   template:
-    src: 'etc/prometheus/exporter.json.j2'
-    dest: '/etc/prometheus/{{ item }}.{{ inventory_hostname }}.json'
+    src: 'etc/prometheus/file_sd_configs.d/exporter.json.j2'
+    dest: '/etc/prometheus/file_sd_configs.d/{{ item }}.{{ inventory_hostname }}.json'
     owner: 'root'
     group: 'root'
     mode: '0644'

@@ -5,13 +5,14 @@
 # {{ ansible_managed }}
 
 # Set the command-line arguments to pass to the server.
-ARGS="
-{% for element in prometheus_server__args %}
+{% set prometheus_server__tpl_args = [] %}
+{% for element in prometheus_server__args | parse_kv_items %}
 {%   if element.name|d() and element.state|d('present') not in [ 'absent', 'ignore' ] %}
-{{ '--{}={}'.format(element.name, element.value) }}
+{%     set _ = prometheus_server__tpl_args.append('--{}={}'.format(element.name, element.value)) %}
 {%   endif %}
 {% endfor %}
-"
+# Set the command-line arguments to pass to the server.
+ARGS="{{ prometheus_server__tpl_args | join(' ') }}"
 
 # Prometheus supports the following options:
 #  --config.file="/etc/prometheus/prometheus.yml"

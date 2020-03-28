@@ -14,6 +14,16 @@
   register: prometheus_server__register_install_status
   until: prometheus_server__register_install_status is succeeded
 
+- name: Create additional directories used by Prometheus
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_items:
+    - '/etc/prometheus/file_sd_configs.d'
+
 - name: Divert the original prometheus configuration files
   dpkg_divert:
     path: '{{ item }}'
@@ -29,8 +39,8 @@
     src: '{{ item }}.j2'
     dest: '/{{ item }}'
     owner: 'root'
-    group: 'root'
-    mode: '0644'
+    group: 'prometheus'
+    mode: '0640'
   with_items:
     - 'etc/default/prometheus'
     - 'etc/prometheus/prometheus.yml'
