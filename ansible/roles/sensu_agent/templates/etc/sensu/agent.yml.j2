@@ -9,8 +9,12 @@
 name: "{{ sensu_agent__name }}"
 namespace: "{{ sensu_agent__namespace }}"
 subscriptions: {{ sensu_agent__subscriptions | to_yaml }}
-labels: {{ sensu_agent__labels | to_yaml }}
-annotations: {{ sensu_agent__annotations | to_yaml }}
+{% set sensu_agent__tpl_labels = {} %}
+{% set _ = sensu_agent__tpl_labels.__setitem__("labels", sensu_agent__labels) %}
+{% set sensu_agent__tpl_annotations = {} %}
+{% set _ = sensu_agent__tpl_annotations.__setitem__("annotations", sensu_agent__annotations) %}
+{{ sensu_agent__tpl_labels | to_nice_yaml }}
+{{ sensu_agent__tpl_annotations | to_nice_yaml }}
 
 ##
 # agent configuration
