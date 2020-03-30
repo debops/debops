@@ -712,22 +712,22 @@ postfix__restrictions_maincf:
     weight: 70
     value:
 
-       - name: 'mua_sender_restrictions'
-         weight: -300
-       - name: 'mua_client_restrictions,'
-         weight: -200
-       - name: 'mua_helo_restrictions'
-         weight: -100
+      - name: 'mua_sender_restrictions'
+        weight: -300
+      - name: 'mua_client_restrictions,'
+        weight: -200
+      - name: 'mua_helo_restrictions'
+        weight: -100
 
   - name: 'mua_client_restrictions'
     section: 'restrictions'
     weight: 80
     value:
 
-       - name: 'permit_sasl_authenticated'
-         weight: -200
-       - name: 'reject'
-         weight: -100
+      - name: 'permit_sasl_authenticated'
+        weight: -200
+      - name: 'reject'
+        weight: -100
 
 
   - name: 'mua_sender_restrictions'
@@ -735,19 +735,18 @@ postfix__restrictions_maincf:
     weight: 90
     value:
 
-       - name: 'permit_sasl_authenticated'
-         weight: -200
-       - name: 'reject'
-         weight: -100
+      - name: 'permit_sasl_authenticated'
+        weight: -200
+      - name: 'reject'
+        weight: -100
 
   - name: 'mua_helo_restrictions'
     section: 'restrictions'
     weight: 100
     value:
 
-       - name: 'permit'
-         weight: -100
-
+      - name: 'permit'
+        weight: -100
 
                                                                    # ]]]
 # .. envvar:: postfix__maincf [[[
@@ -912,12 +911,15 @@ postfix__original_mastercf:
 
       - name: 'smtpd_client_restrictions'
         value: '$mua_client_restrictions'
+        state: 'comment'
 
       - name: 'smtpd_helo_restrictions'
         value: '$mua_helo_restrictions'
+        state: 'comment'
 
       - name: 'smtpd_sender_restrictions'
         value: '$mua_sender_restrictions'
+        state: 'comment'
 
       - smtpd_recipient_restrictions: ''
 
@@ -1244,6 +1246,22 @@ postfix__tls_mastercf:
       - tls_preempt_cipherlist: True
 
                                                                    # ]]]
+# .. envvar:: postfix__restrictions_mastercf [[[
+#
+# do not restrict authenticated clients
+postfix__restrictions_mastercf:
+  - name: 'submission'
+    options:
+      - name: 'smtpd_client_restrictions'
+        state: 'present'
+
+      - name: 'smtpd_helo_restrictions'
+        state: 'present'
+
+      - name: 'smtpd_sender_restrictions'
+        state: 'present'
+
+                                                                   # ]]]
 # .. envvar:: postfix__mastercf [[[
 #
 # The list of Postfix :file:`/etc/postfix/master.cf` configuration file options
@@ -1284,6 +1302,7 @@ postfix__combined_mastercf: '{{ postfix__original_mastercf
                                 + postfix__default_mastercf
                                 + postfix__tls_mastercf
                                 + postfix__env_persistent_mastercf
+                                + postfix__restrictions_mastercf
                                 + postfix__mastercf
                                 + postfix__group_mastercf
                                 + postfix__host_mastercf }}'
