@@ -165,3 +165,27 @@
   become: False
   delegate_to: 'localhost'
   with_items: [ 'maincf.json', 'mastercf.json' ]
+
+- name: Make sure that PKI hook directory exists
+  file:
+    path: '{{ postfix__pki_hook_path }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: postfix__pki|bool
+
+- name: Manage PKI postfix hook
+  template:
+    src: 'etc/pki/hooks/postfix.j2'
+    dest: '{{ postfix__pki_hook_path + "/" + postfix__pki_hook_name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: postfix__pki|bool
+
+- name: Ensure the PKI postfix hook is absent
+  file:
+    path: '{{ postfix__pki_hook_path }}'
+    state: 'absent'
+  when: not (postfix__pki|bool)
