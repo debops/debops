@@ -1,0 +1,31 @@
+{# Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@drybjed.net>
+ # Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+ # Copyright (C) 2014-2017 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+
+{% macro lua_print(object, prefix='',depth=0) %}
+{%   if object is mapping                      %}
+{%     set prefix = prefix + '  '             %}
+{%     if depth!=0  %}{{ "{\n"  }}{% endif %}
+{%     for _item_name, _value in object |dictsort   %}
+{{      _item_name+' = '+lua_print(_value, prefix,depth+1)|indent(2,true) }}
+{%     endfor                                 %}
+{%     if depth!=0  %}{{ '}'  }}{% endif %}
+{%   elif 'bool' == object|type_debug %}
+{%     if object  %}{{ 'true;'|indent(2,true)  }}
+{%     else       %}{{ 'false;'|indent(2,true)  }}{% endif %}
+{%   elif object is string                    %}
+{{     '"' + object + '";'                     }}
+{%   elif object is iterable                  %}
+{%     if depth!=0  %}{{ "{\n"  }}{% endif %}
+{%     for _item in object                    %}
+{{       lua_print(_item, prefix,depth+1)|indent(2,true) }}
+{%     endfor                                 %}
+{%     if depth!=0  %}{{ '}'  }}{% endif %}
+{%   elif object is number                    %}
+{{     '%d' | format(object)|indent(2,true) }}
+{%   else                                     %}
+error unknown type
+{%   endif                                    %}
+{%  endmacro %}

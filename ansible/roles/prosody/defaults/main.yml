@@ -283,15 +283,7 @@ prosody__combined_config_global: '{{ prosody__default_config_global | combine(
                                 , prosody__host_config_global ) }}'
 
                                                                    # ]]]
-# .. envvar:: prosody__config_virtual_hosts [[[
-#
-# List of virtual hosts
-prosody__config_virtual_hosts:
-  - name: '{{ ansible_domain }}'
-    enabled: false
-    pki_realm: 'domain'
 
-                                                                   # ]]]
 # .. envvar:: prosody__http_upload [[[
 #
 #  http_upload enables upload via http(s) for clients to share files
@@ -366,6 +358,75 @@ prosody__combined_config_components: '{{ prosody__default_config_components
                                        + prosody__host_config_components  }}'
 
                                                                    # ]]]
+# Virtual Host Configuration [[[
+# ----------------------------------------
+
+# You need to add a VirtualHost entry for each domain you wish Prosody to serve.
+# Settings under each VirtualHost entry apply *only* to that host.
+#
+# For more information, check `Virtual host settings <https://prosody.im/doc/configure#virtual_host_settings>`_.
+
+# Each virtual host in the list can have the following parameters:
+# prosody__virtual_hosts:
+#   - name: 'example.com'
+#     enabled: True
+#     pki_realm: 'xmpp.example.com'
+#     modules_enabled:
+#       - 'module1'
+#       - 'module2'
+#     modules_disabled:
+#       - 'another_module'
+#     admins:
+#       - alice@example.com
+#     authentication: 'internal_hashed'
+
+
+# .. envvar:: prosody__default_virtual_hosts [[[
+#
+# List of virtual hosts
+prosody__default_virtual_hosts:
+  - name: '{{ ansible_domain }}'
+    enabled: false
+    pki_realm: 'domain'
+
+                                                                   # ]]]
+
+# .. envvar:: prosody__virtual_hosts [[[
+#
+# List of gloabl virtual hosts
+prosody__virtual_hosts: []
+
+                                                                   # ]]]
+
+# .. envvar:: prosody__host_virtual_hosts [[[
+#
+# List of host virtual hosts
+prosody__host_virtual_hosts: []
+
+                                                                   # ]]]
+
+
+# .. envvar:: prosody__group_virtual_hosts [[[
+#
+# List of group virtual hosts
+prosody__group_virtual_hosts: []
+
+                                                                   # ]]]
+
+# .. envvar:: prosody__combined_virtual_hosts [[[
+#
+# Combined virtual hosts list
+prosody__combined_virtual_hosts: '{{ prosody__default_virtual_hosts
+                                    + prosody__virtual_hosts
+                                    + prosody__host_virtual_hosts
+                                    + prosody__group_virtual_hosts }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+
+# Configuration for other Ansible roles [[[
+# ----------------------------------------
+
 # .. envvar:: prosody__ferm__dependent_rules [[[
 #
 # Configuration for :command:`iptables` firewall manged by :program:`ferm`.
@@ -395,6 +456,7 @@ prosody__ferm__dependent_rules:
     name: 'prosody-http'
     multiport: True
     rule_state: '{{ prosody__deploy_state }}'
+                                                                   # ]]]
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

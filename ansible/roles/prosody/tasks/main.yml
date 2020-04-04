@@ -11,10 +11,17 @@
   register: prosody__register_packages
   until: prosody__register_packages is succeeded
 
-- name: Generate Prosody configuration
+- name: Generate Global Prosody configuration
   template:
     src: 'etc/prosody/prosody.cfg.lua.j2'
     dest: '/etc/prosody/prosody.cfg.lua'
+  notify: [ 'Restart prosody' ]
+
+- name: Generate Virtual Host Prosody configuration
+  template:
+    src: 'etc/prosody/conf.avail/VirtualHost.j2'
+    dest: 'etc/prosody/conf.avail/{{ item.name }}.cfg.lua'
+  loop: '{{ prosody__combined_virtual_hosts }}'
   notify: [ 'Restart prosody' ]
 
 - name: Enable Services
