@@ -349,6 +349,26 @@ dovecot_ssl_cipher_list_better_cypto: 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:E
 # https://www.ncsc.nl/english/current-topics/factsheets/it-security-guidelines-for-transport-layer-security-tls.html
 dovecot_ssl_cipher_list_ncsc_nl: 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-RSA-AES128-GCM-SHA256'
                                                                    # ]]]
+# .. envvar:: dovecot_pki_hook_name [[[
+#
+# Name of the hook script which will be stored in hook directory.
+dovecot_pki_hook_name: 'dovecot'
+
+                                                                   # ]]]
+# .. envvar:: dovecot_pki_hook_path [[[
+#
+# Directory with PKI hooks.
+dovecot_pki_hook_path: '{{ ansible_local.pki.hooks
+                         if (ansible_local|d() and ansible_local.pki|d() and
+                             ansible_local.pki.hooks|d())
+                         else "/etc/pki/hooks" }}'
+
+                                                                   # ]]]
+# .. envvar:: dovecot_pki_hook_action [[[
+#
+# Specify how changes in PKI should affect dovecot, either 'reload' or 'restart'.
+dovecot_pki_hook_action: 'reload'
+                                                                   # ]]]
                                                                    # ]]]
 # Diffie-Hellman parameters [[[
 # -----------------------------
