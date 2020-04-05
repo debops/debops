@@ -16,6 +16,7 @@
     src: 'etc/prosody/prosody.cfg.lua.j2'
     dest: '/etc/prosody/prosody.cfg.lua'
   notify: [ 'Restart prosody' ]
+  tags: [ 'role::prosody:template' ]
 
 - name: Generate Virtual Host Prosody configuration
   template:
@@ -23,6 +24,7 @@
     dest: '/etc/prosody/conf.avail/{{ item.name }}.cfg.lua'
   loop: '{{ prosody__combined_virtual_hosts }}'
   notify: [ 'Restart prosody' ]
+  tags: [ 'role::prosody:template' ]
 
 - name: Enable Services
   service:
