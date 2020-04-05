@@ -4,7 +4,10 @@
  #}
 -- {{ ansible_managed }}
 {% import 'templates/import/debops__tpl_macros.j2' as debops__tpl_macros with context %}
-{% import 'templates/import/prosody_macros.j2' as prosody_macros with context %}
+{% import 'templates/import/prosody_macros.j2' as prosody_macros without context %}
+
+-- Virtual Host '{{ item.name }}' Configuration File
+
 
 {% set prosody__tpl_pki_realm = item.pki_realm %}{#| d((debops__tpl_macros.get_realm_yaml_list(item.name, prosody__pki_realm) | from_yaml)[0]) %#}
 {% set prosody__tpl_pki_realm_path = prosdoy__pki_realm_path + "/" + prosody__tpl_pki_realm %}
@@ -16,15 +19,15 @@ VirtualHost "{{ item.name }}"
     key =  "{{ item.tls_key | d(prosody__tpl_pki_realm_path + "/" + (item.pki_key|d(prosody__pki_key_filename))) }}";
   }
 
-{% if item.admins %}
-  admins = {{ prosody_macros.lua_print(item.admins,'',2) }}
+{% if item.admins|d() %}
+  admins = {{ prosody_macros.lua_print(item.admins,'',1)|indent(4,true) }}
 {% endif %}
-{% if item.authentication %}
-  admins = {{ prosody_macros.lua_print(item.authentication,'',2) }}
+{% if item.authentication|d() %}
+  authentication = {{ prosody_macros.lua_print(item.authentication,'',1)|indent(4,true) }}
 {% endif %}
-{% if item.modules_enabled %}
-  admins = {{ prosody_macros.lua_print(item.modules_enabled,'',2) }}
+{% if item.modules_enabled|d() %}
+  modules_enabled = {{ prosody_macros.lua_print(item.modules_enabled,'',1)|indent(4,true) }}
 {% endif %}
-{% if item.modules_disabled %}
-  admins = {{ prosody_macros.lua_print(item.modules_disabled,'',2) }}
+{% if item.modules_disabled|d() %}
+  modules_disabled = {{ prosody_macros.lua_print(item.modules_disabled,'',1)|indent(4,true) }}
 {% endif %}
