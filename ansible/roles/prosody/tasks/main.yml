@@ -31,7 +31,7 @@
     state: 'absent'
     path: '/etc/prosody/conf.avail/{{ item.domain|mandatory }}.cfg.lua'
   loop: '{{ prosody__combined_components }}'
-  when: (item.domain|mandatory) and not (item.enabled|bool)
+  when: not (item.enabled|d(false)|bool)
   notify: [ 'Restart prosody' ]
   tags: [ 'role::prosody:template' ]
 
@@ -40,7 +40,7 @@
     src: 'etc/prosody/conf.avail/Component.j2'
     dest: '/etc/prosody/conf.avail/{{ item.domain|mandatory }}.cfg.lua'
   loop: '{{ prosody__combined_components }}'
-  when: (item.domain|mandatory) and (item.enabled|bool)
+  when: (item.enabled|d(false)|bool)
   notify: [ 'Restart prosody' ]
   tags: [ 'role::prosody:template' ]
 

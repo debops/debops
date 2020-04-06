@@ -5,24 +5,18 @@
 -- {{ ansible_managed }}
 {% import 'templates/import/debops__tpl_macros.j2' as debops__tpl_macros with context %}
 {% import 'templates/import/prosody_macros.j2' as prosody_macros without context %}
-
--- Component '{{ item.name }}' Configuration File
+-- Prosody '{{ item.domain }}' Component Configuration File
 
 {% if item.plugin_name|d() %}
 Component "{{ item.domain }}" "{{ item.plugin_name|d() }}"
 {% else %}
 Component "{{ item.domain }}"
 {% endif %}
-{% if item.description|d() %}
-  name = "{{ item.description }}"
-{% endif %}
-{% if item.param|d() %}
-  modules_enabled = {{ prosody_macros.lua_print(item.modules_enabled,'',1)|indent(4,true) }}
-  {% for key, value in item.param.items() %}
-  {{ key }} = {{ prosody_macros.lua_print(value,'',1)|indent(4,true)  }}
+{% if item.params|d() %}
+  {% for key, value in item.params.items() %}
+  {{ key }} = {{ prosody_macros.lua_print(value,'',2)|indent(2,true)  }}
   {% endfor %}
 {% endif %}
-
 {% if item.modules_enabled|d() %}
   modules_enabled = {{ prosody_macros.lua_print(item.modules_enabled,'',1)|indent(4,true) }}
 {% endif %}
