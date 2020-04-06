@@ -1,33 +1,67 @@
 {# Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@drybjed.net>
  # Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+ # Copyright (C) 2018-2020 Norbert Summer <git@o-g.at>
  # Copyright (C) 2014-2017 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 
-{% macro lua_print(object, prefix='',depth=0) %}
-{%   if object is mapping                      %}
-{%     set prefix = prefix + '  '             %}
-{%     if depth!=0  %}{{ "{\n"  }}{% endif %}
-{%     for _item_name, _value in object |dictsort   %}
-{{      _item_name+' = '+lua_print(_value, prefix,depth+1)|indent(2,true) }}
-{%     endfor                                 %}
-{%     if depth!=0  %}{{ '}'  }}{% endif %}
-{%   elif 'bool' == object|type_debug %}
-{%     if object  %}{{ 'true;'|indent(2,true)  }}
-{%     else       %}{{ 'false;'|indent(2,true)  }}
-{%     endif                                  %}
-{%   elif object is string                    %}
-{{     '"' + object + '";'                     }}
-{%   elif object is iterable                  %}
-{%     if depth!=0  %}{{ "{\n"  }}{% endif %}
-{%     for _item in object                    %}
-{{       lua_print(_item, prefix,depth+1)|indent(2,true) }}
-{%     endfor                                 %}
-{%     if depth!=0  %}{{ '}'  }}{% endif %}
-{%   elif object is number                    %}
-{{     '%d' | format(object)|indent(2,true) }}
-{%   else                                     %}
-error unknown type
-{%   endif                                    %}
-{%  endmacro %}
-{{ "\n" }}
+ {# read more about the used syntax:
+  # https://github.com/debops/debops/issues/953#issuecomment-609068919
+  #}
+
+{#
+ # for printing a lua config
+ # @param dict object  key value with entries
+ #}
+{%- macro lua_print(object)                            %}
+{{    lua_print_mapping(object)                        }}
+{%  endmacro                                           %}
+
+{#
+ # prints a dict without brackets
+ # @param dict object
+ #}
+{%- macro lua_print_mapping(object)                    %}
+{%-   for _key, _item in object| dictsort              %}
+{{      _key + ' = ' + lua_print_variable(_item) + ';' }}
+{%-   endfor                                           %}
+{%- endmacro                                           %}
+
+{#
+ # prints a list without brackets
+ # @param list object
+ #}
+{%- macro lua_print_sequence(object)                   %}
+{%-   for _item in object                              %}
+{{      lua_print_variable(_item) + ';'                }}
+{%-   endfor                                           %}
+{%- endmacro                                           %}
+
+
+{#
+ # switch case over different types,
+ # to print in the right format
+ # @param dict|list|bool|string|int object
+ #}
+{%- macro lua_print_variable(object)                   %}
+{%-   if object is mapping                             %}
+{{-     '{'                                            }}
+{{-       lua_print_mapping(object) | indent(2)        }}
+{{      '}'                                            }}
+{%-   elif object == True or object == False           %}
+{#-   boolean check only aviable since jinja2.11       #}
+{%-     if object  %}{{ 'true'                         }}
+{%-     else       %}{{ 'false'                        }}
+{%-     endif                                          %}
+{%-   elif object is string                            %}
+{{-     '"' + object + '"'                             }}
+{%-   elif object is sequence                          %}
+{{-     '{'                                            }}
+{{-        lua_print_sequence(object) | indent(2)      }}
+{{      '}'                                            }}
+{%-   elif object is number                            %}
+{{-     '%d' | format(object)                          }}
+{%-   else                                             %}
+        error unknown type
+{%    endif                                            %}
+{%- endmacro                                           %}
