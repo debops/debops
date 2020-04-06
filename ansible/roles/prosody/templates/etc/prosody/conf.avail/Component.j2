@@ -1,0 +1,28 @@
+{# Copyright (C) 2018 Norbert Summer <git@o-g.at>
+ # Copyright (C) 2018 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+-- {{ ansible_managed }}
+{% import 'templates/import/debops__tpl_macros.j2' as debops__tpl_macros with context %}
+{% import 'templates/import/prosody_macros.j2' as prosody_macros without context %}
+
+-- Component '{{ item.name }}' Configuration File
+
+{% if item.plugin_name|d() %}
+Component "{{ item.domain }}" "{{ item.plugin_name|d() }}"
+{% else %}
+Component "{{ item.domain }}"
+{% endif %}
+{% if item.description|d() %}
+  name = "{{ item.description }}"
+{% endif %}
+{% if item.param|d() %}
+  modules_enabled = {{ prosody_macros.lua_print(item.modules_enabled,'',1)|indent(4,true) }}
+  {% for key, value in item.param.items() %}
+  {{ key }} = {{ prosody_macros.lua_print(value,'',1)|indent(4,true)  }}
+  {% endfor %}
+{% endif %}
+
+{% if item.modules_enabled|d() %}
+  modules_enabled = {{ prosody_macros.lua_print(item.modules_enabled,'',1)|indent(4,true) }}
+{% endif %}

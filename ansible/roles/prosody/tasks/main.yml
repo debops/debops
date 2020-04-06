@@ -26,6 +26,24 @@
   notify: [ 'Restart prosody' ]
   tags: [ 'role::prosody:template' ]
 
+- name: Delete disabled Prosody Components
+  file:
+    state: 'absent'
+    path: '/etc/prosody/conf.avail/{{ item.domain|mandatory }}.cfg.lua'
+  loop: '{{ prosody__combined_components }}'
+  when: (item.domain|mandatory) and not (item.enabled|bool)
+  notify: [ 'Restart prosody' ]
+  tags: [ 'role::prosody:template' ]
+
+- name: Generate Prosody Components configuration
+  template:
+    src: 'etc/prosody/conf.avail/Component.j2'
+    dest: '/etc/prosody/conf.avail/{{ item.domain|mandatory }}.cfg.lua'
+  loop: '{{ prosody__combined_components }}'
+  when: (item.domain|mandatory) and (item.enabled|bool)
+  notify: [ 'Restart prosody' ]
+  tags: [ 'role::prosody:template' ]
+
 - name: Enable Services
   service:
     name: '{{ item }}'
