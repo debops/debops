@@ -17,16 +17,15 @@ VirtualHost "{{ item.name }}"
     certificate = "{{ item.tls_crt | d(prosody__tpl_pki_realm_path + "/" + (item.pki_crt|d(prosody__pki_crt_filename))) }}";
     key =  "{{ item.tls_key | d(prosody__tpl_pki_realm_path + "/" + (item.pki_key|d(prosody__pki_key_filename))) }}";
   }
-
 {% if item.admins|d() %}
-  admins = {{ prosody_macros.lua_print(item.admins|indent(4,true) }}
+  admins = {{ prosody_macros.lua_print_variable(item.admins)|indent(4,true) }}
 {% endif %}
 {% if item.authentication|d() %}
-  authentication = {{ prosody_macros.lua_print(item.authentication) }}
+  authentication = {{ prosody_macros.lua_print_variable(item.authentication) }}
 {% endif %}
 {% if item.modules_enabled|d() %}
-  modules_enabled = {{ prosody_macros.lua_print(item.modules_enabled)|indent(4,true) }}
+  modules_enabled = {{ prosody_macros.lua_print_variable(item.modules_enabled)|indent(4,true) }}
 {% endif %}
 {% if item.modules_disabled|d() %}
-  modules_disabled = {{ prosody_macros.lua_print(item.modules_disabled)|indent(4,true) }}
+  modules_disabled = {{ prosody_macros.lua_print_variable(item.modules_disabled)|indent(4,true) }}
 {% endif %}

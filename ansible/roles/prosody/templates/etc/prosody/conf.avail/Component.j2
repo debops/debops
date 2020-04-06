@@ -14,9 +14,9 @@ Component "{{ item.domain }}"
 {% endif %}
 {% if item.params|d() %}
   {% for key, value in item.params.items() %}
-  {{ key }} = {{ prosody_macros.lua_print(value)|indent(2,true)  }}
+  {{ key }} = {{ prosody_macros.lua_print_variable(value)|indent(2,true)  }}
   {% endfor %}
 {% endif %}
 {% if item.modules_enabled|d() %}
-  modules_enabled = {{ prosody_macros.lua_print(item.modules_enabled)|indent(4,true) }}
+  modules_enabled = {{ prosody_macros.lua_print_variable(item.modules_enabled)|indent(4,true) }}
 {% endif %}
