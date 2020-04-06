@@ -19,14 +19,14 @@ VirtualHost "{{ item.name }}"
   }
 
 {% if item.admins|d() %}
-  admins = {{ prosody_macros.lua_print(item.admins,'',1)|indent(4,true) }}
+  admins = {{ prosody_macros.lua_print(item.admins|indent(4,true) }}
 {% endif %}
 {% if item.authentication|d() %}
-  authentication = {{ prosody_macros.lua_print(item.authentication,'',1) }}
+  authentication = {{ prosody_macros.lua_print(item.authentication) }}
 {% endif %}
 {% if item.modules_enabled|d() %}
-  modules_enabled = {{ prosody_macros.lua_print(item.modules_enabled,'',1)|indent(4,true) }}
+  modules_enabled = {{ prosody_macros.lua_print(item.modules_enabled)|indent(4,true) }}
 {% endif %}
 {% if item.modules_disabled|d() %}
-  modules_disabled = {{ prosody_macros.lua_print(item.modules_disabled,'',1)|indent(4,true) }}
+  modules_disabled = {{ prosody_macros.lua_print(item.modules_disabled)|indent(4,true) }}
 {% endif %}
