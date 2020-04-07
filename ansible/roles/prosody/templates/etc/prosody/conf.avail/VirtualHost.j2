@@ -11,7 +11,7 @@
 {% set prosody__tpl_pki_realm = item.pki_realm %}{#| d((debops__tpl_macros.get_realm_yaml_list(item.name, prosody__pki_realm) | from_yaml)[0]) %#}
 {% set prosody__tpl_pki_realm_path = prosdoy__pki_realm_path + "/" + prosody__tpl_pki_realm %}
 VirtualHost "{{ item.name }}"
-  enabled = {{ item.enabled }}
+  enabled = {{ item.enabled|d(true) }}
 
   ssl = {
     certificate = "{{ item.tls_crt | d(prosody__tpl_pki_realm_path + "/" + (item.pki_crt|d(prosody__pki_crt_filename))) }}";
