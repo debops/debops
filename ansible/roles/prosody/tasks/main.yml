@@ -29,8 +29,8 @@
 - name: Delete disabled Prosody Components
   file:
     state: 'absent'
-    path: '/etc/prosody/conf.avail/{{ item.domain|mandatory }}.cfg.lua'
-  loop: '{{ prosody__combined_components }}'
+    path: '/etc/prosody/conf.avail/{{ item.key|mandatory }}.cfg.lua'
+  loop: '{{ prosody__combined_components|dict2items }}'
   when: not (item.enabled|d(false)|bool)
   notify: [ 'Restart prosody' ]
   tags: [ 'role::prosody:template' ]
@@ -38,8 +38,8 @@
 - name: Generate Prosody Components configuration
   template:
     src: 'etc/prosody/conf.avail/Component.j2'
-    dest: '/etc/prosody/conf.avail/{{ item.domain|mandatory }}.cfg.lua'
-  loop: '{{ prosody__combined_components }}'
+    dest: '/etc/prosody/conf.avail/{{ item.key|mandatory }}.cfg.lua'
+  loop: '{{ prosody__combined_components|dict2items }}'
   when: (item.enabled|d(false)|bool)
   notify: [ 'Restart prosody' ]
   tags: [ 'role::prosody:template' ]
