@@ -21,7 +21,7 @@
 - name: Delete disabled Prosody Virtual Hosts
   file:
     state: 'absent'
-    path: '/etc/prosody/conf.avail/{{ item.key|mandatory }}.cfg.lua'
+    path: '/etc/prosody/conf.d/{{ item.key|mandatory }}.cfg.lua'
   loop: '{{ prosody__combined_virtual_hosts|dict2items }}'
   when: not (item.value.enabled|d(true)|bool)
   notify: [ 'Restart prosody' ]
@@ -29,8 +29,8 @@
 
 - name: Generate Virtual Host Prosody configuration
   template:
-    src: 'etc/prosody/conf.avail/VirtualHost.j2'
-    dest: '/etc/prosody/conf.avail/{{ item.name }}.cfg.lua'
+    src: 'etc/prosody/conf.d/VirtualHost.j2'
+    dest: '/etc/prosody/conf.d/{{ item.name }}.cfg.lua'
   loop: '{{ prosody__combined_virtual_hosts }}'
   notify: [ 'Restart prosody' ]
   tags: [ 'role::prosody:template' ]
@@ -38,7 +38,7 @@
 - name: Delete disabled Prosody Components
   file:
     state: 'absent'
-    path: '/etc/prosody/conf.avail/{{ item.key|mandatory }}.cfg.lua'
+    path: '/etc/prosody/conf.d/{{ item.key|mandatory }}.cfg.lua'
   loop: '{{ prosody__combined_components|dict2items }}'
   when: not (item.value.enabled|d(true)|bool)
   notify: [ 'Restart prosody' ]
@@ -46,8 +46,8 @@
 
 - name: Generate Prosody Components configuration
   template:
-    src: 'etc/prosody/conf.avail/Component.j2'
-    dest: '/etc/prosody/conf.avail/{{ item.key|mandatory }}.cfg.lua'
+    src: 'etc/prosody/conf.d/Component.j2'
+    dest: '/etc/prosody/conf.d/{{ item.key|mandatory }}.cfg.lua'
   loop: '{{ prosody__combined_components|dict2items }}'
   when: (item.value.enabled|d(true)|bool)
   notify: [ 'Restart prosody' ]
