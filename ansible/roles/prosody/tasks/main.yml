@@ -18,6 +18,15 @@
   notify: [ 'Restart prosody' ]
   tags: [ 'role::prosody:template' ]
 
+- name: Delete disabled Prosody Virtual Hosts
+  file:
+    state: 'absent'
+    path: '/etc/prosody/conf.avail/{{ item.key|mandatory }}.cfg.lua'
+  loop: '{{ prosody__combined_virtual_hosts|dict2items }}'
+  when: not (item.value.enabled|d(true)|bool)
+  notify: [ 'Restart prosody' ]
+  tags: [ 'role::prosody:template' ]
+
 - name: Generate Virtual Host Prosody configuration
   template:
     src: 'etc/prosody/conf.avail/VirtualHost.j2'
