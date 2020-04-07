@@ -30,7 +30,7 @@
 - name: Generate Virtual Host Prosody configuration
   template:
     src: 'etc/prosody/conf.d/VirtualHost.j2'
-    dest: '/etc/prosody/conf.d/{{ item.name }}.cfg.lua'
+    dest: '/etc/prosody/conf.d/{{ item.key }}.cfg.lua'
   loop: '{{ prosody__combined_virtual_hosts|dict2items }}'
   notify: [ 'Restart prosody' ]
   tags: [ 'role::prosody:template' ]
