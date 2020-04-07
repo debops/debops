@@ -294,7 +294,7 @@ prosody__combined_config_global: '{{ prosody__default_config_global | combine(
 
 # Each virtual host in the list can have the following parameters:
 # prosody__virtual_hosts:
-#   - name: 'example.com'
+#   'example.com':
 #     enabled: True
 #     pki_realm: 'xmpp.example.com'
 #     modules_enabled:
@@ -309,9 +309,9 @@ prosody__combined_config_global: '{{ prosody__default_config_global | combine(
 
 # .. envvar:: prosody__default_virtual_hosts [[[
 #
-# List of virtual hosts
+# Variable which contains default virtual hosts used by prosody
 prosody__default_virtual_hosts:
-  - name: '{{ ansible_domain }}'
+  '{{ ansible_domain }}':
     enabled: false
     pki_realm: 'domain'
 
@@ -319,33 +319,36 @@ prosody__default_virtual_hosts:
 
 # .. envvar:: prosody__virtual_hosts [[[
 #
-# List of gloabl virtual hosts
-prosody__virtual_hosts: []
+# Variable which contains virtual hosts used by prosody configured on all hosts
+# in the Ansible inventory.
+prosody__virtual_hosts: {}
 
                                                                    # ]]]
 
 # .. envvar:: prosody__host_virtual_hosts [[[
 #
-# List of host virtual hosts
-prosody__host_virtual_hosts: []
+# Variable which contains virtual hosts used by prosody configured on specific
+## hosts in the Ansible inventory.
+prosody__host_virtual_hosts: {}
 
                                                                    # ]]]
 
-
 # .. envvar:: prosody__group_virtual_hosts [[[
 #
-# List of group virtual hosts
-prosody__group_virtual_hosts: []
+# Variable which contains virtual hosts used by prosody configured on hosts in
+## specific Ansible inventory group.
+prosody__group_virtual_hosts: {}
 
                                                                    # ]]]
 
 # .. envvar:: prosody__combined_virtual_hosts [[[
 #
-# Combined virtual hosts list
+# Variable which contains virtual hosts used by prosody,, combined from all other
+# variables.
 prosody__combined_virtual_hosts: '{{ prosody__default_virtual_hosts
-                                    + prosody__virtual_hosts
-                                    + prosody__host_virtual_hosts
-                                    + prosody__group_virtual_hosts }}'
+                                    | combine(prosody__virtual_hosts)
+                                    | combine(prosody__host_virtual_hosts)
+                                    | combine(prosody__group_virtual_hosts) }}'
 
                                                                    # ]]]
                                                                    # ]]]
@@ -410,7 +413,7 @@ prosody__components: {}
 
 # .. envvar:: prosody__host_components [[[
 #
-# Variable which contains components used by prosody cconfigured on specific
+# Variable which contains components used by prosody configured on specific
 ## hosts in the Ansible inventory.
 prosody__host_components: []
 
