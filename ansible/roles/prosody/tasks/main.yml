@@ -84,3 +84,19 @@
     path: '{{ prosody__pki_hook_path }}'
     state: 'absent'
   when: (prosody__deploy_state in [ 'absent' ])
+
+- name: Disable Prosdy Service
+  service:
+    name: '{{ item }}'
+    enabled: 'no'
+    state: 'stopped'
+  with_items:
+    - prosody
+  when: (prosody__deploy_state in [ 'absent' ])
+
+- name: Uninstall Prosody Packages
+  package:
+    name: '{{ q("flattened", (prosody__base_packages
+                              + prosody__packages)) }}'
+    state: 'absent'
+  when: (prosody__deploy_state in [ 'absent' ])
