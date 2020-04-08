@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+# Copyright (C) 2020 Rainer Schuth <devel@reixd.net>
+# Copyright (C) 2018 Norbert Summer <git@o-g.at>
+# Copyright (C) 2018 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+# Reload or restart dovecot on a certificate state change
+
+set -o nounset -o pipefail -o errexit
+
+dovecot_config="/etc/dovecot/conf.d/10-ssl.conf"
+dovecot_action="{{ dovecot_pki_hook_action }}"
+
+# Check if current PKI realm is used by the 'dovecot' webserver
+certificate=$(grep -r "${PKI_SCRIPT_DEFAULT_CRT:-}" ${dovecot_config} || true)
+
+# Get list of current realm states
+read -r -a states <<< "$(echo "${PKI_SCRIPT_STATE:-}" | tr "," " ")"
+
+if [ -n "${certificate}" ] && [[ ${states[*]} ]] ; then
+
+    for state in "${states[@]}" ; do
+
+        if [ "${state}" = "changed-certificate" ] || [ "${state}" = "changed-dhparam" ] ; then
+
+            # Check if current init is systemd
+            if pidof systemd > /dev/null 2>&1 ; then
+
+                dovecot_state="$(systemctl is-active dovecot.service)"
+                if [ "${dovecot_state}" = "active" ] ; then
+                    if doveconf -n > /dev/null 2>&1 ; then
+                        systemctl "${dovecot_action}" dovecot.service
+                    fi
+                fi
+            fi
+
+            break
+        fi
+
+    done
+
+fi

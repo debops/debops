@@ -57,6 +57,10 @@ New DebOps roles
   more contact URLs. Let's Encrypt for example uses this information to notify
   you about expiring certificates and emergency revocation.
 
+- The :ref:`debops.dovecot` and :ref:`debops.postfix` roles now include the PKI
+  hook scripts which will reload their corresponding services when the X.509
+  certificates used by them are changed.
+
 :ref:`debops.postconf` role
 '''''''''''''''''''''''''''
 
