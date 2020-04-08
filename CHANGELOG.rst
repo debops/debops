@@ -94,6 +94,12 @@ Fixed
   be restarted correctly. Now the service should be properly stopped by
   :command:`systemd` after a stop timeout.
 
+:ref:`debops.mosquitto` role
+''''''''''''''''''''''''''''
+
+- Ignore the ``group`` and ``mode`` parameters defined in the Mosquitto bridge
+  configuration; they are used to specify the configuration file attributes.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
