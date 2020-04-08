@@ -7,7 +7,7 @@
 {% endif %}
 connection {{ bridge_name }}
 {% for config_key, config_value in bridge.items() %}
-{%   if config_key not in [ 'connection', 'state', 'comment' ] %}
+{%   if config_key not in [ 'connection', 'state', 'comment', 'group', 'mode' ] %}
 {%     if config_value is string and config_value != '' %}
 {{ "%s %s" | format(config_key, config_value) }}
 {%     elif config_value is not string and config_value is not mapping %}
