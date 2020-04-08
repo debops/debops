@@ -11,6 +11,8 @@ Here you can find a few guides that can help you configure more advanced
 Prosody features.
 For more details see the configuration specific to ``prosody`` role.
 
+You can use the `XMPP Compliance Tester <https://compliance.conversations.im/>`_
+to check if your server fullfills the suggested compliance settings.
 
 .. _prosody__ref_guides_working_example:
 
