@@ -275,12 +275,13 @@ prosody__host_config_global: {}
 #
 # Mapping which combines all of the global config variables and is used
 # in the configuration template.
-prosody__combined_config_global: '{{ prosody__default_config_global | combine(
-                                  prosody__config_http_server
-                                , prosody__config_ldap if prosody__authentication == "ldap2" else {}
-                                , prosody__config_global
-                                , prosody__group_config_global
-                                , prosody__host_config_global ) }}'
+prosody__combined_config_global: '{{ prosody__default_config_global
+                                     | combine(prosody__config_http_server,
+                                               prosody__config_ldap
+                                                 if prosody__authentication == "ldap2" else {},
+                                               prosody__config_global,
+                                               prosody__group_config_global,
+                                               prosody__host_config_global ) }}'
 
                                                                    # ]]]
 
@@ -355,9 +356,9 @@ prosody__host_virtual_hosts: {}
 # Variable which contains virtual hosts used by prosody,, combined from all other
 # variables.
 prosody__combined_virtual_hosts: '{{ prosody__default_virtual_hosts
-                                    | combine(prosody__virtual_hosts)
-                                    | combine(prosody__group_virtual_hosts)
-                                    | combine(prosody__host_virtual_hosts) }}'
+                                    | combine(prosody__virtual_hosts,
+                                              prosody__group_virtual_hosts,
+                                              prosody__host_virtual_hosts) }}'
 
                                                                    # ]]]
                                                                    # ]]]
@@ -445,9 +446,9 @@ prosody__host_components: []
 # Variable which contains components used by prosody,, combined from all other
 # variables.
 prosody__combined_components: '{{ prosody__default_components
-                                  | combine(prosody__components)
-                                  | combine(prosody__group_components)
-                                  | combine(prosody__host_components) }}'
+                                  | combine(prosody__components,
+                                            prosody__group_components,
+                                            prosody__host_components) }}'
 
                                                                    # ]]]
                                                                    # ]]]
