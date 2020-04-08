@@ -78,20 +78,26 @@
           item.state|d('present') == 'absent'))
   no_log: True
 
-- name: Configure nullmailer-smtpd service in xinetd
+- name: Configure nullmailer services in xinetd
   template:
-    src: 'etc/xinetd.d/nullmailer-smtpd.j2'
-    dest: '/etc/xinetd.d/nullmailer-smtpd'
+    src: 'etc/xinetd.d/{{ item }}.j2'
+    dest: '/etc/xinetd.d/{{ item }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
+  loop:
+    - 'nullmailer-smtpd'
+    - 'nullmailer-smtpd6'
   notify: [ 'Reload xinetd' ]
   when: (nullmailer__deploy_state|d('present') != 'absent' and nullmailer__smtpd|bool)
 
 - name: Disable nullmailer-smtpd service in xinetd
   file:
-    path: '/etc/xinetd.d/nullmailer-smtpd'
+    path: '/etc/xinetd.d/{{ item }}'
     state: 'absent'
+  loop:
+    - 'nullmailer-smtpd'
+    - 'nullmailer-smtpd6'
   notify: [ 'Reload xinetd' ]
   when: ((nullmailer__deploy_state|d() and nullmailer__deploy_state == 'absent') or
          not nullmailer__smtpd|bool)

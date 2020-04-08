@@ -123,6 +123,13 @@ General
 
 - TLSv1.3 is now enabled by default for nginx version 1.13.0 and up.
 
+:ref:`debops.nullmailer` role
+'''''''''''''''''''''''''''''
+
+- The Nullmailer smtpd service can now listen on both IPv4 and IPv6 addresses.
+  It listens on both loopback addresses by default, where it used to only
+  listen on the IPv6 loopback address.
+
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
 
