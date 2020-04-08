@@ -293,19 +293,28 @@ prosody__combined_config_global: '{{ prosody__default_config_global | combine(
 # For more information, check `Virtual host settings <https://prosody.im/doc/configure#virtual_host_settings>`_.
 
 # Each virtual host in the list can have the following parameters:
-# prosody__virtual_hosts:
-#   'example.com':
-#     enabled: True
-#     pki_realm: 'xmpp.example.com'
-#     modules_enabled:
-#       - 'module1'
-#       - 'module2'
-#     modules_disabled:
-#       - 'another_module'
-#     admins:
-#       - alice@example.com
-#     authentication: 'internal_hashed'
-
+#
+# .. code-block:: yaml
+#    :linenos:
+#
+#  prosody__virtual_hosts:
+#    'example.com':
+#      enabled: True
+#      pki_realm: 'xmpp.example.com'
+#      # optional settings
+#      modules_enabled:
+#        - 'module1'
+#        - 'module2'
+#      modules_disabled:
+#        - 'another_module'
+#      admins:
+#        - alice@example.com
+#      authentication: 'internal_hashed'
+#
+#    'another-domain.net':
+#      enabled: True
+#      pki_realm: 'chat.another-domain.net'
+#
 
 # .. envvar:: prosody__default_virtual_hosts [[[
 #
@@ -363,39 +372,43 @@ prosody__combined_virtual_hosts: '{{ prosody__default_virtual_hosts
 # For more information, check `Components in Prosody <https://prosody.im/doc/components>`_.
 #
 # Each Component in the list can have the following parameters:
-# prosody__components:
-#   'conference.{{ prosody__domain }}':
-#     enabled: true
-#     # optional settings
-#     plugin_name: 'muc'
-#     component_secret: 's3cr3t'
-#     component_interface: '{{ ansible_default_ipv4.address|d() }}'
-#     component_ports: [ '4242' ]
-#     modules_enabled:
-#       - module1
-#       - storage:
-#           muc_log: 'sql'
-#     params:
-#       - key1: value1
-#       - key2: value2
-
+#
+# .. code-block:: yaml
+#    :linenos:
+#
+#   prosody__components:
+#     'conference.{{ prosody__domain }}':
+#       enabled: true
+#       # optional settings
+#       plugin_name: 'muc'
+#       component_secret: 's3cr3t'
+#       component_interface: '{{ ansible_default_ipv4.address|d() }}'
+#       component_ports: [ '4242' ]
+#       modules_enabled:
+#         - module1
+#         - storage:
+#             muc_log: 'sql'
+#       params:
+#         - key1: value1
+#         - key2: value2
+#
 
 # .. envvar:: prosody__default_components [[[
 #
 # Variable which contains default components used by prosody
 prosody__default_components:
-    #  muc (multi user channel) config for group channel function.
-    #  https://prosody.im/doc/modules/mod_muc
-    #  XEP-0045
+  #  muc (multi user channel) config for group channel function.
+  #  https://prosody.im/doc/modules/mod_muc
+  #  XEP-0045
   'conference.{{ prosody__domain }}':
     enabled: true
     plugin_name: 'muc'
     modules_enabled: []
     params: {}
 
-    #  http_upload enables upload via http(s) for clients to share files
-    #  https://modules.prosody.im/mod_http_upload.html
-    #  XEP-0363
+  #  http_upload enables upload via http(s) for clients to share files
+  #  https://modules.prosody.im/mod_http_upload.html
+  #  XEP-0363
   'upload.{{ prosody__domain }}':
     enabled: true
     plugin_name: 'http_upload'
