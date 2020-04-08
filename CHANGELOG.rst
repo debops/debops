@@ -75,6 +75,12 @@ Fixed
 
 - Fix idempotency issue in the :file:`/etc/crontab` file.
 
+:ref:`debops.mosquitto` role
+''''''''''''''''''''''''''''
+
+- Ignore the ``group`` and ``mode`` parameters defined in the Mosquitto bridge
+  configuration; they are used to specify the configuration file attributes.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
