@@ -64,6 +64,22 @@ New DebOps roles
   removed conditionally, controlled by the :envvar:`postconf__deploy_state`
   variable.
 
+:ref:`debops.prosody` role
+'''''''''''''''''''''''''''
+
+ - The role has kept the same behaviour, however the configuration parameters have changes.
+   See :ref:`upgrade_notes` for details.
+ - Split global, VirtualHost and Components configurarion. VirtualHosts and Components are now managed in separated
+   list of dics and stored in dedicated config files under `/etc/prosody/conf.d/[domain_name].cfg.lua`.
+ - VirtualHost and Components can have additional (optional) parameters. See corresponding documentation.
+ - Add missing tasks when "undeploying" (removing) prosody.
+ - Change :envvar:`prosody__authentication` default value to `internal_hashed` as safe default for storing passwords.
+ - Added new `prosody__*_virtual_hosts` and `prosody__*_components` variables.
+ - Add dependent Virtual Host and Components variables.
+ - Deleted/Replaced the following variables: `prosody__muc`,
+ - Improvements in the role documentation.
+ - Add guide/example on how to configure a working prosody server.
+
 :ref:`debops.resources` role
 ''''''''''''''''''''''''''''
 

@@ -15,6 +15,26 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+Inventory variable changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Some variables in the :ref:`debops.prosody` role have been renamed:
+
+  +-----------------------------------------+------------------------------------------+----------------------------------------------+
+  | Old variable name                       | New variable name                        | Changed value                                |
+  +=========================================+==========================================+==============================================+
+  | ``prosody__authentication``             | :envvar:`prosody__authentication`        | Yes                                          |
+  | ``prosody__config_virtual_hosts:``      | :envvar:`prosody__default_virtual_hosts` | Yes                                          |
+  | ``prosody__default_config_components:`` | :envvar:`prosody__default_components`    | Yes                                          |
+  | ``prosody__muc``                        | Removed                                  | Check :envvar:`prosody__default_components`  |
+  | ``prosody__config_muc``                 | Removed                                  | Check :envvar:`prosody__default_components`  |
+  | ``prosody__http_upload``                | Removed                                  | Check :envvar:`prosody__default_components`  |
+  | ``prosody__config_http_upload``         | Removed                                  | Check :envvar:`prosody__default_components`  |
+  | ``prosody__config_components``          | Removed                                  | Check :envvar:`prosody__default_components`  |
+  | ``prosody__host_config_components``     | Removed                                  | Check :envvar:`prosody__host_components`     |
+  | ``prosody__group_config_components``    | Removed                                  | Check :envvar:`prosody__group_components`    |
+  | ``prosody__combined_config_components`` | Removed                                  | Check :envvar:`prosody__combined_components` |
+  +-----------------------------------------+------------------------------------------+----------------------------------------------+
 
 v2.0.0 (2020-01-30)
 -------------------
