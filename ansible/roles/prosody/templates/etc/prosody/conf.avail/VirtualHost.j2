@@ -8,24 +8,24 @@
 -- Virtual Host Configuration File
 
 
-{% set prosody__tpl_pki_realm = item.value.pki_realm %}{#| d((debops__tpl_macros.get_realm_yaml_list(item.name, prosody__pki_realm) | from_yaml)[0]) %#}
+{% set prosody__tpl_pki_realm = item.pki_realm|d(prosody__pki_realm) %}
 {% set prosody__tpl_pki_realm_path = prosdoy__pki_realm_path + "/" + prosody__tpl_pki_realm %}
-VirtualHost "{{ item.key }}"
-  enabled = {{ item.value.enabled|d(true) }}
+VirtualHost "{{ item.name|mandatory }}"
+  enabled = {{ item.enabled|d(true) }}
 
   ssl = {
-    certificate = "{{ item.value.tls_crt | d(prosody__tpl_pki_realm_path + "/" + (item.value.pki_crt|d(prosody__pki_crt_filename))) }}";
-    key =  "{{ item.value.tls_key | d(prosody__tpl_pki_realm_path + "/" + (item.value.pki_key|d(prosody__pki_key_filename))) }}";
+    certificate = "{{ item.tls_crt | d(prosody__tpl_pki_realm_path + "/" + (item.pki_crt|d(prosody__pki_crt_filename))) }}";
+    key =  "{{ item.tls_key | d(prosody__tpl_pki_realm_path + "/" + (item.pki_key|d(prosody__pki_key_filename))) }}";
   }
-{% if item.value.admins|d() %}
-  admins = {{ prosody_macros.lua_print_variable(item.value.admins)|indent(4,true) }}
+{% if item.admins|d() %}
+  admins = {{ prosody_macros.lua_print_variable(item.admins)|indent(4,true) }}
 {% endif %}
-{% if item.value.authentication|d() %}
-  authentication = {{ prosody_macros.lua_print_variable(item.value.authentication) }}
+{% if item.authentication|d() %}
+  authentication = {{ prosody_macros.lua_print_variable(item.authentication) }}
 {% endif %}
-{% if item.value.modules_enabled|d() %}
-  modules_enabled = {{ prosody_macros.lua_print_variable(item.value.modules_enabled)|indent(4,true) }}
+{% if item.modules_enabled|d() %}
+  modules_enabled = {{ prosody_macros.lua_print_variable(item.modules_enabled)|indent(4,true) }}
 {% endif %}
-{% if item.value.modules_disabled|d() %}
-  modules_disabled = {{ prosody_macros.lua_print_variable(item.value.modules_disabled)|indent(4,true) }}
+{% if item.modules_disabled|d() %}
+  modules_disabled = {{ prosody_macros.lua_print_variable(item.modules_disabled)|indent(4,true) }}
 {% endif %}

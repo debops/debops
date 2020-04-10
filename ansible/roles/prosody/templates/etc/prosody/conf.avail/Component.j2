@@ -7,16 +7,16 @@
 {% import 'templates/import/prosody_macros.j2' as prosody_macros without context %}
 -- Component Configuration File
 
-{% if item.value.plugin_name|d() %}
-Component "{{ item.key }}" "{{ item.value.plugin_name|d() }}"
+{% if item.plugin_name|d() %}
+Component "{{ item.name|mandatory }}" "{{ item.plugin_name|d() }}"
 {% else %}
-Component "{{ item.key }}"
+Component "{{ item.name|mandatory }}"
 {% endif %}
-{% if item.value.params|d() %}
-  {% for key, value in item.value.params.items() %}
+{% if item.params|d() %}
+  {% for key, value in item.params.items() %}
   {{ key }} = {{ prosody_macros.lua_print_variable(value)|indent(2,true)  }}
   {% endfor %}
 {% endif %}
-{% if item.value.modules_enabled|d() %}
-  modules_enabled = {{ prosody_macros.lua_print_variable(item.value.modules_enabled)|indent(4,true) }}
+{% if item.modules_enabled|d() %}
+  modules_enabled = {{ prosody_macros.lua_print_variable(item.modules_enabled)|indent(4,true) }}
 {% endif %}

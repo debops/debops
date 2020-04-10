@@ -299,10 +299,12 @@ prosody__combined_config_global: '{{ prosody__default_config_global
 #  :linenos:
 #
 #  prosody__virtual_hosts:
-#    'example.com':
+#    - name: 'example.com'
 #      enabled: True
 #      pki_realm: 'xmpp.example.com'
 #      # optional settings
+#      tls_crt: '/path/to/cert.pem'
+#      tls_key: '/path/to/key.pem'
 #      modules_enabled:
 #        - 'module1'
 #        - 'module2'
@@ -312,7 +314,7 @@ prosody__combined_config_global: '{{ prosody__default_config_global
 #        - alice@example.com
 #      authentication: 'internal_hashed'
 #
-#    'another-domain.net':
+#    - name: 'another-domain.net'
 #      enabled: True
 #      pki_realm: 'chat.another-domain.net'
 #
@@ -321,7 +323,7 @@ prosody__combined_config_global: '{{ prosody__default_config_global
 #
 # Variable which contains default virtual hosts used by prosody
 prosody__default_virtual_hosts:
-  '{{ ansible_domain }}':
+  - name: '{{ ansible_domain }}'
     enabled: false
     pki_realm: 'domain'
 
@@ -331,7 +333,7 @@ prosody__default_virtual_hosts:
 #
 # Variable which contains virtual hosts used by prosody configured on all hosts
 # in the Ansible inventory.
-prosody__virtual_hosts: {}
+prosody__virtual_hosts: []
 
                                                                    # ]]]
 
@@ -339,7 +341,7 @@ prosody__virtual_hosts: {}
 #
 # Variable which contains virtual hosts used by prosody configured on hosts in
 ## specific Ansible inventory group.
-prosody__group_virtual_hosts: {}
+prosody__group_virtual_hosts: []
 
                                                                    # ]]]
 
@@ -347,7 +349,7 @@ prosody__group_virtual_hosts: {}
 #
 # Variable which contains virtual hosts used by prosody configured on specific
 ## hosts in the Ansible inventory.
-prosody__host_virtual_hosts: {}
+prosody__host_virtual_hosts: []
 
                                                                    # ]]]
 
@@ -355,10 +357,14 @@ prosody__host_virtual_hosts: {}
 #
 # Variable which contains virtual hosts used by prosody,, combined from all other
 # variables.
-prosody__combined_virtual_hosts: '{{ prosody__default_virtual_hosts
-                                    | combine(prosody__virtual_hosts,
-                                              prosody__group_virtual_hosts,
-                                              prosody__host_virtual_hosts) }}'
+prosody__combined_virtual_hosts: '{{ (prosody__default_virtual_hosts
+                                     + prosody__virtual_hosts
+                                     + prosody__group_virtual_hosts
+                                     + prosody__host_virtual_hosts)|
+                                       parse_kv_items(merge_keys=[
+                                         "enabled", "pki_realm", "tls_crt", "tls_key",
+                                         "modules_enabled", "modules_disabled",
+                                         "admins", "authentication"]) }}'
 
                                                                    # ]]]
                                                                    # ]]]
@@ -378,7 +384,7 @@ prosody__combined_virtual_hosts: '{{ prosody__default_virtual_hosts
 #   :linenos:
 #
 #   prosody__components:
-#     'conference.{{ prosody__domain }}':
+#     - name: 'conference.{{ prosody__domain }}'
 #       enabled: true
 #       # optional settings
 #       plugin_name: 'muc'
@@ -401,7 +407,7 @@ prosody__default_components:
   #  muc (multi user channel) config for group channel function.
   #  https://prosody.im/doc/modules/mod_muc
   #  XEP-0045
-  'conference.{{ prosody__domain }}':
+  - name: 'conference.{{ prosody__domain }}'
     enabled: true
     plugin_name: 'muc'
     modules_enabled: []
@@ -410,7 +416,7 @@ prosody__default_components:
   #  http_upload enables upload via http(s) for clients to share files
   #  https://modules.prosody.im/mod_http_upload.html
   #  XEP-0363
-  'upload.{{ prosody__domain }}':
+  - name: 'upload.{{ prosody__domain }}'
     enabled: true
     plugin_name: 'http_upload'
     modules_enabled: []
@@ -421,7 +427,7 @@ prosody__default_components:
 #
 # Variable which contains components used by prosody configured on all hosts
 # in the Ansible inventory.
-prosody__components: {}
+prosody__components: []
 
                                                                    # ]]]
 
@@ -445,10 +451,13 @@ prosody__host_components: []
 #
 # Variable which contains components used by prosody,, combined from all other
 # variables.
-prosody__combined_components: '{{ prosody__default_components
-                                  | combine(prosody__components,
-                                            prosody__group_components,
-                                            prosody__host_components) }}'
+prosody__combined_components: '{{ (prosody__default_components
+                                   + prosody__components
+                                   + prosody__group_components
+                                   + prosody__host_components)|
+                                      parse_kv_items(merge_keys=[
+                                        "enabled", "plugin_name", "component_secret", "component_interface",
+                                        "component_ports", "modules_enabled", "params"]) }}'
 
                                                                    # ]]]
                                                                    # ]]]
