@@ -17,6 +17,14 @@ Component "{{ item.name|mandatory }}"
   {{ key }} = {{ prosody_macros.lua_print_variable(value)|indent(2,true)  }}
   {% endfor %}
 {% endif %}
-{% if item.modules_enabled|d() %}
-  modules_enabled = {{ prosody_macros.lua_print_variable(item.modules_enabled)|indent(4,true) }}
+{%if item.modules_enabled|d() %}
+  modules_enabled = {
+  {% for _mod in item.modules_enabled %}
+  {% if _mod is mapping %}
+  {{ prosody_macros.lua_print_mapping(_mod)|indent(2,true) }}
+  {% else %}
+  {{ prosody_macros.lua_print_variable(_mod)|indent(2,true) }};
+  {% endif %}
+  {% endfor %}
+  }
 {% endif %}
