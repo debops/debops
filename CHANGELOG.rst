@@ -57,6 +57,10 @@ New DebOps roles
   more contact URLs. Let's Encrypt for example uses this information to notify
   you about expiring certificates and emergency revocation.
 
+- The :ref:`debops.dovecot` and :ref:`debops.postfix` roles now include the PKI
+  hook scripts which will reload their corresponding services when the X.509
+  certificates used by them are changed.
+
 :ref:`debops.postconf` role
 '''''''''''''''''''''''''''
 
@@ -138,6 +142,13 @@ General
 ''''''''''''''''''''''''
 
 - TLSv1.3 is now enabled by default for nginx version 1.13.0 and up.
+
+:ref:`debops.nullmailer` role
+'''''''''''''''''''''''''''''
+
+- The Nullmailer smtpd service can now listen on both IPv4 and IPv6 addresses.
+  It listens on both loopback addresses by default, where it used to only
+  listen on the IPv6 loopback address.
 
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''

@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+# Copyright (C) 2020 Rainer Schuth <devel@reixd.net>
+# Copyright (C) 2018 Norbert Summer <git@o-g.at>
+# Copyright (C) 2018 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+# Reload or restart postfix on a certificate state change
+
+set -o nounset -o pipefail -o errexit
+
+postfix_config="/etc/postfix/main.cf"
+postfix_action="{{ postfix__pki_hook_action }}"
+
+# Check if current PKI realm is used by the 'postfix' webserver
+certificate=$(grep -r "${PKI_SCRIPT_DEFAULT_CRT:-}" ${postfix_config} || true)
+
+# Get list of current realm states
+read -r -a states <<< "$(echo "${PKI_SCRIPT_STATE:-}" | tr "," " ")"
+
+if [ -n "${certificate}" ] && [[ ${states[*]} ]] ; then
+
+    for state in "${states[@]}" ; do
+
+        if [ "${state}" = "changed-certificate" ] || [ "${state}" = "changed-dhparam" ] ; then
+
+            # Check if current init is systemd
+            if pidof systemd > /dev/null 2>&1 ; then
+
+                postfix_state="$(systemctl is-active postfix.service)"
+                if [ "${postfix_state}" = "active" ] ; then
+                    if postfix check > /dev/null 2>&1 ; then
+                        systemctl "${postfix_action}" postfix.service
+                    fi
+                fi
+            fi
+
+            break
+        fi
+
+    done
+
+fi

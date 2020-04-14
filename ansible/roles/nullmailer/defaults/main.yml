@@ -423,9 +423,16 @@ nullmailer__smtpd: False
                                                                    # ]]]
 # .. envvar:: nullmailer__smtpd_bind [[[
 #
-# Specify the IP address on which the :program:`xinetd` SMTP server should listen for
-# new connections. By default it listens only on ``lo`` interface.
-nullmailer__smtpd_bind: 'localhost'
+# Specify the IPv4 address on which the :program:`xinetd` SMTP server should
+# listen for new connections. By default it listens only on ``lo`` interface.
+nullmailer__smtpd_bind: '127.0.0.1'
+
+                                                                   # ]]]
+# .. envvar:: nullmailer__smtpd_bind6 [[[
+#
+# Specify the IPv6 address on which the :program:`xinetd` SMTP server should
+# listen for new connections. By default it listens only on ``lo`` interface.
+nullmailer__smtpd_bind6: '::1'
 
                                                                    # ]]]
 # .. envvar:: nullmailer__smtpd_port [[[
@@ -510,6 +517,7 @@ nullmailer__dpkg_cleanup__dependent_packages:
       - '/etc/ferm/ferm.d/50_debops.nullmailer_accept_25.conf'
       - '/etc/hosts.allow.d/50_nullmailer_dependent_allow'
       - '/etc/xinetd.d/nullmailer-smtpd'
+      - '/etc/xinetd.d/nullmailer-smtpd6'
     reload_services:
       - 'xinetd'
     restart_services:
