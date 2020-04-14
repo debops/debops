@@ -26,7 +26,7 @@
   file:
     state: 'absent'
     path: '/etc/prosody/conf.d/{{ item.name|mandatory }}.cfg.lua'
-  loop: '{{ prosody__combined_virtual_hosts }}'
+  loop: '{{ prosody__combined_virtual_hosts|parse_kv_items() }}'
   when: not (item.enabled|d(true)|bool)
   notify: [ 'Restart prosody' ]
   tags: [ 'role::prosody:template' ]
@@ -35,7 +35,7 @@
   template:
     src: 'etc/prosody/conf.d/VirtualHost.j2'
     dest: '/etc/prosody/conf.d/{{ item.name|mandatory }}.cfg.lua'
-  loop: '{{ prosody__combined_virtual_hosts }}'
+  loop: '{{ prosody__combined_virtual_hosts|parse_kv_items() }}'
   when: (item.enabled|d(true)|bool)
   notify: [ 'Restart prosody' ]
   tags: [ 'role::prosody:template' ]
@@ -44,7 +44,7 @@
   file:
     state: 'absent'
     path: '/etc/prosody/conf.d/{{ item.name|mandatory }}.cfg.lua'
-  loop: '{{ prosody__combined_components }}'
+  loop: '{{ prosody__combined_components|parse_kv_items() }}'
   when: not (item.enabled|d(true)|bool)
   notify: [ 'Restart prosody' ]
   tags: [ 'role::prosody:template' ]
@@ -53,7 +53,7 @@
   template:
     src: 'etc/prosody/conf.d/Component.j2'
     dest: '/etc/prosody/conf.d/{{ item.name|mandatory }}.cfg.lua'
-  loop: '{{ prosody__combined_components }}'
+  loop: '{{ prosody__combined_components|parse_kv_items() }}'
   when: (item.enabled|d(true)|bool)
   notify: [ 'Restart prosody' ]
   tags: [ 'role::prosody:template' ]
