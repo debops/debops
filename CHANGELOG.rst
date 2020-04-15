@@ -189,6 +189,12 @@ General
                applied. See the patch files in the role :file:`files/patches/`
                directory for more information.
 
+- The GitLab package repository signing key has been replaced with the new key
+  that has been in use since 2020-04-06, allowing APT to update package lists
+  again. See the `GitLab.com blog`__ for more information about this change.
+
+  .. __: https://about.gitlab.com/releases/2020/03/30/gpg-key-for-gitlab-package-repositories-metadata-changing/
+
 :ref:`debops.minio` role
 ''''''''''''''''''''''''
 
