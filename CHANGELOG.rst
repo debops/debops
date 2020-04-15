@@ -26,6 +26,12 @@ Added
 
 - The custom patches applied by the role can now be reverted conditionally.
 
+- The GitLab package repository signing key has been replaced with the new key
+  that has been in use since 2020-04-06, allowing APT to update package lists
+  again. See the `GitLab.com blog`__ for more information about this change.
+
+  .. __: https://about.gitlab.com/releases/2020/03/30/gpg-key-for-gitlab-package-repositories-metadata-changing/
+
 :ref:`debops.gunicorn` role
 '''''''''''''''''''''''''''
 
