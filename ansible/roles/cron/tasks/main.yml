@@ -89,8 +89,8 @@
 - name: Manage cron environment variables
   cron:
     cron_file:  '{{ item.0.file | d(item.0.cron_file) }}'
-    name:       '{{ item.1.keys()[0] }}'
-    value:      '{{ item.1.values()[0] }}'
+    name:       '{{ item.1.keys() | list | first }}'
+    value:      '{{ item.1.values() | list | first }}'
     user:       '{{ item.0.user | d("root") }}'
     state:      'present'
     env:        True
