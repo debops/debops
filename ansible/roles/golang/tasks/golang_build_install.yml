@@ -19,7 +19,7 @@
 - name: 'Install {{ build.name }} APT packages'
   package:
     name: '{{ build.apt_packages }}'
-    state: 'present'
+    state: 'latest'
   register: golang__register_install_apt_packages
   until: golang__register_install_apt_packages is succeeded
   when: (not (build.upstream|d())|bool and
