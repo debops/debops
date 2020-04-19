@@ -26,17 +26,29 @@
   user:
     name: 'prometheus'
     group: 'prometheus'
-    groups: '{{ prometheus_exporter__append_groups | join(",") | default(omit) }}'
+    groups: '{{ prometheus_exporter__combined_append_groups | join(",") | default(omit) }}'
     home: '/var/lib/prometheus'
     comment: 'Prometheus daemon,,,'
     shell: '/bin/false'
     state: 'present'
     system: True
 
+- name: Fetch Ghostunnel release
+  get_url:
+    url: '{{ prometheus_exporter__ghostunnel_resource }}'
+    dest: '{{ "/usr/local/bin/ghostunnel" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: prometheus_exporter__pki|bool
+
 - name: Fetch release prometheus exporters
   get_url:
     url: '{{ item.resource }}'
     dest: '{{ "/usr/local/bin/prometheus-" + item.name + "-exporter" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
   with_items: '{{ prometheus_exporter__combined_release_exporters }}'
   when: item.name is defined and item.name and
         item.resource is defined and item.resource and
@@ -77,6 +89,20 @@
   with_items: '{{ prometheus_exporter__combined_exporters }}'
   tags: [ 'role::prometheus_exporter:config' ]
 
+- name: Configure Ghostunnel for Prometheus exporters
+  template:
+    src: 'etc/default/ghostunnel.j2'
+    dest: '/etc/default/ghostunnel-{{ item }}-exporter'
+    owner: 'root'
+    group: 'prometheus'
+    mode: '0640'
+  with_items:
+    - '{{ prometheus_exporter__combined_exporters }}'
+    - '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'
+  tags: [ 'role::prometheus_exporter:config' ]
+  notify: restart ghostunnel prometheus exporters
+  when: prometheus_exporter__pki|bool
+
 - name: Configure Prometheus exporters
   template:
     src: 'etc/default/prometheus-exporter.j2'
@@ -116,11 +142,26 @@
   with_items: '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'
   notify: restart prometheus exporters
 
+- name: Generate Ghostunnel systemd service unit
+  template:
+    src: 'etc/systemd/system/ghostunnel.service.j2'
+    dest: '/etc/systemd/system/ghostunnel-{{ item }}-exporter.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: prometheus_exporter__register_ghostunnel_systemd
+  with_items:
+    - '{{ prometheus_exporter__combined_exporters }}'
+    - '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'
+  notify: restart ghostunnel prometheus exporters
+  when: prometheus_exporter__pki|bool
+
 - name: Reload systemd configuration
   systemd:
     daemon_reload: True
   when: (ansible_service_mgr == 'systemd' and
-         prometheus_exporter__register_systemd is changed)
+         (prometheus_exporter__register_systemd is changed or
+          prometheus_exporter__register_ghostunnel_systemd is changed))
 
 - name: Enable and start release Prometheus exporters
   service:
@@ -130,6 +171,17 @@
   with_items: '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'
   when: ansible_service_mgr == 'systemd' and
         prometheus_exporter__register_systemd is changed
+
+- name: Enable and start Ghostunnel Prometheus exporters
+  service:
+    name: 'ghostunnel-{{ item }}-exporter'
+    state: 'started'
+    enabled: True
+  with_items:
+    - '{{ prometheus_exporter__combined_exporters }}'
+    - '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'
+  when: ansible_service_mgr == 'systemd' and
+        prometheus_exporter__register_ghostunnel_systemd is changed
 
 - name: Make sure that Ansible local facts directory exists
   file:

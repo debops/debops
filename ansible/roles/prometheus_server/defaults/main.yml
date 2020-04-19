@@ -139,12 +139,12 @@ prometheus_server__args:
 # configuration file.
 prometheus_server__configuration:
 
-    global: '{{ prometheus_server__global_configuration }}'
-    rule_files: '{{ prometheus_server__rule_files_configuration }}'
-    alerting: '{{ prometheus_server__alerting_configuration }}'
-    scrape_configs: '{{ prometheus_exporter__combined_scrape_configs_configuration }}'
-    remote_write: '{{ prometheus_server__remote_write_configuration }}'
-    remote_read: '{{ prometheus_server__remote_read_configuration }}'
+  global: '{{ prometheus_server__global_configuration }}'
+  rule_files: '{{ prometheus_server__rule_files_configuration }}'
+  alerting: '{{ prometheus_server__alerting_configuration }}'
+  scrape_configs: '{{ prometheus_server__combined_scrape_configs_configuration }}'
+  remote_write: '{{ prometheus_server__remote_write_configuration }}'
+  remote_read: '{{ prometheus_server__remote_read_configuration }}'
 
                                                                    # ]]]
 # .. envvar:: prometheus_server__global_configuration [[[
@@ -153,8 +153,8 @@ prometheus_server__configuration:
 # configuration file.
 prometheus_server__global_configuration:
 
-    scrape_interval: '15s'
-    evaluation_interval: '15s'
+  scrape_interval: '15s'
+  evaluation_interval: '15s'
 
                                                                    # ]]]
 # .. envvar:: prometheus_server__rule_files_configuration [[[
@@ -198,13 +198,16 @@ prometheus_server__default_server_scrape_config_configuration:
 prometheus_server__default_scrape_configs_configuration:
 
   - job_name: 'node'
+    scheme: '{{ "https" if prometheus_server__pki|bool else "http" }}'
+    tls_config: '{{ prometheus_server__tls_config if prometheus_server__pki|bool else {} }}'
     file_sd_configs:
       - files:
-        - '/etc/prometheus/file_sd_configs.d/node.*.json'
+          - '/etc/prometheus/file_sd_configs.d/node.*.json'
     relabel_configs:
       - source_labels: ['__address__']
         separator:     ':'
-        regex:         '([^.:]*)[.].*:(.*)' # Get hostname from address
+        # Get hostname from address
+        regex:         '([^.:]*)[.].*:(.*)'
         target_label:  'instance'
         replacement:   '${1}:${2}'
 
@@ -216,13 +219,13 @@ prometheus_server__default_scrape_configs_configuration:
 prometheus_server__scrape_configs_configuration: []
 
                                                                    # ]]]
-# .. envvar:: prometheus_exporter__combined_scrape_configs_configuration [[[
+# .. envvar:: prometheus_server__combined_scrape_configs_configuration [[[
 #
 # The variable which combines all other Prometheus scrape
 # configurations options and is used in the role tasks and templates.
-prometheus_exporter__combined_scrape_configs_configuration: '{{ prometheus_server__default_server_scrape_config_configuration
-                                                                + prometheus_server__default_scrape_configs_configuration
-                                                                + prometheus_server__scrape_configs_configuration }}'
+prometheus_server__combined_scrape_configs_configuration: '{{ prometheus_server__default_server_scrape_config_configuration
+                                                              + prometheus_server__default_scrape_configs_configuration
+                                                              + prometheus_server__scrape_configs_configuration }}'
 
                                                                    # ]]]
 # .. envvar:: prometheus_server__remote_write_configuration [[[
@@ -237,6 +240,76 @@ prometheus_server__remote_write_configuration: []
 # The remote read configuration options which should be present in the main
 # configuration file.
 prometheus_server__remote_read_configuration: []
+
+                                                                   # ]]]
+                                                                   # ]]]
+# SSL configuration [[[
+# ---------------------
+
+# .. envvar:: prometheus_server__append_groups [[[
+#
+# List of additional system groups to append to the Prometheus system user.
+prometheus_server__append_groups: [ 'ssl-cert' ]
+
+                                                                   # ]]]
+# .. envvar:: prometheus_server__tls_config [[[
+#
+# Configuration of SSL support in :program:`prometheus`, managed by :ref:`debops.pki` role.
+prometheus_server__tls_config:
+
+  ca_file: '{{ prometheus_server__pki_path + "/" + prometheus_server__pki_realm +
+               "/" + prometheus_server__pki_ca }}'
+  key_file: '{{ prometheus_server__pki_path + "/" + prometheus_server__pki_realm +
+                "/" + prometheus_server__pki_key }}'
+  cert_file: '{{ prometheus_server__pki_path + "/" + prometheus_server__pki_realm +
+                 "/" + prometheus_server__pki_crt }}'
+  server_name: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_server__pki [[[
+#
+# Enable or disable support for SSL in Prometheus server (using :ref:`debops.pki`).
+prometheus_server__pki: '{{ True
+                            if (ansible_local|d() and ansible_local.pki|d() and
+                                ansible_local.pki.enabled|d()|bool and
+                                prometheus_server__pki_realm in ansible_local.pki.known_realms)
+                            else False }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_server__pki_path [[[
+#
+# Base path for PKI directory.
+prometheus_server__pki_path: '{{ (ansible_local.pki.base_path
+                                 if (ansible_local|d() and ansible_local.pki|d() and
+                                     ansible_local.pki.base_path|d())
+                                 else "/etc/pki") }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_server__pki_realm [[[
+#
+# Default PKI realm used by Prometheus exporters.
+prometheus_server__pki_realm: '{{ ansible_local.pki.realm
+                                  if (ansible_local|d() and ansible_local.pki|d() and
+                                      ansible_local.pki.realm|d())
+                                  else "domain" }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_server__pki_ca [[[
+#
+# Root CA certificate used by Prometheus server, relative to :envvar:`prometheus_server__pki_realm`.
+prometheus_server__pki_ca: 'CA.crt'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_server__pki_crt [[[
+#
+# Host certificate used by Prometheus exporters, relative to :envvar:`prometheus_server__pki_realm`.
+prometheus_server__pki_crt: 'default.crt'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_server__pki_key [[[
+#
+# Host private key used by Prometheus exporters, relative to :envvar:`prometheus_server__pki_realm`.
+prometheus_server__pki_key: 'default.key'
 
                                                                    # ]]]
                                                                    # ]]]

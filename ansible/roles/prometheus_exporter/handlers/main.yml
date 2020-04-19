@@ -10,3 +10,11 @@
   with_items:
     - '{{ prometheus_exporter__combined_exporters }}'
     - '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'
+
+- name: restart ghostunnel prometheus exporters
+  service:
+    name: 'ghostunnel-{{ item }}-exporter'
+    state: 'restarted'
+  with_items:
+    - '{{ prometheus_exporter__combined_exporters }}'
+    - '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'

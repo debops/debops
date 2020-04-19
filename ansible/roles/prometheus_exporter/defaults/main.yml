@@ -52,11 +52,25 @@ prometheus_exporter__server_file_based_discovery_service: True
 # Basic configuration [[[
 # -----------------------
 
+# .. envvar:: prometheus_exporter__default_append_groups [[[
+#
+# List of default additional system groups to append to the Prometheus system user.
+prometheus_exporter__default_append_groups: '{{ [ "ssl-cert" ] if prometheus_exporter__pki|bool else [] }}'
+
+                                                                   # ]]]
 # .. envvar:: prometheus_exporter__append_groups [[[
 #
 # List of additional system groups to append to the Prometheus system user.
 # Some groups are required for access to sockets.
 prometheus_exporter__append_groups: []
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__combined_append_groups [[[
+#
+# The variable which combines all other Prometheus additional system groups
+# to append to the Prometheus system user and is used in the role tasks and templates.
+prometheus_exporter__combined_append_groups: '{{ prometheus_exporter__default_append_groups
+                                                 + prometheus_exporter__append_groups }}'
 
                                                                    # ]]]
 # .. envvar:: prometheus_exporter__default_exporters [[[
@@ -194,6 +208,7 @@ prometheus_exporter__combined_ports_map: '{{ prometheus_exporter__default_ports_
                                              combine(prometheus_exporter__ports_map) |
                                              combine(prometheus_exporter__group_ports_map) |
                                              combine(prometheus_exporter__host_ports_map) }}'
+
                                                                    # ]]]
                                                                    # ]]]
 # Prometheus default file [[[
@@ -211,7 +226,9 @@ prometheus_exporter__default_args:
 
   - name: 'common'
     options:
-      - web.listen-address: '{{ prometheus_exporter__bind + ":" + prometheus_exporter__combined_ports_map[item] }}'
+      - web.listen-address: '{{ ("localhost" if prometheus_exporter__pki|bool else prometheus_exporter__bind) + ":" +
+                                ("3" + prometheus_exporter__combined_ports_map[item][1:] if
+                                prometheus_exporter__pki|bool else prometheus_exporter__combined_ports_map[item]) }}'
 
                                                                    # ]]]
 # .. envvar:: prometheus_exporter__args [[[
@@ -236,6 +253,71 @@ prometheus_exporter__combined_args: '{{ prometheus_exporter__default_args
 # configuration files.
 # :ref:`prometheus_exporter__env` for more details.
 prometheus_exporter__env: []
+
+                                                                   # ]]]
+                                                                   # ]]]
+# SSL configuration [[[
+# ---------------------
+
+# .. envvar:: prometheus_exporter__ghostunnel_version [[[
+#
+# Version of Ghostunnel TLS proxy
+prometheus_exporter__ghostunnel_version: 'v1.5.2'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__ghostunnel_version [[[
+#
+# Resource release of Ghostunnel TLS proxy.
+prometheus_exporter__ghostunnel_resource: '{{ "https://github.com/square/ghostunnel" +
+                                              "/releases/download/" + prometheus_exporter__ghostunnel_version +
+                                              "/ghostunnel-" + prometheus_exporter__ghostunnel_version +
+                                              "-linux-amd64-with-pkcs11" }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__pki [[[
+#
+# Enable or disable support for SSL in Prometheus exporters (using :ref:`debops.pki`).
+prometheus_exporter__pki: '{{ True
+                              if (ansible_local|d() and ansible_local.pki|d() and
+                                  ansible_local.pki.enabled|d()|bool and
+                                  prometheus_exporter__pki_realm in ansible_local.pki.known_realms)
+                              else False }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__pki_path [[[
+#
+# Base path for PKI directory.
+prometheus_exporter__pki_path: '{{ (ansible_local.pki.base_path
+                                   if (ansible_local|d() and ansible_local.pki|d() and
+                                       ansible_local.pki.base_path|d())
+                                   else "/etc/pki") }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__pki_realm [[[
+#
+# Default PKI realm used by Prometheus exporters.
+prometheus_exporter__pki_realm: '{{ ansible_local.pki.realm
+                                    if (ansible_local|d() and ansible_local.pki|d() and
+                                        ansible_local.pki.realm|d())
+                                    else "domain" }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__pki_ca [[[
+#
+# Root CA certificate used by Prometheus exporters, relative to :envvar:`prometheus_exporter__pki_realm`.
+prometheus_exporter__pki_ca: 'CA.crt'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__pki_crt [[[
+#
+# Host certificate used by Prometheus exporters, relative to :envvar:`prometheus_exporter__pki_realm`.
+prometheus_exporter__pki_crt: 'default.crt'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__pki_key [[[
+#
+# Host private key used by Prometheus exporters, relative to :envvar:`prometheus_exporter__pki_realm`.
+prometheus_exporter__pki_key: 'default.key'
 
                                                                    # ]]]
                                                                    # ]]]
@@ -275,7 +357,6 @@ prometheus_exporter__ferm__dependent_rules:
                "lookup/prometheus_exporter__ferm__dependent_rules_dport.j2") }}'
     accept_any: False
     role: 'prometheus_exporter'
-    state: '{{ "absent" if prometheus_exporter__server == "localhost" else "present" }}'
 
                                                                    # ]]]
                                                                    # ]]]

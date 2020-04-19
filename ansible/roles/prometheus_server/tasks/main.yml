@@ -14,6 +14,14 @@
   register: prometheus_server__register_install_status
   until: prometheus_server__register_install_status is succeeded
 
+- name: Add Prometheus server user to specified groups
+  user:
+    name: 'prometheus'
+    groups: '{{ prometheus_server__append_groups | join(",") | default(omit) }}'
+    append: True
+    createhome: False
+  when: prometheus_server__pki|bool
+
 - name: Create additional directories used by Prometheus
   file:
     path: '{{ item }}'
