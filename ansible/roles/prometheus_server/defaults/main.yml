@@ -110,7 +110,7 @@ prometheus_server__basic_auth_users: '{{ ansible_local.core.admin_users
 # The variables below define the contents of the
 # :file:`/etc/default/prometheus` configuration file.
 
-# .. envvar:: prometheus_server__default_args [[[
+# .. envvar:: prometheus_server__args [[[
 #
 # The configuration options which should be present in the default
 # configuration file.
@@ -161,7 +161,14 @@ prometheus_server__global_configuration:
 #
 # The rule files configuration options which should be present in the main
 # configuration file.
-prometheus_server__rule_files_configuration: []
+prometheus_server__rule_files_configuration: [ '/etc/prometheus/rules.d/*.yml' ]
+
+                                                                   # ]]]
+# .. envvar:: prometheus_server__rules [[[
+#
+# Prometheus supports two types of rules which may be configured and
+# then evaluated at regular intervals: recording rules and alerting rules
+prometheus_server__rules: []
 
                                                                    # ]]]
 # .. envvar:: prometheus_server__alerting_configuration [[[
