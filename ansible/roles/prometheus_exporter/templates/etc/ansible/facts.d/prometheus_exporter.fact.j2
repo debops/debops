@@ -4,9 +4,6 @@
  #}
 {% set prometheus_exporter__tpl_delegate_to = ansible_local.prometheus_exporter.delegate_to if (ansible_local|d() and ansible_local.prometheus_exporter|d() and ansible_local.prometheus_exporter.delegate_to|d()) else prometheus_exporter__delegate_to %}
 {% set prometheus_exporter__tpl_server      = ansible_local.prometheus_exporter.server      if (ansible_local|d() and ansible_local.prometheus_exporter|d() and ansible_local.prometheus_exporter.server|d())      else prometheus_exporter__server %}
-{% if prometheus_exporter__register_version.stdout %}
-{% set prometheus_exporter__tpl_server      = "localhost" %}
-{% endif %}
 {
 "delegate_to": "{{ prometheus_exporter__tpl_delegate_to }}",
 "server": "{{ prometheus_exporter__tpl_server }}",

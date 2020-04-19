@@ -7,7 +7,7 @@
 {% set prometheus_exporter__tpl_ghostunnel_args = [] %}
 {% set _ = prometheus_exporter__tpl_ghostunnel_args.append('--{} {}'.format('listen', ('0.0.0.0' if not prometheus_exporter__bind|d(False) else prometheus_exporter__bind) + ':' + prometheus_exporter__combined_ports_map[item])) %}
 {% set _ = prometheus_exporter__tpl_ghostunnel_args.append('--{} {}'.format('target', 'localhost:3' + prometheus_exporter__combined_ports_map[item][1:])) %}
-{% set _ = prometheus_exporter__tpl_ghostunnel_args.append('--{} {}'.format('allow-cn', ansible_fqdn if prometheus_exporter__server == 'localhost' else prometheus_exporter__server)) %}
+{% set _ = prometheus_exporter__tpl_ghostunnel_args.append('--{} {}'.format('allow-cn', prometheus_exporter__server)) %}
 ARGS="{{ prometheus_exporter__tpl_ghostunnel_args | join(' ') }}"
 CERT_PATH="{{ prometheus_exporter__pki_path + "/" + prometheus_exporter__pki_realm + "/" + prometheus_exporter__pki_crt }}"
 KEY_PATH="{{ prometheus_exporter__pki_path + "/" + prometheus_exporter__pki_realm + "/" + prometheus_exporter__pki_key }}"
