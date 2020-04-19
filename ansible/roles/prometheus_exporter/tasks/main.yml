@@ -33,50 +33,41 @@
     state: 'present'
     system: True
 
-- name: Create additional directories used by Prometheus
-  file:
-    path: '{{ prometheus_exporter__src }}'
-    state: 'directory'
+- name: Fetch release prometheus exporters
+  get_url:
+    url: '{{ item.resource }}'
+    dest: '{{ "/usr/local/bin/prometheus-" + item.name + "-exporter" }}'
+  with_items: '{{ prometheus_exporter__combined_release_exporters }}'
+  when: item.name is defined and item.name and
+        item.resource is defined and item.resource and
+        (item.archive is not defined or not item.archive|bool)
+
+- name: Unarchive release prometheus exporters
+  unarchive:
+    src: '{{ item.resource }}'
+    dest: '{{ "/tmp" }}'
+    remote_src: True
+  args:
+    creates: '{{ "/usr/local/bin/prometheus-" + item.name + "-exporter" }}'
+  with_items: '{{ prometheus_exporter__combined_release_exporters }}'
+  when: item.name is defined and item.name and
+        item.resource is defined and item.resource and
+        item.archive is defined and item.archive|bool
+
+- name: Install unarchived release prometheus exporters
+  copy:
+    src: '{{ "/tmp/" + item.binary }}'
+    dest: '{{ "/usr/local/bin/prometheus-" + item.name + "-exporter" }}'
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: prometheus_exporter__combined_go_exporters|length > 0
-
-- name: Clone Go Prometheus exporters source code
-  git:
-    repo: '{{ item.git_repo }}'
-    dest: '{{ prometheus_exporter__src + "/" + item.git_repo.split("://")[1] }}'
-    version: '{{ item.git_version | d(omit) }}'
-  with_items: '{{ prometheus_exporter__combined_go_exporters }}'
+    remote_src: True
+  with_items: '{{ prometheus_exporter__combined_release_exporters }}'
   when: item.name is defined and item.name and
-        item.git_repo is defined and item.git_repo
-
-- name: Get dependencies Go prometheus exporters
-  command: 'go get -d ./...'
-  args:
-    chdir: '{{ prometheus_exporter__src + "/" + item.git_repo.split("://")[1] }}'
-    creates: '{{ "/usr/local/bin/prometheus-" + item.name + "-exporter" }}'
-  with_items: '{{ prometheus_exporter__combined_go_exporters }}'
-  when: item.name is defined and item.name and
-        item.git_repo is defined and item.git_repo
-
-- name: Compile Go Prometheus exporters
-  command: '{{ "go build -o /usr/local/bin/prometheus-" + item.name + "-exporter" +
-               (" " + item.compile_args if item.compile_args is defined else "") }}'
-  args:
-    chdir: '{{ prometheus_exporter__src + "/" + item.git_repo.split("://")[1] }}'
-    creates: '{{ "/usr/local/bin/prometheus-" + item.name + "-exporter" }}'
-  with_items: '{{ prometheus_exporter__combined_go_exporters }}'
-  when: item.name is defined and item.name and
-        item.git_repo is defined and item.git_repo
-  register: prometheus_exporter__register_compile
-
-- name: Discard local changes in Go Prometheus exporters source code
-  command: 'git reset --hard'
-  args:
-    chdir: '{{ prometheus_exporter__src + "/" + item.item.git_repo.split("://")[1] }}'
-  with_items: '{{ prometheus_exporter__register_compile.results }}'
-  when: prometheus_exporter__register_compile is change and item.changed
+        item.resource is defined and item.resource and
+        item.archive is defined and item.archive|bool and
+        item.binary is defined and item.binary
+  notify: restart prometheus exporters
 
 - name: Divert the original prometheus exporters configuration files
   dpkg_divert:
@@ -95,7 +86,7 @@
     mode: '0640'
   with_items:
     - '{{ prometheus_exporter__combined_exporters }}'
-    - '{{ prometheus_exporter__combined_go_exporters | map(attribute="name") | list }}'
+    - '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'
   tags: [ 'role::prometheus_exporter:config' ]
   notify: restart prometheus exporters
 
@@ -108,7 +99,7 @@
     mode: '0644'
   with_items:
     - '{{ prometheus_exporter__combined_exporters }}'
-    - '{{ prometheus_exporter__combined_go_exporters | map(attribute="name") | list }}'
+    - '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'
     - '{{ prometheus_exporter__pre_installed_exporters }}'
   delegate_to: '{{ prometheus_exporter__delegate_to }}'
   when: prometheus_exporter__server is defined and prometheus_exporter__server and
@@ -122,7 +113,7 @@
     group: 'root'
     mode: '0644'
   register: prometheus_exporter__register_systemd
-  with_items: '{{ prometheus_exporter__combined_go_exporters | map(attribute="name") | list }}'
+  with_items: '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'
   notify: restart prometheus exporters
 
 - name: Reload systemd configuration
@@ -131,12 +122,12 @@
   when: (ansible_service_mgr == 'systemd' and
          prometheus_exporter__register_systemd is changed)
 
-- name: Enable and start Go Prometheus exporters
+- name: Enable and start release Prometheus exporters
   service:
     name: 'prometheus-{{ item }}-exporter'
     state: 'started'
     enabled: True
-  with_items: '{{ prometheus_exporter__combined_go_exporters | map(attribute="name") | list }}'
+  with_items: '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'
   when: ansible_service_mgr == 'systemd' and
         prometheus_exporter__register_systemd is changed
 
