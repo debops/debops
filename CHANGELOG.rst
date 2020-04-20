@@ -21,6 +21,13 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+:ref:`debops.fail2ban` role
+'''''''''''''''''''''''''''
+
+- The :command:`fail2ban` service will by default use the hostnames from logs
+  to lookup IP addresses via DNS, but will warn about it. You can change this
+  behaviour via the :envvar:`fail2ban_usedns` variable.
+
 :ref:`debops.gitlab_runner` role
 ''''''''''''''''''''''''''''''''
 
