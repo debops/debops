@@ -177,8 +177,22 @@ prometheus_server__rules: []
 # configuration file.
 prometheus_server__alerting_configuration:
 
-  alert_relabel_configs: []
-  alertmanagers: []
+  alert_relabel_configs:
+
+    - source_labels: ['__address__']
+      separator:     ':'
+      # Get hostname from address
+      regex:         '([^.:]*)[.].*:(.*)'
+      target_label:  'instance'
+      replacement:   '${1}:${2}'
+
+  alertmanagers:
+
+    - scheme: '{{ "https" if prometheus_server__pki|bool else "http" }}'
+      tls_config: '{{ prometheus_server__tls_config if prometheus_server__pki|bool else {} }}'
+      file_sd_configs:
+        - files:
+            - '/etc/prometheus/file_sd_configs.d/alertmanager.*.json'
 
                                                                    # ]]]
 # .. envvar:: prometheus_server__default_server_scrape_config_configuration [[[
@@ -210,6 +224,20 @@ prometheus_server__default_scrape_configs_configuration:
     file_sd_configs:
       - files:
           - '/etc/prometheus/file_sd_configs.d/node.*.json'
+    relabel_configs:
+      - source_labels: ['__address__']
+        separator:     ':'
+        # Get hostname from address
+        regex:         '([^.:]*)[.].*:(.*)'
+        target_label:  'instance'
+        replacement:   '${1}:${2}'
+
+  - job_name: 'alertmanager'
+    scheme: '{{ "https" if prometheus_server__pki|bool else "http" }}'
+    tls_config: '{{ prometheus_server__tls_config if prometheus_server__pki|bool else {} }}'
+    file_sd_configs:
+      - files:
+          - '/etc/prometheus/file_sd_configs.d/alertmanager.*.json'
     relabel_configs:
       - source_labels: ['__address__']
         separator:     ':'
@@ -259,6 +287,13 @@ prometheus_server__remote_read_configuration: []
 prometheus_server__append_groups: [ 'ssl-cert' ]
 
                                                                    # ]]]
+# .. envvar:: prometheus_server__tls_config_server_name [[[
+#
+# ServerName extension to indicate the name of the server.
+# http://tools.ietf.org/html/rfc4366#section-3.1
+prometheus_server__tls_config_server_name: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
 # .. envvar:: prometheus_server__tls_config [[[
 #
 # Configuration of SSL support in :program:`prometheus`, managed by :ref:`debops.pki` role.
@@ -270,7 +305,7 @@ prometheus_server__tls_config:
                 "/" + prometheus_server__pki_key }}'
   cert_file: '{{ prometheus_server__pki_path + "/" + prometheus_server__pki_realm +
                  "/" + prometheus_server__pki_crt }}'
-  server_name: '{{ ansible_fqdn }}'
+  server_name: '{{ prometheus_server__tls_config_server_name }}'
 
                                                                    # ]]]
 # .. envvar:: prometheus_server__pki [[[
@@ -294,7 +329,7 @@ prometheus_server__pki_path: '{{ (ansible_local.pki.base_path
                                                                    # ]]]
 # .. envvar:: prometheus_server__pki_realm [[[
 #
-# Default PKI realm used by Prometheus exporters.
+# Default PKI realm used by Prometheus server.
 prometheus_server__pki_realm: '{{ ansible_local.pki.realm
                                   if (ansible_local|d() and ansible_local.pki|d() and
                                       ansible_local.pki.realm|d())
@@ -309,13 +344,13 @@ prometheus_server__pki_ca: 'CA.crt'
                                                                    # ]]]
 # .. envvar:: prometheus_server__pki_crt [[[
 #
-# Host certificate used by Prometheus exporters, relative to :envvar:`prometheus_server__pki_realm`.
+# Host certificate used by Prometheus server, relative to :envvar:`prometheus_server__pki_realm`.
 prometheus_server__pki_crt: 'default.crt'
 
                                                                    # ]]]
 # .. envvar:: prometheus_server__pki_key [[[
 #
-# Host private key used by Prometheus exporters, relative to :envvar:`prometheus_server__pki_realm`.
+# Host private key used by Prometheus server, relative to :envvar:`prometheus_server__pki_realm`.
 prometheus_server__pki_key: 'default.key'
 
                                                                    # ]]]

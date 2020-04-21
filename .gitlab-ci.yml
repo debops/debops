@@ -1377,6 +1377,15 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/prometheus_server/.*'
     JANE_LOG_PATTERN: '\[debops\.prometheus_server\]'
 
+'prometheus_alertmanager role':
+  <<: *test_role_1st_deps
+  variables:
+    JANE_TEST_FACT: 'prometheus_alertmanager.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/prometheus_alertmanager.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_prometheus_alertmanager'
+    JANE_DIFF_PATTERN: '.*/roles/prometheus_alertmanager/.*'
+    JANE_LOG_PATTERN: '\[debops\.prometheus_alertmanager\]'
+
 'prometheus_exporter role':
   <<: *test_role_1st_deps
   variables:

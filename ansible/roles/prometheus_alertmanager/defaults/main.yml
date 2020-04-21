@@ -1,0 +1,419 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2020 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+# .. Copyright (C) 2020 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-or-later
+
+# .. _prometheus_alertmanager__ref_defaults:
+
+# debops.prometheus_alertmanager default variables
+# ========================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# APT packages [[[
+# -------------------------------
+
+# .. envvar:: prometheus_alertmanager__base_packages [[[
+#
+# List of the default APT packages to install for Prometheus alertmanager support.
+prometheus_alertmanager__base_packages: [ 'prometheus-alertmanager' ]
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__packages [[[
+#
+# List of additional APT packages to install with Prometheus alertmanager.
+prometheus_alertmanager__packages: []
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Prometheus server configuration [[[
+# --------------------------------
+
+# .. envvar:: prometheus_alertmanager__server [[[
+#
+# FQDN hostname of the Prometheus server. If a local Prometheus server is detected, it
+# will override this variable automatically. Only one server at a time is
+# currently supported per host.
+prometheus_alertmanager__server: ''
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__delegate_to [[[
+#
+# When the Prometheus server is used remotely, Ansible needs to run tasks on the
+# correct host. This variable controls the task delegation to the correct
+# database server.
+#
+# If the Prometheus server is run locally, this should point to the inventory name
+# of the current host, NOT ``localhost`` because that would delegate the tasks
+# to the Ansible Controller.
+prometheus_alertmanager__delegate_to: '{{ prometheus_alertmanager__server
+                                          if (prometheus_alertmanager__server|d() and
+                                              prometheus_alertmanager__server != "localhost")
+                                          else inventory_hostname }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__server_file_based_discovery_service [[[
+#
+# Use file-based discovery service in server
+prometheus_alertmanager__server_file_based_discovery_service: True
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Basic configuration [[[
+# -----------------------
+
+# .. envvar:: prometheus_alertmanager__fqdn [[[
+#
+# The Fully Qualified Domain Name address on which the Prometheus alertmanager
+# will be accessible.
+prometheus_alertmanager__fqdn: '{{ ansible_hostname }}.{{ prometheus_alertmanager__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__domain [[[
+#
+# The DNS domain used by default to configure the main application FQDN.
+prometheus_alertmanager__domain: '{{ ansible_local.core.domain
+                                     if (ansible_local|d() and ansible_local.core|d() and
+                                         ansible_local.core.domain|d())
+                                     else ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__allow [[[
+#
+# List of IP addresses or CIDR subnets which will be permitted to access the
+# Prometheus alertmanager service. If the list is empty, nobody can access
+# the service.
+prometheus_alertmanager__allow: []
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__bind [[[
+#
+# A valid string consisting of a hostname or IP.
+prometheus_alertmanager__bind: '0.0.0.0'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__port [[[
+#
+# Port number on which this Prometheus alertmanager listens on.
+prometheus_alertmanager__port: '9093'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__cluster_allow [[[
+#
+# List of IP addresses or CIDR subnets which will be permitted to access the
+# Prometheus alertmanager cluster service. If the list is empty, nobody can access
+# the service.
+prometheus_alertmanager__cluster_allow: []
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__cluster_bind [[[
+#
+# A valid string consisting of a hostname or IP.
+prometheus_alertmanager__cluster_bind: '0.0.0.0'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__port [[[
+#
+# Port number on which this Prometheus alertmanager cluster listens on.
+prometheus_alertmanager__cluster_port: '9094'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__allow [[[
+#
+# List of IP addresses or CIDR subnets which will be permitted to access the
+# Prometheus alertmanager web interface. If the list is empty, anybody can access
+# the service.
+prometheus_alertmanager__http_allow: []
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__basic_auth [[[
+#
+# Enable or disable HTTP Basic Authentication in the webserver frontend.
+prometheus_alertmanager__basic_auth: True
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__basic_auth_realm [[[
+#
+# The HTTP Basic Auth realm used by Prometheus alertmanager service.
+prometheus_alertmanager__basic_auth_realm: 'Prometheus alertmanager'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__basic_auth_name [[[
+#
+# Name of the :command:`htpasswd` file stored in the
+# :file:`/etc/nginx/private/` directory which contains HTTP Basic Auth
+# credentials.
+prometheus_alertmanager__basic_auth_name: 'prometheus-alertmanager'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__basic_auth_users [[[
+#
+# List of user accounts which will be allowed access to Prometheus alertmanager
+# service via HTTP Basic Auth. The passwords will be automatically generated by
+# the :ref:`debops.nginx` role and stored in the :file:`secret/` directory on
+# Ansible Controller. See :ref:`debops.secret` role for more details.
+prometheus_alertmanager__basic_auth_users: '{{ ansible_local.core.admin_users
+                                               if (ansible_local|d() and ansible_local.core|d() and
+                                                   ansible_local.core.admin_users|d())
+                                               else [] }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Prometheus default file [[[
+# -------------------------------
+
+# The variables below define the contents of the
+# :file:`/etc/default/prometheus-alertmanager` configuration file.
+
+# .. envvar:: prometheus_alertmanager__args [[[
+#
+# The configuration options which should be present in the default
+# configuration file.
+prometheus_alertmanager__args:
+
+  - name: 'config.file'
+    value: '/etc/prometheus/alertmanager.yml'
+
+  - name: 'web.listen-address'
+    value: '{{ ("127.0.0.1" if prometheus_alertmanager__pki|bool else prometheus_alertmanager__bind) + ":" +
+               ("3" + prometheus_alertmanager__port[1:] if
+               prometheus_alertmanager__pki|bool else prometheus_alertmanager__port) }}'
+
+  - name: 'cluster.listen-address'
+    value: '{{ ("127.0.0.1" if prometheus_alertmanager__pki|bool else prometheus_alertmanager__cluster_bind) + ":" +
+               ("3" + prometheus_alertmanager__cluster_port[1:] if
+               prometheus_alertmanager__pki|bool else prometheus_alertmanager__cluster_port) }}'
+
+  - name: 'web.external-url'
+    value: 'https://{{ prometheus_alertmanager__fqdn }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Prometheus configuration file [[[
+# -------------------------------
+
+# The variables below define the contents of the
+# :file:`/etc/prometheus/alertmanager.yml` configuration file.
+
+# .. envvar:: prometheus_alertmanager__configuration [[[
+#
+# The configuration options which should be present in the main
+# configuration file.
+prometheus_alertmanager__configuration:
+
+  global: '{{ prometheus_alertmanager__global_configuration }}'
+  templates: '{{ prometheus_alertmanager__templates_configuration }}'
+  route: '{{ prometheus_alertmanager__route_configuration }}'
+  receivers: '{{ prometheus_alertmanager__receivers_configuration }}'
+  inhibit_rules: '{{ prometheus_alertmanager__inhibit_rules_configuration }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__global_configuration [[[
+#
+# The global configuration options which should be present in the main
+# configuration file.
+prometheus_alertmanager__global_configuration: {}
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__templates_configuration [[[
+#
+# The templates configuration options which should be present in the main
+# configuration file.
+prometheus_alertmanager__templates_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__route_configuration [[[
+#
+# The route configuration options which should be present in the main
+# configuration file.
+prometheus_alertmanager__route_configuration:
+
+  receiver: 'default-receiver'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__receivers_configuration [[[
+#
+# The receivers configuration options which should be present in the main
+# configuration file.
+prometheus_alertmanager__receivers_configuration:
+
+  - name: 'default-receiver'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__inhibit_rules_configuration [[[
+#
+# The inhibit rules configuration options which should be present in the main
+# configuration file.
+prometheus_alertmanager__inhibit_rules_configuration: []
+
+                                                                   # ]]]
+                                                                   # ]]]
+# SSL configuration [[[
+# ---------------------
+
+# .. envvar:: prometheus_alertmanager__ghostunnel_version [[[
+#
+# Version of Ghostunnel TLS proxy
+prometheus_alertmanager__ghostunnel_version: 'v1.5.2'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__ghostunnel_resource [[[
+#
+# Resource release of Ghostunnel TLS proxy.
+prometheus_alertmanager__ghostunnel_resource: '{{ "https://github.com/square/ghostunnel" +
+                                                  "/releases/download/" + prometheus_alertmanager__ghostunnel_version +
+                                                  "/ghostunnel-" + prometheus_alertmanager__ghostunnel_version +
+                                                  "-linux-amd64-with-pkcs11" }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__append_groups [[[
+#
+# List of additional system groups to append to the Prometheus system user.
+prometheus_alertmanager__append_groups: [ 'ssl-cert' ]
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__tls_config_server_name [[[
+#
+# ServerName extension to indicate the name of the server.
+# http://tools.ietf.org/html/rfc4366#section-3.1
+prometheus_alertmanager__tls_config_server_name: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__tls_config [[[
+#
+# Configuration of SSL support in :program:`prometheus-alertmanager`, managed by :ref:`debops.pki` role.
+prometheus_alertmanager__tls_config:
+
+  ca_file: '{{ prometheus_alertmanager__pki_path + "/" + prometheus_alertmanager__pki_realm +
+               "/" + prometheus_alertmanager__pki_ca }}'
+  key_file: '{{ prometheus_alertmanager__pki_path + "/" + prometheus_alertmanager__pki_realm +
+                "/" + prometheus_alertmanager__pki_key }}'
+  cert_file: '{{ prometheus_alertmanager__pki_path + "/" + prometheus_alertmanager__pki_realm +
+                 "/" + prometheus_alertmanager__pki_crt }}'
+  server_name: '{{ prometheus_alertmanager__tls_config_server_name }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__pki [[[
+#
+# Enable or disable support for SSL in Prometheus alertmanager (using :ref:`debops.pki`).
+prometheus_alertmanager__pki: '{{ True
+                                  if (ansible_local|d() and ansible_local.pki|d() and
+                                      ansible_local.pki.enabled|d()|bool and
+                                      prometheus_alertmanager__pki_realm in ansible_local.pki.known_realms)
+                                  else False }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__pki_path [[[
+#
+# Base path for PKI directory.
+prometheus_alertmanager__pki_path: '{{ (ansible_local.pki.base_path
+                                       if (ansible_local|d() and ansible_local.pki|d() and
+                                           ansible_local.pki.base_path|d())
+                                       else "/etc/pki") }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__pki_realm [[[
+#
+# Default PKI realm used by Prometheus alertmanager.
+prometheus_alertmanager__pki_realm: '{{ ansible_local.pki.realm
+                                        if (ansible_local|d() and ansible_local.pki|d() and
+                                            ansible_local.pki.realm|d())
+                                        else "domain" }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__pki_ca [[[
+#
+# Root CA certificate used by Prometheus alertmanager, relative to :envvar:`prometheus_alertmanager__pki_realm`.
+prometheus_alertmanager__pki_ca: 'CA.crt'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__pki_crt [[[
+#
+# Host certificate used by Prometheus alertmanager, relative to :envvar:`prometheus_alertmanager__pki_realm`.
+prometheus_alertmanager__pki_crt: 'default.crt'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__pki_key [[[
+#
+# Host private key used by Prometheus alertmanager, relative to :envvar:`prometheus_alertmanager__pki_realm`.
+prometheus_alertmanager__pki_key: 'default.key'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: prometheus_alertmanager__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+prometheus_alertmanager__etc_services__dependent_list:
+
+  - name: 'prometheus-alertmanager'
+    port: '{{ prometheus_alertmanager__port }}'
+
+  - name: 'prometheus-alertmanager-cluster'
+    port: '{{ prometheus_alertmanager__cluster_port }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+prometheus_alertmanager__ferm__dependent_rules:
+
+  - name: 'prometheus_alertmanager'
+    type: 'accept'
+    saddr: '{{ prometheus_alertmanager__allow }}'
+    dport: 'prometheus-alertmanager'
+    accept_any: False
+    role: 'prometheus_alertmanager'
+
+  - name: 'prometheus_alertmanager_cluster'
+    type: 'accept'
+    saddr: '{{ prometheus_alertmanager__cluster_allow }}'
+    dport: 'prometheus-alertmanager-cluster'
+    accept_any: False
+    role: 'prometheus_alertmanager'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__nginx__dependent_htpasswd [[[
+#
+# HTTP Basic Auth password configuration for the :ref:`debops.nginx` Ansible
+# role.
+prometheus_alertmanager__nginx__dependent_htpasswd:
+  name: '{{ prometheus_alertmanager__basic_auth_name }}'
+  users: '{{ prometheus_alertmanager__basic_auth_users }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__nginx__dependent_servers [[[
+#
+# Server configuration for the :ref:`debops.nginx` Ansible role.
+prometheus_alertmanager__nginx__dependent_servers:
+  - name: '{{ prometheus_alertmanager__fqdn }}'
+    by_role: 'debops.prometheus_alertmanager'
+    filename: 'debops.prometheus_alertmanager'
+    type: 'proxy'
+    proxy_pass: 'http://prometheus_alertmanager'
+    proxy_redirect: 'default'
+    allow: '{{ prometheus_alertmanager__http_allow }}'
+    auth_basic: '{{ prometheus_alertmanager__basic_auth|bool }}'
+    auth_basic_realm: '{{ prometheus_alertmanager__basic_auth_realm }}'
+    auth_basic_name: '{{ prometheus_alertmanager__basic_auth_name }}'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__nginx__dependent_upstreams [[[
+#
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
+prometheus_alertmanager__nginx__dependent_upstreams:
+  - name: 'prometheus_alertmanager'
+    server: '{{ ("localhost" if prometheus_alertmanager__bind == "0.0.0.0" or prometheus_alertmanager__pki|bool else
+                prometheus_alertmanager__bind) + ":" +
+                ("3" + prometheus_alertmanager__port[1:] if prometheus_alertmanager__pki|bool else
+                prometheus_alertmanager__port) }}'
+                                                                   # ]]]
+                                                                   # ]]]
