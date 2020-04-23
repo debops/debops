@@ -85,6 +85,9 @@ Fixed
 
 - Fix idempotency issue in the :file:`/etc/crontab` file.
 
+- Fix creation of empty environment variables in :command:`cron` configuration
+  files managed by Ansible.
+
 :ref:`debops.minio` role
 ''''''''''''''''''''''''
 
