@@ -169,6 +169,12 @@ General
 
   .. __: https://github.com/ansible/ansible/issues/67723
 
+:ref:`debops.cron` role
+'''''''''''''''''''''''
+
+- Fix creation of empty environment variables in :command:`cron` configuration
+  files managed by Ansible.
+
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
