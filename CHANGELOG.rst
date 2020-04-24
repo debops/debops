@@ -56,6 +56,12 @@ LDAP
   machines; for this, take a look at the QEMU documentation:
   https://www.qemu.org/docs/master/system/target-i386.html#important-cpu-features-for-intel-x86-hosts
 
+:ref:`debops.dovecot` role
+''''''''''''''''''''''''''
+
+- Add support for ``checkpassword`` to support checking passwords via an
+  external application.
+
 :ref:`debops.gitlab_runner` role
 ''''''''''''''''''''''''''''''''
 
