@@ -68,6 +68,7 @@ dovecot__version: '{{ ansible_local.dovecot.version
 # - ``sql``: Mail users are stored in a SQL database
 # - ``ldap``: Mail users are stored in an LDAP directory
 # - ``passwdfile``: Users password are stored in a file
+# - ``checkpassword``: Users password are stored in an external program
 #
 dovecot_user_accounts: '{{ [ "deny", "ldap" ]
                            if dovecot__ldap_enabled|bool
@@ -238,6 +239,18 @@ dovecot_passwdfile_home: '{{ (ansible_local.root.home
 #
 # Path inside the mailbox home directory
 dovecot_passwdfile_mailbox_path: '%u'
+                                                                   # ]]]
+                                                                   # ]]]
+# .. envvar:: dovecot_checkpassword_passdb_command [[[
+#
+# Command to fetch password database in checkpassword auth mode 
+dovecot_checkpassword_passdb_command: '/usr/bin/checkpassword'
+                                                                   # ]]]
+                                                                   # ]]]
+# .. envvar:: dovecot_checkpassword_userdb_command [[[
+#
+# Command to fetch user database in checkpassword auth mode
+dovecot_checkpassword_userdb_command: '/usr/bin/checkpassword'
                                                                    # ]]]
                                                                    # ]]]
 # PKI / TLS configuration [[[
