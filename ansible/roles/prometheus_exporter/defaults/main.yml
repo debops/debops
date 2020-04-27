@@ -5,10 +5,10 @@
 # .. Copyright (C) 2020 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-or-later
 
-# .. _prometheus_server__ref_defaults:
+# .. _prometheus_exporter__ref_defaults:
 
 # debops.prometheus_exporter default variables
-# ========================================
+# ============================================
 
 # .. contents:: Sections
 #    :local:
@@ -92,7 +92,7 @@ prometheus_exporter__exporters: []
 prometheus_exporter__group_exporters: []
 
                                                                    # ]]]
-# .. envvar:: prometheus_exporter__group_exporters [[[
+# .. envvar:: prometheus_exporter__host_exporters [[[
 #
 # Prometheus exporters to install and configure in specific Ansible
 # inventory host.
@@ -120,6 +120,7 @@ prometheus_exporter__release_exporters: []
 #
 # Prometheus exporters in release repo to install and configure in specific Ansible
 # inventory group.
+# :ref:`prometheus_exporter__release_exporters` for more details.
 prometheus_exporter__group_release_exporters: []
 
                                                                    # ]]]
@@ -127,6 +128,7 @@ prometheus_exporter__group_release_exporters: []
 #
 # Prometheus exporters in release repo to install and configure in specific Ansible
 # inventory host.
+# :ref:`prometheus_exporter__release_exporters` for more details.
 prometheus_exporter__host_release_exporters: []
 
                                                                    # ]]]
@@ -155,7 +157,7 @@ prometheus_exporter__allow: []
 # .. envvar:: prometheus_exporter__bind [[[
 #
 # A valid string consisting of a hostname or IP. To allow connections from
-# remote hosts you need to change this to ````, the default.
+# remote hosts you need to change this to empty string, the default.
 prometheus_exporter__bind: ''
 
                                                                    # ]]]
@@ -217,7 +219,7 @@ prometheus_exporter__combined_ports_map: '{{ prometheus_exporter__default_ports_
 # The variables below define the contents of the
 # :file:`/etc/default/prometheus-*-exporter` configuration files.
 
-# .. envvar:: prometheus_exporter__args [[[
+# .. envvar:: prometheus_exporter__default_args [[[
 #
 # The default configuration options which should be present in the exporters
 # configuration files.
@@ -251,7 +253,6 @@ prometheus_exporter__combined_args: '{{ prometheus_exporter__default_args
 #
 # The configuration env variables which should be present in the exporters
 # configuration files.
-# :ref:`prometheus_exporter__env` for more details.
 prometheus_exporter__env: []
 
                                                                    # ]]]
@@ -265,7 +266,7 @@ prometheus_exporter__env: []
 prometheus_exporter__ghostunnel_version: 'v1.5.2'
 
                                                                    # ]]]
-# .. envvar:: prometheus_exporter__ghostunnel_version [[[
+# .. envvar:: prometheus_exporter__ghostunnel_resource [[[
 #
 # Resource release of Ghostunnel TLS proxy.
 prometheus_exporter__ghostunnel_resource: '{{ "https://github.com/square/ghostunnel" +

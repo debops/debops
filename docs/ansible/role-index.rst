@@ -237,6 +237,9 @@ Monitoring
 - :ref:`debops.proc_hidepid`
 - :ref:`debops.snmpd`
 - ``debops.smstools``
+- :ref:`debops.prometheus_server`
+- :ref:`debops.prometheus_exporter`
+- :ref:`debops.prometheus_alertmanager`
 
 
 Networking
