@@ -100,6 +100,13 @@ Continuous Integration
 Fixed
 ~~~~~
 
+General
+'''''''
+
+- Fix an issue with the collection creation script where the role files that
+  contained multiple uses of a particular custom Ansible plugin, for example
+  ``template_src`` or ``file_src``, were modified multiple times by the script.
+
 :ref:`debops.cron` role
 '''''''''''''''''''''''
 
