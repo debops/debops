@@ -6,6 +6,9 @@
   {
     "targets": [ "{{ ansible_fqdn }}:{{ prometheus_alertmanager__port }}" ],
     "labels": {
+{% for key, value in prometheus_alertmanager__combined_labels.iteritems() %}
+      "{{ key }}": "{{ value }}",
+{% endfor %}
       "job": "alertmanager"
     }
   }

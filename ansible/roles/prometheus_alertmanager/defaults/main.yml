@@ -84,6 +84,35 @@ prometheus_alertmanager__domain: '{{ ansible_local.core.domain
                                      else ansible_domain }}'
 
                                                                    # ]]]
+# .. envvar:: prometheus_alertmanager__labels [[[
+#
+# An optional dict of labels used to filter alertmanagers.
+prometheus_alertmanager__labels: {}
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__group_labels [[[
+#
+# An optional dict of labels used to filter alertmanagers for a given service
+# in specific Ansible inventory group.
+prometheus_alertmanager__group_labels: {}
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__host_labels [[[
+#
+# An optional list of labels used to filter alertmanagers for a given service
+# in specific Ansible inventory host.
+prometheus_alertmanager__host_labels: {}
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__combined_labels [[[
+#
+# The variable which combines all other optional dict of labels used to
+# filter alertmanagers and is used in the role tasks and templates.
+prometheus_alertmanager__combined_labels: '{{ prometheus_alertmanager__labels |
+                                              combine(prometheus_alertmanager__group_labels) |
+                                              combine(prometheus_alertmanager__host_labels) }}'
+
+                                                                   # ]]]
 # .. envvar:: prometheus_alertmanager__allow [[[
 #
 # List of IP addresses or CIDR subnets which will be permitted to access the

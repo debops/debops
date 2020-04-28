@@ -147,6 +147,35 @@ prometheus_exporter__combined_release_exporters: '{{ prometheus_exporter__releas
 prometheus_exporter__pre_installed_exporters: []
 
                                                                    # ]]]
+# .. envvar:: prometheus_exporter__labels [[[
+#
+# An optional dict of labels used to filter nodes for a given service.
+prometheus_exporter__labels: {}
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__group_labels [[[
+#
+# An optional dict of labels used to filter nodes for a given service
+# in specific Ansible inventory group.
+prometheus_exporter__group_labels: {}
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__host_labels [[[
+#
+# An optional list of labels used to filter nodes for a given service
+# in specific Ansible inventory host.
+prometheus_exporter__host_labels: {}
+
+                                                                   # ]]]
+# .. envvar:: prometheus_exporter__combined_labels [[[
+#
+# The variable which combines all other optional dict of labels used to
+# filter nodes and is used in the role tasks and templates.
+prometheus_exporter__combined_labels: '{{ prometheus_exporter__labels |
+                                          combine(prometheus_exporter__group_labels) |
+                                          combine(prometheus_exporter__host_labels) }}'
+
+                                                                   # ]]]
 # .. envvar:: prometheus_exporter__allow [[[
 #
 # List of IP addresses or CIDR subnets which will be permitted to access the
