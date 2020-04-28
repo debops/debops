@@ -165,6 +165,15 @@ for role in "${!debops_role_map[@]}" ; do
     fi
 done
 
+# Give bonus points for roles that are imported by other roles
+read -r -a role_task_files <<<"$(find ansible/roles -type f -path '*/tasks/*.yml' | tr '\n' ' ')"
+for task_file in "${role_task_files[@]}" ; do
+    imported_role="$(awk '/import_role/,/name/' "${task_file}" | tail -n 1 | awk '{print $2}' | sed -e "s/'//g")"
+    if [ -n "${imported_role}" ] ; then
+        debops_role_map["${imported_role}"]=$(( debops_role_map["${imported_role}"] + collection_floor_map[${collections[0]}] ))
+    fi
+done
+
 # Ensure that selected roles are always in the first Ansible Collection
 for role in ansible_plugins core secret keyring python ; do
     debops_role_map["${role}"]=$(( collection_floor_map[${collections[0]}] + debops_role_map["${role}"] ))
