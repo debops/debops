@@ -278,26 +278,32 @@ for collection in "${collections[@]}" ; do
         cp -r "${directory}" "${workdir_map[${collection}]}/"
     done
 
-    files_to_modify=()
-
     # Convert Ansible plugin use to Ansible Collection format
     for plugin in task_src template_src parse_kv_config parse_kv_items ; do
 
         printf "%s " "Searching in 'debops.${collection}'"
+        files_to_modify=()
         counter=0
         while read -r in ; do
             if grep -q "${plugin}" "${in}" ; then
-                files_to_modify+=("${in}")
-                counter=$(( counter + 1 ))
-                counter_state=$(( counter % 5 ))
-                if [ ${counter_state} -eq 0 ] ; then
-                    printf "%s" "."
+                if [[ ! " ${files_to_modify[@]} " =~ " ${in} " ]] ; then
+                    files_to_modify+=("${in}")
+                    counter=$(( counter + 1 ))
+                    counter_state=$(( counter % 5 ))
+                    if [ ${counter_state} -eq 0 ] ; then
+                        printf "%s" "."
+                    fi
                 fi
             fi
         done < <(find "${workdir_map[${collection}]}/roles" -type f \
             -not -wholename "./${workdir_map[${collection}]}/roles/ansible_plugins")
-        printf " %s\\n" "found ${#files_to_modify[@]} '${plugin}' uses, replacing..."
-        sed -i "s/${plugin}/debops.${collections[0]}.${plugin}/" "${files_to_modify[@]}"
+
+        if [ "${#files_to_modify[@]}" -gt 0 ] ; then
+            printf " %s\\n" "found ${#files_to_modify[@]} '${plugin}' uses, replacing..."
+            sed -i "s/${plugin}/debops.${collections[0]}.${plugin}/" "${files_to_modify[@]}"
+        else
+            printf " %s\\n" "no '${plugin}' uses found"
+        fi
     done
 
     # Generate the 'galaxy.yml' file
