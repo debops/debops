@@ -14,10 +14,10 @@ debops.stunnel
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    guides
    troubleshooting
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------

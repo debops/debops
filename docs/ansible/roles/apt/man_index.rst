@@ -15,7 +15,6 @@ debops.apt
    man_description
    getting-started
    defaults-detailed
-   upgrade
    man_seealso
 
 ..

@@ -15,9 +15,9 @@ debops.dovecot
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    guides
    defaults/main
+   defaults-detailed
    ldap-dit
 
 Copyright

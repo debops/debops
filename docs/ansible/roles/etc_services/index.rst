@@ -15,8 +15,8 @@ debops.etc_services
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------

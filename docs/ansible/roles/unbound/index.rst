@@ -14,9 +14,9 @@ debops.unbound
    :maxdepth: 3
 
    getting-started
+   defaults/main
    defaults-detailed
    defaults-server
-   defaults/main
 
 Copyright
 ---------

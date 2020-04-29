@@ -13,8 +13,8 @@ debops.rabbitmq_server
    man_synopsis
    man_description
    getting-started
-   defaults-detailed
    dependency
+   defaults-detailed
 
 ..
  Local Variables:

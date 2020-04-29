@@ -14,8 +14,8 @@ debops.ipxe
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------

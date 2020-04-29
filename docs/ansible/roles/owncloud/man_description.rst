@@ -21,8 +21,7 @@ Note that Nginx is `not officially supported by ownCloud nor NextCloud
 supported and should work without problems. Apache is supported by the role but
 not yet used by default and not very well tested.
 
-Features
-~~~~~~~~
+**Features:**
 
 * Support for LDAP using the :ref:`debops.ldap` Ansible role.
 * In memory caching using Redis for file locking and APCu.

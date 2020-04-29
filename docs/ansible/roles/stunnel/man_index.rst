@@ -13,9 +13,9 @@ debops.stunnel
    man_synopsis
    man_description
    getting-started
-   defaults-detailed
    guides
    troubleshooting
+   defaults-detailed
 
 ..
  Local Variables:

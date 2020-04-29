@@ -14,9 +14,9 @@ debops.rsyslog
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    unprivileged-tls
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------

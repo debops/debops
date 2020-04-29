@@ -13,8 +13,8 @@ debops.freeradius
    man_synopsis
    man_description
    getting-started
-   defaults-detailed
    example-eduroam
+   defaults-detailed
 
 ..
  Local Variables:

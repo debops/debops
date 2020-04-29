@@ -14,8 +14,8 @@ debops.dovecot
    man_synopsis
    man_description
    getting-started
-   defaults-detailed
    guides
+   defaults-detailed
 
 ..
  Local Variables:

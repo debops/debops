@@ -14,9 +14,9 @@ debops.etc_aliases
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    dependency
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------

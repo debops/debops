@@ -14,7 +14,6 @@ debops.docker_gen
    :maxdepth: 2
 
    getting-started
-   upgrade
    defaults/main
 
 Copyright

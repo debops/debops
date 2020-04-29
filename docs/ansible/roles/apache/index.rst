@@ -14,9 +14,9 @@ debops.apache
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    ansible-integration
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------

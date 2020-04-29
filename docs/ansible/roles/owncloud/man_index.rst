@@ -15,10 +15,9 @@ debops.owncloud
    man_synopsis
    man_description
    getting-started
-   defaults-detailed
    external-users
    external-storage
-   upgrade
+   defaults-detailed
 
 ..
  Local Variables:

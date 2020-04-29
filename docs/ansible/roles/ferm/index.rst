@@ -16,10 +16,10 @@ debops.ferm
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    rules
    guides
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------

@@ -15,7 +15,6 @@ debops.cryptsetup
    getting-started
    guides
    defaults-detailed
-   upgrade
 
 ..
  Local Variables:

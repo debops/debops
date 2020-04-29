@@ -14,9 +14,9 @@ debops.redis_sentinel
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    config-pipeline
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------

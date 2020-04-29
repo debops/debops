@@ -18,11 +18,11 @@ debops.pki
    internal-ca
    acme-integration
    external-certificates
-   defaults-detailed
    system-ca-certificates
    custom-files
    custom-hooks
    ansible-integration
+   defaults-detailed
 
 ..
  Local Variables:

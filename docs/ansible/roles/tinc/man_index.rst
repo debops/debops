@@ -14,9 +14,8 @@ debops.tinc
    man_synopsis
    man_description
    getting-started
-   defaults-detailed
    examples
-   upgrade
+   defaults-detailed
 
 ..
  Local Variables:

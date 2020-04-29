@@ -14,8 +14,8 @@ debops.apt_mark
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------

@@ -15,9 +15,8 @@ debops.cryptsetup
 
    getting-started
    guides
-   defaults-detailed
-   upgrade
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------

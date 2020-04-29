@@ -13,9 +13,9 @@ debops.icinga
    man_synopsis
    man_description
    getting-started
-   defaults-detailed
    deployment
    dependency
+   defaults-detailed
 
 ..
  Local Variables:

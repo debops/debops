@@ -15,8 +15,8 @@ debops.tinyproxy
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------
@@ -28,4 +28,3 @@ Copyright
  mode: rst
  ispell-local-dictionary: "american"
  End:
-

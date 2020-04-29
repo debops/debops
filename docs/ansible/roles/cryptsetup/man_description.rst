@@ -16,8 +16,7 @@ filesystem (both on the Ansible controller and the remote system).
 .. __: https://gitlab.com/cryptsetup/cryptsetup
 .. __: https://en.wikipedia.org/wiki/Linux_Unified_Key_Setup
 
-Features
-~~~~~~~~
+**Features:**
 
 * Create a random keyfile or use an already existing keyfile.
 * Manage :file:`/etc/crypttab` and :file:`/etc/fstab` and mount point directories.
