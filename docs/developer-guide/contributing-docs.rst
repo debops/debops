@@ -24,15 +24,52 @@ and lives in the ``docs/`` folder of the `monorepo`__.
 .. __: https://www.sphinx-doc.org/
 .. __: https://github.com/debops/debops/tree/master/docs
 
-The documentation for roles lives in ``doc/ansible/roles/``.
-
 You can build the documentation yourself on
 :ref:`your local fork<contribution_workflow>` by running
 :ref:`make docs<cmd_make_docs>` from your project folder.
 
 
+Role documentation
+------------------
+
+The documentation for roles lives in ``doc/ansible/roles/``.
+
+The main entry points for role documentation are:
+
+- ``index.rst`` generates the top-level pages for the html documentation
+- ``man_index.rst`` generate the role manpages
+
+To keep things uniform, sections go in the following order:
+
+- ``getting_started.rst`` covers initial configuration and basic usage
+- *Guides*, *examples* and anything else specific to the role's responsibilities
+- ``dependent.rst`` describes usage as a dependent role
+- *Default Variables* gets populated from inline markup in roles' ``defaults/main.yml``
+- ``defaults-detailed.rst`` contains details for complex variables
+- ``defaults-*.rst``, for roles with different types of complex variables
+- ``ldap-dit.rst`` describes the LDAP Directory Information Tree a role utilizes
+
+The **manpages** follow the same order, however ``defaults/main`` and
+``ldap-dit`` are omitted. They also have their own special files:
+
+Before eveything else:
+
+- ``man_synopsis.rst`` provides a short hint for command line usage
+- ``man_description.rst`` provides a description of the role.
+  This also gets included at the top of ``index.rst`` when rendering the html.
+
+After everything else:
+
+- ``man_seealso.rst`` mentions any other relevant manpages or links.
+
+Of course, due to DebOps' wide variety of roles, their documentation can also
+vary greatly. Plenty of roles are just fine with just a ``getting_started``,
+``defaults/main``, and the introductory ``man_`` stuff.
+
+
 Fixing broken links
 -------------------
+
 While working with the documentation, the :ref:`make links<cmd_make_links>`
 command can be used to spot and fix broken external links.
 
