@@ -34,6 +34,11 @@ should work out of the box on Debian without the need of a Snap installation.
 The :ref:`debops.golang` configuration for building and installing LXD is
 defined in the :envvar:`lxd__golang__dependent_packages` variable.
 
+Due to the build dependency on the ``lxc-dev`` APT package, which pulls the
+``lxc`` APT package automatically, the :ref:`debops.lxc` role and its
+dependencies will be used to configure the LXC environment. The ``lxcbr0``
+network brige will be automatically disabled in this case.
+
 
 Example inventory
 -----------------
