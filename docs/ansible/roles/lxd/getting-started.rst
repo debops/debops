@@ -26,19 +26,9 @@ The role will configure the rest of the needed infrastructure
 (:command:`systemd` unit files, :command:`logrotate` and :command:`sysctl`
 configuration, POSIX groups, log directory, etc.) so that the LXD service
 should work out of the box on Debian without the need of a Snap installation.
-This also installs the old ``lxc`` APT package due to ``lxc-dev`` dependency,
-but this shouldn't be an issue.
 
-At the moment the role builds the latest release of LXD due to issue with
-`missing raft dependency required for build`__. The issue is in the LXD
-repository :file:`Makefile`, and was corrected in newer releases (3.15 onwards)
-but the LTS release (3.0.x) still contains the faulty code. The plan is to
-switch to the LTS release in the future, when one is available with a working
-build instructions. The :ref:`debops.golang` configuration for building and
-installing LXD is defined in the :envvar:`lxd__golang__dependent_packages`
-variable.
-
-.. __: https://github.com/lxc/lxd/issues/5875
+The :ref:`debops.golang` configuration for building and installing LXD is
+defined in the :envvar:`lxd__golang__dependent_packages` variable.
 
 
 Example inventory
