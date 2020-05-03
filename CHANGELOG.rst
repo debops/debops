@@ -45,6 +45,13 @@ Added
 - The role will now override the :file:`/etc/sysctl.d/30-lxc-inotify.conf` file
   contents as needed via the :ref:`debops.sysctl` role.
 
+:ref:`debops.lxd` role
+''''''''''''''''''''''
+
+- The role will install all of the compiled binaries in the
+  :file:`/usr/local/bin/` directory to ensure feature parity with other LXD
+  installations.
+
 :ref:`debops.php` role
 ''''''''''''''''''''''
 
