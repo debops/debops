@@ -100,7 +100,15 @@ lxc__root_subgid_count: '{{ ansible_local.root_account.subgids[0]["count"]
 # If ``present``, the role will configure internal LXC network using the
 # ``lxc-net`` service. If ``absent``, the internal LXC network will be disabled
 # and de-configured.
-lxc__net_deploy_state: 'present'
+#
+# The ``lxc-net`` service is not configured inside container environment or if
+# the host is also configured to support LXD service using the
+# :ref:`debops.lxd` role.
+lxc__net_deploy_state: '{{ "absent"
+                           if ((ansible_virtualization_type in [ "lxc", "docker", "openvz" ] and
+                                ansible_virtualization_role == "guest") or
+                               inventory_hostname in groups["debops_service_lxd"])
+                           else "present" }}'
 
                                                                    # ]]]
 # .. envvar:: lxc__net_bridge [[[

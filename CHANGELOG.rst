@@ -101,6 +101,14 @@ Continuous Integration
 
   .. __: https://about.gitlab.com/releases/2020/03/30/gpg-key-for-gitlab-package-repositories-metadata-changing/
 
+:ref:`debops.lxd` role
+''''''''''''''''''''''
+
+- The support for the LXC containers managed by the :ref:`debops.lxc` role will
+  be applied on the host when the LXD is configured, due to the build
+  dependency on the ``lxc`` APT package. In this case, the ``lxcbr0`` network
+  bridge will not be configured by default.
+
 :ref:`debops.mcli` role
 '''''''''''''''''''''''
 

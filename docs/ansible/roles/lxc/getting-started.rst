@@ -23,6 +23,12 @@ automatically integrate with the LXC host configuration using Ansible local
 facts and will generate the configuration necessary to access the
 ``lxc.{{ ansible_domain }}`` DNS domain.
 
+If the LXD support is also configured on the host (detected by the inventory
+host being included in the ``[debops_service_lxd]`` Ansible inventory group),
+the role will disable and deconfigure any existing ``lxcbr0`` bridge, and will
+not configure it initially. You should refer to the LXD documentation for
+details about network bridge management.
+
 Additional bridge network interfaces can be maintained using the
 :ref:`debops.ifupdown` role. By default the :command:`ifupdown` role creates
 the ``br0`` network bridge attached to the external network, which is defined

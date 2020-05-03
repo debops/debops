@@ -31,6 +31,7 @@
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ golang__apt_preferences__dependent_list }}'
+        - '{{ lxc__apt_preferences__dependent_list }}'
 
     - role: golang
       tags: [ 'role::golang', 'skip::golang' ]
@@ -42,10 +43,26 @@
       logrotate__dependent_config:
         - '{{ lxd__logrotate__dependent_config }}'
 
+    - role: ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ lxc__ferm__dependent_rules }}'
+
+    - role: python
+      tags: [ 'role::python', 'skip::python', 'role::lxc' ]
+      python__dependent_packages3:
+        - '{{ lxc__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ lxc__python__dependent_packages2 }}'
+
     - role: sysctl
       tags: [ 'role::sysctl', 'skip::sysctl' ]
       sysctl__dependent_parameters:
+        - '{{ lxc__sysctl__dependent_parameters }}'
         - '{{ lxd__sysctl__dependent_parameters }}'
+
+    - role: lxc
+      tags: [ 'role::lxc', 'skip::lxc' ]
 
     - role: lxd
       tags: [ 'role::lxd', 'skip::lxd' ]
