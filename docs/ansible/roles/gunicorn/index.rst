@@ -14,9 +14,9 @@ debops.gunicorn
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    virtualenv-support
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------

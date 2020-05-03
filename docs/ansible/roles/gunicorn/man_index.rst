@@ -13,8 +13,8 @@ debops.gunicorn
    man_synopsis
    man_description
    getting-started
-   defaults-detailed
    virtualenv-support
+   defaults-detailed
 
 ..
  Local Variables:

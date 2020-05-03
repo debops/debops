@@ -19,8 +19,8 @@ debops.slapd
    ldap-acl
    backup-restore
    guide-multi-master-replication
-   defaults-detailed
    defaults/main
+   defaults-detailed
    ldap-dit
 
 Copyright

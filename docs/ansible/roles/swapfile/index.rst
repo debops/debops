@@ -15,9 +15,8 @@ debops.swapfile
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
-   upgrade
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------

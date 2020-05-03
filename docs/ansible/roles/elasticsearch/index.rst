@@ -16,10 +16,10 @@ debops.elasticsearch
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    clustering
    dependency
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------

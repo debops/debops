@@ -18,8 +18,8 @@ debops.ldap
    ldap-admin
    ldap-access
    dependency
-   defaults-detailed
    defaults/main
+   defaults-detailed
    ldap-dit
 
 Copyright

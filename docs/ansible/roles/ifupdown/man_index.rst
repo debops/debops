@@ -14,10 +14,9 @@ debops.ifupdown
    man_synopsis
    man_description
    getting-started
-   defaults-detailed
    ifupdown-systemd
    custom-hooks
-   upgrade
+   defaults-detailed
 
 ..
  Local Variables:

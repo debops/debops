@@ -15,9 +15,9 @@ debops.docker_server
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    docker-virtualenv
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------

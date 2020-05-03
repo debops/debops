@@ -13,8 +13,8 @@ debops.apache
    man_synopsis
    man_description
    getting-started
-   defaults-detailed
    ansible-integration
+   defaults-detailed
 
 ..
  Local Variables:

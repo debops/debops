@@ -14,9 +14,9 @@ debops.opendkim
    :maxdepth: 3
 
    getting-started
+   defaults/main
    defaults-detailed
    defaults-config
-   defaults/main
 
 Copyright
 ---------

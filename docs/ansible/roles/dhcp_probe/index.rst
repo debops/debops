@@ -14,8 +14,8 @@ debops.dhcp_probe
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------

@@ -14,9 +14,9 @@ debops.persistent_paths
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    guides
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------

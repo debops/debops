@@ -13,8 +13,8 @@ debops.rsyslog
    man_synopsis
    man_description
    getting-started
-   defaults-detailed
    unprivileged-tls
+   defaults-detailed
 
 ..
  Local Variables:

@@ -14,8 +14,8 @@ debops.nginx
    man_synopsis
    man_description
    getting-started
-   defaults-detailed
    acme-support
+   defaults-detailed
 
 ..
  Local Variables:

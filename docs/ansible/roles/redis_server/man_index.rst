@@ -13,8 +13,8 @@ debops.redis_server
    man_synopsis
    man_description
    getting-started
-   defaults-detailed
    config-pipeline
+   defaults-detailed
 
 ..
  Local Variables:

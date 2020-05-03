@@ -14,8 +14,8 @@ debops.golang
    man_synopsis
    man_description
    getting-started
-
-.. include:: includes/defaults-packages.rst
+   usage-examples
+   defaults-detailed
 
 ..
  Local Variables:

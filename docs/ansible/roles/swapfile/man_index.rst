@@ -15,7 +15,6 @@ debops.swapfile
    man_description
    getting-started
    defaults-detailed
-   upgrade
 
 ..
  Local Variables:

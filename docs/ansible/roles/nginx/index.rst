@@ -15,9 +15,9 @@ debops.nginx
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    acme-support
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------

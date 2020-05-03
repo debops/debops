@@ -15,11 +15,10 @@ debops.ifupdown
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    ifupdown-systemd
    custom-hooks
-   upgrade
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------

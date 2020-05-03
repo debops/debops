@@ -14,9 +14,9 @@ debops.minio
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    deployment-guide
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------

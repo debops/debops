@@ -16,11 +16,10 @@ debops.owncloud
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    external-users
    external-storage
-   upgrade
    defaults/main
+   defaults-detailed
    ldap-dit
 
 Copyright

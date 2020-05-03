@@ -13,12 +13,11 @@ debops.postfix
    man_synopsis
    man_description
    getting-started
+   guides
+   dependency
    defaults-detailed
    defaults-maincf
    defaults-mastercf
-   dependency
-   guides
-   upgrade
 
 ..
  Local Variables:

@@ -14,13 +14,12 @@ debops.postfix
    :maxdepth: 3
 
    getting-started
+   guides
+   dependency
+   defaults/main
    defaults-detailed
    defaults-maincf
    defaults-mastercf
-   dependency
-   guides
-   upgrade
-   defaults/main
 
 Copyright
 ---------

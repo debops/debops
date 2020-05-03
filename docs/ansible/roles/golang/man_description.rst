@@ -6,7 +6,7 @@
 Description
 ===========
 
-`Go`__ is a compiled programminag language similar to `C`__. Applications
+`Go`__ is a compiled programming language similar to `C`__. Applications
 written in Go are compiled to static binaries, with an aim to simplify
 deployment. Many popular data center applications and tools are written in Go.
 

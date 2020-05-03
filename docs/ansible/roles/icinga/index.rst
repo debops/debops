@@ -14,10 +14,10 @@ debops.icinga
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    deployment
    dependency
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------

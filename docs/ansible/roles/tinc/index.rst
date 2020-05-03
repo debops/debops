@@ -15,10 +15,9 @@ debops.tinc
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    examples
-   upgrade
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------

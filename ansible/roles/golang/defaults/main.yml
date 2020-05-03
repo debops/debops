@@ -6,14 +6,13 @@
 # .. Copyright (C) 2015-2019 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
-# UNIX and build environment
-# ==========================
+# .. _golang__ref_defaults:
+
+# debops.golang default variables
+# ===============================
 
 # .. contents::
 #    :local:
-#
-# .. include:: ../../../../../includes/global.rst
-
 
 # Go UNIX environment [[[
 # -----------------------
@@ -106,5 +105,100 @@ golang__git_depth: '0'
 # the :ref:`debops.golang` role and is used by the Ansible local fact to
 # resolve the paths to preferred binaries.
 golang__bin_database: '/usr/local/etc/golang-binaries'
+                                                                   # ]]]
+                                                                   # ]]]
+# Go packages [[[
+# ---------------
+
+# The ``golang__*_packages`` default variables define what Go packages should
+# be installed by the :ref:`debops.golang` role.
+# See the :ref:`golang__ref_packages` documentation for more details.
+
+# .. envvar:: golang__default_packages [[[
+#
+# List of default Go packages to install, defined by the role.
+golang__default_packages:
+
+  # The Go environment will be installed if no dependent Go packages are defined
+  - name: 'golang-go'
+    apt_packages: 'golang-go'
+    state: '{{ "ignore" if golang__dependent_packages|d() else "present" }}'
+
+                                                                   # ]]]
+# .. envvar:: golang__packages [[[
+#
+# List of Go packages to install on all hosts in Ansible inventory.
+golang__packages: []
+
+                                                                   # ]]]
+# .. envvar:: golang__group_packages [[[
+#
+# List of Go packages to install on a group of hosts in Ansible inventory.
+golang__group_packages: []
+
+                                                                   # ]]]
+# .. envvar:: golang__host_packages [[[
+#
+# List of Go packages to install on specific hosts in Ansible inventory.
+golang__host_packages: []
+
+                                                                   # ]]]
+# .. envvar:: golang__dependent_packages [[[
+#
+# List of Go packages to install specified by other Ansible roles.
+golang__dependent_packages: []
+
+                                                                   # ]]]
+# .. envvar:: golang__combined_packages [[[
+#
+# List of Go packages which combines all other lists and is used in the role
+# tasks.
+golang__combined_packages: '{{ golang__default_packages
+                               + golang__dependent_packages
+                               + golang__packages
+                               + golang__group_packages
+                               + golang__host_packages }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: golang__keyring__dependent_gpg_user [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role (all GPG keys should
+# be imported into a specific UNIX account keyring).
+golang__keyring__dependent_gpg_user: '{{ golang__user }}'
+
+                                                                   # ]]]
+# .. envvar:: golang__keyring__dependent_gpg_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role (list of GPG keys to
+# import to the keyring).
+golang__keyring__dependent_gpg_keys:
+
+  - user:  '{{ golang__user }}'
+    group: '{{ golang__group }}'
+    home:  '{{ golang__home }}'
+    state: '{{ "present"
+               if (q("flattened", golang__combined_packages) | parse_kv_items
+                   | selectattr("gpg", "defined") | selectattr("state", "equalto", "present")
+                   | map(attribute="gpg") | list)
+               else "absent" }}'
+
+  - '{{ q("flattened", golang__combined_packages) | parse_kv_items
+        | selectattr("gpg", "defined") | selectattr("state", "equalto", "present")
+        | map(attribute="gpg") | list }}'
+
+                                                                   # ]]]
+# .. envvar:: golang__apt_preferences__dependent_list [[[
+#
+# Configuration for the :ref:`debops.apt_preferences` role.
+golang__apt_preferences__dependent_list:
+
+  - packages: [ 'golang', 'golang-*', 'dh-golang' ]
+    backports: [ 'wheezy', 'jessie', 'stretch', 'precise', 'trusty' ]
+    reason: 'Closer feature parity with upstream'
+    by_role: 'debops.golang'
+
                                                                    # ]]]
                                                                    # ]]]

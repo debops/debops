@@ -13,8 +13,8 @@ debops.etc_aliases
    man_synopsis
    man_description
    getting-started
-   defaults-detailed
    dependency
+   defaults-detailed
 
 ..
  Local Variables:

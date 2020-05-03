@@ -14,9 +14,9 @@ debops.freeradius
    :maxdepth: 2
 
    getting-started
-   defaults-detailed
    example-eduroam
    defaults/main
+   defaults-detailed
 
 Copyright
 ---------

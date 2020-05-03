@@ -7,6 +7,7 @@ Default variable details
 
 .. include:: ../../../includes/global.rst
 .. include:: includes/role.rst
+   :start-line: 6
 
 Some of ``debops.apache`` default variables have more extensive configuration
 than simple strings or lists. Here you can find documentation and examples for

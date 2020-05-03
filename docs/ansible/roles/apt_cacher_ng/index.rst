@@ -14,7 +14,6 @@ debops.apt_cacher_ng
    :maxdepth: 2
 
    getting-started
-   upgrade
    defaults/main
 
 Copyright

@@ -15,9 +15,9 @@ debops.elasticsearch
    man_synopsis
    man_description
    getting-started
-   defaults-detailed
    clustering
    dependency
+   defaults-detailed
 
 ..
  Local Variables:

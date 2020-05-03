@@ -15,9 +15,9 @@ debops.golang
    :maxdepth: 2
 
    getting-started
-   defaults/main/environment
-   defaults/main/packages
-   defaults/main/dependent
+   usage-examples
+   defaults/main
+   defaults-detailed
 
 Copyright
 ---------
