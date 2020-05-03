@@ -111,8 +111,9 @@ lxc__root_subgid_count: '{{ ansible_local.root_account.subgids[0]["count"]
 # :ref:`debops.lxd` role.
 lxc__net_deploy_state: '{{ "absent"
                            if ((ansible_virtualization_type in [ "lxc", "docker", "openvz" ] and
-                                ansible_virtualization_role == "guest") or
-                               inventory_hostname in groups["debops_service_lxd"])
+                                ansible_virtualization_role == "aguest") or
+                               (inventory_hostname in groups["debops_service_lxd"]|d([])) or
+                               (ansible_local.lxd.installed|d(False))|bool)
                            else "present" }}'
 
                                                                    # ]]]
