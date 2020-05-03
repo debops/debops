@@ -3,8 +3,26 @@
 .. Copyright (C) 2015-2019 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
+.. _golang__ref_defaults_detailed:
+
 Default variable details
 ========================
+
+.. include:: ../../../includes/global.rst
+
+Some of ``debops.golang`` default variables have more extensive configuration than
+simple strings or lists, here you can find documentation and examples for them.
+
+.. only:: html
+
+   .. contents::
+      :local:
+      :depth: 1
+
+.. _golang__ref_packages:
+
+golang__packages
+----------------
 
 Each ``golang__*_packages`` variable contains a list of YAML dictionaries, each
 dictionary defines a Go package installation using specific parameters:
