@@ -98,6 +98,9 @@ Updates of upstream application versions
 - In the :ref:`debops.roundcube` role, the Roundcube version installed by
   default has been updated to ``v1.4.2``.
 
+- In the :ref:`debops.lxd` role, the LXD version installed by default has been
+  updated to ``v4.0.1``, which is a LTS release.
+
 Continuous Integration
 ''''''''''''''''''''''
 
