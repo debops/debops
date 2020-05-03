@@ -1,7 +1,7 @@
 ---
-# Copyright (C) 2014-2018 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2014-2020 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2015-2016 Robin Schneider <ypid@riseup.net>
-# Copyright (C) 2014-2018 DebOps <https://debops.org/>
+# Copyright (C) 2014-2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Manage LXC hosts
@@ -39,6 +39,11 @@
         - '{{ lxc__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ lxc__python__dependent_packages2 }}'
+
+    - role: sysctl
+      tags: [ 'role::sysctl', 'skip::sysctl' ]
+      sysctl__dependent_parameters:
+        - '{{ lxc__sysctl__dependent_parameters }}'
 
     - role: lxc
       tags: [ 'role::lxc', 'skip::lxc' ]

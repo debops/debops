@@ -1,9 +1,9 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# .. Copyright (C) 2014-2018 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2014-2020 Maciej Delmanowski <drybjed@gmail.com>
 # .. Copyright (C) 2015-2016 Robin Schneider <ypid@riseup.net>
-# .. Copyright (C) 2014-2018 DebOps <https://debops.org/>
+# .. Copyright (C) 2014-2020 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _lxc__ref_defaults:
@@ -105,7 +105,15 @@ lxc__root_subgid_count: '{{ ansible_local.root_account.subgids[0]["count"]
 # If ``present``, the role will configure internal LXC network using the
 # ``lxc-net`` service. If ``absent``, the internal LXC network will be disabled
 # and de-configured.
-lxc__net_deploy_state: 'present'
+#
+# The ``lxc-net`` service is not configured inside container environment or if
+# the host is also configured to support LXD service using the
+# :ref:`debops.lxd` role.
+lxc__net_deploy_state: '{{ "absent"
+                           if ((ansible_virtualization_type in [ "lxc", "docker", "openvz" ] and
+                                ansible_virtualization_role == "guest") or
+                               inventory_hostname in groups["debops_service_lxd"])
+                           else "present" }}'
 
                                                                    # ]]]
 # .. envvar:: lxc__net_bridge [[[
@@ -716,4 +724,26 @@ lxc__ferm__dependent_rules:
       @hook post "iptables -A POSTROUTING -t mangle -p udp --dport bootpc -j CHECKSUM --checksum-fill";
 
 # ]]]
-# ]]]
+# .. envvar:: lxc__sysctl__dependent_parameters [[[
+#
+# Configuration for the :ref:`debops.sysctl` Ansible role.
+lxc__sysctl__dependent_parameters:
+
+  - name: 'lxc-inotify'
+    divert: True
+    weight: '30'
+    options:
+
+      - name: 'fs.inotify.max_user_instances'
+        comment: |
+          Defines the maximum number of inotify listeners.
+          By default, this value is 128, which is quickly exhausted when using
+          systemd-based LXC containers (15 containers are enough).
+          When the limit is reached, systemd becomes mostly unusable, throwing
+          "Too many open files" all around (both on the host and in containers).
+          See https://kdecherf.com/blog/2015/09/12/systemd-and-the-fd-exhaustion/
+          Increase the user inotify instance limit to allow for about
+          100 containers to run before the limit is hit again
+        value: 1024
+                                                                   # ]]]
+                                                                   # ]]]
