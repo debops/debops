@@ -125,6 +125,13 @@ General
   .. __: https://reuse.software/spec/
   .. __: https://spdx.org/ids
 
+:ref:`debops.etc_aliases` role
+''''''''''''''''''''''''''''''
+
+- The custom filter plugin used by the role has been moved to the
+  :ref:`debops.ansible_plugins` role to allow it to be used via Ansible
+  Collection system, which requires all plugins to be centralized.
+
 :ref:`debops.lxd` role
 ''''''''''''''''''''''
 
