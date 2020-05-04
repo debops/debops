@@ -92,6 +92,13 @@ Continuous Integration
 - Various improvements in the Vagrant box environment have been backported from
   the ``master`` branch.
 
+:ref:`debops.cran` role
+'''''''''''''''''''''''
+
+- The custom ``cran`` Ansible module used by the role has been moved to the
+  :ref:`debops.ansible_plugins` role to allow it to be used via Ansible
+  Collection system, which requires all plugins to be centralized.
+
 :ref:`debops.etc_aliases` role
 ''''''''''''''''''''''''''''''
 
