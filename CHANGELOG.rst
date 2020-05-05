@@ -156,6 +156,11 @@ General
 - Fix creation of empty environment variables in :command:`cron` configuration
   files managed by Ansible.
 
+:ref:`debops.golang` role
+'''''''''''''''''''''''''
+
+- Fix Ansible local fact script compatibility with Python 3.x environment.
+
 :ref:`debops.minio` role
 ''''''''''''''''''''''''
 
