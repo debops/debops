@@ -139,6 +139,14 @@ General
   :ref:`debops.ansible_plugins` role to allow it to be used via Ansible
   Collection system, which requires all plugins to be centralized.
 
+:ref:`debops.golang` role
+'''''''''''''''''''''''''
+
+- On Debian Buster, Golang APT packages from the ``buster-backports`` APT
+  repository will be preferred instead of their Buster version. This allows for
+  installation of applications that depend on a newer Go runtime environment,
+  like GitLab or MinIO.
+
 :ref:`debops.lxd` role
 ''''''''''''''''''''''
 
