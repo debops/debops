@@ -1,10 +1,28 @@
 ---
-# Copyright (C) 2015-2017 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2015-2017 DebOps <https://debops.org/>
+# Copyright (C) 2015-2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Ensure that a SQL database is available
   assert:
     that:
       - 'gitlab__database == "postgresql"'
+    quiet: True
+  tags: [ 'role::gitlab:env', 'role::gitlab:assert' ]
+
+  # This task blocks the upgrade of an existing GitLab installation if Golang
+  # version required by GitLab v12.10+ is not currently installed.
+- name: Ensure that required Golang version is available
+  assert:
+    that:
+      - 'ansible_local.golang.installed|bool'
+      - 'ansible_local.golang.version is version("1.14", ">=")'
+    quiet: True
+    fail_msg: >
+      GitLab v12.10+ requires Golang v1.14+ runtime environment. Make sure that
+      the host is upgraded before applying the playbook. On older OS releases,
+      ensure that the Go packages from backports are installed before the
+      GitLab playbook is applied.
+  when: ansible_local.gitlab.installed|d()|bool and
+        gitlab_version is version('12.2', '>')
   tags: [ 'role::gitlab:env', 'role::gitlab:assert' ]
