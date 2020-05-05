@@ -104,6 +104,11 @@ Fixed
 - Fix creation of empty environment variables in :command:`cron` configuration
   files managed by Ansible.
 
+:ref:`debops.gitlab` role
+'''''''''''''''''''''''''
+
+- Use correct ``bin_dir`` path in Gitaly configuration file.
+
 :ref:`debops.golang` role
 '''''''''''''''''''''''''
 
