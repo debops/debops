@@ -101,6 +101,14 @@ Updates of upstream application versions
 - In the :ref:`debops.lxd` role, the LXD version installed by default has been
   updated to ``v4.0.1``, which is a LTS release.
 
+- In the :ref:`debops.gitlab` role, the GitLab release installed on Debian
+  Buster and newer OS releases is updated to ``12-10-stable``.
+
+  This release requires Golang packages from ``buster-backports`` APT
+  repository, which will be installed by default via the :ref:`debops.golang`
+  role. Existing installations need to upgrade the Golang packages before the
+  playbook is applied.
+
 Continuous Integration
 ''''''''''''''''''''''
 
