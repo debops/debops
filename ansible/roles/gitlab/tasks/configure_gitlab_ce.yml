@@ -214,7 +214,11 @@
   environment:
     RAILS_ENV: 'production'
     GITLAB_ROOT_EMAIL: '{{ gitlab_admin_email }}'
-  command: 'bundle exec rake db:schema:load setup_postgresql db:seed_fu'
+  command: '{{ "bundle exec rake "
+                + ("db:schema:load setup_postgresql"
+                   if (gitlab_version is version("12.10", "<"))
+                   else "db:structure:load")
+                + " db:seed_fu" }}'
   args:
     chdir: '{{ gitlab_ce_git_checkout }}'
   become: True
