@@ -435,7 +435,7 @@ owncloud__variant_name_map:
 #
 # For ownCloud refer to the `ownCloud Maintenance and Release Schedule <https://github.com/owncloud/core/wiki/Maintenance-and-Release-Schedule>`_
 # and the `package index <https://download.owncloud.org/download/repositories/>`_ for more details.
-owncloud__release: '{{ "10.3"
+owncloud__release: '{{ "10.4"
                        if (owncloud__variant == "owncloud")
                        else "17.0" }}'
 
@@ -456,15 +456,13 @@ owncloud__distribution_name: '{{ ansible_distribution }}'
 # .. envvar:: owncloud__distribution_version
 #
 # Version number of the OS distribution for ownCloud URLs.
-owncloud__distribution_version: '{{ (ansible_distribution_major_version + ".0")
-                                    if ansible_distribution in [ "Debian" ]
-                                    else ansible_distribution_version }}'
+owncloud__distribution_version: '{{ ansible_distribution_major_version }}'
 
 
 # .. envvar:: owncloud__apt_repo_base
 #
 # Base APT repository URL starting at the authority part.
-owncloud__apt_repo_base: 'download.owncloud.org/download/repositories/{{ owncloud__release }}'
+owncloud__apt_repo_base: 'attic.owncloud.org/download/repositories/{{ owncloud__release }}/prod'
 
 
 # .. envvar:: owncloud__apt_repo_key_id
@@ -499,7 +497,7 @@ owncloud__src_remote_dir: '{{
 # .. envvar:: owncloud__apt_repo_source
 #
 # APT ``sources.list`` URL of the ownCloud ``.deb`` repository.
-owncloud__apt_repo_source: '{{ "deb http://" + owncloud__apt_repo_base + "/" +
+owncloud__apt_repo_source: '{{ "deb https://" + owncloud__apt_repo_base + "/" +
                                owncloud__distribution + "/ /" }}'
 
 
