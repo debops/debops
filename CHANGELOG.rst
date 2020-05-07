@@ -93,7 +93,8 @@ Updates of upstream application versions
   10.3 respectively.
 
 - In the :ref:`debops.owncloud` role, the Nextcloud version installed by
-  default has been updated to ``v17.0``.
+  default has been updated to ``v17.0``. The ownCloud version has been updated
+  to ``v10.4``.
 
 - In the :ref:`debops.roundcube` role, the Roundcube version installed by
   default has been updated to ``v1.4.4``.
