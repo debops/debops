@@ -29,23 +29,23 @@ Default ports for exporters installed from Debian packages are:
 .. code-block:: yaml
 
    prometheus_exporter__default_ports_map:
-     apache:  '9117'
-     bind: '9119'
-     bird: '9324'
-     blackbox: '9110'
-     haproxy: '9101'
-     mongodb: '9216'
-     mysqld: '9104'
-     nginx: '9113'
-     node: '9100'
-     pgbouncer: '9127'
-     postgres: '9187'
-     process: '9256'
-     snmp: '9116'
-     sql: '9237'
-     squid: '9301'
-     trafficserver: '9548'
-     varnish: '9131'
+     apache:  '9117:3117'
+     bind: '9119:3119'
+     bird: '9324:3324'
+     blackbox: '9110:3110'
+     haproxy: '9101:3101'
+     mongodb: '9216:3216'
+     mysqld: '9104:3104'
+     nginx: '9113:3113'
+     node: '9100:3100'
+     pgbouncer: '9127:3127'
+     postgres: '9187:3187'
+     process: '9256:3256'
+     snmp: '9116:3116'
+     sql: '9237:3237'
+     squid: '9301:3301'
+     trafficserver: '9548:3548'
+     varnish: '9131:3131'
 
 Listen address
 ~~~~~~~~~~~~~~
@@ -59,8 +59,9 @@ Default web listen address for all exporters.
      - name: 'common'
        options:
          - web.listen-address: '{{ ("localhost" if prometheus_exporter__pki|bool else prometheus_exporter__bind) + ":" +
-                                   ("3" + prometheus_exporter__combined_ports_map[item][1:] if
-                                   prometheus_exporter__pki|bool else prometheus_exporter__combined_ports_map[item]) }}'
+                                   (prometheus_exporter__combined_ports_map[item].split(":")[1] if
+                                   prometheus_exporter__pki|bool else
+                                   prometheus_exporter__combined_ports_map[item].split(":")[0]) }}'
 
 SSL and authentication
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -164,9 +165,9 @@ add ``prometheus`` user to ``www-data`` group).
 
    prometheus_exporter__ports_map:
 
-     phpfpm: '9253'
-     redis: '9121'
-     rabbitmq: '9419'
+     phpfpm: '9253:3253'
+     redis: '9121:3121'
+     rabbitmq: '9419:3419'
 
    prometheus_exporter__args:
 

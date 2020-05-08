@@ -131,6 +131,13 @@ prometheus_alertmanager__bind: '0.0.0.0'
 prometheus_alertmanager__port: '9093'
 
                                                                    # ]]]
+# .. envvar:: prometheus_alertmanager__private_port [[[
+#
+# Private port number on which this Prometheus alertmanager listens on.
+# Used with SSL tunneling.
+prometheus_alertmanager__private_port: '3093'
+
+                                                                   # ]]]
 # .. envvar:: prometheus_alertmanager__cluster_allow [[[
 #
 # List of IP addresses or CIDR subnets which will be permitted to access the
@@ -149,6 +156,13 @@ prometheus_alertmanager__cluster_bind: '0.0.0.0'
 #
 # Port number on which this Prometheus alertmanager cluster listens on.
 prometheus_alertmanager__cluster_port: '9094'
+
+                                                                   # ]]]
+# .. envvar:: prometheus_alertmanager__cluster_private_port [[[
+#
+# Private port number on which this Prometheus alertmanager cluster listens on.
+# Used with SSL tunneling.
+prometheus_alertmanager__cluster_private_port: '3094'
 
                                                                    # ]]]
 # .. envvar:: prometheus_alertmanager__http_allow [[[
@@ -209,12 +223,12 @@ prometheus_alertmanager__args:
 
   - name: 'web.listen-address'
     value: '{{ ("127.0.0.1" if prometheus_alertmanager__pki|bool else prometheus_alertmanager__bind) + ":" +
-               ("3" + prometheus_alertmanager__port[1:] if
+               (prometheus_alertmanager__private_port if
                prometheus_alertmanager__pki|bool else prometheus_alertmanager__port) }}'
 
   - name: 'cluster.listen-address'
     value: '{{ ("127.0.0.1" if prometheus_alertmanager__pki|bool else prometheus_alertmanager__cluster_bind) + ":" +
-               ("3" + prometheus_alertmanager__cluster_port[1:] if
+               (prometheus_alertmanager__cluster_private_port if
                prometheus_alertmanager__pki|bool else prometheus_alertmanager__cluster_port) }}'
 
   - name: 'web.external-url'
@@ -440,7 +454,7 @@ prometheus_alertmanager__nginx__dependent_upstreams:
   - name: 'prometheus_alertmanager'
     server: '{{ ("localhost" if prometheus_alertmanager__bind == "0.0.0.0" or prometheus_alertmanager__pki|bool else
                 prometheus_alertmanager__bind) + ":" +
-                ("3" + prometheus_alertmanager__port[1:] if prometheus_alertmanager__pki|bool else
+                (prometheus_alertmanager__private_port if prometheus_alertmanager__pki|bool else
                 prometheus_alertmanager__port) }}'
                                                                    # ]]]
                                                                    # ]]]

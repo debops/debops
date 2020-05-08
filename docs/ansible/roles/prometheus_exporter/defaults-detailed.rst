@@ -56,8 +56,8 @@ PHP-FPM and Redis exporter with port configuration:
 
    prometheus_exporter__ports_map:
 
-     phpfpm: '9253'
-     redis: '9121'
+     phpfpm: '9253:3253'
+     redis: '9121:3121'
 
 .. _prometheus_exporter__args:
 

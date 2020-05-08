@@ -6,7 +6,7 @@
 
 {% set prometheus_alertmanager__tpl_ghostunnel_args = [] %}
 {% set _ = prometheus_alertmanager__tpl_ghostunnel_args.append('--{} {}'.format('listen', prometheus_alertmanager__cluster_bind + ':' + prometheus_alertmanager__cluster_port)) %}
-{% set _ = prometheus_alertmanager__tpl_ghostunnel_args.append('--{} {}'.format('target', 'localhost:3' + prometheus_alertmanager__cluster_port[1:])) %}
+{% set _ = prometheus_alertmanager__tpl_ghostunnel_args.append('--{} {}'.format('target', 'localhost:' + prometheus_alertmanager__cluster_private_port)) %}
 {% set _ = prometheus_alertmanager__tpl_ghostunnel_args.append('--{} {}'.format('allow-ou', prometheus_alertmanager__domain)) %}
 ARGS="{{ prometheus_alertmanager__tpl_ghostunnel_args | join(' ') }}"
 CERT_PATH="{{ prometheus_alertmanager__pki_path + "/" + prometheus_alertmanager__pki_realm + "/" + prometheus_alertmanager__pki_crt }}"

@@ -4,7 +4,7 @@
  #}
 [
   {
-    "targets": [ "{{ ansible_fqdn }}:{{ prometheus_exporter__combined_ports_map[item] }}" ],
+    "targets": [ "{{ ansible_fqdn }}:{{ prometheus_exporter__combined_ports_map[item].split(':')[0] }}" ],
     "labels": {
 {% for key, value in prometheus_exporter__combined_labels.items() %}
       "{{ key }}": "{{ value }}",

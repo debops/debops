@@ -6,19 +6,19 @@
 {% for exporter in prometheus_exporter__combined_exporters %}
 {%   set _ = prometheus_exporter__tpl_etc_services.append({
    'name': 'prometheus-' + exporter + '-exporter',
-   'port': prometheus_exporter__combined_ports_map[exporter]
+   'port': prometheus_exporter__combined_ports_map[exporter].split(':')[0]
 }) %}
 {% endfor %}
 {% for exporter in prometheus_exporter__combined_release_exporters %}
 {%   set _ = prometheus_exporter__tpl_etc_services.append({
    'name': 'prometheus-' + exporter.name + '-exporter',
-   'port': prometheus_exporter__combined_ports_map[exporter.name]
+   'port': prometheus_exporter__combined_ports_map[exporter.name].split(':')[0]
 }) %}
 {% endfor %}
-{% for exporter in prometheus_exporter__pre_installed_exporters %}
+{% for exporter in prometheus_exporter__apm_exporters %}
 {%   set _ = prometheus_exporter__tpl_etc_services.append({
    'name': 'prometheus-' + exporter + '-exporter',
-   'port': prometheus_exporter__combined_ports_map[exporter]
+   'port': prometheus_exporter__combined_ports_map[exporter].split(':')[0]
 }) %}
 {% endfor %}
 {{ prometheus_exporter__tpl_etc_services }}

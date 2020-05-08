@@ -49,12 +49,12 @@ Default arguments for Prometheus alertmanager.
 
      - name: 'web.listen-address'
        value: '{{ ("127.0.0.1" if prometheus_alertmanager__pki|bool else prometheus_alertmanager__bind) + ":" +
-                  ("3" + prometheus_alertmanager__port[1:] if
+                  (prometheus_alertmanager__private_port if
                   prometheus_alertmanager__pki|bool else prometheus_alertmanager__port) }}'
 
      - name: 'cluster.listen-address'
        value: '{{ ("127.0.0.1" if prometheus_alertmanager__pki|bool else prometheus_alertmanager__cluster_bind) + ":" +
-                  ("3" + prometheus_alertmanager__cluster_port[1:] if
+                  (prometheus_alertmanager__cluster_private_port if
                   prometheus_alertmanager__pki|bool else prometheus_alertmanager__cluster_port) }}'
 
      - name: 'web.external-url'
