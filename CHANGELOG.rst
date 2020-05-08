@@ -134,6 +134,17 @@ General
   .. __: https://reuse.software/spec/
   .. __: https://spdx.org/ids
 
+- In new DebOps environments, Ansible will ignore any missing inventory groups
+  using the ``host_pattern_mismatch`` parameter. This will disable the "Could
+  not match supplied host pattern" warning message present in most of the
+  playbooks included in DebOps. To disable this message in an existing
+  environment, add in the :file:`.debops.cfg` configuration file:
+
+  .. code-block:: ini
+
+     [ansible inventory]
+     host_pattern_mismatch = ignore
+
 :ref:`debops.cran` role
 '''''''''''''''''''''''
 
