@@ -157,9 +157,10 @@ check-links:
 .PHONY: test-playbook-syntax
 test-playbook-syntax:
 	@printf "%s\n" "Testing Ansible playbook syntax..."
-	@ANSIBLE_ROLES_PATH="ansible/roles" ansible-playbook --syntax-check \
-		ansible/playbooks/bootstrap.yml \
-		ansible/playbooks/site.yml
+	@ANSIBLE_ROLES_PATH="ansible/roles" ANSIBLE_HOST_PATTERN_MISMATCH=ignore \
+	 ansible-playbook --syntax-check ansible/playbooks/bootstrap.yml \
+		                         ansible/playbooks/bootstrap-ldap.yml \
+		                         ansible/playbooks/site.yml
 
 .PHONY: test-ansible-lint
 test-ansible-lint:
