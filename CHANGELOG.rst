@@ -82,6 +82,9 @@ Updates of upstream application versions
 - In the :ref:`debops.lxd` role, the LXD version installed by default has been
   updated to ``v4.0.1``, which is a LTS release.
 
+- In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
+  has been updated to the next point release, 10.4.
+
 Continuous Integration
 ''''''''''''''''''''''
 
