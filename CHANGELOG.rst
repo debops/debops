@@ -106,6 +106,12 @@ General
 Fixed
 ~~~~~
 
+General
+'''''''
+
+- Correctly display shell error messages in the :command:`debops-defaults`
+  script.
+
 :ref:`debops.cron` role
 '''''''''''''''''''''''
 
