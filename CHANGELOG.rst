@@ -165,6 +165,9 @@ General
   contained multiple uses of a particular custom Ansible plugin, for example
   ``template_src`` or ``file_src``, were modified multiple times by the script.
 
+- Correctly display shell error messages in the :command:`debops-defaults`
+  script.
+
 :ref:`debops.cron` role
 '''''''''''''''''''''''
 
