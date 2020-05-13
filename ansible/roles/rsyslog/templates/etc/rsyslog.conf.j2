@@ -1,11 +1,49 @@
-{# Copyright (C) 2015-2017 Maciej Delmanowski <drybjed@gmail.com>
- # Copyright (C) 2015-2017 DebOps <https://debops.org/>
+{# Copyright (C) 2015-2020 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2015-2020 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 # {{ ansible_managed }}
 
+#  /etc/rsyslog.conf	Configuration file for rsyslog.
 #
-# Include all config files in /etc/rsyslog.d/
-#
-$IncludeConfig /etc/rsyslog.d/*.conf
-
+#			For more information see
+#			/usr/share/doc/rsyslog-doc/html/rsyslog_conf.html
+{% for section in rsyslog__combined_configuration_sections | parse_kv_config %}
+{%   if section.name|d() and section.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%     set section_config = (rsyslog__combined_configuration | parse_kv_config
+                             | selectattr("section", "equalto", section.name) | list) %}
+{%     if section_config|d() %}
+{%       if section.state != 'hidden' %}
+{%         if ('present' in (section_config | map(attribute='state') | list)) %}
+{%           set section_title = (' ' + ((section.title | d(section.name)) | upper) + ' ') %}
+{%           set section_width = section_title | length + 8 %}
+{{           '' }}
+{{           '' }}
+{{           ("{:#^" + section_width|string + "}").format('#') }}
+{{           ("{:#^" + section_width|string + "}").format(section_title) }}
+{{           ("{:#^" + section_width|string + "}").format('#') }}
+{{           '' }}
+{%         endif %}
+{%       else %}
+{{         '' }}
+{%       endif %}
+{%       for element in section_config %}
+{%         if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%           if element.comment|d() %}
+{%             if not loop.first %}
+{{               '' }}
+{%             endif %}
+{{             element.comment | regex_replace('\n$', '') | comment }}
+{%           endif %}
+{%           if element.raw|d() %}
+{%             if element.state|d('present') == 'comment' %}
+{{               '{}'.format(element.raw | regex_replace('\n$', '') | comment(prefix='', decoration='#', postfix='')) -}}
+{%             else %}
+{{               '{}'.format(element.raw | regex_replace('\n$', '')) }}
+{%             endif %}
+{%           endif %}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{% endfor %}

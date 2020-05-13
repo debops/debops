@@ -1,38 +1,32 @@
-{# Copyright (C) 2015-2017 Maciej Delmanowski <drybjed@gmail.com>
- # Copyright (C) 2015-2017 DebOps <https://debops.org/>
+{# Copyright (C) 2015-2020 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2015-2020 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 # {{ ansible_managed }}
 
-{#
-#    ==== template for rsyslog created via debops.rsyslog role ====
-#
-# List of parameters supported by this template:
-#
-#   - item.name: ''
-#       Name of the template. Required.
-#
-#   - item.comment: ''
-#       Comment to the template, which you want to see on the top of the
-#       template file. Optional.
-#
-#   - item.options: |
-#       Text block with value mapping specified in the template format, check
-#       rsyslog documentation or examples if not sure about syntax. Required.
-#
-#   - item.state: 'present'
-#       If this parameter is defined and 'absent', template file will be removed
-#       from the rsyslog configuration. Optional.
-#}
+{% if item.comment|d() %}
+{{   item.comment | regex_replace('\n$', '') | comment }}
+{% endif %}
+{% if item.raw|d() %}
+{%   if item.state|d('present') == 'comment' %}
+{{     '{}'.format(item.raw | regex_replace('\n$', '') | comment(prefix='', decoration='#', postfix='')) -}}
+{%   else %}
+{{     '{}'.format(item.raw | regex_replace('\n$', '')) }}
+{%   endif %}
+{% elif item.options|d() %}
+{%   for element in item.options %}
+{%     if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%       if element.comment|d() %}
+{%         if not loop.first %}
 
-{% if item.name is defined and item.name                                    %}
-{% if item.comment is defined and item.comment                              %}
-# {{ item.comment }}
-{% endif                                                                    %}
-template(
-        name="{{ item.name }}"
-        {% if item.options is defined and item.options                      %}
-{{ item.options | indent(8) | regex_replace("(?m)^\s*$", "") }}
-        {% endif                                                            %}
-)
-{% endif                                                                    %}
+{%         endif %}
+{{         element.comment | regex_replace('\n$', '') | comment }}
+{%       endif %}
+{%       if element.state|d('present') == 'comment' %}
+{{         '{}'.format(element.raw | regex_replace('\n$', '') | comment(prefix='', decoration='#', postfix='')) -}}
+{%       else %}
+{{         '{}'.format(element.raw | regex_replace('\n$', '')) }}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
