@@ -1,5 +1,5 @@
-.. Copyright (C) 2015-2017 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2015-2017 DebOps <https://debops.org/>
+.. Copyright (C) 2015-2020 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015-2020 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 Getting started
@@ -19,27 +19,37 @@ generated, although with slightly longer log rotation. If the operating system
 is Debian, ``rsyslog`` will be run on a privileged ``root`` account; if the
 system is Ubuntu, an unprivileged ``syslog`` account will be used by default.
 
-The ``rsyslog`` configuration is stored in :file:`/etc/rsyslog.d/`, most of the
-configuration located in :file:`/etc/rsyslog.conf` has been moved to the directory
-and put in separate files (old configuration is preserved in a diverted file).
 
 Configuration filename extensions
 ---------------------------------
 
 The configuration order is important, and to aid support of configuration from
-other roles, ``debops.rsyslog`` includes configuration files with different
-filename extensions at certain parts of the configuration:
+other roles, the :file:`/etc/rsyslog.conf` configuration file includes other
+configuration files with different filename extensions at certain points of the
+configuration:
+
+:file:`/etc/rsyslog.d/*.input`
+  These files define configuration of the `rsyslog input modules`__ which can
+  be used as data sources.
+
+  .. __: https://www.rsyslog.com/doc/v8-stable/configuration/modules/idx_input.html
+
+:file:`/etc/rsyslog.d/*.template`
+  These configuration files can be used to create custom templates used by
+  ``rsyslog`` in different parts of the configuration.
 
 :file:`/etc/rsyslog.d/*.conf`
   These files are included by default. They are meant to be used for
   configuration of the local system logs, the extension is used to preserve
   compatibility with Debian package conventions.
 
-:file:`/etc/rsyslog.d/*.template`
-  These configuration files can be used to create custom templates used by
-  ``rsyslog`` in different parts of the configuration.
+:file:`/etc/rsyslog.d/*.output`
+  These files define configuration of the `rsyslog output modules`__ which can
+  be used as targets by various local and remote rulesets defined later on.
 
-:file:`/etc/rsyslog.d/*.system`
+  .. __: https://www.rsyslog.com/doc/v8-stable/configuration/modules/idx_output.html
+
+:file:`/etc/rsyslog.d/*.ruleset`
   These configuration files are meant to be used to define log matching rules
   specific to a given system, to store logs in different files.
 
@@ -50,63 +60,53 @@ filename extensions at certain parts of the configuration:
   modules. This way the local (system) logs and remote logs from other hosts
   can be managed separately and shouldn't mix with each other.
 
+
 Quick start: log forwarding
 ---------------------------
 
-To enable log forwarding, you will want to configure a few variables differently
-in your Ansible inventory. The quick and dirty setup described here assumes
-that you want to forward logs over UDP without any encryption, so it should
-only be used for testing if remote logs work. For more advanced configuration
-check the :ref:`rsyslog__forward` documentation.
+`Log forwarding`__ tells :command:`rsyslogd` server to send all or specific syslog
+messages to another syslog server(s). The :ref:`debops.rsyslog` role is
+tailored for configuring log forwarding over TLS to a central syslog server
+using `DNS SRV resource records`__.
 
-First, on the host that should receive the remote logs, for example in
-:file:`ansible/inventory/host_vars/logs.example.org/rsyslog.yml`, configure
-variables:
+.. __: https://www.rsyslog.com/sending-messages-to-a-remote-syslog-server/
+.. __: https://tools.ietf.org/html/draft-schoenw-opsawg-nm-srv-03
 
-.. code-block:: yaml
+The role checks if the ``_syslog._tcp.{{ rsyslog__domain }}`` DNS SRV resource
+record exists. If it's found, the host is not configured to receive logs via
+:envvar:`rsyslog__remote_enabled` variable and the :ref:`debops.pki` role has
+been configured on the host, the :ref:`debops.rsyslog` will generate
+configuration for each target server that will send syslog messages over TLS to
+port 6514 by default. This configuration can be found and changed in the
+:envvar:`rsyslog__default_forward` and the :envvar:`rsyslog__default_rules`
+variables.
 
-   # Enable network input channels and storage of remote logs in filesystem
-   rsyslog__capabilities: [ 'network', 'remote-files' ]
 
-   # Specify which subnets can send remote logs through the firewall
-   rsyslog__host_allow: [ '192.0.2.0/24', '2001:db8::/32' ]
+Quick start: receiving remote logs
+----------------------------------
 
-   # Mask log forwarding configuration defined elsewhere
-   rsyslog__forward: []
-   rsyslog__group_forward: []
-   rsyslog__host_forward: []
+The role does not configure :command:`rsyslogd` service to receive log messages
+from the network by default. To enable this, you can specify a list of allowed
+IP addresses and/or CIDR subnets which are allowed to send syslog messages
+using the :envvar:`rsyslog__allow`, :envvar:`rsyslog__group_allow` and/or
+:envvar:`rsyslog__host_allow` variables. Defining these in the inventory will
+tell the role to configure :command:`rsyslog` to accept remote logs and store
+them in subdirectories under the :file:`/var/log/remote/` directory. The
+:ref:`debops.ferm` and the :ref:`debops.logrotate` roles will be used to
+configure the IPTables firewall and log rotation respectively.
 
-   # Or, alternatively, forward logs to a different host
-   rsyslog__host_forward: [ '*.* @other.{{ ansible_domain }}' ]
+This behaviour is controlled by the :envvar:`rsyslog__remote_enabled` variable.
 
-This will prepare a given central log storage host to receive logs from other
-systems on specified subnets, and store them in :file:`/var/log/remote/` directory.
-
-Now, you can enable log forwarding for all hosts in your inventory (in
-:file:`ansible/inventory/group_vars/all/rsyslog.yml`) or only for a specific group
-(in :file:`ansible/inventory/group_vars/logged/rsyslog.yml`), using:
-
-.. code-block:: yaml
-
-   rsyslog__forward: [ '*.* @logs.{{ ansible_domain }}' ]
-
-This will forward logs on all hosts in the inventory over unencrypted UDP to
-a specified host. Due to above "masking" of the variables on the host inventory
-level, the log server should not create an infinite loop which forwards logs to
-itself. The ``debops.rsyslog`` role does not handle such case automatically, so
-you need to make sure this doesn't happen by accident.
-
-The role by default supports more advanced setups like forwarding logs over TCP
-using encrypted TLS connections, but these require more extensive configuration
-from different Ansible roles. You should read the rest of the
-``debops.rsyslog`` documentation to see how you can enable these features.
 
 Example inventory
 -----------------
 
-To enable the ``debops.rsyslog`` role on a given host or group of hosts, you
-need to add that host to the ``[debops_service_rsyslog]`` Ansible inventory
-group:
+The :ref:`debops.rsyslog` role is included by default in the DebOps
+:file:`common.yml` playbook and does not need to be specifically enabled.
+
+To enable the ``debops.rsyslog`` role on a given host or group of hosts not
+managed by DebOps, you need to add that host to the
+``[debops_service_rsyslog]`` Ansible inventory group:
 
 .. code-block:: none
 

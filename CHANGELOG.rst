@@ -198,6 +198,20 @@ General
 - The persistent configuration stored on the Ansible Controller has been
   refactored and does not use multiple separate tasks to handle the JSON files.
 
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- The role has been refreshed and uses the custom Ansible filter plugins to
+  manage the :command:`rsyslog` configuration files. The default configuration
+  was rearranged, the :file:`/etc/rsyslog.conf` configuration file has the
+  default contents that come with the Debian package and can be configured by
+  the role. The configuration model has been redesigned; any changes in the
+  configuration of the role set in the Ansible inventory need to be reviewed
+  before applying the new version.
+
+- The ``rsyslog`` APT package and its service can be cleanly removed from the
+  host, either via the role or by uninstalling the package itself.
+
 Removed
 ~~~~~~~
 
