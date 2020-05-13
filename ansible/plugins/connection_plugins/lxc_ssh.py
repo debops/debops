@@ -500,38 +500,39 @@ class Connection(ConnectionBase):
             '''
 
             output = []
-            for l in chunk.splitlines(True):
+            for line in chunk.splitlines(True):
                 suppress_output = False
 
                 # display.debug(
                 #         ("Examining line (source=%s, state=%s): "
                 #          "'%s'") % (source, state, l.rstrip('\r\n')))
-                if self._play_context.prompt and self.check_password_prompt(l):
+                if (self._play_context.prompt
+                        and self.check_password_prompt(line)):
                     display.debug(
                             ("become_prompt: (source=%s, state=%s): "
-                             "'%s'") % (source, state, l.rstrip('\r\n')))
+                             "'%s'") % (source, state, line.rstrip('\r\n')))
                     self._flags['become_prompt'] = True
                     suppress_output = True
                 elif (self._play_context.success_key
-                      and self.check_become_success(l)):
+                      and self.check_become_success(line)):
                     display.debug(
                             ("become_success: (source=%s, state=%s): "
-                             "'%s'") % (source, state, l.rstrip('\r\n')))
+                             "'%s'") % (source, state, line.rstrip('\r\n')))
                     self._flags['become_success'] = True
                     suppress_output = True
-                elif sudoable and self.check_incorrect_password(l):
+                elif sudoable and self.check_incorrect_password(line):
                     display.debug(
                             ("become_error: (source=%s, state=%s): "
-                             "'%s'") % (source, state, l.rstrip('\r\n')))
+                             "'%s'") % (source, state, line.rstrip('\r\n')))
                     self._flags['become_error'] = True
-                elif sudoable and self.check_missing_password(l):
+                elif sudoable and self.check_missing_password(line):
                     display.debug(
                             ("become_nopasswd_error: (source=%s, state=%s): "
-                             "'%s'") % (source, state, l.rstrip('\r\n')))
+                             "'%s'") % (source, state, line.rstrip('\r\n')))
                     self._flags['become_nopasswd_error'] = True
 
                 if not suppress_output:
-                    output.append(l)
+                    output.append(line)
 
             # The chunk we read was most likely a series of complete lines,
             # but just in case the last line was incomplete (and not a prompt,
