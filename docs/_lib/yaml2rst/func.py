@@ -138,5 +138,6 @@ def convert_file(infilename, outfilename,
                  strip_regex=None, yaml_strip_regex=None):
     with open(infilename) as infh:
         with open(outfilename, "w") as outfh:
-            for l in convert(infh.readlines(), strip_regex, yaml_strip_regex):
-                print(l.rstrip(), file=outfh)
+            for line in convert(infh.readlines(), strip_regex,
+                                yaml_strip_regex):
+                print(line.rstrip(), file=outfh)
