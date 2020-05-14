@@ -36,7 +36,7 @@ New DebOps roles
 
 - The :ref:`debops.journald` role can be used to manage the
   :command:`systemd-journald` service, supports configuration of Forward Secure
-  Sealing and configures persistent storage of the log files. The role is
+  Sealing and can configure persistent storage of the log files. The role is
   included by default in the :file:`common.yml` playbook.
 
 - The :ref:`debops.dpkg_cleanup` role can create :command:`dpkg` hooks that

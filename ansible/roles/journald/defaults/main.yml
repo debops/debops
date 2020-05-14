@@ -49,9 +49,17 @@ journald__storage: 'auto'
 # Set the desired state of the persistent journal storage directory
 # (:file:`/var/log/journal/`). If set to ``absent``, the directory will be
 # removed by the role.
+#
+# By default the role will not enable persistent journal if the
+# :file:`/var/log/journal/` directory is not already present, but it will be
+# kept persistent if it is used. This is due to slow :command:`journalctl` and
+# :command:`systemctl` command operation with large persistent journals.
+# See https://github.com/systemd/systemd/issues/2460 for more details.
 journald__persistent_state: '{{ "absent"
                                 if (journald__storage == "none")
-                                else "present" }}'
+                                else ("present"
+                                      if (ansible_local.journald.persistent|d())|bool
+                                      else "absent") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Forward Secure Sealing [[[
