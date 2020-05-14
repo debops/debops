@@ -16,11 +16,11 @@ Getting started
 Forward Secure Sealing
 ----------------------
 
-The :ref:`debops.journald` role configures Forward Secure Sealing functionality
-of the Journal by default. The verification keys are saved in the
-:file:`secret/journald/fss/` directories on the Ansible Controller. The role
-can be used in an "alternative" mode where Ansible checks the log integrity by
-running the command:
+When the persistent logs are enabled, the :ref:`debops.journald` role
+configures Forward Secure Sealing functionality of the Journal by default. The
+verification keys are saved in the :file:`secret/journald/fss/` directories on
+the Ansible Controller. The role can be used in an "alternative" mode where
+Ansible checks the log integrity by running the command:
 
 .. code-block:: console
 
