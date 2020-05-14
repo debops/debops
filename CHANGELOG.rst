@@ -50,6 +50,10 @@ New DebOps roles
 
   .. __: https://influxdata.com/
 
+- The :ref:`debops.influxdb_server` and :ref:`debops.influxdb` roles can be
+  used to install the InfluxDB time series database service and manage its
+  databases and users, respectively.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 

@@ -1,0 +1,125 @@
+---
+# Copyright (C) 2020 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+# Copyright (C) 2020 Innobyte Bechea Leonardo <https://www.innobyte.com/>
+# Copyright (C) 2020 Innobyte Alin Alexandru <https://www.innobyte.com/>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- import_role:
+    name: 'ansible_plugins'
+
+- import_role:
+    name: 'secret'
+
+- name: Restart database server on first install (influx bug)
+  service:
+    name: 'influxdb'
+    state: 'restarted'
+  when: not (ansible_local|d() and ansible_local.influxdb_server|d()
+             and ansible_local.influxdb_server.installed|d(false)|bool)
+
+- name: Wait for HTTP endpoint port to become open on the host on first install
+  wait_for:
+    port: '{{ influxdb_server__port }}'
+  when: not (ansible_local|d() and ansible_local.influxdb_server|d()
+             and ansible_local.influxdb_server.installed|d(false)|bool)
+
+- name: Create default admin user on first install
+  influxdb_user:
+    user_name: 'root'
+    user_password: '{{ influxdb_server__root_password }}'
+    state: 'present'
+    admin: 'yes'
+    proxies:
+      http:
+      https:
+  when: not (ansible_local|d() and ansible_local.influxdb_server|d()
+             and ansible_local.influxdb_server.installed|d(false)|bool)
+
+- name: Stop database server on first install
+  service:
+    name: 'influxdb'
+    state: 'stopped'
+  when: not (ansible_local|d() and ansible_local.influxdb_server|d()
+             and ansible_local.influxdb_server.installed|d(false)|bool)
+
+- name: Add InfluxDB server user to specified groups
+  user:
+    name: 'influxdb'
+    groups: '{{ influxdb_server__append_groups | join(",") | default(omit) }}'
+    append: True
+    createhome: False
+  when: influxdb_server__pki|bool
+
+- name: Ensure InfluxDB server directory exists
+  file:
+    path: '{{ influxdb_server__directory }}'
+    state: 'directory'
+    owner: 'influxdb'
+    group: 'influxdb'
+    mode: '0750'
+
+- name: Move InfluxDB data files to data directory
+  shell:
+    'mv {{ influxdb_server__default_directory }}/* {{ influxdb_server__directory }}'
+  when: (not (ansible_local|d() and ansible_local.influxdb_server|d()
+              and ansible_local.influxdb_server.installed|d(false)|bool) and
+         influxdb_server__directory != influxdb_server__default_directory)
+
+- name: Divert the original influxdb configuration file
+  dpkg_divert:
+    path: '/etc/influxdb/influxdb.conf'
+    state: 'present'
+    delete: True
+  tags: [ 'role::influxdb_server:config' ]
+
+- name: Configure InfluxDB server
+  template:
+    src: 'etc/influxdb/influxdb.conf.j2'
+    dest: '/etc/influxdb/influxdb.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  tags: [ 'role::influxdb_server:config' ]
+  notify: restart influxdb
+
+- name: Start database server on first install
+  service:
+    name: 'influxdb'
+    state: 'started'
+  when: not (ansible_local|d() and ansible_local.influxdb_server|d()
+             and ansible_local.influxdb_server.installed|d(false)|bool)
+
+- name: Configure autoinfluxdbbackup
+  include: 'autoinfluxdbbackup.yml'
+  when: influxdb_server__backup|bool
+  tags: [ 'role::influxdb_server:autoinfluxdbbackup' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save InfluxDB server local facts
+  template:
+    src: 'etc/ansible/facts.d/influxdb_server.fact.j2'
+    dest: '/etc/ansible/facts.d/influxdb_server.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: influxdb_server__register_local_facts
+
+- name: Save InfluxDB local facts
+  template:
+    src: 'etc/ansible/facts.d/influxdb.fact.j2'
+    dest: '/etc/ansible/facts.d/influxdb.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: influxdb__register_local_facts
+
+- name: Re-read local facts if they have been modified
+  action: setup
+  when: influxdb_server__register_local_facts is changed or
+        influxdb__register_local_facts is changed
