@@ -733,6 +733,24 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/influxdata/.*'
     JANE_LOG_PATTERN: '\[debops\.influxdata\]'
 
+'influxdb_server role':
+  <<: *test_role_1st_deps
+  variables:
+    JANE_TEST_FACT: 'influxdb_server.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/influxdb_server.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_influxdb_server'
+    JANE_DIFF_PATTERN: '.*/roles/influxdb_server/.*'
+    JANE_LOG_PATTERN: '\[debops\.influxdb_server\]'
+
+'influxdb role':
+  <<: *test_role_1st_deps
+  variables:
+    JANE_TEST_FACT: 'influxdb.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/influxdb.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_influxdb'
+    JANE_DIFF_PATTERN: '.*/roles/influxdb/.*'
+    JANE_LOG_PATTERN: '\[debops\.influxdb\]'
+
 'ipxe role':
   <<: *test_role_no_deps
   variables:

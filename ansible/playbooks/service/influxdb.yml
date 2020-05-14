@@ -1,0 +1,27 @@
+---
+# Copyright (C) 2020 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+# Copyright (C) 2020 Innobyte Bechea Leonardo <https://www.innobyte.com/>
+# Copyright (C) 2020 Innobyte Alin Alexandru <https://www.innobyte.com/>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Manage InfluxDB client
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_service_influxdb' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: python
+      tags: [ 'role::python', 'skip::python', 'role::influxdb' ]
+      python__dependent_packages3:
+        - '{{ influxdb__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ influxdb__python__dependent_packages2 }}'
+
+    - role: influxdb
+      tags: [ 'role::influxdb', 'skip::influxdb' ]

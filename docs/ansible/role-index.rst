@@ -122,6 +122,8 @@ Databases
 - :ref:`debops.redis_server`
 - :ref:`debops.redis_sentinel`
 - :ref:`debops.slapd`
+- :ref:`debops.influxdb`
+- :ref:`debops.influxdb_server`
 - ``debops.phpmyadmin``
 
 

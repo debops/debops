@@ -1,0 +1,47 @@
+---
+# Copyright (C) 2020 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+# Copyright (C) 2020 Innobyte Bechea Leonardo <https://www.innobyte.com/>
+# Copyright (C) 2020 Innobyte Alin Alexandru <https://www.innobyte.com/>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Manage InfluxDB server
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_service_influxdb_server' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::influxdata' ]
+      keyring__dependent_apt_keys:
+        - '{{ influxdata__keyring__dependent_apt_keys }}'
+
+    - role: etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ influxdb_server__etc_services__dependent_list }}'
+
+    - role: ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ influxdb_server__ferm__dependent_rules }}'
+
+    - role: python
+      tags: [ 'role::python', 'skip::python', 'role::influxdb_server' ]
+      python__dependent_packages3:
+        - '{{ influxdb_server__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ influxdb_server__python__dependent_packages2 }}'
+
+    - role: influxdata
+      tags: [ 'role::influxdata', 'skip::influxdata' ]
+      influxdata__dependent_packages:
+        - '{{ influxdb_server__influxdata__dependent_packages }}'
+
+    - role: influxdb_server
+      tags: [ 'role::influxdb_server', 'skip::influxdb_server' ]

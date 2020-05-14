@@ -1,0 +1,173 @@
+# Copyright (C) 2020 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+# Copyright (C) 2020 Innobyte Bechea Leonardo <https://www.innobyte.com/>
+# Copyright (C) 2020 Innobyte Alin Alexandru <https://www.innobyte.com/>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# {{ ansible_managed }}
+
+#
+# InfluxDB Backup Script
+# VER. 0.1
+
+# Note, this is a lobotomized port of AutoMySQLBackup
+# (http://sourceforge.net/projects/automysqlbackup/) for use with
+# InfluxDB.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#=====================================================================
+#=====================================================================
+# Set the following variables to your system needs
+# (Detailed instructions below variables)
+#=====================================================================
+
+# Database name to specify a specific database only e.g. myawesomeapp
+# Unnecessary if backup all databases
+# DBNAME=""
+
+# Host name (or IP address) of influxdb server e.g localhost
+DBHOST="{{ influxdb_server__rpc_bind }}"
+
+# Port that influxdb is listening on
+DBPORT="{{ influxdb_server__rpc_port }}"
+
+# Backup directory location e.g /backups
+BACKUPDIR="{{ influxdb_server__backup_directory|d('/var/lib/autoinfluxdbbackup') }}"
+
+# Mail setup
+# What would you like to be mailed to you?
+# - log   : send only log file
+# - files : send log file and sql files as attachments (see docs)
+# - stdout : will simply output the log to the screen if run manually.
+# - quiet : Only send logs if an error occurs to the MAILADDR.
+MAILCONTENT="quiet"
+
+# Set the maximum allowed email size in k. (4000 = approx 5MB email [see docs])
+export MAXATTSIZE="4000"
+
+# Email Address to send mail to? (user@domain.com)
+MAILADDR="{{ influxdb_server__backup_mailaddr }}"
+
+# ============================================================================
+# === SCHEDULING AND RETENTION OPTIONS ( Read the doc's below for details )===
+#=============================================================================
+
+# Do you want to do hourly backups? How long do you want to keep them?
+DOHOURLY="no"
+HOURLYRETENTION=24
+
+# Do you want to do daily backups? How long do you want to keep them?
+DODAILY="yes"
+DAILYRETENTION=0
+
+# Which day do you want weekly backups? (1 to 7 where 1 is Monday)
+DOWEEKLY="yes"
+WEEKLYDAY={{ influxdb_server__backup_doweekly }}
+WEEKLYRETENTION=4
+
+# Do you want monthly backups? How long do you want to keep them?
+DOMONTHLY="yes"
+MONTHLYRETENTION=4
+
+# ============================================================
+# === ADVANCED OPTIONS ( Read the doc's below for details )===
+#=============================================================
+
+# Choose Compression type. (gzip or bzip2)
+COMP="gzip"
+
+# Choose if the uncompressed folder should be deleted after compression has completed
+CLEANUP="yes"
+
+# Additionally keep a copy of the most recent backup in a seperate directory.
+LATEST="{{ influxdb_server__backup_latest }}"
+
+# Make Hardlink not a copy
+LATESTLINK="yes"
+
+# Maximum files of a single backup used by split - leave empty if no split required
+# MAXFILESIZE=""
+
+# Command to run before backups (uncomment to use)
+# PREBACKUP=""
+
+# Command run after backups (uncomment to use)
+# POSTBACKUP=""
+
+#=====================================================================
+# Options documentation
+#=====================================================================
+# Set the DBHOST option to the server you wish to backup, leave the
+# default to backup "this server".(to backup multiple servers make
+# copies of this file and set the options for that server)
+#
+# You can change the backup storage location from /backups to anything
+# you like by using the BACKUPDIR setting..
+#
+# The MAILCONTENT and MAILADDR options and pretty self explanatory, use
+# these to have the backup log mailed to you at any email address or multiple
+# email addresses in a space separated list.
+#
+# (If you set mail content to "log" you will require access to the "mail" program
+# on your server. If you set this to "files" you will have to have mutt installed
+# on your server. If you set it to "stdout" it will log to the screen if run from
+# the console or to the cron job owner if run through cron. If you set it to "quiet"
+# logs will only be mailed if there are errors reported. )
+#
+#
+# Finally copy autoinfluxdbbackup to anywhere on your server and make sure
+# to set executable permission. You can also copy the script to
+# /etc/cron.daily to have it execute automatically every night or simply
+# place a symlink in /etc/cron.daily to the file if you wish to keep it
+# somewhere else.
+#
+# NOTE: On Debian copy the file with no extension for it to be run
+# by cron e.g just name the file "autoinfluxdbbackup"
+#
+# That's it..
+#
+#
+# === Advanced options ===
+#
+# To set the day of the week that you would like the weekly backup to happen
+# set the WEEKLYDAY setting, this can be a value from 1 to 7 where 1 is Monday,
+# The default is 6 which means that weekly backups are done on a Saturday.
+#
+# Use PREBACKUP and POSTBACKUP to specify Pre and Post backup commands
+# or scripts to perform tasks either before or after the backup process.
+#
+#
+#=====================================================================
+# Backup Rotation..
+#=====================================================================
+#
+# Hourly backups are executed if DOHOURLY is set to "yes".
+# The number of hours backup copies to keep for each day (i.e. 'Monday', 'Tuesday', etc.) is set with DHOURLYRETENTION.
+# DHOURLYRETENTION=0 rotates hourly backups every day (i.e. only the most recent hourly copy is kept). -1 disables rotation.
+#
+# Daily backups are executed if DODAILY is set to "yes".
+# The number of daily backup copies to keep for each day (i.e. 'Monday', 'Tuesday', etc.) is set with DAILYRETENTION.
+# DAILYRETENTION=0 rotates daily backups every week (i.e. only the most recent daily copy is kept). -1 disables rotation.
+#
+# Weekly backups are executed if DOWEEKLY is set to "yes".
+# WEEKLYDAY [1-7] sets which day a weekly backup occurs when cron.daily scripts are run.
+# Rotate weekly copies after the number of weeks set by WEEKLYRETENTION.
+# WEEKLYRETENTION=0 rotates weekly backups every week. -1 disables rotation.
+#
+# Monthly backups are executed if DOMONTHLY is set to "yes".
+# Monthly backups occur on the first day of each month when cron.daily scripts are run.
+# Rotate monthly backups after the number of months set by MONTHLYRETENTION.
+# MONTHLYRETENTION=0 rotates monthly backups upon each execution. -1 disables rotation.

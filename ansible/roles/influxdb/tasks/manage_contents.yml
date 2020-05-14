@@ -1,0 +1,104 @@
+---
+# Copyright (C) 2020 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+# Copyright (C) 2020 Innobyte Bechea Leonardo <https://www.innobyte.com/>
+# Copyright (C) 2020 Innobyte Alin Alexandru <https://www.innobyte.com/>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Drop databases if requested
+  influxdb_database:
+    database_name: '{{ item.database | d(item.name) }}'
+    state: 'absent'
+    hostname: '{{ influxdb__server }}'
+    port: '{{ influxdb__port }}'
+    ssl: '{{ influxdb__pki }}'
+    password: '{{ lookup("password",
+                  secret + "/influxdb/" + influxdb__server +
+                  "/credentials/root/password " +
+                  "length=" + influxdb__password_length) }}'
+    proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'
+    validate_certs: '{{ item.validate_certs | d(influxdb__validate_certs | d(True)) }}'
+  with_flattened: '{{ influxdb__databases + influxdb__dependent_databases|d([]) }}'
+  delegate_to: '{{ influxdb__delegate_to }}'
+  when: ((item.database|d(False) or item.name|d(False)) and
+         (item.state is defined and item.state == 'absent'))
+
+- name: Create databases
+  influxdb_database:
+    database_name: '{{ item.database | d(item.name) }}'
+    state: 'present'
+    hostname: '{{ influxdb__server }}'
+    port: '{{ influxdb__port }}'
+    ssl: '{{ influxdb__pki }}'
+    password: '{{ lookup("password",
+                  secret + "/influxdb/" + influxdb__server +
+                  "/credentials/root/password " +
+                  "length=" + influxdb__password_length) }}'
+    proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'
+    validate_certs: '{{ item.validate_certs | d(influxdb__validate_certs | d(True)) }}'
+  with_flattened: '{{ influxdb__databases + influxdb__dependent_databases|d([]) }}'
+  delegate_to: '{{ influxdb__delegate_to }}'
+  when: ((item.database|d(False) or item.name|d(False)) and
+         (item.state is undefined or item.state != 'absent'))
+
+- name: Create retention policies
+  influxdb_retention_policy:
+    policy_name: '{{ item.policy | d(item.name) }}'
+    database_name: '{{ item.database }}'
+    duration: '{{ item.duration }}'
+    replication: '{{ item.replication }}'
+    default: '{{ item.default | d(False) }}'
+    hostname: '{{ influxdb__server }}'
+    port: '{{ influxdb__port }}'
+    ssl: '{{ influxdb__pki }}'
+    password: '{{ lookup("password",
+                  secret + "/influxdb/" + influxdb__server +
+                  "/credentials/root/password " +
+                  "length=" + influxdb__password_length) }}'
+    proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'
+    validate_certs: '{{ item.validate_certs | d(influxdb__validate_certs | d(True)) }}'
+  with_flattened: '{{ influxdb__retention_policies + influxdb__dependent_retention_policies|d([]) }}'
+  delegate_to: '{{ influxdb__delegate_to }}'
+  when: item.policy|d(False) or item.name|d(False)
+
+- name: Drop user accounts if requested
+  influxdb_user:
+    user_name: '{{ item.user | d(item.name) }}'
+    state: 'absent'
+    hostname: '{{ influxdb__server }}'
+    port: '{{ influxdb__port }}'
+    ssl: '{{ influxdb__pki }}'
+    password: '{{ lookup("password",
+                  secret + "/influxdb/" + influxdb__server +
+                  "/credentials/root/password " +
+                  "length=" + influxdb__password_length) }}'
+    proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'
+    validate_certs: '{{ item.validate_certs | d(influxdb__validate_certs | d(True)) }}'
+  with_flattened: '{{ influxdb__users + influxdb__dependent_users|d([]) }}'
+  delegate_to: '{{ influxdb__delegate_to }}'
+  when: ((item.user|d(False) or item.name|d(False)) and
+         (item.state is defined and item.state == "absent"))
+
+- name: Create user accounts
+  influxdb_user:
+    user_name: '{{ item.user | d(item.name) }}'
+    user_password: '{{ item.password | d(lookup("password",
+                       secret + "/influxdb/" + influxdb__server +
+                       "/credentials/" + item.user | d(item.name) + "/password " +
+                       "length=" + influxdb__password_length)) }}'
+    grants: '{{ item.grants | d(omit) }}'
+    admin: '{{ item.admin | d(False) }}'
+    state: 'present'
+    hostname: '{{ influxdb__server }}'
+    port: '{{ influxdb__port }}'
+    ssl: '{{ influxdb__pki }}'
+    password: '{{ lookup("password",
+                  secret + "/influxdb/" + influxdb__server +
+                  "/credentials/root/password " +
+                  "length=" + influxdb__password_length) }}'
+    proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'
+    validate_certs: '{{ item.validate_certs | d(influxdb__validate_certs | d(True)) }}'
+  with_flattened: '{{ influxdb__users + influxdb__dependent_users }}'
+  delegate_to: '{{ influxdb__delegate_to }}'
+  when: ((item.user|d(False) or item.name|d(False)) and
+         (item.state is undefined or item.state != "absent"))
