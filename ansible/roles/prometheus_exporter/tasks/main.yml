@@ -99,6 +99,7 @@
   with_items:
     - '{{ prometheus_exporter__combined_exporters }}'
     - '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'
+    - '{{ prometheus_exporter__apm_exporters }}'
   tags: [ 'role::prometheus_exporter:config' ]
   notify: restart ghostunnel prometheus exporters
   when: prometheus_exporter__pki|bool
@@ -153,6 +154,7 @@
   with_items:
     - '{{ prometheus_exporter__combined_exporters }}'
     - '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'
+    - '{{ prometheus_exporter__apm_exporters }}'
   notify: restart ghostunnel prometheus exporters
   when: prometheus_exporter__pki|bool
 
@@ -180,6 +182,7 @@
   with_items:
     - '{{ prometheus_exporter__combined_exporters }}'
     - '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'
+    - '{{ prometheus_exporter__apm_exporters }}'
   when: ansible_service_mgr == 'systemd' and
         prometheus_exporter__register_ghostunnel_systemd is changed
 
