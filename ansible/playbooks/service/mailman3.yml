@@ -1,0 +1,59 @@
+---
+# Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Manage Mailman 3 Suite
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_mailman3' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  pre_tasks:
+
+    - import_role:
+        name: 'postfix'
+        tasks_from: 'main_env'
+      vars:
+        postfix__dependent_maincf:
+          - role: 'mailman3'
+            config: '{{ mailman3__postfix__dependent_maincf }}'
+      tags: [ 'role::postfix', 'skip::postfix' ]
+
+  roles:
+
+    - role: etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ mailman3__etc_services__dependent_list }}'
+
+    - role: ldap
+      tags: [ 'role::ldap', 'skip::ldap' ]
+      ldap__dependent_tasks:
+        - '{{ mailman3__ldap__dependent_tasks }}'
+      when: mailman3__ldap
+
+    - role: python
+      tags: [ 'role::python', 'skip::python' ]
+      python__dependent_packages2:
+        - '{{ mailman3__python__dependent_packages2 }}'
+      python__dependent_packages3:
+        - '{{ mailman3__python__dependent_packages3 }}'
+
+    - role: nginx
+      tags: [ 'role::nginx', 'skip::nginx' ]
+      nginx__dependent_servers:
+        - '{{ mailman3__nginx__dependent_servers }}'
+
+    - role: mailman3
+      tags: [ 'role::mailman3', 'skip::mailman3' ]
+
+    - role: postfix
+      tags: [ 'role::postfix', 'skip::postfix' ]
+      postfix__dependent_maincf:
+        - role: 'mailman3'
+          config: '{{ mailman3__postfix__dependent_maincf }}'

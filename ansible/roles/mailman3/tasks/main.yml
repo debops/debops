@@ -1,0 +1,182 @@
+---
+# Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- import_role:
+    name: 'secret'
+
+- name: Configure custom mailman3.service
+  template:
+    src: 'etc/systemd/system/mailman3.service.j2'
+    dest: '/etc/systemd/system/mailman3.service'
+  when: mailman3__database_type != "sqlite3"
+  register: mailman3__register_service_configure
+
+- name: Remove custom mailman3.service
+  file:
+    path: '/etc/systemd/system/mailman3.service'
+    state: 'absent'
+  when: mailman3__database_type == "sqlite3"
+  register: mailman3__register_service_remove
+
+- name: Reload systemd units
+  systemd:
+    daemon_reload: True
+  when: mailman3__register_service_configure.changed or mailman3__register_service_remove.changed
+
+- name: Configure mailman3 with debconf
+  debconf:
+    name: 'mailman3'
+    question: 'mailman3/{{ item.question }}'
+    vtype: '{{ item.vtype }}'
+    value: '{{ item.value }}'
+  loop:
+
+    - question: 'dbconfig-install'
+      vtype: 'boolean'
+      value: 'true'
+
+    - question: 'dbconfig-upgrade'
+      vtype: 'boolean'
+      value: 'true'
+
+    - question: 'database-type'
+      vtype: 'select'
+      value: '{{ mailman3__database_map[mailman3__database_type] }}'
+
+    - question: 'db/dbname'
+      vtype: 'string'
+      value: '{{ mailman3__database_core_name }}'
+
+    - question: 'db/app-user'
+      vtype: 'string'
+      value: '{{ mailman3__database_core_user }}'
+
+    - question: 'mysql/app-pass'
+      vtype: 'password'
+      value: '{{ mailman3__database_core_password }}'
+
+    - question: 'pgsql/app-pass'
+      vtype: 'password'
+      value: '{{ mailman3__database_core_password }}'
+
+    - question: 'app-password-confirm'
+      vtype: 'password'
+      value: '{{ mailman3__database_core_password }}'
+  changed_when: False  # Otherwise Ansible will wrongly show that database password has changed
+  no_log: '{{ secret__no_log|d(True) }}'
+
+- name: Configure mailman3-web with debconf
+  debconf:
+    name: 'mailman3-web'
+    question: 'mailman3-web/{{ item.question }}'
+    vtype: '{{ item.vtype }}'
+    value: '{{ item.value }}'
+  loop:
+
+    - question: 'dbconfig-install'
+      vtype: 'boolean'
+      value: 'true'
+
+    - question: 'dbconfig-upgrade'
+      vtype: 'boolean'
+      value: 'true'
+
+    - question: 'database-type'
+      vtype: 'select'
+      value: '{{ mailman3__database_map[mailman3__database_type] }}'
+
+    - question: 'db/dbname'
+      vtype: 'string'
+      value: '{{ mailman3__database_web_name }}'
+
+    - question: 'db/app-user'
+      vtype: 'string'
+      value: '{{ mailman3__database_web_user }}'
+
+    - question: 'mysql/app-pass'
+      vtype: 'password'
+      value: '{{ mailman3__database_web_password }}'
+
+    - question: 'pgsql/app-pass'
+      vtype: 'password'
+      value: '{{ mailman3__database_web_password }}'
+
+    - question: 'app-password-confirm'
+      vtype: 'password'
+      value: '{{ mailman3__database_web_password }}'
+
+    - question: 'superuser-name'
+      vtype: 'string'
+      value: '{{ mailman3__superuser_name }}'
+
+    - question: 'superuser-mail'
+      vtype: 'string'
+      value: '{{ mailman3__superuser_mail }}'
+
+    - question: 'superuser-password'
+      vtype: 'password'
+      value: '{{ mailman3__superuser_password }}'
+  changed_when: False  # Otherwise Ansible will wrongly show that database password has changed
+  no_log: '{{ secret__no_log|d(True) }}'
+
+- name: Install APT packages
+  package:
+    name: '{{ (mailman3__base_packages + mailman3__packages)|flatten }}'
+    state: 'present'
+  register: mailman3__register_packages
+  until: mailman3__register_packages is succeeded
+
+- name: Divert the original mailman3 and mailman3-web configuration files
+  command: |
+    dpkg-divert --quiet --local \
+      --divert /etc/mailman3/{{ item }}.dpkg-divert \
+      --rename /etc/mailman3/{{ item }}
+  loop: [ 'mailman.cfg', 'mailman-hyperkitty.cfg', 'mailman-web.py' ]
+  args:
+    creates: '/etc/mailman3/mailman-web.py.dpkg-divert'
+
+- name: Configure mailman3
+  template:
+    src: 'etc/mailman3/mailman.cfg.j2'
+    dest: '/etc/mailman3/mailman.cfg'
+    owner: 'root'
+    group: 'list'
+    mode: '0640'
+  notify: [ 'Reload mailman3' ]
+
+- name: Configure mailman3-web
+  template:
+    src: 'etc/mailman3/{{ item.file }}.j2'
+    dest: '/etc/mailman3/{{ item.file }}'
+    owner: 'root'
+    group: '{{ item.group }}'
+    mode: '0640'
+  loop:
+    - file: 'mailman-hyperkitty.cfg'
+      group: 'list'
+    - file: 'mailman-web.py'
+      group: 'www-data'
+  notify: [ 'Restart mailman3-web' ]
+
+- name: Ensure Postfix lookup tables exist
+  command: 'mailman aliases'
+  args:
+    creates: '/var/lib/mailman3/data/postfix_domains'
+  become: True
+  become_user: 'list'
+
+- name: Ensure that Ansible local fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save local facts
+  template:
+    src: 'etc/ansible/facts.d/mailman3.fact.j2'
+    dest: '/etc/ansible/facts.d/mailman3.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'

@@ -32,6 +32,7 @@ etc.
 - :ref:`debops.kibana`
 - :ref:`debops.librenms`
 - :ref:`debops.mailman`
+- :ref:`debops.mailman3`
 - :ref:`debops.netbox`
 - :ref:`debops.owncloud`
 - :ref:`debops.etesync`
@@ -215,6 +216,7 @@ Mail services
 - :ref:`debops.dovecot`
 - :ref:`debops.etc_aliases`
 - :ref:`debops.mailman`
+- :ref:`debops.mailman3`
 - :ref:`debops.nullmailer`
 - :ref:`debops.opendkim`
 - :ref:`debops.postconf`

@@ -1,0 +1,501 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+# .. Copyright (C) 2020 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-or-later
+
+# .. _mailman3__ref_defaults:
+
+# debops.mailman3 default variables [[[
+# ====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: mailman3__base_packages [[[
+#
+# List of base APT packages to install. The dbconfig package will be used to set
+# up the database.
+mailman3__base_packages:
+
+  - 'mailman3-full'
+  - 'dbconfig-{{ mailman3__database_map[mailman3__database_type] }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__packages [[[
+#
+# List of additional packages to install.
+mailman3__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Domain names [[[
+# ----------------
+
+# .. envvar:: mailman3__fqdns [[[
+#
+# List of Fully Qualified Domain Names used for the Mailman installation.
+# Postfix will be configured to accept mail for these domains, and NGINX will
+# show the Mailman 3 web interface (Postorius and Hyperkitty) to visitors,
+# optionally after redirecting them to the first domain in the list.
+mailman3__fqdns: '{{ [ "lists." + ansible_domain ] }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__redirect [[[
+#
+# Whether to redirect visitors to the first domain in the ``mailman3__fqdns``
+# list.
+mailman3__redirect: True
+                                                                   # ]]]
+                                                                   # ]]]
+# Superuser [[[
+# -------------
+
+# .. envvar:: mailman3__superuser_name [[[
+#
+# The username of the Mailman 3 web interface superuser.
+mailman3__superuser_name: 'admin'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__superuser_mail [[[
+#
+# The email address of the Mailman 3 web interface superuser.
+mailman3__superuser_mail: 'postmaster@{{ mailman3__emailname }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__superuser_password [[[
+#
+# The password of the Mailman 3 web interface superuser.
+mailman3__superuser_password: '{{ lookup("password", secret + "/credentials/"
+                                                     + inventory_hostname + "/"
+                                                     + "mailman3/superuser/"
+                                                     + "password chars=ascii_letters,digits length=14") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Application configuration [[[
+# -----------------------------
+
+# .. envvar:: mailman3__archiver_from [[[
+#
+# List of IP addresses that are allowed to access the Hyperkitty list archiver
+# API. This may not be needed anymore in future versions of Mailman:
+# https://gitlab.com/mailman/hyperkitty/-/merge_requests/86
+mailman3__archiver_from: '{{ [ "127.0.0.1", "::1" ]
+                             + ansible_all_ipv4_addresses|d([])
+                             + (ansible_all_ipv6_addresses|d([])
+                                | difference(ansible_all_ipv6_addresses|d([])
+                                             | ipaddr("link-local"))) }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__emailname [[[
+#
+# If the Mailman3 web interface sends emails, this domain will be used for the
+# sender addresses. In particular, it will be 'postorius@<domain>' for internal
+# authentication and 'root@<domain>' for error messages.
+mailman3__emailname: '{{ ansible_fqdn }}'
+                                                                   # ]]]
+# API credentials [[[
+# -------------------
+
+# .. envvar:: mailman3__rest_api_user [[[
+#
+# Username used to access the Mailman 3 REST API.
+mailman3__rest_api_user: 'restadmin'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__rest_api_pass [[[
+#
+# Password used to access the Mailman 3 REST API.
+mailman3__rest_api_pass: '{{ lookup("password", secret + "/credentials/"
+                                                + inventory_hostname + "/"
+                                                + "mailman3/rest_api/"
+                                                + "password chars=ascii_letters,digits length=22") }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__hyperkitty_api_key [[[
+#
+# API key used to access the HyperKitty archiver.
+mailman3__hyperkitty_api_key: '{{ lookup("password", secret + "/credentials/"
+                                                + inventory_hostname + "/"
+                                                + "mailman3/hyperkitty/"
+                                                + "api_key chars=ascii_letters,digits length=22") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Django defaults [[[
+# -------------------
+
+# .. envvar:: mailman3__django_secret_key [[[
+#
+# Secret key used by Django for cryptographic signing. Should be set to a
+# unique, unpredictable value.
+mailman3__django_secret_key: '{{ lookup("password", secret + "/credentials/"
+                                                + inventory_hostname + "/"
+                                                + "mailman3/django/"
+                                                + "secret_key chars=ascii_letters,digits,!@#$%^&*(-_=+) length=50") }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__django_time_zone [[[
+#
+# Time zone configuration for Django.
+# See https://docs.djangoproject.com/en/1.11/topics/i18n/timezones/
+mailman3__django_time_zone: '{{ ansible_local.timezone
+                                if (ansible_local|d() and
+                                    ansible_local.timezone|d())
+                                else "UTC" }}'
+                                                                   # ]]]
+# Database configuration [[[
+# --------------------------
+
+# .. envvar:: mailman3__database_type [[[
+#
+# The database type to use for Mailman 3 Core and Web. Can be one of 'mariadb',
+# 'postgresql' or 'sqlite3'.
+mailman3__database_type: '{{ "postgresql"
+                             if (ansible_local|d() and ansible_local.postgresql|d())
+                             else "mariadb"
+                                  if (ansible_local|d() and ansible_local.mariadb|d())
+                                  else "sqlite3" }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__database_map [[[
+#
+# Mapping from DebOps-recognized database names to names used by dbconfig.
+mailman3__database_map:
+  'mariadb': 'mysql'
+  'postgresql': 'pgsql'
+  'sqlite3': 'sqlite3'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__database_port [[[
+#
+# The database port. Leave empty for sqlite3.
+mailman3__database_port: '{{ ansible_local[mailman3__database_type].port
+                            if (ansible_local|d() and
+                                ansible_local[mailman3__database_type]|d() and
+                                ansible_local[mailman3__database_type].port|d())
+                            else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__database_core_name [[[
+#
+# The database name (or SQLite filename) for Mailman Core.
+mailman3__database_core_name: '{{ "mailman.db"
+                                  if mailman3__database_type == "sqlite3"
+                                  else "mailman3" }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__database_core_user [[[
+#
+# The database user for Mailman Core. Not used with SQLite.
+mailman3__database_core_user: 'mailman3'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__database_core_password [[[
+#
+# The database password for Mailman Core. Not used with SQLite.
+mailman3__database_core_password: '{{ (lookup("password", secret + "/"
+                                                          + mailman3__database_type + "/"
+                                                          + inventory_hostname + "/"
+                                                          + ((mailman3__database_port + "/")
+                                                             if mailman3__database_type == "postgresql"
+                                                             else "")
+                                                          + "credentials/"
+                                                          + mailman3__database_core_user + "/"
+                                                          + "password chars=ascii_letters,digits length=22"))
+                                      if mailman3__database_type != "sqlite3"
+                                      else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__database_web_name [[[
+#
+# The database name (or SQLite filename) for Mailman's web frontend.
+mailman3__database_web_name: '{{ "mailman3web.db"
+                                 if mailman3__database_type == "sqlite3"
+                                 else "mailman3web" }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__database_web_user [[[
+#
+# The database user for Mailman's web frontend. Not used with SQLite.
+mailman3__database_web_user: 'mailman3web'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__database_web_password [[[
+#
+# The database password for Mailman's web frontend. Not used with SQLite.
+mailman3__database_web_password: '{{ (lookup("password", secret + "/"
+                                                         + mailman3__database_type + "/"
+                                                         + inventory_hostname + "/"
+                                                         + ((mailman3__database_port + "/")
+                                                            if mailman3__database_type == "postgresql"
+                                                            else "")
+                                                         + "credentials/"
+                                                         + mailman3__database_web_user + "/"
+                                                         + "password chars=ascii_letters,digits length=22"))
+                                     if mailman3__database_type != "sqlite3"
+                                     else "" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# LDAP configuration [[[
+# ----------------------
+
+# .. envvar:: mailman3__ldap [[[
+#
+# Enable or disable LDAP authentication in the web interface.
+mailman3__ldap: '{{ ansible_local.ldap.enabled
+                    if (ansible_local|d() and ansible_local.ldap|d() and
+                        ansible_local.ldap.enabled|d())
+                    else False }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__ldap_uri [[[
+#
+# List of LDAP server URIs.
+mailman3__ldap_uri: '{{ ansible_local.ldap.uri
+                        if (ansible_local|d() and
+                            ansible_local.ldap|d() and
+                            ansible_local.ldap.uri|d())
+                        else [ "ldap://ldap." + ansible_domain ] }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__ldap_device_dn [[[
+#
+# The Distinguished Name of the device LDAP object, defined as a YAML list. It
+# will be used as a base for the Mailman 3 service account object. The role will
+# not create the account object automatically if this list is empty.
+mailman3__ldap_device_dn: '{{ ansible_local.ldap.device_dn
+                              if (ansible_local|d() and
+                                  ansible_local.ldap|d() and
+                                  ansible_local.ldap.device_dn|d())
+                              else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__ldap_self_rdn [[[
+#
+# The Relative Distinguished Name of the service account object that Mailman 3
+# uses to access the LDAP directory.
+mailman3__ldap_self_rdn: 'uid=mailman'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__ldap_self_object_classes [[[
+#
+# List of object classes that will be used to create the LDAP service account.
+mailman3__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
+
+                                                                   # ]]]
+# .. envvar:: mailman3__ldap_self_attributes [[[
+#
+# YAML dictionary that defines the attributes of the LDAP service account.
+mailman3__ldap_self_attributes:
+  uid: '{{ mailman3__ldap_self_rdn.split("=")[1] }}'
+  userPassword: '{{ mailman3__ldap_bind_password }}'
+  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  description: 'Account used by the "mailman" service to access the LDAP directory'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__ldap_starttls [[[
+#
+# Enable or disable StartTLS for encrypted connections to the LDAP server.
+mailman3__ldap_starttls: True
+
+                                                                   # ]]]
+# .. envvar:: mailman3__ldap_bind_dn [[[
+#
+# The Distinguished Name of the service account object that Mailman 3 uses to
+# access the LDAP directory.
+mailman3__ldap_bind_dn: '{{ ([ mailman3__ldap_self_rdn ]
+                             + mailman3__ldap_device_dn) | join(",") }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__ldap_bind_password [[[
+#
+# The password used by Mailman 3 to access the LDAP directory.
+mailman3__ldap_bind_password: '{{ lookup("password", secret + "/ldap/credentials/"
+                                                     + mailman3__ldap_bind_dn | to_uuid
+                                                     + ".password chars=ascii_letters,digits length=22") }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__ldap_base_dn [[[
+#
+# The base Distinguished Name of the LDAP directory, defined as a YAML list.
+mailman3__ldap_base_dn: '{{ ansible_local.ldap.basedn
+                            if (ansible_local|d() and
+                                ansible_local.ldap|d() and
+                                ansible_local.ldap.basedn|d())
+                            else "dc=" + ansible_domain.split(".")
+                                         | join(",dc=") }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__ldap_people_rdn [[[
+#
+# The Relative Distinguished Name of the LDAP subtree that contains personal
+# entries.
+mailman3__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn
+                            if (ansible_local|d() and
+                                ansible_local.ldap|d() and
+                                ansible_local.ldap.people_rdn|d())
+                            else "ou=People" }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__ldap_groups_rdn [[[
+#
+# The Relative Distinguished Name of the LDAP subtree that contains group
+# entries.
+mailman3__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn
+                               if (ansible_local|d() and
+                                   ansible_local.ldap|d() and
+                                   ansible_local.ldap.groups_rdn|d())
+                               else "ou=Groups" }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__ldap_people_dn [[[
+#
+# The Distinguished Name of the LDAP subtree that contains personal entries.
+mailman3__ldap_people_dn: '{{ mailman3__ldap_people_rdn + ","
+                              + mailman3__ldap_base_dn }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__ldap_groups_dn [[[
+#
+# The Distinguished Name of the LDAP subtree that contains group entries.
+mailman3__ldap_groups_dn: '{{ mailman3__ldap_groups_rdn + ","
+                              + mailman3__ldap_base_dn }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__ldap_people_filter [[[
+#
+# The LDAP filter to query personal entries with.
+mailman3__ldap_people_filter: '(&
+                                 (objectClass=inetOrgPerson)
+                                 (uid=%(user)s)
+                                 (|
+                                   (authorizedService=all)
+                                   (authorizedService=mailman)
+                                 )
+                               )'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__ldap_groups_filter [[[
+#
+# The LDAP filter to query group entries with.
+mailman3__ldap_groups_filter: '(objectClass=groupOfNames)'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__ldap_superusers_group [[[
+#
+# The name of the LDAP group that contains the superusers. Members of this group
+# are given full administrative privileges in the Mailman 3 web interface.
+mailman3__ldap_superusers_group: 'UNIX Administrators'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: mailman3__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` role.
+mailman3__etc_services__dependent_list:
+
+  - name: 'mailman-api'
+    port: '8001'
+    protocols: [ 'tcp' ]
+    comment: 'Added by debops.mailman3 Ansible role.'
+
+  - name: 'mailman-lmtp'
+    port: '8024'
+    protocols: [ 'tcp' ]
+    comment: 'Added by debops.mailman3 Ansible role.'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__ldap_dependent_tasks [[[
+#
+# Configuration for the :ref:`debops.ldap` role.
+mailman3__ldap__dependent_tasks:
+
+  - name: '{{ "Create Mailman 3 account for "
+              + mailman3__ldap_device_dn | join(",") }}'
+    dn: '{{ mailman3__ldap_bind_dn }}'
+    objectClass: '{{ mailman3__ldap_self_object_classes }}'
+    attributes: '{{ mailman3__ldap_self_attributes }}'
+    no_log: '{{ secret__no_log|d(True) }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__nginx__servers [[[
+#
+# Configuration for the `debops.nginx` Ansible role.
+mailman3__nginx__dependent_servers:
+
+  - name: '{{ mailman3__fqdns }}'
+    redirect_from: '{{ mailman3__redirect }}'
+    by_role: 'debops.mailman3'
+    filename: 'debops.mailman3'
+    webroot_create: False
+    location:
+      '/': |
+        uwsgi_pass unix:/run/mailman3-web/uwsgi.sock;
+        include /etc/nginx/uwsgi_params;
+
+      '/mailman3/static': |
+        alias /var/lib/mailman3/web/static;
+
+      '/mailman3/static/favicon.ico': |
+        alias /var/lib/mailman3/web/static/postorius/img/favicon.ico;
+
+# ]]]
+# .. envvar:: mailman3__postfix__dependent_maincf [[[
+#
+# Configuration of Postfix ``main.cf`` in :ref:`debops.postfix` role.
+mailman3__postfix__dependent_maincf:
+
+  - name: 'owner_request_special'
+    value: False
+    state: 'present'
+
+  - name: 'transport_maps'
+    value: [ 'hash:/var/lib/mailman3/data/postfix_lmtp' ]
+    state: 'present'
+
+  - name: 'local_recipient_maps'
+    value:
+      - 'proxy:unix:passwd.byname'
+      - '$alias_maps'
+      - 'hash:/var/lib/mailman3/data/postfix_lmtp'
+    state: 'present'
+
+  - name: 'relay_domains'
+    value: [ 'hash:/var/lib/mailman3/data/postfix_domains' ]
+    state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` role.
+mailman3__python__dependent_packages2: '{{ ([ "python-django-auth-ldap" ]
+                                            if mailman3__ldap else [])
+                                           + ([ "python-pymysql" ]
+                                              if mailman3__database_type == "mariadb"
+                                              else [])
+                                           + ([ "python-psycopg2" ]
+                                              if mailman3__database_type == "postgresql"
+                                              else []) }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman3__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` role.
+mailman3__python__dependent_packages3: '{{ ([ "python3-django-auth-ldap" ]
+                                            if mailman3__ldap else [])
+                                           + ([ "python3-pymysql" ]
+                                              if mailman3__database_type == "mariadb"
+                                              else [])
+                                           + ([ "python3-psycopg2" ]
+                                              if mailman3__database_type == "postgresql"
+                                              else []) }}'
+                                                                   # ]]]
+                                                                   # ]]]

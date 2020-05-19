@@ -54,6 +54,11 @@ New DebOps roles
   used to install the InfluxDB time series database service and manage its
   databases and users, respectively.
 
+- The :ref:`debops.mailman3` role manages Mailman Suite installations, which
+  consist of the Mailman Core backend, Postorius web frontend and Hyperkitty
+  list archiver. The role manages the database with debconf, integrates with
+  NGINX and Postfix and configures LDAP authentication for superusers.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 

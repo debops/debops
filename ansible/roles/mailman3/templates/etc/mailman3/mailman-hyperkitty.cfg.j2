@@ -1,0 +1,27 @@
+{# Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+ # Copyright (C) 2020 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+
+# {{ ansible_managed }}
+
+# This is the mailman extension configuration file to enable HyperKitty as an
+# archiver. Remember to add the following lines in the mailman.cfg file:
+#
+# [archiver.hyperkitty]
+# class: mailman_hyperkitty.Archiver
+# enable: yes
+# configuration: /etc/mailman3/mailman-hyperkitty.cfg
+#
+
+[general]
+
+# This is your HyperKitty installation, preferably on the localhost. This
+# address will be used by Mailman to forward incoming emails to HyperKitty
+# for archiving. It does not need to be publicly available, in fact it's
+# better if it is not.
+base_url: https://{{ mailman3__fqdns[0] }}/hyperkitty/
+
+# Shared API key, must be the identical to the value in HyperKitty's
+# settings.
+api_key: {{ mailman3__hyperkitty_api_key }}

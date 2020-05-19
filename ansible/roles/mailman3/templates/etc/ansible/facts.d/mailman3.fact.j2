@@ -1,0 +1,20 @@
+#!{{ ansible_python['executable'] }}
+
+# Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+from json import dumps
+import apt
+
+cache = apt.Cache()
+output = {}
+
+try:
+    output['installed'] = cache['mailman3'].is_installed
+except KeyError:
+    output['installed'] = False
+
+print(dumps(output, sort_keys=True, indent=4))

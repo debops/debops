@@ -1,0 +1,30 @@
+{# Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+ # Copyright (C) 2020 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+
+# {{ ansible_managed }}
+
+# systemd service template for mailman3 program
+
+[Unit]
+Description=Mailman3 server
+Documentation=man:mailman(1)
+Documentation=https://mailman.readthedocs.io/
+ConditionPathExists=/etc/mailman3/mailman.cfg
+
+# Delay mailman3 service startup until database service is running
+After={{ mailman3__database_type }}.service
+
+[Service]
+ExecStart=/usr/bin/mailman -C /etc/mailman3/mailman.cfg start --force
+ExecReload=/usr/bin/mailman -C /etc/mailman3/mailman.cfg restart
+ExecStop=/usr/bin/mailman -C /etc/mailman3/mailman.cfg stop
+Type=forking
+PIDFile=/run/mailman3/master.pid
+SyslogIdentifier=mailman3
+User=list
+Group=list
+
+[Install]
+WantedBy=multi-user.target
