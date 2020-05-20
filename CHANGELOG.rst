@@ -113,6 +113,13 @@ General
 
 - TLSv1.3 is now enabled by default for nginx version 1.13.0 and up.
 
+:ref:`debops.postix` role
+'''''''''''''''''''''''''
+
+- Include the ``permit_mynetworks`` parameter in the
+  ``smtpd_sender_restrictions`` by default to allow locally installed services
+  to send e-mail messages without authentication.
+
 Fixed
 ~~~~~
 
