@@ -243,8 +243,8 @@ in :file:`ansible/playbooks/site.yml`:
 .. code-block:: yaml
 
   ---
-  - include: '{{ lookup("ENV", "HOME") + "/.local/share/debops/debops/ansible/playbooks/site.yml" }}'
-  - include: your_role.yml
+  - import_playbook: '{{ lookup("ENV", "HOME") + "/.local/share/debops/debops/ansible/playbooks/site.yml" }}'
+  - import_playbook: your_role.yml
 
 
 in :file:`ansible/playbooks/your_role.yml`:
