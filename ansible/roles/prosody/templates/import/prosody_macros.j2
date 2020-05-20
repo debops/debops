@@ -1,0 +1,67 @@
+{# Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@drybjed.net>
+ # Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+ # Copyright (C) 2018-2020 Norbert Summer <git@o-g.at>
+ # Copyright (C) 2014-2017 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+
+ {# read more about the used syntax:
+  # https://github.com/debops/debops/issues/953#issuecomment-609068919
+  #}
+
+{#
+ # for printing a lua config
+ # @param dict object  key value with entries
+ #}
+{%- macro lua_print(object)                            %}
+{{    lua_print_mapping(object)                        }}
+{%  endmacro                                           %}
+
+{#
+ # prints a dict without brackets
+ # @param dict object
+ #}
+{%- macro lua_print_mapping(object)                    %}
+{%-   for _key, _item in object| dictsort              %}
+{{      _key + ' = ' + lua_print_variable(_item) + ';\n' }}
+{%-   endfor                                           %}
+{%- endmacro                                           %}
+
+{#
+ # prints a list without brackets
+ # @param list object
+ #}
+{%- macro lua_print_sequence(object)                   %}
+{%-   for _item in object                              %}
+{{      lua_print_variable(_item) + ';\n'              }}
+{%-   endfor                                           %}
+{%- endmacro                                           %}
+
+
+{#
+ # switch case over different types,
+ # to print in the right format
+ # @param dict|list|bool|string|int object
+ #}
+{%- macro lua_print_variable(object)                   %}
+{%-   if object is mapping                             %}
+{{-     '{'                                            }}
+{{-       lua_print_mapping(object) | indent(2)        }}
+{{      '}'                                            }}
+{%-   elif object == True or object == False           %}
+{#-   boolean check only aviable since jinja2.11       #}
+{%-     if object  %}{{ 'true'                         }}
+{%-     else       %}{{ 'false'                        }}
+{%-     endif                                          %}
+{%-   elif object is string                            %}
+{{-     '"' + object + '"'                             }}
+{%-   elif object is sequence                          %}
+{{-     '{'                                            }}
+{{-        lua_print_sequence(object) | indent(2)      }}
+{{      '}'                                            }}
+{%-   elif object is number                            %}
+{{-     '%d' | format(object)                          }}
+{%-   else                                             %}
+        error unknown type
+{%    endif                                            %}
+{%- endmacro                                           %}

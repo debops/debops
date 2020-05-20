@@ -1,7 +1,11 @@
 ---
 # Copyright (C) 2018 Norbert Summer <git@o-g.at>
+# Copyright (C) 2020 Rainer 'rei' Schuth <devel@reixd.net>
 # Copyright (C) 2018 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
+
+- import_role:
+    name: 'ansible_plugins'
 
 - name: Install required packages
   package:
@@ -11,11 +15,48 @@
   register: prosody__register_packages
   until: prosody__register_packages is succeeded
 
-- name: Generate Prosody configuration
+- name: Generate Global Prosody configuration
   template:
     src: 'etc/prosody/prosody.cfg.lua.j2'
     dest: '/etc/prosody/prosody.cfg.lua'
   notify: [ 'Restart prosody' ]
+  tags: [ 'role::prosody:template' ]
+
+- name: Delete disabled Prosody Virtual Hosts
+  file:
+    state: 'absent'
+    path: '/etc/prosody/conf.d/{{ item.name|mandatory }}.cfg.lua'
+  loop: '{{ prosody__combined_virtual_hosts|parse_kv_items() }}'
+  when: not (item.enabled|d(true)|bool)
+  notify: [ 'Restart prosody' ]
+  tags: [ 'role::prosody:template' ]
+
+- name: Generate Virtual Host Prosody configuration
+  template:
+    src: 'etc/prosody/conf.d/VirtualHost.j2'
+    dest: '/etc/prosody/conf.d/{{ item.name|mandatory }}.cfg.lua'
+  loop: '{{ prosody__combined_virtual_hosts|parse_kv_items() }}'
+  when: (item.enabled|d(true)|bool)
+  notify: [ 'Restart prosody' ]
+  tags: [ 'role::prosody:template' ]
+
+- name: Delete disabled Prosody Components
+  file:
+    state: 'absent'
+    path: '/etc/prosody/conf.d/{{ item.name|mandatory }}.cfg.lua'
+  loop: '{{ prosody__combined_components|parse_kv_items() }}'
+  when: not (item.enabled|d(true)|bool)
+  notify: [ 'Restart prosody' ]
+  tags: [ 'role::prosody:template' ]
+
+- name: Generate Prosody Components configuration
+  template:
+    src: 'etc/prosody/conf.d/Component.j2'
+    dest: '/etc/prosody/conf.d/{{ item.name|mandatory }}.cfg.lua'
+  loop: '{{ prosody__combined_components|parse_kv_items() }}'
+  when: (item.enabled|d(true)|bool)
+  notify: [ 'Restart prosody' ]
+  tags: [ 'role::prosody:template' ]
 
 - name: Enable Services
   service:
@@ -46,5 +87,21 @@
 - name: Ensure the PKI prosody hook is absent
   file:
     path: '{{ prosody__pki_hook_path }}'
+    state: 'absent'
+  when: (prosody__deploy_state in [ 'absent' ])
+
+- name: Disable Prosdy Service
+  service:
+    name: '{{ item }}'
+    enabled: 'no'
+    state: 'stopped'
+  with_items:
+    - prosody
+  when: (prosody__deploy_state in [ 'absent' ])
+
+- name: Uninstall Prosody Packages
+  package:
+    name: '{{ q("flattened", (prosody__base_packages
+                              + prosody__packages)) }}'
     state: 'absent'
   when: (prosody__deploy_state in [ 'absent' ])

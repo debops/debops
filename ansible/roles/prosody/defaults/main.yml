@@ -2,6 +2,7 @@
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
 # .. Copyright (C) 2018 Norbert Summer <git@o-g.at>
+# .. Copyright (C) 2020 Rainer 'rei' Schuth <devel@reixd.net>
 # .. Copyright (C) 2018 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
@@ -173,14 +174,14 @@ prosody__modules: '{{ prosody__modules_default }}'
 # .. envvar:: prosody__authentication [[[
 #
 # Providers:
+#  - internal_hashed [default]
 #  - internal_plain
-#  - internal_hashed
 #  - cyrus
 #  - anonymous
 #  - ldap2 (TODO)
 #
 # https://prosody.im/doc/authentication
-prosody__authentication: 'internal_plain'
+prosody__authentication: 'internal_hashed'
 
                                                                    # ]]]
 # .. envvar:: prosody__insecure_domains [[[
@@ -275,97 +276,206 @@ prosody__host_config_global: {}
 #
 # Mapping which combines all of the global config variables and is used
 # in the configuration template.
-prosody__combined_config_global: '{{ prosody__default_config_global | combine(
-                                  prosody__config_http_server
-                                , prosody__config_ldap if prosody__authentication == "ldap2" else {}
-                                , prosody__config_global
-                                , prosody__group_config_global
-                                , prosody__host_config_global ) }}'
+prosody__combined_config_global: '{{ prosody__default_config_global
+                                     | combine(prosody__config_http_server,
+                                               prosody__config_ldap
+                                                 if prosody__authentication == "ldap2" else {},
+                                               prosody__config_global,
+                                               prosody__group_config_global,
+                                               prosody__host_config_global ) }}'
 
                                                                    # ]]]
-# .. envvar:: prosody__config_virtual_hosts [[[
+
+# Virtual Host Configuration [[[
+# ----------------------------------------
+
+# You need to add a VirtualHost entry for each domain you wish Prosody to serve.
+# Settings under each VirtualHost entry apply *only* to that host.
 #
-# List of virtual hosts
-prosody__config_virtual_hosts:
+# For more information, check `Virtual host settings <https://prosody.im/doc/configure#virtual_host_settings>`_.
+
+# Each virtual host in the list can have the following parameters:
+#
+# .. code-block:: yaml
+#  :linenos:
+#
+#  prosody__virtual_hosts:
+#    - name: 'example.com'
+#      enabled: True
+#      pki_realm: 'xmpp.example.com'
+#      # optional settings
+#      tls_crt: '/path/to/cert.pem'
+#      tls_key: '/path/to/key.pem'
+#      modules_enabled:
+#        - 'module1'
+#        - 'module2'
+#      modules_disabled:
+#        - 'another_module'
+#      admins:
+#        - alice@example.com
+#      authentication: 'internal_hashed'
+#
+#    - name: 'another-domain.net'
+#      enabled: True
+#      pki_realm: 'chat.another-domain.net'
+#
+
+# .. envvar:: prosody__default_virtual_hosts [[[
+#
+# Variable which contains default virtual hosts used by prosody
+prosody__default_virtual_hosts:
   - name: '{{ ansible_domain }}'
     enabled: false
     pki_realm: 'domain'
 
                                                                    # ]]]
-# .. envvar:: prosody__http_upload [[[
+
+# .. envvar:: prosody__virtual_hosts [[[
 #
-#  http_upload enables upload via http(s) for clients to share files
-#  https://modules.prosody.im/mod_http_upload.html
-#  XEP-0363
-prosody__http_upload: True
+# Variable which contains virtual hosts used by prosody configured on all hosts
+# in the Ansible inventory.
+prosody__virtual_hosts: []
 
                                                                    # ]]]
-# .. envvar:: prosody__muc [[[
+
+# .. envvar:: prosody__group_virtual_hosts [[[
 #
-#  muc (multi user channel) enables group channel function.
-#  https://prosody.im/doc/modules/mod_muc
-#  XEP-0045
-prosody__muc: True
+# Variable which contains virtual hosts used by prosody configured on hosts in
+## specific Ansible inventory group.
+prosody__group_virtual_hosts: []
 
                                                                    # ]]]
-# .. envvar:: prosody__config_http_upload [[[
+
+# .. envvar:: prosody__host_virtual_hosts [[[
 #
-#  http_upload config is for client upload via http(s) to share files
-#  https://modules.prosody.im/mod_http_upload.html
-#  XEP-0363
-prosody__config_http_upload:
-  - domain: 'upload.{{ prosody__domain }}'
-    params: '"http_upload"'
+# Variable which contains virtual hosts used by prosody configured on specific
+## hosts in the Ansible inventory.
+prosody__host_virtual_hosts: []
 
                                                                    # ]]]
-# .. envvar:: prosody__config_muc [[[
+
+# .. envvar:: prosody__dependent_virtual_hosts [[[
 #
-#  muc (multi user channel) config for group channel function.
-#  https://prosody.im/doc/modules/mod_muc
-#  XEP-0045
-prosody__config_muc:
-  - domain: 'conference.{{ prosody__domain }}'
-    params: '"muc"'
+# The variable which can be used by other Ansible roles to define additional
+# Virtual Hosts that should be present in the Prosody server.
+prosody__dependent_virtual_hosts: []
 
                                                                    # ]]]
-# .. envvar:: prosody__default_config_components [[[
+
+# .. envvar:: prosody__combined_virtual_hosts [[[
 #
-# List of default components
-prosody__default_config_components: '{{ (prosody__config_http_upload if prosody__http_upload|bool else [])
-                                      + (prosody__config_muc if prosody__muc|bool else []) }}'
+# Variable which contains virtual hosts used by prosody,, combined from all other
+# variables.
+prosody__combined_virtual_hosts: '{{ (prosody__default_virtual_hosts
+                                     + prosody__virtual_hosts
+                                     + prosody__group_virtual_hosts
+                                     + prosody__host_virtual_hosts
+                                     + prosody__dependent_virtual_hosts) }}'
 
                                                                    # ]]]
-# .. envvar:: prosody__config_components [[[
+                                                                   # ]]]
+
+# Component Configuration [[[
+# ----------------------------------------
+
+# Components are extra services on a server which are available to clients,
+# usually on a subdomain of the main server (such as mycomponent.example.com).
+# Example components might be chatroom servers, user directories, or gateways to other protocols.
 #
-# List of components which will be managed on all hosts in the Ansible
-# inventory.
-prosody__config_components: []
+# For more information, check `Components in Prosody <https://prosody.im/doc/components>`_.
+#
+# Each Component in the list can have the following parameters:
+#
+# .. code-block:: yaml
+#   :linenos:
+#
+#   prosody__components:
+#     - name: 'conference.{{ prosody__domain }}'
+#       enabled: true
+#       # optional settings
+#       plugin_name: 'muc'
+#       modules_enabled:
+#         - module1
+#         - storage:
+#             muc_log: 'sql'
+#       params:
+#         key1: value1
+#         key2: value2
+#         component_secret: 's3cr3t'
+#         component_interface: '{{ ansible_default_ipv4.address|d() }}'
+#         component_ports: [ '4242' ]
+
+# .. envvar:: prosody__default_components [[[
+#
+# Variable which contains default components used by prosody
+prosody__default_components:
+  #  muc (multi user channel) config for group channel function.
+  #  https://prosody.im/doc/modules/mod_muc
+  #  XEP-0045
+  - name: 'conference.{{ prosody__domain }}'
+    enabled: true
+    plugin_name: 'muc'
+    modules_enabled: []
+    params: {}
+
+  #  http_upload enables upload via http(s) for clients to share files
+  #  https://modules.prosody.im/mod_http_upload.html
+  #  XEP-0363
+  - name: 'upload.{{ prosody__domain }}'
+    enabled: true
+    plugin_name: 'http_upload'
+    modules_enabled: []
+    params: {}
+                                                                   # ]]]
+
+# .. envvar:: prosody__components [[[
+#
+# Variable which contains components used by prosody configured on all hosts
+# in the Ansible inventory.
+prosody__components: []
 
                                                                    # ]]]
-# .. envvar:: prosody__group_config_components [[[
+
+# .. envvar:: prosody__group_components [[[
 #
-# List of components which will be managed on specific groups in the Ansible
-# inventory.
-prosody__group_config_components: []
+# Variable which contains components used by prosody configured on hosts in
+## specific Ansible inventory group.
+prosody__group_components: []
 
                                                                    # ]]]
-# .. envvar:: prosody__host_config_components [[[
+
+# .. envvar:: prosody__host_components [[[
 #
-# List of components which will be managed on specific hosts in the Ansible
-# inventory.
-prosody__host_config_components: []
+# Variable which contains components used by prosody configured on specific
+## hosts in the Ansible inventory.
+prosody__host_components: []
 
                                                                    # ]]]
-# .. envvar:: prosody__combined_config_components [[[
+
+# .. envvar:: prosody__dependent_components [[[
 #
-# List which combines all of the global config variables and is used
-# in the configuration template.
-prosody__combined_config_components: '{{ prosody__default_config_components
-                                       + prosody__config_components
-                                       + prosody__group_config_components
-                                       + prosody__host_config_components  }}'
+# The variable which can be used by other Ansible roles to define additional
+# Components that should be present in the Prosody server.
+prosody__dependent_components: []
 
                                                                    # ]]]
+
+# .. envvar:: prosody__combined_components [[[
+#
+# Variable which contains components used by prosody,, combined from all other
+# variables.
+prosody__combined_components: '{{ (prosody__default_components
+                                   + prosody__components
+                                   + prosody__group_components
+                                   + prosody__host_components
+                                   + prosody__dependent_components) }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+
+# Configuration for other Ansible roles [[[
+# ----------------------------------------
+
 # .. envvar:: prosody__ferm__dependent_rules [[[
 #
 # Configuration for :command:`iptables` firewall manged by :program:`ferm`.
@@ -395,6 +505,7 @@ prosody__ferm__dependent_rules:
     name: 'prosody-http'
     multiport: True
     rule_state: '{{ prosody__deploy_state }}'
+                                                                   # ]]]
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

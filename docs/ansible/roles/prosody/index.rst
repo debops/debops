@@ -15,6 +15,7 @@ debops.prosody
 
    getting-started
    defaults/main
+   guides
 
 Copyright
 ---------

@@ -1,0 +1,31 @@
+{# Copyright (C) 2020 Rainer 'rei' Schuth <devel@reixd.net>
+ # Copyright (C) 2018 Norbert Summer <git@o-g.at>
+ # Copyright (C) 2018 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+-- {{ ansible_managed }}
+{% import 'templates/import/debops__tpl_macros.j2' as debops__tpl_macros with context %}
+{% import 'templates/import/prosody_macros.j2' as prosody_macros without context %}
+-- Component Configuration File
+
+{% if item.plugin_name|d() %}
+Component "{{ item.name|mandatory }}" "{{ item.plugin_name|d() }}"
+{% else %}
+Component "{{ item.name|mandatory }}"
+{% endif %}
+{% if item.params|d() %}
+  {% for key, value in item.params.items() %}
+  {{ key }} = {{ prosody_macros.lua_print_variable(value)|indent(2,true)  }}
+  {% endfor %}
+{% endif %}
+{%if item.modules_enabled|d() %}
+  modules_enabled = {
+  {% for _mod in item.modules_enabled %}
+  {% if _mod is mapping %}
+  {{ prosody_macros.lua_print_mapping(_mod)|indent(2,true) }}
+  {% else %}
+  {{ prosody_macros.lua_print_variable(_mod)|indent(2,true) }};
+  {% endif %}
+  {% endfor %}
+  }
+{% endif %}
