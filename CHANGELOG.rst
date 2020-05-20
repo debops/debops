@@ -72,6 +72,12 @@ General
      [ansible inventory]
      host_pattern_mismatch = ignore
 
+:ref:`debops.mount` role
+''''''''''''''''''''''''
+
+- Don't require the ``fstype`` parameter in mount point configuration - if not
+  specified, the role will configure the filesystem type with ``auto``.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
