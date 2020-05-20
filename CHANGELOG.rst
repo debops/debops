@@ -108,6 +108,12 @@ General
 
 - The Ansible fact script has been updated to new MinIO Server version syntax.
 
+:ref:`debops.mount` role
+''''''''''''''''''''''''
+
+- Don't require the ``fstype`` parameter in mount point configuration - if not
+  specified, the role will configure the filesystem type with ``auto``.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
