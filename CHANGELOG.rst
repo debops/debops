@@ -98,6 +98,12 @@ General
 
   .. __: https://about.gitlab.com/releases/2020/03/30/gpg-key-for-gitlab-package-repositories-metadata-changing/
 
+:ref:`debops.mount` role
+''''''''''''''''''''''''
+
+- Don't require the ``fstype`` parameter in mount point configuration - if not
+  specified, the role will configure the filesystem type with ``auto``.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
