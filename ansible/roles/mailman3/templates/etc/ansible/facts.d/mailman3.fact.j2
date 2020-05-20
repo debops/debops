@@ -1,20 +1,22 @@
 #!{{ ansible_python['executable'] }}
 
-# Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
-# Copyright (C) 2020 DebOps <https://debops.org/>
+# Copyright (C) 2018 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2018 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 # {{ ansible_managed }}
 
 from json import dumps
-import apt
+import os
 
-cache = apt.Cache()
-output = {}
 
-try:
-    output['installed'] = cache['mailman3'].is_installed
-except KeyError:
-    output['installed'] = False
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+output = {'installed': cmd_exists('mailman')}
 
 print(dumps(output, sort_keys=True, indent=4))
