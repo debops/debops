@@ -22,7 +22,7 @@ To see what facts are configured on a host, run command:
 
 .. code-block:: console
 
-   user@host:~$ ansible <hostname> -s -m setup -a 'filter=ansible_local'
+   user@host:~$ ansible <hostname> -b -m setup -a 'filter=ansible_local'
 
 Ansible Controller IP addresses
 -------------------------------

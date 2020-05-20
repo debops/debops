@@ -50,7 +50,7 @@ this Ansible command:
 
 .. code-block:: console
 
-   user@host:~$ ansible database-host -s -m service -a 'name=mysql state=restarted'
+   user@host:~$ ansible database-host -b -m service -a 'name=mysql state=restarted'
 
 Note the :command:`mysql` service name - MariaDB still uses the old MySQL init files,
 configuration and data paths to allow easy compatibility with old MySQL
