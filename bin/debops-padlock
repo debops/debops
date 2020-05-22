@@ -40,6 +40,7 @@ from pkg_resources import resource_filename
 
 from debops import INVENTORY, ENCFS_PREFIX, SECRET_NAME, PADLOCK_CMD
 from debops import ENCFS_CONFIGFILE, ENCFS_KEYFILE, ENCFS_KEYFILE_LENGTH
+from debops import read_config
 from debops import subprocess
 from debops import padlock_lock, padlock_unlock, shquote
 
@@ -80,6 +81,7 @@ GPG = 'gpg'
 
 def main(subcommand_func, **kwargs):
     project_root = find_debops_project(required=True)
+    config = read_config(project_root)
     # :todo: Source DebOps configuration file
     # [ -r ${debops_config} ] && source ${debops_config}
 
@@ -92,7 +94,7 @@ def main(subcommand_func, **kwargs):
     else:
         require_commands(ENCFS, FIND, FUSERMOUNT, GPG)
 
-    inventory_path = find_inventorypath(project_root, required=False)
+    inventory_path = find_inventorypath(config, project_root, required=False)
     # If inventory hasn't been found automatically, assume it's the default
     if not inventory_path:
         inventory_path = os.path.join(project_root, 'ansible', INVENTORY)

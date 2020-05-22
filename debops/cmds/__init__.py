@@ -108,8 +108,8 @@ def find_playbookpath(config, project_root, required=True):
     return playbooks_path
 
 
-def find_inventorypath(project_root, required=True):
-    inventory = _find_inventorypath(project_root)
+def find_inventorypath(config, project_root, required=True):
+    inventory = _find_inventorypath(config, project_root)
     if required and not inventory:
         error_msg("Ansible inventory not found")
     return inventory
