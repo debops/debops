@@ -47,7 +47,7 @@ DEBOPS_RESERVED_NAMES = ["task", "init", "update", "defaults", "padlock"]
 project_root = find_debops_project(required=True)
 # Source DebOps configuration file
 # todo: need to decide on semantics!
-# config = read_config(project_root)
+config = read_config(project_root)
 
 # External programms used. List here for easy substitution for
 # hard-coded paths.
@@ -58,7 +58,7 @@ ANSIBLE = 'ansible'
 # Make sure required commands are present
 require_commands(ANSIBLE)
 
-ansible_inventory = find_inventorypath(project_root)
+ansible_inventory = find_inventorypath(config, project_root)
 
 # Get module name from the script name if script is named 'debops-*'
 module_name = SCRIPT_NAME.rsplit('-', 1)[-1]
