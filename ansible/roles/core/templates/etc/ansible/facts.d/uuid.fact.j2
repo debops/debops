@@ -19,9 +19,9 @@ from sys import exit
         ansible_local.root.uuid|d() %}
 {%   set core__tpl_uuid = ansible_local.root.uuid %}
 {% else %}
-{%   set core__tpl_uuid = (core__register_uuid.stdout
+{%   set core__tpl_uuid = (core__register_uuid
                            if (core__register_uuid|d() and
-                               core__register_uuid.stdout)
+                               core__register_uuid)
                            else core__uuid_random) | lower %}
 {% endif %}
 """
