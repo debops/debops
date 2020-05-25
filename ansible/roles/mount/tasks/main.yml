@@ -16,8 +16,8 @@
 - name: Ensure that the mount points exist
   file:
     path:    '{{ item.path    | d(item.dest | d(item.name)) }}'
-    owner:   '{{ item.owner   | d("root") }}'
-    group:   '{{ item.group   | d(item.owner | d("root")) }}'
+    owner:   '{{ item.owner   | d(omit) }}'
+    group:   '{{ item.group   | d(item.owner | d(omit)) }}'
     mode:    '{{ item.mode    | d("0755") }}'
     state:   'directory'
   loop: '{{ (mount__devices
@@ -72,8 +72,8 @@
 - name: Manage directories
   file:
     path:    '{{ item.path    | d(item.dest | d(item.name)) }}'
-    owner:   '{{ item.owner   | d("root") }}'
-    group:   '{{ item.group   | d(item.owner | d("root")) }}'
+    owner:   '{{ item.owner   | d(omit) }}'
+    group:   '{{ item.group   | d(item.owner | d(omit)) }}'
     mode:    '{{ item.mode    | d("0755") }}'
     recurse: '{{ item.recurse | d(omit) }}'
     state:   '{{ item.state   | d("directory") }}'
