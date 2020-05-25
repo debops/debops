@@ -160,6 +160,10 @@ General
 - Don't require the ``fstype`` parameter in mount point configuration - if not
   specified, the role will configure the filesystem type with ``auto``.
 
+- If ``owner`` or ``group`` parameters are not specified in the mount point
+  configuration, they will be omitted instead of enforced with ``root``. This
+  should allow to preserve ownership of existing mount points.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
