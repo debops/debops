@@ -164,10 +164,17 @@ def find_playbookpath(config, project_root):
             return playbook_path
 
 
-def find_inventorypath(project_root):
+def find_inventorypath(config, project_root):
     """
     Search Ansible inventory in local directories.
     """
+    user_defined_inventorypath = config.get('ansible defaults', {}) \
+                                       .get('inventory')
+    if user_defined_inventorypath:
+        if os.path.isabs(user_defined_inventorypath):
+            return user_defined_inventorypath
+        else:
+            return os.path.join(project_root, user_defined_inventorypath)
     for inventory_path in ANSIBLE_INVENTORY_PATHS:
         ansible_inventory = os.path.join(project_root, inventory_path)
         if os.path.isdir(ansible_inventory):

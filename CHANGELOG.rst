@@ -149,6 +149,10 @@ General
      [ansible inventory]
      host_pattern_mismatch = ignore
 
+- The :command:`debops` script will now use the Ansible inventory path defined
+  in the :file:`.debops.cfg` configuration file ``[ansible defaults]`` section
+  instead of the static :file:`ansible/inventory/` path.
+
 :ref:`debops.cran` role
 '''''''''''''''''''''''
 
