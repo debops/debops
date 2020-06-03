@@ -54,6 +54,10 @@ New DebOps roles
   used to install the InfluxDB time series database service and manage its
   databases and users, respectively.
 
+- The :ref:`debops.hier` role will be used to define base directory hierarchy
+  used by other DebOps roles (previously done by the :ref:`debops.core` role).
+  The role is included in the :file:`common.yml` playbook.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 

@@ -1,0 +1,29 @@
+---
+# Copyright (C) 2015-2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- import_role:
+    name: 'ansible_plugins'
+
+- name: Create base directory hierarchy
+  file:
+    path: '{{ hostvars[inventory_hostname]["ansible_local"]["hier"][item.name] | d(item.path) }}'
+    state: 'directory'
+  loop: '{{ hier__combined_directories | parse_kv_items }}'
+  loop_control:
+    label: '{{ {item.name: (hostvars[inventory_hostname]["ansible_local"]["hier"][item.name] | d(item.path))} }}'
+  when: (hier__enabled|bool and item.state|d('present') != 'absent' and
+         (hostvars[inventory_hostname]["ansible_local"]["hier"][item.name] | d(item.path)).startswith('/'))
+
+- name: Save local facts
+  template:
+    src: 'etc/ansible/facts.d/hier.fact.j2'
+    dest: '/etc/ansible/facts.d/hier.fact'
+    mode: '0755'
+  register: hier__register_facts
+  when: hier__enabled|bool
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: hier__register_facts is changed

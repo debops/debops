@@ -1,0 +1,30 @@
+#!{{ ansible_python['executable'] }}
+
+# Copyright (C) 2015-2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+
+# Workaround to allow Jinja template inside of a Python script
+"""
+{% set hier__tpl_facts = {} %}
+{% for item in hier__combined_directories | parse_kv_items %}
+{%   if hostvars[inventory_hostname]["ansible_local"]["hier"][item.name]|d() %}
+{%     set _ = hier__tpl_facts.update({item.name:
+         hostvars[inventory_hostname]["ansible_local"]["hier"][item.name]}) %}
+{%   else %}
+{%     if item.state|d('present') != 'absent' and item.path.startswith('/') %}
+{%       set _ = hier__tpl_facts.update({item.name: item.path}) %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+"""
+
+output = loads('''{{ hier__tpl_facts | to_nice_json }}''')
+
+print(dumps(output, sort_keys=True, indent=4))
