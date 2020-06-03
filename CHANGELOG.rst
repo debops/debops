@@ -259,6 +259,10 @@ General
 :ref:`debops.roundcube` role
 ''''''''''''''''''''''''''''
 
+- Use the Roundcube version from Ansible local facts instead of the one defined
+  in role default variables to detect if a database migration is required after
+  Roundcube :command:`git` repository is updated.
+
 - The role will install PHP PostgreSQL support if it's not present on the host
   and the PostgreSQL database is used by Roundcube.
 

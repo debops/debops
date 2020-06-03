@@ -52,7 +52,8 @@
 
 - name: Update Ansible facts if they were modified
   action: setup
-  when: roundcube__register_facts is changed
+  when: roundcube__register_facts is changed or
+        roundcube__register_git is changed
 
 # ---- Skins/Themes ----
 - include_tasks: configure_skins.yml
@@ -110,7 +111,7 @@
   register: roundcube__register_updatedb
   changed_when: roundcube__register_updatedb.stdout|d()
   when: (roundcube__register_version.stdout|d() and
-         roundcube__git_version is version_compare(roundcube__register_version.stdout, '>'))
+         (ansible_local.roundcube.version|d("0.0.0")) is version_compare(roundcube__register_version.stdout, '>'))
   tags: [ 'role::roundcube:database' ]
 
 - name: Post hooks
