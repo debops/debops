@@ -41,20 +41,12 @@
   tags: [ 'role::core', 'role::ferm', 'role::ferm:config', 'role::tcpwrappers' ]
   become: False
 
-- name: Read the host UUID
-  shell: set -o nounset -o pipefail -o errexit &&
-         dmidecode --string system-uuid | tail -n 1 || true
-  args:
-    executable: 'bash'
-  register: core__register_uuid
-  changed_when: False
-
 - name: Save local facts
   template:
     src: 'etc/ansible/facts.d/{{ item }}.fact.j2'
     dest: '/etc/ansible/facts.d/{{ item }}.fact'
     mode: '0755'
-  with_items: [ 'core', 'root', 'tags', 'uuid' ]
+  with_items: [ 'core', 'root', 'tags' ]
   register: core__register_core_fact
 
 - name: Install local fact scripts
