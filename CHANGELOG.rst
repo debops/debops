@@ -48,6 +48,13 @@ Added
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.ansible` role, Ansible 2.9.x from the
+  ``buster-backports`` repository will be installed on Debian Buster by
+  default, when backports are enabled.
+
 Continuous Integration
 ''''''''''''''''''''''
 
