@@ -104,7 +104,11 @@ Updates of upstream application versions
   default has been updated to ``v1.4.4``.
 
 - In the :ref:`debops.lxd` role, the LXD version installed by default has been
-  updated to ``v4.0.1``, which is a LTS release.
+  changed to the ``stable-4.0`` branch, which is a LTS release. The role uses
+  a :command:`git` branch instead of a specific tagged release to bypass
+  `broken LXD build dependency`__ which is not yet fixed in a tagged release.
+
+  .. __: https://github.com/lxc/lxd/issues/7357
 
 - In the :ref:`debops.gitlab` role, the GitLab release installed on Debian
   Buster and newer OS releases is updated to ``12-10-stable``.
