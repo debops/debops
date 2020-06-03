@@ -114,6 +114,10 @@ Updates of upstream application versions
   role. Existing installations need to upgrade the Golang packages before the
   playbook is applied.
 
+- In the :ref:`debops.ansible` role, Ansible 2.9.x from the
+  ``buster-backports`` repository will be installed on Debian Buster by
+  default, when backports are enabled.
+
 Continuous Integration
 ''''''''''''''''''''''
 
