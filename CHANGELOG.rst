@@ -184,6 +184,16 @@ General
   ``smtpd_sender_restrictions`` by default to allow locally installed services
   to send e-mail messages without authentication.
 
+Removed
+~~~~~~~
+
+:ref:`debops.core` role
+'''''''''''''''''''''''
+
+- The ``ansible_local.uuid`` local fact and corresponding variables and tasks
+  have been removed from the role. A replacement fact, ``ansible_machine_id``
+  is an Ansible built-in.
+
 Fixed
 ~~~~~
 
