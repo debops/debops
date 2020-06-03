@@ -104,7 +104,11 @@ Updates of upstream application versions
   default has been updated to ``v1.4.4``.
 
 - In the :ref:`debops.lxd` role, the LXD version installed by default has been
-  updated to ``v4.0.1``, which is a LTS release.
+  changed to the ``stable-4.0`` branch, which is a LTS release. The role uses
+  a :command:`git` branch instead of a specific tagged release to bypass
+  `broken LXD build dependency`__ which is not yet fixed in a tagged release.
+
+  .. __: https://github.com/lxc/lxd/issues/7357
 
 - In the :ref:`debops.gitlab` role, the GitLab release installed on Debian
   Buster and newer OS releases is updated to ``12-10-stable``.
@@ -113,6 +117,10 @@ Updates of upstream application versions
   repository, which will be installed by default via the :ref:`debops.golang`
   role. Existing installations need to upgrade the Golang packages before the
   playbook is applied.
+
+- In the :ref:`debops.ansible` role, Ansible 2.9.x from the
+  ``buster-backports`` repository will be installed on Debian Buster by
+  default, when backports are enabled.
 
 Continuous Integration
 ''''''''''''''''''''''
@@ -230,6 +238,13 @@ Removed
   maintained by the role has been removed; the :ref:`debops.dpkg_cleanup` role
   will be used for this purpose instead.
 
+:ref:`debops.core` role
+'''''''''''''''''''''''
+
+- The ``ansible_local.uuid`` local fact and corresponding variables and tasks
+  have been removed from the role. A replacement fact, ``ansible_machine_id``
+  is an Ansible built-in.
+
 Fixed
 ~~~~~
 
@@ -312,6 +327,13 @@ General
   directory.  This avoids the issue during execution of the script via
   :command:`cron` where it would emit errors about not being able to change to
   the :file:`/root/` home directory due to the permissions.
+
+:ref:`debops.roundcube` role
+''''''''''''''''''''''''''''
+
+- Use the Roundcube version from Ansible local facts instead of the one defined
+  in role default variables to detect if a database migration is required after
+  Roundcube :command:`git` repository is updated.
 
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
