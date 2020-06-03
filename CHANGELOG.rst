@@ -248,6 +248,12 @@ General
 - The ``file`` Ansible module does not support the ``validate`` parameter; it
   seems that this was a copying mistake and has been removed.
 
+:ref:`debops.roundcube` role
+''''''''''''''''''''''''''''
+
+- The role will install PHP PostgreSQL support if it's not present on the host
+  and the PostgreSQL database is used by Roundcube.
+
 
 `debops v2.0.3`_ - 2020-03-03
 -----------------------------
