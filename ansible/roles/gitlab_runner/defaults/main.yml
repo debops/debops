@@ -96,10 +96,8 @@ gitlab_runner__system: True
 # .. envvar:: gitlab_runner__home [[[
 #
 # Home directory of the GitLab Runner user.
-gitlab_runner__home: '{{ (ansible_local.root.home
-	                  if (ansible_local|d() and ansible_local.root|d() and
-	                      ansible_local.root.home|d())
-	                  else "/var/local") + "/" + gitlab_runner__user }}'
+gitlab_runner__home: '{{ (ansible_local.hier.home | d("/var/local"))
+	                 + "/" + gitlab_runner__user }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab_runner__comment [[[

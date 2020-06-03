@@ -92,10 +92,8 @@ gitusers_default_groups_append: 'yes'
 # .. envvar:: gitusers_default_home_prefix [[[
 #
 # Directory where git-shell user home will be created
-gitusers_default_home_prefix: '{{ (ansible_local.root.data
-                                   if (ansible_local|d() and ansible_local.root|d() and
-                                       ansible_local.root.data|d())
-                                   else "/srv") + "/gitusers" }}'
+gitusers_default_home_prefix: '{{ (ansible_local.hier.data | d("/srv"))
+                                  + "/gitusers" }}'
 
                                                                    # ]]]
 # .. envvar:: gitusers_default_home_mode [[[
@@ -107,10 +105,8 @@ gitusers_default_home_mode: '0750'
 # .. envvar:: gitusers_git_scripts [[[
 #
 # Main location of gitusers scripts
-gitusers_git_scripts: '{{ (ansible_local.root.home
-                           if (ansible_local|d() and ansible_local.root|d() and
-                               ansible_local.root.home|d())
-                           else "/var/local") + "/gitusers" }}'
+gitusers_git_scripts: '{{ (ansible_local.hier.home | d("/var/local"))
+                          + "/gitusers" }}'
 
                                                                    # ]]]
 # .. envvar:: gitusers_default_www_prefix [[[

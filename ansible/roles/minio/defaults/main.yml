@@ -41,10 +41,8 @@ minio__additional_groups: '{{ [ "ssl-cert" ] if minio__pki_enabled|bool else [] 
 # .. envvar:: minio__home [[[
 #
 # The absolute path of the MinIO UNIX account home directory.
-minio__home: '{{ (ansible_local.root.home
-                  if (ansible_local|d() and ansible_local.root|d() and
-                      ansible_local.root.home|d())
-                  else "/var/local") + "/" + minio__user }}'
+minio__home: '{{ (ansible_local.hier.home | d("/var/local"))
+                 + "/" + minio__user }}'
 
                                                                    # ]]]
 # .. envvar:: minio__shell [[[

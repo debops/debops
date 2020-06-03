@@ -84,10 +84,8 @@ ipxe__debian_netboot_firmware: '{{ ansible_local.apt.nonfree
 # The base directory where the Debian netboot and firmware tarballs will be
 # downloaded. The final directory depends on a given OS release and hardware
 # architecture.
-ipxe__debian_netboot_src: '{{ (ansible_local.root.src
-                               if (ansible_local|d() and ansible_local.root|d() and
-                                   ansible_local.root.src|d())
-                               else "/usr/local/src") + "/ipxe/debian/netboot" }}'
+ipxe__debian_netboot_src: '{{ (ansible_local.hier.src | d("/usr/local/src"))
+                              + "/ipxe/debian/netboot" }}'
 
                                                                    # ]]]
 # .. envvar:: ipxe__debian_netboot_pxe_root [[[

@@ -58,10 +58,8 @@ postwhite__gecos: 'Postscreen SPF Whitelist'
 # .. envvar:: postwhite__home [[[
 #
 # The home directory of the UNIX system account.
-postwhite__home: '{{ (ansible_local.root.home
-                      if (ansible_local|d() and ansible_local.root|d() and
-                          ansible_local.root.home|d())
-                      else "/var/local") + "/" + postwhite__user }}'
+postwhite__home: '{{ (ansible_local.hier.home | d("/var/local"))
+                     + "/" + postwhite__user }}'
                                                                    # ]]]
                                                                    # ]]]
 # Software stack [[[
@@ -70,10 +68,8 @@ postwhite__home: '{{ (ansible_local.root.home
 # .. envvar:: postwhite__src [[[
 #
 # Base directory where the Postwhite and spf-tools source code will be cloned.
-postwhite__src: '{{ (ansible_local.root.src
-                     if (ansible_local|d() and ansible_local.root|d() and
-                         ansible_local.root.src|d())
-                     else "/usr/local/src") + "/" + postwhite__user }}'
+postwhite__src: '{{ (ansible_local.hier.src | d("/usr/local/src"))
+                    + "/" + postwhite__user }}'
 
                                                                    # ]]]
 # .. envvar:: postwhite__spftools_git_repo [[[

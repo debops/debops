@@ -190,10 +190,8 @@ mosquitto__domain: '{{ ansible_local.core.domain
 # Absolute path of the directory with static files which will be served by the
 # Mosquitto server over HTTP. This directory will be created by the role if it
 # doesn't exist.
-mosquitto__http_dir_path: '{{ (ansible_local.root.data
-                               if (ansible_local|d() and ansible_local.root|d() and
-                                   ansible_local.root.data|d())
-                               else "/srv") + "/mosquitto/www/public" }}'
+mosquitto__http_dir_path: '{{ (ansible_local.hier.data | d("/srv"))
+                              + "/mosquitto/www/public" }}'
 
                                                                    # ]]]
 # .. envvar:: mosquitto__http_dir_owner [[[

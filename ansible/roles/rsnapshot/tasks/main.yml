@@ -17,10 +17,7 @@
 - name: Install custom backup scripts
   copy:
     src: 'usr/local/sbin/'
-    dest: '{{ (ansible_local.root.sbin
-               if (ansible_local|d() and ansible_local.root|d() and
-                   ansible_local.root.sbin|d())
-               else "/usr/local/sbin") + "/" }}'
+    dest: '{{ (ansible_local.hier.sbin | d("/usr/local/sbin")) + "/" }}'
     mode: '0755'
 
 - name: Create required directories

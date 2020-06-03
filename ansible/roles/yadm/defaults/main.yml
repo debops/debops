@@ -40,10 +40,8 @@ yadm__dotfiles_enabled: False
 # repositories. The repositories will be cloned in subdirectories based on the
 # URL path. Users can then install the dotfiles from a local mirror of the
 # repository instead of directly from the Internet.
-yadm__dotfiles_root: '{{ (ansible_local.root.src
-                          if (ansible_local|d() and ansible_local.root|d() and
-                              ansible_local.root.src|d())
-                          else "/usr/local/src") + "/yadm" }}'
+yadm__dotfiles_root: '{{ (ansible_local.hier.src | d("/usr/local/src"))
+                         + "/yadm" }}'
 
                                                                    # ]]]
 # .. envvar:: yadm__dotfiles_host [[[
@@ -139,11 +137,8 @@ yadm__upstream_repo: 'https://github.com/TheLocehiliosan/yadm'
 #
 # Absolute path to the directory where the yadm upstream :command:`git`
 # repository will be cloned into.
-yadm__upstream_dest: '{{ (ansible_local.root.src
-                          if (ansible_local|d() and ansible_local.root|d() and
-                              ansible_local.root.src|d())
-                          else "/usr/local/src") + "/yadm/"
-                          + yadm__upstream_repo.split("://")[1] }}'
+yadm__upstream_dest: '{{ (ansible_local.hier.src | d("/usr/local/src"))
+                          + "/yadm/" + yadm__upstream_repo.split("://")[1] }}'
 
                                                                    # ]]]
 # .. envvar:: yadm__upstream_version [[[

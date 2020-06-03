@@ -48,10 +48,8 @@
   user:
     name: '{{ item.owner }}'
     group: '{{ item.group | d(item.owner) }}'
-    home: '{{ item.home | d((ansible_local.root.home
-                             if (ansible_local|d() and ansible_local.root|d() and
-                                 ansible_local.root.home|d())
-                             else "/var/local") + "/" + item.owner) }}'
+    home: '{{ item.home | d((ansible_local.hier.home | d("/var/local"))
+                            + "/" + item.owner) }}'
     system: '{{ (item.system | d(True)) | bool }}'
     state: 'present'
   with_flattened:

@@ -53,10 +53,8 @@ icinga_web__group: 'icingaweb2'
 #
 # Directory where custom source code will be downloaded by the role, for
 # example module repositories.
-icinga_web__src: '{{ (ansible_local.root.src
-                      if (ansible_local|d() and ansible_local.root|d() and
-                          ansible_local.root.src|d())
-                      else "/usr/local/src") + "/icinga_web" }}'
+icinga_web__src: '{{ (ansible_local.hier.src | d("/usr/local/src"))
+                     + "/icinga_web" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Network configuration [[[

@@ -42,30 +42,24 @@ backup2l__backup_dev: ''
 #
 # Absolute path to the directory where :command:`backup2l` script maintains
 # backups. This path will be excluded from the backups.
-backup2l__backup_dir: '{{ (ansible_local.root.backup
-                           if (ansible_local|d() and ansible_local.root|d() and
-                               ansible_local.root.backup|d())
-                           else "/var/backups") + "/backup2l" }}'
+backup2l__backup_dir: '{{ (ansible_local.hier.backup | d("/var/backups"))
+                          + "/backup2l" }}'
 
                                                                    # ]]]
 # .. envvar:: backup2l__pre_hook_dir [[[
 #
 # Absolute path to a directory with scripts executed by the
 # :command:`run-parts` command before backups are performed.
-backup2l__pre_hook_dir: '{{ (ansible_local.root.etc
-                             if (ansible_local|d() and ansible_local.root|d() and
-                                 ansible_local.root.etc|d())
-                             else "/usr/local/etc") + "/backup/pre-hook.d" }}'
+backup2l__pre_hook_dir: '{{ (ansible_local.hier.etc | d("/usr/local/etc"))
+                            + "/backup/pre-hook.d" }}'
 
                                                                    # ]]]
 # .. envvar:: backup2l__post_hook_dir [[[
 #
 # Absolute path to a directory with scripts executed by the
 # :command:`run-parts` command after backups are finished.
-backup2l__post_hook_dir: '{{ (ansible_local.root.etc
-                              if (ansible_local|d() and ansible_local.root|d() and
-                                  ansible_local.root.etc|d())
-                              else "/usr/local/etc") + "/backup/post-hook.d" }}'
+backup2l__post_hook_dir: '{{ (ansible_local.hier.etc | d("/usr/local/etc"))
+                             + "/backup/post-hook.d" }}'
 
                                                                    # ]]]
 # .. envvar:: backup2l__include_file [[[
@@ -73,10 +67,8 @@ backup2l__post_hook_dir: '{{ (ansible_local.root.etc
 # Absolute path to a text file which contains a list of paths to include in
 # a backup, one per line. This file can be modified by other software to
 # include additional paths.
-backup2l__include_file: '{{ (ansible_local.root.etc
-                             if (ansible_local|d() and ansible_local.root|d() and
-                                 ansible_local.root.etc|d())
-                             else "/usr/local/etc") + "/backup/include" }}'
+backup2l__include_file: '{{ (ansible_local.hier.etc | d("/usr/local/etc"))
+                            + "/backup/include" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Directories and files to archive [[[

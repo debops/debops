@@ -228,10 +228,8 @@ dovecot_passwdfile_gid: 'dovecot-vmail'
 # .. envvar:: dovecot_passwdfile_home [[[
 #
 # Path to the mailbox
-dovecot_passwdfile_home: '{{ (ansible_local.root.home
-                             if (ansible_local|d() and ansible_local.root|d() and
-                                  ansible_local.root.home|d())
-                             else "/var/local") + "/" + dovecot_passwdfile_uid }}'
+dovecot_passwdfile_home: '{{ (ansible_local.hier.home | d("/var/local"))
+                             + "/" + dovecot_passwdfile_uid }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_passwdfile_mailbox_path [[[

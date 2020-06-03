@@ -137,10 +137,8 @@ homeassistant__verify_client_certificate: False
 # .. envvar:: homeassistant__home_path [[[
 #
 # The Home Assistant system account home directory.
-homeassistant__home_path: '{{ (ansible_local.root.home
-                               if (ansible_local|d() and ansible_local.root|d() and
-                                   ansible_local.root.home|d())
-                               else "/var/local") + "/" + homeassistant__user }}'
+homeassistant__home_path: '{{ (ansible_local.hier.home | d("/var/local"))
+                              + "/" + homeassistant__user }}'
 
                                                                    # ]]]
 # .. envvar:: homeassistant__virtualenv_path [[[

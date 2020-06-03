@@ -56,10 +56,8 @@ hashicorp__group: 'hashicorp'
 # .. envvar:: hashicorp__home [[[
 #
 # Path to the home directory of the HashiCorp_ account.
-hashicorp__home: '{{ (ansible_local.root.home
-                      if (ansible_local|d() and ansible_local.root|d() and
-                          ansible_local.root.home|d())
-                      else "/var/local") + "/" + hashicorp__user }}'
+hashicorp__home: '{{ (ansible_local.hier.home | d("/var/local"))
+                     + "/" + hashicorp__user }}'
 
                                                                    # ]]]
 # .. envvar:: hashicorp__comment [[[
@@ -193,10 +191,8 @@ hashicorp__combined_binary_map: '{{ hashicorp__default_binary_map
 #
 # Base path to the directory with HashiCorp_ binary archives, their hash
 # signatures and OpenPGP signatures.
-hashicorp__src: '{{ (ansible_local.root.src
-                     if (ansible_local|d() and ansible_local.root|d() and
-                         ansible_local.root.src|d())
-                     else "/usr/local/src") + "/" + hashicorp__user + "/" +
+hashicorp__src: '{{ (ansible_local.hier.src | d("/usr/local/src"))
+                    + "/" + hashicorp__user + "/" +
                      (hashicorp__base_url.split("://")|last | split("/") | first) }}'
 
                                                                    # ]]]
@@ -204,20 +200,15 @@ hashicorp__src: '{{ (ansible_local.root.src
 #
 # Base path to the directory where HashiCorp_ archives are unpacked after
 # verification.
-hashicorp__lib: '{{ (ansible_local.root.lib
-                     if (ansible_local|d() and ansible_local.root|d() and
-                         ansible_local.root.lib|d())
-                     else "/usr/local/lib") + "/" + hashicorp__user }}'
+hashicorp__lib: '{{ (ansible_local.hier.lib | d("/usr/local/lib"))
+                    + "/" + hashicorp__user }}'
 
                                                                    # ]]]
 # .. envvar:: hashicorp__bin [[[
 #
 # Base path to the directory where HashiCorp_ application binaries will be
 # installed by the ``root`` account.
-hashicorp__bin: '{{ (ansible_local.root.bin
-                     if (ansible_local|d() and ansible_local.root|d() and
-                         ansible_local.root.bin|d())
-                     else "/usr/local/bin") }}'
+hashicorp__bin: '{{ ansible_local.hier.bin | d("/usr/local/bin") }}'
                                                                    # ]]]
                                                                    # ]]]
 # HashiCorp application repositories [[[

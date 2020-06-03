@@ -97,10 +97,7 @@ firejail__program_file_path: 'auto'
 # This directory path must be included in the ``PATH`` variable before the
 # directory which contains the real program so that the symlink pointing to
 # :command:`firejail` is used when users try to execute the program.
-firejail__system_local_bin_path: '{{ ansible_local.root.bin
-                                     if (ansible_local|d() and ansible_local.root|d() and
-                                         ansible_local.root.bin|d())
-                                     else "/usr/local/bin" }}'
+firejail__system_local_bin_path: '{{ ansible_local.hier.bin | d("/usr/local/bin") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Program sandboxes [[[

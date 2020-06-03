@@ -32,10 +32,8 @@ rstudio_server__rstudio_in_apt: '{{ True
 # .. envvar:: rstudio_server__src [[[
 #
 # Directory where downloaded packages will be stored.
-rstudio_server__src: '{{ (ansible_local.root.src
-                          if (ansible_local|d() and ansible_local.root|d() and
-                              ansible_local.root.src|d())
-                          else "/usr/local/src") + "/" + rstudio_server__user }}'
+rstudio_server__src: '{{ (ansible_local.hier.src | d("/usr/local/src"))
+                         + "/" + rstudio_server__user }}'
 
                                                                    # ]]]
 # .. envvar:: rstudio_server__release_deb_map [[[
@@ -114,10 +112,8 @@ rstudio_server__group: 'rstudio-server'
 # .. envvar:: rstudio_server__home [[[
 #
 # RStudio Server home directory.
-rstudio_server__home: '{{ (ansible_local.root.home
-                           if (ansible_local|d() and ansible_local.root|d() and
-                               ansible_local.root.home|d())
-                           else "/var/local") + "/" + rstudio_server__user }}'
+rstudio_server__home: '{{ (ansible_local.hier.home | d("/var/local"))
+                          + "/" + rstudio_server__user }}'
 
                                                                    # ]]]
 # .. envvar:: rstudio_server__shell [[[

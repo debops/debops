@@ -93,38 +93,30 @@ netbox__shell: '/usr/sbin/nologin'
 # .. envvar:: netbox__home [[[
 #
 # The NetBox account home directory.
-netbox__home: '{{ (ansible_local.root.home
-                   if (ansible_local|d() and ansible_local.root|d() and
-                       ansible_local.root.home|d())
-                   else "/var/local") + "/" + netbox__user }}'
+netbox__home: '{{ (ansible_local.hier.home | d("/var/local"))
+                  + "/" + netbox__user }}'
 
                                                                    # ]]]
 # .. envvar:: netbox__src [[[
 #
 # Directory where the role stores NetBox sources from GitHub.
-netbox__src: '{{ (ansible_local.root.src
-                  if (ansible_local|d() and ansible_local.root|d() and
-                      ansible_local.root.src|d())
-                  else "/usr/local/src") + "/" + netbox__user }}'
+netbox__src: '{{ (ansible_local.hier.src | d("/usr/local/src"))
+                 + "/" + netbox__user }}'
 
                                                                    # ]]]
 # .. envvar:: netbox__lib [[[
 #
 # Directory where the NetBox application directory is located.
-netbox__lib: '{{ (ansible_local.root.lib
-                  if (ansible_local|d() and ansible_local.root|d() and
-                      ansible_local.root.lib|d())
-                  else "/usr/local/lib") + "/" + netbox__user }}'
+netbox__lib: '{{ (ansible_local.hier.lib | d("/usr/local/lib"))
+                 + "/" + netbox__user }}'
 
                                                                    # ]]]
 # .. envvar:: netbox__data [[[
 #
 # Directory where custom Netbox data (images, scripts) outside of the database
 # is stored.
-netbox__data: '{{ (ansible_local.root.data
-                   if (ansible_local|d() and ansible_local.root|d() and
-                       ansible_local.root.data|d())
-                   else "/srv") + "/" + netbox__user }}'
+netbox__data: '{{ (ansible_local.hier.data | d("/srv"))
+                  + "/" + netbox__user }}'
                                                                    # ]]]
                                                                    # ]]]
 # Application sources and deployment [[[

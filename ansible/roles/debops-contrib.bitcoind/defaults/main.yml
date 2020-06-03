@@ -133,10 +133,8 @@ bitcoind__tor_password: ''
 # .. envvar:: bitcoind__home_path [[[
 #
 # The bitcoind system account home directory.
-bitcoind__home_path: '{{ (ansible_local.root.home
-                          if (ansible_local|d() and ansible_local.root|d() and
-                              ansible_local.root.home|d())
-                          else "/var/local") + "/" + bitcoind__user }}'
+bitcoind__home_path: '{{ (ansible_local.hier.home | d("/var/local"))
+                         + "/" + bitcoind__user }}'
 
                                                                    # ]]]
 # .. envvar:: bitcoind__data_directory [[[

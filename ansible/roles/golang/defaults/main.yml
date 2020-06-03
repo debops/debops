@@ -33,10 +33,8 @@ golang__group: '_golang'
 # .. envvar:: golang__home [[[
 #
 # Absolute path to the home directory of the Go UNIX account.
-golang__home: '{{ (ansible_local.root.home
-                   if (ansible_local|d() and ansible_local.root|d() and
-                       ansible_local.root.home|d())
-                   else "/var/local") + "/" + golang__user }}'
+golang__home: '{{ (ansible_local.hier.home | d("/var/local"))
+                  + "/" + golang__user }}'
 
                                                                    # ]]]
 # .. envvar:: golang__shell [[[

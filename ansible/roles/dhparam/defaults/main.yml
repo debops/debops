@@ -143,10 +143,8 @@ dhparam__suffix: '.pem'
 # .. envvar:: dhparam__generate_params [[[
 #
 # Absolute path of the ``dhparam-generate-params`` script on remote hosts.
-dhparam__generate_params: '{{ (ansible_local.root.lib
-                               if (ansible_local|d() and ansible_local.root|d() and
-                                   ansible_local.root.lib|d())
-                               else "/usr/local/lib") + "/dhparam-generate-params" }}'
+dhparam__generate_params: '{{ (ansible_local.hier.lib | d("/usr/local/lib"))
+                              + "/dhparam-generate-params" }}'
 
                                                                    # ]]]
 # .. envvar:: dhparam__generate_log [[[

@@ -101,10 +101,8 @@ kodi__groups:
 # .. envvar:: kodi__home_path [[[
 #
 # The Home Assistant system account home directory.
-kodi__home_path: '{{ (ansible_local.root.home
-                      if (ansible_local|d() and ansible_local.root|d() and
-                          ansible_local.root.home|d())
-                      else "/var/local") + "/" + kodi__user }}'
+kodi__home_path: '{{ (ansible_local.hier.home | d("/var/local"))
+                     + "/" + kodi__user }}'
 
                                                                    # ]]]
 # .. envvar:: kodi__gecos [[[
