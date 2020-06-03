@@ -80,7 +80,11 @@ Updates of upstream application versions
 ''''''''''''''''''''''''''''''''''''''''
 
 - In the :ref:`debops.lxd` role, the LXD version installed by default has been
-  updated to ``v4.0.1``, which is a LTS release.
+  changed to the ``stable-4.0`` branch, which is a LTS release. The role uses
+  a :command:`git` branch instead of a specific tagged release to bypass
+  `broken LXD build dependency`__ which is not yet fixed in a tagged release.
+
+  .. __: https://github.com/lxc/lxd/issues/7357
 
 - In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
   has been updated to the next point release, 10.4.
