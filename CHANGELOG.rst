@@ -65,6 +65,10 @@ Updates of upstream application versions
 - In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
   has been updated to the next point release, 10.4.
 
+- In the :ref:`debops.ansible` role, Ansible 2.9.x from the
+  ``buster-backports`` repository will be installed on Debian Buster by
+  default, when backports are enabled.
+
 Continuous Integration
 ''''''''''''''''''''''
 
