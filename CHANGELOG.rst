@@ -321,6 +321,13 @@ General
   :command:`cron` where it would emit errors about not being able to change to
   the :file:`/root/` home directory due to the permissions.
 
+:ref:`debops.roundcube` role
+''''''''''''''''''''''''''''
+
+- Use the Roundcube version from Ansible local facts instead of the one defined
+  in role default variables to detect if a database migration is required after
+  Roundcube :command:`git` repository is updated.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
