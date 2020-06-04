@@ -1,6 +1,6 @@
 ---
-# Copyright (C) 2015-2016 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2015-2016 DebOps <https://debops.org/>
+# Copyright (C) 2015-2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Ensure that APT cache is valid
@@ -23,16 +23,6 @@
   until: core__register_packages is succeeded
   tags: [ 'meta::provision' ]
 
-- name: Create root directories
-  file:
-    path: '{{ hostvars[inventory_hostname]["ansible_local"]["root"][item.fact]
-              if (hostvars[inventory_hostname]["ansible_local"]|d() and
-                  hostvars[inventory_hostname]["ansible_local"]["root"]|d() and
-                  hostvars[inventory_hostname]["ansible_local"]["root"][item.fact]|d())
-              else item.path }}'
-    state: 'directory'
-  with_items: '{{ core__root_directories }}'
-
 - name: Check IP address of current Ansible Controller
   set_fact:
     ansible_controller: '{{ core__active_controller }}'
@@ -41,12 +31,18 @@
   tags: [ 'role::core', 'role::ferm', 'role::ferm:config', 'role::tcpwrappers' ]
   become: False
 
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
 - name: Save local facts
   template:
     src: 'etc/ansible/facts.d/{{ item }}.fact.j2'
     dest: '/etc/ansible/facts.d/{{ item }}.fact'
     mode: '0755'
-  with_items: [ 'core', 'root', 'tags' ]
+  with_items: [ 'core', 'tags' ]
   register: core__register_core_fact
 
 - name: Install local fact scripts

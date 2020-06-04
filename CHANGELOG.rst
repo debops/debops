@@ -250,19 +250,23 @@ General
 Removed
 ~~~~~~~
 
-:ref:`debops.nullmailer` role
-'''''''''''''''''''''''''''''
-
-- The script and :command:`dpkg` hook that cleaned up the additional files
-  maintained by the role has been removed; the :ref:`debops.dpkg_cleanup` role
-  will be used for this purpose instead.
-
 :ref:`debops.core` role
 '''''''''''''''''''''''
 
 - The ``ansible_local.uuid`` local fact and corresponding variables and tasks
   have been removed from the role. A replacement fact, ``ansible_machine_id``
   is an Ansible built-in.
+
+- The :file:`root.fact` script, corresponding variables and documentation have
+  been removed from the role. This functionality is now managed by the
+  :ref:`debops.hier` role.
+
+:ref:`debops.nullmailer` role
+'''''''''''''''''''''''''''''
+
+- The script and :command:`dpkg` hook that cleaned up the additional files
+  maintained by the role has been removed; the :ref:`debops.dpkg_cleanup` role
+  will be used for this purpose instead.
 
 Fixed
 ~~~~~
