@@ -1,0 +1,11 @@
+{# Copyright (C) 2014-2020 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2020      CipherMail B.V. <https://www.ciphermail.com/>
+ # Copyright (C) 2014-2020 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+# Add additional service dependencies to Mailman 3 Web service
+[Unit]
+After=postgresql.service mysql.service apache2.service nginx.service mailman3.service network.target network-online.target
+Wants=mailman3.service

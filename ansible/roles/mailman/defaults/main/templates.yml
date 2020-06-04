@@ -1,0 +1,54 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2014-2020 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2014-2020 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# Mailman templates
+# =================
+
+# These variables define the configuration of the custom Mailman 3 templating
+# system. See :ref:`mailman__ref_templates` for more details.
+
+# .. envvar:: mailman__default_templates [[[
+#
+# The list of the Mailman 3 templates defined by the role.
+mailman__default_templates:
+
+  # Remove the default message footer from all mailing lists
+  - name: 'site/en/list:member:generic:footer.txt'
+    content: ''
+
+                                                                   # ]]]
+# .. envvar:: mailman__templates [[[
+#
+# The list of the Mailman 3 templates defined on all hosts in the Ansible
+# inventory.
+mailman__templates: []
+
+                                                                   # ]]]
+# .. envvar:: mailman__group_templates [[[
+#
+# The list of the Mailman 3 templates defined on hosts in a specific Ansible
+# inventory group.
+mailman__group_templates: []
+
+                                                                   # ]]]
+# .. envvar:: mailman__host_templates [[[
+#
+# The list of the Mailman 3 templates defined on specific hosts in the Ansible
+# inventory.
+mailman__host_templates: []
+
+                                                                   # ]]]
+# .. envvar:: mailman__combined_templates [[[
+#
+# Variable which combines all of the other Mailman 3 template variables and is
+# used in role tasks and templates.
+mailman__combined_templates: '{{ mailman__default_templates
+                                 + mailman__templates
+                                 + mailman__group_templates
+                                 + mailman__host_templates }}'
+
+                                                                   # ]]]

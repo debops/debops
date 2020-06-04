@@ -1,0 +1,95 @@
+{# Copyright (C) 2014-2020 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2014-2020 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# {{ ansible_managed }}
+
+# Copyright (C) 2008-2017 by the Free Software Foundation, Inc.
+#
+# This file is part of GNU Mailman.
+#
+# GNU Mailman is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option)
+# any later version.
+#
+# GNU Mailman is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# GNU Mailman.  If not, see <http://www.gnu.org/licenses/>.
+
+# This file contains the Debian configuration for mailman.  It uses ini-style
+# formats under the lazr.config regime to define all system configuration
+# options.  See <https://launchpad.net/lazr.config> for details.
+
+
+{% for section in mailman__core_combined_configuration | parse_kv_items %}
+{%   if section.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%     if not loop.first %}
+
+{%     endif %}
+{%     if section.separator|d() %}
+
+{%     endif %}
+{%     if section.state|d('present') != 'hidden' %}
+{{ "[{}]".format(section.name) }}
+{%     endif %}
+{%     if section.comment|d() %}
+{{ section.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%       if section.name == 'paths.debian' %}
+#
+{%       endif %}
+{%     endif %}
+{%     if section.options|d() %}
+{%       for option in section.options %}
+{%         if option.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%           if ((option.comment|d() or option.separator|d()) and
+                 section.name not in [ 'paths.debian' ] and
+                 (not loop.first or section.comment|d())) %}
+
+{%           endif %}
+{%           if option.comment|d() %}
+{{ option.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%           endif %}
+{%           set option_comment = '' %}
+{%           if option.state|d('present') == 'comment' %}
+{%             set option_comment = '#' %}
+{%           endif %}
+{%           set option_name = (option.option | d(option.name)) %}
+{%           if option.value | bool and option.value is not iterable %}
+{%             if option.value | int and option.value | string != 'True' %}
+{%               set option_value = option.value %}
+{%             else %}
+{%               set option_value = 'yes' %}
+{%             endif %}
+{%           elif not option.value | bool and option.value is not iterable %}
+{%             if option.value is not none %}
+{%               if option.value | int or option.value | string == '0' %}
+{%                 set option_value = option.value %}
+{%               else %}
+{%                 set option_value = 'no' %}
+{%               endif %}
+{%             endif %}
+{%           else %}
+{%             set option_value = (([ option.value ]
+                                    if (option.value is string or
+                                        option.value is not iterable)
+                                    else (option.value
+                                          | selectattr("state", "equalto", "present")
+                                          | map(attribute="name")
+                                          | list))
+                                   | join(' ')) %}
+{%           endif %}
+{%           if option_value %}
+{{ "{}{}: {}".format(option_comment, option_name, option_value) }}
+{%           else %}
+{{ "{}{}:".format(option_comment, option_name) }}
+{%           endif %}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{% endfor %}

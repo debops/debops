@@ -947,9 +947,9 @@ stages:
   <<: *test_role_3rd_deps
   variables:
     JANE_TEST_FACT: 'mailman.fact'
-    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mailman.yml'
-    JANE_INVENTORY_GROUPS: 'debops_service_mailman'
-    JANE_INVENTORY_HOSTVARS: 'mailman__site_list_notify=false'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postfix.yml ${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/mailman.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_postfix,debops_service_postgresql_server,debops_service_mailman'
+    JANE_INVENTORY_HOSTVARS: 'postgresql_server__delegate_to=localhost postgresql__delegate_to=localhost'
     JANE_DIFF_PATTERN: '.*/roles/mailman/.*'
     JANE_LOG_PATTERN: '\[debops\.mailman\]'
 

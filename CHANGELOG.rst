@@ -122,6 +122,11 @@ Updates of upstream application versions
   ``buster-backports`` repository will be installed on Debian Buster by
   default, when backports are enabled.
 
+- The :ref:`debops.mailman` role has been redesigned and now installs and
+  configures Mailman 3.x instead of Mailman 2.x. Read the
+  :ref:`mailman__ref_mailman2_migration` guide and the rest of the
+  :ref:`debops.mailman` documentation for details.
+
 Continuous Integration
 ''''''''''''''''''''''
 

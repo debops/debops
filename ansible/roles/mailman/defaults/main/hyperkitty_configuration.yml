@@ -1,0 +1,85 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2014-2020 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2014-2020 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# HyperKitty configuration options
+# ================================
+
+# These variables define the contents of the
+# :file:`/etc/mailman3/mailman-hyperkitty.cfg` configuration file.
+# They use the same syntax as the Mailman Core configuration options.
+# See :ref:`mailman__ref_core_configuration` for more details.
+
+# .. envvar:: mailman__hyperkitty_original_configuration [[[
+#
+# The original contents of the configuration file. The options are modified in
+# subsequent variables.
+mailman__hyperkitty_original_configuration:
+
+  - name: 'general'
+    options:
+
+      - name: 'base_url'
+        comment: |
+          This is your HyperKitty installation, preferably on the localhost. This
+          address will be used by Mailman to forward incoming emails to HyperKitty
+          for archiving. It does not need to be publicly available, in fact it's
+          better if it is not.
+        value: 'http://localhost/mailman3/hyperkitty/'
+
+      - name: 'api_key'
+        comment: |
+          Shared API key, must be the identical to the value in HyperKitty's
+          settings.
+        value: 'SecretArchiverAPIKey'
+
+                                                                   # ]]]
+# .. envvar:: mailman__hyperkitty_default_configuration [[[
+#
+# The HyperKitty configuration defined by the role.
+mailman__hyperkitty_default_configuration:
+
+  - name: 'general'
+    options:
+
+      - name: 'base_url'
+        value: '{{ "https://" + mailman__fqdn + "/hyperkitty/" }}'
+
+      - name: 'api_key'
+        value: '{{ ansible_local.mailman.archiver_key | d("SecretArchiverAPIKey") }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman__hyperkitty_configuration [[[
+#
+# The HyperKitty configuration defined on all hosts in the Ansible inventory.
+mailman__hyperkitty_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: mailman__hyperkitty_group_configuration [[[
+#
+# The HyperKitty configuration defined on hosts in a specific Ansible inventory
+# group.
+mailman__hyperkitty_group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: mailman__hyperkitty_host_configuration [[[
+#
+# The HyperKitty configuration defined on specific hosts in the Ansible
+# inventory.
+mailman__hyperkitty_host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: mailman__hyperkitty_combined_configuration [[[
+#
+# The variable which combines all other HyperKitty configuration variables and
+# is used in the role tasks and templates.
+mailman__hyperkitty_combined_configuration: '{{ mailman__hyperkitty_original_configuration
+                                                + mailman__hyperkitty_default_configuration
+                                                + mailman__hyperkitty_configuration
+                                                + mailman__hyperkitty_group_configuration
+                                                + mailman__hyperkitty_host_configuration }}'
+
+                                                                   # ]]]

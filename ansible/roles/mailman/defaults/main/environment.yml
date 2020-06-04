@@ -1,0 +1,116 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2014-2020 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2014-2020 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# Mailman environment configuration [[[
+# =====================================
+
+# System package configuration [[[
+# --------------------------------
+
+# .. envvar:: mailman__base_packages [[[
+#
+# List of the base APT packages to install for Mailman 3 support.
+mailman__base_packages:
+
+  - 'mailman3-full'
+  - 'lynx'
+  - '{{ "dbconfig-pgsql"
+        if (mailman__database_type == "postgresql")
+        else [] }}'
+  - '{{ "dbconfig-mysql"
+        if (mailman__database_type == "mysql")
+        else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman__packages [[[
+#
+# List of additional APT packages to install with Mailman 3.
+mailman__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# UNIX environment [[[
+# --------------------
+
+# .. envvar:: mailman__user [[[
+#
+# The UNIX system account used by the Mailman installation.
+mailman__user: 'list'
+
+                                                                   # ]]]
+# .. envvar:: mailman__group [[[
+#
+# The UNIX system group used by the Mailman installation.
+mailman__group: 'list'
+                                                                   # ]]]
+                                                                   # ]]]
+# Web environment [[[
+# -------------------
+
+# .. envvar:: mailman__domain [[[
+#
+# The DNS domain used by Mailman service.
+mailman__domain: '{{ ansible_local.core.domain
+                         if (ansible_local|d() and ansible_local.core|d() and
+                             ansible_local.core.domain|d())
+                         else ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman__fqdn [[[
+#
+# The Fully Qualified Domain Name used by Mailman.
+# If the Mailman3 web interface sends emails, this domain will be used for the
+# sender addresses. In particular, it will be 'postorius@<fqdn>' for internal
+# authentication and 'root@<fqdn>' for error messages.
+mailman__fqdn: 'lists.{{ mailman__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman__additional_domains [[[
+#
+# Additional DNS names used by the Mailman webserver. The users will be
+# automatically redirected to the main FQDN of the service.
+mailman__additional_domains: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Database configuration options [[[
+# ----------------------------------
+
+# .. envvar:: mailman__database_type [[[
+#
+# The database type used by the Mailman installation, defined via Ansible local
+# facts to avoid switching to a different database on subsequent Ansible runs.
+# If Mailman 3 is not installed, the database will be selected in order of
+# preference - PostgreSQL, MySQL, SQLite.
+mailman__database_type: '{{ ansible_local.mailman.database_class.split(".")[2]
+                            if (ansible_local|d() and ansible_local.mailman is defined)
+                            else ("postgresql"
+                                  if (ansible_local.postgresql is defined)
+                                  else ("mysql"
+                                        if (ansible_local.mariadb is defined)
+                                        else "sqlite")) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Django superuser account [[[
+# ----------------------------
+
+# .. envvar:: mailman__superuser_name [[[
+#
+# Name of the Django superuser account created by the role.
+mailman__superuser_name: '{{ ansible_local.core.admin_users[0]
+                             if (ansible_local|d() and ansible_local.core|d() and
+                                 ansible_local.core.admin_users|d())
+                             else "admin" }}'
+
+                                                                   # ]]]
+# .. envvar:: mailman__superuser_email [[[
+#
+# E-mail address of the Django superuser account created by the role.
+mailman__superuser_email: '{{ ansible_local.core.admin_private_email[0]
+                              if (ansible_local|d() and ansible_local.core|d() and
+                                  ansible_local.core.admin_private_email|d())
+                              else ("postmaster@" + mailman__domain) }}'
+                                                                   # ]]]
+                                                                   # ]]]
