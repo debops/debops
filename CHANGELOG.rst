@@ -58,6 +58,11 @@ New DebOps roles
   used by other DebOps roles (previously done by the :ref:`debops.core` role).
   The role is included in the :file:`common.yml` playbook.
 
+- The :ref:`debops.tzdata` role manages the host time zone configuration and
+  provides the ``ansible_local.tzdata.timezone`` local fact with the time zone
+  in the ``Area/Zone`` format. The role is included in the :file:`common.yml`
+  playbook.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 

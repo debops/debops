@@ -1,0 +1,29 @@
+#!{{ ansible_python['executable'] }}
+
+# Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+import subprocess
+import os
+
+
+timezone_file = '/etc/timezone'
+
+output = loads('''{{ {"configured": True,
+                      "enabled": tzdata__enabled|bool
+                     } | to_nice_json }}''')
+
+if os.path.exists(timezone_file) and os.path.isfile(timezone_file):
+    try:
+        with open(timezone_file, 'r') as f:
+            for line in f:
+                output.update({'timezone': line.strip()})
+    except Exception:
+        pass
+
+print(dumps(output, sort_keys=True, indent=4))
