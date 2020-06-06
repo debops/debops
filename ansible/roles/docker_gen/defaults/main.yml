@@ -151,9 +151,7 @@ docker_gen__nginx_options: |
 #
 # Notify command used by :command:`docker-gen` to reload :program:`nginx`, depending on the
 # init system used.
-docker_gen__nginx_notify: '{{ docker_gen__nginx_notify_map[(ansible_local.init
-                             if (ansible_local|d() and ansible_local.init|d())
-                                 else "systemd")] }}'
+docker_gen__nginx_notify: '{{ docker_gen__nginx_notify_map[ansible_service_mgr] }}'
 
                                                                    # ]]]
 # .. envvar:: docker_gen__nginx_notify_map [[[
