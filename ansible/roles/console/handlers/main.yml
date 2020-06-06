@@ -1,30 +1,21 @@
 ---
-# Copyright (C) 2013-2016 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2014-2017 DebOps <https://debops.org/>
+# Copyright (C) 2013-2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2014-2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Reload sysvinit
   command: telinit q
 
-- name: Restart remote-fs.target
-  systemd:
-    daemon_reload: True
-    state: 'restarted'
-    name: 'remote-fs.target'
-  with_items:
-    - '{{ console__register_nfs_mount_points.results }}'
-    - '{{ console__register_mount_points.results }}'
-  when: (ansible_service_mgr == 'systemd' and item.changed) and
-        ((item.opts | default(console_default_mount_nfs_options) is match(".*x-systemd.automount.*")
-          and item.fstype is match("nfs.*")) or
-        (item.opts | default(console_default_mount_options) is match(".*x-systemd.automount.*")))
-
-- name: Restart local-fs.target
-  systemd:
-    daemon_reload: True
-    state: 'restarted'
-    name: 'local-fs.target'
-  with_items:
-    - '{{ console__register_mount_points.results }}'
-  when: ansible_service_mgr == 'systemd' and item.changed and
-        (item.opts | default(console_default_mount_options) is match(".*x-systemd.automount.*"))
+# FIXME: To be integrated in the 'nfs' role
+#- name: Restart remote-fs.target
+#  systemd:
+#    daemon_reload: True
+#    state: 'restarted'
+#    name: 'remote-fs.target'
+#  with_items:
+#    - '{{ console__register_nfs_mount_points.results }}'
+#    - '{{ console__register_mount_points.results }}'
+#  when: (ansible_service_mgr == 'systemd' and item.changed) and
+#        ((item.opts | default(console_default_mount_nfs_options) is match(".*x-systemd.automount.*")
+#          and item.fstype is match("nfs.*")) or
+#        (item.opts | default(console_default_mount_options) is match(".*x-systemd.automount.*")))

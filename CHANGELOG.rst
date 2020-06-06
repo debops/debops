@@ -255,6 +255,14 @@ General
 Removed
 ~~~~~~~
 
+:ref:`debops.console` role
+''''''''''''''''''''''''''
+
+- The local and NFS mount support has been removed from the
+  :ref:`debops.console` role. Local mounts can be managed using the
+  :ref:`debops.mount` role; NFS mounts can be managed by the :ref:`debops.nfs`
+  role.
+
 :ref:`debops.core` role
 '''''''''''''''''''''''
 
