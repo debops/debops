@@ -490,10 +490,7 @@ netbox__config_max_page_size: '1000'
 # .. envvar:: netbox__config_time_zone [[[
 #
 # Specify the timezone used by NetBox.
-netbox__config_time_zone: '{{ ansible_local.timezone
-                              if (ansible_local|d() and
-                                  ansible_local.timezone|d())
-                              else "Etc/UTC" }}'
+netbox__config_time_zone: '{{ ansible_local.tzdata.timezone | d("Etc/UTC") }}'
 
                                                                    # ]]]
 # .. envvar:: netbox__config_date_format [[[

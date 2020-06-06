@@ -859,7 +859,7 @@ owncloud__role_config:
 owncloud__role_recommended_config:
 
   ## The default timezone for logfiles is UTC.
-  logtimezone: '{{ ansible_local.timezone if (ansible_local|d() and ansible_local.timezone|d()) else "Etc/UTC" }}'
+  logtimezone: '{{ ansible_local.tzdata.timezone | d("Etc/UTC") }}'
 
   ## Loglevel to start logging at. Valid values are: 0 = Debug, 1 = Info,
   ##  2 = Warning, 3 = Error, and 4 = Fatal. The default value is Warning.
