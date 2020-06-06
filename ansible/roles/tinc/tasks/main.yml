@@ -42,10 +42,10 @@
     name: '{{ item }}'
     state: 'present'
   with_items: '{{ tinc__modprobe_modules }}'
-  when: (tinc__modprobe|bool and ansible_local|d() and ansible_local.cap12s|d() and
-         (not ansible_local.cap12s.enabled | bool or
-          (ansible_local.cap12s.enabled | bool and
-           'cap_sys_admin' in ansible_local.cap12s.list)))
+  when: (tinc__modprobe|bool and
+         ((ansible_system_capabilities_enforced|d())|bool and
+          "cap_sys_admin" in ansible_system_capabilities) or
+         not (ansible_system_capabilities_enforced|d(True))|bool)
 
 - name: Make sure that required modules are loaded on boot
   lineinfile:
@@ -54,10 +54,10 @@
     line: '{{ item }}'
     state: 'present'
   with_items: '{{ tinc__modprobe_modules }}'
-  when: (tinc__modprobe|bool and ansible_local|d() and ansible_local.cap12s|d() and
-         (not ansible_local.cap12s.enabled | bool or
-          (ansible_local.cap12s.enabled | bool and
-           'cap_sys_admin' in ansible_local.cap12s.list)))
+  when: (tinc__modprobe|bool and
+         ((ansible_system_capabilities_enforced|d())|bool and
+          "cap_sys_admin" in ansible_system_capabilities) or
+         not (ansible_system_capabilities_enforced|d(True))|bool)
 
 # Tinc configuration [[[1
 - name: Set tincd default environment

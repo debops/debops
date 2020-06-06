@@ -25,10 +25,10 @@
 # If ``True``, role will install and configure an NTP daemon. The daemon is not
 # required in containerized environments, where the host takes care for setting
 # time accurately.
-ntp__daemon_enabled: '{{ "True" if (ntp__daemon|d() and ansible_local|d() and
-                                    (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
-                                     (ansible_local.cap12s.enabled | bool and
-                                      "cap_sys_time" in ansible_local.cap12s.list))))
+ntp__daemon_enabled: '{{ "True" if (ntp__daemon|d() and
+                                    ((ansible_system_capabilities_enforced|d())|bool and
+                                      "cap_sys_time" in ansible_system_capabilities) or
+                                     not (ansible_system_capabilities_enforced|d(True))|bool)
                                 else "False" }}'
 
                                                                    # ]]]
