@@ -266,6 +266,12 @@ Removed
   been removed from the role. This functionality is now managed by the
   :ref:`debops.hier` role.
 
+:ref:`debops.ntp` role
+''''''''''''''''''''''
+
+- The timezone configuration has been moved from the :ref:`debops.ntp` role to
+  the :ref:`debops.tzdata` role.
+
 :ref:`debops.nullmailer` role
 '''''''''''''''''''''''''''''
 

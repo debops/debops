@@ -209,25 +209,25 @@ the :command:`ssh` service from specified networks.
 The :ref:`debops.sshd` role has many more variables you can check out to see
 the default configuration used by DebOps and what can be changed as needed.
 
-ntp__timezone
-~~~~~~~~~~~~~
+tzdata__timezone
+~~~~~~~~~~~~~~~~
 
 By default, DebOps does not try to change the remote host timezone and tries to
 use the detected one in roles that need that information for the configuration.
 If you need to change the timezone, you can do it by setting the
-``ntp__timezone`` variable like this:
+:envvar:`tzdata__timezone` variable like this:
 
 .. code-block:: yaml
 
    ---
-   ntp__timezone: 'America/New_York'
+   tzdata__timezone: 'America/New_York'
 
-For UTC timezone, use this format:
+For UTC timezone (the default), use this format:
 
 .. code-block:: yaml
 
    ---
-   ntp__timezone: 'Etc/UTC'
+   tzdata__timezone: 'Etc/UTC'
 
 nullmailer__relayhost
 ~~~~~~~~~~~~~~~~~~~~~

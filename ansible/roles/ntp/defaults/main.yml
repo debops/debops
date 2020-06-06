@@ -1,9 +1,9 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# .. Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2014-2020 Maciej Delmanowski <drybjed@gmail.com>
 # .. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-# .. Copyright (C) 2014-2017 DebOps <https://debops.org/>
+# .. Copyright (C) 2014-2020 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _ntp__ref_defaults:
@@ -154,18 +154,6 @@ ntp__purge_packages:
   - '{{ "openntpd" if (ntp__daemon != "openntpd")                else [] }}'
   - '{{ "ntpdate"  if (ntp__daemon != "ntpdate" and
                        not ntp__ignore_ntpdate|bool)             else [] }}'
-                                                                   # ]]]
-                                                                   # ]]]
-# Timezone configuration [[[
-# --------------------------
-
-# .. envvar:: ntp__timezone [[[
-#
-# Specify timezone in the format of 'Area/Zone'. Use :command:`timedatectl
-# list-timezones` to see a list of possible values. To set the UTC timezone,
-# specify it as 'Etc/UTC'.
-# If this variable is empty or set to ``False``, the timezone won't be changed.
-ntp__timezone: ''
                                                                    # ]]]
                                                                    # ]]]
 # OpenNTPd configuration [[[

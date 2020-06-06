@@ -15,6 +15,17 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+Inventory variable changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Some variables in the :ref:`debops.ntp` role have been removed:
+
+  +-------------------+----------------------------+---------------+
+  | Old variable name | New variable name          | Changed value |
+  +===================+============================+===============+
+  | ``ntp__timezone`` | :envvar:`tzdata__timezone` | No            |
+  +-------------------+----------------------------+---------------+
+
 
 v2.0.0 (2020-01-30)
 -------------------
