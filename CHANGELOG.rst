@@ -262,6 +262,9 @@ Removed
   have been removed from the role. A replacement fact, ``ansible_machine_id``
   is an Ansible built-in.
 
+- The ``ansible_local.init`` fact has been removed from the role. A native
+  ``ansible_service_mgr`` Ansible fact is it's replacement.
+
 - The :file:`root.fact` script, corresponding variables and documentation have
   been removed from the role. This functionality is now managed by the
   :ref:`debops.hier` role.
