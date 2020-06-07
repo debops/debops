@@ -45,14 +45,6 @@
   with_items: [ 'core', 'tags' ]
   register: core__register_core_fact
 
-- name: Install local fact scripts
-  copy:
-    src: 'etc/ansible/facts.d/'
-    dest: '/etc/ansible/facts.d/'
-    mode: '0755'
-  register: core__register_fact_scripts
-
 - name: Gather local facts if they changed
   action: setup
-  when: core__register_core_fact is changed or
-        core__register_fact_scripts is changed
+  when: core__register_core_fact is changed

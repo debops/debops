@@ -273,6 +273,10 @@ Removed
 - The ``ansible_local.init`` fact has been removed from the role. A native
   ``ansible_service_mgr`` Ansible fact is it's replacement.
 
+- The ``ansible_local.cap12s`` fact has been removed from the role. A native
+  set of Ansible facts (``ansible_system_capabilities``,
+  ``ansible_system_capabilities_enforced`` is be used as a replacement.
+
 - The :file:`root.fact` script, corresponding variables and documentation have
   been removed from the role. This functionality is now managed by the
   :ref:`debops.hier` role.
