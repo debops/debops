@@ -1,5 +1,12 @@
 ---
 
+- import_role:
+    name: 'ansible_plugins'
+
+- import_role:
+    name: 'secret'
+
+# Install packages [[[1
 - name: Install required packages
   package:
     name: '{{ q("flattened", borgbackup__base_packages,
@@ -8,6 +15,7 @@
     state: 'present'
   tags: [ 'role::borgbackup:install' ]
 
+# Create Python virtualenv and install Python modules [[[1
 - name: Create Python virtualenv
   pip:
     name:       '{{ item.name | d(item) }}'
@@ -36,7 +44,7 @@
   with_flattened: '{{ borgbackup__virtualenv_executables }}'
   tags: [ 'role::borgbackup:install' ]
 
-
+# Configure borgmatic [[[1
 - name: Create directory for borgmatic configuration
   file:
     path: '{{ borgbackup__configuration_base_path }}'
@@ -61,7 +69,6 @@
   with_items: '{{ borgbackup__combined_configuration | parse_kv_config }}'
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
   tags: [ 'role::borgbackup:config' ]
-
 
 - name: Create directory for borgbackup passphrase files
   file:
@@ -89,6 +96,7 @@
   tags: [ 'role::borgbackup:config' ]
 
 
+# Initialize borgbackup repository [[[1
 - name: Initialize borgbackup repository
   command: borgmatic --config '{{ borgbackup__configuration_base_path + "/" + item.name + ".yaml" }}' --init --encryption keyfile
   with_items: '{{ borgbackup__combined_configuration | parse_kv_config }}'
@@ -108,6 +116,7 @@
     verify_host: True
   tags: [ 'role::borgbackup:config' ]
 
+# Create Ansible local facts [[[1
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'

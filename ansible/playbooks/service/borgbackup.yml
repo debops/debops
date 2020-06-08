@@ -1,6 +1,7 @@
 ---
 
 - name: Setup backup using borgbackup and borgmatic
+  collections: [ 'debops.debops' ]
   hosts: [ 'debops_service_borgbackup' ]
   become: True
 
@@ -10,10 +11,10 @@
 
   roles:
 
-    - role: debops.apt_preferences
+    - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ borgbackup__apt_preferences__dependent_list }}'
 
-    - role: debops.borgbackup
+    - role: borgbackup
       tags: [ 'role::borgbackup' ]
