@@ -389,6 +389,12 @@ Fixed
   Existing installations might need to be recreated to avoid warnings about
   duplicate OIDs emitted during OpenLDAP operations.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- Fix BeagleBoards detection with Debian 10 image.
+  Tested with a BeagleBoards Black.
+
 
 `debops v2.0.1`_ - 2020-02-03
 -----------------------------
