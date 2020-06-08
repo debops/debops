@@ -155,6 +155,12 @@ General
 - Correctly display shell error messages in the :command:`debops-defaults`
   script.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- Fix BeagleBoards detection with Debian 10 image.
+  Tested with a BeagleBoards Black.
+
 :ref:`debops.cron` role
 '''''''''''''''''''''''
 
