@@ -1,0 +1,587 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2020 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+# .. Copyright (C) 2020 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _logstash__ref_defaults:
+
+# debops.logstash default variables [[[
+# ===================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# APT packages, version [[[
+# -------------------------
+
+# The ``debops.logstash`` role uses the ``debops.elatic_co`` Ansible role to
+# configure the Elastic APT repositories and install the packages. The role
+# also installs the Ansible facts that provide the :command:`logstash` version.
+
+# .. envvar:: logstash__base_packages [[[
+#
+# List of base APT packages to install.
+logstash__base_packages: [ 'logstash' ]
+
+                                                                   # ]]]
+# .. envvar:: logstash__packages [[[
+#
+# List of additional APT packages to install with Logstash.
+logstash__packages: []
+
+                                                                   # ]]]
+# .. envvar:: logstash__version [[[
+#
+# Store the detected Logstash version in a convenient variable for conditional
+# configuration.
+logstash__version: '{{ ansible_local.elastic_co.packages.logstash
+                     if (ansible_local|d() and ansible_local.elastic_co|d() and
+                         ansible_local.elastic_co.packages|d() and
+                         ansible_local.elastic_co.packages.logstash|d())
+                     else "0.0.0" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# UNIX user and group [[[
+# -----------------------
+
+# .. envvar:: logstash__user [[[
+#
+# Name of the UNIX user account used by Logstash.
+logstash__user: 'logstash'
+
+                                                                   # ]]]
+# .. envvar:: logstash__group [[[
+#
+# Name of the UNIX primary group used by Logstash.
+logstash__group: 'logstash'
+                                                                   # ]]]
+                                                                   # ]]]
+# Firewall configuration [[[
+# --------------------------
+
+# .. envvar:: logstash__allow [[[
+#
+# List of IP addresses or CIDR subnets that can connect to the Logstash
+# TCP transport port. This variable needs to be set to allow nodes to
+# communicate. If this list is empty, nobody can connect to the transport port
+logstash__allow: []
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Logstash default pipeline options [[[
+# -------------------------
+
+# .. envvar:: logstash__node_name [[[
+#
+# Descriptive name of the Logstash node, by default based on the hostname.
+logstash__node_name: '{{ ansible_hostname }}'
+
+                                                                   # ]]]
+# .. envvar:: logstash__port [[[
+#
+# Specify the TCP port on which Logstash will listen for connections.
+logstash__port: '5044'
+
+                                                                   # ]]]
+# .. envvar:: logstash__elasticsearch_hosts [[[
+#
+# The URL addresses of the Elasticsearch cluster the Logstash client should connect
+# to. By default Logstash is configured to connect to a standalone
+# Elasticsearch instance on the same host.
+logstash__elasticsearch_hosts: [ 'http://localhost:9200' ]
+
+                                                                   # ]]]
+# .. envvar:: logstash__elasticsearch_username [[[
+#
+# The username used by Logstash for internal maintenance on password-protected
+# Elasticsearch clusters.
+logstash__elasticsearch_username: ''
+
+                                                                   # ]]]
+# .. envvar:: logstash__elasticsearch_password [[[
+#
+# The password used by Logstash for internal maintenance on password-protected
+# Elasticsearch clusters.
+logstash__elasticsearch_password: ''
+
+                                                                   # ]]]
+# .. envvar:: logstash__index [[[
+#
+# The Logstash index pattern used by Logstash to store beats events.
+logstash__index: '%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Memory options [[[
+# ------------------
+
+# The variables below configure JVM memory allocation options. See
+# https://www.elastic.co/guide/en/logstash/master/performance-troubleshooting.html
+# for more details.
+
+# .. envvar:: logstash__jvm_memory_heap_size_multiplier [[[
+#
+# This variable defines a float value which will be used to select the JVM heap
+# size depending on the size of the available system RAM.
+logstash__jvm_memory_heap_size_multiplier: '0.5'
+
+                                                                   # ]]]
+# .. envvar:: logstash__jvm_memory_min_heap_size [[[
+#
+# Specify the minimum JVM heap size, depending on the available system RAM.
+logstash__jvm_memory_min_heap_size: '{{ (((ansible_memtotal_mb|int
+                                          * logstash__jvm_memory_heap_size_multiplier|float)
+                                          | round | int) | string + "m")
+                                        if (ansible_memtotal_mb|int / 2 <= 32768)
+                                        else "32600m" }}'
+
+                                                                   # ]]]
+# .. envvar:: logstash__jvm_memory_max_heap_size [[[
+#
+# Specify the maximum JVM heap size, depending on the available system RAM.
+# This usually should be the same as the minimum heap size, for performance
+# reasons.
+logstash__jvm_memory_max_heap_size: '{{ logstash__jvm_memory_min_heap_size }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Paths [[[
+# ---------
+
+# The variables below configure paths used by Logstash.
+
+# .. envvar:: logstash__path_data [[[
+#
+# Logstash data path. He will be created and permissions will be updated if needed.
+logstash__path_data: '/var/lib/logstash'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Pipelines [[[
+# ---------
+
+# The variables below configure pipelines used by Logstash.
+
+# .. envvar:: logstash__pipeline_id [[[
+#
+# The ID of the pipeline.
+logstash__pipeline_id: 'main'
+
+                                                                   # ]]]
+# .. envvar:: logstash__pipeline_workers [[[
+#
+# Set the number of workers that will, in parallel, execute the filters+outputs
+# stage of the pipeline.
+logstash__pipeline_workers: '{{ ansible_processor_vcpus|int }}'
+
+                                                                   # ]]]
+# .. envvar:: logstash__default_pipeline_filters [[[
+#
+# Filters for default main pipeline.
+logstash__default_pipeline_filter: []
+
+                                                                   # ]]]
+# .. envvar:: logstash__default_pipeline [[[
+#
+# Define the default contents of the :file:`/etc/logstash/pipelines.yml`
+# configuration file and stages in :file:`/etc/logstash/conf.d/pipeline.conf`
+logstash__default_pipeline:
+
+  - name: '{{ logstash__pipeline_id }}'
+    stages:
+      - name: 'input'
+        sections:
+          - plugins:
+              - name: 'beats'
+                settings:
+                  - port: 5044
+                  - ssl: '{{ logstash__pki|bool }}'
+                  - ssl_certificate_authorities: '{{ [ logstash__pki_path + "/" + logstash__pki_realm +
+                                                       "/" + logstash__pki_ca ] }}'
+                  - ssl_certificate: '{{ logstash__pki_path + "/" + logstash__pki_realm +
+                                         "/" + logstash__pki_crt }}'
+                  - ssl_key: '{{ logstash__pki_path + "/" + logstash__pki_realm +
+                                 "/" + logstash__pki_key }}'
+                  - ssl_verify_mode: '{{ logstash__ssl_verify_mode }}'
+                  - tls_min_version: '{{ logstash__tls_min_version }}'
+                  - tls_max_version: '{{ logstash__tls_max_version }}'
+
+      - name: 'filter'
+        sections: '{{ logstash__default_pipeline_filter }}'
+
+      - name: 'output'
+        sections:
+          - plugins:
+              - name: 'elasticsearch'
+                settings:
+                  - hosts: '{{ logstash__elasticsearch_hosts }}'
+                  - index: '{{ logstash__index }}'
+                  - user: '{{ logstash__elasticsearch_username if
+                              logstash__elasticsearch_username else "" }}'
+                  - password: '{{ logstash__elasticsearch_password if
+                                  logstash__elasticsearch_password else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: logstash__pipelines [[[
+#
+# Define the contents of the :file:`/etc/logstash/pipelines.yml`
+# configuration file and stages in :file:`/etc/logstash/conf.d/pipeline.conf`
+# See https://www.elastic.co/guide/en/logstash/current/multiple-pipelines.html
+# for more details.
+logstash__pipelines: []
+
+                                                                   # ]]]
+# .. envvar:: logstash__combined_pipelines [[[
+#
+# Actual list of Logstash pipelines passed to the
+# configuration template. This list defines the order in which the options from
+# different variables are processed.
+logstash__combined_pipelines: '{{ logstash__default_pipeline + logstash__pipelines }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Queuing Settings [[[
+# ---------
+
+# The variables below configure queue used by Logstash.
+
+# .. envvar:: logstash__queue_type [[[
+#
+# Internal queuing model, "memory" for legacy in-memory based queuing and
+# "persisted" for disk-based acked queueing. Defaults is memory
+logstash__queue_type: 'memory'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Logstash configuration file [[[
+# ------------------------------------
+
+# The variables below define the contents of the
+# :file:`/etc/logstash/logstash.yml` configuration file.
+# See :ref:`logstash__ref_configuration` for the details and configuration
+# syntax.
+
+# .. envvar:: logstash__default_configuration [[[
+#
+# The default configuration options which should be present in the main
+# configuration file.
+logstash__default_configuration:
+
+  - name: 'node.name'
+    value: '{{ logstash__node_name }}'
+    comment: 'Use a descriptive name for the node'
+
+  - name: 'path.data'
+    value: '{{ logstash__path_data }}'
+    comment: |
+      Which directory should be used by logstash and its plugins
+      for any persistent needs. Defaults to LOGSTASH_HOME/data
+
+  - name: 'pipeline.id'
+    value: '{{ logstash__pipeline_id }}'
+    comment: 'The ID of the pipeline'
+
+  - name: 'pipeline.workers'
+    value: '{{ logstash__pipeline_workers }}'
+    comment: |
+      Set the number of workers that will, in parallel, execute the filters+outputs
+      stage of the pipeline
+
+  - name: 'queue.type'
+    value: '{{ logstash__queue_type }}'
+    comment: |
+      Internal queuing model, "memory" for legacy in-memory based queuing and
+      "persisted" for disk-based acked queueing. Defaults is memory
+
+  - name: 'log.level'
+    value: 'info'
+    comment: |
+       Options for log.level:
+         * fatal
+         * error
+         * warn
+         * info (default)
+         * debug
+         * trace
+
+  - name: 'path.logs'
+    value: '/var/log/logstash'
+    comment: 'Path to log files'
+
+                                                                   # ]]]
+# .. envvar:: logstash__configuration [[[
+#
+# List of configuration options defined on all hosts in the Ansible inventory.
+logstash__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: logstash__group_configuration [[[
+#
+# List of configuration options defined on hosts in specific Ansible inventory
+# group.
+logstash__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: logstash__host_configuration [[[
+#
+# List of configuration options defined on specific hosts in the Ansible
+# inventory.
+logstash__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: logstash__plugin_configuration [[[
+#
+# List of configuration options defined separately for any Logstash
+# plugins. See :ref:`logstash__ref_plugins` for more details.
+logstash__plugin_configuration: '{{ lookup("template",
+                                    "lookup/logstash__plugin_configuration.j2")
+                                    | from_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: logstash__dependent_role [[[
+#
+# A string that identifies another Ansible role that uses the
+# ``debops.logstash`` role as a dependency. This value is needed to
+# correctly store the dependent configuration options.
+# See :ref:`logstash__ref_dependency` for more details.
+logstash__dependent_role: ''
+
+                                                                   # ]]]
+# .. envvar:: logstash__dependent_state [[[
+#
+# Specify the state of the dependent configuration options, either ``present``
+# (options should be included in the configuration file) or ``absent`` (options
+# should be removed from the configuration file).
+# See :ref:`logstash__ref_dependency` for more details.
+logstash__dependent_state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: logstash__dependent_configuration [[[
+#
+# List of Logstash configuration options defined by another Ansible role
+# and specified using role dependent variables.
+logstash__dependent_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: logstash__dependent_configuration_filter [[[
+#
+# Actual variable used in the combined Logstash configuration that unwraps
+# the dependent configuration specified by other Ansible roles and converts it
+# into format understood by the ``debops.logstash`` configuration
+# template. See :ref:`logstash__ref_dependency` for more details.
+logstash__dependent_configuration_filter: '{{ lookup("template",
+                                              "lookup/logstash__dependent_configuration_filter.j2")
+                                              | from_yaml }}'
+
+                                                                   # ]]]
+# .. envvar:: logstash__combined_configuration [[[
+#
+# Actual list of Logstash configuration options passed to the
+# configuration template. This list defines the order in which the options from
+# different variables are processed.
+logstash__combined_configuration: '{{ lookup("flattened", (logstash__default_configuration
+                                      + logstash__plugin_configuration
+                                      + logstash__dependent_configuration_filter
+                                      + logstash__configuration
+                                      + logstash__group_configuration
+                                      + logstash__host_configuration)) }}'
+
+                                                                   # ]]]
+# .. envvar:: logstash__configuration_sections [[[
+#
+# List of sections defined in the :file:`/etc/logstash/logstash.yml`
+# configuration file and corresponding variable groups.
+# See :ref:`logstash__ref_configuration_sections` for more details.
+logstash__configuration_sections:
+
+  - name: 'Node identity'
+    part: 'node'
+
+  - name: 'Data path'
+    part: 'path'
+
+  - name: 'Pipeline settings'
+    part: 'pipeline'
+
+  - name: 'Pipeline Configuration Settings'
+    parts: 'config'
+
+  - name: 'Module Settings'
+    part: 'modules'
+
+  - name: 'Queuing Settings'
+    part: 'queue'
+
+  - name: 'Dead-Letter Queue Settings'
+    part: 'dead_letter_queue'
+
+  - name: 'Metrics Settings'
+    part: 'http'
+
+  - name: 'Debugging Settings'
+    part: 'log'
+
+  - name: 'X-Pack Settings (not applicable for OSS build)'
+    part: 'xpack'
+
+  - name: 'Search Guard'
+    part: 'searchguard'
+                                                                   # ]]]
+                                                                   # ]]]
+# Plugin configuration [[[
+# ------------------------
+
+# These variables define lists of Logstash plugins to install/remove, as
+# well as additional configuration options for them.
+# See :ref:`logstash__ref_plugins` for more details.
+
+# .. envvar:: logstash__plugins [[[
+#
+# List of Logstash plugins to manage on all hosts in the Ansible
+# inventory.
+logstash__plugins: []
+
+                                                                   # ]]]
+# .. envvar:: logstash__group_plugins [[[
+#
+# List of Logstash plugins to manage on hosts in specific Ansible
+# inventory group.
+logstash__group_plugins: []
+
+                                                                   # ]]]
+# .. envvar:: logstash__host_plugins [[[
+#
+# List of Logstash plugins to manage on specific hosts in the Ansible
+# inventory.
+logstash__host_plugins: []
+
+                                                                   # ]]]
+# .. envvar:: logstash__combined_plugins [[[
+#
+# Actual list of Logstash plugins that combines other plugin variables and
+# is used in the Ansible tasks and the configuration template.
+logstash__combined_plugins: '{{ lookup("flattened", (logstash__plugins
+                                + logstash__group_plugins
+                                + logstash__host_plugins)) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# SSL configuration [[[
+# ---------------------
+
+# .. envvar:: logstash__append_groups [[[
+#
+# List of additional system groups to append to the Logstash system user.
+# ``ssl-cert`` group is required for access to certificate private keys.
+logstash__append_groups: [ 'ssl-cert' ]
+
+                                                                   # ]]]
+# .. envvar:: logstash__pki [[[
+#
+# Enable or disable support for SSL in Logstash (using :ref:`debops.pki`).
+logstash__pki: '{{ True
+                   if (ansible_local|d() and ansible_local.pki|d() and
+                       ansible_local.pki.enabled|d()|bool and
+                       logstash__pki_realm in ansible_local.pki.known_realms)
+                   else False }}'
+
+                                                                   # ]]]
+# .. envvar:: logstash__pki_path [[[
+#
+# Base path for PKI directory.
+logstash__pki_path: '{{ (ansible_local.pki.base_path
+                         if (ansible_local|d() and ansible_local.pki|d() and
+                             ansible_local.pki.base_path|d())
+                         else "/etc/pki") }}'
+
+                                                                   # ]]]
+# .. envvar:: logstash__pki_realm [[[
+#
+# Default PKI realm used by Logstash server.
+logstash__pki_realm: '{{ ansible_local.pki.realm
+                         if (ansible_local|d() and ansible_local.pki|d() and
+                             ansible_local.pki.realm|d())
+                         else "domain" }}'
+
+                                                                   # ]]]
+# .. envvar:: logstash__pki_ca [[[
+#
+# Root CA certificate used by Logstash, relative to :envvar:`logstash__pki_realm`.
+logstash__pki_ca: 'CA.crt'
+
+                                                                   # ]]]
+# .. envvar:: logstash__pki_crt [[[
+#
+# Host certificate used by Logstash, relative to :envvar:`logstash__pki_realm`.
+logstash__pki_crt: 'default.crt'
+
+                                                                   # ]]]
+# .. envvar:: logstash__pki_key [[[
+#
+# Host private key used by Logstash, relative to :envvar:`logstash__pki_realm`.
+logstash__pki_key: 'default.key'
+
+                                                                   # ]]]
+# .. envvar:: logstash__ssl_verify_mode [[[
+#
+# Value can be any of: none, peer, force_peer.
+# By default the server doesn’t do any client verification.
+# peer will make the server ask the client to provide a certificate.
+# If the client provides a certificate, it will be validated.
+# force_peer will make the server ask the client to provide a certificate.
+# If the client doesn’t provide a certificate, the connection will be closed.
+# This option needs to be used with ssl_certificate_authorities and a defined list of CAs.
+logstash__ssl_verify_mode: 'force_peer'
+
+                                                                   # ]]]
+# .. envvar:: logstash__tls_min_version [[[
+#
+# The minimum TLS version allowed for the encrypted connections.
+# The value must be one of the following: 1.0 for TLS 1.0, 1.1 for TLS 1.1, 1.2 for TLS 1.2
+logstash__tls_min_version: 1.2
+
+                                                                   # ]]]
+# .. envvar:: logstash__tls_max_version [[[
+#
+# The maximum TLS version allowed for the encrypted connections.
+# The value must be the one of the following: 1.0 for TLS 1.0, 1.1 for TLS 1.1, 1.2 for TLS 1.2
+logstash__tls_max_version: 1.2
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: logstash__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+logstash__etc_services__dependent_list:
+  - name: 'logstash'
+    port: '{{ logstash__port }}'
+
+                                                                   # ]]]
+# .. envvar:: logstash__elastic_co__dependent_packages [[[
+#
+# Configuration for the :ref:`debops.elastic_co` Ansible role.
+logstash__elastic_co__dependent_packages:
+  - '{{ logstash__base_packages }}'
+  - '{{ logstash__packages }}'
+
+                                                                   # ]]]
+# .. envvar:: logstash__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+logstash__ferm__dependent_rules:
+
+  - name: 'logstash'
+    type: 'accept'
+    dport: 'logstash'
+    saddr: '{{ logstash__allow }}'
+    accept_any: False
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

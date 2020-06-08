@@ -1,0 +1,15 @@
+{# Copyright (C) 2020 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+ # Copyright (C) 2020 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+# This file is where you define your pipelines. You can define multiple.
+# For more information on multiple pipelines, see the documentation:
+#   https://www.elastic.co/guide/en/logstash/current/multiple-pipelines.html
+
+{% for pipeline in logstash__combined_pipelines %}
+- pipeline.id: {{ pipeline.name }}
+  path.config: /etc/logstash/conf.d/{{ pipeline.name }}.conf
+
+{% endfor %}

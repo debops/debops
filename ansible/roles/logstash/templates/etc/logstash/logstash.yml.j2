@@ -1,0 +1,272 @@
+{# Copyright (C) 2020 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+ # Copyright (C) 2020 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+# Settings file in YAML
+#
+# Settings can be specified either in hierarchical form, e.g.:
+#
+#   pipeline:
+#     batch:
+#       size: 125
+#       delay: 5
+#
+# Or as flat keys:
+#
+#   pipeline.batch.size: 125
+#   pipeline.batch.delay: 5
+#
+
+{% set logstash__tpl_config = {} %}
+{% set logstash__tpl_comment = {} %}
+{% for item in logstash__combined_configuration %}
+{%   if item is mapping %}
+{%     if item.name|d() %}
+{%       if item.state|d('present') != 'absent' %}
+{%         if item.value is defined %}
+{%           set name_exploded = item.name.split('.') %}
+{%           set current_dict = logstash__tpl_config[name_exploded[0]] | d({}) %}
+{%           if item.state|d('present') == 'comment' %}
+{%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'comment': item.value } }) %}
+{%           else %}
+{%             set _ = current_dict.update({ name_exploded[1:] | join('.'): item.value }) %}
+{%           endif %}
+{%           set _ = logstash__tpl_config.update({ name_exploded[0]: current_dict }) %}
+{#           set _ = logstash__tpl_config.update({ item.name: item.value }) #}
+{%           if item.comment|d() %}
+{%             set _ = logstash__tpl_comment.update({ item.name: item.comment }) %}
+{%           endif %}
+{%         elif item.options is defined %}
+{%           set name_exploded = item.name.split('.') %}
+{%           set current_dict = logstash__tpl_config[name_exploded[0]] | d({}) %}
+{%           if item.state|d('present') == 'comment' %}
+{%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'comment': item.options, 'options': item.options } }) %}
+{%           else %}
+{%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'options': item.options } }) %}
+{%           endif %}
+{%           set _ = logstash__tpl_config.update({ name_exploded[0]: current_dict }) %}
+{%           if item.comment|d() %}
+{%             set _ = logstash__tpl_comment.update({ item.name: item.comment }) %}
+{%           endif %}
+{%         elif item.empty is defined %}
+{%           set name_exploded = item.name.split('.') %}
+{%           set current_dict = logstash__tpl_config[name_exploded[0]] | d({}) %}
+{%           if item.state|d('present') == 'comment' %}
+{%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'comment': item.empty, 'empty': item.empty } }) %}
+{%           else %}
+{%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'empty': item.empty } }) %}
+{%           endif %}
+{%           set _ = logstash__tpl_config.update({ name_exploded[0]: current_dict }) %}
+{%           if item.comment|d() %}
+{%             set _ = logstash__tpl_comment.update({ item.name: item.comment }) %}
+{%           endif %}
+{%         elif item.raw is defined %}
+{%           set name_exploded = item.name.split('.') %}
+{%           set current_dict = logstash__tpl_config[name_exploded[0]] | d({}) %}
+{%           if item.state|d('present') == 'comment' %}
+{%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'comment': item.raw, 'raw': item.raw } }) %}
+{%           else %}
+{%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'raw': item.raw } }) %}
+{%           endif %}
+{%           set _ = logstash__tpl_config.update({ name_exploded[0]: current_dict }) %}
+{%           if item.comment|d() %}
+{%             set _ = logstash__tpl_comment.update({ item.name: item.comment }) %}
+{%           endif %}
+{%         endif %}
+{%       elif item.state|d('present') == 'absent' %}
+{%         set name_exploded = item.name.split('.') %}
+{%         set current_dict = logstash__tpl_config[name_exploded[0]] | d({}) %}
+{%         set _ = current_dict.pop(name_exploded[1:] | join('.'), None) %}
+{%         if current_dict.keys() | length > 0 %}
+{%           set _ = logstash__tpl_config.update({ name_exploded[0]: current_dict }) %}
+{%         else %}
+{%           set _ = logstash__tpl_config.pop(name_exploded[0], None) %}
+{%         endif %}
+{#         set _ = logstash__tpl_config.pop(item.name, None) #}
+{%       endif %}
+{%     else %}
+{%       for key, value in item.items() %}
+{%         set name_exploded = key.split('.') %}
+{%         set current_dict = logstash__tpl_config[name_exploded[0]] | d({}) %}
+{%         set _ = current_dict.update({ name_exploded[1:] | join('.'): value }) %}
+{%         set _ = logstash__tpl_config.update({ name_exploded[0]: current_dict }) %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+{% macro print_config(config, key_prefix='') %}
+{%   for key, value in config.items() %}
+{%     if key|d() %}{# key is not empty #}
+{%       if (key_prefix + '.' + key) in logstash__tpl_comment.keys() %}
+
+{{ logstash__tpl_comment[key_prefix + '.' + key] | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%       endif %}
+{%       if value | bool and value is not iterable %}
+{{ '%s: %s' | format(key_prefix + '.' + key, 'true') }}
+{%       elif not value | bool and value is not iterable %}
+{%         if value is not none %}
+{%           if value | int or value | string == '0' %}
+{{ '%s: %s' | format(key_prefix + '.' + key, value) }}
+{%           else %}
+{{ '%s: %s' | format(key_prefix + '.' + key, 'false') }}
+{%           endif %}
+{%         endif %}
+{%       elif value is string %}
+{{ '%s: "%s"' | format(key_prefix + '.' + key, value) }}
+{%       elif value is number %}
+{{ '%s: %s' | format(key_prefix + '.' + key, value) }}
+{%       elif value is mapping %}
+{%         if value.comment is defined %}
+{%           if value.comment | bool and value.comment is not iterable %}
+{{ '# %s: %s' | format(key_prefix + '.' + key, 'true') }}
+{%           elif not value.comment | bool and value.comment is not iterable %}
+{%             if value.comment is not none %}
+{%               if value.comment | int or value.comment | string == '0' %}
+{{ '# %s: %s' | format(key_prefix + '.' + key, value.comment) }}
+{%               else %}
+{{ '# %s: %s' | format(key_prefix + '.' + key, 'false') }}
+{%               endif %}
+{%             endif %}
+{%           elif value.comment is string %}
+{{ '# %s: "%s"' | format(key_prefix + '.' + key, value.comment) }}
+{%           elif value.comment is number %}
+{{ '# %s: %s' | format(key_prefix + '.' + key, value.comment) }}
+{%           elif value.comment is mapping %}
+{%             if value.options|d() %}
+{%               if value.options is mapping %}
+{%                 for option_key, option_value in value.options.items() %}
+{%                   if option_value | bool and option_value is not iterable %}
+{{ '# %s: %s' | format(key_prefix + '.' + option_key, 'true') }}
+{%                   elif not option_value | bool and option_value is not iterable %}
+{%                     if option_value is not none %}
+{%                       if option_value | int or option_value | string == '0' %}
+{{ '# %s: %s' | format(key_prefix + '.' + option_key, option_value) }}
+{%                       else %}
+{{ '# %s: %s' | format(key_prefix + '.' + option_key, 'false') }}
+{%                       endif %}
+{%                     endif %}
+{%                   elif option_value is string %}
+{{ '# %s: "%s"' | format(key_prefix + '.' + option_key, option_value) }}
+{%                   elif option_value is number %}
+{{ '# %s: %s' | format(key_prefix + '.' + option_key, option_value) }}
+{%                   elif option_value is not string and option_value is not mapping %}
+{%                     if option_value | count <= 4 %}
+{{ '# %s: %s' | format(key_prefix + '.' + option_key, '[ "' + option_value | join('", "') + '" ]') }}
+{%                     else %}
+# {{ key_prefix + '.' + option_key }}:
+{%                       for element in option_value %}
+#  - "{{ element }}"
+{%                       endfor %}
+
+{%                     endif %}
+{%                   endif %}
+{%                 endfor %}
+{%               endif %}
+{%             elif value.empty is defined %}
+{%               if value.empty is string %}
+{{ '# %s: "%s"' | format(key_prefix + '.' + key, value.empty) }}
+{%               else %}
+{{ '# %s: %s' | format(key_prefix + '.' + key, value.empty) }}
+{%               endif %}
+{%             elif value.raw|d() %}
+{{ value.raw | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%             endif %}
+{%           elif value.comment is not string and value.comment is not mapping %}
+{%             if value.comment | count <= 4 %}
+{{ '# %s: %s' | format(key_prefix + '.' + key, '[ "' + value.comment | join('", "') + '" ]') }}
+{%             else %}
+# {{ key_prefix + '.' + key }}:
+{%               for element in value.comment %}
+#  - "{{ element }}"
+{%               endfor %}
+
+{%             endif %}
+{%           endif %}
+{%         elif value.options|d() %}
+{%           if value.options is mapping %}
+{%             for option_key, option_value in value.options.items() %}
+{%               if option_value | bool and option_value is not iterable %}
+{{ '%s: %s' | format(key_prefix + '.' + option_key, 'true') }}
+{%               elif not option_value | bool and option_value is not iterable %}
+{%                 if option_value is not none %}
+{%                   if option_value | int or option_value | string == '0' %}
+{{ '%s: %s' | format(key_prefix + '.' + option_key, option_value) }}
+{%                   else %}
+{{ '%s: %s' | format(key_prefix + '.' + option_key, 'false') }}
+{%                   endif %}
+{%                 endif %}
+{%               elif option_value is string %}
+{{ '%s: "%s"' | format(key_prefix + '.' + option_key, option_value) }}
+{%               elif option_value is number %}
+{{ '%s: %s' | format(key_prefix + '.' + option_key, option_value) }}
+{%               elif option_value is not string and option_value is not mapping %}
+{%                 if option_value | count <= 4 %}
+{{ '%s: %s' | format(key_prefix + '.' + option_key, '[ "' + option_value | join('", "') + '" ]') }}
+{%                 else %}
+{{ key_prefix + '.' + option_key }}:
+{%                  for element in option_value %}
+  - "{{ element }}"
+{%                  endfor %}
+
+{%                endif %}
+{%              endif %}
+{%             endfor %}
+{%           endif %}
+{%         elif value.empty is defined %}
+{%           if value.empty is string %}
+{{ '%s: "%s"' | format(key_prefix + '.' + key, value.empty) }}
+{%           else %}
+{{ '%s: %s' | format(key_prefix + '.' + key, value.empty) }}
+{%           endif %}
+{%         elif value.raw|d() %}
+{{ value.raw }}
+{%         endif %}
+{%       elif value is not string and value is not mapping %}
+{%         if value | count <= 4 %}
+{{ '%s: %s' | format(key_prefix + '.' + key, '[ "' + value | join('", "') + '" ]') }}
+{%         else %}
+{{ key_prefix + '.' + key }}:
+{%           for element in value %}
+  - "{{ element }}"
+{%           endfor %}
+
+{%         endif %}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{% endmacro %}
+{% set logstash__tpl_seen_sections = [] %}
+{% for section in logstash__configuration_sections %}
+{%   if section.name|d() %}
+{%     if section.part|d() and ([ section.part ] if section.part is string else section.part) | intersect(logstash__tpl_config.keys()) %}
+{{ "{:-^78}".format(' ' + section.name + ' ') | comment }}
+{%     elif section.parts|d() and ([ section.parts ] if section.parts is string else section.parts) | intersect(logstash__tpl_config.keys()) %}
+{{ "{:-^78}".format(' ' + section.name + ' ') | comment }}
+{%     endif %}
+{%   endif %}
+{%   if section.part|d() and ([ section.part ] if section.part is string else section.part) | intersect(logstash__tpl_config.keys()) %}
+{%     for element in ([ section.part ] if section.part is string else section.part) %}
+{%       if element in logstash__tpl_config.keys() and element not in logstash__tpl_seen_sections %}
+{{ print_config(logstash__tpl_config[element], key_prefix=element) -}}
+{%         set _ = logstash__tpl_seen_sections.append(element) %}
+{%       endif %}
+{%     endfor %}
+
+{%   elif section.parts|d() and ([ section.parts ] if section.parts is string else section.parts) | intersect(logstash__tpl_config.keys()) %}
+{%     for element in ([ section.parts ] if section.parts is string else section.parts) %}
+{%       if element in logstash__tpl_config.keys() and element not in logstash__tpl_seen_sections %}
+{{ print_config(logstash__tpl_config[element], key_prefix=element) -}}
+{%         set _ = logstash__tpl_seen_sections.append(element) %}
+{%       endif %}
+{%     endfor %}
+
+{%   endif %}
+{% endfor %}
+{% if logstash__tpl_config.keys() | difference(logstash__tpl_seen_sections) %}
+{{ "{:-^78}".format(' Various ') | comment }}
+{%   for element in (logstash__tpl_config.keys() | difference(logstash__tpl_seen_sections)) %}
+{{ print_config(logstash__tpl_config[element], key_prefix=element) -}}
+{%   endfor %}
+{% endif %}
