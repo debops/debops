@@ -25,6 +25,12 @@
   until: python__register_packages is succeeded
   when: python__enabled|bool
 
+- name: Generate pip configuration
+  template:
+    src: 'etc/pip.conf.j2'
+    dest: '/etc/pip.conf'
+    mode: '0644'
+
 - name: Update the role status in local facts
   template:
     src: 'etc/ansible/facts.d/python.fact.j2'
