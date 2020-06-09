@@ -171,7 +171,7 @@ Inventory variable changes
 
   This will remove the installation and source directories, after which the
   role should be able to install Roundcube without issues. Remember to create
-  backups in case of errors, epsecially if you use the SQLite database as
+  backups in case of errors, especially if you use the SQLite database as
   backend since by default it is located inside of the installation directory.
 
 
@@ -357,11 +357,11 @@ NodeJS and NPM changes
 - By default, the :ref:`debops.nodejs` role will install the NodeJS and NPM
   packages from the OS (Debian or Ubuntu) repositories. On the Debian Oldstable
   release (currently Stretch), the packages backported from the Stable release
-  will be used. The role supports an automatic upgrade to the upstrean NodeJS
+  will be used. The role supports an automatic upgrade to the upstream NodeJS
   package when the support for NodeSource repositories is enabled using the
   :envvar:`nodejs__node_upstream` variable.
 
-  On existing installations, status of the upstream APT repositorie should be
+  On existing installations, status of the upstream APT repository should be
   preserved, however note that the Ansible local fact name that tracks this has
   been changed to ``ansible_local.nodejs.node_upstream``, along with the
   default variable name. You might want to update the Ansible inventory to
@@ -377,7 +377,7 @@ Inventory variable changes
   The configuration of the hosts to back up has also been redesigned; the role
   does not use Ansible inventory groups to define the hosts to back up
   implicitly; you now have to explicitly specify hosts to back up using the
-  :ref:`rsnapshot__ref_hosts` variables. There is a way to replocate the
+  :ref:`rsnapshot__ref_hosts` variables. There is a way to replicate the
   previous usage of inventory groups to define hosts to back up as well, see
   the provided examples.
 
@@ -708,7 +708,7 @@ Inventory variable changes
 - The :ref:`debops.grub` role was redesigned, most of the ``grub_*`` default
   variables have been removed and the new configuration method has been
   implemented. The role variables have been namespaced, the role now uses
-  ``grub__*`` variabe naming scheme. Check the role documentation for details
+  ``grub__*`` variable naming scheme. Check the role documentation for details
   about configuring GRUB via Ansible inventory.
 
 - Variables related to :command:`dhcp_probe` in the :ref:`debops.dhcpd` role

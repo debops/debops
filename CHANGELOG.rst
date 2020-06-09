@@ -265,7 +265,7 @@ General
 - Introduce :envvar:`python__pip_version_check` which defaults to ``False`` to
   disable PIP update checks outside of the system package manager.
   Before, this was not configured by DebOps leaving it at PIP default which
-  meant it would check for updates occationally.
+  meant it would check for updates occasionally.
 
 Removed
 ~~~~~~~
