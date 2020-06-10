@@ -23,6 +23,11 @@
   until: core__register_packages is succeeded
   tags: [ 'meta::provision' ]
 
+- name: Re-gather facts on package installation
+  action: setup
+  when: core__register_packages is changed
+  tags: [ 'meta::provision' ]
+
 - name: Check IP address of current Ansible Controller
   set_fact:
     ansible_controller: '{{ core__active_controller }}'
