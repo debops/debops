@@ -287,7 +287,7 @@ if [ -d "${interface_request_path}" ] ; then
                     if ifquery --state "${iface_name}" > /dev/null 2>&1 ; then
 
                         # The interface in question was definitely not set up by 'ifup@.service'
-                        if ! containsElement "${iface_name}" "${systemd_interface_instances[@]:-}" ; then
+                        if containsElement "${iface_name}" "${systemd_interface_instances[@]:-}" ; then
 
                             log_message -m "The '${iface_name}' interface is still active, shutting down networking service"
                             stop_networking
