@@ -164,7 +164,7 @@ Ansible roles that manage filesystem-level services, or export filesystems to
 other hosts.
 
 - :ref:`debops.cryptsetup`
-- :ref:`debops.hier`
+- :ref:`debops.fhs`
 - :ref:`debops.iscsi`
 - :ref:`debops.lvm`
 - :ref:`debops.mcli`
@@ -311,7 +311,7 @@ System configuration
 - :ref:`debops.etc_services`
 - :ref:`debops.etckeeper`
 - :ref:`debops.ferm`
-- :ref:`debops.hier`
+- :ref:`debops.fhs`
 - :ref:`debops.keyring`
 - :ref:`debops.ldap`
 - :ref:`debops.locales`

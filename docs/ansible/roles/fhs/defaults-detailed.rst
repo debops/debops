@@ -2,14 +2,14 @@
 .. Copyright (C) 2020 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
-.. _hier__ref_defaults_detailed:
+.. _fhs__ref_defaults_detailed:
 
 Default variable details
 ========================
 
 .. include:: ../../../includes/global.rst
 
-Some of ``debops.hier`` default variables have more extensive configuration than
+Some of ``debops.fhs`` default variables have more extensive configuration than
 simple strings or lists, here you can find documentation and examples for them.
 
 .. only:: html
@@ -18,16 +18,16 @@ simple strings or lists, here you can find documentation and examples for them.
       :local:
       :depth: 1
 
-.. _hier__ref_directories:
+.. _fhs__ref_directories:
 
-hier__directories
------------------
+fhs__directories
+----------------
 
-The ``hier__*_directories`` variables define the list of base directories to
+The ``fhs__*_directories`` variables define the list of base directories to
 create by the role. The directory paths are saved using an Ansible local fact
 to ensure that any changes after applying the role don't affect an existing
 installation. To modify existing paths, the
-:file:`/etc/ansible/facts.d/hier.fact` script should be removed from the host,
+:file:`/etc/ansible/facts.d/fhs.fact` script should be removed from the host,
 this will ensure that the role does not use existing paths from the facts.
 
 Examples
@@ -40,7 +40,7 @@ a remote NFS filesystem):
 
 .. code-block:: yaml
 
-   hier__directories:
+   fhs__directories:
 
      - name: 'data'
        path: '/data'
