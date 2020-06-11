@@ -56,7 +56,7 @@ hashicorp__group: 'hashicorp'
 # .. envvar:: hashicorp__home [[[
 #
 # Path to the home directory of the HashiCorp_ account.
-hashicorp__home: '{{ (ansible_local.hier.home | d("/var/local"))
+hashicorp__home: '{{ (ansible_local.fhs.home | d("/var/local"))
                      + "/" + hashicorp__user }}'
 
                                                                    # ]]]
@@ -191,7 +191,7 @@ hashicorp__combined_binary_map: '{{ hashicorp__default_binary_map
 #
 # Base path to the directory with HashiCorp_ binary archives, their hash
 # signatures and OpenPGP signatures.
-hashicorp__src: '{{ (ansible_local.hier.src | d("/usr/local/src"))
+hashicorp__src: '{{ (ansible_local.fhs.src | d("/usr/local/src"))
                     + "/" + hashicorp__user + "/" +
                      (hashicorp__base_url.split("://")|last | split("/") | first) }}'
 
@@ -200,7 +200,7 @@ hashicorp__src: '{{ (ansible_local.hier.src | d("/usr/local/src"))
 #
 # Base path to the directory where HashiCorp_ archives are unpacked after
 # verification.
-hashicorp__lib: '{{ (ansible_local.hier.lib | d("/usr/local/lib"))
+hashicorp__lib: '{{ (ansible_local.fhs.lib | d("/usr/local/lib"))
                     + "/" + hashicorp__user }}'
 
                                                                    # ]]]
@@ -208,7 +208,7 @@ hashicorp__lib: '{{ (ansible_local.hier.lib | d("/usr/local/lib"))
 #
 # Base path to the directory where HashiCorp_ application binaries will be
 # installed by the ``root`` account.
-hashicorp__bin: '{{ ansible_local.hier.bin | d("/usr/local/bin") }}'
+hashicorp__bin: '{{ ansible_local.fhs.bin | d("/usr/local/bin") }}'
                                                                    # ]]]
                                                                    # ]]]
 # HashiCorp application repositories [[[

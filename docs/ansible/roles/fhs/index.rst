@@ -1,20 +1,31 @@
-:orphan:
-
 .. Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2020 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
-debops.hier
-===========
+.. _debops.fhs:
+
+debops.fhs
+==========
+
+.. include:: man_description.rst
+   :start-line: 8
 
 .. toctree::
    :maxdepth: 2
 
-   man_synopsis
-   man_description
    getting-started
+   defaults/main
    defaults-detailed
-   man_seealso
+
+Copyright
+---------
+
+.. literalinclude:: ../../../../ansible/roles/fhs/COPYRIGHT
+
+.. seealso::
+
+   .. include:: man_seealso.rst
+      :start-line: 7
 
 ..
  Local Variables:

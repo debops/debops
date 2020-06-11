@@ -202,7 +202,7 @@ owncloud__system_group: 'nextcloud'
 # .. envvar:: owncloud__system_home [[[
 #
 # Path to the home directory of the Nextcloud account.
-owncloud__system_home: '{{ (ansible_local.hier.home | d("/var/local"))
+owncloud__system_home: '{{ (ansible_local.fhs.home | d("/var/local"))
                            + "/" + owncloud__system_user }}'
 
                                                                    # ]]]
@@ -228,7 +228,7 @@ owncloud__shell: '/usr/sbin/nologin'
 #
 # Base path to the directory with application archives, their hash
 # signatures and OpenPGP signatures.
-owncloud__src: '{{ (ansible_local.hier.src | d("/usr/local/src"))
+owncloud__src: '{{ (ansible_local.fhs.src | d("/usr/local/src"))
                    + "/" + owncloud__system_user }}'
 
                                                                    # ]]]
@@ -285,7 +285,7 @@ owncloud__auto_database_upgrade_enabled: '{{ True if (owncloud__variant == "ownc
 #
 # File path where the package manager hook script is stored.
 owncloud__dpkg_hook_script: '{{
-  (ansible_local.hier.lib | d("/usr/local/lib"))
+  (ansible_local.fhs.lib | d("/usr/local/lib"))
   + "/owncloud_dpkg_hook" }}'
 
 
@@ -482,7 +482,7 @@ owncloud__old_apt_repo_keys:
 # File path used to store application sources on the remote system.
 # This is currently only used to copy the OpenPGP public key to the remote.
 owncloud__src_remote_dir: '{{
-  (ansible_local.hier.src | d("/usr/local/src"))
+  (ansible_local.fhs.src | d("/usr/local/src"))
   + "/owncloud" }}'
 
 
@@ -1136,7 +1136,7 @@ owncloud__dependent_occ_cmd_list: []
 # .. envvar:: owncloud__occ_bin_file_path
 #
 # Where the :command:`occ` wrapper script should be installed.
-owncloud__occ_bin_file_path: '{{ (ansible_local.hier.bin | d("/usr/local/bin"))
+owncloud__occ_bin_file_path: '{{ (ansible_local.fhs.bin | d("/usr/local/bin"))
                                  + "/occ" }}'
 
 

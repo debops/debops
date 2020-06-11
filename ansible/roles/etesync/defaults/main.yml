@@ -82,7 +82,7 @@ etesync__shell: '/usr/sbin/nologin'
 # .. envvar:: etesync__home [[[
 #
 # The EteSync account home directory.
-etesync__home: '{{ (ansible_local.hier.home | d("/var/local"))
+etesync__home: '{{ (ansible_local.fhs.home | d("/var/local"))
                    + "/" + etesync__user }}'
 
                                                                    # ]]]
@@ -95,21 +95,21 @@ etesync__etc: '/etc/etesync-server'
 # .. envvar:: etesync__src [[[
 #
 # Directory where the role stores EteSync version control sources.
-etesync__src: '{{ (ansible_local.hier.src | d("/usr/local/src"))
+etesync__src: '{{ (ansible_local.fhs.src | d("/usr/local/src"))
                   + "/" + etesync__user }}'
 
                                                                    # ]]]
 # .. envvar:: etesync__lib [[[
 #
 # Directory where the EteSync server directory is located.
-etesync__lib: '{{ (ansible_local.hier.lib | d("/usr/local/lib"))
+etesync__lib: '{{ (ansible_local.fhs.lib | d("/usr/local/lib"))
                   + "/" + etesync__user }}'
 
                                                                    # ]]]
 # .. envvar:: etesync__data [[[
 #
 # Directory where EteSync data is stored.
-etesync__data: '{{ (ansible_local.hier.data | d("/srv"))
+etesync__data: '{{ (ansible_local.fhs.data | d("/srv"))
                    + "/" + etesync__user }}'
                                                                    # ]]]
                                                                    # ]]]

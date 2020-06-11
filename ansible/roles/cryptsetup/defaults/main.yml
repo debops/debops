@@ -122,7 +122,7 @@ cryptsetup__secret_mode: 'u=rwX,g=,o='
 # .. envvar:: cryptsetup__keyfile_remote_location [[[
 #
 # Directory where the keyfiles will be stored on the remote system.
-cryptsetup__keyfile_remote_location: '{{ (ansible_local.hier.var | d("/var/local"))
+cryptsetup__keyfile_remote_location: '{{ (ansible_local.fhs.var | d("/var/local"))
                                          + "/keyfiles" }}'
 
                                                                    # ]]]
@@ -193,7 +193,7 @@ cryptsetup__keyfile_shred_command: 'shred --remove --zero --iterations=42'
 #    {{ cryptsetup__header_backup_remote_location + "/" + item.name + "_header_backup.raw" }}
 #
 # on the Ansible controller.
-cryptsetup__header_backup_remote_location: '{{ (ansible_local.hier.backup | d("/var/backups"))
+cryptsetup__header_backup_remote_location: '{{ (ansible_local.fhs.backup | d("/var/backups"))
                                                + "/luks_header_backup" }}'
 
                                                                    # ]]]

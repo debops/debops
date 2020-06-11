@@ -54,7 +54,7 @@ New DebOps roles
   used to install the InfluxDB time series database service and manage its
   databases and users, respectively.
 
-- The :ref:`debops.hier` role will be used to define base directory hierarchy
+- The :ref:`debops.fhs` role will be used to define base directory hierarchy
   used by other DebOps roles (previously done by the :ref:`debops.core` role).
   The role is included in the :file:`common.yml` playbook.
 
@@ -177,13 +177,13 @@ General
 
 - The variables in various DebOps roles that define filesystem paths have been
   switched from using the ``ansible_local.root.*`` Ansible local facts to the
-  new ``ansible_local.hier.*`` facts defined by the :ref:`debops.hier` role.
+  new ``ansible_local.fhs.*`` facts defined by the :ref:`debops.fhs` role.
   The new facts use the same base paths as the old ones; there should be no
   issues if the variables have not been modified through Ansible inventory.
 
   If you have redefined any ``core__root_*`` variables in the Ansible inventory
   to modify the filesystem paths used by DebOps roles, you will need to update
-  the configuration. See the :ref:`debops.hier` role documentation for details.
+  the configuration. See the :ref:`debops.fhs` role documentation for details.
 
 - The use of ``ansible_local.core.fqdn`` and ``ansible_local.core.domain``
   local facts in roles to define the host DNS domain and FQDN has been removed;
@@ -286,7 +286,7 @@ Removed
 
 - The :file:`root.fact` script, corresponding variables and documentation have
   been removed from the role. This functionality is now managed by the
-  :ref:`debops.hier` role.
+  :ref:`debops.fhs` role.
 
 - The ``ansible_local.core.fqdn`` and ``ansible_local.core.domain`` local facts
   and their corresponding default variables have been removed from the role. In

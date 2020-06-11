@@ -90,21 +90,21 @@ netbox__shell: '/usr/sbin/nologin'
 # .. envvar:: netbox__home [[[
 #
 # The NetBox account home directory.
-netbox__home: '{{ (ansible_local.hier.home | d("/var/local"))
+netbox__home: '{{ (ansible_local.fhs.home | d("/var/local"))
                   + "/" + netbox__user }}'
 
                                                                    # ]]]
 # .. envvar:: netbox__src [[[
 #
 # Directory where the role stores NetBox sources from GitHub.
-netbox__src: '{{ (ansible_local.hier.src | d("/usr/local/src"))
+netbox__src: '{{ (ansible_local.fhs.src | d("/usr/local/src"))
                  + "/" + netbox__user }}'
 
                                                                    # ]]]
 # .. envvar:: netbox__lib [[[
 #
 # Directory where the NetBox application directory is located.
-netbox__lib: '{{ (ansible_local.hier.lib | d("/usr/local/lib"))
+netbox__lib: '{{ (ansible_local.fhs.lib | d("/usr/local/lib"))
                  + "/" + netbox__user }}'
 
                                                                    # ]]]
@@ -112,7 +112,7 @@ netbox__lib: '{{ (ansible_local.hier.lib | d("/usr/local/lib"))
 #
 # Directory where custom Netbox data (images, scripts) outside of the database
 # is stored.
-netbox__data: '{{ (ansible_local.hier.data | d("/srv"))
+netbox__data: '{{ (ansible_local.fhs.data | d("/srv"))
                   + "/" + netbox__user }}'
                                                                    # ]]]
                                                                    # ]]]

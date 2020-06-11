@@ -85,7 +85,7 @@ phpipam__group: 'phpipam'
 # .. envvar:: phpipam__home [[[
 #
 # Home directory of the ``phpipam__user`` user.
-phpipam__home: '{{ (ansible_local.hier.home | d("/var/local"))
+phpipam__home: '{{ (ansible_local.fhs.home | d("/var/local"))
                    + "/" + phpipam__user }}'
 
                                                                    # ]]]
@@ -132,7 +132,7 @@ phpipam__database_schema: '{{ phpipam__git_checkout + "/db/SCHEMA.sql" }}'
 # .. envvar:: phpipam__src [[[
 #
 # Base path for git bare repository with phpIPAM source
-phpipam__src: '{{ (ansible_local.hier.src | d("/usr/local/src"))
+phpipam__src: '{{ (ansible_local.fhs.src | d("/usr/local/src"))
                   + "/" + phpipam__user }}'
 
                                                                    # ]]]
