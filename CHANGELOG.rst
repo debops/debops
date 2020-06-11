@@ -288,6 +288,11 @@ Removed
   been removed from the role. This functionality is now managed by the
   :ref:`debops.hier` role.
 
+- The ``ansible_local.core.fqdn`` and ``ansible_local.core.domain`` local facts
+  and their corresponding default variables have been removed from the role. In
+  their place, ``ansible_fqdn`` and ``ansible_domain`` facts should be used
+  instead.
+
 :ref:`debops.ntp` role
 ''''''''''''''''''''''
 
