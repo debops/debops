@@ -70,7 +70,7 @@ try:
     setup(
         name="debops",
         version=unicode(RELEASE),
-        install_requires=['argparse', 'distro', 'future'],
+        install_requires=['distro', 'future'],
         extras_require={
             'ansible': ['ansible', 'netaddr', 'passlib',
                         'python-ldap', 'dnspython', 'pyopenssl']
