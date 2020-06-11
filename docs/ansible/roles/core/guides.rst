@@ -1,5 +1,5 @@
-.. Copyright (C) 2015-2016 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2015-2016 DebOps <https://debops.org/>
+.. Copyright (C) 2015-2020 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015-2020 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 Usage guides
@@ -214,60 +214,6 @@ Define list of admin accounts to create in the application:
                                 ansible_local.core.admin_users|d())
                             else [] }}'
 
-Root directory paths
---------------------
-
-Playbooks and roles that install custom software can use different paths for
-various types of files: binaries, static data, variable data, and so on. These
-paths are commonly shared among various software on a UNIX-like operating
-system. Because switching the paths on many roles at once can become tedious,
-the "root path" variables exist to define common directories that can be used by
-roles. Using these, you can easily change where the various application files
-are stored, without the need to modify the roles themselves.
-
-It is advisable to set the root paths once and not change them through the
-lifetime of a given host, due to the fact that these variables are internal
-Ansible variables, and not "live" application variables – if you change them
-after the system is configured, and reconfigure it using Ansible with new
-information, some files might need to be moved to the new location manually
-(for example compiled binaries or generated data), otherwise applications might
-not find these files in the new location.
-
-You can specify various root paths using the ``core__root_*`` variables found in
-the :file:`defaults/main.yml`. They are accessible in the roles and playbooks in
-the ``ansible_local.root.*`` variable namespace.
-
-Examples
-~~~~~~~~
-
-Create an user account with home directory using root paths assuming that the
-``debops.core`` role has been run on the host previously:
-
-.. code-block:: yaml
-
-   - name: Create new user
-     user:
-       name: '{{ username }}'
-       state: 'present'
-       home: '{{ ansible_local.root.home + "/" + username }}'
-
-If you want to support the case without the ``debops.core`` role present, you
-can do it like this:
-
-.. code-block:: yaml
-
-   - name: Create new user
-     user:
-       name: '{{ username }}'
-       state: 'present'
-       home: '{{ (ansible_local.root.home
-                  if (ansible_local|d() and ansible_local.root|d() and
-                      ansible_local.root.home|d())
-                  else "/home") + "/" + username }}'
-
-This will allow you to set the path for common home directories in one location
-and reuse it through your infrastructure.
-
 Custom distribution and release facts
 -------------------------------------
 
@@ -335,45 +281,3 @@ even from the context of another role is not otherwise done in DebOps.
 This was done in this case to allow to only enable
 :envvar:`core__unsafe_writes` when necessary without the need to run the
 ``debops.core`` role first and ensuring that it’s facts are made persistent as well.
-
-List of current POSIX capabilities
-----------------------------------
-
-`POSIX Capabilities
-<http://www.linuxjournal.com/magazine/making-root-unprivileged>`_ are a way to
-control access to system files and resources by a particular process, for
-example the ability to create or remove network interfaces, control the
-``netfilter`` firewall, mount filesystems, and so on.
-
-On regular Linux hosts, capabilities are usually not set or very broad and don't
-hinder Ansible at all. This changes in more controlled environments, like Linux
-Containers, Docker containers or similar environments. In there, a local
-``root`` account can be blocked by a host system from accessing the network
-stack or mounting filesystems, in which case Ansible usually returns an error.
-
-To avoid this issue, ``debops.core`` provides a Bash script which gathers
-a list of currently present POSIX capabilities and presents them as Ansible
-facts. Using these, playbooks and roles can check if a particular capability is
-present and avoid execution of a set of tasks if they cannot be performed
-safely.
-
-The list of POSIX capabilities is available in the ``ansible_local.cap12s.list``
-variable. To check if POSIX capabilities are enabled at all (the list is
-unreliable for this check), you can use the ``ansible_local.cap12s.enabled``
-boolean variable.
-
-Examples
-~~~~~~~~
-
-Reconfigure the firewall if the system capabilities allow it:
-
-.. code-block:: yaml
-
-   - name: Configure the firewall
-     service:
-       name: 'ferm'
-       state: 'restarted'
-     when: (ansible_local|d() and ansible_local.cap12s|d() and
-            (not ansible_local.cap12s.enabled | bool or
-            (ansible_local.cap12s.enabled | bool and
-             'cap_net_admin' in ansible_local.cap12s.list)))

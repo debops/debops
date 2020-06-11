@@ -64,10 +64,8 @@ etherpad_group: '{{ etherpad_system_name }}'
 # .. envvar:: etherpad_home [[[
 #
 # Home directory of Etherpad.
-etherpad_home: '{{ (ansible_local.root.app
-                    if (ansible_local|d() and ansible_local.root|d() and
-                        ansible_local.root.app|d())
-                    else "/var/local") + "/" + etherpad_user }}'
+etherpad_home: '{{ (ansible_local.hier.app | d("/var/local"))
+                   + "/" + etherpad_user }}'
 
                                                                    # ]]]
 # .. envvar:: etherpad__shell [[[
@@ -79,19 +77,15 @@ etherpad__shell: '/usr/sbin/nologin'
 # .. envvar:: etherpad_src_dir [[[
 #
 # Etherpad sources root directory.
-etherpad_src_dir: '{{ (ansible_local.root.src
-                       if (ansible_local|d() and ansible_local.root|d() and
-                           ansible_local.root.src|d())
-                       else "/usr/local/src") + "/" + etherpad_system_name }}'
+etherpad_src_dir: '{{ (ansible_local.hier.src | d("/usr/local/src"))
+                      + "/" + etherpad_system_name }}'
 
                                                                    # ]]]
 # .. envvar:: etherpad_log_dir [[[
 #
 # Path where Etherpad logs are stored.
-etherpad_log_dir: '{{ (ansible_local.root.log
-                       if (ansible_local|d() and ansible_local.root|d() and
-                           ansible_local.root.log|d())
-                       else "/var/log") + "/" + etherpad_system_name }}'
+etherpad_log_dir: '{{ (ansible_local.hier.log | d("/var/log"))
+                      + "/" + etherpad_system_name }}'
                                                                    # ]]]
                                                                    # ]]]
 # Basic configuration [[[

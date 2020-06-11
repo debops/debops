@@ -78,10 +78,8 @@ debops__async_timeout: '{{ (60 * 20) }}'
 # .. envvar:: debops__data_path [[[
 #
 # Path where DebOps playbooks and roles will be installed system-wide.
-debops__data_path: '{{ (ansible_local.root.share
-                        if (ansible_local|d() and ansible_local.root|d() and
-                            ansible_local.root.share|d())
-                        else "/usr/local/share") + "/debops" }}'
+debops__data_path: '{{ (ansible_local.hier.share | d("/usr/local/share"))
+                       + "/debops" }}'
                                                                    # ]]]
                                                                    # ]]]
 # DebOps project configuration [[[

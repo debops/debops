@@ -53,10 +53,8 @@ icinga_web__group: 'icingaweb2'
 #
 # Directory where custom source code will be downloaded by the role, for
 # example module repositories.
-icinga_web__src: '{{ (ansible_local.root.src
-                      if (ansible_local|d() and ansible_local.root|d() and
-                          ansible_local.root.src|d())
-                      else "/usr/local/src") + "/icinga_web" }}'
+icinga_web__src: '{{ (ansible_local.hier.src | d("/usr/local/src"))
+                     + "/icinga_web" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Network configuration [[[
@@ -73,20 +71,14 @@ icinga_web__fqdn: 'icinga.{{ icinga_web__domain }}'
 # .. envvar:: icinga_web__domain [[[
 #
 # The domain used by the Icinga 2 Web interface.
-icinga_web__domain: '{{ ansible_local.core.domain
-                        if (ansible_local|d() and ansible_local.core|d() and
-                            ansible_local.core.domain|d())
-                        else ansible_domain }}'
+icinga_web__domain: '{{ ansible_domain }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__node_fqdn [[[
 #
 # The Fully Qualified Domain Name of the local Icinga 2 node. This hostname
 # will be used to access the Icinga 2 REST API.
-icinga_web__node_fqdn: '{{ ansible_local.core.fqdn
-                           if (ansible_local|d() and ansible_local.core|d() and
-                               ansible_local.core.fqdn|d())
-                           else ansible_fqdn }}'
+icinga_web__node_fqdn: '{{ ansible_fqdn }}'
                                                                    # ]]]
                                                                    # ]]]
 # Icinga 2 Web modules [[[

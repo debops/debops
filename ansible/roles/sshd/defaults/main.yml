@@ -918,10 +918,7 @@ sshd__pam_access__dependent_rules:
         comment: 'Grant access via SSH to root account on the same DNS domain'
         permission: 'allow'
         users: 'root'
-        origins: '.{{ ansible_local.core.domain
-                      if (ansible_local|d() and ansible_local.core|d() and
-                          ansible_local.core.domain|d())
-                      else ansible_domain }}'
+        origins: '.{{ ansible_domain }}'
 
       - name: 'deny-root'
         comment: 'Deny access to root account via SSH from anywhere else'
@@ -957,10 +954,7 @@ sshd__pam_access__dependent_rules:
           needs to have UseDNS option enabled for this rule to work correctly.
         permission: 'allow'
         users: 'ALL'
-        origins: '.{{ ansible_local.core.domain
-                      if (ansible_local|d() and ansible_local.core|d() and
-                          ansible_local.core.domain|d())
-                      else ansible_domain }}'
+        origins: '.{{ ansible_domain }}'
 
       - name: 'deny-all'
         comment: 'Deny access via SSH by anyone from anywhere'

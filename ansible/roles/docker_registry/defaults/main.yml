@@ -181,10 +181,7 @@ docker_registry__fqdn: 'registry.{{ docker_registry__domain }}'
 # .. envvar:: docker_registry__domain [[[
 #
 # The DNS domain used as a base for the Docker Registry FQDN address.
-docker_registry__domain: '{{ ansible_local.core.domain
-                             if (ansible_local|d() and ansible_local.core|d() and
-                                 ansible_local.core.domain|d())
-                             else ansible_domain }}'
+docker_registry__domain: '{{ ansible_domain }}'
 
                                                                    # ]]]
 # .. envvar:: docker_registry__backend_port [[[
@@ -260,10 +257,8 @@ docker_registry__basic_auth_except_get: False
 #
 # Absolute path of the local filesystem storage directory used by the Docker
 # Registry service.
-docker_registry__storage_dir: '{{ (ansible_local.root.data
-                                   if (ansible_local|d() and ansible_local.root|d() and
-                                       ansible_local.root.data|d())
-                                   else "/srv") + "/" + docker_registry__user + "/storage" }}'
+docker_registry__storage_dir: '{{ (ansible_local.hier.data | d("/srv"))
+                                  + "/" + docker_registry__user + "/storage" }}'
 
                                                                    # ]]]
 # .. envvar:: docker_registry__storage_mode [[[

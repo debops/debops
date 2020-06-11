@@ -360,9 +360,7 @@ php__ini_allow_url_fopen: True
 #
 # Configure the PHP timezone. This variable uses configuration provided by the
 # :ref:`debops.core`.
-php__ini_date_timezone: '{{ ansible_local.timezone
-                            if (ansible_local|d() and ansible_local.timezone|d())
-                            else "Etc/UTC" }}'
+php__ini_date_timezone: '{{ ansible_local.tzdata.timezone | d("Etc/UTC") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Configuration added to php.ini [[[

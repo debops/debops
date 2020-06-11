@@ -184,9 +184,7 @@ postgresql_server__locale_messages: 'C'
 # .. envvar:: postgresql_server__timezone [[[
 #
 # Timezone configured in PostgreSQL clusters.
-postgresql_server__timezone: '{{ ansible_local.timezone
-                                 if (ansible_local|d() and ansible_local.timezone|d())
-                                 else "Etc/UTC" }}'
+postgresql_server__timezone: '{{ ansible_local.tzdata.timezone | d("Etc/UTC") }}'
 
                                                                    # ]]]
 # .. envvar:: postgresql_server__start_conf [[[

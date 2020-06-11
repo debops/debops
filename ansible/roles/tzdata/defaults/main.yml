@@ -1,0 +1,70 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2020 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _tzdata__ref_defaults:
+
+# debops.tzdata default variables
+# ===============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Global options [[[
+# ------------------
+
+# .. envvar:: tzdata__enabled [[[
+#
+# Enable or disable time zone management using the :ref:`debops.tzdata` role.
+tzdata__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: tzdata__timezone [[[
+#
+# Specify timezone in the form of 'Area/Zone'. Use :command:`timedatectl
+# list-timezones` to see a list of possible values. To set the UTC timezone,
+# specify it as 'Etc/UTC'.
+tzdata__timezone: '{{ ansible_local.tzdata.timezone | d("Etc/UTC") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: tzdata__base_packages [[[
+#
+# List of the APT packages to install for time zone support.
+tzdata__base_packages: [ 'tzdata' ]
+
+                                                                   # ]]]
+# .. envvar:: tzdata__packages [[[
+#
+# List of additional APT packages to install with the ``tzdata`` package.
+tzdata__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Service restart [[[
+# -------------------
+
+# .. envvar:: tzdata__restart_default_services [[[
+#
+# List of the default :command:`systemd` service units which should be
+# restarted when time zone is changed. Only currently active services will be
+# restarted.
+tzdata__restart_default_services:
+  - 'cron.service'
+  - 'rsyslog.service'
+
+                                                                   # ]]]
+# .. envvar:: tzdata__restart_services [[[
+#
+# List of additional :command:`systemd` service units which should be restarted
+# when time zone is changed.
+tzdata__restart_services: []
+                                                                   # ]]]
+                                                                   # ]]]

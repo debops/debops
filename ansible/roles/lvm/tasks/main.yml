@@ -54,6 +54,6 @@
 
 - name: Manage LVM
   include: manage_lvm.yml
-  when: (ansible_local|d() and ((ansible_local.tags|d() and 'ignore-cap12s' in ansible_local.tags) or
-         (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
-          (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
+  when: (((ansible_system_capabilities_enforced|d())|bool and
+          "cap_sys_admin" in ansible_system_capabilities) or
+         not (ansible_system_capabilities_enforced|d(True))|bool)

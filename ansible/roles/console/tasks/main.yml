@@ -1,6 +1,6 @@
 ---
-# Copyright (C) 2013-2016 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2014-2017 DebOps <https://debops.org/>
+# Copyright (C) 2013-2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2014-2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - import_role:
@@ -49,16 +49,3 @@
     state: 'present'
     line: 'FSCKFIX={{ console_fsckfix }}'
   when: ansible_distribution_release in console_fsckfix_releases
-
-- include: filesystem_mount.yml
-  tags: [ 'role::console:mount' ]
-  when: (
-          ansible_local|d() and (
-            (ansible_local.tags|d() and 'ignore-cap12s' in ansible_local.tags) or (
-              ansible_local.cap12s|d() and (
-                not ansible_local.cap12s.enabled|bool or
-                (ansible_local.cap12s.enabled|bool and 'cap_sys_admin' in ansible_local.cap12s.list)
-              )
-            )
-          )
-        )

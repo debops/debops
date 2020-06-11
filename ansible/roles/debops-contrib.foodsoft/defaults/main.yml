@@ -83,10 +83,7 @@ foodsoft__fqdn: 'foodsoft.{{ foodsoft__domain }}'
 # .. envvar:: foodsoft__domain [[[
 #
 # Domain that will be configured for the Foodsoft instance.
-foodsoft__domain: '{{ ansible_local.core.domain
-                      if (ansible_local|d() and ansible_local.core|d() and
-                          ansible_local.core.domain|d())
-                      else ansible_domain }}'
+foodsoft__domain: '{{ ansible_domain }}'
                                                                    # ]]]
                                                                    # ]]]
 # Database configuration [[[
@@ -379,7 +376,7 @@ foodsoft__role_config:
   # Potentially splitting at "/" and returning the second half of the string
   # would do the job but that would need testing.
   # Change manually if needed.
-  # time_zone: '{{ ansible_local.timezone if (ansible_local|d() and ansible_local.timezone|d()) else "Etc/UTC" }}'
+  # time_zone: '{{ ansible_local.tzdata.timezone | d("Etc/UTC") }}'
 
   # Page footer (html allowed). Default is a Foodsoft footer. Set to `blank` for no footer.
   page_footer: '{{ foodsoft__page_footer }}'

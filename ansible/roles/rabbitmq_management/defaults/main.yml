@@ -49,10 +49,7 @@ rabbitmq_management__fqdn: 'rabbitmq.{{ rabbitmq_management__domain }}'
 # .. envvar:: rabbitmq_management__domain [[[
 #
 # The DNS domain used by default to configure the main application FQDN.
-rabbitmq_management__domain: '{{ ansible_local.core.domain
-                                 if (ansible_local|d() and ansible_local.core|d() and
-                                     ansible_local.core.domain|d())
-                                 else ansible_domain }}'
+rabbitmq_management__domain: '{{ ansible_domain }}'
 
                                                                    # ]]]
 # .. envvar:: rabbitmq_management__webserver_allow [[[
@@ -103,9 +100,7 @@ rabbitmq_management__app_bind: '::'
 #
 # The FQDN address on which the plugin will be accessed by the reverse proxy
 # (:command:`nginx`). By default it's the host's own FQDN.
-rabbitmq_management__app_host: '{{ ansible_local.core.fqdn
-                                   if (ansible_local|d() and ansible_local.core|d() and
-                                       ansible_local.core.fqdn|d()) else ansible_fqdn }}'
+rabbitmq_management__app_host: '{{ ansible_fqdn }}'
 
                                                                    # ]]]
 # .. envvar:: rabbitmq_management__app_protocol [[[

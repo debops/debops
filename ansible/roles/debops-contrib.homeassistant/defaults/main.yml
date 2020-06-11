@@ -116,10 +116,7 @@ homeassistant__fqdn: 'ha.{{ homeassistant__domain }}'
 # .. envvar:: homeassistant__domain [[[
 #
 # Domain that will be configured for the Home Assistant instance.
-homeassistant__domain: '{{ ansible_local.core.domain
-                           if (ansible_local|d() and ansible_local.core|d() and
-                               ansible_local.core.domain|d())
-                           else ansible_domain }}'
+homeassistant__domain: '{{ ansible_domain }}'
                                                                    # ]]]
                                                                    # ]]]
 # Reverse proxy configuration [[[
@@ -137,10 +134,8 @@ homeassistant__verify_client_certificate: False
 # .. envvar:: homeassistant__home_path [[[
 #
 # The Home Assistant system account home directory.
-homeassistant__home_path: '{{ (ansible_local.root.home
-                               if (ansible_local|d() and ansible_local.root|d() and
-                                   ansible_local.root.home|d())
-                               else "/var/local") + "/" + homeassistant__user }}'
+homeassistant__home_path: '{{ (ansible_local.hier.home | d("/var/local"))
+                              + "/" + homeassistant__user }}'
 
                                                                    # ]]]
 # .. envvar:: homeassistant__virtualenv_path [[[

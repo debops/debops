@@ -94,10 +94,8 @@ preseed__group: 'preseed'
 # .. envvar:: preseed__home
 #
 # Home directory of the Pressed user account.
-preseed__home: '{{ (ansible_local.root.home
-                    if (ansible_local|d() and ansible_local.root|d() and
-                        ansible_local.root.home|d())
-                    else "/var/local") + "/" + preseed__user }}'
+preseed__home: '{{ (ansible_local.hier.home | d("/var/local"))
+                   + "/" + preseed__user }}'
 
 
 # .. Default Preseed list [[[1
@@ -193,10 +191,8 @@ preseed__admin_home: '{{ "/home/" + preseed__admin_name }}'
 # .. envvar:: preseed__admin_system_home
 #
 # Home directory of the administrator account, when it's a system account.
-preseed__admin_system_home: '{{ (ansible_local.root.home
-                                 if (ansible_local|d() and ansible_local.root|d() and
-                                     ansible_local.root.home|d())
-                                 else "/var/local") + "/" + preseed__admin_name }}'
+preseed__admin_system_home: '{{ (ansible_local.hier.home | d("/var/local"))
+                                + "/" + preseed__admin_name }}'
 
 
 # .. envvar:: preseed__admin_home_group

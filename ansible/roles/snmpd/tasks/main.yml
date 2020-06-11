@@ -58,8 +58,7 @@
     daemon_reload: True
     name: 'snmpd.service'
     enabled: True
-  when: ((ansible_local|d() and ansible_local.init|d() and
-          ansible_local.init == "systemd") and not ansible_local.snmpd|d())
+  when: ((ansible_service_mgr == "systemd") and not ansible_local.snmpd|d())
 
 - name: Allow 'snmp' user access to /proc if needed
   user:

@@ -97,10 +97,8 @@ snmpd_download_mibs: '{{ True
 # .. envvar:: snmpd_extension_scripts [[[
 #
 # Path on the remote host where extension scripts are stored
-snmpd_extension_scripts: '{{ (ansible_local.root.lib
-                              if (ansible_local|d() and ansible_local.root|d() and
-                                  ansible_local.root.lib|d())
-                              else "/usr/local/lib") + "/snmpd" }}'
+snmpd_extension_scripts: '{{ (ansible_local.hier.lib | d("/usr/local/lib"))
+                             + "/snmpd" }}'
                                                                    # ]]]
                                                                    # ]]]
 # LLDP daemon [[[

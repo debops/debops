@@ -70,10 +70,8 @@ wpcli__release_files:
 #
 # Absolute path to the directory on the remote host, where the WP-CLI source
 # files will be stored.
-wpcli__src: '{{ (ansible_local.root.src
-                 if (ansible_local|d() and ansible_local.root|d() and
-                     ansible_local.root.src|d())
-                 else "/usr/local/src") + "/wpcli" }}'
+wpcli__src: '{{ (ansible_local.hier.src | d("/usr/local/src"))
+                + "/wpcli" }}'
 
                                                                    # ]]]
 # .. envvar:: wpcli__binary [[[

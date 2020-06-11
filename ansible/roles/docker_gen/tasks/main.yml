@@ -68,8 +68,7 @@
     group: 'root'
     mode: '0755'
   notify: [ 'Restart docker-gen' ]
-  when: (ansible_local|d() and ansible_local.init|d() and
-         ansible_local.init != "systemd")
+  when: ansible_service_mgr != 'systemd'
 
 - name: Configure docker-gen systemd service
   template:
@@ -84,7 +83,7 @@
 - name: Reload systemd daemons
   systemd:
     daemon_reload: True
-  when: ((ansible_local|d() and ansible_local.init|d() and ansible_local.init == 'systemd') and
+  when: ((ansible_service_mgr == 'systemd') and
          (docker_gen__register_service|d() and docker_gen__register_service is changed))
 
 - name: Start docker-gen on install

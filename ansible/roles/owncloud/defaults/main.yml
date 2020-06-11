@@ -202,10 +202,8 @@ owncloud__system_group: 'nextcloud'
 # .. envvar:: owncloud__system_home [[[
 #
 # Path to the home directory of the Nextcloud account.
-owncloud__system_home: '{{ (ansible_local.root.home
-                             if (ansible_local|d() and ansible_local.root|d() and
-                                 ansible_local.root.home|d())
-                             else "/var/local") + "/" + owncloud__system_user }}'
+owncloud__system_home: '{{ (ansible_local.hier.home | d("/var/local"))
+                           + "/" + owncloud__system_user }}'
 
                                                                    # ]]]
 # .. envvar:: owncloud__comment [[[
@@ -230,10 +228,8 @@ owncloud__shell: '/usr/sbin/nologin'
 #
 # Base path to the directory with application archives, their hash
 # signatures and OpenPGP signatures.
-owncloud__src: '{{ (ansible_local.root.src
-                     if (ansible_local|d() and ansible_local.root|d() and
-                         ansible_local.root.src|d())
-                     else "/usr/local/src") + "/" + owncloud__system_user }}'
+owncloud__src: '{{ (ansible_local.hier.src | d("/usr/local/src"))
+                   + "/" + owncloud__system_user }}'
 
                                                                    # ]]]
                                                                    # ]]]
@@ -289,10 +285,8 @@ owncloud__auto_database_upgrade_enabled: '{{ True if (owncloud__variant == "ownc
 #
 # File path where the package manager hook script is stored.
 owncloud__dpkg_hook_script: '{{
-  (ansible_local.root.lib
-  if (ansible_local|d() and ansible_local.root|d() and
-      ansible_local.root.lib|d())
-  else "/usr/local/lib") + "/owncloud_dpkg_hook" }}'
+  (ansible_local.hier.lib | d("/usr/local/lib"))
+  + "/owncloud_dpkg_hook" }}'
 
 
 # .. envvar:: owncloud__auto_database_upgrade_migration_test
@@ -488,10 +482,8 @@ owncloud__old_apt_repo_keys:
 # File path used to store application sources on the remote system.
 # This is currently only used to copy the OpenPGP public key to the remote.
 owncloud__src_remote_dir: '{{
-  (ansible_local.root.src
-  if (ansible_local|d() and ansible_local.root|d() and
-      ansible_local.root.src|d())
-  else "/usr/local/src") + "/owncloud" }}'
+  (ansible_local.hier.src | d("/usr/local/src"))
+  + "/owncloud" }}'
 
 
 # .. envvar:: owncloud__apt_repo_source
@@ -765,10 +757,7 @@ owncloud__fqdn: 'cloud.{{ owncloud__domain }}'
 # .. envvar:: owncloud__domain
 #
 # Domain that will be configured for the ownCloud instance.
-owncloud__domain: '{{ ansible_local.core.domain
-                      if (ansible_local|d() and ansible_local.core|d() and
-                          ansible_local.core.domain|d())
-                      else ansible_domain }}'
+owncloud__domain: '{{ ansible_domain }}'
 
 
 # .. envvar:: owncloud__upload_size
@@ -867,7 +856,7 @@ owncloud__role_config:
 owncloud__role_recommended_config:
 
   ## The default timezone for logfiles is UTC.
-  logtimezone: '{{ ansible_local.timezone if (ansible_local|d() and ansible_local.timezone|d()) else "Etc/UTC" }}'
+  logtimezone: '{{ ansible_local.tzdata.timezone | d("Etc/UTC") }}'
 
   ## Loglevel to start logging at. Valid values are: 0 = Debug, 1 = Info,
   ##  2 = Warning, 3 = Error, and 4 = Fatal. The default value is Warning.
@@ -1147,10 +1136,8 @@ owncloud__dependent_occ_cmd_list: []
 # .. envvar:: owncloud__occ_bin_file_path
 #
 # Where the :command:`occ` wrapper script should be installed.
-owncloud__occ_bin_file_path: '{{ (ansible_local.root.bin
-                                  if (ansible_local|d() and ansible_local.root|d() and
-                                      ansible_local.root.bin|d())
-                                  else "/usr/local/bin") + "/occ" }}'
+owncloud__occ_bin_file_path: '{{ (ansible_local.hier.bin | d("/usr/local/bin"))
+                                 + "/occ" }}'
 
 
 # .. ownCloud user files [[[1

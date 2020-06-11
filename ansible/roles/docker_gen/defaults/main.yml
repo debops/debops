@@ -47,20 +47,16 @@ docker_gen__release: '{{ docker_gen__repo }}/releases/download/{{ docker_gen__ve
 #
 # Location of :command:`docker-gen` sources on remote host where source tarball will
 # be stored.
-docker_gen__src: '{{ (ansible_local.root.src
-                     if (ansible_local|d() and ansible_local.root|d() and
-                         ansible_local.root.src|d())
-                     else "/usr/local/src") + "/docker-gen" }}'
+docker_gen__src: '{{ (ansible_local.hier.src | d("/usr/local/src"))
+                     + "/docker-gen" }}'
 
                                                                    # ]]]
 # .. envvar:: docker_gen__lib [[[
 #
 # Location where the :command:`docker-gen` binary will be installed (not in the ``$PATH``
 # since this binary won't be used by the user, but as a service).
-docker_gen__lib: '{{ (ansible_local.root.lib
-                     if (ansible_local|d() and ansible_local.root|d() and
-                         ansible_local.root.lib|d())
-                     else "/usr/local/lib") + "/docker-gen" }}'
+docker_gen__lib: '{{ (ansible_local.hier.lib | d("/usr/local/lib"))
+                     + "/docker-gen" }}'
 
                                                                    # ]]]
 # .. envvar:: docker_gen__templates [[[
@@ -155,9 +151,7 @@ docker_gen__nginx_options: |
 #
 # Notify command used by :command:`docker-gen` to reload :program:`nginx`, depending on the
 # init system used.
-docker_gen__nginx_notify: '{{ docker_gen__nginx_notify_map[(ansible_local.init
-                             if (ansible_local|d() and ansible_local.init|d())
-                                 else "systemd")] }}'
+docker_gen__nginx_notify: '{{ docker_gen__nginx_notify_map[ansible_service_mgr] }}'
 
                                                                    # ]]]
 # .. envvar:: docker_gen__nginx_notify_map [[[

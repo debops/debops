@@ -38,20 +38,16 @@ dhcp_probe__packages: []
 #
 # Absolute path of the cache directory where :command:`mail-throttled` script
 # state is stored.
-dhcp_probe__cache: '{{ (ansible_local.root.cache
-                        if (ansible_local|d() and ansible_local.root|d() and
-                            ansible_local.root.cache|d())
-                        else "/var/cache") + "/dhcp-probe" }}'
+dhcp_probe__cache: '{{ (ansible_local.hier.cache | d("/var/cache"))
+                       + "/dhcp-probe" }}'
 
                                                                    # ]]]
 # .. envvar:: dhcp_probe__lib [[[
 #
 # Absolute path where the custom scripts used by the DHCP Probe service are
 # stored.
-dhcp_probe__lib: '{{ (ansible_local.root.lib
-                      if (ansible_local|d() and ansible_local.root|d() and
-                          ansible_local.root.lib|d())
-                      else "/usr/local/lib") + "/dhcp-probe" }}'
+dhcp_probe__lib: '{{ (ansible_local.hier.lib | d("/usr/local/lib"))
+                     + "/dhcp-probe" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Monitored network interfaces [[[
@@ -126,10 +122,7 @@ dhcp_probe__options: ''
 # .. envvar:: dhcp_probe__domain [[[
 #
 # The DNS domain used to send e-mail notifications about rogue DHCP servers.
-dhcp_probe__domain: '{{ ansible_local.core.domain
-                        if (ansible_local|d() and ansible_local.core|d() and
-                            ansible_local.core.domain|d())
-                        else ansible_domain }}'
+dhcp_probe__domain: '{{ ansible_domain }}'
 
                                                                    # ]]]
 # .. envvar:: dhcp_probe__mail_from [[[

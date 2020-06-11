@@ -136,10 +136,8 @@ reprepro_group: 'reprepro'
 # .. envvar:: reprepro_spool [[[
 #
 # Directory for reprepro spool files
-reprepro_spool: '{{ (ansible_local.root.spool
-                      if (ansible_local|d() and ansible_local.root|d() and
-                          ansible_local.root.spool|d())
-                      else "/var/spool") + "/reprepro" }}'
+reprepro_spool: '{{ (ansible_local.hier.spool | d("/var/spool"))
+                    + "/reprepro" }}'
 
                                                                    # ]]]
 # .. envvar:: reprepro_upload [[[

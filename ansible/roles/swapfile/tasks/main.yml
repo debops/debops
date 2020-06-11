@@ -9,8 +9,9 @@
   changed_when: False
   with_items: '{{ swapfile__files }}'
   when: (item.state|d("present") == 'absent' and
-         (ansible_local|d() and (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
-          (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
+         ((ansible_system_capabilities_enforced|d())|bool and
+          "cap_sys_admin" in ansible_system_capabilities) or
+         not (ansible_system_capabilities_enforced|d(True))|bool)
 
 - name: Create swap files
   command: |
@@ -45,8 +46,9 @@
   command: swapon -p {{ item.item.priority | d(swapfile__priority) }} {{ item.item.path | d(item.item) }}
   with_items: '{{ swapfile__register_allocation.results|d([]) }}'
   when: (item is changed and item.state|d("present") != 'absent' and
-          (ansible_local|d() and (ansible_local.cap12s|d() and (not ansible_local.cap12s.enabled | bool or
-           (ansible_local.cap12s.enabled | bool and 'cap_sys_admin' in ansible_local.cap12s.list)))))
+         ((ansible_system_capabilities_enforced|d())|bool and
+          "cap_sys_admin" in ansible_system_capabilities) or
+         not (ansible_system_capabilities_enforced|d(True))|bool)
 
 - name: Manage swap files in /etc/fstab
   mount:

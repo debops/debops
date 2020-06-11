@@ -199,10 +199,8 @@ pki_acme_tiny_version: 'master'
 # .. envvar:: pki_acme_tiny_src [[[
 #
 # Directory where :program:`acme-tiny` source code will be cloned into for deployment.
-pki_acme_tiny_src: '{{ (ansible_local.root.src
-                        if (ansible_local|d() and ansible_local.root|d() and
-                            ansible_local.root.src|d())
-                        else "/usr/local/src") + "/" + pki_acme_user }}'
+pki_acme_tiny_src: '{{ (ansible_local.hier.src | d("/usr/local/src"))
+                       + "/" + pki_acme_user }}'
 
                                                                    # ]]]
 # .. envvar:: pki_acme_tiny_bin [[[

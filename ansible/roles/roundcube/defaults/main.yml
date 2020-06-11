@@ -109,10 +109,8 @@ roundcube__group: 'roundcube'
 # .. envvar:: roundcube__home [[[
 #
 # Path to the home directory of the Roundcube system account.
-roundcube__home: '{{ (ansible_local.root.home
-                       if (ansible_local|d() and ansible_local.root|d() and
-                           ansible_local.root.home|d())
-                       else "/var/local") + "/" + roundcube__user }}'
+roundcube__home: '{{ (ansible_local.hier.home | d("/var/local"))
+                     + "/" + roundcube__user }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__comment [[[
@@ -177,10 +175,8 @@ roundcube__git_dest: '{{ roundcube__www + "/sites/" + roundcube__user + "/public
 # .. envvar:: roundcube__src [[[
 #
 # Base path for git bare repository with Roundcube source.
-roundcube__src: '{{ (ansible_local.root.src
-                      if (ansible_local|d() and ansible_local.root|d() and
-                          ansible_local.root.src|d())
-                      else "/usr/local/src") + "/" + roundcube__user }}'
+roundcube__src: '{{ (ansible_local.hier.src | d("/usr/local/src"))
+                    + "/" + roundcube__user }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__www [[[
@@ -543,10 +539,7 @@ roundcube__fqdn: 'webmail.{{ roundcube__domain }}'
 # .. envvar:: roundcube__domain [[[
 #
 # The DNS domain of the RoundCube installation.
-roundcube__domain: '{{ ansible_local.core.domain
-                       if (ansible_local|d() and ansible_local.core|d() and
-                           ansible_local.core.domain|d())
-                       else ansible_domain }}'
+roundcube__domain: '{{ ansible_domain }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__imap_srv_rr [[[

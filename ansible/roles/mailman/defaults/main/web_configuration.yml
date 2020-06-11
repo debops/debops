@@ -373,8 +373,8 @@ mailman__web_default_configuration:
 
   - name: 'time_zone'
     value: '{{ "UTC"
-               if ((ansible_local.timezone | d("Etc/UTC")) == "Etc/UTC")
-               else ansible_local.timezone }}'
+               if ((ansible_local.tzdata.timezone | d("Etc/UTC")) == "Etc/UTC")
+               else ansible_local.tzdata.timezone }}'
 
   - name: 'postorius_template_base_url'
     value: '{{ "https://" + mailman__fqdn + "/" }}'

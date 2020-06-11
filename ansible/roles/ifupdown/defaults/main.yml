@@ -91,10 +91,8 @@ ifupdown__reconfigure_auto: True
 #
 # Path where the reconfiguration script will be installed if automatic
 # reconfiguration is disabled.
-ifupdown__reconfigure_script_path: '{{ (ansible_local.root.lib
-                                        if (ansible_local|d() and ansible_local.root|d() and
-                                            ansible_local.root.lib|d())
-                                        else "/usr/local/lib") + "/ifupdown-reconfigure-interfaces" }}'
+ifupdown__reconfigure_script_path: '{{ (ansible_local.hier.lib | d("/usr/local/lib"))
+                                       + "/ifupdown-reconfigure-interfaces" }}'
 
                                                                    # ]]]
 # .. envvar:: ifupdown__reconfigure_init_file [[[

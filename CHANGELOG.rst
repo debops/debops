@@ -54,6 +54,15 @@ New DebOps roles
   used to install the InfluxDB time series database service and manage its
   databases and users, respectively.
 
+- The :ref:`debops.hier` role will be used to define base directory hierarchy
+  used by other DebOps roles (previously done by the :ref:`debops.core` role).
+  The role is included in the :file:`common.yml` playbook.
+
+- The :ref:`debops.tzdata` role manages the host time zone configuration and
+  provides the ``ansible_local.tzdata.timezone`` local fact with the time zone
+  in the ``Area/Zone`` format. The role is included in the :file:`common.yml`
+  playbook.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
@@ -166,6 +175,23 @@ General
   in the :file:`.debops.cfg` configuration file ``[ansible defaults]`` section
   instead of the static :file:`ansible/inventory/` path.
 
+- The variables in various DebOps roles that define filesystem paths have been
+  switched from using the ``ansible_local.root.*`` Ansible local facts to the
+  new ``ansible_local.hier.*`` facts defined by the :ref:`debops.hier` role.
+  The new facts use the same base paths as the old ones; there should be no
+  issues if the variables have not been modified through Ansible inventory.
+
+  If you have redefined any ``core__root_*`` variables in the Ansible inventory
+  to modify the filesystem paths used by DebOps roles, you will need to update
+  the configuration. See the :ref:`debops.hier` role documentation for details.
+
+- The use of ``ansible_local.core.fqdn`` and ``ansible_local.core.domain``
+  local facts in roles to define the host DNS domain and FQDN has been removed;
+  the roles will use the ``ansible_fqdn`` and ``ansible_domain`` facts
+  directly. This is due to issues with the :ref:`debops.core` local facts not
+  updating when the host's domain is changed and causing the roles to use wrong
+  domain names in configuration.
+
 :ref:`debops.cran` role
 '''''''''''''''''''''''
 
@@ -236,12 +262,13 @@ General
 Removed
 ~~~~~~~
 
-:ref:`debops.nullmailer` role
-'''''''''''''''''''''''''''''
+:ref:`debops.console` role
+''''''''''''''''''''''''''
 
-- The script and :command:`dpkg` hook that cleaned up the additional files
-  maintained by the role has been removed; the :ref:`debops.dpkg_cleanup` role
-  will be used for this purpose instead.
+- The local and NFS mount support has been removed from the
+  :ref:`debops.console` role. Local mounts can be managed using the
+  :ref:`debops.mount` role; NFS mounts can be managed by the :ref:`debops.nfs`
+  role.
 
 :ref:`debops.core` role
 '''''''''''''''''''''''
@@ -249,6 +276,35 @@ Removed
 - The ``ansible_local.uuid`` local fact and corresponding variables and tasks
   have been removed from the role. A replacement fact, ``ansible_machine_id``
   is an Ansible built-in.
+
+- The ``ansible_local.init`` fact has been removed from the role. A native
+  ``ansible_service_mgr`` Ansible fact is it's replacement.
+
+- The ``ansible_local.cap12s`` fact has been removed from the role. A native
+  set of Ansible facts (``ansible_system_capabilities``,
+  ``ansible_system_capabilities_enforced`` is be used as a replacement.
+
+- The :file:`root.fact` script, corresponding variables and documentation have
+  been removed from the role. This functionality is now managed by the
+  :ref:`debops.hier` role.
+
+- The ``ansible_local.core.fqdn`` and ``ansible_local.core.domain`` local facts
+  and their corresponding default variables have been removed from the role. In
+  their place, ``ansible_fqdn`` and ``ansible_domain`` facts should be used
+  instead.
+
+:ref:`debops.ntp` role
+''''''''''''''''''''''
+
+- The timezone configuration has been moved from the :ref:`debops.ntp` role to
+  the :ref:`debops.tzdata` role.
+
+:ref:`debops.nullmailer` role
+'''''''''''''''''''''''''''''
+
+- The script and :command:`dpkg` hook that cleaned up the additional files
+  maintained by the role has been removed; the :ref:`debops.dpkg_cleanup` role
+  will be used for this purpose instead.
 
 Fixed
 ~~~~~

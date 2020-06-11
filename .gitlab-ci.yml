@@ -253,7 +253,7 @@ stages:
 'core role':
   <<: *test_role_no_deps
   variables:
-    JANE_TEST_FACT: 'core.fact root.fact tags.fact uuid.fact'
+    JANE_TEST_FACT: 'core.fact tags.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/core.yml'
     JANE_DIFF_PATTERN: '.*/roles/core/.*'
     JANE_LOG_PATTERN: '\[debops\.core\]'
@@ -662,6 +662,14 @@ stages:
     JANE_INVENTORY_HOSTVARS: 'hashicorp__applications=[\"consul\",\"consul-template\"]'
     JANE_DIFF_PATTERN: '.*/roles/hashicorp/.*'
     JANE_LOG_PATTERN: '\[debops\.hashicorp\]'
+
+'hier role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_FACT: 'hier.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/hier.yml'
+    JANE_DIFF_PATTERN: '.*/roles/hier/.*'
+    JANE_LOG_PATTERN: '\[debops\.hier\]'
 
 'hwraid role':
   <<: *test_role_1st_deps
@@ -1747,6 +1755,14 @@ stages:
     JANE_INVENTORY_GROUPS: 'debops_service_tinyproxy'
     JANE_DIFF_PATTERN: '.*/roles/tinyproxy/.*'
     JANE_LOG_PATTERN: '\[debops\.tinyproxy\]'
+
+'tzdata role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_FACT: 'tzdata.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/tzdata.yml'
+    JANE_DIFF_PATTERN: '.*/roles/tzdata/.*'
+    JANE_LOG_PATTERN: '\[debops\.tzdata\]'
 
 # --- u --- [[[2
 

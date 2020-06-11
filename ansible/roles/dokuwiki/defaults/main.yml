@@ -78,10 +78,8 @@ dokuwiki__home: '{{ (ansible_local.nginx.www
 # .. envvar:: dokuwiki__src [[[
 #
 # Base path for git bare repository with DokuWiki source.
-dokuwiki__src: '{{ (ansible_local.root.src
-                    if (ansible_local|d() and ansible_local.root|d() and
-                        ansible_local.root.src|d())
-                    else "/usr/local/src") + "/" + dokuwiki__user }}'
+dokuwiki__src: '{{ (ansible_local.hier.src | d("/usr/local/src"))
+                   + "/" + dokuwiki__user }}'
 
                                                                    # ]]]
 # .. envvar:: dokuwiki__www [[[

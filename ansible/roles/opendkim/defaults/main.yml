@@ -94,20 +94,14 @@ opendkim__socket: '{{ "/var/spool/postfix/opendkim/opendkim.sock"
 # .. envvar:: opendkim__domain [[[
 #
 # The main DNS domain used in the OpenDKIM configuration.
-opendkim__domain: '{{ ansible_local.core.domain
-                      if (ansible_local|d() and ansible_local.core|d() and
-                          ansible_local.core.domain|d())
-                      else ansible_domain }}'
+opendkim__domain: '{{ ansible_domain }}'
 
                                                                    # ]]]
 # .. envvar:: opendkim__fqdn [[[
 #
 # The Fully Qualified Domain Name of the current host used in the OpenDKIM
 # configuration.
-opendkim__fqdn: '{{ ansible_local.core.fqdn
-                    if (ansible_local|d() and ansible_local.core|d() and
-                        ansible_local.core.domain|d())
-                    else ansible_fqdn }}'
+opendkim__fqdn: '{{ ansible_fqdn }}'
 
                                                                    # ]]]
 # .. envvar:: opendkim__domainkeys_path [[[

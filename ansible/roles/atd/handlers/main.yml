@@ -6,8 +6,7 @@
 - name: Reload systemd units
   systemd:
     daemon_reload: True
-  when: ansible_local|d() and ansible_local.init|d() and
-        ansible_local.init in [ 'systemd' ]
+  when: ansible_service_mgr == 'systemd'
 
 - name: Restart atd
   service:

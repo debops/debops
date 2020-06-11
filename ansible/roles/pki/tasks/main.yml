@@ -25,10 +25,8 @@
 - name: Expose host FQDN and library path in temporary variables
   set_fact:
     pki_fact_fqdn: '{{ pki_fqdn }}'
-    pki_fact_lib_path: '{{ (ansible_local.root.lib
-                            if (ansible_local|d() and ansible_local.root|d() and
-                                ansible_local.root.lib|d())
-                            else "/usr/local/lib") + "/pki" }}'
+    pki_fact_lib_path: '{{ (ansible_local.hier.lib | d("/usr/local/lib"))
+                           + "/pki" }}'
 
 # Install PKI packages [[[
 - name: Install PKI packages

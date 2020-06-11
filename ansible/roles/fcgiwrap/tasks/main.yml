@@ -47,10 +47,8 @@
 
 - name: Configure fcgiwrap instances in sysvinit
   include: configure_sysvinit.yml
-  when: (ansible_local|d() and ansible_local.init|d() and
-          ansible_local.init != 'systemd')
+  when: ansible_service_mgr != 'systemd'
 
 - name: Configure fcgiwrap instances in systemd
   include: configure_systemd.yml
-  when: (ansible_local|d() and ansible_local.init|d() and
-          ansible_local.init == 'systemd')
+  when: ansible_service_mgr == 'systemd'
