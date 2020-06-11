@@ -185,6 +185,13 @@ General
   to modify the filesystem paths used by DebOps roles, you will need to update
   the configuration. See the :ref:`debops.hier` role documentation for details.
 
+- The use of ``ansible_local.core.fqdn`` and ``ansible_local.core.domain``
+  local facts in roles to define the host DNS domain and FQDN has been removed;
+  the roles will use the ``ansible_fqdn`` and ``ansible_domain`` facts
+  directly. This is due to issues with the :ref:`debops.core` local facts not
+  updating when the host's domain is changed and causing the roles to use wrong
+  domain names in configuration.
+
 :ref:`debops.cran` role
 '''''''''''''''''''''''
 

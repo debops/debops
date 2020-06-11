@@ -32,10 +32,7 @@ postldap__postfix__dependent_packages: '{{ [ "postfix-ldap" ]
 #
 # The DNS domain used to generate a :man:`ldap_table(5)` pattern for LDAP
 # search queries.
-postldap__domain: '{{ ansible_local.core.domain
-                      if (ansible_local|d() and ansible_local.core|d() and
-                          ansible_local.core.domain|d())
-                      else "" }}'
+postldap__domain: '{{ ansible_domain }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__domain_rev_pattern [[[

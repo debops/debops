@@ -212,10 +212,7 @@ minio__host_volumes: []
 # certificate requirements. If you want to change the FQDN on which
 # a particular MinIO instance is accessible via :command:`nginx`, use the
 # ``item.fqdn`` parameter instead.
-minio__fqdn: '{{ ansible_local.core.fqdn
-                 if (ansible_local|d() and ansible_local.core|d() and
-                     ansible_local.core.fqdn|d())
-                 else ansible_fqdn }}'
+minio__fqdn: '{{ ansible_fqdn }}'
 
                                                                    # ]]]
 # .. envvar:: minio__domain [[[
@@ -223,10 +220,7 @@ minio__fqdn: '{{ ansible_local.core.fqdn
 # This variable is used in the :command:`nginx` configuration to generate the
 # FQDN of the MinIO service based on the MinIO instance name and DNS domain
 # specified here.
-minio__domain: '{{ ansible_local.core.domain
-                   if (ansible_local|d() and ansible_local.core|d() and
-                       ansible_local.core.domain|d())
-                   else ansible_domain }}'
+minio__domain: '{{ ansible_domain }}'
                                                                    # ]]]
                                                                    # ]]]
 # Transport Layer Security (TLS) support [[[
