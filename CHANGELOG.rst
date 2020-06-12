@@ -73,6 +73,14 @@ Added
 
 - Allow selection of the day of the month for monthly backups.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- Introduce :envvar:`python__pip_version_check` which defaults to ``False`` to
+  disable PIP update checks outside of the system package manager.
+  Before, this was not configured by DebOps leaving it at PIP default which
+  meant it would check for updates occationally.
+
 Changed
 ~~~~~~~
 
@@ -188,14 +196,6 @@ General
   ``smtpd_sender_restrictions`` by default to allow locally installed services
   to send e-mail messages without authentication.
 
-:ref:`debops.python` role
-'''''''''''''''''''''''''
-
-- Introduce :envvar:`python__pip_version_check` which defaults to ``False`` to
-  disable PIP update checks outside of the system package manager.
-  Before, this was not configured by DebOps leaving it at PIP default which
-  meant it would check for updates occationally.
-
 Removed
 ~~~~~~~
 
@@ -218,6 +218,12 @@ General
 
 - Correctly display shell error messages in the :command:`debops-defaults`
   script.
+
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- Fix BeagleBoards detection with Debian 10 image.
+  Tested with a BeagleBoards Black.
 
 :ref:`debops.cron` role
 '''''''''''''''''''''''
@@ -392,12 +398,6 @@ Fixed
 
   Existing installations might need to be recreated to avoid warnings about
   duplicate OIDs emitted during OpenLDAP operations.
-
-:ref:`debops.apt` role
-''''''''''''''''''''''
-
-- Fix BeagleBoards detection with Debian 10 image.
-  Tested with a BeagleBoards Black.
 
 
 `debops v2.0.1`_ - 2020-02-03
