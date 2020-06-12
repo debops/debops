@@ -81,6 +81,14 @@ New DebOps roles
   removed conditionally, controlled by the :envvar:`postconf__deploy_state`
   variable.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- Introduce :envvar:`python__pip_version_check` which defaults to ``False`` to
+  disable PIP update checks outside of the system package manager.
+  Before, this was not configured by DebOps leaving it at PIP default which
+  meant it would check for updates occasionally.
+
 :ref:`debops.resources` role
 ''''''''''''''''''''''''''''
 
@@ -258,14 +266,6 @@ General
 
 - The ``rsyslog`` APT package and its service can be cleanly removed from the
   host, either via the role or by uninstalling the package itself.
-
-:ref:`debops.python` role
-'''''''''''''''''''''''''
-
-- Introduce :envvar:`python__pip_version_check` which defaults to ``False`` to
-  disable PIP update checks outside of the system package manager.
-  Before, this was not configured by DebOps leaving it at PIP default which
-  meant it would check for updates occasionally.
 
 Removed
 ~~~~~~~
