@@ -247,6 +247,18 @@ General
 
 - Support has been added for Nextcloud 17.0 and 18.0.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- Use ``inventory_hostname`` variable instead of the ``ansible_fqdn`` variable
+  in paths of the directories used to store data on Ansible Controller. This
+  decouples the host FQDN and domain name from the certificate management tasks
+  in the role.
+
+  .. note:: The role will try to recreate existing X.509 certificates making
+            the playbook execution idempotent. Removing the PKI realms and
+            recreating them will fix this issue.
+
 :ref:`debops.postfix` role
 ''''''''''''''''''''''''''
 
