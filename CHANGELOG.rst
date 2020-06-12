@@ -332,6 +332,12 @@ General
   contained multiple uses of a particular custom Ansible plugin, for example
   ``template_src`` or ``file_src``, were modified multiple times by the script.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- Fix BeagleBoards detection with Debian 10 image.
+  Tested with a BeagleBoards Black.
+
 :ref:`debops.cron` role
 '''''''''''''''''''''''
 
@@ -413,12 +419,6 @@ General
 
   Existing installations might need to be recreated to avoid warnings about
   duplicate OIDs emitted during OpenLDAP operations.
-
-:ref:`debops.apt` role
-''''''''''''''''''''''
-
-- Fix BeagleBoards detection with Debian 10 image.
-  Tested with a BeagleBoards Black.
 
 
 `debops v2.0.0`_ - 2020-01-30
