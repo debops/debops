@@ -44,16 +44,6 @@ pki_internal: '{{ (True
                    else False) | bool }}'
 
                                                                    # ]]]
-# .. envvar:: pki_fqdn [[[
-#
-# Fully Qualified Domain Name of the remote host that is managed by
-# the ``debops.pki`` role. This variable is important in Ansible tasks that
-# maintain files in the :file:`secret/` directory, as well as correct
-# identification of hosts which should have certificates signed by the internal
-# Certificate Authority.
-pki_fqdn: '{{ ansible_fqdn }}'
-
-                                                                   # ]]]
 # .. envvar:: pki_inventory_groups [[[
 #
 # List of Ansible inventory group names which are taken into account while
@@ -677,7 +667,7 @@ pki_dependent_authorities: []
 # - ``by-group/{{ group_name }}`` - certificates copied to hosts in a specified
 #   inventory group;
 #
-# - ``by-host/{{ pki_fqdn }}`` - certificates copied to a specific host;
+# - ``by-host/{{ inventory_hostname }}`` - certificates copied to a specific host;
 #
 pki_ca_certificates_path: 'by-group/all'
                                                                    # ]]]
