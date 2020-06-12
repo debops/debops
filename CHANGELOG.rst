@@ -259,6 +259,14 @@ General
 - The ``rsyslog`` APT package and its service can be cleanly removed from the
   host, either via the role or by uninstalling the package itself.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- Introduce :envvar:`python__pip_version_check` which defaults to ``False`` to
+  disable PIP update checks outside of the system package manager.
+  Before, this was not configured by DebOps leaving it at PIP default which
+  meant it would check for updates occasionally.
+
 Removed
 ~~~~~~~
 
@@ -405,6 +413,12 @@ General
 
   Existing installations might need to be recreated to avoid warnings about
   duplicate OIDs emitted during OpenLDAP operations.
+
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- Fix BeagleBoards detection with Debian 10 image.
+  Tested with a BeagleBoards Black.
 
 
 `debops v2.0.0`_ - 2020-01-30

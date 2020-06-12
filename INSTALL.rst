@@ -93,7 +93,7 @@ Ansible:
   versions. It allows creation of code that can be run in both old and new
   Python environments without changes.
 
-.. __: http://python-future.org/
+.. __: https://python-future.org/
 
 `netaddr`__
   This is a Python library which can be used to manipulate IP addresses in
