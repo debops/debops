@@ -78,18 +78,18 @@
 
   roles:
 
+    - role: resolvconf
+      tags: [ 'role::resolvconf', 'skip::resolvconf' ]
+
+    - role: netbase
+      tags: [ 'role::netbase', 'skip::netbase' ]
+
     - role: python
       tags: [ 'role::python', 'skip::python', 'role::netbase' ]
       python__dependent_packages3:
         - '{{ netbase__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ netbase__python__dependent_packages2 }}'
-
-    - role: resolvconf
-      tags: [ 'role::resolvconf', 'skip::resolvconf' ]
-
-    - role: netbase
-      tags: [ 'role::netbase', 'skip::netbase' ]
 
     - role: sudo
       tags: [ 'role::sudo', 'skip::sudo', 'role::system_groups' ]

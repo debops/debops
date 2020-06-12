@@ -121,6 +121,10 @@ General
   in the :file:`.debops.cfg` configuration file ``[ansible defaults]`` section
   instead of the static :file:`ansible/inventory/` path.
 
+- The :ref:`debops.netbase` and :ref:`debops.resolvconf` roles in the common
+  and bootstrap playbooks will be applied before the :ref:`debops.secret` role
+  to ensure correct hostname and domain information.
+
 :ref:`debops.cran` role
 '''''''''''''''''''''''
 
