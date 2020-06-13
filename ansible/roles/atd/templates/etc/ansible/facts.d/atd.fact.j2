@@ -2,11 +2,8 @@
  # Copyright (C) 2015-2017 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
-{% set atd_tpl_batch_interval = ansible_local.atd.batch_interval|d(atd_fact_batch_interval | d(''))) %}
-{% set atd_tpl_batch_load = ansible_local.atd.batch_load|d(atd_fact_batch_load | d(''))) %}
-{% set atd_tpl_enabled = atd_enabled | bool | lower %}
 {
-"batch_interval": "{{ atd_tpl_batch_interval }}",
-"batch_load": "{{ atd_tpl_batch_load }}",
-"enabled": "{{ atd_tpl_enabled }}"
+"batch_interval": "{{ ansible_local.atd.batch_interval|d(atd_fact_batch_interval | d('')) }}",
+"batch_load": "{{ ansible_local.atd.batch_load|d(atd_fact_batch_load | d('')) }}",
+"enabled": "{{ atd_enabled | bool | lower }}"
 }

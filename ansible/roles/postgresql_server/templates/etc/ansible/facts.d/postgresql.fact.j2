@@ -2,16 +2,11 @@
  # Copyright (C) 2015-2017 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
-{% set postgresql_server__tpl_version = ansible_local.postgresql.version|d(postgresql_server__version) %}
-{% set postgresql_server__tpl_server = ansible_local.postgresql.server|d("localhost") %}
-{% set postgresql_server__tpl_port = ansible_local.postgresql.port|d("5432") %}
-{% set postgresql_server__tpl_delegate_to = ansible_local.postgresql.delegate_to|d(postgresql_server__delegate_to) %}
-{% set postgresql_server__tpl_user = ansible_local.postgresql.user|d(postgresql_server__user) %}
 {
-"delegate_to": "{{ postgresql_server__tpl_delegate_to }}",
+"delegate_to": "{{ ansible_local.postgresql.delegate_to|d(postgresql_server__delegate_to) }}",
 "password_chars": "{{ postgresql_server__password_characters }}",
-"port": "{{ postgresql_server__tpl_port }}",
-"server": "{{ postgresql_server__tpl_server }}",
-"user": "{{ postgresql_server__tpl_user }}",
-"version": "{{ postgresql_server__tpl_version }}"
+"port": "{{ ansible_local.postgresql.port|d("5432") }}",
+"server": "{{ ansible_local.postgresql.server|d("localhost") }}",
+"user": "{{ ansible_local.postgresql.user|d(postgresql_server__user) }}",
+"version": "{{ ansible_local.postgresql.version|d(postgresql_server__version) }}"
 }

@@ -2,10 +2,8 @@
  # Copyright (C) 2015-2017 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
-{% set gitlab__tpl_systemd_services = ansible_local.gitlab.systemd_services|d(gitlab_use_systemd) %}
-{% set gitlab__tpl_database = ansible_local.gitlab.database|d(gitlab__database) %}
 {
-"database": "{{ gitlab__tpl_database }}",
+"database": "{{ ansible_local.gitlab.database|d(gitlab__database) }}",
 "fqdn": "{{ gitlab__fqdn }}",
 "installed": true,
 "registry": {{ gitlab__registry_enabled | bool | lower }},
@@ -13,6 +11,6 @@
 "registry_token_realm_url": "{{ gitlab__registry_token_realm_url }}",
 "registry_token_issuer": "{{ gitlab__registry_token_issuer }}",
 "registry_token_service": "{{ gitlab__registry_token_service }}",
-"systemd_services": {{ gitlab__tpl_systemd_services | bool | lower }},
+"systemd_services": {{ ansible_local.gitlab.systemd_services|d(gitlab_use_systemd) | bool | lower }},
 "version": "{{ gitlab_version }}"
 }

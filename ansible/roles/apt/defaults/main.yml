@@ -214,20 +214,14 @@ apt__architecture_map:
 #
 # The OS distribution present on the host.
 apt__distribution: '{{ ansible_local.core.distribution
-                       if (ansible_local.core.distribution|d())
-                       else (ansible_lsb.id
-                             if (ansible_lsb|d() and ansible_lsb.id|d())
-                             else ansible_distribution) }}'
+                       |d(ansible_lsb.id|d(ansible_distribution)) }}'
 
                                                                    # ]]]
 # .. envvar:: apt__distribution_release [[[
 #
 # The OS release present on the host.
 apt__distribution_release: '{{ ansible_local.core.distribution_release
-                              if (ansible_local.core.distribution_release|d())
-                            else ansible_lsb.codename
-                              if (ansible_lsb|d() and ansible_lsb.codename|d())
-                            else ansible_distribution_release }}'
+                               |(ansible_lsb.codename|d(ansible_distribution_release)) }}'
 
                                                                    # ]]]
 # .. envvar:: apt__distribution_release_map [[[
