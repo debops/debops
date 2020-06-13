@@ -278,7 +278,7 @@ prometheus_server__remote_read_configuration: []
 
                                                                    # ]]]
                                                                    # ]]]
-# SSL configuration [[[
+# TLS configuration [[[
 # ---------------------
 
 # .. envvar:: prometheus_server__append_groups [[[
@@ -296,7 +296,7 @@ prometheus_server__tls_config_server_name: '{{ ansible_fqdn }}'
                                                                    # ]]]
 # .. envvar:: prometheus_server__tls_config [[[
 #
-# Configuration of SSL support in :program:`prometheus`, managed by :ref:`debops.pki` role.
+# Configuration of TLS support in :program:`prometheus`, managed by :ref:`debops.pki` role.
 prometheus_server__tls_config:
 
   ca_file: '{{ prometheus_server__pki_path + "/" + prometheus_server__pki_realm +
@@ -310,7 +310,7 @@ prometheus_server__tls_config:
                                                                    # ]]]
 # .. envvar:: prometheus_server__pki [[[
 #
-# Enable or disable support for SSL in Prometheus server (using :ref:`debops.pki`).
+# Enable or disable support for TLS in Prometheus server (using :ref:`debops.pki`).
 prometheus_server__pki: '{{ True
                             if (ansible_local|d() and ansible_local.pki|d() and
                                 ansible_local.pki.enabled|d()|bool and

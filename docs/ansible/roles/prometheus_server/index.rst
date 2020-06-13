@@ -14,21 +14,21 @@ Apache 2 License, with source code available on GitHub, and is a graduated
 project of the Cloud Native Computing Foundation, along with Kubernetes and Envoy.
 Ansible roles ``debops.prometheus_exporter``, ``debops.prometheus_alertmanager``
 and ``debops.prometheus_server`` allow you to manage a Prometheus server and / or
-access remotely to Prometheus exporters and / or Prometheus alertmanagers in other
+access remotely to Prometheus exporters and / or Prometheus Alertmanagers in other
 hosts.
 
 ``debops.prometheus_server`` role is the "server" part - it installs
 ``prometheus`` Debian package, and configures access to the server with
 ``nginx`` basic authentication. After that, you can use :ref:`debops.prometheus_exporter`
-role to install and configure prometheus exporters in other hosts for
-collect metrics. Also you can use :ref:`debops.prometheus_alertmanager`
-role to install and configure prometheus alertmanager in order to include
+role to install and configure Prometheus exporters on other hosts to
+collect metrics. Also you can use the :ref:`debops.prometheus_alertmanager`
+role to install and configure Prometheus Alertmanager in order to include
 logic to silence alerts and also to forward them to email, Slack, or
 notification services such as PagerDuty.
 
-``debops.prometheus_server`` configure by default node exporter and alertmanager
+``debops.prometheus_server`` by default configures node exporter and Alertmanager
 scrape configurations with file-based service discovery mechanism that is used
-by :ref:`debops.prometheus_exporter` and :ref:`debops.prometheus_alertmanager`
+by the :ref:`debops.prometheus_exporter` and :ref:`debops.prometheus_alertmanager`
 roles.
 
 .. __: https://en.wikipedia.org/wiki/Prometheus_(software)
