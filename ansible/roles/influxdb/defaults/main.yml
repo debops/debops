@@ -65,6 +65,15 @@ influxdb__pki: '{{ ansible_local.pki.enabled|d()|bool }}'
 influxdb__password_length: '48'
 
                                                                    # ]]]
+# .. envvar:: influxdb__root_password [[[
+#
+# Password for default root admin user.
+influxdb__root_password: '{{ lookup("password",
+                             secret + "/influxdb/" + influxdb__server +
+                             "/credentials/root/password " +
+                             "length=" + influxdb__password_length) }}'
+
+                                                                   # ]]]
 # .. envvar:: influxdb__databases [[[
 #
 # List of databases configured on the InfluxDB server. See
