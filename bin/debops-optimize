@@ -18,21 +18,43 @@ cd "$(git rev-parse --show-toplevel)" || exit
 git ls-files -z "$(git rev-parse --show-toplevel)" | xargs --null -I '{}' find './{}' -type f -print0 | \
     xargs --null perl -i -p0e '
         s~
-            ## Use Ansible 2.8 default shortcut
-            \(?True\n
+            ## Use Ansible 2.8 default shortcut: True or False
+
+            ## Line: .*True
+            \(?True\n?
 
             ## Line: if (ansible_local|d() and ansible_local.pki|d() and
-            \s*if\s*\((?<var_ref1>ansible_local)\|d\(\)\s+and\s+(?<var_ref2>\k<var_ref1>\.\w+)\|d\(\)\s+and\n
+            \s*if\s*\((?<var_ref1>ansible_local)\|d\(\)\s+and\s+(?<var_ref2>\k<var_ref1>\.\w+)\|d\(\)\s+and\n?
             ## var_ref1: ansible_local
             ## var_ref2: ansible_local.pki
 
             ## Line: ansible_local.pki.enabled|d()|bool)
-            \s*(?<expression>\k<var_ref2>\.\w+\|d\(\).*)\)\n
+            \s*(?<expression>\k<var_ref2>\.\w+\|d\(\).*)\)\n?
             ## expression: ansible_local.pki.enabled|d()|bool
 
             ## Line: else False
             \s*else\s+False\)?(?:\s*\|\s*bool)?
-         ~$+{expression}~x;
+         ~$+{expression}~xg;
+
+        s~
+            ## Use Ansible 2.8 default shortcut: Thing if defined else fallback
+
+            ## Line: .*ansible_local.core.domain
+            \(?(?<var_ref3>(?<var_ref2>(?<var_ref1>ansible_local)\.[\w]+)\.[\w]+)\n?
+            ## var_ref1: ansible_local
+            ## var_ref2: ansible_local.core
+            ## var_ref3: ansible_local.core.domain
+
+            ## Line: if (ansible_local|d() and ansible_local.core|d() and
+            \s*if\s+\(\k<var_ref1>\|d\(\)\s+and\s+\k<var_ref2>\|d\(\)\s+and\n?
+
+            ## Line: ansible_local.core.domain|d())
+            \s*\k<var_ref3>\|d\(\)\)\n?
+
+            ## Line: else ansible_domain
+            \s*else\s+(?<else_exp>[^\n]+?)\s+}}
+            ## else_exp: ansible_domain
+        ~$+{var_ref3}|d($+{else_exp}) }}~xg;
     '
 
 
