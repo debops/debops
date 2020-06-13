@@ -342,19 +342,13 @@ mosquitto__combined_bridges: '{{ mosquitto__bridges
 #
 # Enable or disable support for the PKI infrastructe and connections over TLS,
 # depending on the presence of the :ref:`debops.pki` environment.
-mosquitto__pki: '{{ (ansible_local.pki.enabled
-                     if (ansible_local|d() and ansible_local.pki|d() and
-                         ansible_local.pki.enabled|d())
-                     else False) | bool }}'
+mosquitto__pki: '{{ ansible_local.pki.enabled|d(False) | bool) }}'
 
                                                                    # ]]]
 # .. envvar:: mosquitto__pki_path [[[
 #
 # Absolute path to the directory that contains PKI realms.
-mosquitto__pki_path: '{{ ansible_local.pki.path
-                         if (ansible_local|d() and ansible_local.pki|d() and
-                             ansible_local.pki.path|d())
-                         else "/etc/pki/realms" }}'
+mosquitto__pki_path: '{{ ansible_local.pki.path|d("/etc/pki/realms") }}'
 
                                                                    # ]]]
 # .. envvar:: mosquitto__pki_client_realm [[[
@@ -378,28 +372,19 @@ mosquitto__pki_broker_realm: 'domain'
 # .. envvar:: mosquitto__pki_ca [[[
 #
 # Name of the file with the Root CA certificate of a given PKI realm.
-mosquitto__pki_ca: '{{ ansible_local.pki.ca
-                       if (ansible_local|d() and ansible_local.pki|d() and
-                           ansible_local.pki.ca|d())
-                       else "CA.crt" }}'
+mosquitto__pki_ca: '{{ ansible_local.pki.ca|d("CA.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: mosquitto__pki_crt [[[
 #
 # Name of the file with the certificate of a given PKI realm.
-mosquitto__pki_crt: '{{ ansible_local.pki.crt
-                        if (ansible_local|d() and ansible_local.pki|d() and
-                            ansible_local.pki.crt|d())
-                        else "default.crt" }}'
+mosquitto__pki_crt: '{{ ansible_local.pki.crt|d("default.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: mosquitto__pki_key [[[
 #
 # Name of the file with the private key of a given PKI realm.
-mosquitto__pki_key: '{{ ansible_local.pki.key
-                        if (ansible_local|d() and ansible_local.pki|d() and
-                            ansible_local.pki.key|d())
-                        else "default.key" }}'
+mosquitto__pki_key: '{{ ansible_local.pki.key|d("default.key") }}'
                                                                    # ]]]
                                                                    # ]]]
 # PKI inventory variables [[[

@@ -38,16 +38,10 @@
    else "2.4.0" -}}
 {% endmacro %}
 {% macro get_openssl_version() %}{# [[[ #}
-{{ ansible_local.pki.openssl_version
-   if (ansible_local|d() and ansible_local.pki|d() and
-       ansible_local.pki.openssl_version|d())
-   else "1.0.2" }}
+{{ ansible_local.pki.openssl_version|d("1.0.2") }}
 {% endmacro %}
 {% macro get_gnutls_version() %}{# [[[ #}
-{{ ansible_local.pki.gnutls_version
-   if (ansible_local|d() and ansible_local.pki|d() and
-       ansible_local.pki.gnutls_version|d())
-   else "0.0.0" }}
+{{ ansible_local.pki.gnutls_version|d("0.0.0") }}
 {% endmacro %}
 {% macro debops_indent(content, width=4, indentfirst=False) %}{# [[[ #}
 {# Fixed version of the `indent` filter which does not insert trailing spaces on empty lines.

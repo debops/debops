@@ -560,20 +560,14 @@ sshd__authorized_keys_lookup_type: [ 'ldap', 'sss' ]
 # .. envvar:: sshd__ldap_base_dn [[[
 #
 # The base LDAP Distinguished Name used for SSH public key lookups.
-sshd__ldap_base_dn: '{{ ansible_local.ldap.base_dn
-                        if (ansible_local|d() and ansible_local.ldap|d() and
-                            ansible_local.ldap.base_dn|d())
-                        else [] }}'
+sshd__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: sshd__ldap_device_dn [[[
 #
 # The Distinguished Name of the device LDAP object that represents current
 # host. It will be used as a base DN for the ``sshd`` LDAP account object.
-sshd__ldap_device_dn: '{{ ansible_local.ldap.device_dn
-                          if (ansible_local|d() and ansible_local.ldap|d() and
-                              ansible_local.ldap.device_dn|d())
-                          else [] }}'
+sshd__ldap_device_dn: '{{ ansible_local.ldap.device_dn|d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: sshd__ldap_device_object_classes [[[
@@ -909,10 +903,7 @@ sshd__pam_access__dependent_rules:
         comment: 'Grant access via SSH to root account from the Ansible Controller hosts'
         permission: 'allow'
         users: 'root'
-        origins: '{{ ansible_local.core.ansible_controllers
-                     if (ansible_local|d() and ansible_local.core|d() and
-                         ansible_local.core.ansible_controllers|d())
-                     else [] }}'
+        origins: '{{ ansible_local.core.ansible_controllers|d([]) }}'
 
       - name: 'allow-root'
         comment: 'Grant access via SSH to root account on the same DNS domain'

@@ -50,10 +50,7 @@ dovecot_dependencies: True
 # Variable which specifies what Dovecot version is installed on the host. It is
 # defined via Ansible local facts and can be used in conditions to modify the
 # configuration as needed.
-dovecot__version: '{{ ansible_local.dovecot.version
-                      if (ansible_local|d() and ansible_local.dovecot|d() and
-                          ansible_local.dovecot.version|d())
-                      else "0.0.0" }}'
+dovecot__version: '{{ ansible_local.dovecot.version|d("0.0.0") }}'
                                                                    # ]]]
                                                                    # ]]]
 # User database/mailbox configuration [[[
@@ -250,47 +247,32 @@ dovecot_pki: '{{ ansible_local.pki.enabled|d() | bool }}'
 # .. envvar:: dovecot_pki_path [[[
 #
 # Base PKI directory
-dovecot_pki_path: '{{ ansible_local.pki.path
-                      if (ansible_local|d() and ansible_local.pki|d() and
-                        ansible_local.pki.path|d())
-                      else "/etc/pki/realms" }}'
+dovecot_pki_path: '{{ ansible_local.pki.path|d("/etc/pki/realms") }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_pki_realm [[[
 #
 # Default PKI realm used by Dovecot
-dovecot_pki_realm: '{{ ansible_local.pki.realm
-                      if (ansible_local|d() and ansible_local.pki|d() and
-                        ansible_local.pki.realm|d())
-                      else "domain" }}'
+dovecot_pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__pki_ca [[[
 #
 # Name of the Root Certificate Authority certificate file used by Postfix,
 # relative to the PKI realm directory.
-dovecot__pki_ca: '{{ ansible_local.pki.ca
-                    if (ansible_local|d() and ansible_local.pki|d() and
-                      ansible_local.pki.ca|d())
-                    else "CA.crt" }}'
+dovecot__pki_ca: '{{ ansible_local.pki.ca|d("CA.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_pki_crt [[[
 #
 # Default certificate, relative to ``dovecot_pki_realm`` variable
-dovecot_pki_crt: '{{ ansible_local.pki.crt
-                    if (ansible_local|d() and ansible_local.pki|d() and
-                      ansible_local.pki.crt|d())
-                    else "default.crt" }}'
+dovecot_pki_crt: '{{ ansible_local.pki.crt|d("default.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_pki_key [[[
 #
 # Default private key, relative to ``dovecot_pki_realm`` variable
-dovecot_pki_key: '{{ ansible_local.pki.key
-                    if (ansible_local|d() and ansible_local.pki|d() and
-                      ansible_local.pki.key|d())
-                    else "default.key" }}'
+dovecot_pki_key: '{{ ansible_local.pki.key|d("default.key") }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__tls_ca_cert_dir [[[
@@ -358,10 +340,7 @@ dovecot_pki_hook_name: 'dovecot'
 # .. envvar:: dovecot_pki_hook_path [[[
 #
 # Directory with PKI hooks.
-dovecot_pki_hook_path: '{{ ansible_local.pki.hooks
-                         if (ansible_local|d() and ansible_local.pki|d() and
-                             ansible_local.pki.hooks|d())
-                         else "/etc/pki/hooks" }}'
+dovecot_pki_hook_path: '{{ ansible_local.pki.hooks|d("/etc/pki/hooks") }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_pki_hook_action [[[
@@ -651,19 +630,13 @@ dovecot__allow_sieve: []
 # On the one hand this prevents mail server components from accessing sensitive system directories,
 # on the other hand it protects the mailboxes from external access.
 # Only vmail (and root) are allowed to access the mailboxes.
-dovecot__vmail_posix_user: '{{ ansible_local.postldap.vmail_posix_user
-                              if (ansible_local|d() and ansible_local.postldap|d() and
-                                ansible_local.postldap.vmail_posix_user|d())
-                              else "vmail" }}'
+dovecot__vmail_posix_user: '{{ ansible_local.postldap.vmail_posix_user|d("vmail") }}'
                                                                    # ]]]
 # .. envvar:: dovecot__vmail_posix_group [[[
 #
 # Virtual Mail POSIX group
 #
-dovecot__vmail_posix_group: '{{ ansible_local.postldap.vmail_posix_group
-                                if (ansible_local|d() and ansible_local.postldap|d() and
-                                  ansible_local.postldap.vmail_posix_group|d())
-                                else "vmail" }}'
+dovecot__vmail_posix_group: '{{ ansible_local.postldap.vmail_posix_group|d("vmail") }}'
                                                                    # ]]]
                                                                    # ]]]
 # LDAP [[[
@@ -685,10 +658,7 @@ dovecot__ldap_enabled: '{{ True
 #
 # The base Distinguished Name which should be used to create Distinguished
 # Names of the LDAP directory objects, defined as a YAML list.
-dovecot__ldap_base_dn: '{{ ansible_local.ldap.base_dn
-                           if (ansible_local|d() and ansible_local.ldap|d() and
-                             ansible_local.ldap.base_dn|d())
-                           else [] }}'
+dovecot__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_device_dn [[[
@@ -697,10 +667,7 @@ dovecot__ldap_base_dn: '{{ ansible_local.ldap.base_dn
 # list. It will be used as a base for the Postfix/Dovecot Virtual Mail service account LDAP
 # object. If the list is empty, the role will not create the account LDAP
 # object automatically.
-dovecot__ldap_device_dn: '{{ ansible_local.ldap.device_dn
-                             if (ansible_local|d() and ansible_local.ldap|d() and
-                                ansible_local.ldap.device_dn|d())
-                             else [] }}'
+dovecot__ldap_device_dn: '{{ ansible_local.ldap.device_dn|d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_self_rdn [[[
@@ -749,10 +716,7 @@ dovecot__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
 #
 # The Relative Distinguished Name of the LDAP object which contains the user
 # accounts stored in LDAP.
-dovecot__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn
-                              if (ansible_local|d() and ansible_local.ldap|d() and
-                                 ansible_local.ldap.people_rdn|d())
-                              else "ou=People" }}'
+dovecot__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn|d("ou=People") }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_people_dn [[[
@@ -770,19 +734,13 @@ dovecot__ldap_people_dn: '{{ [ dovecot__ldap_people_rdn ]
 #
 # List of LDAP URIs that point to the directory servers which should be used by
 # `dovecot` service.
-dovecot__ldap_uri: '{{ ansible_local.ldap.uri
-                       if (ansible_local|d() and ansible_local.ldap|d() and
-                         ansible_local.ldap.uri|d())
-                       else [""] }}'
+dovecot__ldap_uri: '{{ ansible_local.ldap.uri|d([""]) }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_server_port [[[
 #
 # The TCP port which should be used for connections to the LDAP server.
-dovecot__ldap_server_port: '{{ ansible_local.ldap.port
-                               if (ansible_local|d() and ansible_local.ldap|d() and
-                                  ansible_local.ldap.port|d())
-                               else ("389" if dovecot__ldap_start_tls|bool else "636") }}'
+dovecot__ldap_server_port: '{{ ansible_local.ldap.port|d(("389" if dovecot__ldap_start_tls|bool else "636")) }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_start_tls [[[

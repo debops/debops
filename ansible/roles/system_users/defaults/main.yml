@@ -154,10 +154,7 @@ system_users__dotfiles_enabled: '{{ ansible_local.yadm.dotfiles|d() }}'
 # An URL or an absolute path on the remote host to the :command:`git` dotfiles
 # repository. The repository will be used by default if the dotfiles management
 # is enabled without specifying a custom repository for the user.
-system_users__dotfiles_repo: '{{ ansible_local.yadm.dotfiles
-                                 if (ansible_local|d() and ansible_local.yadm|d() and
-                                     ansible_local.yadm.dotfiles|d())
-                                 else "" }}'
+system_users__dotfiles_repo: '{{ ansible_local.yadm.dotfiles|d("") }}'
                                                                    # ]]]
                                                                    # ]]]
 # The "current Ansible user" configuration [[[

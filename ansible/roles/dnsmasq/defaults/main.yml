@@ -432,10 +432,7 @@ dnsmasq__default_configuration:
                           if (ansible_local|d() and ansible_local.lxc|d() and
                               ansible_local.lxc.net_domain|d())
                           else "")
-                   + "/" + (ansible_local.lxc.net_address
-                            if (ansible_local|d() and ansible_local.lxc|d() and
-                                ansible_local.lxc.net_address|d())
-                            else "") }}'
+                   + "/" + ansible_local.lxc.net_address|d("")) }}'
 
       # Create a separate 'lxc' host record that points to the 'lxcbr0'
       # interface from the outside, if there's no external domain set.
@@ -444,10 +441,7 @@ dnsmasq__default_configuration:
                     if (ansible_local|d() and ansible_local.lxc|d() and
                         ansible_local.lxc.net_domain|d())
                     else "")
-                   + "," + (ansible_local.lxc.net_address
-                            if (ansible_local|d() and ansible_local.lxc|d() and
-                                ansible_local.lxc.net_address|d())
-                            else "") }}'
+                   + "," + ansible_local.lxc.net_address|d("")) }}'
         state: '{{ "present"
                    if (ansible_local|d() and ansible_local.lxc|d() and
                        "." not in ansible_local.lxc.net_domain|d())
@@ -458,16 +452,10 @@ dnsmasq__default_configuration:
                     if (ansible_local|d() and ansible_local.lxc|d() and
                         ansible_local.lxc.net_subnet|d())
                     else "")
-                   + "," + (ansible_local.lxc.net_address
-                            if (ansible_local|d() and ansible_local.lxc|d() and
-                                ansible_local.lxc.net_address|d())
-                            else "") }}'
+                   + "," + ansible_local.lxc.net_address|d("")) }}'
 
       - name: 'rebind-domain-ok'
-        value: '{{ ansible_local.lxc.net_domain
-                   if (ansible_local|d() and ansible_local.lxc|d() and
-                       ansible_local.lxc.net_domain|d())
-                   else "" }}'
+        value: '{{ ansible_local.lxc.net_domain|d("") }}'
 
     state: '{{ "present"
                if (ansible_local|d() and ansible_local.lxc|d() and

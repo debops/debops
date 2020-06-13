@@ -36,10 +36,7 @@
              | flatten }}'
     state: 'present'
     install_recommends: False
-    cache_valid_time: '{{ ansible_local.core.cache_valid_time
-                          if (ansible_local|d() and ansible_local.core|d() and
-                              ansible_local.core.cache_valid_time|d())
-                          else "86400" }}'
+    cache_valid_time: '{{ ansible_local.core.cache_valid_time|d("86400") }}'
   register: pki__register_packages
   until: pki__register_packages is succeeded
   when: pki_enabled | bool

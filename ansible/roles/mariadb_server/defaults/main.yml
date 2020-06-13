@@ -349,19 +349,13 @@ mariadb_server__pki: '{{ (True
 # .. envvar:: mariadb_server__pki_path [[[
 #
 # Base path for PKI directory.
-mariadb_server__pki_path: '{{ (ansible_local.pki.base_path
-                           if (ansible_local|d() and ansible_local.pki|d() and
-                               ansible_local.pki.base_path|d())
-                           else "/etc/pki") }}'
+mariadb_server__pki_path: '{{ ansible_local.pki.base_path|d("/etc/pki")) }}'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__pki_realm [[[
 #
 # Default PKI realm used by MariaDB server.
-mariadb_server__pki_realm: '{{ ansible_local.pki.realm
-                               if (ansible_local|d() and ansible_local.pki|d() and
-                                   ansible_local.pki.realm|d())
-                               else "domain" }}'
+mariadb_server__pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__pki_ca [[[

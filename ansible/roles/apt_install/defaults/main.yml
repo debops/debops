@@ -64,10 +64,7 @@ apt_install__archive_areas_map:
 # List of package archive areas which are currently available. This list is
 # used to conditionally enable packages for installation, depending on
 # availability of a given archive area.
-apt_install__archive_areas: '{{ ansible_local.apt.archive_areas
-                                if (ansible_local|d() and ansible_local.apt|d() and
-                                    ansible_local.apt.archive_areas|d())
-                                else (apt_install__archive_areas_map[apt_install__distribution] | d([])) }}'
+apt_install__archive_areas: '{{ ansible_local.apt.archive_areas|d((apt_install__archive_areas_map[apt_install__distribution] | d([]))) }}'
 
                                                                    # ]]]
 # .. envvar:: apt_install__condition_map [[[

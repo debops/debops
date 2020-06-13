@@ -43,17 +43,9 @@ output = loads('''{
     "configured": true,
     "dependent_interfaces": {{ ifupdown__tpl_dependent_interfaces
                                | to_nice_json }},
-    "external_interface": "{{ ansible_local.ifupdown.external_interface
-                           if (ansible_local|d() and
-                               ansible_local.ifupdown|d() and
-                               ansible_local.ifupdown.external_interface|d())
-                           else ifupdown__external_interface }}",
+    "external_interface": "{{ ansible_local.ifupdown.external_interface|d(ifupdown__external_interface) }}",
     "interface_layout": "{{ ifupdown__interface_layout }}",
-    "internal_interface": "{{ ansible_local.ifupdown.internal_interface
-                           if (ansible_local|d() and
-                               ansible_local.ifupdown|d() and
-                               ansible_local.ifupdown.internal_interface|d())
-                           else ifupdown__internal_interface }}"
+    "internal_interface": "{{ ansible_local.ifupdown.internal_interface|d(ifupdown__internal_interface) }}"
 }''')
 
 network_commands = ['/lib/systemd/systemd-networkd',

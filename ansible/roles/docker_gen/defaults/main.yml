@@ -176,19 +176,13 @@ docker_gen__pki: '{{ ansible_local.pki.enabled|d() | bool }}'
 # .. envvar:: docker_gen__pki_path [[[
 #
 # Directory where PKI files are located on the remote host.
-docker_gen__pki_path: '{{ ansible_local.pki.base_path
-                         if (ansible_local|d() and ansible_local.pki|d() and
-                             ansible_local.pki.base_path|d())
-                         else "/etc/pki" }}'
+docker_gen__pki_path: '{{ ansible_local.pki.base_path|d("/etc/pki") }}'
 
                                                                    # ]]]
 # .. envvar:: docker_gen__pki_realm [[[
 #
 # Name of the PKI realm used by :command:`docker-gen`.
-docker_gen__pki_realm: '{{ ansible_local.pki.realm
-                          if (ansible_local|d() and ansible_local.pki|d() and
-                              ansible_local.pki.realm|d())
-                          else "system" }}'
+docker_gen__pki_realm: '{{ ansible_local.pki.realm|d("system") }}'
 
                                                                    # ]]]
 # .. envvar:: docker_gen__pki_ca [[[

@@ -46,10 +46,7 @@
 
     # Relative Distinguished Name of the LDAP object that contains the personal
     # user accounts
-    ldap_people_rdn: '{{ ansible_local.ldap.people_rdn
-                         if (ansible_local|d() and ansible_local.ldap|d() and
-                             ansible_local.ldap.people_rdn|d())
-                         else "ou=People" }}'
+    ldap_people_rdn: '{{ ansible_local.ldap.people_rdn|d("ou=People") }}'
 
     # Relative Distinguished Name of an user account to convert to an UUID
     person_rdn: 'uid={{ person_uid.user_input }}'

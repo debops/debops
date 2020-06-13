@@ -48,22 +48,13 @@
 {% endmacro %}{# ]]] #}
 
 {% macro get_apache_version() %}{# [[[ #}
-{{ ansible_local.apache.version
-   if (ansible_local|d() and ansible_local.apache|d() and
-       ansible_local.apache.version|d())
-   else "2.4.0" }}
+{{ ansible_local.apache.version|d("2.4.0") }}
 {% endmacro %}{# ]]] #}
 
 {% macro get_openssl_version() %}{# [[[ #}
-{{ ansible_local.pki.openssl_version
-   if (ansible_local|d() and ansible_local.pki|d() and
-       ansible_local.pki.openssl_version|d())
-   else "0.0.0" }}
+{{ ansible_local.pki.openssl_version|d("0.0.0") }}
 {% endmacro %}{# ]]] #}
 
 {% macro get_gnutls_version() %}{# [[[ #}
-{{ ansible_local.pki.gnutls_version
-   if (ansible_local|d() and ansible_local.pki|d() and
-       ansible_local.pki.gnutls_version|d())
-   else "0.0.0" }}
+{{ ansible_local.pki.gnutls_version|d("0.0.0") }}
 {% endmacro %}{# ]]] #}

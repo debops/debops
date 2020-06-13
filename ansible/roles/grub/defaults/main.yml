@@ -111,22 +111,13 @@ grub__original_configuration:
 grub__fact_configuration:
 
   - name: 'default'
-    value: '{{ ansible_local.grub.default
-               if (ansible_local|d() and ansible_local.grub|d() and
-                   ansible_local.grub.default|d())
-               else "0" }}'
+    value: '{{ ansible_local.grub.default|d("0") }}'
 
   - name: 'cmdline_linux_default'
-    value: '{{ ansible_local.grub.cmdline_default
-               if (ansible_local|d() and ansible_local.grub|d() and
-                   ansible_local.grub.cmdline_default|d())
-               else [] }}'
+    value: '{{ ansible_local.grub.cmdline_default|d([]) }}'
 
   - name: 'cmdline_linux'
-    value: '{{ ansible_local.grub.cmdline
-               if (ansible_local|d() and ansible_local.grub|d() and
-                   ansible_local.grub.cmdline|d())
-               else [] }}'
+    value: '{{ ansible_local.grub.cmdline|d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: grub__default_configuration [[[

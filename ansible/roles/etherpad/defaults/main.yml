@@ -158,10 +158,7 @@ etherpad_welcome_text: |
 etherpad_database_server: '{{ ansible_local.mariadb.server
                               if (ansible_local|d() and ansible_local.mariadb|d() and
                                   ansible_local.mariadb.server|d())
-                              else (ansible_local.postgresql.server
-                                    if (ansible_local|d() and ansible_local.postgresql|d() and
-                                        ansible_local.postgresql.server|d())
-                                    else "") }}'
+                              else ansible_local.postgresql.server|d("")) }}'
 
                                                                    # ]]]
 # .. envvar:: etherpad_database_user [[[

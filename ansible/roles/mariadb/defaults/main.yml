@@ -82,10 +82,7 @@ mariadb__delegate_to: '{{ mariadb__server
 #
 # The choice depends on availability of MariaDB packages in a distribution.
 # Percona needs to be selected explicitly.
-mariadb__flavor: '{{ (ansible_local.mariadb.flavor
-                      if (ansible_local|d() and ansible_local.mariadb|d() and
-                          ansible_local.mariadb.flavor|d())
-                      else (mariadb__flavor_map[ansible_distribution_release] | default("mariadb"))) }}'
+mariadb__flavor: '{{ ansible_local.mariadb.flavor|d((mariadb__flavor_map[ansible_distribution_release] | default("mariadb")))) }}'
 
                                                                    # ]]]
 # .. envvar:: mariadb__flavor_map [[[
@@ -274,20 +271,14 @@ mariadb__pki: '{{ (True
 # .. envvar:: mariadb__pki_path [[[
 #
 # Base path for PKI directory.
-mariadb__pki_path: '{{ (ansible_local.pki.base_path
-                        if (ansible_local|d() and ansible_local.pki|d() and
-                            ansible_local.pki.base_path|d())
-                        else "/etc/pki") }}'
+mariadb__pki_path: '{{ ansible_local.pki.base_path|d("/etc/pki")) }}'
 
                                                                    # ]]]
 # .. envvar:: mariadb__pki_realm [[[
 #
 # Default PKI realm used by MariaDB (Debian MariaDB packages do not support chained
 # certificates, see https://bugs.debian.org/630625).
-mariadb__pki_realm: '{{ ansible_local.pki.realm
-                        if (ansible_local|d() and ansible_local.pki|d() and
-                            ansible_local.pki.realm|d())
-                        else "domain" }}'
+mariadb__pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: mariadb__pki_ca [[[

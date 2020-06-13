@@ -122,10 +122,7 @@ netbase__domain: '{{ ""
 # that the hostname is specified first to avoid any issues with name
 # resolution.
 netbase__aliases: '{{ ([ netbase__hostname ]
-                       + (ansible_local.netbase.self_aliases
-                          if (ansible_local|d() and ansible_local.netbase|d() and
-                              ansible_local.netbase.self_aliases|d())
-                          else []) | unique) }}'
+                       + ansible_local.netbase.self_aliases|d([]) | unique)) }}'
 
                                                                    # ]]]
 # .. envvar:: netbase__host_ipv4_address [[[
@@ -138,10 +135,7 @@ netbase__host_ipv4_address: '{{ (ansible_default_ipv4.address | d())
                                 if (ansible_domain|d() and
                                     ansible_local|d() and ansible_local.netbase|d() and
                                     ansible_local.netbase.self_domain_source in [ "dns" ])
-                                else (ansible_local.netbase.self_address
-                                      if (ansible_local|d() and ansible_local.netbase|d() and
-                                          ansible_local.netbase.self_address|d())
-                                      else "127.0.1.1") }}'
+                                else ansible_local.netbase.self_address|d("127.0.1.1")) }}'
 
                                                                    # ]]]
 # .. envvar:: netbase__host_ipv6_address [[[

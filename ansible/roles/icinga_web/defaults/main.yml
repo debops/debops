@@ -304,55 +304,37 @@ icinga_web__master_database_enabled: '{{ True
 #
 # Specify the type of the Icinga 2 master database, either ``postgresql`` or
 # ``mariadb``.
-icinga_web__master_database_type: '{{ ansible_local.icinga_db.type
-                                      if (ansible_local|d() and ansible_local.icinga_db|d() and
-                                          ansible_local.icinga_db.type|d())
-                                      else "" }}'
+icinga_web__master_database_type: '{{ ansible_local.icinga_db.type|d("") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__master_database_name [[[
 #
 # Name of the Icinga 2 master database.
-icinga_web__master_database_name: '{{ ansible_local.icinga_db.dbc_dbname
-                                      if (ansible_local|d() and ansible_local.icinga_db|d() and
-                                          ansible_local.icinga_db.dbc_dbname|d())
-                                      else "icinga2" }}'
+icinga_web__master_database_name: '{{ ansible_local.icinga_db.dbc_dbname|d("icinga2") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__master_database_user [[[
 #
 # Name of the Icinga 2 master database user.
-icinga_web__master_database_user: '{{ ansible_local.icinga_db.dbc_dbuser
-                                      if (ansible_local|d() and ansible_local.icinga_db|d() and
-                                          ansible_local.icinga_db.dbc_dbuser|d())
-                                      else "icinga2" }}'
+icinga_web__master_database_user: '{{ ansible_local.icinga_db.dbc_dbuser|d("icinga2") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__master_database_password [[[
 #
 # Password for the Icinga 2 master database.
-icinga_web__master_database_password: '{{ ansible_local.icinga_db.dbc_dbpass
-                                          if (ansible_local|d() and ansible_local.icinga_db|d() and
-                                              ansible_local.icinga_db.dbc_dbpass|d())
-                                          else "" }}'
+icinga_web__master_database_password: '{{ ansible_local.icinga_db.dbc_dbpass|d("") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__master_database_host [[[
 #
 # The address of the Icinga 2 master database host.
-icinga_web__master_database_host: '{{ ansible_local.icinga_db.dbc_dbserver
-                                      if (ansible_local|d() and ansible_local.icinga_db|d() and
-                                          ansible_local.icinga_db.dbc_dbserver|d())
-                                      else "localhost" }}'
+icinga_web__master_database_host: '{{ ansible_local.icinga_db.dbc_dbserver|d("localhost") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__master_database_port [[[
 #
 # The port on which the Icinga 2 master database listens for connections.
-icinga_web__master_database_port: '{{ ansible_local.icinga_db.dbc_dbport
-                                      if (ansible_local|d() and ansible_local.icinga_db|d() and
-                                          ansible_local.icinga_db.dbc_dbport|d())
-                                      else "" }}'
+icinga_web__master_database_port: '{{ ansible_local.icinga_db.dbc_dbport|d("") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Icinga 2 Director support [[[
@@ -920,10 +902,7 @@ icinga_web__default_roles:
     options:
 
       - name: 'users'
-        value: '{{ (ansible_local.core.admin_users
-                    if (ansible_local|d() and ansible_local.core|d() and
-                        ansible_local.core.admin_users|d())
-                    else []) | join(",") }}'
+        value: '{{ ansible_local.core.admin_users|d([]) | join(",")) }}'
 
       - name: 'permissions'
         value: '*'

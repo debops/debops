@@ -35,10 +35,7 @@ redis_server__packages: []
 #
 # The version of the installed Redis Server. It will be detected via Ansible
 # local facts, installed by the role.
-redis_server__version: '{{ ansible_local.redis_server.version
-                           if (ansible_local|d() and ansible_local.redis_server|d() and
-                               ansible_local.redis_server.version|d())
-                           else "0.0.0" }}'
+redis_server__version: '{{ ansible_local.redis_server.version|d("0.0.0") }}'
                                                                    # ]]]
                                                                    # ]]]
 # UNIX environment [[[

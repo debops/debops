@@ -639,10 +639,7 @@ but query the local fact of the ferm role:
 
 .. code-block:: yaml
 
-   is_firewall_enabled: '{{ ansible_local.ferm.enabled
-                            if (ansible_local|d() and ansible_local.ferm|d() and
-                                ansible_local.ferm.enabled|d())
-                            else "unknown" }}'
+   is_firewall_enabled: '{{ ansible_local.ferm.enabled|d("unknown") }}'
 
 To successfully read the local fact of another role the latter obviously must
 have run before. Always consider the case that the fact may be undefined and

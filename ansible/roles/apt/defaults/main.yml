@@ -75,10 +75,7 @@ apt__remove_default_configuration: True
 #
 # Update APT cache early in the playbook if it's older than 24h
 # Set to False to disable update (useful when changing APT mirrors)
-apt__cache_valid_time: '{{ ansible_local.core.cache_valid_time
-                           if (ansible_local|d() and ansible_local.core|d() and
-                               ansible_local.core.cache_valid_time|d())
-                           else (60 * 60 * 24) }}'
+apt__cache_valid_time: '{{ ansible_local.core.cache_valid_time|d((60 * 60 * 24)) }}'
 
                                                                    # ]]]
 # .. envvar:: apt__install_recommends [[[
@@ -397,10 +394,7 @@ apt__host_sources: []
 # using Ansible local facts.
 apt__original_sources:
   - comment: 'Original APT package sources gathered by Ansible'
-    uris: '{{ ansible_local.apt.original_mirrors_deb
-              if (ansible_local|d() and ansible_local.apt|d() and
-                  ansible_local.apt.original_mirrors_deb|d())
-              else [] }}'
+    uris: '{{ ansible_local.apt.original_mirrors_deb|d([]) }}'
     state: '{{ "present" if (ansible_local|d() and ansible_local.apt|d() and
                              ansible_local.apt.original_mirrors_deb|d() and
                              apt__distribution_suite != "archive")

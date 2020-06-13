@@ -176,14 +176,8 @@ unbound__default_zones:
               if (ansible_local|d() and ansible_local.lxc|d() and
                   ansible_local.lxc.net_domain|d())
               else "" }}'
-    revdns: '{{ ansible_local.lxc.net_subnet
-                if (ansible_local|d() and ansible_local.lxc|d() and
-                    ansible_local.lxc.net_subnet|d())
-                else "" }}'
-    nameserver: '{{ ansible_local.lxc.net_address
-                    if (ansible_local|d() and ansible_local.lxc|d() and
-                        ansible_local.lxc.net_address|d())
-                    else "" }}'
+    revdns: '{{ ansible_local.lxc.net_subnet|d("") }}'
+    nameserver: '{{ ansible_local.lxc.net_address|d("") }}'
     state: '{{ "present"
                if (ansible_local|d() and ansible_local.lxc|d() and
                    ansible_local.lxc.net_domain|d())

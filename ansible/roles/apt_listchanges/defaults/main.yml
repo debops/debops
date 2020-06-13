@@ -46,10 +46,7 @@ apt_listchanges__packages: []
 #
 # List of e-mail accounts to which messages from :command:`apt-listchanges` will be
 # sent.
-apt_listchanges__mail_to: '{{ ansible_local.core.admin_private_email
-                              if (ansible_local|d() and ansible_local.core|d() and
-                                  ansible_local.core.admin_private_email|d())
-                              else [ "root" ] }}'
+apt_listchanges__mail_to: '{{ ansible_local.core.admin_private_email|d([ "root" ]) }}'
 
                                                                    # ]]]
 # .. envvar:: apt_listchanges__apt_frontend [[[

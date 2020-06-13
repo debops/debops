@@ -41,10 +41,7 @@ ipxe__packages: []
 ipxe__tftp_root: '{{ ansible_local.tftpd.directory
                      if (ansible_local|d() and ansible_local.tftpd|d() and
                          ansible_local.tftpd.directory|d())
-                     else (ansible_local.dnsmasq.boot_tftp_root
-                           if (ansible_local|d() and ansible_local.dnsmasq|d() and
-                               ansible_local.dnsmasq.boot_tftp_root|d())
-                           else "/srv/tftp") }}'
+                     else ansible_local.dnsmasq.boot_tftp_root|d("/srv/tftp")) }}'
 
                                                                    # ]]]
 # .. envvar:: ipxe__bootloaders [[[
@@ -218,10 +215,7 @@ ipxe__default_scripts:
 
       - name: 'main_menu_title'
         comment: 'The main menu title'
-        value: '{{ (ansible_local.machine.organization
-                    if (ansible_local|d() and ansible_local.machine|d() and
-                        ansible_local.machine.organization|d())
-                    else "DebOps") + " Boot Menu" }}'
+        value: '{{ ansible_local.machine.organization|d("DebOps") + " Boot Menu") }}'
 
       - name: 'debian_installer_mirror'
         comment: 'Debian mirror used during automated installation'

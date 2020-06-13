@@ -189,10 +189,7 @@
 
 - name: Save role version information
   ini_file:
-    dest: '{{ ansible_local.debops_fact.public_facts
-              if (ansible_local|d() and ansible_local.debops_fact|d() and
-                  ansible_local.debops_fact.public_facts|d())
-              else "/etc/ansible/debops_fact.ini" }}'
+    dest: '{{ ansible_local.debops_fact.public_facts|d("/etc/ansible/debops_fact.ini") }}'
     section: 'version'
     option: 'ifupdown'
     value: '{{ ifupdown__role_metadata.version }}'

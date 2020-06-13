@@ -11,10 +11,7 @@
   file:
     path: '{{ owncloud__nginx_client_body_temp_path }}'
     state: 'directory'
-    owner: '{{ ansible_local.nginx.user
-              if (ansible_local|d() and ansible_local.nginx|d() and
-                  ansible_local.nginx.user|d())
-              else "www-data" }}'
+    owner: '{{ ansible_local.nginx.user|d("www-data") }}'
     group: 'root'
     mode: '0700'
   when: (owncloud__webserver in ["nginx"] and owncloud__nginx_client_body_temp_path|d())

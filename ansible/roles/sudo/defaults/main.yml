@@ -55,10 +55,7 @@ sudo__logind_session: '{{ True if (ansible_service_mgr == "systemd") else False 
 #
 # The base Distinguished Name which should be used to create Distinguished
 # Names of the LDAP directory objects, defined as a YAML list.
-sudo__ldap_base_dn: '{{ ansible_local.ldap.base_dn
-                        if (ansible_local|d() and ansible_local.ldap|d() and
-                            ansible_local.ldap.base_dn|d())
-                        else [] }}'
+sudo__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: sudo__ldap_device_dn [[[
@@ -67,10 +64,7 @@ sudo__ldap_base_dn: '{{ ansible_local.ldap.base_dn
 # list. It will be used as a base for the :command:`sudo` service account LDAP
 # object. If the list is empty, the role will not create the account LDAP
 # object automatically.
-sudo__ldap_device_dn: '{{ ansible_local.ldap.device_dn
-                          if (ansible_local|d() and ansible_local.ldap|d() and
-                              ansible_local.ldap.device_dn|d())
-                          else [] }}'
+sudo__ldap_device_dn: '{{ ansible_local.ldap.device_dn|d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: sudo__ldap_self_rdn [[[
@@ -191,10 +185,7 @@ sudo__ldap_default_configuration:
 
   - name: 'uri'
     comment: 'The location at which the LDAP server(s) should be reachable.'
-    value: '{{ ansible_local.ldap.uri
-               if (ansible_local|d() and ansible_local.ldap|d() and
-                   ansible_local.ldap.uri|d())
-               else "" }}'
+    value: '{{ ansible_local.ldap.uri|d("") }}'
 
   - name: 'ssl'
     comment: 'SSL options'

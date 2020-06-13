@@ -184,46 +184,31 @@ rsyslog__pki: '{{ True
 # .. envvar:: rsyslog__pki_path [[[
 #
 # Path to the directory with PKI realms.
-rsyslog__pki_path: '{{ ansible_local.pki.path
-                       if (ansible_local|d() and ansible_local.pki|d() and
-                           ansible_local.pki.path|d())
-                       else "/etc/pki" }}'
+rsyslog__pki_path: '{{ ansible_local.pki.path|d("/etc/pki") }}'
 
                                                                    # ]]]
 # .. envvar:: rsyslog__pki_realm [[[
 #
 # Name of the PKi realm to use with ``rsyslogd``.
-rsyslog__pki_realm: '{{ ansible_local.pki.realm
-                        if (ansible_local|d() and ansible_local.pki|d() and
-                            ansible_local.pki.realm|d())
-                        else "domain" }}'
+rsyslog__pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: rsyslog__pki_ca [[[
 #
 # Name of the root CA certificate used by the ``debops.rsyslog`` role.
-rsyslog__pki_ca: '{{ ansible_local.pki.ca
-                      if (ansible_local|d() and ansible_local.pki|d() and
-                          ansible_local.pki.ca|d())
-                      else "CA.crt" }}'
+rsyslog__pki_ca: '{{ ansible_local.pki.ca|d("CA.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: rsyslog__pki_crt [[[
 #
 # Name of the client certificate file used by the ``debops.rsyslog`` role.
-rsyslog__pki_crt: '{{ ansible_local.pki.crt
-                      if (ansible_local|d() and ansible_local.pki|d() and
-                          ansible_local.pki.crt|d())
-                      else "default.crt" }}'
+rsyslog__pki_crt: '{{ ansible_local.pki.crt|d("default.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: rsyslog__pki_key [[[
 #
 # Name of the private key file used by the ``debops.rsyslog`` role.
-rsyslog__pki_key: '{{ ansible_local.pki.key
-                      if (ansible_local|d() and ansible_local.pki|d() and
-                          ansible_local.pki.key|d())
-                      else "default.key" }}'
+rsyslog__pki_key: '{{ ansible_local.pki.key|d("default.key") }}'
 
                                                                    # ]]]
 # .. envvar:: rsyslog__default_netstream_driver [[[

@@ -50,37 +50,25 @@ prosody__pki: '{{ ansible_local|d() and ansible_local.pki|d() and
 # .. envvar:: prosody__pki_realm_path [[[
 #
 # Directory path where PKI realm live.
-prosdoy__pki_realm_path: '{{ ansible_local.pki.path
-                            if (ansible_local|d() and ansible_local.pki|d() and
-                                ansible_local.pki.path|d())
-                            else "/etc/pki/realms" }}'
+prosdoy__pki_realm_path: '{{ ansible_local.pki.path|d("/etc/pki/realms") }}'
 
                                                                    # ]]]
 # .. envvar:: prosody__pki_realm [[[
 #
 # Default PKI realm to use.
-prosody__pki_realm: '{{ ansible_local.pki.realm
-                       if (ansible_local|d() and ansible_local.pki|d() and
-                           ansible_local.pki.realm|d())
-                       else "domain" }}'
+prosody__pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: prosody__pki_crt_filename [[[
 #
 # Default CRT file name to use.
-prosody__pki_crt_filename: '{{ ansible_local.pki.crt
-                              if (ansible_local|d() and ansible_local.pki|d() and
-                                  ansible_local.pki.crt|d())
-                              else "default.crt" }}'
+prosody__pki_crt_filename: '{{ ansible_local.pki.crt|d("default.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: prosody__pki_key_filename [[[
 #
 # Default private key file name to use.
-prosody__pki_key_filename: '{{ ansible_local.pki.key
-                              if (ansible_local|d() and ansible_local.pki|d() and
-                                  ansible_local.pki.key|d())
-                              else "default.key" }}'
+prosody__pki_key_filename: '{{ ansible_local.pki.key|d("default.key") }}'
 
                                                                    # ]]]
 # .. envvar:: prosody__pki_hook_name [[[
@@ -92,10 +80,7 @@ prosody__pki_hook_name: 'prosody'
 # .. envvar:: prosody__pki_hook_path [[[
 #
 # Directory with PKI hooks.
-prosody__pki_hook_path: '{{ ansible_local.pki.hooks
-                         if (ansible_local|d() and ansible_local.pki|d() and
-                             ansible_local.pki.hooks|d())
-                         else "/etc/pki/hooks" }}'
+prosody__pki_hook_path: '{{ ansible_local.pki.hooks|d("/etc/pki/hooks") }}'
 
                                                                    # ]]]
 # .. envvar:: prosody__pki_hook_action [[[

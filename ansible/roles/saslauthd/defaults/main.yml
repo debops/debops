@@ -117,10 +117,7 @@ saslauthd__combined_instances: '{{ q("flattened", (saslauthd__default_instances
 # Names of the LDAP directory objects, defined as a YAML list. If this variable
 # is empty, :file:`/etc/saslauthd.conf` configuration file will not be
 # generated.
-saslauthd__ldap_base_dn: '{{ ansible_local.ldap.base_dn
-                             if (ansible_local|d() and ansible_local.ldap|d() and
-                                 ansible_local.ldap.base_dn|d())
-                             else [] }}'
+saslauthd__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: saslauthd__ldap_device_dn [[[
@@ -129,10 +126,7 @@ saslauthd__ldap_base_dn: '{{ ansible_local.ldap.base_dn
 # list. It will be used as a base for the :command:`saslauthd` service account
 # LDAP object. If the list is empty, the role will not create the account LDAP
 # object automatically.
-saslauthd__ldap_device_dn: '{{ ansible_local.ldap.device_dn
-                               if (ansible_local|d() and ansible_local.ldap|d() and
-                                   ansible_local.ldap.device_dn|d())
-                               else [] }}'
+saslauthd__ldap_device_dn: '{{ ansible_local.ldap.device_dn|d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: saslauthd__ldap_self_rdn [[[
@@ -193,10 +187,7 @@ saslauthd__ldap_default_profiles:
     options:
 
       - name: 'ldap_servers'
-        value: '{{ ansible_local.ldap.uri
-                   if (ansible_local|d() and ansible_local.ldap|d() and
-                       ansible_local.ldap.uri|d())
-                   else "" }}'
+        value: '{{ ansible_local.ldap.uri|d("") }}'
 
       - name: 'ldap_bind_dn'
         value: '{{ saslauthd__ldap_binddn }}'
@@ -235,10 +226,7 @@ saslauthd__ldap_default_profiles:
     options:
 
       - name: 'ldap_servers'
-        value: '{{ ansible_local.ldap.uri
-                   if (ansible_local|d() and ansible_local.ldap|d() and
-                       ansible_local.ldap.uri|d())
-                   else "" }}'
+        value: '{{ ansible_local.ldap.uri|d("") }}'
 
       - name: 'ldap_bind_dn'
         value: '{{ saslauthd__ldap_binddn }}'
@@ -284,10 +272,7 @@ saslauthd__ldap_default_profiles:
     options:
 
       - name: 'ldap_servers'
-        value: '{{ ansible_local.ldap.uri
-                   if (ansible_local|d() and ansible_local.ldap|d() and
-                       ansible_local.ldap.uri|d())
-                   else "" }}'
+        value: '{{ ansible_local.ldap.uri|d("") }}'
 
       - name: 'ldap_bind_dn'
         value: '{{ saslauthd__ldap_binddn }}'

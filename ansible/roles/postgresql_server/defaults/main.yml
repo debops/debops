@@ -119,10 +119,7 @@ postgresql_server__max_connections: '100'
 # as ``postgres`` role with peer authentication. The special ``*postgres*``
 # account name is replaced with username of the cluster system user.
 postgresql_server__admins: '{{ [ "root", "*postgres*" ] +
-                               (ansible_local.core.admin_users
-                                if (ansible_local|d() and ansible_local.core|d() and
-                                    ansible_local.core.admin_users|d())
-                                else []) }}'
+                               ansible_local.core.admin_users|d([])) }}'
 
                                                                    # ]]]
 # .. envvar:: postgresql_server__admin_password [[[
@@ -152,10 +149,7 @@ postgresql_server__password_characters: 'ascii,digits,.-_~&()*;='
 #
 # List of local UNIX accounts that are implicitly trusted by PostgreSQL server
 # and can login to their own roles without password.
-postgresql_server__trusted: '{{ ansible_local.core.admin_users
-                                if (ansible_local|d() and ansible_local.core|d() and
-                                    ansible_local.core.admin_users|d())
-                                else [] }}'
+postgresql_server__trusted: '{{ ansible_local.core.admin_users|d([]) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Cluster configuration [[[
@@ -210,19 +204,13 @@ postgresql_server__pki: '{{ ansible_local.pki.enabled|d() | bool }}'
 # .. envvar:: postgresql_server__pki_path [[[
 #
 # Base path of PKI infrastructure, managed by :ref:`debops.pki` role.
-postgresql_server__pki_path: '{{ ansible_local.pki.path
-                                 if (ansible_local|d() and ansible_local.pki|d() and
-                                     ansible_local.pki.path|d())
-                                 else "/etc/pki/realms" }}'
+postgresql_server__pki_path: '{{ ansible_local.pki.path|d("/etc/pki/realms") }}'
 
                                                                    # ]]]
 # .. envvar:: postgresql_server__pki_realm [[[
 #
 # PKI realm used by PostgreSQL role.
-postgresql_server__pki_realm: '{{ ansible_local.pki.realm
-                                  if (ansible_local|d() and ansible_local.pki|d() and
-                                      ansible_local.pki.realm|d())
-                                  else "domain" }}'
+postgresql_server__pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: postgresql_server__pki_ca [[[
