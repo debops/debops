@@ -30,24 +30,16 @@ apt_install__enabled: True
 #
 # The variable that indicates host operating system distribution, used to
 # conditionally select packages for installation.
-apt_install__distribution:  '{{ ansible_local.core.distribution
-                                if (ansible_local|d() and ansible_local.core|d() and
-                                    ansible_local.core.distribution|d())
-                                else (ansible_lsb.id
-                                      if (ansible_lsb|d() and ansible_lsb.id|d())
-                                      else ansible_distribution) }}'
+apt_install__distribution: '{{ ansible_local.core.distribution
+                               |d(ansible_lsb.id|d(ansible_distribution)) }}'
 
                                                                    # ]]]
 # .. envvar:: apt_install__distribution_release [[[
 #
 # The variable that indicates host distribution release, used to conditionally
 # select packages for installation.
-apt_install__distribution_release:  '{{ ansible_local.core.distribution_release
-                                        if (ansible_local|d() and ansible_local.core|d() and
-                                          ansible_local.core.distribution_release|d())
-                                        else (ansible_lsb.codename
-                                              if (ansible_lsb|d() and ansible_lsb.codename|d())
-                                              else ansible_distribution_release) }}'
+apt_install__distribution_release: '{{ ansible_local.core.distribution_release
+                                       |d(ansible_lsb.codename|d(ansible_distribution_release)) }}'
 
                                                                    # ]]]
 # .. envvar:: apt_install__archive_areas_map [[[
@@ -64,7 +56,8 @@ apt_install__archive_areas_map:
 # List of package archive areas which are currently available. This list is
 # used to conditionally enable packages for installation, depending on
 # availability of a given archive area.
-apt_install__archive_areas: '{{ ansible_local.apt.archive_areas|d((apt_install__archive_areas_map[apt_install__distribution] | d([]))) }}'
+apt_install__archive_areas: '{{ ansible_local.apt.archive_areas
+                                |d(apt_install__archive_areas_map[apt_install__distribution] | d([])) }}'
 
                                                                    # ]]]
 # .. envvar:: apt_install__condition_map [[[

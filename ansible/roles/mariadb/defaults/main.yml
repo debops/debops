@@ -82,7 +82,7 @@ mariadb__delegate_to: '{{ mariadb__server
 #
 # The choice depends on availability of MariaDB packages in a distribution.
 # Percona needs to be selected explicitly.
-mariadb__flavor: '{{ ansible_local.mariadb.flavor|d((mariadb__flavor_map[ansible_distribution_release] | default("mariadb")))) }}'
+mariadb__flavor: '{{ ansible_local.mariadb.flavor|d(mariadb__flavor_map[ansible_distribution_release] | d("mariadb")) }}'
 
                                                                    # ]]]
 # .. envvar:: mariadb__flavor_map [[[
