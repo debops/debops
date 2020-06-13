@@ -116,10 +116,7 @@ apt_install__update_cache: True
 # .. envvar:: apt_install__cache_valid_time [[[
 #
 # Amount of time between APT cache updates in seconds.
-apt_install__cache_valid_time: '{{ ansible_local.core.cache_valid_time
-                                   if (ansible_local|d() and ansible_local.core|d() and
-                                       ansible_local.core.cache_valid_time)
-                                   else (60 * 60 * 24 * 7) }}'
+apt_install__cache_valid_time: '{{ ansible_local.core.cache_valid_time|d(60 * 60 * 24 * 7) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Debconf package configuration [[[

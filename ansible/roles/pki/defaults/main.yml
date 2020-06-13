@@ -501,10 +501,7 @@ pki_dhparam: '{{ ansible_local.dhparam.default|d() }}'
 #
 # Path to the Diffie-Hellman parameters file which will be appended to the
 # certificate chain, if specified.
-pki_dhparam_file: '{{ ansible_local.dhparam.default
-                      if (ansible_local|d() and ansible_local.dhparam|d() and
-                          ansible_local.dhparam.default)
-                      else "" }}'
+pki_dhparam_file: '{{ ansible_local.dhparam.default|d("") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Internal Certificate Authorities [[[
