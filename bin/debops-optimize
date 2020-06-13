@@ -11,6 +11,33 @@ set -o nounset -o pipefail -o errexit
 ## Script is expected to be run from the root of the DebOps monorepo.
 cd "$(git rev-parse --show-toplevel)" || exit
 
+## Testing:
+#    perl -p0e '
+#    ' ansible/roles/influxdb/defaults/test
+
+git ls-files -z "$(git rev-parse --show-toplevel)" | xargs --null -I '{}' find './{}' -type f -print0 | \
+    xargs --null perl -i -p0e '
+        s~
+            ## Use Ansible 2.8 default shortcut
+            \(?True\n
+
+            ## Line: if (ansible_local|d() and ansible_local.pki|d() and
+            \s*if\s*\((?<var_ref1>ansible_local)\|d\(\)\s+and\s+(?<var_ref2>\k<var_ref1>\.\w+)\|d\(\)\s+and\n
+            ## var_ref1: ansible_local
+            ## var_ref2: ansible_local.pki
+
+            ## Line: ansible_local.pki.enabled|d()|bool)
+            \s*(?<expression>\k<var_ref2>\.\w+\|d\(\).*)\)\n
+            ## expression: ansible_local.pki.enabled|d()|bool
+
+            ## Line: else False
+            \s*else\s+False\)?(?:\s*\|\s*bool)?
+         ~$+{expression}~x;
+    '
+
+
+## TODO: I need to bring yaml4rst back to speed again.
+exit
 
 for role_dir in ./ansible/roles/*; do
     role_full_name="$(basename "$role_dir")"
