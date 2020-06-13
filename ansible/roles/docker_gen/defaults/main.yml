@@ -170,10 +170,7 @@ docker_gen__nginx_notify_map:
 # .. envvar:: docker_gen__pki [[[
 #
 # Enable or disable support for PKI certificates managed by ``debops.pki``.
-docker_gen__pki: '{{ (True
-                     if (ansible_local|d() and ansible_local.pki|d() and
-                         ansible_local.pki.enabled|d() | bool)
-                     else False) | bool }}'
+docker_gen__pki: '{{ ansible_local.pki.enabled|d() | bool }}'
 
                                                                    # ]]]
 # .. envvar:: docker_gen__pki_path [[[

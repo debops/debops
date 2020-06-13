@@ -244,10 +244,7 @@ dovecot_passwdfile_mailbox_path: '%u'
 # .. envvar:: dovecot_pki [[[
 #
 # Enable or disable support for TLS in Dovecot (using debops.pki)
-dovecot_pki: '{{ (True
-                  if (ansible_local|d() and ansible_local.pki|d() and
-                    ansible_local.pki.enabled|d() | bool)
-                  else False) | bool }}'
+dovecot_pki: '{{ ansible_local.pki.enabled|d() | bool }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_pki_path [[[

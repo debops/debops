@@ -139,10 +139,7 @@ postfix__allow_smtps: []
 #
 # Enable or disable support for TLS in Postfix, managed by the :ref:`debops.pki`
 # Ansible role.
-postfix__pki: '{{ (True
-                   if (ansible_local|d() and ansible_local.pki|d() and
-                       ansible_local.pki.enabled|d() | bool)
-                   else False) | bool }}'
+postfix__pki: '{{ ansible_local.pki.enabled|d() | bool }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__pki_path [[[

@@ -204,10 +204,7 @@ postgresql_server__start_conf: 'auto'
 # .. envvar:: postgresql_server__pki [[[
 #
 # Enable or disable support for PKI infrastructure managed by :ref:`debops.pki`.
-postgresql_server__pki: '{{ (True
-                             if (ansible_local|d() and ansible_local.pki|d() and
-                                 ansible_local.pki.enabled|d() | bool)
-                             else False) | bool }}'
+postgresql_server__pki: '{{ ansible_local.pki.enabled|d() | bool }}'
 
                                                                    # ]]]
 # .. envvar:: postgresql_server__pki_path [[[

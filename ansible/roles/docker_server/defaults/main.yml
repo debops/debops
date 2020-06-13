@@ -437,10 +437,7 @@ docker_server__options: []
 # .. envvar:: docker_server__pki [[[
 #
 # Enable or disable support for PKI certificates managed by :ref:`debops.pki`.
-docker_server__pki: '{{ (True
-                        if (ansible_local|d() and ansible_local.pki|d() and
-                            ansible_local.pki.enabled|d() | bool)
-                        else False) | bool }}'
+docker_server__pki: '{{ ansible_local.pki.enabled|d() | bool }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__pki_path [[[

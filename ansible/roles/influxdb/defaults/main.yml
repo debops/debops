@@ -51,10 +51,7 @@ influxdb__delegate_to: '{{ inventory_hostname }}'
 # .. envvar:: influxdb__pki [[[
 #
 # Enable or disable support for SSL in InfluxDB (using :ref:`debops.pki`).
-influxdb__pki: '{{ True
-                   if (ansible_local|d() and ansible_local.pki|d() and
-                       ansible_local.pki.enabled|d()|bool)
-                   else False }}'
+influxdb__pki: '{{ ansible_local.pki.enabled|d()|bool }}'
 
                                                                    # ]]]
                                                                    # ]]]

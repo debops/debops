@@ -146,10 +146,7 @@ system_users__admin_groups: '{{ ansible_local.system_groups.access.root
 #
 # Enable or disable management of user dotfiles via :command:`yadm` script. See
 # the :ref:`debops.yadm` role for script installation and dotfile mirroring.
-system_users__dotfiles_enabled: '{{ True
-                                    if (ansible_local|d() and ansible_local.yadm|d() and
-                                        ansible_local.yadm.dotfiles|d())
-                                    else False }}'
+system_users__dotfiles_enabled: '{{ ansible_local.yadm.dotfiles|d() }}'
 
                                                                    # ]]]
 # .. envvar:: system_users__dotfiles_repo [[[
