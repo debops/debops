@@ -26,8 +26,7 @@
 ifupdown__base_packages:
   - [ 'ifupdown', 'bsdutils', 'rsync' ]
   - '{{ []
-        if (ansible_local|d() and ansible_local.ifupdown|d() and
-            "/usr/sbin/NetworkManager" in ansible_local.ifupdown.known_managers|d([]))
+        if ("/usr/sbin/NetworkManager" in ansible_local.ifupdown.known_managers|d([]))
         else "rdnssd" }}'
 
                                                                    # ]]]
@@ -201,16 +200,12 @@ ifupdown__default_interfaces_map:
 
     'br0':
       state: '{{ "absent"
-                 if (ansible_local|d() and ansible_local.ifupdown|d() and
-                     ansible_local.ifupdown.interface_layout|d() and
-                     ansible_local.ifupdown.interface_layout == "bridge")
+                 if (ansible_local.ifupdown.interface_layout|d() == "bridge")
                  else "ignore" }}'
 
     'br1':
       state: '{{ "absent"
-                 if (ansible_local|d() and ansible_local.ifupdown|d() and
-                     ansible_local.ifupdown.interface_layout|d() and
-                     ansible_local.ifupdown.interface_layout == "bridge")
+                 if (ansible_local.ifupdown.interface_layout|d() == "bridge")
                  else "ignore" }}'
 
   'bridge':
