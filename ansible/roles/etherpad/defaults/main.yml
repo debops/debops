@@ -155,10 +155,7 @@ etherpad_welcome_text: |
 #
 # FQDN of the database host. It will be configured by
 # the :ref:`debops.mariadb` or :ref:`debops.postgresql` role.
-etherpad_database_server: '{{ ansible_local.mariadb.server
-                              if (ansible_local|d() and ansible_local.mariadb|d() and
-                                  ansible_local.mariadb.server|d())
-                              else ansible_local.postgresql.server|d("")) }}'
+etherpad_database_server: '{{ ansible_local.mariadb.server|d(ansible_local.postgresql.server|d("")) }}'
 
                                                                    # ]]]
 # .. envvar:: etherpad_database_user [[[

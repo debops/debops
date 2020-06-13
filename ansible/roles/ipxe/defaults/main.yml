@@ -38,10 +38,7 @@ ipxe__packages: []
 # .. envvar:: ipxe__tftp_root [[[
 #
 # Absolute path to the TFTP root directory.
-ipxe__tftp_root: '{{ ansible_local.tftpd.directory
-                     if (ansible_local|d() and ansible_local.tftpd|d() and
-                         ansible_local.tftpd.directory|d())
-                     else ansible_local.dnsmasq.boot_tftp_root|d("/srv/tftp")) }}'
+ipxe__tftp_root: '{{ ansible_local.tftpd.directory|d(ansible_local.dnsmasq.boot_tftp_root|d("/srv/tftp")) }}'
 
                                                                    # ]]]
 # .. envvar:: ipxe__bootloaders [[[
