@@ -506,8 +506,7 @@ owncloud__app_home: '{{ "/var/www/owncloud"
                         if (owncloud__variant == "owncloud")
                         else (
                           (ansible_local.nginx.www
-                          if (ansible_local|d() and ansible_local.nginx|d()
-                              and ansible_local.nginx.www|d())
+                          if (ansible_local.nginx.www|d())
                           else "/srv/www") + "/" + owncloud__system_user
                         ) }}'
 
@@ -568,8 +567,7 @@ owncloud__apcu_enabled: True
 # requirement is not meet for Ubuntu trusty (neither in the release repos nor
 # in backports) thus Redis will not be enabled automatically by the role.
 # Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/configuration/server/caching_configuration.html#redis-configuration>`__ for details.
-owncloud__redis_enabled: '{{ ansible_local|d() and ansible_local.redis_server|d() and
-                             ansible_local.redis_server.installed|d() | bool and
+owncloud__redis_enabled: '{{ ansible_local.redis_server.installed|d() | bool and
                              (not (ansible_distribution == "Ubuntu" and ansible_distribution_release == "trusty")) }}'
 
 
@@ -1435,8 +1433,7 @@ owncloud__ldap_expert_username_attr: ''
 # The configuration database configID to use for the LDAP configuration managed
 # by the role.
 owncloud__ldap_config_id: '{{ ansible_local.owncloud.ldap_config_id
-                              if (ansible_local|d() and ansible_local.owncloud|d() and
-                                  ansible_local.owncloud.ldap_config_id|d())
+                              if (ansible_local.owncloud.ldap_config_id|d())
                               else (owncloud__register_ldap_config_id.stdout
                                     if (owncloud__register_ldap_config_id|d() and
                                         owncloud__register_ldap_config_id.stdout|d())
@@ -1822,12 +1819,11 @@ owncloud__theme_conf_map:
 # Variable containing the webserver which should be used.
 # Refer to :ref:`owncloud__ref_getting_started` for how to switch webservers.
 owncloud__webserver: '{{ ansible_local.owncloud.webserver
-                         if (ansible_local|d() and ansible_local.owncloud|d() and
-                             ansible_local.owncloud.webserver|d())
+                         if (ansible_local.owncloud.webserver|d())
                          else ("apache"
-                               if (ansible_local|d() and ansible_local.apache|d() and ansible_local.apache.enabled|d()|bool)
+                               if (ansible_local.apache.enabled|d()|bool)
                                else ("nginx"
-                                     if (ansible_local|d() and ansible_local.nginx|d() and ansible_local.nginx.enabled|d()|bool)
+                                     if (ansible_local.nginx.enabled|d()|bool)
                                      else "no-webserver-detected")) }}'
 
                                                                    # ]]]
@@ -2223,8 +2219,7 @@ owncloud__nginx__dependent_servers:
           fastcgi_param front_controller_active true;
           fastcgi_intercept_errors on;
           {% if (ansible_local.nginx.version
-                 if (ansible_local|d() and ansible_local.nginx|d() and
-                     ansible_local.nginx.version|d())
+                 if (ansible_local.nginx.version|d())
                  else "0.0")
                 is version_compare("1.7.11",'>=') %}
           fastcgi_request_buffering off;

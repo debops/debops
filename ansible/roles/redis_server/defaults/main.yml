@@ -76,8 +76,7 @@ redis_server__domain: '{{ ansible_domain }}'
 # The password used for authentication in Redis. The same password is used on
 # all nodes in the Redis/Sentinel cluster to simplify authentication.
 redis_server__auth_password: '{{ ansible_local.redis_server.password
-                                 if (ansible_local|d() and ansible_local.redis_server|d() and
-                                     ansible_local.redis_server.password|d())
+                                 if (ansible_local.redis_server.password|d())
                                  else (lookup("password", secret +
                                        "/redis/clusters/" + redis_server__domain +
                                        "/password length=" + redis_server__password_length +

@@ -43,8 +43,7 @@ elasticsearch__packages: []
 # Store the detected Elasticsearch version in a convenient variable for
 # conditional configuration.
 elasticsearch__version: '{{ ansible_local.elastic_co.packages.elasticsearch
-                            if (ansible_local|d() and ansible_local.elastic_co|d() and
-                                ansible_local.elastic_co.packages|d() and
+                            if (ansible_local.elastic_co.packages|d() and
                                 ansible_local.elastic_co.packages.elasticsearch|d())
                             else "0.0.0" }}'
                                                                    # ]]]
@@ -142,8 +141,7 @@ elasticsearch__allow_tcp: []
 # https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-network.html
 # for more details.
 elasticsearch__network_host: '{{ [ "_local_", "_site_" ]
-                                 if (ansible_local|d() and ansible_local.ferm|d() and
-                                     ansible_local.ferm.enabled|d() and
+                                 if (ansible_local.ferm.enabled|d() and
                                      ansible_local.ferm.enabled|bool)
                                  else [ "_local_" ] }}'
 

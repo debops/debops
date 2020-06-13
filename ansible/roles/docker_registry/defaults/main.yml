@@ -64,7 +64,6 @@ docker_registry__group: 'docker-registry'
 docker_registry__additional_groups:
   - '{{ ansible_local.redis_server.auth_group
         if (docker_registry__redis_enabled|bool and
-            ansible_local|d() and ansible_local.redis_server|d() and
             ansible_local.redis_server.auth_group|d())
         else [] }}'
 

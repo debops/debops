@@ -88,8 +88,7 @@ gitlab_version: '{{ gitlab__release | replace("-stable","") | replace("-",".") }
 # documentation of the :ref:`debops.postgresql_server` role for information about
 # its features.
 gitlab__database: '{{ ansible_local.gitlab.database
-                      if (ansible_local|d() and ansible_local.gitlab|d() and
-                          ansible_local.gitlab.database|d())
+                      if (ansible_local.gitlab.database|d())
                       else ("postgresql"
                             if (ansible_local|d() and ansible_local.postgresql is defined)
                             else ("mariadb-is-deprecated"
@@ -103,11 +102,9 @@ gitlab__database: '{{ ansible_local.gitlab.database
 # init script provided by GitLab. By default the init script will be used on
 # non-systemd hosts.
 gitlab_use_systemd: '{{ (ansible_local.gitlab.systemd_services
-                         if (ansible_local|d() and ansible_local.gitlab|d() and
-                             ansible_local.gitlab.systemd_services|d())
+                         if (ansible_local.gitlab.systemd_services|d())
                          else (False
-                               if (ansible_local|d() and ansible_local.gitlab|d() and
-                                   ansible_local.gitlab.installed|d())
+                               if (ansible_local.gitlab.installed|d())
                                else (True if ansible_service_mgr == "systemd" else False))) }}'
 
                                                                    # ]]]

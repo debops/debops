@@ -642,8 +642,7 @@ sshd__ldap_filter: '{{ sshd__ldap_filter_map["service+host"] }}'
 # for a given host in the :ref:`debops.ldap` role.
 # See :ref:`ldap__ref_ldap_access_host` for more details.
 sshd__ldap_posix_urns: '{{ (ansible_local.ldap.urn_patterns
-                            if (ansible_local|d() and ansible_local.ldap|d() and
-                                ansible_local.ldap.urn_patterns|d())
+                            if (ansible_local.ldap.urn_patterns|d())
                             else [])
                            | map("regex_replace", "^(.*)$", "(host=posix:urn:\1)")
                            | list }}'
@@ -922,8 +921,7 @@ sshd__pam_access__dependent_rules:
           Grant access via SSH to members of UNIX groups defined on this host
         permission: 'allow'
         groups: '{{ ansible_local.system_groups.access.sshd
-                   if (ansible_local|d() and ansible_local.system_groups|d() and
-                       ansible_local.system_groups.access|d() and
+                   if (ansible_local.system_groups.access|d() and
                        ansible_local.system_groups.access.sshd|d())
                    else [ "admins", "sshusers", "sftponly" ] }}'
         origins: 'ALL'

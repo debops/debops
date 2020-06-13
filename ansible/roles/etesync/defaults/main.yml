@@ -198,8 +198,7 @@ etesync__config_secret_key_filepath: '{{ etesync__etc + "/secret.txt" }}'
 #
 # Name of the initial admin account created by the role.
 etesync__superuser_name: '{{ ansible_local.core.admin_users[0]
-                             if (ansible_local|d() and ansible_local.core|d() and
-                                 ansible_local.core.admin_users|d())
+                             if (ansible_local.core.admin_users|d())
                              else "admin" }}'
 
                                                                    # ]]]
@@ -207,8 +206,7 @@ etesync__superuser_name: '{{ ansible_local.core.admin_users[0]
 #
 # E-mail address of the initial admin account created by the role.
 etesync__superuser_email: '{{ ansible_local.core.admin_private_email[0]
-                              if (ansible_local|d() and ansible_local.core|d() and
-                                  ansible_local.core.admin_private_email|d())
+                              if (ansible_local.core.admin_private_email|d())
                               else ("root@" + etesync__domain) }}'
 
                                                                    # ]]]

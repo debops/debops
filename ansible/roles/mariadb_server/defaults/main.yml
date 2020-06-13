@@ -42,8 +42,7 @@
 # The choice depends on availability of MariaDB packages in a distribution.
 # Percona needs to be selected explicitly.
 mariadb_server__flavor: '{{ (ansible_local.mariadb.flavor
-                             if (ansible_local|d() and ansible_local.mariadb|d() and
-                                 ansible_local.mariadb.flavor|d())
+                             if (ansible_local.mariadb.flavor|d())
                              else (mariadb_server__flavor_map[ansible_distribution_release]
                                    | d("mariadb"))) }}'
 
@@ -340,8 +339,7 @@ mariadb_server__append_groups: [ 'ssl-cert' ]
 #
 # Enable or disable support for SSL in MariaDB (using :ref:`debops.pki`).
 mariadb_server__pki: '{{ (True
-                      if (ansible_local|d() and ansible_local.pki|d() and
-                          ansible_local.pki.enabled|d() and
+                      if (ansible_local.pki.enabled|d() and
                           mariadb_server__pki_realm in ansible_local.pki.known_realms)
                       else False) | bool }}'
 

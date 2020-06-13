@@ -76,8 +76,7 @@ iscsi__iqn_authority: '{{ ansible_domain }}'
 # saved in Ansible local facts to prevent changes related to the default date
 # field.
 iscsi__iqn: '{{ (ansible_local.iscsi.iqn
-                 if (ansible_local|d() and ansible_local.iscsi|d() and
-                     ansible_local.iscsi.iqn|d())
+                 if (ansible_local.iscsi.iqn|d())
                  else ("iqn." + iscsi__iqn_date + "." +
                        iscsi__iqn_authority.split(".")[::-1] | join("."))) }}'
 

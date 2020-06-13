@@ -114,8 +114,7 @@ atd_batch_multiplier: '{{ ((atd_multiplier_max | int |
 # CPU load average which will prevent batch job execution and will hold the
 # batch queue.
 atd_batch_load: '{{ (ansible_local.atd.batch_load
-                     if (ansible_local|d() and ansible_local.atd|d() and
-                         ansible_local.atd.batch_load|d())
+                     if (ansible_local.atd.batch_load|d())
                      else ((atd_batch_base | float) *
                            (atd_batch_multiplier | float))) }}'
 
@@ -136,8 +135,7 @@ atd_interval_max: '120'
 #
 # Time in seconds between batch job execution.
 atd_batch_interval: '{{ (ansible_local.atd.batch_interval
-                         if (ansible_local|d() and ansible_local.atd|d() and
-                             ansible_local.atd.batch_interval|d())
+                         if (ansible_local.atd.batch_interval|d())
                          else (atd_interval_max | int |
                                random(atd_interval_min | int))) }}'
                                                                    # ]]]

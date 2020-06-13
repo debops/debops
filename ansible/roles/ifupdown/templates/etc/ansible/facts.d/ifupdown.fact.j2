@@ -28,8 +28,7 @@ import os
 {%     endif %}
 {%   endfor %}
 {% endif %}
-{% if ansible_local|d() and ansible_local.ifupdown|d() and
-      ansible_local.ifupdown.dependent_interfaces|d() %}
+{% if ansible_local.ifupdown.dependent_interfaces|d() %}
 {%   for element in ansible_local.ifupdown.dependent_interfaces %}
 {%     if element not in ifupdown__tpl_dependent_interfaces_absent and
           element not in ifupdown__tpl_dependent_interfaces %}

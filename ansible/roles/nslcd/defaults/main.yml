@@ -126,8 +126,7 @@ nslcd__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
 # for a given host in the :ref:`debops.ldap` role.
 # See :ref:`ldap__ref_ldap_access_host` for more details.
 nslcd__ldap_posix_urns: '{{ (ansible_local.ldap.urn_patterns
-                             if (ansible_local|d() and ansible_local.ldap|d() and
-                                 ansible_local.ldap.urn_patterns|d())
+                             if (ansible_local.ldap.urn_patterns|d())
                              else [])
                             | map("regex_replace", "^(.*)$", "(host=posix:urn:\1)")
                             | list }}'

@@ -227,9 +227,7 @@ docker_server__fixed_cidr: ''
 # are gathered by the :ref:`debops.core` role from the :file:`/etc/resolv.conf` file of
 # the remote host.
 docker_server__dns_nameserver: '{{ ansible_local.resolvconf.upstream_nameservers
-                                   if (ansible_local|d() and
-                                       ansible_local.resolvconf|d() and
-                                       ansible_local.resolvconf.upstream_nameservers|d())
+                                   if (ansible_local.resolvconf.upstream_nameservers|d())
                                    else (ansible_dns.nameservers
                                          if ("127.0.0.1" not in ansible_dns.nameservers)
                                          else []) }}'
@@ -240,9 +238,7 @@ docker_server__dns_nameserver: '{{ ansible_local.resolvconf.upstream_nameservers
 # List of DNS search domains to use by Docker. By default they are gathered by
 # the :ref:`debops.core` role from the :file:`/etc/resolv.conf` file of the remote host.
 docker_server__dns_search: '{{ ansible_local.resolvconf.search
-                               if (ansible_local|d() and
-                                   ansible_local.resolvconf|d() and
-                                   ansible_local.resolvconf.search|d() and
+                               if (ansible_local.resolvconf.search|d() and
                                    (ansible_local.resolvconf.upstream_nameservers|d() or
                                     "127.0.0.1" not in ansible_dns.nameservers))
                                else (ansible_dns.search|d()
@@ -382,8 +378,7 @@ docker_server__registry_mirrors: []
 #
 # Storage driver for docker volumes.
 docker_server__storage_driver: '{{ ansible_local.docker_server.storage_driver
-                                   if (ansible_local|d() and ansible_local.docker_server|d() and
-                                       ansible_local.docker_server.storage_driver|d())
+                                   if (ansible_local.docker_server.storage_driver|d())
                                    else ("aufs"
                                          if (ansible_distribution_release in ["wheezy", "jessie" ])
                                          else "overlay2") }}'

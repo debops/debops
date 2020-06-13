@@ -49,7 +49,7 @@
 
 {% macro get_realm_yaml_list(domains, fallback_realm) %}{# [[[ #}
 {% set custom_realm_list = [] %}
-{% if domains and (ansible_local|d() and ansible_local.pki|d() and ansible_local.pki.known_realms|d()) %}
+{% if domains and (ansible_local.pki.known_realms|d()) %}
 {%   for domain in (get_yaml_list_for_elem(domains) | from_yaml) %}
 {%     if domain in ansible_local.pki.known_realms %}
 {%       set _ = custom_realm_list.append(domain) %}
@@ -65,17 +65,11 @@
 {% endmacro %}{# ]]] #}
 
 {% macro get_apache_version() %}{# [[[ #}
-{{ ansible_local.apache.version
-   if (ansible_local|d() and ansible_local.apache|d() and
-       ansible_local.apache.version|d())
-   else "2.4.0" -}}
+{{ ansible_local.apache.version|d("2.4.0") -}}
 {% endmacro %}{# ]]] #}
 
 {% macro get_apache_min_version() %}{# [[[ #}
-{{ ansible_local.apache.min_version
-   if (ansible_local|d() and ansible_local.apache|d() and
-       ansible_local.apache.min_version|d())
-   else "2.4.0" -}}
+{{ ansible_local.apache.min_version|d("2.4.0") -}}
 {% endmacro %}{# ]]] #}
 
 {% macro get_openssl_version() %}{# [[[ #}

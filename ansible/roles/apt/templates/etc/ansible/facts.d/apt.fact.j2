@@ -49,8 +49,7 @@ security_sources = loads('''{{ apt__tpl_security_sources | to_nice_json }}''')
 output = loads('''{{ ({
     "enabled": apt__enabled,
     "configured": (ansible_local.apt.configured
-                   if (ansible_local|d() and ansible_local.apt|d() and
-                       ansible_local.apt.configured|d())
+                   if (ansible_local.apt.configured|d())
                    else False),
     "default_mirrors": apt__tpl_default_sources,
     "default_sources_map": apt__tpl_default_sources_map,

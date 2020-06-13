@@ -262,8 +262,7 @@ mariadb__client_cnf_file: '{{ "/etc/mysql/mariadb.conf.d/90-client.cnf"
 #
 # Enable or disable support for SSL in MariaDB (using :ref:`debops.pki`).
 mariadb__pki: '{{ (True
-                   if (ansible_local|d() and ansible_local.pki|d() and
-                       ansible_local.pki.enabled|d() and
+                   if (ansible_local.pki.enabled|d() and
                        mariadb__pki_realm in ansible_local.pki.known_realms)
                    else False) | bool }}'
 

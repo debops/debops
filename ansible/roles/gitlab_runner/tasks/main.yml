@@ -196,8 +196,7 @@
     name: '{{ gitlab_runner__user }}'
     append: True
     groups: '{{ ([ (ansible_local.libvirtd.unix_sock_group
-                    if (ansible_local|d() and ansible_local.libvirtd|d() and
-                        ansible_local.libvirtd.unix_sock_group|d())
+                    if (ansible_local.libvirtd.unix_sock_group|d())
                     else "libvirt") ]
                  + ([ "kvm" ]
                     if (ansible_local|d() and ansible_local.libvirtd|d() and

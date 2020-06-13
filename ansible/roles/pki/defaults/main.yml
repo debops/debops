@@ -225,9 +225,7 @@ pki_acme_ca_api_map:
 # related to your account. For example, the server may wish to notify you about
 # server-initiated revocation or certificate expiration.
 pki_acme_contacts: [ 'mailto:{{ ansible_local.core.admin_public_email[0]
-                                if (ansible_local|d() and
-                                    ansible_local.core|d() and
-                                    ansible_local.core.admin_public_email|d() and
+                                if (ansible_local.core.admin_public_email|d() and
                                     ansible_local.core.admin_public_email[0]|d())
                                 else "root@" + ansible_domain }}' ]
 
@@ -238,8 +236,7 @@ pki_acme_contacts: [ 'mailto:{{ ansible_local.core.admin_public_email[0]
 # By default it's defined by the ``debops.nginx`` Ansible role using Ansible
 # facts.
 pki_acme_challenge_dir: '{{ (ansible_local.nginx.acme_root
-                             if (ansible_local|d() and ansible_local.nginx|d() and
-                                 ansible_local.nginx.acme_root|d())
+                             if (ansible_local.nginx.acme_root|d())
                              else "/srv/www/sites/acme/public") +
                              "/.well-known/acme-challenge" }}'
 
@@ -248,8 +245,7 @@ pki_acme_challenge_dir: '{{ (ansible_local.nginx.acme_root
 #
 # Whether the directory where the ACME client should store responses
 # should be created.
-pki_create_acme_challenge_dir: '{{ True if (ansible_local|d() and ansible_local.nginx|d() and
-                                            ansible_local.nginx.acme|d() and
+pki_create_acme_challenge_dir: '{{ True if (ansible_local.nginx.acme|d() and
                                             ansible_local.nginx.acme|bool) else False }}'
                                                                    # ]]]
                                                                    # ]]]

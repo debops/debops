@@ -173,14 +173,12 @@ unbound__default_zones:
       Support for resolving LXC container hosts that use the 'lxc-net' bridge
       configuration
     zone: '{{ (ansible_local.lxc.net_domain + ".")
-              if (ansible_local|d() and ansible_local.lxc|d() and
-                  ansible_local.lxc.net_domain|d())
+              if (ansible_local.lxc.net_domain|d())
               else "" }}'
     revdns: '{{ ansible_local.lxc.net_subnet|d("") }}'
     nameserver: '{{ ansible_local.lxc.net_address|d("") }}'
     state: '{{ "present"
-               if (ansible_local|d() and ansible_local.lxc|d() and
-                   ansible_local.lxc.net_domain|d())
+               if (ansible_local.lxc.net_domain|d())
                else "absent" }}'
 
   # Ref: https://learn.hashicorp.com/consul/security-networking/forwarding#unbound-setup

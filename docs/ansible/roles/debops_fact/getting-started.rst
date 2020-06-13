@@ -70,8 +70,7 @@ Add your role to list of roles applied on this host:
        section: '{{ ansible_local.debops_fact.public_section|d("global") }}'
        option: 'applied_roles'
        value: '{{ ((ansible_local.debops_fact.global.applied_roles
-                    if (ansible_local|d() and ansible_local.debops_fact|d() and
-                        ansible_local.debops_fact.global|d() and
+                    if (ansible_local.debops_fact.global|d() and
                         ansible_local.debops_fact.global.applied_roles|d())
                     else []) + [ "username.rolename" ]) | unique | to_json }}'
      when: ansible_local|d() and ansible_local.debops_fact|d() and

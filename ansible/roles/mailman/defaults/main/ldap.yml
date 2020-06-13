@@ -78,9 +78,7 @@ mailman__ldap_bind_password: '{{ lookup("password", secret + "/ldap/credentials/
 #
 # The base Distinguished Name of the LDAP directory, defined as a YAML list.
 mailman__ldap_base_dn: '{{ ansible_local.ldap.basedn
-                           if (ansible_local|d() and
-                               ansible_local.ldap|d() and
-                               ansible_local.ldap.basedn|d())
+                           if (ansible_local.ldap.basedn|d())
                            else "dc=" + ansible_domain.split(".")
                                         | join(",dc=") }}'
 

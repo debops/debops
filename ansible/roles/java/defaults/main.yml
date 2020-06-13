@@ -29,8 +29,7 @@
 # If the APT configuration is not detected, the role will install the default
 # Java packages for a given OS release.
 java__install_v8: '{{ True
-                      if ((ansible_local|d() and ansible_local.apt|d() and
-                           ansible_local.apt.configured|d()) and
+                      if ((ansible_local.apt.configured|d()) and
                           (ansible_distribution_release in java__v8_backported_releases))
                       else False }}'
 

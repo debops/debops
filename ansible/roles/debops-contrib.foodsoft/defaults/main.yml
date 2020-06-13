@@ -99,8 +99,7 @@ foodsoft__domain: '{{ ansible_domain }}'
 # .. Planned are ``mariadb``, ``postgresql``, ``sqlite``.
 #
 foodsoft__database: '{{ ansible_local.foodsoft.database
-                        if (ansible_local|d() and ansible_local.foodsoft|d() and
-                            ansible_local.foodsoft.database|d())
+                        if (ansible_local.foodsoft.database|d())
                         else ("mariadb"
                               if (ansible_local|d() and ansible_local.mariadb is defined)
                               else ("postgresql"
@@ -186,12 +185,11 @@ foodsoft__database_config:
 # Autodetected variable containing the webserver which should be used.
 # Currently only Nginx is supported.
 foodsoft__webserver: '{{ ansible_local.foodsoft.webserver
-                         if (ansible_local|d() and ansible_local.foodsoft|d() and
-                             ansible_local.foodsoft.webserver|d())
+                         if (ansible_local.foodsoft.webserver|d())
                          else ("nginx"
-                               if (ansible_local|d() and ansible_local.nginx|d() and ansible_local.nginx.enabled|d()|bool)
+                               if (ansible_local.nginx.enabled|d()|bool)
                                else ("apache"
-                                     if (ansible_local|d() and ansible_local.apache|d() and ansible_local.apache.enabled|d()|bool)
+                                     if (ansible_local.apache.enabled|d()|bool)
                                      else "no-webserver-detected")) }}'
 
                                                                    # ]]]

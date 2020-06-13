@@ -133,10 +133,10 @@
 {%   endif %}
 {%   if ferm__tpl_config['type'] == 'ansible_controller' %}
 {%     set ferm__tpl_ansible_controllers = [] %}
-{%     if ansible_local|d() and ansible_local.core|d() and ansible_local.core.ansible_controllers|d() %}
+{%     if ansible_local.core.ansible_controllers|d() %}
 {%       set _ = ferm__tpl_ansible_controllers.extend(ansible_local.core.ansible_controllers) %}
 {%     endif %}
-{%     if ansible_local|d() and ansible_local.ferm|d() and ansible_local.ferm.ansible_controllers|d() %}
+{%     if ansible_local.ferm.ansible_controllers|d() %}
 {%       set _ = ferm__tpl_ansible_controllers.extend(ansible_local.ferm.ansible_controllers) %}
 {%     endif %}
 {%     if ferm__ansible_controllers|d() %}

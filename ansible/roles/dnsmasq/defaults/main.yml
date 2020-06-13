@@ -429,8 +429,7 @@ dnsmasq__default_configuration:
 
       - name: 'local'
         value: '{{ "/" + (ansible_local.lxc.net_domain
-                          if (ansible_local|d() and ansible_local.lxc|d() and
-                              ansible_local.lxc.net_domain|d())
+                          if (ansible_local.lxc.net_domain|d())
                           else "")
                    + "/" + ansible_local.lxc.net_address|d("")) }}'
 
@@ -438,8 +437,7 @@ dnsmasq__default_configuration:
       # interface from the outside, if there's no external domain set.
       - name: 'host-record'
         value: '{{ (ansible_local.lxc.net_domain
-                    if (ansible_local|d() and ansible_local.lxc|d() and
-                        ansible_local.lxc.net_domain|d())
+                    if (ansible_local.lxc.net_domain|d())
                     else "")
                    + "," + ansible_local.lxc.net_address|d("")) }}'
         state: '{{ "present"
@@ -449,8 +447,7 @@ dnsmasq__default_configuration:
 
       - name: 'rev-server'
         value: '{{ (ansible_local.lxc.net_subnet
-                    if (ansible_local|d() and ansible_local.lxc|d() and
-                        ansible_local.lxc.net_subnet|d())
+                    if (ansible_local.lxc.net_subnet|d())
                     else "")
                    + "," + ansible_local.lxc.net_address|d("")) }}'
 
@@ -458,8 +455,7 @@ dnsmasq__default_configuration:
         value: '{{ ansible_local.lxc.net_domain|d("") }}'
 
     state: '{{ "present"
-               if (ansible_local|d() and ansible_local.lxc|d() and
-                   ansible_local.lxc.net_domain|d())
+               if (ansible_local.lxc.net_domain|d())
                else "init" }}'
 
   - name: 'dhcp-boot.conf'

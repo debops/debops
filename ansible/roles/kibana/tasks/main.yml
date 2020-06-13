@@ -12,8 +12,7 @@
   register: kibana__register_dependent_config_file
   become: False
   delegate_to: 'localhost'
-  when: (ansible_local|d() and ansible_local.kibana|d() and
-         ansible_local.kibana.installed|d())
+  when: (ansible_local.kibana.installed|d())
   tags: [ 'role::kibana:config' ]
 
 - name: Load the dependent configuration from Ansible Controller
@@ -22,8 +21,7 @@
   register: kibana__register_dependent_config
   become: False
   delegate_to: 'localhost'
-  when: (ansible_local|d() and ansible_local.kibana|d() and
-         ansible_local.kibana.installed|d() and
+  when: (ansible_local.kibana.installed|d() and
          kibana__register_dependent_config_file.stat.exists|bool)
   tags: [ 'role::kibana:config' ]
 

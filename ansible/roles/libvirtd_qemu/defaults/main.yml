@@ -74,8 +74,7 @@ libvirtd_qemu__packages: []
 # Specify the type of the environment a given :command:`libvirtd` operates in.
 # Possible choices: ``libvirt``, ``opennebula``.
 libvirtd_qemu__deployment_mode: '{{ ansible_local.libvirtd.deployment_mode
-                                    if (ansible_local|d() and ansible_local.libvirtd|d() and
-                                        ansible_local.libvirtd.deployment_mode|d())
+                                    if (ansible_local.libvirtd.deployment_mode|d())
                                     else ("opennebula"
                                           if ("debops_service_opennebula_node" in group_names)
                                           else "libvirt") }}'
@@ -87,8 +86,7 @@ libvirtd_qemu__deployment_mode: '{{ ansible_local.libvirtd.deployment_mode
 # Debian default is ``libvirt-qemu``, however OpenNebula requires the use of
 # the ``oneadmin`` management account to ensure correct file access.
 libvirtd_qemu__user: '{{ (ansible_local.opennebula.user
-                          if (ansible_local|d() and ansible_local.opennebula|d() and
-                              ansible_local.opennebula.user|d())
+                          if (ansible_local.opennebula.user|d())
                           else "oneadmin")
                          if (libvirtd_qemu__deployment_mode == "opennebula")
                          else "libvirt-qemu" }}'
@@ -100,8 +98,7 @@ libvirtd_qemu__user: '{{ (ansible_local.opennebula.user
 # default is ``libvirt-qemu``, however OpenNebula requires the use of the
 # ``oneadmin`` management group to ensure correct file access.
 libvirtd_qemu__group: '{{ (ansible_local.opennebula.group
-                           if (ansible_local|d() and ansible_local.opennebula|d() and
-                               ansible_local.opennebula.group|d())
+                           if (ansible_local.opennebula.group|d())
                            else "oneadmin")
                           if (libvirtd_qemu__deployment_mode == "opennebula")
                           else "libvirt-qemu" }}'
