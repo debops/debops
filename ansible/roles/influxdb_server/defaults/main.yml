@@ -218,8 +218,7 @@ influxdb_server__pki_options:
 #
 # Enable or disable support for SSL in InfluxDB (using :ref:`debops.pki`).
 influxdb_server__pki: '{{ True
-                          if (ansible_local|d() and ansible_local.pki|d() and
-                              ansible_local.pki.enabled|d()|bool and
+                          if (ansible_local.pki.enabled|d()|bool and
                               influxdb_server__pki_realm in ansible_local.pki.known_realms)
                           else False }}'
 
@@ -227,19 +226,13 @@ influxdb_server__pki: '{{ True
 # .. envvar:: influxdb_server__pki_path [[[
 #
 # Base path for PKI directory.
-influxdb_server__pki_path: '{{ (ansible_local.pki.base_path
-                               if (ansible_local|d() and ansible_local.pki|d() and
-                                   ansible_local.pki.base_path|d())
-                               else "/etc/pki") }}'
+influxdb_server__pki_path: '{{ ansible_local.pki.base_path|d("/etc/pki") }}'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__pki_realm [[[
 #
 # Default PKI realm used by InfluxDB server.
-influxdb_server__pki_realm: '{{ ansible_local.pki.realm
-                                if (ansible_local|d() and ansible_local.pki|d() and
-                                    ansible_local.pki.realm|d())
-                                else "domain" }}'
+influxdb_server__pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__pki_ca [[[

@@ -15,14 +15,12 @@
   service:
     name: 'influxdb'
     state: 'restarted'
-  when: not (ansible_local|d() and ansible_local.influxdb_server|d()
-             and ansible_local.influxdb_server.installed|d(false)|bool)
+  when: not (ansible_local.influxdb_server.installed|d(false)|bool)
 
 - name: Wait for HTTP endpoint port to become open on the host on first install
   wait_for:
     port: '{{ influxdb_server__port }}'
-  when: not (ansible_local|d() and ansible_local.influxdb_server|d()
-             and ansible_local.influxdb_server.installed|d(false)|bool)
+  when: not (ansible_local.influxdb_server.installed|d(false)|bool)
 
 - name: Create default admin user on first install
   influxdb_user:
@@ -33,15 +31,13 @@
     proxies:
       http:
       https:
-  when: not (ansible_local|d() and ansible_local.influxdb_server|d()
-             and ansible_local.influxdb_server.installed|d(false)|bool)
+  when: not (ansible_local.influxdb_server.installed|d(false)|bool)
 
 - name: Stop database server on first install
   service:
     name: 'influxdb'
     state: 'stopped'
-  when: not (ansible_local|d() and ansible_local.influxdb_server|d()
-             and ansible_local.influxdb_server.installed|d(false)|bool)
+  when: not (ansible_local.influxdb_server.installed|d(false)|bool)
 
 - name: Add InfluxDB server user to specified groups
   user:
@@ -62,8 +58,7 @@
 - name: Move InfluxDB data files to data directory
   shell:
     'mv {{ influxdb_server__default_directory }}/* {{ influxdb_server__directory }}'
-  when: (not (ansible_local|d() and ansible_local.influxdb_server|d()
-              and ansible_local.influxdb_server.installed|d(false)|bool) and
+  when: (not (ansible_local.influxdb_server.installed|d(false)|bool) and
          influxdb_server__directory != influxdb_server__default_directory)
 
 - name: Divert the original influxdb configuration file
@@ -87,8 +82,7 @@
   service:
     name: 'influxdb'
     state: 'started'
-  when: not (ansible_local|d() and ansible_local.influxdb_server|d()
-             and ansible_local.influxdb_server.installed|d(false)|bool)
+  when: not (ansible_local.influxdb_server.installed|d(false)|bool)
 
 - name: Configure autoinfluxdbbackup
   include: 'autoinfluxdbbackup.yml'
