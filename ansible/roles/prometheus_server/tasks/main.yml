@@ -33,7 +33,7 @@
     - '/etc/prometheus/file_sd_configs.d'
     - '/etc/prometheus/rules.d'
 
-- name: Divert the original prometheus configuration files
+- name: Divert the original Prometheus configuration files
   dpkg_divert:
     path: '{{ item }}'
     state: 'present'
@@ -55,7 +55,7 @@
     - 'etc/prometheus/prometheus.yml'
     - 'etc/prometheus/rules.d/ansible_rules.yml'
   tags: [ 'role::prometheus_server:config' ]
-  notify: restart prometheus
+  notify: [ 'Restart Prometheus' ]
 
 - name: Make sure that Ansible local facts directory exists
   file:
