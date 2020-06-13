@@ -52,7 +52,7 @@ git ls-files -z "$(git rev-parse --show-toplevel)" | xargs --null -I '{}' find '
             \s*\k<var_ref3>\|d\(\)\)\n?
 
             ## Line: else ansible_domain
-            \s*else\s+(?<else_exp>[^\n]+?)\s+}}
+            \s*else\s+\(?(?<else_exp>[^\n]+?)\)?\s+}}
             ## else_exp: ansible_domain
         ~$+{var_ref3}|d($+{else_exp}) }}~xg;
     '
