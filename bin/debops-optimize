@@ -12,8 +12,9 @@ set -o nounset -o pipefail -o errexit
 cd "$(git rev-parse --show-toplevel)" || exit
 
 ## Testing:
-#    perl -p0e '
-#    ' ansible/roles/influxdb/defaults/test
+# perl -i -p0e '
+# ' ansible/roles/prometheus_exporter/templates/etc/ansible/facts.d/prometheus_exporter.fact.j2
+# exit 0
 
 git ls-files -z "$(git rev-parse --show-toplevel)" | xargs --null -I '{}' find './{}' -type f -print0 | \
     xargs --null perl -i -p0e '
@@ -24,37 +25,50 @@ git ls-files -z "$(git rev-parse --show-toplevel)" | xargs --null -I '{}' find '
             \(?True\n?
 
             ## Line: if (ansible_local|d() and ansible_local.pki|d() and
-            \s*if\s*\((?<var_ref1>ansible_local)\|d\(\)\s+and\s+(?<var_ref2>\k<var_ref1>\.\w+)\|d\(\)\s+and\n?
+            \s+if\s*\((?<var_ref1>ansible_local)\s*\|\s*d(?:efault)?\(\)\s+and\s+(?<var_ref2>\k<var_ref1>\.\w+)\s*\|\s*d(?:efault)?\(\)\s+and\n?
             ## var_ref1: ansible_local
             ## var_ref2: ansible_local.pki
 
             ## Line: ansible_local.pki.enabled|d()|bool)
-            \s*(?<expression>\k<var_ref2>\.\w+\|d\(\).*)\)\n?
+            \s+(?<expression>\k<var_ref2>\.\w+\s*\|\s*d(?:efault)?\(\))\)\n?
             ## expression: ansible_local.pki.enabled|d()|bool
 
             ## Line: else False
-            \s*else\s+False\)?(?:\s*\|\s*bool)?
+            \s+else\s+False\)?(?:\s*\|\s*bool)?
          ~$+{expression}~xg;
 
         s~
             ## Use Ansible 2.8 default shortcut: Thing if defined else fallback
 
             ## Line: .*ansible_local.core.domain
-            \(?(?<var_ref3>(?<var_ref2>(?<var_ref1>ansible_local)\.[\w]+)\.[\w]+)\n?
+            \(?(?<var_ref3>(?<var_ref2>(?<var_ref1>ansible_local)\.\w+)\.\w+)\n?
             ## var_ref1: ansible_local
             ## var_ref2: ansible_local.core
             ## var_ref3: ansible_local.core.domain
 
             ## Line: if (ansible_local|d() and ansible_local.core|d() and
-            \s*if\s+\(\k<var_ref1>\|d\(\)\s+and\s+\k<var_ref2>\|d\(\)\s+and\n?
+            \s+if\s+\(\k<var_ref1>\s*\|\s*d(?:efault)?\(\)\s+and\s+\k<var_ref2>\s*\|\s*d(?:efault)?\(\)\s+and\n?
 
             ## Line: ansible_local.core.domain|d())
-            \s*\k<var_ref3>(?:\|d\(\))?\)\n?
+            \s+\k<var_ref3>(?:\s*\|\s*d(?:efault)?\(\))?\)\n?
 
             ## Line: else ansible_domain
-            \s*else\s+\(?(?<else_exp>[^\n]+?)\)?\s+}}
+            \s+else\s+\(?(?<else_exp>[^\n]+?)\)?\s+(?<end_marker>-?}}|-?%})
             ## else_exp: ansible_domain
-        ~$+{var_ref3}|d($+{else_exp}) }}~xg;
+        ~$+{var_ref3}|d($+{else_exp}) $+{end_marker}~xg;
+
+        s~
+            ## Use Ansible 2.8 default shortcut: More generic catch-all as last resort.
+
+            ## Line: ansible_local|d() and ansible_local.pki|d() and
+            (?<var_ref1>ansible_local)\s*\|\s*d(?:efault)?\(\)\s+and\s+(?<var_ref2>\k<var_ref1>\.\w+)\s*\|\s*d(?:efault)?\(\)\s+and\n?
+            ## var_ref1: ansible_local
+            ## var_ref2: ansible_local.pki
+
+            ## Line: ansible_local.pki.enabled|d()|bool
+            \s+(?<expression>\k<var_ref2>\.\w+\s*\|\s*d(?:efault)?\(\))
+            ## expression: ansible_local.pki.enabled|d()
+         ~$+{expression}~xg;
     '
 
 
