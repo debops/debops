@@ -274,8 +274,7 @@ dnsmasq__default_configuration:
     raw: |
       server = /consul/127.0.0.1#8600
     state: '{{ "present"
-               if (ansible_local|d() and ansible_local.consul|d() and
-                   (ansible_local.consul.installed|d())|bool)
+               if (ansible_local.consul.installed|d()|bool)
                else "init" }}'
 
   - name: 'lxd-override'
@@ -406,11 +405,11 @@ dnsmasq__default_configuration:
         raw: |
           bogus-priv
         state: '{{ "comment"
-                   if (ansible_local|d() and
-                       (ansible_local.lxc|d() and ansible_local.lxc.net_domain|d()) or
-                       (ansible_local.resolvconf|d() and
-                        ((ansible_local.resolvconf.upstream_nameservers
-                          | d(ansible_local.resolvconf.nameservers)) | ipaddr("private"))))
+                   if (
+                       (ansible_local.lxc.net_domain|d()) or
+                       (ansible_local.resolvconf.upstream_nameservers
+                          | d(ansible_local.resolvconf.nameservers) | ipaddr("private"))
+                      )
                    else "present" }}'
 
       - name: 'resolv-file'
@@ -428,28 +427,21 @@ dnsmasq__default_configuration:
     options:
 
       - name: 'local'
-        value: '{{ "/" + (ansible_local.lxc.net_domain
-                          if (ansible_local.lxc.net_domain|d())
-                          else "")
-                   + "/" + ansible_local.lxc.net_address|d("")) }}'
+        value: '{{ "/" + (ansible_local.lxc.net_domain|d(""))
+                   + "/" + ansible_local.lxc.net_address|d("") }}'
 
       # Create a separate 'lxc' host record that points to the 'lxcbr0'
       # interface from the outside, if there's no external domain set.
       - name: 'host-record'
-        value: '{{ (ansible_local.lxc.net_domain
-                    if (ansible_local.lxc.net_domain|d())
-                    else "")
+        value: '{{ ansible_local.lxc.net_domain|d("")
                    + "," + ansible_local.lxc.net_address|d("")) }}'
         state: '{{ "present"
-                   if (ansible_local|d() and ansible_local.lxc|d() and
-                       "." not in ansible_local.lxc.net_domain|d())
+                   if ("." not in ansible_local.lxc.net_domain|d())
                    else "absent" }}'
 
       - name: 'rev-server'
-        value: '{{ (ansible_local.lxc.net_subnet
-                    if (ansible_local.lxc.net_subnet|d())
-                    else "")
-                   + "," + ansible_local.lxc.net_address|d("")) }}'
+        value: '{{ ansible_local.lxc.net_subnet|d("")
+                   + "," + ansible_local.lxc.net_address|d("") }}'
 
       - name: 'rebind-domain-ok'
         value: '{{ ansible_local.lxc.net_domain|d("") }}'
