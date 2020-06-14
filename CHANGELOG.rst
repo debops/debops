@@ -128,6 +128,12 @@ General
 - Fix creation of empty environment variables in :command:`cron` configuration
   files managed by Ansible.
 
+:ref:`debops.dnsmasq` role
+''''''''''''''''''''''''''
+
+- :envvar:`dnsmasq__public_dns` did not create a firewall allow rule when no
+  interfaces where specified.
+
 :ref:`debops.gitlab` role
 '''''''''''''''''''''''''
 
