@@ -14,8 +14,7 @@ from sys import exit
 # A workaround for Jinja templates in Python scripts
 """
 {% set system_groups__tpl_acl = {} %}
-{% set system_groups__tpl_access = (
-  ansible_local.system_groups.access|d({}) %}
+{% set system_groups__tpl_access = ansible_local.system_groups.access|d({}) %}
 {% for element in (system_groups__combined_list | parse_kv_items) %}
 {%   if (element.name|d() and element.state|d('present') not in
          [ 'init', 'absent', 'ignore' ]) %}

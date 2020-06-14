@@ -51,8 +51,7 @@
   set_fact:
     php__version: '{{ ansible_local.php.version|d(php__register_version.stdout) }}'
     php__long_version: '{{ ansible_local.php.long_version
-                           if (ansible_local.php.long_version|d() and
-                               ansible_local.php.long_version|d() != "(none)")
+                           if (ansible_local.php.long_version|d() != "(none)")
                            else php__register_long_version.stdout }}'
   tags: [ 'role::php:pools', 'role::php:config' ]
 

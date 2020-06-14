@@ -32,12 +32,8 @@ php__version_preference: [ 'php7.3', 'php', 'php5.6' ]
 # Enable custom APT repositories of Ondřej Surý, Debian and Ubuntu PHP package
 # maintainer. You can enable these repositories to install PHP 7.0 on Debian
 # Jessie. See :ref:`php__ref_sury` for more details.
-php__sury: '{{ (ansible_local.php.sury
-                if (ansible_local.php.sury|d())
-                 else (True
-                       if (ansible_distribution_release in
-                           [ "jessie", "stretch", "trusty", "xenial" ])
-                       else False)) | bool }}'
+php__sury: '{{ ansible_local.php.sury
+               |d(ansible_distribution_release in [ "jessie", "stretch", "trusty", "xenial" ]) | bool }}'
 
                                                                    # ]]]
 # .. envvar:: php__sury_apt_key_id [[[
