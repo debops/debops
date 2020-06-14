@@ -598,9 +598,10 @@ dnsmasq__ferm__dependent_rules:
                          | selectattr("state", "equalto", "present")
                          | map(attribute="name") | list) }}'
     rule_state: '{{ "present"
-                    if (dnsmasq__combined_interfaces | flatten | parse_kv_items
-                        | selectattr("state", "equalto", "present")
-                        | map(attribute="name") | list)
+                    if ((dnsmasq__public_dns|bool) or
+                        (dnsmasq__combined_interfaces | flatten | parse_kv_items
+                            | selectattr("state", "equalto", "present")
+                            | map(attribute="name") | list))
                     else "absent" }}'
 
   - type: 'accept'
