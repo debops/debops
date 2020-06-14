@@ -261,7 +261,7 @@ use the parameter in relevant tasks, like this:
        owner: 'root'
        group: 'root'
        mode: '0644'
-       unsafe_writes: '{{ True if (core__unsafe_writes|dansible_local.core.unsafe_writes|d() | bool) else omit }}'
+       unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
 
 Note that the way :envvar:`core__unsafe_writes` is checked and takes precedence
 even from the context of another role is not otherwise done in DebOps.

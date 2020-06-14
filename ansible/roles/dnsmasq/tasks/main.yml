@@ -29,7 +29,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-    unsafe_writes: '{{ True if (core__unsafe_writes|dansible_local.core.unsafe_writes|d() | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
   register: dnsmasq__register_facts
 
 - name: Reload facts if they were modified
@@ -98,7 +98,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-    unsafe_writes: '{{ True if (core__unsafe_writes|dansible_local.core.unsafe_writes|d() | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
   notify: [ 'Test and restart dnsmasq' ]
 
 - name: Configure custom nameservers in resolvconf
@@ -108,6 +108,6 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-    unsafe_writes: '{{ True if (core__unsafe_writes|dansible_local.core.unsafe_writes|d() | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
   notify: [ 'Test and restart dnsmasq' ]
   when: dnsmasq__nameservers|d()
