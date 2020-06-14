@@ -488,10 +488,7 @@ mosquitto__tls_version: 'tlsv1.2'
 #
 # Enable or disable Avahi support. See :ref:`mosquitto__ref_avahi_support` for
 # more details.
-mosquitto__avahi: '{{ True
-                      if (ansible_local|d() and ansible_local.avahi|d() and
-                          ansible_local.avahi.installed|bool)
-                      else False }}'
+mosquitto__avahi: '{{ ansible_local.avahi.installed|d()|bool }}'
 
                                                                    # ]]]
 # .. envvar:: mosquitto__avahi_name [[[

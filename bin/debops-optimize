@@ -38,6 +38,25 @@ git ls-files -z "$(git rev-parse --show-toplevel)" | xargs --null -I '{}' find '
          ~$+{expression}~xg;
 
         s~
+            ## Use Ansible 2.8 default shortcut: True or False (no final default in expression)
+
+            ## Line: .*True
+            \(?\n?True\n?
+
+            ## Line: if (ansible_local|d() and ansible_local.pki|d() and
+            \s+if\s*\((?<var_ref1>ansible_local)\s*\|\s*d(?:efault)?\(\)\s+and\s+(?<var_ref2>\k<var_ref1>\.\w+)\s*\|\s*d(?:efault)?\(\)\s+and\n?
+            ## var_ref1: ansible_local
+            ## var_ref2: ansible_local.pki
+
+            ## Line: ansible_local.pki.enabled|bool)
+            \s+(?<expression>\k<var_ref2>\.\w+?)\s*\|\s*bool\)\n?
+            ## expression: ansible_local.pki.enabled|d()|bool
+
+            ## Line: else False
+            \s+else\s+False\)?(?:\s*\|\s*bool)?
+        ~$+{expression}|d()|bool~xg;
+
+        s~
             ## Use Ansible 2.8 default shortcut: Thing if defined else fallback
 
             ## Line: .*ansible_local.core.domain
