@@ -175,10 +175,7 @@ rsyslog__logfiles: []
 #
 # Enable or disable support for X.509 certificates managed by :ref:`debops.pki`
 # role, used for TLS connections.
-rsyslog__pki: '{{ True
-                  if (ansible_local|d() and ansible_local.pki|d() and
-                      ansible_local.pki.enabled|bool)
-                  else False }}'
+rsyslog__pki: '{{ ansible_local.pki.enabled|d()|bool }}'
 
                                                                    # ]]]
 # .. envvar:: rsyslog__pki_path [[[

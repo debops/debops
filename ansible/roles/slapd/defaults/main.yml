@@ -31,10 +31,7 @@
 # in the LDAP directory, but may require additional changes in existing
 # databases. See :ref:`the rfc2307bis schema <slapd__ref_rfc2307bis>` for more
 # details.
-slapd__rfc2307bis_enabled: '{{ ansible_local.slapd.rfc2307bis
-                               if (ansible_local|d() and ansible_local.slapd|d() and
-                                   (ansible_local.slapd.rfc2307bis|d())|bool)
-                               else True }}'
+slapd__rfc2307bis_enabled: '{{ ansible_local.slapd.rfc2307bis|d(True)|bool }}'
 
                                                                    # ]]]
 # .. envvar:: slapd__debops_schema_path [[[
@@ -284,7 +281,7 @@ slapd__pki: '{{ ansible_local.pki.enabled|d(False) | bool) }}'
 # .. envvar:: slapd__pki_path [[[
 #
 # Absolute path to the directory that contains PKI realms.
-slapd__pki_path: '{{ ansible_local.pki.base_path|d("/etc/pki/realms")) }}'
+slapd__pki_path: '{{ ansible_local.pki.base_path|d("/etc/pki/realms") }}'
 
                                                                    # ]]]
 # .. envvar:: slapd__pki_realm [[[
@@ -293,8 +290,7 @@ slapd__pki_path: '{{ ansible_local.pki.base_path|d("/etc/pki/realms")) }}'
 # setup the configuration is shared, therefore all cluster nodes should use the
 # same PKI realm name.
 slapd__pki_realm: '{{ slapd__domain
-                      if (ansible_local|d() and ansible_local.pki|d() and
-                          slapd__domain in ansible_local.pki.known_realms|d([]))
+                      if (slapd__domain in ansible_local.pki.known_realms|d([]))
                       else ansible_local.pki.realm|d("domain")) }}'
 
                                                                    # ]]]
@@ -331,10 +327,7 @@ slapd__dhparam_set: 'default'
 # Absolute path to the file with Diffie-Hellman parameters used by the OpenLDAP
 # server. If it's empty, the custom Diffie-Hellman parameters will not be
 # configured.
-slapd__dhparam_file: '{{ (ansible_local.dhparam[slapd__dhparam_set]
-                          if (ansible_local|d() and ansible_local.dhparam|d() and
-                              ansible_local.dhparam[slapd__dhparam_set]|d())
-                          else "") }}'
+slapd__dhparam_file: '{{ (ansible_local.dhparam[slapd__dhparam_set]|d("") }}'
 
                                                                    # ]]]
 # .. envvar:: slapd__tls_ca_certificate [[[
