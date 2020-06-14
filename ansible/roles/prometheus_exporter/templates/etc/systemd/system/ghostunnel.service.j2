@@ -4,18 +4,18 @@
  #}
 # {{ ansible_managed }}
 
-# prometheus-{{ item }}-exporter.service unit file
+# ghostunnel-{{ item.name }}-exporter.service unit file
 # Copyright (C) 2020 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
 # Copyright (C) DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 [Unit]
-Description=Ghostunnel for Prometheus exporter for {{ item }}
+Description=Ghostunnel for Prometheus exporter for {{ item.name }}
 
 [Service]
 Restart=always
 User=prometheus
-EnvironmentFile=/etc/default/ghostunnel-{{ item }}-exporter
+EnvironmentFile=/etc/default/ghostunnel-{{ item.name }}-exporter
 ExecStart=-/usr/local/bin/ghostunnel server --shutdown-timeout=1s $ARGS
 
 [Install]

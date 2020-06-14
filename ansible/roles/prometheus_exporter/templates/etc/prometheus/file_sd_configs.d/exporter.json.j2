@@ -4,12 +4,12 @@
  #}
 [
   {
-    "targets": [ "{{ ansible_fqdn }}:{{ prometheus_exporter__combined_ports_map[item].split(':')[0] }}" ],
+    "targets": [ "{{ ansible_fqdn }}:{{ item.public_port }}" ],
     "labels": {
 {% for key, value in prometheus_exporter__combined_labels.items() %}
       "{{ key }}": "{{ value }}",
 {% endfor %}
-      "job": "{{ item }}"
+      "job": "{{ item.name }}"
     }
   }
 ]

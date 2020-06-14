@@ -9,30 +9,6 @@
 - import_role:
     name: 'secret'
 
-- name: Install Prometheus exporters packages
-  package:
-    name: '{{ lookup("template", "lookup/prometheus_exporter__packages.j2") }}'
-    state: 'present'
-  register: prometheus_exporter__register_install_status
-  until: prometheus_exporter__register_install_status is succeeded
-
-- name: Create Prometheus system group
-  group:
-    name: 'prometheus'
-    state: 'present'
-    system: True
-
-- name: Create Prometheus system user
-  user:
-    name: 'prometheus'
-    group: 'prometheus'
-    groups: '{{ prometheus_exporter__combined_append_groups | join(",") | default(omit) }}'
-    home: '/var/lib/prometheus'
-    comment: 'Prometheus daemon,,,'
-    shell: '/bin/false'
-    state: 'present'
-    system: True
-
 - name: Fetch Ghostunnel release
   get_url:
     url: '{{ prometheus_exporter__ghostunnel_resource }}'
@@ -42,91 +18,51 @@
     mode: '0755'
   when: prometheus_exporter__pki|bool
 
-- name: Fetch release prometheus exporters
-  get_url:
-    url: '{{ item.resource }}'
-    dest: '{{ "/usr/local/bin/prometheus-" + item.name + "-exporter" }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  with_items: '{{ prometheus_exporter__combined_release_exporters }}'
-  when: item.name is defined and item.name and
-        item.resource is defined and item.resource and
-        (item.archive is not defined or not item.archive|bool)
-
-- name: Unarchive release prometheus exporters
-  unarchive:
-    src: '{{ item.resource }}'
-    dest: '{{ "/tmp" }}'
-    remote_src: True
-  args:
-    creates: '{{ "/usr/local/bin/prometheus-" + item.name + "-exporter" }}'
-  with_items: '{{ prometheus_exporter__combined_release_exporters }}'
-  when: item.name is defined and item.name and
-        item.resource is defined and item.resource and
-        item.archive is defined and item.archive|bool
-
-- name: Install unarchived release prometheus exporters
-  copy:
-    src: '{{ "/tmp/" + item.binary }}'
-    dest: '{{ "/usr/local/bin/prometheus-" + item.name + "-exporter" }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-    remote_src: True
-  with_items: '{{ prometheus_exporter__combined_release_exporters }}'
-  when: item.name is defined and item.name and
-        item.resource is defined and item.resource and
-        item.archive is defined and item.archive|bool and
-        item.binary is defined and item.binary
-  notify: restart prometheus exporters
-
 - name: Divert the original prometheus exporters configuration files
   dpkg_divert:
-    path: '/etc/default/prometheus-{{ item }}-exporter'
+    path: '/etc/default/prometheus-{{ item.name }}-exporter'
     state: 'present'
     delete: True
   with_items: '{{ prometheus_exporter__combined_exporters }}'
+  when: (not (item.upstream|d())|bool and
+         (item.apt_packages is defined and
+          (([ item.apt_packages ] if (item.apt_packages is string) else item.apt_packages))))
   tags: [ 'role::prometheus_exporter:config' ]
 
 - name: Configure Ghostunnel for Prometheus exporters
   template:
     src: 'etc/default/ghostunnel.j2'
-    dest: '/etc/default/ghostunnel-{{ item }}-exporter'
+    dest: '/etc/default/ghostunnel-{{ item.name }}-exporter'
     owner: 'root'
     group: 'prometheus'
     mode: '0640'
   with_items:
     - '{{ prometheus_exporter__combined_exporters }}'
-    - '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'
     - '{{ prometheus_exporter__apm_exporters }}'
   tags: [ 'role::prometheus_exporter:config' ]
-  notify: restart ghostunnel prometheus exporters
+  notify: Restart ghostunnel prometheus exporters
   when: prometheus_exporter__pki|bool
 
 - name: Configure Prometheus exporters
   template:
     src: 'etc/default/prometheus-exporter.j2'
-    dest: '/etc/default/prometheus-{{ item }}-exporter'
+    dest: '/etc/default/prometheus-{{ item.name }}-exporter'
     owner: 'root'
     group: 'prometheus'
     mode: '0640'
-  with_items:
-    - '{{ prometheus_exporter__combined_exporters }}'
-    - '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'
+  with_items: '{{ prometheus_exporter__combined_exporters }}'
   tags: [ 'role::prometheus_exporter:config' ]
-  notify: restart prometheus exporters
+  notify: Restart prometheus exporters
 
 - name: Configure discovery files for Prometheus server
   template:
     src: 'etc/prometheus/file_sd_configs.d/exporter.json.j2'
-    dest: '/etc/prometheus/file_sd_configs.d/{{ item }}.{{ inventory_hostname }}.json'
+    dest: '/etc/prometheus/file_sd_configs.d/{{ item.name }}.{{ inventory_hostname }}.json'
     owner: 'root'
     group: 'root'
     mode: '0644'
   with_items:
     - '{{ prometheus_exporter__combined_exporters }}'
-    - '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'
     - '{{ prometheus_exporter__apm_exporters }}'
   delegate_to: '{{ prometheus_exporter__delegate_to }}'
   when: prometheus_exporter__server is defined and prometheus_exporter__server and
@@ -135,27 +71,29 @@
 - name: Generate systemd service unit
   template:
     src: 'etc/systemd/system/prometheus-exporter.service.j2'
-    dest: '/etc/systemd/system/prometheus-{{ item }}-exporter.service'
+    dest: '/etc/systemd/system/prometheus-{{ item.name }}-exporter.service'
     owner: 'root'
     group: 'root'
     mode: '0644'
   register: prometheus_exporter__register_systemd
-  with_items: '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'
-  notify: restart prometheus exporters
+  with_items: '{{ prometheus_exporter__combined_exporters }}'
+  when: ((item.git|d() or item.url|d()) and ((item.upstream|d())|bool or
+         (item.apt_packages is undefined or
+          (not (([ item.apt_packages ] if (item.apt_packages is string) else item.apt_packages))))))
+  notify: Restart prometheus exporters
 
 - name: Generate Ghostunnel systemd service unit
   template:
     src: 'etc/systemd/system/ghostunnel.service.j2'
-    dest: '/etc/systemd/system/ghostunnel-{{ item }}-exporter.service'
+    dest: '/etc/systemd/system/ghostunnel-{{ item.name }}-exporter.service'
     owner: 'root'
     group: 'root'
     mode: '0644'
   register: prometheus_exporter__register_ghostunnel_systemd
   with_items:
     - '{{ prometheus_exporter__combined_exporters }}'
-    - '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'
     - '{{ prometheus_exporter__apm_exporters }}'
-  notify: restart ghostunnel prometheus exporters
+  notify: Restart ghostunnel prometheus exporters
   when: prometheus_exporter__pki|bool
 
 - name: Reload systemd configuration
@@ -167,21 +105,23 @@
 
 - name: Enable and start release Prometheus exporters
   service:
-    name: 'prometheus-{{ item }}-exporter'
+    name: 'prometheus-{{ item.name }}-exporter'
     state: 'started'
     enabled: True
-  with_items: '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'
+  with_items: '{{ prometheus_exporter__combined_exporters }}'
   when: ansible_service_mgr == 'systemd' and
-        prometheus_exporter__register_systemd is changed
+        prometheus_exporter__register_systemd is changed and
+        ((item.git|d() or item.url|d()) and ((item.upstream|d())|bool or
+         (item.apt_packages is undefined or
+          (not (([ item.apt_packages ] if (item.apt_packages is string) else item.apt_packages))))))
 
 - name: Enable and start Ghostunnel Prometheus exporters
   service:
-    name: 'ghostunnel-{{ item }}-exporter'
+    name: 'ghostunnel-{{ item.name }}-exporter'
     state: 'started'
     enabled: True
   with_items:
     - '{{ prometheus_exporter__combined_exporters }}'
-    - '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'
     - '{{ prometheus_exporter__apm_exporters }}'
   when: ansible_service_mgr == 'systemd' and
         prometheus_exporter__register_ghostunnel_systemd is changed

@@ -4,12 +4,9 @@
  #}
 {% set prometheus_exporter__tpl_ferm_dport = [] %}
 {% for exporter in prometheus_exporter__combined_exporters %}
-{%   set _ = prometheus_exporter__tpl_ferm_dport.append('prometheus-' + exporter + '-exporter') %}
-{% endfor %}
-{% for exporter in prometheus_exporter__combined_release_exporters %}
 {%   set _ = prometheus_exporter__tpl_ferm_dport.append('prometheus-' + exporter.name + '-exporter') %}
 {% endfor %}
 {% for exporter in prometheus_exporter__apm_exporters %}
-{%   set _ = prometheus_exporter__tpl_ferm_dport.append('prometheus-' + exporter + '-exporter') %}
+{%   set _ = prometheus_exporter__tpl_ferm_dport.append('prometheus-' + exporter.name + '-exporter') %}
 {% endfor %}
 {{ prometheus_exporter__tpl_ferm_dport }}

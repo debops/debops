@@ -74,12 +74,18 @@ prometheus_exporter__combined_append_groups: '{{ prometheus_exporter__default_ap
 # .. envvar:: prometheus_exporter__default_exporters [[[
 #
 # Default Prometheus exporters to install and configure.
-prometheus_exporter__default_exporters: [ 'node' ]
+prometheus_exporter__default_exporters:
+
+  - name: 'node'
+    private_port: '3100'
+    public_port: '9100'
+    apt_packages: 'prometheus-node-exporter'
 
                                                                    # ]]]
 # .. envvar:: prometheus_exporter__exporters [[[
 #
 # Prometheus exporters to install and configure.
+# :ref:`prometheus_exporter__exporters` for more details.
 prometheus_exporter__exporters: []
 
                                                                    # ]]]
@@ -107,44 +113,13 @@ prometheus_exporter__combined_exporters: '{{ prometheus_exporter__default_export
                                              + prometheus_exporter__host_exporters }}'
 
                                                                    # ]]]
-# .. envvar:: prometheus_exporter__release_exporters [[[
-#
-# Prometheus exporters in release repo to install and configure.
-# :ref:`prometheus_exporter__release_exporters` for more details.
-prometheus_exporter__release_exporters: []
-
-                                                                   # ]]]
-# .. envvar:: prometheus_exporter__group_release_exporters [[[
-#
-# Prometheus exporters in release repo to install and configure in specific Ansible
-# inventory group.
-# :ref:`prometheus_exporter__release_exporters` for more details.
-prometheus_exporter__group_release_exporters: []
-
-                                                                   # ]]]
-# .. envvar:: prometheus_exporter__host_release_exporters [[[
-#
-# Prometheus exporters in release repo to install and configure in specific Ansible
-# inventory host.
-# :ref:`prometheus_exporter__release_exporters` for more details.
-prometheus_exporter__host_release_exporters: []
-
-                                                                   # ]]]
-# .. envvar:: prometheus_exporter__combined_release_exporters [[[
-#
-# The variable which combines all other Prometheus exporters in release repo
-# configuration variables and is used in the role tasks and templates.
-prometheus_exporter__combined_release_exporters: '{{ prometheus_exporter__release_exporters
-                                                     + prometheus_exporter__group_release_exporters
-                                                     + prometheus_exporter__host_release_exporters }}'
-
-                                                                   # ]]]
 # .. envvar:: prometheus_exporter__apm_exporters [[[
 #
 # Prometheus APM exporters to configure.
+# :ref:`prometheus_exporter__apm_exporters` for more details.
 prometheus_exporter__apm_exporters: []
 
-                                                                   # ]]]
+                                                                    # ]]]
 # .. envvar:: prometheus_exporter__labels [[[
 #
 # An optional dict of labels used to filter nodes for a given service.
@@ -188,69 +163,6 @@ prometheus_exporter__allow: []
 prometheus_exporter__bind: ''
 
                                                                    # ]]]
-# .. envvar:: prometheus_exporter__default_ports_map [[[
-#
-# Default port number map on which this Prometheus exporters listens on.
-# The format is <public port>:<private port>. Private port is used for
-# SSL tunneling. <public port> format is accepted but SSL tunneling will
-# not configured.
-prometheus_exporter__default_ports_map:
-  apache:  '9117:3117'
-  bind: '9119:3119'
-  bird: '9324:3324'
-  blackbox: '9110:3110'
-  haproxy: '9101:3101'
-  mongodb: '9216:3216'
-  mysqld: '9104:3104'
-  nginx: '9113:3113'
-  node: '9100:3100'
-  pgbouncer: '9127:3127'
-  postgres: '9187:3187'
-  process: '9256:3256'
-  snmp: '9116:3116'
-  sql: '9237:3237'
-  squid: '9301:3301'
-  trafficserver: '9548:3548'
-  varnish: '9131:3131'
-                                                                   # ]]]
-# .. envvar:: prometheus_exporter__ports_map [[[
-#
-# Port number map on which this Prometheus exporters listens on.
-# The format is <public port>:<private port>. Private port is used for
-# SSL tunneling. <public port> format is accepted but SSL tunneling will
-# not configured.
-prometheus_exporter__ports_map: {}
-                                                                   # ]]]
-# .. envvar:: prometheus_exporter__group_ports_map [[[
-#
-# Port number map on which this Prometheus exporters listens on in specific Ansible
-# inventory group.
-# The format is <public port>:<private port>. Private port is used for
-# SSL tunneling. <public port> format is accepted but SSL tunneling will
-# not configured.
-prometheus_exporter__group_ports_map: {}
-
-                                                                   # ]]]
-# .. envvar:: prometheus_exporter__host_ports_map [[[
-#
-# Port number map on which this Prometheus exporters listens on in specific Ansible
-# inventory host.
-# The format is <public port>:<private port>. Private port is used for
-# SSL tunneling. <public port> format is accepted but SSL tunneling will
-# not configured.
-prometheus_exporter__host_ports_map: {}
-
-                                                                   # ]]]
-# .. envvar:: prometheus_exporter__combined_ports_map [[[
-#
-# The variable which combines all other Prometheus exporters
-# port maps and is used in the role tasks and templates.
-prometheus_exporter__combined_ports_map: '{{ prometheus_exporter__default_ports_map |
-                                             combine(prometheus_exporter__ports_map) |
-                                             combine(prometheus_exporter__group_ports_map) |
-                                             combine(prometheus_exporter__host_ports_map) }}'
-
-                                                                   # ]]]
                                                                    # ]]]
 # Prometheus default file [[[
 # -------------------------------
@@ -268,9 +180,8 @@ prometheus_exporter__default_args:
   - name: 'common'
     options:
       - web.listen-address: '{{ ("localhost" if prometheus_exporter__pki|bool else prometheus_exporter__bind) + ":" +
-                                (prometheus_exporter__combined_ports_map[item].split(":")[1] if
-                                prometheus_exporter__pki|bool else
-                                prometheus_exporter__combined_ports_map[item].split(":")[0]) }}'
+                                (item.private_port if prometheus_exporter__pki|bool else
+                                item.public_port) }}'
 
                                                                    # ]]]
 # .. envvar:: prometheus_exporter__args [[[
@@ -365,6 +276,12 @@ prometheus_exporter__pki_key: 'default.key'
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
+# .. envvar:: prometheus_exporter__golang__dependent_packages [[[
+#
+# Configuration of the :ref:`debops.golang` role.
+prometheus_exporter__golang__dependent_packages: '{{ prometheus_exporter__combined_exporters }}'
+
+                                                                   # ]]]
 # .. envvar:: prometheus_exporter__apt_preferences__dependent_list [[[
 #
 # Configuration of the :ref:`debops.apt_preferences` role.

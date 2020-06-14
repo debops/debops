@@ -20,11 +20,24 @@
       tags: [ 'role::prometheus_exporter', 'role::prometheus_exporter:env',
               'role::etc_services', 'role::ferm' ]
 
+    - set_fact:
+        golang__dependent_packages:
+          - '{{ prometheus_exporter__golang__dependent_packages }}'
+      tags: [ 'role::prometheus_exporter', 'role::prometheus_exporter:env',
+              'role::keyring', 'role::golang' ]
+
   roles:
+
+    - role: keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::golang' ]
+      keyring__dependent_gpg_user: '{{ golang__keyring__dependent_gpg_user }}'
+      keyring__dependent_gpg_keys:
+        - '{{ golang__keyring__dependent_gpg_keys }}'
 
     - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
+        - '{{ golang__apt_preferences__dependent_list }}'
         - '{{ prometheus_exporter__apt_preferences__dependent_list }}'
 
     - role: etc_services
@@ -36,6 +49,9 @@
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ prometheus_exporter__ferm__dependent_rules_env }}'
+
+    - role: golang
+      tags: [ 'role::golang', 'skip::golang' ]
 
     - role: prometheus_exporter
       tags: [ 'role::prometheus_exporter', 'skip::prometheus_exporter' ]

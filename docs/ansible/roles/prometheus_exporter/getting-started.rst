@@ -19,33 +19,12 @@ mechanism that is used by :ref:`debops.prometheus_server` role.
 
 .. code-block:: yaml
 
-   prometheus_exporter__default_exporters: [ 'node' ]
+   prometheus_exporter__default_exporters:
 
-Ports
-~~~~~
-
-Default ports for exporters installed from Debian packages are:
-
-.. code-block:: yaml
-
-   prometheus_exporter__default_ports_map:
-     apache:  '9117:3117'
-     bind: '9119:3119'
-     bird: '9324:3324'
-     blackbox: '9110:3110'
-     haproxy: '9101:3101'
-     mongodb: '9216:3216'
-     mysqld: '9104:3104'
-     nginx: '9113:3113'
-     node: '9100:3100'
-     pgbouncer: '9127:3127'
-     postgres: '9187:3187'
-     process: '9256:3256'
-     snmp: '9116:3116'
-     sql: '9237:3237'
-     squid: '9301:3301'
-     trafficserver: '9548:3548'
-     varnish: '9131:3131'
+     - name: 'node'
+       private_port: '3100'
+       public_port: '9100'
+       apt_packages: 'prometheus-node-exporter'
 
 Listen address
 ~~~~~~~~~~~~~~
@@ -57,11 +36,10 @@ Default web listen address for all exporters.
    prometheus_exporter__default_args:
 
      - name: 'common'
-       options:
-         - web.listen-address: '{{ ("localhost" if prometheus_exporter__pki|bool else prometheus_exporter__bind) + ":" +
-                                   (prometheus_exporter__combined_ports_map[item].split(":")[1] if
-                                   prometheus_exporter__pki|bool else
-                                   prometheus_exporter__combined_ports_map[item].split(":")[0]) }}'
+         options:
+           - web.listen-address: '{{ ("localhost" if prometheus_exporter__pki|bool else prometheus_exporter__bind) + ":" +
+                                     (item.private_port if prometheus_exporter__pki|bool else
+                                     item.public_port) }}'
 
 SSL and authentication
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -73,15 +51,10 @@ Prometheus server by default with certificate authentication.
 
 ``debops.prometheus_exporter`` will configure SSL tunneling using Ghostunnel__,
 a simple TLS proxy with mutual authentication support for securing non-TLS backend
-applications. In this case, exporter will be configured to listen on ``localhost:3xxx``
-and Ghostunnel will be configured to listen on ``{{ prometheus_exporter__bind }}:9xxx``.
+applications. In this case, exporter will be configured to listen on ``localhost:<private_port>``
+and Ghostunnel will be configured to listen on ``{{ prometheus_exporter__bind }}:<public_port>``.
 Also Ghostunnel will enable certificate authentication for Prometheus server name
 defined in ``{{ prometheus_exporter__server }}``.
-
-Example: Node exporter port is 9100. If pki is enabled, this role will configure
-node exporter to listen on ``localhost:3100`` and Ghostunnel will be configured to
-listen on ``{{ prometheus_exporter__bind }}:9100`` for SSL connections from
-Prometheus server.
 
 If the PKI environment is not configured or disabled, connections to the
 Prometheus server will be performed in cleartext, so you might want to consider
@@ -125,7 +98,22 @@ Debian packages examples.
 
 .. code-block:: yaml
 
-   prometheus_exporter__exporters: [ 'nginx', 'mysqld', 'mongodb' ]
+   prometheus_exporter__exporters:
+
+     - name: 'nginx'
+       private_port: '3113'
+       public_port: '9113'
+       apt_packages: 'prometheus-nginx-exporter'
+
+     - name: 'mysqld'
+       private_port: '3104'
+       public_port: '9104'
+       apt_packages: 'prometheus-mysqld-exporter'
+
+     - name: 'mongodb'
+       private_port: '3216'
+       public_port: '9216'
+       apt_packages: 'prometheus-mongodb-exporter'
 
    prometheus_exporter__args:
 
@@ -149,37 +137,82 @@ add ``prometheus`` user to ``www-data`` group).
    prometheus_exporter__release_exporters:
 
      - name: 'phpfpm'
-       resource: 'https://github.com/Lusitaniae/phpfpm_exporter/releases/download/v0.5.0/phpfpm_exporter-0.5.0.linux-amd64.tar.gz'
-       archive: True
-       binary: 'phpfpm_exporter-0.5.0.linux-amd64/phpfpm_exporter'
+       private_port: '3253'
+       public_port: '9253'
+       upstream_type: 'url'
+       url:
+         - src: 'https://github.com/Lusitaniae/phpfpm_exporter/releases/download/v0.5.0/phpfpm_exporter-0.5.0.linux-amd64.tar.gz'
+           dest: 'releases/linux-amd64/Lusitaniae/phpfpm_exporter/0.5.0/phpfpm_exporter-0.5.0.linux-amd64.tar.gz'
+           checksum: 'sha256:3eb1af2d8f107e9aa43467e8a5e823bd7da8b1c600f61e020708de29746b6c40'
+           unarchive: True
+           unarchive_creates: 'releases/linux-amd64/Lusitaniae/phpfpm_exporter/0.5.0/phpfpm_exporter-0.5.0.linux-amd64/phpfpm_exporter'
+
+       url_binaries:
+         - src: 'releases/linux-amd64/Lusitaniae/phpfpm_exporter/0.5.0/phpfpm_exporter-0.5.0.linux-amd64/phpfpm_exporter'
+           dest: 'prometheus-phpfpm-exporter'
+           notify: [ 'Restart prometheus exporters' ]
 
      - name: 'redis'
-       resource: 'https://github.com/oliver006/redis_exporter/releases/download/v1.5.3/redis_exporter-v1.5.3.linux-amd64.tar.gz'
-       archive: True
-       binary: 'redis_exporter-v1.5.3.linux-amd64/redis_exporter'
+       private_port: '3121'
+       public_port: '9121'
+       upstream_type: 'url'
+       url:
+         - src: 'https://github.com/oliver006/redis_exporter/releases/download/v1.7.0/redis_exporter-v1.7.0.linux-amd64.tar.gz'
+           dest: 'releases/linux-amd64/oliver006/redis_exporter/1.7.0/redis_exporter-v1.7.0.linux-amd64.tar.gz'
+           checksum: 'sha256:70f634088b0bd5e9c5d724ee834c220468c321b479786244192419c41c57db78'
+           unarchive: True
+           unarchive_creates: 'releases/linux-amd64/oliver006/redis_exporter/1.7.0/redis_exporter-v1.7.0.linux-amd64/redis_exporter'
+
+       url_binaries:
+         - src: 'releases/linux-amd64/oliver006/redis_exporter/1.7.0/redis_exporter-v1.7.0.linux-amd64/redis_exporter'
+           dest: 'prometheus-redis-exporter'
+           notify: [ 'Restart prometheus exporters' ]
 
      - name: 'rabbitmq'
-       resource: 'https://github.com/kbudde/rabbitmq_exporter/releases/download/v1.0.0-RC6.1/rabbitmq_exporter-1.0.0-RC6.1.linux-amd64.tar.gz'
-       archive: True
-       binary: 'rabbitmq_exporter-1.0.0-RC6.1.linux-amd64/rabbitmq_exporter'
+       private_port: '3419'
+       public_port: '9419'
+       upstream_type: 'url'
+       url:
+         - src: 'https://github.com/kbudde/rabbitmq_exporter/releases/download/v1.0.0-RC7/rabbitmq_exporter-1.0.0-RC7.linux-amd64.tar.gz'
+           dest: 'releases/linux-amd64/kbudde/rabbitmq_exporter/1.0.0-RC7/rabbitmq_exporter-1.0.0-RC7.linux-amd64.tar.gz'
+           unarchive: True
+           unarchive_creates: 'releases/linux-amd64/kbudde/rabbitmq_exporter/1.0.0-RC7/rabbitmq_exporter-1.0.0-RC7.linux-amd64/rabbitmq_exporter'
 
-   prometheus_exporter__ports_map:
-
-     phpfpm: '9253:3253'
-     redis: '9121:3121'
-     rabbitmq: '9419:3419'
+       url_binaries:
+         - src: 'releases/linux-amd64/kbudde/rabbitmq_exporter/1.0.0-RC7/rabbitmq_exporter-1.0.0-RC7.linux-amd64/rabbitmq_exporter'
+           dest: 'prometheus-rabbitmq-exporter'
+           notify: [ 'Restart prometheus exporters' ]
 
    prometheus_exporter__args:
 
+     # Rabbitmq exporter doesn't support web.listen-address parameter.
+     # Include this option in other exporters in the same host.
+     - name: 'common'
+       state: 'absent'
+
+     - name: 'node'
+       options:
+         - web.listen-address: '{{ ("localhost" if prometheus_exporter__pki|bool else prometheus_exporter__bind) + ":" +
+                                   (item.private_port if prometheus_exporter__pki|bool else
+                                   item.public_port) }}'
+
      - name: 'phpfpm'
        options:
+         - web.listen-address: '{{ ("localhost" if prometheus_exporter__pki|bool else prometheus_exporter__bind) + ":" +
+                                   (item.private_port if prometheus_exporter__pki|bool else
+                                   item.public_port) }}'
          - phpfpm.socket-paths:
               - '/run/php7.2-fpm.sock'
          - phpfpm.status-path: '/status.php'
 
      - name: 'redis'
        options:
+         - web.listen-address: '{{ ("localhost" if prometheus_exporter__pki|bool else prometheus_exporter__bind) + ":" +
+                                   (item.private_port if prometheus_exporter__pki|bool else
+                                   item.public_port) }}'
          - redis.password: '{{ lookup("password", secret + "/redis/clusters/" + ansible_domain + "/password") }}'
+
+   prometheus_exporter__env:
 
      - name: 'rabbitmq'
        options:

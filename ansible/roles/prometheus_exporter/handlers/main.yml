@@ -3,19 +3,16 @@
 # Copyright (C) 2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-- name: restart prometheus exporters
+- name: Restart prometheus exporters
   service:
-    name: 'prometheus-{{ item }}-exporter'
+    name: 'prometheus-{{ item.name }}-exporter'
     state: 'restarted'
-  with_items:
-    - '{{ prometheus_exporter__combined_exporters }}'
-    - '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'
+  with_items: '{{ prometheus_exporter__combined_exporters }}'
 
-- name: restart ghostunnel prometheus exporters
+- name: Restart ghostunnel prometheus exporters
   service:
-    name: 'ghostunnel-{{ item }}-exporter'
+    name: 'ghostunnel-{{ item.name }}-exporter'
     state: 'restarted'
   with_items:
     - '{{ prometheus_exporter__combined_exporters }}'
-    - '{{ prometheus_exporter__combined_release_exporters | map(attribute="name") | list }}'
     - '{{ prometheus_exporter__apm_exporters }}'

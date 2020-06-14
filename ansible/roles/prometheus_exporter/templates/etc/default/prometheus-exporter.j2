@@ -7,7 +7,7 @@
 {% set prometheus_exporter__tpl_args = [] %}
 {% for element in prometheus_exporter__combined_args | parse_kv_items %}
 {%   if element.name|d() and element.state|d('present') not in [ 'absent', 'ignore' ] %}
-{%     if element.name in [ 'common', item ] and element.options|d() %}
+{%     if element.name in [ 'common', item.name ] and element.options|d() %}
 {%       for thing in element.options %}
 {%         if thing.name|d() and thing.value|d() and thing.state|d('present') != 'absent' %}
 {%           if thing.value is iterable and thing.value is not string %}
@@ -26,7 +26,7 @@
 ARGS="{{ prometheus_exporter__tpl_args | join(' ') }}"
 {% for element in prometheus_exporter__env | parse_kv_items %}
 {%   if element.name|d() and element.state|d('present') not in [ 'absent', 'ignore' ] %}
-{%     if element.name == item and element.options|d() %}
+{%     if element.name == item.name and element.options|d() %}
 {%       for thing in element.options %}
 {%         if thing.name|d() and thing.value|d() and thing.state|d('present') != 'absent' %}
 {{ thing.name + "=" + thing.value }}
