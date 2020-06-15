@@ -2,10 +2,8 @@
  # Copyright (C) 2020 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-or-later
  #}
-{% set prometheus_exporter__tpl_delegate_to = ansible_local.prometheus_exporter.delegate_to if (ansible_local|d() and ansible_local.prometheus_exporter|d() and ansible_local.prometheus_exporter.delegate_to|d()) else prometheus_exporter__delegate_to %}
-{% set prometheus_exporter__tpl_server      = ansible_local.prometheus_exporter.server      if (ansible_local|d() and ansible_local.prometheus_exporter|d() and ansible_local.prometheus_exporter.server|d())      else prometheus_exporter__server %}
 {
-"delegate_to": "{{ prometheus_exporter__tpl_delegate_to }}",
-"server": "{{ prometheus_exporter__tpl_server }}",
+"delegate_to": "{{ ansible_local.prometheus_exporter.delegate_to|d(prometheus_exporter__delegate_to) }}",
+"server": "{{ ansible_local.prometheus_exporter.server|d(prometheus_exporter__server) }}",
 "exporters": {{ prometheus_exporter__combined_exporters | union(prometheus_exporter__apm_exporters) | map(attribute="name") | list | to_json }}
 }

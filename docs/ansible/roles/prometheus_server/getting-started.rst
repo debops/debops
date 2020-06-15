@@ -15,16 +15,16 @@ Default configuration
 ---------------------
 
 The configuration is split into 6 basic parameters,
-this is because of limitation of YAML and easier representation.
+this is because of YAML limitations and easier representation.
 
-- prometheus_server__global_configuration
-- prometheus_server__rule_files_configuration
-- prometheus_server__alerting_configuration
-- prometheus_server__*_scrape_configs_configuration
-- prometheus_server__remote_write_configuration
-- prometheus_server__remote_read_configuration
+- :envvar:`prometheus_server__global_configuration`
+- :envvar:`prometheus_server__rule_files_configuration`
+- :envvar:`prometheus_server__alerting_configuration`
+- :envvar:`prometheus_server__*_scrape_configs_configuration`
+- :envvar:`prometheus_server__remote_write_configuration`
+- :envvar:`prometheus_server__remote_read_configuration`
 
-By default it configures node exporter and alertmanager scrape configurations
+By default it configures node exporter and Alertmanager scrape configurations
 with file-based service discovery mechanism that is used by
 :ref:`debops.prometheus_exporter` and :ref:`debops.prometheus_alertmanager`
 roles.
@@ -92,21 +92,21 @@ roles.
            target_label:  'instance'
            replacement:   '${1}:${2}'
 
-SSL and authentication for scrape configuration
+TLS and authentication for scrape configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If :ref:`debops.pki` role is used to configure a PKI environment, with default
+If the :ref:`debops.pki` role is used to configure a PKI environment, with default
 ``domain`` PKI realm enabled, ``debops.prometheus_server`` role will configure
-the provided private keys and X.509 certificates to enable SSL connections to
-the exporters and alertmanagers by default with certificate authentication.
+the provided private keys and X.509 certificates to enable TLS connections to
+the exporters and Alertmanagers by default with certificate authentication.
 
 :ref:`debops.prometheus_exporter` and :ref:`debops.prometheus_alertmanager`
-will configure SSL tunneling using Ghostunnel__, a simple TLS proxy with mutual
+will configure TLS tunneling using Ghostunnel__, a simple TLS proxy with mutual
 authentication support for securing non-TLS backend applications.
 
 If the PKI environment is not configured or disabled, connections to the
 Prometheus server will be performed in cleartext, so you might want to consider
-securing them by configuring server on a separate internal network, or
+securing them by deploying the server on a separate internal network, or
 accessing it over a VPN connection. You can use ``debops.subnetwork``,
 :ref:`debops.tinc` and :ref:`debops.dnsmasq` Ansible roles to set up a VPN internal
 network to secure communication between hosts.
@@ -125,7 +125,7 @@ To install Prometheus on a host, you need to add it to
    prometheus-host
 
 This will install ``prometheus`` package, configure the server to discover node
-exporter and alertmanager targets with file-based service discovery mechanism
+exporter and Alertmanager targets with file-based service discovery mechanism
 and configure ``nginx`` to access the server with basic authentication.
 
 Also you can add other Prometheus server configuration like scrape configurations

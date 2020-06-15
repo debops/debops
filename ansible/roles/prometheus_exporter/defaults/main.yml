@@ -230,8 +230,7 @@ prometheus_exporter__ghostunnel_resource: '{{ "https://github.com/square/ghostun
 #
 # Enable or disable support for SSL in Prometheus exporters (using :ref:`debops.pki`).
 prometheus_exporter__pki: '{{ True
-                              if (ansible_local|d() and ansible_local.pki|d() and
-                                  ansible_local.pki.enabled|d()|bool and
+                              if (ansible_local.pki.enabled|d()|bool and
                                   prometheus_exporter__pki_realm in ansible_local.pki.known_realms)
                               else False }}'
 
@@ -239,19 +238,13 @@ prometheus_exporter__pki: '{{ True
 # .. envvar:: prometheus_exporter__pki_path [[[
 #
 # Base path for PKI directory.
-prometheus_exporter__pki_path: '{{ (ansible_local.pki.base_path
-                                   if (ansible_local|d() and ansible_local.pki|d() and
-                                       ansible_local.pki.base_path|d())
-                                   else "/etc/pki") }}'
+prometheus_exporter__pki_path: '{{ ansible_local.pki.base_path|d("/etc/pki") }}'
 
                                                                    # ]]]
 # .. envvar:: prometheus_exporter__pki_realm [[[
 #
 # Default PKI realm used by Prometheus exporters.
-prometheus_exporter__pki_realm: '{{ ansible_local.pki.realm
-                                    if (ansible_local|d() and ansible_local.pki|d() and
-                                        ansible_local.pki.realm|d())
-                                    else "domain" }}'
+prometheus_exporter__pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: prometheus_exporter__pki_ca [[[
