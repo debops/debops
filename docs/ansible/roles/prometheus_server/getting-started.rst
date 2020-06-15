@@ -20,7 +20,7 @@ this is because of YAML limitations and easier representation.
 - :envvar:`prometheus_server__global_configuration`
 - :envvar:`prometheus_server__rule_files_configuration`
 - :envvar:`prometheus_server__alerting_configuration`
-- :envvar:`prometheus_server__*_scrape_configs_configuration`
+- :envvar:`prometheus_server__combined_scrape_configs_configuration`
 - :envvar:`prometheus_server__remote_write_configuration`
 - :envvar:`prometheus_server__remote_read_configuration`
 
