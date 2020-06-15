@@ -44,10 +44,24 @@ mosquitto__upstream_repository:
   Ubuntu:   'ppa:mosquitto-dev/mosquitto-ppa'
 
                                                                    # ]]]
+# .. envvar:: mosquitto__distribution_release [[[
+#
+# This variable defines the OS release used to determine if certain packages
+# are provided or not.
+mosquitto__distribution_release: '{{ ansible_local.core.distribution_release|d(ansible_distribution_release) }}'
+
+                                                                   # ]]]
 # .. envvar:: mosquitto__base_packages [[[
 #
 # List of base APT packages to install for Mosquitto support.
-mosquitto__base_packages: [ 'mosquitto', 'mosquitto-clients', 'python-pip', 'python-setuptools' ]
+mosquitto__base_packages:
+  - 'mosquitto'
+  - 'mosquitto-clients'
+  - '{{ ["python-pip", "python-setuptools" ]
+        if (mosquitto__distribution_release in
+            [ "jessie", "stretch",
+              "precise", "trusty", "xenial" ])
+        else ["python3-paho-mqtt"] }}'
 
                                                                    # ]]]
 # .. envvar:: mosquitto__packages [[[
@@ -66,17 +80,20 @@ mosquitto__version: '{{ mosquitto__register_version.stdout | d("0.0.0") }}'
 # PyPI packages [[[
 # -----------------
 
-# The ``paho-mqtt`` Python module is required by Ansible ``mqtt`` module, and
-# it's not available in Debian repositories, therefore it's installed by
-# default from PyPI. This allows usage of the ``mqtt`` module in Ansible roles
+# The ``paho-mqtt`` Python module is required by Ansible ``mqtt`` module.
+# It became available in Debian Buster. For older releases it's installed
+# from PyPI. This module allows usage of the ``mqtt`` module in Ansible roles
 # after checking if Mosquitto is installed via Ansible local facts.
-# To disable this, make the PyPI package list empty.
 
 # .. envvar:: mosquitto__pip_packages [[[
 #
 # List of PyPI packages to install system-wide using :command:`pip` package
 # manager.
-mosquitto__pip_packages: [ 'paho-mqtt' ]
+mosquitto__pip_packages: '{{ ["paho-mqtt" ]
+                             if (mosquitto__distribution_release in
+                                 [ "jessie", "stretch",
+                                   "precise", "trusty", "xenial" ])
+                             else [] }}'
                                                                    # ]]]
                                                                    # ]]]
 # User, group, additional groups [[[

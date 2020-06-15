@@ -279,6 +279,12 @@ General
 - The ``rsyslog`` APT package and its service can be cleanly removed from the
   host, either via the role or by uninstalling the package itself.
 
+:ref:`debops.mosquitto` role
+''''''''''''''''''''''''''''
+
+- Update the role for Debian Buster. No need anymore to install Python packages
+  outside of the system package management.
+
 Removed
 ~~~~~~~
 
