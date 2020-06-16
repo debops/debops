@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # Copyright (C) 2014-2019 Hartmut Goebel <h.goebel@crazy-compilers.com>
 # Copyright (C) 2014-2020 Maciej Delmanowski <drybjed@gmail.com>
