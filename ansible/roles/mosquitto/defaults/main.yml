@@ -57,11 +57,6 @@ mosquitto__distribution_release: '{{ ansible_local.core.distribution_release|d(a
 mosquitto__base_packages:
   - 'mosquitto'
   - 'mosquitto-clients'
-  - '{{ ["python-pip", "python-setuptools" ]
-        if (mosquitto__distribution_release in
-            [ "jessie", "stretch",
-              "precise", "trusty", "xenial" ])
-        else ["python3-paho-mqtt"] }}'
 
                                                                    # ]]]
 # .. envvar:: mosquitto__packages [[[
@@ -618,6 +613,30 @@ mosquitto__auth_patterns: []
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
+# .. envvar:: mosquitto__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+mosquitto__python__dependent_packages3:
+
+  - '{{ []
+        if (mosquitto__distribution_release in
+            [ "jessie", "stretch",
+              "precise", "trusty", "xenial" ])
+        else ["python3-paho-mqtt"] }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+mosquitto__python__dependent_packages2:
+
+  - '{{ []
+        if (mosquitto__distribution_release in
+            [ "jessie", "stretch",
+              "precise", "trusty", "xenial" ])
+        else ["python-paho-mqtt"] }}'
+
+                                                                   # ]]]
 # .. envvar:: mosquitto__etc_services__dependent_list [[[
 #
 # Configuration for the :ref:`debops.etc_services` Ansible role.

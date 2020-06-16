@@ -43,11 +43,13 @@
         - '{{ nginx__ferm__dependent_rules }}'
 
     - role: python
-      tags: [ 'role::python', 'skip::python' ]
+      tags: [ 'role::python', 'skip::python', 'role::nginx', 'role::mosquitto' ]
       python__dependent_packages3:
         - '{{ nginx__python__dependent_packages3 }}'
+        - '{{ mosquitto__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ nginx__python__dependent_packages2 }}'
+        - '{{ mosquitto__python__dependent_packages2 }}'
 
     - role: nginx
       tags: [ 'role::nginx', 'skip::nginx' ]
