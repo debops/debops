@@ -61,22 +61,14 @@ to check against ``version_compare()`` Ansible filter:
 
 .. code-block:: yaml
 
-   application__version: '{{ ansible_local.influxdata.packages.influxdb
-                             if (ansible_local|d() and ansible_local.influxdata|d() and
-                                 ansible_local.influxdata.packages|d() and
-                                 ansible_local.influxdata.packages.influxdb|d())
-                             else "0.0.0" }}'
+   application__version: '{{ ansible_local.influxdata.packages.influxdb | d("0.0.0") }}'
 
 You can also use the ``ansible_local.influxdata.packages`` fact to check if
 a given InfluxData application is installed:
 
 .. code-block:: yaml
 
-   application__present: '{{ True
-                             if (ansible_local|d() and ansible_local.influxdata|d() and
-                                 ansible_local.influxdata.packages|d() and
-                                 "influxdb" in ansible_local.influxdata.packages.keys())
-                             else False }}'
+   application__present: '{{ "influxdb" in (ansible_local.influxdata.packages|d({})) }}'
 
 
 Example inventory
