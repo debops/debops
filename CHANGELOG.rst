@@ -39,6 +39,12 @@ Added
 - Add the :ref:`debops.secret` role as a dependency to allow usage of the
   confidential values.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The :command:`nginx` location match strings for PHP scripts with and without
+  parameters can now be configured in the server configuration entries.
+
 :ref:`debops.php` role
 ''''''''''''''''''''''
 

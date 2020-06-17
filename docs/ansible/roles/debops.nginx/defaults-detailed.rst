@@ -785,6 +785,22 @@ Available when ``item.type`` is set to ``php`` for a server.
   defined in the PHP location blocks. If not defined, the default is to use the
   ``$script_name`` and ``=404`` values.
 
+``php_location_script_name``
+  Optional. This parameter allows modification of the location matching rule
+  used for PHP scripts without additional parameters, by default:
+
+  .. code-block:: none
+
+     ~ ^(?!.+\.php/)(?<script_name>.+\.php)$
+
+``php_location_path_info``
+  Optional. This parameter allows modification of the location matching rule
+  used for PHP scripts with additional parameters, by default:
+
+  .. code-block:: none
+
+     ~ ^(?<script_name>.+\.php)(?<path_info>/.*)$
+
 ``php_options``
   Optional, string. Additional options to append to php location.
 
