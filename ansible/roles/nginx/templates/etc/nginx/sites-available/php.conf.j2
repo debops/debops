@@ -59,7 +59,7 @@
         # CVE-2019-11043 mitigation (https://security-tracker.debian.org/tracker/CVE-2019-11043)
         # Based on: https://bugs.php.net/bug.php?id=78599
         rewrite ^(.*?)\n $1;
-        location ~ ^(?!.+\.php/)(?<script_name>.+\.php)$ {
+        location {{ item.php_location_script_name | d("~ ^(?!.+\.php/)(?<script_name>.+\.php)$") }} {
 {%      if item.php_limit_except|d() %}
                 limit_except {{ item.php_limit_except if item.php_limit_except is string else item.php_limit_except | join(' ') }} { deny all; }
 
@@ -93,7 +93,7 @@
         # CVE-2019-11043 mitigation (https://security-tracker.debian.org/tracker/CVE-2019-11043)
         # Based on: https://bugs.php.net/bug.php?id=78599
         rewrite ^(.*?)\n $1;
-        location ~ ^(?<script_name>.+\.php)(?<path_info>/.*)$ {
+        location {{ item.php_location_path_info | d("~ ^(?<script_name>.+\.php)(?<path_info>/.*)$") }} {
 {%     if item.php_limit_except|d() %}
                 limit_except {{ item.php_limit_except if item.php_limit_except is string else item.php_limit_except | join(' ') }} { deny all; }
 

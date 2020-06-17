@@ -52,6 +52,12 @@ Added
   :file:`/usr/local/bin/` directory to ensure feature parity with other LXD
   installations.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The :command:`nginx` location match strings for PHP scripts with and without
+  parameters can now be configured in the server configuration entries.
+
 :ref:`debops.php` role
 ''''''''''''''''''''''
 
