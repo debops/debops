@@ -90,7 +90,7 @@
                                           ansible_local.snmpd.username)
                                       else lookup("pipe", "openssl rand -hex "
                                                   + (((snmpd_account_username_length | int) / 2) | int) | string) }}'
-    snmpd_account_local_password: '{{ ansible_local.snmpd.password|d(lookup("pipe", "openssl rand -base64 " + snmpd_account_password_length) }}'
+    snmpd_account_local_password: '{{ ansible_local.snmpd.password|d(lookup("pipe", "openssl rand -base64 " + snmpd_account_password_length)) }}'
   no_log: True
 
 - name: Configure lldpd daemon variables
