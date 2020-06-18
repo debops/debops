@@ -131,8 +131,7 @@ core__admin_groups: [ 'admins' ]
 # To override the admin accounts autodetected by Ansible, specify them in this
 # list.
 core__admin_users: '{{ ((ansible_local.core.admin_users
-                         if (ansible_local|d() and ansible_local.core|d() and
-                             ansible_local.core.admin_users|d())
+                         if (ansible_local.core.admin_users|d())
                          else [])
                         + [ (ansible_user
                               if (ansible_user is defined and
@@ -200,7 +199,7 @@ core__cache_valid_time: '{{ (60 * 60 * 24) }}'
 # Some of the OS distributions are not detected by Ansible correctly. This
 # variable can be used to fix that issue across all roles that use it.
 core__distribution: '{{ ansible_lsb.id
-                        if (ansible_lsb|d() and ansible_lsb.id|d())
+                        if (ansible_lsb.id|d())
                         else ansible_distribution }}'
 
                                                                    # ]]]
@@ -209,7 +208,7 @@ core__distribution: '{{ ansible_lsb.id
 # Some of the OS releases are not detected by Ansible correctly. This variable
 # can be used to fix that issue across all roles that use it.
 core__distribution_release: '{{ ansible_lsb.codename
-                                if (ansible_lsb|d() and ansible_lsb.codename|d())
+                                if (ansible_lsb.codename|d())
                                 else ansible_distribution_release }}'
 
                                                                    # ]]]

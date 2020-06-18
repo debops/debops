@@ -279,6 +279,12 @@ General
 - The ``rsyslog`` APT package and its service can be cleanly removed from the
   host, either via the role or by uninstalling the package itself.
 
+:ref:`debops.mosquitto` role
+''''''''''''''''''''''''''''
+
+- Update the role for Debian Buster. No need anymore to install Python packages
+  outside of the system package management.
+
 Removed
 ~~~~~~~
 
@@ -431,6 +437,12 @@ General
 
   Existing installations might need to be recreated to avoid warnings about
   duplicate OIDs emitted during OpenLDAP operations.
+
+:ref:`debops.dnsmasq` role
+''''''''''''''''''''''''''
+
+- :envvar:`dnsmasq__public_dns` did not create a firewall allow rule when no
+  interfaces where specified.
 
 
 `debops v2.0.0`_ - 2020-01-30

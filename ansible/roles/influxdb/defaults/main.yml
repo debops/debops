@@ -51,10 +51,7 @@ influxdb__delegate_to: '{{ inventory_hostname }}'
 # .. envvar:: influxdb__pki [[[
 #
 # Enable or disable support for SSL in InfluxDB (using :ref:`debops.pki`).
-influxdb__pki: '{{ True
-                   if (ansible_local|d() and ansible_local.pki|d() and
-                       ansible_local.pki.enabled|d()|bool)
-                   else False }}'
+influxdb__pki: '{{ ansible_local.pki.enabled|d()|bool }}'
 
                                                                    # ]]]
                                                                    # ]]]
@@ -66,6 +63,15 @@ influxdb__pki: '{{ True
 # Length of automatically generated user accounts, saved in the ``secret/``
 # directory. See :ref:`debops.secret` role for more details about passwords.
 influxdb__password_length: '48'
+
+                                                                   # ]]]
+# .. envvar:: influxdb__root_password [[[
+#
+# Password for default root admin user.
+influxdb__root_password: '{{ lookup("password",
+                             secret + "/influxdb/" + influxdb__server +
+                             "/credentials/root/password " +
+                             "length=" + influxdb__password_length) }}'
 
                                                                    # ]]]
 # .. envvar:: influxdb__databases [[[
@@ -109,7 +115,6 @@ influxdb__users: []
 influxdb__dependent_users: []
                                                                    # ]]]
                                                                    # ]]]
-
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 

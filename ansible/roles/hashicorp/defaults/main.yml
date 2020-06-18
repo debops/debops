@@ -87,10 +87,7 @@ hashicorp__gpg_key_id: '91A6 E7F8 5D05 C656 30BE F189 5185 2D87 348F FC4C'
 # .. envvar:: hashicorp__keyserver [[[
 #
 # URL of the OpenPGP keyserver used to obtain the HashiCorp_ OpenPGP key.
-hashicorp__keyserver: '{{ ansible_local.core.keyserver
-                          if (ansible_local|d() and ansible_local.core|d() and
-                              ansible_local.core.keyserver|d())
-                          else "hkp://pool.sks-keyservers.net" }}'
+hashicorp__keyserver: '{{ ansible_local.core.keyserver|d("hkp://pool.sks-keyservers.net") }}'
                                                                    # ]]]
                                                                    # ]]]
 # HashiCorp Application lists [[[
@@ -273,10 +270,7 @@ hashicorp__sig_suffix: '{{ hashicorp__hash_suffix + ".sig" }}'
 # Boolean variable which controls if the Consul Web UI should be installed
 # alongside ``consul``. By default the Web UI files are not installed to allow
 # headless installation.
-hashicorp__consul_webui: '{{ (ansible_local.hashicorp.consul_webui
-                              if (ansible_local|d() and ansible_local.hashicorp|d() and
-                                  ansible_local.hashicorp.consul_webui|d())
-                              else False) | bool }}'
+hashicorp__consul_webui: '{{ ansible_local.hashicorp.consul_webui|d(False) | bool) }}'
 
                                                                    # ]]]
 # .. envvar:: hashicorp__consul_webui_suffix [[[
@@ -288,10 +282,7 @@ hashicorp__consul_webui_suffix: 'web_ui.zip'
 # .. envvar:: hashicorp__consul_webui_path [[[
 #
 # Absolute path where the Consul Web UI files should be installed.
-hashicorp__consul_webui_path: '{{ (ansible_local.nginx.www
-                                   if (ansible_local|d() and ansible_local.nginx|d()
-                                       and ansible_local.nginx.www|d())
-                                   else "/srv/www") + "/consul/sites/public" }}'
+hashicorp__consul_webui_path: '{{ ansible_local.nginx.www|d("/srv/www") + "/consul/sites/public") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[

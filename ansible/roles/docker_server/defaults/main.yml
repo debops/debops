@@ -23,19 +23,13 @@
 # .. envvar:: docker_server__distribution [[[
 #
 # The OS distribution which is used to select upstream APT repository.
-docker_server__distribution: '{{ ansible_local.core.distribution
-                                 if (ansible_local|d() and ansible_local.core|d() and
-                                     ansible_local.core.distribution|d())
-                                 else ansible_distribution }}'
+docker_server__distribution: '{{ ansible_local.core.distribution|d(ansible_distribution) }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__distribution_release [[[
 #
 # The OS distribution release which is used to select upstream APT repository.
-docker_server__distribution_release: '{{ ansible_local.core.distribution_release
-                                         if (ansible_local|d() and ansible_local.core|d() and
-                                             ansible_local.core.distribution_release|d())
-                                         else ansible_distribution_release }}'
+docker_server__distribution_release: '{{ ansible_local.core.distribution_release|d(ansible_distribution_release) }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__upstream [[[
@@ -142,11 +136,7 @@ docker_server__packages: []
 #
 # Specify the Docker version installed on a host. This variable is populated
 # automatically via Ansible local facts and shouldn't be set manually.
-docker_server__version: '{{ ansible_local.docker_server.version
-                            if (ansible_local|d() and
-                                ansible_local.docker_server|d() and
-                                ansible_local.docker_server.version|d())
-                            else "0.0.0" }}'
+docker_server__version: '{{ ansible_local.docker_server.version|d("0.0.0") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Docker Python environment [[[
@@ -211,10 +201,7 @@ docker_server__pip_packages: []
 #
 # List of UNIX accounts which should be added to the ``docker`` system group
 # which giving them access to the Docker UNIX socket.
-docker_server__admins: '{{ ansible_local.core.admin_users
-                           if (ansible_local|d() and ansible_local.core|d() and
-                               ansible_local.core.admin_users|d())
-                           else [] }}'
+docker_server__admins: '{{ ansible_local.core.admin_users|d([]) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Network configuration [[[
@@ -240,9 +227,7 @@ docker_server__fixed_cidr: ''
 # are gathered by the :ref:`debops.core` role from the :file:`/etc/resolv.conf` file of
 # the remote host.
 docker_server__dns_nameserver: '{{ ansible_local.resolvconf.upstream_nameservers
-                                   if (ansible_local|d() and
-                                       ansible_local.resolvconf|d() and
-                                       ansible_local.resolvconf.upstream_nameservers|d())
+                                   if (ansible_local.resolvconf.upstream_nameservers|d())
                                    else (ansible_dns.nameservers
                                          if ("127.0.0.1" not in ansible_dns.nameservers)
                                          else []) }}'
@@ -253,9 +238,7 @@ docker_server__dns_nameserver: '{{ ansible_local.resolvconf.upstream_nameservers
 # List of DNS search domains to use by Docker. By default they are gathered by
 # the :ref:`debops.core` role from the :file:`/etc/resolv.conf` file of the remote host.
 docker_server__dns_search: '{{ ansible_local.resolvconf.search
-                               if (ansible_local|d() and
-                                   ansible_local.resolvconf|d() and
-                                   ansible_local.resolvconf.search|d() and
+                               if (ansible_local.resolvconf.search|d() and
                                    (ansible_local.resolvconf.upstream_nameservers|d() or
                                     "127.0.0.1" not in ansible_dns.nameservers))
                                else (ansible_dns.search|d()
@@ -395,8 +378,7 @@ docker_server__registry_mirrors: []
 #
 # Storage driver for docker volumes.
 docker_server__storage_driver: '{{ ansible_local.docker_server.storage_driver
-                                   if (ansible_local|d() and ansible_local.docker_server|d() and
-                                       ansible_local.docker_server.storage_driver|d())
+                                   if (ansible_local.docker_server.storage_driver|d())
                                    else ("aufs"
                                          if (ansible_distribution_release in ["wheezy", "jessie" ])
                                          else "overlay2") }}'
@@ -437,30 +419,19 @@ docker_server__options: []
 # .. envvar:: docker_server__pki [[[
 #
 # Enable or disable support for PKI certificates managed by :ref:`debops.pki`.
-docker_server__pki: '{{ (True
-                        if (ansible_local|d() and ansible_local.pki|d() and
-                            ansible_local.pki.enabled|d() | bool)
-                        else False) | bool }}'
+docker_server__pki: '{{ ansible_local.pki.enabled|d() | bool }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__pki_path [[[
 #
 # Directory where PKI files are located on the remote host.
-docker_server__pki_path: '{{ ansible_local.pki.base_path
-                             if (ansible_local|d() and
-                                 ansible_local.pki|d() and
-                                 ansible_local.pki.base_path|d())
-                             else "/etc/pki" }}'
+docker_server__pki_path: '{{ ansible_local.pki.base_path|d("/etc/pki") }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__pki_realm [[[
 #
 # Name of the PKI realm used by Docker.
-docker_server__pki_realm: '{{ ansible_local.pki.realm
-                              if (ansible_local|d() and
-                                  ansible_local.pki|d() and
-                                  ansible_local.pki.realm|d())
-                              else "system" }}'
+docker_server__pki_realm: '{{ ansible_local.pki.realm|d("system") }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__pki_ca [[[

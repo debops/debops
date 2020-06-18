@@ -140,8 +140,7 @@ Check if specific HashiCorp_ application is installed on a host:
 .. code-block:: yaml
 
    consul_is_installed: '{{ True
-                            if (ansible_local|d() and ansible_local.hashicorp|d() and
-                                ansible_local.hashicorp.applications|d() and
+                            if (ansible_local.hashicorp.applications|d() and
                                 'consul' in ansible_local.hashicorp.applications.keys())
                             else False }}'
 
@@ -151,6 +150,5 @@ version changed and restart the daemon:
 .. code-block:: yaml
 
    consul_version: '{{ (ansible_local.hashicorp.applications["consul"]|d())
-                        if (ansible_local|d() and ansible_local.hashicorp|d() and
-                            ansible_local.hashicorp.applications|d())
+                        if (ansible_local.hashicorp.applications|d())
                         else "") }}'

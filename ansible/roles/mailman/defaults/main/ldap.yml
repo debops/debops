@@ -12,20 +12,13 @@
 # .. envvar:: mailman__ldap_enabled [[[
 #
 # Enable or disable LDAP authentication in the web interface.
-mailman__ldap_enabled: '{{ ansible_local.ldap.enabled
-                           if (ansible_local|d() and ansible_local.ldap|d() and
-                               ansible_local.ldap.enabled|d())
-                           else False }}'
+mailman__ldap_enabled: '{{ ansible_local.ldap.enabled|d(False) }}'
 
                                                                    # ]]]
 # .. envvar:: mailman__ldap_uri [[[
 #
 # List of LDAP server URIs.
-mailman__ldap_uri: '{{ ansible_local.ldap.uri
-                       if (ansible_local|d() and
-                           ansible_local.ldap|d() and
-                           ansible_local.ldap.uri|d())
-                       else [ "ldap://ldap." + ansible_domain ] }}'
+mailman__ldap_uri: '{{ ansible_local.ldap.uri|d([ "ldap://ldap." + ansible_domain ]) }}'
 
                                                                    # ]]]
 # .. envvar:: mailman__ldap_device_dn [[[
@@ -33,11 +26,7 @@ mailman__ldap_uri: '{{ ansible_local.ldap.uri
 # The Distinguished Name of the device LDAP object, defined as a YAML list. It
 # will be used as a base for the Mailman 3 service account object. The role will
 # not create the account object automatically if this list is empty.
-mailman__ldap_device_dn: '{{ ansible_local.ldap.device_dn
-                             if (ansible_local|d() and
-                                 ansible_local.ldap|d() and
-                                 ansible_local.ldap.device_dn|d())
-                             else [] }}'
+mailman__ldap_device_dn: '{{ ansible_local.ldap.device_dn|d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: mailman__ldap_self_rdn [[[
@@ -89,9 +78,7 @@ mailman__ldap_bind_password: '{{ lookup("password", secret + "/ldap/credentials/
 #
 # The base Distinguished Name of the LDAP directory, defined as a YAML list.
 mailman__ldap_base_dn: '{{ ansible_local.ldap.basedn
-                           if (ansible_local|d() and
-                               ansible_local.ldap|d() and
-                               ansible_local.ldap.basedn|d())
+                           if (ansible_local.ldap.basedn|d())
                            else "dc=" + ansible_domain.split(".")
                                         | join(",dc=") }}'
 
@@ -100,22 +87,14 @@ mailman__ldap_base_dn: '{{ ansible_local.ldap.basedn
 #
 # The Relative Distinguished Name of the LDAP subtree that contains personal
 # entries.
-mailman__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn
-                           if (ansible_local|d() and
-                               ansible_local.ldap|d() and
-                               ansible_local.ldap.people_rdn|d())
-                           else "ou=People" }}'
+mailman__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn|d("ou=People") }}'
 
                                                                    # ]]]
 # .. envvar:: mailman__ldap_groups_rdn [[[
 #
 # The Relative Distinguished Name of the LDAP subtree that contains group
 # entries.
-mailman__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn
-                              if (ansible_local|d() and
-                                  ansible_local.ldap|d() and
-                                  ansible_local.ldap.groups_rdn|d())
-                              else "ou=Groups" }}'
+mailman__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn|d("ou=Groups") }}'
 
                                                                    # ]]]
 # .. envvar:: mailman__ldap_people_dn [[[

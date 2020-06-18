@@ -69,10 +69,7 @@ dokuwiki__group: 'dokuwiki'
 # .. envvar:: dokuwiki__home [[[
 #
 # DokuWiki home directory.
-dokuwiki__home: '{{ (ansible_local.nginx.www
-                     if (ansible_local|d() and ansible_local.nginx|d() and
-                         ansible_local.nginx.www|d())
-                     else "/srv/www") + "/" + dokuwiki__user }}'
+dokuwiki__home: '{{ ansible_local.nginx.www|d("/srv/www") + "/" + dokuwiki__user) }}'
 
                                                                    # ]]]
 # .. envvar:: dokuwiki__src [[[
@@ -85,20 +82,13 @@ dokuwiki__src: '{{ (ansible_local.fhs.src | d("/usr/local/src"))
 # .. envvar:: dokuwiki__www [[[
 #
 # Base web root directory for DokuWiki website.
-dokuwiki__www: '{{ (ansible_local.nginx.www
-                    if (ansible_local|d() and ansible_local.nginx|d() and
-                        ansible_local.nginx.www|d())
-                    else "/srv/www") + "/" + dokuwiki__user }}'
+dokuwiki__www: '{{ ansible_local.nginx.www|d("/srv/www") + "/" + dokuwiki__user) }}'
 
                                                                    # ]]]
 # .. envvar:: dokuwiki__webserver_user [[[
 #
 # DokuWiki webserver user (needs read-only access to the website code).
-dokuwiki__webserver_user: '{{ ansible_local.nginx.user
-                              if (ansible_local|d() and
-                                  ansible_local.nginx|d() and
-                                  ansible_local.nginx.user|d())
-                              else "www-data" }}'
+dokuwiki__webserver_user: '{{ ansible_local.nginx.user|d("www-data") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Application sources [[[
@@ -146,10 +136,7 @@ dokuwiki__ldap_enabled: '{{ True
 # The base Distinguished Name which should be used to create Distinguished
 # Names of the LDAP directory objects, defined as a YAML list. If this variable
 # is empty, LDAP configuration will not be performed.
-dokuwiki__ldap_base_dn: '{{ ansible_local.ldap.base_dn
-                            if (ansible_local|d() and ansible_local.ldap|d() and
-                                ansible_local.ldap.base_dn|d())
-                            else [] }}'
+dokuwiki__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: dokuwiki__ldap_device_dn [[[
@@ -158,10 +145,7 @@ dokuwiki__ldap_base_dn: '{{ ansible_local.ldap.base_dn
 # list. It will be used as a base for the DokuWiki service account LDAP
 # object. If the list is empty, the role will not create the account LDAP
 # object automatically.
-dokuwiki__ldap_device_dn: '{{ ansible_local.ldap.device_dn
-                              if (ansible_local|d() and ansible_local.ldap|d() and
-                                  ansible_local.ldap.device_dn|d())
-                              else [] }}'
+dokuwiki__ldap_device_dn: '{{ ansible_local.ldap.device_dn|d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: dokuwiki__ldap_self_rdn [[[
@@ -208,10 +192,7 @@ dokuwiki__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
 #
 # The Relative Distinguished Name of the LDAP object which contains the user
 # accounts stored in LDAP.
-dokuwiki__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn
-                               if (ansible_local|d() and ansible_local.ldap|d() and
-                                   ansible_local.ldap.people_rdn|d())
-                               else "ou=People" }}'
+dokuwiki__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn|d("ou=People") }}'
 
                                                                    # ]]]
 # .. envvar:: dokuwiki__ldap_people_dn [[[
@@ -234,10 +215,7 @@ dokuwiki__ldap_private_groups: True
 #
 # The Relative Distinguished Name of the LDAP object which contains the groups
 # stored in LDAP.
-dokuwiki__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn
-                               if (ansible_local|d() and ansible_local.ldap|d() and
-                                   ansible_local.ldap.groups_rdn|d())
-                               else "ou=Groups" }}'
+dokuwiki__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn|d("ou=Groups") }}'
 
                                                                    # ]]]
 # .. envvar:: dokuwiki__ldap_groups_dn [[[
@@ -289,19 +267,13 @@ dokuwiki__ldap_object_ownerdn: '{{ ([ dokuwiki__ldap_object_owner_rdn, dokuwiki_
 # .. envvar:: dokuwiki__ldap_server_uri [[[
 #
 # The URI address of the LDAP server used by DokuWiki.
-dokuwiki__ldap_server_uri: '{{ (ansible_local.ldap.uri
-                                if (ansible_local|d() and ansible_local.ldap|d() and
-                                    ansible_local.ldap.uri|d())
-                                else [""]) | first }}'
+dokuwiki__ldap_server_uri: '{{ ansible_local.ldap.uri|d([""]) | first) }}'
 
                                                                    # ]]]
 # .. envvar:: dokuwiki__ldap_server_port [[[
 #
 # The TCP port which should be used for connections to the LDAP server.
-dokuwiki__ldap_server_port: '{{ ansible_local.ldap.port
-                                if (ansible_local|d() and ansible_local.ldap|d() and
-                                    ansible_local.ldap.port|d())
-                                else ("389" if dokuwiki__ldap_start_tls|bool else "636") }}'
+dokuwiki__ldap_server_port: '{{ ansible_local.ldap.port|d("389" if dokuwiki__ldap_start_tls|bool else "636") }}'
 
                                                                    # ]]]
 # .. envvar:: dokuwiki__ldap_start_tls [[[

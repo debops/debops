@@ -4,9 +4,9 @@
  # Copyright (C) 2020 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-or-later
  #}
-{% set influxdb__tpl_delegate_to = ansible_local.influxdb.delegate_to if (ansible_local|d() and ansible_local.influxdb|d() and ansible_local.influxdb.delegate_to|d()) else influxdb__delegate_to %}
-{% set influxdb__tpl_port        = ansible_local.influxdb.port        if (ansible_local|d() and ansible_local.influxdb|d() and ansible_local.influxdb.port|d())        else influxdb__port %}
-{% set influxdb__tpl_server      = ansible_local.influxdb.server      if (ansible_local|d() and ansible_local.influxdb|d() and ansible_local.influxdb.server|d())      else influxdb__server %}
+{% set influxdb__tpl_delegate_to = ansible_local.influxdb.delegate_to|d(influxdb__delegate_to) %}
+{% set influxdb__tpl_port        = ansible_local.influxdb.port|d(influxdb__port) %}
+{% set influxdb__tpl_server      = ansible_local.influxdb.server|d(influxdb__server) %}
 {% if influxdb__register_version.stdout %}
 {% set influxdb__tpl_server      = ansible_fqdn if influxdb__pki else "localhost" %}
 {% endif %}

@@ -12,10 +12,7 @@
     hostname: '{{ influxdb__server }}'
     port: '{{ influxdb__port }}'
     ssl: '{{ influxdb__pki }}'
-    password: '{{ lookup("password",
-                  secret + "/influxdb/" + influxdb__server +
-                  "/credentials/root/password " +
-                  "length=" + influxdb__password_length) }}'
+    password: '{{ influxdb__root_password }}'
     proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'
     validate_certs: '{{ item.validate_certs | d(influxdb__validate_certs | d(True)) }}'
   with_flattened: '{{ influxdb__databases + influxdb__dependent_databases|d([]) }}'
@@ -30,10 +27,7 @@
     hostname: '{{ influxdb__server }}'
     port: '{{ influxdb__port }}'
     ssl: '{{ influxdb__pki }}'
-    password: '{{ lookup("password",
-                  secret + "/influxdb/" + influxdb__server +
-                  "/credentials/root/password " +
-                  "length=" + influxdb__password_length) }}'
+    password: '{{ influxdb__root_password }}'
     proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'
     validate_certs: '{{ item.validate_certs | d(influxdb__validate_certs | d(True)) }}'
   with_flattened: '{{ influxdb__databases + influxdb__dependent_databases|d([]) }}'
@@ -51,10 +45,7 @@
     hostname: '{{ influxdb__server }}'
     port: '{{ influxdb__port }}'
     ssl: '{{ influxdb__pki }}'
-    password: '{{ lookup("password",
-                  secret + "/influxdb/" + influxdb__server +
-                  "/credentials/root/password " +
-                  "length=" + influxdb__password_length) }}'
+    password: '{{ influxdb__root_password }}'
     proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'
     validate_certs: '{{ item.validate_certs | d(influxdb__validate_certs | d(True)) }}'
   with_flattened: '{{ influxdb__retention_policies + influxdb__dependent_retention_policies|d([]) }}'
@@ -68,13 +59,10 @@
     hostname: '{{ influxdb__server }}'
     port: '{{ influxdb__port }}'
     ssl: '{{ influxdb__pki }}'
-    password: '{{ lookup("password",
-                  secret + "/influxdb/" + influxdb__server +
-                  "/credentials/root/password " +
-                  "length=" + influxdb__password_length) }}'
+    password: '{{ influxdb__root_password }}'
     proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'
     validate_certs: '{{ item.validate_certs | d(influxdb__validate_certs | d(True)) }}'
-  with_flattened: '{{ influxdb__users + influxdb__dependent_users|d([]) }}'
+  with_flattened: '{{ influxdb__users + influxdb__dependent_users }}'
   delegate_to: '{{ influxdb__delegate_to }}'
   when: ((item.user|d(False) or item.name|d(False)) and
          (item.state is defined and item.state == "absent"))
@@ -92,10 +80,7 @@
     hostname: '{{ influxdb__server }}'
     port: '{{ influxdb__port }}'
     ssl: '{{ influxdb__pki }}'
-    password: '{{ lookup("password",
-                  secret + "/influxdb/" + influxdb__server +
-                  "/credentials/root/password " +
-                  "length=" + influxdb__password_length) }}'
+    password: '{{ influxdb__root_password }}'
     proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'
     validate_certs: '{{ item.validate_certs | d(influxdb__validate_certs | d(True)) }}'
   with_flattened: '{{ influxdb__users + influxdb__dependent_users }}'

@@ -65,8 +65,7 @@ cron__crontab_seed: '{{ inventory_hostname }}'
 # The offset seeds will be stored on the remote hosts in the local fact script
 # to ensure idempotency.
 cron__crontab_offset_seeds: '{{ ansible_local.cron.crontab_offset_seeds
-                                if (ansible_local|d() and ansible_local.cron|d() and
-                                    ansible_local.cron.crontab_offset_seeds|d())
+                                if (ansible_local.cron.crontab_offset_seeds|d())
                                 else ((ansible_all_ipv4_addresses
                                        + ansible_all_ipv6_addresses
                                        + (ansible_default_ipv4.values() | d([])) | list

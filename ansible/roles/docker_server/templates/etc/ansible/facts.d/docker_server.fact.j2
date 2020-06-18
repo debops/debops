@@ -36,9 +36,7 @@ def cmd_abspath(cmd):
 
 output = loads('''{{
     {"upstream": (ansible_local.docker_server.upstream
-                  if (ansible_local|d() and
-                      ansible_local.docker_server|d() and
-                      ansible_local.docker_server.upstream|d())
+                  if (ansible_local.docker_server.upstream|d())
                   else docker_server__upstream) | bool
     } | to_json }}''')
 

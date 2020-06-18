@@ -26,8 +26,7 @@ volkszaehler__base_packages:
   - 'git-core'
 
   - '{{ [ "php-xml", "php-mbstring" ]
-        if (ansible_local|d() and ansible_local.php|d() and
-            ansible_local.php.version|d() and ansible_local.php.version is version_compare("7", ">="))
+        if (ansible_local.php.version|d() is version_compare("7", ">="))
         else [] }}'
 
                                                                    # ]]]
@@ -92,8 +91,7 @@ volkszaehler__domain: '{{ ansible_domain }}'
 # .. Planned are ``mariadb``, ``postgresql``, ``sqlite``.
 #
 volkszaehler__database: '{{ ansible_local.volkszaehler.database
-                            if (ansible_local|d() and ansible_local.volkszaehler|d() and
-                                ansible_local.volkszaehler.database|d())
+                            if (ansible_local.volkszaehler.database|d())
                             else ("mariadb"
                                   if (ansible_local|d() and ansible_local.mariadb is defined)
                                   else ("postgresql"
@@ -237,12 +235,11 @@ volkszaehler__max_file_size: '1M'
 #
 # Refer to :ref:`volkszaehler__ref_getting_started` for details.
 volkszaehler__webserver: '{{ ansible_local.volkszaehler.webserver
-                             if (ansible_local|d() and ansible_local.volkszaehler|d() and
-                                 ansible_local.volkszaehler.webserver|d())
+                             if (ansible_local.volkszaehler.webserver|d())
                              else ("apache"
-                                   if (ansible_local|d() and ansible_local.apache|d() and ansible_local.apache.enabled|d()|bool)
+                                   if (ansible_local.apache.enabled|d()|bool)
                                    else ("nginx"
-                                         if (ansible_local|d() and ansible_local.nginx|d() and ansible_local.nginx.enabled|d()|bool)
+                                         if (ansible_local.nginx.enabled|d()|bool)
                                          else "no-webserver-detected")) }}'
 
                                                                    # ]]]
@@ -274,10 +271,7 @@ volkszaehler__apache_modules:
 # .. envvar:: volkszaehler__home_path [[[
 #
 # The volkszaehler system account home directory.
-volkszaehler__home_path: '{{ (ansible_local.nginx.www
-                              if (ansible_local|d() and ansible_local.nginx|d()
-                                  and ansible_local.nginx.www|d())
-                              else "/srv/www") + "/" + volkszaehler__user }}'
+volkszaehler__home_path: '{{ ansible_local.nginx.www|d("/srv/www") + "/" + volkszaehler__user) }}'
 
                                                                    # ]]]
 # .. envvar:: volkszaehler__www_path [[[
@@ -333,8 +327,7 @@ volkszaehler__git_repo: 'https://github.com/volkszaehler/volkszaehler.org.git'
 # Defaults to the latest stable version. Currently v0.7.
 # For PHP versions below 7, a commit before v0.7 is used which is still compatible with PHP 5.
 volkszaehler__git_version: '{{ "05422cf80490bb27c43bdde3a427b4f16b55bcbf"
-                                if (ansible_local|d() and ansible_local.php|d() and
-                                    ansible_local.php.version|d("7")|int >= 7)
+                                if (ansible_local.php.version|d("7")|int >= 7)
                                 else "fadb821555527d0fb4d729a3f62e238cde10f168" }}'
 
                                                                    # ]]]
@@ -371,8 +364,7 @@ volkszaehler__config_user: '{{ volkszaehler__user
 #
 # The system group of the :file:`etc/volkszaehler.conf.php` file.
 volkszaehler__config_group: '{{ (ansible_local.apache.user
-                                 if (ansible_local|d() and ansible_local.apache|d() and
-                                     ansible_local.apache.user|d())
+                                 if (ansible_local.apache.user|d())
                                  else "www-data")
                                 if (volkszaehler__webserver in ["apache"])
                                 else volkszaehler__user }}'

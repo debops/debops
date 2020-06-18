@@ -26,14 +26,10 @@ def cmd_exists(cmd):
 output = loads('''{{
     {"configured": True,
      "node_upstream": (ansible_local.nodejs.node_upstream
-                       if (ansible_local|d() and
-                           ansible_local.nodejs|d() and
-                           ansible_local.nodejs.node_upstream|d())
+                       if (ansible_local.nodejs.node_upstream|d())
                        else nodejs__node_upstream),
      "yarn_upstream": (ansible_local.nodejs.yarn_upstream
-                      if (ansible_local|d() and
-                          ansible_local.nodejs|d() and
-                          ansible_local.nodejs.yarn_upstream|d())
+                      if (ansible_local.nodejs.yarn_upstream|d())
                       else nodejs__yarn_upstream)
     } | to_json }}''')
 

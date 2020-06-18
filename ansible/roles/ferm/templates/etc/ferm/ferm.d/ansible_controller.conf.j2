@@ -87,12 +87,12 @@
 {% set ferm__tpl_dport = [ 'ssh' ] %}
 {% set ferm__tpl_state = [] %}
 {% set ferm__tpl_subchain = (item.type + "-" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) %}
-{% if ansible_local|d() and ansible_local.core|d() and ansible_local.core.ansible_controllers|d() %}
+{% if ansible_local.core.ansible_controllers|d() %}
 {%   for element in ansible_local.core.ansible_controllers %}
 {%     set _ = ferm__tpl_ansible_controllers.append(element) %}
 {%   endfor %}
 {% endif %}
-{% if ansible_local|d() and ansible_local.ferm|d() and ansible_local.ferm.ansible_controllers|d() %}
+{% if ansible_local.ferm.ansible_controllers|d() %}
 {%   for element in ansible_local.ferm.ansible_controllers %}
 {%     set _ = ferm__tpl_ansible_controllers.append(element) %}
 {%   endfor %}

@@ -10,8 +10,8 @@ Getting started
 .. contents::
    :local:
 
-``debops.influxdb`` role is only the "client" part. To have working a
-InfluxDB installation, you also need to setup ``debops.influxdb_server``
+``debops.influxdb`` role is only the "client" part. To have a working
+InfluxDB installation, you also need to setup the ``debops.influxdb_server``
 role somewhere. It can be either on the same host, or on a separate host.
 See the ``debops.influxdb_server`` documentation to learn how to install the
 database server itself.
@@ -43,7 +43,7 @@ server at a time is supported by the role.
 
 If :ref:`debops.pki` role is used to configure a PKI environment, with default
 ``domain`` PKI realm enabled, ``debops.influxdb_server`` role will configure
-the provided private keys and X.509 certificates to enable SSL connections to
+the provided private keys and X.509 certificates to enable TLS connections to
 the database by default.
 
 If the PKI environment is not configured or disabled, connections to the

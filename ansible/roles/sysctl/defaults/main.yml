@@ -26,10 +26,7 @@
 # the current namespace (host, VM, container). The path elements need to be
 # separated by a dot (``.``) instead of a slash (``/``).
 # See :ref:`sysctl__ref_writable` for more details.
-sysctl__writable: '{{ ansible_local.sysctl.writable
-                      if (ansible_local|d() and ansible_local.sysctl|d() and
-                          ansible_local.sysctl.writable|d())
-                      else [] }}'
+sysctl__writable: '{{ ansible_local.sysctl.writable|d([]) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Shared memory configuration [[[

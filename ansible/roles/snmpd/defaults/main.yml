@@ -314,10 +314,7 @@ snmpd_proc_hidepid: '{{ True
 #
 # Name of the system group which ``snmp`` user will be added to to get
 # information about processes.
-snmpd_proc_hidepid_group: '{{ (ansible_local.proc_hidepid.group
-                               if (ansible_local|d() and ansible_local.proc_hidepid|d() and
-                                   ansible_local.proc_hidepid.group|d())
-                               else "") }}'
+snmpd_proc_hidepid_group: '{{ ansible_local.proc_hidepid.group|d("")) }}'
                                                                    # ]]]
                                                                    # ]]]
 # SNMPv3 admin, agent and local accounts [[[

@@ -26,8 +26,7 @@
 ifupdown__base_packages:
   - [ 'ifupdown', 'bsdutils', 'rsync' ]
   - '{{ []
-        if (ansible_local|d() and ansible_local.ifupdown|d() and
-            "/usr/sbin/NetworkManager" in ansible_local.ifupdown.known_managers|d([]))
+        if ("/usr/sbin/NetworkManager" in ansible_local.ifupdown.known_managers|d([]))
         else "rdnssd" }}'
 
                                                                    # ]]]
@@ -123,10 +122,7 @@ ifupdown__default_nat_masquerade: False
 #
 # Name of the physical network interface which is assumed by the role to be an
 # "external" interface. This is usually the default network interface.
-ifupdown__external_interface: '{{ ansible_local.ifupdown.external_interface
-                                  if (ansible_local|d() and ansible_local.ifupdown|d() and
-                                      ansible_local.ifupdown.external_interface|d())
-                                  else (lookup("template", "lookup/ifupdown__external_interface.j2", convert_data=False) | from_yaml) }}'
+ifupdown__external_interface: '{{ ansible_local.ifupdown.external_interface|d(lookup("template", "lookup/ifupdown__external_interface.j2", convert_data=False) | from_yaml) }}'
 
                                                                    # ]]]
 # .. envvar:: ifupdown__internal_interface [[[
@@ -134,10 +130,7 @@ ifupdown__external_interface: '{{ ansible_local.ifupdown.external_interface
 # Name of the physical network interface which is assumed by the role to be an
 # "internal" interface. This will be one of the non-default network interfaces,
 # chosen in alphabetical order.
-ifupdown__internal_interface: '{{ ansible_local.ifupdown.internal_interface
-                                  if (ansible_local|d() and ansible_local.ifupdown|d() and
-                                      ansible_local.ifupdown.internal_interface|d())
-                                  else (lookup("template", "lookup/ifupdown__internal_interface.j2", convert_data=False) | from_yaml) }}'
+ifupdown__internal_interface: '{{ ansible_local.ifupdown.internal_interface|d(lookup("template", "lookup/ifupdown__internal_interface.j2", convert_data=False) | from_yaml) }}'
 
                                                                    # ]]]
 # .. envvar:: ifupdown__interface_layout [[[
@@ -207,16 +200,12 @@ ifupdown__default_interfaces_map:
 
     'br0':
       state: '{{ "absent"
-                 if (ansible_local|d() and ansible_local.ifupdown|d() and
-                     ansible_local.ifupdown.interface_layout|d() and
-                     ansible_local.ifupdown.interface_layout == "bridge")
+                 if (ansible_local.ifupdown.interface_layout|d() == "bridge")
                  else "ignore" }}'
 
     'br1':
       state: '{{ "absent"
-                 if (ansible_local|d() and ansible_local.ifupdown|d() and
-                     ansible_local.ifupdown.interface_layout|d() and
-                     ansible_local.ifupdown.interface_layout == "bridge")
+                 if (ansible_local.ifupdown.interface_layout|d() == "bridge")
                  else "ignore" }}'
 
   'bridge':

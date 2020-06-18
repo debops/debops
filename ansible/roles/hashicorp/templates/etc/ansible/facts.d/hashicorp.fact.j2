@@ -2,10 +2,10 @@
  # Copyright (C) 2016-2017 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
-{% set hashicorp__tpl_application_list = ((ansible_local.hashicorp.applications|list if (ansible_local|d() and ansible_local.hashicorp|d() and ansible_local.hashicorp.applications|d()) else []) + hashicorp__applications + hashicorp__dependent_applications) | sort | unique %}
+{% set hashicorp__tpl_application_list = ((ansible_local.hashicorp.applications|list if (ansible_local.hashicorp.applications|d()) else []) + hashicorp__applications + hashicorp__dependent_applications) | sort | unique %}
 {% set hashicorp__tpl_applications = {} %}
 {% for entry in hashicorp__tpl_application_list %}
-{%   if (ansible_local|d() and ansible_local.hashicorp|d() and ansible_local.hashicorp.applications|d() and entry in ansible_local.hashicorp.applications) %}
+{%   if (ansible_local.hashicorp.applications|d() and entry in ansible_local.hashicorp.applications) %}
 {%     set _ = hashicorp__tpl_applications.update({ entry : ansible_local.hashicorp.applications[entry] }) %}
 {%   elif entry in hashicorp__combined_version_map %}
 {%     set _ = hashicorp__tpl_applications.update({ entry : hashicorp__combined_version_map[entry] }) %}
@@ -14,7 +14,7 @@
 {%     set _ = hashicorp__tpl_applications.update({ entry : hashicorp__combined_version_map[entry] }) %}
 {%   endif %}
 {% endfor %}
-{% set hashicorp__tpl_consul_webui = (ansible_local.hashicorp.consul_webui if (ansible_local|d() and ansible_local.hashicorp|d() and ansible_local.hashicorp.consul_webui|d()) else False) | bool | lower %}
+{% set hashicorp__tpl_consul_webui = ansible_local.hashicorp.consul_webui|d(False) | bool | lower) %}
 {% if hashicorp__consul_webui | bool and 'consul' in hashicorp__tpl_applications %}
 {%   set hashicorp__tpl_consul_webui = True %}
 {% endif %}

@@ -54,10 +54,7 @@ keyring__keyserver: 'hkp://pool.sks-keyservers.net'
 #
 # The version of the :command:`gpg` command in use. This variable is defined
 # via Ansible local facts and can be used for conditional code execution.
-keyring__gpg_version: '{{ ansible_local.keyring.gpg_version
-                          if (ansible_local|d() and ansible_local.keyring|d() and
-                              ansible_local.keyring.gpg_version|d())
-                          else "0.0.0" }}'
+keyring__gpg_version: '{{ ansible_local.keyring.gpg_version|d("0.0.0") }}'
                                                                    # ]]]
                                                                    # ]]]
 # APT packages [[[

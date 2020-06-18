@@ -66,10 +66,7 @@
     state: 'present'
     install_recommends: False
     update_cache: True
-    cache_valid_time: '{{ ansible_local.core.cache_valid_time
-                          if (ansible_local|d() and ansible_local.core|d() and
-                              ansible_local.core.cache_valid_time|d())
-                           else "86400" }}'
+    cache_valid_time: '{{ ansible_local.core.cache_valid_time|d("86400") }}'
   register: gitlab_runner__register_apt_https
   until: gitlab_runner__register_apt_https is succeeded
 
@@ -133,9 +130,7 @@
   with_together:
     - '{{ gitlab_runner__default_instances + gitlab_runner__instances
           + gitlab_runner__group_instances + gitlab_runner__host_instances }}'
-    - '{{ ansible_local.gitlab_runner.instance_tokens
-          if (ansible_local|d() and ansible_local.gitlab_runner|d() and
-              ansible_local.gitlab_runner.instance_tokens|d()) else [] }}'
+    - '{{ ansible_local.gitlab_runner.instance_tokens|d([]) }}'
   when: (gitlab_runner__register_api.status|d() and gitlab_runner__register_api.status == 200 and
          gitlab_runner__api_token and item.0.name|d() and item.1.name|d() and item.0.name == item.1.name and
          (item.0.state|d() and item.0.state == 'absent'))
@@ -201,8 +196,7 @@
     name: '{{ gitlab_runner__user }}'
     append: True
     groups: '{{ ([ (ansible_local.libvirtd.unix_sock_group
-                    if (ansible_local|d() and ansible_local.libvirtd|d() and
-                        ansible_local.libvirtd.unix_sock_group|d())
+                    if (ansible_local.libvirtd.unix_sock_group|d())
                     else "libvirt") ]
                  + ([ "kvm" ]
                     if (ansible_local|d() and ansible_local.libvirtd|d() and

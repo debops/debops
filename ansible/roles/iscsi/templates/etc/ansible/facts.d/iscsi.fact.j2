@@ -2,12 +2,9 @@
  # Copyright (C) 2015 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
-{% set iscsi__tpl_iqn = (ansible_local.iscsi.iqn
-                         if (ansible_local|d() and ansible_local.iscsi|d() and
-                             ansible_local.iscsi.iqn|d())
-                         else iscsi__iqn) %}
+{% set iscsi__tpl_iqn = ansible_local.iscsi.iqn|d(iscsi__iqn) %}
 {% set iscsi__tpl_discovered_portals = [] %}
-{% if ansible_local|d() and ansible_local.iscsi|d() and ansible_local.iscsi.discovered_portals|d() %}
+{% if ansible_local.iscsi.discovered_portals|d() %}
 {% set iscsi__tpl_discovered_portals = ansible_local.iscsi.discovered_portals %}
 {% endif %}
 {% if iscsi__register_discover_targets|d() and iscsi__register_discover_targets.results|d() %}

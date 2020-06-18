@@ -12,7 +12,7 @@
 {%     endif %}
 {%   endfor %}
 {% endif %}
-{% if ansible_local|d() and ansible_local.gitlab_runner|d() and ansible_local.gitlab_runner.instance_tokens|d() %}
+{% if ansible_local.gitlab_runner.instance_tokens|d() %}
 {%   for item in ansible_local.gitlab_runner.instance_tokens %}
 {%     if item.name not in gitlab_runner__tpl_instances %}
 {%       for element in (gitlab_runner__default_instances + gitlab_runner__instances + gitlab_runner__group_instances + gitlab_runner__host_instances) %}

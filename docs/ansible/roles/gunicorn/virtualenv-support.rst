@@ -31,10 +31,7 @@ should be present in the ``virtualenv`` environment:
 
      # Install compatible 'gunicorn' module inside the virtualenv
      - name: 'gunicorn'
-       version: '{{ ansible_local.gunicorn.version
-                    if (ansible_local|d() and ansible_local.gunicorn|d() and
-                        ansible_local.gunicorn.version|d())
-                    else omit }}'
+       version: '{{ ansible_local.gunicorn.version|d(omit) }}'
 
      # Install 'setproctitle' for nice process names
      - 'setproctitle'

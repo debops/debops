@@ -124,8 +124,7 @@ apache__server_name: '{{ apache__fqdn }}'
 # Refer to :ref:`item.server_admin <apache__ref_vhost_server_admin>` for
 # how to overwrite this for a virtual host.
 apache__server_admin: '{{ ansible_local.core.admin_public_email[0]
-                          if (ansible_local|d() and ansible_local.core|d() and
-                              ansible_local.core.admin_public_email|d())
+                          if (ansible_local.core.admin_public_email|d())
                           else (apache__user + "@" + apache__fqdn) }}'
 
                                                                    # ]]]
@@ -495,55 +494,37 @@ apache__redirect_to_https: '{{ apache__https_enabled|bool }}'
 # .. envvar:: apache__pki_realm_path [[[
 #
 # Directory path where PKI realm live.
-apache__pki_realm_path: '{{ ansible_local.pki.path
-                            if (ansible_local|d() and ansible_local.pki|d() and
-                                ansible_local.pki.path|d())
-                            else "/etc/pki/realms" }}'
+apache__pki_realm_path: '{{ ansible_local.pki.path|d("/etc/pki/realms") }}'
 
                                                                    # ]]]
 # .. envvar:: apache__pki_realm [[[
 #
 # Default PKI realm to use.
-apache__pki_realm: '{{ ansible_local.pki.realm
-                       if (ansible_local|d() and ansible_local.pki|d() and
-                           ansible_local.pki.realm|d())
-                       else "domain" }}'
+apache__pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: apache__pki_crt_filename [[[
 #
 # Default CRT file name to use.
-apache__pki_crt_filename: '{{ ansible_local.pki.crt
-                              if (ansible_local|d() and ansible_local.pki|d() and
-                                  ansible_local.pki.crt|d())
-                              else "default.crt" }}'
+apache__pki_crt_filename: '{{ ansible_local.pki.crt|d("default.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: apache__pki_key_filename [[[
 #
 # Default private key file name to use.
-apache__pki_key_filename: '{{ ansible_local.pki.key
-                              if (ansible_local|d() and ansible_local.pki|d() and
-                                  ansible_local.pki.key|d())
-                              else "default.key" }}'
+apache__pki_key_filename: '{{ ansible_local.pki.key|d("default.key") }}'
 
                                                                    # ]]]
 # .. envvar:: apache__pki_ca_filename [[[
 #
 # Default CA certificate file name to use.
-apache__pki_ca_filename: '{{ ansible_local.pki.ca
-                             if (ansible_local|d() and ansible_local.pki|d() and
-                                 ansible_local.pki.ca|d())
-                             else "CA.crt" }}'
+apache__pki_ca_filename: '{{ ansible_local.pki.ca|d("CA.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: apache__pki_trusted_filename [[[
 #
 # Default CA certificate file name to use.
-apache__pki_trusted_filename: '{{ ansible_local.pki.trusted
-                                  if (ansible_local|d() and ansible_local.pki|d() and
-                                      ansible_local.pki.trusted|d())
-                                  else "trusted.crt" }}'
+apache__pki_trusted_filename: '{{ ansible_local.pki.trusted|d("trusted.crt") }}'
                                                                    # ]]]
                                                                    # ]]]
 # TLS ciphers and protocol versions [[[
