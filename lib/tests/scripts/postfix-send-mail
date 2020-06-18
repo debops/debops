@@ -7,5 +7,8 @@ printf "Hello, world!\\n\\nThis is a test message from Jane.\\n" \
     | mail -a "Content-Type: text/plain; charset=utf-8" \
            -s "Test message" "vagrant@$(hostname -f)"
 
+# Let Postfix process the message in case the server is under load
+sleep 10
+
 jane notify info "Displaying vagrant mailbox..."
 cat /var/mail/vagrant
