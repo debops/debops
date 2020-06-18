@@ -4,14 +4,12 @@
  #}
 # Ansible Controllers
 {% set tcpwrappers__tpl_local_ansible_controllers = [] %}
-{% if ansible_local|d() and ansible_local.core|d() and
-      ansible_local.core.ansible_controllers|d() %}
+{% if ansible_local.core.ansible_controllers|d() %}
 {%   for element in ansible_local.core.ansible_controllers %}
 {%     set _ = tcpwrappers__tpl_local_ansible_controllers.append(element | ipwrap) %}
 {%   endfor %}
 {% endif %}
-{% if (ansible_local|d() and ansible_local.tcpwrappers|d() and
-       ansible_local.tcpwrappers.ansible_controllers|d()) %}
+{% if (ansible_local.tcpwrappers.ansible_controllers|d()) %}
 {%   for element in ansible_local.tcpwrappers.ansible_controllers %}
 {%     set _ = tcpwrappers__tpl_local_ansible_controllers.append(element | ipwrap) %}
 {%   endfor %}

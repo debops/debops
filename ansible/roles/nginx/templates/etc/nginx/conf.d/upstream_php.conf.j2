@@ -16,7 +16,7 @@
 #       expected location.
 #
 #}
-{% set nginx__tpl_php_version = (ansible_local.php.version if (ansible_local|d() and ansible_local.php|d() and ansible_local.php.version|d()) else ('5' if (ansible_distribution_release in [ 'wheezy', 'jessie', 'precise', 'trusty', 'wily' ]) else '7.0')) %}
+{% set nginx__tpl_php_version = ansible_local.php.version|d('5' if (ansible_distribution_release in [ 'wheezy', 'jessie', 'precise', 'trusty', 'wily' ]) else '7.0') %}
 {% block nginx_tpl_block_custom_upstreams %}
 {%   set nginx__tpl_php_pools = item.php_pools | d(item.php_pool | d([]) ) %}
 {%   if nginx__tpl_php_pools %}

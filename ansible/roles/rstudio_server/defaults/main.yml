@@ -190,10 +190,7 @@ rstudio_server__session_timeout: '120'
 #
 # The URL of the Comprehensive R Archive Network mirror which should be used by
 # RStudio Server.
-rstudio_server__cran_mirror: '{{ ansible_local.cran.mirror
-                                 if (ansible_local|d() and ansible_local.cran|d() and
-                                     ansible_local.cran.mirror|d())
-                                 else "https://cloud.r-project.org/" }}'
+rstudio_server__cran_mirror: '{{ ansible_local.cran.mirror|d("https://cloud.r-project.org/") }}'
                                                                    # ]]]
                                                                    # ]]]
 # RStudio Server configuration files [[[

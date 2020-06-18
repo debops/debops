@@ -2,19 +2,15 @@
  # Copyright (C) 2015-2017 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
-{% set postgresql__tpl_version = ansible_local.postgresql.version if (ansible_local|d() and ansible_local.postgresql|d() and ansible_local.postgresql.version|d()) else postgresql__version %}
-{% set postgresql__tpl_server = ansible_local.postgresql.server if (ansible_local|d() and ansible_local.postgresql|d() and ansible_local.postgresql.server|d()) else postgresql__server %}
-{% set postgresql__tpl_port = ansible_local.postgresql.port if (ansible_local|d() and ansible_local.postgresql|d() and ansible_local.postgresql.port|d()) else postgresql__port %}
-{% set postgresql__tpl_delegate_to = ansible_local.postgresql.delegate_to if (ansible_local|d() and ansible_local.postgresql|d() and ansible_local.postgresql.delegate_to|d()) else postgresql__delegate_to %}
-{% set postgresql__tpl_user = ansible_local.postgresql.user if (ansible_local|d() and ansible_local.postgresql|d() and ansible_local.postgresql.user|d()) else postgresql__user %}
+{% set postgresql__tpl_server = ansible_local.postgresql.server|d(postgresql__server) %}
 {% if (postgresql__register_server|d() and postgresql__register_server.stdout) %}
-{% set postgresql__tpl_server = "localhost" %}
+{%   set postgresql__tpl_server = "localhost" %}
 {% endif %}
 {
-"delegate_to": "{{ postgresql__tpl_delegate_to }}",
+"delegate_to": "{{ ansible_local.postgresql.delegate_to|d(postgresql__delegate_to) }}",
 "password_chars": "{{ postgresql__password_characters }}",
-"port": "{{ postgresql__tpl_port }}",
+"port": "{{ ansible_local.postgresql.port|d(postgresql__port) }}",
 "server": "{{ postgresql__tpl_server }}",
-"user": "{{ postgresql__tpl_user }}",
-"version": "{{ postgresql__tpl_version }}"
+"user": "{{ ansible_local.postgresql.user|d(postgresql__user) }}",
+"version": "{{ ansible_local.postgresql.version|d(postgresql__version) }}"
 }

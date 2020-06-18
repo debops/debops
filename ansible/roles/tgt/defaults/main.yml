@@ -42,8 +42,7 @@ tgt_iqn_authority: '{{ ansible_domain }}'
 # iSCSI Qualified Name of this iSCSI Target host, will be saved in Ansible
 # local facts to prevent changes related to the default date field.
 tgt_iqn_base: '{{ (ansible_local.tgt.iqn_base
-                   if (ansible_local|d() and ansible_local.tgt|d() and
-                       ansible_local.tgt.iqn_base|d())
+                   if (ansible_local.tgt.iqn_base|d())
                    else ("iqn." + tgt_iqn_date + "." +
                          tgt_iqn_authority.split(".")[::-1] | join("."))) }}'
 

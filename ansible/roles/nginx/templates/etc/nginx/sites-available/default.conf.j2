@@ -16,7 +16,7 @@
  #
  #   ---- HTTPS, ports to listen on, default server, HTTPS redirect ----
  #}
-{% set nginx_version            = ansible_local.nginx.version if (ansible_local|d() and ansible_local.nginx|d() and ansible_local.nginx.version|d()) else "0.0" %}
+{% set nginx_version            = ansible_local.nginx.version|d("0.0") %}
 {% set nginx_tpl_robots_tag     = [] if (item.robots_tag|d(nginx__http_robots_tag) is string and item.robots_tag|d(nginx__http_robots_tag) == omit)
     else (
         [ item.robots_tag|d(nginx__http_robots_tag) ]
@@ -59,7 +59,7 @@
 {% set nginx_tpl_http_redirect = item.redirect | default('https://$host$request_uri') %}
 {% set nginx_tpl_pki_custom_realm = '' %}
 {% set nginx_tpl_pki_custom_realm_list = [] %}
-{% if (nginx_pki | bool and item.name | d() and (ansible_local|d() and ansible_local.pki|d() and ansible_local.pki.known_realms|d())) %}
+{% if (nginx_pki | bool and item.name | d() and (ansible_local.pki.known_realms|d())) %}
 {# TODO: Legacy code. Use debops__tpl_macros.j2 #}
 {%     for name in ([ item.name ] if item.name is string else item.name)                       %}
 {%         if name in ansible_local.pki.known_realms                                           %}

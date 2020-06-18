@@ -78,8 +78,7 @@ root_account__password_length: '32'
 # role is executed. If you want to update the password on each run, set this
 # variable to ``True``.
 root_account__password_update: '{{ False
-                                   if (ansible_local|d() and ansible_local.root_account|d() and
-                                       ansible_local.root_account.configured|d())
+                                   if (ansible_local.root_account.configured|d())
                                    else True }}'
 
                                                                    # ]]]
@@ -153,20 +152,14 @@ root_account__fix_no_tty: True
 #
 # Enable or disable dotfiles management, depending on the availablility of the
 # dotfiles repository installed by the :ref:`debops.yadm` role.
-root_account__dotfiles_enabled: '{{ True
-                                    if (ansible_local|d() and ansible_local.yadm|d() and
-                                        ansible_local.yadm.dotfiles|d())
-                                    else False }}'
+root_account__dotfiles_enabled: '{{ ansible_local.yadm.dotfiles|d() }}'
 
                                                                    # ]]]
 # .. envvar:: root_account__dotfiles_repo [[[
 #
 # An URL or an absolute directory to the :command:`git` repository that
 # contains dotfiles for the ``root`` account.
-root_account__dotfiles_repo: '{{ ansible_local.yadm.dotfiles
-                                 if (ansible_local|d() and ansible_local.yadm|d() and
-                                     ansible_local.yadm.dotfiles|d())
-                                 else "" }}'
+root_account__dotfiles_repo: '{{ ansible_local.yadm.dotfiles|d("") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Authorized SSH keys [[[

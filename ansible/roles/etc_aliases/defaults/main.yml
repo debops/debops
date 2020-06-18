@@ -31,10 +31,7 @@ etc_aliases__rfc2142_compliant: True
 # List of e-mail addresses of the system administrators defined by the
 # :ref:`debops.core` Ansible role. These addresses will be used as the recipients of
 # the mail sent to the ``root`` account.
-etc_aliases__admin_private_email: '{{ ansible_local.core.admin_private_email
-                                      if (ansible_local|d() and ansible_local.core|d() and
-                                          ansible_local.core.admin_private_email)
-                                      else ("root@" + etc_aliases__domain) }}'
+etc_aliases__admin_private_email: '{{ ansible_local.core.admin_private_email|d("root@" + etc_aliases__domain) }}'
 
                                                                    # ]]]
 # .. envvar:: etc_aliases__domain [[[

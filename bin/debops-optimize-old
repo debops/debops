@@ -74,11 +74,6 @@ fi
 #     fi
 # fi
 
-if command -v ansible-lint
-then
-    ansible-lint -x ANSIBLE0018 . || :
-fi
-
 if [ ! -e 'meta/main.yml' ]
 then
     echo "This repository is not a Ansible role. Disabling Ansible role optimizations."
@@ -86,7 +81,7 @@ then
 fi
 
 ## For testing:
-# git ls-files -z | xargs --null -I '{}' find '{}' -type f -regextype posix-extended -regex '(defaults/.*\.yml|.*\.rst)$' -print0 | \
+# git ls-files -z | xargs --null -I '{}' find './{}' -type f -regextype posix-extended -regex '(defaults/.*\.yml|.*\.rst)$' -print0 | \
 #     xargs --null sed --in-place --regexp-extended '
 #     '
 
@@ -96,7 +91,7 @@ fi
 # exit 0
 
 # shellcheck disable=SC2016
-git ls-files -z | xargs --null -I '{}' find '{}' -type f -regextype posix-extended -regex '(defaults/.*\.yml|.*\.rst)$' -and -not -name 'README.rst' -print0 | \
+git ls-files -z | xargs --null -I '{}' find './{}' -type f -regextype posix-extended -regex '(defaults/.*\.yml|.*\.rst)$' -and -not -name 'README.rst' -print0 | \
     xargs --null sed --in-place --regexp-extended '
         s/``(\/[^`]+[^`0-9])``/:file:`\1`/g;
         s/``([^`]+\w+(\.(yml|yaml|rst|j2|ini|pem|crt|conf)))``/:file:`\1`/g;
@@ -141,7 +136,7 @@ git ls-files -z | xargs --null -I '{}' find '{}' -type f -regextype posix-extend
 # reST error:
 # s/\.\. code::/.. code-block::/;
 
-git ls-files -z | xargs --null -I '{}' find '{}' -type f -regextype posix-extended -regex '(meta/.*\.yml)$' -print0 | \
+git ls-files -z | xargs --null -I '{}' find './{}' -type f -regextype posix-extended -regex '(meta/.*\.yml)$' -print0 | \
     xargs --null --no-run-if-empty sed --in-place --regexp-extended '
         s#(GNU General Public License v3|GPLv3)#GPL-3.0-only#;
         s#categories:#galaxy_tags:#;
@@ -152,7 +147,7 @@ git ls-files -z | xargs --null -I '{}' find '{}' -type f -regextype posix-extend
 # But as it is now, also fixing docs files does more good then harm as it seems.
 # Learn when to use NO-BREAK SPACE properly!
 # Done that because `tree` uses NO-BREAK SPACE properly.
-git ls-files -z | xargs --null -I '{}' find '{}' -type f -regextype posix-extended -not -regex '(.*\.rst)$' -print0 | \
+git ls-files -z | xargs --null -I '{}' find './{}' -type f -regextype posix-extended -not -regex '(.*\.rst)$' -print0 | \
     xargs --null --no-run-if-empty sed --in-place --regexp-extended '
         s#[ ]# #g;
     '
@@ -190,14 +185,14 @@ fi
 
 # HTTPS everywhere
 # LICENSE should be done in a global replace to decease commit review noise.
-git ls-files -z | xargs --null -I '{}' find '{}' -type f -regextype posix-extended -not -regex '(LICENSE|README.md)$' -print0 | \
+git ls-files -z | xargs --null -I '{}' find './{}' -type f -regextype posix-extended -not -regex '(LICENSE|README.md)$' -print0 | \
     xargs --null sed --in-place --regexp-extended '
         s#http://(ansible\.com|debops\.org|docs\.debops\.org|www\.gnu\.org|stackoverflow\.com|nginx\.org)#https://\1#g;
         s#Copyright \(C\) ([[:digit:],-]+) DebOps Project#Copyright (C) \1 DebOps#gi;
         s#set -eu -o pipefail#set -o nounset -o pipefail -o errexit#gi;
     '
 
-git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | \
+git ls-files -z | xargs --null -I '{}' find './{}' -type f -print0 | \
     xargs --null sed --in-place --regexp-extended '
         s/\(This file is managed remotely, all changes will be lost\|This file is managed remotely, some changes might be overwritten\|This file is managed by Ansible, all changes will be lost\)/{{ ansible_managed }}/g;
         s/:pkts/:pkgs/g;
@@ -211,7 +206,7 @@ git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | \
 
 if [ "$role_name" != 'mariadb' ]
 then
-    git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | \
+    git ls-files -z | xargs --null -I '{}' find './{}' -type f -print0 | \
         xargs --null sed --in-place --regexp-extended '
             s/(mariadb)__?(dependent_)?(users|databases)/\1__dependent_\3/g;
         '
@@ -219,7 +214,7 @@ fi
 
 if [ "$role_name" != 'postgresql' ]
 then
-    git ls-files -z | xargs --null -I '{}' find '{}' -type f -print0 | \
+    git ls-files -z | xargs --null -I '{}' find './{}' -type f -print0 | \
         xargs --null sed --in-place --regexp-extended '
             s/(postgresql)__?(dependent_)?(roles|pgpass|groups|databases)/\1__dependent_\3/g;
         '
@@ -239,24 +234,24 @@ sed --in-place --regexp-extended "
 
 # Ensure normal files are not executable.
 # Example: https://github.com/debops/ansible-apt_install/commit/2df7d51c58a78bd4ca7724a5f8f95208b0043c1c
-git ls-files -z | xargs --null -I '{}' find '{}' -type f -executable -regextype posix-extended -regex '((defaults|tasks|meta|templates|handlers).*|.*\.(rst|md|txt))' -exec chmod -x {} \;
+git ls-files -z | xargs --null -I '{}' find './{}' -type f -executable -regextype posix-extended -regex '((defaults|tasks|meta|templates|handlers).*|.*\.(rst|md|txt))' -exec chmod -x {} \;
 
 ## Revert a change for the role itself because a self reference (currently points to GitHub) might be confusing.
 ## Also in preparation for: https://github.com/debops/docs/issues/212
-git ls-files -z | xargs --null -I '{}' find '{}' -type f -regextype posix-extended -regex '(defaults/.*\.yml|.*\.rst)$' -print0 | \
+git ls-files -z | xargs --null -I '{}' find './{}' -type f -regextype posix-extended -regex '(defaults/.*\.yml|.*\.rst)$' -print0 | \
     xargs --null sed --in-place --regexp-extended "
             s/\\b${role_full_name}_\\b/\`\`${role_full_name}\`\`/g;
         "
 
 ## Revert a change for deprecated roles (might be removed from the documentation at some point) or falsely detected roles.
-git ls-files -z | xargs --null -I '{}' find '{}' -type f -regextype posix-extended -regex '(defaults/.*\.yml|.*\.rst)$' -print0 | \
+git ls-files -z | xargs --null -I '{}' find './{}' -type f -regextype posix-extended -regex '(defaults/.*\.yml|.*\.rst)$' -print0 | \
     xargs --null sed --in-place --regexp-extended "
             s/\\b(debops\\.(php5|sshkeys|cfg|subnetwork)|ypid\\.(crypttab|gdm|snapshot_snapper|kernel_module|linuxmuster_net-client-epoptes_via_postsync|linuxmuster_net-server-epoptes_via_postsync))_\\b/\`\`\\1\`\`/g;
         "
 
 ## Revert other changes.
 # shellcheck disable=SC2016
-git ls-files -z | xargs --null -I '{}' find '{}' -type f -regextype posix-extended -regex '(defaults/.*\.yml|.*\.rst)$' -print0 | \
+git ls-files -z | xargs --null -I '{}' find './{}' -type f -regextype posix-extended -regex '(defaults/.*\.yml|.*\.rst)$' -print0 | \
     xargs --null sed --in-place --regexp-extended '
             s/:envvar:`((role_name__[[:alnum:]_]+|bootstrap__admin_system_home|bootstrap__admin_name|bootstrap__admin_manage_existing|owncloud__enable_occ_shortcut|php__pool_default|php__version|inventory__host_environment|inventory__group_environment|inventory__environment|tinc__compression|tinc__connect_to_mesh0|owncloud__subdomain|apt__conditional_whitelist|apt__proxy_bypass_for_bugs_debian_org|apt__sources_sections|apt__update_cache_early|apt__sources_types|apt__http_proxy_url|apt__https_proxy_url|apt__proxy_url|apt_cacher_ng__nginx_upstream|apt_cacher_ng__nginx_upstream_servers|swapfile__swappiness|swapfile__cache_pressure|x2go_server__apt_repo_key_fingerprint_override_map|x2go_server__upstream_repository_override_map|owncloud__nginx__servers|owncloud__nginx__upstream_php|owncloud__theme_entitiy_name|php__fpm_|roundcube__dependencies|roundcube__extra_packages|roundcube__nginx_server|roundcube__nginx_upstream_php5|roundcube__php5_packages|roundcube__php5_pool|tinc__address_family_mesh0|tinc__mlock_mesh0|tinc__inventory_hosts_mesh0|tinc__reachable_peer_hosts_mesh0|tinc__client_hosts|tinc__compression_mesh0|persistent_paths__qubes_os_paths|persistent_paths__qubes_os_bind_dirs|checkmk_agent__hostname|checkmk_agent__group_plugin_map|mariadb_server__default_options|ferm__rules_forward|ferm__default_weight|libvirtd__group_map|libvirtd__access_group|libvirtd__connections|libvirtd__access_groups|libvirtd__uri|ntp__root_flags))`/``\1``/g;
         '
@@ -265,7 +260,7 @@ git ls-files -z | xargs --null -I '{}' find '{}' -type f -regextype posix-extend
 if [ "$role_name" == 'playbooks' ]
 then
     # shellcheck disable=SC2016
-    git ls-files -z | xargs --null -I '{}' find '{}' -type f -regextype posix-extended -regex '(defaults/.*\.yml|.*\.rst)$' -print0 | \
+    git ls-files -z | xargs --null -I '{}' find './{}' -type f -regextype posix-extended -regex '(defaults/.*\.yml|.*\.rst)$' -print0 | \
         xargs --null sed --in-place --regexp-extended '
                 s/:envvar:`(([^`]+__[^`]+))`/``\1``/g;
             '

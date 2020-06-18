@@ -143,8 +143,7 @@
   authorized_key:
     user: '{{ item.ssh_user | d("root") }}'
     key: '{{ ansible_local.rsnapshot.ssh_identities[item.ssh_identity | d(rsnapshot__ssh_main_identity)]
-             if (ansible_local|d() and ansible_local.rsnapshot|d() and
-                 ansible_local.rsnapshot.ssh_identities|d() and
+             if (ansible_local.rsnapshot.ssh_identities|d() and
                  ansible_local.rsnapshot.ssh_identities[item.ssh_identity | d(rsnapshot__ssh_main_identity)]|d())
              else "" }}'
     key_options: '{{ item.ssh_options | d(rsnapshot__ssh_options) }},command="{{ item.ssh_command | d(rsnapshot__ssh_command) }}"'

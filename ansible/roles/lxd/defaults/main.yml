@@ -62,10 +62,7 @@ lxd__upstream_git_release: 'stable-4.0'
 #
 # Directory with compiled source code of additional libraries required by LXD.
 # They will be installed to the :file:`/usr/local/lib/` directory by the role.
-lxd__golang_gosrc: '{{ ansible_local.golang.gosrc
-                       if (ansible_local|d() and ansible_local.golang|d() and
-                           ansible_local.golang.gosrc|d())
-                       else "" }}'
+lxd__golang_gosrc: '{{ ansible_local.golang.gosrc|d("") }}'
 
                                                                    # ]]]
 # .. envvar:: lxd__binary [[[
@@ -74,8 +71,7 @@ lxd__golang_gosrc: '{{ ansible_local.golang.gosrc
 # :ref:`debops.golang` Ansible role. The path is used in various
 # :command:`systemd` unit files.
 lxd__binary: '{{ ansible_local.golang.binaries["lxd"]
-                 if (ansible_local|d() and ansible_local.golang|d() and
-                     ansible_local.golang.binaries|d() and
+                 if (ansible_local.golang.binaries|d() and
                      ansible_local.golang.binaries.lxd|d())
                  else "/usr/bin/lxd" }}'
 
@@ -105,10 +101,7 @@ lxd__group: 'lxd'
 #
 # List of POSIX accounts which will be granted full access to the LXD service
 # by adding them to the LXD system group.
-lxd__admin_accounts: '{{ ansible_local.core.admin_users
-                         if (ansible_local|d() and ansible_local.core|d() and
-                             ansible_local.core.admin_users|d())
-                         else [] }}'
+lxd__admin_accounts: '{{ ansible_local.core.admin_users|d([]) }}'
                                                                    # ]]]
                                                                    # ]]]
 # LXD configuration preseeding [[[

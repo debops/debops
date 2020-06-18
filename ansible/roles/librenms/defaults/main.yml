@@ -91,10 +91,7 @@ librenms__nginx_access_policy: ''
 #
 # Name of the webserver user account which will be granted read only access to
 # the LibreNMS application directory.
-librenms__webserver_user: '{{ ansible_local.nginx.user
-                              if (ansible_local|d() and ansible_local.nginx|d() and
-                                  ansible_local.nginx.user|d())
-                              else "www-data" }}'
+librenms__webserver_user: '{{ ansible_local.nginx.user|d("www-data") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Application user, group, directories [[[
@@ -121,10 +118,7 @@ librenms__shell: '/bin/bash'
 # .. envvar:: librenms__home [[[
 #
 # Home directory of the LibreNMS application.
-librenms__home: '{{ (ansible_local.nginx.www
-                     if (ansible_local|d() and ansible_local.nginx|d() and
-                         ansible_local.nginx.www|d())
-                     else "/srv/www") + "/" + librenms__user }}'
+librenms__home: '{{ ansible_local.nginx.www|d("/srv/www") + "/" + librenms__user) }}'
 
                                                                    # ]]]
 # .. envvar:: librenms__install_path [[[
@@ -226,10 +220,7 @@ librenms__database_password: "{{ lookup('password', secret + '/mariadb/' +
 #
 # Passwords will be automatically stored in ``secret/`` directory (see
 # ``debops.secret`` role for more details).
-librenms__admin_accounts: '{{ ansible_local.core.admin_users
-                              if (ansible_local|d() and ansible_local.core|d() and
-                                  ansible_local.core.admin_users|d())
-                              else [] }}'
+librenms__admin_accounts: '{{ ansible_local.core.admin_users|d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: librenms__cron_threads [[[

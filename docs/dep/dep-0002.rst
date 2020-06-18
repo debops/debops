@@ -448,11 +448,7 @@ current state. The related default variable is defined in
 .. code-block:: yaml
 
     # Enable or disable support for SSL in MariaDB (using ``debops.pki``).
-    mariadb_server__pki: '{{ (True
-                          if (ansible_local|d() and ansible_local.pki|d() and
-                              ansible_local.pki.enabled|d() and
-                              mariadb_server__pki_realm in ansible_local.pki.known_realms)
-                          else False) | bool }}'
+    mariadb_server__pki: '{{ mariadb_server__pki_realm in ansible_local.pki.known_realms|d([]) }}'
 
 If the user doesn't agree with the defined condition, the variable can simply
 be redefined in the Ansible inventory without the need to modify the Ansible
@@ -639,10 +635,7 @@ but query the local fact of the ferm role:
 
 .. code-block:: yaml
 
-   is_firewall_enabled: '{{ ansible_local.ferm.enabled
-                            if (ansible_local|d() and ansible_local.ferm|d() and
-                                ansible_local.ferm.enabled|d())
-                            else "unknown" }}'
+   is_firewall_enabled: '{{ ansible_local.ferm.enabled|d("unknown") }}'
 
 To successfully read the local fact of another role the latter obviously must
 have run before. Always consider the case that the fact may be undefined and

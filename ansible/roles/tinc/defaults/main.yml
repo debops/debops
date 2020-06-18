@@ -333,8 +333,7 @@ tinc__persistent_paths__dependent_paths:
         '/etc/systemd/system/tinc@.service',
         '/etc/systemd/system/multi-user.target.wants/tinc.service',
       ] + ((ansible_local.tinc.networks.keys() | map("regex_replace", "^", "/etc/default/tinc-") | list)
-           if (ansible_local|d() and ansible_local.tinc|d() and
-               ansible_local.tinc.networks|d())
+           if (ansible_local.tinc.networks|d())
            else [])
       }}
 # ]]]

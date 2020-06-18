@@ -35,10 +35,7 @@ opendkim__packages: []
 #
 # The version of the installed OpenDKIM service, gathered automatically by
 # Ansible local facts.
-opendkim__version: '{{ ansible_local.opendkim.version
-                       if (ansible_local|d() and ansible_local.opendkim|d() and
-                           ansible_local.opendkim.version|d())
-                       else "0.0.0" }}'
+opendkim__version: '{{ ansible_local.opendkim.version|d("0.0.0") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Application environment, Postfix support [[[
@@ -71,10 +68,7 @@ opendkim__postfix_integration: '{{ ansible_local.postfix.installed
 # Name of the UNIX system group used by Postfix SMTP server. This variable is
 # used to create the OpenDKIM socket directory with correct access permissions
 # for Postfix.
-opendkim__postfix_group: '{{ ansible_local.postfix.system_group
-                             if (ansible_local|d() and ansible_local.postfix|d() and
-                                 ansible_local.postfix.system_group|d())
-                             else "postfix" }}'
+opendkim__postfix_group: '{{ ansible_local.postfix.system_group|d("postfix") }}'
 
                                                                    # ]]]
 # .. envvar:: opendkim__pidfile [[[

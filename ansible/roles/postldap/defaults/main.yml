@@ -98,10 +98,7 @@ postldap__vmail_posix_user: 'vmail'
 # .. envvar:: postldap__vmail_posix_uidnumber [[[
 #
 # Virtual Mail POSIX uidNumber
-postldap__vmail_posix_uidnumber: '{{ ansible_local.postldap.vmail_posix_uidnumber
-                                     if (ansible_local|d() and ansible_local.postldap|d() and
-                                         ansible_local.postldap.vmail_posix_uidnumber|d())
-                                     else None }}'
+postldap__vmail_posix_uidnumber: '{{ ansible_local.postldap.vmail_posix_uidnumber|d(None) }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__vmail_posix_group [[[
@@ -113,10 +110,7 @@ postldap__vmail_posix_group: 'vmail'
 # .. envvar:: postldap__vmail_posix_gidnumber [[[
 #
 # Virtual Mail POSIX gidNumber
-postldap__vmail_posix_gidnumber: '{{ ansible_local.postldap.vmail_posix_gidnumber
-                                     if (ansible_local|d() and ansible_local.postldap|d() and
-                                       ansible_local.postldap.vmail_posix_gidnumber|d())
-                                     else None }}'
+postldap__vmail_posix_gidnumber: '{{ ansible_local.postldap.vmail_posix_gidnumber|d(None) }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__mailbox_base [[[
@@ -497,10 +491,7 @@ postldap__ldap_enabled: '{{ True
 # The base Distinguished Name which should be used to create Distinguished
 # Names of the LDAP directory objects, defined as a YAML list. If this variable
 # is empty, automated Postfix LDAP configuration will not be performed.
-postldap__ldap_base_dn: '{{ ansible_local.ldap.base_dn
-                            if (ansible_local|d() and ansible_local.ldap|d() and
-                                ansible_local.ldap.base_dn|d())
-                            else [] }}'
+postldap__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_device_dn [[[
@@ -509,10 +500,7 @@ postldap__ldap_base_dn: '{{ ansible_local.ldap.base_dn
 # list. It will be used as a base for the Postfix service account LDAP
 # object. If the list is empty, the role will not create the account LDAP
 # object automatically.
-postldap__ldap_device_dn: '{{ ansible_local.ldap.device_dn
-                              if (ansible_local|d() and ansible_local.ldap|d() and
-                                  ansible_local.ldap.device_dn|d())
-                              else [] }}'
+postldap__ldap_device_dn: '{{ ansible_local.ldap.device_dn|d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_self_rdn [[[
@@ -563,10 +551,7 @@ postldap__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
 #
 # The Relative Distinguished Name of the LDAP object which contains the user
 # accounts stored in LDAP.
-postldap__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn
-                               if (ansible_local|d() and ansible_local.ldap|d() and
-                                   ansible_local.ldap.people_rdn|d())
-                               else "ou=People" }}'
+postldap__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn|d("ou=People") }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_people_dn [[[
@@ -581,10 +566,7 @@ postldap__ldap_people_dn: '{{ [ postldap__ldap_people_rdn ]
 #
 # List of LDAP URIs that point to the directory servers which should be used by
 # `postfix virtual`.
-postldap__ldap_uri: '{{ ansible_local.ldap.uri
-                        if (ansible_local|d() and ansible_local.ldap|d() and
-                            ansible_local.ldap.uri|d())
-                        else [""] }}'
+postldap__ldap_uri: '{{ ansible_local.ldap.uri|d([""]) }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_private_subtree [[[
@@ -602,20 +584,14 @@ postldap__ldap_private_subtree: False
 #
 # The Relative Distinguished Name of the LDAP object which contains the groups
 # stored in LDAP.
-postldap__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn
-                               if (ansible_local|d() and ansible_local.ldap|d() and
-                                   ansible_local.ldap.groups_rdn|d())
-                               else "ou=Groups" }}'
+postldap__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn|d("ou=Groups") }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_domains_rdn [[[
 #
 # The Relative Distinguished Name of the LDAP object which contains the (virtual mail)
 # domains stored in LDAP.
-postldap__ldap_domains_rdn: '{{ ansible_local.ldap.domains_rdn
-                                if (ansible_local|d() and ansible_local.ldap|d() and
-                                    ansible_local.ldap.domains_rdn|d())
-                                else "ou=Domains" }}'
+postldap__ldap_domains_rdn: '{{ ansible_local.ldap.domains_rdn|d("ou=Domains") }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_groups_dn [[[
@@ -661,19 +637,13 @@ postldap__ldap_default_virtual_domain_dn: '{{ (["dc="
 # .. envvar:: postldap__ldap_server_uri [[[
 #
 # The URI address of the LDAP server used by Postfix.
-postldap__ldap_server_uri: '{{ (ansible_local.ldap.uri
-                                            if (ansible_local|d() and ansible_local.ldap|d() and
-                                                ansible_local.ldap.uri|d())
-                                            else [""]) | first }}'
+postldap__ldap_server_uri: '{{ ansible_local.ldap.uri|d([""]) | first) }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_server_port [[[
 #
 # The TCP port which should be used for connections to the LDAP server.
-postldap__ldap_server_port: '{{ ansible_local.ldap.port
-                                            if (ansible_local|d() and ansible_local.ldap|d() and
-                                                ansible_local.ldap.port|d())
-                                            else ("389" if postldap__ldap_start_tls|bool else "636") }}'
+postldap__ldap_server_port: '{{ ansible_local.ldap.port|d(("389" if postldap__ldap_start_tls|bool else "636")) }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_start_tls [[[

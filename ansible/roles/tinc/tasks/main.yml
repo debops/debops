@@ -67,8 +67,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
-                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
   notify: [ 'Reload tinc' ]
 
 - name: Disable tinc networks in systemd if requested
@@ -105,8 +104,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
-                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
   with_dict: '{{ tinc__combined_networks }}'
   when: item.value.state|d('present') != 'absent' and item.value.tinc_options|d()
   notify: [ 'Reload tinc' ]
@@ -123,8 +121,7 @@
     owner: 'root'
     group: '{{ tinc__group }}'
     mode: '0750'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
-                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
   with_dict: '{{ tinc__combined_networks }}'
   when: (item.value.state|d('present') != 'absent' and item.value.generate_tinc_up|d(True)|bool)
 
@@ -135,8 +132,7 @@
     owner: 'root'
     group: '{{ tinc__group }}'
     mode: '0750'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
-                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
   with_dict: '{{ tinc__combined_networks }}'
   when: (item.value.state|d('present') != 'absent' and item.value.generate_tinc_up|d(True)|bool)
 
@@ -147,8 +143,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
-                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
 
 # RSA key management [[[1
 
@@ -159,8 +154,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
-                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
 
 - name: Initialize RSA key pairs
   shell: set -o nounset -o pipefail -o errexit &&
@@ -192,8 +186,7 @@
     owner: 'root'
     group: 'root'
     mode: '0640'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
-                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
   with_dict: '{{ tinc__combined_networks }}'
   when: item.value.state|d('present') != 'absent'
 
@@ -279,8 +272,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
-                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
   with_dict: '{{ tinc__combined_networks }}'
   when: tinc__systemd|bool and item.value.state|d('present') != 'absent'
   notify: [ 'Reload tinc' ]
@@ -292,8 +284,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
-                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
   when: tinc__systemd | bool
 
 - name: Clean up old systemd configuration
@@ -308,8 +299,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
-                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
   with_items: [ 'tinc.service', 'tinc@.service' ]
   register: tinc__register_systemd
   when: tinc__systemd | bool
@@ -353,8 +343,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(True if (ansible_local|d() and ansible_local.core|d()
-                       and ansible_local.core.unsafe_writes|d() | bool) else False) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
   register: tinc__register_facts
 
 - name: Reload facts if they were modified

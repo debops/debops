@@ -120,10 +120,7 @@ neurodebian__apt_source_types: [ 'deb' ]
 # A rough estimate of the region (country) a given host resides in, based on
 # the system locale settings. This variable is used to select a mirror near the
 # host, and might be inaccurate.
-neurodebian__region: '{{ ansible_local.locales.system_region
-                         if (ansible_local|d() and ansible_local.locales|d() and
-                             ansible_local.locales.system_region|d())
-                         else "US" }}'
+neurodebian__region: '{{ ansible_local.locales.system_region|d("US") }}'
 
                                                                    # ]]]
 # .. envvar:: neurodebian__region_mirror_map [[[

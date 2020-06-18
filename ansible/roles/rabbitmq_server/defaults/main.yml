@@ -581,54 +581,38 @@ rabbitmq_server__cluster_allow: []
 #
 # Enable or disable PKI support.
 rabbitmq_server__pki: '{{ True
-                          if (ansible_local|d() and ansible_local.pki|d() and
-                              ansible_local.pki.enabled|d() and
+                          if (ansible_local.pki.enabled|d() and
                               ansible_local.pki.enabled|bool) else False }}'
 
                                                                    # ]]]
 # .. envvar:: rabbitmq_server__pki_path [[[
 #
 # Absolute path to the directory with PKI realms.
-rabbitmq_server__pki_path: '{{ ansible_local.pki.path
-                               if (ansible_local|d() and ansible_local.pki|d() and
-                                   ansible_local.pki.path|d())
-                               else "/etc/pki/realms" }}'
+rabbitmq_server__pki_path: '{{ ansible_local.pki.path|d("/etc/pki/realms") }}'
 
                                                                    # ]]]
 # .. envvar:: rabbitmq_server__pki_realm [[[
 #
 # Name of the PKI realm to use by the RabbitMQ service.
-rabbitmq_server__pki_realm: '{{ ansible_local.pki.realm
-                                if (ansible_local|d() and ansible_local.pki|d() and
-                                    ansible_local.pki.realm|d())
-                                else "domain" }}'
+rabbitmq_server__pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: rabbitmq_server__pki_ca [[[
 #
 # Name of the Certificate Authority certificate file to use.
-rabbitmq_server__pki_ca: '{{ ansible_local.pki.ca
-                             if (ansible_local|d() and ansible_local.pki|d() and
-                                 ansible_local.pki.ca|d())
-                             else "CA.crt" }}'
+rabbitmq_server__pki_ca: '{{ ansible_local.pki.ca|d("CA.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: rabbitmq_server__pki_crt [[[
 #
 # Name of the X.509 certificate file to use.
-rabbitmq_server__pki_crt: '{{ ansible_local.pki.crt
-                              if (ansible_local|d() and ansible_local.pki|d() and
-                                  ansible_local.pki.crt|d())
-                              else "default.crt" }}'
+rabbitmq_server__pki_crt: '{{ ansible_local.pki.crt|d("default.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: rabbitmq_server__pki_key [[[
 #
 # Name of the X.509 private key file to use.
-rabbitmq_server__pki_key: '{{ ansible_local.pki.key
-                              if (ansible_local|d() and ansible_local.pki|d() and
-                                  ansible_local.pki.key|d())
-                              else "default.key" }}'
+rabbitmq_server__pki_key: '{{ ansible_local.pki.key|d("default.key") }}'
 
                                                                    # ]]]
 # .. envvar:: rabbitmq_server__cacertfile [[[
@@ -665,10 +649,7 @@ rabbitmq_server__ssl_versions: [ 'tlsv1.2', 'tlsv1.1' ]
 #
 # A Erlang raw string which contains a list of TLS/SSL ciphers to allow by the
 # server. Contents of this variable are gathered by the Ansible local facts.
-rabbitmq_server__ssl_ciphers: '{{ ansible_local.rabbitmq_server.raw_erlang_ssl_ciphers
-                                  if (ansible_local|d() and ansible_local.rabbitmq_server|d() and
-                                      ansible_local.rabbitmq_server.raw_erlang_ssl_ciphers|d())
-                                  else "" }}'
+rabbitmq_server__ssl_ciphers: '{{ ansible_local.rabbitmq_server.raw_erlang_ssl_ciphers|d("") }}'
 
                                                                    # ]]]
 # .. envvar:: rabbitmq_server__ssl_dhparam [[[

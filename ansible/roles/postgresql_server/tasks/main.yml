@@ -22,8 +22,7 @@
 - name: Set default PostgreSQL version variable
   set_fact:
     postgresql_server__version: '{{ (ansible_local.postgresql.version
-                                     if (ansible_local|d() and ansible_local.postgresql|d() and
-                                         ansible_local.postgresql.version|d())
+                                     if (ansible_local.postgresql.version|d())
                                      else (postgresql_server__preferred_version
                                            if postgresql_server__preferred_version|d()
                                            else postgresql_server__register_version.stdout)) }}'

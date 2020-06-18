@@ -24,10 +24,7 @@
 #
 # Specify the OS distribution release to use for the upstream APT repositories
 # and other configuration.
-nodejs__distribution_release: '{{ ansible_local.core.distribution_release
-                                  if (ansible_local|d() and ansible_local.core|d() and
-                                      ansible_local.core.distribution_release|d())
-                                  else ansible_distribution_release }}'
+nodejs__distribution_release: '{{ ansible_local.core.distribution_release|d(ansible_distribution_release) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Node upstream configuration [[[

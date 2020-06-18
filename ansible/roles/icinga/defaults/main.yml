@@ -45,29 +45,20 @@ icinga__upstream_apt_repo: 'deb https://packages.icinga.com/{{ icinga__distribut
 #
 # Name of the OS distribution used to select the correct upstream APT
 # repository.
-icinga__distribution: '{{ ansible_local.core.distribution
-                          if (ansible_local|d() and ansible_local.core|d() and
-                              ansible_local.core.distribution|d())
-                          else ansible_distribution }}'
+icinga__distribution: '{{ ansible_local.core.distribution|d(ansible_distribution) }}'
 
                                                                    # ]]]
 # .. envvar:: icinga__distribution_release [[[
 #
 # Name of the OS release used to select the correct upstream APT repository.
-icinga__distribution_release: '{{ ansible_local.core.distribution_release
-                                  if (ansible_local|d() and ansible_local.core|d() and
-                                      ansible_local.core.distribution_release|d())
-                                  else ansible_distribution_release }}'
+icinga__distribution_release: '{{ ansible_local.core.distribution_release|d(ansible_distribution_release) }}'
 
                                                                    # ]]]
 # .. envvar:: icinga__version [[[
 #
 # The version of the installed Icinga 2 package, detected by the Ansible local
 # fact script. This variable can be used in conditional Icinga 2 configuration.
-icinga__version: '{{ ansible_local.icinga.version
-                     if (ansible_local|d() and ansible_local.icinga|d() and
-                         ansible_local.icinga.version|d())
-                     else "0.0.0" }}'
+icinga__version: '{{ ansible_local.icinga.version|d("0.0.0") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga__base_packages [[[
@@ -109,8 +100,7 @@ icinga__group: 'nagios'
 icinga__additional_groups:
   - 'ssl-cert'
   - '{{ ansible_local.proc_hidepid.group
-        if (ansible_local|d() and ansible_local.proc_hidepid|d() and
-            ansible_local.proc_hidepid.group|d() and
+        if (ansible_local.proc_hidepid.group|d() and
             (ansible_local.proc_hidepid.enabled|d())|bool)
         else [] }}'
                                                                    # ]]]
@@ -451,46 +441,31 @@ icinga__pki_enabled: '{{ True
 # .. envvar:: icinga__pki_path [[[
 #
 # The base path where the PKI realms are located.
-icinga__pki_path: '{{ ansible_local.pki.path
-                      if (ansible_local|d() and ansible_local.pki|d() and
-                          ansible_local.pki.path|d())
-                      else "/etc/pki/realms" }}'
+icinga__pki_path: '{{ ansible_local.pki.path|d("/etc/pki/realms") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga__pki_realm [[[
 #
 # Name of the PKI realm to use for Icinga REST API.
-icinga__pki_realm: '{{ ansible_local.pki.realm
-                       if (ansible_local|d() and ansible_local.pki|d() and
-                           ansible_local.pki.realm|d())
-                       else "domain" }}'
+icinga__pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga__pki_ca [[[
 #
 # Name of the file which contains the Root Certificate Authority certificate.
-icinga__pki_ca: '{{ ansible_local.pki.ca
-                    if (ansible_local|d() and ansible_local.pki|d() and
-                        ansible_local.pki.ca|d())
-                    else "CA.crt" }}'
+icinga__pki_ca: '{{ ansible_local.pki.ca|d("CA.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga__pki_crt [[[
 #
 # Name of the file which contains the server certificate.
-icinga__pki_crt: '{{ ansible_local.pki.crt
-                     if (ansible_local|d() and ansible_local.pki|d() and
-                         ansible_local.pki.crt|d())
-                     else "default.crt" }}'
+icinga__pki_crt: '{{ ansible_local.pki.crt|d("default.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga__pki_key [[[
 #
 # Name of the file which contains the private key.
-icinga__pki_key: '{{ ansible_local.pki.key
-                     if (ansible_local|d() and ansible_local.pki|d() and
-                         ansible_local.pki.key|d())
-                     else "default.key" }}'
+icinga__pki_key: '{{ ansible_local.pki.key|d("default.key") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga__pki_cert_path [[[

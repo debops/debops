@@ -23,14 +23,8 @@
 {% if gitlab_runner__vagrant_lxc|bool %}
 {%   set _ = output.extend([ 'vagrant', 'vagrant-lxc' ]) %}
 {% endif %}
-{% set _ = output.append((ansible_local.core.distribution
-                          if (ansible_local|d() and ansible_local.core|d() and
-                              ansible_local.core.distribution|d())
-                          else ansible_distribution) | lower) %}
-{% set _ = output.append((ansible_local.core.distribution_release
-                          if (ansible_local|d() and ansible_local.core|d() and
-                              ansible_local.core.distribution_release|d())
-                          else ansible_distribution_release) | lower) %}
+{% set _ = output.append(ansible_local.core.distribution|d(ansible_distribution) | lower) %}
+{% set _ = output.append(ansible_local.core.distribution_release|d(ansible_distribution_release) | lower) %}
 {% if ansible_virtualization_type not in [ 'NA' ] %}
 {%   set _ = output.append(ansible_virtualization_type + '-' + ansible_virtualization_role) %}
 {% endif %}

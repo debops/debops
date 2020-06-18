@@ -25,10 +25,7 @@
 # The role will remember the selected version using Ansible local facts which
 # should ensure that in the future currently installed version of the APT
 # repository stays the same on a given host.
-elastic_co__version: '{{ ansible_local.elastic_co.version
-                         if (ansible_local|d() and ansible_local.elastic_co|d() and
-                             ansible_local.elastic_co.version|d())
-                         else "6.x" }}'
+elastic_co__version: '{{ ansible_local.elastic_co.version|d("6.x") }}'
 
                                                                    # ]]]
 # .. envvar:: elastic_co__curator_version [[[
@@ -37,10 +34,7 @@ elastic_co__version: '{{ ansible_local.elastic_co.version
 # The role will remember the selected version using Ansible local facts which
 # should ensure that in the future currently installed version of the APT
 # repository stays the same on a given host.
-elastic_co__curator_version: '{{ ansible_local.elastic_co.curator_version
-                                 if (ansible_local|d() and ansible_local.elastic_co|d() and
-                                     ansible_local.elastic_co.curator_version|d())
-                                 else "5" }}'
+elastic_co__curator_version: '{{ ansible_local.elastic_co.curator_version|d("5") }}'
 
                                                                    # ]]]
 # .. envvar:: elastic_co__key_id [[[

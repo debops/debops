@@ -38,18 +38,14 @@
 
     # LDAP base Distinguished Name
     ldap_base_dn: '{{ ansible_local.ldap.base_dn
-                      if (ansible_local|d() and ansible_local.ldap|d() and
-                          ansible_local.ldap.base_dn|d())
+                      if (ansible_local.ldap.base_dn|d())
                       else (ansible_domain.split(".")
                             | map("regex_replace", "^(.*)$", "dc=\1")
                             | list) }}'
 
     # Relative Distinguished Name of the LDAP object that contains the personal
     # user accounts
-    ldap_people_rdn: '{{ ansible_local.ldap.people_rdn
-                         if (ansible_local|d() and ansible_local.ldap|d() and
-                             ansible_local.ldap.people_rdn|d())
-                         else "ou=People" }}'
+    ldap_people_rdn: '{{ ansible_local.ldap.people_rdn|d("ou=People") }}'
 
     # Relative Distinguished Name of an user account to convert to an UUID
     person_rdn: 'uid={{ person_uid.user_input }}'

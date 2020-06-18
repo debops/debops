@@ -248,10 +248,7 @@ owncloud__upstream_key_fingerprint: '2880 6A87 8AE4 23A2 8372 792E D758 99B9 A72
 # .. envvar:: owncloud__keyserver [[[
 #
 # URL of the OpenPGP keyserver used to obtain OpenPGP keys.
-owncloud__keyserver: '{{ ansible_local.core.keyserver
-                          if (ansible_local|d() and ansible_local.core|d() and
-                              ansible_local.core.keyserver|d())
-                          else "hkp://pool.sks-keyservers.net" }}'
+owncloud__keyserver: '{{ ansible_local.core.keyserver|d("hkp://pool.sks-keyservers.net") }}'
                                                                    # ]]]
                                                                    # ]]]
 # .. ownCloud upgrades [[[1
@@ -379,10 +376,7 @@ owncloud__post_upgrade_hook_host_list: []
 # * ``owncloud`` (legacy variant, not recommended for new deployments, not well tested)
 # * ``nextcloud`` (Main supported variant in the future. Currently supported on Debian stretch, refer to `issue 45 <https://github.com/debops/ansible-owncloud/issues/45>`_ for details)
 #
-owncloud__variant: '{{ ansible_local.owncloud.variant
-                       if (ansible_local|d() and ansible_local.owncloud|d() and
-                           ansible_local.owncloud.variant|d())
-                       else "nextcloud" }}'
+owncloud__variant: '{{ ansible_local.owncloud.variant|d("nextcloud") }}'
 
 
 # .. envvar:: owncloud__variant_download_url_map
@@ -496,10 +490,7 @@ owncloud__apt_repo_source: '{{ "deb https://" + owncloud__apt_repo_base + "/" +
 # .. envvar:: owncloud__app_user
 #
 # User that will be used for the ownCloud instance.
-owncloud__app_user: '{{ ansible_local.nginx.user
-                        if (ansible_local|d() and ansible_local.nginx|d() and
-                            ansible_local.nginx.user|d())
-                        else "www-data" }}'
+owncloud__app_user: '{{ ansible_local.nginx.user|d("www-data") }}'
 
 
 # .. envvar:: owncloud__app_group
@@ -515,8 +506,7 @@ owncloud__app_home: '{{ "/var/www/owncloud"
                         if (owncloud__variant == "owncloud")
                         else (
                           (ansible_local.nginx.www
-                          if (ansible_local|d() and ansible_local.nginx|d()
-                              and ansible_local.nginx.www|d())
+                          if (ansible_local.nginx.www|d())
                           else "/srv/www") + "/" + owncloud__system_user
                         ) }}'
 
@@ -577,36 +567,26 @@ owncloud__apcu_enabled: True
 # requirement is not meet for Ubuntu trusty (neither in the release repos nor
 # in backports) thus Redis will not be enabled automatically by the role.
 # Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/configuration/server/caching_configuration.html#redis-configuration>`__ for details.
-owncloud__redis_enabled: '{{ ansible_local|d() and ansible_local.redis_server|d() and
-                             ansible_local.redis_server.installed|d() | bool and
+owncloud__redis_enabled: '{{ ansible_local.redis_server.installed|d() | bool and
                              (not (ansible_distribution == "Ubuntu" and ansible_distribution_release == "trusty")) }}'
 
 
 # .. envvar:: owncloud__redis_host
 #
 # Redis server to use when :envvar:`owncloud__redis_enabled` is ``True``.
-owncloud__redis_host: '{{ ansible_local.redis_server.host
-                          if (ansible_local|d() and ansible_local.redis_server|d() and
-                              ansible_local.redis_server.host|d())
-                          else "localhost" }}'
+owncloud__redis_host: '{{ ansible_local.redis_server.host|d("localhost") }}'
 
 
 # .. envvar:: owncloud__redis_port
 #
 # Network port on which the Redis server is listening on.
-owncloud__redis_port: '{{ ansible_local.redis_server.port
-                          if (ansible_local|d() and ansible_local.redis_server|d() and
-                              ansible_local.redis_server.port|d())
-                          else "6379" }}'
+owncloud__redis_port: '{{ ansible_local.redis_server.port|d("6379") }}'
 
 
 # .. envvar:: owncloud__redis_password
 #
 # Redis server authentication password.
-owncloud__redis_password: '{{ ansible_local.redis_server.password
-                              if (ansible_local|d() and ansible_local.redis_server|d() and
-                                  ansible_local.redis_server.password|d())
-                              else omit }}'
+owncloud__redis_password: '{{ ansible_local.redis_server.password|d(omit) }}'
 
 # .. Database configuration [[[1
 #
@@ -1208,10 +1188,7 @@ owncloud_ldap_update_settings: True
 # The base Distinguished Name which should be used to create Distinguished
 # Names of the LDAP directory objects, defined as a YAML list. If this variable
 # is empty, automated Nextcloud LDAP configuration will not be performed.
-owncloud__ldap_base_dn: '{{ ansible_local.ldap.base_dn
-                            if (ansible_local|d() and ansible_local.ldap|d() and
-                                ansible_local.ldap.base_dn|d())
-                            else [] }}'
+owncloud__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: owncloud__ldap_device_dn [[[
@@ -1220,10 +1197,7 @@ owncloud__ldap_base_dn: '{{ ansible_local.ldap.base_dn
 # list. It will be used as a base for the Nextcloud service account LDAP
 # object. If the list is empty, the role will not create the account LDAP
 # object automatically.
-owncloud__ldap_device_dn: '{{ ansible_local.ldap.device_dn
-                              if (ansible_local|d() and ansible_local.ldap|d() and
-                                  ansible_local.ldap.device_dn|d())
-                              else [] }}'
+owncloud__ldap_device_dn: '{{ ansible_local.ldap.device_dn|d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: owncloud__ldap_self_rdn [[[
@@ -1271,10 +1245,7 @@ owncloud__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
 #
 # List of LDAP URIs that point to the directory servers which should be used by
 # Nextcloud.
-owncloud__ldap_uri: '{{ ansible_local.ldap.uri
-                        if (ansible_local|d() and ansible_local.ldap|d() and
-                            ansible_local.ldap.uri|d())
-                        else [] }}'
+owncloud__ldap_uri: '{{ ansible_local.ldap.uri|d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: owncloud__ldap_primary_server [[[
@@ -1462,8 +1433,7 @@ owncloud__ldap_expert_username_attr: ''
 # The configuration database configID to use for the LDAP configuration managed
 # by the role.
 owncloud__ldap_config_id: '{{ ansible_local.owncloud.ldap_config_id
-                              if (ansible_local|d() and ansible_local.owncloud|d() and
-                                  ansible_local.owncloud.ldap_config_id|d())
+                              if (ansible_local.owncloud.ldap_config_id|d())
                               else (owncloud__register_ldap_config_id.stdout
                                     if (owncloud__register_ldap_config_id|d() and
                                         owncloud__register_ldap_config_id.stdout|d())
@@ -1849,12 +1819,11 @@ owncloud__theme_conf_map:
 # Variable containing the webserver which should be used.
 # Refer to :ref:`owncloud__ref_getting_started` for how to switch webservers.
 owncloud__webserver: '{{ ansible_local.owncloud.webserver
-                         if (ansible_local|d() and ansible_local.owncloud|d() and
-                             ansible_local.owncloud.webserver|d())
+                         if (ansible_local.owncloud.webserver|d())
                          else ("apache"
-                               if (ansible_local|d() and ansible_local.apache|d() and ansible_local.apache.enabled|d()|bool)
+                               if (ansible_local.apache.enabled|d()|bool)
                                else ("nginx"
-                                     if (ansible_local|d() and ansible_local.nginx|d() and ansible_local.nginx.enabled|d()|bool)
+                                     if (ansible_local.nginx.enabled|d()|bool)
                                      else "no-webserver-detected")) }}'
 
                                                                    # ]]]
@@ -2250,8 +2219,7 @@ owncloud__nginx__dependent_servers:
           fastcgi_param front_controller_active true;
           fastcgi_intercept_errors on;
           {% if (ansible_local.nginx.version
-                 if (ansible_local|d() and ansible_local.nginx|d() and
-                     ansible_local.nginx.version|d())
+                 if (ansible_local.nginx.version|d())
                  else "0.0")
                 is version_compare("1.7.11",'>=') %}
           fastcgi_request_buffering off;

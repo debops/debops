@@ -151,8 +151,7 @@ minio__upstream_git_release: '{{ "RELEASE.2019-03-27T22-35-21Z"
 # Absolute path to the :command:`minio` Go binary installed on the host.
 # See the :ref:`debops.golang` role for more details.
 minio__binary: '{{ ansible_local.golang.binaries["minio"]
-                   if (ansible_local|d() and ansible_local.golang|d() and
-                       ansible_local.golang.binaries|d() and
+                   if (ansible_local.golang.binaries|d() and
                        ansible_local.golang.binaries.minio|d())
                    else "" }}'
                                                                    # ]]]
@@ -247,29 +246,20 @@ minio__pki_enabled: '{{ ansible_local.pki.enabled
 #
 # The absolute path to the directory which contains the PKI realm
 # subdirectories.
-minio__pki_base_path: '{{ ansible_local.pki.base_path
-                          if (ansible_local|d() and ansible_local.pki|d() and
-                              ansible_local.pki.base_path|d())
-                          else "/etc/pki/realms" }}'
+minio__pki_base_path: '{{ ansible_local.pki.base_path|d("/etc/pki/realms") }}'
 
                                                                    # ]]]
 # .. envvar:: minio__pki_realm [[[
 #
 # Name of the PKI realm to use by the MinIO service.
-minio__pki_realm: '{{ ansible_local.pki.realm
-                      if (ansible_local|d() and ansible_local.pki|d() and
-                          ansible_local.pki.realm|d())
-                      else "domain" }}'
+minio__pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: minio__pki_key [[[
 #
 # The name of the file which contains the private key used by the X.509
 # certificate, relative to the PKI realm directory.
-minio__pki_key: '{{ ansible_local.pki.key
-                    if (ansible_local|d() and ansible_local.pki|d() and
-                        ansible_local.pki.key|d())
-                    else "default.key" }}'
+minio__pki_key: '{{ ansible_local.pki.key|d("default.key") }}'
 
                                                                    # ]]]
 # .. envvar:: minio__pki_crt [[[

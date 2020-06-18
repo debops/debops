@@ -53,10 +53,7 @@ preseed__domains:
 # .. envvar:: preseed__www
 #
 # Path to main directory where Preseed files are served from.
-preseed__www: '{{ (ansible_local.nginx.www
-                   if (ansible_local|d() and ansible_local.nginx|d() and
-                       ansible_local.nginx.www|d())
-                   else "/srv/www") + "/preseed/configs" }}'
+preseed__www: '{{ ansible_local.nginx.www|d("/srv/www") + "/preseed/configs") }}'
 
 
 # .. envvar:: preseed__www_webserver

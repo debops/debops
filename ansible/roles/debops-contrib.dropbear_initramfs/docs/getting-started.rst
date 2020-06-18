@@ -38,8 +38,7 @@ If you are using DebOps, you can set the following in your inventory:
    apt__group_sources:
      - comment: 'Enable Debian stretch repository'
        uri: '{{ ansible_local.apt.default_sources_map.Debian[0]
-                if (ansible_local|d() and ansible_local.apt|d() and
-                    ansible_local.apt.default_sources_map|d() and
+                if (ansible_local.apt.default_sources_map|d() and
                     ansible_local.apt.default_sources_map.Debian|d() and
                     ansible_local.apt.default_sources_map.Debian[0]|d())
                 else "http://deb.debian.org/debian" }}'

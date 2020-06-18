@@ -41,8 +41,7 @@
    (origins + unattended_upgrades__origins + unattended_upgrades__dependent_origins),
    unattended_upgrades__tpl_origins,
    unattended_upgrades__tpl_origins_absent) %}
-{% if (ansible_local|d() and ansible_local.unattended_upgrades|d() and
-       ansible_local.unattended_upgrades.origins|d()) %}
+{% if (ansible_local.unattended_upgrades.origins|d()) %}
 {%   for item in ansible_local.unattended_upgrades.origins %}
 {%     set _ = unattended_upgrades__tpl_origins.append(item) %}
 {%   endfor %}
@@ -79,8 +78,7 @@
    (blacklist + unattended_upgrades__dependent_blacklist),
    unattended_upgrades__tpl_blacklist,
    unattended_upgrades__tpl_blacklist_absent) %}
-{% if (ansible_local|d() and ansible_local.unattended_upgrades|d() and
-       ansible_local.unattended_upgrades.blacklist|d()) %}
+{% if (ansible_local.unattended_upgrades.blacklist|d()) %}
 {%   for item in ansible_local.unattended_upgrades.blacklist %}
 {%     set _ = unattended_upgrades__tpl_blacklist.append(item) %}
 {%   endfor %}

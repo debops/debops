@@ -35,10 +35,7 @@ redis_sentinel__packages: []
 #
 # The version of the installed Redis Sentinel. It will be detected via Ansible
 # local facts, installed by the role.
-redis_sentinel__version: '{{ ansible_local.redis_sentinel.version
-                             if (ansible_local|d() and ansible_local.redis_sentinel|d() and
-                                 ansible_local.redis_sentinel.version|d())
-                             else "0.0.0" }}'
+redis_sentinel__version: '{{ ansible_local.redis_sentinel.version|d("0.0.0") }}'
                                                                    # ]]]
                                                                    # ]]]
 # UNIX environment [[[
@@ -79,8 +76,7 @@ redis_sentinel__domain: '{{ ansible_domain }}'
 # The password used for authentication in Redis. The same password is used on
 # all nodes in the Redis/Sentinel cluster to simplify authentication.
 redis_sentinel__auth_password: '{{ ansible_local.redis_sentinel.password
-                                   if (ansible_local|d() and ansible_local.redis_sentinel|d() and
-                                       ansible_local.redis_sentinel.password|d())
+                                   if (ansible_local.redis_sentinel.password|d())
                                    else (lookup("password", secret +
                                          "/redis/clusters/" + redis_sentinel__domain +
                                          "/password length=" + redis_sentinel__password_length +

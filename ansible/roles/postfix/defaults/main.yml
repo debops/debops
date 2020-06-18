@@ -51,10 +51,7 @@ postfix__purge_packages: [ 'exim4-base', 'exim4-config',
 #
 # The currently installed Postfix version. This variable is defined by the
 # Ansible local facts and it's here for convenience, shouldn't be set manually.
-postfix__version: '{{ ansible_local.postfix.version
-                      if (ansible_local|d() and ansible_local.postfix|d() and
-                          ansible_local.postfix.version|d())
-                      else "0.0.0" }}'
+postfix__version: '{{ ansible_local.postfix.version|d("0.0.0") }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__doc_installed [[[
@@ -139,58 +136,40 @@ postfix__allow_smtps: []
 #
 # Enable or disable support for TLS in Postfix, managed by the :ref:`debops.pki`
 # Ansible role.
-postfix__pki: '{{ (True
-                   if (ansible_local|d() and ansible_local.pki|d() and
-                       ansible_local.pki.enabled|d() | bool)
-                   else False) | bool }}'
+postfix__pki: '{{ ansible_local.pki.enabled|d() | bool }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__pki_path [[[
 #
 # Absolute path to the directory where PKI realms are located.
-postfix__pki_path: '{{ ansible_local.pki.path
-                       if (ansible_local|d() and ansible_local.pki|d() and
-                           ansible_local.pki.path|d())
-                       else "/etc/pki/realms" }}'
+postfix__pki_path: '{{ ansible_local.pki.path|d("/etc/pki/realms") }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__pki_realm [[[
 #
 # Name of the default PKI realm used by Postfix.
-postfix__pki_realm: '{{ ansible_local.pki.realm
-                        if (ansible_local|d() and ansible_local.pki|d() and
-                            ansible_local.pki.realm|d())
-                        else "domain" }}'
+postfix__pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__pki_ca [[[
 #
 # Name of the Root Certificate Authority certificate file used by Postfix,
 # relative to the PKI realm directory.
-postfix__pki_ca: '{{ ansible_local.pki.ca
-                     if (ansible_local|d() and ansible_local.pki|d() and
-                         ansible_local.pki.ca|d())
-                     else "CA.crt" }}'
+postfix__pki_ca: '{{ ansible_local.pki.ca|d("CA.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__pki_crt [[[
 #
 # Name of the certificate file used by Postfix, relative to the PKI realm
 # directory.
-postfix__pki_crt: '{{ ansible_local.pki.crt
-                      if (ansible_local|d() and ansible_local.pki|d() and
-                          ansible_local.pki.crt|d())
-                      else "default.crt" }}'
+postfix__pki_crt: '{{ ansible_local.pki.crt|d("default.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__pki_key [[[
 #
 # Name of the private key file used by Postfix, relative to the PKI realm
 # directory.
-postfix__pki_key: '{{ ansible_local.pki.key
-                      if (ansible_local|d() and ansible_local.pki|d() and
-                          ansible_local.pki.key|d())
-                      else "default.key" }}'
+postfix__pki_key: '{{ ansible_local.pki.key|d("default.key") }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__tls_ca_file [[[
@@ -223,10 +202,7 @@ postfix__pki_hook_name: 'postfix'
 # .. envvar:: postfix__pki_hook_path [[[
 #
 # Directory with PKI hooks.
-postfix__pki_hook_path: '{{ ansible_local.pki.hooks
-                         if (ansible_local|d() and ansible_local.pki|d() and
-                             ansible_local.pki.hooks|d())
-                         else "/etc/pki/hooks" }}'
+postfix__pki_hook_path: '{{ ansible_local.pki.hooks|d("/etc/pki/hooks") }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__pki_hook_action [[[

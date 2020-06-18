@@ -68,11 +68,9 @@ nginx_flavor: 'full'
                                                                    # ]]]
 # .. envvar:: nginx__flavor_distribution_release [[[
 #
-# Specify the OS distribution release to use in falvored repositories.
+# Specify the OS distribution release to use in flavored repositories.
 nginx__flavor_distribution_release: '{{ ansible_local.core.distribution_release
-                                        if (ansible_local|d() and ansible_local.core|d() and
-                                            ansible_local.core.distribution_release|d())
-                                        else ansible_distribution_release }}'
+                                        |d(ansible_distribution_release) }}'
 
                                                                    # ]]]
 # .. envvar:: nginx__flavor_apt_key_id [[[
@@ -419,28 +417,19 @@ nginx_pki: '{{ ansible_local|d() and ansible_local.pki|d() and
 # .. envvar:: nginx_pki_path [[[
 #
 # Directory path where PKI realm live.
-nginx_pki_path: '{{ ansible_local.pki.path
-                    if (ansible_local|d() and ansible_local.pki|d() and
-                        ansible_local.pki.path|d())
-                    else "/etc/pki/realms" }}'
+nginx_pki_path: '{{ ansible_local.pki.path|d("/etc/pki/realms") }}'
 
                                                                    # ]]]
 # .. envvar:: nginx_pki_realm [[[
 #
 # Default PKI realm to use.
-nginx_pki_realm: '{{ ansible_local.pki.realm
-                     if (ansible_local|d() and ansible_local.pki|d() and
-                         ansible_local.pki.realm|d())
-                     else "domain" }}'
+nginx_pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: nginx_pki_ca_realm [[[
 #
 # PKI realm to use for client CA.
-nginx_pki_ca_realm: '{{ ansible_local.pki.ca_realm
-                        if (ansible_local|d() and ansible_local.pki|d() and
-                            ansible_local.pki.ca_realm|d())
-                        else "domain" }}'
+nginx_pki_ca_realm: '{{ ansible_local.pki.ca_realm|d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: nginx_pki_crt [[[
@@ -475,10 +464,7 @@ nginx_pki_hook_name: 'nginx'
 # .. envvar:: nginx_pki_hook_path [[[
 #
 # Directory with PKI hooks.
-nginx_pki_hook_path: '{{ ansible_local.pki.hooks
-                         if (ansible_local|d() and ansible_local.pki|d() and
-                             ansible_local.pki.hooks|d())
-                         else "/etc/pki/hooks" }}'
+nginx_pki_hook_path: '{{ ansible_local.pki.hooks|d("/etc/pki/hooks") }}'
 
                                                                    # ]]]
 # .. envvar:: nginx_pki_hook_action [[[

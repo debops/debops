@@ -44,10 +44,19 @@ mosquitto__upstream_repository:
   Ubuntu:   'ppa:mosquitto-dev/mosquitto-ppa'
 
                                                                    # ]]]
+# .. envvar:: mosquitto__distribution_release [[[
+#
+# This variable defines the OS release used to determine if certain packages
+# are provided or not.
+mosquitto__distribution_release: '{{ ansible_local.core.distribution_release|d(ansible_distribution_release) }}'
+
+                                                                   # ]]]
 # .. envvar:: mosquitto__base_packages [[[
 #
 # List of base APT packages to install for Mosquitto support.
-mosquitto__base_packages: [ 'mosquitto', 'mosquitto-clients', 'python-pip', 'python-setuptools' ]
+mosquitto__base_packages:
+  - 'mosquitto'
+  - 'mosquitto-clients'
 
                                                                    # ]]]
 # .. envvar:: mosquitto__packages [[[
@@ -66,17 +75,20 @@ mosquitto__version: '{{ mosquitto__register_version.stdout | d("0.0.0") }}'
 # PyPI packages [[[
 # -----------------
 
-# The ``paho-mqtt`` Python module is required by Ansible ``mqtt`` module, and
-# it's not available in Debian repositories, therefore it's installed by
-# default from PyPI. This allows usage of the ``mqtt`` module in Ansible roles
+# The ``paho-mqtt`` Python module is required by Ansible ``mqtt`` module.
+# It became available in Debian Buster. For older releases it's installed
+# from PyPI. This module allows usage of the ``mqtt`` module in Ansible roles
 # after checking if Mosquitto is installed via Ansible local facts.
-# To disable this, make the PyPI package list empty.
 
 # .. envvar:: mosquitto__pip_packages [[[
 #
 # List of PyPI packages to install system-wide using :command:`pip` package
 # manager.
-mosquitto__pip_packages: [ 'paho-mqtt' ]
+mosquitto__pip_packages: '{{ ["paho-mqtt" ]
+                             if (mosquitto__distribution_release in
+                                 [ "jessie", "stretch",
+                                   "precise", "trusty", "xenial" ])
+                             else [] }}'
                                                                    # ]]]
                                                                    # ]]]
 # User, group, additional groups [[[
@@ -340,21 +352,15 @@ mosquitto__combined_bridges: '{{ mosquitto__bridges
 
 # .. envvar:: mosquitto__pki [[[
 #
-# Enable or disable support for the PKI infrastructe and connections over TLS,
+# Enable or disable support for the PKI infrastructure and connections over TLS,
 # depending on the presence of the :ref:`debops.pki` environment.
-mosquitto__pki: '{{ (ansible_local.pki.enabled
-                     if (ansible_local|d() and ansible_local.pki|d() and
-                         ansible_local.pki.enabled|d())
-                     else False) | bool }}'
+mosquitto__pki: '{{ ansible_local.pki.enabled|d(False) | bool }}'
 
                                                                    # ]]]
 # .. envvar:: mosquitto__pki_path [[[
 #
 # Absolute path to the directory that contains PKI realms.
-mosquitto__pki_path: '{{ ansible_local.pki.path
-                         if (ansible_local|d() and ansible_local.pki|d() and
-                             ansible_local.pki.path|d())
-                         else "/etc/pki/realms" }}'
+mosquitto__pki_path: '{{ ansible_local.pki.path|d("/etc/pki/realms") }}'
 
                                                                    # ]]]
 # .. envvar:: mosquitto__pki_client_realm [[[
@@ -378,28 +384,19 @@ mosquitto__pki_broker_realm: 'domain'
 # .. envvar:: mosquitto__pki_ca [[[
 #
 # Name of the file with the Root CA certificate of a given PKI realm.
-mosquitto__pki_ca: '{{ ansible_local.pki.ca
-                       if (ansible_local|d() and ansible_local.pki|d() and
-                           ansible_local.pki.ca|d())
-                       else "CA.crt" }}'
+mosquitto__pki_ca: '{{ ansible_local.pki.ca|d("CA.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: mosquitto__pki_crt [[[
 #
 # Name of the file with the certificate of a given PKI realm.
-mosquitto__pki_crt: '{{ ansible_local.pki.crt
-                        if (ansible_local|d() and ansible_local.pki|d() and
-                            ansible_local.pki.crt|d())
-                        else "default.crt" }}'
+mosquitto__pki_crt: '{{ ansible_local.pki.crt|d("default.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: mosquitto__pki_key [[[
 #
 # Name of the file with the private key of a given PKI realm.
-mosquitto__pki_key: '{{ ansible_local.pki.key
-                        if (ansible_local|d() and ansible_local.pki|d() and
-                            ansible_local.pki.key|d())
-                        else "default.key" }}'
+mosquitto__pki_key: '{{ ansible_local.pki.key|d("default.key") }}'
                                                                    # ]]]
                                                                    # ]]]
 # PKI inventory variables [[[
@@ -503,10 +500,7 @@ mosquitto__tls_version: 'tlsv1.2'
 #
 # Enable or disable Avahi support. See :ref:`mosquitto__ref_avahi_support` for
 # more details.
-mosquitto__avahi: '{{ True
-                      if (ansible_local|d() and ansible_local.avahi|d() and
-                          ansible_local.avahi.installed|bool)
-                      else False }}'
+mosquitto__avahi: '{{ ansible_local.avahi.installed|d()|bool }}'
 
                                                                    # ]]]
 # .. envvar:: mosquitto__avahi_name [[[
@@ -619,6 +613,30 @@ mosquitto__auth_patterns: []
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
+# .. envvar:: mosquitto__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+mosquitto__python__dependent_packages3:
+
+  - '{{ []
+        if (mosquitto__distribution_release in
+            [ "jessie", "stretch",
+              "precise", "trusty", "xenial" ])
+        else ["python3-paho-mqtt"] }}'
+
+                                                                   # ]]]
+# .. envvar:: mosquitto__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+mosquitto__python__dependent_packages2:
+
+  - '{{ []
+        if (mosquitto__distribution_release in
+            [ "jessie", "stretch",
+              "precise", "trusty", "xenial" ])
+        else ["python-paho-mqtt"] }}'
+
+                                                                   # ]]]
 # .. envvar:: mosquitto__etc_services__dependent_list [[[
 #
 # Configuration for the :ref:`debops.etc_services` Ansible role.

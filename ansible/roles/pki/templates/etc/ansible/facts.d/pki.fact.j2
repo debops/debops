@@ -25,8 +25,7 @@ import re
 {%       set _ = pki_tpl_known_realms.append(realm.name) %}
 {%     endif %}
 {%   endfor %}
-{%   if (ansible_local|d() and ansible_local.pki|d() and
-         ansible_local.pki.known_realms|d()) %}
+{%   if (ansible_local.pki.known_realms|d()) %}
 {%     for realm in ansible_local.pki.known_realms %}
 {%       if realm not in pki_tpl_known_realms %}
 {%         set _ = pki_tpl_known_realms.append(realm) %}

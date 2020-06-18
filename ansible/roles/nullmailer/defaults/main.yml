@@ -162,10 +162,7 @@ nullmailer__ldap_enabled: '{{ ansible_local.ldap.enabled
 # Names of the LDAP directory objects, defined as a YAML list. If this variable
 # is empty, the LDAP account for the :command`nullmailer` SMTP service will not
 # be created in the LDAP directory.
-nullmailer__ldap_base_dn: '{{ ansible_local.ldap.base_dn
-                              if (ansible_local|d() and ansible_local.ldap|d() and
-                                  ansible_local.ldap.base_dn|d())
-                              else [] }}'
+nullmailer__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: nullmailer__ldap_device_dn [[[
@@ -174,10 +171,7 @@ nullmailer__ldap_base_dn: '{{ ansible_local.ldap.base_dn
 # list. It will be used as a base for the :command:`nullmailer` service account
 # LDAP object. If the list is empty, the role will not create the account LDAP
 # object automatically.
-nullmailer__ldap_device_dn: '{{ ansible_local.ldap.device_dn
-                                if (ansible_local|d() and ansible_local.ldap|d() and
-                                    ansible_local.ldap.device_dn|d())
-                                else [] }}'
+nullmailer__ldap_device_dn: '{{ ansible_local.ldap.device_dn|d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: nullmailer__ldap_self_rdn [[[

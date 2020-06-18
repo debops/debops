@@ -110,10 +110,7 @@ system_groups__default_list:
       {{ ('%' + system_groups__prefix + 'admins ALL = (ALL:ALL) '
           + ('NOPASSWD: ' if system_groups__admins_sudo_nopasswd|bool else '')
           + 'ALL') }}
-    members: '{{ ansible_local.core.admin_users
-                 if (ansible_local|d() and ansible_local.core|d() and
-                     ansible_local.core.admin_users|d())
-                 else [] }}'
+    members: '{{ ansible_local.core.admin_users|d([]) }}'
     access: [ 'root', 'sshd' ]
 
 
@@ -139,10 +136,7 @@ system_groups__default_list:
       {{ ('%' + system_groups__prefix + 'wheel ALL = (ALL:ALL) '
           + ('NOPASSWD: ' if system_groups__admins_sudo_nopasswd|bool else '')
           + 'ALL') }}
-    members: '{{ ansible_local.core.admin_users
-                 if (ansible_local|d() and ansible_local.core|d() and
-                     ansible_local.core.admin_users|d())
-                 else [] }}'
+    members: '{{ ansible_local.core.admin_users|d([]) }}'
     access: [ 'root', 'sshd' ]
     state: 'init'
 
@@ -153,10 +147,7 @@ system_groups__default_list:
   # the '/var/log/' directory as well as firewall configuration in the
   # '/etc/ferm/' directory.
   - name: 'adm'
-    members: '{{ ansible_local.core.admin_users
-                 if (ansible_local|d() and ansible_local.core|d() and
-                     ansible_local.core.admin_users|d())
-                 else [] }}'
+    members: '{{ ansible_local.core.admin_users|d([]) }}'
 
 
   # This group is present on Debian installations by default.
@@ -164,10 +155,7 @@ system_groups__default_list:
   # Users in the 'staff' UNIX group have write access to the '/usr/local/' and
   # '/var/local/' directories and can manage content inside of them.
   - name: 'staff'
-    members: '{{ ansible_local.core.admin_users
-                 if (ansible_local|d() and ansible_local.core|d() and
-                     ansible_local.core.admin_users|d())
-                 else [] }}'
+    members: '{{ ansible_local.core.admin_users|d([]) }}'
 
 
   # Users in the 'sshusers' UNIX group are allowed to connect to the host via

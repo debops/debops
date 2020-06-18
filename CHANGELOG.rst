@@ -230,6 +230,12 @@ General
   dependency on the ``lxc`` APT package. In this case, the ``lxcbr0`` network
   bridge will not be configured by default.
 
+:ref:`debops.mosquitto` role
+''''''''''''''''''''''''''''
+
+- Update the role for Debian Buster. No need anymore to install Python packages
+  outside of the system package management.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
@@ -355,6 +361,12 @@ General
 
 - Fix creation of empty environment variables in :command:`cron` configuration
   files managed by Ansible.
+
+:ref:`debops.dnsmasq` role
+''''''''''''''''''''''''''
+
+- :envvar:`dnsmasq__public_dns` did not create a firewall allow rule when no
+  interfaces where specified.
 
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
