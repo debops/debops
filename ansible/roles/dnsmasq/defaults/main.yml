@@ -434,7 +434,7 @@ dnsmasq__default_configuration:
       # interface from the outside, if there's no external domain set.
       - name: 'host-record'
         value: '{{ ansible_local.lxc.net_domain|d("")
-                   + "," + ansible_local.lxc.net_address|d("")) }}'
+                   + "," + ansible_local.lxc.net_address|d("") }}'
         state: '{{ "present"
                    if ("." not in ansible_local.lxc.net_domain|d())
                    else "absent" }}'
