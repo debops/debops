@@ -4,6 +4,9 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - import_role:
+    name: 'ansible_plugins'
+
+- import_role:
     name: 'secret'
 
 - name: Check if the dependent config file exists
@@ -36,10 +39,10 @@
   when: logstash__pki|bool
 
 - name: Divert original configuration files
-  command: dpkg-divert --quiet --local --divert {{ item }}.dpkg-divert
-           --rename {{ item }}
-  args:
-    creates: '{{ item }}.dpkg-divert'
+  dpkg_divert:
+    path: '{{ item }}'
+    state: 'present'
+    delete: True
   with_items:
     - '/etc/logstash/logstash.yml'
     - '/etc/logstash/pipelines.yml'
