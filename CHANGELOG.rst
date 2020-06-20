@@ -232,6 +232,13 @@ General
 - The ``file`` Ansible module does not support the ``validate`` parameter; it
   seems that this was a copying mistake and has been removed.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- Fix an issue where in the "self-signed" mode, the role did not correctly
+  configure the symlink to the root CA certificate when OpenSSL library was
+  used to manage PKI.
+
 
 `debops v1.2.3`_ - 2020-02-24
 -----------------------------
