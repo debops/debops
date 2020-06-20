@@ -13,10 +13,19 @@ You can read information about required changes between releases in the
 :ref:`upgrade_notes` documentation.
 
 
-`debops stable-1.0`_ - unreleased
----------------------------------
+.. note:: The ``stable-1.0`` branch has been retired, there will be no more
+          updates. Consider upgrade to the newer release of DebOps.
+
+`debops stable-1.0`_ - retired
+------------------------------
 
 .. _debops stable-1.0: https://github.com/debops/debops/compare/v1.0.0...stable-1.0
+
+
+`debops v1.0.18`_ - 2020-06-20
+------------------------------
+
+.. _debops v1.0.18: https://github.com/debops/debops/compare/v1.0.17...v1.0.18
 
 Added
 ~~~~~
