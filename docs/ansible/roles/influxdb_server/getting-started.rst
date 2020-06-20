@@ -35,6 +35,7 @@ role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/influxdb_server.yml
    :language: yaml
+   :lines: 1,7-
 
 Remote access to the database
 -----------------------------

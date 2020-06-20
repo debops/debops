@@ -7,8 +7,10 @@
 Getting started
 ===============
 
-.. contents::
-   :local:
+.. only:: html
+
+   .. contents::
+      :local:
 
 ``debops.influxdb`` role is only the "client" part. To have a working
 InfluxDB installation, you also need to setup the ``debops.influxdb_server``
@@ -88,6 +90,7 @@ that uses the ``debops.influxdb`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/influxdb.yml
    :language: yaml
+   :lines: 1,7-
 
 Ansible tags
 ~~~~~~~~~~~~
