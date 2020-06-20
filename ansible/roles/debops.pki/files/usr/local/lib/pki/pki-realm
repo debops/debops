@@ -788,7 +788,7 @@ selfsign_openssl_request () {
             test -r "${sign_out}.tmp" && mv "${sign_out}.tmp" "${sign_out}"
             if [ -r "${sign_out}" ] && [ ! -r "${root_out}" ] ; then
                 cd "$(dirname "${root_out}")" || exit 1
-                ln -s "${sign_out}" "${root_out}"
+                ln -s "$(basename ${sign_out})" "$(basename "${root_out}")"
                 cd - > /dev/null
             fi
 
