@@ -10,6 +10,7 @@
 set -o nounset -o pipefail -o errexit
 
 repository_root="$(git rev-parse --show-toplevel)"
+current_branch="$(git name-rev --name-only HEAD)"
 debops_version="${DEBOPS_VERSION:-$(git describe | tr -d 'v')}"
 
 declare -A debops_role_map
@@ -47,7 +48,7 @@ if ! git diff --quiet && git diff --cached --quiet ; then
     git status --short
 fi
 
-printf "Creating DebOps Collections\\nVersion: %s\\nCalculating role distribution...\\n" "${debops_version}"
+printf "Creating DebOps Collections\\nBranch: %s\\nVersion: %s\\nCalculating role distribution...\\n" "${current_branch}" "${debops_version}"
 
 cd "${repository_root}"
 
@@ -263,7 +264,28 @@ for collection in "${collections[@]}" ; do
             && [[ ${role} != rails_deploy ]] ; then
             for role_in_collection in "${collection_roles[@]}" ; do
                 if [[ "${role}" = "${role_in_collection}" ]] ; then
+                    generated_readme="false"
+                    if ! [ -f "${role}/README.md" ] ; then
+                        generated_readme="true"
+                        if [ -f "../../docs/ansible/roles/${role}/man_description.rst" ] ; then
+                            pandoc "../../docs/ansible/roles/${role}/man_description.rst" \
+                                -f rst -t markdown_strict -s \
+                                -V "titleblock:### ${role}" \
+                                -V "include-after:Read the [${role} role documentation](https://docs.debops.org/en/${current_branch}/ansible/roles/${role}/) for more details." \
+                                -o "${role}/README.md"
+                        else
+                            cat <<EOF > "${role}/README.md"
+### ${role}
+
+This role does not have official documentation.
+See [DebOps documentation](https://docs.debops.org/en/${current_branch}/) instead.
+EOF
+                        fi
+                    fi
                     cp -r "${role}" "${workdir_map[${collection}]}/roles/${role}"
+                    if [ "${generated_readme}" == "true" ] ; then
+                        rm -f "${role}/README.md"
+                    fi
                 fi
             done
         fi
