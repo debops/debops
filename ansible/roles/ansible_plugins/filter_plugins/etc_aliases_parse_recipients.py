@@ -92,7 +92,7 @@ def _del_recipients(current_data, new_data, *args, **kwargs):
             current_data.update({'recipients': new_recipients})
 
 
-def etc_aliases__parse_recipients(*args, **kwargs):
+def etc_aliases_parse_recipients(*args, **kwargs):
     """Return a parsed list of mail aliases and recipients"""
 
     input_args = []
@@ -189,4 +189,4 @@ class FilterModule(object):
     """Register custom filter plugins in Ansible"""
 
     def filters(self):
-        return {'etc_aliases__parse_recipients': etc_aliases__parse_recipients}
+        return {'etc_aliases_parse_recipients': etc_aliases_parse_recipients}

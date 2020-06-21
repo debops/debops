@@ -3,7 +3,7 @@
 # Local alias database
 # See aliases(5) for more details
 
-{% set etc_aliases__tpl_filtered_recipients = (etc_aliases__combined_recipients | etc_aliases__parse_recipients) %}
+{% set etc_aliases__tpl_filtered_recipients = (etc_aliases__combined_recipients | etc_aliases_parse_recipients) %}
 {% set etc_aliases__tpl_section_list = ((etc_aliases__tpl_filtered_recipients | map(attribute='section')) | list | unique) %}
 {% for section in etc_aliases__sections %}
 {%   if section.state|d('present') != 'absent' %}
