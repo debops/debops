@@ -11,6 +11,7 @@
 set -o nounset -o pipefail -o errexit
 
 repository_root="$(git rev-parse --show-toplevel)"
+current_branch="$(git name-rev --name-only HEAD)"
 debops_version="${DEBOPS_VERSION:-$(git describe | tr -d 'v')}"
 
 declare -A debops_role_map
@@ -48,7 +49,7 @@ if ! git diff --quiet && git diff --cached --quiet ; then
     git status --short
 fi
 
-printf "Creating DebOps Collections\\nVersion: %s\\nCalculating role distribution...\\n" "${debops_version}"
+printf "Creating DebOps Collections\\nBranch: %s\\nVersion: %s\\nCalculating role distribution...\\n" "${current_branch}" "${debops_version}"
 
 cd "${repository_root}"
 
@@ -92,7 +93,7 @@ for role in "${!debops_role_map[@]}" ; do
                                                             ansible/playbooks/service/${role}.yml \
                                                    | sed -e "s/^.*role:://" -e "s/'.*$//" \
                                                    | tr '\n' ' ')" || true
-        if [ -n "${dependencies_in_playbooks[*]}" ] ; then
+        if [ -n "${dependencies_in_playbooks[*]+x}" ] ; then
             for dependency in "${dependencies_in_playbooks[@]}" ; do
                 if [[ -v "debops_role_map[${dependency}]" ]] ; then
                     if [ "${debops_role_map[${dependency}]}" -eq 0 ] ; then
@@ -116,7 +117,7 @@ for role in "${!debops_role_map[@]}" ; do
                                        | sed -e "s/${role}__//" -e "s/__.*$//" \
                                        | tr '\n' ' ' \
                                        | sort | uniq)" || true
-    if [ -n "${role_dependencies[*]}" ] ; then
+    if [ -n "${role_dependencies[*]+x}" ] ; then
         for dependency in "${role_dependencies[@]}" ; do
             if [[ -v "debops_role_map[${dependency}]" ]] ; then
                 if [ "${debops_role_map[${dependency}]}" -eq 0 ] ; then
@@ -154,7 +155,7 @@ for role in "${!debops_role_map[@]}" ; do
                                          | sed -e "s#ansible/playbooks/service/##" \
                                                -e "s/\\.yml//" \
                                          | tr '\n' ' ')" || true
-    if [ -n "${dependency_of_roles[*]}" ] ; then
+    if [ -n "${dependency_of_roles[*]+x}" ] ; then
         for dependency in "${dependency_of_roles[@]}" ; do
             if [ "${role}" != "${dependency}" ] && [[ -v "debops_role_map[${dependency}]" ]] ; then
                 if [ "${debops_role_map[${role}]}" -le "${collection_floor_map[${collections[0]}]}" ] ; then
@@ -220,6 +221,15 @@ if [ -n "${roles_not_included}" ] ; then
     printf '\n'
 fi
 
+printf "Gathering license information...\\n"
+if [ -d "LICENSES" ] ; then
+    read -r -a used_licenses <<<"$(reuse lint | grep "Used licenses:" \
+                                   | sed -e "s/^.*Used licenses: //" \
+                                   | tr ',' ' ')"
+else
+    used_licenses=( "GPL-3.0-only" )
+fi
+
 workdir_path="$(mktemp -d "/tmp/debops-collections.XXXXXXXX")"
 for collection in "${collections[@]}" ; do
     workdir_map[${collection}]="$(mktemp -d "${workdir_path}/debops-$$.${collection}.XXXXXXXX")"
@@ -259,7 +269,28 @@ for collection in "${collections[@]}" ; do
             && [[ ${role} != rails_deploy ]] ; then
             for role_in_collection in "${collection_roles[@]}" ; do
                 if [[ "${role}" = "${role_in_collection}" ]] ; then
+                    generated_readme="false"
+                    if ! [ -f "${role}/README.md" ] ; then
+                        generated_readme="true"
+                        if [ -f "../../docs/ansible/roles/${role}/man_description.rst" ] ; then
+                            pandoc "../../docs/ansible/roles/${role}/man_description.rst" \
+                                -f rst -t markdown_strict -s \
+                                -V "titleblock:### ${role}" \
+                                -V "include-after:Read the [${role} role documentation](https://docs.debops.org/en/${current_branch}/ansible/roles/${role}/) for more details." \
+                                -o "${role}/README.md"
+                        else
+                            cat <<EOF > "${role}/README.md"
+### ${role}
+
+This role does not have official documentation.
+See [DebOps documentation](https://docs.debops.org/en/${current_branch}/) instead.
+EOF
+                        fi
+                    fi
                     cp -r "${role}" "${workdir_map[${collection}]}/roles/${role}"
+                    if [ "${generated_readme}" == "true" ] ; then
+                        rm -f "${role}/README.md"
+                    fi
                 fi
             done
         fi
@@ -284,14 +315,16 @@ for collection in "${collections[@]}" ; do
     done
 
     for directory in "${directory_list[@]}" ; do
-        cp -r "${directory}" "${workdir_map[${collection}]}/"
+        if [ -d "${directory}" ] ; then
+            cp -r "${directory}" "${workdir_map[${collection}]}/"
+        fi
     done
 
     # Convert Ansible plugin use to Ansible Collection format
-    for plugin in task_src template_src parse_kv_config parse_kv_items etc_aliases__parse_recipients ; do
+    for plugin in task_src template_src parse_kv_config parse_kv_items etc_aliases_parse_recipients ; do
 
         printf "%s " "Searching in 'debops.${collection}'"
-        files_to_modify=()
+        declare -a files_to_modify=( stub_file )
         counter=0
         while read -r in ; do
             if grep -q "${plugin}" "${in}" ; then
@@ -306,6 +339,9 @@ for collection in "${collections[@]}" ; do
             fi
         done < <(find "${workdir_map[${collection}]}/roles" -type f \
             -not -wholename "./${workdir_map[${collection}]}/roles/ansible_plugins")
+
+        # Remove the temporary element
+        unset 'files_to_modify[0]'
 
         if [ "${#files_to_modify[@]}" -gt 0 ] ; then
             printf " %s\\n" "found ${#files_to_modify[@]} '${plugin}' uses, replacing..."
@@ -332,14 +368,19 @@ authors:
   - "DebOps Developers <debops-users@lists.debops.org>"
 
 repository: "https://github.com/debops/debops"
-documentation: "https://docs.debops.org/en/master/ansible/role-index.html"
+documentation: "https://docs.debops.org/en/${current_branch}/ansible/role-index.html"
 homepage: "https://debops.org/"
 issues: "https://github.com/debops/debops/issues"
 
 readme: "README.md"
 license:
-  - "GPL-3.0-only"
-license_file: "LICENSE"
+EOF
+        for license in "${used_licenses[@]}" ; do
+            cat <<EOF >> "${workdir_map[${collection}]}/galaxy.yml"
+  - "${license}"
+EOF
+        done
+        cat <<EOF >> "${workdir_map[${collection}]}/galaxy.yml"
 
 tags:
   - "debian"
@@ -374,14 +415,19 @@ authors:
   - "DebOps Developers <debops-users@lists.debops.org>"
 
 repository: "https://github.com/debops/debops"
-documentation: "https://docs.debops.org/en/master/ansible/role-index.html"
+documentation: "https://docs.debops.org/en/${current_branch}/ansible/role-index.html"
 homepage: "https://debops.org/"
 issues: "https://github.com/debops/debops/issues"
 
 readme: "README.md"
 license:
-  - "GPL-3.0-only"
-license_file: "LICENSE"
+EOF
+        for license in "${used_licenses[@]}" ; do
+            cat <<EOF >> "${workdir_map[${collection}]}/galaxy.yml"
+  - "${license}"
+EOF
+        done
+        cat <<EOF >> "${workdir_map[${collection}]}/galaxy.yml"
 
 tags:
   - "debops"
@@ -395,6 +441,7 @@ for collection in "${collections[@]}" ; do
     if [ -d "${workdir_map[${collection}]}" ] ; then
         pushd "${workdir_map[${collection}]}" > /dev/null
         ansible-galaxy collection build
+        python3 -m galaxy_importer.main debops-*.tar.gz
         cp debops-*.tar.gz ../
         popd > /dev/null
     fi
