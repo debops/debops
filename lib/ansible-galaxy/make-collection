@@ -11,7 +11,7 @@
 set -o nounset -o pipefail -o errexit
 
 repository_root="$(git rev-parse --show-toplevel)"
-current_branch="$(git name-rev --name-only HEAD)"
+current_branch="${CURRENT_BRANCH:-$(git name-rev --name-only HEAD)}"
 debops_version="${DEBOPS_VERSION:-$(git describe | tr -d 'v')}"
 
 declare -A debops_role_map
