@@ -41,7 +41,7 @@ description:
       modify its holder and/or its divert path.
     - It's a feature of this module to mimic C(dpkg-divert)'s behaviour
       regarding the renaming of files when removing as well as adding a
-      diversion: existing files are never overwritten.
+      diversion; existing files are never overwritten.
 version_added: "2.4"
 author: "quidame@poivron.org"
 options:

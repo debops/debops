@@ -37,7 +37,7 @@ options:
     description:
       - The name of an R package.
     required: true
-    default null
+    default: null
   state:
     description:
       - The state of module
