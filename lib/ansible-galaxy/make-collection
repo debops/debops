@@ -315,7 +315,9 @@ for collection in "${collections[@]}" ; do
     done
 
     for directory in "${directory_list[@]}" ; do
-        cp -r "${directory}" "${workdir_map[${collection}]}/"
+        if [ -d "${directory}" ] ; then
+            cp -r "${directory}" "${workdir_map[${collection}]}/"
+        fi
     done
 
     # Convert Ansible plugin use to Ansible Collection format
