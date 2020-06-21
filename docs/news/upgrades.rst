@@ -15,6 +15,10 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+
+v2.1.0 (2020-06-21)
+-------------------
+
 Inventory variable changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
