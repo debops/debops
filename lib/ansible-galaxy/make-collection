@@ -93,7 +93,7 @@ for role in "${!debops_role_map[@]}" ; do
                                                             ansible/playbooks/service/${role}.yml \
                                                    | sed -e "s/^.*role:://" -e "s/'.*$//" \
                                                    | tr '\n' ' ')" || true
-        if [ -n "${dependencies_in_playbooks[*]}" ] ; then
+        if [ -n "${dependencies_in_playbooks[*]+x}" ] ; then
             for dependency in "${dependencies_in_playbooks[@]}" ; do
                 if [[ -v "debops_role_map[${dependency}]" ]] ; then
                     if [ "${debops_role_map[${dependency}]}" -eq 0 ] ; then
@@ -117,7 +117,7 @@ for role in "${!debops_role_map[@]}" ; do
                                        | sed -e "s/${role}__//" -e "s/__.*$//" \
                                        | tr '\n' ' ' \
                                        | sort | uniq)" || true
-    if [ -n "${role_dependencies[*]}" ] ; then
+    if [ -n "${role_dependencies[*]+x}" ] ; then
         for dependency in "${role_dependencies[@]}" ; do
             if [[ -v "debops_role_map[${dependency}]" ]] ; then
                 if [ "${debops_role_map[${dependency}]}" -eq 0 ] ; then
@@ -155,7 +155,7 @@ for role in "${!debops_role_map[@]}" ; do
                                          | sed -e "s#ansible/playbooks/service/##" \
                                                -e "s/\\.yml//" \
                                          | tr '\n' ' ')" || true
-    if [ -n "${dependency_of_roles[*]}" ] ; then
+    if [ -n "${dependency_of_roles[*]+x}" ] ; then
         for dependency in "${dependency_of_roles[@]}" ; do
             if [ "${role}" != "${dependency}" ] && [[ -v "debops_role_map[${dependency}]" ]] ; then
                 if [ "${debops_role_map[${role}]}" -le "${collection_floor_map[${collections[0]}]}" ] ; then
