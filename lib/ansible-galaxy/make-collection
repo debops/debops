@@ -219,6 +219,15 @@ if [ -n "${roles_not_included}" ] ; then
     printf '\n'
 fi
 
+printf "Gathering license information...\\n"
+if [ -d "LICENSES" ] ; then
+    read -r -a used_licenses <<<"$(reuse lint | grep "Used licenses:" \
+                                   | sed -e "s/^.*Used licenses: //" \
+                                   | tr ',' ' ')"
+else
+    used_licenses=( "GPL-3.0-only" )
+fi
+
 workdir_path="$(mktemp -d "/tmp/debops-collections.XXXXXXXX")"
 for collection in "${collections[@]}" ; do
     workdir_map[${collection}]="$(mktemp -d "${workdir_path}/debops-$$.${collection}.XXXXXXXX")"
@@ -329,8 +338,13 @@ issues: "https://github.com/debops/debops/issues"
 
 readme: "README.md"
 license:
-  - "GPL-3.0-only"
-license_file: "LICENSE"
+EOF
+        for license in "${used_licenses[@]}" ; do
+            cat <<EOF >> "${workdir_map[${collection}]}/galaxy.yml"
+  - "${license}"
+EOF
+        done
+        cat <<EOF >> "${workdir_map[${collection}]}/galaxy.yml"
 
 tags:
   - "debian"
@@ -371,8 +385,13 @@ issues: "https://github.com/debops/debops/issues"
 
 readme: "README.md"
 license:
-  - "GPL-3.0-only"
-license_file: "LICENSE"
+EOF
+        for license in "${used_licenses[@]}" ; do
+            cat <<EOF >> "${workdir_map[${collection}]}/galaxy.yml"
+  - "${license}"
+EOF
+        done
+        cat <<EOF >> "${workdir_map[${collection}]}/galaxy.yml"
 
 tags:
   - "debops"
