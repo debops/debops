@@ -438,6 +438,7 @@ for collection in "${collections[@]}" ; do
     if [ -d "${workdir_map[${collection}]}" ] ; then
         pushd "${workdir_map[${collection}]}" > /dev/null
         ansible-galaxy collection build
+        python3 -m galaxy_importer.main debops-*.tar.gz
         cp debops-*.tar.gz ../
         popd > /dev/null
     fi
