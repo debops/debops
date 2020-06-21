@@ -324,7 +324,7 @@ for collection in "${collections[@]}" ; do
     for plugin in task_src template_src parse_kv_config parse_kv_items etc_aliases_parse_recipients ; do
 
         printf "%s " "Searching in 'debops.${collection}'"
-        files_to_modify=()
+        declare -a files_to_modify=( stub_file )
         counter=0
         while read -r in ; do
             if grep -q "${plugin}" "${in}" ; then
@@ -339,6 +339,9 @@ for collection in "${collections[@]}" ; do
             fi
         done < <(find "${workdir_map[${collection}]}/roles" -type f \
             -not -wholename "./${workdir_map[${collection}]}/roles/ansible_plugins")
+
+        # Remove the temporary element
+        unset 'files_to_modify[0]'
 
         if [ "${#files_to_modify[@]}" -gt 0 ] ; then
             printf " %s\\n" "found ${#files_to_modify[@]} '${plugin}' uses, replacing..."
