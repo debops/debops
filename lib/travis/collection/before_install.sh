@@ -7,5 +7,6 @@
 set -o nounset -o pipefail -o errexit
 
 sudo apt-get -qq update
+sudo apt-get -yq install pandoc pandoc-data
 pip3 install --upgrade pip wheel setuptools
-pip3 install galaxy-importer ansible ansible-lint
+pip3 install galaxy-importer ansible ansible-lint reuse
