@@ -22,6 +22,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.1: https://github.com/debops/debops/compare/v2.1.0...stable-2.1
 
+Added
+~~~~~
+
+:ref:`debops.mailman` role
+''''''''''''''''''''''''''
+
+- The :command:`nginx` service will be configured to reditect old
+  ``/mailman/listinfo`` URLs to the new ``/postorius/lists/`` URLs to help with
+  migration from Mailman 2.1 installations.
 
 `debops v2.1.0`_ - 2020-06-21
 -----------------------------
