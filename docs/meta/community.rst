@@ -42,5 +42,5 @@ Mailman. The list has low traffic and is used for notifications about
 significant changes in the project, and more asynchronous communication. You
 can also check out the `mailing list archives`__.
 
-.. __: https://lists.debops.org/mailman/listinfo/
-.. __: https://lists.debops.org/pipermail/debops-users/
+.. __: https://lists.debops.org/mailman/listinfo
+.. __: https://lists.debops.org/pipermail/debops-users
