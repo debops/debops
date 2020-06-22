@@ -106,14 +106,35 @@ mailman__nginx__dependent_servers:
     location_list:
 
       # Provide a redirect from old Mailman 2.1 installation
-      - pattern: '/mailman/listinfo'
+      - pattern: '^/mailman/?$'
+        pattern_prefix: '~* '
         options: 'return 301 /postorius/lists/;'
         state: 'present'
 
-        # Provide a redirect from old Mailman 2.1 installation to per-list page
-      - pattern: '^\/mailman\/listinfo\/(.*)'
-        pattern_prefix: '~*'
+      # Provide a redirect from old Mailman 2.1 installation
+      - pattern: '^/mailman/listinfo/?$'
+        pattern_prefix: '~* '
+        options: 'return 301 /postorius/lists/;'
+        state: 'present'
+
+      # Provide a redirect from old Mailman 2.1 installation to per-list page
+      # FIXME: Captures the trailing slash but shouldn't
+      - pattern: '^/mailman/listinfo/(.+)/?$'
+        pattern_prefix: '~* '
         options: 'return 301 /postorius/lists/$1.{{ mailman__fqdn }}/;'
+        state: 'present'
+
+      # Provide a redirect from old Mailman 2.1 installation
+      - pattern: '^/pipermail/?$'
+        pattern_prefix: '~* '
+        options: 'return 301 /hyperkitty/;'
+        state: 'present'
+
+      # Provide a redirect from old Mailman 2.1 installation
+      # FIXME: Captures the trailing slash but shouldn't
+      - pattern: '^/pipermail/(.+)/?$'
+        pattern_prefix: '~* '
+        options: 'return 301 /hyperkitty/list/$1@{{ mailman__fqdn }}/;'
         state: 'present'
 
       - pattern: '/'
