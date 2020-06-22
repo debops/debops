@@ -62,10 +62,10 @@ ansible_managed = This file is managed remotely, all changes will be lost
 
 if sys.platform.startswith('win'):
     DEFAULTS = DEFAULTS.replace('$XDG_DATA_HOME',
-                                os.getenv('APPDATA') or '~\\Application Data')
+                                os.getenv('APPDATA') or os.path.expanduser('~\\Application Data'))
 elif sys.platform == 'darwin':  # Mac OS X
     DEFAULTS = DEFAULTS.replace('$XDG_DATA_HOME',
-                                '~/Library/Application Support')
+                                os.path.expanduser('~/Library/Application Support'))
 
 
 def _set_xdg_defaults():
@@ -74,9 +74,9 @@ def _set_xdg_defaults():
     http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
     """
     for name, default in (
-            ('XDG_CONFIG_HOME', '~/.config'),
+            ('XDG_CONFIG_HOME', os.path.expanduser('~/.config')),
             ('XDG_CONFIG_DIRS', '/etc/xdg'),
-            ('XDG_DATA_HOME', '~/.local/share')):
+            ('XDG_DATA_HOME', os.path.expanduser('~/.local/share'))):
         if not os.environ.get(name):
             os.environ[name] = default
 
