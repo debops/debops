@@ -79,7 +79,7 @@ are not accessed directly by end users.
 
 - :ref:`debops.ansible`
 - :ref:`debops.apt_cacher_ng`
-- :ref:`debops.debops` - install DebOps on other hosts
+- :ref:`debops.controller` - install DebOps on other hosts
 - :ref:`debops.debops_api`
 - :ref:`debops.gitlab_runner`
 - :ref:`debops.fcgiwrap`

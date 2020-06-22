@@ -1,0 +1,53 @@
+---
+# Copyright (C) 2015-2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Install required packages
+  package:
+    name: '{{ q("flattened", ([ "git", "python-pip" ]
+                              + controller__base_packages
+                              + controller__packages)) }}'
+    state: 'present'
+  register: controller__register_packages
+  until: controller__register_packages is succeeded
+
+- name: Install DebOps from PyPI
+  pip:
+    name: '{{ q("flattened", controller__pip_packages) }}'
+    state: 'present'
+  register: controller__register_pip_install
+  until: controller__register_pip_install is succeeded
+  notify: '{{ [ "Update DebOps in the background with " + controller__update_method ]
+              if not controller__update_method == "sync" else omit }}'
+
+- name: Configure system-wide DebOps scripts
+  template:
+    src: 'etc/debops.cfg.j2'
+    dest: '/etc/debops.cfg'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: controller__install_systemwide|bool
+
+- name: Update roles and playbooks
+  become: '{{ controller__install_systemwide|bool }}'
+  command: debops-update
+  when: controller__update_method == 'sync'
+
+- name: Clone project repository
+  become: '{{ controller__install_systemwide|bool }}'
+  git:
+    repo: '{{ controller__project_git_repo }}'
+    dest: '{{ controller__project_name if controller__project_name else controller__project_git_repo | basename }}'
+    version: 'master'
+    update: True
+  when: controller__project_git_repo|d()
+
+- name: Initialize new project
+  become: '{{ controller__install_systemwide|bool }}'
+  command: debops-init '{{ controller__project_name }}'
+  args:
+    creates: '{{ controller__project_name }}/.debops.cfg'
+  when: controller__project_name|d() and
+        not controller__project_git_repo|d()
