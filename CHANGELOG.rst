@@ -22,6 +22,17 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v2.1.0...master
 
+Changed
+~~~~~~~
+
+General
+'''''''
+
+- The ``debops.debops`` role has been renamed to the :ref:`debops.controller`
+  role to allow for the ``debops__`` variable namespace to be used for global
+  variables. All role variables have been renamed along with the role inventory
+  group, you will have to update your inventory.
+
 
 `debops v2.1.0`_ - 2020-06-21
 -----------------------------
@@ -3083,7 +3094,7 @@ New DebOps roles
 ''''''''''''''''
 
 - The :ref:`debops.ansible` role: install Ansible on a Debian/Ubuntu host using
-  Ansible. The :ref:`debops.debops` role now uses the new role to install
+  Ansible. The ```debops.debops`` role now uses the new role to install
   Ansible instead of doing it directly.
 
 - The :ref:`debops.apt_mark` role: set install state of APT packages

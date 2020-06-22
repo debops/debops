@@ -250,6 +250,15 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/console/.*'
     JANE_LOG_PATTERN: '\[debops\.console\]'
 
+'controller role':
+  <<: *test_role_2nd_deps
+  variables:
+    JANE_TEST_FACT: 'controller.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/controller.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_controller'
+    JANE_DIFF_PATTERN: '.*/roles/controller/.*'
+    JANE_LOG_PATTERN: '\[debops\.controller\]'
+
 'core role':
   <<: *test_role_no_deps
   variables:
@@ -297,15 +306,6 @@ stages:
 
 
 # --- d --- [[[2
-
-'debops role':
-  <<: *test_role_2nd_deps
-  variables:
-    JANE_TEST_FACT: 'debops.fact'
-    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/debops.yml'
-    JANE_INVENTORY_GROUPS: 'debops_service_debops'
-    JANE_DIFF_PATTERN: '.*/roles/debops/.*'
-    JANE_LOG_PATTERN: '\[debops\.debops\]'
 
 # The 'debops_api' role is currently broken, needs to be updated.
 #'debops_api role':

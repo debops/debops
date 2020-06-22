@@ -994,7 +994,7 @@ X.509 certificate changes
 Role changes
 ~~~~~~~~~~~~
 
-- The :ref:`debops.debops` role now uses the :ref:`debops.ansible` role to
+- The ``debops.debops`` role now uses the :ref:`debops.ansible` role to
   install Ansible instead of doing it by itself. The relevant code has been
   removed, see the :ref:`debops.ansible` role documentation for new variables.
 
