@@ -105,6 +105,17 @@ mailman__nginx__dependent_servers:
 
     location_list:
 
+      # Provide a redirect from old Mailman 2.1 installation
+      - pattern: '/mailman/listinfo'
+        options: 'return 301 /postorius/lists/;'
+        state: 'present'
+
+        # Provide a redirect from old Mailman 2.1 installation to per-list page
+      - pattern: '^\/mailman\/listinfo\/(.*)'
+        pattern_prefix: '~*'
+        options: 'return 301 /postorius/lists/$1.{{ mailman__fqdn }}/;'
+        state: 'present'
+
       - pattern: '/'
         options: |
           uwsgi_pass mailman3;
