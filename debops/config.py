@@ -62,10 +62,12 @@ ansible_managed = This file is managed remotely, all changes will be lost
 
 if sys.platform.startswith('win'):
     DEFAULTS = DEFAULTS.replace('$XDG_DATA_HOME',
-                                os.getenv('APPDATA') or os.path.expanduser('~\\Application Data'))
+                                os.getenv('APPDATA') or os.path.expanduser(
+                                    '~\\Application Data'))
 elif sys.platform == 'darwin':  # Mac OS X
     DEFAULTS = DEFAULTS.replace('$XDG_DATA_HOME',
-                                os.path.expanduser('~/Library/Application Support'))
+                                os.path.expanduser(
+                                    '~/Library/Application Support'))
 
 
 def _set_xdg_defaults():
