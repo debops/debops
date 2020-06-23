@@ -293,7 +293,8 @@ class TestReadConfigDefaultsForPlattforms(TestCase):
         cfgparser = configparser.SafeConfigParser()
         cfgparser.readfp(cStringIO(debops.config.DEFAULTS))
         self.assertEqual(cfgparser.get('paths', 'data-home'),
-                         '~\\Application Data/debops')
+                         os.path.expanduser(
+                             '~\\Application Data/debops'))
 
     def test_defaults_windows_with_APPDATA(self):
         sys.platform = 'win32'
@@ -310,4 +311,5 @@ class TestReadConfigDefaultsForPlattforms(TestCase):
         cfgparser = configparser.SafeConfigParser()
         cfgparser.readfp(cStringIO(debops.config.DEFAULTS))
         self.assertEqual(cfgparser.get('paths', 'data-home'),
-                         '~/Library/Application Support/debops')
+                         os.path.expanduser(
+                             '~/Library/Application Support/debops'))
