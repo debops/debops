@@ -32,6 +32,16 @@ Added
   ``/mailman/listinfo`` URLs to the new ``/postorius/lists/`` URLs to help with
   migration from Mailman 2.1 installations.
 
+Fixed
+~~~~~
+
+General
+'''''''
+
+- Fixed an issue where the :command:`debops` scripts did not expand the
+  :file:`~/` prefix of the file and directory paths in user home directories.
+
+
 `debops v2.1.0`_ - 2020-06-21
 -----------------------------
 
