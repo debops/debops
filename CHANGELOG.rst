@@ -18,6 +18,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.1: https://github.com/debops/debops/compare/v1.1.0...stable-1.1
 
+Fixed
+~~~~~
+
+General
+'''''''
+
+- Fixed an issue where the :command:`debops` scripts did not expand the
+  :file:`~/` prefix of the file and directory paths in user home directories.
+
 
 `debops v1.1.10`_ - 2020-06-21
 ------------------------------
