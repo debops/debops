@@ -1,0 +1,44 @@
+---
+# Copyright (C) 2020 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Deploy and manage Node-RED
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_service_nodered' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: keyring
+      tags: [ 'role::keyring', 'skip::keyring',
+              'role::nginx', 'role::nodered' ]
+      keyring__dependent_apt_keys:
+        - '{{ nginx__keyring__dependent_apt_keys }}'
+
+    - role: apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ nginx__apt_preferences__dependent_list }}'
+
+    - role: ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ nginx__ferm__dependent_rules }}'
+
+    - role: nodejs
+      tags: [ 'role::nodejs', 'skip::nodejs', 'role::nodered' ]
+
+    - role: nginx
+      tags: [ 'role::nginx', 'skip::nginx' ]
+      nginx__dependent_upstreams:
+        - '{{ nodered__nginx__dependent_upstreams }}'
+      nginx__dependent_servers:
+        - '{{ nodered__nginx__dependent_servers }}'
+
+    - role: nodered
+      tags: [ 'role::nodered', 'skip::nodered' ]

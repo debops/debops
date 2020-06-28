@@ -1,0 +1,157 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2020 Robin Schneider <ypid@riseup.net>
+# .. Copyright (C) 2020 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _nodered__ref_defaults:
+
+# debops.nodered default variables [[[
+# ===================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Domain name configuration [[[
+# -----------------------------
+
+# .. envvar:: nodered__domain [[[
+#
+# The DNS domain used by other variables in the ``debops.nodered`` role.
+nodered__domain: '{{ ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: nodered__fqdn [[[
+#
+# String of the Fully Qualified domain names on which Node-RED
+# will be available, used by the webserver.
+nodered__fqdn: 'nodered.{{ nodered__domain }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: nodered__base_packages [[[
+#
+# List of APT packages which are required by the Node-RED server.
+nodered__base_packages: []
+                                                                   # ]]]
+                                                                   #
+# .. envvar:: nodered__packages [[[
+#
+# List of additional APT packages to install with Node-RED.
+nodered__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Application user, group, home [[[
+# ---------------------------------
+
+# .. envvar:: nodered__user [[[
+#
+# Name of the UNIX system account used to manage Node-RED.
+nodered__user: 'nodered'
+
+                                                                   # ]]]
+# .. envvar:: nodered__group [[[
+#
+# Name of the UNIX primary group used to manage Node-RED.
+nodered__group: 'nodered'
+
+                                                                   # ]]]
+# .. envvar:: nodered__gecos [[[
+#
+# Contents of the GECOS field set for the Node-RED account.
+nodered__gecos: 'Node-RED'
+
+                                                                   # ]]]
+# .. envvar:: nodered__shell [[[
+#
+# The default shell set on the Node-RED account.
+nodered__shell: '/usr/sbin/nologin'
+                                                                   # ]]]
+                                                                   # ]]]
+# Directory paths [[[
+# -------------------
+
+# .. envvar:: nodered__home [[[
+#
+# The Node-RED account home directory.
+nodered__home: '{{ (ansible_local.fhs.home | d("/var/local"))
+                   + "/" + nodered__user }}'
+
+                                                                   # ]]]
+# .. envvar:: nodered__etc [[[
+#
+# Directory where the role stores Node-RED configuration.
+nodered__etc: '/etc/nodered-server'
+
+                                                                   # ]]]
+# .. envvar:: nodered__src [[[
+#
+# Directory where the role stores Node-RED version control sources.
+nodered__src: '{{ (ansible_local.fhs.src | d("/usr/local/src"))
+                  + "/" + nodered__user }}'
+
+                                                                   # ]]]
+# .. envvar:: nodered__lib [[[
+#
+# Directory where the Node-RED server directory is located.
+nodered__lib: '{{ (ansible_local.fhs.lib | d("/usr/local/lib"))
+                  + "/" + nodered__user }}'
+
+                                                                   # ]]]
+# .. envvar:: nodered__data [[[
+#
+# Directory where Node-RED data is stored.
+nodered__data: '{{ (ansible_local.fhs.data | d("/srv"))
+                   + "/" + nodered__user }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Node-RED configuration options [[[
+# --------------------------------
+
+                                                                   # ]]]
+# Reverse proxy configuration [[[
+# -------------------------------
+
+# .. envvar:: nodered__verify_client_certificate [[[
+#
+# Should a valid client certificate be required to access Node-RED?
+nodered__verify_client_certificate: False
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration variables for other Ansible roles [[[
+# ---------------------------------------------------
+
+# .. envvar:: nodered__nginx__dependent_upstreams [[[
+#
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
+nodered__nginx__dependent_upstreams:
+  - name: 'nodered'
+    server: '127.0.0.1:1880'
+
+                                                                   # ]]]
+# .. envvar:: nodered__nginx__dependent_servers [[[
+#
+# Server configuration for the :ref:`debops.nginx` Ansible role.
+nodered__nginx__dependent_servers:
+  - name: '{{ nodered__fqdn }}'
+    filename: 'debops.nodered'
+    by_role: 'debops.nodered'
+    type: 'proxy'
+    ssl_verify_client: '{{ nodered__verify_client_certificate|bool }}'
+    proxy_pass: 'http://nodered'
+    proxy_redirect: 'default'
+    proxy_options: |
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+
+# ]]]
+# ]]]
+# ]]]

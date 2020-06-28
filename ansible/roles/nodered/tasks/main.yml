@@ -1,0 +1,73 @@
+---
+# Copyright (C) 2020 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- import_role:
+    name: 'secret'
+
+# Install system packages [[[1
+- name: Install required packages
+  package:
+    name: '{{ q("flattened", (nodered__base_packages
+                              + nodered__packages)) }}'
+    state: 'present'
+  register: nodered__register_packages
+  until: nodered__register_packages is succeeded
+
+# Create Node-RED system user [[[1
+- name: Create Node-RED system group
+  group:
+    name: '{{ nodered__group }}'
+    state: 'present'
+    system: True
+
+- name: Create Node-RED system user
+  user:
+    name: '{{ nodered__user }}'
+    group: '{{ nodered__group }}'
+    home: '{{ nodered__home }}'
+    comment: '{{ nodered__gecos }}'
+    shell: '{{ nodered__shell }}'
+    state: 'present'
+    system: True
+
+- name: Create additional directories used by Node-RED
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: '{{ nodered__user }}'
+    group: '{{ nodered__group }}'
+    mode: '0755'
+  with_items:
+    # - '{{ nodered__etc }}'
+    # - '{{ nodered__src }}'
+    # - '{{ nodered__git_dest | dirname }}'
+    - '{{ nodered__lib }}'
+    - '{{ nodered__data }}'
+
+# Install npm packages [[[1
+- name: Install Node-RED
+  npm:
+    name: 'node-red'
+    path: '{{ nodered__lib }}'
+  become: True
+  become_user: '{{ nodered__user }}'
+
+# systemd configuration [[[1
+- name: Configure systemd unit file
+  template:
+    src: 'etc/systemd/system/nodered.service.j2'
+    dest: '/etc/systemd/system/nodered.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: nodered__register_systemd_unit_file
+
+- name: Set Node-RED state using systemd
+  systemd:
+    name: 'nodered'
+    state: 'started'
+    enabled: True
+    masked: False
+    daemon_reload: '{{ nodered__register_systemd_unit_file is changed }}'

@@ -1,0 +1,29 @@
+{# Copyright (C) 2020 Robin Schneider <ypid@riseup.net>
+ # Copyright (C) 2020 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+# Source: https://raw.githubusercontent.com/node-red/linux-installers/master/resources/nodered.service
+
+[Unit]
+Description=Node-RED
+Wants=network.target
+Documentation=https://nodered.org/docs
+
+[Service]
+Type=simple
+User={{ nodered__user }}
+
+Nice=5
+Environment="NODE_OPTIONS=--max_old_space_size=512"
+# uncomment the next line for a more verbose log output
+#Environment="NODE_RED_OPTIONS=-v"
+ExecStart=/usr/bin/env node $NODE_OPTIONS {{ nodered__lib + "/node_modules/node-red/red.js" }} $NODE_RED_OPTIONS
+
+# Use SIGINT to stop
+KillSignal=SIGINT
+# Auto restart on crash
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
