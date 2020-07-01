@@ -32,6 +32,12 @@ Added
   ``/mailman/listinfo`` URLs to the new ``/postorius/lists/`` URLs to help with
   migration from Mailman 2.1 installations.
 
+:ref:`debops.ntp` role
+''''''''''''''''''''''
+
+- The :command:`chrony` ``cmdport`` parameter is now configurable using
+  a default variable.
+
 Fixed
 ~~~~~
 
