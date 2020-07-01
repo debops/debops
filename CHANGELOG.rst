@@ -38,6 +38,12 @@ Added
 - The :command:`chrony` ``cmdport`` parameter is now configurable using
   a default variable.
 
+:ref:`debops.postfix` role
+''''''''''''''''''''''''''
+
+- Postfix main.cf configuration overrides are now written to master.cf in 'long
+  form'. This allows specifying parameter values that contain whitespace.
+
 Fixed
 ~~~~~
 
