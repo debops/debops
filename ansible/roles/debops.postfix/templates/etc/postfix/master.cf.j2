@@ -111,7 +111,7 @@
 {%         if parsed_options | count > 0 %}
 {%           for thing in parsed_options %}
 {%             set thing_commented = ('#' if thing.state|d('present') == 'comment' else '') %}
-{{ '{}  -o {}={}'.format(option_commented if option_commented else thing_commented, thing.name, ([ thing.value ] if thing.value is string else thing.value) | join(',')) }}
+{{ '{}  -o {{ {} = {} }}'.format(option_commented if option_commented else thing_commented, thing.name, ([ thing.value ] if thing.value is string else thing.value) | join(', ')) }}
 {%           endfor %}
 {%         endif %}
 {%       endif %}
