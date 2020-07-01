@@ -21,6 +21,12 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+:ref:`debops.ntp` role
+''''''''''''''''''''''
+
+- The :command:`chrony` ``cmdport`` parameter is now configurable using
+  a default variable.
+
 :ref:`debops.postgresql` role
 '''''''''''''''''''''''''''''
 

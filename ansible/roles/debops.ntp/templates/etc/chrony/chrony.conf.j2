@@ -21,8 +21,8 @@ bindaddress {{ address }}
 # Only listen on localhost for command connections
 bindcmdaddress 127.0.0.1
 
-# Do not listen on udp control port on loopback. chronyc can still talk to chronyd via Unix sockets.
-cmdport 0
+# Set the udp control port on loopback. 0 means that chronyc can only talk to chronyd via Unix sockets.
+cmdport {{ ntp__chrony_cmdport }}
 
 {% if ntp__allow == False %}
 # Allow all hosts to connect to the server
