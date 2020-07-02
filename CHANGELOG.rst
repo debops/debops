@@ -59,6 +59,13 @@ General
 - Fixed an issue where the :command:`debops` scripts did not expand the
   :file:`~/` prefix of the file and directory paths in user home directories.
 
+LDAP
+''''
+
+- The :file:`ldap/init-directory.yml` playbook will correctly initialize the
+  LDAP directory when the local UNIX account does not have any GECOS
+  information.
+
 :ref:`debops.owncloud` role
 ''''''''''''''''''''''''''''
 
