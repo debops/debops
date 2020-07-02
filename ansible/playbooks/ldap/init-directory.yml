@@ -131,9 +131,9 @@
         attributes:
 
           # inetOrgPerson attributes
-          commonName:   '{{ admin_gecos.split(",")[0]|d(admin_user) }}'
-          givenName:    '{{ (admin_gecos.split(",")[0].split()[0]) if (admin_gecos|d() and " " in admin_gecos) else "" }}'
-          surname:      '{{ (admin_gecos.split(",")[0].split()[1]) if (admin_gecos|d() and " " in admin_gecos) else admin_gecos }}'
+          commonName:   '{{ admin_gecos.split(",")[0] if admin_gecos|d() else (admin_user | capitalize) }}'
+          givenName:    '{{ (admin_gecos.split(",")[0].split()[0]) if (admin_gecos|d() and " " in admin_gecos) else (admin_user | capitalize) }}'
+          surname:      '{{ (admin_gecos.split(",")[0].split()[1]) if (admin_gecos|d() and " " in admin_gecos) else (admin_user | capitalize) }}'
           userPassword: '{{ admin_plaintext_password }}'
 
           # POSIX attributes
