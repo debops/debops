@@ -409,35 +409,41 @@ slapd__default_tasks:
     attributes:
       olcOverlay: '{2}unique'
 
-  - name: 'Enable memberOf overlay in the main database'
+  - name: 'Enable memberOf overlay in the main database for Groups'
     dn: 'olcOverlay={3}memberof,olcDatabase={1}mdb,cn=config'
     objectClass: [ 'olcOverlayConfig', 'olcMemberOf' ]
     attributes:
       olcOverlay: '{3}memberof'
 
+  - name: 'Enable memberOf overlay in the main database for Roles'
+    dn: 'olcOverlay={4}memberof,olcDatabase={1}mdb,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcMemberOf' ]
+    attributes:
+      olcOverlay: '{4}memberof'
+
   - name: 'Enable Referential Integrity overlay in the main database'
-    dn: 'olcOverlay={4}refint,olcDatabase={1}mdb,cn=config'
+    dn: 'olcOverlay={5}refint,olcDatabase={1}mdb,cn=config'
     objectClass: [ 'olcOverlayConfig', 'olcRefintConfig' ]
     attributes:
-      olcOverlay: '{4}refint'
+      olcOverlay: '{5}refint'
 
   - name: 'Enable Audit Logging overlay in the main database'
-    dn: 'olcOverlay={5}auditlog,olcDatabase={1}mdb,cn=config'
+    dn: 'olcOverlay={6}auditlog,olcDatabase={1}mdb,cn=config'
     objectClass: [ 'olcOverlayConfig', 'olcAuditLogConfig' ]
     attributes:
-      olcOverlay: '{5}auditlog'
+      olcOverlay: '{6}auditlog'
 
   - name: 'Enable Constraint overlay in the main database'
-    dn: 'olcOverlay={6}constraint,olcDatabase={1}mdb,cn=config'
+    dn: 'olcOverlay={7}constraint,olcDatabase={1}mdb,cn=config'
     objectClass: [ 'olcOverlayConfig', 'olcConstraintConfig' ]
     attributes:
-      olcOverlay: '{6}constraint'
+      olcOverlay: '{7}constraint'
 
   - name: 'Enable LastBind overlay in the main database'
-    dn: 'olcOverlay={7}lastbind,olcDatabase={1}mdb,cn=config'
+    dn: 'olcOverlay={8}lastbind,olcDatabase={1}mdb,cn=config'
     objectClass: [ 'olcOverlayConfig', 'olcLastBindConfig' ]
     attributes:
-      olcOverlay: '{7}lastbind'
+      olcOverlay: '{8}lastbind'
 
   - name: 'Configure Password Policy overlay in the main database'
     dn: 'olcOverlay={1}ppolicy,olcDatabase={1}mdb,cn=config'
@@ -461,7 +467,7 @@ slapd__default_tasks:
         - 'ldap:///ou=People,{{ slapd__basedn }}?gid?sub'
     state: 'exact'
 
-  - name: 'Configure memberOf overlay in the main database'
+  - name: 'Configure memberOf overlay in the main database for Groups'
     dn: 'olcOverlay={3}memberof,olcDatabase={1}mdb,cn=config'
     attributes:
       olcMemberOfDangling: 'ignore'
@@ -471,8 +477,18 @@ slapd__default_tasks:
       olcMemberOfMemberOfAD: 'memberOf'
     state: 'exact'
 
+  - name: 'Configure memberOf overlay in the main database for Roles'
+    dn: 'olcOverlay={4}memberof,olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcMemberOfDangling: 'ignore'
+      olcMemberOfRefInt: 'TRUE'
+      olcMemberOfGroupOC: 'organizationalRole'
+      olcMemberOfMemberAD: 'roleOccupant'
+      olcMemberOfMemberOfAD: 'memberOf'
+    state: 'exact'
+
   - name: 'Configure Referential Integrity overlay in the main database'
-    dn: 'olcOverlay={4}refint,olcDatabase={1}mdb,cn=config'
+    dn: 'olcOverlay={5}refint,olcDatabase={1}mdb,cn=config'
     attributes:
       olcRefintAttribute:
         - 'member'
@@ -487,13 +503,13 @@ slapd__default_tasks:
     state: 'exact'
 
   - name: 'Configure Audit Logging overlay in the main database'
-    dn: 'olcOverlay={5}auditlog,olcDatabase={1}mdb,cn=config'
+    dn: 'olcOverlay={6}auditlog,olcDatabase={1}mdb,cn=config'
     attributes:
       olcAuditlogFile: '{{ slapd__log_dir + "/slapd-auditlog-main.ldif" }}'
     state: 'exact'
 
   - name: 'Configure Constraint overlay in the main database'
-    dn: 'olcOverlay={6}constraint,olcDatabase={1}mdb,cn=config'
+    dn: 'olcOverlay={7}constraint,olcDatabase={1}mdb,cn=config'
     attributes:
       olcConstraintAttribute:
         - 'jpegPhoto size 524288'  # 512 KiB
@@ -507,7 +523,7 @@ slapd__default_tasks:
     state: 'exact'
 
   - name: 'Configure LastBind overlay in the main database'
-    dn: 'olcOverlay={7}lastbind,olcDatabase={1}mdb,cn=config'
+    dn: 'olcOverlay={8}lastbind,olcDatabase={1}mdb,cn=config'
     attributes:
       olcLastBindPrecision: '{{ (60 * 60 * 24) }}'
     state: 'exact'

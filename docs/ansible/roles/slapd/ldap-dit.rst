@@ -82,15 +82,17 @@ Directory structure
 
         - :ref:`olcOverlay={2}unique <slapd__ref_unique_overlay>`
 
-        - :ref:`olcOverlay={3}memberof <slapd__ref_memberof_overlay>`
+        - :ref:`olcOverlay={3}memberof <slapd__ref_memberof_overlay>` (for ``groupOfNames`` LDAP objects)
 
-        - :ref:`olcOverlay={4}refint <slapd__ref_refint_overlay>`
+        - :ref:`olcOverlay={4}memberof <slapd__ref_memberof_overlay>` (for ``organizationalRole`` LDAP objects)
 
-        - :ref:`olcOverlay={5}auditlog <slapd__ref_auditlog_overlay>`
+        - :ref:`olcOverlay={5}refint <slapd__ref_refint_overlay>`
 
-        - :ref:`olcOverlay={6}constraint <slapd__ref_constraint_overlay>`
+        - :ref:`olcOverlay={6}auditlog <slapd__ref_auditlog_overlay>`
 
-        - :ref:`olcOverlay={7}lastbind <slapd__ref_lastbind_overlay>`
+        - :ref:`olcOverlay={7}constraint <slapd__ref_constraint_overlay>`
+
+        - :ref:`olcOverlay={8}lastbind <slapd__ref_lastbind_overlay>`
 
         - :envvar:`olcAccess <slapd__acl_tasks>` (:ref:`documentation <slapd__ref_acl>`)
 

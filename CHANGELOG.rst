@@ -50,6 +50,14 @@ General
   since Postfix 3.0. This allows specifying parameter values that contain
   whitespace.
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- The role will set up an additional instance of the ``memberof`` OpenLDAP
+  overlay to update role membership in the ``organizationalRole`` LDAP objects.
+  This change modifies the list of overlays and will require re-initialization
+  of the OpenLDAP directory.
+
 Fixed
 ~~~~~
 
