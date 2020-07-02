@@ -58,6 +58,11 @@ General
 - Fixed an issue where the :command:`debops` scripts did not expand the
   :file:`~/` prefix of the file and directory paths in user home directories.
 
+:ref:`debops.sudo` role
+'''''''''''''''''''''''
+
+- Add missing role dependency on the :ref:`debops.secret` Ansible role.
+
 
 `debops v2.1.0`_ - 2020-06-21
 -----------------------------
