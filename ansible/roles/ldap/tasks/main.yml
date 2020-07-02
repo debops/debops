@@ -86,7 +86,7 @@
         item.name|d() and item.dn|d() and
         item.state|d('present') not in [ 'init', 'ignore' ]
   tags: [ 'role::ldap:tasks', 'skip::ldap:tasks' ]
-  no_log: '{{ item.no_log | d(True
-                              if ("userPassword" in (item.attributes|d({})).keys() or
-                                  "olcRootPW"    in (item.attributes|d({})).keys())
-                              else False) }}'
+  no_log: '{{ debops__no_log | d(item.no_log | d(True
+                                 if ("userPassword" in (item.attributes|d({})).keys() or
+                                     "olcRootPW"    in (item.attributes|d({})).keys())
+                                 else False)) }}'
