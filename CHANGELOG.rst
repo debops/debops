@@ -38,6 +38,12 @@ General
 - Fixed an issue where the :command:`debops` scripts did not expand the
   :file:`~/` prefix of the file and directory paths in user home directories.
 
+:ref:`debops.rsnapshot` role
+''''''''''''''''''''''''''''
+
+- Fixed an issue which caused dry runs of the :ref:`debops.rsnapshot` role to
+  fail.
+
 :ref:`debops.sudo` role
 '''''''''''''''''''''''
 
