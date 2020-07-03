@@ -89,6 +89,20 @@ LDAP
 - Fixed an issue which caused dry runs of the :ref:`debops.rsnapshot` role to
   fail.
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- Modify the :file:`mailservice.schema` LDAP schema so that various
+  mail-related attributes do not use the ``mail`` attribute as SUPerior
+  attribute. This fixes an issue where searching for ``mail`` attribute values
+  returned entries with the values present in related attributes, for example
+  ``mailForwardTo``, causing problems with account lookups.
+
+  This change will require the rebuild of the OpenLDAP directory to be applied
+  correctly. The role will not apply the changes on existing installations
+  automatically due to the :file:`mailservice.schema` being loaded into the
+  database.
+
 
 `debops v2.1.0`_ - 2020-06-21
 -----------------------------
