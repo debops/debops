@@ -61,6 +61,10 @@ General
 - New equality indexes have been added to the :command:`slapd` service:
   ``roleOccupant``, ``memberOf`` and ``employeeNumber``.
 
+- The :file:`eduperson.schema` LDAP schema has been extended with additional
+  attributes not present in the official specification. The new schema will not
+  be applied automatically on existing installations.
+
 Fixed
 ~~~~~
 

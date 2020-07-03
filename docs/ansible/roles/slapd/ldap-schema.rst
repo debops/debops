@@ -281,6 +281,11 @@ slightly outdated and does not include object and attribute descriptions.
 Because of that, DebOps contains its own copy of the schema, cleaned up and
 updated, which will be imported by default to OpenLDAP directory server.
 
+The version of the schema included in DebOps has been extended with additional
+attributes for the ``eduPerson`` and ``eduOrg`` Object Classes not present in
+the official specification. These attributes have been found useful in an
+academic environment; more attributes might be added in the future if needed.
+
 
 .. _slapd__ref_nextcloud:
 

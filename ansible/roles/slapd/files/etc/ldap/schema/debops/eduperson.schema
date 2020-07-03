@@ -185,19 +185,161 @@ attributeType ( eduPersonAttribute:16
                 EQUALITY caseIgnoreMatch
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
 
+attributeType ( eduPersonAttribute:17
+                NAME 'eduPersonGlobalId'
+                DESC 'Specifies the person\27s global identifier associated to
+                      him/her outside of the organization, for example national
+                      identification number. This attribute should normally be
+                      protected and with a restricted access.
+
+                      This is a non-standard eduPerson attribute.'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' SINGLE-VALUE )
+
+attributeType ( eduPersonAttribute:18
+                NAME 'eduPersonGlobalIdType'
+                DESC 'Specifies the type of the global identifier associated to
+                      a given person outside of the organization, for example
+                      national identification number. This attribute should
+                      normally be protected and with a restricted access.
+
+                      This is a non-standard eduPerson attribute.'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' SINGLE-VALUE )
+
+attributeType ( eduPersonAttribute:19
+                NAME 'eduPersonPrimaryLocalId'
+                DESC 'Specifies the person\27s primary local identifier
+                      associated to him/her inside of the organization, for
+                      example student card number. This attribute should
+                      normally be protected and with a restricted access.
+
+                      This is a non-standard eduPerson attribute.'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' SINGLE-VALUE )
+
+attributeType ( eduPersonAttribute:20
+                NAME 'eduPersonLocalId'
+                DESC 'Specifies the person\27s local identifier associated
+                      to him/her inside of the organization, for
+                      example student card number. Multiple values are
+                      permitted to allow for historical data. This attribute
+                      should normally be protected and with a restricted
+                      access.
+
+                      This is a non-standard eduPerson attribute.'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributeType ( eduPersonAttribute:21
+                NAME 'eduPersonPosition'
+                DESC 'Denotes a position of a given person within the
+                      organization.
+
+                      This is a non-standard eduPerson attribute.'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributeType ( eduPersonAttribute:22
+                NAME 'eduPersonFunction'
+                DESC 'Denotes a function of a given person within the
+                      organization.
+
+                      This is a non-standard eduPerson attribute.'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
+
+attributeType ( eduPersonAttribute:23
+                NAME 'eduPersonAcademicDegree'
+                DESC 'Denotes an academic degree of a given person.
+
+                      This is a non-standard eduPerson attribute.'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' SINGLE-VALUE )
+
+attributeType ( eduPersonAttribute:24
+                NAME 'eduPersonDormBuildingName'
+                DESC 'Specifies the name of the dorm on the organizational
+                      campus in which a given person resides. This attribute
+                      should normally be protected and with a restricted
+                      access.
+
+                      This is a non-standard eduPerson attribute.'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15{256}' )
+
+attributeType ( eduPersonAttribute:25
+                NAME 'eduPersonDormRoomNumber'
+                DESC 'Specifies the dorm room number on the organizational
+                      campus in which a given person resides. This attribute
+                      should normally be protected and with a restricted
+                      access.
+
+                      This is a non-standard eduPerson attribute.'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15{256}' )
+
+attributeType ( eduPersonAttribute:26
+                NAME 'eduPersonVisible'
+                DESC 'This attribute can be used as an indicator that a given
+                      person should be visible in general views.
+
+                      This is a non-standard eduPerson attribute.'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' SINGLE-VALUE )
+
+attributeType ( eduPersonAttribute:27
+                NAME 'eduPersonSearchable'
+                DESC 'This attribute can be used as an indicator that a given
+                      person should be included in search results.
+
+                      This is a non-standard eduPerson attribute.'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' SINGLE-VALUE )
+
+attributeType ( eduPersonAttribute:28
+                NAME 'eduPersonPublic'
+                DESC 'This attribute can be used as an indicator that specific
+                      attributes of a person can be displayed publicly.
+
+                      This is a non-standard eduPerson attribute.'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' SINGLE-VALUE )
+
 
 # eduPerson object definitions
 # ----------------------------
 
 objectClass ( eduPersonObject
-              NAME 'eduPerson' AUXILIARY
-              MAY ( eduPersonAffiliation $ eduPersonNickname $
+              NAME 'eduPerson'
+              AUXILIARY
+              MAY ( organizationalStatus $ personalSignature $ personalTitle $
+                    buildingName $ roomNumber $ manager $ secretary $
+                    eduPersonAffiliation $ eduPersonNickname $
                     eduPersonOrgDN $ eduPersonOrgUnitDN $
                     eduPersonPrimaryAffiliation $ eduPersonPrincipalName $
                     eduPersonPrincipalNamePrior $ eduPersonEntitlement $
                     eduPersonPrimaryOrgUnitDN $ eduPersonScopedAffiliation $
                     eduPersonTargetedID $ eduPersonAssurance $
-                    eduPersonUniqueId $ eduPersonOrcid ) )
+                    eduPersonUniqueId $ eduPersonOrcid $
+                    eduPersonGlobalId $ eduPersonGlobalIdType $
+                    eduPersonPrimaryLocalId $ eduPersonLocalId $
+                    eduPersonPosition $ eduPersonFunction $
+                    eduPersonAcademicDegree $
+                    eduPersonDormBuildingName $ eduPersonDormRoomNumber $
+                    eduPersonVisible $ eduPersonSearchable $ eduPersonPublic ) )
 
 
 # eduOrg attribute definitions
@@ -239,6 +381,46 @@ attributeType ( eduOrgAttribute:6
                 EQUALITY caseExactMatch
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' )
 
+attributeType ( eduOrgAttribute:7
+                NAME 'eduOrgUnitNumber'
+                DESC 'This attribute specifies an unit number within an
+                      organization. An unit can be composed of multiple
+                      organizational departments.
+
+                      This is a non-standard eduOrg attribute.'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' SINGLE-VALUE )
+
+attributeType ( eduOrgAttribute:8
+                NAME 'eduOrgDepartmentNumber'
+                DESC 'This attribute specifies an unique organizational
+                      department number within an organization.
+
+                      This is a non-standard eduOrg attribute.'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' SINGLE-VALUE )
+
+attributeType ( eduOrgAttribute:9
+                NAME 'eduOrgVisible'
+                DESC 'This attribute can be used as an indicator that a given
+                      organizational unit should be visible in general views.
+
+                      This is a non-standard eduOrg attribute.'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' SINGLE-VALUE )
+
+attributeType ( eduOrgAttribute:10
+                NAME 'eduOrgSearchable'
+                DESC 'This attribute can be used as an indicator that a given
+                      organizational unit should be included in search results.
+
+                      This is a non-standard eduPerson attribute.'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15' SINGLE-VALUE )
 
 # eduOrg object definitions
 # -------------------------
@@ -246,6 +428,9 @@ attributeType ( eduOrgAttribute:6
 objectClass ( eduOrgObject
               NAME 'eduOrg'
               AUXILIARY
-              MAY ( cn $ eduOrgHomePageURI $
-                    eduOrgIdentityAuthNPolicyURI $ eduOrgLegalName $
-                    eduOrgSuperiorURI $ eduOrgWhitePagesURI ) )
+              MAY ( cn $ buildingName $ roomNumber $ businessCategory $
+                    organizationalStatus $ manager $ secretary $
+                    eduOrgHomePageURI $ eduOrgIdentityAuthNPolicyURI $
+                    eduOrgLegalName $ eduOrgSuperiorURI $ eduOrgWhitePagesURI $
+                    eduOrgUnitNumber $ eduOrgDepartmentNumber $
+                    eduOrgVisible $ eduOrgSearchable ) )
