@@ -58,6 +58,9 @@ General
   This change modifies the list of overlays and will require re-initialization
   of the OpenLDAP directory.
 
+- New equality indexes have been added to the :command:`slapd` service:
+  ``roleOccupant``, ``memberOf`` and ``employeeNumber``.
+
 Fixed
 ~~~~~
 
