@@ -42,6 +42,12 @@ General
 - Fixed an issue where the :command:`debops` scripts did not expand the
   :file:`~/` prefix of the file and directory paths in user home directories.
 
+:ref:`debops.owncloud` role
+''''''''''''''''''''''''''''
+
+- Fixed multiple issues which caused dry runs of the :ref:`debops.owncloud` role
+  to incorrectly show pending changes or fail altogether.
+
 
 `debops v2.1.0`_ - 2020-06-21
 -----------------------------
