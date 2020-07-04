@@ -52,6 +52,7 @@
         executable: 'sh'
       register: owncloud__register_full_version
       changed_when: False
+      check_mode: False
       tags: [ 'role::nextcloud:verify' ]
 
     # Nextcloud application archive download [[[2
@@ -74,6 +75,7 @@
         - 'zip.asc'
         - 'zip.sha512'
       register: owncloud__register_download_assurance
+      when: not ansible_check_mode
       tags: [ 'role::nextcloud:download', 'role::nextcloud:verify' ]
 
     # Nextcloud application archive authenticity verification [[[2
@@ -87,6 +89,7 @@
         executable: 'sh'
       changed_when: False
       register: owncloud__register_checksum
+      when: not ansible_check_mode  # Latest checksum file may not be available
       tags: [ 'role::nextcloud:download', 'role::nextcloud:verify' ]
 
     - name: Download application archive
