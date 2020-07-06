@@ -94,8 +94,7 @@
   become: True
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
-  when: (((item.name|d() and item.name) or (item.role|d() and item.role)) and
-         (item.state is undefined or item.state != 'absent'))
+  when: item.state|d('present') == 'present'
   no_log: True
 
 - name: Create PostgreSQL databases
@@ -115,11 +114,10 @@
   become: True
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
-  when: (((item.name|d() and item.name) or (item.database|d() and item.database)) and
-         (item.state is undefined or item.state != 'absent') and
-         (item.create_db is undefined or item.create_db))
+  when: (item.state|d('present') == 'present') and
+        item.create_db|d(True)
 
-- name: Enable specified database extensions
+- name: Enable or disable specified database extensions
   postgresql_ext:
     db: '{{ item.database }}'
     name: '{{ item.extension }}'
@@ -131,7 +129,7 @@
   become: True
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
-  when: (item.extension|d() and item.database|d())
+  when: item.state|d('present') in ['present', 'absent']
 
 - name: Grant public schema permissions
   postgresql_privs:
@@ -150,9 +148,8 @@
   become: True
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
-  when: (((item.name|d() and item.name) or (item.database|d() and item.database)) and
-         (item.state is undefined or item.state != 'absent') and
-         (item.owner|d() and item.owner))
+  when: (item.state|d('present') == 'present') and
+        item.owner|d()
 
 - name: Grant PostgreSQL groups
   postgresql_privs:
@@ -170,10 +167,8 @@
   become: True
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
-  when: ((item.roles|d() and item.roles) and
-         (item.groups|d() and item.groups) and
-         (item.database|d() and item.database) and
-         (item.enabled is undefined or item.enabled|bool))
+  when: (item.state|d('present') == 'present') and
+        item.enabled|d(True)|bool
 
 - name: Grant database privileges to PostgreSQL roles
   postgresql_user:
@@ -189,10 +184,8 @@
   become: True
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
-  when: (((item.name|d() and item.name) or (item.role|d() and item.role)) and
-         (item.state is undefined or item.state != 'absent') and
-         (item.db|d() and item.db) and
-         (item.priv|d() and item.priv))
+  when: (item.state|d('present') == 'present') and
+        (item.db|d() and item.priv|d())
   no_log: True
 
 - name: Make sure required system groups exist
@@ -204,7 +197,6 @@
     - '{{ postgresql__pgpass }}'
     - '{{ postgresql_pgpass|d([]) }}'
     - '{{ postgresql__dependent_pgpass }}'
-  when: item.owner|d() and item.owner
   no_log: True
 
 - name: Make sure required system accounts exist
@@ -218,7 +210,6 @@
     - '{{ postgresql__pgpass }}'
     - '{{ postgresql_pgpass|d([]) }}'
     - '{{ postgresql__dependent_pgpass }}'
-  when: item.owner|d() and item.owner
   no_log: True
 
 - name: Populate ~/.pgpass file
@@ -254,5 +245,4 @@
     - '{{ postgresql__pgpass }}'
     - '{{ postgresql_pgpass|d([]) }}'
     - '{{ postgresql__dependent_pgpass }}'
-  when: item.owner|d() and item.owner
   no_log: True
