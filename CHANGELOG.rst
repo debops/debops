@@ -42,6 +42,12 @@ General
 - Fixed an issue where the :command:`debops` scripts did not expand the
   :file:`~/` prefix of the file and directory paths in user home directories.
 
+:ref:`debops.nginx`
+'''''''''''''''''''
+
+- Documented the previously undocumented ``content_type_options`` variable for
+  server blocks.
+
 
 `debops v2.1.0`_ - 2020-06-21
 -----------------------------
