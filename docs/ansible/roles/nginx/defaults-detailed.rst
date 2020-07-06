@@ -474,6 +474,13 @@ Locations
 HTTP security headers
 ~~~~~~~~~~~~~~~~~~~~~
 
+``content_type_options``
+  Optional, string. Defaults to ``nosniff``, which indicates to browsers that
+  MIME types advertised in the Content-Type headers should not be changed and be
+  followed. This prevents MIME type sniffing and is the reason why site security
+  testers usually expect this header to be set. Set this variable to
+  ``{{ omit }}`` to exclude the header from all responses.
+
 ``csp``
   Optional, string. Defaults to: ``default-src https: ;`` (force all assets to be loaded over HTTPS).
   Sets the first part of the ``Content-Security-Policy`` header.
