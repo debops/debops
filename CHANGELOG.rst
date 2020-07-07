@@ -18,11 +18,16 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.2: https://github.com/debops/debops/compare/v1.2.0...stable-1.2
 
+Changed
+~~~~~~~
+
 :ref:`debops.postfix` role
 ''''''''''''''''''''''''''
 
-- Postfix main.cf configuration overrides are now written to master.cf in 'long
-  form'. This allows specifying parameter values that contain whitespace.
+- Postfix :file:`main.cf` configuration overrides are now written to the
+  :file:`master.cf` configuration file using 'long form' notation supported
+  since Postfix 3.0. This allows specifying parameter values that contain
+  whitespace.
 
 Fixed
 ~~~~~
