@@ -33,6 +33,14 @@ General
   variables. All role variables have been renamed along with the role inventory
   group, you will have to update your inventory.
 
+:ref:`debops.postfix` role
+''''''''''''''''''''''''''
+
+- Postfix :file:`main.cf` configuration overrides are now written to the
+  :file:`master.cf` configuration file using 'long form' notation supported
+  since Postfix 3.0. This allows specifying parameter values that contain
+  whitespace.
+
 Fixed
 ~~~~~
 
