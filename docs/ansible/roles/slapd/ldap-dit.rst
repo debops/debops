@@ -1,5 +1,5 @@
-.. Copyright (C) 2016-2019 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2016-2019 DebOps <https://debops.org/>
+.. Copyright (C) 2016-2020 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2016-2020 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 .. _slapd__ref_ldap_dit:
@@ -42,6 +42,8 @@ Directory structure
 
         - ``{9}lastbind``
 
+        - ``{10}autogroup``
+
       - :ref:`cn=schema <slapd__ref_ldap_schemas>`
 
         - :ref:`core.schema <slapd__ref_initial_schemas>`
@@ -70,6 +72,8 @@ Directory structure
 
         - :ref:`mailservice.schema <slapd__ref_mailservice>`
 
+        - :ref:`dyngroup.schema <slapd__ref_dyngroup>`
+
       - ``olcDatabase={0}config``
 
         - :ref:`olcOverlay={0}syncprov <slapd__ref_syncprov_overlay>` (:ref:`for Multi-Master replication <slapd__ref_syncrepl_multi_master>`)
@@ -84,15 +88,19 @@ Directory structure
 
         - :ref:`olcOverlay={3}memberof <slapd__ref_memberof_overlay>` (for ``groupOfNames`` LDAP objects)
 
-        - :ref:`olcOverlay={4}memberof <slapd__ref_memberof_overlay>` (for ``organizationalRole`` LDAP objects)
+        - :ref:`olcOverlay={4}memberof <slapd__ref_memberof_overlay>` (for ``groupOfURLs`` LDAP objects)
 
-        - :ref:`olcOverlay={5}refint <slapd__ref_refint_overlay>`
+        - :ref:`olcOverlay={5}memberof <slapd__ref_memberof_overlay>` (for ``organizationalRole`` LDAP objects)
 
-        - :ref:`olcOverlay={6}auditlog <slapd__ref_auditlog_overlay>`
+        - :ref:`olcOverlay={6}refint <slapd__ref_refint_overlay>`
 
-        - :ref:`olcOverlay={7}constraint <slapd__ref_constraint_overlay>`
+        - :ref:`olcOverlay={7}auditlog <slapd__ref_auditlog_overlay>`
 
-        - :ref:`olcOverlay={8}lastbind <slapd__ref_lastbind_overlay>`
+        - :ref:`olcOverlay={8}constraint <slapd__ref_constraint_overlay>`
+
+        - :ref:`olcOverlay={9}autogroup <slapd__ref_autogroup_overlay>`
+
+        - :ref:`olcOverlay={10}lastbind <slapd__ref_lastbind_overlay>`
 
         - :envvar:`olcAccess <slapd__acl_tasks>` (:ref:`documentation <slapd__ref_acl>`)
 

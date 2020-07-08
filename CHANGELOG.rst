@@ -31,6 +31,13 @@ Added
 - The role can now drop PostgreSQL databases and remove roles when their state
   is set to ``absent`` in the Ansible inventory.
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- Support for the dynamic LDAP groups maintained by the
+  :ref:`slapd__ref_autogroup_overlay` has been implemented in the role. Debian
+  Buster or newer is recommended for this feature to work properly.
+
 Changed
 ~~~~~~~
 

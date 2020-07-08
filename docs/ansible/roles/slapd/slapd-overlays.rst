@@ -89,7 +89,10 @@ Reverse Group Membership Maintenance overlay
 
 The `memberOf overlay`__ is used to update the LDAP objects of group members
 when they are added or removed from a particular ``groupOfNames`` object, as
-well as "role occupants" defined in a given ``organizationalRole`` object.
+well as "role occupants" defined in a given ``organizationalRole`` object. The
+overlay also maintains reverse membership information of the ``groupOfURLs``
+objects maintained by the :ref:`slapd__ref_autogroup_overlay`.
+
 Applications and services can search for objects with the ``memberOf``
 attribute with specific values to get the list of groups or roles a given user
 belongs to.
@@ -140,6 +143,42 @@ attributes, for example number of possible values, size or format.
 .. __: https://www.openldap.org/doc/admin24/overlays.html#Constraints
 
 Manual page: :man:`slapo-constraint(5)`
+
+
+.. _slapd__ref_autogroup_overlay:
+
+AutoGroup overlay
+-----------------
+
+The ``autogroup`` overlay is yet another attempt at creating `dynamic groups`__
+in the LDAP directory. Normally using the combination of the
+:man:`slapo-dynlist(5)` and the :man:`slapo-dyngroup(5)` overlays the LDAP
+directory can support dynamic group objects which define membership in a group
+using LDAP search URLs. However these groups are "virtual" and don't really
+exist, using the dynamic attributes in searches will not include these groups.
+Also, the reverse membership information defined by the ``memberOf`` attribute
+cannot be implemented this way.
+
+With ``autogroup`` overlay, the directory server checks on each add, modify or
+delete operation on an object if that object is included in a search of
+a particular ``groupOfURLs`` group and statically adds or removes a reference
+to it in the ``member`` attribute as needed. With addition of the ``memberof``
+overlay which maintains reverse membership information of a given object using
+the ``memberOf`` attribute, the AutoGroup overlay can be used to provide
+two-way dynamic group support in the LDAP directory. The write performance
+might be an issue with large datasets.
+
+The dynamic groups are defined using the ``groupOfURLs`` LDAP object. The
+``memberURL`` attribute(s) define the `LDAP search URLs`__ (:rfc:`4516`) used
+to specify the members of the group.
+
+.. warning:: During development of the feature in DebOps, crashes of the
+             :command:`slapd` daemon were observed in multi-master replication
+             mode on older Debian releases. The OpenLDAP version included in
+             Debian Buster seems to work fine, though.
+
+.. __: https://www.zytrax.com/books/ldap/ch11/dynamic.html
+.. __: https://ldapwiki.com/wiki/LDAP%20URL
 
 
 .. _slapd__ref_lastbind_overlay:
