@@ -22,6 +22,15 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v2.1.0...master
 
+Added
+~~~~~
+
+:ref:`debops.postgresql` role
+'''''''''''''''''''''''''''''
+
+- The role can now drop PostgreSQL databases and remove roles when their state
+  is set to ``absent`` in the Ansible inventory.
+
 Changed
 ~~~~~~~
 
