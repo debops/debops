@@ -369,6 +369,12 @@ slapd__tls_cipher_suite: 'SECURE256:PFS:-VERS-SSL3.0:-VERS-TLS-ALL:+VERS-TLS1.2:
 # role.
 slapd__default_tasks:
 
+  - name: 'Define the maximum size of the main database'
+    dn: [ 'olcDatabase={1}mdb', 'cn=config' ]
+    attributes:
+      olcDbMaxSize: '{{ slapd__data_max_size }}'
+    state: 'exact'
+
   - name: 'Load dynamic OpenLDAP modules'
     dn: 'cn=module{0},cn=config'
     attributes:
@@ -609,12 +615,6 @@ slapd__default_tasks:
       olcAuthzRegexp:
         - '{0}uid=([^,]*),cn=[^,]*,cn=auth uid=$1,ou=People,{{ slapd__basedn }}'
         - '{1}uid=([^,]*),cn=([^,]*),cn=[^,]*,cn=auth ldap:///ou=Hosts,{{ slapd__basedn }}??sub?(&(objectClass=account)(uid=$1)(host=$2))'
-    state: 'exact'
-
-  - name: 'Define the maximum size of the main database'
-    dn: [ 'olcDatabase={1}mdb', 'cn=config' ]
-    attributes:
-      olcDbMaxSize: '{{ slapd__data_max_size }}'
     state: 'exact'
 
   - name: 'Define indexes present in the main database'
