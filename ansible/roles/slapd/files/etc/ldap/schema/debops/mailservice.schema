@@ -56,39 +56,56 @@ objectIdentifier mailServiceObject mailService:4
 attributeType ( mailServiceAttribute:1
                 NAME 'mailAddress'
                 DESC 'Primary RFC 822 email address of this recipient'
-                SUP mail SINGLE-VALUE )
+                EQUALITY caseIgnoreIA5Match
+                SUBSTR caseIgnoreIA5SubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}'
+                SINGLE-VALUE )
 
 attributeType ( mailServiceAttribute:2
                 NAME 'mailAlternateAddress'
                 DESC 'Alternate RFC 822 email address(es) of this recipient'
-                SUP mail )
+                EQUALITY caseIgnoreIA5Match
+                SUBSTR caseIgnoreIA5SubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}' )
 
 attributeType ( mailServiceAttribute:3
                 NAME 'mailInternalAddress'
                 DESC 'An internal RFC 822 email address of this recipient
                       which will be rewritten to an external email address'
-                SUP mail SINGLE-VALUE )
+                EQUALITY caseIgnoreIA5Match
+                SUBSTR caseIgnoreIA5SubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}'
+                SINGLE-VALUE )
 
 attributeType ( mailServiceAttribute:4
                 NAME 'mailExternalAddress'
                 DESC 'An external RFC 822 email address of this recipient
                       which will be rewritten to an internal email address'
-                SUP mail SINGLE-VALUE )
+                EQUALITY caseIgnoreIA5Match
+                SUBSTR caseIgnoreIA5SubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}'
+                SINGLE-VALUE )
 
 attributeType ( mailServiceAttribute:5
                 NAME 'mailSenderBccTo'
                 DESC 'RFC 822 BCC email address(es) to add for a given mail sender'
-                SUP mail )
+                EQUALITY caseIgnoreIA5Match
+                SUBSTR caseIgnoreIA5SubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}' )
 
 attributeType ( mailServiceAttribute:6
                 NAME 'mailRecipientBccTo'
                 DESC 'RFC 822 BCC email address(es) to add for a given mail recipient'
-                SUP mail )
+                EQUALITY caseIgnoreIA5Match
+                SUBSTR caseIgnoreIA5SubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}' )
 
 attributeType ( mailServiceAttribute:7
                 NAME 'mailForwardTo'
                 DESC 'RFC 822 email address(es) to forward all incoming messages to'
-                SUP mail )
+                EQUALITY caseIgnoreIA5Match
+                SUBSTR caseIgnoreIA5SubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}' )
 
 attributeType ( mailServiceAttribute:8
                 NAME 'mailForwardToURL'
@@ -101,31 +118,44 @@ attributeType ( mailServiceAttribute:9
                 NAME 'mailErrorsTo'
                 DESC 'RFC 822 email address(es) to use when routing error and notification
                       messages to the owner(s) of an email distribution list'
-                SUP mail )
+                EQUALITY caseIgnoreIA5Match
+                SUBSTR caseIgnoreIA5SubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}' )
 
 attributeType ( mailServiceAttribute:10
                 NAME 'mailRequestsTo'
                 DESC 'RFC 822 email address(es) to use when routing request
                       messages sent to the email distribution list'
-                SUP mail )
+                EQUALITY caseIgnoreIA5Match
+                SUBSTR caseIgnoreIA5SubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}' )
 
 attributeType ( mailServiceAttribute:11
                 NAME 'mailEnvelopeAddress'
                 DESC 'RFC 822 envelope sender email address of a given mail user
                       or email distribution list'
-                SUP mail SINGLE-VALUE )
+                EQUALITY caseIgnoreIA5Match
+                SUBSTR caseIgnoreIA5SubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}'
+                SINGLE-VALUE )
 
 attributeType ( mailServiceAttribute:12
                 NAME 'mailRoutingAddress'
                 DESC 'RFC 822 email address to use when routing messages to
                       the SMTP MTA of this recipient'
-                SUP mail SINGLE-VALUE )
+                EQUALITY caseIgnoreIA5Match
+                SUBSTR caseIgnoreIA5SubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}'
+                SINGLE-VALUE )
 
 attributeType ( mailServiceAttribute:13
                 NAME 'mailHost'
                 DESC 'Fully Qualified Domain Name of the SMTP MTA that
                       handles messages for this recipient'
-                SUP host SINGLE-VALUE )
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.15{256}'
+                SINGLE-VALUE )
 
 attributeType ( mailServiceAttribute:14
                 NAME 'mailTransport'
@@ -137,22 +167,31 @@ attributeType ( mailServiceAttribute:14
 attributeType ( mailServiceAttribute:15
                 NAME 'mailUidNumber'
                 DESC 'UID required to access the mailbox'
-                SUP uidNumber SINGLE-VALUE )
+                EQUALITY integerMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+                SINGLE-VALUE )
 
 attributeType ( mailServiceAttribute:16
                 NAME 'mailGidNumber'
                 DESC 'GID required to access the mailbox'
-                SUP gidNumber SINGLE-VALUE )
+                EQUALITY integerMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
+                SINGLE-VALUE )
 
 attributeType ( mailServiceAttribute:17
                 NAME 'mailHomeDirectory'
                 DESC 'The absolute path to the mail user home directory'
-                SUP homeDirectory SINGLE-VALUE )
+                EQUALITY caseExactIA5Match
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26'
+                SINGLE-VALUE )
+
 
 attributeType ( mailServiceAttribute:18
                 NAME 'mailMessageStore'
                 DESC 'The path to the mail user mailbox storage directory'
-                SUP homeDirectory SINGLE-VALUE )
+                EQUALITY caseExactIA5Match
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26'
+                SINGLE-VALUE )
 
 attributeType ( mailServiceAttribute:19
                 NAME 'mailQuota'
@@ -191,7 +230,8 @@ attributeType ( mailServiceAttribute:23
 attributeType ( mailServiceAttribute:24
                 NAME 'mailDeliveryFile'
                 DESC 'Path to a file used for archiving messages sent to the distribution list'
-                SUP homeDirectory )
+                EQUALITY caseExactIA5Match
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
 
 attributeType ( mailServiceAttribute:25
                 NAME 'mailDeliveryOption'

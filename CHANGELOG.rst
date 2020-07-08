@@ -31,6 +31,13 @@ Added
 - The role can now drop PostgreSQL databases and remove roles when their state
   is set to ``absent`` in the Ansible inventory.
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- Support for the dynamic LDAP groups maintained by the
+  :ref:`slapd__ref_autogroup_overlay` has been implemented in the role. Debian
+  Buster or newer is recommended for this feature to work properly.
+
 Changed
 ~~~~~~~
 
@@ -50,6 +57,21 @@ General
   since Postfix 3.0. This allows specifying parameter values that contain
   whitespace.
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- The role will set up an additional instance of the ``memberof`` OpenLDAP
+  overlay to update role membership in the ``organizationalRole`` LDAP objects.
+  This change modifies the list of overlays and will require re-initialization
+  of the OpenLDAP directory.
+
+- New equality indexes have been added to the :command:`slapd` service:
+  ``roleOccupant``, ``memberOf`` and ``employeeNumber``.
+
+- The :file:`eduperson.schema` LDAP schema has been extended with additional
+  attributes not present in the official specification. The new schema will not
+  be applied automatically on existing installations.
+
 Fixed
 ~~~~~
 
@@ -58,6 +80,13 @@ General
 
 - Fixed an issue where the :command:`debops` scripts did not expand the
   :file:`~/` prefix of the file and directory paths in user home directories.
+
+LDAP
+''''
+
+- The :file:`ldap/init-directory.yml` playbook will correctly initialize the
+  LDAP directory when the local UNIX account does not have any GECOS
+  information.
 
 :ref:`debops.owncloud` role
 ''''''''''''''''''''''''''''
@@ -70,6 +99,20 @@ General
 
 - Fixed an issue which caused dry runs of the :ref:`debops.rsnapshot` role to
   fail.
+
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- Modify the :file:`mailservice.schema` LDAP schema so that various
+  mail-related attributes do not use the ``mail`` attribute as SUPerior
+  attribute. This fixes an issue where searching for ``mail`` attribute values
+  returned entries with the values present in related attributes, for example
+  ``mailForwardTo``, causing problems with account lookups.
+
+  This change will require the rebuild of the OpenLDAP directory to be applied
+  correctly. The role will not apply the changes on existing installations
+  automatically due to the :file:`mailservice.schema` being loaded into the
+  database.
 
 
 `debops v2.1.0`_ - 2020-06-21

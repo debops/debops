@@ -19,10 +19,10 @@
   run_once:    '{{ item.run_once | d(False) }}'
   when: (item.objectClass|d() or item.entry_state|d()) and item.state not in [ 'init', 'ignore' ]
   tags: [ 'role::ldap:tasks', 'skip::ldap:tasks' ]
-  no_log: '{{ item.no_log | d(True
-                              if ("userPassword" in (item.attributes|d({})).keys() or
-                                  "olcRootPW"    in (item.attributes|d({})).keys())
-                              else False) }}'
+  no_log: '{{ debops__no_log | d(item.no_log | d(True
+                                 if ("userPassword" in (item.attributes|d({})).keys() or
+                                     "olcRootPW"    in (item.attributes|d({})).keys())
+                                 else False)) }}'
 
 - name: '{{ item.name }}'
   ldap_attrs:
@@ -40,7 +40,7 @@
   run_once:    '{{ item.run_once | d(False) }}'
   when: not item.objectClass|d() and not item.entry_state|d() and item.state not in [ 'init', 'ignore' ]
   tags: [ 'role::ldap:tasks', 'skip::ldap:tasks' ]
-  no_log: '{{ item.no_log | d(True
-                              if ("userPassword" in (item.attributes|d({})).keys() or
-                                  "olcRootPW"    in (item.attributes|d({})).keys())
-                              else False) }}'
+  no_log: '{{ debops__no_log | d(item.no_log | d(True
+                                 if ("userPassword" in (item.attributes|d({})).keys() or
+                                     "olcRootPW"    in (item.attributes|d({})).keys())
+                                 else False)) }}'

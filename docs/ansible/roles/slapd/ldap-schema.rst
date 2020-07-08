@@ -281,6 +281,11 @@ slightly outdated and does not include object and attribute descriptions.
 Because of that, DebOps contains its own copy of the schema, cleaned up and
 updated, which will be imported by default to OpenLDAP directory server.
 
+The version of the schema included in DebOps has been extended with additional
+attributes for the ``eduPerson`` and ``eduOrg`` Object Classes not present in
+the official specification. These attributes have been found useful in an
+academic environment; more attributes might be added in the future if needed.
+
 
 .. _slapd__ref_nextcloud:
 
@@ -309,3 +314,22 @@ messages to multiple recipients with basic access controls.
 
 With this schema installed, the ``mail`` attribute should not be used for mail
 services, but should be relegated to user authentication only.
+
+.. _slapd__ref_dyngroup:
+
+The ``dyngroup`` schema
+-----------------------
+
+The ``dyngroup`` schema provides LDAP object and attribute definitions for
+creation of `dynamic groups`__ inside of the LDAP directory. Dynamic group
+objects define LDAP search URLs which are resolved by the directory server on
+searches and provided to the client with computed set of ``member`` attributes
+as opposed to having a static object with members.
+
+In DebOps, this schema is modified by adding the optional ``member`` attribute
+to the group objects to support usage of the
+:ref:`slapd__ref_autogroup_overlay` which maintains "static" dynamic groups by
+updating these objects each time an LDAP entry included in the specified search
+is created, modified or destroyed.
+
+.. __: https://www.zytrax.com/books/ldap/ch11/dynamic.html

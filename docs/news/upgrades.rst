@@ -15,6 +15,21 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+Changes in the OpenLDAP support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The list of the OpenLDAP overlays configured by the :ref:`debops.slapd` role
+  has been modified. This change cannot be applied cleanly on an existing
+  OpenLDAP server and will require re-initialization of the service - an
+  easiest way is reinstallation of the host and import of the existing
+  directory. Check the :ref:`slapd__ref_backup_restore` documentation for more
+  details and restore instructions.
+
+- The :file:`mailservice.schema` and the :file:`eduperson.schema` LDAP schemas
+  have been modified. Changes will not be applied automatically on existing
+  installations and it is recommended to re-create the directory from scratch
+  to apply new schema cleanly.
+
 
 v2.1.0 (2020-06-21)
 -------------------
