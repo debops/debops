@@ -27,6 +27,12 @@ Added
 - The :command:`chrony` ``cmdport`` parameter is now configurable using
   a default variable.
 
+:ref:`debops.postgresql` role
+'''''''''''''''''''''''''''''
+
+- The role can now drop PostgreSQL databases and remove roles when their state
+  is set to ``absent`` in the Ansible inventory.
+
 Changed
 ~~~~~~~
 
