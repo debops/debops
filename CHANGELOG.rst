@@ -77,6 +77,18 @@ LDAP
 - Fixed multiple issues which caused dry runs of the :ref:`debops.owncloud` role
   to incorrectly show pending changes or fail altogether.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- Fixed activation of the Diffie-Hellman parameter support based on the status
+  of the :ref:`debops.dhparam` role.
+
+:ref:`debops.root_account` role
+'''''''''''''''''''''''''''''''
+
+- Fixed conditional installation of dotfiles for the ``root`` account based on
+  the status of the :ref:`debops.yadm` role.
+
 :ref:`debops.rsnapshot` role
 ''''''''''''''''''''''''''''
 
@@ -87,6 +99,12 @@ LDAP
 '''''''''''''''''''''''
 
 - Add missing role dependency on the :ref:`debops.secret` Ansible role.
+
+:ref:`debops.system_users` role
+'''''''''''''''''''''''''''''''
+
+- Fixed conditional installation of dotfiles for the UNIX accounts based on the
+  status of the :ref:`debops.yadm` role.
 
 
 `debops v2.1.0`_ - 2020-06-21
