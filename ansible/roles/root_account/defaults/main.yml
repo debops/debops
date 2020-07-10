@@ -152,7 +152,9 @@ root_account__fix_no_tty: True
 #
 # Enable or disable dotfiles management, depending on the availablility of the
 # dotfiles repository installed by the :ref:`debops.yadm` role.
-root_account__dotfiles_enabled: '{{ ansible_local.yadm.dotfiles|d() }}'
+root_account__dotfiles_enabled: '{{ True
+                                    if ansible_local.yadm.dotfiles|d()
+                                    else False }}'
 
                                                                    # ]]]
 # .. envvar:: root_account__dotfiles_repo [[[
