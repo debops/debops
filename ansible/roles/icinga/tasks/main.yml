@@ -76,6 +76,7 @@
          (item.divert|d())|bool and
          ('/etc/icinga2/' + (item.filename | d(item.name | regex_replace('.conf$','') + '.conf'))
                           + '.dpkg-divert' not in icinga__register_diversions.stdout_lines))
+  delegate_to: '{{ item.delegate_to | d(inventory_hostname) }}'
 
 - name: Ensure that configuration directories exist
   file:
@@ -87,6 +88,7 @@
   with_items: '{{ icinga__combined_configuration | parse_kv_items }}'
   when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init', 'feature' ] and
          ((item.filename | d(item.name | regex_replace(".conf$","") + ".conf")) | dirname | d()))
+  delegate_to: '{{ item.delegate_to | d(inventory_hostname) }}'
 
 - name: Remove Icinga configuration if requested
   file:
@@ -95,6 +97,7 @@
   with_items: '{{ icinga__combined_configuration | parse_kv_items }}'
   notify: [ 'Check icinga2 configuration and restart' ]
   when: (item.name|d() and item.state|d('present') == 'absent' and item.divert is undefined)
+  delegate_to: '{{ item.delegate_to | d(inventory_hostname) }}'
 
 - name: Generate Icinga configuration files
   template:
@@ -105,7 +108,9 @@
     mode:  '{{ item.mode  | d("0644") }}'
   with_items: '{{ icinga__combined_configuration | parse_kv_items }}'
   notify: [ 'Check icinga2 configuration and restart' ]
+  register: icinga__configuration_result
   when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init', 'divert', 'feature' ])
+  delegate_to: '{{ item.delegate_to | d(inventory_hostname) }}'
   no_log: '{{ item.no_log | d(omit) }}'
 
 - name: Revert original Icinga configuration
@@ -119,6 +124,7 @@
   when: (item.name|d() and item.state|d('present') == 'absent' and (item.divert|d())|bool and
          ('/etc/icinga2/' + (item.filename | d(item.name | regex_replace('.conf$','') + '.conf'))
                           + '.dpkg-divert' in icinga__register_diversions.stdout_lines))
+  delegate_to: '{{ item.delegate_to | d(inventory_hostname) }}'
 
 - name: Configure state of Icinga features
   file:
@@ -129,8 +135,10 @@
     force: '{{ True if ansible_check_mode|bool else omit }}'
   with_items: '{{ icinga__combined_configuration | parse_kv_items }}'
   notify: [ 'Check icinga2 configuration and restart' ]
+  register: icinga__features_result
   when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init', 'divert' ] and
          item.feature_name|d() and item.feature_state|d())
+  delegate_to: '{{ item.delegate_to | d(inventory_hostname) }}'
 
 - name: Copy custom files for Icinga
   copy:

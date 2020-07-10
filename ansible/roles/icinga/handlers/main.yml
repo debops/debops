@@ -6,11 +6,26 @@
 - name: Check icinga2 configuration and restart
   command: icinga2 daemon -C
   notify: [ 'Restart icinga2' ]
+  delegate_to: '{{ item }}'
+  with_items: |
+    {% set changed_hosts = [] %}
+    {% for c in icinga__configuration_result.results +
+                icinga__features_result.results %}
+    {%   if c.changed %}
+    {%     set _ = changed_hosts.append(c.item.delegate_to | d(inventory_hostname)) %}
+    {%   endif %}
+    {% endfor %}
+    {{ changed_hosts | unique }}
+  run_once: true
+  register: 'icinga__check_result'
 
 - name: Restart icinga2
   service:
     name: 'icinga2'
     state: 'restarted'
+  run_once: true
+  delegate_to: '{{ item }}'
+  with_items: '{{ icinga__check_result.results | json_query("[?changed].item") }}'
 
 - name: Trigger Icinga Director configuration deployment
   uri:
