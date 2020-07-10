@@ -106,6 +106,14 @@ LDAP
 - Fixed conditional installation of dotfiles for the UNIX accounts based on the
   status of the :ref:`debops.yadm` role.
 
+:ref:`debops.tinc` role
+'''''''''''''''''''''''
+
+- Fix issue with Tinc VPN interfaces starting before the general host
+  networking is set up and failing to bind to the selected bridge interface.
+  The Tinc :command:`systemd` service will wait for the
+  ``network-online.target`` unit to start up before activation.
+
 
 `debops v2.1.0`_ - 2020-06-21
 -----------------------------
