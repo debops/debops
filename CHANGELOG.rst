@@ -77,6 +77,14 @@ LDAP
 
 - Add missing role dependency on the :ref:`debops.secret` Ansible role.
 
+:ref:`debops.tinc` role
+'''''''''''''''''''''''
+
+- Fix issue with Tinc VPN interfaces starting before the general host
+  networking is set up and failing to bind to the selected bridge interface.
+  The Tinc :command:`systemd` service will wait for the
+  ``network-online.target`` unit to start up before activation.
+
 
 `debops v1.1.10`_ - 2020-06-21
 ------------------------------
