@@ -42,6 +42,12 @@ General
 - Fixed an issue where the :command:`debops` scripts did not expand the
   :file:`~/` prefix of the file and directory paths in user home directories.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- Fixed an issue where the role would attempt adding APT keys from a PGP
+  keyserver without installing gnupg2 first.
+
 
 `debops v2.1.0`_ - 2020-06-21
 -----------------------------
