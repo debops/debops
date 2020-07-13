@@ -46,7 +46,7 @@ General
 ''''''''''''''''''''''
 
 - Fixed an issue where the role would attempt adding APT keys from a PGP
-  keyserver without installing gnupg2 first.
+  keyserver without installing gnupg first.
 
 
 `debops v2.1.0`_ - 2020-06-21
