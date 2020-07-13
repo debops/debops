@@ -75,7 +75,7 @@ LDAP
 ''''''''''''''''''''''
 
 - Fixed an issue where the role would attempt adding APT keys from a PGP
-  keyserver without installing gnupg2 first.
+  keyserver without installing gnupg first.
 
 :ref:`debops.owncloud` role
 ''''''''''''''''''''''''''''
