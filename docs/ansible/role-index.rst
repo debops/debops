@@ -372,5 +372,6 @@ additional functions to other roles.
 - :ref:`debops.core`
 - :ref:`debops.debops_fact`
 - :ref:`debops.dpkg_cleanup`
+- :ref:`debops.global_handlers`
 - :ref:`debops.keyring`
 - :ref:`debops.secret`

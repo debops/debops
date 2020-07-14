@@ -25,6 +25,14 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+New DebOps roles
+''''''''''''''''
+
+- The :ref:`debops.global_handlers` Ansible role provides a central place to
+  maintain handlers for other Ansible roles. Keeping them centralized allows
+  Ansible roles to use handlers from different roles without including them
+  entirely in the playbook.
+
 :ref:`debops.postgresql` role
 '''''''''''''''''''''''''''''
 
@@ -48,6 +56,10 @@ General
   role to allow for the ``debops__`` variable namespace to be used for global
   variables. All role variables have been renamed along with the role inventory
   group, you will have to update your inventory.
+
+- Most of the handers from different DebOps roles have been moved to the new
+  :ref:`debops.global_handlers` role to allow for easier cross-role handler
+  notification. The role has been imported in roles that rely on the handlers.
 
 :ref:`debops.postfix` role
 ''''''''''''''''''''''''''

@@ -1,0 +1,17 @@
+---
+# Copyright (C) 2015-2017 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2015-2017 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Restart libvirtd
+  service:
+    name: 'libvirtd'
+    state: 'restarted'
+  when: ansible_distribution_release not in [ 'precise', 'trusty', 'xenial' ]
+
+- name: Restart libvirt-bin
+  service:
+    name: 'libvirt-bin'
+    state: 'restarted'
+  when: ansible_distribution_release in [ 'precise', 'trusty', 'xenial' ]
