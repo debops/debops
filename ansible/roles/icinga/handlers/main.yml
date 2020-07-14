@@ -3,15 +3,6 @@
 # Copyright (C) 2018 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- name: Check icinga2 configuration and restart
-  command: icinga2 daemon -C
-  notify: [ 'Restart icinga2' ]
-
-- name: Restart icinga2
-  service:
-    name: 'icinga2'
-    state: 'restarted'
-
 - name: Trigger Icinga Director configuration deployment
   uri:
     body_format: 'json'

@@ -1,0 +1,15 @@
+---
+# Copyright (C) 2015-2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Check and restart rsyslogd
+  command: rsyslogd -N 1
+  notify: [ 'Restart rsyslogd' ]
+  when: (ansible_local.rsyslog.installed|d())|bool
+
+- name: Restart rsyslogd
+  service:
+    name: 'rsyslog'
+    state: 'restarted'
+  when: (ansible_local.rsyslog.installed|d())|bool

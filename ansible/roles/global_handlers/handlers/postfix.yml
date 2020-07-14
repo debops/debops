@@ -1,0 +1,32 @@
+---
+# Copyright (C) 2014-2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2014-2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Process Postfix Makefile
+  environment:
+    LC_MESSAGES: 'C'
+  command: make
+  args:
+    chdir: '/etc/postfix'
+  register: handlers__register_postfix_make
+  notify: [ 'Check postfix and reload' ]
+  changed_when: 'not handlers__register_postfix_make.stdout.startswith("make: Nothing to be done")'
+
+- name: Check postfix and restart
+  command: /usr/sbin/postfix -c /etc/postfix check
+  notify: [ 'Restart postfix' ]
+
+- name: Check postfix and reload
+  command: /usr/sbin/postfix -c /etc/postfix check
+  notify: [ 'Reload postfix' ]
+
+- name: Restart postfix
+  service:
+    name: 'postfix'
+    state: 'restarted'
+
+- name: Reload postfix
+  service:
+    name: 'postfix'
+    state: 'reloaded'
