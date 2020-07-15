@@ -126,6 +126,14 @@ LDAP
   automatically due to the :file:`mailservice.schema` being loaded into the
   database.
 
+:ref:`debops.tinc` role
+'''''''''''''''''''''''
+
+- Fix issue with Tinc VPN interfaces starting before the general host
+  networking is set up and failing to bind to the selected bridge interface.
+  The Tinc :command:`systemd` service will wait for the
+  ``network-online.target`` unit to start up before activation.
+
 
 `debops v2.1.0`_ - 2020-06-21
 -----------------------------
