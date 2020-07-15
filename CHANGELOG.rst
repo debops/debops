@@ -100,6 +100,12 @@ LDAP
   LDAP directory when the local UNIX account does not have any GECOS
   information.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- Fixed an issue where the role would attempt to add APT keys from a PGP
+  keyserver without installing the :command:`gnupg` package first.
+
 :ref:`debops.owncloud` role
 ''''''''''''''''''''''''''''
 
