@@ -15,8 +15,8 @@ General deployment notes
 ------------------------
 
 The application will be by default deployed both on ``ipam.{{ ansible_domain
-}}`` as well ass ``dcim.{{ ansible_domain }}`` DNS domains, for convenience.
-you should either point these domains to the deployment host via DNS, or change
+}}`` as well as ``dcim.{{ ansible_domain }}`` DNS domains, for convenience.
+You should either point these domains to the deployment host via DNS, or change
 the :envvar:`netbox__fqdn` to set a desired subdomain.
 
 By default NetBox will allow connections only to the specified DNS domains and
@@ -59,7 +59,7 @@ switches between these modes as needed.
 Example inventory
 -----------------
 
-The NetBox application uses PostgreSQL database as its backend, therefore you
+The NetBox application uses a PostgreSQL database as its backend, therefore you
 need to setup a PostgreSQL server which the application can access. To
 configure one on the same host as NetBox, add that host to the
 ``[debops_service_postgresql_server]`` Ansible inventory group. See the
