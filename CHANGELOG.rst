@@ -747,7 +747,7 @@ Mail Transport Agents
 - The :envvar:`nullmailer__mailname` and the :envvar:`postfix__mailname`
   variables will use the host's FQDN address instead of the DNS domain as the
   mailname. This was done to not include the hostnames in the e-mail addresses,
-  however this is better handled by Postfix domain nasquerading done on the
+  however this is better handled by Postfix domain masquerading done on the
   mail relay host, which allows for exceptions, supports multiple DNS domains
   and does not break mail delivery in subtle ways. See the
   :ref:`debops.nullmailer` role documentation for an example configuration.
@@ -827,7 +827,7 @@ Mail Transport Agents
 :ref:`debops.postconf` role
 '''''''''''''''''''''''''''
 
-- If both :ref:`Devecot <debops.dovecot>` and :ref:`Cyrus <debops.saslauthd>`
+- If both :ref:`Dovecot <debops.dovecot>` and :ref:`Cyrus <debops.saslauthd>`
   services are installed on a host, Postfix will be configured to prefer Cyrus
   for SASL authentication. This permits mail relay via the authenticated
   :ref:`nullmailer <debops.nullmailer>` Mail Transfer Agents with accounts in
