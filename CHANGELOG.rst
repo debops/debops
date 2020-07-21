@@ -92,6 +92,13 @@ LDAP
 - Fixed activation of the Diffie-Hellman parameter support based on the status
   of the :ref:`debops.dhparam` role.
 
+:ref:`debops.php` role
+''''''''''''''''''''''
+
+- Set correct APT preferences for the Backports or Sury APT repository to
+  the ``libapache2-mod-php*`` APT packages to ensure that the selected
+  repository is the same as the ``php*`` APT packages.
+
 :ref:`debops.root_account` role
 '''''''''''''''''''''''''''''''
 
