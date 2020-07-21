@@ -75,6 +75,13 @@ LDAP
 - Fixed multiple issues which caused dry runs of the :ref:`debops.owncloud` role
   to incorrectly show pending changes or fail altogether.
 
+:ref:`debops.php` role
+''''''''''''''''''''''
+
+- Set correct APT preferences for the Backports or Sury APT repository to
+  the ``libapache2-mod-php*`` APT packages to ensure that the selected
+  repository is the same as the ``php*`` APT packages.
+
 :ref:`debops.rsnapshot` role
 ''''''''''''''''''''''''''''
 
