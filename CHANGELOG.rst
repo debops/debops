@@ -81,6 +81,10 @@ Updates of upstream application versions
 - In the :ref:`debops.roundcube` role, the Roundcube version installed by
   default has been updated to ``v1.4.7``.
 
+- In the :ref:`debops.netbox` role, Netbox 2.8.7 is installed by default.
+  Existing installations will be updated.
+  The newly added plugin support can be configured from DebOps.
+
 General
 '''''''
 
