@@ -120,7 +120,7 @@ infrastructure environments.
    :hidden:
 
    meta/community
-   meta/roadmap
+   meta/goals
    meta/policy
    meta/philosophy
    meta/timeline

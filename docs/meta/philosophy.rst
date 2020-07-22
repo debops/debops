@@ -12,6 +12,8 @@ In this section, you can read about DebOps from a personal perspective of its
 authors. We hope that this will help explain how the project came to be, what
 its goals are, and where it is heading.
 
+If you want to see a more objective set of goals for DebOps, check the
+:ref:`goals` documentation page.
 
 Maciej Delmanowski
 ------------------

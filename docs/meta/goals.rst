@@ -2,15 +2,19 @@
 .. Copyright (C) 2020 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
-.. _roadmap:
+.. _goals:
 
-Project roadmap
-===============
+Project goals
+=============
 
 The work on the DebOps project began around October 2013; some of the reasons
 it was started might have been fixed over time, but there's still lots of
-problems to work on.  Here's a short list of issues we would like to solve
+problems to work on. Here's a short list of issues we would like to solve
 using this project.
+
+This list is an objective look at the goals of the DebOps project. If you want
+a more subjective, personal take on the project by its contributors, check the
+:ref:`philosophy` page.
 
 .. contents::
    :local:
