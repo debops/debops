@@ -52,7 +52,7 @@ effectively to create a generalized solution.
 
 In recent years, configuration management ecosystems exploded in popularity.
 The Debian Popularity Contest data for `Chef`__, `Ansible`__, `Puppet`__ and
-`Saltstack`__ show that there's no need to invent a new configuration tool from
+`SaltStack`__ show that there's no need to invent a new configuration tool from
 scratch anymore. All a system administrator needs is to express the
 configuration of their environment using existing tools. This of course incurs
 a large investment in time to research the applications we want to configure,
@@ -94,14 +94,14 @@ platforms and with a `galaxy`__ of modules, roles and other elements of
 a successful ecosystem.
 
 One of the greatest strengths of Ansible is the design conductive for creation
-of general-purpose configuration solutions - roles and playbooks can be
+of general-purpose configuration solutions – roles and playbooks can be
 composed together to customize the result for the needs of an organization, the
 variable and inventory system allows for even more ways to customize the roles
 when they are written to take advantage of it. Configuration of distinct
 services can affect each other conditionally, allowing for clear separation of
 duties between Ansible roles which helps with their maintenance and upkeep.
 
-In 2013, when project which eventally became DebOps started to take shape,
+In 2013, when project which eventually became DebOps started to take shape,
 there weren't many publicly available solutions that provided system
 administrators with ready-made set of Ansible roles and playbooks to configure
 their environments. They usually focused on a specific set of goals for
@@ -137,7 +137,7 @@ a standardized container image which is then used by different execution
 engines to manage application instances.
 
 However, classical configuration management still has its place. In a cloud
-environment which primarly uses containers as application delivery method,
+environment which primarily uses containers as application delivery method,
 configuration management tools can be used to create these images with required
 configuration "baked-in" during the build process. In self-hosted or
 on-premises environments, configuration management can be used to configure
@@ -153,7 +153,7 @@ benefit of the entire community.
 Provide a set of building blocks for complex deployments
 --------------------------------------------------------
 
-Typical infrastructure deployments are composed from multiple services. There's
+Typical infrastructure deployments are composed of multiple services. There's
 the base operating system which defines the environment; a firewall service
 controls the access to other services; a webserver provides an access point to
 the static and dynamic applications; database services create different storage
@@ -163,13 +163,13 @@ managed as standalone, but they are meant to work together to achieve a task.
 The Ansible roles included in the DebOps project are meant to define a concise
 and stable API surface between different services. Each role should focus on
 specific service configuration and in turn, provide an interface for other
-roles where apropriate so that multiple services can be configured together
+roles where appropriate so that multiple services can be configured together
 without conflicts.
 
 This will allow the project to provide a set of "stacks" written as Ansible
 playbooks that use multiple Ansible roles together to deploy complex
 applications - a WorPress blog, a VM hypervisor host, a container cluster will
-be composed from the same set of building blocks, which allows creation of
+be composed of the same set of building blocks, which allows creation of
 customized environments, tailored for a particular organization.
 
 
@@ -177,22 +177,22 @@ Final goal: DebOps is used to set up a data center in an extraterrestrial colony
 --------------------------------------------------------------------------------
 
 Every project needs a final goal which, when reached, marks its completion. The
-final goal of the DebOps project is for it to be used on an extraterrestial
+final goal of the DebOps project is for it to be used on an extraterrestrial
 colony to set up a data center.
 
 It's not a pipe dream. Debian has already made it into space, due to `being
 used as the operating system on various laptops used on the International
 Space Station`__. Humanity already made it to the Earth's Moon in the past, so
 we will be getting there at some point in the future; other planets like Mars
-will also be visited. Eventually a new human colony will be estabilished,
-either on a planetary/lunar surface, on an asteroid or within an artifical space
+will also be visited. Eventually a new human colony will be established,
+either on a planetary/lunar surface, on an asteroid or within an artificial space
 station. In such case, at least one local data center will have to be set up to
-faciliate computing tasks optimally.
+facilitate computing tasks optimally.
 
 Obviously the first couple of data centers set up in space won't be based on
 Linux and/or Debian for that matter. But eventually when a colony grows and
 more people show up to live and work there, a GNU/Linux-like environment will
-become a necessity. Debian has a high chance for being selected as the base
+become a necessity. Debian has a high chance of being selected as the base
 operating system for such task, due to its wide range of supported
 architectures and large software library which can be easily packaged and sent
 into space to be available locally.
@@ -201,7 +201,7 @@ When that eventually happens, DebOps should be ready to assist the local system
 administrators to set up and maintain their infrastructure. This of course
 requires other things to happen - the project needs to be useful enough to be
 recognized as a good choice for that purpose. Clean codebase, extensive
-documentation, long-term planning and best practices used to faciliate its
+documentation, long-term planning and best practices used to facilitate its
 operation will also help.
 
 Let's get it done.
