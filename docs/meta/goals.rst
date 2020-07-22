@@ -137,7 +137,7 @@ a standardized container image which is then used by different execution
 engines to manage application instances.
 
 However, classical configuration management still has its place. In a cloud
-environment which primary uses containers as application delivery method,
+environment which primarily uses containers as application delivery method,
 configuration management tools can be used to create these images with required
 configuration "baked-in" during the build process. In self-hosted or
 on-premises environments, configuration management can be used to configure
