@@ -189,8 +189,8 @@ either on a planetary/lunar surface, on an asteroid or within an artificial spac
 station. In such case, at least one local data center will have to be set up to
 facilitate computing tasks optimally.
 
-After basic life-form needs are met by life support systems and the like and
-colony grow and more people show up to live and work there, a GNU/Linux-like
+After basic life-form needs are met by things like life support systems, the
+colony grows and more people show up to live and work there, a GNU/Linux-like
 environment will become a necessity. Debian has a high chance of being selected
 as the base operating system for such task, due to its wide range of supported
 architectures and large software library which can be easily packaged and sent
