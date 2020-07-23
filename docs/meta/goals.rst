@@ -189,11 +189,10 @@ either on a planetary/lunar surface, on an asteroid or within an artificial spac
 station. In such case, at least one local data center will have to be set up to
 facilitate computing tasks optimally.
 
-Obviously the first couple of data centers set up in space won't be based on
-Linux and/or Debian for that matter. But eventually when a colony grows and
-more people show up to live and work there, a GNU/Linux-like environment will
-become a necessity. Debian has a high chance of being selected as the base
-operating system for such task, due to its wide range of supported
+After basic life-form needs are met by things like life support systems, the
+colony grows and more people show up to live and work there, a GNU/Linux-like
+environment will become a necessity. Debian has a high chance of being selected
+as the base operating system for such task, due to its wide range of supported
 architectures and large software library which can be easily packaged and sent
 into space to be available locally.
 
