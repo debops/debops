@@ -64,6 +64,9 @@ General
 - Fixed an issue where the :command:`debops` scripts did not expand the
   :file:`~/` prefix of the file and directory paths in user home directories.
 
+- Issues found by :command:`shellcheck` v0.7.0 in various Ansible roles have
+  been fixed or triaged by disabling the checks.
+
 LDAP
 ''''
 
