@@ -104,6 +104,7 @@ values2LDIF()
 		i=$((i+1))
 	done
 
+	# shellcheck disable=SC2001
 	{ [ $i -lt 2 ] && [ "${2}" != "nonumbers" ] && sed 's/^\([^:]\+: \){0}/\1/' <<<"$values" || echo "$values"; } | sed 's/\\n/\n/g' | sed -n ':p;s/\([^\n]\{78\}\)\([^\n]\)/\1\n \2/;tp;p'
 }
 
@@ -320,16 +321,19 @@ writeSchema()
 changetype: modify
 "
 
+			# shellcheck disable=SC2001
 			[ -n "$identifiers" ] && ldif="${ldif}replace: olcObjectIdentifier
 $(sed 's/\\n/\n/g' <<<"$identifiers")
 -
 "
 
+			# shellcheck disable=SC2001
 			[ -n "$attributes" ] && ldif="${ldif}replace: olcAttributeTypes
 $(sed 's/\\n/\n/g' <<<"$attributes")
 -
 "
 
+			# shellcheck disable=SC2001
 			[ -n "$classes" ] && ldif="${ldif}replace: olcObjectClasses
 $(sed 's/\\n/\n/g' <<<"$classes")
 -
@@ -345,12 +349,15 @@ objectClass: olcSchemaConfig
 cn: ${cn}
 "
 
+			# shellcheck disable=SC2001
 			[ -n "$identifiers" ] && ldif="${ldif}$(sed 's/\\n/\n/g' <<<"$identifiers")
 "
 
+			# shellcheck disable=SC2001
 			[ -n "$attributes" ] && ldif="${ldif}$(sed 's/\\n/\n/g' <<<"$attributes")
 "
 
+			# shellcheck disable=SC2001
 			[ -n "$classes" ] && ldif="${ldif}$(sed 's/\\n/\n/g' <<<"$classes")
 "
 
