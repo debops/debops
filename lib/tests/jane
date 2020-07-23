@@ -36,7 +36,6 @@ require_bash_4
 
 
 readonly SCRIPTNAME="$( basename "${0}" )"
-readonly SCRIPTDIR="$( readlink -m "$( dirname "${0}" )" )"
 readonly SCRIPTPID="$$"
 readonly ARGS=( "${@:-}" )
 readonly PATH="${PATH}:${HOME}/.local/lib/${SCRIPTNAME}:/vagrant/lib/tests:/usr/local/lib/${SCRIPTNAME}:/usr/lib/${SCRIPTNAME}"
@@ -181,7 +180,7 @@ sub__env () {
 
     case "${env_mode}" in
 
-        ${SCRIPTNAME}|ci|script)
+        "${SCRIPTNAME}"|ci|script)
             ( set -o posix ; set \
               | while read -r line ; do
                     printf "%s\\n" "$(tr -d '[:cntrl:]' <<< "${line}")"
