@@ -122,10 +122,46 @@ homeassistant__domain: '{{ ansible_domain }}'
 # Reverse proxy configuration [[[
 # -------------------------------
 
+# While Home Assistant provides it’s own authentication methods one might want
+# to enable multiple authentications after each other that are enforced by
+# different components (Security in Depth).
+# Also refer to
+# `RFC: Support subpath/subdir hosting for additional security`__.
+#
+# .. __: https://github.com/debops/debops/issues/1233
+
 # .. envvar:: homeassistant__verify_client_certificate [[[
 #
 # Should a valid client certificate be required to access Home Assistant?
 homeassistant__verify_client_certificate: False
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__basic_auth [[[
+#
+# Enable or disable HTTP Basic Authentication in the webserver frontend.
+# Note that there is an unhandled issue that you might face when enabling this.
+# Ref: https://github.com/home-assistant/core/issues/6184
+homeassistant__basic_auth: False
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__basic_auth_realm [[[
+#
+# The HTTP Basic Auth realm used for Home Assistant.
+homeassistant__basic_auth_realm: 'Home Assistant'
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__basic_auth_name [[[
+#
+# Name of the :command:`htpasswd` file stored in the
+# :file:`/etc/nginx/private/` directory which contains HTTP Basic Auth
+# credentials.
+homeassistant__basic_auth_name: 'homeassistant'
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__basic_auth_users [[[
+#
+# List of user accounts which will be allowed access to Home Assistant.
+homeassistant__basic_auth_users: '{{ ansible_local.core.admin_users|d([]) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Directory paths [[[
@@ -258,6 +294,15 @@ homeassistant__nginx__dependent_upstreams:
     server: 'localhost:8123'
 
                                                                    # ]]]
+# .. envvar:: homeassistant__nginx__dependent_htpasswd [[[
+#
+# HTTP Basic Auth password configuration for the :ref:`debops.nginx` Ansible
+# role.
+homeassistant__nginx__dependent_htpasswd:
+  name: '{{ homeassistant__basic_auth_name }}'
+  users: '{{ homeassistant__basic_auth_users }}'
+
+                                                                   # ]]]
 # .. envvar:: homeassistant__nginx__dependent_servers [[[
 #
 # Configuration of the Home Assistant nginx server, used by the debops.nginx_
@@ -270,6 +315,9 @@ homeassistant__nginx__dependent_servers:
     state: '{{ "present" if (homeassistant__deploy_state == "present") else "absent" }}'
     type: 'proxy'
     ssl_verify_client: '{{ homeassistant__verify_client_certificate|bool }}'
+    auth_basic: '{{ homeassistant__basic_auth | bool }}'
+    auth_basic_realm: '{{ homeassistant__basic_auth_realm }}'
+    auth_basic_name: '{{ homeassistant__basic_auth_name }}'
     options: 'proxy_buffering off;'
     proxy_pass: 'http://homeassistant'
     proxy_options: |
