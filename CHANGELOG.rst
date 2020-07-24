@@ -89,6 +89,13 @@ LDAP
   the ``libapache2-mod-php*`` APT packages to ensure that the selected
   repository is the same as the ``php*`` APT packages.
 
+:ref:`debops.roundcube` role
+''''''''''''''''''''''''''''
+
+- Redirect standard output of the :command:`cleandb.sh` cron job to
+  :file:`/dev/null` to avoid sending e-mails about cleaning the Roundcube
+  database. Errors will still be sent.
+
 :ref:`debops.rsnapshot` role
 ''''''''''''''''''''''''''''
 
