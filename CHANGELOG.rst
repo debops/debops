@@ -112,6 +112,13 @@ LDAP
 - Fixed conditional installation of dotfiles for the ``root`` account based on
   the status of the :ref:`debops.yadm` role.
 
+:ref:`debops.roundcube` role
+''''''''''''''''''''''''''''
+
+- Redirect standard output of the :command:`cleandb.sh` cron job to
+  :file:`/dev/null` to avoid sending e-mails about cleaning the Roundcube
+  database. Errors will still be sent.
+
 :ref:`debops.rsnapshot` role
 ''''''''''''''''''''''''''''
 
