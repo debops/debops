@@ -8,18 +8,30 @@
 # wins. You can read more about how this file works at
 # https://help.github.com/articles/about-codeowners/
 
-# Each person or team that's included as reviewers requires write access to the
-# repository. If you want to be included as a reviewer for the roles,
-# playbooks, or other code included in the DebOps monorepo, create an issue in
-# the https://github.com/debops/debops/ repository. Additional teams will be
-# created as needed.
+# Reviewers cane be added into "teams" according to their interests, each
+# reviewer is identified by their GitHub username to allow for GitHub to notify
+# them on changes in their selected files. If you are registered as a reviewer
+# here, you are expected to perform reviews of pull requests to the repository
+# in a reasonable time, usually a week. If a review might take longer, leave
+# a comment so that we know that you want to do it.
+#
+# Available teams:
+# - Documentation: drybjed, tasosalvas
+
 
 # Global, default reviewers for everything in the repository
-*                                                   @ddebops/core-team
+*                                                   @drybjed
 
 
-/ansible/roles/apache/                              @drybjed @ypid
-/ansible/playbooks/service/apache.yml               @drybjed @ypid
+# Documentation
+/docs/                                              @drybjed @tasosalvas
+*.rst                                               @drybjed @tasosalvas
+*.md                                                @drybjed @tasosalvas
+
+
+# Authors of new roles should add themselves below if they want to be notified
+# about changes in their roles. Include all people in the global section as
+# well, otherwise only you will be notified.
 
 /ansible/roles/apt_cacher_ng/                       @drybjed @ypid
 /ansible/playbooks/service/apt_cacher_ng.yml        @drybjed @ypid
@@ -30,47 +42,8 @@
 /ansible/roles/debops_api/                          @drybjed @ypid
 /ansible/playbooks/service/debops_api.yml           @drybjed @ypid
 
-/ansible/roles/dovecot/                             @debops/mail-team
-/ansible/playbooks/service/dovecot.yml              @debops/mail-team
-
-/ansible/roles/gitlab*/                             @debops/gitlab-team
-/ansible/playbooks/service/gitlab*.yml              @debops/gitlab-team
-
-/ansible/roles/grub/                                @debops/system-team
-/ansible/playbooks/service/grub.yml                 @debops/system-team
-
-/ansible/roles/mailman/                             @debops/mail-team
-/ansible/playbooks/service/mailman.yml              @debops/mail-team
-
-/ansible/roles/nullmailer/                          @debops/mail-team
-/ansible/playbooks/service/nullmailer.yml           @debops/mail-team
-
-/ansible/roles/opendkim/                            @debops/mail-team
-/ansible/playbooks/service/opendkim.yml             @debops/mail-team
-
-/ansible/roles/owncloud/                            @debops/cloud-team
-/ansible/playbooks/service/owncloud*.yml            @debops/cloud-team
-
 /ansible/roles/persistent_paths/                    @drybjed @ypid
 /ansible/playbooks/service/persisten_paths.yml      @drybjed @ypid
 
-/ansible/roles/postconf/                            @debops/mail-team
-/ansible/playbooks/service/postconf.yml             @debops/mail-team
-
-/ansible/roles/postfix/                             @debops/mail-team
-/ansible/playbooks/service/postfix.yml              @debops/mail-team
-
-/ansible/roles/postscreen/                          @debops/mail-team
-/ansible/playbooks/service/postscreen.yml           @debops/mail-team
-
-/ansible/roles/postwhite/                           @debops/mail-team
-/ansible/playbooks/service/postwhite.yml            @debops/mail-team
-
-/ansible/roles/saslauthd/                           @debops/mail-team
-/ansible/playbooks/service/saslauthd.yml            @debops/mail-team
-
 /ansible/roles/sysctl/                              @drybjed @ypid
 /ansible/playbooks/service/sysctl.yml               @drybjed @ypid
-
-/ansible/roles/unbound/                             @debops/mail-team
-/ansible/playbooks/service/unbound.yml              @debops/mail-team
