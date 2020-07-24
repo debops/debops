@@ -27,6 +27,13 @@ Added
 - The :command:`chrony` ``cmdport`` parameter is now configurable using
   a default variable.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Role can now specify separate LDAP base Distinguished Names for groups and
+  user accounts that should be used by Nextcloud/ownCloud for searches via new
+  default variables.
+
 :ref:`debops.postgresql` role
 '''''''''''''''''''''''''''''
 

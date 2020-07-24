@@ -1220,6 +1220,19 @@ owncloud__ldap_base_dn: '{{ ansible_local.ldap.base_dn
                             else [] }}'
 
                                                                    # ]]]
+
+# .. envvar:: owncloud__ldap_base_groups_dn [[[
+#
+# The base Distinguished Name where Nextcloud will look for groups.
+owncloud__ldap_base_groups_dn: '{{ owncloud__ldap_base_dn | join(",") }}'
+
+                                                                   # ]]]
+# .. envvar:: owncloud__ldap_base_users_dn [[[
+#
+# The base Distinguished Name where Nextcloud will look for users.
+owncloud__ldap_base_users_dn: '{{ owncloud__ldap_base_dn | join(",") }}'
+
+                                                                   # ]]]
 # .. envvar:: owncloud__ldap_device_dn [[[
 #
 # The Distinguished Name of the current host LDAP object, defined as a YAML
@@ -1510,8 +1523,17 @@ owncloud__ldap_default_config:
   - name: 'ldapBase'
     value: '{{ owncloud__ldap_base_dn | join(",") }}'
 
+  - name: 'ldapBaseGroups'
+    value: '{{ owncloud__ldap_base_groups_dn }}'
+
+  - name: 'ldapBaseUsers'
+    value: '{{ owncloud__ldap_base_users_dn }}'
+
   - name: 'ldapEmailAttribute'
     value: 'mail'
+
+  - name: 'ldapExpertUsernameAttr'
+    value: '{{ owncloud__ldap_expert_username_attr }}'
 
   - name: 'ldapConfigurationActive'
     value: '1'
