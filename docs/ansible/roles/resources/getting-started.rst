@@ -68,3 +68,6 @@ Available role tags:
 
 ``role::resources:commands``
   Run specified commands on the remote hosts.
+
+``role::resources:capabilities``
+  Manage file privileges on the remote hosts.

@@ -511,3 +511,27 @@ parameters:
   Optional, boolean. If ``True``, Ansible will not display the task contents or
   record them in the log. It's useful to avoid recording sensitive data like
   passwords.
+
+.. _resources__ref_capabilities:
+
+resources__capabilities
+-----------------------
+
+These lists allow you to manipulate file privileges using the Linux
+:manpage:`capabilities(7)` system.
+You can use all parameters supported by the `Ansible capabilities module`_.
+The role recognizes these additional alias for parameters:
+
+``item.path`` or ``item.name``
+  Required. Specifies the path to the file to be managed
+
+Examples
+~~~~~~~~
+
+Allow Bluetooth LE scanning as non root:
+
+.. code-block:: yaml
+
+   resources__host_file_capabilities:
+     - path: '/usr/bin/hcitool'
+       capability: 'cap_net_raw,cap_net_admin+eip'

@@ -293,6 +293,16 @@
          ((item.path|d() or item.dest|d() or item.name|d()) or item))
   tags: [ 'role::resources:paths' ]
 
+- name: Set custom file capabilities
+  capabilities:
+    path:       '{{ item.path  | d(item.name) }}'
+    capability: '{{ item.capability }}'
+    state:      '{{ item.state | d("present") }}'
+  with_flattened:
+    - '{{ resources__combined_file_capabilities }}'
+  when: resources__enabled|bool
+  tags: [ 'role::resources:capabilities' ]
+
 # Execute custom shell commands [[[1
 # This is not an alternative to a fully-fledged Ansible role.
 - name: Execute shell commands
