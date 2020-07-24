@@ -32,9 +32,9 @@ nodejs__distribution_release: '{{ ansible_local.core.distribution_release|d(ansi
 
 # .. envvar:: nodejs__node_upstream [[[
 #
-# Enable or disable support for NodeSource APT repositories. By default the
-# upstream package will be installed due to no security support in Debian
-# Stable release.
+# Enable or disable support for NodeSource APT repositories. On older
+# distribution versions the upstream package will be installed due to no
+# security support.
 nodejs__node_upstream: '{{ ansible_local.nodejs.node_upstream
                            |d(nodejs__distribution_release in [ "jessie", "xenial" ]) | bool }}'
 
