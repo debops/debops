@@ -268,6 +268,41 @@ resources__group_files: []
 resources__host_files: []
                                                                    # ]]]
                                                                    # ]]]
+# Manage file capabilities [[[
+# ----------------------------
+
+# These lists allow you to manipulate file privileges using the Linux
+# :manpage:`capabilities(7)` system.
+# You can use all parameters supported by the `Ansible capabilities module`_.
+#
+# See :ref:`resources__ref_capabilities` for more details.
+
+# .. envvar:: resources__file_capabilities [[[
+#
+# Manage file capabilities on all hosts in Ansible inventory.
+resources__file_capabilities: []
+
+                                                                   # ]]]
+# .. envvar:: resources__group_file_capabilities [[[
+#
+# Manage file capabilities on hosts in a specific group in Ansible inventory.
+resources__group_file_capabilities: []
+
+                                                                   # ]]]
+# .. envvar:: resources__host_file_capabilities [[[
+#
+# Manage file capabilities on specific hosts in Ansible inventory.
+resources__host_file_capabilities: []
+                                                                   # ]]]
+# .. envvar:: resources__combined_file_capabilities [[[
+#
+# Variable which combines all other file capabilities variables and is used in
+# the role tasks.
+resources__combined_file_capabilities: '{{ resources__file_capabilities
+                                           + resources__group_file_capabilities
+                                           + resources__host_file_capabilities }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # Manage custom delayed paths [[[
 # -------------------------------
 
@@ -298,6 +333,7 @@ resources__group_delayed_paths: []
 #
 # Paths managed on specific hosts in Ansible inventory.
 resources__host_delayed_paths: []
+                                                                   # ]]]
                                                                    # ]]]
 # Custom shell commands [[[
 # -------------------------

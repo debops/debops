@@ -33,6 +33,13 @@ Added
 - The role can now drop PostgreSQL databases and remove roles when their state
   is set to ``absent`` in the Ansible inventory.
 
+:ref:`debops.resources` role
+''''''''''''''''''''''''''''
+
+- Support manipulating file privileges using the Linux
+  :manpage:`capabilities(7)` with the help of the Ansible capabilities
+  module.
+
 Changed
 ~~~~~~~
 
