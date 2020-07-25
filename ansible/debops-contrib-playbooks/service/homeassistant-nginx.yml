@@ -1,7 +1,7 @@
 ---
 # Copyright (C) 2017 Robin Schneider <ypid@riseup.net>
 # Copyright (C) 2017 DebOps <https://debops.org/>
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: GPL-3.0-only
 
 - name: Setup and manage Home Assistant with Nginx as reverse proxy
   collections: [ 'debops.debops', 'debops.roles01',
@@ -29,6 +29,8 @@
       tags: [ 'role::nginx' ]
       nginx__dependent_upstreams:
         - '{{ homeassistant__nginx__dependent_upstreams }}'
+      nginx__dependent_htpasswd:
+        - '{{ homeassistant__nginx__dependent_htpasswd }}'
       nginx__dependent_servers:
         - '{{ homeassistant__nginx__dependent_servers }}'
 
