@@ -32,13 +32,11 @@ nodejs__distribution_release: '{{ ansible_local.core.distribution_release|d(ansi
 
 # .. envvar:: nodejs__node_upstream [[[
 #
-# Enable or disable support for NodeSource APT repositories. By default the
-# upstream package will be installed due to no security support in Debian
-# Stable release.
-nodejs__node_upstream: '{{ ansible_local.nodejs.node_upstream|bool
-                           if (ansible_local|d() and ansible_local.nodejs|d() and
-                               ansible_local.nodejs.node_upstream is defined)
-                           else nodejs__distribution_release in [ "jessie", "xenial" ] }}'
+# Enable or disable support for NodeSource APT repositories. On older
+# distribution versions the upstream package will be installed due to no
+# security support.
+nodejs__node_upstream: '{{ ansible_local.nodejs.node_upstream
+                           |d(nodejs__distribution_release in [ "jessie", "xenial" ]) | bool }}'
 
                                                                    # ]]]
 # .. envvar:: nodejs__node_upstream_release [[[
@@ -80,17 +78,14 @@ nodejs__node_upstream_repository: 'deb https://deb.nodesource.com/{{ nodejs__nod
 # Enable or disable support for Yarn upstream APT repository.
 #
 # At the moment the ``yarnpkg`` package in Debian Buster is broken if Node.js
-# from NodeSource is installed, therfore in that case installation from
+# from NodeSource is installed, therefore in that case installation from
 # upstream will be enabled automatically. Ref: https://bugs.debian.org/933229
 nodejs__yarn_upstream: '{{ True
                            if nodejs__node_upstream|bool
-                           else (ansible_local.nodejs.yarn_upstream|bool
-                                 if (ansible_local|d() and ansible_local.nodejs|d() and
-                                     ansible_local.nodejs.yarn_upstream is defined)
-                                 else (True
-                                       if (nodejs__distribution_release in
-                                           [ "jessie", "stretch", "xenial", "bionic" ])
-                                       else False)) }}'
+                           else (ansible_local.nodejs.yarn_upstream
+                                 |d(nodejs__distribution_release in
+                                    [ "jessie", "stretch", "xenial", "bionic" ])
+                           ) }}'
 
                                                                    # ]]]
 # .. envvar:: nodejs__yarn_upstream_key_id [[[

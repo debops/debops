@@ -158,10 +158,7 @@ mosquitto__allow_tls: []
 #
 # Enable or disable support for WebSockets if the required packages are
 # available.
-mosquitto__websockets: '{{ True
-                           if (mosquitto__register_websockets.stdout|d() and
-                               mosquitto__register_websockets.stdout != "")
-                           else False }}'
+mosquitto__websockets: '{{ mosquitto__register_websockets.stdout|d() != "" }}'
 
                                                                    # ]]]
 # .. envvar:: mosquitto__websockets_package [[[
@@ -584,7 +581,7 @@ mosquitto__auth_anonymous: []
                                                                    # ]]]
 # .. envvar:: mosquitto__auth_users [[[
 #
-# A YAML list of user accunts configured on all hosts in Ansible inventory.
+# A YAML list of user accounts configured on all hosts in Ansible inventory.
 # See :ref:`mosquitto__ref_auth_users` for more details.
 mosquitto__auth_users: []
 
