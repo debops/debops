@@ -14,9 +14,10 @@ General configuration
 ---------------------
 
 On a new host, PostgreSQL server will be configured with a default cluster
-``main`` running on port ``5432``. Cluster will only listen to connections from
-``localhost``, Ansible management account and ``root`` account will be able to
-login to the PostgreSQL server using ``postgres`` role, for example:
+``main`` running on port ``5432``.
+The cluster will only listen to connections from ``localhost``.
+The ansible management account and the ``root`` account will be able to login
+to the PostgreSQL server using the ``postgres`` role. For example:
 
 .. code-block:: console
 
@@ -24,8 +25,8 @@ login to the PostgreSQL server using ``postgres`` role, for example:
 
 The PostgreSQL version installed by the role will be a default version offered
 by the distribution. If you want PostgreSQL 9.4 on Debian Wheezy, or an
-upstream version of the server, you can enable the upstream APT repository by
-adding in inventory:
+upstream version of the server, you can enable the upstream APT repository from
+inventory, by adding:
 
 .. code-block:: yaml
 
@@ -40,11 +41,14 @@ PostgreSQL roles and databases.
 Remote access to the database
 -----------------------------
 
-PostgreSQL server listens only for connections on ``localhost`` by default. To
-enable remote access, you need to change the
-:envvar:`postgresql_server__listen_addresses` list to specify either IP addresses of
-the interfaces you want your host to listen on or ``*`` for all interfaces.
-Because firewall by default blocks all connections to PostgreSQL server, you
+By default, PostgreSQL listens only for connections on ``localhost``.
+
+To enable remote access, you need to change the
+:envvar:`postgresql_server__listen_addresses` list to specify either IP
+addresses of the interfaces you want your host to listen on,
+or ``*`` for all interfaces.
+
+As the firewall blocks all connections to the PostgreSQL server by default, you
 will also need to specify IP addresses or CIDR subnets which should be able to
 connect to the clusters. Example configuration of variables in inventory:
 
@@ -53,12 +57,13 @@ connect to the clusters. Example configuration of variables in inventory:
    postgresql_server__listen_addresses: [ '*' ]
    postgresql_server__allow: [ '192.0.2.0/24', '2001:db8::/32' ]
 
-Default set of Host-Based Authentication rules permit connections from remote
-hosts that are in the same subnet as the server, only over SSL, and require the
-correct password to be provided to accept connections. If you want to allow
-connections from other subnets than the server, you will need to add your own
-HBA entries to the PostgreSQL cluster configuration. Example for the default
-cluster:
+The default set of Host-Based Authentication rules permit connections from
+remote hosts that are in the same subnet as the server, only over SSL, and
+require the correct password to be provided to accept connections.
+
+If you want to allow connections from other subnets than the server, you will
+need to add your own HBA entries to the PostgreSQL cluster configuration.
+Example for the default cluster:
 
 .. code-block:: yaml
 
@@ -74,7 +79,12 @@ cluster:
          method: 'md5'
 
 The ``debops.postgresql_server`` role is designed to use the PKI infrastructure
-managed by :ref:`debops.pki` role. See its documentation for more details.
+managed by the :ref:`debops.pki` role.
+
+A **pki realm** can be picked with the :envvar:`postgresql_server__pki_realm`
+variable, then remote connections to the server will be automatically
+encrypted over SSL, otherwise dropped by default.
+
 
 Example inventory
 -----------------
