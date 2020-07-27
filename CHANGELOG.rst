@@ -76,6 +76,12 @@ LDAP
 - Fixed an issue where the role would attempt adding APT keys from a PGP
   keyserver without installing gnupg first.
 
+:ref:`debops.ldap` role
+'''''''''''''''''''''''
+
+- Fixed multiple issues with adding and updating hosts to the LDAP directory,
+  when these hosts were configured for network bonding.
+
 :ref:`debops.owncloud` role
 ''''''''''''''''''''''''''''
 
