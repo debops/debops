@@ -361,3 +361,16 @@ Execute a custom script every week, as the ``backup`` user:
            content: |
              #!/bin/bash
              touch /tmp/weekly-result
+
+Disable email notification for one job only:
+
+.. code-block:: yaml
+
+   cron__jobs:
+
+     'script-without-mail':
+       special_time: 'hourly'
+       job: '/usr/local/lib/hourly-job'
+       enviroment:
+         - MAILTO: ''
+         
