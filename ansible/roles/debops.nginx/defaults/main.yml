@@ -485,10 +485,14 @@ nginx_pki_hook_action: 'reload'
 # .. envvar:: nginx_ssl_dhparam [[[
 #
 # Path to the file with Diffie-Hellman parameters to use by the webserver.
-nginx_ssl_dhparam: '{{ (ansible_local.dhparam[nginx_ssl_dhparam_set]
-                        if (ansible_local|d() and ansible_local.dhparam|d() and
-                            ansible_local.dhparam[nginx_ssl_dhparam_set]|d())
-                        else "") }}'
+nginx_ssl_dhparam: '{{ (""
+                        if nginx_default_tls_protocols|length == 1 and
+                           nginx_default_tls_protocols[0] == "TLSv1.3"
+                        else
+                           (ansible_local.dhparam[nginx_ssl_dhparam_set]
+                            if (ansible_local|d() and ansible_local.dhparam|d() and
+                                ansible_local.dhparam[nginx_ssl_dhparam_set]|d())
+                            else "")) }}'
 
                                                                    # ]]]
 # .. envvar:: nginx_ssl_dhparam_set [[[
