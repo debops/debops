@@ -3,7 +3,7 @@
 {% set ldap__tpl_device_ip_addresses = [] %}
 {% for item in ansible_interfaces %}
 {%   set iface = (item | replace('-','_') | regex_replace('^(.*)$', 'ansible_\\1')) %}
-{%   if iface.startswith(('ansible_en', 'ansible_eth', 'ansible_vlan')) %}
+{%   if iface.startswith(('ansible_bond', 'ansible_en', 'ansible_eth', 'ansible_vlan')) %}
 {%     set _ = ldap__tpl_device_interfaces.append(item) %}
 {%   elif hostvars[inventory_hostname][iface].type|d('ether') == 'bridge' %}
 {%     set _ = ldap__tpl_device_masters.append(item) %}
