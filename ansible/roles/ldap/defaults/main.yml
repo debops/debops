@@ -284,7 +284,7 @@ ldap__device_aliases: [ '{{ ansible_hostname }}' ]
 # attributes, if they are configured to be reachable from outside of the host.
 ldap__device_ip_addresses: '{{ q("template",
                                  "lookup/ldap__device_ip_addresses.j2")
-                                 | from_yaml }}'
+                                 | from_yaml | flatten }}'
 
                                                                    # ]]]
 # .. envvar:: ldap__device_mac_addresses [[[
@@ -295,9 +295,14 @@ ldap__device_ip_addresses: '{{ q("template",
 # Only the Ethernet network interfaces, or their equivalents in the virtual
 # machines or containers, will be included in the list. Any other types of
 # network devices will be skipped.
+#
+# The 'unique' filter is used here to prevent adding duplicate MAC addresses to
+# the device object. This could otherwise cause problems when the host employs
+# network bonding (where the MAC addresses of the physical interfaces can become
+# the same).
 ldap__device_mac_addresses: '{{ q("template",
                                   "lookup/ldap__device_mac_addresses.j2")
-                                  | from_yaml }}'
+                                  | from_yaml | flatten | unique }}'
 
                                                                    # ]]]
 # .. envvar:: ldap__device_self_rdn [[[
@@ -383,8 +388,8 @@ ldap__device_object_classes: '{{ [ "device", "ieee802Device", "ipHost" ]
 # well on any changes.
 ldap__device_attributes:
   cn: '{{ ([ ldap__device_self_rdn.split("=")[1] ] + ldap__device_aliases) | unique }}'
-  ipHostNumber: '{{ ldap__device_ip_addresses  | flatten }}'
-  macAddress:   '{{ ldap__device_mac_addresses | flatten }}'
+  ipHostNumber: '{{ ldap__device_ip_addresses }}'
+  macAddress:   '{{ ldap__device_mac_addresses }}'
   manager:      '{{ ldap__device_managers }}'
                                                                    # ]]]
                                                                    # ]]]
