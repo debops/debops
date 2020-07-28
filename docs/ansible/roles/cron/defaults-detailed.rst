@@ -361,3 +361,17 @@ Execute a custom script every week, as the ``backup`` user:
            content: |
              #!/bin/bash
              touch /tmp/weekly-result
+
+Set environment variables for one job only:
+
+.. code-block:: yaml
+
+   cron__jobs:
+
+     'script-without-mail':
+       special_time: 'hourly'
+       job: '/usr/local/lib/hourly-job'
+       environment:
+         MAILTO: ''
+         ENVIRONMENT: 'production'
+         PATH: '/usr/local/sbin:$PATH'
