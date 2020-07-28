@@ -362,7 +362,7 @@ Execute a custom script every week, as the ``backup`` user:
              #!/bin/bash
              touch /tmp/weekly-result
 
-Disable email notification for one job only:
+Set environment variables for one job only:
 
 .. code-block:: yaml
 
@@ -372,4 +372,6 @@ Disable email notification for one job only:
        special_time: 'hourly'
        job: '/usr/local/lib/hourly-job'
        environment:
-         - MAILTO: ''
+         MAILTO: ''
+         ENVIRONMENT: 'production'
+         PATH: '/usr/local/sbin:$PATH'
