@@ -116,7 +116,7 @@ LDAP
 :ref:`debops.ldap` role
 '''''''''''''''''''''''
 
-- Fixed multiple issues with adding and updating hosts to the LDAP directory,
+- Fixed multiple issues with adding and updating hosts to the LDAP directory
   when these hosts were configured for network bonding.
 
 :ref:`debops.owncloud` role
