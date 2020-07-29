@@ -15,5 +15,17 @@
 
   roles:
 
+    - role: mariadb
+      tags: [ 'role::mariadb', 'skip::mariadb' ]
+      mariadb__dependent_databases: '{{ icinga_db__mariadb__dependent_databases }}'
+      mariadb__dependent_users: '{{ icinga_db__mariadb__dependent_users }}'
+      when: (icinga_db__type == 'mariadb')
+
+    - role: postgresql
+      tags: [ 'role::postgresql', 'skip::postgresql' ]
+      postgresql__dependent_roles: '{{ icinga_db__postgresql__dependent_roles }}'
+      postgresql__dependent_databases: '{{ icinga_db__postgresql__dependent_databases }}'
+      when: (icinga_db__type == 'postgresql')
+
     - role: icinga_db
       tags: [ 'role::icinga_db', 'skip::icinga_db' ]
