@@ -55,6 +55,130 @@ icinga_db__feature: '{{ "ido-pgsql"
                         else ("ido-mysql"
                               if (icinga_db__type == "mariadb")
                               else "unknown") }}'
+
+                                                                   # ]]]
+
+# .. envvar:: icinga_db__dbconfigs [[[
+#
+# Debconf questions and answers for the icinga2-ido-pgsql and icinga2-ido-mysql
+# packages, to install these packages without user interaction.
+icinga_db__dbconfigs:
+
+  - question: 'icinga2-{{ icinga_db__feature }}/dbconfig-install'
+    vtype: 'boolean'
+    value: 'false'
+
+  - question: 'icinga2-{{ icinga_db__feature }}/dbconfig-upgrade'
+    vtype: 'boolean'
+    value: '{{ icinga_db__host == "localhost" }}'
+
+  - question: 'icinga2-{{ icinga_db__feature }}/enable'
+    vtype: 'boolean'
+    value: 'true'
+
+  - question: 'icinga2-{{ icinga_db__feature }}/remote/host'
+    vtype: 'string'
+    value: '{{ icinga_db__host }}'
+
+  - question: 'icinga2-{{ icinga_db__feature }}/remote/port'
+    vtype: 'string'
+    value: '{{ icinga_db__port }}'
+
+  - question: 'icinga2-{{ icinga_db__feature }}/db/dbname'
+    vtype: 'string'
+    value: '{{ icinga_db__database }}'
+
+  - question: 'icinga2-{{ icinga_db__feature }}/db/app-user'
+    vtype: 'string'
+    value: '{{ icinga_db__user }}'
+
+  - question: 'icinga2-{{ icinga_db__feature }}/{{ "pgsql"
+                                                   if icinga_db__type == "postgresql"
+                                                   else ("mysql" if icinga_db__type == "mariadb"
+                                                                 else "")}}/app-pass'
+    vtype: 'password'
+    value: '{{ icinga_db__password }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+
+# Database configuration [[[
+# --------------------------
+# .. envvar:: icinga_db__host [[[
+#
+# The host where the Icinga 2 database will be installed.
+icinga_db__host: '{{ ansible_local.postgresql.server
+                     if (ansible_local.postgresql.server|d() and
+                         icinga_db__type == "postgresql")
+                     else (ansible_local.mariadb.server
+                           if (ansible_local.mariadb.server|d() and
+                               icinga_db__type == "mariadb")
+                           else "localhost") }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_db__port [[[
+#
+# The port used to connect to the Icinga 2 database.
+icinga_db__port: '{{ ansible_local.postgresql.port
+                     if (ansible_local.postgresql.port|d() and
+                         icinga_db__type == "postgresql")
+                     else (ansible_local.mariadb.port
+                           if (ansible_local.mariadb.server|d() and
+                               icinga_db__type == "mariadb")
+                           else "unknown") }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_db__user [[[
+#
+# Name of the database user for Icinga 2.
+icinga_db__user: 'icinga2'
+
+                                                                   # ]]]
+# .. envvar:: icinga_db__database [[[
+#
+# Name of the database for Icinga 2.
+icinga_db__database: 'icinga2'
+
+                                                                   # ]]]
+# .. envvar:: icinga_db__password_path [[[
+#
+# Path to database password file located on the Ansible Controller. See the
+# :ref:`debops.secret` role for more details.
+icinga_db__password_path: '{{ secret + "/" + icinga_db__type + "/" +
+                                        ansible_local[icinga_db__type].delegate_to }}{%
+                                         if icinga_db__type == "postgresql" %}/{{ ansible_local[icinga_db__type].port }}{% endif
+                                        %}{{ "/credentials/" + icinga_db__user +
+                                        "/password" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_db__password [[[
+#
+# Password of the Icinga 2 database user.
+icinga_db__password: "{{ lookup('password', icinga_db__password_path
+                                   + ' length=48 chars=ascii_letters,digits,.-_') }}"
+
+                                                                   # ]]]
+# .. envvar:: icinga_db__init [[[
+#
+# Should the Icinga 2 database be initialized ? Per default, it should be
+# initialized only the first time this role runs.
+icinga_db__init: '{{ False if ansible_local.icinga_db.configured|d()
+                           else True }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_db__postgresql_schema [[[
+#
+# Path on the host where this role runs of the PostgreSQL schema. This schema
+# is used to populate the database when it is created.
+icinga_db__postgresql_schema: '/usr/share/icinga2-ido-pgsql/schema/pgsql.sql'
+
+                                                                   # ]]]
+# .. envvar:: icinga_db__mariadb_schema [[[
+#
+# Path on the host where this role runs of the MariaDB schema. This schema
+# is used to populate the database when it is created.
+icinga_db__mariadb_schema: '/usr/share/icinga2-ido-mysql/schema/mysql.sql'
+
                                                                    # ]]]
                                                                    # ]]]
 # APT packages [[[
@@ -79,3 +203,40 @@ icinga_db__base_packages:
 icinga_db__packages: []
                                                                    # ]]]
                                                                    # ]]]
+
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: icinga_db__postgresql__dependent_roles [[[
+#
+# Configuration of PostgreSQL roles for :ref:`debops.postgresql` Ansible role.
+icinga_db__postgresql__dependent_roles:
+  - name: '{{ icinga_db__user }}'
+    password: '{{ icinga_db__password }}'
+    db: '{{ icinga_db__database }}'
+    priv: ['ALL']
+
+                                                                   # ]]]
+# .. envvar:: icinga_db__postgresql__dependent_databases [[[
+#
+# Configuration of PostgreSQL databases for the :ref:`debops.postgresql` Ansible
+# role.
+icinga_db__postgresql__dependent_databases:
+  - name: '{{ icinga_db__database }}'
+    owner: '{{ icinga_db__user }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_db__mariadb__dependent_users [[[
+#
+# Configuration of MariaDB users for :ref:`debops.mariadb` Ansible role.
+icinga_db__mariadb__dependent_users:
+  - name: '{{ icinga_db__user }}'
+    password: '{{ icinga_db__password }}'
+    database: '{{ icinga_db__database }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_db__mariadb__dependent_databases [[[
+#
+# Configuration of MariaDB databases for :ref:`debops.mariadb` Ansible role.
+icinga_db__mariadb__dependent_databases:
+  - name: '{{ icinga_db__database }}'

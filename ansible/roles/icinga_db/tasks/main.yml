@@ -6,17 +6,21 @@
 - import_role:
     name: 'global_handlers'
 
+- import_role:
+    name: 'secret'
+
 - name: Set dbconfig configuration for Icinga database
   debconf:
     name: 'icinga2-{{ icinga_db__feature }}'
-    question: '{{ item }}'
-    vtype: 'boolean'
-    value: 'true'
-  with_items:
-    - 'icinga2-{{ icinga_db__feature }}/dbconfig-install'
-    - 'icinga2-{{ icinga_db__feature }}/dbconfig-upgrade'
+    question: '{{ item.question }}'
+    vtype: '{{ item.vtype }}'
+    value: '{{ item.value }}'
+  with_items: '{{ icinga_db__dbconfigs }}'
   when: icinga_db__icinga_installed|bool and
-        icinga_db__type != 'unknown'
+        icinga_db__type != 'unknown' and
+        item.state|d('present') == 'present'
+  no_log: '{{ item.vtype == "password" }}'
+  changed_when: False
 
 - name: Install required packages
   package:
@@ -29,6 +33,28 @@
   notify: [ 'Check icinga2 configuration and restart' ]
   when: icinga_db__icinga_installed|bool and
         icinga_db__type != 'unknown'
+
+- name: Import Icinga IDO database on installation into PostgreSQL
+  postgresql_db:
+    name: '{{ icinga_db__database }}'
+    state: 'restore'
+    login_host: '{{ icinga_db__host }}'
+    login_password: '{{ icinga_db__password }}'
+    login_user: '{{ icinga_db__user }}'
+    target: '{{ icinga_db__postgresql_schema }}'
+  when: icinga_db__type == 'postgresql' and
+        icinga_db__init|bool
+
+- name: Import Icinga IDO database on installation into MariaDB
+  mysql_db:
+    name: '{{ icinga_db__database }}'
+    state: 'import'
+    login_host: '{{ icinga_db__host }}'
+    login_password: '{{ icinga_db__password }}'
+    login_user: '{{ icinga_db__user }}'
+    target: '{{ icinga_db__mariadb_schema }}'
+  when: icinga_db__type == 'mariadb' and
+        icinga_db__init|bool
 
 - name: Ensure that IDO feature is enabled
   file:
