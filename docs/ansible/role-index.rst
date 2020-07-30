@@ -204,6 +204,7 @@ Logging
 -------
 
 - :ref:`debops.elasticsearch`
+- :ref:`debops.filebeat`
 - :ref:`debops.journald`
 - :ref:`debops.kibana`
 - :ref:`debops.logrotate`

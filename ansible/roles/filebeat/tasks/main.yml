@@ -1,0 +1,131 @@
+---
+# Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- import_role:
+    name: 'ansible_plugins'
+
+- import_role:
+    name: 'global_handlers'
+
+- import_role:
+    name: 'secret'
+
+- name: Divert the original Filebeat configuration
+  dpkg_divert:
+    path: '/etc/filebeat/filebeat.yml'
+    state: 'present'
+  register: filebeat__register_config_divert
+  when: ansible_pkg_mgr == 'apt'
+
+- name: Generate main Filebeat configuration
+  template:
+    src: 'etc/filebeat/filebeat.yml.j2'
+    dest: '/etc/filebeat/filebeat.yml'
+    mode: '0600'
+  notify: [ 'Test filebeat configuration and restart' ]
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Create required configuration directories
+  file:
+    path: '{{ "/etc/filebeat/" + (item.name | dirname) }}'
+    state: 'directory'
+    mode: '0755'
+  loop: '{{ filebeat__combined_snippets | parse_kv_config }}'
+  loop_control:
+    label:  '{{ {"name": item.name, "state": item.state} }}'
+  when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and item.config|d()
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Remove snippet configuration if requested
+  file:
+    path: '{{ "/etc/filebeat/" + (item.name | regex_replace(".yml","") + ".yml") }}'
+    state: 'absent'
+  loop: '{{ filebeat__combined_snippets | parse_kv_config }}'
+  loop_control:
+    label:  '{{ {"name": item.name, "state": item.state, "config": item.config} }}'
+  notify: [ 'Test filebeat configuration and restart' ]
+  when: item.state|d('present') == 'absent' and item.config|d()
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Generate snippet configuration
+  template:
+    src: 'etc/filebeat/snippets.d/snippet.yml.j2'
+    dest: '{{ "/etc/filebeat/" + (item.name | regex_replace(".yml","") + ".yml") }}'
+    mode: '{{ item.mode | d("0600") }}'
+  loop: '{{ filebeat__combined_snippets | parse_kv_config }}'
+  loop_control:
+    label:  '{{ {"name": item.name, "state": item.state, "config": item.config} }}'
+  notify: [ 'Test filebeat configuration and restart' ]
+  when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and item.config|d()
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Check if the Filebeat keystore exists
+  stat:
+    path: '/var/lib/filebeat/filebeat.keystore'
+  register: filebeat__register_keystore
+
+- name: Create Filebeat keystore if not present
+  command: 'filebeat keystore create'
+  when: not filebeat__register_keystore.stat.exists
+
+- name: Get the list of keystore contents
+  command: 'filebeat keystore list'
+  register: filebeat__register_keys
+  changed_when: False
+  check_mode: False
+
+- name: Remove key from Filebeat keystore when requested
+  command: 'filebeat keystore remove {{ item.name }}'
+  loop: '{{ filebeat__combined_keys | parse_kv_config }}'
+  loop_control:
+    label:  '{{ {"name": item.name, "state": item.state} }}'
+  notify: [ 'Test filebeat configuration and restart' ]
+  when: (item.state|d('present') == 'absent' and
+         item.name in filebeat__register_keys.stdout_lines)
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Set or update key in Filebeat keystore
+  environment:
+    DEBOPS_FILEBEAT_KEY: '{{ item.value }}'
+  shell: |
+    set -o nounset -o pipefail -o errexit &&
+    {% if item.force | d(False) %}
+    printf "%s" "${DEBOPS_FILEBEAT_KEY}" | filebeat keystore add "{{ item.name }}" --stdin --force
+    {% else %}
+    printf "%s" "${DEBOPS_FILEBEAT_KEY}" | filebeat keystore add "{{ item.name }}" --stdin
+    {% endif %}
+  args:
+    executable: 'bash'
+  loop: '{{ filebeat__combined_keys | parse_kv_config }}'
+  loop_control:
+    label:  '{{ {"name": item.name, "state": item.state} }}'
+  notify: [ 'Test filebeat configuration and restart' ]
+  when: (item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
+         (item.name not in filebeat__register_keys.stdout_lines or
+          (item.force|d(False))|bool))
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Enable filebeat service on installation
+  service:
+    name: 'filebeat'
+    enabled: True
+  when: filebeat__register_config_divert is changed
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save Filebeat local facts
+  template:
+    src: 'etc/ansible/facts.d/filebeat.fact.j2'
+    dest: '/etc/ansible/facts.d/filebeat.fact'
+    mode: '0755'
+  register: filebeat__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: filebeat__register_facts is changed
