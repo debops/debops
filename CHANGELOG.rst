@@ -33,6 +33,11 @@ New DebOps roles
   Ansible roles to use handlers from different roles without including them
   entirely in the playbook.
 
+- The :ref:`debops.filebeat` role can be used to install and configure
+  `Filebeat`__, a log shipping agent from Elastic, part of the ELK stack.
+
+  .. __: https://www.elastic.co/beats/filebeat
+
 :ref:`debops.postgresql` role
 '''''''''''''''''''''''''''''
 

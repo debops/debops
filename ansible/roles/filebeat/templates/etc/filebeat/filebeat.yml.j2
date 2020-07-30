@@ -1,0 +1,15 @@
+{# Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2020 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+---
+# {{ ansible_managed }}
+
+{% set filebeat__tpl_configuration = {} %}
+{% for element in filebeat__combined_configuration | parse_kv_config %}
+{%   if element.state|d('present') not in [ 'absent', 'init', 'ignore' ] and element.config|d() %}
+{%     set combined_config = filebeat__tpl_configuration | combine(element.config, recursive=True) %}
+{%     set _ = filebeat__tpl_configuration.update(combined_config) %}
+{%   endif %}
+{% endfor %}
+{{ filebeat__tpl_configuration | to_nice_yaml(indent=2) }}

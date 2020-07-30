@@ -1,0 +1,34 @@
+---
+# Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Manage Filebeat service
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_filebeat' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::elastic_co' ]
+      keyring__dependent_apt_keys:
+        - '{{ elastic_co__keyring__dependent_apt_keys }}'
+
+    - role: apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ elastic_co__apt_preferences__dependent_list }}'
+
+    - role: elastic_co
+      tags: [ 'role::elastic_co', 'skip::elastic_co' ]
+      elastic_co__dependent_packages:
+        - '{{ filebeat__elastic_co__dependent_packages }}'
+
+    - role: filebeat
+      tags: [ 'role::filebeat', 'skip::filebeat' ]

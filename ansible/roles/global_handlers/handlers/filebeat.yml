@@ -1,0 +1,22 @@
+---
+# Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Test filebeat configuration and restart
+  command: 'filebeat test config'
+  notify:
+    - 'Restart filebeat'
+    - 'Commit changes in etckeeper'
+  when: (ansible_local.filebeat.installed|d())|bool
+
+- name: Test filebeat output and restart
+  command: 'filebeat test output'
+  notify: [ 'Restart filebeat' ]
+  when: (ansible_local.filebeat.installed|d())|bool
+
+- name: Restart filebeat
+  service:
+    name: 'filebeat'
+    state: 'restarted'
+  when: (ansible_local.filebeat.installed|d())|bool

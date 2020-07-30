@@ -1,0 +1,517 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2020 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _filebeat__ref_defaults:
+
+# debops.filebeat default variables
+# =================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# APT packages, version [[[
+# -------------------------
+
+# The ``debops.filebeat`` role uses the :ref:`debops.elastic_co` Ansible role
+# to configure the Elastic APT repositories and install the packages. The role
+# also installs the Ansible facts that provide the ``filebeat``
+# version.
+
+# .. envvar:: filebeat__base_packages [[[
+#
+# List of base APT packages to install.
+filebeat__base_packages: [ 'filebeat' ]
+
+                                                                   # ]]]
+# .. envvar:: filebeat__packages [[[
+#
+# List of additional APT packages to install with Filebeat.
+filebeat__packages: []
+
+                                                                   # ]]]
+# .. envvar:: filebeat__version [[[
+#
+# Store the detected Filebeat version in a convenient variable for conditional
+# configuration.
+filebeat__version: '{{ ansible_local.elastic_co.packages.filebeat | d("0.0.0") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Main Filebeat configuration file [[[
+# ------------------------------------
+
+# The variables below define the contents of the
+# :file:`/etc/filebeat/filebeat.yml` configuration file.
+# See :ref:`filebeat__ref_configuration` for more details.
+
+# .. envvar:: filebeat__original_configuration [[[
+#
+# Filebeat configuration based on the original config file which comes with the
+# package. Some of the configuration options are overridden in the subsequent
+# configuration variable.
+filebeat__original_configuration:
+
+  - name: 'filebeat_inputs'
+    config:
+      filebeat.inputs:
+        - type: 'log'
+          enabled: False
+          paths: [ '/var/log/*.log' ]
+
+  - name: 'filebeat_config_modules'
+    config:
+      filebeat.config.modules:
+        path: '${path.config}/modules.d/*.yml'
+        reload.enabled: False
+
+  - name: 'setup_template_settings'
+    config:
+      setup.template.settings:
+        index.number_of_shards: 3
+
+  - name: 'setup_kibana'
+    config:
+      setup.kibana:
+
+  - name: 'output_elasticsearch'
+    config:
+      output.elasticsearch:
+        hosts: [ 'localhost:9200' ]
+
+  - name: 'processors'
+    config:
+      processors:
+        - add_host_metadata: ~
+        - add_cloud_metadata: ~
+
+                                                                   # ]]]
+# .. envvar:: filebeat__default_configuration [[[
+#
+# The Filebeat configuration defined by the role.
+filebeat__default_configuration:
+
+  - name: 'filebeat_inputs'
+    config:
+      filebeat.inputs:
+        - type: 'log'
+          enabled: True
+          paths:
+            - '/var/log/*.log'
+            - '/var/log/messages'
+
+  - name: 'filebeat_config_inputs'
+    config:
+      filebeat.config.inputs:
+        path: '${path.config}/inputs.d/*.yml'
+        reload.enabled: True
+        reload.period: '30s'
+
+  - name: 'filebeat_config_modules'
+    config:
+      filebeat.config.modules:
+        path: '${path.config}/modules.d/*.yml'
+        reload.enabled: True
+        reload.period: '30s'
+
+                                                                   # ]]]
+# .. envvar:: filebeat__configuration [[[
+#
+# The Filebeat configuration which should be present on all hosts in the
+# Ansible inventory.
+filebeat__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: filebeat__group_configuration [[[
+#
+# The Filebeat configuration which should be present on hosts in a specific
+# Ansible inventory group.
+filebeat__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: filebeat__host_configuration [[[
+#
+# The Filebeat configuration which should be present on specific hosts in the
+# Ansible inventory.
+filebeat__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: filebeat__combined_configuration [[[
+#
+# Variable which combines all Filebeat configuration variables and is used in
+# the role tasks and templates.
+filebeat__combined_configuration: '{{ filebeat__original_configuration
+                                      + filebeat__default_configuration
+                                      + filebeat__configuration
+                                      + filebeat__group_configuration
+                                      + filebeat__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Filebeat configuration snippets [[[
+# -----------------------------------
+
+# The variables below define Filebeat configuration snippets stored in the
+# :file:`/etc/filebeat/` directory. Snippets can be created in subdirectories,
+# which will be created automatically. See :ref:`filebeat__ref_snippets` for
+# more details.
+
+# .. envvar:: filebeat__default_snippets [[[
+#
+# A list of default Filebeat configuration snippets defined by the role.
+filebeat__default_snippets:
+
+  - name: 'inputs.d/ceph.yml'
+    state: '{{ "present"
+               if ansible_local.ceph.installed|d()|bool
+               else "absent" }}'
+    config:
+
+      - type: 'log'
+        enabled: True
+        paths:
+          - '/var/log/ceph/ceph-osd.*.log'
+        ignore_older: '1h'
+        fields:
+          ceph.daemon: 'osd'
+        fields_under_root: True
+
+      - type: 'log'
+        enabled: True
+        paths:
+          - '/var/log/ceph/ceph-mgr.*.log'
+        ignore_older: '1h'
+        fields:
+          ceph.daemon: 'mgr'
+        fields_under_root: True
+
+      - type: 'log'
+        enabled: True
+        paths:
+          - '/var/log/ceph/ceph-mon.*.log'
+        ignore_older: '1h'
+        fields:
+          ceph.daemon: 'mon'
+        fields_under_root: True
+
+      - type: 'log'
+        enabled: True
+        paths:
+          - '/var/log/ceph/ceph.log'
+        ignore_older: '1h'
+        fields:
+          ceph.daemon: 'ceph'
+        fields_under_root: True
+
+      - type: 'log'
+        enabled: True
+        paths:
+          - '/var/log/ceph/ceph.audit.log'
+        ignore_older: '1h'
+        fields:
+          ceph.daemon: 'audit'
+        fields_under_root: True
+
+
+  - name: 'inputs.d/libvirt.yml'
+    state: '{{ "present"
+               if ansible_local.libvirtd.installed|d()|bool
+               else "absent" }}'
+    config:
+      type: 'log'
+      enabled: True
+      paths:
+        - '/var/log/libvirt/*.log'
+        - '/var/log/libvirt/qemu/*.log'
+      ignore_older: '1h'
+      fields:
+        libvirt: True
+      fields_under_root: True
+
+
+  - name: 'inputs.d/named.yml'
+    state: '{{ "present"
+               if ansible_local.bind.installed|d()|bool
+               else "absent" }}'
+    config:
+
+      - type: 'log'
+        enabled: True
+        paths:
+          - '/var/log/named/named.log'
+        ignore_older: '1h'
+        fields:
+          named.type: 'general'
+        files_under_root: True
+
+      - type: 'log'
+        enabled: True
+        paths:
+          - '/var/log/named/lame.log'
+        ignore_older: '1h'
+        fields:
+          named.type: 'lame'
+        files_under_root: True
+
+      - type: 'log'
+        enabled: True
+        paths:
+          - '/var/log/named/query.log'
+        ignore_older: '1h'
+        fields:
+          named.type: 'query'
+        files_under_root: True
+
+      - type: 'log'
+        enabled: True
+        paths:
+          - '/var/log/named/query-errors.log'
+        ignore_older: '1h'
+        fields:
+          named.type: 'query-errors'
+        files_under_root: True
+
+
+  - name: 'inputs.d/openstack.yml'
+    state: '{{ "present"
+               if ansible_local.openstack.installed|d()|bool
+               else "absent" }}'
+    config:
+
+      - type: 'log'
+        enabled: True
+        paths:
+          - '/var/log/nova/*.log'
+        ignore_older: '1h'
+        fields:
+          openstack.component: 'nova'
+        fields_under_root: True
+        multiline:
+          pattern: '^.*(ERROR).*[[:space:]]{3}.*'
+          negate: False
+          match: 'after'
+
+      - type: 'log'
+        enabled: True
+        paths:
+          - '/var/log/neutron/*.log'
+        ignore_older: '1h'
+        fields:
+          openstack.component: 'neutron'
+        fields_under_root: True
+        multiline:
+          pattern: '^.*(ERROR).*[[:space:]]{3}.*'
+          negate: False
+          match: 'after'
+
+      - type: 'log'
+        enabled: True
+        paths:
+          - '/var/log/glance/*.log'
+        ignore_older: '1h'
+        fields:
+          openstack.component: 'glance'
+        fields_under_root: True
+        multiline:
+          pattern: '^.*(ERROR).*[[:space:]]{3}.*'
+          negate: False
+          match: 'after'
+
+      - type: 'log'
+        enabled: True
+        paths:
+          - '/var/log/cinder/*.log'
+        ignore_older: '1h'
+        fields:
+          openstack.component: 'cinder'
+        fields_under_root: True
+        multiline:
+          pattern: '^.*(ERROR).*[[:space:]]{3}.*'
+          negate: False
+          match: 'after'
+
+      - type: 'log'
+        enabled: True
+        paths:
+          - '/var/log/keystone/*.log'
+        ignore_older: '1h'
+        fields:
+          openstack.component: 'keystone'
+        fields_under_root: True
+        multiline:
+          pattern: '^.*(ERROR).*[[:space:]]{3}.*'
+          negate: False
+          match: 'after'
+
+      - type: 'log'
+        enabled: True
+        paths:
+          - '/var/log/ironic/*.log'
+          - '/var/log/ironic-inspector/*.log'
+        ignore_older: '1h'
+        fields:
+          openstack.component: 'ironic'
+        fields_under_root: True
+        multiline:
+          pattern: '^.*(ERROR).*[[:space:]]{3}.*'
+          negate: False
+          match: 'after'
+
+
+  - name: 'modules.d/apache2.yml'
+    config:
+      module: 'apache2'
+      access:
+        enabled: True
+      error:
+        enabled: True
+    state: '{{ "present"
+               if (ansible_local.apache.installed|d()|bool)
+               else "ignore" }}'
+
+  - name: 'modules.d/auditd.yml'
+    config:
+      module: 'auditd'
+      log:
+        enabled: True
+    state: '{{ "present"
+               if (ansible_local.auditd.installed|d()|bool)
+               else "ignore" }}'
+
+  - name: 'modules.d/icinga.yml'
+    config:
+      module: 'icinga'
+      main:
+        enabled: True
+      debug:
+        enabled: True
+      startup:
+        enabled: True
+    state: '{{ "present"
+               if (ansible_local.icinga.installed|d()|bool)
+               else "ignore" }}'
+
+  - name: 'modules.d/mysql.yml'
+    config:
+      module: 'mysql'
+      error:
+        enabled: True
+      slowlog:
+        enabled: True
+    state: '{{ "present"
+               if (ansible_local.mariadb.installed|d()|bool)
+               else "ignore" }}'
+
+  - name: 'modules.d/nginx.yml'
+    config:
+      module: 'nginx'
+      access:
+        enabled: True
+      error:
+        enabled: True
+    state: '{{ "present"
+               if (ansible_local.nginx.installed|d()|bool)
+               else "ignore" }}'
+
+  - name: 'modules.d/postgresql.yml'
+    config:
+      module: 'postgresql'
+      log:
+        enabled: True
+    state: '{{ "present"
+               if (ansible_local.postgresql.installed|d()|bool)
+               else "ignore" }}'
+
+  - name: 'modules.d/system.yml'
+    config:
+      module: 'system'
+      syslog:
+        enabled: True
+      auth:
+        enabled: True
+
+                                                                   # ]]]
+# .. envvar:: filebeat__snippets [[[
+#
+# A list of Filebeat configuration snippets which should be present on all
+# hosts in the Ansible inventory.
+filebeat__snippets: []
+
+                                                                   # ]]]
+# .. envvar:: filebeat__group_snippets [[[
+#
+# A list of Filebeat configuration snippets which should be present on hosts in
+# a specific Ansible inventory group.
+filebeat__group_snippets: []
+
+                                                                   # ]]]
+# .. envvar:: filebeat__host_snippets [[[
+#
+# A list of Filebeat configuration snippets which should be present on specific
+# hosts in the Ansible inventory.
+filebeat__host_snippets: []
+
+                                                                   # ]]]
+# .. envvar:: filebeat__combined_snippets [[[
+#
+# Variable which combines all Filebeat snippet variables and is used in role
+# tasks and templates.
+filebeat__combined_snippets: '{{ filebeat__default_snippets
+                                 + filebeat__snippets
+                                 + filebeat__group_snippets
+                                 + filebeat__host_snippets }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Filebeat keystore contents [[[
+# ------------------------------
+
+# The variables below define the contents of the Filebeat keystore which can be
+# used to store passwords and other confidental data, which then can be
+# referenced in Filebeat configuration files. See :ref:`filebeat__ref_keys` for
+# more details.
+
+# .. envvar:: filebeat__keys [[[
+#
+# Filebeat keystore content which should be present on all hosts in the Ansible
+# inventory.
+filebeat__keys: []
+
+                                                                   # ]]]
+# .. envvar:: filebeat__group_keys [[[
+#
+# Filebeat keystore content which should be present on all hosts in the Ansible
+# inventory.
+filebeat__group_keys: []
+
+                                                                   # ]]]
+# .. envvar:: filebeat__host_keys [[[
+#
+# Filebeat keystore content which should be present on hosts in a specific
+# Ansible inventory group.
+filebeat__host_keys: []
+
+                                                                   # ]]]
+# .. envvar:: filebeat__combined_keys [[[
+#
+# Filebeat keystore content which should be present on specific hosts in the
+# Ansible inventory.
+filebeat__combined_keys: '{{ filebeat__keys
+                             + filebeat__group_keys
+                             + filebeat__host_keys }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: filebeat__elastic_co__dependent_packages [[[
+#
+# Configuration for the :ref:`debops.elastic_co` Ansible role.
+filebeat__elastic_co__dependent_packages:
+  - '{{ filebeat__base_packages }}'
+  - '{{ filebeat__packages }}'
+                                                                   # ]]]
+                                                                   # ]]]
