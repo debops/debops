@@ -159,6 +159,16 @@
   no_log: True
   tags: [ 'role::dokuwiki:conf' ]
 
+- name: Generate protected plugin configuration file
+  template:
+    src: 'srv/www/dokuwiki/sites/public/conf/plugins.protected.php.j2'
+    dest: '{{ dokuwiki__git_checkout + "/conf/plugins.protected.php" }}'
+    owner: '{{ dokuwiki__user }}'
+    group: '{{ dokuwiki__group }}'
+    mode: '0600'
+  no_log: True
+  tags: [ 'role::dokuwiki:conf' ]
+
 - name: Generate local MIME configuration file
   template:
     src: 'srv/www/dokuwiki/sites/public/conf/mime.local.conf.j2'
