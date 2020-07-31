@@ -191,7 +191,6 @@ initialize_environment () {
     config["acme_root_ca_file"]="mozilla/DST_Root_CA_X3.crt"
 
     config["pki_default_ca_bundle"]="/etc/ssl/certs/ca-certificates.crt"
-    config["pki_default_subject"]="CN=$(hostname -f)"
     config["pki_default_fqdn"]="$(hostname -f)"
     config["pki_default_domain"]="$(get_dnsdomainname)"
     config["pki_default_subdomains"]="_wildcard_"
@@ -217,7 +216,6 @@ initialize_environment () {
     config["subdomains"]=""
     config["subject_alt_names"]=""
 
-    config["acme_default_subject"]="CN=$(get_dnsdomainname)"
     config["acme_default_domain"]="$(get_dnsdomainname)"
     config["acme_default_subdomains"]="www/ftp/mail/smtp/imap"
 
@@ -419,7 +417,7 @@ run_pki_hooks () {
 
         export PKI_SCRIPT_REALM="${config['name']}"
         export PKI_SCRIPT_FQDN="${config['pki_default_fqdn']}"
-        export PKI_SCRIPT_SUBJECT="${config['subject']:-${config['pki_default_subject']}}"
+        export PKI_SCRIPT_SUBJECT="${config['subject']:-CN=${config['pki_default_domain']}}"
         export PKI_SCRIPT_DOMAINS="${config['domains']:-${config['pki_default_domain']}}"
         export PKI_SCRIPT_SUBDOMAINS="${config['subdomains']:-${config['pki_default_subdomains']}}"
         export PKI_SCRIPT_PRIVATE_KEY
@@ -472,7 +470,7 @@ run_external_script () {
 
         export PKI_SCRIPT_REALM="${config['name']}"
         export PKI_SCRIPT_FQDN="${config['pki_default_fqdn']}"
-        export PKI_SCRIPT_SUBJECT="${config['subject']:-${config['pki_default_subject']}}"
+        export PKI_SCRIPT_SUBJECT="${config['subject']:-CN=${config['pki_default_domain']}}"
         export PKI_SCRIPT_DOMAINS="${config['domains']:-${config['pki_default_domain']}}"
         export PKI_SCRIPT_SUBDOMAINS="${config['subdomains']:-${config['pki_default_subdomains']}}"
 
@@ -1250,11 +1248,11 @@ check_files () {
 
             if [[ ${name} != *.* && ${name} != *@* ]] ; then
 
-                "create_${library}_config" "internal/${library}.conf" internal "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
+                "create_${library}_config" "internal/${library}.conf" internal "${config['subject']:-CN=${config['pki_default_domain']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
 
             elif [[ ${name} == *.* && ${name} != *@* ]] ; then
 
-                "create_${library}_config" "internal/${library}.conf" internal "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
+                "create_${library}_config" "internal/${library}.conf" internal "${config['subject']:-CN=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
 
             fi
 
@@ -1328,7 +1326,7 @@ check_files () {
             if [[ ${name} != *.* && ${name} != *@* ]] ; then
 
                 "create_${library}_config" "selfsigned/${library}.conf" selfsigned \
-                    "${config['subject']:-${config['pki_default_subject']}}" \
+                    "${config['subject']:-CN=${config['pki_default_domain']}}" \
                     "${config['domains']:-${config['pki_default_domain']}}" \
                     "${config['subdomains']:-${config['pki_default_subdomains']}}" \
                     "${config['subject_alt_names']:-}"
@@ -1336,7 +1334,7 @@ check_files () {
             elif [[ ${name} == *.* && ${name} != *@* ]] ; then
 
                 "create_${library}_config" "selfsigned/${library}.conf" selfsigned \
-                    "${config['subject']:-cn=${name}}" \
+                    "${config['subject']:-CN=${name}}" \
                     "${config['domains']:-${name:-${config['pki_default_domain']}}}" \
                     "${config['subdomains']:-${config['pki_default_subdomains']}}" \
                     "${config['subject_alt_names']:-}"
@@ -1394,11 +1392,11 @@ check_files () {
 
             if [[ ${name} != *.* && ${name} != *@* ]] ; then
 
-                "create_${acme_library}_config" "acme/${acme_library}.conf" acme "${config['acme_subject']:-${config['acme_default_subject']}}" "${config['acme_domains']:-${config['acme_default_domain']}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}"
+                "create_${acme_library}_config" "acme/${acme_library}.conf" acme "${config['acme_subject']:-CN=${config['acme_default_domain']}}" "${config['acme_domains']:-${config['acme_default_domain']}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}"
 
             elif [[ ${name} == *.* && ${name} != *@* ]] ; then
 
-                "create_${acme_library}_config" "acme/${acme_library}.conf" acme "${config['acme_subject']:-cn=${name}}" "${config['acme_domains']:-${name:-${config['acme_default_domain']}}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}"
+                "create_${acme_library}_config" "acme/${acme_library}.conf" acme "${config['acme_subject']:-CN=${name}}" "${config['acme_domains']:-${name:-${config['acme_default_domain']}}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}"
 
             fi
 
@@ -2093,25 +2091,25 @@ sub_new-realm () {
         if [[ ${name} != *.* && ${name} != *@* ]] ; then
 
             if [ "${config['pki_internal']}" = "false" ] ; then
-                create_${library}_config selfsigned/${library}.conf selfsigned "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
+                create_${library}_config selfsigned/${library}.conf selfsigned "${config['subject']:-CN=${config['pki_default_domain']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
             fi
 
-            create_${library}_config internal/${library}.conf internal "${config['subject']:-${config['pki_default_subject']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
+            create_${library}_config internal/${library}.conf internal "${config['subject']:-CN=${config['pki_default_domain']}}" "${config['domains']:-${config['pki_default_domain']}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
 
             if [ "${config['pki_acme']}" = "true" ] ; then
-                create_${acme_library}_config acme/${acme_library}.conf acme "${config['acme_subject']:-${config['acme_default_subject']}}" "${config['acme_domains']:-${config['acme_default_domain']}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}" "${config['acme_alt_names']:-}"
+                create_${acme_library}_config acme/${acme_library}.conf acme "${config['acme_subject']:-CN=${config['acme_default_domain']}}" "${config['acme_domains']:-${config['acme_default_domain']}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}" "${config['acme_alt_names']:-}"
             fi
 
         elif [[ ${name} == *.* && ${name} != *@* ]] ; then
 
             if [ "${config['pki_internal']}" = "false" ] ; then
-                create_${library}_config selfsigned/${library}.conf selfsigned "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
+                create_${library}_config selfsigned/${library}.conf selfsigned "${config['subject']:-CN=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
             fi
 
-            create_${library}_config internal/${library}.conf internal "${config['subject']:-cn=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
+            create_${library}_config internal/${library}.conf internal "${config['subject']:-CN=${name}}" "${config['domains']:-${name:-${config['pki_default_domain']}}}" "${config['subdomains']:-${config['pki_default_subdomains']}}" "${config['subject_alt_names']:-}"
 
             if [ "${config['pki_acme']}" = "true" ] ; then
-                create_${acme_library}_config acme/${acme_library}.conf acme "${config['acme_subject']:-cn=${name}}" "${config['acme_domains']:-${name:-${config['acme_default_domain']}}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}" "${config['acme_alt_names']:-}"
+                create_${acme_library}_config acme/${acme_library}.conf acme "${config['acme_subject']:-CN=${name}}" "${config['acme_domains']:-${name:-${config['acme_default_domain']}}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}" "${config['acme_alt_names']:-}"
             fi
 
         fi
