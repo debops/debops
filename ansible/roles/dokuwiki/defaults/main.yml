@@ -354,6 +354,17 @@ dokuwiki__protected_conf_php: |
   {{ dokuwiki__ldap_configuration }}
   {% endif %}
 # ]]]
+
+# .. envvar:; dokuwiki__protected_plugins_php [[[
+#
+# This variable defines the contents of the :file:`conf/plugins.protected.php`
+# configuration file. The contents should be written in PHP, Jinja can be used
+# for logic outside of the PHP engine.
+dokuwiki__protected_plugins_php: |
+  {% if dokuwiki__ldap_enabled|bool %}
+  $plugins['authldap'] = 1;
+  {% endif %}
+# ]]]
 # ]]]
 # MIME Types local configuration [[[
 # ---------------------------------
@@ -443,6 +454,7 @@ dokuwiki__plugins_syntax:
 
   - repo: 'https://github.com/ashrafhasson/dokuwiki-plugin-advrack.git'
     dest: 'advrack'
+    state: 'absent'
 
   - repo: 'https://github.com/glensc/dokuwiki-plugin-pageredirect.git'
     dest: 'pageredirect'
@@ -467,6 +479,7 @@ dokuwiki__plugins_syntax:
 
   - repo: 'https://github.com/tgarc/dokuwiki-plugin-rst'
     dest: 'rst'
+    state: 'absent'
 
                                                                    # ]]]
 # .. envvar:: dokuwiki__plugins_git [[[
@@ -476,9 +489,11 @@ dokuwiki__plugins_git:
 
   - repo: 'https://github.com/kossmac/dokuwiki-plugin-gitlab'
     dest: 'gitlab'
+    state: 'absent'
 
   - repo: 'https://github.com/ZJ/ghissues.git'
     dest: 'ghissues'
+    state: 'absent'
 
   - repo: 'https://github.com/splitbrain/dokuwiki-plugin-gh.git'
     dest: 'gh'
