@@ -3272,6 +3272,59 @@ roundcube__default_plugins:
           present in address book, but not assigned to any identity.
         value: True
 
+  - name: 'help'
+    state: 'enabled'
+    options:
+
+      - name: 'help_source'
+        comment: |
+          Help content iframe source
+          %l will be replaced by the language code resolved using the 'help_language_map' option
+          If you are serving roundcube via https, then change this URL to https also.
+        value: 'https://docs.roundcube.net/doc/help/1.1/%l/'
+
+      - name: 'help_index_map'
+        comment: |
+          Map task/action combinations to deep-links
+          Use '<task>/<action>' or only '<task>' strings as keys
+          The values will be appended to the 'help_source' URL
+        array:
+          - 'login':                'login.html'
+            'mail':                 'mail/index.html'
+            'mail/compose':         'mail/compose.html'
+            'addressbook':          'addressbook/index.html'
+            'settings':             'settings/index.html'
+            'settings/preferences': 'settings/preferences.html'
+            'settings/folders':     'settings/folders.html'
+            'settings/identities':  'settings/identities.html'
+
+      - name: 'help_language_map'
+        comment: |
+          Map to translate Roundcube language codes into help document languages
+          The '*' entry will be used as default
+        array:
+          - '*': 'en_US'
+
+      - name: 'help_about_url'
+        comment: |
+          Enter an absolute URL to a page displaying information about this webmail
+          Alternatively, create a HTML file under <this-plugin-dir>/content/about.html
+        value: null
+
+      - name: 'help_license_url'
+        comment: |
+          Enter an absolute URL to a page displaying information about this webmail
+          Alternatively, put your license text to <this-plugin-dir>/content/license.html
+        value: null
+
+      - name: 'help_open_extwin'
+        comment: 'Determine whether to open the elp in a new window'
+        value: False
+
+      - name: 'help_csrf_info'
+        comment: 'URL to additional information about CSRF protection'
+        value: null
+
     # This plugin adds additional commands in the header of the message if
     # Roundcube detects it's a mailing list message.
   - name: 'listcommands'
