@@ -354,6 +354,17 @@ dokuwiki__protected_conf_php: |
   {{ dokuwiki__ldap_configuration }}
   {% endif %}
 # ]]]
+
+# .. envvar:; dokuwiki__protected_plugins_php [[[
+#
+# This variable defines the contents of the :file:`conf/plugins.protected.php`
+# configuration file. The contents should be written in PHP, Jinja can be used
+# for logic outside of the PHP engine.
+dokuwiki__protected_plugins_php: |
+  {% if dokuwiki__ldap_enabled|bool %}
+  $plugins['authldap'] = 1;
+  {% endif %}
+# ]]]
 # ]]]
 # MIME Types local configuration [[[
 # ---------------------------------
