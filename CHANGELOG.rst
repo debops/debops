@@ -58,6 +58,11 @@ Added
   :manpage:`capabilities(7)` with the help of the Ansible capabilities
   module.
 
+:ref:`debops.roundcube` role
+''''''''''''''''''''''''''''
+
+- The role will enable more plugins by default: ``help``.
+
 Changed
 ~~~~~~~
 
