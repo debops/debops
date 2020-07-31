@@ -125,6 +125,9 @@ LDAP
   will not be installed anymore due to issues with newest DokuWiki release.
   Affected plugins: ``advrack``, ``rst``, ``gitlab``, ``ghissues``.
 
+- Ensure that the ``authldap`` DokuWiki plugin is enabled when LDAP support is
+  configured by the role.
+
 :ref:`debops.ldap` role
 '''''''''''''''''''''''
 
