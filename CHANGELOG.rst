@@ -61,7 +61,7 @@ Added
 :ref:`debops.roundcube` role
 ''''''''''''''''''''''''''''
 
-- The role will enable more plugins by default: ``help``.
+- The role will enable more plugins by default: ``help``, ``markasjunk``.
 
 Changed
 ~~~~~~~
