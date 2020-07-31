@@ -83,6 +83,13 @@ LDAP
 - Fixed an issue where the role would attempt adding APT keys from a PGP
   keyserver without installing gnupg first.
 
+:ref:`debops.dokuwiki` role
+'''''''''''''''''''''''''''
+
+- A few custom DokuWiki plugins will be removed if installed, otherwise they
+  will not be installed anymore due to issues with newest DokuWiki release.
+  Affected plugins: ``advrack``, ``rst``, ``gitlab``, ``ghissues``.
+
 :ref:`debops.ldap` role
 '''''''''''''''''''''''
 
