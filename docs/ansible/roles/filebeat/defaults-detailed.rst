@@ -220,8 +220,8 @@ Controller, managed by the :ref:`debops.secret` Ansible role:
 
    filebeat__keys:
 
-     - ELASTIC_PASSWORD: '{{ lookup("file", secret + "/elk-stack/elastic/password") }}'
-     - KIBANA_PASSWORD:  '{{ lookup("file", secret + "/elk-stack/kibana/password") }}'
+     - ELASTIC_PASSWORD: '{{ lookup("file", secret + "/elastic-stack/elastic/password") }}'
+     - KIBANA_PASSWORD:  '{{ lookup("file", secret + "/elastic-stack/kibana/password") }}'
 
 Update an existing key with new content (presence of the ``force`` parameter
 will update the key on each Ansible run):

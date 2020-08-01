@@ -34,7 +34,7 @@ New DebOps roles
   entirely in the playbook.
 
 - The :ref:`debops.filebeat` role can be used to install and configure
-  `Filebeat`__, a log shipping agent from Elastic, part of the ELK stack.
+  `Filebeat`__, a log shipping agent from Elastic, part of the Elastic Stack.
 
   .. __: https://www.elastic.co/beats/filebeat
 
