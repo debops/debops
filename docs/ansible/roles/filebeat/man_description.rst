@@ -5,8 +5,8 @@
 Description
 ===========
 
-`Filebeat`__, from `Elastic`__ is part of the Elasticsearch-Logstash-Kibana
-(ELK) stack. Filebeat can be used to parse and "ingest" logs from files,
+`Filebeat`__, from `Elastic`__ is part of the Elastic Stack.
+Filebeat can be used to parse and "ingest" logs from files,
 syslog, and various other sources, parse them and send them off to
 Elasticsearch, Logstash or other destinations.
 
