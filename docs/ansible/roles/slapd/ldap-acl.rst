@@ -276,6 +276,9 @@ Object owners
 - Object owners see their own LDAP objects even if they are hidden using the
   :ref:`slapd__ref_acl_group_hidden_objects` LDAP group.
 
+- Object owners can authenticate to the LDAP directory via the ``userPassword``
+  attribute.
+
 - Object owners have write access to the ``shadowLastChange`` attribute, and
   write-only access to the ``userPassword`` attribute in their own LDAP objects
   to allow password changes.
