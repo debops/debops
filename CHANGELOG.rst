@@ -107,6 +107,13 @@ General
   needed for the LDAP Password Modify Extended Operation (:rfc:`3062`) to work
   correctly in Roundcube.
 
+- In the :file:`mailservice.schema` LDAP schema, the ``mailACLGroups``
+  attribute has been renamed to ``mailGroupACL`` since this seems to be the
+  name used by different applications like Dovecot and Roundcube.
+
+  This change will not be applied automatically in an existing LDAP directories
+  - they will need to be rebuild to apply new schema changes.
+
 Fixed
 ~~~~~
 
