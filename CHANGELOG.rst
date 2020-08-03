@@ -71,6 +71,13 @@ New DebOps roles
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.ipxe` role, the Debian Stretch and Debian Buster netboot
+  installer versions have been updated to their next point releases, 9.13 and
+  10.5 respectively.
+
 General
 '''''''
 
@@ -82,13 +89,6 @@ General
 - Most of the handers from different DebOps roles have been moved to the new
   :ref:`debops.global_handlers` role to allow for easier cross-role handler
   notification. The role has been imported in roles that rely on the handlers.
-
-Updates of upstream application versions
-''''''''''''''''''''''''''''''''''''''''
-
-- In the :ref:`debops.ipxe` role, the Debian Stretch and Debian Buster netboot
-  installer versions have been updated to their next point releases, 9.13 and
-  10.5 respectively.
 
 :ref:`debops.postfix` role
 ''''''''''''''''''''''''''
