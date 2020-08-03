@@ -29,6 +29,7 @@ Directory structure
             - :ref:`uid=nextcloud <owncloud__ref_ldap_dit>` -> :ref:`debops.owncloud`
             - :ref:`uid=nullmailer <nullmailer__ref_ldap_dit>` -> :ref:`debops.nullmailer`
             - :ref:`uid=postfix <postldap__ref_ldap_dit>` -> :ref:`debops.postldap`
+            - :ref:`uid=roundcube <roundcube__ref_ldap_dit>` -> :ref:`debops.roundcube`
             - :ref:`uid=saslauthd <saslauthd__ref_ldap_dit>` -> :ref:`debops.saslauthd`
             - :ref:`uid=sshd <sshd__ref_ldap_dit>` -> :ref:`debops.sshd`
             - :ref:`uid=sudo <sudo__ref_ldap_dit>` -> :ref:`debops.sudo`

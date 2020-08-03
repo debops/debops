@@ -21,6 +21,7 @@ written in PHP.
       :maxdepth: 2
 
       defaults/main
+      ldap-dit
 
    Copyright
    ---------

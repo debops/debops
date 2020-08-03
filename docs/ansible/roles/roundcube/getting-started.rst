@@ -23,7 +23,9 @@ SQLite is used as database backend for storing the user settings.
 When the :ref:`LDAP infrastructure <debops.ldap>` is detected on the Roundcube
 host, the role will install and configure LDAP support in Roundcube. The
 default address book will be configured to allow only searches in the
-directory, which is benefical in larger environments.
+directory, which is benefical in larger environments. The ``password`` plugin
+will be enabled and configured to use the LDAP Password Modify Extended
+Operation (:rfc:`3062`) driver to allow users to change their passwords.
 
 Roundcube will use the current user credentials to login to the LDAP directory,
 therefore access to the LDAP entries and attributes depends on the LDAP ACL

@@ -55,13 +55,20 @@
     - role: python
       tags: [ 'role::python', 'skip::python', 'role::mariadb', 'role::postgresql' ]
       python__dependent_packages3:
+        - '{{ ldap__python__dependent_packages3 }}'
         - '{{ mariadb__python__dependent_packages3 if roundcube__database_map[roundcube__database].dbtype == "mysql" else [] }}'
         - '{{ nginx__python__dependent_packages3 }}'
         - '{{ postgresql__python__dependent_packages3 if roundcube__database_map[roundcube__database].dbtype == "postgresql" else [] }}'
       python__dependent_packages2:
+        - '{{ ldap__python__dependent_packages2 }}'
         - '{{ mariadb__python__dependent_packages2 if roundcube__database_map[roundcube__database].dbtype == "mysql" else [] }}'
         - '{{ nginx__python__dependent_packages2 }}'
         - '{{ postgresql__python__dependent_packages2 if roundcube__database_map[roundcube__database].dbtype == "postgresql" else [] }}'
+
+    - role: ldap
+      tags: [ 'role::ldap', 'skip::ldap' ]
+      ldap__dependent_tasks:
+        - '{{ roundcube__ldap__dependent_tasks }}'
 
     - role: php
       tags: [ 'role::php', 'skip::php' ]
