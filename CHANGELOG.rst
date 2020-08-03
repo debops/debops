@@ -123,7 +123,7 @@ General
   name used by different applications like Dovecot and Roundcube.
 
   This change will not be applied automatically in an existing LDAP directories
-  - they will need to be rebuild to apply new schema changes.
+  - they will need to be rebuilt to apply new schema changes.
 
 Fixed
 ~~~~~
