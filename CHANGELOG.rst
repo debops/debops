@@ -71,6 +71,13 @@ New DebOps roles
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.ipxe` role, the Debian Stretch and Debian Buster netboot
+  installer versions have been updated to their next point releases, 9.13 and
+  10.5 respectively.
+
 General
 '''''''
 
@@ -116,7 +123,7 @@ General
   name used by different applications like Dovecot and Roundcube.
 
   This change will not be applied automatically in an existing LDAP directories
-  - they will need to be rebuild to apply new schema changes.
+  - they will need to be rebuilt to apply new schema changes.
 
 Fixed
 ~~~~~
