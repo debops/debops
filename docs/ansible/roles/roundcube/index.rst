@@ -14,9 +14,9 @@ debops.roundcube
    :maxdepth: 2
 
    getting-started
-   guides
    defaults/main
    defaults-detailed
+   ldap-dit
 
 Copyright
 ---------

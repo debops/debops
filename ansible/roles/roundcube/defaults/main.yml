@@ -44,7 +44,7 @@ roundcube__optional_php_packages:
   - '{{ "memcached" if roundcube__memcached_enabled|bool else [] }}'
   - '{{ "redis"     if roundcube__redis_enabled|bool     else [] }}'
   - 'fileinfo'
-  - 'pspell'
+  - 'enchant'
   - 'zip'
 
                                                                    # ]]]
@@ -88,7 +88,7 @@ roundcube__packages: []
 # .. envvar:: roundcube__base_packages [[[
 #
 # APT packages required for the Roundcube installation.
-roundcube__base_packages: [ 'curl', 'file', 'unzip' ]
+roundcube__base_packages: [ 'curl', 'file', 'unzip', 'aspell', 'aspell-en' ]
                                                                    # ]]]
                                                                    # ]]]
 # Roundcube user account [[[
@@ -383,6 +383,18 @@ roundcube__ldap_enabled: '{{ ansible_local.ldap.enabled
                              else False }}'
 
                                                                    # ]]]
+# .. envvar:: roundcube__ldap_password_enabled [[[
+#
+# Enable or disable support for changing user passwords using the "password"
+# Roundcube plugin. The plugin will be configured to use LDAP Password Modify
+# Extended Operation (:rfc:`3062`).
+#
+# If the password change support is disabled, the "password" plugin will be
+# disabled as well. Password change via other mechanisms can be configured
+# separately via Ansible inventory variables.
+roundcube__ldap_password_enabled: '{{ roundcube__ldap_enabled }}'
+
+                                                                   # ]]]
 # .. envvar:: roundcube__ldap_addressbook_name [[[
 #
 # The name of the LDAP address book. It will be visible on the address book
@@ -414,6 +426,55 @@ roundcube__ldap_use_tls: '{{ ansible_local.ldap.start_tls|d(True) }}'
 #
 # The Base Distinguished Name of the LDAP directory, defined as a YAML list.
 roundcube__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_device_dn [[[
+#
+# The Distinguished Name of the current host LDAP object, defined as a YAML
+# list. It will be used as a base for the Roundcube application account LDAP
+# object. If the list is empty, the role will not create the account LDAP
+# object automatically.
+roundcube__ldap_device_dn: '{{ ansible_local.ldap.device_dn|d([]) }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_self_rdn [[[
+#
+# The Relative Distinguished Name of the account LDAP object used by the
+# Roundcube application to access the LDAP directory.
+roundcube__ldap_self_rdn: '{{ "uid=" + roundcube__user }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_self_object_classes [[[
+#
+# List of the LDAP object classes which will be used to create the LDAP object
+# used by the Roundcube application to access the LDAP directory.
+roundcube__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_self_attributes [[[
+#
+# YAML dictionary that defines the attributes of the LDAP object used by the
+# Roundcube application to access the LDAP directory.
+roundcube__ldap_self_attributes:
+  uid: '{{ roundcube__ldap_self_rdn.split("=")[1] }}'
+  userPassword: '{{ roundcube__ldap_bindpw }}'
+  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  description: 'Account used by the "Roundcube" application to access the LDAP directory'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_binddn [[[
+#
+# The Distinguished Name of the account LDAP object used by the
+# Roundcube application to bind to the LDAP directory.
+roundcube__ldap_binddn: '{{ ([ roundcube__ldap_self_rdn ] + roundcube__ldap_device_dn) | join(",") }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap_bindpw [[[
+#
+# The password stored in the account LDAP object used by the Roundcube
+# application to bind to the LDAP directory.
+roundcube__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
+                                   + roundcube__ldap_binddn | to_uuid + ".password length=32") }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__ldap_people_rdn [[[
@@ -458,10 +519,10 @@ roundcube__ldap_groups_dn: '{{ [ roundcube__ldap_groups_rdn ]
 roundcube__ldap_hidden: True
 
                                                                    # ]]]
-# .. envvar:: roundcube__ldap_filed_map [[[
+# .. envvar:: roundcube__ldap_field_map [[[
 #
 # YAML dictionary which defines mapping between Roundcube address book fields
-# and LDAP entry attributes. Some of the files are not mapped yet because they
+# and LDAP entry attributes. Some of the fields are not mapped yet because they
 # don't work or there are currently no good LDAP equivalents.
 roundcube__ldap_field_map:
   name: 'cn'
@@ -3056,6 +3117,26 @@ roundcube__default_configuration:
             right: 'compose'
             down:  'none'
 
+  - name: 'enable_spellcheck'
+    value: True
+    state: 'present'
+
+  - name: 'spellcheck_engine'
+    value: 'enchant'
+    state: 'present'
+
+  - name: 'spellcheck_ignore_caps'
+    value: True
+    state: 'present'
+
+  - name: 'spellcheck_ignore_nums'
+    value: True
+    state: 'present'
+
+  - name: 'spellcheck_ignore_syms'
+    value: True
+    state: 'present'
+
                                                                    # ]]]
 # .. envvar:: roundcube__configuration [[[
 #
@@ -3271,6 +3352,937 @@ roundcube__default_plugins:
           New user identity will be created for each e-mail address
           present in address book, but not assigned to any identity.
         value: True
+
+  - name: 'password'
+    state: '{{ "enabled" if roundcube__ldap_password_enabled|bool else "absent" }}'
+    options:
+
+      - name: 'password_driver'
+        comment: |
+          Password Plugin options
+          -----------------------
+          A driver to use for password change. Default: "sql".
+          See README file for list of supported driver names.
+        value: '{{ "ldap_exop" if roundcube__ldap_password_enabled|bool else "sql" }}'
+
+      - name: 'password_strength_driver'
+        comment: |
+          A driver to use for checking password strength. Default: null (disabled).
+          See README file for list of supported driver names.
+        value: null
+
+      - name: 'password_confirm_current'
+        comment: |
+          Determine whether current password is required to change password.
+          Default: false.
+        value: True
+
+      - name: 'password_minimum_length'
+        comment: |
+          Require the new password to be a certain length.
+          set to blank to allow passwords of any length
+        value: 0
+
+      - name: 'password_minimum_score'
+        comment: |
+          Require the new password to have at least the specified strength score.
+          Note: Password strength is scored from 1 (week) to 5 (strong).
+        value: 0
+
+      - name: 'password_log'
+        comment: |
+          Enables logging of password changes into logs/password
+        value: False
+
+      - name: 'password_login_exceptions'
+        comment: |
+          Comma-separated list of login exceptions for which password change
+          will be not available (no Password tab in Settings)
+        value: null
+
+      - name: 'password_hosts'
+        comment: |
+          Array of hosts that support password changing.
+          Listed hosts will feature a Password option in Settings; others will not.
+          Example: array('mail.example.com', 'mail2.example.org');
+          Default is NULL (all hosts supported).
+        value: null
+
+      - name: 'password_force_save'
+        comment: |
+          Enables saving the new password even if it matches the old password. Useful
+          for upgrading the stored passwords after the encryption scheme has changed.
+        value: False
+
+      - name: 'password_force_new_user'
+        comment: |
+          Enables forcing new users to change their password at their first login.
+        value: False
+
+      - name: 'password_algorithm'
+        comment: |
+          Default password hashing/crypting algorithm.
+          Possible options: des-crypt, ext-des-crypt, md5-crypt, blowfish-crypt,
+          sha256-crypt, sha512-crypt, md5, sha, smd5, ssha, ssha512, samba, ad, dovecot, clear.
+          For details see password::hash_password() method.
+        value: 'clear'
+
+      - name: 'password_algorithm_prefix'
+        comment: |
+          Password prefix (e.g. {CRYPT}, {SHA}) for passwords generated
+          using password_algorithm above. Default: empty.
+        value: ''
+
+      - name: 'password_dovecotpw'
+        comment: |
+          Path for dovecotpw/doveadm-pw (if not in the $PATH).
+          Used for password_algorithm = 'dovecot'.
+          $config['password_dovecotpw'] = '/usr/local/sbin/dovecotpw'; // for dovecot-1.x
+        value: '/usr/bin/doveadm pw'  # for dovecot-2.x
+
+      - name: 'password_dovecotpw_method'
+        comment: |
+          Dovecot password scheme.
+          Used for password_algorithm = 'dovecot'.
+        value: 'CRAM-MD5'
+
+      - name: 'password_dovecotpw_with_method'
+        comment: |
+          Enables use of password with method prefix, e.g. {MD5}$1$LUiMYWqx$fEkg/ggr/L6Mb2X7be4i1/
+          when using password_algorithm=dovecot
+        value: False
+
+      - name: 'password_blowfish_cost'
+        comment: |
+          Iteration count parameter for Blowfish-based hashing algo.
+          It must be between 4 and 31. Default: 12.
+          Be aware, the higher the value, the longer it takes to generate the password hashes.
+        value: 12
+
+      - name: 'password_crypt_rounds'
+        comment: |
+          Number of rounds for the sha256 and sha512 crypt hashing algorithms.
+          Must be at least 1000. If not set, then the number of rounds is left up
+          to the crypt() implementation. On glibc this defaults to 5000.
+          Be aware, the higher the value, the longer it takes to generate the password hashes.
+        value: 50000
+
+      - name: 'password_disabled'
+        comment: |
+          This option temporarily disables the password change functionality.
+          Use it when the users database server is in maintenance mode or sth like that.
+          You can set it to TRUE/FALSE or a text describing the reason
+          which will replace the default.
+        value: False
+
+      - name: 'password_username_format'
+        comment: |
+          Various drivers/setups use different format of the username.
+          This option allows you to force specified format use. Default: '%u'.
+          Supported variables:
+              %u - full username,
+              %l - the local part of the username (in case the username is an email address)
+              %d - the domain part of the username (in case the username is an email address)
+          Note: This may no apply to some drivers implementing their own rules, e.g. sql.
+        value: '%u'
+
+      - name: 'password_db_dsn'
+        comment: |
+          SQL Driver options
+          ------------------
+          PEAR database DSN for performing the query. By default
+          Roundcube DB settings are used.
+          Supported replacement variables:
+          %h - user's IMAP hostname
+          %n - hostname ($_SERVER['SERVER_NAME'])
+          %t - hostname without the first part
+          %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
+          %z - IMAP domain (IMAP hostname without the first part)
+        value: ''
+
+      - name: 'password_query'
+        comment: |
+          The SQL query used to change the password.
+          The query can contain the following macros that will be expanded as follows:
+               %p is replaced with the plaintext new password
+               %P is replaced with the crypted/hashed new password
+                  according to configured password_method
+               %o is replaced with the old (current) password
+               %O is replaced with the crypted/hashed old (current) password
+                  according to configured password_method
+               %h is replaced with the imap host (from the session info)
+               %u is replaced with the username (from the session info)
+               %l is replaced with the local part of the username
+                  (in case the username is an email address)
+               %d is replaced with the domain part of the username
+                  (in case the username is an email address)
+          Deprecated macros:
+               %c is replaced with the crypt version of the new password, MD5 if available
+                  otherwise DES. More hash function can be enabled using the password_crypt_hash
+                  configuration parameter.
+               %D is replaced with the dovecotpw-crypted version of the new password
+               %n is replaced with the hashed version of the new password
+               %q is replaced with the hashed password before the change
+          Escaping of macros is handled by this module.
+          Default: "SELECT update_passwd(%c, %u)"
+        value: 'SELECT update_passwd(%c, %u)'
+
+      - name: 'password_crypt_hash'
+        comment: |
+          By default the crypt() function which is used to create the %c
+          parameter uses the md5 algorithm (deprecated, use %P).
+          You can choose between: des, md5, blowfish, sha256, sha512.
+        value: 'md5'
+
+      - name: 'password_idn_ascii'
+        comment: |
+          By default domains in variables are using unicode.
+          Enable this option to use punycoded names
+        value: False
+
+      - name: 'password_hash_algorithm'
+        comment: |
+          Using a password hash for %n and %q variables (deprecated, use %P).
+          Determine which hashing algorithm should be used to generate
+          the hashed new and current password for using them within the
+          SQL query. Requires PHP's 'hash' extension.
+        value: 'sha1'
+
+      - name: 'password_hash_base64'
+        comment: |
+          You can also decide whether the hash should be provided
+          as hex string or in base64 encoded format.
+        value: False
+
+      - name: 'password_pop_host'
+        comment: |
+          Poppassd Driver options
+          -----------------------
+          The host which changes the password (default: localhost)
+          Supported replacement variables:
+            %n - hostname ($_SERVER['SERVER_NAME'])
+            %t - hostname without the first part
+            %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
+            %h - IMAP host
+            %z - IMAP domain without first part
+            %s - domain name after the '@' from e-mail address provided at login screen
+        value: 'localhost'
+
+      - name: 'password_pop_port'
+        comment: |
+          TCP port used for poppassd connections (default: 106)
+        value: 106
+
+      - name: 'password_saslpasswd_args'
+        comment: |
+          SASL Driver options
+          -------------------
+          Additional arguments for the saslpasswd2 call
+        value: ''
+
+      - name: 'password_ldap_host'
+        comment: |
+          LDAP, LDAP_SIMPLE and LDAP_EXOP Driver options
+          -----------------------------------
+          LDAP server name to connect to.
+          You can provide one or several hosts in an array in which case the hosts are tried from left to right.
+          Exemple: array('ldap1.exemple.com', 'ldap2.exemple.com');
+          Default: 'localhost'
+        value: '{{ (roundcube__ldap_hosts | first)
+                   if roundcube__ldap_hosts|d()
+                   else "" }}'
+
+      - name: 'password_ldap_port'
+        comment: |
+          LDAP server port to connect to
+          Default: '389'
+        value: '{{ roundcube__ldap_port }}'
+
+      - name: 'password_ldap_starttls'
+        comment: |
+          TLS is started after connecting
+          Using TLS for password modification is recommended.
+          Default: false
+        value: '{{ roundcube__ldap_use_tls | bool }}'
+
+      - name: 'password_ldap_version'
+        comment: |
+          LDAP version
+          Default: '3'
+        value: '3'
+
+      - name: 'password_ldap_basedn'
+        comment: |
+          LDAP base name (root directory)
+          Exemple: 'dc=exemple,dc=com'
+        value: '{{ roundcube__ldap_base_dn | join(",") }}'
+
+      - name: 'password_ldap_method'
+        comment: |
+          LDAP connection method
+          There are two connection methods for changing a user's LDAP password.
+          'user': use user credential (recommended, require password_confirm_current=true)
+          'admin': use admin credential (this mode require password_ldap_adminDN and password_ldap_adminPW)
+          Default: 'user'
+        value: 'user'
+
+      - name: 'password_ldap_adminDN'
+        comment: |
+          LDAP Admin DN
+          Used only in admin connection mode
+          Default: null
+        value: null
+
+      - name: 'password_ldap_adminPW'
+        comment: |
+          LDAP Admin Password
+          Used only in admin connection mode
+          Default: null
+        value: null
+
+      - name: 'password_ldap_userDN_mask'
+        comment: |
+          LDAP user DN mask
+          The user's DN is mandatory and as we only have his login,
+          we need to re-create his DN using a mask
+          '%login' will be replaced by the current roundcube user's login
+          '%name' will be replaced by the current roundcube user's name part
+          '%domain' will be replaced by the current roundcube user's domain part
+          '%dc' will be replaced by domain name hierarchal string e.g. "dc=test,dc=domain,dc=com"
+          Exemple: 'uid=%login,ou=people,dc=exemple,dc=com'
+        value: 'uid=%login,ou=people,dc=exemple,dc=com'
+        state: 'comment'  # use searches instead
+
+      - name: 'password_ldap_searchDN'
+        comment: |
+          LDAP search DN
+          The DN roundcube should bind with to find out user's DN
+          based on his login. Note that you should comment out the default
+          password_ldap_userDN_mask setting for this to take effect.
+          Use this if you cannot specify a general template for user DN with
+          password_ldap_userDN_mask. You need to perform a search based on
+          users login to find his DN instead. A common reason might be that
+          your users are placed under different ou's like engineering or
+          sales which cannot be derived from their login only.
+        value: '{{ roundcube__ldap_binddn }}'
+
+      - name: 'password_ldap_searchPW'
+        comment: |
+          LDAP search password
+          If password_ldap_searchDN is set, the password to use for
+          binding to search for user's DN. Note that you should comment out the default
+          password_ldap_userDN_mask setting for this to take effect.
+          Warning: Be sure to set approperiate permissions on this file so this password
+          is only accesible to roundcube and don't forget to restrict roundcube's access to
+          your directory as much as possible using ACLs. Should this password be compromised
+          you want to minimize the damage.
+        value: '{{ roundcube__ldap_bindpw }}'
+
+      - name: 'password_ldap_search_base'
+        comment: |
+          LDAP search base
+          If password_ldap_searchDN is set, the base to search in using the filter below.
+          Note that you should comment out the default password_ldap_userDN_mask setting
+          for this to take effect.
+        value: '{{ roundcube__ldap_base_dn | join(",") }}'
+
+      - name: 'password_ldap_search_filter'
+        comment: |
+          LDAP search filter
+          If password_ldap_searchDN is set, the filter to use when
+          searching for user's DN. Note that you should comment out the default
+          password_ldap_userDN_mask setting for this to take effect.
+          '%login' will be replaced by the current roundcube user's login
+          '%name' will be replaced by the current roundcube user's name part
+          '%domain' will be replaced by the current roundcube user's domain part
+          '%dc' will be replaced by domain name hierarchal string e.g. "dc=test,dc=domain,dc=com"
+          Example: '(uid=%login)'
+          Example: '(&(objectClass=posixAccount)(uid=%login))'
+        value: '(&
+                  (objectClass=mailRecipient)
+                  (|
+                    (uid=%name)
+                    (mail=%login)
+                  )
+                )'
+
+      - name: 'password_ldap_encodage'
+        comment: |
+          LDAP password hash type
+          Standard LDAP encryption type which must be one of: crypt,
+          ext_des, md5crypt, blowfish, md5, sha, smd5, ssha, ad, cram-md5 (dovecot style) or clear.
+          Set to 'default' if you want to use method specified in password_algorithm option above.
+          Multiple password Values can be generated by concatenating encodings with a +. E.g. 'cram-md5+crypt'
+          Default: 'crypt'.
+        value: 'clear'  # default: crypt
+
+      - name: 'password_ldap_pwattr'
+        comment: |
+          LDAP password attribute
+          Name of the ldap's attribute used for storing user password
+          Default: 'userPassword'
+        value: 'userPassword'
+
+      - name: 'password_ldap_force_replace'
+        comment: |
+          LDAP password force replace
+          Force LDAP replace in cases where ACL allows only replace not read
+          See http://pear.php.net/package/Net_LDAP2/docs/latest/Net_LDAP2/Net_LDAP2_Entry.html#methodreplace
+          Default: true
+        value: True
+
+      - name: 'password_ldap_lchattr'
+        comment: |
+          LDAP Password Last Change Date
+          Some places use an attribute to store the date of the last password change
+          The date is meassured in "days since epoch" (an integer value)
+          Whenever the password is changed, the attribute will be updated if set (e.g. shadowLastChange)
+        value: ''
+
+      - name: 'password_ldap_samba_pwattr'
+        comment: |
+          LDAP Samba password attribute, e.g. sambaNTPassword
+          Name of the LDAP's Samba attribute used for storing user password
+        value: ''
+
+      - name: 'password_ldap_samba_lchattr'
+        comment: |
+          LDAP Samba Password Last Change Date attribute, e.g. sambaPwdLastSet
+          Some places use an attribute to store the date of the last password change
+          The date is meassured in "seconds since epoch" (an integer value)
+          Whenever the password is changed, the attribute will be updated if set
+        value: ''
+
+      - name: 'password_ldap_ppolicy_cmd'
+        comment: |
+          LDAP PPolicy Driver options
+          -----------------------------------
+          LDAP Change password command - filename of the perl script
+          Example: 'change_ldap_pass.pl'
+        value: 'change_ldap_pass.pl'
+
+      - name: 'password_ldap_ppolicy_uri'
+        comment: |
+          LDAP URI
+          Example: 'ldap://ldap.example.com/ ldaps://ldap2.example.com:636/'
+        value: 'ldap://localhost/'
+
+      - name: 'password_ldap_ppolicy_basedn'
+        comment: |
+          LDAP base name (root directory)
+          Exemple: 'dc=exemple,dc=com'
+        value: 'dc=example,dc=com'
+
+      - name: 'password_ldap_ppolicy_searchDN'
+        value: 'cn=someuser,dc=example,dc=com'
+
+      - name: 'password_ldap_ppolicy_searchPW'
+        value: 'secret'
+
+      - name: 'password_ldap_policy_search_filter'
+        comment: |
+          LDAP search filter
+          Example: '(uid=%login)'
+          Example: '(&(objectClass=posixAccount)(uid=%login))'
+        value: '(uid=%login)'
+
+      - name: 'password_ldap_ppolicy_cafile'
+        comment: |
+          CA Certificate file if in URI is LDAPS connection
+        value: '/etc/ssl/certs/ca-certificates.crt'
+
+      - name: 'password_directadmin_host'
+        comment: |
+          DirectAdmin Driver options
+          --------------------------
+          The host which changes the password
+          Use 'ssl://host' instead of 'tcp://host' when running DirectAdmin over SSL.
+          The host can contain the following macros that will be expanded as follows:
+              %h is replaced with the imap host (from the session info)
+              %d is replaced with the domain part of the username (if the username is an email)
+        value: 'tcp://localhost'
+
+      - name: 'password_directadmin_port'
+        comment: |
+          TCP port used for DirectAdmin connections
+        value: 2222
+
+      - name: 'password_vpopmaild_host'
+        comment: |
+          vpopmaild Driver options
+          -----------------------
+          The host which changes the password
+        value: 'localhost'
+
+      - name: 'password_vpopmaild_port'
+        comment: |
+          TCP port used for vpopmaild connections
+        value: 89
+
+      - name: 'password_vpopmaild_timeout'
+        comment: |
+          Timeout used for the connection to vpopmaild (in seconds)
+        value: 10
+
+      - name: 'password_cpanel_host'
+        comment: |
+          cPanel Driver options
+          --------------------------
+          The cPanel Host name
+        value: 'host.domain.com'
+
+      - name: 'password_cpanel_username'
+        comment: |
+          The cPanel admin username
+        value: 'username'
+
+      - name: 'password_cpanel_password'
+        comment: |
+          The cPanel admin password
+        value: 'password'
+
+      - name: 'password_cpanel_hash'
+        comment: |
+          The cPanel admin hash
+          If you prefer to use a hash (Remote Access Key) instead of plain password, enter it below.
+          Hash takes precedence over password auth.
+          You can generate a Remote Access Key in WHM -> Clusters -> Remote Access Key
+        value: ''
+
+      - name: 'password_cpanel_port'
+        comment: |
+          The cPanel port to use
+        value: 2087
+
+      - name: 'password_cpanel_webmail_host'
+        comment: |
+          cPanel Webmail Driver options
+          -----------------------------
+          The cPanel Host name
+        value: 'host.domain.com'
+
+      - name: 'password_cpanel_webmail_port'
+        comment: |
+          The cPanel port to use
+        value: 2096
+
+      - name: 'password_ximss_host'
+        comment: |
+          XIMSS (Communigate server) Driver options
+          -----------------------------------------
+          Host name of the Communigate server
+        value: 'mail.example.com'
+
+      - name: 'password_ximss_port'
+        comment: |
+          XIMSS port on Communigate server
+        value: 11024
+
+      - name: 'password_chpasswd_cmd'
+        comment: |
+          chpasswd Driver options
+          ---------------------
+          Command to use (see "Sudo setup" in README)
+        value: 'sudo /usr/sbin/chpasswd 2> /dev/null'
+
+      - name: 'xmail_host'
+        comment: |
+          XMail Driver options
+          ---------------------
+        value: 'localhost'
+
+      - name: 'xmail_user'
+        value: 'YourXmailControlUser'
+
+      - name: 'xmail_pass'
+        value: 'YourXmailControlPass'
+
+      - name: 'xmail_port'
+        value: 6017
+
+      - name: 'hmailserver_remote_dcom'
+        comment: |
+          hMail Driver options
+          -----------------------
+          Remote hMailServer configuration
+          true:  HMailserver is on a remote box (php.ini: com.allow_dcom = true)
+          false: Hmailserver is on same box as PHP
+        value: False
+
+      - name: 'hmailserver_server'
+        comment: 'Windows credentials'
+        array:
+          - Server: 'localhost'
+          - Username: 'administrator'
+          - Password: 'password'
+
+      - name: 'password_pw_usermod_cmd'
+        comment: |
+          pw_usermod Driver options
+          --------------------------
+          Use comma delimited exlist to disable password change for users.
+          See "Sudo setup" in README file.
+        value: 'sudo /usr/sbin/pw usermod -h 0 -n'
+
+      - name: 'password_dbmail_args'
+        comment: |
+          DBMail Driver options
+          -------------------
+          Additional arguments for the dbmail-users call
+        value: '-p sha512'
+
+      - name: 'password_expect_bin'
+        comment: |
+          Expect Driver options
+          ---------------------
+          Location of expect binary
+        value: '/usr/bin/expect'
+
+      - name: 'password_expect_script'
+        comment: |
+          Location of expect script (see helpers/passwd-expect)
+        value: ''
+
+      - name: 'password_expect_params'
+        comment: |
+          Arguments for the expect script. See the helpers/passwd-expect file for details.
+          This is probably a good starting default:
+            -telent -host localhost -output /tmp/passwd.log -log /tmp/passwd.log
+        value: ''
+
+      - name: 'password_smb_host'
+        comment: |
+          smb Driver options
+          ---------------------
+          Samba host (default: localhost)
+          Supported replacement variables:
+          %n - hostname ($_SERVER['SERVER_NAME'])
+          %t - hostname without the first part
+          %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
+        value: 'localhost'
+
+      - name: 'password_smb_cmd'
+        comment: |
+          Location of smbpasswd binary (default: /usr/bin/smbpasswd)
+        value: '/usr/bin/smbpasswd'
+
+      - name: 'password_gearman_host'
+        comment: |
+          gearman driver options
+          ---------------------
+          Gearman host (default: localhost)
+        value: 'localhost'
+
+      - name: 'password_plesk_host'
+        comment: |
+          Plesk/PPA Driver options
+          --------------------
+          You need to allow RCP for IP of roundcube-server in Plesk/PPA Panel
+
+          Plesk RCP Host
+        value: '10.0.0.5'
+
+      - name: 'password_plesk_user'
+        comment: 'Plesk RPC Username'
+        value: 'admin'
+
+      - name: 'password_plesk_pass'
+        comment: 'Plesk RPC Password'
+        value: 'password'
+
+      - name: 'password_plesk_rpc_port'
+        comment: 'Plesk RPC Port'
+        value: '8443'
+
+      - name: 'password_plesk_rpc_path'
+        comment: 'Plesk RPC Path'
+        value: 'enterprise/control/agent.php'
+
+      - name: 'password_kpasswd_cmd'
+        comment: |
+          kasswd Driver options
+          ---------------------
+          Command to use
+        value: '/usr/bin/kpasswd'
+
+      - name: 'password_modoboa_api_token'
+        comment: |
+          Modoboa Driver options
+          ---------------------
+          put token number from Modoboa server
+        value: ''
+
+  - name: 'help'
+    state: 'enabled'
+    options:
+
+      - name: 'help_source'
+        comment: |
+          Help content iframe source
+          %l will be replaced by the language code resolved using the 'help_language_map' option
+          If you are serving roundcube via https, then change this URL to https also.
+        value: 'https://docs.roundcube.net/doc/help/1.1/%l/'
+
+      - name: 'help_index_map'
+        comment: |
+          Map task/action combinations to deep-links
+          Use '<task>/<action>' or only '<task>' strings as keys
+          The values will be appended to the 'help_source' URL
+        array:
+          - 'login':                'login.html'
+            'mail':                 'mail/index.html'
+            'mail/compose':         'mail/compose.html'
+            'addressbook':          'addressbook/index.html'
+            'settings':             'settings/index.html'
+            'settings/preferences': 'settings/preferences.html'
+            'settings/folders':     'settings/folders.html'
+            'settings/identities':  'settings/identities.html'
+
+      - name: 'help_language_map'
+        comment: |
+          Map to translate Roundcube language codes into help document languages
+          The '*' entry will be used as default
+        array:
+          - '*': 'en_US'
+
+      - name: 'help_about_url'
+        comment: |
+          Enter an absolute URL to a page displaying information about this webmail
+          Alternatively, create a HTML file under <this-plugin-dir>/content/about.html
+        value: null
+
+      - name: 'help_license_url'
+        comment: |
+          Enter an absolute URL to a page displaying information about this webmail
+          Alternatively, put your license text to <this-plugin-dir>/content/license.html
+        value: null
+
+      - name: 'help_open_extwin'
+        comment: 'Determine whether to open the elp in a new window'
+        value: False
+
+      - name: 'help_csrf_info'
+        comment: 'URL to additional information about CSRF protection'
+        value: null
+
+  - name: 'markasjunk'
+    state: 'enabled'
+    options:
+
+      - name: 'markasjunk_learning_driver'
+        comment: |
+          Learning driver
+          Use an external process such as sa-learn to learn from spam/ham messages. Default: null.
+          Please see the README for more information
+        value: null
+
+      - name: 'markasjunk_ham_mbox'
+        comment: |
+          Ham mailbox
+          Mailbox messages should be moved to when they are marked as ham. null = INBOX
+          set to FALSE to disable message moving
+        value: null
+
+      - name: 'markasjunk_spam_mbox'
+        comment: |
+          Spam mailbox
+          Mailbox messages should be moved to when they are marked as spam.
+          null = the mailbox assigned as the spam folder in Roundcube settings
+          set to FALSE to disable message moving
+        value: null
+
+      - name: 'markasjunk_read_spam'
+        comment: 'Mark messages as read when reporting them as spam'
+        value: True  # original: False
+
+      - name: 'markasjunk_unread_ham'
+        comment: 'Mark messages as unread when reporting them as ham'
+        value: True  # original: False
+
+      - name: 'markasjunk_spam_flag'
+        comment: |
+          Add flag to messages marked as spam (flag will be removed when marking as ham)
+          If you do not want to use message flags set this to false
+        value: 'Junk'
+
+      - name: 'markasjunk_ham_flag'
+        comment: |
+          Add flag to messages marked as ham (flag will be removed when marking as spam)
+          If you do not want to use message flags set this to false
+        value: 'NonJunk'
+
+      - name: 'markasjunk_debug'
+        comment: 'Write output from spam/ham commands to the log for debug'
+        value: False
+
+      - name: 'markasjunk_toolbar'
+        comment: |
+          The mark as spam/ham icon can either be displayed on the toolbar or as part of the mark messages menu.
+          Set to False to use Mark menu instead of the toolbar. Default: true.
+        value: True
+
+      - name: 'markasjunk_move_spam'
+        comment: |
+          Learn any message moved to the spam mailbox as spam (not just when the button is pressed)
+        value: True  # original: False
+
+      - name: 'markasjunk_move_ham'
+        comment: |
+          Learn any message moved from the spam mailbox to the ham mailbox as ham (not just when the button is pressed)
+        value: True  # original: False
+
+      - name: 'markasjunk_permanently_remove'
+        comment: |
+          Some drivers create new copies of the target message(s), in this case the original message(s) will be deleted
+          Rather than deleting the message(s) (moving to Trash) setting this option true will cause the original message(s) to be permanently removed
+        value: False
+
+      - name: 'markasjunk_spam_only'
+        comment: 'Display only a mark as spam button'
+        value: False
+
+      - name: 'markasjunk_allowed_hosts'
+        comment: |
+          Activate markasjunk for selected mail hosts only. If this is not set all mail hosts are allowed.
+          Example: $config['markasjunk_allowed_hosts'] = array('mail1.domain.tld', 'mail2.domain.tld');
+        value: null
+
+      - name: 'markasjunk_host_config'
+        comment: |
+          Load specific config for different mail hosts
+          Example: $config['markasjunk_host_config'] = array(
+             'mail1.domain.tld' => 'mail1_config.inc.php',
+             'mail2.domain.tld' => 'mail2_config.inc.php',
+          );
+        value: null
+
+      - name: 'markasjunk_spam_cmd'
+        comment: |
+          cmd_learn Driver options
+          ------------------------
+          The command used to learn that a message is spam
+          The command can contain the following macros that will be expanded as follows:
+               %u is replaced with the username (from the session info)
+               %l is replaced with the local part of the username (if the username is an email address)
+               %d is replaced with the domain part of the username (if the username is an email address or default mail domain if not)
+               %i is replaced with the email address from the user's default identity
+               %s is replaced with the email address the message is from
+               %f is replaced with the path to the message file
+               %h:<header name> is replaced with the content of that header from the message (lower case) eg: %h:x-dspam-signature
+          If you do not want to run the command set this to null
+        value: null
+
+      - name: 'markasjunk_ham_cmd'
+        comment: |
+          The command used to learn that a message is ham
+          The command can contain the following macros that will be expanded as follows:
+               %u is replaced with the username (from the session info)
+               %l is replaced with the local part of the username (if the username is an email address)
+               %d is replaced with the domain part of the username (if the username is an email address or default mail domain if not)
+               %i is replaced with the email address from the user's default identity
+               %s is replaced with the email address the message is from
+               %f is replaced with the path to the message file
+               %h:<header name> is replaced with the content of that header from the message (lower case) eg: %h:x-dspam-signature
+          If you do not want to run the command set this to null
+        value: null
+
+      - name: 'markasjunk_spam_dir'
+        comment: |
+          dir_learn Driver options
+          ------------------------
+          The full path of the directory used to store spam (must be writable by webserver)
+        value: null
+
+      - name: 'markasjunk_ham_dir'
+        comment: |
+          The full path of the directory used to store ham (must be writable by webserver)
+        value: null
+
+      - name: 'markasjunk_filename'
+        comment: |
+          The filename prefix
+          The filename can contain the following macros that will be expanded as follows:
+               %u is replaced with the username (from the session info)
+               %l is replaced with the local part of the username (if the username is an email address)
+               %d is replaced with the domain part of the username (if the username is an email address or default mail domain if not)
+               %t is replaced with the type of message (spam/ham)
+        value: null
+
+      - name: 'markasjunk_email_spam'
+        comment: |
+          email_learn Driver options
+          --------------------------
+          The email address that spam messages will be sent to
+          The address can contain the following macros that will be expanded as follows:
+               %u is replaced with the username (from the session info)
+               %l is replaced with the local part of the username (if the username is an email address)
+               %d is replaced with the domain part of the username (if the username is an email address or default mail domain if not)
+               %i is replaced with the email address from the user's default identity
+          If you do not want to send an email set this to null
+        value: null
+
+      - name: 'markasjunk_email_ham'
+        comment: |
+          The email address that ham messages will be sent to
+          The address can contain the following macros that will be expanded as follows:
+               %u is replaced with the username (from the session info)
+               %l is replaced with the local part of the username (if the username is an email address)
+               %d is replaced with the domain part of the username (if the username is an email address or default mail domain if not)
+               %i is replaced with the email address from the user's default identity
+          If you do not want to send an email set this to null
+        value: null
+
+      - name: 'markasjunk_email_attach'
+        comment: 'Should the spam/ham message be sent as an attachment'
+        value: True
+
+      - name: 'markasjunk_email_subject'
+        comment: |
+          The email subject (when sending as attachment)
+          The subject can contain the following macros that will be expanded as follows:
+               %u is replaced with the username (from the session info)
+               %l is replaced with the local part of the username (if the username is an email address)
+               %d is replaced with the domain part of the username (if the username is an email address or default mail domain if not)
+               %t is replaced with the type of message (spam/ham)
+        value: 'learn this message as %t'
+
+      - name: 'markasjunk_sauserprefs_config'
+        comment: |
+          sa_blacklist Driver options
+          ---------------------------
+          Path to SAUserPrefs config file
+        value: '../sauserprefs/config.inc.php'
+
+      - name: 'markasjunk_amacube_config'
+        comment: |
+          amavis_blacklist Driver options
+          ---------------------------
+          Path to amacube config file
+        value: '../amacube/config.inc.php'
+
+      - name: 'markasjunk_spam_patterns'
+        comment: |
+          edit_headers Driver options
+          ---------------------------
+          Patterns to match and replace headers for spam messages
+          Replacement method uses preg_replace - http://www.php.net/manual/function.preg-replace.php
+          WARNING: Be sure to match the entire header line, including the name of the header, also use ^ and $ and the 'm' flag
+          see the README for an example
+          TEST CAREFULLY BEFORE USE ON REAL MESSAGES
+        array:
+          - patterns:     []
+            replacements: []
+
+      - name: 'markasjunk_ham_patterns'
+        comment: |
+          Patterns to match and replace headers for spam messages
+          Replacement method uses preg_replace - http://www.php.net/manual/function.preg-replace.php
+          WARNING: Be sure to match the entire header line, including the name of the header, also use ^ and $ and the 'm' flag
+          see the README for an example
+          TEST CAREFULLY BEFORE USE ON REAL MESSAGES
+        array:
+          - patterns:     []
+            replacements: []
 
     # This plugin adds additional commands in the header of the message if
     # Roundcube detects it's a mailing list message.
@@ -3569,6 +4581,19 @@ roundcube__keyring__dependent_gpg_keys:
     id: '{{ roundcube__git_gpg_key }}'
 
   - '{{ roundcube__git_additional_gpg_keys }}'
+
+                                                                   # ]]]
+# .. envvar:: roundcube__ldap__dependent_tasks [[[
+#
+# Configuration for the :ref:`debops.ldap` Ansible role.
+roundcube__ldap__dependent_tasks:
+
+  - name: 'Create roundcube account for {{ roundcube__ldap_device_dn | join(",") }}'
+    dn: '{{ roundcube__ldap_binddn }}'
+    objectClass: '{{ roundcube__ldap_self_object_classes }}'
+    attributes: '{{ roundcube__ldap_self_attributes }}'
+    no_log: True
+    state: '{{ "present" if roundcube__ldap_device_dn|d() else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__nginx__dependent_servers [[[
