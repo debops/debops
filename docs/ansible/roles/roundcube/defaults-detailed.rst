@@ -312,7 +312,7 @@ The plugins are defined using YAML dictionaries with specific parameters:
 
 ``state``
   Optional. If not defined or ``present``, the plugin will be installed (if the
-  ``packate`` parameter is also defined), and its :file:`config.inc.php`
+  ``package`` parameter is also defined), and its :file:`config.inc.php`
   configuration file will be generated, but the plugin itself will not be
   active in Roundcube. If ``enabled``, the plugin will be installed if needed,
   and will be activated in the Roundcube configuration file.
