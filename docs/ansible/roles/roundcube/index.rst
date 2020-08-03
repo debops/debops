@@ -17,6 +17,7 @@ debops.roundcube
    guides
    defaults/main
    defaults-detailed
+   ldap-dit
 
 Copyright
 ---------
