@@ -102,6 +102,11 @@ General
   attributes not present in the official specification. The new schema will not
   be applied automatically on existing installations.
 
+- In the OpenLDAP ACL rules, authenticated object owners can now
+  re-authenticate themselves using the ``userPassword`` attribute. This is
+  needed for the LDAP Password Modify Extended Operation (:rfc:`3062`) to work
+  correctly in Roundcube.
+
 Fixed
 ~~~~~
 
