@@ -64,6 +64,10 @@ Added
 - The role will enable more plugins by default: ``help``, ``markasjunk``,
   ``password`` (only with LDAP).
 
+- Roundcube will offer local spell checking support by default with ``Enchant``
+  library. English language is supported by default, more languages can be
+  added via Ansible inventory.
+
 Changed
 ~~~~~~~
 

@@ -44,7 +44,7 @@ roundcube__optional_php_packages:
   - '{{ "memcached" if roundcube__memcached_enabled|bool else [] }}'
   - '{{ "redis"     if roundcube__redis_enabled|bool     else [] }}'
   - 'fileinfo'
-  - 'pspell'
+  - 'enchant'
   - 'zip'
 
                                                                    # ]]]
@@ -88,7 +88,7 @@ roundcube__packages: []
 # .. envvar:: roundcube__base_packages [[[
 #
 # APT packages required for the Roundcube installation.
-roundcube__base_packages: [ 'curl', 'file', 'unzip' ]
+roundcube__base_packages: [ 'curl', 'file', 'unzip', 'aspell', 'aspell-en' ]
                                                                    # ]]]
                                                                    # ]]]
 # Roundcube user account [[[
@@ -3116,6 +3116,26 @@ roundcube__default_configuration:
           - left:  'none'
             right: 'compose'
             down:  'none'
+
+  - name: 'enable_spellcheck'
+    value: True
+    state: 'present'
+
+  - name: 'spellcheck_engine'
+    value: 'enchant'
+    state: 'present'
+
+  - name: 'spellcheck_ignore_caps'
+    value: True
+    state: 'present'
+
+  - name: 'spellcheck_ignore_nums'
+    value: True
+    state: 'present'
+
+  - name: 'spellcheck_ignore_syms'
+    value: True
+    state: 'present'
 
                                                                    # ]]]
 # .. envvar:: roundcube__configuration [[[

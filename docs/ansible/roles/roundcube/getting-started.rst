@@ -35,6 +35,13 @@ Roundcube will use the current user credentials to login to the LDAP directory,
 therefore access to the LDAP entries and attributes depends on the LDAP ACL
 configuration in the directory itself.
 
+Local spell check support will be configured using the `Enchant`__ library with
+``aspell`` spell checker. By default only the English dictionary
+(``aspell-en``) is installed, more dictionaries can be added using the
+:envvar:`roundcube__packages` variable.
+
+.. __: https://en.wikipedia.org/wiki/Enchant_(software)
+
 
 .. _roundcube__ref_private_repo:
 
