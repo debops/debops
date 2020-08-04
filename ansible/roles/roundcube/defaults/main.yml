@@ -4607,7 +4607,8 @@ roundcube__ldap__dependent_tasks:
     objectClass: '{{ roundcube__ldap_self_object_classes }}'
     attributes: '{{ roundcube__ldap_self_attributes }}'
     no_log: True
-    state: '{{ "present" if roundcube__ldap_device_dn|d() else "ignore" }}'
+    state: '{{ "present" if roundcube__ldap_password_enabled and
+                            roundcube__ldap_device_dn|d() else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__nginx__dependent_servers [[[
