@@ -149,9 +149,11 @@
 
     - role: nslcd
       tags: [ 'role::nslcd', 'skip::nslcd' ]
+      when: (ansible_local.ldap.posix_enabled|d())|bool
 
     - role: nscd
       tags: [ 'role::nscd', 'skip::nscd' ]
+      when: (ansible_local.ldap.posix_enabled|d())|bool
 
     - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::yadm' ]
