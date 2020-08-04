@@ -26,7 +26,7 @@ sudo__enabled: True
 # List of base APT packages to install for :command:`sudo` support.
 sudo__base_packages: '{{ [ "sudo-ldap" ]
                          if (ansible_local|d() and ansible_local.ldap|d() and
-                             (ansible_local.ldap.enabled|d())|bool)
+                             (ansible_local.ldap.posix_enabled|d())|bool)
                          else [ "sudo" ] }}'
 
                                                                    # ]]]
@@ -171,7 +171,7 @@ sudo__combined_sudoers: '{{ sudo__sudoers
 # not be changed or removed.
 sudo__ldap_enabled: '{{ True
                         if (ansible_local|d() and ansible_local.ldap|d() and
-                            (ansible_local.ldap.enabled|d())|bool)
+                            (ansible_local.ldap.posix_enabled|d())|bool)
                         else False }}'
 
                                                                    # ]]]
@@ -257,6 +257,9 @@ sudo__ldap__dependent_tasks:
     objectClass: '{{ sudo__ldap_self_object_classes }}'
     attributes: '{{ sudo__ldap_self_attributes }}'
     no_log: True
-    state: '{{ "present" if sudo__ldap_device_dn|d() else "ignore" }}'
+    state: '{{ "present"
+               if ((ansible_local.ldap.posix_enabled|d())|bool and
+                   sudo__ldap_device_dn|d())
+               else "ignore" }}'
                                                                    # ]]]
                                                                    # ]]]

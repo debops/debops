@@ -18,6 +18,17 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.1: https://github.com/debops/debops/compare/v1.1.0...stable-1.1
 
+Changed
+~~~~~~~
+
+LDAP
+''''
+
+- The :ref:`LDAP-POSIX integration <ldap__ref_posix>` can now be disabled using
+  a default variable. This will disable LDAP support in the POSIX environment
+  and specific services (user accounts, PAM, :command:`sshd`, :command:`sudo`)
+  while leaving higher-level services unaffected.
+
 
 `debops v1.1.11`_ - 2020-08-03
 ------------------------------
