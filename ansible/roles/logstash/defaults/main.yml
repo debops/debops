@@ -206,7 +206,7 @@ logstash__default_pipeline:
                   - ssl_certificate: '{{ logstash__pki_path + "/" + logstash__pki_realm +
                                          "/" + logstash__pki_crt }}'
                   - ssl_key: '{{ logstash__pki_path + "/" + logstash__pki_realm +
-                                 "/" + logstash__pki_key }}'
+                                 "/" + logstash__pki_key_pkcs8 }}'
                   - ssl_verify_mode: '{{ logstash__ssl_verify_mode }}'
                   - tls_min_version: '{{ logstash__tls_min_version }}'
                   - tls_max_version: '{{ logstash__tls_max_version }}'
@@ -526,6 +526,12 @@ logstash__pki_crt: 'default.crt'
 logstash__pki_key: 'default.key'
 
                                                                    # ]]]
+# .. envvar:: logstash__pki_key_pkcs8 [[[
+#
+# Host private key used by Logstash in PKCS8 format, relative to :envvar:`logstash__pki_realm`.
+logstash__pki_key_pkcs8: 'default_pkcs8.key'
+
+                                                                   # ]]]
 # .. envvar:: logstash__ssl_verify_mode [[[
 #
 # Value can be any of: none, peer, force_peer.
@@ -535,7 +541,7 @@ logstash__pki_key: 'default.key'
 # force_peer will make the server ask the client to provide a certificate.
 # If the client doesn’t provide a certificate, the connection will be closed.
 # This option needs to be used with ssl_certificate_authorities and a defined list of CAs.
-logstash__ssl_verify_mode: 'force_peer'
+logstash__ssl_verify_mode: 'peer'
 
                                                                    # ]]]
 # .. envvar:: logstash__tls_min_version [[[

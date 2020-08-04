@@ -50,6 +50,21 @@
   notify: [ 'Start logstash' ]
   tags: [ 'role::logstash:config' ]
 
+  # https://github.com/elastic/logstash/issues/9897
+- name: Generate private key in PKCS8 format
+  command: '{{ "openssl pkcs8 -topk8 -inform pem -in " + logstash__pki_path + "/" + logstash__pki_realm +
+               "/" + logstash__pki_key + " -outform pem -nocrypt -out " + logstash__pki_path + "/" +
+               logstash__pki_realm + "/" + logstash__pki_key_pkcs8 }}'
+  when: logstash__pki
+
+- name: Set correct permissions for key in PKCS8 format
+  file:
+    path: '{{ logstash__pki_path + "/" + logstash__pki_realm + "/" + logstash__pki_key_pkcs8 }}'
+    owner: 'root'
+    group: 'ssl-cert'
+    mode: '0640'
+  when: logstash__pki
+
 - name: Generate Logstash configuration
   template:
     src: '{{ item }}.j2'
