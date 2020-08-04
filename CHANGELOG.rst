@@ -22,6 +22,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.1: https://github.com/debops/debops/compare/v2.1.0...stable-2.1
 
+Changed
+~~~~~~~
+
+:ref:`debops.roundcube` role
+''''''''''''''''''''''''''''
+
+- The ``uid=roundcube`` LDAP account will be created only when support for
+  password changes is enabled.
+
 
 `debops v2.1.1`_ - 2020-08-03
 -----------------------------
