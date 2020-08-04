@@ -93,6 +93,14 @@ General
   :ref:`debops.global_handlers` role to allow for easier cross-role handler
   notification. The role has been imported in roles that rely on the handlers.
 
+LDAP
+''''
+
+- The :ref:`LDAP-POSIX integration <ldap__ref_posix>` can now be disabled using
+  a default variable. This will disable LDAP support in the POSIX environment
+  and specific services (user accounts, PAM, :command:`sshd`, :command:`sudo`)
+  while leaving higher-level services unaffected.
+
 :ref:`debops.postfix` role
 ''''''''''''''''''''''''''
 
