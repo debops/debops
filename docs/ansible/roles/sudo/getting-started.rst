@@ -12,10 +12,11 @@ Support for sudoers in LDAP
 
 The :ref:`debops.sudo` role will automatically enable integration with the
 :ref:`debops.ldap` Ansible role to configure support for ``sudoers`` rules
-defined in the LDAP directory. When the LDAP support is enabled on a host, the
-role will register its own LDAP account object (using :ref:`debops.ldap` as
-a dependency) and configure access to the LDAP directory using simple bind.
-The ``ldap/init-directory.yml`` Ansible playbook will create the needed LDAP
+defined in the LDAP directory. When the LDAP support and :ref:`LDAP-POSIX
+integration <ldap__ref_posix>` is enabled on a host, the role will register its
+own LDAP account object (using :ref:`debops.ldap` as a dependency) and
+configure access to the LDAP directory using simple bind. The
+``ldap/init-directory.yml`` Ansible playbook will create the needed LDAP
 directory structure required for ``sudoers`` rules.
 
 See the :man:`sudoers.ldap(5)` manual page for more details about the LDAP

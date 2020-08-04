@@ -32,6 +32,16 @@ ldap__enabled: '{{ ansible_local.ldap.enabled
                    else False }}'
 
                                                                    # ]]]
+# .. envvar:: ldap__posix_enabled [[[
+#
+# Enable or disable support for LDAP-POSIX environment integration. If this
+# variable is disabled, this will instruct other Ansible roles to not configure
+# POSIX subsystems like PAM, :command:`sshd` service, :command:`sudo` and
+# similar to use LDAP directory on a paritcular host. Only higher level
+# applications will integrate with the directory.
+ldap__posix_enabled: '{{ ansible_local.ldap.posix_enabled | d(ldap__enabled) }}'
+
+                                                                   # ]]]
 # .. envvar:: ldap__configured [[[
 #
 # This variable is used to detect if the role already applied its default

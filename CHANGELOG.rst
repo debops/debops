@@ -21,6 +21,14 @@ You can read information about required changes between releases in the
 Changed
 ~~~~~~~
 
+LDAP
+''''
+
+- The :ref:`LDAP-POSIX integration <ldap__ref_posix>` can now be disabled using
+  a default variable. This will disable LDAP support in the POSIX environment
+  and specific services (user accounts, PAM, :command:`sshd`, :command:`sudo`)
+  while leaving higher-level services unaffected.
+
 :ref:`debops.roundcube` role
 ''''''''''''''''''''''''''''
 

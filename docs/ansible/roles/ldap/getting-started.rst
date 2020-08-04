@@ -73,6 +73,13 @@ basic things like UNIX system groups used to manage the host. It's best to
 either not enable LDAP support in a given environment, or enable it at the
 beginning of a new deployment.
 
+The POSIX integration with the LDAP directory can be controlled using the
+:envvar:`ldap__posix_enabled` variable. If it's set to ``False``, services that
+are specific to a POSIX environment (:command:`nslcd`, :command:`sshd`,
+:command:`sudo` and others) will not be configured with LDAP support. In such
+case only higher-level applications like :command:`nullmailer`, Postfix,
+GitLab, etc. will be configured for use with LDAP.
+
 You can of course enable LDAP support in an existing environment, but you
 should first learn about changes required by other Ansible roles for successful
 migration. Check the documentation of other DebOps roles for more details.

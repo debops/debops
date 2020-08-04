@@ -285,7 +285,10 @@ nslcd__ldap__dependent_tasks:
     objectClass: '{{ nslcd__ldap_self_object_classes }}'
     attributes: '{{ nslcd__ldap_self_attributes }}'
     no_log: True
-    state: '{{ "present" if nslcd__ldap_device_dn|d() else "ignore" }}'
+    state: '{{ "present"
+               if ((ansible_local.ldap.posix_enabled|d())|bool and
+                   nslcd__ldap_device_dn|d())
+               else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: nslcd__nsswitch__dependent_services [[[

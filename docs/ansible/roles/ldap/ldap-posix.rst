@@ -16,6 +16,22 @@ done without compromise.
    .. contents::
       :local:
 
+LDAP-POSIX support in DebOps
+----------------------------
+
+The :envvar:`ldap__posix_enabled` default variable controls if the LDAP-POSIX
+integration should be done on a given host. By default the integation will be
+enabled, based on the value of the :envvar:`ldap__enabled` variable. This
+choice will also be recorded in the Ansible local facts as
+``ansible_local.ldap.posix_enabled`` variable, which will preserve the current
+state of the integration on subsequent Ansible runs.
+
+If the POSIX support is disabled by setting the :envvar:`ldap__posix_enabled`
+variable to ``False``, DebOps roles which manage services in the POSIX
+environment will not configure LDAP support automatically - the required LDAP
+accounts will not be created and the service configuration will not rely on
+LDAP directory. Other, higher level services will be integrated with the
+directory as usual.
 
 POSIX attributes
 ----------------

@@ -531,9 +531,9 @@ sshd__paranoid: False
 #
 # Enable support for looking up authorized public keys in external data sources
 # (currently LDAP is supported). This function works only with OpenSSH 6.2+.
-sshd__authorized_keys_lookup: '{{ ansible_local.ldap.enabled
+sshd__authorized_keys_lookup: '{{ ansible_local.ldap.posix_enabled
                                   if (ansible_local|d() and ansible_local.ldap|d() and
-                                      (ansible_local.ldap.enabled|d())|bool)
+                                      (ansible_local.ldap.posix_enabled|d())|bool)
                                   else False }}'
 
                                                                    # ]]]
@@ -877,19 +877,28 @@ sshd__ldap__dependent_tasks:
     dn: '{{ sshd__ldap_device_dn }}'
     attributes:
       objectClass: '{{ sshd__ldap_device_object_classes }}'
-    state: '{{ "present" if sshd__ldap_device_dn|d() else "ignore" }}'
+    state: '{{ "present"
+               if ((ansible_local.ldap.posix_enabled|d())|bool and
+                   sshd__ldap_device_dn|d())
+               else "ignore" }}'
 
   - name: 'Update SSH host public keys in {{ sshd__ldap_device_dn | join(",") }}'
     dn: '{{ sshd__ldap_device_dn }}'
     attributes: '{{ sshd__ldap_device_attributes }}'
-    state: '{{ "exact" if sshd__ldap_device_dn|d() else "ignore" }}'
+    state: '{{ "exact"
+               if ((ansible_local.ldap.posix_enabled|d())|bool and
+                   sshd__ldap_device_dn|d())
+               else "ignore" }}'
 
   - name: 'Create sshd account for {{ sshd__ldap_device_dn | join(",") }}'
     dn: '{{ sshd__ldap_binddn }}'
     objectClass: '{{ sshd__ldap_self_object_classes }}'
     attributes: '{{ sshd__ldap_self_attributes }}'
     no_log: True
-    state: '{{ "present" if sshd__ldap_device_dn|d() else "ignore" }}'
+    state: '{{ "present"
+               if ((ansible_local.ldap.posix_enabled|d())|bool and
+                   sshd__ldap_device_dn|d())
+               else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: sshd__pam_access__dependent_rules [[[
@@ -943,7 +952,7 @@ sshd__pam_access__dependent_rules:
         origins: 'ALL'
         state: '{{ "present"
                    if (ansible_local|d() and ansible_local.ldap|d() and
-                       (ansible_local.ldap.enabled|d())|bool)
+                       (ansible_local.ldap.posix_enabled|d())|bool)
                    else "absent" }}'
 
       - name: 'allow-domain'
