@@ -122,7 +122,7 @@ setup(
     description='Your Debian-based data center in a box',
     long_description=README,
     author='DebOps Developers',
-    author_email='debops-users@lists.debops.org',
+    author_email='debops-devel@lists.debops.org',
     url='https://debops.org/',
     license="GPL-3.0-or-later",
     license_files=glob.glob("LICENSES/*.txt"),
