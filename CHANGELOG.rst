@@ -35,6 +35,16 @@ LDAP
 - The ``uid=roundcube`` LDAP account will be created only when support for
   password changes is enabled.
 
+Fixed
+~~~~~
+
+:ref:`debops.ntp` role
+''''''''''''''''''''''
+
+- Don't try to disable or stop the ``systemd-timesyncd`` service when using an
+  alternative NTP service implementation and ``systemd-timesyncd`` is not
+  available.
+
 
 `debops v2.0.5`_ - 2020-08-03
 -----------------------------
