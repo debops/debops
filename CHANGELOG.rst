@@ -174,6 +174,13 @@ LDAP
 - Fixed multiple issues with adding and updating hosts to the LDAP directory
   when these hosts were configured for network bonding.
 
+:ref:`debops.ntp` role
+''''''''''''''''''''''
+
+- Don't try to disable or stop the ``systemd-timesyncd`` service when using an
+  alternative NTP service implementation and ``systemd-timesyncd`` is not
+  available.
+
 :ref:`debops.owncloud` role
 ''''''''''''''''''''''''''''
 
