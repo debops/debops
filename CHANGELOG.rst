@@ -29,6 +29,16 @@ LDAP
   and specific services (user accounts, PAM, :command:`sshd`, :command:`sudo`)
   while leaving higher-level services unaffected.
 
+Fixed
+~~~~~
+
+:ref:`debops.ntp` role
+''''''''''''''''''''''
+
+- Don't try to disable or stop the ``systemd-timesyncd`` service when using an
+  alternative NTP service implementation and ``systemd-timesyncd`` is not
+  available.
+
 
 `debops v1.1.11`_ - 2020-08-03
 ------------------------------

@@ -7,12 +7,18 @@
   register: ntp__register_apt_install
   until: ntp__register_apt_install is succeeded
 
+- name: Query available systemd services
+  service_facts:
+  when: ansible_service_mgr == "systemd"
+
 - name: Manage systemd-timesyncd state
   service:
     name: 'systemd-timesyncd'
     state: '{{ "started" if (ntp__daemon in [ "systemd-timesyncd" ]) else "stopped" }}'
     enabled: '{{ True if (ntp__daemon in [ "systemd-timesyncd" ]) else False }}'
-  when: ansible_service_mgr == "systemd"
+  when:
+    - ansible_service_mgr == "systemd"
+    - ("systemd-timesyncd.service" in ansible_facts.services)
 
 # NTPdate does not need to be configured separately as the script `/usr/sbin/ntpdate-debian`
 # will pick up the configuration from `/etc/ntp.conf` when it exists.
