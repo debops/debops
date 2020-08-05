@@ -132,7 +132,7 @@ setup(
     download_url='https://github.com/debops/debops'
                  '/archive/v' + unicode(RELEASE) + '.tar.gz',
     classifiers=[
-                'Development Status :: 5 - Production/Stable',
+                'Development Status :: 3 - Alpha',
                 'Environment :: Console',
                 'Intended Audience :: Information Technology',
                 'Intended Audience :: System Administrators',
