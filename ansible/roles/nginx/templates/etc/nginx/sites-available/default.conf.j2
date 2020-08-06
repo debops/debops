@@ -633,7 +633,10 @@ server {
         ssl_certificate           {{ nginx_tpl_ssl_certificate }};
         ssl_certificate_key       {{ nginx_tpl_ssl_certificate_key }};
         ssl_protocols             {{ (item.tls_protocols | d(nginx_default_tls_protocols)) | join(" ") }};
-        ssl_prefer_server_ciphers off;
+        ssl_prefer_server_ciphers {{ "off"
+                                      if nginx_default_tls_protocols|length == 1 and
+                                         nginx_default_tls_protocols[0] == "TLSv1.3"
+                                      else "on" }};
 {%     if (nginx_ssl_ciphers[item.ssl_ciphers | d(nginx_default_ssl_ciphers)]) %}
         ssl_ciphers               "{{ nginx_ssl_ciphers[item.ssl_ciphers | default(nginx_default_ssl_ciphers)] }}"; # TLS cipher suites set: {{ item.ssl_ciphers | default(nginx_default_ssl_ciphers) }}
 {%     else %}
