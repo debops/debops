@@ -62,7 +62,7 @@ try:
     with open(os.devnull, 'w') as devnull:
         RELEASE = subprocess.check_output(
                 ['git', 'describe'], stderr=devnull
-                ).strip().lstrip(b'v')
+                ).strip().lstrip(b'v').decode('utf-8')
 except subprocess.CalledProcessError:
     try:
         RELEASE = open('VERSION').read().strip()
@@ -71,16 +71,16 @@ except subprocess.CalledProcessError:
             with open('CHANGELOG.rst', 'r') as changelog:
                 for count, line in enumerate(changelog):
                     if re.search('^`debops v', line):
-                        RELEASE = line.split()[1].rstrip(b'`_').lstrip(b'v')
+                        RELEASE = line.split()[1].rstrip('`_').lstrip('v')
                         break
         except Exception:
             RELEASE = '0.0.0'
 
 with open('VERSION', 'w') as version_file:
-    version_file.write('{}\n'.format(RELEASE.decode('utf-8')))
+    version_file.write('{}\n'.format(RELEASE))
 with open('src/debops/__version__.py', 'w') as version_file:
     version_file.write('__version__ = "{}"\n'
-                       .format(RELEASE.decode('utf-8')))
+                       .format(RELEASE))
 
 MANPAGES_5 = []
 if os.path.exists('docs/_build/man'):
