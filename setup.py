@@ -68,7 +68,7 @@ except subprocess.CalledProcessError:
         RELEASE = open('VERSION').read().strip()
     except Exception:
         try:
-            with file('CHANGELOG.rst') as changelog:
+            with open('CHANGELOG.rst', 'r') as changelog:
                 for count, line in enumerate(changelog):
                     if re.search('^`debops v', line):
                         RELEASE = line.split()[1].rstrip(b'`_').lstrip(b'v')
