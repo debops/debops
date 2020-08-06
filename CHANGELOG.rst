@@ -210,9 +210,9 @@ General
             package for a working version.
 
 - The DebOps monorepo can now be used as an "Ansible Collection" when path to
-  it is specified in the `collections_paths`__ variable in the Ansible
-  configuration file. In such case Ansible will look in subdirectories of the
-  :file:`ansible_collections/` directory for roles, modules and other plugins.
+  the :file:`ansible/collections/` subdirectory inside of the :command:`git`
+  repository is specified in the `collections_paths`__ variable in the Ansible
+  configuration file.
 
   .. note:: The roles and plugins included in DebOps are not yet fully
             compatible with the Collection system. They will be converted at

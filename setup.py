@@ -104,7 +104,7 @@ setup(
     ],
     package_data={
         'debops':
-            find_files('src/debops/ansible_collections/debops/debops',
+            find_files('src/debops/_data',
                        'src/debops')
     },
 
