@@ -4,9 +4,16 @@
 # Copyright (C) 2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from .__version__ import __version__
 import argparse
 import os
+
+# Detect the DebOps version from the Python module. If the version is not
+# available, we are in a development environment in which case we use a stub
+# version number to avoid errors.
+try:
+    from .__version__ import __version__
+except ModuleNotFoundError:
+    __version__ = "0.0.0"
 
 
 class Subcommands(object):
