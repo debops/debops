@@ -7,6 +7,40 @@ Getting started
       :local:
 
 
+Security defaults
+-----------------
+
+Following `Mozilla intermediate level recommendations`_, this role
+configures nginx with only TLSv1.2 and TLSv1.3 enabled. All modern
+browsers are supported with the default cipher suite. If you need
+support for older clients, see ``nginx_default_ssl_ciphers`` and
+``nginx_default_tls_protocols``. To follow modern level
+recommendation, enable only TLSv1.3 in
+``nginx_default_tls_protocols``. Note that there is still limited
+client support for TLSv1.3.
+
+Only one TLS curve is enabled by default: ``secp256r1``. While
+`NCSC-NL`_ recommends three other curves, these are not supported by
+openssl (in Debian Buster, as checked on 2020-08-06).
+
+If TLSv1.3 is the only protocol in use, clients are allowed to choose
+ciphers, because they know best if they have support for
+hardware-accelerated AES. If TLSv1.2 or lower is used, server ciphers
+are preferred, because those protocols allow downgrade attacks.
+
+No dhparam is set if the only protocol is TLSv1.3, because that
+protocol uses `Ephemeral Diffie-Hellman key exchange`_, which employs
+one-time keys for the current network session. Omitting the option is
+purely cosmetic, resulting in cleaner configuration file.
+
+If `HTTP Strict Transport Security`_ is enabled, the default age is 2
+years.
+
+.. _Mozilla intermediate level recommendations: https://ssl-config.mozilla.org/#server=nginx&version=1.17.7&config=intermediate&openssl=1.1.1d&guideline=5.6
+.. _NCSC-NL: https://english.ncsc.nl/publications/publications/2019/juni/01/it-security-guidelines-for-transport-layer-security-tls
+.. _Ephemeral Diffie-Hellman key exchange: https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange
+.. _HTTP Strict Transport Security: https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Strict_Transport_Security_Cheat_Sheet.html
+
 Example inventory
 -----------------
 
