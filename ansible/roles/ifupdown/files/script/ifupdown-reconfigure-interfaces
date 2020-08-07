@@ -130,6 +130,8 @@ containsElement () {
 # Stop the entre networking service at once
 stop_networking () {
 
+    echo "Pause for a few seconds before stopping network, to give control a bit of head start"
+    sleep 3
     if is_systemd ; then
         systemctl stop networking.service
     else
@@ -287,7 +289,7 @@ if [ -d "${interface_request_path}" ] ; then
                     if ifquery --state "${iface_name}" > /dev/null 2>&1 ; then
 
                         # The interface in question was definitely not set up by 'ifup@.service'
-                        if ! containsElement "${iface_name}" "${systemd_interface_instances[@]:-}" ; then
+                        if containsElement "${iface_name}" "${systemd_interface_instances[@]:-}" ; then
 
                             log_message -m "The '${iface_name}' interface is still active, shutting down networking service"
                             stop_networking
