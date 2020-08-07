@@ -32,6 +32,12 @@ LDAP
 Fixed
 ~~~~~
 
+:ref:`debops.ifupdown` role
+'''''''''''''''''''''''''''
+
+- Network configuration with bonded interfaces should now be correctly applied
+  by the reconfiguration script.
+
 :ref:`debops.ntp` role
 ''''''''''''''''''''''
 
