@@ -168,6 +168,12 @@ LDAP
 - Ensure that the ``authldap`` DokuWiki plugin is enabled when LDAP support is
   configured by the role.
 
+:ref:`debops.ifupdown` role
+'''''''''''''''''''''''''''
+
+- Network configuration with bonded interfaces should now be correctly applied
+  by the reconfiguration script.
+
 :ref:`debops.ldap` role
 '''''''''''''''''''''''
 
