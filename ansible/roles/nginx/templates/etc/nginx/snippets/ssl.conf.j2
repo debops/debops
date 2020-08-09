@@ -8,7 +8,12 @@
 # Define default SSL configuration options
 
 ssl_protocols               {{ nginx_default_tls_protocols | join(" ") }};
-ssl_prefer_server_ciphers   on;
+ssl_prefer_server_ciphers   {{ "off"
+                               if nginx_default_tls_protocols|length == 1 and
+                                  nginx_default_tls_protocols[0] == "TLSv1.3"
+                               else "on" }};
 ssl_ciphers                 {{ nginx_ssl_ciphers[nginx_default_ssl_ciphers] }};
+{% if nginx_ssl_dhparam != '' %}
 ssl_dhparam                 {{ nginx_ssl_dhparam }};
+{% endif %}
 ssl_ecdh_curve              {{ nginx_default_ssl_curve }};
