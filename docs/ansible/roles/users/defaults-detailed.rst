@@ -189,6 +189,23 @@ Parameters related to home directories
   specified, the role will check the home directory path of an existing account
   defined on the host.
 
+  .. warning::
+    The ``users`` role runs early, will not create the home's parent directory,
+    and will fail if it does not exist even if a later role ends up creating it.
+
+    :ref:`debops.fhs` can be used to create the directory during bootstrap.
+
+    For example:
+
+    .. code-block:: yaml
+
+      fhs__directories:
+        - name: 'www'
+          path: '/srv/www'
+
+    This will also create the ``ansible_local.fhs.www`` local fact, which can
+    be used elsewhere to point to that base directory.
+
 ``home_owner``
   Optional. Specify the owner of the home directory of a given UNIX account.
 
