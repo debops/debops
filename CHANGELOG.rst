@@ -29,6 +29,27 @@ LDAP
   and specific services (user accounts, PAM, :command:`sshd`, :command:`sudo`)
   while leaving higher-level services unaffected.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The default SSL configuration used by the role has been updated to bring it
+  to the modern standards. By default only TLSv1.2 and TLSv1.3 protocols are
+  enabled, along with an improved set of ciphers. The HTTP Strict Transport
+  Security age has been increased from 6 months to 2 years. The configuration
+  is based on the `intermediate Mozilla SSL recommendations`__ to support wide
+  range of possible clients.
+
+  .. __: https://ssl-config.mozilla.org/#server=nginx&version=1.17.7&config=intermediate&openssl=1.1.1d&guideline=5.6
+
+- The server can be configured to support TLSv1.3 protocol only using the
+  :envvar:`nginx_default_tls_protocols` variable, which will disable the use of
+  custom Diffie-Hellman parameters and allow the HTTPS clients to select their
+  own preferred ciphers to use for connections. The preferred set of ciphers
+  will also change to `Mozilla modern`__ variant. Keep in mind that not all
+  clients support this configuration.
+
+  .. __: https://ssl-config.mozilla.org/#server=nginx&version=1.17.7&config=modern&openssl=1.1.1d&guideline=5.6
+
 :ref:`debops.roundcube` role
 ''''''''''''''''''''''''''''
 
