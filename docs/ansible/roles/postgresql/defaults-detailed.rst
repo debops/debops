@@ -243,7 +243,7 @@ parameters:
 ``encoding``
   Optional. Default encoding used by a given database.
   If not supplied it falls back to the server default, derived from
-  :envar:`postgresql_server__locale` on the ``postgresql_server`` role.
+  :envvar:`postgresql_server__locale` on the ``postgresql_server`` role.
 
 ``create_db``
   Optional. Set this to False when granting a role specific privileges on an existing database.
