@@ -132,6 +132,14 @@ nslcd__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
 # configuration file. See :ref:`nslcd__ref_configuration` for more details, and
 # :man:`nslcd.conf(5)` for possible configuration parameters.
 
+# .. envvar:: nslcd__idle_timelimit [[[
+#
+# The idle timelimit for connections with the LDAP server. This must be lower
+# than the server's olcIdleTimeout, otherwise nslcd will log error messages like
+# "ldap_result() failed: Can't contact LDAP server".
+nslcd__idle_timelimit: '600'
+
+                                                                   # ]]]
 # .. envvar:: nslcd__default_configuration [[[
 #
 # The default :command:`nslcd` configuration options defined by the role.
@@ -150,6 +158,10 @@ nslcd__default_configuration:
                if (ansible_local|d() and ansible_local.ldap|d() and
                    ansible_local.ldap.uri|d())
                else "" }}'
+
+  - name: 'idle_timelimit'
+    comment: 'The idle timelimit for connections with the LDAP server.'
+    value: '{{ nslcd__idle_timelimit }}'
 
   - name: 'base'
     comment: 'The search base that will be used for all queries.'
