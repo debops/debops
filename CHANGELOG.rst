@@ -201,6 +201,14 @@ LDAP
 - Fixed multiple issues with adding and updating hosts to the LDAP directory
   when these hosts were configured for network bonding.
 
+:ref:`debops.nslcd` role
+''''''''''''''''''''''''
+
+- Enabled idle_timelimit to make sure that connections to the LDAP server are
+  properly closed. A disabled or too high idle_timelimit causes the LDAP server
+  to time out, resulting in nslcd errors like "ldap_result() failed: Can't
+  contact LDAP server".
+
 :ref:`debops.ntp` role
 ''''''''''''''''''''''
 
