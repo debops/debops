@@ -51,6 +51,14 @@ Fixed
   alternative NTP service implementation and ``systemd-timesyncd`` is not
   available.
 
+:ref:`debops.nslcd` role
+''''''''''''''''''''''''
+
+- Enabled idle_timelimit to make sure that connections to the LDAP server are
+  properly closed. A disabled or too high idle_timelimit causes the LDAP server
+  to time out, resulting in nslcd errors like "ldap_result() failed: Can't
+  contact LDAP server".
+
 
 `debops v2.0.5`_ - 2020-08-03
 -----------------------------
