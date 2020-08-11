@@ -155,7 +155,7 @@ specific parameters:
 lxc__containers
 ---------------
 
-THe :envvar:`lxc__containers` variable can be used to define and manage LXC
+The :envvar:`lxc__containers` variable can be used to define and manage LXC
 containers on a given LXC host. By default, DebOps configures LXC containers
 with static MAC addresses based on the container name, therefore the names used
 for LXC containers should be unique on a given subnet, even between different
