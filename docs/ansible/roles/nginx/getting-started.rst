@@ -24,7 +24,7 @@ recommendation, enable only TLSv1.3 in
 ``nginx_default_tls_protocols``. Note that there is still limited
 client support for TLSv1.3.
 
-Only one TLS curve is enabled by default: ``secp256r1``. While
+Only one curve (ECC) is enabled by default: ``secp256r1``. While
 `NCSC-NL`_ recommends three other curves, these are not supported by
 openssl (in Debian Buster, as checked on 2020-08-06).
 
@@ -36,7 +36,7 @@ are preferred, because those protocols allow downgrade attacks.
 No dhparam is set if the only protocol is TLSv1.3, because that
 protocol uses `Ephemeral Diffie-Hellman key exchange`_, which employs
 one-time keys for the current network session. Omitting the option is
-purely cosmetic, resulting in cleaner configuration file.
+purely cosmetic, resulting in a cleaner configuration file.
 
 If `HTTP Strict Transport Security`_ is enabled, the default age is 2
 years.
