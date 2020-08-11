@@ -17,7 +17,7 @@ recommendation, enable only TLSv1.3 in
 ``nginx_default_tls_protocols``. Note that there is still limited
 client support for TLSv1.3.
 
-Only one TLS curve is enabled by default: ``secp256r1``. While
+Only one curve (ECC) is enabled by default: ``secp256r1``. While
 `NCSC-NL`_ recommends three other curves, these are not supported by
 openssl (in Debian Buster, as checked on 2020-08-06).
 
