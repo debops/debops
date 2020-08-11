@@ -279,7 +279,7 @@ Each template is defined by a YAML dictionary with specific parameters:
 
 ``name``
   Required. A path relative to the :file:`/var/lib/mailman3/templates/`
-  directroy with the template filename, ending with ``.txt`` extension. Any
+  directory with the template filename, ending with ``.txt`` extension. Any
   subdirectories will be created automatically, if not present. Configuration
   entries with the same ``name`` parameter are merged together in order of
   appearance.

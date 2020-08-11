@@ -52,7 +52,7 @@ General
 '''''''''''''''''''''''''
 
 - The role can now create Icinga configuration on the Icinga "master" node via
-  task delegation. This can be useful in centralized environments withoout
+  task delegation. This can be useful in centralized environments without
   Icinga Director support.
 
 :ref:`debops.postgresql` role

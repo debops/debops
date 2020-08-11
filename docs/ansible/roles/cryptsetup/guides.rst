@@ -139,4 +139,4 @@ effect.
 
 After the role run terminated, no access to plaintext files should be possible.
 If you want to access the plaintext files again, just change the ``state`` and
-rerun the role as all required information are still stored on the Ansible controller.
+rerun the role as all required information is still stored on the Ansible controller.
