@@ -31,7 +31,7 @@ are preferred, because those protocols allow downgrade attacks.
 No dhparam is set if the only protocol is TLSv1.3, because that
 protocol uses `Ephemeral Diffie-Hellman key exchange`_, which employs
 one-time keys for the current network session. Omitting the option is
-purely cosmetic, resulting in cleaner configuration file.
+purely cosmetic, resulting in a cleaner configuration file.
 
 If `HTTP Strict Transport Security`_ is enabled, the default age is 2
 years.

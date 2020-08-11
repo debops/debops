@@ -10,7 +10,7 @@ Getting started
 Default configuration
 ---------------------
 
-With the default configuration, ``debops.mosquitto`` role will configure
+With the default configuration, the ``debops.mosquitto`` role will configure
 Mosquitto with a TLS listener accepting connections from any host (if the
 :ref:`debops.pki` environment is detected), and plaintext listener accepting
 connections only from localhost. Anonymous access to the broker will be
