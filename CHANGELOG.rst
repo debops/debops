@@ -79,7 +79,7 @@ Updates of upstream application versions
   10.5 respectively.
 
 - In the :ref:`debops.roundcube` role, the Roundcube version installed by
-  default has been updated to ``v1.4.7``.
+  default has been updated to ``1.4.8``.
 
 General
 '''''''
