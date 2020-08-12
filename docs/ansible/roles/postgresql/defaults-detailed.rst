@@ -21,7 +21,7 @@ postgresql__preferred_version
 -----------------------------
 
 By default the role installs the PostgreSQL version preferred by the APT
-package manager. This behaviour is influenced by how the PostgreSQL is packaged
+package manager. This behavior is influenced by how the PostgreSQL is packaged
 in Debian - each version has its own set of packages with the version as
 a suffix, and there's a set of metapackages which depend on the version
 available in the distribution (by default only 1 version is available).
@@ -109,13 +109,17 @@ Each entry is defined by a YAML dict. Supported parameters:
 postgresql__roles
 -----------------
 
-PostgreSQL uses "roles" as database accounts as well as groups. Roles can have
-certain permissions granted to them by the server which allow access to
-database objects. This list can be used to create roles on a PostgreSQL server,
-each role is defined as a YAML dictionary.
+PostgreSQL uses `Roles`__ as database accounts as well as groups.
+
+.. __: https://www.postgresql.org/docs/current/user-manag.html
+
+Roles can have certain permissions granted to them by the server which allow
+access to database objects.
+This list can be used to create roles on a PostgreSQL server.
+Each role is defined as a YAML dictionary.
 
 ``role`` or ``name``
-  Required. Name of a given role.
+  Required. The name of a given role.
 
 ``port``
   Optional. By default roles are created on the local or remote PostgreSQL
@@ -123,9 +127,9 @@ each role is defined as a YAML dictionary.
   change the cluster which will be used.
 
 ``password``
-  Optional. Specify password for a given PostgreSQL role. If not set, a random
-  password will be generated and stored in :file:`secret/` directory. See
-  :ref:`debops.secret` role for more details.
+  Optional. Specify the password for a given PostgreSQL role. If not set, a
+  random password will be generated and stored in :file:`secret/` directory.
+  See :ref:`debops.secret` role for more details.
 
 ``encrypted``
   Optional, bool. Specify if a given password is already encrypted or not.
@@ -238,6 +242,8 @@ parameters:
 
 ``encoding``
   Optional. Default encoding used by a given database.
+  If not supplied it falls back to the server default, derived from
+  :envvar:`postgresql_server__locale` on the ``postgresql_server`` role.
 
 ``create_db``
   Optional. Set this to False when granting a role specific privileges on an existing database.

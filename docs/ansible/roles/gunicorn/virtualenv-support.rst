@@ -34,22 +34,15 @@ should be present in the ``virtualenv`` environment:
        version: '{{ ansible_local.gunicorn.version|d(omit) }}'
 
      # Install 'setproctitle' for nice process names
+     # (You'll need gcc and the python-dev or python3-dev package for this)
      - 'setproctitle'
 
 Next, in your role task list, include set of tasks that will create the
-``virtualenv`` environment and install the required modules inside (the example
-below requires Ansible 2.1+ to work):
+``virtualenv`` environment and install the required modules inside:
 
 .. code-block:: yaml
 
    ---
-
-   - name: Create the virtualenv environment
-     pip:
-       name: 'wsgiref'
-       virtualenv: '/path/to/virtualenv'
-     become_user: 'app-user'
-
    - name: Install additional Python modules for gunicorn support
      pip:
        name:    '{{ item.name    | d(item) }}'
@@ -58,14 +51,11 @@ below requires Ansible 2.1+ to work):
      with_flattened: '{{ application__virtualenv_pip_packages }}'
      become_user: 'app-user'
 
-The above tasks can be combined into one if you don't need to perform
-additional steps between creating the environment and installing additional
-modules.
-
 The above steps should ensure that the application deployed in the
-``virtualenv`` environment can be started by the ``gunicorn`` service installed
-from the Debian packages. To do that, you can define the application using the
-role dependent variables in your role's :file:`defaults/main.yml` file, like this:
+``virtualenv`` environment can be started by the ``gunicorn`` service
+installed from the Debian packages.
+To do that, you can define the application using the role dependent variables
+in your role's :file:`defaults/main.yml` file, like this:
 
 .. code-block:: yaml
 

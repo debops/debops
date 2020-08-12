@@ -10,11 +10,12 @@ Getting started
    .. contents::
       :local:
 
-``debops.postgresql`` role is only the "client" part. To have working
-a PostgreSQL installation, you also need to setup ``debops.postgresql_server``
-role somewhere. It can be either on the same host, or on a separate host.  See
-the ``debops.postgresql_server`` documentation to learn how to install the
-database server itself.
+``debops.postgresql`` role is only the *client* part. For a working PostgreSQL
+installation, ``debops.postgresql_server`` also needs to run somewhere.
+It can be either on the same host, or on a separate one.
+
+See the :ref:`debops.postgresql_server` documentation to learn how to install
+the database server itself.
 
 The PostgreSQL version installed by the role will be a default version offered
 by the distribution. If you want PostgreSQL 9.4 on Debian Wheezy, or an
@@ -39,35 +40,38 @@ Local database server
 
 If the database server is installed locally, it will be automatically detected
 and used by the ``debops.postgresql`` role without any additional
-configuration. Also, if a remote server was used previously, and a local one
-was installed, it will automatically override the remote configuration. You
-might need to recreate the databases and user accounts in that case.
+configuration.
+
+If a remote server was used previously, and then a local one was installed,
+it will automatically override the remote configuration.
+You might need to recreate the databases and user accounts in that case.
 
 Remote database server
 ~~~~~~~~~~~~~~~~~~~~~~
 
-If your PostgreSQL server is configured on a remote host and you don't have
-a local installation, ``debops.postgresql`` will detect that and won't manage the
-databases/user accounts without a server specified. To point it to a server,
-you need to set a variable in the inventory::
+If your PostgreSQL server is configured on a remote host and
+``debops.postgresql`` does not detect a local installation, it won't manage
+databases or user accounts without a server specified.
+
+To point it to a server, you need to set a variable in the inventory:
 
     postgresql__server: 'db.example.org'
 
-This needs to be a FQDN address or an IP address of a host with PostgreSQL
+This needs to be a FQDN address or an IP address of a host with the PostgreSQL
 server installed. This host will be accessed by Ansible using task delegation,
-so it needs to be accessible and managed by Ansible. Currently only 1 server at
-a time is supported by the role.
+so it needs to be accessible and managed by Ansible. Currently the role only
+supports one server at a time.
 
 If you use :ref:`debops.pki` to manage SSL certificates and you configured
-PostgreSQL server with them, remote connections to the database should be
-automatically encrypted. Default server configuration requires remote
-connections to be done over SSL, otherwise connection is dropped.
+PostgreSQL server with them, remote connections to the database will be
+automatically encrypted. The default server configuration requires remote
+connections to be done over SSL, otherwise the connection is dropped.
 
 Example inventory
 -----------------
 
 To enable PostgreSQL client support on a host, you need to add that host to
-``[debops_service_postgresql]`` Ansible group::
+``[debops_service_postgresql]`` Ansible group:
 
     [debops_service_postgresql]
     hostname
@@ -99,16 +103,20 @@ create user accounts and databases using inventory variables:
 
      - owner: 'application'
 
-Above set of variables will create a PostgreSQL roles ``application`` and
-``application_production`` which is meant to manage the database and cannot
-directly be logged into. A ``application_production`` PostgreSQL database will
-be created on the server and ``application_production`` role will be its owner.
-``application`` role will be granted access to ``application_production`` role
-and all of its objects.
+The above set of variables will create the PostgreSQL roles ``application`` and
+``application_production``, which is meant to manage the database and cannot
+directly be logged into.
 
-Next, Ansible will ensure that local system group and user account
+The ``application_production`` PostgreSQL database will be created on the server
+and the ``application_production`` role will be its owner.
+
+The ``application`` role will be granted access to the
+``application_production`` role and all of its objects.
+
+Next, Ansible will ensure that the local system group and user account
 ``application`` exists, and will create ``~/.pgpass`` with PostgreSQL user and
 password stored for easier access.
+
 
 Example playbook
 ----------------
