@@ -1,0 +1,57 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+# .. Copyright (C) 2020 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-or-later
+
+# .. _dhcrelay__ref_defaults:
+
+# Default variables
+# =================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: dhcrelay__base_packages [[[
+#
+# List of base packages to install for DHCP server support.
+dhcrelay__base_packages: [ 'isc-dhcp-relay' ]
+
+                                                                   # ]]]
+# .. envvar:: dhcrelay__packages [[[
+#
+# List of additional packages to install with this role.
+dhcrelay__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# ISC DHCP relay options [[[
+# --------------------------
+
+# .. envvar:: dhcrelay__servers [[[
+#
+# List of DHCP servers that should receive the relayed packets.
+dhcrelay__servers: [ '{{ ansible_default_ipv4.gateway
+                         if ansible_default_ipv4.gateway|d()
+                         else [] }}' ]
+
+                                                                   # ]]]
+# .. envvar:: dhcrelay__interfaces [[[
+#
+# List of network interfaces that dhcrelay should listen on.
+dhcrelay__interfaces: [ '{{ ansible_local.ifupdown.internal_interface
+                            if ansible_local.ifupdown.internal_interface|d()
+                            else ansible_default_ipv4.interface }}' ]
+
+                                                                   # ]]]
+# .. envvar:: dhcrelay__options [[[
+#
+# Additional dhcrelay options.
+dhcrelay__options: ''
+                                                                   # ]]]
+                                                                   # ]]]
