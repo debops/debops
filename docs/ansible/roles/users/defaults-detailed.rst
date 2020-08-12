@@ -189,6 +189,28 @@ Parameters related to home directories
   specified, the role will check the home directory path of an existing account
   defined on the host.
 
+  The :ref:`debops.users` role does not create parent directories of home
+  directories. If you try to create a home directory in a non-existent
+  subdirectory, Ansible will fail. This might be problematic due to the role
+  order in the playbook.
+
+  You can use the :ref:`debops.fhs` role to ensure that the base directories
+  exist before creating home directories in them. For example, a common
+  practice is creation of the web application home directories inside of the
+  :file:`/srv/www/` subdirectory which doesn't exist by default. To ensure that
+  the base directory is created on the host, you can include in the Ansible
+  inventory:
+
+  .. code-block:: yaml
+
+    fhs__directories:
+      - name: 'www'
+        path: '/srv/www'
+
+  This will also create the ``ansible_local.fhs.www`` local fact, which can
+  be used elsewhere to point to that base directory.
+  See the :ref:`fhs__ref_directories` documentation for more details.
+
 ``home_owner``
   Optional. Specify the owner of the home directory of a given UNIX account.
 
