@@ -55,7 +55,8 @@ Commands:
 
     def do_init(self):
         parser = argparse.ArgumentParser(
-                description='initialize new project directory')
+                description='initialize new project directory',
+                usage='debops init [<args>] [dir]')
         self.add_bool_argument(parser, 'git',
                                help='enable git support (default)',
                                no_help='disable git support')

@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .subcommands import Subcommands
+from .projectdir import ProjectDir
 
 
 class Interpreter(object):
@@ -26,7 +27,12 @@ class Interpreter(object):
             self.do_status(self.parsed_args.args)
 
     def do_init(self, args):
-        print('Creating the project directory')
+        try:
+            project = ProjectDir(path=args.dir, create=True)
+        except (IsADirectoryError, NotADirectoryError,
+                PermissionError) as errmsg:
+            print('Error:', errmsg)
+            exit(1)
 
     def do_run(self, args):
         print('Running the Ansible playbooks')
@@ -35,4 +41,10 @@ class Interpreter(object):
         print('Running the playbooks in check mode')
 
     def do_status(self, args):
-        print('Showing project status')
+        try:
+            project = ProjectDir()
+        except NotADirectoryError as errmsg:
+            print('Error:', errmsg)
+            exit(1)
+
+        project.status()

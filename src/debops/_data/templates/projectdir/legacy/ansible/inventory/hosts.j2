@@ -1,0 +1,30 @@
+{# Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2020 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# This is an Ansible inventory file in INI format. You can define a list of
+# hosts and groups to be managed by this particular inventory.
+
+# Hosts listed under [debops_all_hosts] will have common DebOps plays
+# ran against them. It will include services such as iptables, DNS, Postfix,
+# sshd configuration and more.
+#
+# View the list here:
+# https://github.com/debops/debops/blob/master/ansible/playbooks/common.yml
+#
+# You should check Getting Started guide for useful suggestions:
+# https://docs.debops.org/en/master/introduction/getting-started.html
+
+{% if host_as_controller == True %}
+# Your host is eligible to be managed by DebOps' common playbook. If you want
+# that functionality and more, then uncomment your hostname below.
+
+[debops_all_hosts]
+#{{ hostname }} ansible_host={{ fqdn }} ansible_connection=local
+{% else %}
+# Your host was not detected as compatible with DebOps playbooks, so you will
+# not be able to leverage the above features on your current operating system.
+# You can however use a virtual machine as the Ansible Controller.
+
+[debops_all_hosts]
+{% endif %}
