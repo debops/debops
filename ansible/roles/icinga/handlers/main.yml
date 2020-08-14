@@ -9,6 +9,17 @@
     name: 'icinga2'
     state: 'restarted'
 
+- name: Check icinga2 configuration and restart it on the master node
+  command: icinga2 daemon -C
+  notify: [ 'Restart icinga2 on the master node' ]
+  delegate_to: '{{ icinga__master_delegate_to }}'
+
+- name: Restart icinga2 on the master node
+  service:
+    name: 'icinga2'
+    state: 'restarted'
+  delegate_to: '{{ icinga__master_delegate_to }}'
+
 - name: Trigger Icinga Director configuration deployment
   uri:
     body_format: 'json'

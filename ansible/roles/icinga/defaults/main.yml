@@ -144,6 +144,15 @@ icinga__master_nodes: '{{ lookup("dig", "_icinga-master._tcp." + icinga__domain 
                                  "flat=0", wantlist=True) }}'
 
                                                                    # ]]]
+
+# .. envvar:: icinga__master_node_inventory_hostname [[[
+#
+# The host where tasks that must execute on the master node will be delegated.
+# It's used when ``icinga__master_*_configuration`` is set and configuration
+# files are written on the master node.
+icinga__master_delegate_to: '{{ icinga__master_nodes.0.target }}'
+
+                                                                   # ]]]
 # .. envvar:: icinga__director_nodes [[[
 #
 # List of ``dig`` Ansible module results that define which Icinga 2 nodes are
@@ -783,6 +792,47 @@ icinga__combined_configuration: '{{ icinga__default_configuration
                                     + icinga__configuration
                                     + icinga__group_configuration
                                     + icinga__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Icinga master node's configuration files [[[
+# --------------------------------------------
+
+# These lists manage the files and directories stored in the
+# :file:`/etc/icinga2/zones.d/` directory on the Icinga master node.
+# It may be used when the setup of an Icinga agent needs to add config files
+# to the master node. It's useful when Director module is not used and
+# Icinga objects (Zone, Endpoint, Host, ...) need to be defined both
+# on the agent and the master nodes.
+# The syntax for ``icinga__master_*_configuration`` variables is the
+# same as :ref:`icinga__ref_configuration`.
+
+# .. envvar:: icinga__master_configuration [[[
+#
+# List of the Icinga configuration files defined on the master node for
+# every host.
+icinga__master_configuration: []
+                                                                   # ]]]
+# .. envvar:: icinga__master_group_configuration [[[
+#
+# List of the Icinga configuration files defined on the master node for
+# hosts in a specific Ansible inventory group.
+icinga__master_group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: icinga__master_host_configuration [[[
+#
+# List of the Icinga configuration files defined on the master node for
+# specific hosts in the Ansible inventory.
+icinga__master_host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: icinga__master_combined_configuration [[[
+#
+# Variable which combines Icinga master node configuration from previous
+# variables.
+icinga__master_combined_configuration: '{{ icinga__master_configuration
+                                           + icinga__master_group_configuration
+                                           + icinga__master_host_configuration }}'
                                                                    # ]]]
                                                                    # ]]]
 # Custom files managed with Icinga [[[
