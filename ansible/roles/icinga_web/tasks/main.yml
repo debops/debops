@@ -120,21 +120,21 @@
     owner: 'root'
     group: 'root'
     mode: '0600'
-  when: icinga_web__database_host == 'localhost' and
-      icinga_web__database_init|bool
+  when: icinga_web__database_init|bool
   no_log: True
 
 - name: Import Icinga Web database on installation into PostgreSQL
   postgresql_db:
     name: '{{ icinga_web__database_name }}'
     state: 'restore'
+    login_host: '{{ icinga_web__database_host }}'
+    login_user: '{{ icinga_web__database_user }}'
+    login_password: '{{ icinga_web__database_password }}'
     target: '{{ item }}'
   with_items:
     - '{{ icinga_web__database_schema }}'
     - '/tmp/icingaweb-initial-data.sql'
-  delegate_to: '{{ icinga_web__database_delegate_to }}'
   when: icinga_web__database_type == 'postgresql' and
-        icinga_web__database_host == 'localhost' and
         icinga_web__database_init|bool
 
   # Without this, Icinga Web cannot access the database, with error:
@@ -154,13 +154,14 @@
   mysql_db:
     name: '{{ icinga_web__database_name }}'
     state: 'import'
+    login_host: '{{ icinga_web__database_host }}'
+    login_user: '{{ icinga_web__database_user }}'
+    login_password: '{{ icinga_web__database_password }}'
     target: '{{ item }}'
   with_items:
     - '{{ icinga_web__database_schema }}'
     - '/tmp/icingaweb-initial-data.sql'
-  delegate_to: '{{ icinga_web__database_delegate_to }}'
   when: icinga_web__database_type == 'mariadb' and
-        icinga_web__database_host == 'localhost' and
         icinga_web__database_init|bool
 
 - name: Ensure that initial data schema is removed
