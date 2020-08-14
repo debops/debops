@@ -48,6 +48,21 @@ playbook directory.
 In case you use multiple `DebOps Contrib`_ roles, consider using the
 `DebOps Contrib playbooks`_.
 
+Hosting static files
+--------------------
+
+`Home Assistant supports hosting static files`__. The role configures the
+webserver to serve those files directly. Same as Home Assistant, no
+authentication for static files is provided!
+
+To avoid the risk of giving the webserver access the configuration directory
+under which the :file:`www` directory is normally stored, the role creates the
+:file:`www` directory one level above the configuration directory and creates a
+symlink where Home Assistant would read them to not break the application in
+any way.
+
+.. __: https://www.home-assistant.io/integrations/http/#hosting-files
+
 Ansible tags
 ------------
 
