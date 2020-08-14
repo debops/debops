@@ -1707,10 +1707,12 @@ icinga_web__mariadb__dependent_users:
 
   - database: '{{ icinga_web__database_name }}'
     user: '{{ icinga_web__database_user }}'
+    password: '{{ icinga_web__database_password }}'
     state: '{{ "present" if icinga_web__database_type == "mariadb" else "ignore" }}'
 
   - database: '{{ icinga_web__director_database_name }}'
     user: '{{ icinga_web__director_database_user }}'
+    password: '{{ icinga_web__director_database_password }}'
     state: '{{ "present"
                 if (icinga_web__director_enabled | bool and icinga_web__director_database_type == "mariadb")
                 else "ignore" }}'
