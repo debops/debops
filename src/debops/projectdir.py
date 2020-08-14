@@ -4,6 +4,7 @@
 # Copyright (C) 2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from .ansibleconfig import AnsibleConfig
 import os
 import pkgutil
 import jinja2
@@ -14,7 +15,8 @@ import platform
 
 class ProjectDir(object):
 
-    def __init__(self, path=os.getcwd(), project_type='legacy', create=False):
+    def __init__(self, path=os.getcwd(), project_type='legacy', create=False,
+                 refresh=False):
         self.path = os.path.abspath(path)
         self.project_type = project_type
 
@@ -29,19 +31,21 @@ class ProjectDir(object):
             # First let's make sure that we are not inside another project
             self._legacy_config_path = self._find_up_dir(self.path,
                                                          ['.debops.cfg'])
-            if self._legacy_config_path:
+            if self._legacy_config_path and not refresh:
                 raise IsADirectoryError('You are inside another '
                                         'DebOps project directory')
 
             # Let's make a new project
             if self.project_type == 'legacy':
-                self._create_legacy_project(self.path)
+                self.user_config = os.path.join(self.path, '.debops.cfg')
+                self._create_legacy_project(self.path, refresh=refresh)
 
         # Find the project again in case that it was just created
         self._legacy_config_path = self._find_up_dir(self.path,
                                                      ['.debops.cfg'])
         if self._legacy_config_path:
             self.path = os.path.dirname(self._legacy_config_path)
+            self.user_config = os.path.join(self.path, '.debops.cfg')
             self.project_type = 'legacy'
         else:
             self.project_type = None
@@ -71,10 +75,11 @@ class ProjectDir(object):
             with open(filename, "w") as fh:
                 fh.writelines(content)
 
-    def _create_legacy_project(self, path):
+    def _create_legacy_project(self, path, refresh=False):
         skel_dirs = (
             os.path.join("ansible", "inventory", "group_vars", "all"),
             os.path.join("ansible", "inventory", "host_vars"),
+            os.path.join("ansible", "collections", "ansible_collections"),
             os.path.join("ansible", "playbooks"),
             os.path.join("ansible", "roles"),
         )
@@ -153,8 +158,27 @@ class ProjectDir(object):
                              host_as_controller=host_as_controller,
                              hostname=socket.gethostname(),
                              fqdn=socket.getfqdn()))
-        print('Created new DebOps project in', path)
+
+        self.ansible_cfg = AnsibleConfig(
+                os.path.join(self.path, 'ansible.cfg'),
+                user_config=self.user_config,
+                project_type=self.project_type,
+                refresh=refresh)
+        self.ansible_cfg.write_config()
+        if refresh:
+            print('Refreshed DebOps project in', path)
+        else:
+            print('Created new DebOps project in', path)
 
     def status(self):
+        self.ansible_cfg = AnsibleConfig(
+                os.path.join(self.path, 'ansible.cfg'),
+                user_config=self.user_config,
+                project_type=self.project_type)
+        collections = self.ansible_cfg.get_option(
+                'defaults', 'collections_paths')
         print('Project type:', self.project_type)
         print('Project root:', self.path)
+        print('Ansible Collection paths:')
+        for path in collections.strip('"').split(':'):
+            print('   ', path)

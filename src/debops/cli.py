@@ -28,7 +28,8 @@ class Interpreter(object):
 
     def do_init(self, args):
         try:
-            project = ProjectDir(path=args.dir, create=True)
+            project = ProjectDir(path=args.dir, create=True,
+                                 refresh=args.refresh)
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError) as errmsg:
             print('Error:', errmsg)
@@ -43,7 +44,7 @@ class Interpreter(object):
     def do_status(self, args):
         try:
             project = ProjectDir()
-        except NotADirectoryError as errmsg:
+        except (IsADirectoryError, NotADirectoryError) as errmsg:
             print('Error:', errmsg)
             exit(1)
 

@@ -60,6 +60,9 @@ Commands:
         self.add_bool_argument(parser, 'git',
                                help='enable git support (default)',
                                no_help='disable git support')
+        parser.add_argument('--refresh', default=False,
+                            help='re-initialize existing configuration',
+                            action='store_true')
         parser.add_argument('dir', type=str, nargs='?', default=os.getcwd(),
                             help='path to the project directory')
         self.args = parser.parse_args(self.args[2:])
