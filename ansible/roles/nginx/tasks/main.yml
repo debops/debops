@@ -37,13 +37,14 @@
 - name: Check if nginx is installed
   stat:
     path: '/usr/sbin/nginx'
+  when: nginx__install_packages
   register: nginx_register_installed
 
 - name: Ensure base packages are installed
   package:
     name: '{{ q("flattened", nginx_base_packages) }}'
     state: 'present'
-  when: (nginx__deploy_state in [ 'present' ])
+  when: (nginx__deploy_state in [ 'present' ]) and (nginx__install_packages)
   register: nginx__register_packages_present
   until: nginx__register_packages_present is succeeded
 
@@ -52,6 +53,7 @@
     name: '{{ q("flattened", nginx__flavor_packages) }}'
     state: '{{ "present" if (nginx__deploy_state == "present") else "absent" }}'
   register: nginx__register_packages_flavor
+  when: nginx__install_packages
   until: nginx__register_packages_flavor is succeeded
 
 - name: Make sure that Ansible local facts directory is present
@@ -96,7 +98,7 @@
            --rename /etc/nginx/conf.d/default.conf
   args:
     creates: '/etc/nginx/conf.d/default.conf.dpkg-divert'
-  when: (nginx_flavor == 'nginx.org' and nginx__deploy_state in [ 'present' ])
+  when: (nginx_flavor == 'nginx.org') and (nginx__deploy_state in [ 'present' ]) and (nginx__install_packages)
 
 - include: 'passenger_config.yml'
   when: (nginx_flavor == 'passenger' and nginx__deploy_state in [ 'present' ])
@@ -105,8 +107,9 @@
   service:
     name: 'nginx'
     state: 'restarted'
-  when: (nginx_register_installed|d() and not nginx_register_installed.stat.exists and
-         nginx__deploy_state in [ 'present' ])
+  when: ((nginx_register_installed|d()) and
+         (nginx_register_installed.stat.exists is defined and not nginx_register_installed.stat.exists) and
+         (nginx__deploy_state in [ 'present' ]))
 
 - name: Get list of nameservers configured in /etc/resolv.conf
   shell: awk '$1=="nameserver" {if(/%/){sub(/[0-9a-fA-F:]+/, "[&]", $2)}; print $2}' /etc/resolv.conf
@@ -159,7 +162,7 @@
            --rename /etc/nginx/nginx.conf
   args:
     creates: '/etc/nginx/nginx.conf.dpkg-divert'
-  when: (nginx__deploy_state in [ 'present' ])
+  when: (nginx__deploy_state in [ 'present' ]) and (nginx__install_packages)
 
 - name: Setup /etc/nginx/nginx.conf
   template:

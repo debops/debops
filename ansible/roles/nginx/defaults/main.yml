@@ -54,6 +54,31 @@ nginx_host_allow: []
 nginx__deploy_state: 'present'
 
                                                                    # ]]]
+# .. envvar:: nginx__packages_installation [[[
+#
+# There is a deployment scenario possible where you install nginx packages from
+# sources or manually. This option allows you to omit nginx packages
+# installation by the role. Use with caution, as it can have unexpected
+# consequences. Notice: you must define ``nginx_default_tls_protocols``
+# manually, for example:
+#
+# ``nginx_default_tls_protocols: [ "TLSv1.2", "TLSv1.3" ]``
+#
+# Possible options:
+#
+# ``True``
+#   Default. Required packages will be installed.
+#
+# ``False``
+#   Installation of packages will be omitted.
+#
+#   .. warning:: Designed for expierenced devops only! Example use case includes
+#      a scenario where nginx binaries are prepared by
+#      https://virtubox.github.io/nginx-ee/ automation.
+#
+nginx__install_packages: True
+
+                                                                   # ]]]
 # .. envvar:: nginx_base_packages [[[
 #
 # List of Debian packages installed by this role
