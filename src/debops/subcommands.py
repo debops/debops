@@ -44,7 +44,7 @@ Commands:
         self.subcommand = parser.parse_args(self.args[1:2])
         self.command = self.subcommand.command
         if not hasattr(self, 'do_' + self.subcommand.command):
-            print('Unrecognized command')
+            print('Error: unrecognized command:', self.subcommand.command)
             parser.print_help()
             exit(1)
         getattr(self, 'do_' + self.subcommand.command)()
