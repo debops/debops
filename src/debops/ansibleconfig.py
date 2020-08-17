@@ -51,9 +51,9 @@ class AnsibleConfig(object):
         template_vars = {}
         template_vars['collections'] = [
                 '/usr/share/ansible/collections',
-                '~/.ansible/collections',
                 os.path.join(DEBOPS_PACKAGE_DATA, 'ansible', 'collections')
                 .replace(os.path.expanduser('~'), '~', 1),
+                '~/.ansible/collections',
                 'ansible/collections'
         ]
 
