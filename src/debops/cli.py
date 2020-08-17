@@ -6,6 +6,7 @@
 
 from .subcommands import Subcommands
 from .projectdir import ProjectDir
+from .ansibleplaybookrunner import AnsiblePlaybookRunner
 
 
 class Interpreter(object):
@@ -17,11 +18,8 @@ class Interpreter(object):
         if self.parsed_args.command == 'init':
             self.do_init(self.parsed_args.args)
 
-        elif self.parsed_args.command == 'run':
+        elif self.parsed_args.command in ['run', 'check']:
             self.do_run(self.parsed_args.args)
-
-        elif self.parsed_args.command == 'check':
-            self.do_check(self.parsed_args.args)
 
         elif self.parsed_args.command == 'status':
             self.do_status(self.parsed_args.args)
@@ -36,10 +34,18 @@ class Interpreter(object):
             exit(1)
 
     def do_run(self, args):
-        print('Running the Ansible playbooks')
+        try:
+            project = ProjectDir(path=args.project_dir)
+        except (IsADirectoryError, NotADirectoryError) as errmsg:
+            print('Error:', errmsg)
+            exit(1)
 
-    def do_check(self, args):
-        print('Running the playbooks in check mode')
+        runner = AnsiblePlaybookRunner(project, **vars(args))
+        if args.eval:
+            runner.eval()
+            exit()
+        else:
+            runner.execute()
 
     def do_status(self, args):
         try:

@@ -55,6 +55,11 @@ class ProjectDir(object):
             raise NotADirectoryError('DebOps project directory not found '
                                      'in ' + self.path)
 
+        self.ansible_cfg = AnsibleConfig(
+                os.path.join(self.path, 'ansible.cfg'),
+                user_config=self.user_config,
+                project_type=self.project_type)
+
     def _find_up_dir(self, path, filenames):
         path = os.path.abspath(path)
         last_path = None
