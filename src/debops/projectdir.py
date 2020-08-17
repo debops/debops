@@ -176,7 +176,7 @@ class ProjectDir(object):
                 user_config=self.user_config,
                 project_type=self.project_type)
         collections = self.ansible_cfg.get_option(
-                'defaults', 'collections_paths')
+                'collections_paths')
         print('Project type:', self.project_type)
         print('Project root:', self.path)
         print('Ansible Collection paths:')

@@ -96,7 +96,7 @@ class AnsibleConfig(object):
                 .decode('utf-8'), trim_blocks=True)
         self.config.read_string(template.render(template_vars))
 
-    def get_option(self, section, option):
+    def get_option(self, option, section='defaults'):
         return self.config.get(section, option)
 
     def write_config(self):
