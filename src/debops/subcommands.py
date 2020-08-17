@@ -20,6 +20,12 @@ class Subcommands(object):
 
     def __init__(self, args=None):
         self.args = args
+
+        self.global_parser = argparse.ArgumentParser(add_help=False)
+        self.global_parser.add_argument('--project-dir', type=str,
+                                        nargs='?', default=os.getcwd(),
+                                        help='path to the project directory')
+
         parser = argparse.ArgumentParser(
                 description="DebOps CLI",
                 usage='''debops <command> [<args>]
@@ -56,19 +62,21 @@ Commands:
     def do_init(self):
         parser = argparse.ArgumentParser(
                 description='initialize new project directory',
-                usage='debops init [<args>] [dir]')
+                usage='debops init [<args>] <project_dir>')
         self.add_bool_argument(parser, 'git',
                                help='enable git support (default)',
                                no_help='disable git support')
         parser.add_argument('--refresh', default=False,
                             help='re-initialize existing configuration',
                             action='store_true')
-        parser.add_argument('dir', type=str, nargs='?', default=os.getcwd(),
+        parser.add_argument('project_dir', type=str, nargs='?',
+                            default=os.getcwd(),
                             help='path to the project directory')
         self.args = parser.parse_args(self.args[2:])
 
     def do_status(self):
         parser = argparse.ArgumentParser(
+                parents=[self.global_parser],
                 description='display project information')
         self.args = parser.parse_args(self.args[2:])
 
