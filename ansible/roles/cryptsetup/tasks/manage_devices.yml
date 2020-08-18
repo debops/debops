@@ -295,11 +295,13 @@
 - name: Create LUKS header backup
   tags: [ 'role::cryptsetup:backup' ]
   shell: |
+    set -o nounset -o pipefail -o errexit &&
     rm -f {{ (cryptsetup__header_backup_remote_location + "/" + item.0.name + "_header_backup.raw") | quote }}
     cryptsetup luksHeaderBackup {{ item.0.ciphertext_block_device | quote }} \
       --header-backup-file {{ (cryptsetup__header_backup_remote_location + "/"
                                + item.0.name + "_header_backup.raw") | quote }}
   args:
+    executable: 'bash'
     warn: False
   changed_when: False
   when: ((item.0.backup_header|d(cryptsetup__header_backup) | bool) and
