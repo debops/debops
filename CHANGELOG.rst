@@ -64,6 +64,7 @@ General
 
 - The missing ``mode`` parameter which specifies file/directory permissions has
   been added to various roles to satisfy :command:`ansible-lint` requirements.
+  Nested Jinja patterns and required ``pipefail`` errors have also been fixed.
 
 :ref:`debops.ifupdown` role
 '''''''''''''''''''''''''''
