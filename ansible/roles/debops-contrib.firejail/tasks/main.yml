@@ -94,6 +94,7 @@
   file:
     path: '{{ firejail__system_local_bin_path }}'
     state: 'directory'
+    mode: '0755'
 
 - name: Create/remove symlinks for sandboxed programs
   file:
@@ -122,6 +123,7 @@
                ) else "absent" }}'
     owner: 'root'
     group: 'root'
+    mode: '0755'
     force: '{{ ansible_check_mode|d(omit) }}'
   when: not (item in firejail__combined_program_sandboxes and firejail__combined_program_sandboxes[item].system_wide_sandboxed|d("present") in ["ignored"])
   with_items: '{{ firejail__combined_program_sandboxes.keys() | list | union(firejail__fact_system_wide_profiles) }}'
@@ -216,6 +218,7 @@
   file:
     path: '~/.local/share/applications'
     state: 'directory'
+    mode: '0755'
   become: True
   become_user: '{{ item.name }}'
   no_log: '{{ not (firejail__ansible_log | bool) }}'

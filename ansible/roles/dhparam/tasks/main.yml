@@ -38,6 +38,7 @@
   file:
     path: '{{ dhparam__source_path }}'
     state: 'directory'
+    mode: '0755'
   delegate_to: 'localhost'
   become: False
   run_once: True
@@ -85,6 +86,7 @@
     dest: '{{ dhparam__path + "/params/" + dhparam__set_prefix + item + "/" }}'
     owner: 'root'
     group: 'root'
+    mode: '0644'
     force: False
   when: dhparam__deploy_state in ['present']
   with_sequence: 'start=0 count={{ dhparam__sets }}'
@@ -96,6 +98,7 @@
              + dhparam__prefix + dhparam__default_length + dhparam__suffix }}'
     path: '{{ dhparam__path + "/" + dhparam__set_prefix + item }}'
     state: 'link'
+    mode: '0644'
   when: dhparam__deploy_state in ['present']
   with_sequence: 'start=0 count={{ dhparam__sets }}'
 

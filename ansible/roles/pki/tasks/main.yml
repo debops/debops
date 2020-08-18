@@ -394,6 +394,7 @@
         dest: '/etc/pki/realms/{{ item.0.name }}/{{ item.1 }}/'
         owner: 'root'
         group: 'root'
+        mode: '0644'
       with_nested:
         - '{{ pki_realms + pki_group_realms + pki_host_realms + pki_default_realms + pki_dependent_realms }}'
         - [ 'external', 'internal' ]
@@ -425,6 +426,7 @@
         dest: '/etc/pki/realms/{{ item.0.name }}/external/'
         owner: 'root'
         group: 'root'
+        mode: '0644'
         force: False
       with_nested:
         - '{{ pki_group_realms + pki_default_realms }}'
@@ -440,6 +442,7 @@
         dest: '/etc/pki/realms/{{ item.name }}/external/'
         owner: 'root'
         group: 'root'
+        mode: '0644'
         force: False
       with_items:
         - '{{ pki_realms + pki_default_realms }}'
@@ -463,6 +466,7 @@
         dest: '/usr/local/share/ca-certificates/pki/'
         owner: 'root'
         group: 'root'
+        mode: '0644'
         force: False
       with_items: '{{ pki_inventory_groups }}'
       notify: [ 'Regenerate ca-certificates.crt' ]
@@ -474,6 +478,7 @@
         dest: '/usr/local/share/ca-certificates/pki/'
         owner: 'root'
         group: 'root'
+        mode: '0644'
         force: '{{ pki_system_ca_certificates_download_all_hosts_force|bool }}'
       notify: [ 'Regenerate ca-certificates.crt' ]
       when: pki_system_ca_certificates_download_all_hosts|d(pki_enabled) | bool

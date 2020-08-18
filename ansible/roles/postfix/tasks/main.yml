@@ -123,6 +123,7 @@
   template:
     src: '{{ "secret/postfix/dependent_config/inventory_hostname/" + item + ".j2" }}'
     dest: '{{ secret + "/postfix/dependent_config/" + inventory_hostname + "/" + item }}'
+    mode: '0644'
   become: False
   delegate_to: 'localhost'
   with_items: [ 'maincf.json', 'mastercf.json' ]

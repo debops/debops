@@ -126,6 +126,7 @@
     src: '{{ ("../features-available/" + item.feature_name + ".conf")
              if (item.feature_state|d("present") == "present") else omit }}'
     state: '{{ "link" if item.feature_state|d("present") == "present" else "absent" }}'
+    mode: '0644'
     force: '{{ True if ansible_check_mode|bool else omit }}'
   with_items: '{{ icinga__combined_configuration | parse_kv_items }}'
   notify: [ 'Check icinga2 configuration and restart' ]
@@ -152,6 +153,7 @@
   template:
     src: 'secret/icinga/dependent_config/inventory_hostname/configuration.json.j2'
     dest: '{{ secret + "/icinga/dependent_config/" + inventory_hostname + "/configuration.json" }}'
+    mode: '0644'
   become: False
   delegate_to: 'localhost'
 

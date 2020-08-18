@@ -10,5 +10,6 @@
     dest: '/etc/snapper/configs/{{ snapshot_snapper__volume.name }}'
     regexp: '^{{ item.key }}='
     line: '{{ item.key }}="{{ item.value }}"'
+    mode: '0644'
   with_dict: '{{ (snapshot_snapper__templates_combined[snapshot_snapper__volume.template|d("default")]|d({}))
                  | combine(snapshot_snapper__volume.config|d({})) }}'

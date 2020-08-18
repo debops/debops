@@ -43,6 +43,7 @@
     path: '/etc/localtime'
     src: '/usr/share/zoneinfo/{{ tzdata__timezone }}'
     state: 'link'
+    mode: '0644'
   when: (tzdata__enabled|bool and
          tzdata__register_etc_timezone is changed and
          tzdata__register_etc_localtime.stat.islnk|bool)
