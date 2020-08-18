@@ -72,8 +72,8 @@
 
 - name: Install gitlab-runner packages
   apt:
-    name: "{{ query('flattened', ['{{ gitlab_runner__base_packages }}',
-                                  '{{ gitlab_runner__packages }}']) }}"
+    name: "{{ query('flattened', gitlab_runner__base_packages +
+                                 gitlab_runner__packages) }}"
     state: 'present'
     install_recommends: False
   register: gitlab_runner__register_packages
