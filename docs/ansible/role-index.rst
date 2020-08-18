@@ -249,6 +249,7 @@ Networking
 - :ref:`debops.avahi`
 - :ref:`debops.dhcp_probe`
 - :ref:`debops.dhcpd`
+- :ref:`debops.dhcrelay`
 - :ref:`debops.dnsmasq`
 - :ref:`debops.freeradius`
 - :ref:`debops.ifupdown`

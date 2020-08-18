@@ -15,6 +15,25 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+Splitting up debops.dhcpd
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- A new role has been written for the ISC DHCP Relay Agent:
+  :ref:`debops.dhcrelay`. dhcrelay was originally part of the
+  :ref:`debops.dhcpd` role but will be removed on the next role update. You will
+  need to update your Ansible inventory by adding your dhcrelay hosts to the new
+  ``debops_service_dhcrelay`` group. Inventory variable changes are as follows:
+
+  +----------------------------+--------------------------------+---------------+
+  | Old variable name          | New variable name              | Changed value |
+  +============================+================================+===============+
+  | ``dhcpd_relay_servers``    | :envvar:`dhcrelay__servers`    | No            |
+  +----------------------------+--------------------------------+---------------+
+  | ``dhcpd_relay_interfaces`` | :envvar:`dhcrelay__interfaces` | No            |
+  +----------------------------+--------------------------------+---------------+
+  | ``dhcpd_relay_options``    | :envvar:`dhcrelay__options`    | Yes           |
+  +----------------------------+--------------------------------+---------------+
+
 Changes in the OpenLDAP support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

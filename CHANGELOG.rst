@@ -28,6 +28,10 @@ Added
 New DebOps roles
 ''''''''''''''''
 
+- The :ref:`debops.dhcrelay` role can be used to manage the ISC DHCP Relay
+  Agent, which forwards DHCP traffic between networks. This role replaces the
+  dhcrelay functionality in :ref:`debops.dhcpd`.
+
 - The :ref:`debops.global_handlers` Ansible role provides a central place to
   maintain handlers for other Ansible roles. Keeping them centralized allows
   Ansible roles to use handlers from different roles without including them
