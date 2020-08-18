@@ -13,7 +13,7 @@ Example inventory
 The ``debops.libuser`` Ansible role is included by default in the
 :file:`common.yml` DebOps playbook; you don't need to do anything to have it
 executed. It's also included in the :file:`bootstrap.yml` and the
-:file:bootstrap-ldap.yml` playbooks to help create the local sysadmin accounts
+:file:`bootstrap-ldap.yml` playbooks to help create the local sysadmin accounts
 during host bootstrapping.
 
 If you don’t want to let ``debops.libuser`` manage user accounts, you can
