@@ -70,6 +70,7 @@
       file:
         dest: '{{ (golang__gosrc + "/" + url_item.dest) | dirname }}'
         state: 'directory'
+        mode: '0755'
       loop: '{{ build.url }}'
       loop_control:
         loop_var: 'url_item'
@@ -91,6 +92,7 @@
         dest: '{{ golang__gosrc + "/" + (url_item.unarchive_dest | d(url_item.dest | dirname)) }}'
         remote_src: True
         creates: '{{ golang__gosrc + "/" + url_item.unarchive_creates }}'
+        mode: 'u=rwX,g=rwX,o=rX'
       loop: '{{ build.url }}'
       loop_control:
         loop_var: 'url_item'

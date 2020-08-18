@@ -123,6 +123,7 @@
     dest: '/etc/grub.d/10_linux'
     regexp: "^CLASS=(?:\\$\\{[A-Z_]+:-)?([\"'][\\w _-]+)([\"'])\\}?"
     replace: 'CLASS=${GRUB_LINUX_MENUENTRY_CLASS:-\1 ${GRUB_LINUX_MENUENTRY_CLASS_ADDITIONAL:-}\2}'
+    mode: '0755'
   notify: [ 'Update GRUB' ]
   when: (grub__combined_users|length > 0)
 

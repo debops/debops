@@ -35,6 +35,7 @@
     path: '/etc/postgresql-common/createcluster.conf'
     regexp: '^data_directory\s+='
     line: "data_directory = '{{ postgresql_server__data_directory }}/%v/%c'"
+    mode: '0644'
   when: postgresql_server__data_directory != '/var/lib/postgresql'
 
 - name: Make sure that custom PostgreSQL data directory exists

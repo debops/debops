@@ -41,6 +41,7 @@
              + item.netboot_version + (item.netboot_subdir | d("")) + "/netboot.tar.gz" }}'
     dest: '{{ ipxe__debian_netboot_pxe_root + "/" + item.release + "/" + item.architecture + "/"
               + item.netboot_version + (item.netboot_subdir | d("")) }}'
+    mode: 'u=rwX,g=rwX,o=rX'
     remote_src: True
     creates: '{{ ipxe__debian_netboot_pxe_root + "/" + item.release + "/" + item.architecture + "/"
                  + item.netboot_version + (item.netboot_subdir | d("")) + "/pxelinux.0" }}'
@@ -54,6 +55,7 @@
     path: '{{ ipxe__debian_netboot_pxe_root + "/" + item.release + "/" + item.architecture + "/current" }}'
     src: '{{ item.netboot_version }}'
     state: 'link'
+    mode: '0775'
   loop: '{{ ipxe__debian_netboot_combined_release_map | parse_kv_items }}'
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
         item.release in ipxe__debian_netboot_releases and item.architecture in ipxe__debian_netboot_architectures and

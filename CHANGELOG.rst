@@ -59,6 +59,12 @@ LDAP
 Fixed
 ~~~~~
 
+General
+'''''''
+
+- The missing ``mode`` parameter which specifies file/directory permissions has
+  been added to various roles to satisfy :command:`ansible-lint` requirements.
+
 :ref:`debops.ifupdown` role
 '''''''''''''''''''''''''''
 

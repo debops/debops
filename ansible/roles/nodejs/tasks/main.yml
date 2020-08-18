@@ -37,6 +37,7 @@
     path: '/usr/local/bin/yarn'
     src: '{{ omit if nodejs__yarn_upstream|bool else "/usr/bin/yarnpkg" }}'
     state: '{{ "absent" if nodejs__yarn_upstream|bool else "link" }}'
+    mode: '0755'
 
 - name: Install NPM packages
   npm:

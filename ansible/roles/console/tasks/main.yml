@@ -34,6 +34,7 @@
     regexp: '^{{ console_serial_inittab }}'
     state: 'present'
     line: '{{ console_serial_inittab }}'
+    mode: '0644'
   when: ((console_serial is defined and console_serial) and
          ((console_register_inittab is defined and console_register_inittab) and
           console_register_inittab.stat.exists))
@@ -45,6 +46,7 @@
     regexp: 'FSCKFIX='
     state: 'present'
     line: 'FSCKFIX={{ console_fsckfix }}'
+    mode: '0644'
   when: ansible_distribution_release in console_fsckfix_releases
 
 - include: filesystem_mount.yml

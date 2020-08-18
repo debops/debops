@@ -278,6 +278,7 @@
   file:
     path: '{{ item.mount | d(cryptsetup__mountpoint_parent_directory + "/" + item.name) }}'
     state: 'directory'
+    mode: '0755'
   when: (item.state|d(cryptsetup__state) in [ 'present' ] and (item.manage_filesystem|d(True) | bool))
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 

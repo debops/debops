@@ -30,6 +30,7 @@
     regexp: '^(enabled  = )true'
     line: '\1false'
     backrefs: yes
+    mode: '0644'
   notify: [ 'Reload fail2ban jails' ]
 
 - name: Install custom fail2ban rule files
@@ -38,6 +39,7 @@
     dest: '/etc/fail2ban/'
     owner: 'root'
     group: 'root'
+    mode: 'u=rwX,g=rX,o=rX'
   notify: [ 'Reload fail2ban jails' ]
 
 - name: Configure custom fail2ban actions

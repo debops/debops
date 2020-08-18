@@ -246,6 +246,7 @@
     line: '{{ item.forward if item.forward is string else item.forward | join(", ") }}'
     state: '{{ item.forward_state | d("present") }}'
     create: True
+    mode: '0644'
   become: True
   become_user: '{{ (item.prefix | d(system_users__prefix)) + item.name }}'
   loop: '{{ system_users__combined_accounts | parse_kv_items }}'

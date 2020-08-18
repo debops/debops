@@ -29,6 +29,7 @@
     path: '/etc/icinga2/features-enabled/{{ icinga_db__feature }}.conf'
     src: '../features-available/{{ icinga_db__feature }}.conf'
     state: 'link'
+    mode: '0600'
   notify: [ 'Check icinga2 configuration and restart' ]
   when: icinga_db__icinga_installed|bool and
         icinga_db__feature != 'unknown'

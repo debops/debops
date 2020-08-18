@@ -22,6 +22,7 @@
     regexp: '^InitiatorName=iqn'
     line:   'InitiatorName={{ iscsi__initiator_name }}'
     state:  'present'
+    mode: '0600'
   register: iscsi__register_initiatorname
 
 - name: Configure iSCSI discovery authentication
@@ -30,6 +31,7 @@
     regexp:  '{{ (item.key | replace(".","\.")) + "\s=\s" }}'
     line:    '{{ item.key + " = " + item.value }}'
     state:   'present'
+    mode:    '0600'
   with_dict: '{{ iscsi__default_options }}'
   when: item|d(False) and item.value
   no_log: True

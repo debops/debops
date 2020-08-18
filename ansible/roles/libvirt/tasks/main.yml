@@ -16,12 +16,14 @@
   file:
     path: '~/.config/libvirt'
     state: 'directory'
+    mode: '0755'
   become: False
 
 - name: Generate libvirt.conf configuration
   template:
     src: 'home/config/libvirt/libvirt.conf.j2'
     dest: '~/.config/libvirt/libvirt.conf'
+    mode: '0644'
   become: False
 
 - name: Get list of groups admin account belongs to

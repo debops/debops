@@ -103,6 +103,7 @@
   template:
     src: 'etc/systemd/system/{{ item }}.j2'
     dest: '/etc/systemd/system/{{ item }}'
+    mode: '0644'
   with_items:
     - 'gitlab.slice'
     - 'gitlab-mailroom.service'
@@ -120,6 +121,7 @@
   template:
     src: 'etc/systemd/system/gitlab-pages.service.j2'
     dest: '/etc/systemd/system/gitlab-pages.service'
+    mode: '0644'
   register: gitlab__register_pages_systemd_services
   when: (gitlab_enable_pages and
          gitlab_register_ce_checkout is changed and

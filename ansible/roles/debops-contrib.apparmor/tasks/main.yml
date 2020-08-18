@@ -31,6 +31,7 @@
     regexp: '{{ item.regexp }}'
     line: '{{ item.line }}'
     insertbefore: '{{ item.insertbefore }}'
+    mode: '0644'
   when: ((apparmor__manage_grub|d() | bool) and (apparmor__enabled|d() | bool))
   with_items:
     - regexp: '^GRUB_CMDLINE_LINUX='
@@ -47,6 +48,7 @@
     regexp: '^GRUB_CMDLINE_LINUX="(.*?)\$GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR(.*)"'
     line: 'GRUB_CMDLINE_LINUX="\1 \2"'
     backrefs: yes
+    mode: '0644'
   when: (apparmor__manage_grub and not (apparmor__enabled|d() | bool))
   notify: [ 'Update grub' ]
 
@@ -115,6 +117,7 @@
   file:
     path: '/etc/apparmor.d/tunables/home.d'
     state: 'directory'
+    mode: '0755'
 
 - name: Configure tunables
   template:

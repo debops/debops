@@ -60,13 +60,16 @@
   file:
     path: '{{ item.path }}'
     src: '{{ item.src }}'
+    mode: '{{ item.mode }}'
     state: 'link'
   loop:
     - path: '{{ minio__tls_certs_dir + "/private.key" }}'
       src: '{{ minio__tls_private_key }}'
+      mode: '0640'
 
     - path: '{{ minio__tls_certs_dir + "/public.crt" }}'
       src: '{{ minio__tls_public_crt }}'
+      mode: '0644'
   when: minio__pki_enabled|bool
 
 - name: Install systemd configuration files

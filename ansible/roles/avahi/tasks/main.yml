@@ -80,6 +80,7 @@
                               if item.value.endswith("." + avahi__domain)
                               else (item.value + "." + avahi__domain)) }}'
     state: 'present'
+    mode: '0644'
   with_dict: '{{ avahi__hosts | combine(avahi__group_hosts) | combine(avahi__host_hosts) }}'
   when: item.key|d() and item.value|d()
 

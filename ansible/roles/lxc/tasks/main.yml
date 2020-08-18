@@ -335,6 +335,7 @@
     line: 'lxc.mount = /var/lib/lxc/{{ item.name | d(item) }}/fstab'
     insertafter: '^lxc\.rootfs\.backend\s+=\s+'
     state: 'present'
+    mode: '0644'
   loop: '{{ lxc__containers }}'
   when: ansible_local|d() and ansible_local.lxc|d() and
         (item.name | d(item)) not in ansible_local.lxc.containers|d() and

@@ -23,6 +23,7 @@
     regexp: '^# Provides:\s+fcgiwrap.*$'
     line: '# Provides:          fcgiwrap-{{ item.name }}'
     state: 'present'
+    mode: '0755'
   with_items: '{{ fcgiwrap__instances }}'
 
 - name: Modify fcgiwrap instance init script (name)
@@ -31,6 +32,7 @@
     regexp: '^NAME="fcgiwrap.*"$'
     line: 'NAME="fcgiwrap-{{ item.name }}"'
     state: 'present'
+    mode: '0755'
   with_items: '{{ fcgiwrap__instances }}'
 
 - name: Enable fcgiwrap instance init script

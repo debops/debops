@@ -28,5 +28,6 @@
     path: '/etc/ldap/schema/{{ item | replace("rfc2307bis", "nis") }}'
     src: '{{ (("fusiondirectory-schema" in slapd__rfc2307bis_packages)
               | ternary("fusiondirectory", "gosa")) + "/" + item }}'
+    mode: '0644'
   loop: [ 'rfc2307bis.schema', 'rfc2307bis.ldif' ]
   when: not ansible_check_mode|bool

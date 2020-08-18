@@ -48,6 +48,7 @@
     regexp: '^{{ item }}$'
     line: '{{ item }}'
     state: 'present'
+    mode: '0644'
   with_items: '{{ tinc__modprobe_modules }}'
   when: (tinc__modprobe|bool and ansible_local|d() and ansible_local.cap12s|d() and
          (not ansible_local.cap12s.enabled | bool or

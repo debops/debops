@@ -37,6 +37,7 @@
     state: '{{ "present"
                if item.value.cname_state|d(item.value.state | d("present")) != "absent"
                else "absent" }}'
+    mode: '0644'
   with_dict: '{{ avahi__combined_services }}'
   register: avahi__register_aliases
   when: item.value.cname|d()

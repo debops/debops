@@ -60,6 +60,7 @@
     backrefs: yes
     regexp: '^(# )?PRUNENAMES=(".*)"$'
     line: 'PRUNENAMES=\2 {{ snapshot_snapper__directory }}"'
+    mode: '0644'
   when: snapshot_snapper__register_updatedb_configured.rc != 0
 # .. ]]]
 
@@ -114,6 +115,7 @@
            | map(attribute="path")
            | map("replace", "/etc/snapper/configs/", "")
            | join(" ") }}"'
+    mode: '0644'
   when: (snapshot_snapper__auto_reinit|bool)
   tags: [ 'role::snapshot_snapper:reinit' ]
 # .. ]]]

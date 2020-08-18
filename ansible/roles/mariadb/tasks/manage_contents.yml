@@ -177,6 +177,7 @@
   file:
     path: '{{ item.0.creds_path | regex_replace("^(.*/).*$", "\\1") }}'
     state: 'directory'
+    mode: '{{ item.0.mode | d("0755") }}'
   with_together:
     - '{{ mariadb__users + lookup("flattened", mariadb__dependent_users, wantlist=True) + mariadb_users|d([]) }}'
     - '{{ mariadb__register_create_users.results }}'

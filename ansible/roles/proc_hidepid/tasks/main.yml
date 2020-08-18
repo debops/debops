@@ -56,6 +56,7 @@
     line: 'mount -o remount,hidepid={{ proc_hidepid__level }},gid={{ proc_hidepid__group }} /proc'
     insertbefore: 'exit 0'
     state: 'present'
+    mode: '0755'
   when: (proc_hidepid__enabled|bool and proc_hidepid__remount|bool and
          (ansible_distribution in [ 'Ubuntu' ] and
           ansible_distribution_release in [ 'trusty' ]))

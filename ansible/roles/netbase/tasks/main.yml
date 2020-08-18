@@ -57,6 +57,7 @@
                  if (item.value is string)
                  else ((item.value|d()) | selectattr('name', 'defined') | map(attribute='name') | list | join(' ')) }}"
     state:   '{{ "present" if item.value|d() else "absent" }}'
+    mode:    '0644'
   loop: '{{ netbase__combined_hosts | parse_kv_config }}'
   loop_control:
     label: '{{ {item.name: (item.value|d([])) | selectattr("name", "defined") | map(attribute="name") | list} }}'
@@ -69,6 +70,7 @@
     regexp:  '^{{ item.key | replace(".","\.") }}\s+'
     line:    "{{ item.key }}\t{{ item.value if (item.value is string) else (item.value|d() | join(' ')) }}"
     state:   '{{ "present" if item.value|d() else "absent" }}'
+    mode:    '0644'
   with_dict: '{{ netbase__networks | combine(netbase__group_networks, netbase__host_networks) }}'
   register: netbase__register_networks
   when: netbase__enabled|bool

@@ -235,6 +235,7 @@
     create: True
     owner: '{{ item.name if ((item.chroot|d())|bool) else omit }}'
     group: '{{ (item.group | d(item.name)) if ((item.chroot|d())|bool) else omit }}'
+    mode: '0644'
   become: True
   become_user: '{{ "root" if ((item.chroot|d())|bool) else item.name }}'
   loop: '{{ users__combined_accounts | parse_kv_items }}'

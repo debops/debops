@@ -116,6 +116,7 @@
     state: 'link'
     owner: '{{ item.owner | d(freeradius__user) }}'
     group: '{{ item.group | d(freeradius__group) }}'
+    mode:  '{{ item.mode  | d("0640") }}'
   with_items: '{{ freeradius__combined_configuration | parse_kv_items }}'
   notify: [ 'Check freeradius configuration and restart' ]
   when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and

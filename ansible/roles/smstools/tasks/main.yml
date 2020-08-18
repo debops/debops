@@ -81,6 +81,7 @@
   lineinfile: dest=/etc/rc.local state=present insertbefore='^exit 0'
               regexp='^/usr/local/lib/smstools/fix-device-permissions'
               line='/usr/local/lib/smstools/fix-device-permissions'
+              mode='0755'
   register: smstools_register_fixpermissions
   when: (ansible_virtualization_type is defined and ansible_virtualization_type == 'openvz') and
         (ansible_virtualization_role is defined and ansible_virtualization_role == 'guest')

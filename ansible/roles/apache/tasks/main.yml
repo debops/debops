@@ -84,6 +84,7 @@
   file:
     path: '{{ apache__config_path + "/conf-enabled/" + item.key + ".conf" }}'
     src: '../conf-available/{{ item.key }}.conf'
+    mode: '0644'
     force: '{{ ansible_check_mode|d() | bool }}'
     state: '{{ (((item.value.enabled|d(True)
                   if (item.value is mapping)

@@ -163,6 +163,7 @@
         src: '{{ hashicorp__src + "/" + item + "/" + hashicorp__combined_version_map[item] + "/" +
                  item + "_" + hashicorp__combined_version_map[item] + "_" + hashicorp__tar_suffix }}'
         dest: '{{ hashicorp__lib + "/" + item + "/" + hashicorp__combined_version_map[item] }}'
+        mode: 'u=rwX,g=rwX,o=rX'
         creates: '{{ hashicorp__lib + "/" + item + "/" + hashicorp__combined_version_map[item] + "/" +
                      ((hashicorp__combined_binary_map[item]
                        if hashicorp__combined_binary_map[item] is string
@@ -178,6 +179,7 @@
         src: '{{ hashicorp__src + "/" + item + "/" + hashicorp__combined_version_map[item] + "/" +
                  item + "_" + hashicorp__combined_version_map[item] + "_" + hashicorp__consul_webui_suffix }}'
         dest: '{{ hashicorp__lib + "/" + item + "/" + hashicorp__combined_version_map[item] + "/web_ui" + "/" }}'
+        mode: 'u=rwX,g=rwX,o=rX'
         creates: '{{ hashicorp__lib + "/" + item + "/"
                      + hashicorp__combined_version_map[item] + "/web_ui/index.html" }}'
       with_items: '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'

@@ -91,6 +91,7 @@
     path: '{{ docker_server__virtualenv_python_symlink }}'
     src:  '{{ docker_server__virtualenv_python_interpreter }}'
     state: 'link'
+    mode: '0755'
   when: docker_server__install_virtualenv
 
 - name: Symlink selected Python scripts to /usr/local/bin
@@ -98,6 +99,7 @@
     path: '{{ item.path }}'
     src: '{{ item.src }}'
     state: 'link'
+    mode: '0755'
   with_flattened:
     - '{{ docker_server__default_pip_packages }}'
     - '{{ docker_server__pip_packages }}'
