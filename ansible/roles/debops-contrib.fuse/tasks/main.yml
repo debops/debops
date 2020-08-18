@@ -19,6 +19,7 @@
   template:
     src: 'etc/fuse.conf.j2'
     dest: '/etc/fuse.conf'
+    mode: '0644'
 
 - name: Ensure fuse system group is present
   group:
@@ -40,6 +41,7 @@
   template:
     src: 'etc/udev/rules.d/fuse.rules.j2'
     dest: '/etc/udev/rules.d/99-fuse.rules'
+    mode: '0644'
   when: fuse_restrict_access | bool
 
 - name: Ensure FUSE permissions are applied immediately

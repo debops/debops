@@ -64,6 +64,10 @@ Each base directory is defined as a YAML dictionary with specific parameters:
   Required. An absolute path of the base directory to create. The path needs to
   start with the ``/`` character, otherwise it will not be created by the role.
 
+``mode``
+  Optional. Specify the permissions of the base directory. If not specified,
+  ``0755`` will be used by default.
+
 ``state``
   Optional. If not specified or ``present``, the path will be created by the
   role. If ``absent``, the role will not create this path (existing paths are

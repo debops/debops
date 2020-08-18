@@ -40,6 +40,7 @@
               ) }}'
     owner: '{{ item.owner | d(nginx_webroot_owner) }}'
     group: '{{ item.group | d(item.owner | d(nginx_webroot_group)) }}'
+    mode:  '0644'
     force: '{{ item.welcome_force|d() | bool }}'
   with_flattened:
     - '{{ nginx__servers }}'
@@ -67,6 +68,7 @@
               ) }}'
     owner: '{{ item.owner | d(nginx_webroot_owner) }}'
     group: '{{ item.group | d(item.owner | d(nginx_webroot_group)) }}'
+    mode:  '0644'
     force: '{{ item.welcome_force|d() | bool }}'
   with_flattened:
     - '{{ nginx__servers }}'

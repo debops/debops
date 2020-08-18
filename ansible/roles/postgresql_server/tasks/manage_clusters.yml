@@ -179,6 +179,7 @@
                                        + (item.version | d(postgresql_server__version)) + "/" + item.name))
               + "/root.crt" }}'
     state: 'link'
+    mode: '0644'
   with_flattened:
     - '{{ postgresql_server__clusters }}'
   when: ((postgresql_server__pki|d() and postgresql_server__pki | bool) and
@@ -194,6 +195,7 @@
                                        + (item.version | d(postgresql_server__version)) + "/" + item.name))
               + "/server.crt" }}'
     state: 'link'
+    mode: '0644'
   with_flattened:
     - '{{ postgresql_server__clusters }}'
   when: ((postgresql_server__pki|d() and postgresql_server__pki | bool) and
@@ -209,6 +211,7 @@
                                        + (item.version | d(postgresql_server__version)) + "/" + item.name))
               + "/server.key" }}'
     state: 'link'
+    mode: '0640'
   with_flattened:
     - '{{ postgresql_server__clusters }}'
   when: ((postgresql_server__pki|d() and postgresql_server__pki | bool) and
