@@ -1,328 +1,81 @@
-{# Copyright (C) 2014-2018 Maciej Delmanowski <drybjed@gmail.com>
- # Copyright (C) 2014-2018 DebOps <https://debops.org/>
- # SPDX-License-Identifier: GPL-3.0-only
+{# Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+ # Copyright (C) 2020 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
  #}
-{% macro print_class(class) %}
-{% if class.comment is defined and class.comment %}
-# {{ class.comment }}
-{% endif %}
-class "{{ class.class }}" {
-{% if class.options is defined and class.options %}
-{{ class.options | indent(8,true) }}
-{% endif %}
-{% if class.include is defined and class.include %}
-        include "{{ class.include }}";
-{% endif %}
-}
-{% if class.subclass is defined and class.subclass %}
-
-{% for key, value in class.subclass.items() %}
-{% if value is defined and value %}
-subclass "{{ class.class }}" "{{ key }}" {
-{{ value | indent(8,true) }}
-}
-
-{% else %}
-subclass "{{ class.class }}" {{ key }};
-{% endif %}
-{% endfor %}
-{% endif %}
-{% endmacro %}
-{% macro print_group(group) %}
-{% if group.comment is defined and group.comment %}
-# {{ group.comment }}
-{% endif %}
-group {
-{% if group.options is defined and group.options %}
-{{ group.options | indent(8,true) }}
-{% endif %}
-{% if group.include is defined and group.include %}
-{% if group.include is string %}
-        include "{{ group.include }}";
-{% else %}
-{% for filename in group.include %}
-        include "{{ filename }}";
-{% endfor %}
-{% endif %}
-{% endif %}
-{% if group.groups is defined and group.groups %}
-{% for group in group.groups %}
-{{ print_group(group) | indent(8, true) }}
-{% endfor %}
-{% endif %}
-{% if group.subnets is defined and group.subnets %}
-{% for subnet in group.subnets %}
-{{ print_subnet(subnet) | indent(8, true) }}
-{% endfor %}
-{% endif %}
-{% if group.hosts is defined and group.hosts %}
-{{ print_hosts(group.hosts) | indent(8, true) }}
-{% endif %}
-}
-{% endmacro %}
-{% macro print_subnet(subnet) %}
-{% if subnet.comment is defined and subnet.comment %}
-# {{ subnet.comment }}
-{% endif %}
-{% if dhcpd_ipversion is defined and dhcpd_ipversion == '6' %}
-subnet6 {{ subnet.subnet | ipaddr('network') + '/' + subnet.subnet | ipaddr('prefix') | string }} {
-{% else %}
-{% if (subnet.netmask is defined and (subnet.subnet + '/' + subnet.netmask) | ipaddr('cidr') | ipaddr('network')) %}
-subnet {{ (subnet.subnet + '/' + subnet.netmask) | ipaddr('cidr') | ipaddr('network') }} netmask {{ subnet.netmask }} {
-{% elif subnet.subnet | ipaddr('cidr') | ipaddr('network') %}
-subnet {{ subnet.subnet | ipaddr('cidr') | ipaddr('network') }} netmask {{ subnet.subnet | ipaddr('netmask') }} {
-{% else %}
-subnet {{ subnet.subnet | ipaddr('cidr') | ipaddr('address') }} netmask 255.255.255.255 {
-{% endif %}
-{% endif %}
-{% if subnet.routers is defined and subnet.routers %}
-{% if subnet.routers is string %}
-        option routers {{ subnet.routers }};
-{% else %}
-        option routers {{ subnet.routers | join(', ') }};
-{% endif %}
-{% endif %}
-{% if subnet.options is defined and subnet.options %}
-{{ subnet.options | indent(8,true) }}
-{% endif %}
-{% if subnet.include is defined and subnet.include %}
-        include "{{ subnet.include }}";
-{% endif %}
-{% if subnet.pools is defined and subnet.pools %}
-{% for pool in subnet.pools %}
-        pool {
-{% if pool.comment is defined and pool.comment %}
-                # {{ pool.comment }}
-{% endif %}
-{% if dhcpd_ipversion is defined and dhcpd_ipversion == '6' %}
-                range6 {{ pool.range }};
-{% else %}
-                range {{ pool.range }};
-{% endif %}
-{% if pool.options is defined and pool.options %}
-{{ pool.options | indent(16,true) }}
-{% endif %}
-{% if pool.include is defined and pool.include %}
-        include "{{ pool.include }}";
-{% endif %}
-        }
-{% endfor %}
-{% endif %}
-{% if subnet.hosts is defined and subnet.hosts %}
-{{ print_hosts(subnet.hosts) | indent(8, true) }}
-{% endif %}
-}
-{% endmacro %}
-{% macro print_hosts(hosts) %}
-{% if hosts is string %}
-include "{{ hosts }}";
-{% else %}
-{% for host in hosts %}
-{% if host.comment is defined and host.comment %}
-# {{ host.comment }}
-{% endif %}
-{# Hack to support host with multiple MACs #}
-{% if host.ethernet is defined and host.ethernet is sequence and not host.ethernet is string %}
-{% for hwaddr in host.ethernet %}
-host {{ host.hostname }}-hw{{ loop.index }} {
-{% if host.options is defined and host.options %}
-{{ host.options | indent(8,true) }}
-{% endif %}
-        hardware ethernet {{ hwaddr }};
-{% if not host.options is defined or (host.options and not 'host-name' in host.options) %}
-        option host-name "{{ host.hostname }}";
-{% endif %}
-{% if host.address is defined and host.address %}
-        fixed-address {{ host.address }};
-{% endif %}
-}
-{% endfor %}
-{% else %}
-host {{ host.hostname }} {
-{% if host.options is defined and host.options %}
-{{ host.options | indent(8,true) }}
-{% endif %}
-{% if host.ethernet is defined and host.ethernet %}
-        hardware ethernet {{ host.ethernet }};
-{% endif %}
-{% if host.address is defined and host.address %}
-{% if dhcpd_ipversion is defined and dhcpd_ipversion == '6' %}
-        fixed-address6 {{ host.address }};
-{% else %}
-        fixed-address {{ host.address }};
-{% endif %}
-{% endif %}
-}
-{% endif %}
-{% endfor %}
-{% endif %}
-{% endmacro %}
-{% macro print_failover(failover) %}
-{% if failover.comment is defined and failover.comment %}
-# {{ failover.comment }}
-{% endif %}
-failover peer "{{ failover.failover }}" {
-{% if failover.primary is defined and failover.primary in ansible_all_ipv4_addresses|d([]) %}
-        primary;
-        mclt {{ failover.mclt|default(3600) }};
-{% if failover.primary_fo_addr is defined and failover.primary_fo_addr %}
-        address {{ failover.primary_fo_addr }};
-{% else %}
-        address {{ failover.primary }};
-{% endif %}
-{% if failover.secondary_fo_addr is defined and failover.secondary_fo_addr %}
-        peer address {{ failover.secondary_fo_addr }};
-{% else %}
-        peer address {{ failover.secondary }};
-{% endif %}
-{% if failover.split is defined and failover.split %}
-        split {{ failover.split }};
-{% elif failover.hba is defined and failover.hba %}
-        hba {{ failover.hba }};
-{% endif %}
-{% else %}
-        secondary;
-{% if failover.secondary_fo_addr is defined and failover.secondary_fo_addr %}
-        address {{ failover.secondary_fo_addr }};
-{% else %}
-        address {{ failover.secondary }};
-{% endif %}
-{% if failover.primary_fo_addr is defined and failover.primary_fo_addr %}
-        peer address {{ failover.primary_fo_addr }};
-{% else %}
-        peer address {{ failover.primary }};
-{% endif %}
-{% endif %}
-        max-response-delay {{ failover.max_response_delay|default(30) }};
-        max-unacked-updates {{ failover.max_unacked_updates|default(10) }};
-{% if failover.load_balance_max_seconds is defined and failover.load_balance_max_seconds %}
-        load balance max seconds {{ failover.load_balance_max_seconds }};
-{% endif %}
-{% if failover.max_lease_misbalance is defined and failover.max_lease_misbalance %}
-        max-lease-misbalance {{ failover.max_lease_misbalance }};
-{% endif %}
-{% if failover.max_lease_ownership is defined and failover.max_lease_ownership %}
-        max-lease-ownership {{ failover.max_lease_ownership }};
-{% endif %}
-{% if failover.min_balance is defined and failover.min_balance %}
-        min-balance {{ failover.min_balance }};
-{% endif %}
-{% if failover.max_balance is defined and failover.max_balance %}
-        max-balance {{ failover.max_balance }};
-{% endif %}
-{% if failover.auto_partner_down is defined and failover.auto_partner_down %}
-        auto-partner-down {{ failover.auto_partner_down }};
-{% endif %}
-}
-{% endmacro %}
-{% macro print_key(key) %}
-{% if key.comment is defined and key.comment %}
-# {{ key.comment }}
-{% endif %}
-key {{ key.key }} {
-        algorithm {{ key.algorithm|default('hmac-md5') }};
-        secret {{ key.secret }};
-}
-{% endmacro %}
-{% macro print_zone(zone) %}
-{% if zone.comment is defined and zone.comment %}
-# {{ zone.comment }}
-{% endif %}
-zone {{ zone.zone }} {
-        primary {{ zone.primary }};
-        key {{ zone.key }};
-}
-{% endmacro %}
+{% from 'macro_class.j2' import print_class %}
+{% from 'macro_group.j2' import print_group %}
+{% from 'macro_host.j2' import print_host %}
+{% from 'macro_shared_network.j2' import print_shared_network %}
+{% from 'macro_subnet.j2' import print_subnet %}
 # {{ ansible_managed }}
 
-{% if dhcpd_authoritative is defined and dhcpd_authoritative %}
+# Global server configuration
+# ===========================
+{%  if dhcpd__authoritative %}
 authoritative;
+{%  endif %}
+log-facility {{ dhcpd__log_facility }};
+default-lease-time {{ dhcpd__default_lease_time }};
+max-lease-time {{ dhcpd__max_lease_time }};
+update-static-leases {{ "on" if dhcpd__update_static_leases else "off" }};
+{%  if dhcpd__protocol == 'DHCPv6' %}
+preferred-lifetime {{ dhcpd__preferred_lifetime }};
+dhcpv6-set-tee-times {{ "on" if dhcpd__dhcpv6_set_tee_times else "off" }};
+{%  endif %}
 
-{% elif dhcpd_authoritative is undefined or (dhcpd_authoritative is defined and not dhcpd_authoritative) %}
-not authoritative;
+# DHCP options
+# ============
+{%  if dhcpd__protocol == 'DHCPv4' %}
+{%      if dhcpd__domain_name %}
+option domain-name "{{ dhcpd__domain_name }}";
+{%      endif %}
+{%      if dhcpd__domain_search %}
+option domain-search "{{ dhcpd__domain_search|join('", "') }}";
+{%      endif %}
+{%      if dhcpd__name_servers|ipv4 %}
+option domain-name-servers {{ dhcpd__name_servers|ipv4|join(', ') }};
+{%      endif %}
+{%  elif dhcpd__protocol == 'DHCPv6' %}
+{%      if dhcpd__domain_search %}
+option dhcp6.domain-search "{{ dhcpd__domain_search|join('", "') }}";
+{%      endif %}
+{%      if dhcpd__name_servers|ipv6 %}
+option dhcp6.name-servers {{ dhcpd__name_servers|ipv6|join(', ') }};
+{%      endif %}
+{%  endif %}
+{%  if dhcpd__global_options_map[dhcpd__protocol]|d() %}
 
-{% endif %}
-{% if dhcpd_global_default_lease_time|d() and dhcpd_global_default_lease_time %}
-default-lease-time {{ dhcpd_global_default_lease_time }};
-{% endif %}
-{% if dhcpd_global_max_lease_time|d() and dhcpd_global_max_lease_time %}
-max-lease-time {{ dhcpd_global_max_lease_time }};
+# Custom global configuration options
+# ===================================
+{{ dhcpd__global_options_map[dhcpd__protocol] }}
+{%  endif %}
 
-{% endif %}
-{% if dhcpd_log_facility|d() and dhcpd_log_facility %}
-log-facility {{ dhcpd_log_facility }};
+# Configuration includes
+# ======================
+include "/etc/dhcp/ansible_keys.conf";
+include "/etc/dhcp/ansible_zones.conf";
+{%  if dhcpd__protocol == 'DHCPv4' %}
+include "/etc/dhcp/ansible_failovers.conf";
+{%      if dhcpd__ipxe %}
+include "/etc/dhcp/ansible_ipxe.conf";
+{%      endif %}
+{%  endif %}
 
-{% endif %}
-{% if dhcpd_auto_options|d() and dhcpd_auto_options %}
-{% include 'auto_options.j2' %}
-{% endif %}
-{% if dhcpd_options is defined and dhcpd_options %}
-# Configuration options
-{{ dhcpd_options }}
+# Configuration scopes
+# ====================
 
-{% endif %}
-{% include 'ipxe.j2' %}
-{% if dhcpd_keys is defined and dhcpd_keys %}
-{% for key in dhcpd_keys %}
-{{ print_key(key) }}
-{% endfor %}
-{% endif %}
-{% if dhcpd_zones is defined and dhcpd_zones %}
-{% for zone in dhcpd_zones %}
-{{ print_zone(zone) }}
-{% endfor %}
-{% endif %}
-{% if dhcpd_classes is defined and dhcpd_classes %}
-{% for class in dhcpd_classes %}
+{%  for host in dhcpd__hosts %}
+{{ print_host(host, dhcpd__protocol) }}
+{%  endfor %}
+{%  for class in dhcpd__classes %}
 {{ print_class(class) }}
-{% endfor %}
-{% endif %}
-{% if dhcpd_failovers is defined and dhcpd_failovers %}
-{% for failover in dhcpd_failovers %}
-{{ print_failover(failover) }}
-{% endfor %}
-{% endif %}
-{% if dhcpd_shared_networks is defined and dhcpd_shared_networks %}
-{% for network in dhcpd_shared_networks %}
-{% if network.subnets is defined and network.subnets %}
-{% if network.comment is defined and network.comment %}
-# {{ network.comment }}
-{% endif %}
-shared-network "{{ network.name }}" {
-{% if network.options is defined and network.options %}
-{{ network.options | indent(8,true) }}
-{% endif %}
-{% if network.include is defined and network.include %}
-        include "{{ network.include }}";
-{% endif %}
-{% for subnet in network.subnets %}
-
-{{ print_subnet(subnet) | indent(8,true) }}
-{% endfor %}
-}
-
-{% endif %}
-{% endfor %}
-{% endif %}
-{% if dhcpd_groups is defined and dhcpd_groups %}
-{% for group in dhcpd_groups %}
-{{ print_group(group) }}
-{% endfor %}
-{% endif %}
-{% if dhcpd_subnets is defined and dhcpd_subnets %}
-{% for subnet in dhcpd_subnets %}
-{{ print_subnet(subnet) }}
-{% endfor %}
-{% endif %}
-{% if dhcpd_hosts is defined and dhcpd_hosts %}
-{{ print_hosts(dhcpd_hosts) }}
-{% endif %}
-{% if dhcpd_includes is defined and dhcpd_includes %}
-{% for include in dhcpd_includes %}
-include "{{ include }}";
-{% endfor %}
-
-{% endif %}
-{#
-    vim: ft=dhcpd
-#}
+{%  endfor %}
+{%  for group in dhcpd__groups %}
+{{ print_group(group, dhcpd__protocol) }}
+{%  endfor %}
+{%  for subnet in dhcpd__subnets %}
+{{ print_subnet(subnet, dhcpd__protocol) }}
+{%  endfor %}
+{%  for shared_network in dhcpd__shared_networks %}
+{{ print_shared_network(shared_network, dhcpd__protocol) }}
+{%  endfor %}
