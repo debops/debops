@@ -27,7 +27,7 @@ Here are a few services that are available
 **Service monitoring and logging**
 
 +-------------------+
-| `Check_MK agent`_ |
+| `CheckMK agent`_ |
 +-------------------+
 
 **System**
@@ -58,7 +58,7 @@ Here are a few services that are available
 .. _dropbear-initramfs: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/dropbear_initramfs.yml
 .. _Firejail: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/firejail.yml
 
-.. _`Check_MK agent`: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/checkmk_agent.yml
+.. _`CheckMK agent`: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/checkmk_agent.yml
 
 .. _BTRFS: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/btrfs.yml
 .. _FUSE: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/fuse.yml

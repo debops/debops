@@ -146,7 +146,7 @@ I really like Debian and would like to become a Debian Developer some day.
 
 Starting in 2012, I worked 5 years as a IT Consultant until 2017, mainly
 deploying and advocating Free and Open Source software. During that time, I
-set up and deployed a monitoring appliance based on Debian, Icinga and Check_MK
+set up and deployed a monitoring appliance based on Debian, Icinga and CheckMK
 as well as file syncing appliance based on Debian and ownCloud. The file syncing
 appliance was build from the ground up with DebOps and deployment was also done
 with Ansible and DebOps. The monitoring appliance was set up by me before I knew
