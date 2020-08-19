@@ -1,0 +1,166 @@
+---
+# Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2015-2017 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Combine variables
+  set_fact:
+    apparmor__profile_status: '{{
+      apparmor__global_profile_status               | d({})
+      | combine(apparmor__host_group_profile_status | d({}))
+      | combine(apparmor__host_profile_status       | d({})) }}'
+    apparmor__local_config: '{{
+      apparmor__local_dependent_config            | d({})
+      | combine(apparmor__local_config_global     | d({}))
+      | combine(apparmor__local_group_config      | d({}))
+      | combine(apparmor__local_host_config       | d({})) }}'
+    apparmor__tunables: '{{
+      (apparmor__tunables_dependent | d([]) | list) +
+      (apparmor__global_tunables    | d([]) | list) +
+      (apparmor__group_tunables     | d([]) | list) +
+      (apparmor__host_tunables      | d([]) | list) }}'
+
+- name: Install required packages
+  package:
+    name: '{{ q("flattened", (apparmor__base_packages
+                              + apparmor__packages)) }}'
+    state: 'present'
+  register: apparmor__register_packages
+  until: apparmor__register_packages is succeeded
+
+- name: Setup apparmor=1 security=apparmor as kernel parameter
+  lineinfile:
+    dest: '/etc/default/grub'
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+    insertbefore: '{{ item.insertbefore }}'
+    mode: '0644'
+  when: ((apparmor__manage_grub|d() | bool) and (apparmor__enabled|d() | bool))
+  with_items:
+    - regexp: '^GRUB_CMDLINE_LINUX='
+      line: 'GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR {{ apparmor__additional_kernel_parameters }}"'
+      insertbefore: ''
+    - regexp: '^GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR='
+      line: 'GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR="apparmor=1 security=apparmor"'
+      insertbefore: '^GRUB_CMDLINE_LINUX='
+  notify: [ 'Update grub' ]
+
+- name: Remove apparmor=1 security=apparmor from kernel parameter list
+  lineinfile:
+    dest: '/etc/default/grub'
+    regexp: '^GRUB_CMDLINE_LINUX="(.*?)\$GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR(.*)"'
+    line: 'GRUB_CMDLINE_LINUX="\1 \2"'
+    backrefs: yes
+    mode: '0644'
+  when: (apparmor__manage_grub and not (apparmor__enabled|d() | bool))
+  notify: [ 'Update grub' ]
+
+- name: Check if the running kernel has been started with AppArmor enabled
+  set_fact:
+    apparmor__fact_apparmor_enabled_and_loaded: '{{
+      (apparmor__enabled|d() | bool) and
+      (ansible_cmdline.apparmor|d(0)|string == "1") and
+      (ansible_cmdline.security|d("none") == "apparmor") }}'
+  check_mode: False
+
+- name: Flush the handlers in case the next tasks fails
+  meta: flush_handlers
+
+- name: Send mail to administrator if reboot is required to enable AppArmor
+  mail:
+    from: 'root@{{ ansible_fqdn }}'
+    subject: '{{ apparmor__mail_subject }}'
+    to: '{{ apparmor__mail_to|d([]) | list | join(",") }}'
+    charset: 'utf8'
+    body: '{{ apparmor__mail_body }}'
+  when: (apparmor__fact_apparmor_enabled_and_loaded|bool and apparmor__mail_to|d())
+
+## Seems that there is currently a bug in the version include in Debian Jessie
+## which throws an exception when AppArmor has not been enabled yet.
+- name: Put all profiles into enforcement mode
+  shell: |
+    set -o nounset -o pipefail -o errexit &&
+    find /etc/apparmor.d -maxdepth 1 -type f | while read file
+    do
+      if grep --quiet "flags\s*=.*complain" "$file"; then
+        aa-enforce "$file"
+      fi
+    done
+  args:
+    executable: 'bash'
+  register: apparmor__register_enforce_all_profiles
+  changed_when: (apparmor__register_enforce_all_profiles.stdout|d())
+  when: (apparmor__enforce_all_profiles|d() | bool)
+
+- name: Set profile status
+  command: aa-{{ item.value }} "{{ item.key }}"
+  register: apparmor__register_profile_status
+  # changed_when: (apparmor__register_profile_status.stdout|d())
+  ## FIXME: Currently changed_when seems to be tricky.
+  changed_when: False
+  failed_when: |
+    apparmor__register_profile_status.rc != 0 and (
+      "Warning: unable to find a suitable fs in /proc/mounts, is it mounted?"
+      not in apparmor__register_profile_status.stderr and
+      apparmor__fact_apparmor_enabled_and_loaded|bool
+    )
+  ## AppArmor tries to load the profile with the new status into the Kernel after changing it.
+  ## This does not work if the Kernel has not been started with AppArmor support.
+  ## But the profile configuration file is updated anyway and will be picked up on next reboot with AppArmor support.
+  with_dict: '{{ apparmor__profile_status }}'
+
+- name: Ensure AppArmor service is started
+  service:
+    name: 'apparmor'
+    state: 'started'
+    enabled: True
+  when: apparmor__fact_apparmor_enabled_and_loaded|bool
+
+- name: Ensure tunables directory exists
+  file:
+    path: '/etc/apparmor.d/tunables/home.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Configure tunables
+  template:
+    src: 'etc/apparmor.d/tunables/home.d/debops.j2'
+    dest: '/etc/apparmor.d/tunables/home.d/debops'
+    mode: '0640'
+    owner: 'root'
+    group: 'root'
+  register: apparmor__register_tunables
+
+- name: Configure additions or overrides of system profiles
+  template:
+    src: 'etc/apparmor.d/local/local.j2'
+    dest: '/etc/apparmor.d/local/{{ item.key }}'
+    mode: '0640'
+    owner: 'root'
+    group: 'root'
+  register: apparmor__register_local_config
+  with_dict: '{{ apparmor__local_config }}'
+
+- name: Reload changed profiles
+  command: apparmor_parser --replace "/etc/apparmor.d/{{ item.item.key }}"
+  when: (item is changed and apparmor__register_tunables is not changed)
+  with_items: '{{ apparmor__register_local_config.results }}'
+
+- name: Reload AppArmor all profiles
+  service:
+    name: 'apparmor'
+    state: 'reloaded'
+  when: apparmor__fact_apparmor_enabled_and_loaded|bool and apparmor__register_tunables is changed
+
+- name: Unload AppArmor profiles
+  command: service apparmor teardown
+  args:
+    warn: False
+  when: (not (apparmor__enabled|d() | bool))
+
+- name: Ensure AppArmor service is stopped
+  service:
+    name: 'apparmor'
+    state: 'stopped'
+    enabled: False
+  when: (not (apparmor__enabled|d() | bool))

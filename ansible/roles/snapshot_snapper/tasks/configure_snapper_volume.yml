@@ -1,0 +1,15 @@
+---
+# Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2016-2017 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+  ## Alternative: `snapper -c home set-config ALLOW_GROUPS=user` but it gives no feedback if it changed something.
+  ## FIXME: ALLOW_USERS and SYNC_ACL should be changed via ``snapper`` to work properly.
+- name: Configure snapper volume
+  lineinfile:
+    dest: '/etc/snapper/configs/{{ snapshot_snapper__volume.name }}'
+    regexp: '^{{ item.key }}='
+    line: '{{ item.key }}="{{ item.value }}"'
+    mode: '0644'
+  with_dict: '{{ (snapshot_snapper__templates_combined[snapshot_snapper__volume.template|d("default")]|d({}))
+                 | combine(snapshot_snapper__volume.config|d({})) }}'

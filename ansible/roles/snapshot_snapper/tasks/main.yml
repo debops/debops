@@ -1,0 +1,154 @@
+---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2016-2017 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Combine snapper inventory variables [[[
+- name: Combine snapper inventory variables
+  set_fact:
+    snapshot_snapper__templates_combined: '{{
+                snapshot_snapper__templates
+      | combine(snapshot_snapper__host_group_templates, recursive=True )
+      | combine(snapshot_snapper__host_templates      , recursive=True ) }}'
+    snapshot_snapper__volumes_combined: '{{
+      (snapshot_snapper__volumes            | list) +
+      (snapshot_snapper__host_group_volumes | list) +
+      (snapshot_snapper__host_volumes       | list) }}'
+    snapshot_snapper__combined_packages: '{{
+      (snapshot_snapper__base_packages | list) +
+      (snapshot_snapper__packages      | list) }}'
+  tags:
+    - 'role::snapshot_snapper:reinit'
+# .. ]]]
+
+# Installation [[[
+
+- name: Ensure specified packages are in there desired state
+  package:
+    name: '{{ q("flattened", snapshot_snapper__combined_packages) }}'
+    state: 'present'
+  register: snapshot_snapper__register_packages
+  until: snapshot_snapper__register_packages is succeeded
+
+# .. ]]]
+
+# Configure updatedb to exclude snapshots [[[
+- name: 'Divert original configuration under /etc'
+  command: dpkg-divert --quiet --local --divert "{{ item }}.dpkg-divert" --rename "{{ item }}"
+  args:
+    creates: '{{ item }}.dpkg-divert'
+  register: snapshot_snapper__updatedb_diverted_register
+  when: ansible_os_family in [ "Debian" ]
+  with_flattened: '{{ snapshot_snapper__divert_files }}'
+
+- name: Copy diverted configuration file to original location
+  command: cp {{ item }}.dpkg-divert {{ item }}
+  args:
+    creates: '{{ item }}'
+  when: snapshot_snapper__updatedb_diverted_register is changed
+  with_flattened: '{{ snapshot_snapper__divert_files }}'
+
+- name: Check if snapshots are already excluded from updatedb
+  command: grep PRUNENAMES=.*{{ snapshot_snapper__directory }}.* /etc/updatedb.conf
+  failed_when: False
+  changed_when: False
+  check_mode: False
+  when: snapshot_snapper__directory|d() and "mlocate" in snapshot_snapper__combined_packages
+  register: snapshot_snapper__register_updatedb_configured
+
+- name: Configure updatedb to exclude snapshots
+  lineinfile:
+    dest: '/etc/updatedb.conf'
+    backrefs: yes
+    regexp: '^(# )?PRUNENAMES=(".*)"$'
+    line: 'PRUNENAMES=\2 {{ snapshot_snapper__directory }}"'
+    mode: '0644'
+  when: snapshot_snapper__register_updatedb_configured.rc != 0
+# .. ]]]
+
+# Automatic snapper volume reinitialization [[[
+- name: Check which snapper /etc/snapper/configs/ exist
+  stat:
+    path: '/etc/snapper/configs/{{ item.name }}'
+  when: (snapshot_snapper__auto_reinit|bool and item.path|d() and item.name|d() and
+         (item.state|d("present") == "present"))
+  register: snapshot_snapper__register_snapper_configs
+  tags: [ 'role::snapshot_snapper:reinit' ]
+  with_items: '{{ snapshot_snapper__volumes_combined }}'
+
+- name: Check which snapper snapshot directories exist
+  stat:
+    path: '{{ item.path + "/" + snapshot_snapper__directory }}'
+  when: (snapshot_snapper__auto_reinit|bool and item.path|d() and item.name|d() and
+         (item.state|d("present") == "present"))
+  tags: [ 'role::snapshot_snapper:reinit' ]
+  register: snapshot_snapper__register_snapshot_directory
+  with_items: '{{ snapshot_snapper__volumes_combined }}'
+
+- name: Delete snapper configuration to automatically reinit
+  file:
+    path: '/etc/snapper/configs/{{ item.0.item.name }}'
+    state: 'absent'
+  tags: [ 'role::snapshot_snapper:reinit' ]
+  when: (item.0 is not skipped and item.1 is not skipped and
+         item.0.stat.exists|d(item.0.stat.isreg) and not item.1.stat.exists)
+  register: snapshot_snapper__register_snapper_configs_delete
+  with_together:
+    - '{{ snapshot_snapper__register_snapper_configs.results }}'
+    - '{{ snapshot_snapper__register_snapshot_directory.results }}'
+
+- name: Get list of active snapper volumes
+  find:
+    file_type: 'file'
+    paths: [ '/etc/snapper/configs/' ]
+    hidden: False
+    recurse: False
+  register: snapshot_snapper__register_snapper_configs_current
+  when: (snapshot_snapper__auto_reinit|bool)
+  tags: [ 'role::snapshot_snapper:reinit' ]
+
+- name: Update active snapper volumes in /etc/default/snapper
+  lineinfile:
+    dest: '/etc/default/snapper'
+    state: 'present'
+    regexp: '^SNAPPER_CONFIGS="[^"]*"$'
+    line: 'SNAPPER_CONFIGS="{{
+           snapshot_snapper__register_snapper_configs_current.files
+           | map(attribute="path")
+           | map("replace", "/etc/snapper/configs/", "")
+           | join(" ") }}"'
+    mode: '0644'
+  when: (snapshot_snapper__auto_reinit|bool)
+  tags: [ 'role::snapshot_snapper:reinit' ]
+# .. ]]]
+
+# Configure snapper templates [[[
+- name: Configure snapper templates
+  template:
+    src: 'etc/snapper/config-templates/item.j2'
+    dest: '/etc/snapper/config-templates/{{ item.key }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_dict: '{{ snapshot_snapper__templates_combined }}'
+# .. ]]]
+
+# Create initial configuration per volume [[[
+- name: Create initial configuration per volume
+  command: snapper --config '{{ item.name|default("root") }}'
+           create-config
+           {{ ("'--template' '" + item.template + "'") if (item.template|d()) else '' }}
+           '{{ item.path }}'
+  args:
+    creates: '/etc/snapper/configs/{{ item.name }}'
+  when: (item.path|d() and item.name|d() and (item.state|d("present") == "present"))
+  with_items: '{{ snapshot_snapper__volumes_combined }}'
+# .. ]]]
+
+- name: Adjust configuration per volume
+  include: configure_snapper_volume.yml
+  loop_control:
+    loop_var: 'snapshot_snapper__volume'
+  with_items: '{{ snapshot_snapper__volumes_combined }}'

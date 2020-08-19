@@ -1,0 +1,59 @@
+---
+# Copyright (C) 2016 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2016 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Install required packages
+  package:
+    name: '{{ q("flattened", fuse_base_packages) }}'
+    state: 'present'
+  register: fuse__register_packages
+  until: fuse__register_packages is succeeded
+
+- name: Divert original /etc/fuse.conf
+  command: dpkg-divert --quiet --local --divert /etc/fuse.conf.dpkg-divert --rename /etc/fuse.conf
+  args:
+    creates: '/etc/fuse.conf.dpkg-divert'
+
+- name: Setup udev rule for fuse to change file permissions
+  template:
+    src: 'etc/fuse.conf.j2'
+    dest: '/etc/fuse.conf'
+    mode: '0644'
+
+- name: Ensure fuse system group is present
+  group:
+    name: '{{ fuse_group }}'
+    state: 'present'
+    system: True
+
+- name: Add fuse_users to fuse_group
+  user:
+    name: '{{ item }}'
+    groups: '{{ fuse_group }}'
+    append: True
+  with_flattened:
+    - '{{ fuse_users }}'
+    - '{{ fuse_users_host_group }}'
+    - '{{ fuse_users_host }}'
+
+- name: Setup udev rule for fuse to change file permissions
+  template:
+    src: 'etc/udev/rules.d/fuse.rules.j2'
+    dest: '/etc/udev/rules.d/99-fuse.rules'
+    mode: '0644'
+  when: fuse_restrict_access | bool
+
+- name: Ensure FUSE permissions are applied immediately
+  file:
+    path: '/dev/fuse'
+    owner: 'root'
+    group: '{{ fuse_group }}'
+    mode: '{{ fuse_permissions }}'
+  when: fuse_restrict_access | bool
+
+- name: Remove udev rule for fuse
+  file:
+    path: '/etc/udev/rules.d/99-fuse.rules'
+    state: 'absent'
+  when: not (fuse_restrict_access | bool)
