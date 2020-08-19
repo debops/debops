@@ -21,12 +21,14 @@
   template:
     src: 'etc/default/isc-dhcp-relay.j2'
     dest: '/etc/default/isc-dhcp-relay'
+    mode: '0644'
   notify: [ 'Restart isc-dhcp-relay' ]
 
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
+    mode: '0755'
 
 - name: Save local facts
   template:

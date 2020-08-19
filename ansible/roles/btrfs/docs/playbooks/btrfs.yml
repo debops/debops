@@ -1,0 +1,19 @@
+---
+# Copyright (C) 2016 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2016 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Manage Btrfs
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_btrfs' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: btrfs
+      tags: [ 'role::btrfs' ]

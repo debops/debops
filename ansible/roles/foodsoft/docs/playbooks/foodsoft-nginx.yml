@@ -1,0 +1,44 @@
+---
+# Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2016-2017 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Setup and manage Foodsoft with Nginx as webserver
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_foodsoft_nginx' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: apt_preferences
+      tags: [ 'role::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ ruby__apt_preferences__dependent_list }}'
+        - '{{ nginx__apt_preferences__dependent_list }}'
+
+    - role: ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ nginx__ferm__dependent_rules }}'
+
+    - role: mariadb
+      tags: [ 'role::mariadb' ]
+      mariadb__dependent_databases: '{{ foodsoft__mariadb__dependent_databases }}'
+      mariadb__dependent_users: '{{ foodsoft__mariadb__dependent_users }}'
+      when: (foodsoft__database == 'mariadb')
+
+    - role: ruby
+      tags: [ 'role::ruby' ]
+
+    - role: nginx
+      tags: [ 'role::nginx' ]
+      nginx__dependent_servers:
+        - '{{ foodsoft__nginx__dependent_servers }}'
+
+    - role: foodsoft
+      tags: [ 'role::foodsoft' ]

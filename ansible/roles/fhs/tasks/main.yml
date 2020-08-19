@@ -10,6 +10,7 @@
   file:
     path: '{{ hostvars[inventory_hostname]["ansible_local"]["fhs"][item.name] | d(item.path) }}'
     state: 'directory'
+    mode: '{{ item.mode | d("0755") }}'
   loop: '{{ fhs__combined_directories | parse_kv_items }}'
   loop_control:
     label: '{{ {item.name: (hostvars[inventory_hostname]["ansible_local"]["fhs"][item.name] | d(item.path))} }}'

@@ -1,0 +1,252 @@
+---
+# vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2016-2017 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- import_role:
+    name: 'secret'
+
+# Ensure specified packages are present [[[
+- name: Ensure specified packages are present
+  package:
+    name: '{{ q("flattened", (firejail__base_packages
+                              + firejail__packages
+                              + firejail__group_packages
+                              + firejail__host_packages)) }}'
+    state: 'present'
+  when: firejail__deploy_state in ["present"]
+  register: firejail__register_packages
+  until: firejail__register_packages is succeeded
+  tags: [ 'role::firejail:pkgs' ]
+# ]]]
+
+# Installation details [[[
+- name: Get program file path of firejail
+  command: which -a firejail
+  register: firejail__register_program_file_path
+  check_mode: False
+  changed_when: False
+  failed_when: firejail__register_program_file_path.rc not in [ 0, 1 ]
+  when: (firejail__program_file_path == "auto")
+
+- name: Set program file path of firejail for later use in the role
+  set_fact:
+    firejail__program_file_path: '{{ (firejail__register_program_file_path.stdout_lines
+                                      + ["/usr/bin/firejail"]) | first }}'
+  when: (firejail__program_file_path == "auto")
+# ]]]
+
+# Gather list of system wide profiles [[[
+- name: Get list of system wide profiles
+  find:
+    file_type: 'file'
+    paths: [ '{{ firejail__config_path }}' ]
+    patterns: '*.profile'
+    use_regex: False
+    hidden: False
+    recurse: False
+  register: firejail__register_find_system_wide_profiles
+  # no_log: True
+  ## Disabled because the output is not interesting but very verbose.
+
+- name: Set list of system wide profiles
+  set_fact:
+    firejail__fact_system_wide_profiles: '{{
+      firejail__register_find_system_wide_profiles.files
+        | map(attribute="path")
+        | map("basename")
+        | map("regex_replace", "\.profile$", "") | list }}'
+# ]]]
+
+# Gather list of installed programs [[[
+- name: Check if programs which should be sandboxed are installed
+  command: which -a {{ item | quote }}
+  check_mode: False
+  changed_when: False
+  failed_when: firejail__register_cmd_which_programs.rc not in [ 0, 1 ]
+  register: firejail__register_cmd_which_programs
+  when: (item in (
+          firejail__combined_program_sandboxes.keys() | list + (
+            firejail__fact_system_wide_profiles
+            if (firejail__global_profiles_system_wide_sandboxed == "if_installed")
+            else []
+          )
+        ))
+  with_items: '{{ firejail__combined_program_sandboxes.keys() | list | union(firejail__fact_system_wide_profiles) }}'
+
+# For optimized performance, firejail__fact_installed_programs only contains
+# programs for which the install state actually matters.
+- name: Set list of installed programs
+  set_fact:
+    firejail__fact_installed_programs: '{{
+      firejail__register_cmd_which_programs.results
+      | selectattr("rc", "defined")
+      | selectattr("rc", "equalto", 0)
+      | map(attribute="stdout_lines")
+      | map("first") | map("basename") | list }}'
+
+# ]]]
+
+# Create/remove symlinks for sandboxed programs [[[
+- name: Ensure that the local bin path exists
+  file:
+    path: '{{ firejail__system_local_bin_path }}'
+    state: 'directory'
+    mode: '0755'
+
+- name: Create/remove symlinks for sandboxed programs
+  file:
+    path: '{{ firejail__system_local_bin_path + "/" + item }}'
+    src: '{{ firejail__program_file_path }}'
+    state: '{{ "link"
+               if (
+                 firejail__deploy_state in ["present"] and (
+                   (item in firejail__combined_program_sandboxes and (
+                     (firejail__combined_program_sandboxes[item].system_wide_sandboxed
+                      | d(firejail__program_sandboxes_system_wide_sandboxed) == "present") or
+                     (
+                       (firejail__combined_program_sandboxes[item].system_wide_sandboxed
+                        | d(firejail__program_sandboxes_system_wide_sandboxed) == "if_installed") and
+                       item in firejail__fact_installed_programs
+                     )
+                   )) or (item not in firejail__combined_program_sandboxes and (
+                     (
+                       firejail__global_profiles_system_wide_sandboxed == "present"
+                     ) or (
+                       firejail__global_profiles_system_wide_sandboxed == "if_installed" and
+                       item in firejail__fact_installed_programs
+                     )
+                   ))
+                 )
+               ) else "absent" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+    force: '{{ ansible_check_mode|d(omit) }}'
+  when: not (item in firejail__combined_program_sandboxes and firejail__combined_program_sandboxes[item].system_wide_sandboxed|d("present") in ["ignored"])
+  with_items: '{{ firejail__combined_program_sandboxes.keys() | list | union(firejail__fact_system_wide_profiles) }}'
+# ]]]
+
+# Manage profile [[[
+- name: Provide (additional) profiles
+  copy:
+    dest:           '{{ item.value.profile.dest           | d(firejail__config_path + "/" + item.key + ".profile") }}'
+    backup:         '{{ item.value.profile.backup         | d(omit) }}'
+    content:        '{{ item.value.profile.content        | d(omit) }}'
+    directory_mode: '{{ item.value.profile.directory_mode | d(omit) }}'
+    follow:         '{{ item.value.profile.follow         | d(omit) }}'
+    force:          '{{ item.value.profile.force          | d(omit) }}'
+    owner:          '{{ item.value.profile.owner          | d("root") }}'
+    group:          '{{ item.value.profile.group          | d("root") }}'
+    mode:           '{{ item.value.profile.mode           | d("0644") }}'
+    selevel:        '{{ item.value.profile.selevel        | d(omit) }}'
+    serole:         '{{ item.value.profile.serole         | d(omit) }}'
+    setype:         '{{ item.value.profile.setype         | d(omit) }}'
+    seuser:         '{{ item.value.profile.seuser         | d(omit) }}'
+    src:            '{{ item.value.profile.src            | d(omit) }}'
+    validate:       '{{ item.value.profile.validate       | d(omit) }}'
+  when: (firejail__deploy_state in ["present"] and
+         "profile" in item.value and item.value.profile.state|d("present") == "present")
+  with_dict: '{{ firejail__combined_program_sandboxes }}'
+  tags: [ 'role::firejail:profile' ]
+
+- name: Delete profiles
+  file:
+    path: '{{ item.value.profile.dest | d(firejail__config_path + "/" + item.key + ".profile") }}'
+    state: 'absent'
+  when: ("profile" in item.value and
+         (item.value.profile.state|d("present") == "absent" or firejail__deploy_state in ["absent"]))
+  with_dict: '{{ firejail__combined_program_sandboxes }}'
+  tags: [ 'role::firejail:profile' ]
+# ]]]
+
+# Clean up program sandboxes [[[
+
+# This will not `find` broken symlinks which is the reason why system package
+# removal is performed after the cleanup so that the symlinks are not yet broken
+# when the cleanup tasks are run in `absent` `firejail__deploy_state`.
+# > /usr/local/bin/$program was skipped as it does not seem to be a valid file or it cannot be accessed
+- name: Get list of files in local bin path
+  find:
+    file_type: 'file'
+    paths: [ '{{ firejail__system_local_bin_path }}' ]
+    hidden: False
+    recurse: False
+  register: firejail__register_profile_program_symlinks_find
+  no_log: True
+  ## Disabled because log is not interesting but very verbose.
+
+# Needed because of a bug: https://github.com/ansible/ansible-modules-core/issues/3027
+# `realpath` filter (https://docs.ansible.com/ansible/playbooks_filters.html#other-useful-filters)
+# can not be used because filters are executed on the Ansible controller.
+- name: Workaround to get the realpath
+  stat:
+    path: '{{ item.path }}'
+  register: firejail__register_profile_program_symlinks_stat
+  no_log: True
+  ## Disabled because log is not interesting but very verbose.
+  with_items: '{{ firejail__register_profile_program_symlinks_find.files }}'
+
+- name: Remove program symlink when profiles is is not defined in any variable
+  file:
+    path: '{{ item.stat.path }}'
+    state: 'absent'
+  no_log: True
+  ## Disabled because log is not interesting but very verbose.
+  when: (item.stat.islnk and (
+         (
+           item.stat.lnk_source|basename == "firejail" and (
+             item.stat.lnk_source != firejail__program_file_path or
+             firejail__deploy_state not in ["present"]
+           )
+         ) or (
+           item.stat.lnk_source == firejail__program_file_path and
+           (item.stat.path|basename not in (firejail__combined_program_sandboxes.keys() | list
+                                            | union(firejail__fact_system_wide_profiles)))
+         )
+        ))
+  with_items: '{{ firejail__register_profile_program_symlinks_stat.results }}'
+
+# ]]]
+
+# Workaround for desktop files [[[
+
+  ## Firejail 0.9.44.4 does not ensure that the directory exists?
+- name: Ensure ~/.local/share/applications exists
+  file:
+    path: '~/.local/share/applications'
+    state: 'directory'
+    mode: '0755'
+  become: True
+  become_user: '{{ item.name }}'
+  no_log: '{{ not (firejail__ansible_log | bool) }}'
+  when: firejail__deploy_state in ["present"] and item != "root" and item.state|d("present") == "present"
+  with_flattened: '{{ firejail__combined_fix_for_users }}'
+
+- name: Apply workaround for desktop files
+  command: firecfg --fix
+  register: firejail__register_cmd_firecfg_fix
+  changed_when: ("created" in firejail__register_cmd_firecfg_fix.stdout)
+  become: True
+  become_user: '{{ item.name }}'
+  no_log: '{{ not (firejail__ansible_log | bool) }}'
+  when: firejail__deploy_state in ["present"] and item != "root" and item.state|d("present") == "present"
+  with_flattened: '{{ firejail__combined_fix_for_users }}'
+
+# ]]]
+
+# Ensure specified packages are absent [[[
+- name: Ensure specified packages are absent
+  package:
+    name: '{{ item }}'
+    state: 'absent'
+  when: firejail__deploy_state in ["absent"]
+  with_flattened:
+    - '{{ firejail__base_packages }}'
+    - '{{ firejail__packages }}'
+    - '{{ firejail__group_packages }}'
+    - '{{ firejail__host_packages }}'
+  tags: [ 'role::firejail:pkgs' ]
+# ]]]
