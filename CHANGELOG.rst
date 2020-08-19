@@ -21,6 +21,14 @@ You can read information about required changes between releases in the
 Changed
 ~~~~~~~
 
+General
+'''''''
+
+- The ``debops-contrib.*`` roles included in the DebOps monorepo have been
+  renamed to drop the prefix. This is enforced by the new release of the
+  :command:`ansible-lint` linter. These roles are not yet cleaned up and
+  integrated with the main playbook.
+
 LDAP
 ''''
 
