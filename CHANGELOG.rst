@@ -97,6 +97,11 @@ General
   :ref:`debops.global_handlers` role to allow for easier cross-role handler
   notification. The role has been imported in roles that rely on the handlers.
 
+- The ``debops-contrib.*`` roles included in the DebOps monorepo have been
+  renamed to drop the prefix. This is enforced by the new release of the
+  :command:`ansible-lint` linter. These roles are not yet cleaned up and
+  integrated with the main playbook.
+
 LDAP
 ''''
 
