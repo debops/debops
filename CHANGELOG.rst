@@ -162,6 +162,14 @@ Updates of upstream application versions
 - In the :ref:`debops.roundcube` role, the Roundcube version installed by
   default has been updated to ``v1.4.7``.
 
+General
+'''''''
+
+- The ``debops-contrib.*`` roles included in the DebOps monorepo have been
+  renamed to drop the prefix. This is enforced by the new release of the
+  :command:`ansible-lint` linter. These roles are not yet cleaned up and
+  integrated with the main playbook.
+
 :ref:`debops.postfix` role
 ''''''''''''''''''''''''''
 
