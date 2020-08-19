@@ -3,10 +3,10 @@
 # Copyright (C) 2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- name: Setup and manage volkszaehler with Apache as webserver
+- name: Setup and manage volkszaehler with Nginx as webserver
   collections: [ 'debops.debops', 'debops.roles01',
                  'debops.roles02', 'debops.roles03' ]
-  hosts: [ 'debops_service_volkszaehler_apache' ]
+  hosts: [ 'debops_service_volkszaehler_nginx' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -25,22 +25,18 @@
         tasks_from: 'main_env'
       tags: [ 'role::php', 'role::php:env', 'role::logrotate' ]
 
-    - import_role:
-        name: 'apache'
-        tasks_from: 'main_env'
-      tags: [ 'role::apache', 'role::apache:env' ]
-
   roles:
 
     - role: apt_preferences
       tags: [ 'role::apt_preferences' ]
       apt_preferences__dependent_list:
+        - '{{ nginx__apt_preferences__dependent_list }}'
         - '{{ php__apt_preferences__dependent_list }}'
 
     - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
-        - '{{ apache__ferm__dependent_rules }}'
+        - '{{ nginx__ferm__dependent_rules }}'
 
     - role: mariadb
       tags: [ 'role::mariadb' ]
@@ -63,10 +59,12 @@
     - role: geerlingguy.composer
       tags: [ 'role::composer' ]
 
-    - role: apache
-      tags: [ 'role::apache' ]
-      apache__dependent_vhosts:
-        - '{{ volkszaehler__apache__dependent_vhosts }}'
+    - role: nginx
+      tags: [ 'role::nginx' ]
+      nginx__dependent_upstreams:
+        - '{{ volkszaehler__nginx__dependent_upstreams }}'
+      nginx__dependent_servers:
+        - '{{ volkszaehler__nginx__dependent_servers }}'
 
-    - role: debops-contrib.volkszaehler
+    - role: volkszaehler
       tags: [ 'role::volkszaehler' ]
