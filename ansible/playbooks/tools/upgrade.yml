@@ -1,0 +1,27 @@
+---
+
+# upgrade - upgrade packages which are safe to be updated.
+# This means no packages will be removed.
+# The machine is rebooted if necessary. Skip the reboot
+# tag to avoid that.
+# Copyright (C) 2020 Ellen Papsch <ellenpapsch@gmail.com>
+
+- hosts: debops_all_hosts
+  become: true
+  tasks:
+    - name: Upgrade safe packages with refreshed cache
+      apt:
+        update_cache: yes
+        upgrade: safe
+    - name: Check if reboot is required
+      stat:
+        path: '/var/run/reboot-required'
+        get_checksum: no
+      register: reboot_required
+    - name: Reboot the server
+      # molly-guard interfers with reboot module. A reboot
+      # command must be used instead.
+      command: systemctl reboot
+      when: reboot_required.stat.exists
+      tags:
+        - reboot
