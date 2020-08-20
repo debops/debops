@@ -408,7 +408,7 @@ dnsmasq__default_configuration:
                    if (
                        (ansible_local.lxc.net_domain|d()) or
                        (ansible_local.resolvconf.upstream_nameservers
-                          | d(ansible_local.resolvconf.nameservers) | ipaddr("private"))
+                          | d(ansible_dns.nameservers) | ipaddr("private"))
                       )
                    else "present" }}'
 

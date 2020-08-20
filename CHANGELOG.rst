@@ -139,6 +139,14 @@ LDAP
   since Postfix 3.0. This allows specifying parameter values that contain
   whitespace.
 
+:ref:`debops.resolvconf` role
+'''''''''''''''''''''''''''''
+
+- The 'domain', 'nameservers' and 'search' variables have been removed from the
+  resolvconf Ansible local facts script. You are encouraged to use the
+  `ansible_domain`, `ansible_dns.nameservers` and `ansible_dns.search` variables
+  instead.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
