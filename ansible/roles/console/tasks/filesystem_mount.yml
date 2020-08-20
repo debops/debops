@@ -42,6 +42,7 @@
 - name: Ensure mount directories exist when manually mounted
   file:
     path: '{{ item.name }}'
+    mode: '{{ item.mode | d("0755") }}'
     state: 'directory'
   when: (item.state is string and item.state == 'present')
   with_flattened:

@@ -37,6 +37,7 @@
     path: '/etc/localtime'
     src: '/usr/share/zoneinfo/{{ ntp__timezone }}'
     state: 'link'
+    mode: '0644'
   when: (ntp__register_etc_timezone is changed and
          ntp__register_etc_localtime.stat.islnk|bool)
 

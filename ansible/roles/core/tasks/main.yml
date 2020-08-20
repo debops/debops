@@ -27,6 +27,7 @@
                   hostvars[inventory_hostname]["ansible_local"]["root"]|d() and
                   hostvars[inventory_hostname]["ansible_local"]["root"][item.fact]|d())
               else item.path }}'
+    mode: '{{ item.mode | d("0755") }}'
     state: 'directory'
   with_items: '{{ core__root_directories }}'
 
