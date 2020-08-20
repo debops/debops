@@ -10,15 +10,18 @@
 - hosts: debops_all_hosts
   become: true
   tasks:
+
     - name: Upgrade safe packages with refreshed cache
       apt:
         update_cache: yes
         upgrade: safe
+
     - name: Check if reboot is required
       stat:
         path: '/var/run/reboot-required'
         get_checksum: no
       register: reboot_required
+
     - name: Reboot a machine with shutdown command in unusual place
       reboot:
         search_paths:
