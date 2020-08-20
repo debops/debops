@@ -76,6 +76,7 @@ infrastructure environments.
    introduction/quick-start
    introduction/install
    introduction/getting-started
+   introduction/configuration
    introduction/faq
 
 .. toctree::
@@ -84,11 +85,11 @@ infrastructure environments.
    :hidden:
 
    user-guide/debops-for-ansible
-   user-guide/configuration
    user-guide/project-directories
    user-guide/scripts
    user-guide/custom-environment
    user-guide/playbooks
+   user-guide/universal-configuration
    ansible/role-index
    ansible/roles/index
 
