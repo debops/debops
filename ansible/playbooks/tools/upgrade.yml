@@ -19,10 +19,10 @@
         path: '/var/run/reboot-required'
         get_checksum: no
       register: reboot_required
-    - name: Reboot the server
-      # molly-guard interfers with reboot module. A reboot
-      # command must be used instead.
-      command: systemctl reboot
+    - name: Reboot a machine with shutdown command in unusual place
+      reboot:
+        search_paths:
+          - '/lib/molly-guard'
       when: reboot_required.stat.exists
       tags:
         - reboot
