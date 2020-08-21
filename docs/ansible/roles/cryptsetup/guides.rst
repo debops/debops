@@ -87,7 +87,7 @@ You can check that the `plaintext mount point of the filesystem` is mounted usin
 
 .. code-block:: shell
 
-   df -h | egrep '(^Filesystem|example1)'
+   df -h /media/example1
 
 which should show something like:
 
