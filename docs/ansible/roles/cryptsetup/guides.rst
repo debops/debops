@@ -23,8 +23,8 @@ So lets create a loop device:
 
 .. code-block:: shell
 
-   truncate --size=42M /tmp/example1_loop_file.raw
-   losetup --show --find /tmp/example1_loop_file.raw
+   truncate --size=42M /var/tmp/example1_loop_file.raw
+   losetup --show --find /var/tmp/example1_loop_file.raw
 
 The printed loop device will be our `ciphertext block device`
 (:ref:`cryptsetup__ref_overview_terminology`).
@@ -92,7 +92,7 @@ which should show something like:
    Filesystem            Size  Used Avail Use% Mounted on
    /dev/mapper/example1   35M  491K   32M   2% /media/example1
 
-You can now use :file:`/media/example1` to store files which are transparently encrypted and saved on :file:`/dev/loop0` (respectively :file:`/tmp/example1_loop_file.raw`).
+You can now use :file:`/media/example1` to store files which are transparently encrypted and saved on :file:`/dev/loop0` (respectively :file:`/var/tmp/example1_loop_file.raw`).
 
 .. _cryptsetup__ref_guide_teardown_device:
 
