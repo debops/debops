@@ -82,7 +82,8 @@ Updates of upstream application versions
   default has been updated to ``v1.4.7``.
 
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
-  ``v2.8.9``. The newly added plugin support can be configured from DebOps.
+  ``v2.9.1``.
+  The plugin support added in ``v2.8.0`` can be configured from DebOps.
 
 General
 '''''''
