@@ -95,6 +95,15 @@ General
   alternative NTP service implementation and ``systemd-timesyncd`` is not
   available.
 
+:ref:`debops.system_users` role
+'''''''''''''''''''''''''''''''
+
+- Fixed an issue where the role execution broke if the
+  :envvar:`system_users__self_name` variable was set to an UNIX account which
+  does not exist on the Ansible Controller, for example ``ansible``. The role
+  will now correctly create such UNIX accounts on the remote hosts with default
+  GECOS and shell values.
+
 
 `debops v2.0.5`_ - 2020-08-03
 -----------------------------

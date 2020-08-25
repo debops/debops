@@ -15,11 +15,13 @@
   changed_when: False
   check_mode: False
   run_once: True
+  when: system_users__self_name == lookup('env', 'USER')
 
 - name: Remember local Ansible user details
   set_fact:
     system_users__fact_self_comment: '{{ (system_users__register_passwd.stdout|from_json)[system_users__self_name][3] }}'
     system_users__fact_self_shell: '{{ (system_users__register_passwd.stdout|from_json)[system_users__self_name][5] }}'
+  when: system_users__self_name == lookup('env', 'USER')
 
 - name: Ensure that required packages are installed
   package:
