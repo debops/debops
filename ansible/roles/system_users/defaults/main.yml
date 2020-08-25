@@ -175,7 +175,9 @@ system_users__self: '{{ False
 # .. envvar:: system_users__self_name [[[
 #
 # The username of the "current Ansible user", used as a basis to create the
-# private UNIX group, UNIX account, home directory.
+# private UNIX group, UNIX account, home directory. The account name can
+# contain the "prefix" specified in the :envvar:`system_users__prefix`
+# variable; it will be automatically stripped when necessary.
 system_users__self_name: '{{ lookup("env", "USER") }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -218,8 +220,8 @@ system_users__dependent_groups: []
 # List of default UNIX system user accounts managed by Ansible.
 system_users__default_accounts:
 
-  - name: '{{ system_users__self_name }}'
-    group: '{{ system_users__self_name }}'
+  - name: '{{ system_users__self_name | regex_replace("^" + system_users__prefix, "") }}'
+    group: '{{ system_users__self_name | regex_replace("^" + system_users__prefix, "") }}'
     comment: '{{ system_users__fact_self_comment | d("") | regex_replace(",,,$","") }}'
     # home path is generated automatically
     shell: '{{ (system_users__fact_self_shell | d("/bin/bash"))
