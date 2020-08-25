@@ -18,6 +18,16 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.1: https://github.com/debops/debops/compare/v1.1.0...stable-1.1
 
+Added
+~~~~~
+
+:ref:`debops.system_users` role
+'''''''''''''''''''''''''''''''
+
+- The UNIX account name in the :envvar:`system_users__self_name` variable can
+  be specified with the ``_`` prefix used in LDAP environments. The prefix will
+  be automatically trimmed from the username when necessary.
+
 Changed
 ~~~~~~~
 
