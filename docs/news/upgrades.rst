@@ -15,6 +15,14 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+Changes to debops.resolvconf facts
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The 'domain', 'nameservers' and 'search' variables have been removed from the
+  resolvconf Ansible local facts script. You are encouraged to use the
+  `ansible_domain`, `ansible_dns.nameservers` and `ansible_dns.search` variables
+  instead.
+
 Splitting up debops.dhcpd
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 

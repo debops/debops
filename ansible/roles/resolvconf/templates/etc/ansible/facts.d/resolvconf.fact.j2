@@ -23,18 +23,11 @@ def read_resolv_file(resolv_file):
     try:
         with open(resolv_file, 'r') as f:
             nameservers = []
-            domain = ''
-            search = []
             for line in f:
                 if line.startswith('nameserver'):
                     nameservers.append(line.strip().split()[1])
-                elif line.startswith('domain'):
-                    domain = line.strip().split()[1]
-                elif line.startswith('search'):
-                    for element in line.strip().split()[1:]:
-                        search.append(element.rstrip('.'))
 
-            return nameservers, domain, search
+            return nameservers
 
     except Exception:
         pass
@@ -50,14 +43,7 @@ if not output['installed']:
     output['deploy_state'] = 'absent'
 
 # Get the primary resolver configuration
-nameservers, domain, search = read_resolv_file('/etc/resolv.conf')
-
-if nameservers:
-    output['nameservers'] = nameservers
-if domain:
-    output['domain'] = domain
-if search:
-    output['search'] = search
+nameservers = read_resolv_file('/etc/resolv.conf')
 
 # Get the upstream resolver configuration
 upstream_nameservers = []
@@ -74,7 +60,7 @@ if os.path.isfile(systemdresolved_path):
 
 for element in resolvconf_files:
     try:
-        nameservers, domain, search = read_resolv_file(element)
+        nameservers = read_resolv_file(element)
 
         for server in nameservers:
             if not server.startswith('127.'):
@@ -87,8 +73,8 @@ for element in resolvconf_files:
 # upstream nameservers, then output the upstream nameservers.
 # - 127.0.0.1 is the stub address used by resolvconf
 # - 127.0.0.53 is the stub address used by systemd-resolved
-if (('127.0.0.1' in output['nameservers'] or
-        '127.0.0.53' in output['nameservers']) and
+if (('127.0.0.1' in nameservers or
+        '127.0.0.53' in nameservers) and
         upstream_nameservers):
     output['upstream_nameservers'] = upstream_nameservers
 
