@@ -151,6 +151,11 @@ completely separate Ansible accounts with administrative access. If you
 configure the ``ansible_user`` variable before bootstrapping the host, the
 specified username will be used to create an administrator account.
 
+If you define this variable in the inventory, you might also want to define the
+:envvar:`system_users__self_name` variable to the same value. This variable is
+used by the :ref:`debops.system_users` role to create and manage a local
+administrator account, by default based on your own local UNIX account.
+
 netbase__domain
 ~~~~~~~~~~~~~~~
 
@@ -297,6 +302,15 @@ Or, for short:
 .. code-block:: console
 
    alice@laptop:~/myproject$ debops bootstrap -l server -u root -k
+
+If you defined the ``ansible_user`` variable in the Ansible intentory for
+a given host to use a different UNIX account than your regular local account,
+you need to use a modified version of the above command to override that
+variable from the command line using Ansible "extra vars":
+
+.. code-block:: console
+
+   alice@laptop:~/myproject$ debops bootstrap -l server -e 'ansible_user=root' -k
 
 This command will execute the `DebOps bootstrap playbook`_ and use it to
 install a base set of packages needed by Ansible like ``python`` and
