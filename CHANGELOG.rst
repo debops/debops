@@ -42,6 +42,12 @@ New DebOps roles
 
   .. __: https://www.elastic.co/beats/filebeat
 
+General
+'''''''
+
+- The :file:`tools/reboot.yml` can be used to reboot DebOps hosts even if they
+  are secured by the ``molly-guard`` package.
+
 :ref:`debops.postgresql` role
 '''''''''''''''''''''''''''''
 
