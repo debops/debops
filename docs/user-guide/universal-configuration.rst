@@ -207,7 +207,7 @@ Reordering items
 ~~~~~~~~~~~~~~~~
 
 Our flowerpot maximizer is almost ready!
-However, due to role constraints I just made up, list item order is important.
+However, due to made up role constraints, list item order is important.
 
 Fortunately, Universal Configuration items implement a ``weight`` mechanic:
 
@@ -228,7 +228,7 @@ Fortunately, Universal Configuration items implement a ``weight`` mechanic:
 
 
 And here we go. Now the role knows to prioritize ``flowerpot`` production,
-without ``production facilities`` hogging all the clay!
+without ``production capacity`` hogging all the clay!
 
 
 .. _universal_configuration_patterns:
@@ -270,6 +270,14 @@ The *dependent* pattern
 *Dependent* configuration lists are used when roles are loaded as dependencies
 of other roles. They look like ``role__dependent_list`` and are included
 towards the end of ``role__combined_list`` variables.
+
+.. code-block:: yaml
+
+   role__combined_list: '{{
+       role__default_list
+       + role__list
+       + role__dependent_list
+   }}'
 
 Dependent configurations are empty when the role runs on its own, and are
 populated in playbooks from other roles' dependent variables.
@@ -388,8 +396,14 @@ merging.
 
 .. note::
 
+   The behavior applies only to the first level of items passed through the
+   list. Lists as values nested in item values will not be parsed.
+
+
+.. note::
+
    When merging items with the same ``name`` whose ``value`` fields contain
-   lists, the underlying `parse_kv_items` filter **will not merge** them,
+   lists, the underlying ``parse_kv_items`` filter **will not merge** them,
    but override them instead. Only the last appearing ``value`` will be used.
 
    Those cases are clearly stated in the implementing role's documentation.
@@ -404,8 +418,12 @@ features of DebOps Universal Configuration.
 If you want to read more about implementing the syntax in your roles,
 check out the role development guide.
 
-- TODO: Link to a nice yaml cheatsheet (suggestions welcome)
-- TODO: Developer documentation for implementing Universal Configuration.
+- :ref:`ansible_plugins_config_filters` documentation
+- `YAML syntax`__ on the Ansible documentation
+- `YAML Version 1.2`__ Specification
+
+.. __: https://docs.ansible.com/ansible/latest/reference_appendices/YAMLSyntax.html
+.. __: https://yaml.org/spec/1.2/spec.html
 
 ..
  Local Variables:

@@ -35,11 +35,32 @@ Jinja templates:
   This filter plugin can be used to filter strings or lists that match shell
   glob patterns.
 
+``split``
+  This filter plugin can be used to split strings, similarly to the
+  ``.split()`` function in Python.
+
+
+.. _ansible_plugins_config_filters:
+
+Configuration filters
+~~~~~~~~~~~~~~~~~~~~~
+
+These filters are used to implement DebOps :ref:`universal_configuration`.
+See the user-facing documentation for the behaviors they are meant to
+facilitate.
+
 ``parse_kv_config``
   Parse a YAML list of dictionaries and output a sorted and expanded list of
   YAML dictionaries that contain a common set of dictionary keys. The filter
   supports dynamic order of the entries using weight model, and can be used to
   generate a configuration file which uses a key/value syntax with unique keys.
+
+  The ``parse_kv_config`` filter accepts this argument:
+
+  ``name``
+    Optional, String. Defaults to ``name``.
+    Sets the name of the field to be used as the unique key.
+
 
 ``parse_kv_items``
   This is a wrapper for the ``parse_kv_config`` filter which can be used in the
@@ -47,9 +68,89 @@ Jinja templates:
   generate a configuration file with multiple key/value configuration
   structures.
 
-``split``
-  This filter plugin can be used to split strings, similarly to the
-  ``.split()`` function in Python.
+  The ``parse_kv_items`` filter accepts the following arguments:
+
+  ``name``
+    Optional, String. Defaults to ``name``.
+    Sets the name of the field to be used as the unique key.
+
+  ``defaults``
+    Optional, Dict. Keys are parameter names, values are default values to
+    use when a parameter is not specified. Examples:
+
+    .. code-block:: jinja
+
+      {{ variable | parse_kv_items(defaults={'some_param': 'default_value'}) }}
+
+  ``empty``
+    Optional, Dict. Keys are fields which might be empty, values
+    are other field names or lists of field names.
+
+    The value of the first field with a value other than ``None`` will be used
+    as the value of the specified field, if the specified field is empty.
+
+    This behavior does not extend to fields in second-level lists, such as
+    ``options`` or other defined ``merge_keys``.
+
+    For example, running the filter with the following dict as ``empty``:
+
+    .. code-block:: jinja
+
+      {{ variable | parse_kv_items(
+        empty={
+          'some_param':  'other_param',
+          'empty_param': ['param1', 'param2']
+        })
+      }}
+
+    Will turn these input items:
+
+    .. code-block:: yaml
+
+      - name: foo
+        other_param: bar
+
+      - name: fizz
+        param2: buzz
+
+    Into ones looking like this (plus the extra fields described later on):
+
+    .. code-block:: yaml
+
+      - name: foo
+        some_param: bar
+        other_param: bar
+
+      - name: fizz
+        empty_param: buzz
+        param2: buzz
+
+  ``merge_keys``
+    Optional. List of keys in the item that will be processed by the filter.
+    If not specified, lists in the ``options`` field will be processed by default.
+
+
+Output mappings
+'''''''''''''''
+These values get populated in the ``parse_kv_*`` output mappings:
+
+- ``id``: The initial source order of the items in the input list ``* 10``.
+- ``state`` defaults to ``present``
+- ``weight``: The weight as defined in the source mapping. Defaults to ``0``.
+- ``real_weight``: Calculated from adding ``weight`` and ``id``.
+- ``section``: defaults to ``unknown``. Can be used by roles to split sections.
+- ``separator``: defaults to ``False``.
+  Can be used by roles to affect formatting.
+
+Any other values in the mappings are preserved, so the ``parse_kv_*`` filters
+can be used to weigh and merge arbitrary of mappings, as long as they have a
+unique key field.
+
+The filter plugins `source`__ contains tests you may find useful in better
+understanding the ``parse_kv_*`` filters' behavior.
+
+.. __: https://github.com/debops/debops/blob/master/ansible/roles/ansible_plugins/filter_plugins/debops_filter_plugins.py
+
 
 Custom Ansible lookup plugins
 -----------------------------
