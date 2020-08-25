@@ -221,10 +221,11 @@ system_users__default_accounts:
 
   - name: '{{ system_users__self_name }}'
     group: '{{ system_users__self_name }}'
-    comment: '{{ system_users__fact_self_comment | regex_replace(",,,$","") }}'
+    comment: '{{ system_users__fact_self_comment | d("") | regex_replace(",,,$","") }}'
     # home path is generated automatically
-    shell: '{{ system_users__fact_self_shell
-               if (system_users__fact_self_shell in system_users__shell_package_map.keys())
+    shell: '{{ (system_users__fact_self_shell | d("/bin/bash"))
+               if ((system_users__fact_self_shell | d("/bin/bash"))
+                   in system_users__shell_package_map.keys())
                else omit }}'
     admin: True
     sshkeys: '{{ lookup("pipe","ssh-add -L | grep ^ssh || cat ~/.ssh/*.pub || true") }}'
