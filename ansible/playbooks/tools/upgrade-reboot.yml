@@ -1,0 +1,40 @@
+---
+# Copyright (C) 2020 Ellen Papsch <ellenpapsch@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+#
+# Upgrade packages which are safe to be updated. This means no
+# packages will be removed. The machine is rebooted if
+# necessary. Skip the reboot tag to avoid that.
+
+- name: Upgrade a machine and reboot if necessary
+  hosts: [ 'debops_all_hosts' ]
+  become: True
+  gather_facts: False
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  tasks:
+
+    - name: Upgrade safe packages with refreshed cache
+      apt:
+        update_cache: yes
+        upgrade: 'safe'
+
+    - name: Check if reboot is required
+      stat:
+        path: '/var/run/reboot-required'
+        get_checksum: no
+      register: reboot_required
+
+    - name: Reboot a machine when required
+      reboot:
+        search_paths:
+          - '/lib/molly-guard'
+          - '/sbin'
+          - '/usr/sbin'
+          - '/usr/local/sbin'
+      when: reboot_required.stat.exists
+      tags:
+        - reboot
