@@ -272,6 +272,15 @@ LDAP
   automatically due to the :file:`mailservice.schema` being loaded into the
   database.
 
+:ref:`debops.system_users` role
+'''''''''''''''''''''''''''''''
+
+- Fixed an issue where the role execution broke if the
+  :envvar:`system_users__self_name` variable was set to an UNIX account which
+  does not exist on the Ansible Controller, for example ``ansible``. The role
+  will now correctly create such UNIX accounts on the remote hosts with default
+  GECOS and shell values.
+
 :ref:`debops.tinc` role
 '''''''''''''''''''''''
 
