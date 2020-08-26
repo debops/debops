@@ -41,6 +41,10 @@ Updates of upstream application versions
 - In the :ref:`debops.roundcube` role, the Roundcube version installed by
   default has been updated to ``v1.4.8``.
 
+- In the :ref:`debops.phpipam` role, the phpIPAM version installed by default
+  has been updated to ``v1.4.1``. The change was backported because otherwise
+  the role is broken.
+
 LDAP
 ''''
 
