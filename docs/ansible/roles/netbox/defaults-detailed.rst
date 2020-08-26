@@ -37,3 +37,25 @@ specific parameters:
 
 The Python modules will be installed or updated as needed when the NetBox
 checked out code is updated.
+
+.. _netbox__config_plugins_config:
+
+netbox__config_plugins_config
+-----------------------------
+
+YAML dictionary where the key is the plugin name. The value can be any nested
+data structure. What is supported as value is defined by the individual plugin.
+
+Example:
+
+.. code-block:: yaml
+
+   netbox__config_plugins_config:
+     netbox_topology_views:
+       preselected_device_roles:
+         - 'Access point'
+         - 'Firewall'
+         - 'Peripheral'
+         - 'Power'
+         - 'Server'
+         - 'Switch'
