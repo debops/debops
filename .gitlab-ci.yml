@@ -2,8 +2,8 @@
 
 # Test DebOps roles and playbooks using Gitlab CI, Vagrant and Jane
 #
-# Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2017 DebOps <https://debops.org/>
+# Copyright (C) 2017-2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2017-2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -89,6 +89,9 @@ stages:
 
 'ansible role':
   <<: *test_role_1st_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
   variables:
     JANE_TEST_FACT: 'ansible.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ansible.yml'
@@ -101,6 +104,8 @@ stages:
 
 'apache role':
   <<: *test_role_1st_deps
+  needs:
+    - 'ferm role'
   variables:
     JANE_TEST_FACT: 'apache.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apache.yml'
@@ -112,7 +117,7 @@ stages:
 # --- apt --- [[[2
 
 'apt role':
-  <<: *test_role_1st_deps
+  <<: *test_role_no_deps
   variables:
     JANE_TEST_FACT: 'apt.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml'
@@ -121,6 +126,13 @@ stages:
 
 'apt_cacher_ng role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'etc_services role'
+    - 'apt_preferences role'
+    - 'ferm role'
+    - 'python role'
+    - 'nginx role'
   variables:
     JANE_TEST_FACT: 'apt_cacher_ng.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt_cacher_ng.yml'
@@ -130,6 +142,8 @@ stages:
 
 'apt_install role':
   <<: *test_role_1st_deps
+  needs:
+    - 'apt_preferences role'
   variables:
     JANE_TEST_FACT: 'apt_install.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt_install.yml'
@@ -203,6 +217,10 @@ stages:
 
 'avahi role':
   <<: *test_role_1st_deps
+  needs:
+    - 'python role'
+    - 'ferm role'
+    - 'nsswitch role'
   variables:
     JANE_TEST_FACT: 'avahi.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/avahi.yml'
@@ -236,7 +254,57 @@ stages:
 # --- c --- [[[2
 
 'common playbook':
-  <<: *test_role_2nd_deps
+  <<: *test_role_4th_deps
+  needs:
+    - 'debops_fact role'
+    - 'environment role'
+    - 'resolvconf role'
+    - 'netbase role'
+    - 'secret role'
+    - 'fhs role'
+    - 'python role'
+    - 'apt_preferences role'
+    - 'apt_proxy role'
+    - 'apt role'
+    - 'tzdata role'
+    - 'etckeeper role'
+    - 'cron role'
+    - 'atd role'
+    - 'dhparam role'
+    - 'pki role'
+    - 'machine role'
+    - 'ldap role'
+    - 'keyring role'
+    - 'yadm role'
+    - 'sudo role'
+    - 'nsswitch role'
+    - 'root_account role'
+    - 'libuser role'
+    - 'system_groups role'
+    - 'system_users role'
+    - 'pam_access role'
+    - 'apt_listchanges role'
+    - 'apt_install role'
+    - 'etc_services role'
+    - 'logrotate role'
+    - 'auth role'
+    - 'users role'
+    - 'mount role'
+    - 'resources role'
+    - 'ferm role'
+    - 'tcpwrappers role'
+    - 'locales role'
+    - 'ntp role'
+    - 'proc_hidepid role'
+    - 'console role'
+    - 'sysctl role'
+    - 'nullmailer role'
+    - 'journald role'
+    - 'rsyslog role'
+    - 'unattended_upgrades role'
+    - 'authorized_keys role'
+    - 'sshd role'
+    - 'apt_mark role'
   variables:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/common.yml'
     JANE_DIFF_PATTERN: '.*/playbooks\/common\.yml/.*'
@@ -252,6 +320,11 @@ stages:
 
 'controller role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'python role'
+    - 'ansible role'
   variables:
     JANE_TEST_FACT: 'controller.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/controller.yml'
@@ -269,6 +342,10 @@ stages:
 
 'cran role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'java role'
   variables:
     JANE_TEST_FACT: 'cran.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/cran.yml'
@@ -296,6 +373,8 @@ stages:
 
 'cryptsetup/persistent_paths role':
   <<: *test_role_1st_deps
+  needs:
+    - 'persistent_paths role'
   variables:
     JANE_TEST_FACT: 'cryptsetup.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/cryptsetup-persistent_paths.yml'
@@ -367,7 +446,15 @@ stages:
     JANE_LOG_PATTERN: '\[dhparam\]'
 
 'dnsmasq role':
-  <<: *test_role_2nd_deps
+  <<: *test_role_3rd_deps
+  needs:
+    - 'resolvconf role'
+    - 'python role'
+    - 'kmod role'
+    - 'ferm role'
+    - 'sysctl role'
+    - 'tcpwrappers role'
+    - 'ifupdown role'
   variables:
     BASE_VAGRANT_BOX: 'debian/stretch64'
     JANE_TEST_FACT: 'dnsmasq.fact'
@@ -379,7 +466,17 @@ stages:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'dnsmasq/persistent_paths role':
-  <<: *test_role_2nd_deps
+  <<: *test_role_4th_deps
+  needs:
+    - 'resolvconf role'
+    - 'python role'
+    - 'kmod role'
+    - 'ferm role'
+    - 'sysctl role'
+    - 'tcpwrappers role'
+    - 'ifupdown role'
+    - 'dnsmasq role'
+    - 'persistent_paths role'
   variables:
     BASE_VAGRANT_BOX: 'debian/stretch64'
     JANE_TEST_FACT: 'dnsmasq.fact'
@@ -401,6 +498,16 @@ stages:
 
 'docker_registry role':
   <<: *test_role_3rd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'etc_services role'
+    - 'python role'
+    - 'ldap role'
+    - 'sudo role'
+    - 'ferm role'
+    - 'nginx role'
+    - 'golang role'
   variables:
     JANE_TEST_FACT: 'docker_registry.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/docker_registry.yml'
@@ -410,6 +517,12 @@ stages:
 
 'docker_server role':
   <<: *test_role_1st_deps
+  needs:
+    - 'resolvconf role'
+    - 'keyring role'
+    - 'etc_services role'
+    - 'ferm role'
+    - 'python role'
   variables:
     JANE_TEST_FACT: 'docker_server.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/docker_server.yml'
@@ -420,6 +533,15 @@ stages:
 
 'dokuwiki role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'logrotate role'
+    - 'php role'
+    - 'ferm role'
+    - 'python role'
+    - 'ldap role'
+    - 'nginx role'
   variables:
     JANE_TEST_FACT: 'dokuwiki.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/dokuwiki.yml'
@@ -429,6 +551,12 @@ stages:
 
 'dovecot role':
   <<: *test_role_3rd_deps
+  needs:
+    - 'secret role'
+    - 'ferm role'
+    - 'postfix role'
+    - 'python role'
+    - 'ldap role'
   variables:
     JANE_TEST_FACT: 'dovecot.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/pki.yml ${DEBOPS_PLAYBOOKS}/service/dovecot.yml'
@@ -442,6 +570,9 @@ stages:
 
 'elastic_co role':
   <<: *test_role_1st_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
   variables:
     JANE_TEST_FACT: 'elastic_co.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/elastic_co.yml'
@@ -451,6 +582,15 @@ stages:
 
 'elasticsearch role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'secret role'
+    - 'apt_preferences role'
+    - 'etc_services role'
+    - 'sysctl role'
+    - 'ferm role'
+    - 'java role'
+    - 'elastic_co role'
   variables:
     JANE_TEST_FACT: 'elasticsearch.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/elasticsearch.yml'
@@ -468,6 +608,8 @@ stages:
 
 'etc_aliases role':
   <<: *test_role_1st_deps
+  needs:
+    - 'secret role'
   variables:
     JANE_TEST_FACT: 'etc_aliases.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/etc_aliases.yml'
@@ -494,6 +636,15 @@ stages:
 
 'etherpad role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'etc_services role'
+    - 'logrotate role'
+    - 'apt_preferences role'
+    - 'nodejs role'
+    - 'ferm role'
+    - 'python role'
+    - 'nginx role'
   variables:
     JANE_TEST_FACT: 'etherpad.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/etherpad.yml'
@@ -502,7 +653,20 @@ stages:
     JANE_LOG_PATTERN: '\[etherpad\]'
 
 'etherpad/mariadb role':
-  <<: *test_role_2nd_deps
+  <<: *test_role_3rd_deps
+  needs:
+    - 'keyring role'
+    - 'etc_services role'
+    - 'logrotate role'
+    - 'apt_preferences role'
+    - 'nodejs role'
+    - 'ferm role'
+    - 'tcpwrappers role'
+    - 'python role'
+    - 'mariadb_server role'
+    - 'mariadb role'
+    - 'nginx role'
+    - 'etherpad role'
   variables:
     JANE_TEST_FACT: 'etherpad.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mariadb_server.yml ${DEBOPS_PLAYBOOKS}/service/etherpad.yml'
@@ -512,7 +676,20 @@ stages:
     JANE_IGNORE_IDEMPOTENCY: 'Issues with mysql_user Ansible module (https://github.com/ansible/ansible/issues/60567)'
 
 'etherpad/postgresql role':
-  <<: *test_role_2nd_deps
+  <<: *test_role_3rd_deps
+  needs:
+    - 'keyring role'
+    - 'etc_services role'
+    - 'logrotate role'
+    - 'apt_preferences role'
+    - 'nodejs role'
+    - 'ferm role'
+    - 'python role'
+    - 'locales role'
+    - 'postgresql_server role'
+    - 'postgresql role'
+    - 'nginx role'
+    - 'etherpad role'
   variables:
     JANE_TEST_FACT: 'etherpad.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/etherpad.yml'
@@ -523,6 +700,14 @@ stages:
 
 'etesync role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'logrotate role'
+    - 'ferm role'
+    - 'python role'
+    - 'gunicorn role'
+    - 'nginx role'
   variables:
     JANE_TEST_FACT: 'etesync.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/etesync.yml'
@@ -569,6 +754,10 @@ stages:
 
 'filebeat role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'elastic_co role'
   variables:
     JANE_TEST_FACT: 'filebeat.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/filebeat.yml'
@@ -578,6 +767,9 @@ stages:
 
 'freeradius role':
   <<: *test_role_1st_deps
+  needs:
+    - 'ferm role'
+    - 'logrotate role'
   variables:
     JANE_TEST_FACT: 'freeradius.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml ${DEBOPS_PLAYBOOKS}/service/freeradius.yml'
@@ -589,7 +781,21 @@ stages:
 # --- g --- [[[2
 
 'gitlab role':
-  <<: *test_role_3rd_deps
+  <<: *test_role_4th_deps
+  needs:
+    - 'keyring role'
+    - 'system_groups role'
+    - 'apt_preferences role'
+    - 'python role'
+    - 'golang role'
+    - 'nodejs role'
+    - 'etc_services role'
+    - 'logrotate role'
+    - 'ferm role'
+    - 'ruby role'
+    - 'postgresql role'
+    - 'ldap role'
+    - 'nginx role'
   variables:
     JANE_TEST_FACT: 'gitlab.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml ${DEBOPS_PLAYBOOKS}/service/redis_server.yml ${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/gitlab.yml'
@@ -602,6 +808,8 @@ stages:
 
 'gitlab_runner role':
   <<: *test_role_1st_deps
+  needs:
+    - 'keyring role'
   variables:
     JANE_TEST_FACT: 'gitlab_runner.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/gitlab_runner.yml'
@@ -611,6 +819,14 @@ stages:
 
 'gitlab_runner/docker_server role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'resolvconf role'
+    - 'keyring role'
+    - 'etc_services role'
+    - 'ferm role'
+    - 'python role'
+    - 'docker_server role'
+    - 'gitlab_runner role'
   variables:
     JANE_TEST_FACT: 'gitlab_runner.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/docker_server.yml ${DEBOPS_PLAYBOOKS}/service/gitlab_runner.yml'
@@ -621,6 +837,10 @@ stages:
 
 'gitlab_runner/libvirt role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'python role'
+    - 'libvirt role'
   variables:
     JANE_TEST_FACT: 'gitlab_runner.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/libvirtd.yml ${DEBOPS_PLAYBOOKS}/service/gitlab_runner.yml'
@@ -631,6 +851,15 @@ stages:
 
 'gitlab_runner/lxc role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'resolvconf role'
+    - 'root_account role'
+    - 'apt_preferences role'
+    - 'ferm role'
+    - 'python role'
+    - 'sysctl role'
+    - 'lxc role'
+    - 'keyring role'
   variables:
     JANE_TEST_FACT: 'gitlab_runner.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/lxc.yml ${DEBOPS_PLAYBOOKS}/service/gitlab_runner.yml'
@@ -640,7 +869,10 @@ stages:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'gitusers role':
-  <<: *test_role_1st_deps
+  <<: *test_role_4th_deps
+  needs:
+    - 'system_groups role'
+    - 'authorized_keys role'
   variables:
     JANE_TEST_FACT: 'gitusers.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/gitusers.yml'
@@ -650,6 +882,9 @@ stages:
 
 'golang role':
   <<: *test_role_1st_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
   variables:
     JANE_TEST_FACT: 'golang.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/golang.yml'
@@ -669,6 +904,10 @@ stages:
 
 'gunicorn role':
   <<: *test_role_1st_deps
+  needs:
+    - 'apt_preferences role'
+    - 'logrotate role'
+    - 'python role'
   variables:
     JANE_TEST_FACT: 'gunicorn.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/gunicorn.yml'
@@ -681,6 +920,8 @@ stages:
 
 'hashicorp role':
   <<: *test_role_1st_deps
+  needs:
+    - 'keyring role'
   variables:
     JANE_TEST_FACT: 'hashicorp.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/hashicorp.yml'
@@ -691,6 +932,8 @@ stages:
 
 'hwraid role':
   <<: *test_role_1st_deps
+  needs:
+    - 'keyring role'
   variables:
     JANE_TEST_FACT: 'hwraid.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/hwraid.yml'
@@ -703,6 +946,12 @@ stages:
 
 'icinga role':
   <<: *test_role_1st_deps
+  needs:
+    - 'keyring role'
+    - 'secret role'
+    - 'apt_preferences role'
+    - 'etc_services role'
+    - 'ferm role'
   variables:
     JANE_TEST_FACT: 'icinga.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml ${DEBOPS_PLAYBOOKS}/service/pki.yml ${DEBOPS_PLAYBOOKS}/service/icinga.yml'
@@ -712,6 +961,8 @@ stages:
 
 'icinga_db/mariadb role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'mariadb role'
   variables:
     JANE_TEST_FACT: 'icinga_db.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml ${DEBOPS_PLAYBOOKS}/service/pki.yml ${DEBOPS_PLAYBOOKS}/service/mariadb_server.yml ${DEBOPS_PLAYBOOKS}/service/icinga.yml ${DEBOPS_PLAYBOOKS}/service/icinga_db.yml'
@@ -721,6 +972,8 @@ stages:
 
 'icinga_db/postgresql role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'postgresql role'
   variables:
     JANE_TEST_FACT: 'icinga_db.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml ${DEBOPS_PLAYBOOKS}/service/pki.yml ${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/icinga.yml ${DEBOPS_PLAYBOOKS}/service/icinga_db.yml'
@@ -731,6 +984,22 @@ stages:
 
 'icinga_web role':
   <<: *test_role_3rd_deps
+  needs:
+    - 'apt role'
+    - 'secret role'
+    - 'cron role'
+    - 'pki role'
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'etc_services role'
+    - 'logrotate role'
+    - 'ferm role'
+    - 'python role'
+    - 'locales role'
+    - 'postgresql_server role'
+    - 'postgresql role'
+    - 'icinga role'
+    - 'icinga_db/postgresql role'
   variables:
     JANE_TEST_FACT: 'icinga_web.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml ${DEBOPS_PLAYBOOKS}/service/pki.yml ${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/icinga.yml ${DEBOPS_PLAYBOOKS}/service/icinga_db.yml ${DEBOPS_PLAYBOOKS}/service/icinga_web.yml'
@@ -740,7 +1009,13 @@ stages:
     JANE_LOG_PATTERN: '\[icinga_web\]'
 
 'ifupdown role':
-  <<: *test_role_1st_deps
+  <<: *test_role_2nd_deps
+  needs:
+    - 'resolvconf role'
+    - 'python role'
+    - 'kmod role'
+    - 'ferm role'
+    - 'sysctl role'
   variables:
     BASE_VAGRANT_BOX: 'debian/stretch64'
     JANE_TEST_FACT: 'ifupdown.fact'
@@ -752,6 +1027,8 @@ stages:
 
 'influxdata role':
   <<: *test_role_1st_deps
+  needs:
+    - 'keyring role'
   variables:
     JANE_TEST_FACT: 'influxdata.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/influxdata.yml'
@@ -760,7 +1037,13 @@ stages:
     JANE_LOG_PATTERN: '\[influxdata\]'
 
 'influxdb_server role':
-  <<: *test_role_1st_deps
+  <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'etc_services role'
+    - 'ferm role'
+    - 'python role'
+    - 'influxdata role'
   variables:
     JANE_TEST_FACT: 'influxdb_server.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/influxdb_server.yml'
@@ -770,6 +1053,8 @@ stages:
 
 'influxdb role':
   <<: *test_role_1st_deps
+  needs:
+    - 'python role'
   variables:
     JANE_TEST_FACT: 'influxdb.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/influxdb.yml'
@@ -788,6 +1073,9 @@ stages:
 
 'iscsi role':
   <<: *test_role_1st_deps
+  needs:
+    - 'unattended_upgrades role'
+    - 'lvm role'
   variables:
     JANE_TEST_FACT: 'iscsi.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/iscsi.yml'
@@ -801,6 +1089,8 @@ stages:
 
 'java role':
   <<: *test_role_1st_deps
+  needs:
+    - 'apt_preferences role'
   variables:
     JANE_TEST_FACT: 'java.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/java.yml'
@@ -830,6 +1120,15 @@ stages:
 
 'kibana role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'secret role'
+    - 'apt_preferences role'
+    - 'etc_services role'
+    - 'ferm role'
+    - 'python role'
+    - 'nginx role'
+    - 'elastic_co role'
   variables:
     JANE_TEST_FACT: 'kibana.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/kibana.yml'
@@ -840,7 +1139,9 @@ stages:
   tags: [ 'mem-2GB' ]
 
 'kmod role':
-  <<: *test_role_no_deps
+  <<: *test_role_1st_deps
+  needs:
+    - 'python role'
   variables:
     JANE_TEST_FACT: 'kmod.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/kmod.yml'
@@ -853,6 +1154,8 @@ stages:
 
 'ldap role':
   <<: *test_role_1st_deps
+  needs:
+    - 'python role'
   variables:
     JANE_TEST_FACT: 'ldap.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ldap.yml'
@@ -863,6 +1166,18 @@ stages:
 
 'librenms role':
   <<: *test_role_3rd_deps
+  needs:
+    - 'apt role'
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'logrotate role'
+    - 'ferm role'
+    - 'tcpwrappers role'
+    - 'python role'
+    - 'mariadb_server role'
+    - 'php role'
+    - 'nginx role'
+    - 'mariadb role'
   variables:
     JANE_TEST_FACT: 'librenms.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml ${DEBOPS_PLAYBOOKS}/service/mariadb_server.yml ${DEBOPS_PLAYBOOKS}/service/librenms.yml'
@@ -883,6 +1198,8 @@ stages:
 
 'libvirt role':
   <<: *test_role_1st_deps
+  needs:
+    - 'python role'
   variables:
     JANE_TEST_FACT: 'libvirt.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/libvirt.yml'
@@ -892,7 +1209,13 @@ stages:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'libvirtd role':
-  <<: *test_role_1st_deps
+  <<: *test_role_2nd_deps
+  needs:
+    - 'apt_preferences role'
+    - 'nsswitch role'
+    - 'ferm role'
+    - 'python role'
+    - 'libvirtd_qemu role'
   variables:
     JANE_TEST_FACT: 'libvirtd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/libvirtd.yml'
@@ -903,6 +1226,8 @@ stages:
 
 'libvirtd_qemu role':
   <<: *test_role_1st_deps
+  needs:
+    - 'ferm role'
   variables:
     JANE_TEST_FACT: 'libvirtd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/libvirtd_qemu.yml'
@@ -939,6 +1264,13 @@ stages:
 
 'lxc role':
   <<: *test_role_1st_deps
+  needs:
+    - 'resolvconf role'
+    - 'root_account role'
+    - 'apt_preferences role'
+    - 'ferm role'
+    - 'python role'
+    - 'sysctl role'
   variables:
     JANE_TEST_FACT: 'lxc.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/lxc.yml'
@@ -949,6 +1281,17 @@ stages:
 
 'lxd role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'resolvconf role'
+    - 'root_account role'
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'golang role'
+    - 'logrotate role'
+    - 'ferm role'
+    - 'python role'
+    - 'sysctl role'
+    - 'lxc role'
   variables:
     JANE_TEST_FACT: 'lxd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/lxd.yml'
@@ -971,6 +1314,15 @@ stages:
 
 'mailman role':
   <<: *test_role_3rd_deps
+  needs:
+    - 'keyring role'
+    - 'secret role'
+    - 'apt_preferences role'
+    - 'ferm role'
+    - 'python role'
+    - 'ldap role'
+    - 'postfix role'
+    - 'nginx role'
   variables:
     JANE_TEST_FACT: 'mailman.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postfix.yml ${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/mailman.yml'
@@ -981,6 +1333,9 @@ stages:
 
 'mariadb role':
   <<: *test_role_1st_deps
+  needs:
+    - 'keyring role'
+    - 'python role'
   variables:
     JANE_TEST_FACT: 'mariadb.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mariadb.yml'
@@ -990,6 +1345,11 @@ stages:
 
 'mariadb_server role':
   <<: *test_role_1st_deps
+  needs:
+    - 'keyring role'
+    - 'ferm role'
+    - 'tcpwrappers role'
+    - 'python role'
   variables:
     JANE_TEST_FACT: 'mariadb.fact mariadb_server.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mariadb_server.yml'
@@ -999,6 +1359,12 @@ stages:
 
 'mariadb_server/client role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'ferm role'
+    - 'tcpwrappers role'
+    - 'python role'
+    - 'mariadb_server role'
   variables:
     JANE_TEST_FACT: 'mariadb.fact mariadb_server.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mariadb_server.yml ${DEBOPS_PLAYBOOKS}/service/mariadb.yml'
@@ -1010,6 +1376,10 @@ stages:
 
 'mcli role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'golang role'
   variables:
     JANE_TEST_FACT: 'mcli.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mcli.yml'
@@ -1028,6 +1398,17 @@ stages:
 
 'minio role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'secret role'
+    - 'apt_preferences role'
+    - 'etc_services role'
+    - 'golang role'
+    - 'ferm role'
+    - 'sysctl role'
+    - 'sysfs role'
+    - 'python role'
+    - 'nginx role'
   variables:
     JANE_TEST_FACT: 'minio.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/minio.yml'
@@ -1037,6 +1418,19 @@ stages:
 
 'minio/pki role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'secret role'
+    - 'cron role'
+    - 'pki role'
+    - 'apt_preferences role'
+    - 'etc_services role'
+    - 'golang role'
+    - 'ferm role'
+    - 'sysctl role'
+    - 'sysfs role'
+    - 'python role'
+    - 'nginx role'
   variables:
     JANE_TEST_FACT: 'minio.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/pki.yml ${DEBOPS_PLAYBOOKS}/service/minio.yml'
@@ -1055,6 +1449,12 @@ stages:
 
 'mosquitto role':
   <<: *test_role_1st_deps
+  needs:
+    - 'keyring role'
+    - 'etc_services role'
+    - 'tcpwrappers role'
+    - 'ferm role'
+    - 'python role'
   variables:
     JANE_TEST_FACT: 'mosquitto.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mosquitto-plain.yml'
@@ -1064,6 +1464,15 @@ stages:
 
 'mosquitto/nginx role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'etc_services role'
+    - 'tcpwrappers role'
+    - 'ferm role'
+    - 'python role'
+    - 'nginx role'
+    - 'mosquitto role'
   variables:
     JANE_TEST_FACT: 'mosquitto.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mosquitto-nginx.yml'
@@ -1085,6 +1494,8 @@ stages:
 
 'netbase role':
   <<: *test_role_1st_deps
+  needs:
+    - 'python role'
   variables:
     JANE_TEST_FACT: 'netbase.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/netbase.yml'
@@ -1094,6 +1505,22 @@ stages:
 
 'netbox role':
   <<: *test_role_3rd_deps
+  needs:
+    - 'secret role'
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'etc_services role'
+    - 'logrotate role'
+    - 'ferm role'
+    - 'sysctl role'
+    - 'sysfs role'
+    - 'python role'
+    - 'locales role'
+    - 'redis_server role'
+    - 'postgresql_server role'
+    - 'postgresql role'
+    - 'gunicorn role'
+    - 'nginx role'
   variables:
     JANE_TEST_FACT: 'netbox.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/redis_server.yml ${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/netbox.yml'
@@ -1104,6 +1531,9 @@ stages:
 
 'neurodebian role':
   <<: *test_role_1st_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
   variables:
     JANE_TEST_FACT: 'neurodebian.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/neurodebian.yml'
@@ -1122,6 +1552,10 @@ stages:
 
 'nfs_server role':
   <<: *test_role_1st_deps
+  needs:
+    - 'etc_services role'
+    - 'ferm role'
+    - 'tcpwrappers role'
   variables:
     JANE_TEST_FACT: 'nfs_server.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/nfs_server.yml'
@@ -1131,6 +1565,11 @@ stages:
 
 'nginx role':
   <<: *test_role_1st_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'ferm role'
+    - 'python role'
   variables:
     JANE_TEST_FACT: 'nginx.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/nginx.yml'
@@ -1140,6 +1579,11 @@ stages:
 
 'nginx/passenger role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'ferm role'
+    - 'python role'
   variables:
     JANE_TEST_FACT: 'nginx.fact'
     BASE_VAGRANT_BOX: 'debian/stretch64'
@@ -1151,6 +1595,9 @@ stages:
 
 'nodejs role':
   <<: *test_role_1st_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
   variables:
     JANE_TEST_FACT: 'nodejs.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/nodejs.yml'
@@ -1169,6 +1616,10 @@ stages:
 
 'nslcd role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'python role'
+    - 'ldap role'
+    - 'nsswitch role'
   variables:
     JANE_TEST_FACT: 'nslcd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/nslcd.yml'
@@ -1187,6 +1638,8 @@ stages:
 
 'ntp role':
   <<: *test_role_1st_deps
+  needs:
+    - 'ferm role'
   variables:
     JANE_TEST_FACT: 'ntp.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ntp.yml'
@@ -1194,7 +1647,12 @@ stages:
     JANE_LOG_PATTERN: '\[ntp\]'
 
 'nullmailer role':
-  <<: *test_role_1st_deps
+  <<: *test_role_2nd_deps
+  needs:
+    - 'python role'
+    - 'ldap role'
+    - 'ferm role'
+    - 'tcpwrappers role'
   variables:
     JANE_TEST_FACT: 'nullmailer.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/nullmailer.yml'
@@ -1206,6 +1664,9 @@ stages:
 
 'opendkim role':
   <<: *test_role_3rd_deps
+  needs:
+    - 'secret role'
+    - 'postfix role'
   variables:
     JANE_TEST_FACT: 'opendkim.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/opendkim.yml'
@@ -1215,6 +1676,18 @@ stages:
 
 'owncloud/apache role':
   <<: *test_role_3rd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'ferm role'
+    - 'python role'
+    - 'ldap role'
+    - 'mariadb role'
+    - 'postgresql role'
+    - 'unattended_upgrades role'
+    - 'php role'
+    - 'logrotate role'
+    - 'apache role'
   variables:
     JANE_TEST_FACT: 'owncloud.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mariadb_server.yml ${DEBOPS_PLAYBOOKS}/service/owncloud-apache.yml'
@@ -1225,6 +1698,18 @@ stages:
 
 'owncloud/nginx role':
   <<: *test_role_3rd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'ferm role'
+    - 'python role'
+    - 'ldap role'
+    - 'mariadb role'
+    - 'postgresql role'
+    - 'unattended_upgrades role'
+    - 'php role'
+    - 'logrotate role'
+    - 'nginx role'
   variables:
     JANE_TEST_FACT: 'owncloud.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mariadb_server.yml ${DEBOPS_PLAYBOOKS}/service/owncloud-nginx.yml'
@@ -1256,6 +1741,10 @@ stages:
 
 'php role':
   <<: *test_role_1st_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'logrotate role'
   variables:
     JANE_TEST_FACT: 'php.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/php.yml'
@@ -1265,6 +1754,15 @@ stages:
 
 'phpipam role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'logrotate role'
+    - 'php role'
+    - 'ferm role'
+    - 'python role'
+    - 'nginx role'
+    - 'mariadb role'
   variables:
     JANE_TEST_FACT: 'phpipam.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mariadb_server.yml ${DEBOPS_PLAYBOOKS}/service/phpipam.yml'
@@ -1275,6 +1773,14 @@ stages:
 
 'phpmyadmin role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'logrotate role'
+    - 'php role'
+    - 'ferm role'
+    - 'python role'
+    - 'nginx role'
   variables:
     BASE_VAGRANT_BOX: 'debian/stretch64'
     JANE_TEST_FACT: 'phpmyadmin.fact'
@@ -1285,6 +1791,9 @@ stages:
 
 'pki role':
   <<: *test_role_1st_deps
+  needs:
+    - 'secret role'
+    - 'cron role'
   variables:
     JANE_TEST_FACT: 'pki.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/pki.yml'
@@ -1293,6 +1802,10 @@ stages:
 
 'postconf role':
   <<: *test_role_3rd_deps
+  needs:
+    - 'secret role'
+    - 'ferm role'
+    - 'postfix role'
   variables:
     JANE_TEST_FACT: 'postconf.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postconf.yml'
@@ -1302,6 +1815,10 @@ stages:
 
 'postfix role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'secret role'
+    - 'ferm role'
+    - 'etc_aliases role'
   variables:
     JANE_TEST_FACT: 'postfix.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postfix.yml'
@@ -1312,6 +1829,10 @@ stages:
 
 'postgresql role':
   <<: *test_role_1st_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'python role'
   variables:
     JANE_TEST_FACT: 'postgresql.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postgresql.yml'
@@ -1321,6 +1842,13 @@ stages:
 
 'postgresql_server role':
   <<: *test_role_1st_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'etc_services role'
+    - 'ferm role'
+    - 'python role'
+    - 'locales role'
   variables:
     JANE_TEST_FACT: 'postgresql.fact postgresql_server.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml'
@@ -1330,6 +1858,14 @@ stages:
 
 'postgresql_server/client role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'etc_services role'
+    - 'ferm role'
+    - 'python role'
+    - 'locales role'
+    - 'postgresql_server role'
   variables:
     JANE_TEST_FACT: 'postgresql.fact postgresql_server.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/postgresql.yml'
@@ -1340,6 +1876,10 @@ stages:
 
 'postldap role':
   <<: *test_role_3rd_deps
+  needs:
+    - 'secret role'
+    - 'ldap role'
+    - 'postfix role'
   variables:
     JANE_TEST_FACT: 'postldap.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postldap.yml'
@@ -1349,6 +1889,9 @@ stages:
 
 'postscreen role':
   <<: *test_role_3rd_deps
+  needs:
+    - 'secret role'
+    - 'postfix role'
   variables:
     JANE_TEST_FACT: 'postscreen.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postscreen.yml'
@@ -1358,6 +1901,9 @@ stages:
 
 'postwhite role':
   <<: *test_role_3rd_deps
+  needs:
+    - 'secret role'
+    - 'postfix role'
   variables:
     JANE_TEST_FACT: 'postwhite.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postwhite.yml'
@@ -1367,6 +1913,12 @@ stages:
 
 'preseed role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'ferm role'
+    - 'python role'
+    - 'nginx role'
   variables:
     JANE_TEST_FACT: 'preseed.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/preseed.yml'
@@ -1385,6 +1937,8 @@ stages:
 
 'prosody/pki role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'ferm role'
   variables:
     JANE_TEST_FACT: 'prosody.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/pki.yml ${DEBOPS_PLAYBOOKS}/service/prosody.yml'
@@ -1417,6 +1971,15 @@ stages:
 
 'rabbitmq_management role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'secret role'
+    - 'apt_preferences role'
+    - 'etc_services role'
+    - 'ferm role'
+    - 'python role'
+    - 'nginx role'
+    - 'rabbitmq_server role'
   variables:
     JANE_TEST_FACT: 'rabbitmq_management.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/rabbitmq_management.yml'
@@ -1426,6 +1989,11 @@ stages:
 
 'rabbitmq_server role':
   <<: *test_role_1st_deps
+  needs:
+    - 'secret role'
+    - 'apt_preferences role'
+    - 'etc_services role'
+    - 'ferm role'
   variables:
     JANE_TEST_FACT: 'rabbitmq_server.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/rabbitmq_server.yml'
@@ -1434,7 +2002,14 @@ stages:
     JANE_LOG_PATTERN: '\[rabbitmq_server\]'
 
 'radvd role':
-  <<: *test_role_2nd_deps
+  <<: *test_role_3rd_deps
+  needs:
+    - 'resolvconf role'
+    - 'python role'
+    - 'kmod role'
+    - 'ferm role'
+    - 'sysctl role'
+    - 'ifupdown role'
   variables:
     BASE_VAGRANT_BOX: 'debian/stretch64'
     JANE_TEST_FACT: 'radvd.fact'
@@ -1447,6 +2022,11 @@ stages:
 
 'redis_sentinel role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'apt_preferences role'
+    - 'etc_services role'
+    - 'ferm role'
+    - 'python role'
   variables:
     JANE_TEST_FACT: 'redis_sentinel.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/redis_sentinel.yml'
@@ -1456,6 +2036,14 @@ stages:
 
 'redis_server role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'secret role'
+    - 'apt_preferences role'
+    - 'etc_services role'
+    - 'ferm role'
+    - 'sysctl role'
+    - 'sysfs role'
+    - 'python role'
   variables:
     JANE_TEST_FACT: 'redis_server.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/redis_server.yml'
@@ -1465,6 +2053,12 @@ stages:
 
 'reprepro role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'ferm role'
+    - 'python role'
+    - 'nginx role'
   variables:
     JANE_TEST_FACT: 'reprepro.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/reprepro.yml'
@@ -1500,6 +2094,16 @@ stages:
 
 'roundcube role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'logrotate role'
+    - 'ferm role'
+    - 'python role'
+    - 'ldap role'
+    - 'php role'
+    - 'nodejs role'
+    - 'nginx role'
   variables:
     JANE_TEST_FACT: 'roundcube.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/roundcube.yml'
@@ -1508,7 +2112,19 @@ stages:
     JANE_LOG_PATTERN: '\[roundcube\]'
 
 'roundcube/mariadb role':
-  <<: *test_role_2nd_deps
+  <<: *test_role_3rd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'logrotate role'
+    - 'ferm role'
+    - 'python role'
+    - 'ldap role'
+    - 'php role'
+    - 'nodejs role'
+    - 'nginx role'
+    - 'mariadb role'
+    - 'roundcube role'
   variables:
     JANE_TEST_FACT: 'roundcube.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mariadb_server.yml ${DEBOPS_PLAYBOOKS}/service/roundcube.yml'
@@ -1531,6 +2147,15 @@ stages:
 
 'rstudio_server role':
   <<: *test_role_3rd_deps
+  needs:
+    - 'keyring role'
+    - 'etc_services role'
+    - 'apt_preferences role'
+    - 'ferm role'
+    - 'python role'
+    - 'nginx role'
+    - 'java role'
+    - 'cran role'
   variables:
     # Needed due to old libssl dependency of rstudio-server package
     BASE_VAGRANT_BOX: 'debian/stretch64'
@@ -1542,6 +2167,11 @@ stages:
 
 'rsyslog role':
   <<: *test_role_1st_deps
+  needs:
+    - 'etc_services role'
+    - 'apt_preferences role'
+    - 'ferm role'
+    - 'logrotate role'
   variables:
     JANE_TEST_FACT: 'rsyslog.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/rsyslog.yml'
@@ -1550,6 +2180,8 @@ stages:
 
 'ruby role':
   <<: *test_role_1st_deps
+  needs:
+    - 'apt_preferences role'
   variables:
     JANE_TEST_FACT: 'ruby.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ruby.yml'
@@ -1562,6 +2194,12 @@ stages:
 
 'salt role':
   <<: *test_role_1st_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'etc_services role'
+    - 'python role'
+    - 'ferm role'
   variables:
     JANE_TEST_FACT: 'salt.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/salt.yml'
@@ -1571,6 +2209,8 @@ stages:
 
 'samba role':
   <<: *test_role_1st_deps
+  needs:
+    - 'ferm role'
   variables:
     JANE_TEST_FACT: 'samba.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/samba.yml'
@@ -1581,6 +2221,9 @@ stages:
 
 'saslauthd role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'python role'
+    - 'ldap role'
   variables:
     JANE_TEST_FACT: 'saslauthd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/saslauthd.yml'
@@ -1597,6 +2240,13 @@ stages:
 
 'sks role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'etc_services role'
+    - 'ferm role'
+    - 'python role'
+    - 'nginx role'
   variables:
     JANE_TEST_FACT: 'sks.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/sks.yml'
@@ -1606,6 +2256,13 @@ stages:
 
 'slapd role':
   <<: *test_role_3rd_deps
+  needs:
+    - 'ferm role'
+    - 'tcpwrappers role'
+    - 'logrotate role'
+    - 'python role'
+    - 'ldap role'
+    - 'saslauthd role'
   variables:
     JANE_TEST_FACT: 'slapd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/slapd.yml'
@@ -1616,6 +2273,16 @@ stages:
 
 'slapd/pki role':
   <<: *test_role_3rd_deps
+  needs:
+    - 'secret role'
+    - 'cron role'
+    - 'pki role'
+    - 'ferm role'
+    - 'tcpwrappers role'
+    - 'logrotate role'
+    - 'python role'
+    - 'ldap role'
+    - 'saslauthd role'
   variables:
     JANE_TEST_FACT: 'slapd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/pki.yml ${DEBOPS_PLAYBOOKS}/service/slapd.yml'
@@ -1625,6 +2292,13 @@ stages:
 
 'smstools role':
   <<: *test_role_3rd_deps
+  needs:
+    - 'secret role'
+    - 'etc_services role'
+    - 'rsyslog role'
+    - 'tcpwrappers role'
+    - 'ferm role'
+    - 'postfix role'
   variables:
     JANE_TEST_FACT: 'smstools.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/smstools.yml'
@@ -1634,6 +2308,10 @@ stages:
 
 'snmpd role':
   <<: *test_role_1st_deps
+  needs:
+    - 'apt_preferences role'
+    - 'ferm role'
+    - 'tcpwrappers role'
   variables:
     JANE_TEST_FACT: 'snmpd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/snmpd.yml'
@@ -1642,7 +2320,14 @@ stages:
     JANE_LOG_PATTERN: '\[snmpd\]'
 
 'sshd role':
-  <<: *test_role_1st_deps
+  <<: *test_role_2nd_deps
+  needs:
+    - 'apt_preferences role'
+    - 'ferm role'
+    - 'tcpwrappers role'
+    - 'python role'
+    - 'ldap role'
+    - 'pam_access role'
   variables:
     JANE_TEST_FACT: 'sshd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/sshd.yml'
@@ -1652,6 +2337,10 @@ stages:
 
 'stunnel role':
   <<: *test_role_1st_deps
+  needs:
+    - 'etc_services role'
+    - 'ferm role'
+    - 'tcpwrappers role'
   variables:
     JANE_TEST_FACT: 'stunnel.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/stunnel.yml'
@@ -1661,6 +2350,9 @@ stages:
 
 'sudo role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'python role'
+    - 'ldap role'
   variables:
     JANE_TEST_FACT: 'sudo.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/sudo.yml'
@@ -1689,6 +2381,8 @@ stages:
 
 'sysfs role':
   <<: *test_role_1st_deps
+  needs:
+    - 'secret role'
   variables:
     JANE_TEST_FACT: 'sysfs.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/sysfs.yml'
@@ -1709,6 +2403,10 @@ stages:
 
 'system_groups role':
   <<: *test_role_3rd_deps
+  needs:
+    - 'python role'
+    - 'ldap role'
+    - 'sudo role'
   variables:
     JANE_TEST_FACT: 'system_groups.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/system_groups.yml'
@@ -1717,7 +2415,9 @@ stages:
     JANE_LOG_PATTERN: '\[system_groups\]'
 
 'system_users role':
-  <<: *test_role_no_deps
+  <<: *test_role_1st_deps
+  needs:
+    - 'libuser role'
   variables:
     JANE_TEST_FACT: 'system_users.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/system_users.yml'
@@ -1737,6 +2437,9 @@ stages:
 
 'tftpd role':
   <<: *test_role_1st_deps
+  needs:
+    - 'ferm role'
+    - 'tcpwrappers role'
   variables:
     JANE_TEST_FACT: 'tftpd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/tftpd.yml'
@@ -1746,6 +2449,9 @@ stages:
 
 'tgt role':
   <<: *test_role_1st_deps
+  needs:
+    - 'apt_preferences role'
+    - 'ferm role'
   variables:
     JANE_TEST_FACT: 'tgt.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/tgt.yml'
@@ -1755,6 +2461,16 @@ stages:
 
 'tinc/gateway role':
   <<: *test_role_3rd_deps
+  needs:
+    - 'resolvconf role'
+    - 'python role'
+    - 'kmod role'
+    - 'ferm role'
+    - 'sysctl role'
+    - 'ifupdown role'
+    - 'secret role'
+    - 'apt_preferences role'
+    - 'etc_services role'
   variables:
     JANE_TEST_FACT: 'tinc.fact'
     BASE_VAGRANT_BOX: 'debian/stretch64'
@@ -1767,6 +2483,9 @@ stages:
 
 'tinyproxy role':
   <<: *test_role_1st_deps
+  needs:
+    - 'etc_services role'
+    - 'ferm role'
   variables:
     JANE_TEST_FACT: 'tinyproxy.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/tinyproxy.yml'
@@ -1794,6 +2513,11 @@ stages:
 
 'unbound role':
   <<: *test_role_1st_deps
+  needs:
+    - 'resolvconf role'
+    - 'apt_preferences role'
+    - 'python role'
+    - 'etc_services role'
   variables:
     JANE_TEST_FACT: 'unbound.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/unbound.yml'
@@ -1802,7 +2526,9 @@ stages:
     JANE_LOG_PATTERN: '\[unbound\]'
 
 'users role':
-  <<: *test_role_no_deps
+  <<: *test_role_1st_deps
+  needs:
+    - 'libuser role'
   variables:
     JANE_TEST_FACT: 'users.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/users.yml'
@@ -1814,6 +2540,11 @@ stages:
 
 'wpcli role':
   <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'logrotate role'
+    - 'php role'
   variables:
     JANE_TEST_FACT: 'wpcli.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/wpcli.yml'
@@ -1826,6 +2557,9 @@ stages:
 
 'yadm role':
   <<: *test_role_1st_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
   variables:
     JANE_TEST_FACT: 'yadm.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/yadm.yml'
