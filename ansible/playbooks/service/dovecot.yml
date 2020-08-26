@@ -43,6 +43,13 @@
         - role: 'dovecot'
           config: '{{ dovecot__postfix__dependent_mastercf }}'
 
+    - role: python
+      tags: [ 'role::python', 'skip::python', 'role::ldap' ]
+      python__dependent_packages3:
+        - '{{ ldap__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ ldap__python__dependent_packages2 }}'
+
     - role: ldap
       tags: [ 'role::ldap', 'skip::ldap' ]
       ldap__dependent_tasks:
