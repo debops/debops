@@ -94,6 +94,9 @@ Updates of upstream application versions
 - In the :ref:`debops.owncloud` role, the Nextcloud version installed by
   default has been updated to ``v18.0``.
 
+- In the :ref:`debops.phpipam` role, the phpIPAM version installed by default
+  has been updated to ``v1.4.1``.
+
 General
 '''''''
 
@@ -214,6 +217,12 @@ LDAP
 
 - Ensure that the ``authldap`` DokuWiki plugin is enabled when LDAP support is
   configured by the role.
+
+:ref:`debops.etherpad` role
+'''''''''''''''''''''''''''
+
+- Fixed the installation of Etherpad with the PostgreSQL backend by removing
+  unused dependent variables.
 
 :ref:`debops.ifupdown` role
 '''''''''''''''''''''''''''
