@@ -94,6 +94,9 @@ Updates of upstream application versions
 - In the :ref:`debops.owncloud` role, the Nextcloud version installed by
   default has been updated to ``v18.0``.
 
+- In the :ref:`debops.phpipam` role, the phpIPAM version installed by default
+  has been updated to ``v1.4.1``.
+
 General
 '''''''
 
