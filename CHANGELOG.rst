@@ -86,6 +86,12 @@ General
   been added to various roles to satisfy :command:`ansible-lint` requirements.
   Nested Jinja patterns and required ``pipefail`` errors have also been fixed.
 
+:ref:`debops.etherpad` role
+'''''''''''''''''''''''''''
+
+- Fixed the installation of Etherpad with the PostgreSQL backend by removing
+  unused dependent variables.
+
 :ref:`debops.ifupdown` role
 '''''''''''''''''''''''''''
 
