@@ -174,6 +174,7 @@
     group: '{{ netbox__group }}'
     mode: '0640'
   notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver' ]
+  register: netbox__register_configuration
   tags: [ 'role::netbox:config' ]
 
 - name: Perform database installation or migration
@@ -195,6 +196,7 @@
     SUPERUSER_NAME: '{{ netbox__superuser_name }}'
     SUPERUSER_EMAIL: '{{ netbox__superuser_email }}'
     SUPERUSER_PASSWORD: '{{ netbox__superuser_password }}'
+    ## TODO: Does not work with 2.8 anymore.
   shell: set -o nounset -o pipefail -o errexit
          echo "from django.contrib.auth.models import User;
                User.objects.create_superuser('${SUPERUSER_NAME}', '${SUPERUSER_EMAIL}', '${SUPERUSER_PASSWORD}')"
@@ -217,19 +219,9 @@
     chdir: '{{ netbox__git_checkout + "/netbox" }}'
   become: True
   become_user: '{{ netbox__user }}'
-  when: netbox__register_checkout is changed
-
-- name: Load initial data
-  environment:
-    VIRTUAL_ENV: '{{ netbox__virtualenv }}'
-    PATH: '{{ netbox__virtualenv_env_path }}'
-  command: ./manage.py loaddata initial_data
-  args:
-    chdir: '{{ netbox__git_checkout + "/netbox" }}'
-  become: True
-  become_user: '{{ netbox__user }}'
-  when: (netbox__load_initial_data|bool and not netbox__register_installed.stat.exists|bool and
-         not netbox__register_migration.stdout is search('No migrations to apply.'))
+  when: (netbox__register_checkout|d({}) is changed or
+         netbox__register_configuration is changed)
+  tags: [ 'role::netbox:config' ]
 
 - name: Generate systemd service unit
   template:

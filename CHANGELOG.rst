@@ -97,6 +97,10 @@ Updates of upstream application versions
 - In the :ref:`debops.phpipam` role, the phpIPAM version installed by default
   has been updated to ``v1.4.1``.
 
+- In the :ref:`debops.netbox` role, the NetBox version has been updated to
+  ``v2.9.1``.
+  The plugin support added in ``v2.8.0`` can be configured from DebOps.
+
 General
 '''''''
 

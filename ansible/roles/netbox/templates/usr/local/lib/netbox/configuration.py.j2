@@ -35,12 +35,20 @@ SECRET_KEY = '{{ netbox__config_secret_key }}'
 
 # Redis database settings. The Redis database is used for caching and background processing such as webhooks
 REDIS = {
-    'HOST': '{{ netbox__redis_host }}',
-    'PORT': {{ netbox__redis_port }},
-    'PASSWORD': '{{ netbox__redis_password }}',
-    'DATABASE': {{ netbox__redis_database }},
-    'CACHE_DATABASE': {{ netbox__redis_cache_database }},
-    'SSL': {{ netbox__redis_ssl }},
+    'tasks': {
+        'HOST': '{{ netbox__redis_host }}',
+        'PORT': {{ netbox__redis_port }},
+        'PASSWORD': '{{ netbox__redis_password }}',
+        'DATABASE': {{ netbox__redis_database }},
+        'SSL': {{ netbox__redis_ssl }},
+    },
+    'caching': {
+        'HOST': '{{ netbox__redis_host }}',
+        'PORT': {{ netbox__redis_port }},
+        'PASSWORD': '{{ netbox__redis_password }}',
+        'DATABASE': {{ netbox__redis_cache_database }},
+        'SSL': {{ netbox__redis_ssl }},
+    }
 }
 
 #########################
@@ -166,6 +174,13 @@ NAPALM_ARGS = {{ netbox__config_napalm_args | to_nice_json }}
 
 # Determine how many objects to display per page within a list. (Default: 50)
 PAGINATE_COUNT = {{ netbox__config_paginate_count }}
+
+# Enable installed plugins. Add the name of each plugin to the list.
+PLUGINS = {{ netbox__config_plugins | to_nice_json }}
+
+# Plugins configuration settings. These settings are used by various plugins that the user may have installed.
+# Each key in the dictionary is the name of an installed plugin and its value is a dictionary of settings.
+PLUGINS_CONFIG = {{ netbox__config_plugins_config | to_nice_json }}
 
 # When determining the primary IP address for a device, IPv6 is preferred over IPv4 by default. Set this to True to
 # prefer IPv4 instead.
