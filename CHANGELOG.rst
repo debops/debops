@@ -215,6 +215,12 @@ LDAP
 - Ensure that the ``authldap`` DokuWiki plugin is enabled when LDAP support is
   configured by the role.
 
+:ref:`debops.etherpad` role
+'''''''''''''''''''''''''''
+
+- Fixed the installation of Etherpad with the PostgreSQL backend by removing
+  unused dependent variables.
+
 :ref:`debops.ifupdown` role
 '''''''''''''''''''''''''''
 
