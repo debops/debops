@@ -16,32 +16,38 @@
     createhome: False
     shell: '/bin/false'
 
-- name: Create source directory
-  file:
-    path: '{{ pki_acme_tiny_src }}'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
+- name: Install acme-tiny from source
+  when: ansible_distribution_release in
+        [ "wheezy", "jessie", "stretch",
+          "precise", "trusty", "xenial", "bionic" ]
+  block:
 
-- name: Clone acme-tiny source code
-  git:
-    repo: '{{ pki_acme_tiny_repo }}'
-    dest: '{{ pki_acme_tiny_src + "/acme-tiny" }}'
-    version: '{{ pki_acme_tiny_version }}'
-  register: pki_register_acme_tiny_src
+    - name: Create source directory
+      file:
+        path: '{{ pki_acme_tiny_src }}'
+        state: 'directory'
+        owner: 'root'
+        group: 'root'
+        mode: '0755'
 
-- name: Install acme-tiny script
-  command: cp -f {{ pki_acme_tiny_src }}/acme-tiny/acme_tiny.py {{ pki_acme_tiny_bin }}
-  when: pki_register_acme_tiny_src is changed
+    - name: Clone acme-tiny source code
+      git:
+        repo: '{{ pki_acme_tiny_repo }}'
+        dest: '{{ pki_acme_tiny_src + "/acme-tiny" }}'
+        version: '{{ pki_acme_tiny_version }}'
+      register: pki_register_acme_tiny_src
 
-- name: Ensure that acme-tiny is executable
-  file:
-    path: '{{ pki_acme_tiny_bin }}'
-    state: 'file'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
+    - name: Install acme-tiny script
+      command: cp -f {{ pki_acme_tiny_src }}/acme-tiny/acme_tiny.py {{ pki_acme_tiny_bin }}
+      when: pki_register_acme_tiny_src is changed
+
+    - name: Ensure that acme-tiny is executable
+      file:
+        path: '{{ pki_acme_tiny_bin }}'
+        state: 'file'
+        owner: 'root'
+        group: 'root'
+        mode: '0755'
 
 - name: Create ACME challenge path
   file:
