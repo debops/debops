@@ -203,7 +203,7 @@ pki_acme_tiny_src: '{{ (ansible_local.root.src
 # .. envvar:: pki_acme_tiny_bin [[[
 #
 # Path where the :program:`acme-tiny` script will be installed.
-pki_acme_tiny_bin: '/usr/local/lib/pki/acme-tiny'
+pki_acme_tiny_bin: '/usr/local/bin/acme-tiny'
 
                                                                    # ]]]
 # .. envvar:: pki_acme_ca [[[
@@ -274,9 +274,13 @@ pki_base_packages: [ 'ssl-cert', 'make', 'ca-certificates',
 # .. envvar:: pki_acme_packages [[[
 #
 # List of APT packages required by ACME support.
-# :program:`acme-tiny` itself is not yet available in Debian Stable.
-# Ref: https://packages.debian.org/source/stretch/acme-tiny
-pki_acme_packages: [ 'curl', 'git' ]
+pki_acme_packages:
+  - 'curl'
+  - 'git'
+  - '{{ [] if (ansible_distribution_release in
+               [ "wheezy", "jessie", "stretch",
+                 "precise", "trusty", "xenial", "bionic" ])
+           else "acme-tiny" }}'
 
                                                                    # ]]]
 # .. envvar:: pki_packages [[[
