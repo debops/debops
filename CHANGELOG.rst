@@ -48,6 +48,13 @@ General
 - The :file:`tools/reboot.yml` can be used to reboot DebOps hosts even if they
   are secured by the ``molly-guard`` package.
 
+:ref:`debops.icinga` role
+'''''''''''''''''''''''''
+
+- The role can now create Icinga configuration on the Icinga "master" node via
+  task delegation. This can be useful in centralized environments withoout
+  Icinga Director support.
+
 :ref:`debops.postgresql` role
 '''''''''''''''''''''''''''''
 
