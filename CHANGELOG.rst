@@ -275,6 +275,19 @@ LDAP
   the ``libapache2-mod-php*`` APT packages to ensure that the selected
   repository is the same as the ``php*`` APT packages.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- The :command:`acme-tiny` script will be installed from Debian/Ubuntu
+  repositories on Debian Buster, Ubuntu Focal and newer OS releases. This
+  solves the issue with ``acme-tiny`` script in upstream having
+  ``#!/usr/bin/env python`` shebang hard-coded which makes the script unusable
+  on hosts without Python 2.7 installed.
+
+  The installation location of the script from upstream is changed from
+  :file:`/usr/local/lib/pki/` to :file:`/usr/local/bin/` to leverage the
+  ``$PATH`` variable so that the OS version is used without issues.
+
 :ref:`debops.rsnapshot` role
 ''''''''''''''''''''''''''''
 
