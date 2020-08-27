@@ -25,6 +25,13 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+:ref:`debops.icinga` role
+'''''''''''''''''''''''''
+
+- The role can now create Icinga configuration on the Icinga "master" node via
+  task delegation. This can be useful in centralized environments withoout
+  Icinga Director support.
+
 :ref:`debops.system_users` role
 '''''''''''''''''''''''''''''''
 
