@@ -98,6 +98,10 @@ General
   been added to various roles to satisfy :command:`ansible-lint` requirements.
   Nested Jinja patterns and required ``pipefail`` errors have also been fixed.
 
+- The ``python-pip-whl`` APT package will be installed instead of
+  ``python-pip`` in various roles that require it. The latter package is
+  removed from newer releases of Debian and Ubuntu distributions.
+
 :ref:`debops.etherpad` role
 '''''''''''''''''''''''''''
 

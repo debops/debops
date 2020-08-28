@@ -381,7 +381,7 @@ EOF
         python-nose2-cov \
         python-openssl \
         python-passlib \
-        python-pip \
+        python-pip-whl \
         python-pycodestyle \
         python-pytest \
         python-pytest-cov \
