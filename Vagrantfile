@@ -358,7 +358,7 @@ EOF
 
     if [ -n "${ansible_from_devel}" ] ; then
         jane notify install "Installing Ansible from GitHub..."
-        /vagrant/ansible/roles/debops.ansible/files/script/bootstrap-ansible "${ansible_from_devel}"
+        /vagrant/ansible/roles/ansible/files/script/bootstrap-ansible "${ansible_from_devel}"
     fi
 
     jane notify install "Installing Ansible requirements via APT..."
@@ -382,7 +382,7 @@ EOF
         python-nose2-cov \
         python-openssl \
         python-passlib \
-        python-pip \
+        python-pip-whl \
         python-pycodestyle \
         python-pytest \
         python-pytest-cov \
