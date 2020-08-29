@@ -167,7 +167,6 @@ management system of choice for my private infrastructure, because DebOps is the
 most comprehensive approach to CM for Debian GNU/Linux I could find. Since
 2015-02 I am using it for all my Debian servers (self-hosting) and
 workstations and I'm quite happy with it.
-Workstations are not the main goal of DebOps but it works quite nice for me.
 I did not lose much time as a user of DebOps and started contributing to it and
 helping DebOps evolve. In 2016-07, I officially became the second DebOps
 Developer when Maciej and me set up the :ref:`debops.keyring`.
