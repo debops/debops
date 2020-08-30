@@ -294,6 +294,14 @@ LDAP
 - Fixed an issue which caused dry runs of the :ref:`debops.rsnapshot` role to
   fail.
 
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- Fixed the forgotten :envvar:`rsyslog__send_permitted_peers` variable which
+  defines what server is accepted by the client during TLS handshakes. The
+  value will now be defined using the ``streamDriverPermittedPeers`` parameter
+  in :command:`rsyslog` configuration.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
