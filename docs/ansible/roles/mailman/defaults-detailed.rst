@@ -80,7 +80,7 @@ Each configuration option is defined as a YAML dictionary with specific paramete
   parameters:
 
   ``name``
-    Required. THe name of the configuration option. Entries with the same
+    Required. The name of the configuration option. Entries with the same
     ``name`` are merged together which can be used to modify previously defined
     configuration options.
 
@@ -150,7 +150,7 @@ Syntax
 Each configuration option is defined as a YAML dictionary with specific parameters:
 
 ``name``
-  Required. THe name of the configuration option. Entries with the same
+  Required. The name of the configuration option. Entries with the same
   ``name`` are merged together which can be used to modify previously defined
   configuration options.
 
@@ -279,7 +279,7 @@ Each template is defined by a YAML dictionary with specific parameters:
 
 ``name``
   Required. A path relative to the :file:`/var/lib/mailman3/templates/`
-  directroy with the template filename, ending with ``.txt`` extension. Any
+  directory with the template filename, ending with ``.txt`` extension. Any
   subdirectories will be created automatically, if not present. Configuration
   entries with the same ``name`` parameter are merged together in order of
   appearance.

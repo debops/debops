@@ -55,7 +55,7 @@ Syntax
 Each entry can contain specific parameters:
 
 ``name``
-  Required. THe name of a given Redis instance. This parameter is used as an
+  Required. The name of a given Redis instance. This parameter is used as an
   anchor for merging of multiple YAML dictionaries that specify Redis instances
   together.
 

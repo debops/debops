@@ -22,13 +22,13 @@ There is also the :ref:`Getting Started guide <getting-started>` to learn the ba
 Setup an encrypted loop device
 ------------------------------
 
-For testing purposes `loop devices`_ can be used to get started with this role. Note that loop devices are not required, regular files also work.
+For testing purposes `loop devices`_ can be used to get started with this role.
 So lets create a loop device:
 
 .. code-block:: shell
 
-   truncate --size=42M /tmp/example1_loop_file.raw
-   losetup --show --find /tmp/example1_loop_file.raw
+   truncate --size=42M /var/tmp/example1_loop_file.raw
+   losetup --show --find /var/tmp/example1_loop_file.raw
 
 The printed loop device will be our `ciphertext block device`
 (:ref:`cryptsetup__ref_overview_terminology`).
@@ -87,7 +87,7 @@ You can check that the `plaintext mount point of the filesystem` is mounted usin
 
 .. code-block:: shell
 
-   df -h | egrep '(^Filesystem|example1)'
+   df -h /media/example1
 
 which should show something like:
 
@@ -96,7 +96,7 @@ which should show something like:
    Filesystem            Size  Used Avail Use% Mounted on
    /dev/mapper/example1   35M  491K   32M   2% /media/example1
 
-You can now use :file:`/media/example1` to store files which are transparently encrypted and saved on :file:`/dev/loop0` (respectively :file:`/tmp/example1_loop_file.raw`).
+You can now use :file:`/media/example1` to store files which are transparently encrypted and saved on :file:`/dev/loop0` (respectively :file:`/var/tmp/example1_loop_file.raw`).
 
 .. _cryptsetup__ref_guide_teardown_device:
 
@@ -139,4 +139,4 @@ effect.
 
 After the role run terminated, no access to plaintext files should be possible.
 If you want to access the plaintext files again, just change the ``state`` and
-rerun the role as all required information are still stored on the Ansible controller.
+rerun the role as all required information is still stored on the Ansible controller.

@@ -153,22 +153,23 @@ I really like Debian and would like to become a Debian Developer some day.
 
 Starting in 2012, I worked 5 years as a IT Consultant until 2017, mainly
 deploying and advocating Free and Open Source software. During that time, I
-set up and deployed a monitoring appliance based on Debian, Icinga and Check_MK
+set up and deployed a monitoring appliance based on Debian, Icinga and CheckMK
 as well as file syncing appliance based on Debian and ownCloud. The file syncing
 appliance was build from the ground up with DebOps and deployment was also done
 with Ansible and DebOps. The monitoring appliance was set up by me before I knew
 fancy tools like Ansible/DebOps. Currently, I am working as a full-time
-sysadmin, mainly doing scripting, monitoring, security and automation. Sadly, neither
-Debian, nor Ansible/DebOps play a big role currently. Feel free to get in touch if
+sysadmin, mainly doing scripting, monitoring, security and automation with SaltStack.
+Neither Debian, nor Ansible/DebOps play a big role currently. Feel free to get in touch if
 you think otherwise and are fully committed to Free Software.
 
 I came to DebOps shortly after I settled on Ansible as the configuration
 management system of choice for my private infrastructure, because DebOps is the
 most comprehensive approach to CM for Debian GNU/Linux I could find. Since
-2015-02 I am using it for most of my machines and various projects at work and
-I'm quite happy with it. I did not lose much time as a user of DebOps and
-started contributing to it and helping DebOps evolve. In 2016-07, I officially
-became the second DebOps Developer when Maciej and me set up the :ref:`debops.keyring`.
+2015-02 I am using it for all my Debian servers (self-hosting) and
+workstations and I'm quite happy with it.
+I did not lose much time as a user of DebOps and started contributing to it and
+helping DebOps evolve. In 2016-07, I officially became the second DebOps
+Developer when Maciej and me set up the :ref:`debops.keyring`.
 
 One of my big interests is IT security, so together with Maciej I put a lot of
 effort into DebOps to create something worthwhile, that can be relied upon to a
@@ -179,8 +180,7 @@ include in projects like DebOps. I am not using every component/role that
 DebOps provides currently, but the ones I do are carefully reviewed and
 tested by me. Refer to https://github.com/ypid/ypid-ansible-common/ for my
 ongoing, digitally signed status of this review. I understand that being a
-developer of a project designed to set up and configure thousands of servers and
-workstations (not the main goal of DebOps but it works quite nice for me)
+developer of a project designed to set up and configure thousands of servers
 results in a lot of responsibility. I am doing what I can to keep up with that.
 For example, I switched to Qubes OS in 2016-12. All my development work is done
 from there from now on. OpenPGP signatures come from stripped down, offline

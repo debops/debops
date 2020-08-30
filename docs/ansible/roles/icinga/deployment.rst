@@ -87,7 +87,7 @@ Similar records in the ISC BIND zone file:
    _icinga-director._tcp.example.org. 86400 IN SRV 0 5 443  icinga.example.org.
 
 The above configuration sets the ``icinga-master.example.org`` host as the
-"master" host. THe Director API is available on a separate FQDN,
+"master" host. The Director API is available on a separate FQDN,
 ``icinga.example.org``.
 
 You can also define the master and director nodes explicitly in the inventory
