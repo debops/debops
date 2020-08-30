@@ -162,6 +162,13 @@ homeassistant__basic_auth_name: 'homeassistant'
 #
 # List of user accounts which will be allowed access to Home Assistant.
 homeassistant__basic_auth_users: '{{ ansible_local.core.admin_users|d([]) }}'
+
+                                                                   # ]]]
+# .. envvar:: homeassistant__webserver_user [[[
+#
+# Name of the webserver user account which will be granted read only access to
+# the www directory outside of the Home Assistant configuration directory.
+homeassistant__webserver_user: '{{ ansible_local.nginx.user|d("www-data") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Directory paths [[[
@@ -325,7 +332,13 @@ homeassistant__nginx__dependent_servers:
     auth_basic: '{{ homeassistant__basic_auth | bool }}'
     auth_basic_realm: '{{ homeassistant__basic_auth_realm }}'
     auth_basic_name: '{{ homeassistant__basic_auth_name }}'
-    options: 'proxy_buffering off;'
+    options: |
+      proxy_buffering off;
+
+      location /local/ {
+              autoindex off;
+              alias {{ homeassistant__home_path }}/www/;
+      }
     proxy_pass: 'http://homeassistant'
     proxy_options: |
       proxy_redirect http:// https://;

@@ -196,6 +196,7 @@ git ls-files -z | xargs --null -I '{}' find './{}' -type f -print0 | \
     xargs --null sed --in-place --regexp-extended '
         s/\(This file is managed remotely, all changes will be lost\|This file is managed remotely, some changes might be overwritten\|This file is managed by Ansible, all changes will be lost\)/{{ ansible_managed }}/g;
         s/:pkts/:pkgs/g;
+        s/THe/The/g;
         s/nginx_apt_preferences_dependent_list/nginx__apt_preferences__dependent_list/g;
         s/nginx_ferm_dependent_rules/nginx__ferm__dependent_rules/g;
         s/ansible_ssh_user/ansible_user/g;

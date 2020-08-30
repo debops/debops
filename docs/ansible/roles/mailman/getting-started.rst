@@ -15,7 +15,7 @@ Important installation steps
 ----------------------------
 
 The default installation will configure the Mailman service under
-``lists.<example.org>`` DNS domain. This can be changed using the
+the ``lists.<example.org>`` DNS domain. This can be changed using the
 :envvar:`mailman__fqdn` variable.
 
 On installation, if the LDAP support is not enabled, the role will create an
@@ -23,7 +23,7 @@ initial superuser account with a random password. The default superuser account
 will use the login name specified in the :envvar:`mailman__superuser_name`
 variable and e-mail address specified in the :envvar:`mailman__superuser_email`
 variable. They are based on the facts defined by the :ref:`debops.core` role,
-but uou might want to redefine them beforehand in the inventory to be sure that
+but you might want to redefine them beforehand in the inventory to be sure that
 the validation e-mail is sent to the correct e-mail account.
 
 After the role configures Mailman, you should go to the

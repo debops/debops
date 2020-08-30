@@ -78,6 +78,24 @@
   become_user: '{{ homeassistant__user }}'
   when: (homeassistant__deploy_state == "present")
 
+- name: Ensure Home Assistant www dir exists
+  file:
+    path: '{{ homeassistant__home_path }}/www'
+    owner: '{{ homeassistant__user }}'
+    group: '{{ homeassistant__webserver_user }}'
+    mode: '0750'
+    state: 'directory'
+  when: (homeassistant__deploy_state == "present")
+
+- name: Ensure Home Assistant www in config dir is a symlink
+  file:
+    src: '{{ homeassistant__home_path }}/www'
+    dest: '{{ homeassistant__home_path }}/.homeassistant/www'
+    state: 'link'
+  become: True
+  become_user: '{{ homeassistant__user }}'
+  when: (homeassistant__deploy_state == "present")
+
 - name: Configure systemd unit file
   template:
     src: 'etc/systemd/system/home-assistant.service.j2'
