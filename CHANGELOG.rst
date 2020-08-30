@@ -141,6 +141,14 @@ General
   :file:`/usr/local/lib/pki/` to :file:`/usr/local/bin/` to leverage the
   ``$PATH`` variable so that the OS version is used without issues.
 
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- Fixed the forgotten :envvar:`rsyslog__send_permitted_peers` variable which
+  defines what server is accepted by the client during TLS handshakes. The
+  value will now be defined using the ``streamDriverPermittedPeers`` parameter
+  in :command:`rsyslog` configuration.
+
 :ref:`debops.system_users` role
 '''''''''''''''''''''''''''''''
 

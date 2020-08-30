@@ -240,10 +240,10 @@ rsyslog__permitted_peers: [ '*.{{ rsyslog__domain }}' ]
                                                                    # ]]]
 # .. envvar:: rsyslog__send_permitted_peers [[[
 #
-# List of hostnames, IP addresses or wildcard DNS domains which will be
-# verified by the ``rsyslogd`` client and will allow to send logs to the remote
-# server over TLS.
-rsyslog__send_permitted_peers: '{{ rsyslog__permitted_peers }}'
+# Hostname, IP address or wildcard DNS domain which will be verified by the
+# ``rsyslogd`` client and will allow to connect and send logs to the remote
+# server over TLS. Currently only one peer is supported by :command:`rsyslog`.
+rsyslog__send_permitted_peers: '{{ rsyslog__permitted_peers | first }}'
                                                                    # ]]]
                                                                    # ]]]
 # Firewall, UDP, TCP ports [[[
@@ -673,6 +673,13 @@ rsyslog__default_rules:
                 action.resumeRetryCount="{{ element.resume_retry_count | d('100') }}"
                 queue.type="{{ element.queue_type | d('linkedList') }}"
                 queue.size="{{ element.queue_size | d('10000') }}"
+          {% if rsyslog__default_driver_authmode != "anon" %}
+          {%   if rsyslog__send_permitted_peers is string %}
+                streamDriverPermittedPeers="{{ rsyslog__send_permitted_peers }}"
+          {%   else %}
+                streamDriverPermittedPeers="{{ rsyslog__send_permitted_peers | first }}"
+          {%   endif %}
+          {% endif %}
               )
           {% endfor %}
         state: 'present'
