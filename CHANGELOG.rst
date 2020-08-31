@@ -18,6 +18,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.0: https://github.com/debops/debops/compare/v2.0.0...stable-2.0
 
+Fixed
+~~~~~
+
+:ref:`debops.nullmailer` role
+'''''''''''''''''''''''''''''
+
+- Set the default file mode for public :file:`/etc/nullmailer/*` configuration
+  files to be world-readable.
+
 
 `debops v2.0.6`_ - 2020-08-30
 -----------------------------
