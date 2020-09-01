@@ -193,6 +193,9 @@ Each configuration entry is a YAML dictionary with specific parameters:
   an existing file will be removed. If ``ignore``, the entry will not be
   evaluated by Ansible during execution.
 
+``comment``
+  Optional. Comment to be included at the top of the generated file.
+
 ``mode``
   Optional. Specify the filesystem permissions of the generated file. If not
   specified, ``0600`` will be used by default.

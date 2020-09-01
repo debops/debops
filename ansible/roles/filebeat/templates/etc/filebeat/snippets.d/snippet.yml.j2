@@ -5,4 +5,8 @@
 ---
 # {{ ansible_managed }}
 
+{% if item.comment is defined %}
+{{ item.comment | trim | comment}}
+
+{% endif %}
 {{ q("flattened", item.config) | to_nice_yaml(indent=2) }}
