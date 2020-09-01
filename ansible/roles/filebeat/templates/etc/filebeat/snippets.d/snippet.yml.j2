@@ -6,7 +6,6 @@
 # {{ ansible_managed }}
 
 {% if item.comment is defined %}
-{{ item.comment | trim | comment}}
-
+{{ item.comment | trim | comment(prefix='', postfix='') }}
 {% endif %}
 {{ q("flattened", item.config) | to_nice_yaml(indent=2) }}
