@@ -318,6 +318,12 @@ Common webserver options
   Allows to specify raw Apache directives which are inlined in the appropriate
   virtual host context.
 
+``custom_log_condition``
+  Optional, string.
+  Allows to specify condition which controls whether or not to log a particular
+  request in access log. You can use it for exampe to skip logging health
+  checks from your load balancer.
+
 Redirects
 ~~~~~~~~~
 
