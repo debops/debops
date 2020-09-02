@@ -225,6 +225,99 @@ a service, the risk in the case of breach between LXC containers should be
 minimized.
 
 
+.. _ldap__ref_next_uid_gid:
+
+Next available UID/GID tracking
+-------------------------------
+
+An important part of the POSIX environment is ensuring that UID and GID values
+are unique across the entire infrastructure. This is problematic with an LDAP
+directory due to a lack of the "auto-increment" feature which would allow for
+easy creation of new accounts with unique ``uidNumber`` and ``gidNumber``
+values. Another risk is the possibility of a collision when two or more
+entities in a distributed environment are trying to create a new account at the
+same time.
+
+A solution to this is to track the next available ``uidNumber`` and
+``gidNumber`` values inside of the directory itself, using :ref:`special objcts
+defined by a separate schema <slapd__ref_nextuidgid_schema>` and use an atomic
+LDAP delete+add operation to ensure that the next available UID or GID is
+reserved for our purposes. This solution was inspired by the `UIDNumber
+Attribute Auto-Incrementing Method`__ article.
+
+.. __: https://www.rexconsulting.net/ldap-protocol-uidnumber.html/
+
+Design overview
+~~~~~~~~~~~~~~~
+
+When initializing a LDAP directory, DebOps creates two LDAP objects to track
+the next available UID and GID separately:
+
+- ``cn=Next POSIX UID,ou=System,dc=example,dc=org``
+- ``cn=Next POSIX GID,ou=System,dc=example,dc=org``
+
+The ``Next POSIX UID`` object is meant to track user accounts with their
+corresponding User Private Groups; it will be initialized by the
+:file:`ldap/init-directory.yml` playbook with the next available UID after the
+admin account is created. The ``Next POSIX UID`` object is similarly
+initialized by the same playbook after all required groups are created. Users
+can create additional sets of UID/GID tracking objects for various purposes
+using the ``uidNext`` or ``gidNext`` LDAP object classes.
+
+The ``uidNumber`` and ``gidNumber`` values can be modified by the members of
+the ``cn=UNIX Administrators`` group. The ``unique`` overlay ensures that these
+values are not repeated anywhere in the LDAP directory, and when they are
+incremented the specified values will be available for use.
+
+How to acquire a new UID/GID
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The mechanism of acquiring a new UID or GID needs to be implemented in the
+client applications that manage user accounts. Here you can find an explanation
+of how to get a new UID; getting a new GID is the same, just involves
+a different LDAP object.
+
+1. Search for the next available ``uidNumber`` value by checking the contents
+   of the ``cn=Next POSIX UID,ou=System,dc=example,dc=org`` LDAP entry. An
+   example CLI command:
+
+   .. code-block:: console
+
+      ldapsearch -Z -LLL '(& (objectClass=uidNext) (cn=Next POSIX UID) )' uidNumber
+
+   Store the ``uidNumber`` value you found in the application memory for now.
+
+2. Create a "delete + add" LDAP operation (not "replace", which is not atomic).
+   The operation should tell the LDAP directory to remove the specific
+   ``uidNumber`` value we found using the search query and add a new one,
+   incremented by 1. An example LDIF with the operation:
+
+   .. code-block:: none
+
+      dn: cn=Next POSIX UID,ou=System,dc=example,dc=org
+      changetype: modify
+      delete: uidNumber
+      uidNumber: 2002000001
+      -
+      add: uidNumber
+      uidNumber: 2002000002
+
+3. Execute the operation on the LDAP directory. If it fails, the existing value
+   won't be changed, so the operation is safe to use. An example CLI command
+   with the above file:
+
+   .. code-block:: console
+
+      ldapmodify -Z -f nextuid.ldif
+
+4. Check the operation status returned by the server. If the operation
+   succeeded, you can use the UID value you got at the first step and be sure
+   that it is unique and available. If the operation failed, it means that
+   somebody else has got the UID you currently keep in memory and it is
+   reserved. In that case go back to step 1, search for the current available
+   UID and try again.
+
+
 Collisions with local UNIX accounts/groups
 ------------------------------------------
 

@@ -105,6 +105,10 @@
         dn: '{{ [ "ou=Password Policies" ] + ldap__base_dn }}'
         objectClass: 'organizationalUnit'
 
+      - name: 'Create the ou=System object'
+        dn: '{{ [ "ou=System" ] + ldap__base_dn }}'
+        objectClass: 'organizationalUnit'
+
         # Refer to slapo-ppolicy(5) for details
       - name: 'Create the cn=Default Password Policy object'
         dn: '{{ [ "cn=Default Password Policy", "ou=Password Policies" ] + ldap__base_dn }}'
@@ -240,6 +244,22 @@
           member: '{{ admin_dn }}'
           description: 'People who can connect to UNIX-like infrastructure via SSH'
           host: 'posix:all'
+
+      - name: 'Create cn=Next POSIX UID object'
+        dn: '{{ [ "cn=Next POSIX UID", "ou=System" ] + ldap__base_dn }}'
+        objectClass: 'uidNext'
+        attributes:
+          cn: 'Next POSIX UID'
+          uidNumber: '{{ ldap__groupid_max|int + 2 }}'
+          description: 'The next available uidNumber value'
+
+      - name: 'Create cn=Next POSIX GID object'
+        dn: '{{ [ "cn=Next POSIX GID", "ou=System" ] + ldap__base_dn }}'
+        objectClass: 'gidNext'
+        attributes:
+          cn: 'Next POSIX GID'
+          gidNumber: '{{ ldap__groupid_min|int + 2 }}'
+          description: 'The next available gidNumber value'
 
       - name: 'Create SUDOers container'
         dn: '{{ [ "ou=SUDOers" ] + ldap__base_dn }}'
