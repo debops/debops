@@ -18,6 +18,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-1.2: https://github.com/debops/debops/compare/v1.2.0...stable-1.2
 
+Added
+~~~~~
+
+:ref:`debops.apache` role
+'''''''''''''''''''''''''
+
+- Custom Apache logs can have optional conditions that specify when webserver
+  requests are logged.
+
 Fixed
 ~~~~~
 
