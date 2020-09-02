@@ -141,7 +141,7 @@ ServerAlias {{ apache__tpl_names[1:] | map("quote") | join(" ") }}
 {{ get_server_name_aliases(item.name|d([])) }}
 {% endif %}
 ServerAdmin {{ item.server_admin|d(apache__server_admin) | quote }}
-CustomLog ${APACHE_LOG_DIR}/{{ sanitized_name }}_access.log {{ apache__access_log_format }}
+CustomLog ${APACHE_LOG_DIR}/{{ sanitized_name }}_access.log {{ apache__access_log_format }} {{ item.custom_log_condition|d() }}
 ErrorLog ${APACHE_LOG_DIR}/{{ sanitized_name }}_error.log
 {% endmacro %}
 {% macro get_server_status_directives(item, enabled) %}{# [[[ #}
