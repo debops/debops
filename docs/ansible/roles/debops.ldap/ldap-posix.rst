@@ -103,7 +103,9 @@ hosts, copied from the ``systemd`` documentation page:
 ------------------------- ------------------------- --------------- ----------------------------------
              1000…60000   Regular users             Distributions   ``/etc/passwd`` + LDAP/NIS/…
 ------------------------- ------------------------- --------------- ----------------------------------
-            60001…61183   Unused
+            60001…60513   Human Users (`homed`__)   ``systemd``     ``nss-systemd``
+------------------------- ------------------------- --------------- ----------------------------------
+            60514…61183   Unused
 ------------------------- ------------------------- --------------- ----------------------------------
             61184…65519   `Dynamic service users`__ ``systemd``     ``nss-systemd``
 ------------------------- ------------------------- --------------- ----------------------------------
@@ -124,6 +126,7 @@ hosts, copied from the ``systemd`` documentation page:
              4294967295   32bit ``(uid_t) -1``      Linux
 ========================= ========================= =============== ==================================
 
+.. __: https://www.freedesktop.org/software/systemd/man/systemd-homed.service.html
 .. __: http://0pointer.net/blog/dynamic-users-with-systemd.html
 .. __: https://manpages.debian.org/unstable/libnss-mymachines/nss-mymachines.8.en.html
 
