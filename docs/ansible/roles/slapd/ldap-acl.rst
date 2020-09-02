@@ -100,8 +100,9 @@ UNIX Administrators
 
 - Members of this group have write access to the ``uid``, ``uidNumber``,
   ``gid``, ``gidNumber`` and ``homeDirectory`` attributes of the
-  ``posixAccount``, ``posixGroup`` and ``posixGroupId`` LDAP objects. Everyone
-  else has read-only access to these attributes.
+  ``posixAccount``, ``posixGroup``, ``posixGroupId``, ``uidNext`` and
+  ``gidNext`` LDAP objects. Everyone else has read-only access to these
+  attributes.
 
 - Members of this group have write access to the
   ``ou=SUDOers,dc=example,dc=org`` LDAP subtree which contains
