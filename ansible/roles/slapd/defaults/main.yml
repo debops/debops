@@ -53,6 +53,10 @@ slapd__default_schemas:
   # Custom DebOps schema that defines the missing 'gid' posixGroup attribute
   - '{{ slapd__debops_schema_path + "/posixgroupid.schema" }}'
 
+  # Custom DebOps schema that creates LDAP object definitions used for tracking
+  # the next available POSIX UID/GID numbers
+  - '{{ slapd__debops_schema_path + "/nextuidgid.schema" }}'
+
   # Password Policy schema, included in the 'slapd' APT package
   - '/etc/ldap/schema/ppolicy.schema'
 
@@ -684,7 +688,7 @@ slapd__acl_tasks:
           by * none
 
         - |-
-          to filter="(| (objectClass=posixAccount) (objectClass=posixGroup) (objectClass=posixGroupId) )"
+          to filter="(| (objectClass=posixAccount) (objectClass=posixGroup) (objectClass=posixGroupId) (objectClass=uidNext) (objectClass=gidNext) )"
              attrs="uid,uidNumber,gid,gidNumber,homeDirectory"
           by group/groupOfNames/member="cn=UNIX Administrators, ou=Groups,{{ slapd__basedn }}"        write
           by group/groupOfNames/member="cn=UNIX Administrators, ou=System Groups,{{ slapd__basedn }}" write
