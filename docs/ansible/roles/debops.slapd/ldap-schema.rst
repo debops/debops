@@ -197,6 +197,19 @@ attribute as the UNIX group name, but it's usually a simple configuration
 change.
 
 
+.. _slapd__ref_nextuidgid_schema:
+
+The ``nextuidgid`` schema
+-------------------------
+
+The ``nexuidgid`` schema defines a set of simple LDAP objects (``uidNext``,
+``gidNext``), which can be used to store ``uidNumber`` and ``gidNumber``
+values, respectively. These objects are used in DebOps to :ref:`keep track of
+the next available UID/GID values <ldap__ref_next_uid_gid>`, but can be used
+for other purposes, for example to split the UID/GID range used in the LDAP
+directory into subranges.
+
+
 .. _slapd__ref_ppolicy_schema:
 
 The ``ppolicy`` schema
