@@ -25,6 +25,20 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+LDAP
+''''
+
+- The :ref:`next available UID and GID values <ldap__ref_next_uid_gid>` can now
+  be tracked using special LDAP objects in the directory. These can be used by
+  the client-side account and group management applications to easily allocate
+  unique UID/GID numbers for newly created accounts and groups.
+
+  The objects will be created automatically with the next available UID/GID
+  values by the :file:`ldap/init-directory.yml` playbook. In existing
+  environments users might want to create them manually to ensure that the
+  correct ``uidNumber`` and ``gidNumber`` values are stored instead of the
+  default ones which might already be allocated.
+
 :ref:`debops.apache` role
 '''''''''''''''''''''''''
 
