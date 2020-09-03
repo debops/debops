@@ -1,0 +1,60 @@
+# freeradius-dhcpv4.schema - Define DHCPv4 LDAP objects used by FreeRADIUS
+#
+# Copyright (C) 2009-2020 The FreeRADIUS Server Project <https://freeradius.org/>
+# Copyright (C) 2020      Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020      DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-2.0-only
+
+# Based on: https://github.com/FreeRADIUS/freeradius-server/blob/master/doc/schemas/ldap/openldap/freeradius-dhcpv4.schema
+
+# Depends on:
+# - freeradius.schema
+
+
+# Attribute definitions
+# ---------------------
+
+attributeType ( FreeRADIUSldapDHCPv4ProfileAttr:1
+                NAME 'freeradiusDhcpv4Attribute'
+                DESC 'DHCP attribute in format [<list>:]<attr> <op> <value>'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+objectClass ( FreeRADIUSldapDHCPv4ProfileObject:2
+              NAME 'freeradiusDhcpv4Profile'
+              SUP top
+              AUXILIARY
+              MAY ( freeradiusDhcpv4Attribute ) )
+
+
+attributeType ( FreeRADIUSldapDHCPv4ClientAttr:1
+                NAME 'freeradiusDhcpv4GatewayIdentifier'
+                DESC 'Gateway Identifier, usually Option 82 Remote ID'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+attributeType ( FreeRADIUSldapDHCPv4ClientAttr:2
+                NAME 'freeradiusDhcpv4GatewayAddr'
+                DESC 'Gateway IP address, usually GIADDR'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+attributeType ( FreeRADIUSldapDHCPv4ClientAttr:3
+                NAME 'freeradiusDhcpv4PoolName'
+                DESC 'DHCP ip pool name'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+                SINGLE-VALUE )
+
+objectClass ( FreeRADIUSldapDHCPv4ClientObject:1
+              NAME 'freeradiusDhcpv4Gateway'
+              DESC 'A DHCP gateway, and attributes specific to it'
+              SUP top
+              AUXILIARY
+              MAY ( freeradiusDhcpv4GatewayIdentifier $
+                    freeradiusDhcpv4GatewayAddr $
+                    freeradiusDhcpv4PoolName ) )

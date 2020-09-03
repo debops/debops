@@ -1,0 +1,60 @@
+# freeradius-dhcpv6.schema - Define DHCPv6 LDAP objects used by FreeRADIUS
+#
+# Copyright (C) 2009-2020 The FreeRADIUS Server Project <https://freeradius.org/>
+# Copyright (C) 2020      Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020      DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-2.0-only
+
+# Based on: https://github.com/FreeRADIUS/freeradius-server/blob/master/doc/schemas/ldap/openldap/freeradius-dhcpv6.schema
+
+# Depends on:
+# - freeradius.schema
+
+
+# Attribute definitions
+# ---------------------
+
+attributeType ( FreeRADIUSldapDHCPv6ProfileAttr:1
+                NAME 'freeradiusDhcpv6Attribute'
+                DESC 'DHCP attribute in format [<list>:]<attr> <op> <value>'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+objectClass ( FreeRADIUSldapDHCPv6ProfileObject:2
+              NAME 'freeradiusDhcpv6Profile'
+              SUP top
+              AUXILIARY
+              MAY ( freeradiusDhcpv6Attribute ) )
+
+
+attributeType ( FreeRADIUSldapDHCPv6ClientAttr:1
+                NAME 'freeradiusDhcpv6GatewayIdentifier'
+                DESC 'Gateway Identifier'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+attributeType ( FreeRADIUSldapDHCPv6ClientAttr:2
+                NAME 'freeradiusDhcpv6GatewayAddr'
+                DESC 'Gateway IP address'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+attributeType ( FreeRADIUSldapDHCPv6ClientAttr:3
+                NAME 'freeradiusDhcpv6PoolName'
+                DESC 'DHCP ip pool name'
+                EQUALITY caseIgnoreMatch
+                SUBSTR caseIgnoreSubstringsMatch
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
+                SINGLE-VALUE )
+
+objectClass ( FreeRADIUSldapDHCPv6ClientObject:1
+              NAME 'freeradiusDhcpv6Gateway'
+              DESC 'A DHCP gateway, and attributes specific to it'
+              SUP top
+              AUXILIARY
+              MAY ( freeradiusDhcpv6GatewayIdentifier $
+                    freeradiusDhcpv6GatewayAddr $
+                    freeradiusDhcpv6PoolName ) )

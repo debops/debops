@@ -99,6 +99,13 @@ LDAP
   :ref:`slapd__ref_autogroup_overlay` has been implemented in the role. Debian
   Buster or newer is recommended for this feature to work properly.
 
+- A set of `FreeRADIUS`__ LDAP schema has been added to the role. RADIUS
+  Profiles, Clients and FreeRADIUS DHCP configuration can be stored in the LDAP
+  directory managed by DebOps and used by the :ref:`debops.freeradius` Ansible
+  role.
+
+  .. __: https://freeradius.org/
+
 Changed
 ~~~~~~~
 

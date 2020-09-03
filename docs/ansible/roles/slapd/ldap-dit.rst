@@ -76,6 +76,9 @@ Directory structure
 
         - :ref:`dyngroup.schema <slapd__ref_dyngroup>`
 
+        - :ref:`freeradius.schema <slapd__ref_freeradius_schema>`
+          (with RADIUS Client/Profile/Accounting, DHCPv4, DHCPv6 schema)
+
       - ``olcDatabase={0}config``
 
         - :ref:`olcOverlay={0}syncprov <slapd__ref_syncprov_overlay>` (:ref:`for Multi-Master replication <slapd__ref_syncrepl_multi_master>`)
