@@ -346,3 +346,23 @@ updating these objects each time an LDAP entry included in the specified search
 is created, modified or destroyed.
 
 .. __: https://www.zytrax.com/books/ldap/ch11/dynamic.html
+
+.. _slapd__ref_freeradius_schema:
+
+The ``freeradius`` schema
+-------------------------
+
+The ``freeradius`` schema provide definitions of various LDAP objects usable by
+the `FreeRADIUS`__ service, namely RADIUS Clients, RADIUS Profiles, RADIUS
+Accounting database objects, and FreeRADIUS DHCPv4/DHCPv6 configuration
+objects. The version of the schema included in DebOps is based on the
+``master`` branch of the FreeRADIUS project code.
+
+Keep in mind that the FreeRADIUS schema is split into multiple
+:file:`freeradius-*.schema` files, and the main file defines just the
+``objectIdentifier`` LDAP objects used in other schema files. If you don't want
+to use specific FreeRADIUS features you should be able to disable them by
+changing the list of LDAP schemas the role loads, but the
+:file:`freeradius.schema` file should be always present.
+
+.. __: https://freeradius.org/

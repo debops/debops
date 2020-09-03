@@ -58,6 +58,8 @@ Directory structure
 
         - :ref:`posixgroupid.schema <slapd__ref_posixgroupid>`
 
+        - :ref:`nextuidgid.schema <slapd__ref_nextuidgid_schema>`
+
         - :ref:`ppolicy.schema <slapd__ref_ppolicy_schema>`
 
         - :ref:`ldapns.schema <slapd__ref_ldapns>`
@@ -73,6 +75,9 @@ Directory structure
         - :ref:`mailservice.schema <slapd__ref_mailservice>`
 
         - :ref:`dyngroup.schema <slapd__ref_dyngroup>`
+
+        - :ref:`freeradius.schema <slapd__ref_freeradius_schema>`
+          (with RADIUS Client/Profile/Accounting, DHCPv4, DHCPv6 schema)
 
       - ``olcDatabase={0}config``
 

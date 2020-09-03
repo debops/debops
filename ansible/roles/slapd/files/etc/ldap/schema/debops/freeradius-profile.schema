@@ -1,0 +1,451 @@
+# freeradius-profile.schema - Define RADIUS Profile LDAP objects used by FreeRADIUS
+#
+# Copyright (C) 2009-2020 The FreeRADIUS Server Project <https://freeradius.org/>
+# Copyright (C) 2020      Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020      DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-2.0-only
+
+# Based on: https://github.com/FreeRADIUS/freeradius-server/blob/master/doc/schemas/ldap/openldap/freeradius.schema
+
+# Depends on:
+# - freeradius.schema
+
+
+# Attribute definitions
+# ---------------------
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:1
+                NAME 'radiusArapFeatures'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:2
+                NAME 'radiusArapSecurity'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:3
+                NAME 'radiusArapZoneAccess'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:44
+                NAME 'radiusAuthType'
+                DESC 'controlItem: Auth-Type'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:4
+                NAME 'radiusCallbackId'
+                DESC 'replyItem: Callback-Id'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:5
+                NAME 'radiusCallbackNumber'
+                DESC 'replyItem: Callback-Number'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:6
+                NAME 'radiusCalledStationId'
+                DESC 'controlItem: Called-Station-Id'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:7
+                NAME 'radiusCallingStationId'
+                DESC 'controlItem: Calling-Station-Id'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:8
+                NAME 'radiusClass'
+                DESC 'replyItem: Class'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:45
+                NAME 'radiusClientIPAddress'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:9
+                NAME 'radiusFilterId'
+                DESC 'replyItem: Filter-Id'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:10
+                NAME 'radiusFramedAppleTalkLink'
+                DESC 'replyItem: Framed-AppleTalk-Link'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:11
+                NAME 'radiusFramedAppleTalkNetwork'
+                DESC 'replyItem: Framed-AppleTalk-Network'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:12
+                NAME 'radiusFramedAppleTalkZone'
+                DESC 'replyItem: Framed-AppleTalk-Zone'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:13
+                NAME 'radiusFramedCompression'
+                DESC 'replyItem: Framed-Compression'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:14
+                NAME 'radiusFramedIPAddress'
+                DESC 'replyItem: Framed-IP-Address'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:15
+                NAME 'radiusFramedIPNetmask'
+                DESC 'replyItem: Framed-IP-Netmask'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:16
+                NAME 'radiusFramedIPXNetwork'
+                DESC 'replyItem: Framed-IPX-Network'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:17
+                NAME 'radiusFramedMTU'
+                DESC 'replyItem: Framed-MTU'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:18
+                NAME 'radiusFramedProtocol'
+                DESC 'replyItem: Framed-Protocol'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:19
+                NAME 'radiusFramedRoute'
+                DESC 'replyItem: Framed-Route'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:20
+                NAME 'radiusFramedRouting'
+                DESC 'replyItem: Framed-Routing'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:46
+                NAME 'radiusGroupName'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:47
+                NAME 'radiusHint'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:48
+                NAME 'radiusHuntgroupName'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:21
+                NAME 'radiusIdleTimeout'
+                DESC 'replyItem: Idle-Timeout'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:22
+                NAME 'radiusLoginIPHost'
+                DESC 'replyItem: Login-IP-Host'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:23
+                NAME 'radiusLoginLATGroup'
+                DESC 'replyItem: Login-LAT-Group'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:24
+                NAME 'radiusLoginLATNode'
+                DESC 'replyItem: Login-LAT-Node'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:25
+                NAME 'radiusLoginLATPort'
+                DESC 'replyItem: Login-LAT-Port'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:26
+                NAME 'radiusLoginLATService'
+                DESC 'replyItem: Login-LAT-Service'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:27
+                NAME 'radiusLoginService'
+                DESC 'replyItem: Login-Service'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:28
+                NAME 'radiusLoginTCPPort'
+                DESC 'replyItem: Login-TCP-Port'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:29
+                NAME 'radiusPasswordRetry'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:30
+                NAME 'radiusPortLimit'
+                DESC 'replyItem: Port-Limit'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:49
+                NAME 'radiusProfileDN'
+                EQUALITY distinguishedNameMatch
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:31
+                NAME 'radiusPrompt'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:50
+                NAME 'radiusProxyToRealm'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:51
+                NAME 'radiusReplicateToRealm'
+                DESC 'control:Replicate-To-Realm'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:52
+                NAME 'radiusRealm'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:32
+                NAME 'radiusServiceType'
+                DESC 'replyItem: Service-Type'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:33
+                NAME 'radiusSessionTimeout'
+                DESC 'replyItem: Session-Timeout'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:34
+                NAME 'radiusTerminationAction'
+                DESC 'replyItem: Termination-Action'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:35
+                NAME 'radiusTunnelAssignmentId'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:36
+                NAME 'radiusTunnelMediumType'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:37
+                NAME 'radiusTunnelPassword'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:38
+                NAME 'radiusTunnelPreference'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:39
+                NAME 'radiusTunnelPrivateGroupId'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:40
+                NAME 'radiusTunnelServerEndpoint'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:41
+                NAME 'radiusTunnelType'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:42
+                NAME 'radiusVSA'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:43
+                NAME 'radiusTunnelClientEndpoint'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:53
+                NAME 'radiusSimultaneousUse'
+                DESC 'controlItem: Simultaneous-Use'
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:54
+                NAME 'radiusLoginTime'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:55
+                NAME 'radiusUserCategory'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:56
+                NAME 'radiusStripUserName'
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.7
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:57
+                NAME 'dialupAccess'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:58
+                NAME 'radiusExpiration'
+                DESC 'controlItem: Expiration'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:59
+                NAME 'radiusAttribute'
+                DESC 'controlItem: $GENERIC$'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:61
+                NAME 'radiusNASIpAddress'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
+                SINGLE-VALUE )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:62
+                NAME 'radiusReplyMessage'
+                DESC 'replyItem: Reply-Message'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:63
+                NAME 'radiusControlAttribute'
+                DESC 'controlItem: $GENERIC$'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:64
+                NAME 'radiusReplyAttribute'
+                DESC 'replyItem: $GENERIC$'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+attributeType ( FreeRADIUSldapRADIUSProfileAttr:65
+                NAME 'radiusRequestAttribute'
+                DESC 'requestItem: $GENERIC$'
+                EQUALITY caseIgnoreIA5Match
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+
+# Object definitions
+# ------------------
+
+objectClass ( FreeRADIUSldapRADIUSProfileObject:1
+              NAME 'radiusProfile'
+              SUP top
+              AUXILIARY
+              MAY ( radiusArapFeatures $ radiusArapSecurity $ radiusArapZoneAccess $
+                    radiusAuthType $ radiusCallbackId $ radiusCallbackNumber $
+                    radiusCalledStationId $ radiusCallingStationId $ radiusClass $
+                    radiusClientIPAddress $ radiusFilterId $ radiusFramedAppleTalkLink $
+                    radiusFramedAppleTalkNetwork $ radiusFramedAppleTalkZone $
+                    radiusFramedCompression $ radiusFramedIPAddress $ radiusFramedIPNetmask $
+                    radiusFramedIPXNetwork $ radiusFramedMTU $ radiusFramedProtocol $
+                    radiusAttribute $ radiusFramedRoute $ radiusFramedRouting $
+                    radiusIdleTimeout $ radiusGroupName $ radiusHint $ radiusHuntgroupName $
+                    radiusLoginIPHost $ radiusLoginLATGroup $ radiusLoginLATNode $
+                    radiusLoginLATPort $ radiusLoginLATService $ radiusLoginService $
+                    radiusLoginTCPPort $ radiusLoginTime $ radiusPasswordRetry $
+                    radiusPortLimit $ radiusPrompt $ radiusProxyToRealm $ radiusRealm $
+                    radiusReplicateToRealm $ radiusServiceType $ radiusSessionTimeout $
+                    radiusStripUserName $ radiusTerminationAction $ radiusTunnelClientEndpoint $
+                    radiusProfileDN $ radiusSimultaneousUse $ radiusTunnelAssignmentId $
+                    radiusTunnelMediumType $ radiusTunnelPassword $ radiusTunnelPreference $
+                    radiusTunnelPrivateGroupId $ radiusTunnelServerEndpoint $ radiusTunnelType $
+                    radiusUserCategory $ radiusVSA $ radiusExpiration $ dialupAccess $
+                    radiusNASIpAddress $ radiusReplyMessage $ radiusControlAttribute $
+                    radiusReplyAttribute $ radiusRequestAttribute ) )
+
+# Originally: radiusObjectProfile
+objectClass ( FreeRADIUSldapRADIUSProfileObject:2
+              NAME 'radiusProfileObject'
+              DESC 'A container ObjectClass to be used for creating RADIUS Profile objects'
+              SUP top
+              STRUCTURAL
+              MUST cn
+              MAY ( uid $ userPassword $ description ) )
