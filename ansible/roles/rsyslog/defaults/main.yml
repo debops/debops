@@ -298,7 +298,8 @@ rsyslog__syslog_srv_rr: '{{ q("dig", "_syslog._tcp." + rsyslog__domain + "./SRV"
 # record, logs will be snet to all of them at the same time.
 rsyslog__default_forward: '{{ (rsyslog__syslog_srv_rr | selectattr("target", "defined")
                                | list | sort)
-                              if ("NXDOMAIN" not in rsyslog__syslog_srv_rr and
+                              if (rsyslog__syslog_srv_rr and
+			          "NXDOMAIN" not in rsyslog__syslog_srv_rr and
                                   rsyslog__syslog_srv_rr[0] and
                                   not rsyslog__remote_enabled|bool and
                                   rsyslog__pki|bool)
