@@ -299,7 +299,7 @@ rsyslog__syslog_srv_rr: '{{ q("dig", "_syslog._tcp." + rsyslog__domain + "./SRV"
 rsyslog__default_forward: '{{ (rsyslog__syslog_srv_rr | selectattr("target", "defined")
                                | list | sort)
                               if (rsyslog__syslog_srv_rr and
-			          "NXDOMAIN" not in rsyslog__syslog_srv_rr and
+                              "NXDOMAIN" not in rsyslog__syslog_srv_rr and
                                   rsyslog__syslog_srv_rr[0] and
                                   not rsyslog__remote_enabled|bool and
                                   rsyslog__pki|bool)
