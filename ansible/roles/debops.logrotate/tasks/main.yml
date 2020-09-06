@@ -14,8 +14,8 @@
     {% if logrotate__cron_period in [ 'hourly', 'weekly', 'monthly' ] %}
     test -z "$(dpkg-divert --list /etc/cron.daily/logrotate)" \
       || dpkg-divert --quiet --local --rename --remove /etc/cron.daily/logrotate ;
-    dpkg-divert --quiet --local
-                --divert /etc/cron.{{ logrotate__cron_period }}/logrotate
+    dpkg-divert --quiet --local \
+                --divert /etc/cron.{{ logrotate__cron_period }}/logrotate \
                 --rename /etc/cron.daily/logrotate
     {% else %}
     dpkg-divert --quiet --local --rename --remove /etc/cron.daily/logrotate
