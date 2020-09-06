@@ -48,6 +48,12 @@ LDAP
 Fixed
 ~~~~~
 
+:ref:`debops.logrotate` role
+''''''''''''''''''''''''''''
+
+- Fixed the :command:`dpkg-divert` command execution when log rotation perion
+  is changed.
+
 :ref:`debops.nullmailer` role
 '''''''''''''''''''''''''''''
 
