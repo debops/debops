@@ -54,6 +54,12 @@ Fixed
 - Set the default file mode for public :file:`/etc/nullmailer/*` configuration
   files to be world-readable.
 
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- Fixed ``_syslog._tcp`` DNS SRV resource record detection on hosts with an
+  undefined DNS domain.
+
 
 `debops v2.1.2`_ - 2020-08-30
 -----------------------------
