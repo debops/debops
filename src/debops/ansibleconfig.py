@@ -16,36 +16,29 @@ except ImportError:
 
 class AnsibleConfig(object):
 
-    def __init__(self, path, user_config=None, project_type=None,
+    def __init__(self, path, debops_config=None, project_type=None,
                  refresh=False):
         self.path = os.path.abspath(path)
-        self.user_config = user_config
+        self.debops_config = debops_config
         self.project_type = project_type
 
         self.config = configparser.ConfigParser()
         self._template_config(project_type=self.project_type)
 
-        if self.user_config:
-            if (os.path.exists(self.user_config)
-                    and os.path.isfile(self.user_config)):
-                self._parse_user_config(self.user_config)
+        if self.debops_config:
+            if 'ansible' in self.debops_config:
+                self._parse_debops_config(self.debops_config['ansible'])
 
         if (os.path.exists(self.path) and os.path.isfile(self.path)
                 and not refresh):
             self.config.read(self.path)
 
-    def _parse_user_config(self, config_file):
-        debops_config = configparser.ConfigParser()
-        debops_config.read(config_file)
-
-        parsed_config = dict((sect.split(None, 1)[1], pairs)
-                             for sect, pairs in debops_config.items()
-                             if sect.startswith('ansible '))
-        for section, pairs in parsed_config.items():
-            if not self.config.has_section(section):
+    def _parse_debops_config(self, config_data):
+        for section, pairs in config_data.items():
+            if not self.config.has_section(section) and pairs:
                 self.config.add_section(section)
             for option, value in pairs.items():
-                self.config.set(section, option, value)
+                self.config.set(section, option, str(value))
 
     def _template_config(self, project_type=None):
         template_vars = {}

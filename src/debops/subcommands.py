@@ -34,7 +34,8 @@ Commands:
     init     initialize new project directory
     status   display project information
     run      run Ansible playbook(s) against hosts
-    check    run Ansible playbook(s) in check mode''')
+    check    run Ansible playbook(s) in check mode
+    config   display DebOps configuration options''')
 
         parser.add_argument('command', help='Subcommand to run')
         parser.add_argument('--version', action='version',
@@ -113,4 +114,19 @@ Commands:
                             help=argparse.SUPPRESS, action='append_const')
         parser.add_argument(const='--check', dest='ansible_args',
                             help=argparse.SUPPRESS, action='append_const')
+        self.args = parser.parse_args(self.args[2:])
+
+    def do_config(self):
+        parser = argparse.ArgumentParser(
+                parents=[self.global_parser],
+                usage='debops config [<args>]',
+                description='display DebOps configuration options')
+        parser.add_argument('--env', default=False,
+                            help='show environment inside DebOps '
+                                 'execution context',
+                            action='store_true')
+        parser.add_argument('--format', type=str, nargs='?',
+                            choices=['json', 'toml'],
+                            default='toml',
+                            help='output format (default: %(default)s)')
         self.args = parser.parse_args(self.args[2:])

@@ -4,6 +4,7 @@
 # Copyright (C) 2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from .config import Configuration
 from .subcommands import Subcommands
 from .projectdir import ProjectDir
 from .ansibleplaybookrunner import AnsiblePlaybookRunner
@@ -13,6 +14,7 @@ class Interpreter(object):
 
     def __init__(self, args=None):
         self.args = args
+        self.config = Configuration()
         self.parsed_args = Subcommands(self.args)
 
         if self.parsed_args.command == 'init':
@@ -24,10 +26,13 @@ class Interpreter(object):
         elif self.parsed_args.command == 'status':
             self.do_status(self.parsed_args.args)
 
+        elif self.parsed_args.command == 'config':
+            self.do_config(self.parsed_args.args)
+
     def do_init(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, create=True,
-                                 refresh=args.refresh)
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 create=True, refresh=args.refresh)
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError) as errmsg:
             print('Error:', errmsg)
@@ -35,7 +40,7 @@ class Interpreter(object):
 
     def do_run(self, args):
         try:
-            project = ProjectDir(path=args.project_dir)
+            project = ProjectDir(path=args.project_dir, config=self.config)
         except (IsADirectoryError, NotADirectoryError) as errmsg:
             print('Error:', errmsg)
             exit(1)
@@ -49,9 +54,22 @@ class Interpreter(object):
 
     def do_status(self, args):
         try:
-            project = ProjectDir(path=args.project_dir)
+            project = ProjectDir(path=args.project_dir, config=self.config)
         except (IsADirectoryError, NotADirectoryError) as errmsg:
             print('Error:', errmsg)
             exit(1)
 
         project.status()
+
+    def do_config(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config)
+        except (IsADirectoryError, NotADirectoryError) as errmsg:
+            # This is not a project directory, so no project-dependent
+            # configuration is included
+            pass
+
+        if args.env:
+            self.config.show_env()
+        else:
+            self.config.show(format=args.format)

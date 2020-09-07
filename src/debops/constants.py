@@ -9,6 +9,3 @@ import os
 # Path to the directory which contains data files included in the Python
 # package
 DEBOPS_PACKAGE_DATA = os.path.join(os.path.dirname(__file__), '_data')
-
-# Path to the 'ansible-playbook' binary to use by DebOps scripts.
-CMD_ANSIBLE_PLAYBOOK = 'ansible-playbook'

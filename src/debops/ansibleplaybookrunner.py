@@ -4,7 +4,6 @@
 # Copyright (C) 2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from .constants import CMD_ANSIBLE_PLAYBOOK
 from .ansibleconfig import AnsibleConfig
 import subprocess
 import os
@@ -23,7 +22,9 @@ class AnsiblePlaybookRunner(object):
         self._known_collections = self._find_collections(project)
 
         self._ansible_env = {'ANSIBLE_CONFIG': project.ansible_cfg.path}
-        self._ansible_command = [CMD_ANSIBLE_PLAYBOOK]
+        self._ansible_command = [
+                project.config.raw['binaries']['ansible-playbook']
+        ]
         self._found_playbooks = []
 
         # Add the --extra-vars with 'global-vars.yml' files first so that they

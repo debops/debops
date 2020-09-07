@@ -16,8 +16,10 @@ import platform
 class ProjectDir(object):
 
     def __init__(self, path=os.getcwd(), project_type='legacy', create=False,
-                 refresh=False):
+                 refresh=False, config=None):
+        self.config = config
         self.path = os.path.abspath(path)
+        self.name = os.path.basename(self.path)
         self.project_type = project_type
 
         # Make sure that we are not operating on the home directory
@@ -35,9 +37,11 @@ class ProjectDir(object):
                 raise IsADirectoryError('You are inside another '
                                         'DebOps project directory')
 
+            self.config.merge_env(self.path)
+            self.config.merge(os.path.join(self.path, '.debops.cfg'))
+            self.config.merge(os.path.join(self.path, '.debops', 'conf.d'))
             # Let's make a new project
             if self.project_type == 'legacy':
-                self.user_config = os.path.join(self.path, '.debops.cfg')
                 self._create_legacy_project(self.path, refresh=refresh)
 
         # Find the project again in case that it was just created
@@ -45,7 +49,6 @@ class ProjectDir(object):
                                                      ['.debops.cfg'])
         if self._legacy_config_path:
             self.path = os.path.dirname(self._legacy_config_path)
-            self.user_config = os.path.join(self.path, '.debops.cfg')
             self.project_type = 'legacy'
         else:
             self.project_type = None
@@ -55,9 +58,28 @@ class ProjectDir(object):
             raise NotADirectoryError('DebOps project directory not found '
                                      'in ' + self.path)
 
+        project_data = {'projects': {
+                self.name: {
+                    'path': self.path,
+                    'name': self.name,
+                    'type': self.project_type,
+                    'views': {
+                        'system': {}
+                    }
+                }
+            }
+        }
+
+        project_data['projects'][self.name]['views']['system'].update(
+                self.config.load(os.path.join(self.path, '.debops.cfg')))
+
+        self.config.merge_env(self.path)
+        self.config.merge(project_data)
+
+        self.config.merge(os.path.join(self.path, '.debops', 'conf.d'))
         self.ansible_cfg = AnsibleConfig(
                 os.path.join(self.path, 'ansible.cfg'),
-                user_config=self.user_config,
+                debops_config=self.config.raw,
                 project_type=self.project_type)
 
     def _find_up_dir(self, path, filenames):
@@ -139,16 +161,20 @@ class ProjectDir(object):
 
         # Create .debops.cfg
         self._write_file(os.path.join(path, '.debops.cfg'),
-                         default_debops_cfg.render())
+                         default_debops_cfg.render(env=os.environ)
+                         + '\n')
+        self.config.merge(os.path.join(self.path, '.debops.cfg'))
 
         # Create .gitattributes
         self._write_file(os.path.join(path, '.gitattributes'),
-                         default_gitattributes.render(secret_name='secret'))
+                         default_gitattributes.render(secret_name='secret')
+                         + '\n')
 
         # Create .gitignore
         self._write_file(os.path.join(path, '.gitignore'),
                          default_gitignore.render(secret_name='secret',
-                                                  encfs_prefix='.encfs.'))
+                                                  encfs_prefix='.encfs.')
+                         + '\n')
 
         # Create hosts file
         if (platform.system() == "Linux" and
@@ -166,7 +192,7 @@ class ProjectDir(object):
 
         self.ansible_cfg = AnsibleConfig(
                 os.path.join(self.path, 'ansible.cfg'),
-                user_config=self.user_config,
+                debops_config=self.config.raw,
                 project_type=self.project_type,
                 refresh=refresh)
         self.ansible_cfg.write_config()
@@ -178,7 +204,7 @@ class ProjectDir(object):
     def status(self):
         self.ansible_cfg = AnsibleConfig(
                 os.path.join(self.path, 'ansible.cfg'),
-                user_config=self.user_config,
+                debops_config=self.config.raw,
                 project_type=self.project_type)
         collections = self.ansible_cfg.get_option(
                 'collections_paths')
