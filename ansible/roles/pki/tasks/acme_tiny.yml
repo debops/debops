@@ -35,18 +35,13 @@
         repo: '{{ pki_acme_tiny_repo }}'
         dest: '{{ pki_acme_tiny_src + "/acme-tiny" }}'
         version: '{{ pki_acme_tiny_version }}'
-      register: pki_register_acme_tiny_src
 
     - name: Install acme-tiny script
-      command: cp -f {{ pki_acme_tiny_src }}/acme-tiny/acme_tiny.py {{ pki_acme_tiny_bin }}
-      when: pki_register_acme_tiny_src is changed
-
-    - name: Ensure that acme-tiny is executable
       file:
         path: '{{ pki_acme_tiny_bin }}'
-        state: 'file'
-        owner: 'root'
-        group: 'root'
+        src: '{{ pki_acme_tiny_src }}/acme-tiny/acme_tiny.py'
+        state: 'link'
+        force: True  # Overwrite previously copied script
         mode: '0755'
 
 - name: Create ACME challenge path
