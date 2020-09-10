@@ -53,6 +53,16 @@ LDAP
   systems protected with AppArmor rules, which make the :file:`/proc/sys/`
   directory read-only.
 
+Changed
+~~~~~~~
+
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- Symlink the :command:`acme-tiny` script from the upstream :command:`git`
+  repository instead of copying it over. The role will forcefully replace an
+  existing copy with a symlink, if it already exists.
+
 Fixed
 ~~~~~
 
