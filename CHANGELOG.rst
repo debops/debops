@@ -45,6 +45,14 @@ LDAP
 - Custom Apache logs can have optional conditions that specify when webserver
   requests are logged.
 
+:ref:`debops.sysctl` role
+'''''''''''''''''''''''''
+
+- The role can now be enabled or disabled conditionally via Ansible inventory.
+  This might be required in certain cases, for example LXD containers or
+  systems protected with AppArmor rules, which make the :file:`/proc/sys/`
+  directory read-only.
+
 Fixed
 ~~~~~
 

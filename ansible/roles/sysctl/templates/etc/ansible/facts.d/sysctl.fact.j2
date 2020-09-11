@@ -9,11 +9,12 @@
 # {{ ansible_managed }}
 
 from __future__ import print_function
-from json import dumps
+from json import dumps, loads
 import os
 
-output = {'configured': True,
-          'writable': []}
+output = loads("""{{ {'configured': True,
+                      'enabled': sysctl__enabled|bool,
+                      'writable': []} | to_nice_json }}""")
 
 # Find all paths in '/proc/sys/' that are writable, ie. mounted with
 # read-write permission. If there are no writable paths found, and /proc/sys
