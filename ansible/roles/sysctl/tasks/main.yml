@@ -11,6 +11,7 @@
 
 - name: Pre hooks
   include: '{{ lookup("task_src", "sysctl/pre_main.yml") }}'
+  when: sysctl__enabled|bool
 
 - name: Make sure that Ansible local facts directory exists
   file:
@@ -41,6 +42,7 @@
   args:
     executable: 'bash'
   register: sysctl__register_diversions
+  when: sysctl__enabled|bool
   check_mode: False
   changed_when: False
 
@@ -49,7 +51,7 @@
            --divert /etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}.dpkg-divert
            --rename /etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}
   with_items: '{{ sysctl__combined_parameters | parse_kv_items }}'
-  when: (item.name|d() and item.options|d() and
+  when: (sysctl__enabled|bool and item.name|d() and item.options|d() and
          item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
          (item.divert|d())|bool and
           ('/etc/sysctl.d/' + (item.filename | d(item.weight|string + "-" + item.name + ".conf"))
@@ -61,7 +63,7 @@
     state: 'absent'
   with_items: '{{ sysctl__combined_parameters | parse_kv_items }}'
   register: sysctl__register_config_removed
-  when: item.name|d() and item.state|d('present') == 'absent'
+  when: sysctl__enabled|bool and item.name|d() and item.state|d('present') == 'absent'
 
 - name: Generate sysctl configuration files
   template:
@@ -72,7 +74,7 @@
     mode: '0644'
   with_items: '{{ sysctl__combined_parameters | parse_kv_items }}'
   register: sysctl__register_config_created
-  when: item.name|d() and item.options|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
+  when: sysctl__enabled|bool and item.name|d() and item.options|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Revert original sysctl configuration
   shell: rm -f /etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}
@@ -80,7 +82,7 @@
   args:
     warn: False
   with_items: '{{ sysctl__combined_parameters | parse_kv_items }}'
-  when: (item.name|d() and item.state|d('present') == 'absent' and (item.divert|d())|bool and
+  when: (sysctl__enabled|bool and item.name|d() and item.state|d('present') == 'absent' and (item.divert|d())|bool and
           ('/etc/sysctl.d/' + item.filename | d(item.weight|string + "-" + item.name + ".conf")
            + '.dpkg-divert') in sysctl__register_diversions.stdout_lines)
 
@@ -90,8 +92,9 @@
   args:
     executable: 'bash'
   register: sysctl__register_system
-  when: sysctl__register_config_created is changed or
-        sysctl__register_config_removed is changed
+  when: (sysctl__enabled|bool and
+         (sysctl__register_config_created is changed or
+          sysctl__register_config_removed is changed))
   check_mode: False
 
 - name: Apply kernel parameters if they were modified
@@ -105,8 +108,10 @@
     {% endif %}
   args:
     executable: 'bash'
-  when: sysctl__register_config_created is changed or
-        sysctl__register_config_removed is changed
+  when: (sysctl__enabled|bool and
+         (sysctl__register_config_created is changed or
+          sysctl__register_config_removed is changed))
 
 - name: Post hooks
   include: '{{ lookup("task_src", "sysctl/post_main.yml") }}'
+  when: sysctl__enabled|bool
