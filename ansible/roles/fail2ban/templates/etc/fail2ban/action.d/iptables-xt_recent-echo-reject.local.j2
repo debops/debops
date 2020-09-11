@@ -6,7 +6,7 @@
 # Copyright (C) 2015 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 #
-# $Revision: 1 $
+# $Revision: 2 $
 #
 
 [Definition]
@@ -33,14 +33,14 @@
 #    own rules. The <bantime> second timeout is independent and acts as a
 #    safeguard in case the fail2ban process dies unexpectedly. The
 #    shorter of the two timeouts actually matters.
-actionstart = iptables -I <chain> <position> -m recent --update --seconds <bantime> --name fail2ban-<name> --jump REJECT --reject-with icmp-admin-prohibited
+actionstart = iptables -I <chain> <position> -m recent --update --seconds {{ fail2ban_bantime_distribution_map[ansible_distribution_release] if ansible_distribution_release in fail2ban_bantime_distribution_map.keys() else "<bantime>" }} --name fail2ban-<name> --jump REJECT --reject-with icmp-admin-prohibited
 
 # Option:  actionstop
 # Notes.:  command executed once at the end of Fail2Ban
 # Values:  CMD
 #
 actionstop = echo / > /proc/net/xt_recent/fail2ban-<name>
-             iptables -D <chain> -m recent --update --seconds <bantime> --name fail2ban-<name> --jump REJECT --reject-with icmp-admin-prohibited
+             iptables -D <chain> -m recent --update --seconds {{ fail2ban_bantime_distribution_map[ansible_distribution_release] if ansible_distribution_release in fail2ban_bantime_distribution_map.keys() else "<bantime>" }} --name fail2ban-<name> --jump REJECT --reject-with icmp-admin-prohibited
 
 # Option:  actioncheck
 # Notes.:  command executed once before each actionban command

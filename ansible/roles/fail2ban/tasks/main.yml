@@ -45,6 +45,15 @@
     mode: 'u=rwX,g=rX,o=rX'
   notify: [ 'Reload fail2ban jails' ]
 
+- name: Install custom fail2ban iptables action files
+  template:
+    src: 'etc/fail2ban/action.d/{{ item }}.local.j2'
+    dest: '/etc/fail2ban/action.d/{{ item }}.local'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items: [iptables-xt_recent-echo-reject, iptables-xt_recent-echo]
+
 - name: Configure custom fail2ban actions
   template:
     src: '{{ lookup("template_src", "etc/fail2ban/action.d/action.local.j2") }}'
