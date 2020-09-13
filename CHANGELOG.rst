@@ -52,6 +52,12 @@ LDAP
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- The :ref:`debops.mariadb` and :ref:`debops.mariadb_server` roles now support
+  installation of Percona Server/Client v8.0 from upstream APT repositories.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
