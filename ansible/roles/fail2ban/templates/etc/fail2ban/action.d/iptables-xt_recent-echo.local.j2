@@ -1,0 +1,20 @@
+# This file is managed remotely, all changes will be lost
+
+# Copyright (C) 2015 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+#
+# $Revision: 2 $
+#
+
+# Custom configuration for iptables - xt_recent support
+
+[Definition]
+
+# Changes in the start line:
+# - <bantime> is configurable instead of static 3600 seconds
+# - <chain> is configurable instead of static INPUT
+actionstart = iptables -I <chain> -m recent --update --seconds {{ fail2ban_bantime_distribution_map[ansible_distribution_release] if ansible_distribution_release in fail2ban_bantime_distribution_map.keys() else "<bantime>" }} --name fail2ban-<name> -j DROP
+
+actionstop = echo / > /proc/net/xt_recent/fail2ban-<name>
+             iptables -D <chain> -m recent --update --seconds {{ fail2ban_bantime_distribution_map[ansible_distribution_release] if ansible_distribution_release in fail2ban_bantime_distribution_map.keys() else "<bantime>" }} --name fail2ban-<name> -j DROP
