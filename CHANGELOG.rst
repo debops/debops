@@ -321,7 +321,8 @@ LDAP
 
   The installation location of the script from upstream is changed from
   :file:`/usr/local/lib/pki/` to :file:`/usr/local/bin/` to leverage the
-  ``$PATH`` variable so that the OS version is used without issues.
+  ``$PATH`` variable so that the OS version is used without issues. The script
+  is now also symlinked into place instead of copied over.
 
 :ref:`debops.rsnapshot` role
 ''''''''''''''''''''''''''''
