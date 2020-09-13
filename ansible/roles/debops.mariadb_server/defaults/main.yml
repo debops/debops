@@ -31,9 +31,11 @@
 # - ``mysql-5.7_galera-3``: use MySQL 5.7 engine with Galera from Codership
 #   repository
 #
-# - ``percona``: use Percona default version XtraDB engine from upstream repository
+# - ``percona-8.0``: use Percona 8.0 from its upstream repository, it includes
+#   XtraDB and optionally TokuDB and MyRocks engines
 #
-# - ``percona-5.7``: use Percona 5.7 XtraDB engine from upstream repository
+# - ``percona-5.7``: use Percona 5.7 from its upstream repository, it includes
+#   XtraDB and optionally TokuDB and MyRocks engines
 #
 # The choice depends on availability of MariaDB packages in a distribution.
 # Percona needs to be selected explicitly.
@@ -84,13 +86,15 @@ mariadb_server__apt_key_map:
     - repo: 'deb http://releases.galeracluster.com/mysql-wsrep-5.7/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
     - repo: 'deb http://releases.galeracluster.com/galera-3/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
 
-  'percona':
+  'percona-8.0':
     - id: '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
-      repo: 'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
+    - repo: 'deb http://repo.percona.com/tools/apt {{ ansible_distribution_release }} main'
+    - repo: 'deb http://repo.percona.com/ps-80/apt {{ ansible_distribution_release }} main'
 
   'percona-5.7':
     - id: '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
-      repo: 'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
+    - repo: 'deb http://repo.percona.com/tools/apt {{ ansible_distribution_release }} main'
+    - repo: 'deb http://repo.percona.com/ps-57/apt {{ ansible_distribution_release }} main'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__upstream_version [[[
@@ -128,7 +132,7 @@ mariadb_server__packages_map:
   'mysql': [ 'mysql-server' ]
   'mysql-5.6_galera-3': [ 'mysql-wsrep-server-5.6', 'galera-3', 'galera-arbitrator-3' ]
   'mysql-5.7_galera-3': [ 'mysql-wsrep-server-5.7', 'galera-3', 'galera-arbitrator-3' ]
-  'percona': [ 'percona-server-server' ]
+  'percona-8.0': [ 'percona-server-server' ]
   'percona-5.7': [ 'percona-server-server-5.7' ]
                                                                    # ]]]
                                                                    # ]]]
