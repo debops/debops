@@ -264,6 +264,12 @@ LDAP
 - Fixed the installation of Etherpad with the PostgreSQL backend by removing
   unused dependent variables.
 
+:ref:`debops.fail2ban` role
+'''''''''''''''''''''''''''
+
+- Fixed the configuration support on Ubuntu Focal due to bantime feature
+  changes in the :command:`fail2ban` v0.11.
+
 :ref:`debops.ifupdown` role
 '''''''''''''''''''''''''''
 

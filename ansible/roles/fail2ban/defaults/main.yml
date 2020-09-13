@@ -145,6 +145,13 @@ fail2ban_chain: 'INPUT'
 fail2ban_position: '6'
 
                                                                    # ]]]
+# .. envvar:: fail2ban_bantime_distribution_map [[[
+#
+# Dictionary for release to default bantime for banning IPs
+fail2ban_bantime_distribution_map:
+  'focal': "7200"
+
+                                                                   # ]]]
 # .. envvar:: fail2ban_action [[[
 #
 # Action performed by ``fail2ban`` when IP address is banned. See list of
@@ -152,6 +159,12 @@ fail2ban_position: '6'
 fail2ban_action: 'action_'
 
                                                                    # ]]]
+# .. envvar:: fail2ban_action_distribution_map [[[
+#
+# Dictionary for release to default action for banning IPs
+fail2ban_action_distribution_map:
+  'focal': '%(banaction)s[name=%(__name__)s, port="%(port)s", protocol="%(protocol)s", chain="%(chain)s", position="%(position)s"]'
+# ]]]
 # .. envvar:: fail2ban_default_actions [[[
 #
 # Dict with set of named actions to perform when a ban is executed.
@@ -159,18 +172,24 @@ fail2ban_default_actions:
 
   # Block an IP address in the firewall
   'action_': |
-    %(banaction)s[name=%(__name__)s, port="%(port)s", protocol="%(protocol)s", chain="%(chain)s", position="%(position)s", bantime="%(bantime)s"]
+    {{ fail2ban_action_distribution_map[ansible_distribution_release]
+    if ansible_distribution_release in fail2ban_action_distribution_map.keys()
+    else '%(banaction)s[name=%(__name__)s, port="%(port)s", protocol="%(protocol)s", chain="%(chain)s", position="%(position)s", bantime="%(bantime)s"]' }}
 
   # Block an IP address in the firewall and send a notification about the
   # offender taken from ``whois``
   'action_mw': |
-    %(banaction)s[name=%(__name__)s, port="%(port)s", protocol="%(protocol)s", chain="%(chain)s", position="%(position)s", bantime="%(bantime)s"]
+    {{ fail2ban_action_distribution_map[ansible_distribution_release]
+    if ansible_distribution_release in fail2ban_action_distribution_map.keys()
+    else '%(banaction)s[name=%(__name__)s, port="%(port)s", protocol="%(protocol)s", chain="%(chain)s", position="%(position)s", bantime="%(bantime)s"]' }}
     %(mta)s-whois[name=%(__name__)s, dest="%(destemail)s", protocol="%(protocol)s", chain="%(chain)s"]
 
   # Block an IP address in the firewall and send a notification about the
   # offender taken from ``whois`` and relevant log entries
   'action_mwl': |
-    %(banaction)s[name=%(__name__)s, port="%(port)s", protocol="%(protocol)s", chain="%(chain)s", position="%(position)s", bantime="%(bantime)s"]
+    {{ fail2ban_action_distribution_map[ansible_distribution_release]
+    if ansible_distribution_release in fail2ban_action_distribution_map.keys()
+    else '%(banaction)s[name=%(__name__)s, port="%(port)s", protocol="%(protocol)s", chain="%(chain)s", position="%(position)s", bantime="%(bantime)s"]' }}
     %(mta)s-whois-lines[name=%(__name__)s, dest="%(destemail)s", logpath=%(logpath)s, chain="%(chain)s"]
 
 # ]]]
