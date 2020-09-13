@@ -137,6 +137,9 @@ Updates of upstream application versions
   ``v2.9.1``.
   The plugin support added in ``v2.8.0`` can be configured from DebOps.
 
+- The :ref:`debops.mariadb` and :ref:`debops.mariadb_server` roles now support
+  installation of Percona Server/Client v8.0 from upstream APT repositories.
+
 General
 '''''''
 
