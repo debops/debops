@@ -176,6 +176,8 @@
 #   become: False
 #   delegate_to: 'localhost'
 
+## The `luks_device` Ansible module is way too limited in terms of supported
+## parameters as of Ansible 2.9 to replace this yet unfortunately.
 - name: Create encryption layer
   shell: set -o nounset -o pipefail -o errexit &&
          cryptsetup isLuks "{{ item.0.ciphertext_block_device }}" || cryptsetup luksFormat
