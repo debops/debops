@@ -45,6 +45,11 @@ LDAP
 - Custom Apache logs can have optional conditions that specify when webserver
   requests are logged.
 
+:ref:`debops.lvm` role
+''''''''''''''''''''''
+
+- Default LVM2 configuration for Debian Stretch and Buster has been added.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 
