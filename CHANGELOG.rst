@@ -162,6 +162,11 @@ LDAP
   and specific services (user accounts, PAM, :command:`sshd`, :command:`sudo`)
   while leaving higher-level services unaffected.
 
+:ref:`debops.lvm` role
+''''''''''''''''''''''
+
+- Linux Software RAID devices are now scanned by default.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
