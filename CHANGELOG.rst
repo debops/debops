@@ -136,6 +136,8 @@ Updates of upstream application versions
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
   ``v2.9.4``.
   The plugin support added in ``v2.8.0`` can be configured from DebOps.
+  The NetBox Request Queue Worker service is configured to support background jobs
+  like reports to work.
 
 General
 '''''''
