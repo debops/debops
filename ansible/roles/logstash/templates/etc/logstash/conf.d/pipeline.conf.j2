@@ -12,17 +12,23 @@
   if {{ section.if_expression }} {
 {%       endif %}
 {%       for plugin in section.plugins %}
-    {{ plugin.name }} {
+{%         if plugin.if_expression is defined %}
+    if {{ plugin.if_expression }} {
+{%         endif %}
+      {{ plugin.name }} {
 {%         if plugin.settings is defined %}
 {%           for setting in plugin.settings %}
 {%             for k, v in setting.items() %}
 {%               if v %}
-      {{ k + " => " + v|to_json }}
+        {{ k + " => " + v|to_json }}
 {%               endif %}
 {%             endfor %}
 {%           endfor %}
 {%         endif %}
+      }
+{%         if plugin.if_expression is defined %}
     }
+{%         endif %}
 
 {%       endfor %}
 {%       if section.if_expression is defined %}
