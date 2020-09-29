@@ -148,7 +148,7 @@ Robin `ypid` Schneider
 I made the switch to GNU/Linux as my main OS in August 2009 and self-taught
 myself most of it‘s internals when I was in the last years of secondary school.
 Since 2012 I'm primarily using `Debian GNU/Linux <https://www.debian.org/>`__
-on private and work computers and servers alike.
+on computers and servers alike.
 I really like Debian and would like to become a Debian Developer some day.
 
 Starting in 2012, I worked 5 years as a IT Consultant until 2017, mainly
