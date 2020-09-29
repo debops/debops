@@ -69,6 +69,11 @@ LDAP
   task delegation. This can be useful in centralized environments without
   Icinga Director support.
 
+:ref:`debops.lvm` role
+''''''''''''''''''''''
+
+- Default LVM2 configuration for Debian Stretch and Buster has been added.
+
 :ref:`debops.postgresql` role
 '''''''''''''''''''''''''''''
 
