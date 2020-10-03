@@ -2220,8 +2220,11 @@ owncloud__nginx__dependent_servers:
       # This module is currently not supported.
       #pagespeed off;
 
+      {% if not (owncloud__variant == "nextcloud" and
+                 owncloud__release is version("18.0", ">=")) %}
       error_page            403             /core/templates/403.php;
       error_page            404             /core/templates/404.php;
+      {% endif %}
 
 
       # Avoid to send the security headers twice as ownCloud
