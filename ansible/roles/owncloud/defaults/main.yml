@@ -2177,7 +2177,8 @@ owncloud__nginx__dependent_servers:
     root: '{{ owncloud__deploy_path }}'
     webroot_create: False
     deny_hidden: False
-    ## Nextcloud has it's own maintenance page
+
+    ## Nextcloud has its own maintenance page
     maintenance: '{{ False if (owncloud__variant == "nextcloud") else True }}'
 
     ## https://doc.owncloud.org/server/9.0/admin_manual/issues/general_troubleshooting.html#common-problems-error-messages
@@ -2262,7 +2263,7 @@ owncloud__nginx__dependent_servers:
         options: |
           deny all;
 
-      - pattern: '~ ^\/(?:index|remote|public|cron|core\/ajax\/update|status|ocs\/v[12]|updater\/.+|oc[ms]-provider\/.+)\.php(?:$|\/)'
+      - pattern: '~ ^\/(?:index|remote|public|cron|core\/ajax\/update|status|ocs\/v[12]|updater\/.+|oc[ms]-provider\/.+|.+\/richdocumentscode\/proxy)\.php(?:$|\/)'
         options: |
           include fastcgi_params;
           fastcgi_split_path_info ^(.+?\.php)(\/.*|)$;
