@@ -74,6 +74,13 @@ LDAP
 
 - Default LVM2 configuration for Debian Stretch and Buster has been added.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Drop Nextcloud 16 and 17 support because it is EOL. You need to upgrade Nextcloud
+  manually if you are running version 17 or below. The role now defaults to
+  Nextcloud 18 for new installations.
+
 :ref:`debops.postgresql` role
 '''''''''''''''''''''''''''''
 
