@@ -1,5 +1,5 @@
-{# Copyright (C) 2013-2017 Maciej Delmanowski <drybjed@gmail.com>
- # Copyright (C) 2015-2017 DebOps <https://debops.org/>
+{# Copyright (C) 2013-2020 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2015-2020 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 {% set nfs__tpl_mount_options = [] %}
@@ -13,5 +13,5 @@
 {% if (item.default_options | d(True)) | bool %}
 {{ (nfs__security_mount_options + nfs__tpl_mount_options + nfs__base_mount_options) | unique | join(',') | to_yaml }}
 {% else %}
-{{ '_netdev' | to_yaml }}
+{{ (nfs__tpl_mount_options + [ '_netdev' ]) | unique | join(',') | to_yaml }}
 {% endif %}
