@@ -51,119 +51,112 @@ __license__ = "GNU General Public LIcense version 3 (GPL v3) or later"
 conf_tpl_paths = 'task-paths'
 
 
-class LookupModule(LookupBase):
+if LooseVersion(__ansible_version__) < LooseVersion("2.0"):
+    from ansible import utils, errors
 
-    def __new__(class_name, *args, **kwargs):
-        if LooseVersion(__ansible_version__) < LooseVersion("2.0"):
-            from ansible import utils, errors
+    class LookupModule(object):
 
-            class LookupModuleV1(object):
+        def __init__(self, basedir, *args, **kwargs):
+            self.basedir = basedir
 
-                def __init__(self, basedir, *args, **kwargs):
-                    self.basedir = basedir
+        def run(self, terms, inject=None, **kwargs):
 
-                def run(self, terms, inject=None, **kwargs):
+            terms = utils.listify_lookup_plugin_terms(
+                    terms, self.basedir, inject)
+            ret = []
+            config = {}
+            places = []
 
-                    terms = utils.listify_lookup_plugin_terms(
-                            terms, self.basedir, inject)
-                    ret = []
-                    config = {}
-                    places = []
+            # this can happen if the variable contains a string,
+            # strictly not desired for lookup plugins, but users may
+            # try it, so make it work.
+            if not isinstance(terms, list):
+                terms = [terms]
 
-                    # this can happen if the variable contains a string,
-                    # strictly not desired for lookup plugins, but users may
-                    # try it, so make it work.
-                    if not isinstance(terms, list):
-                        terms = [terms]
+            try:
+                project_root = find_debops_project(required=False)
+                config = read_config(project_root)
+            except NameError:
+                pass
 
-                    try:
-                        project_root = find_debops_project(required=False)
-                        config = read_config(project_root)
-                    except NameError:
-                        pass
+            if ('paths' in config and
+                    conf_tpl_paths in config['paths']):
+                custom_places = (
+                        config['paths'][conf_tpl_paths].split(':'))
+                for custom_path in custom_places:
+                    if os.path.isabs(custom_path):
+                        places.append(custom_path)
+                    else:
+                        places.append(os.path.join(
+                            project_root, custom_path))
 
-                    if ('paths' in config and
-                            conf_tpl_paths in config['paths']):
-                        custom_places = (
-                                config['paths'][conf_tpl_paths].split(':'))
-                        for custom_path in custom_places:
-                            if os.path.isabs(custom_path):
-                                places.append(custom_path)
-                            else:
-                                places.append(os.path.join(
-                                    project_root, custom_path))
+            for term in terms:
+                if '_original_file' in inject:
+                    relative_path = utils.path_dwim_relative(
+                            inject['_original_file'], 'tasks', '',
+                            self.basedir, check=False)
+                    places.append(relative_path)
+                for path in places:
+                    template = os.path.join(path, term)
+                    if template and os.path.exists(template):
+                        ret.append(template)
+                        break
+                else:
+                    raise errors.AnsibleError(
+                            "could not locate file in lookup: %s"
+                            % term)
 
-                    for term in terms:
-                        if '_original_file' in inject:
-                            relative_path = utils.path_dwim_relative(
-                                    inject['_original_file'], 'tasks', '',
-                                    self.basedir, check=False)
-                            places.append(relative_path)
-                        for path in places:
-                            template = os.path.join(path, term)
-                            if template and os.path.exists(template):
-                                ret.append(template)
-                                break
-                        else:
-                            raise errors.AnsibleError(
-                                    "could not locate file in lookup: %s"
-                                    % term)
+            return ret
 
-                    return ret
+else:
+    from ansible.errors import AnsibleError
+    from ansible.plugins.lookup import LookupBase
 
-            return LookupModuleV1(*args, **kwargs)
+    class LookupModule(LookupBase):
 
-        else:
-            from ansible.errors import AnsibleError
-            from ansible.plugins.lookup import LookupBase
+        def run(self, terms, variables=None, **kwargs):
+            ret = []
+            config = {}
+            places = []
 
-            class LookupModuleV2(LookupBase):
+            # this can happen if the variable contains a string,
+            # strictly not desired for lookup plugins, but users may
+            # try it, so make it work.
+            if not isinstance(terms, list):
+                terms = [terms]
 
-                def run(self, terms, variables=None, **kwargs):
-                    ret = []
-                    config = {}
-                    places = []
+            try:
+                project_root = find_debops_project(required=False)
+                config = read_config(project_root)
 
-                    # this can happen if the variable contains a string,
-                    # strictly not desired for lookup plugins, but users may
-                    # try it, so make it work.
-                    if not isinstance(terms, list):
-                        terms = [terms]
+            except NameError:
+                pass
 
-                    try:
-                        project_root = find_debops_project(required=False)
-                        config = read_config(project_root)
+            if 'paths' in config and conf_tpl_paths in config['paths']:
+                custom_places = (
+                        config['paths'][conf_tpl_paths].split(':'))
+                for custom_path in custom_places:
+                    if os.path.isabs(custom_path):
+                        places.append(custom_path)
+                    else:
+                        places.append(os.path.join(
+                            project_root, custom_path))
 
-                    except NameError:
-                        pass
+            for term in terms:
+                if 'role_path' in variables:
+                    relative_path = (
+                            self._loader.path_dwim_relative(
+                                variables['role_path'],
+                                'tasks', ''))
+                    places.append(relative_path)
+                for path in places:
+                    template = os.path.join(path, term)
+                    if template and os.path.exists(template):
+                        ret.append(template)
+                        break
+                else:
+                    raise AnsibleError(
+                            "could not locate file in lookup: %s"
+                            % term)
 
-                    if 'paths' in config and conf_tpl_paths in config['paths']:
-                        custom_places = (
-                                config['paths'][conf_tpl_paths].split(':'))
-                        for custom_path in custom_places:
-                            if os.path.isabs(custom_path):
-                                places.append(custom_path)
-                            else:
-                                places.append(os.path.join(
-                                    project_root, custom_path))
-
-                    for term in terms:
-                        if 'role_path' in variables:
-                            relative_path = (
-                                    self._loader.path_dwim_relative(
-                                        variables['role_path'],
-                                        'tasks', ''))
-                            places.append(relative_path)
-                        for path in places:
-                            template = os.path.join(path, term)
-                            if template and os.path.exists(template):
-                                ret.append(template)
-                                break
-                        else:
-                            raise AnsibleError(
-                                    "could not locate file in lookup: %s"
-                                    % term)
-
-                    return ret
-
-            return LookupModuleV2(*args, **kwargs)
+            return ret
