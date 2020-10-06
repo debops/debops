@@ -103,6 +103,12 @@ General
 - Set the default file mode for public :file:`/etc/nullmailer/*` configuration
   files to be world-readable.
 
+:ref:`debops.system_users` role
+'''''''''''''''''''''''''''''''
+
+- Ensure that the ``ansible_connection`` variable has a default value if it's
+  not defined in the Ansible inventory.
+
 
 `debops v1.2.6`_ - 2020-08-30
 -----------------------------
