@@ -168,7 +168,7 @@ system_users__dotfiles_repo: '{{ ansible_local.yadm.dotfiles|d("") }}'
 # will be automatically detected on the Ansible Controller host.
 system_users__self: '{{ False
                         if (system_users__self_name == "root" or
-                            ansible_connection == "local")
+                            ansible_connection|d("ssh") == "local")
                         else True }}'
 
                                                                    # ]]]
