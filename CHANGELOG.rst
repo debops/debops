@@ -84,6 +84,12 @@ Fixed
 - Fixed the :command:`dpkg-divert` command execution when log rotation perion
   is changed.
 
+:ref:`debops.nfs` role
+''''''''''''''''''''''
+
+- Ensure that with default mount options disabled, options specified by the
+  user still are added in the configuration.
+
 :ref:`debops.nullmailer` role
 '''''''''''''''''''''''''''''
 
