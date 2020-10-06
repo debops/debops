@@ -127,6 +127,12 @@ General
 - Fixed ``_syslog._tcp`` DNS SRV resource record detection on hosts with an
   undefined DNS domain.
 
+:ref:`debops.system_users` role
+'''''''''''''''''''''''''''''''
+
+- Ensure that the ``ansible_connection`` variable has a default value if it's
+  not defined in the Ansible inventory.
+
 
 `debops v2.1.2`_ - 2020-08-30
 -----------------------------
