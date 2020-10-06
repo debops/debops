@@ -251,6 +251,10 @@ General
 - Fixed an issue where the :command:`debops` scripts did not expand the
   :file:`~/` prefix of the file and directory paths in user home directories.
 
+- Fixed an issue with custom lookup plugins (:file:`task_src`,
+  :file:`file_src`, :file:`template_src`) which resulted in Ansible 2.10 not
+  finding them correctly.
+
 LDAP
 ''''
 
