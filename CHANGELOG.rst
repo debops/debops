@@ -1,4 +1,5 @@
 .. Copyright (C) 2017-2020 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2018-2020 Robin Schneider <ypid@riseup.net>
 .. Copyright (C) 2017-2020 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -139,8 +140,10 @@ Updates of upstream application versions
   has been updated to ``v1.4.1``.
 
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
-  ``v2.9.1``.
+  ``v2.9.4``.
   The plugin support added in ``v2.8.0`` can be configured from DebOps.
+  The NetBox Request Queue Worker service is configured to support background jobs
+  like reports to work.
 
 - The :ref:`debops.mariadb` and :ref:`debops.mariadb_server` roles now support
   installation of Percona Server/Client v8.0 from upstream APT repositories.

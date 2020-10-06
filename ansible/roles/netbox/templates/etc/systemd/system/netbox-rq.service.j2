@@ -1,0 +1,27 @@
+{# Copyright (C) 2020 Robin Schneider <ypid@riseup.net>
+ # Copyright (C) 2020 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+[Unit]
+Description=NetBox Request Queue Worker
+Documentation=https://netbox.readthedocs.io/en/stable/
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+
+User={{ netbox__user }}
+Group={{ netbox__group }}
+WorkingDirectory={{ netbox__git_checkout + "/netbox" }}
+
+ExecStart={{ netbox__virtualenv }}/bin/python3 {{ netbox__git_checkout + "/netbox/manage.py rqworker" }}
+
+Restart=on-failure
+RestartSec=30
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
