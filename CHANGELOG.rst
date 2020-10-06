@@ -82,6 +82,13 @@ Updates of upstream application versions
 Fixed
 ~~~~~
 
+General
+'''''''
+
+- Fixed an issue with custom lookup plugins (:file:`task_src`,
+  :file:`file_src`, :file:`template_src`) which resulted in Ansible 2.10 not
+  finding them correctly.
+
 :ref:`debops.docker_gen` role
 '''''''''''''''''''''''''''''
 
