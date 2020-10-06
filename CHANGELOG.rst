@@ -306,6 +306,12 @@ LDAP
   to time out, resulting in nslcd errors like "ldap_result() failed: Can't
   contact LDAP server".
 
+:ref:`debops.nfs` role
+''''''''''''''''''''''
+
+- Ensure that with default mount options disabled, options specified by the
+  user still are added in the configuration.
+
 :ref:`debops.ntp` role
 ''''''''''''''''''''''
 
