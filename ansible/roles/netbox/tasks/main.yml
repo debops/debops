@@ -230,15 +230,28 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: netbox__register_systemd
+  register: netbox__register_systemd_netbox_main
   notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver' ]
   when: netbox__app_internal_appserver|bool
+
+- name: Generate Netbox RQ systemd service unit
+  template:
+    src: 'etc/systemd/system/netbox-rq.service.j2'
+    dest: '/etc/systemd/system/netbox-rq.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: netbox__register_systemd_netbox_rq
+  notify: [ 'Restart netbox Request Queue Worker' ]
+  when: netbox__app_internal_appserver|bool
+
 
 - name: Reload systemd configuration
   systemd:
     daemon_reload: True
   when: (ansible_service_mgr == 'systemd' and
-         netbox__register_systemd is changed)
+         (netbox__register_systemd_netbox_main is changed) or
+         (netbox__register_systemd_netbox_rq is changed))
 
 - name: Enable and start netbox internal appserver
   service:
@@ -246,7 +259,15 @@
     state: 'started'
     enabled: True
   when: (netbox__app_internal_appserver|bool and ansible_service_mgr == 'systemd' and
-         netbox__register_systemd is changed and not netbox__register_installed.stat.exists|bool)
+         netbox__register_systemd_netbox_main is changed and not netbox__register_installed.stat.exists|bool)
+
+- name: Enable and start netbox Request Queue Worker
+  service:
+    name: 'netbox-rq'
+    state: 'started'
+    enabled: True
+  when: (ansible_service_mgr == 'systemd' and
+         netbox__register_systemd_netbox_rq is changed and not netbox__register_installed.stat.exists|bool)
 
 - name: Make sure that Ansible local facts directory exists
   file:
