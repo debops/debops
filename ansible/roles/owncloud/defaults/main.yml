@@ -3,8 +3,8 @@
 
 # .. Copyright (C) 2015-2016 Maciej Delmanowski <drybjed@gmail.com>
 # .. Copyright (C) 2015      Hartmut Goebel <h.goebel@crazy-compilers.com>
-# .. Copyright (C) 2015-2019 Robin Schneider <ypid@riseup.net>
-# .. Copyright (C) 2015-2019 DebOps <https://debops.org/>
+# .. Copyright (C) 2015-2020 Robin Schneider <ypid@riseup.net>
+# .. Copyright (C) 2015-2020 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _owncloud__ref_defaults:
@@ -412,11 +412,10 @@ owncloud__variant_name_map:
 #
 # Supported releases:
 #
-# * ownCloud ``10.3``
+# * ownCloud ``10.4``
 #
-# * Nextcloud ``16.0``
-# * Nextcloud ``17.0``
 # * Nextcloud ``18.0``
+# * Nextcloud ``19.0`` (untested)
 #
 # For Nextcloud refer to the `Nextcloud Maintenance and Release Schedule <https://github.com/nextcloud/server/wiki/Maintenance-and-Release-Schedule>`_.
 # and the `Nextcloud Server Changelog <https://nextcloud.com/changelog/>`_.
@@ -2142,6 +2141,7 @@ owncloud__nginx__dependent_servers:
     root: '{{ owncloud__deploy_path }}'
     webroot_create: False
     deny_hidden: False
+
     ## Nextcloud has its own maintenance page
     maintenance: '{{ False if (owncloud__variant == "nextcloud") else True }}'
 
@@ -2187,8 +2187,11 @@ owncloud__nginx__dependent_servers:
       # This module is currently not supported.
       #pagespeed off;
 
+      {% if not (owncloud__variant == "nextcloud" and
+                 owncloud__release is version("18.0", ">=")) %}
       error_page            403             /core/templates/403.php;
       error_page            404             /core/templates/404.php;
+      {% endif %}
 
 
       # Avoid to send the security headers twice as ownCloud
@@ -2226,7 +2229,7 @@ owncloud__nginx__dependent_servers:
         options: |
           deny all;
 
-      - pattern: '~ ^\/(?:index|remote|public|cron|core\/ajax\/update|status|ocs\/v[12]|updater\/.+|oc[ms]-provider\/.+)\.php(?:$|\/)'
+      - pattern: '~ ^\/(?:index|remote|public|cron|core\/ajax\/update|status|ocs\/v[12]|updater\/.+|oc[ms]-provider\/.+|.+\/richdocumentscode\/proxy)\.php(?:$|\/)'
         options: |
           include fastcgi_params;
           fastcgi_split_path_info ^(.+?\.php)(\/.*|)$;
