@@ -113,5 +113,6 @@
 - name: Verify journal logs using FSS when requested
   command: 'journalctl --verify --verify-key="{{ journald__fss_verify_key }}"'
   register: journald__register_fss_verify
+  when: journald__enabled|bool and journald__persistent_state != 'absent'
   changed_when: False
   tags: [ 'never', 'role::journald:fss:verify' ]

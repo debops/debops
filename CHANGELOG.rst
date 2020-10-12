@@ -119,6 +119,13 @@ General
 - Fixed the configuration support on Ubuntu Focal due to bantime feature
   changes in the :command:`fail2ban` v0.11.
 
+:ref:`debops.journald` role
+'''''''''''''''''''''''''''
+
+- The FSS verification task should no longer be executed if the role has been
+  called via the Ansible ``--tags`` argument and persistent journal is
+  disabled.
+
 :ref:`debops.logrotate` role
 ''''''''''''''''''''''''''''
 
