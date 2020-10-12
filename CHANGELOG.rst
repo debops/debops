@@ -63,6 +63,9 @@ Updates of upstream application versions
 - The :ref:`debops.mariadb` and :ref:`debops.mariadb_server` roles now support
   installation of Percona Server/Client v8.0 from upstream APT repositories.
 
+- In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
+  has been updated to 10.6.
+
 :ref:`debops.lvm` role
 ''''''''''''''''''''''
 
