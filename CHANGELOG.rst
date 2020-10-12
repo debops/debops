@@ -78,6 +78,10 @@ Updates of upstream application versions
 - Changes in the :command:`nginx` configuration for Nextcloud have been
   backported from the ``master`` branch.
 
+- Tasks that download GPG keys and application tarballs from the upstream
+  servers will now retry the download operation a few times in case of network
+  issues.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
