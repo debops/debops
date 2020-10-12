@@ -70,6 +70,9 @@ Updates of upstream application versions
 - In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
   has been updated to 10.6.
 
+- In the :ref:`debops.roundcube` role, the Roundcube version installed by
+  default has been updated to ``1.4.9``.
+
 :ref:`debops.lvm` role
 ''''''''''''''''''''''
 
