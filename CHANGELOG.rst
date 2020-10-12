@@ -68,6 +68,12 @@ Updates of upstream application versions
 
 - Linux Software RAID devices are now scanned by default.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Changes in the :command:`nginx` configuration for Nextcloud have been
+  backported from the ``master`` branch.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
