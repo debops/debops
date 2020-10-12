@@ -110,6 +110,13 @@ General
 - Fixed the :command:`dpkg-divert` command execution when log rotation perion
   is changed.
 
+:ref:`debops.lxd` role
+''''''''''''''''''''''
+
+- The LXD project no longer depends on a forked :command:`sqlite3` library,
+  therefore the role has been updated to reflect that fact, which should fix
+  issues with building LXD from source.
+
 :ref:`debops.nfs` role
 ''''''''''''''''''''''
 
