@@ -75,6 +75,7 @@
         - 'zip.asc'
         - 'zip.sha512'
       register: owncloud__register_download_assurance
+      until: owncloud__register_download_assurance is succeeded
       when: not ansible_check_mode
       tags: [ 'role::nextcloud:download', 'role::nextcloud:verify' ]
 
@@ -98,6 +99,8 @@
                  owncloud__variant + "-" + owncloud__register_full_version.stdout_lines[0] + ".zip" }}'
         dest: '{{ owncloud__src + "/" + owncloud__variant + "/" + owncloud__register_full_version.stdout_lines[0] }}'
         checksum: 'sha512:{{ (owncloud__register_checksum.stdout_lines[0]).split(" ") | first }}'
+      register: owncloud__register_download_application
+      until: owncloud__register_download_application is succeeded
       when: owncloud__register_download_assurance is changed
       tags: [ 'role::nextcloud:download', 'role::nextcloud:verify' ]
 
