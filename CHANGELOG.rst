@@ -135,7 +135,7 @@ Updates of upstream application versions
 
 - In the :ref:`debops.ipxe` role, the Debian Stretch and Debian Buster netboot
   installer versions have been updated to their next point releases, 9.13 and
-  10.5 respectively.
+  10.6 respectively.
 
 - In the :ref:`debops.roundcube` role, the Roundcube version installed by
   default has been updated to ``1.4.8``.
