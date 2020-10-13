@@ -88,10 +88,11 @@ Reverse Group Membership Maintenance overlay
 --------------------------------------------
 
 The `memberOf overlay`__ is used to update the LDAP objects of group members
-when they are added or removed from a particular ``groupOfNames`` object, as
-well as "role occupants" defined in a given ``organizationalRole`` object. The
-overlay also maintains reverse membership information of the ``groupOfURLs``
-objects maintained by the :ref:`slapd__ref_autogroup_overlay`.
+when they are added or removed from a particular ``groupOfNames`` or
+``groupOfEntries`` objects, as well as "role occupants" defined in a given
+``organizationalRole`` object. The overlay also maintains reverse membership
+information of the ``groupOfURLs`` objects maintained by the
+:ref:`slapd__ref_autogroup_overlay`.
 
 Applications and services can search for objects with the ``memberOf``
 attribute with specific values to get the list of groups or roles a given user

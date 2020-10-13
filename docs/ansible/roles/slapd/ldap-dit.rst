@@ -64,6 +64,8 @@ Directory structure
 
         - :ref:`ldapns.schema <slapd__ref_ldapns>`
 
+        - :ref:`groupofentries.schema <slapd__ref_groupofentries>`
+
         - :ref:`openssh-lpk.schema <slapd__ref_openssh_lpk>`
 
         - :ref:`sudo.schema <slapd__ref_sudo>`
@@ -93,19 +95,21 @@ Directory structure
 
         - :ref:`olcOverlay={3}memberof <slapd__ref_memberof_overlay>` (for ``groupOfNames`` LDAP objects)
 
-        - :ref:`olcOverlay={4}memberof <slapd__ref_memberof_overlay>` (for ``groupOfURLs`` LDAP objects)
+        - :ref:`olcOverlay={4}memberof <slapd__ref_memberof_overlay>` (for ``groupOfEntries`` LDAP objects)
 
-        - :ref:`olcOverlay={5}memberof <slapd__ref_memberof_overlay>` (for ``organizationalRole`` LDAP objects)
+        - :ref:`olcOverlay={5}memberof <slapd__ref_memberof_overlay>` (for ``groupOfURLs`` LDAP objects)
 
-        - :ref:`olcOverlay={6}refint <slapd__ref_refint_overlay>`
+        - :ref:`olcOverlay={6}memberof <slapd__ref_memberof_overlay>` (for ``organizationalRole`` LDAP objects)
 
-        - :ref:`olcOverlay={7}auditlog <slapd__ref_auditlog_overlay>`
+        - :ref:`olcOverlay={7}refint <slapd__ref_refint_overlay>`
 
-        - :ref:`olcOverlay={8}constraint <slapd__ref_constraint_overlay>`
+        - :ref:`olcOverlay={8}auditlog <slapd__ref_auditlog_overlay>`
 
-        - :ref:`olcOverlay={9}autogroup <slapd__ref_autogroup_overlay>`
+        - :ref:`olcOverlay={9}constraint <slapd__ref_constraint_overlay>`
 
-        - :ref:`olcOverlay={10}lastbind <slapd__ref_lastbind_overlay>`
+        - :ref:`olcOverlay={10}autogroup <slapd__ref_autogroup_overlay>`
+
+        - :ref:`olcOverlay={11}lastbind <slapd__ref_lastbind_overlay>`
 
         - :envvar:`olcAccess <slapd__acl_tasks>` (:ref:`documentation <slapd__ref_acl>`)
 
