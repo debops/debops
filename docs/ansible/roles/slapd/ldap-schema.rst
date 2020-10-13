@@ -239,6 +239,19 @@ user or application. LDAP clients can use these attributes in LDAP filters to
 grant access only to specific people or applications.
 
 
+.. _slapd__ref_groupofentries:
+
+The ``groupofentries`` schema
+-----------------------------
+
+The ``groupofentries`` schema defines a new `"groupOfEntries" LDAP Object
+Class`__ which is meant to replace the ``groupOfNames`` object defined by
+:rfc:`2256`. The new object can be used to create groups that can be empty (no
+``member`` attribute required).
+
+.. __: https://tools.ietf.org/html/draft-findlay-ldap-groupofentries-00
+
+
 .. _slapd__ref_openssh_lpk:
 
 The ``openssh-lpk`` schema
@@ -250,6 +263,11 @@ SSH authentication via LDAP directory. An `example openssh-ldap-publickey`__
 script shows how this can be configured with OpenSSH and OpenLDAP.
 
 .. __: https://github.com/AndriiGrytsenko/openssh-ldap-publickey
+
+The :ref:`debops.slapd` Ansible role contains a modified version of the
+official schema which adds a separate attribute for the public key
+fingerprints, meant to help find the key owners based on the information logged
+by the :command:`sshd` service.
 
 The :ref:`debops.sshd` Ansible role already contains support for SSH public key
 lookup in OpenLDAP, see its documentation for more details about enabling the

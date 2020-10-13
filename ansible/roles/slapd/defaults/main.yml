@@ -65,8 +65,12 @@ slapd__default_schemas:
   # access control to services and machines
   - '/etc/ldap/schema/fusiondirectory/ldapns.schema'
 
+  # Custom schema which defines a 'groupOfEntries' LDAP object which can create
+  # empty groups
+  - '{{ slapd__debops_schema_path + "/groupofentries.schema" }}'
+
   # Support for SSH public keys in LDAP directory
-  - '/etc/ldap/schema/fusiondirectory/openssh-lpk.schema'
+  - '{{ slapd__debops_schema_path + "/openssh-lpk.schema" }}'
 
   # Support for 'sudo' rules in LDAP directory
   - '/etc/ldap/schema/fusiondirectory/sudo.schema'
@@ -157,9 +161,6 @@ slapd__rfc2307bis_packages: [ 'fusiondirectory-schema' ]
 # ``gosa-*-schema`` packages that conflict with each other, therefore the list
 # of packages should be synchronized.
 slapd__schema_packages:
-
-  # Support for 'openssh-lpk' (SSH public keys in LDAP)
-  - 'fusiondirectory-plugin-ssh-schema'
 
   # Support for 'sudo' rules in LDAP
   - 'fusiondirectory-plugin-sudo-schema'
@@ -442,53 +443,59 @@ slapd__default_tasks:
     attributes:
       olcOverlay: '{2}unique'
 
-  - name: 'Enable memberOf overlay in the main database for Groups'
+  - name: 'Enable memberOf overlay in the main database for groupOfNames'
     dn: 'olcOverlay={3}memberof,olcDatabase={1}mdb,cn=config'
     objectClass: [ 'olcOverlayConfig', 'olcMemberOf' ]
     attributes:
       olcOverlay: '{3}memberof'
 
-  - name: 'Enable memberOf overlay in the main database for AutoGroups'
+  - name: 'Enable memberOf overlay in the main database for groupOfEntries'
     dn: 'olcOverlay={4}memberof,olcDatabase={1}mdb,cn=config'
     objectClass: [ 'olcOverlayConfig', 'olcMemberOf' ]
     attributes:
       olcOverlay: '{4}memberof'
 
-  - name: 'Enable memberOf overlay in the main database for Roles'
+  - name: 'Enable memberOf overlay in the main database for AutoGroups'
     dn: 'olcOverlay={5}memberof,olcDatabase={1}mdb,cn=config'
     objectClass: [ 'olcOverlayConfig', 'olcMemberOf' ]
     attributes:
       olcOverlay: '{5}memberof'
 
+  - name: 'Enable memberOf overlay in the main database for Roles'
+    dn: 'olcOverlay={6}memberof,olcDatabase={1}mdb,cn=config'
+    objectClass: [ 'olcOverlayConfig', 'olcMemberOf' ]
+    attributes:
+      olcOverlay: '{6}memberof'
+
   - name: 'Enable Referential Integrity overlay in the main database'
-    dn: 'olcOverlay={6}refint,olcDatabase={1}mdb,cn=config'
+    dn: 'olcOverlay={7}refint,olcDatabase={1}mdb,cn=config'
     objectClass: [ 'olcOverlayConfig', 'olcRefintConfig' ]
     attributes:
-      olcOverlay: '{6}refint'
+      olcOverlay: '{7}refint'
 
   - name: 'Enable Audit Logging overlay in the main database'
-    dn: 'olcOverlay={7}auditlog,olcDatabase={1}mdb,cn=config'
+    dn: 'olcOverlay={8}auditlog,olcDatabase={1}mdb,cn=config'
     objectClass: [ 'olcOverlayConfig', 'olcAuditLogConfig' ]
     attributes:
-      olcOverlay: '{7}auditlog'
+      olcOverlay: '{8}auditlog'
 
   - name: 'Enable Constraint overlay in the main database'
-    dn: 'olcOverlay={8}constraint,olcDatabase={1}mdb,cn=config'
+    dn: 'olcOverlay={9}constraint,olcDatabase={1}mdb,cn=config'
     objectClass: [ 'olcOverlayConfig', 'olcConstraintConfig' ]
     attributes:
-      olcOverlay: '{8}constraint'
+      olcOverlay: '{9}constraint'
 
   - name: 'Enable AutoGroup overlay in the main database'
-    dn: 'olcOverlay={9}autogroup,olcDatabase={1}mdb,cn=config'
+    dn: 'olcOverlay={10}autogroup,olcDatabase={1}mdb,cn=config'
     objectClass: [ 'olcOverlayConfig', 'olcAutomaticGroups' ]
     attributes:
-      olcOverlay: '{9}autogroup'
+      olcOverlay: '{10}autogroup'
 
   - name: 'Enable LastBind overlay in the main database'
-    dn: 'olcOverlay={10}lastbind,olcDatabase={1}mdb,cn=config'
+    dn: 'olcOverlay={11}lastbind,olcDatabase={1}mdb,cn=config'
     objectClass: [ 'olcOverlayConfig', 'olcLastBindConfig' ]
     attributes:
-      olcOverlay: '{10}lastbind'
+      olcOverlay: '{11}lastbind'
 
   - name: 'Configure Password Policy overlay in the main database'
     dn: 'olcOverlay={1}ppolicy,olcDatabase={1}mdb,cn=config'
@@ -512,7 +519,7 @@ slapd__default_tasks:
         - 'ldap:///ou=People,{{ slapd__basedn }}?gid?sub'
     state: 'exact'
 
-  - name: 'Configure memberOf overlay in the main database for Groups'
+  - name: 'Configure memberOf overlay in the main database for groupOfNames'
     dn: 'olcOverlay={3}memberof,olcDatabase={1}mdb,cn=config'
     attributes:
       olcMemberOfDangling: 'ignore'
@@ -522,8 +529,18 @@ slapd__default_tasks:
       olcMemberOfMemberOfAD: 'memberOf'
     state: 'exact'
 
-  - name: 'Configure memberOf overlay in the main database for AutoGroups'
+  - name: 'Configure memberOf overlay in the main database for groupOfEntries'
     dn: 'olcOverlay={4}memberof,olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcMemberOfDangling: 'ignore'
+      olcMemberOfRefInt: 'TRUE'
+      olcMemberOfGroupOC: 'groupOfEntries'
+      olcMemberOfMemberAD: 'member'
+      olcMemberOfMemberOfAD: 'memberOf'
+    state: 'exact'
+
+  - name: 'Configure memberOf overlay in the main database for AutoGroups'
+    dn: 'olcOverlay={5}memberof,olcDatabase={1}mdb,cn=config'
     attributes:
       olcMemberOfDangling: 'ignore'
       olcMemberOfRefInt: 'TRUE'
@@ -533,7 +550,7 @@ slapd__default_tasks:
     state: 'exact'
 
   - name: 'Configure memberOf overlay in the main database for Roles'
-    dn: 'olcOverlay={5}memberof,olcDatabase={1}mdb,cn=config'
+    dn: 'olcOverlay={6}memberof,olcDatabase={1}mdb,cn=config'
     attributes:
       olcMemberOfDangling: 'ignore'
       olcMemberOfRefInt: 'TRUE'
@@ -543,7 +560,7 @@ slapd__default_tasks:
     state: 'exact'
 
   - name: 'Configure Referential Integrity overlay in the main database'
-    dn: 'olcOverlay={6}refint,olcDatabase={1}mdb,cn=config'
+    dn: 'olcOverlay={7}refint,olcDatabase={1}mdb,cn=config'
     attributes:
       olcRefintAttribute:
         - 'member'
@@ -558,13 +575,13 @@ slapd__default_tasks:
     state: 'exact'
 
   - name: 'Configure Audit Logging overlay in the main database'
-    dn: 'olcOverlay={7}auditlog,olcDatabase={1}mdb,cn=config'
+    dn: 'olcOverlay={8}auditlog,olcDatabase={1}mdb,cn=config'
     attributes:
       olcAuditlogFile: '{{ slapd__log_dir + "/slapd-auditlog-main.ldif" }}'
     state: 'exact'
 
   - name: 'Configure Constraint overlay in the main database'
-    dn: 'olcOverlay={8}constraint,olcDatabase={1}mdb,cn=config'
+    dn: 'olcOverlay={9}constraint,olcDatabase={1}mdb,cn=config'
     attributes:
       olcConstraintAttribute:
         - 'jpegPhoto size 524288'  # 512 KiB
@@ -578,7 +595,7 @@ slapd__default_tasks:
     state: 'exact'
 
   - name: 'Configure AutoGroup overlay in the main database'
-    dn: 'olcOverlay={9}autogroup,olcDatabase={1}mdb,cn=config'
+    dn: 'olcOverlay={10}autogroup,olcDatabase={1}mdb,cn=config'
     attributes:
       olcAGattrSet:
         - '{0}groupOfURLs memberURL member'
@@ -586,7 +603,7 @@ slapd__default_tasks:
     state: 'exact'
 
   - name: 'Configure LastBind overlay in the main database'
-    dn: 'olcOverlay={10}lastbind,olcDatabase={1}mdb,cn=config'
+    dn: 'olcOverlay={11}lastbind,olcDatabase={1}mdb,cn=config'
     attributes:
       olcLastBindPrecision: '{{ (60 * 60 * 24) }}'
     state: 'exact'
