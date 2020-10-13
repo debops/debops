@@ -66,7 +66,7 @@ slapd__default_schemas:
   - '/etc/ldap/schema/fusiondirectory/ldapns.schema'
 
   # Support for SSH public keys in LDAP directory
-  - '/etc/ldap/schema/fusiondirectory/openssh-lpk.schema'
+  - '{{ slapd__debops_schema_path + "/openssh-lpk.schema" }}'
 
   # Support for 'sudo' rules in LDAP directory
   - '/etc/ldap/schema/fusiondirectory/sudo.schema'
@@ -157,9 +157,6 @@ slapd__rfc2307bis_packages: [ 'fusiondirectory-schema' ]
 # ``gosa-*-schema`` packages that conflict with each other, therefore the list
 # of packages should be synchronized.
 slapd__schema_packages:
-
-  # Support for 'openssh-lpk' (SSH public keys in LDAP)
-  - 'fusiondirectory-plugin-ssh-schema'
 
   # Support for 'sudo' rules in LDAP
   - 'fusiondirectory-plugin-sudo-schema'

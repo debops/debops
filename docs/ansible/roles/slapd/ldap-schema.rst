@@ -251,6 +251,11 @@ script shows how this can be configured with OpenSSH and OpenLDAP.
 
 .. __: https://github.com/AndriiGrytsenko/openssh-ldap-publickey
 
+The :ref:`debops.slapd` Ansible role contains a modified version of the
+official schema which adds a separate attribute for the public key
+fingerprints, meant to help find the key owners based on the information logged
+by the :command:`sshd` service.
+
 The :ref:`debops.sshd` Ansible role already contains support for SSH public key
 lookup in OpenLDAP, see its documentation for more details about enabling the
 support.

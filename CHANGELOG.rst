@@ -249,6 +249,11 @@ LDAP
   This change will not be applied automatically in an existing LDAP directories
   - they will need to be rebuilt to apply new schema changes.
 
+- The role will install a modified :ref:`OpenSSH-LPK schema
+  <slapd__ref_openssh_lpk>` instead of the version from the FusionDirectory
+  project, to add support for storing SSH public key fingerprints in the LDAP
+  directory. Existing installations shouldn't be affected.
+
 Fixed
 ~~~~~
 

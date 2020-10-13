@@ -1,0 +1,60 @@
+# openssh-lpk.schema: LDAP Public Key Patch schema for use with openssh-ldappubkey
+#
+# Copyright (C) 2008 Eric AUGE <eau@phear.org>
+# Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: MIT
+#
+# Based on the proposal of : Mark Ruijter
+#
+# This schema extends the popular 'openssh-lpk' LDAP schema with an additional
+# 'sshPublicKeyId' attribute. This attribute can be used to hold the OpenSSH
+# public key fingerprint, used in the OpenSSH server logs, for easy lookup in
+# the directory. This might be useful when multiple people or services have
+# access to the same SSH account.
+#
+# Newer OpenSSH versions include the public key fingerprint in the logs as
+# a SHA256 hash encoded using base64. To generate the hash from the
+# 'id_rsa.pub' file, use the command:
+#
+#     ssh-keygen -lf ~/.ssh/id_rsa.pub
+#
+# Alternatively, to generate the hash manually you can use the command:
+#
+#     cat ~/.ssh/id_rsa.pub | awk '{print $2}' | base64 -d \
+#         | sha256sum | awk '{print $1}' | xxd -r -p | base64
+#
+# The 'sshPublicKeyId' attribute can be used to store the current and past SSH
+# public key fingerprints, for auditing. Log monitoring software can then
+# extract the hashes from logs and lookup the users in the LDAP directory. The
+# fingerprints should only be included in the LDAP entries of the key owners;
+# the service accounts don't need them.
+#
+# Suggested format of the entries:
+#
+#     sshPublicKeyId: SHA256:<hash>
+#
+# Reference: https://en.wikibooks.org/wiki/OpenSSH/Logging_and_Troubleshooting
+
+
+# octetString SYNTAX
+attributeType ( 1.3.6.1.4.1.24552.500.1.1.1.13
+                NAME 'sshPublicKey'
+                DESC 'SSH public key material'
+                EQUALITY octetStringMatch
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.40 )
+
+# octetString SYNTAX
+attributeType ( 1.3.6.1.4.1.24552.500.1.1.1.14
+                NAME 'sshPublicKeyId'
+                DESC 'SSH public key fingerprint'
+                EQUALITY caseExactMatch
+                SUBSTR caseExactSubstringsMatch
+                SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+# printableString SYNTAX yes|no
+objectClass ( 1.3.6.1.4.1.24552.500.1.1.2.0
+              NAME 'ldapPublicKey'
+              SUP top AUXILIARY
+              DESC 'This object can contain SSH public key information'
+              MAY ( uid $ sshPublicKey $ sshPublicKeyId ) )
