@@ -41,6 +41,13 @@ LDAP
 - Custom Apache logs can have optional conditions that specify when webserver
   requests are logged.
 
+:ref:`debops.gitlab_runner` role
+''''''''''''''''''''''''''''''''
+
+- Users can define "pre-" and "post-" scripts to be executed when certain
+  actions are performed by the Runner: before cloning the repository, before
+  build is executed, after build is executed.
+
 :ref:`debops.lvm` role
 ''''''''''''''''''''''
 
