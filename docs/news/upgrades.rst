@@ -28,9 +28,9 @@ Splitting up debops.dhcpd
 
 - A new role has been written for the ISC DHCP Relay Agent:
   :ref:`debops.dhcrelay`. dhcrelay was originally part of the
-  :ref:`debops.dhcpd` role but will be removed on the next role update. You will
-  need to update your Ansible inventory by adding your dhcrelay hosts to the new
-  ``debops_service_dhcrelay`` group. Inventory variable changes are as follows:
+  :ref:`debops.dhcpd` role. You will need to update your Ansible inventory by
+  adding your dhcrelay hosts to the new ``debops_service_dhcrelay`` group.
+  Inventory variable changes are as follows:
 
   +----------------------------+--------------------------------+---------------+
   | Old variable name          | New variable name              | Changed value |
@@ -57,6 +57,47 @@ Changes in the OpenLDAP support
   installations and it is recommended to re-create the directory from scratch
   to apply new schema cleanly.
 
+ISC DHCP Server role rewrite
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The :ref:`debops.dhcpd` role has been largely rewritten in order to better
+  support dual stack networking and to modernize many aspects of the role.
+
+- Support for managing the ISC DHCP Relay Agent has been moved to the
+  :ref:`debops.dhcrelay` role.
+
+- ``dhcpd_*`` inventory variables have been renamed to ``dhcpd__*``. Other
+  inventory variable changes are:
+
+  +-------------------------------------+-----------------------------------------------------------------+---------------+
+  | Old variable name                   | New variable name                                               | Changed value |
+  +=====================================+=================================================================+===============+
+  | ``dhcpd_mode``                      | Removed                                                         |               |
+  +-------------------------------------+-----------------------------------------------------------------+---------------+
+  | ``dhcpd_ipversion``                 | Removed                                                         |               |
+  +-------------------------------------+-----------------------------------------------------------------+---------------+
+  | ``dhcpd_server_options``            | :envvar:`dhcpd__options`                                        | No            |
+  +-------------------------------------+-----------------------------------------------------------------+---------------+
+  | ``dhcpd_interfaces``                | :envvar:`dhcpd__interfacesv4` and :envvar:`dhcpd__interfacesv6` | No            |
+  +-------------------------------------+-----------------------------------------------------------------+---------------+
+  | ``dhcpd_lease_time``                | Removed                                                         |               |
+  +-------------------------------------+-----------------------------------------------------------------+---------------+
+  | ``dhcpd_global_default_lease_time`` | :envvar:`dhcpd__default_lease_time`                             | Yes           |
+  +-------------------------------------+-----------------------------------------------------------------+---------------+
+  | ``dhcpd_global_max_lease_time``     | :envvar:`dhcpd__max_lease_time`                                 | Yes           |
+  +-------------------------------------+-----------------------------------------------------------------+---------------+
+  | ``dhcpd_auto_options``              | Removed                                                         |               |
+  +-------------------------------------+-----------------------------------------------------------------+---------------+
+  | ``dhcpd_nameservers``               | :envvar:`dhcpd__domain_servers`                                 | Yes           |
+  +-------------------------------------+-----------------------------------------------------------------+---------------+
+  | ``dhcpd_options``                   | :envvar:`dhcpd__global_options_map`                             | Yes           |
+  +-------------------------------------+-----------------------------------------------------------------+---------------+
+  | ``dhcpd_subnets``                   | :envvar:`dhcpd__subnets`                                        | Yes           |
+  +-------------------------------------+-----------------------------------------------------------------+---------------+
+  | ``dhcpd_subnet_default``            | :envvar:`dhcpd__default_subnets`                                | Yes           |
+  +-------------------------------------+-----------------------------------------------------------------+---------------+
+  | ``dhcpd_includes``                  | Removed                                                         |               |
+  +-------------------------------------+-----------------------------------------------------------------+---------------+
 
 v2.1.0 (2020-06-21)
 -------------------

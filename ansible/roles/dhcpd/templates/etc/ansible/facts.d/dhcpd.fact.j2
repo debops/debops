@@ -1,0 +1,28 @@
+#!{{ ansible_python['executable'] }}
+
+# Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# {{ ansible_managed }}
+
+from json import dumps
+import os
+import subprocess
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ['PATH'].split(os.pathsep)
+    )
+
+
+output = {'installed': cmd_exists('dhcpd')}
+
+if output['installed']:
+    output['version'] = subprocess.check_output(
+        ['dhcpd', '--version'], stderr=subprocess.STDOUT
+    ).decode('utf-8').split('-')[2].replace('\n', '')
+
+print(dumps(output, sort_keys=True, indent=4))

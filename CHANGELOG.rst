@@ -185,6 +185,15 @@ LDAP
   and specific services (user accounts, PAM, :command:`sshd`, :command:`sudo`)
   while leaving higher-level services unaffected.
 
+:ref:`debops.dhcpd` role
+''''''''''''''''''''''''
+
+- The ``debops.dhcpd`` role has been largely rewritten in order to support
+  both IPv4 and IPv6 on the same server, and to modernize many aspects of the
+  role.
+
+- The DHCP Relay Agent functionality has been moved to :ref:`debops.dhcrelay`.
+
 :ref:`debops.lvm` role
 ''''''''''''''''''''''
 

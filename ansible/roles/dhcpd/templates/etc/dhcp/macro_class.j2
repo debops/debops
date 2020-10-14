@@ -1,0 +1,30 @@
+{# Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+ # Copyright (C) 2020 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+{% macro print_class(class) %}
+{%  if class.comment|d() %}
+# {{ class.comment }}
+{%  endif %}
+class "{{ class.name }}" {
+{%  if class.options|d() %}
+
+    # Custom class options
+    {{ class.options|indent(4) }}
+{%  endif %}
+}
+{%  if class.subclasses|d() %}
+{%      for subclass in class.subclasses %}
+{%          if subclass.comment|d() %}
+# {{ subclass.comment }}
+{%          endif %}
+{%          if subclass.options|d() %}
+subclass "{{ class.name }}" {{ subclass.submatch }} {
+    {{ subclass.options|indent(4) }}
+}
+{%          else %}
+subclass "{{ class.name }}" {{ subclass.submatch }};
+{%          endif %}
+{%      endfor %}
+{%  endif %}
+{% endmacro %}

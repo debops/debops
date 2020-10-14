@@ -1,0 +1,21 @@
+{# Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+ # Copyright (C) 2020 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# {{ ansible_managed }}
+{%  for zone in dhcpd__zones %}
+
+{%      if zone.comment|d() %}
+# {{ zone.comment }}
+{%      endif %}
+zone {{ zone.zone }} {
+{%      if zone.options|d() %}
+
+    # Custom zone options
+    {{ zone.options|indent(4) }}
+{%      endif %}
+
+    primary {{ zone.primary }};
+    key {{ zone.key }};
+}
+{%  endfor %}

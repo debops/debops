@@ -1,0 +1,32 @@
+{# Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+ # Copyright (C) 2020 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+{% from 'macro_host.j2' import print_host %}
+{% from 'macro_subnet.j2' import print_subnet %}
+{% from 'macro_shared_network.j2' import print_shared_network %}
+{% macro print_group(group, protocol) %}
+{%  if group.comment|d() %}
+# {{ group.comment }}
+{%  endif %}
+group {
+{%  if group.options|d() %}
+
+    # Custom group options
+    {{ group.options|indent(4) }}
+{%  endif %}
+
+{%  for host in group.hosts|d() %}
+    {{ print_host(host, protocol)|indent(4) }}
+{%  endfor %}
+{%  for group in group.groups|d() %}
+    {{ print_group(group, protocol)|indent(4) }}
+{%  endfor %}
+{%  for subnet in group.subnets|d() %}
+    {{ print_subnet(subnet, protocol)|indent(4) }}
+{%  endfor %}
+{%  for shared_network in group.shared_networks|d() %}
+    {{ print_shared_network(shared_network, protocol)|indent(4) }}
+{%  endfor %}
+}
+{% endmacro %}

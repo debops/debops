@@ -1,6 +1,7 @@
 ---
 # Copyright (C) 2014-2018 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2014-2018 DebOps <https://debops.org/>
+# Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+# Copyright (C) 2014-2018, 2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Manage ISC DHCP server
@@ -14,6 +15,16 @@
                    | combine(inventory__host_environment  | d({})) }}'
 
   roles:
+
+    - role: etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ dhcpd__etc_services__dependent_list }}'
+
+    - role: ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ dhcpd__ferm__dependent_rules }}'
 
     - role: dhcpd
       tags: [ 'role::dhcpd', 'skip::dhcpd' ]
