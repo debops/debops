@@ -1,0 +1,35 @@
+{# Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+ # Copyright (C) 2020 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+{% from 'macro_pool.j2' import print_pool %}
+{% macro print_subnet(subnet, protocol) %}
+{%  if ((protocol == 'DHCPv4' and subnet.subnet|d()|ipv4) or
+        (protocol == 'DHCPv6' and subnet.subnet|d()|ipv6)) and
+       subnet.state|d('present') == 'present' %}
+{%      if subnet.comment|d() %}
+# {{ subnet.comment }}
+{%      endif %}
+{%      if protocol == 'DHCPv4' %}
+subnet {{ subnet.subnet|ipaddr('network') }} netmask {{ subnet.subnet|ipaddr('netmask') }} {
+{%      elif protocol == 'DHCPv6' %}
+subnet6 {{ subnet.subnet|ipaddr('network/prefix') }} {
+{%      endif %}
+{%      if subnet.options|d() %}
+
+    # Custom subnet options
+    {{ subnet.options|indent(4) }}
+{%      endif %}
+
+{%      if subnet.routers|d() and protocol == 'DHCPv4' %}
+    option routers {{ subnet.routers|join(', ') }};
+{%      endif %}
+{%      for range in subnet.ranges|d() %}
+    {{ "range" if protocol == 'DHCPv4' else "range6" }} {{ range }};
+{%      endfor %}
+{%      for pool in subnet.pools|d() %}
+    {{ print_pool(pool, protocol)|indent(4) }}
+{%      endfor %}
+}
+{%  endif %}
+{% endmacro %}

@@ -1,274 +1,314 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
+# .. Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+# .. Copyright (C) 2020 Imre Jonk <imre@imrejonk.nl>
 # .. Copyright (C) 2014-2018 Maciej Delmanowski <drybjed@gmail.com>
-# .. Copyright (C) 2014-2018 DebOps <https://debops.org/>
+# .. Copyright (C) 2014-2018, 2020 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _dhcpd__ref_defaults:
 
-# debops.dhcpd default variables
-# ==============================
+# Default variables
+# =================
 
 # .. contents:: Sections
 #    :local:
 #
 # .. include:: ../../../../includes/global.rst
 
+# APT packages [[[
+# ----------------
 
-# General options [[[
-# -------------------
-
-# .. envvar:: dhcpd_mode [[[
+# .. envvar:: dhcpd__base_packages [[[
 #
-# What service type to configure on this host:
-#
-# - ``server``: host is an ISC DHCP server, see ``dhcpd(8)``
-#
-# - ``relay``: host is an ISC DHCP relay, see dhcrelay(8)
-#
-dhcpd_mode: 'server'
+# List of base packages to install for DHCP server support.
+dhcpd__base_packages: [ 'isc-dhcp-server' ]
 
                                                                    # ]]]
-# .. envvar:: dhcpd_ipversion [[[
+# .. envvar:: dhcpd__packages [[[
 #
-# Internet Protocol version to configure: ``4`` or ``6``
-dhcpd_ipversion: '4'
+# List of additional packages to install with this role.
+dhcpd__packages: []
                                                                    # ]]]
                                                                    # ]]]
-# ISC DHCP Relay configuration [[[
-# --------------------------------
+# isc-dhcp-server defaults [[[
+# ----------------------------
 
-# .. envvar:: dhcpd_relay_servers [[[
+# .. envvar:: dhcpd__options [[[
 #
-# List of DHCP servers which should receive the relayed packets
-dhcpd_relay_servers: [ '{{ ansible_default_ipv4.gateway
-                           if (ansible_default_ipv4.gateway|d())
-                           else [] }}' ]
-
-                                                                   # ]]]
-# .. envvar:: dhcpd_relay_interfaces [[[
-#
-# List of network interfaces that dhcrelay should listen on
-dhcpd_relay_interfaces: []
+# Additional options to start the dhcpd processes with.
+# See https://manpages.debian.org/dhcpd.8
+dhcpd__options: ''
 
                                                                    # ]]]
-# .. envvar:: dhcpd_relay_options [[[
+# .. envvar:: dhcpd__interfacesv4 [[[
 #
-# Additional dhcrelay options
-dhcpd_relay_options: '{{ "-" + dhcpd_ipversion }}'
-                                                                   # ]]]
-                                                                   # ]]]
-# ISC DHCP Server configuration [[[
-# ---------------------------------
-
-# .. envvar:: dhcpd_server_options [[[
-#
-# dhcpd(8) options
-dhcpd_server_options: '{{ "-" + dhcpd_ipversion }}'
-                                                                   # ]]]
-                                                                   # ]]]
-# DHCP main configuration [[[
-# ---------------------------
-
-# .. envvar:: dhcpd_authoritative [[[
-#
-# Is this DHCP server authoritative?
-dhcpd_authoritative: False
+# List of network interfaces to serve DHCPv4 requests on.
+dhcpd__interfacesv4: [ '{{ ansible_local.ifupdown.external_interface
+                           if ansible_local.ifupdown.external_interface|d()
+                           else ansible_default_ipv4.interface }}' ]
 
                                                                    # ]]]
-# .. envvar:: dhcpd_log_facility [[[
+# .. envvar:: dhcpd__interfacesv6 [[[
 #
-# Log facility to use
-dhcpd_log_facility: 'local7'
+# List of network interfaces to serve DHCPv6 requests on.
+dhcpd__interfacesv6: '{{ dhcpd__interfacesv4
+                         if ansible_default_ipv6.address|d()
+                         else [] }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# DHCP server configuration [[[
+# -----------------------------
+
+# .. envvar:: dhcpd__authoritative [[[
+#
+# Whether to serve authoritative responses.
+dhcpd__authoritative: False
 
                                                                    # ]]]
-# .. envvar:: dhcpd_interfaces [[[
+# .. envvar:: dhcpd__log_facility [[[
 #
-# List of network interfaces to listen on for DHCP requests
-# If this list is empty, Ansible will try to guess correct interfaces
-# automatically
-dhcpd_interfaces: []
+# Syslog facility to use.
+# See https://manpages.debian.org/syslog.3#Values_for_facility
+dhcpd__log_facility: 'daemon'
 
                                                                    # ]]]
-# .. envvar:: dhcpd_lease_time [[[
+# .. envvar:: dhcpd__default_lease_time [[[
 #
-# Max lease time in hours (default lease time is calculated below)
-dhcpd_lease_time: '24'
+# The length in seconds that will be assigned to a lease if the client
+# requesting the lease does not ask for a specific expiration time. This is used
+# for both DHCPv4 and DHCPv6 leases (it is also known as the "valid lifetime" in
+# DHCPv6).
+dhcpd__default_lease_time: '{{ 60 * 60 * 12 }}'
 
                                                                    # ]]]
-# .. envvar:: dhcpd_global_default_lease_time [[[
+# .. envvar:: dhcpd__max_lease_time [[[
 #
-# Default lease time for all IP address leases (18 hours)
-dhcpd_global_default_lease_time: '{{ (((dhcpd_lease_time|int / 2) + 6) * 60 * 60)|round|int }}'
+# The maximum length in seconds that will be assigned to a lease.
+dhcpd__max_lease_time: '{{ 60 * 60 * 24 }}'
 
                                                                    # ]]]
-# .. envvar:: dhcpd_global_max_lease_time [[[
+# .. envvar:: dhcpd__preferred_lifetime [[[
 #
-# Maximum lease time for all IP addresses (24 hours)
-dhcpd_global_max_lease_time: '{{ (dhcpd_lease_time|int * 60 * 60)|round|int }}'
-                                                                   # ]]]
-                                                                   # ]]]
-# DHCP advertised options [[[
-# ---------------------------
-
-# .. envvar:: dhcpd_auto_options [[[
-#
-# If enabled, ISC DHCP server will be configured with a set of automatically
-# detected options. See ``auto_options.j2`` template for more details.
-dhcpd_auto_options: True
+# The preferred lifetime of assigned IPv6 addresses in seconds. An IPv6 address
+# becomes deprecated when the preferred lifetime expires, causing the OS to no
+# longer use it for new outbound connections.
+dhcpd__preferred_lifetime: '{{ (dhcpd__default_lease_time|float * (5/8))|int }}'
 
                                                                    # ]]]
-# .. envvar:: dhcpd_domain_name [[[
+# .. envvar:: dhcpd__dhcpv6_set_tee_times [[[
 #
-# Default host domain to advertise
-dhcpd_domain_name: '{{ ansible_domain }}'
+# Set T1 (renew) and T2 (rebind) to the values recommended in RFC 3315.
+# See https://tools.ietf.org/html/rfc3315#section-22.4
+dhcpd__dhcpv6_set_tee_times: True
 
                                                                    # ]]]
-# .. envvar:: dhcpd_domain_search [[[
+# .. envvar:: dhcpd__update_static_leases [[[
 #
-# List of additional domains which should be checked when looking for hostnames
-dhcpd_domain_search: []
+# Whether to perform DNS updates for clients with static assignments.
+dhcpd__update_static_leases: False
 
                                                                    # ]]]
-# .. envvar:: dhcpd_nameservers [[[
+# .. envvar:: dhcpd__domain_name [[[
 #
-# List of nameservers to advertise by default
-# If it's not specified, nameservers from ``/etc/resolv.conf`` will be used
-# instead.
-dhcpd_nameservers: []
+# Domain name to advertise to DHCPv4 clients.
+dhcpd__domain_name: '{{ ansible_domain }}'
 
                                                                    # ]]]
-# .. envvar:: dhcpd_options [[[
+# .. envvar:: dhcpd__domain_search [[[
 #
-# Custom global options formatted as a text block
-dhcpd_options: False
+# List of search domains to advertise to DHCPv4 and DHCPv6 clients.
+dhcpd__domain_search: '{{ ansible_dns.search|d([]) }}'
+
+                                                                   # ]]]
+# .. envvar:: dhcpd__domain_servers [[[
+#
+# List of IP addresses to advertise as recursive DNS servers. IPv4 addresses
+# will only be advertised to DHCPv4 clients, while IPv6 addresses will only be
+# advertised to DHCPv6 clients.
+dhcpd__name_servers: '{{ ansible_local.resolvconf.upstream_nameservers
+                         if (ansible_local.resolvconf.upstream_nameservers|d())
+                         else (ansible_dns.nameservers
+                               if ("127.0.0.1" not in ansible_dns.nameservers)
+                               else []) }}'
+
+                                                                   # ]]]
+# .. envvar:: dhcpd__global_options_map [[[
+#
+# Additional options to add to the global configuration. This parameter accepts
+# two dictionaries with keys 'DHCPv4' and 'DHCPv6', for each protocol
+# respectively. The values can be strings or YAML text blocks.
+dhcpd__global_options_map:
+  'DHCPv4': ''
+  'DHCPv6': ''
                                                                    # ]]]
                                                                    # ]]]
 # iPXE support [[[
 # ----------------
 
-# .. envvar:: dhcpd_ipxe [[[
+# .. envvar:: dhcpd__ipxe [[[
 #
 # Add iPXE-specific options to ISC DHCP server configuration.
-dhcpd_ipxe: False
+dhcpd__ipxe: False
 
                                                                    # ]]]
-# .. envvar:: dhcpd_ipxe_dhcp_space [[[
+# .. envvar:: dhcpd__ipxe_dhcp_space [[[
 #
 # Add DHCP options iPXE namespace in ``dhcpd.conf`` required to support
 # iPXE-specific DHCP options in the DHCP server configuration.
-dhcpd_ipxe_dhcp_space: True
+dhcpd__ipxe_dhcp_space: True
 
                                                                    # ]]]
-# .. envvar:: dhcpd_ipxe_chain_filename [[[
+# .. envvar:: dhcpd__ipxe_tftp_server [[[
+#
+# IPv4 address of the TFTP server that contains the boot files.
+dhcpd__ipxe_tftp_server: '{{ ansible_default_ipv4.address }}'
+
+                                                                   # ]]]
+# .. envvar:: dhcpd__ipxe_chain_filename [[[
 #
 # Initial file sent to hosts which requested a PXE boot, used to chain-load
-# iPXE boot loader.
-dhcpd_ipxe_chain_filename: 'undionly.kpxe'
+# the iPXE boot loader.
+dhcpd__ipxe_chain_filename: 'undionly.kpxe'
 
                                                                    # ]]]
-# .. envvar:: dhcpd_ipxe_efi_chain_filename [[[
+# .. envvar:: dhcpd__ipxe_efi_chain_filename [[[
 #
 # Initial file sent to hosts using EFI which requested a PXE boot, used to
-# chain-load iPXE boot loader.
-dhcpd_ipxe_efi_chain_filename: 'ipxe.efi'
+# chain-load the iPXE boot loader.
+dhcpd__ipxe_efi_chain_filename: 'ipxe.efi'
 
                                                                    # ]]]
-# .. envvar:: dhcpd_ipxe_filename [[[
+# .. envvar:: dhcpd__ipxe_filename [[[
 #
-# File sent to hosts booted with iPXE, by default load the standard menu file.
-dhcpd_ipxe_filename: 'menu.ipxe'
+# File sent to hosts booted with iPXE, by default this loads the standard menu
+# file.
+dhcpd__ipxe_filename: 'menu.ipxe'
 
                                                                    # ]]]
-# .. envvar:: dhcpd_ipxe_options [[[
+# .. envvar:: dhcpd__ipxe_options [[[
 #
-# Additional DHCP options in a YAML text block format, added in the iPXE
-# section of the configuration.
-dhcpd_ipxe_options: ''
+# Additional DHCP options in YAML text block format, added to the iPXE section
+# of the configuration file.
+dhcpd__ipxe_options: ''
                                                                    # ]]]
                                                                    # ]]]
-# ISC DHCP Server configuration scopes [[[
-# ----------------------------------------
+# DHCP server configuration scopes [[[
+# ------------------------------------
 
-# These lists allow you to generate nested configuration scopes in
-# dhcpd.conf. Most of the information about them can be found in dhcpd.conf(5)
-# manual page. You can create nested configuration using Ansible variable
-# expansion.
-
-# .. envvar:: dhcpd_keys [[[
+# .. envvar:: dhcpd__classes [[[
 #
-# List of secret keys used for Dynamic DNS configuration. See
-# :ref:`dhcpd_keys` for more details.
-dhcpd_keys: []
+# List of host classes with custom options for each class. See
+# :ref:`dhcpd__ref_classes` for details.
+dhcpd__classes: []
 
                                                                    # ]]]
-# .. envvar:: dhcpd_zones [[[
+# .. envvar:: dhcpd__failovers [[[
 #
-# List of DNS zones to update with Dynamic DNS configuration. See
-# :ref:`dhcpd_zones` for more details.
-dhcpd_zones: []
+# List of DHCPv4 failover configuration blocks. See :ref:`dhcpd__ref_failovers`
+# for details.
+dhcpd__failovers: []
 
                                                                    # ]]]
-# .. envvar:: dhcpd_classes [[[
+# .. envvar:: dhcpd__groups [[[
 #
-# List of client classes (see dhcpd.conf(5)). More informaction can be found in
-# :ref:`dhcpd_classes`.
-dhcpd_classes: []
-
-                                                                   # ]]]
-# .. envvar:: dhcpd_groups [[[
-#
-# List of configuration scopes groped together. See :ref:`dhcpd_groups` for
-# more details.
-dhcpd_groups: []
-
-                                                                   # ]]]
-# .. envvar:: dhcpd_shared_networks [[[
-#
-# List of shared networks grouping specified subnets together. See
-# :ref:`dhcpd_shared_networks` for more details.
-dhcpd_shared_networks: []
-
-                                                                   # ]]]
-# .. envvar:: dhcpd_subnets [[[
-#
-# List of subnets not in a shared network. See :ref:`dhcpd_subnets` for more
+# List of grouped configuration scopes. See :ref:`dhcpd__ref_groups` for
 # details.
-dhcpd_subnets: [ '{{ dhcpd_subnet_default[dhcpd_ipversion] }}' ]
+dhcpd__groups: []
 
                                                                    # ]]]
-# .. envvar:: dhcpd_subnet_default [[[
+# .. envvar:: dhcpd__hosts [[[
 #
-# Default subnet managed automatically
-dhcpd_subnet_default:
-  '4':
-    subnet: '{{ ansible_default_ipv4.network + "/" + ansible_default_ipv4.netmask }}'
-    routers: '{{ ansible_default_ipv4.gateway | default("") }}'
-    comment: 'Generated automatically by Ansible'
-  '6':
-    subnet: '{{ ((ansible_default_ipv6.address + "/" + ansible_default_ipv6.prefix)
-                 if ansible_default_ipv6.address|d() else "") }}'
-    comment: 'Generated automatically by Ansible'
+# Global list of static hosts. See :ref:`dhcpd__ref_hosts` for details.
+dhcpd__hosts: []
 
                                                                    # ]]]
-# .. envvar:: dhcpd_hosts [[[
+# .. envvar:: dhcpd__keys [[[
 #
-# Global list of hosts in DHCP. See ref:`dhcpd_hosts` for more details.
-dhcpd_hosts: []
+# List of DNS update keys. See :ref:`dhcpd__ref_keys` for details.
+dhcpd__keys: []
 
                                                                    # ]]]
-# .. envvar:: dhcpd_includes [[[
+# .. envvar:: dhcpd__shared_networks [[[
 #
-# List of external files to include. See :ref:`dhcpd_includes` for more
-# details.
-dhcpd_includes: []
+# List of shared networks to service with this DHCP server. See
+# :ref:`dhcpd__ref_shared_networks` for details.
+dhcpd__shared_networks: []
 
                                                                    # ]]]
-# .. envvar:: dhcpd_failovers [[[
+# .. envvar:: dhcpd__subnets [[[
 #
-# DHCP failover configuration. See :ref:`dhcpd_failovers` for more details.
-dhcpd_failovers: []
+# List of subnets that are not part of a shared network, but are instead defined
+# on a global level. See :ref:`dhcpd__ref_subnets` for details.
+dhcpd__subnets: '{{ dhcpd__default_subnets }}'
+
                                                                    # ]]]
+# .. envvar:: dhcpd__default_subnets [[[
+#
+# The default subnets as detected by this role. Dynamic lease assignment will
+# not work until you configure subnets with valid address ranges.
+dhcpd__default_subnets:
+
+  - comment: 'Autodetected IPv4 subnet'
+    subnet: '{{ ansible_default_ipv4.network
+                + "/" + ansible_default_ipv4.netmask }}'
+    routers: '{{ [ ansible_default_ipv4.gateway ]
+                 if ansible_default_ipv4.gateway|d()
+                 else [] }}'
+
+  - comment: 'Autodetected IPv6 subnet'
+    subnet: '{{ ansible_default_ipv6.address|d()
+                + "/" + ansible_default_ipv6.prefix|d() }}'
+    state: '{{ "present" if ansible_default_ipv6.address|d() else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: dhcpd__zones [[[
+#
+# List of DNS zones to update. See :ref:`dhcpd__ref_zones` for details.
+dhcpd__zones: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other roles [[[
+# ---------------------------------
+
+# .. envvar:: dhcpd__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+dhcpd__etc_services__dependent_list:
+
+  - name: 'dhcp-failover'
+    port: '647'
+    protocols: [ 'tcp', 'udp' ]
+    comment: 'Added by debops.dhcpd Ansible role'
+
+                                                                   # ]]]
+# .. envvar:: dhcpd__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+dhcpd__ferm__dependent_rules:
+
+  # Firewall rules are not needed for DHCPv4 because it uses raw sockets (see
+  # https://kb.isc.org/docs/aa-00378). DHCPv6 doesn't use raw sockets so both
+  # server and client need open ports in their firewalls.
+  - name: 'accept_dhcpv6_server'
+    by_role: 'debops.dhcpd'
+    type: 'accept'
+    interface: '{{ dhcpd__interfacesv6 }}'
+    protocol: 'udp'
+    dport: [ 'dhcpv6-server' ]
+    rule_state: '{{ "present" if dhcpd__interfacesv6 else "absent" }}'
+
+  # The DHCPv4 failover port.
+  - name: 'accept_dhcp_failover'
+    by_role: 'debops.dhcpd'
+    type: 'accept'
+    saddr: '{{ (dhcpd__failovers|map(attribute="primary")|list
+                + dhcpd__failovers|map(attribute="secondary")|list)
+               if dhcpd__failovers
+               else omit }}'
+    protocol: 'tcp'
+    dport: [ 'dhcp-failover' ]
+    rule_state: '{{ "present" if dhcpd__failovers else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]

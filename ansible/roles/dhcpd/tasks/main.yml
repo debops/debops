@@ -1,53 +1,81 @@
 ---
-# Copyright (C) 2014-2018 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2014-2018 DebOps <https://debops.org/>
-# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- import_role:
+    name: 'ansible_plugins'
+
+- import_role:
+    name: 'global_handlers'
 
 - import_role:
     name: 'secret'
 
-- include: dist_vars.yml
-- include: install.yml
+- name: Install ISC DHCP packages
+  package:
+    name: '{{ (dhcpd__base_packages + dhcpd__packages)|flatten }}'
+    state: 'present'
+  register: dhcpd__register_packages
+  until: dhcpd__register_packages is succeeded
 
-- name: Get list of nameservers configured in /etc/resolv.conf
-  shell: set -o nounset -o pipefail -o errexit &&
-         grep -E '^nameserver\s' /etc/resolv.conf | awk '{print $2}' || true
-  args:
-    executable: 'bash'
-  register: dhcpd_register_nameservers
-  changed_when: False
-  when: dhcpd_mode == 'server'
-  check_mode: False
-
-- name: Convert list of nameservers to Ansible list
-  set_fact:
-    dhcpd_runtime_nameservers: "{{ dhcpd_register_nameservers.stdout_lines }}"
-  when: (dhcpd_register_nameservers is defined and dhcpd_register_nameservers.stdout|d())
-
-- name: Configure DHCP server
-  template:
-    src: '{{ item }}.j2'
-    dest: '/{{ item }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0640'
-  with_items: "{{ dhcpd_templates }}"
-  notify: [ 'Restart dhcp server' ]
-  register: dhcpd_register_config
-  when: dhcpd_mode == 'server'
-
-- name: Make sure that included files exist
-  file:
+- name: Divert original configuration
+  dpkg_divert:
     path: '{{ item }}'
-    state: 'touch'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  with_items: '{{ dhcpd_includes }}'
-  notify: [ 'Restart dhcp server' ]
-  when: ((item is defined and item) and dhcpd_mode == 'server' and
-         (dhcpd_register_config is defined and dhcpd_register_config is changed))
+  with_items:
+    - '/etc/default/isc-dhcp-server'
+    - '/etc/dhcp/dhcpd.conf'
+    - '/etc/dhcp/dhcpd6.conf'
 
-- name: Make sure that IPv6 lease file exists
-  command: touch /var/lib/dhcp/dhcpd6.leases creates=/var/lib/dhcp/dhcpd6.leases
-  when: dhcpd_ipversion == '6'
+- name: Write configuration includes
+  template:
+    src: 'etc/dhcp/ansible_{{ item }}.conf.j2'
+    dest: '/etc/dhcp/ansible_{{ item }}.conf'
+    mode: '0644'
+  with_items: [ 'failovers', 'ipxe', 'zones' ]
+  notify: [ 'Restart isc-dhcp-server' ]
+
+- name: Store secret keys
+  template:
+    src: 'etc/dhcp/ansible_keys.conf.j2'
+    dest: '/etc/dhcp/ansible_keys.conf'
+    mode: '0600'
+  notify: [ 'Restart isc-dhcp-server' ]
+
+- name: Configure dhcpd.conf and dhcpd6.conf
+  template:
+    src: 'etc/dhcp/dhcpd.conf.j2'
+    dest: '/etc/dhcp/{{ item.filename }}'
+    mode: '0644'
+  vars:
+    dhcpd__protocol: '{{ item.protocol }}'
+  loop:
+    - filename: 'dhcpd.conf'
+      protocol: 'DHCPv4'
+    - filename: 'dhcpd6.conf'
+      protocol: 'DHCPv6'
+  notify: [ 'Restart isc-dhcp-server' ]
+
+- name: Configure ISC DHCP Server defaults
+  template:
+    src: 'etc/default/isc-dhcp-server.j2'
+    dest: '/etc/default/isc-dhcp-server'
+    mode: '0644'
+  notify: [ 'Restart isc-dhcp-server' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save local facts
+  template:
+    src: 'etc/ansible/facts.d/dhcpd.fact.j2'
+    dest: '/etc/ansible/facts.d/dhcpd.fact'
+    mode: '0755'
+  register: dhcpd__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: dhcpd__register_facts is changed

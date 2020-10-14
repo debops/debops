@@ -1,9 +1,9 @@
 {# Copyright (C) 2014-2018 Maciej Delmanowski <drybjed@gmail.com>
- # Copyright (C) 2014-2018 DebOps <https://debops.org/>
+ # Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+ # Copyright (C) 2014-2018, 2020 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
-{% if dhcpd_ipxe is defined and dhcpd_ipxe %}
-{% if dhcpd_ipxe_dhcp_space is defined and dhcpd_ipxe_dhcp_space %}
+{%  if dhcpd__ipxe_dhcp_space %}
 # DHCP options configuration for iPXE
 option space ipxe;
 option ipxe-encap-opts code 175 = encapsulate ipxe;
@@ -47,20 +47,23 @@ option ipxe.menu code 39 = unsigned integer 8;
 option ipxe.sdi code 40 = unsigned integer 8;
 option ipxe.nfs code 41 = unsigned integer 8;
 
-{% endif %}
+{%  endif %}
 # Client architecture detection
 option client-arch code 93 = unsigned integer 16;
 
+{%  if dhcpd__ipxe_tftp_server %}
+# TFTP server
+next-server {{ dhcpd__ipxe_tftp_server }};
+{%  endif %}
+
 # iPXE chain-loading configuration
 if exists user-class and option user-class = "iPXE" {
-        filename "{{ dhcpd_ipxe_filename }}";
-{% if dhcpd_ipxe_options is defined and dhcpd_ipxe_options %}
-{{ dhcpd_ipxe_options | indent(8, true) }}
-{% endif %}
+        filename "{{ dhcpd__ipxe_filename }}";
+{%  if dhcpd__ipxe_options %}
+        {{ dhcpd__ipxe_options|indent(8) }}
+{%  endif %}
 } elsif option client-arch != 00:00 {
-        filename "{{ dhcpd_ipxe_efi_chain_filename }}";
+        filename "{{ dhcpd__ipxe_efi_chain_filename }}";
 } else {
-        filename "{{ dhcpd_ipxe_chain_filename }}";
+        filename "{{ dhcpd__ipxe_chain_filename }}";
 }
-
-{% endif %}

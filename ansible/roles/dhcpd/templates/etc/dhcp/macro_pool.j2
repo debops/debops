@@ -1,0 +1,23 @@
+{# Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+ # Copyright (C) 2020 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+{% macro print_pool(pool, protocol) %}
+{%  if pool.comment|d() %}
+# {{ pool.comment }}
+{%  endif %}
+{{ "pool" if protocol == 'DHCPv4' else "pool6" }} {
+{%  if pool.options|d() %}
+
+    # Custom pool options
+    {{ pool.options }}
+{%  endif %}
+
+{%  if pool.failover|d() %}
+    failover peer "{{ pool.failover }}";
+{%  endif %}
+{%  for range in pool.ranges|d() %}
+    {{ "range" if protocol == 'DHCPv4' else "range6" }} {{ range }};
+{%  endfor %}
+}
+{% endmacro %}

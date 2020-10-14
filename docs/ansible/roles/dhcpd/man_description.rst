@@ -5,9 +5,9 @@
 Description
 ===========
 
-``debops.dhcpd`` role can be used to configure an `ISC DHCP Server`_ as
-standalone or in a 2-host failover configuration. Alternatively, you can
-configure an DHCP relay on a host connected to multiple networks which will
-relay DHCP/BOOTP messages to your DHCP server.
+The ``debops.dhcpd`` role can be used to configure `ISC DHCP Server`_, either
+standalone or in a two-host failover configuration. It supports both DHCPv4 and
+DHCPv6 configuration, but note that DHCPv6 failover is not supported in ISC DHCP
+Server.
 
-.. _ISC DHCP Server: https://www.isc.org/downloads/dhcp/
+.. _ISC DHCP Server: https://www.isc.org/dhcp/

@@ -1,0 +1,26 @@
+{# Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+ # Copyright (C) 2020 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+{% macro print_host(host, protocol) %}
+{%  if (protocol == 'DHCPv4' and host.address4|d()) or (protocol == 'DHCPv6' and host.address6|d()) %}
+{%      if host.comment|d() %}
+# {{ host.comment }}
+{%      endif %}
+host {{ host.hostname }} {
+{%      if host.options|d() %}
+
+    # Custom host options
+    {{ host.options|indent(4) }}
+{%      endif%}
+
+{%      if protocol == 'DHCPv4' %}
+    hardware ethernet {{ host.ethernet }};
+    fixed-address {{ host.address4 }};
+{%      elif protocol == 'DHCPv6' %}
+    host-identifier option fqdn.fqdn {{ host.hostname }};
+    fixed-address6 {{ host.address6 }};
+{%      endif %}
+}
+{%  endif %}
+{% endmacro %}
