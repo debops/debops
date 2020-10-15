@@ -194,6 +194,12 @@ LDAP
 
 - The DHCP Relay Agent functionality has been moved to :ref:`debops.dhcrelay`.
 
+:ref:`debops.fhs` role
+''''''''''''''''''''''
+
+- The role will create the :file:`/srv/www/` directory by default to allow for
+  home directories used by web applications.
+
 :ref:`debops.lvm` role
 ''''''''''''''''''''''
 
