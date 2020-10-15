@@ -73,6 +73,12 @@ Updates of upstream application versions
 - In the :ref:`debops.roundcube` role, the Roundcube version installed by
   default has been updated to ``1.4.9``.
 
+:ref:`debops.fhs` role
+''''''''''''''''''''''
+
+- The role will create the :file:`/srv/www/` directory by default to allow for
+  home directories used by web applications.
+
 :ref:`debops.lvm` role
 ''''''''''''''''''''''
 
