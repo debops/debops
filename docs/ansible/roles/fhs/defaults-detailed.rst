@@ -49,6 +49,17 @@ Remember that this change will only take effect on first application of the
 role, therefore it should be defined in the Ansible inventory before the host
 is provisioned.
 
+The role will create the :file:`/srv/www/` directory by default since it's
+a common place for home directories of web applications. To avoid this on
+non-www related hosts, you can put the configuration below in the inventory:
+
+.. code-block:: yaml
+
+   fhs__directories:
+
+     - name: 'www'
+       state: 'absent'
+
 Syntax
 ~~~~~~
 
