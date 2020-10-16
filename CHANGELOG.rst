@@ -52,6 +52,9 @@ LDAP
   actions are performed by the Runner: before cloning the repository, before
   build is executed, after build is executed.
 
+- Role can configure more parameters for Docker executor, related to memory,
+  CPU and process management inside of the containers.
+
 :ref:`debops.lvm` role
 ''''''''''''''''''''''
 
