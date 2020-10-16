@@ -122,6 +122,39 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
 {%       if (runner.docker_tls_cert_path|d() or gitlab_runner__docker_tls_cert_path) %}
     tls_cert_path = "{{ runner.docker_tls_cert_path | d(gitlab_runner__docker_tls_cert_path) }}"
 {%       endif %}
+{%       if runner.docker_tls_verify is defined %}
+    tls_verify = {{ runner.docker_tls_verify | bool | lower }}
+{%       endif %}
+{%       if runner.docker_memory is defined %}
+    memory = "{{ runner.docker_memory }}"
+{%       endif %}
+{%       if runner.docker_memory_swap is defined %}
+    memory_swap = "{{ runner.docker_memory_swap }}"
+{%       endif %}
+{%       if runner.docker_memory_reservation is defined %}
+    memory_reservation = "{{ runner.docker_memory_reservation }}"
+{%       endif %}
+{%       if runner.docker_oom_kill_disable is defined %}
+    oom_kill_disable = {{ runner.docker_oom_kill_disable | bool | lower }}
+{%       endif %}
+{%       if runner.docker_oom_score_adjust is defined %}
+    oom_score_adjust = {{ runner.docker_oom_score_adjust }}
+{%       endif %}
+{%       if runner.docker_cpuset_cpus is defined %}
+    cpuset_cpus = "{{ runner.docker_cpuset_cpus }}"
+{%       endif %}
+{%       if runner.docker_cpu_shares is defined %}
+    cpu_shares = {{ runner.docker_cpu_shares }}
+{%       endif %}
+{%       if runner.docker_cpus is defined %}
+    cpus = "{{ runner.docker_cpus }}"
+{%       endif %}
+{%       if runner.docker_disable_entrypoint_overwrite is defined %}
+    disable_entrypoint_overwrite = {{ runner.docker_disable_entrypoint_overwrite | bool | lower }}
+{%       endif %}
+{%       if runner.docker_shm_size is defined %}
+    shm_size = {{ runner.docker_shm_size }}
+{%       endif %}
 {%       if runner.docker_wait_for_services_timeout|d() %}
     wait_for_services_timeout = {{ runner.docker_wait_for_services_timeout }}
 {%       endif %}
