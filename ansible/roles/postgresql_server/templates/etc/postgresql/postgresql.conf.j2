@@ -218,7 +218,12 @@ archive_timeout = {{ item.archive_timeout | d('0') }}
 
 # Set these on the master and on any standby that will send replication data
 max_wal_senders = {{ item.max_wal_senders | d('0') }}
+{% if (item.version | d(postgresql_server__version)) is version_compare('13','<') %}
 wal_keep_segments = {{ item.wal_keep_segments | d('0') }}
+{% endif %}
+{% if (item.version | d(postgresql_server__version)) is version_compare('13','>=') %}
+wal_keep_size = {{ item.wal_keep_size | d('0') }}
+{% endif %}
 {% if (item.version | d(postgresql_server__version)) is version_compare('9.1','>') %}
 wal_sender_timeout = {{ item.wal_sender_timeout | d('60s') }}
 {% endif %}
