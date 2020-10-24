@@ -117,6 +117,12 @@ General
 - Ensure that with default mount options disabled, options specified by the
   user still are added in the configuration.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- Don't add the "always" ``add_header`` parameter into configuration files for
+  :command:`nginx` < 1.7.5.
+
 :ref:`debops.nullmailer` role
 '''''''''''''''''''''''''''''
 
