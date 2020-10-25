@@ -114,6 +114,11 @@ General
 - Fixed the configuration support on Ubuntu Focal due to bantime feature
   changes in the :command:`fail2ban` v0.11.
 
+:ref:`debops.fcgiwrap` role
+'''''''''''''''''''''''''''
+
+- The role can now be used in check mode without throwing an AnsibleFilterError.
+
 :ref:`debops.logrotate` role
 ''''''''''''''''''''''''''''
 
