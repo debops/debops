@@ -105,6 +105,11 @@ General
   :file:`file_src`, :file:`template_src`) which resulted in Ansible 2.10 not
   finding them correctly.
 
+:ref:`debops.fcgiwrap` role
+'''''''''''''''''''''''''''
+
+- The role can now be used in check mode without throwing an AnsibleFilterError.
+
 :ref:`debops.logrotate` role
 ''''''''''''''''''''''''''''
 
