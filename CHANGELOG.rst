@@ -73,6 +73,12 @@ Updates of upstream application versions
 - The :ref:`debops.mariadb` and :ref:`debops.mariadb_server` roles now support
   installation of Percona Server/Client v8.0 from upstream APT repositories.
 
+:ref:`debops.grub` role
+'''''''''''''''''''''''
+
+- The role will now activate both the serial console and the (previously
+  disabled) native platform console when ``grub__serial_console`` is ``True``.
+
 :ref:`debops.lvm` role
 ''''''''''''''''''''''
 
