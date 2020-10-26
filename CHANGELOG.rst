@@ -76,6 +76,12 @@ Updates of upstream application versions
 - In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
   has been updated to 10.6.
 
+:ref:`debops.grub` role
+'''''''''''''''''''''''
+
+- The role will now activate both the serial console and the (previously
+  disabled) native platform console when ``grub__serial_console`` is ``True``.
+
 :ref:`debops.lvm` role
 ''''''''''''''''''''''
 
