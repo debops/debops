@@ -77,3 +77,18 @@ Mount a NFS4 share with automatic configuration:
    nfs__shares:
      - path: '/media/nfs/shared'
        src: 'nas.example.org:/shared'
+
+Create an automount entry for a NFSv4 share using :command:`systemd`
+automount functionality:
+
+.. code-block:: yaml
+
+   nfs__shares:
+
+     - path: '/media/nfs/shared'
+       src: 'nas.example.org:/shared'
+       opts: [ 'defaults',  'x-systemd.automount', 'x-systemd.idle-timeout=2',
+               'x-systemd.device-timeout=2', 'x-systemd.mount-timeout=2' ]
+       # Without this, Ansible tries to mount the share right away which
+       # results in an error
+       state: 'present'
