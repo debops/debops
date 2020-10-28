@@ -41,7 +41,17 @@
     - '{{ nfs__shares }}'
     - '{{ nfs__group_shares }}'
     - '{{ nfs__host_shares }}'
+  register: nfs__register_devices
   when: item.path|d() and item.src|d()
+
+- name: Restart 'remote-fs.target' systemd unit
+  systemd:
+    name: 'remote-fs.target'
+    state: 'restarted'
+    daemon_reload: True
+  loop: '{{ nfs__register_devices.results }}'
+  when: (ansible_service_mgr == 'systemd' and item is changed and
+         (lookup("template", "lookup/mount_options.j2") is match(".*x-systemd.automount.*")))
 
 - name: Ensure that the NFS mount points exist
   file:
