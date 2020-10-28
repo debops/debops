@@ -100,6 +100,12 @@ Updates of upstream application versions
 
 - Linux Software RAID devices are now scanned by default.
 
+:ref:`debops.nfs` role
+''''''''''''''''''''''
+
+- The role will restart the :file:`remote-fs.target` ``systemd`` unit when NFS
+  shares mounted using :man:`systemd.automount(5)` functionality are defined.
+
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
 
