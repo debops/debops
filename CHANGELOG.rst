@@ -328,6 +328,11 @@ LDAP
 - Network configuration with bonded interfaces should now be correctly applied
   by the reconfiguration script.
 
+:ref:`debops.iscsi` role
+''''''''''''''''''''''''
+
+- Fixed uninitialized local fact ``ansible_local.iscsi.discovered_portals``.
+
 :ref:`debops.ldap` role
 '''''''''''''''''''''''
 
