@@ -48,9 +48,8 @@
     portal:   '{{ item }}'
   with_items: '{{ iscsi__portals }}'
   register: iscsi__register_discover_targets
-  when: (iscsi__portals|d(False) and (ansible_local|d() and ansible_local.iscsi|d() and
-         ansible_local.iscsi.discovered_portals is undefined or
-         (item not in ansible_local.iscsi.discovered_portals)))
+  when: iscsi__portals|d(False) and
+        item not in ansible_local.iscsi.discovered_portals([])
 
 - name: Log in to specified iSCSI targets
   open_iscsi:

@@ -125,6 +125,11 @@ General
 
 - The role can now be used in check mode without throwing an AnsibleFilterError.
 
+:ref:`debops.iscsi` role
+''''''''''''''''''''''''
+
+- Fixed uninitialized local fact ``ansible_local.iscsi.discovered_portals``.
+
 :ref:`debops.logrotate` role
 ''''''''''''''''''''''''''''
 
