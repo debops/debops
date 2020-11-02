@@ -72,8 +72,8 @@ try:
         version=unicode(RELEASE),
         install_requires=['distro', 'future'],
         extras_require={
-            'ansible': ['ansible', 'netaddr', 'passlib',
-                        'python-ldap', 'dnspython', 'pyopenssl']
+            'ansible': ['ansible', 'netaddr', 'passlib', 'python-ldap',
+                        'dnspython']
             },
 
         scripts=SCRIPTS,

@@ -107,21 +107,13 @@ Ansible:
 
 .. __: https://bitbucket.org/ecollins/passlib/wiki/Home
 
-`pyOpenSSL`__
-  This is a Python wrapper for the OpenSSL library, available in the
-  ``python-openssl`` package. It's a requirement for :ref:`debops.opendkim` and
-  other roles that generate X.509 certificates or private keys on the Ansible
-  Controller.
-
-.. __: https://www.pyopenssl.org/
-
 You can install them using your distribution packages on Debian or
 Ubuntu by running the command:
 
 .. code-block:: console
 
    sudo apt install python3-future python3-ldap python3-netaddr \
-                    python3-dnspython python3-passlib python3-openssl
+                    python3-dnspython python3-passlib
 
 The missing Python dependencies will be automatically installed with the
 ``ansible`` and ``debops`` Python packages, however some of them, like the
