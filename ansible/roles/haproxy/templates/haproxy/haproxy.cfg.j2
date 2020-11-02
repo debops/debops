@@ -1,0 +1,25 @@
+{# Copyright (C) 2020 Innobyte Alin Alexandru <https://www.innobyte.com/>
+ # Copyright (C) 2020 Innobyte Bechea Leonardo <https://www.innobyte.com/>
+ # Copyright (C) 2020 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+
+# {{ ansible_managed }}
+
+{% for element in haproxy__combined_configuration | parse_kv_items %}
+{%   if element.name|d() and element.state|d('present') not in [ 'absent', 'ignore' ] %}
+
+{{ '{}'.format(element.name) }}
+{%       if element.options|d() %}
+{%         for thing in element.options %}
+{%           if thing.option|d(thing.name) and thing.name|d() and thing.value|d() and thing.state|d('present') and thing.comment|d() != 'absent' %}
+{%                 set thing_commented = ('#' if thing.state|d('present') == 'comment' else '') %}
+{% if thing.comment|d() %}
+{{       thing.comment | regex_replace('\n$','') | comment(decoration="        # ") }}
+{% endif %}
+{{ '       {} {}  {}'.format(thing_commented, thing.option|d(thing.name), ([ thing.value ] if thing.value is string else thing.value) | join(',')) }}
+{%           endif %}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{% endfor %}

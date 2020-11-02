@@ -918,6 +918,15 @@ stages:
 
 # --- h --- [[[2
 
+'haproxy role':
+  <<: *test_role_1st_deps
+  variables:
+    JANE_TEST_FACT: 'haproxy.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/haproxy.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_haproxy'
+    JANE_DIFF_PATTERN: '.*/roles/haproxy/.*'
+    JANE_LOG_PATTERN: '\[debops\.haproxy\]'
+
 'hashicorp role':
   <<: *test_role_1st_deps
   needs:

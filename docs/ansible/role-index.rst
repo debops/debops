@@ -95,6 +95,7 @@ are not accessed directly by end users.
 - :ref:`debops.rabbitmq_server`
 - :ref:`debops.salt`
 - :ref:`debops.tinyproxy`
+- :ref:`debops.haproxy`
 - ``debops.reprepro``
 - ``debops.sks``
 - ``debops.smstools``
