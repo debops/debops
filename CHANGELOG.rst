@@ -83,6 +83,18 @@ Updates of upstream application versions
 - In the :ref:`debops.roundcube` role, the Roundcube version installed by
   default has been updated to ``1.4.9``.
 
+General
+~~~~~~~
+
+- The dependency on ``pyOpenSSL`` has been removed. This dependency was required
+  in Ansible < 2.8.0 because these versions were unable to use the
+  ``cryptography`` module, but DebOps is nowadays developed against Ansible 2.9.
+  pyOpenSSL was used only to generate private RSA keys for the
+  :ref:`debops.opendkim` role. Switching to ``cryptography`` is also a security
+  precaution and the Python Cryptographic Authority
+  [recommends](https://github.com/pyca/cryptography/blob/master/docs/faq.rst#why-use-cryptography)
+  doing so.
+
 :ref:`debops.fhs` role
 ''''''''''''''''''''''
 
