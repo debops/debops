@@ -25,12 +25,11 @@ opendkim__keys
 --------------
 
 The ``opendkim__*_keys`` variables define what DomainKeys are created and used
-by OpenDKIM. The private keys are generated on the Ansible Controller (the
-``python-openssl`` package is required), stored in the
-:file:`secret/opendkim/domainkeys/` directory (see :ref:`debops.secret` role for
-details) and copied to the remote hosts.  The role can install the same private
-key on multiple hosts, which can be useful in environments with multiple SMTP
-servers handling the same domains.
+by OpenDKIM. The private keys are generated on the Ansible Controller, stored in
+the :file:`secret/opendkim/domainkeys/` directory (see :ref:`debops.secret` role
+for details) and copied to the remote hosts. The role can install the same
+private key on multiple hosts, which can be useful in environments with multiple
+SMTP servers handling the same domains.
 
 You can use the :file:`secret/opendkim/lib/extract-domainkey-zone` Bash script
 to get the DomainKey public keys which then need to be configured in your DNS

@@ -73,6 +73,18 @@ Updates of upstream application versions
 - The :ref:`debops.mariadb` and :ref:`debops.mariadb_server` roles now support
   installation of Percona Server/Client v8.0 from upstream APT repositories.
 
+General
+~~~~~~~
+
+- The dependency on ``pyOpenSSL`` has been removed. This dependency was required
+  in Ansible < 2.8.0 because these versions were unable to use the
+  ``cryptography`` module, but DebOps is nowadays developed against Ansible 2.9.
+  pyOpenSSL was used only to generate private RSA keys for the
+  :ref:`debops.opendkim` role. Switching to ``cryptography`` is also a security
+  precaution and the Python Cryptographic Authority
+  [recommends](https://github.com/pyca/cryptography/blob/master/docs/faq.rst#why-use-cryptography)
+  doing so.
+
 :ref:`debops.grub` role
 '''''''''''''''''''''''
 
