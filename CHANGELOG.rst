@@ -334,6 +334,14 @@ LDAP
 - Fixed multiple issues with adding and updating hosts to the LDAP directory
   when these hosts were configured for network bonding.
 
+:ref:`debops.lvm` role
+''''''''''''''''''''''
+
+- Made default behaviour match the documentation: the role now automatically
+  takes care of mounting a filesystem on an LVM volume if the mount point is
+  specified with ``item.mount``. This previously required setting the
+  ``item.fs`` parameter to ``True`` as well.
+
 :ref:`debops.nslcd` role
 ''''''''''''''''''''''''
 
