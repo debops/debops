@@ -157,6 +157,13 @@ General
 - Fixed the :command:`dpkg-divert` command execution when log rotation perion
   is changed.
 
+:ref:`debops.lvm` role
+''''''''''''''''''''''
+
+- Fixed an issue where the role would fail in check mode. The role tries to
+  simulate creating a filesystem, but this failed when the underlying LVM volume
+  did not actually exist (which is to be expected when running in check mode).
+
 :ref:`debops.lxd` role
 ''''''''''''''''''''''
 
