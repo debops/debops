@@ -231,6 +231,13 @@ General
 - Fixed ``_syslog._tcp`` DNS SRV resource record detection on hosts with an
   undefined DNS domain.
 
+:ref:`debops.snmpd` role
+''''''''''''''''''''''''
+
+- Do not create the home directory of the ``snmpd`` service UNIX account to
+  avoid issues on Ubuntu Focal. This directory is created automatically by the
+  ``.deb`` package.
+
 :ref:`debops.system_users` role
 '''''''''''''''''''''''''''''''
 
