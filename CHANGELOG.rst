@@ -197,6 +197,13 @@ General
   the database service. You might need to update the inventory configuration if
   you use this parameter.
 
+:ref:`debops.snmpd` role
+''''''''''''''''''''''''
+
+- Do not create the home directory of the ``snmpd`` service UNIX account to
+  avoid issues on Ubuntu Focal. This directory is created automatically by the
+  ``.deb`` package.
+
 :ref:`debops.system_users` role
 '''''''''''''''''''''''''''''''
 
