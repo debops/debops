@@ -259,6 +259,14 @@ otherwise different:
   Optional. String or list of paths which can be accessed by the PHP
   interpreter. By default not set.
 
+``pm_status``
+  Optional. If ``True``, PHP-FPM status page is enabled. If not specified,
+  the ``php__fpm_pm_status`` will be used instead.
+
+``pm_status_path``
+  Optional. URI path of PHP-FPM status page. If not specified, the
+  ``php__fpm_pm_status_path`` will be used instead.
+
 Examples
 ~~~~~~~~
 
