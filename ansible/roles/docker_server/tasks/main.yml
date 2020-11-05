@@ -88,6 +88,7 @@
     version: '{{ item.version | d(omit) }}'
     virtualenv: '{{ docker_server__virtualenv }}'
     state: '{{ item.state | d("present") }}'
+    virtualenv_site_packages: True
   with_flattened:
     - '{{ docker_server__default_pip_packages }}'
     - '{{ docker_server__pip_packages }}'
