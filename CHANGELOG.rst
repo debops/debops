@@ -99,6 +99,13 @@ General
 
 - Linux Software RAID devices are now scanned by default.
 
+:ref:`debops.mount` role
+''''''''''''''''''''''''
+
+- The role will restart the :file:`remote-fs.target` ``systemd`` unit when
+  there are defined mount points that rely on the :man:`systemd.automount(5)`
+  functionality.
+
 :ref:`debops.nfs` role
 ''''''''''''''''''''''
 
