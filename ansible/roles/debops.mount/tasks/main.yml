@@ -66,6 +66,16 @@
          (((item.opts if (item.opts is string) else item.opts | join(','))
            if item.opts|d() else 'defaults') is match(".*x-systemd.automount.*")))
 
+- name: Restart 'remote-fs.target' systemd unit
+  systemd:
+    name: 'remote-fs.target'
+    state: 'restarted'
+    daemon_reload: True
+  loop: '{{ mount__register_devices.results }}'
+  when: (mount__enabled|bool and ansible_service_mgr == 'systemd' and item is changed and
+         (((item.opts if (item.opts is string) else item.opts | join(','))
+           if item.opts|d() else 'defaults') is match(".*x-systemd.automount.*")))
+
 - name: Manage directories
   file:
     path:    '{{ item.path    | d(item.dest | d(item.name)) }}'
