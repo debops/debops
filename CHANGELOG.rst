@@ -106,6 +106,9 @@ Updates of upstream application versions
 - The role will restart the :file:`remote-fs.target` ``systemd`` unit when NFS
   shares mounted using :man:`systemd.automount(5)` functionality are defined.
 
+- The mount points for the NFS shares will be created before they are defined
+  in the :file:`/etc/fstab` to allow for automount to operate correctly.
+
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
 
