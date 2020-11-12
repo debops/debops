@@ -145,6 +145,14 @@ General
   repository instead of copying it over. The role will forcefully replace an
   existing copy with a symlink, if it already exists.
 
+:ref:`debops.postfix` role
+''''''''''''''''''''''''''
+
+- Remove trailing whitespace in lookup tables to allow for them to be used as
+  lists, for example in the ``$mynetworks`` or ``$relaydomain`` parameters.
+  This can be done with the ``default_action`` parameter defined as an empty
+  string.
+
 Fixed
 ~~~~~
 

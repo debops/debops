@@ -59,7 +59,7 @@
 {%       if element.comment|d() %}
 {{ element.comment | regex_replace('\n$','') | comment(prefix='\n', postfix='') -}}
 {%       endif %}
-{{ ('{}{:<' + (margin + auto_margin['length'])|string + '} {}').format(option_commented, element.key | d(element.name | d(element)), element.action | d(element.value | d(default_action))) }}
+{{ ('{}{:<' + (margin + auto_margin['length'])|string + '} {}').format(option_commented, element.key | d(element.name | d(element)), element.action | d(element.value | d(default_action))).rstrip() }}
 {%     endif %}
 {%   endfor %}
 {% endif %}
