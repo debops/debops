@@ -188,6 +188,12 @@ General
 - Set the default file mode for public :file:`/etc/nullmailer/*` configuration
   files to be world-readable.
 
+:ref:`debops.postfix` role
+''''''''''''''''''''''''''
+
+- Fix an issue with the version string in the Postfix fact script by removing
+  the ``\n`` character from the :command:`dpkg` command output.
+
 :ref:`debops.postgresql_server` role
 ''''''''''''''''''''''''''''''''''''
 
