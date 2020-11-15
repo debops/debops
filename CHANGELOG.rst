@@ -143,6 +143,12 @@ General
   This can be done with the ``default_action`` parameter defined as an empty
   string.
 
+:ref:`debops.secret` role
+'''''''''''''''''''''''''
+
+- Ensure that the :envvar:`secret` variable contains a real path to the
+  :file:`secret/` directory.
+
 Fixed
 ~~~~~
 
