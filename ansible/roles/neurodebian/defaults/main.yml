@@ -103,8 +103,7 @@ neurodebian__apt_key_fingerprint: 'DD95 CC43 0502 E37E F840  ACEE A5D3 2F01 2649
 neurodebian__apt_components:
   - 'main'
   - '{{ [ "contrib", "non-free" ]
-        if (ansible_local|d() and ansible_local.apt|d() and
-            (ansible_local.apt.nonfree|d())|bool)
+        if (ansible_local.apt.nonfree|d()|bool)
         else [] }}'
 
                                                                    # ]]]
