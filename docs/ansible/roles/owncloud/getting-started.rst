@@ -17,7 +17,7 @@ Getting started
 .. include:: ../../../includes/global.rst
 .. include:: includes/role.rst
    :start-line: 8
-   
+
 Database setup
 --------------
 
