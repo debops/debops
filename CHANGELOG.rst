@@ -56,6 +56,12 @@ LDAP
 
 - Default LVM2 configuration for Debian Stretch and Buster has been added.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- Install the ``future`` Python 2.7 and Python 3.x packages by default, to aid
+  in transition to Python 3.x.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 
