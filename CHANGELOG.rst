@@ -45,6 +45,15 @@ LDAP
 - Custom Apache logs can have optional conditions that specify when webserver
   requests are logged.
 
+:ref:`debops.apt_install` role
+''''''''''''''''''''''''''''''
+
+- The role now installs CPU microcode packages on physical hosts by default.
+  These firmware updates correct CPU behaviour and mitigate vulnerabilities like
+  Spectre and Meltdown. You still need to take measures to protect your virtual
+  machines; for this, take a look at the QEMU documentation:
+  https://www.qemu.org/docs/master/system/target-i386.html#important-cpu-features-for-intel-x86-hosts
+
 :ref:`debops.gitlab_runner` role
 ''''''''''''''''''''''''''''''''
 
