@@ -183,6 +183,14 @@ General
   ``text/template`` package syntax in the header comment to hide it from the
   generated file.
 
+:ref:`debops.docker_server` role
+''''''''''''''''''''''''''''''''
+
+- The role's virtual environment is no longer created by default when
+  :envvar:`docker_server__upstream` is ``False``. This does not impact existing
+  virtualenvs. You can remove ``/usr/local/lib/docker/virtualenv`` yourself if
+  you like.
+
 :ref:`debops.fail2ban` role
 '''''''''''''''''''''''''''
 
