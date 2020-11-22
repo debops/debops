@@ -194,6 +194,14 @@ LDAP
 
 - The DHCP Relay Agent functionality has been moved to :ref:`debops.dhcrelay`.
 
+:ref:`debops.docker_registry` role
+''''''''''''''''''''''''''''''''''
+
+- Turn off Nginx request body buffering. Nginx now "streams" large files
+  instead of first having to write them to temporary files before they get
+  forwarded to docker-registry for again writing them to disk.
+  This speeds up :command:`docker push` on systems with slower storage.
+
 :ref:`debops.fhs` role
 ''''''''''''''''''''''
 
