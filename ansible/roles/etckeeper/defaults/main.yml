@@ -20,18 +20,7 @@
 # Enable or disable support for :program:`etckeeper` on a given host. Disabling
 # this option does not remove existing :program:`etckeeper` installation and
 # committing changes via Ansible local facts will be disabled.
-#
-# The :command:`etckeeper` package will not be installed by default if Python
-# 2.7 environment is not present on the host, to avoid creating it.
-# See :ref:`the role documentation <etckeeper__ref_python3only>` for more
-# details.
-etckeeper__enabled: '{{ True
-                        if (ansible_local|d() and ansible_local.python|d() and
-                            (ansible_local.python.installed2|d())|bool)
-                        else (ansible_local.etckeeper.installed
-                              if (ansible_local|d() and ansible_local.etckeeper|d() and
-                                  ansible_local.etckeeper.installed is defined)
-                              else False) }}'
+etckeeper__enabled: True
 
                                                                    # ]]]
 # .. envvar:: etckeeper__installed [[[
@@ -320,3 +309,15 @@ etckeeper__push_remote: '{{ ansible_local.etckeeper.push_remote
                             else "" }}'
                                                                    # ]]]
                                                                    # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: etckeeper__apt_preferences__dependent_list [[[
+#
+# Configuration for the :ref:`debops.apt_preferences` Ansible role.
+etckeeper__apt_preferences__dependent_list:
+
+  - packages: [ 'etckeeper' ]
+    backports: [ 'buster' ]
+    reason: 'Support for Python 3'
+    by_role: 'debops.etckeeper'
