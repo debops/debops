@@ -153,6 +153,45 @@ monit__default_config:
 # be activated when Ansible local facts for specific services are present.
 monit__service_config:
 
+  - name: 'apache2'
+    content: |
+      check process apache2 with pidfile /var/run/apache2/apache2.pid
+        group www
+        group apache2
+      {% if ansible_service_mgr == 'systemd' %}
+        start program = "/bin/systemctl start apache2.service"
+        stop  program = "/bin/systemctl stop  apache2.service"
+      {% else %}
+        start program = "/etc/init.d/apache2 start"
+        stop  program = "/etc/init.d/apache2 stop"
+      {% endif %}
+        if failed port 80 protocol http request "/" then restart
+        if 5 restarts with 5 cycles then timeout
+        depend apache2_bin
+      {% if ansible_service_mgr == 'systemd' %}
+        depend apache2_unit
+      {% else %}
+        depend apache2_rc
+      {% endif %}
+
+      check file apache2_bin with path /usr/sbin/apache2
+        group apache2
+        include /etc/monit/templates/rootbin
+
+      {% if ansible_service_mgr == 'systemd' %}
+      check file apache2_unit with path /lib/systemd/system/apache2.service
+        group apache2
+        include /etc/monit/templates/rootrc
+      {% else %}
+      check file apache2_rc with path /etc/init.d/apache2
+        group apache2
+        include /etc/monit/templates/rootbin
+      {% endif %}
+    state: '{{ "present"
+               if (ansible_local|d() and ansible_local.apache|d() and
+                   (ansible_local.apache.enabled|d())|bool)
+               else "init" }}'
+
   - name: 'atd'
     content: |
       check process atd with pidfile /var/run/atd.pid
