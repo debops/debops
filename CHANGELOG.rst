@@ -71,6 +71,13 @@ LDAP
 
 - Default LVM2 configuration for Debian Stretch and Buster has been added.
 
+:ref:`debops.monit` role
+''''''''''''''''''''''''
+
+- Provide default :command:`monit` configuration for Apache 2.x webserver. It
+  will be enabled automatically when :ref:`debops.apache` Ansible local facts
+  are detected by the role.
+
 :ref:`debops.python` role
 '''''''''''''''''''''''''
 
