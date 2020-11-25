@@ -59,6 +59,7 @@ output = loads('''{{ ({
 apt_sources_list = ['/etc/apt/sources.list.dpkg-divert',
                     '/etc/apt/sources.list']
 
+components = []
 source_deb = []
 source_deb_src = []
 
@@ -106,6 +107,8 @@ try:
             if line.startswith('deb'):
                 source = line.split()
                 for component in source[3:]:
+                    if component not in components:
+                        components.append(component)
                     if component in apt_nonfree_components:
                         apt_nonfree = True
 
@@ -121,6 +124,7 @@ except Exception:
     pass
 
 output.update({
+    "components": components,
     "nonfree": apt_nonfree,
     "original_mirrors_deb": source_deb,
     "original_mirrors_deb_src": source_deb_src,
