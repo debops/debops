@@ -41,6 +41,12 @@ LDAP
 - Custom Apache logs can have optional conditions that specify when webserver
   requests are logged.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- Include a list of enabled APT repository components (``main``, ``contrib``,
+  ``non-free``, etc.) in the Ansible local fact for use by other Ansible roles.
+
 :ref:`debops.apt_install` role
 ''''''''''''''''''''''''''''''
 
