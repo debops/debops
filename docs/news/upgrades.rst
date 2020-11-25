@@ -15,6 +15,14 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+Role configuration changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The :ref:`debops.nullmailer` role has dropped the ``nullmailer__skip_mta``
+  variable. The role now decides whether or not to install nullmailer based on
+  :envvar:`nullmailer__skip_mta_packages` and
+  :envvar:`nullmailer__skip_inventory_groups`.
+
 Changes to debops.resolvconf facts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

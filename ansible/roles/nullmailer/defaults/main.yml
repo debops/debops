@@ -23,17 +23,10 @@
 #
 # Enable or disable support for ``nullmailer`` service. The role will check for
 # presence of other Mail Transport Agents on a host and disable itself
-# automatically if needed.
+# automatically if needed. The role will also disable itself if Ansible detects
+# that another MTA should be installed (e.g. when the host is part of the
+# ``debops_service_postfix`` inventory group).
 nullmailer__enabled: True
-
-                                                                   # ]]]
-# .. envvar:: nullmailer__skip_mta [[[
-#
-# The ``debops.nullmailer`` role avoids replacing the currently configured SMTP
-# server if it's detected. To disable this functionality and force the
-# ``nullmailer`` service to replace an existing MTA, set this variable to
-# ``False``.
-nullmailer__skip_mta: True
 
                                                                    # ]]]
 # .. envvar:: nullmailer__skip_mta_packages [[[
@@ -41,6 +34,14 @@ nullmailer__skip_mta: True
 # List of APT packages which, if present, will disable configuration of
 # ``nullmailer`` service.
 nullmailer__skip_mta_packages: [ 'postfix' ]
+
+                                                                   # ]]]
+# .. envvar:: nullmailer__skip_inventory_groups [[[
+#
+# List of inventory groups to skip deployment for. If the host is a member of
+# one or more of these groups, the ``nullmailer`` configuration will be
+# disabled.
+nullmailer__skip_inventory_groups: [ 'debops_service_postfix' ]
 
                                                                    # ]]]
 # .. envvar:: nullmailer__purge_mta_packages [[[

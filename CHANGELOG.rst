@@ -355,6 +355,14 @@ LDAP
   alternative NTP service implementation and ``systemd-timesyncd`` is not
   available.
 
+:ref:`debops.nullmailer` role
+'''''''''''''''''''''''''''''
+
+- The role will no longer install nullmailer if the host is also configured to
+  install Postfix. This prevents a situation where nullmailer will get installed
+  as part of the common playbook, only to be removed later on in the playbook
+  run.
+
 :ref:`debops.owncloud` role
 ''''''''''''''''''''''''''''
 
