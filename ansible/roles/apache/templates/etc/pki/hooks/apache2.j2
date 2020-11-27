@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+# Copyright (C) 2014-2017 DebOps <https://debops.org/>
+# Copyright (C) 2020-2020 Sebastian Vaisov <sebastian@vaisov.lt>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+# Reload or restart apache2 on a certificate state change
+
+set -o nounset -o pipefail -o errexit
+
+# shellcheck disable=SC1091
+source /etc/apache2/envvars
+
+apache2_config="/etc/apache2/apache2.conf"
+apache2_sites="/etc/apache2/sites-enabled"
+apache2_action="{{ apache__pki_hook_action }}"
+
+# Check if current PKI realm is used by the 'apache2' webserver
+certificate=$(grep -r "${PKI_SCRIPT_DEFAULT_CRT:-}" ${apache2_sites}/* || true)
+
+# Get list of current realm states
+read -r -a states <<< "$(echo "${PKI_SCRIPT_STATE:-}" | tr "," " ")"
+
+if [ -n "${certificate}" ] && [[ ${states[*]} ]] ; then
+
+    for state in "${states[@]}" ; do
+
+        if [ "${state}" = "changed-certificate" ] || [ "${state}" = "changed-dhparam" ] ; then
+
+            # Check if current init is systemd
+            if pidof systemd > /dev/null 2>&1 ; then
+
+                apache2_state="$(systemctl is-active apache2.service)"
+                if [ "${apache2_state}" = "active" ] ; then
+                    if /usr/sbin/apache2 -f "${apache2_config}" -t > /dev/null 2>&1 ; then
+                        systemctl "${apache2_action}" apache2.service
+                    fi
+                fi
+
+            else
+
+                apache2_pidfile="$(grep -E '^pid\s+' "${apache2_config}" | awk '{print $2}' | cut -d\; -f1)"
+                if kill -0 "$(<"${apache2_pidfile}")" > /dev/null 2>&1 ; then
+                    if /usr/sbin/apache2 -f "${apache2_config}" -t > /dev/null 2>&1 ; then
+                        /usr/sbin/service apache2 "${apache2_action}" > /dev/null
+                    fi
+                fi
+
+            fi
+
+            break
+        fi
+
+    done
+
+fi

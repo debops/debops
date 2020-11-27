@@ -3,6 +3,7 @@
 
 # .. Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
 # .. Copyright (C) 2016-2017 DebOps <https://debops.org/>
+# .. Copyright (C) 2020-2020 Sebastian Vaisov <sebastian@vaisov.lt>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _apache__ref_defaults:
@@ -109,6 +110,19 @@ apache__service_name: 'apache2'
 # The user under which Apache is running during normal operation.
 apache__user: 'www-data'
 
+                                                                   # ]]]
+# .. envvar:: apache__www [[[
+#
+# apache base path for website directories
+# It is exposed using Ansible local facts as 'ansible_local.apache.www'
+apache__www: '/srv/www'
+
+                                                                   # ]]]
+# .. envvar:: apache__public_dir_name [[[
+#
+# public folder foreach website
+# It can be overwritten per servers
+apache__public_dir_name: 'public'
                                                                    # ]]]
 # .. envvar:: apache__server_name [[[
 #
@@ -437,6 +451,7 @@ apache__dependent_snippets: {}
 # Apache snippets used internally by this role.
 apache__role_snippets:
   'local-debops_apache': True
+  'acme-challenge': '{{ apache__acme|bool | ternary("True", "False") }}'
 
   'security':
     type: 'divert'
@@ -829,6 +844,13 @@ apache__role_vhosts:
 apache__dependent_vhosts: []
 
                                                                    # ]]]
+# .. envvar:: apache__internal_servers [[[
+#
+# List of internal apache servers
+apache__internal_vhosts:
+  - '{{ apache__server_acme }}'
+
+                                                                   # ]]]
 # .. envvar:: apache__combined_vhosts [[[
 #
 # The list which holds the actual Apache virtual hosts combined from the
@@ -838,6 +860,17 @@ apache__combined_vhosts: '{{ apache__vhosts +
                              apache__host_vhosts +
                              apache__role_vhosts +
                              apache__dependent_vhosts }}'
+
+                                                                   # ]]]
+# .. envvar:: apache__server_acme [[[
+#
+# Custom server for ACME challenge queries
+apache__server_acme:
+  enabled: '{{ apache__acme_server | bool }}'
+  delete: '{{ not apache__acme_server | bool }}'
+  name: [ '{{ apache__acme_domain }}' ]
+  filename: 'acme-challenge'
+  root: '{{ apache__acme_root }}'
 
                                                                    # ]]]
 # .. envvar:: apache__vhost_type [[[
@@ -861,6 +894,28 @@ apache__vhost_allow_override: 'None'
 apache__vhost_options: [ '+FollowSymLinks' ]
                                                                    # ]]]
                                                                    # ]]]
+# .. envvar:: apache__webroot_create [[[
+#
+# Create global webroot directories?
+# Path: :file:`/srv/www/sites/*/public`.
+apache__webroot_create: True
+
+                                                                   # ]]]
+# .. envvar:: apache__webroot_owner [[[
+#
+apache__webroot_owner: 'root'
+
+                                                                   # ]]]
+# .. envvar:: apache__webroot_group [[[
+#
+apache__webroot_group: 'root'
+
+                                                                   # ]]]
+# .. envvar:: apache__webroot_mode [[[
+#
+apache__webroot_mode: '0755'
+
+                                                                   # ]]]
 # Logging [[[
 # -----------
 
@@ -877,7 +932,137 @@ apache__log_level: 'warn'
 # Refer to the `Apache LogFormat directive documentation`_ for details.
 apache__access_log_format: 'combined'
                                                                    # ]]]
+# PKI [[[
+# -------
+
+# .. envvar:: apache__pki [[[
+#
+# Enable or disable support for PKI/SSL/TLS in apache.
+# Defaults to ``True`` if :ref:`debops.pki` is enabled on the remote host.
+apache__pki: '{{ ansible_local|d() and ansible_local.pki|d() and
+               (ansible_local.pki.enabled|d() | bool) }}'
+
                                                                    # ]]]
+# .. envvar:: apache__pki_ca_realm [[[
+#
+# PKI realm to use for client CA.
+apache__pki_ca_realm: '{{ ansible_local.pki.ca_realm|d("domain") }}'
+
+                                                                   # ]]]
+# .. envvar:: apache__pki_crt [[[
+#
+# Path to default certificate, key and DH parameters file used by all apache
+# servers if not specified otherwise in server configuration. Relative to
+# 'apache__pki_realm' variable.
+apache__pki_crt: 'default.crt'
+
+                                                                   # ]]]
+# .. envvar:: apache__pki_key [[[
+#
+apache__pki_key: 'default.key'
+
+                                                                   # ]]]
+# .. envvar:: apache__pki_ca [[[
+#
+apache__pki_ca:  'CA.crt'
+
+                                                                   # ]]]
+# .. envvar:: apache__pki_trusted [[[
+#
+apache__pki_trusted: 'trusted.crt'
+
+                                                                   # ]]]
+# .. envvar:: apache__pki_hook_name [[[
+#
+# Name of the hook script which will be stored in hook directory.
+apache__pki_hook_name: 'apache2'
+
+                                                                   # ]]]
+# .. envvar:: apache__pki_hook_path [[[
+#
+# Directory with PKI hooks.
+apache__pki_hook_path: '{{ ansible_local.pki.hooks|d("/etc/pki/hooks") }}'
+
+                                                                   # ]]]
+# .. envvar:: apache__pki_hook_action [[[
+#
+# Specify how changes in PKI should affect apache, either 'reload' or 'restart'.
+apache__pki_hook_action: 'restart'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# ACME [[[
+# ----
+
+# .. envvar:: apache__acme [[[
+#
+# Enable or disable support for Automated Certificate Management Environment
+# (ACME) on all servers. This can be overridden per server using ``item.acme``
+# variable.
+apache__acme: True
+
+                                                                   # ]]]
+# .. envvar:: apache__acme_root [[[
+#
+# Global directory where ACME challenges will be served from. It's not created
+# by the role automatically and left to be managed by other Ansible roles.
+apache__acme_root: '{{ apache__www + "/sites/acme/public/.well-known/acme-challenge" }}'
+
+                                                                   # ]]]
+# .. envvar:: apache__acme_server [[[
+#
+# Enable or disable custom ACME challenge server configuration. It will answer
+# queries on a specified domain, from ``apache__acme_root`` directory. It can be
+# used for other things as well, for example to serve certificates to
+# other hosts.
+apache__acme_server: False
+
+                                                                   # ]]]
+# .. envvar:: apache__acme_domain [[[
+#
+# Specifies the DNS domain to which ACME challenge queries will be redirected if
+# they are not found on the host. The domain must exist in the DNS and a web
+# server needs to be configured to answer the queries.
+# Set to ``False`` to disable the redirect.
+apache__acme_domain: 'acme.{{ ansible_domain }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# .. envvar:: apache__privileged_group [[[
+#
+# What system group has privileged access to :program:`apache` service.
+apache__privileged_group: 'webadmins'
+
+                                                                   # ]]]
+# .. envvar:: apache__pki_acme_challenge_dir [[[
+#
+# Directory where the ACME client should store responses to ACME CA challenges.
+# By default it's defined by the ``debops.apache`` Ansible role using Ansible
+# facts.
+apache__pki_acme_challenge_dir: '{{ "/srv/www/sites/acme/public/.well-known/acme-challenge" }}'
+
+                                                                   # ]]]
+# .. envvar:: apache__pki_create_acme_challenge_dir [[[
+#
+# Whether the directory where the ACME client should store responses
+# should be created.
+apache__pki_create_acme_challenge_dir: '{{ True if (apache__acme|d() and
+                                               apache__acme|bool) else False }}'
+                                                                   # ]]]
+# .. envvar:: apache__pki_acme_user [[[
+#
+# Name of the system user account which will be used to interact with the ACME
+# Certificate Authority.
+apache__pki_acme_user: 'pki-acme'
+                                                                   # ]]]
+# .. envvar:: apache__pki_acme_group [[[
+#
+# Name of the system group which will be used to interact with the ACME
+# Certificate Authority.
+apache__pki_acme_group: 'pki-acme'
+                                                                   # ]]]
+                                                                   # ]]]
+
 # Apache Status [[[
 # -----------------
 

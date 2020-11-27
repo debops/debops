@@ -68,6 +68,24 @@
 {%   endif %}
 {% endif %}
 {% endmacro %}
+
+{% set apache_tpl_acme           = (item.acme      | default(apache__acme)) | bool %}
+{% set apache_tpl_pki_custom_realm = '' %}
+{% set apache_tpl_pki_custom_realm_list = [] %}
+{% if (apache__pki | bool and item.name | d() and (ansible_local.pki.known_realms|d())) %}
+{# TODO: Legacy code. Use debops__tpl_macros.j2 #}
+{%     for name in ([ item.name ] if item.name is string else item.name)                       %}
+{%         if name in ansible_local.pki.known_realms                                           %}
+{%             set _ = apache_tpl_pki_custom_realm_list.append(name)                           %}
+{%         elif (name.split('.')[1:] | join('.')) in ansible_local.pki.known_realms            %}
+{%             set _ = apache_tpl_pki_custom_realm_list.append(name.split('.')[1:] | join('.'))%}
+{%         endif                                                                               %}
+{%     endfor                                                                                  %}
+{% endif                                                                                       %}
+{% if apache_tpl_pki_custom_realm_list                                       %}
+{%     set apache_tpl_pki_custom_realm = apache_tpl_pki_custom_realm_list[0] %}
+{% endif                                                                     %}
+
 {% macro get_version_wrapped(content, version, compare_operator, fallback_content=False) %}{# [[[ #}
 {# This macro has not been extensivly tested yet. If it contains bugs please try to debug it if you need it.
 
@@ -263,8 +281,8 @@ SSLEngine on
 {{ get_default_tls_directives(item) }}
 {% set apache__tpl_pki_realm = item.pki_realm | d((get_realm_yaml_list(item.name, apache__pki_realm) | from_yaml)[0]) %}
 {% set apache__tpl_pki_realm_path = apache__pki_realm_path + "/" + apache__tpl_pki_realm %}
-SSLCertificateFile      {{ item.tls_crt | d(apache__tpl_pki_realm_path + "/" + (item.pki_crt|d(apache__pki_crt_filename))) | quote }}
-SSLCertificateKeyFile   {{ item.tls_key | d(apache__tpl_pki_realm_path + "/" + (item.pki_key|d(apache__pki_key_filename))) | quote }}
+SSLCertificateFile      {{ item.tls_crt | d(apache__tpl_pki_realm_path + "/" | d(apache_tpl_pki_custom_realm if apache_tpl_pki_custom_realm else apache__pki_realm) + (item.pki_crt|d(apache__pki_crt))) }}
+SSLCertificateKeyFile   {{ item.tls_key | d(apache__tpl_pki_realm_path + "/" | d(apache_tpl_pki_custom_realm if apache_tpl_pki_custom_realm else apache__pki_realm) + (item.pki_key|d(apache__pki_key))) }}
 {% if item.ocsp_stapling_enabled|d(apache__ocsp_stapling_enabled)|bool and get_openssl_version() is version_compare("0.9.8h", ">=") %}
 SSLUseStapling on
 {% endif %}
@@ -312,9 +330,14 @@ handled before all the directives from the alias module.
 {% if module == 'alias' %}
 Redirect {{ code|string }} "{{ from }}" "{{ to }}"
 {% elif module == 'rewrite' %}
-<IfModule mod_rewrite>
+RewriteEngine On
+{% if item.acme|d(False)|bool %}
+RewriteCond %{REQUEST_URI} "!/.well-known/acme-challenge/"
 RewriteRule "^{{ from }}?(.*)" "{{ to }}$1" [L,R={{ code }},NE]
-</IfModule>
+Include conf-enabled/acme-challenge.conf
+{% else %}
+RewriteRule "^{{ from }}?(.*)" "{{ to }}$1" [L,R={{ code }},NE]
+{% endif %}
 {% endif %}
 {% endmacro %}
 {% macro get_alias(url_path, fs_directory) %}{# [[[ #}

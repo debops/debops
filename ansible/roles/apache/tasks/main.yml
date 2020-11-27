@@ -3,6 +3,7 @@
 
 # Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
 # Copyright (C) 2016-2017 DebOps <https://debops.org/>
+# Copyright (C) 2020-2020 Sebastian Vaisov <sebastian@vaisov.lt>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Check for supported Ansible version
@@ -167,6 +168,75 @@
   with_flattened: '{{ apache__combined_vhosts }}'
   tags: [ 'role::apache:vhosts' ]
 
+- name: Create global webroot directories if allowed
+  file:
+    path: '{{ item.root|d(
+              "{}/sites/{}/{}".format(
+                apache__www + ("/" + item.owner if item.owner | d() else ""),
+                (item.name if item.name is string else item.name[0]) | d("default"),
+                item.public_dir_name | d(apache__public_dir_name))
+              ) }}'
+    state: directory
+    owner: '{{ item.owner | d(apache__webroot_owner) }}'
+    group: '{{ item.group | d(item.owner | d(apache__webroot_group)) }}'
+    mode: '{{ item.mode | d(apache__webroot_mode) }}'
+  with_flattened:
+    - '{{ apache__vhosts }}'
+    - '{{ apache__default_vhost }}'
+    - '{{ apache__group_vhosts }}'
+    - '{{ apache__host_vhosts }}'
+    - '{{ apache__role_vhosts }}'
+    - '{{ apache__dependent_vhosts }}'
+    - '{{ apache__internal_vhosts }}'
+    - '{{ apache_vhosts | d([]) }}'
+    - '{{ apache_default_vhost | d([]) }}'
+    - '{{ apache_group_vhosts | d([]) }}'
+    - '{{ apache_host_vhosts | d([]) }}'
+    - '{{ apache_role_vhosts | d([]) }}'
+    - '{{ apache__internal_vhosts | d([]) }}'
+    - '{{ apache_dependent_vhosts | d([]) }}'
+  when: ((item.webroot_create|d(apache__webroot_create)|bool) and
+         item.state|d('present') != 'absent')
+
+- name: Create ACME challenge directory
+  file:
+    path: '{{ apache__pki_acme_challenge_dir }}'
+    state: 'directory'
+    owner: '{{ apache__pki_acme_user }}'
+    group: '{{ apache__pki_acme_group }}'
+    mode: '0755'
+  when: apache__pki_create_acme_challenge_dir
+
+- name: Make sure that PKI hook directory exists
+  file:
+    path: '{{ apache__pki_hook_path }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: (apache__pki|bool and apache__deploy_state in [ 'present' ])
+
+- name: Manage PKI apache hook
+  template:
+    src: 'etc/pki/hooks/apache2.j2'
+    dest: '{{ apache__pki_hook_path + "/" + apache__pki_hook_name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: (apache__pki|bool and apache__deploy_state in [ 'present' ])
+
+- name: Ensure the PKI apache hook is absent
+  file:
+    path: '{{ apache__pki_hook_path }}'
+    state: 'absent'
+  when: (apache__deploy_state in [ 'absent' ])
+
+- name: Ensure that webadmins privileged group exists
+  group:
+    name: '{{ apache__privileged_group }}'
+    state: 'present'
+    system: True
+  when: (apache__deploy_state in [ 'present' ])
 
 # Manage Apache modules, part 2 [[[1
 - name: Detect if the rewrite module has been used in the active configuration

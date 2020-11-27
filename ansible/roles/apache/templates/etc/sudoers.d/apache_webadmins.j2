@@ -1,0 +1,22 @@
+{
+ # Copyright (C) 2014-2017 DebOps <https://debops.org/>
+ # Copyright (C) 2020-2020 Sebastian Vaisov <sebastian@vaisov.lt>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+Cmnd_Alias APACHE_RELOAD = /bin/systemctl reload apache2.service
+
+Cmnd_Alias APACHE_STATUS = /bin/systemctl status apache2.service
+
+Cmnd_Alias APACHE_STOP = /bin/systemctl stop apache2.service
+
+Cmnd_Alias APACHE_START = /bin/systemctl start apache2.service
+
+Cmnd_Alias APACHE_RESTART = /bin/systemctl restart apache2.service
+
+%{{ apache__privileged_group }} ALL = (root) NOPASSWD: APACHE_RELOAD
+%{{ apache__privileged_group }} ALL = (root) NOPASSWD: APACHE_STATUS
+%{{ apache__privileged_group }} ALL = (root) NOPASSWD: APACHE_STOP
+%{{ apache__privileged_group }} ALL = (root) NOPASSWD: APACHE_START
+%{{ apache__privileged_group }} ALL = (root) NOPASSWD: APACHE_RESTART
