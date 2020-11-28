@@ -113,6 +113,9 @@ General
   [recommends](https://github.com/pyca/cryptography/blob/master/docs/faq.rst#why-use-cryptography)
   doing so.
 
+- The official DebOps project logo has been replaced with a new design, created
+  by Tasos Alvas. Thanks!
+
 :ref:`debops.grub` role
 '''''''''''''''''''''''
 
