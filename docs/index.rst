@@ -124,6 +124,7 @@ infrastructure environments.
    meta/philosophy
    meta/timeline
    meta/references
+   meta/logo
    meta/other-projects
    meta/debops-oid-registry
    debops-api/index
