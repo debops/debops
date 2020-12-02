@@ -56,7 +56,7 @@ apt_install__archive_areas_map:
 # List of package archive areas which are currently available. This list is
 # used to conditionally enable packages for installation, depending on
 # availability of a given archive area.
-apt_install__archive_areas: '{{ ansible_local.apt.archive_areas
+apt_install__archive_areas: '{{ ansible_local.apt.components
                                 |d(apt_install__archive_areas_map[apt_install__distribution] | d([])) }}'
 
                                                                    # ]]]
@@ -250,16 +250,18 @@ apt_install__conditional_packages:
 
   - name: 'irqbalance'
     whitelist: '{{ apt_install__conditional_whitelist_packages }}'
-    state: '{{ "present" if (ansible_processor_cores >= 2 and
-                             (ansible_virtualization_role is undefined or
-                              ansible_virtualization_role not in [ "guest" ]))
-                         else "absent" }}'
+    state: '{{ "present"
+               if (ansible_processor_cores >= 2 and
+                   (ansible_virtualization_role is undefined or
+                    ansible_virtualization_role not in [ "guest" ]))
+               else "absent" }}'
 
   - name: 'uptimed'
     whitelist: '{{ apt_install__conditional_whitelist_packages }}'
-    state: '{{ "present" if (ansible_virtualization_role is undefined or
-                              ansible_virtualization_role not in [ "guest" ])
-                         else "absent" }}'
+    state: '{{ "present"
+               if (ansible_virtualization_role is undefined or
+                   ansible_virtualization_role not in [ "guest" ])
+               else "absent" }}'
 
   - name: 'libpam-systemd'
     whitelist: '{{ apt_install__conditional_whitelist_packages }}'
@@ -279,15 +281,17 @@ apt_install__conditional_packages:
   - name: 'gnupg-curl'
     # This package is needed when you want to access HKPS keyservers.
     whitelist: '{{ apt_install__conditional_whitelist_packages }}'
-    state: '{{ "present" if ansible_distribution_release in
-               [ "wheezy", "jessie", "precise", "trusty", "xenial" ]
+    state: '{{ "present"
+               if ansible_distribution_release in
+                  [ "wheezy", "jessie", "precise", "trusty", "xenial" ]
                else "absent" }}'
 
   - name: 'needrestart'
     # Install the package on newer OS releases.
     whitelist: '{{ apt_install__conditional_whitelist_packages }}'
-    state: '{{ "present" if ansible_distribution_release not in
-               [ "precise" ] else "absent" }}'
+    state: '{{ "present"
+               if ansible_distribution_release not in [ "precise" ]
+               else "absent" }}'
 
   - name: 'ranger'
     # Ranger is a console file manager written in Python. In Debian, ranger package
@@ -316,32 +320,57 @@ apt_install__conditional_packages:
 # list of packages will ensure that the required firmware is installed.
 apt_install__firmware_packages:
 
+  - name: 'amd64-microcode'
+    # Non-free microcode firmware for AMD CPUs. These patches mitigate security
+    # issues like Spectre and fix other types of incorrect processor behaviour.
+    # The package only needs to be installed on physical machines. To protect
+    # virtual machines, be sure to set the correct CPU flags in QEMU:
+    # https://www.qemu.org/docs/master/system/target-i386.html#important-cpu-features-for-intel-x86-hosts
+    distribution: [ 'Debian', 'Devuan', 'Ubuntu' ]
+    areas: '{{ [ "main" ]
+               if ansible_distribution in [ "Ubuntu" ]
+               else [ "non-free" ] }}'
+    state: '{{ "present"
+               if ansible_virtualization_role == "host" and
+                  "AuthenticAMD" in ansible_processor
+               else "absent" }}'
+
   - name: 'firmware-linux-free'
-    distribution: 'Debian'
+    distribution: [ 'Debian' ]
     state: '{{ "present" if (ansible_form_factor in [ "Rack Mount Chassis" ])
                          and (ansible_virtualization_role is undefined or
                               ansible_virtualization_role not in [ "guest" ])
                          else "absent" }}'
 
   - name: 'firmware-linux-nonfree'
-    distribution: 'Debian'
-    area: 'non-free'
+    distribution: [ 'Debian' ]
+    areas: [ 'non-free' ]
     state: '{{ "present" if (ansible_form_factor in [ "Rack Mount Chassis" ])
                              and (ansible_virtualization_role is undefined or
                               ansible_virtualization_role not in [ "guest" ])
                          else "absent" }}'
 
+  - name: 'intel-microcode'
+    # Same as amd64-microcode, but for Intel CPUs.
+    distribution: [ 'Debian', 'Devuan', 'Ubuntu' ]
+    areas: '{{ [ "main" ]
+               if ansible_distribution in [ "Ubuntu" ]
+               else [ "non-free" ] }}'
+    state: '{{ "present" if ansible_virtualization_role == "host" and
+                            "GenuineIntel" in ansible_processor
+                         else "absent" }}'
+
   - name: 'linux-firmware'
-    distribution: 'Ubuntu'
+    distribution: [ 'Ubuntu' ]
     state: '{{ "present" if (ansible_form_factor in [ "Rack Mount Chassis" ])
                              and (ansible_virtualization_role is undefined or
                               ansible_virtualization_role not in [ "guest" ])
                          else "absent" }}'
 
   - name: 'linux-firmware-nonfree'
-    distribution: 'Ubuntu'
+    distribution: [ 'Ubuntu' ]
     release: [ 'precise', 'trusty', 'wily' ]
-    area: 'multiverse'
+    areas: [ 'multiverse' ]
     state: '{{ "present" if (ansible_form_factor in [ "Rack Mount Chassis" ])
                              and (ansible_virtualization_role is undefined or
                               ansible_virtualization_role not in [ "guest" ])
