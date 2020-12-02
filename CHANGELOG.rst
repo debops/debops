@@ -330,6 +330,12 @@ General
 - Ensure that the ``ansible_connection`` variable has a default value if it's
   not defined in the Ansible inventory.
 
+:ref:`debops.tinc` role
+'''''''''''''''''''''''
+
+- Fixed an issue with the role where setting :envvar:`tinc__modprobe` variable
+  to ``False`` did not turn off support for loading required kernel modules.
+
 
 `debops v2.1.2`_ - 2020-08-30
 -----------------------------
