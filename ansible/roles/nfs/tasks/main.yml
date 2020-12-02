@@ -30,6 +30,19 @@
         ansible_distribution == 'Debian' and
         ansible_distribution_release in [ 'wheezy', 'jessie' ]
 
+- name: Ensure that the NFS mount points exist
+  file:
+    path:  '{{ item.path }}'
+    owner: '{{ item.owner | d("root") }}'
+    group: '{{ item.group | d("root") }}'
+    mode:  '{{ item.mode  | d("0755") }}'
+    state: 'directory'
+  with_flattened:
+    - '{{ nfs__shares }}'
+    - '{{ nfs__group_shares }}'
+    - '{{ nfs__host_shares }}'
+  when: item.path|d() and item.src|d() and item.state|d('mounted') == 'present'
+
 - name: Manage NFS mount points
   mount:
     name:   '{{ item.path }}'
@@ -44,17 +57,14 @@
     - '{{ nfs__shares }}'
     - '{{ nfs__group_shares }}'
     - '{{ nfs__host_shares }}'
+  register: nfs__register_devices
   when: item.path|d() and item.src|d()
 
-- name: Ensure that the NFS mount points exist
-  file:
-    path:  '{{ item.path }}'
-    owner: '{{ item.owner | d("root") }}'
-    group: '{{ item.group | d("root") }}'
-    mode:  '{{ item.mode  | d("0755") }}'
-    state: 'directory'
-  with_flattened:
-    - '{{ nfs__shares }}'
-    - '{{ nfs__group_shares }}'
-    - '{{ nfs__host_shares }}'
-  when: item.path|d() and item.src|d() and item.state|d('mounted') == 'present'
+- name: Restart 'remote-fs.target' systemd unit
+  systemd:
+    name: 'remote-fs.target'
+    state: 'restarted'
+    daemon_reload: True
+  loop: '{{ nfs__register_devices.results }}'
+  when: (ansible_service_mgr == 'systemd' and item is changed and
+         (lookup("template", "lookup/mount_options.j2") is match(".*x-systemd.automount.*")))
