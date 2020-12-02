@@ -382,6 +382,14 @@ LDAP
   ``$PATH`` variable so that the OS version is used without issues. The script
   is now also symlinked into place instead of copied over.
 
+:ref:`debops.postgresql_server` role
+''''''''''''''''''''''''''''''''''''
+
+- Rename the ``wal_keep_segments`` PostgreSQL configuration option to
+  ``wal_keep_size`` on PostgreSQL 13 and later to avoid issues with starting
+  the database service. You might need to update the inventory configuration if
+  you use this parameter.
+
 :ref:`debops.rsnapshot` role
 ''''''''''''''''''''''''''''
 
