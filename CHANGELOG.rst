@@ -366,6 +366,11 @@ LDAP
   simulate creating a filesystem, but this failed when the underlying LVM volume
   did not actually exist (which is to be expected when running in check mode).
 
+- Made default behaviour match the documentation: the role now automatically
+  takes care of mounting a filesystem on an LVM volume if the mount point is
+  specified with ``item.mount``. This previously required setting the
+  ``item.fs`` parameter to ``True`` as well.
+
 :ref:`debops.nslcd` role
 ''''''''''''''''''''''''
 

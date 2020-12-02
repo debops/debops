@@ -85,5 +85,5 @@
   with_items: '{{ lvm__logical_volumes }}'
   when: lvm__logical_volumes|d(False) and
         item.vg|d() and item.lv|d() and item.size|d() and
-        item.fs|d() and item.mount|d() and
+        item.fs|d(True) and item.mount|d() and
         item.state|d('present') != 'absent'
