@@ -1,5 +1,6 @@
 .. Copyright (C) 2013-2018 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
 .. Copyright (C) 2014-2018 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
@@ -135,6 +136,18 @@ List of parameters related to the entire PKI realm:
   needed, but support for ACME needs to be present on the remote host for it to
   work (see :envvar:`pki_acme_install` variable).
 
+``acme_ca``
+  Optional, name of the ACME API endpoint used by the ACME client. Defaults to
+  :envvar:`pki_acme_ca`.
+
+``acme_ca_api``
+  Optional, the URL of the ACME API endpoint. Defaults to the value in
+  :envvar:`pki_acme_ca_api_map` (whose key defaults to ``item.acme_ca``).
+
+``acme_challenge_dir``
+  Optional, directory where the ACME client should store responses to ACME CA
+  challenges. Defaults to :envvar:`pki_acme_challenge_dir`.
+
 ``acme_contacts``
   Optional, list of (mailto:) URLs that the ACME server can use to contact you
   for issues related to your account. For example, the server may wish to
@@ -183,6 +196,10 @@ List of parameters related to the entire PKI realm:
   the files in the :file:`private/` realm directory. The access will be granted
   using filesystem ACL table. If not specified, the list defined in
   :envvar:`pki_private_file_acl_groups` will be applied.
+
+``realm_key_size``
+  Optional. The size of the private key that is to be generated. Defaults to
+  :envvar:`pki_realm_key_size`.
 
 ``dhparam``
   Optional, boolean. Enable or disable support for adding the Diffie-Hellman
@@ -285,24 +302,62 @@ pki_authorities
 The set of :envvar:`pki_authorities` lists can be used to define internal
 Certificate Authorities managed on an Ansible Controller.
 
-List of supported parameters (incomplete):
+List of supported parameters:
+
+``name``
+  Required, a short name of the CA (used for role internals).
+
+``subdomain``
+  Required, the subdomain to be prepended to ``item.domain``.
+
+``subject``
+  Required, list of the X.509 subject elements of the CA certificate.
+
+``alt_authority``
+  Optional, ``item.name`` of a cross-signed CA. Only use this if the alternative
+  CA certificate can also be used to form a trust chain. The alternative CA
+  certificates will be stored in the PKI realm directory with the ``alt_*.pem``
+  filename.
+
+``ca_sign_days``
+  Optional, the number of days that the intermediate CA certificate will be
+  valid. If left empty, this value will be calculated by multiplying
+  :envvar:`pki_default_sign_base` with :envvar:`pki_default_ca_sign_multiplier`.
+
+``cert_sign_days``
+  Optional, the number of days that the client/server certificates will be
+  valid. If left empty, this value will be calculated by multiplying
+  :envvar:`pki_default_sign_base` with :envvar:`pki_default_cert_sign_multiplier`.
 
 ``crl``
-  The CRL URL to include in certificates which can be used for certificate
-  status checking. The default is ``True`` which will result in ``http://\$name.\$domain_suffix/crl/``.
-  It can be set to ``False`` to not include a CRL URL in certificates.
-  Any other value (not matching :regexp:`^(?:[Tt]rue|[Ff]alse)$`) will be included as is as CRL URL.
+  Optional, the CRL URL to include in certificates which can be used for
+  certificate status checking. The default is ``True`` which will result in
+  ``http://\$name.\$domain_suffix/crl/``. It can be set to ``False`` to not
+  include a CRL URL in certificates. Any other value (not matching
+  :regexp:`^(?:[Tt]rue|[Ff]alse)$`) will be included as is as CRL URL.
+
+``domain``
+  Optional, the DNS domain used for the CA. Defaults to :envvar:`pki_ca_domain`.
+
+``issuer_name``
+  Optional, name of the higher-authority CA (``item.name``) that signs this CA.
+  Defaults to an empty string, meaning that this CA is self-signed (and can thus
+  become the root CA).
+
+``key_size``
+  Optional, size of the CA private key in bits. Defaults to ``4096``.
 
 ``ocsp``
-  The OCSP URL to include in certificates which can be used for certificate
-  status checking. The default is ``True`` which will result in ``http://\$name.\$domain_suffix/ocsp/``.
-  It can be set to ``False`` to not include a OCSP URL in certificates.
-  Any other value (not matching :regexp:`^(?:[Tt]rue|[Ff]alse)$`) will be included as is as OCSP URL.
+  Optional, the OCSP URL to include in certificates which can be used for
+  certificate status checking. The default is ``True`` which will result in
+  ``http://\$name.\$domain_suffix/ocsp/``. It can be set to ``False`` to not
+  include a OCSP URL in certificates. Any other value (not matching
+  :regexp:`^(?:[Tt]rue|[Ff]alse)$`) will be included as is as OCSP URL.
 
 ``name_constraints``
-  The X.509 Name Constraints certificate extension to include in certificates
-  which will be used during certificate verification to ensure that the CA is
-  authorized to issue a certificate for the name in question.
+  Optional, the X.509 Name Constraints certificate extension to include in
+  certificates which will be used during certificate verification to ensure that
+  the CA is authorized to issue a certificate for the name in question.
   The default is ``True`` which will result in ``critical, permitted;DNS:${config_domain}``
   (the 'critical, ' part is omitted when ``item.name_constraints_critical`` is
   set to ``False``). It can be set to ``False`` to not include X.509 Name
@@ -310,9 +365,44 @@ List of supported parameters (incomplete):
   will be included as is as X.509 Name Constraint.
 
 ``name_constraints_critical``
-  Boolean, for specifying whether to mark the default Name Constraints
+  Optional, boolean for specifying whether to mark the default Name Constraints
   extension as critical or not. The default is ``True``. The CA/Browser forum
   recommends this to be enabled (REQUIRING X.509 libraries to support it or to
   return an error), but mentions that the extension may be disabled for
   compatibility reasons
   (ref: `Baseline Requirements for the Issuance and Management of Publicly-Trusted Certificates (v1.6.4) <https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.6.4.pdf>`_).
+
+``root_sign_days``
+  Optional, the number of days that the root CA certificate will be valid. If
+  left empty, this value will be calculated by multiplying
+  :envvar:`pki_default_sign_base` with :envvar:`pki_default_root_sign_multiplier`.
+
+``system_ca``
+  Optional, boolean that specifies whether the root CA certificate will be added
+  to the system CA certificates. This happens by creating a symlink in the
+  :file:`ansible/secret/pki/ca-certificates` directory tree. Defaults to
+  ``True``.
+
+``type``
+  Optional, the CA type. Either ``root``, ``service``, ``server`` or an empty
+  string. Sets various CA type specific options when running the pki-authority
+  script. These options are not documented, you will have to read the
+  pki-authority script to find out what exactly they do.
+
+  Example:
+
+  .. code-block:: yaml
+
+     pki_authorities:
+
+       - name: 'root'
+         subdomain: 'root-ca'
+         subject: [ 'c={{ pki_ca_country }}', 'o={{ pki_ca_organization }}',
+                    'cn={{ pki_ca_organization }} Internal Root CA' ]
+         key_size: '4096'
+         crl: False
+         ocsp: False
+         name_constraints: '{{ "permitted;DNS:example.net,"
+                               + "permitted;DNS:.example.net,"
+                               + "permitted;DNS:example.com,"
+                               + "permitted;DNS:.example.com" }}'
