@@ -116,7 +116,7 @@ docker_server__mandatory_packages:
 # List of base packages to install with Docker.
 docker_server__base_packages:
   - "aufs-tools"
-  - '{{ [ "virtualenv" ] if (ansible_distribution_release not in ["trusty", "wheezy"]) else [] }}'
+  - '{{ [ "virtualenv" ] if docker_server__install_virtualenv else [] }}'
   - "bridge-utils"
   - '{{ [ "cgroup-lite" ] if (ansible_distribution_release in ["trusty"]) else [] }}'
   - '{{ [] if docker_server__upstream|bool else "docker-compose" }}'
@@ -144,7 +144,7 @@ docker_server__version: '{{ ansible_local.docker_server.version|d("0.0.0") }}'
 # .. envvar:: docker_server__install_virtualenv [[[
 #
 # Whether to install Python virtualenv for Docker.
-docker_server__install_virtualenv: True
+docker_server__install_virtualenv: '{{ docker_server__upstream }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__virtualenv [[[
@@ -175,12 +175,10 @@ docker_server__virtualenv_python_symlink: '/usr/local/bin/docker-python'
 docker_server__default_pip_packages:
 
   - name: 'docker'
-    state: '{{ "present" if docker_server__upstream|bool else "absent" }}'
 
   - name: 'docker-compose'
     path: '/usr/local/bin/docker-compose'
     src:  '{{ docker_server__virtualenv + "/bin/docker-compose" }}'
-    state: '{{ "present" if docker_server__upstream|bool else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__pip_packages [[[
