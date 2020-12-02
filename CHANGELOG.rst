@@ -455,6 +455,12 @@ LDAP
   automatically due to the :file:`mailservice.schema` being loaded into the
   database.
 
+:ref:`debops.snmpd` role
+''''''''''''''''''''''''
+
+- Don't create or modify the home directory of the :command:`snmpd` UNIX
+  account to avoid issues on Ubuntu 20.04.
+
 :ref:`debops.system_users` role
 '''''''''''''''''''''''''''''''
 
