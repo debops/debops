@@ -31,7 +31,6 @@ RUN apt-get -q update \
        python3-dnspython \
        python3-future \
        python3-ldap \
-       python3-openssl \
        python3-pip \
        python3-wheel \
        python3-setuptools \
