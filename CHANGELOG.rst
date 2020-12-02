@@ -169,6 +169,12 @@ General
   servers will now retry the download operation a few times in case of network
   issues.
 
+:ref:`debops.php` role
+''''''''''''''''''''''
+
+- Add Debian Bullseye OS release to supported releases, to allow installation
+  of PHP packages.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
