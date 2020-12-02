@@ -83,6 +83,21 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
 {%     if runner.output_limit|d() %}
   output_limit = {{ runner.output_limit }}
 {%     endif %}
+{%     if runner.pre_clone_script|d() %}
+  pre_clone_script = '''
+{{ runner.pre_clone_script | indent(4, true) | regex_replace("((?m)^\s*$|\n$)", "") }}
+  '''
+{%     endif %}
+{%     if runner.pre_build_script|d() %}
+  pre_build_script = '''
+{{ runner.pre_build_script | indent(4, true) | regex_replace("((?m)^\s*$|\n$)", "") }}
+  '''
+{%     endif %}
+{%     if runner.post_build_script|d() %}
+  post_build_script = '''
+{{ runner.post_build_script | indent(4, true) | regex_replace("((?m)^\s*$|\n$)", "") }}
+  '''
+{%     endif %}
 {%     if runner.builds_dir|d() %}
   builds_dir = "{{ runner.builds_dir }}"
 {%     endif %}
