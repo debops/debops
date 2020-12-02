@@ -167,6 +167,14 @@ General
 - Set the default file mode for public :file:`/etc/nullmailer/*` configuration
   files to be world-readable.
 
+:ref:`debops.postgresql_server` role
+''''''''''''''''''''''''''''''''''''
+
+- Rename the ``wal_keep_segments`` PostgreSQL configuration option to
+  ``wal_keep_size`` on PostgreSQL 13 and later to avoid issues with starting
+  the database service. You might need to update the inventory configuration if
+  you use this parameter.
+
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
 
