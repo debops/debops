@@ -67,10 +67,7 @@ ipxe__debian_netboot_enabled: True
 # Enable or disable inclusion of the non-free firmware packages in the Debian
 # Installer images. The non-free firmware might be required to use certain
 # hardware (network cards, storage drivers, etc.).
-ipxe__debian_netboot_firmware: '{{ ansible_local.apt.nonfree
-                                   if (ansible_local|d() and ansible_local.apt|d() and
-                                       ansible_local.apt.nonfree is defined)
-                                   else False }}'
+ipxe__debian_netboot_firmware: '{{ ansible_local.apt.nonfree|d()|bool }}'
 
                                                                    # ]]]
 # .. envvar:: ipxe__debian_netboot_src [[[

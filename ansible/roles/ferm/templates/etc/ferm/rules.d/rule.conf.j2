@@ -52,10 +52,10 @@
 {%       set _ = ferm__tpl_config['daddr'].extend(([ config.daddr ] if config.daddr is string else config.daddr)) %}
 {%   endif %}
 {%   if config.sport|d() %}
-{%       set _ = ferm__tpl_config['sport'].extend(([ config.sport ] if config.sport is string else config.sport)) %}
+{%       set _ = ferm__tpl_config['sport'].extend([ config.sport ] | flatten | map("string")) %}
 {%   endif %}
 {%   if config.dport|d() %}
-{%       set _ = ferm__tpl_config['dport'].extend(([ config.dport ] if config.dport is string else config.dport)) %}
+{%       set _ = ferm__tpl_config['dport'].extend([ config.dport ] | flatten | map("string")) %}
 {%   endif %}
 {%   if config.recent_name|d() %}
 {%     set _ = ferm__tpl_config.update({'recent_name': config.recent_name}) %}
