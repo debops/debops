@@ -220,6 +220,13 @@ LDAP
   virtualenvs. You can remove ``/usr/local/lib/docker/virtualenv`` yourself if
   you like.
 
+:ref:`debops.etckeeper` role
+''''''''''''''''''''''''''''
+
+- The role now installs etckeeper on all hosts by default, not just on hosts
+  that have a Python 2 environment. etckeeper is also installed from
+  buster-backports instead of the main Debian 10 repository.
+
 :ref:`debops.fhs` role
 ''''''''''''''''''''''
 
@@ -2151,8 +2158,7 @@ User management
 ''''''''''''''''''''''''''''
 
 - The installation of :command:`etckeeper` will be disabled by default in
-  Python 3.x-only environments. See :ref:`role documentation
-  <etckeeper__ref_python3only>` for more details.
+  Python 3.x-only environments.
 
 :ref:`debops.gitlab` role
 '''''''''''''''''''''''''
