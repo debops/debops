@@ -380,7 +380,6 @@ EOF
         python-netaddr \
         python-nose2 \
         python-nose2-cov \
-        python-openssl \
         python-passlib \
         python-pip \
         python-pycodestyle \
@@ -401,7 +400,6 @@ EOF
         python3-netaddr \
         python3-nose2 \
         python3-nose2-cov \
-        python3-openssl \
         python3-passlib \
         python3-pip \
         python3-pycodestyle \

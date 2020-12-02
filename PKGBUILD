@@ -29,7 +29,6 @@ depends=('python' 'python-distro' 'python-future' 'util-linux' 'encfs' 'gnupg')
 optdepends=(
     'ansible: required to run playbooks and roles'
     'python-dnspython: required by Ansible "dig" module'
-    'python-pyopenssl: required by "openssl_*" Ansible modules'
     'python-netaddr: required by Ansible "ipaddr" filter plugin'
     'python-ldap: required by Ansible "ldap_*" modules'
     'python-passlib: required by Ansible "password" lookup plugin')
