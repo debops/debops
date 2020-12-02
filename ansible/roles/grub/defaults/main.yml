@@ -148,7 +148,8 @@ grub__default_configuration:
   # Activate GRUB serial console support when requested
   - name: 'terminal'
     comment: 'Uncomment to disable graphical terminal (grub-pc only)'
-    value: 'serial'
+    value: 'console serial'
+    quote: True
     state: '{{ "present" if grub__serial_console|bool else "ignore" }}'
 
   # Specify additional parameters for the 'serial' GRUB command
@@ -156,11 +157,13 @@ grub__default_configuration:
     value: 'serial --unit={{ grub__serial_console_unit }} --speed={{ grub__serial_console_speed }} --word=8 --parity=no --stop=1'
     state: '{{ "present" if grub__serial_console|bool else "ignore" }}'
 
-  # Configure serial console in Linux kernel when requested
+  # Configure serial console in Linux kernel when requested. The last device
+  # will be used for /dev/console, which has been set to tty0 (the foreground
+  # virtual console) to enable output to the VGA console as well.
   - name: 'cmdline_linux_default'
     value:
-      - 'console=tty0'
       - '{{ "console=ttyS{},{}n8".format(grub__serial_console_unit, grub__serial_console_speed) }}'
+      - 'console=tty0'
     state: '{{ "present" if grub__serial_console|bool else "ignore" }}'
 
   # Activate custom hack for menu entry access restrictions when requested
