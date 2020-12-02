@@ -359,6 +359,13 @@ LDAP
 - Fixed multiple issues with adding and updating hosts to the LDAP directory
   when these hosts were configured for network bonding.
 
+:ref:`debops.lvm` role
+''''''''''''''''''''''
+
+- Fixed an issue where the role would fail in check mode. The role tries to
+  simulate creating a filesystem, but this failed when the underlying LVM volume
+  did not actually exist (which is to be expected when running in check mode).
+
 :ref:`debops.nslcd` role
 ''''''''''''''''''''''''
 
