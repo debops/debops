@@ -55,6 +55,7 @@
   when: lvm__logical_volumes|d(False) and
         item.vg|d() and item.lv|d() and item.size|d() and
         item.state|d('present') != 'absent'
+  register: lvm__register_logical_volumes
 
 - name: Manage filesystems
   filesystem:
@@ -67,7 +68,9 @@
   when: lvm__logical_volumes|d(False) and
         item.vg|d() and item.lv|d() and item.size|d() and
         item.state|d('present') != 'absent' and
-        ((item.mount|d() and item.fs|d(True)) or item.fs|d())
+        ((item.mount|d() and item.fs|d(True)) or item.fs|d()) and
+        (not ansible_check_mode or
+         (ansible_check_mode and lvm__register_logical_volumes is not changed))
 
 - name: Manage mount points
   mount:
