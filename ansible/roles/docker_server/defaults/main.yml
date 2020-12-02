@@ -40,11 +40,7 @@ docker_server__distribution_release: '{{ ansible_local.core.distribution_release
 # Note that switching from upstream to default on one host, may not always
 # work. You may need to manually remove the upstream version and configuration.
 docker_server__upstream: '{{ ansible_local.docker_server.upstream
-                             if (ansible_local|d() and ansible_local.docker_server|d() and
-                                 ansible_local.docker_server.upstream is defined)
-                             else (True
-                                   if (docker_server__distribution_release == "stretch")
-                                   else False) }}'
+                             |d(docker_server__distribution_release == "stretch") }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__upstream_edition [[[
@@ -70,7 +66,7 @@ docker_server__upstream_key: '{{ "9DC858229FC7DD38854AE2D88D81803C0EBFCD88"
                                                                    # ]]]
 # .. envvar:: docker_server__upstream_packagename [[[
 #
-# The full docker package name to be installed if installing from upstream.
+# The full Docker package name to be installed if installing from upstream.
 docker_server__upstream_packagename: '{{ "docker-" + docker_server__upstream_edition }}'
 
                                                                    # ]]]
@@ -153,7 +149,7 @@ docker_server__install_virtualenv: True
                                                                    # ]]]
 # .. envvar:: docker_server__virtualenv [[[
 #
-# Absolute path of the location of Docker virtualenv.
+# Root path of the Docker virtualenv.
 docker_server__virtualenv: '/usr/local/lib/docker/virtualenv'
 
                                                                    # ]]]
@@ -226,10 +222,9 @@ docker_server__fixed_cidr: ''
 # List of IP addresses of nameservers used by Docker. By default they
 # are gathered from the resolvconf configuration using Ansible facts.
 docker_server__dns_nameserver: '{{ ansible_local.resolvconf.upstream_nameservers
-                                   if (ansible_local.resolvconf.upstream_nameservers|d())
-                                   else (ansible_dns.nameservers
-                                         if ("127.0.0.1" not in ansible_dns.nameservers)
-                                         else []) }}'
+                                   |d(ansible_dns.nameservers
+                                      if ("127.0.0.1" not in ansible_dns.nameservers)
+                                      else []) }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__dns_search [[[
@@ -302,19 +297,19 @@ docker_server__custom_ports: []
 
 # .. envvar:: docker_server__env_http_proxy [[[
 #
-# Http Proxy settings for the docker daemon
+# Http Proxy settings for the Docker daemon
 docker_server__env_http_proxy: '{{ ansible_env.http_proxy | d() }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__env_https_proxy [[[
 #
-# Https Proxy settings for the docker daemon
+# Https Proxy settings for the Docker daemon
 docker_server__env_https_proxy: '{{ ansible_env.https_proxy | d() }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__env_no_proxy [[[
 #
-# No Proxy settings for the docker daemon
+# No Proxy settings for the Docker daemon
 docker_server__env_no_proxy: '{{ ansible_env.no_proxy | d() }}'
 
                                                                    # ]]]
@@ -343,20 +338,20 @@ docker_server__labels: {}
                                                                    # ]]]
 # .. envvar:: docker_server__debug [[[
 #
-# Start docker daemon in debug mode.
+# Start Docker daemon in debug mode.
 docker_server__debug: False
 
                                                                    # ]]]
 # .. envvar:: docker_server__live_restore [[[
 #
 # Enables keeping containers alive during daemon downtime. Only supported from
-# docker version 1.12 and above.
+# Docker version 1.12 and above.
 docker_server__live_restore: False
 
                                                                    # ]]]
 # .. envvar:: docker_server__data_root [[[
 #
-# Alternative root path of the docker runtime.
+# Root path of the Docker runtime.
 docker_server__data_root: '/var/lib/docker'
 
                                                                    # ]]]
@@ -368,17 +363,16 @@ docker_server__registry_mirrors: []
                                                                    # ]]]
 # .. envvar:: docker_server__storage_driver [[[
 #
-# Storage driver for docker volumes.
+# Storage driver for Docker volumes.
 docker_server__storage_driver: '{{ ansible_local.docker_server.storage_driver
-                                   if (ansible_local.docker_server.storage_driver|d())
-                                   else ("aufs"
-                                         if (ansible_distribution_release in ["wheezy", "jessie" ])
-                                         else "overlay2") }}'
+                                   |d("aufs"
+                                      if (ansible_distribution_release in ["wheezy", "jessie" ])
+                                      else "overlay2") }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__storage_options [[[
 #
-# Additional docker storage driver options.
+# Additional Docker storage driver options.
 docker_server__storage_options: {}
 
                                                                    # ]]]
@@ -450,10 +444,7 @@ docker_server__pki_key: 'default.key'
 # .. envvar:: docker_server__ferm_post_hook [[[
 #
 # Enable or disable installation for the :program:`ferm` post hook.
-docker_server__ferm_post_hook: '{{ True
-                                   if (ansible_local|d() and ansible_local.ferm|d() and
-                                       (ansible_local.ferm.enabled|d())|bool)
-                                   else False }}'
+docker_server__ferm_post_hook: '{{ ansible_local.ferm.enabled|d()|bool }}'
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[

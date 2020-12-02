@@ -1,5 +1,6 @@
 .. Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2019 DebOps <https://debops.org/>
+.. Copyright (C)      2020 Robin Schneider <ypid@riseup.net>
+.. Copyright (C) 2019-2020 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 Getting started
@@ -44,6 +45,40 @@ that uses the ``debops.docker_registry`` role:
 .. literalinclude:: ../../../../ansible/playbooks/service/docker_registry.yml
    :language: yaml
    :lines: 1,5-
+
+
+Authentication
+--------------
+
+:envvar:`docker_registry__basic_auth_except_get` allows an easy yet auditable
+write access control to the registry. To use it, set the variable to ``True``.
+Additionally, you need to define the hosts or networks to require authentication for.
+This is basically a workaround because the Docker Server first does a GET
+request and if it goes though, it will not provide authentication. But we
+always allow read only requests without authentication so we need to force
+authentication like this:
+
+.. code-block:: yaml
+
+   nginx__custom_config:
+     - name: 'geo_force_authentication'
+       custom: |
+         ## This is not security related. It just triggers Docker that it may authenticate itself.
+         geo $force_authentication {
+           default 0;
+           2001:db8:2342::/64 1;
+         }
+
+Then define the users which should be created and allowed write access:
+
+.. code-block:: yaml
+
+   docker_registry__basic_auth_users:
+     - 'build-docker-debian-base-image'
+
+Refer to :ref:`debops.secret` for details.
+
+You can then use :command:`docker login docker-registry.example.net` to login. This step is manually for now.
 
 
 Ansible tags
