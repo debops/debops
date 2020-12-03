@@ -395,6 +395,13 @@ LDAP
   specified with ``item.mount``. This previously required setting the
   ``item.fs`` parameter to ``True`` as well.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- Disabled gzip compression of text/vcard MIME types. Vcards contain, by nature,
+  sensitive information and should not be gzipped to prevent successful BREACH
+  attacks.
+
 :ref:`debops.nslcd` role
 ''''''''''''''''''''''''
 
