@@ -263,6 +263,10 @@ General
 - Don't add the "always" ``add_header`` parameter into configuration files for
   :command:`nginx` < 1.7.5.
 
+- Disabled gzip compression of text/vcard MIME types. Vcards contain, by nature,
+  sensitive information and should not be gzipped to prevent successful BREACH
+  attacks.
+
 :ref:`debops.nullmailer` role
 '''''''''''''''''''''''''''''
 
