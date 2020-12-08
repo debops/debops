@@ -188,8 +188,7 @@ monit__service_config:
         include /etc/monit/templates/rootbin
       {% endif %}
     state: '{{ "present"
-               if (ansible_local|d() and ansible_local.apache|d() and
-                   (ansible_local.apache.enabled|d())|bool)
+               if (ansible_local.apache.enabled|d()|bool)
                else "init" }}'
 
   - name: 'atd'
