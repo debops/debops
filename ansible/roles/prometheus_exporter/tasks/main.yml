@@ -1,0 +1,146 @@
+---
+# Copyright (C) 2020 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- import_role:
+    name: 'ansible_plugins'
+
+- import_role:
+    name: 'secret'
+
+- name: Fetch Ghostunnel release
+  get_url:
+    url: '{{ prometheus_exporter__ghostunnel_resource }}'
+    dest: '{{ "/usr/local/bin/ghostunnel" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: prometheus_exporter__pki|bool
+
+- name: Divert the original prometheus exporters configuration files
+  dpkg_divert:
+    path: '/etc/default/prometheus-{{ item.name }}-exporter'
+    state: 'present'
+    delete: True
+  with_items: '{{ prometheus_exporter__combined_exporters }}'
+  when: (not (item.upstream|d())|bool and
+         (item.apt_packages is defined and
+          (([ item.apt_packages ] if (item.apt_packages is string) else item.apt_packages))))
+  tags: [ 'role::prometheus_exporter:config' ]
+
+- name: Configure Ghostunnel for Prometheus exporters
+  template:
+    src: 'etc/default/ghostunnel.j2'
+    dest: '/etc/default/ghostunnel-{{ item.name }}-exporter'
+    owner: 'root'
+    group: 'prometheus'
+    mode: '0640'
+  with_items:
+    - '{{ prometheus_exporter__combined_exporters }}'
+    - '{{ prometheus_exporter__apm_exporters }}'
+  tags: [ 'role::prometheus_exporter:config' ]
+  notify: Restart ghostunnel prometheus exporters
+  when: prometheus_exporter__pki|bool
+
+- name: Configure Prometheus exporters
+  template:
+    src: 'etc/default/prometheus-exporter.j2'
+    dest: '/etc/default/prometheus-{{ item.name }}-exporter'
+    owner: 'root'
+    group: 'prometheus'
+    mode: '0640'
+  with_items: '{{ prometheus_exporter__combined_exporters }}'
+  tags: [ 'role::prometheus_exporter:config' ]
+  notify: Restart prometheus exporters
+
+- name: Configure discovery files for Prometheus server
+  template:
+    src: 'etc/prometheus/file_sd_configs.d/exporter.json.j2'
+    dest: '/etc/prometheus/file_sd_configs.d/{{ item.name }}.{{ inventory_hostname }}.json'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_items:
+    - '{{ prometheus_exporter__combined_exporters }}'
+    - '{{ prometheus_exporter__apm_exporters }}'
+  delegate_to: '{{ prometheus_exporter__delegate_to }}'
+  when: prometheus_exporter__server is defined and prometheus_exporter__server and
+        prometheus_exporter__server_file_based_discovery_service
+
+- name: Generate systemd service unit
+  template:
+    src: 'etc/systemd/system/prometheus-exporter.service.j2'
+    dest: '/etc/systemd/system/prometheus-{{ item.name }}-exporter.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: prometheus_exporter__register_systemd
+  with_items: '{{ prometheus_exporter__combined_exporters }}'
+  when: ((item.git|d() or item.url|d()) and ((item.upstream|d())|bool or
+         (item.apt_packages is undefined or
+          (not (([ item.apt_packages ] if (item.apt_packages is string) else item.apt_packages))))))
+  notify: Restart prometheus exporters
+
+- name: Generate Ghostunnel systemd service unit
+  template:
+    src: 'etc/systemd/system/ghostunnel.service.j2'
+    dest: '/etc/systemd/system/ghostunnel-{{ item.name }}-exporter.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: prometheus_exporter__register_ghostunnel_systemd
+  with_items:
+    - '{{ prometheus_exporter__combined_exporters }}'
+    - '{{ prometheus_exporter__apm_exporters }}'
+  notify: Restart ghostunnel prometheus exporters
+  when: prometheus_exporter__pki|bool
+
+- name: Reload systemd configuration
+  systemd:
+    daemon_reload: True
+  when: (ansible_service_mgr == 'systemd' and
+         (prometheus_exporter__register_systemd is changed or
+          prometheus_exporter__register_ghostunnel_systemd is changed))
+
+- name: Enable and start release Prometheus exporters
+  service:
+    name: 'prometheus-{{ item.name }}-exporter'
+    state: 'started'
+    enabled: True
+  with_items: '{{ prometheus_exporter__combined_exporters }}'
+  when: ansible_service_mgr == 'systemd' and
+        prometheus_exporter__register_systemd is changed and
+        ((item.git|d() or item.url|d()) and ((item.upstream|d())|bool or
+         (item.apt_packages is undefined or
+          (not (([ item.apt_packages ] if (item.apt_packages is string) else item.apt_packages))))))
+
+- name: Enable and start Ghostunnel Prometheus exporters
+  service:
+    name: 'ghostunnel-{{ item.name }}-exporter'
+    state: 'started'
+    enabled: True
+  with_items:
+    - '{{ prometheus_exporter__combined_exporters }}'
+    - '{{ prometheus_exporter__apm_exporters }}'
+  when: ansible_service_mgr == 'systemd' and
+        prometheus_exporter__register_ghostunnel_systemd is changed
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save Prometheus server local facts
+  template:
+    src: 'etc/ansible/facts.d/prometheus_exporter.fact.j2'
+    dest: '/etc/ansible/facts.d/prometheus_exporter.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: prometheus_exporter__register_local_facts
+
+- name: Re-read local facts if they have been modified
+  action: setup
+  when: prometheus_exporter__register_local_facts is change

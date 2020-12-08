@@ -1,0 +1,78 @@
+# Copyright (C) 2020 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# {{ ansible_managed }}
+
+# Set the command-line arguments to pass to the server.
+{% set prometheus_alertmanager__tpl_args = [] %}
+{% for element in prometheus_alertmanager__args | parse_kv_items %}
+{%   if element.name|d() and element.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%     set _ = prometheus_alertmanager__tpl_args.append('--{}={}'.format(element.name, element.value)) %}
+{%   endif %}
+{% endfor %}
+# Set the command-line arguments to pass to the server.
+ARGS="{{ prometheus_alertmanager__tpl_args | join(' ') }}"
+
+# The alert manager supports the following options:
+
+#  --config.file="/etc/prometheus/alertmanager.yml"
+#       Alertmanager configuration file name.
+#  --storage.path="/var/lib/prometheus/alertmanager/"
+#       Base path for data storage.
+#  --data.retention=120h
+#       How long to keep data for.
+#  --alerts.gc-interval=30m
+#       Interval between alert GC.
+#  --log.level=info
+#       Only log messages with the given severity or above.
+#  --web.external-url=WEB.EXTERNAL-URL
+#       The URL under which Alertmanager is externally reachable (for example,
+#       if Alertmanager is served via a reverse proxy). Used for generating
+#       relative and absolute links back to Alertmanager itself. If the URL has
+#       a path portion, it will be used to prefix all HTTP endpoints served by
+#       Alertmanager. If omitted, relevant URL components will be derived
+#       automatically.
+#  --web.route-prefix=WEB.ROUTE-PREFIX
+#       Prefix for the internal routes of web endpoints. Defaults to path of
+#       --web.external-url.
+#  --web.listen-address=":9093"
+#       Address to listen on for the web interface and API.
+#  --web.ui-path="/usr/share/prometheus/alertmanager/ui/"
+#       Path to static UI directory.
+#  --template.default="/usr/share/prometheus/alertmanager/default.tmpl"
+#       Path to default notification template.
+#  --cluster.listen-address="0.0.0.0:9094"
+#       Listen address for cluster.
+#  --cluster.advertise-address=CLUSTER.ADVERTISE-ADDRESS
+#       Explicit address to advertise in cluster.
+#  --cluster.peer=CLUSTER.PEER ...
+#       Initial peers (may be repeated).
+#  --cluster.peer-timeout=15s
+#       Time to wait between peers to send notifications.
+#  --cluster.gossip-interval=200ms
+#       Interval between sending gossip messages. By lowering this value (more
+#       frequent) gossip messages are propagated across the cluster more
+#       quickly at the expense of increased bandwidth.
+#  --cluster.pushpull-interval=1m0s
+#       Interval for gossip state syncs. Setting this interval lower (more
+#       frequent) will increase convergence speeds across larger clusters at
+#       the expense of increased bandwidth usage.
+#  --cluster.tcp-timeout=10s  Timeout for establishing a stream connection
+#       with a remote node for a full state sync, and for stream read and write
+#       operations.
+#  --cluster.probe-timeout=500ms
+#       Timeout to wait for an ack from a probed node before assuming it is
+#       unhealthy. This should be set to 99-percentile of RTT (round-trip time)
+#       on your network.
+#  --cluster.probe-interval=1s
+#       Interval between random node probes. Setting this lower (more frequent)
+#       will cause the cluster to detect failed nodes more quickly at the
+#       expense of increased bandwidth usage.
+#  --cluster.settle-timeout=1m0s
+#       Maximum time to wait for cluster connections to settle before
+#       evaluating notifications.
+#  --cluster.reconnect-interval=10s
+#       Interval between attempting to reconnect to lost peers.
+#  --cluster.reconnect-timeout=6h0m0s
+#       Length of time to attempt to reconnect to a lost peer.

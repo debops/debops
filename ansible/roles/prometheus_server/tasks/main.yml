@@ -1,0 +1,77 @@
+---
+# Copyright (C) 2020 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- import_role:
+    name: 'ansible_plugins'
+
+- name: Install Prometheus server packages
+  package:
+    name: '{{ q("flattened", (prometheus_server__base_packages
+                              + prometheus_server__packages)) }}'
+    state: 'present'
+  register: prometheus_server__register_install_status
+  until: prometheus_server__register_install_status is succeeded
+
+- name: Add Prometheus server user to specified groups
+  user:
+    name: 'prometheus'
+    groups: '{{ prometheus_server__append_groups | join(",") | default(omit) }}'
+    append: True
+    createhome: False
+  when: prometheus_server__pki|bool
+
+- name: Create additional directories used by Prometheus
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_items:
+    - '/etc/prometheus/file_sd_configs.d'
+    - '/etc/prometheus/rules.d'
+
+- name: Divert the original Prometheus configuration files
+  dpkg_divert:
+    path: '{{ item }}'
+    state: 'present'
+    delete: True
+  with_items:
+    - '/etc/default/prometheus'
+    - '/etc/prometheus/prometheus.yml'
+  tags: [ 'role::prometheus_server:config' ]
+
+- name: Configure Prometheus server
+  template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'prometheus'
+    mode: '0640'
+  with_items:
+    - 'etc/default/prometheus'
+    - 'etc/prometheus/prometheus.yml'
+    - 'etc/prometheus/rules.d/ansible_rules.yml'
+  tags: [ 'role::prometheus_server:config' ]
+  notify: [ 'Restart Prometheus' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save Prometheus server local facts
+  template:
+    src: 'etc/ansible/facts.d/prometheus_server.fact.j2'
+    dest: '/etc/ansible/facts.d/prometheus_server.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: prometheus_server__register_local_facts
+
+- name: Re-read local facts if they have been modified
+  action: setup
+  when: prometheus_server__register_local_facts is change

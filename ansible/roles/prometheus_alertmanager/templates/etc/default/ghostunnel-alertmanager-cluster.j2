@@ -1,0 +1,14 @@
+# Copyright (C) 2020 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# {{ ansible_managed }}
+
+{% set prometheus_alertmanager__tpl_ghostunnel_args = [] %}
+{% set _ = prometheus_alertmanager__tpl_ghostunnel_args.append('--{} {}'.format('listen', prometheus_alertmanager__cluster_bind + ':' + prometheus_alertmanager__cluster_port)) %}
+{% set _ = prometheus_alertmanager__tpl_ghostunnel_args.append('--{} {}'.format('target', 'localhost:' + prometheus_alertmanager__cluster_private_port)) %}
+{% set _ = prometheus_alertmanager__tpl_ghostunnel_args.append('--{} {}'.format('allow-ou', prometheus_alertmanager__domain)) %}
+ARGS="{{ prometheus_alertmanager__tpl_ghostunnel_args | join(' ') }}"
+CERT_PATH="{{ prometheus_alertmanager__pki_path + "/" + prometheus_alertmanager__pki_realm + "/" + prometheus_alertmanager__pki_crt }}"
+KEY_PATH="{{ prometheus_alertmanager__pki_path + "/" + prometheus_alertmanager__pki_realm + "/" + prometheus_alertmanager__pki_key }}"
+CACERT_PATH="{{ prometheus_alertmanager__pki_path + "/" + prometheus_alertmanager__pki_realm + "/" + prometheus_alertmanager__pki_ca }}"

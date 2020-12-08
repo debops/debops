@@ -1,0 +1,55 @@
+---
+# Copyright (C) 2020 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Manage Prometheus alertmanager
+  collections: [ 'debops.debops' ]
+  hosts: [ 'debops_service_prometheus_alertmanager' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::nginx' ]
+      keyring__dependent_apt_keys:
+        - '{{ nginx__keyring__dependent_apt_keys }}'
+
+    - role: etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ prometheus_alertmanager__etc_services__dependent_list }}'
+
+    - role: apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ nginx__apt_preferences__dependent_list }}'
+
+    - role: ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ nginx__ferm__dependent_rules }}'
+        - '{{ prometheus_alertmanager__ferm__dependent_rules }}'
+
+    - role: python
+      tags: [ 'role::python', 'skip::python' ]
+      python__dependent_packages3:
+        - '{{ nginx__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ nginx__python__dependent_packages2 }}'
+
+    - role: nginx
+      tags: [ 'role::nginx', 'skip::nginx' ]
+      nginx__dependent_upstreams:
+        - '{{ prometheus_alertmanager__nginx__dependent_upstreams }}'
+      nginx__dependent_htpasswd:
+        - '{{ prometheus_alertmanager__nginx__dependent_htpasswd }}'
+      nginx__dependent_servers:
+        - '{{ prometheus_alertmanager__nginx__dependent_servers }}'
+
+    - role: prometheus_alertmanager
+      tags: [ 'role::prometheus_alertmanager', 'skip::prometheus_alertmanager' ]
