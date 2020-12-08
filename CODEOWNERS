@@ -2,11 +2,12 @@
 # Copyright (C) 2017-2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# This is a GitHub CODEOWNERS file, which uses a syntax similar to the
+# This is a CODEOWNERS file, which uses a syntax similar to the
 # '.gitignore' file to define the reviewers of certain files or directories in
 # the repository. Order of the entries is important, the last matching entry
-# wins. You can read more about how this file works at
-# https://help.github.com/articles/about-codeowners/
+# wins. You can read more about how this file works at:
+# * https://help.github.com/articles/about-codeowners/
+# * https://docs.gitlab.com/ee/user/project/code_owners.html
 
 # Reviewers can be added into "teams" according to their interests, each
 # reviewer is identified by their GitHub username to allow for GitHub to notify
@@ -30,65 +31,74 @@
 /docs/                                              @drybjed @tasosalvas
 *.rst                                               @drybjed @tasosalvas
 *.md                                                @drybjed @tasosalvas
-/docs/news/releases.rst                             @drybjed @tasosalvas @ypid
-
-
-# Mail
-/ansible/roles/dovecot/                             @drybjed @imrejonk
-/ansible/playbooks/service/dovecot.yml              @drybjed @imrejonk
-/ansible/roles/etc_aliases/                         @drybjed @imrejonk
-/ansible/playbooks/service/etc_aliases.yml          @drybjed @imrejonk
-/ansible/roles/mailman/                             @drybjed @imrejonk
-/ansible/playbooks/service/mailman.yml              @drybjed @imrejonk
-/ansible/roles/nullmailer/                          @drybjed @imrejonk
-/ansible/playbooks/service/nullmailer.yml           @drybjed @imrejonk
-/ansible/roles/opendkim/                            @drybjed @imrejonk
-/ansible/playbooks/service/opendkim.yml             @drybjed @imrejonk
-/ansible/roles/postconf/                            @drybjed @imrejonk
-/ansible/playbooks/service/postconf.yml             @drybjed @imrejonk
-/ansible/roles/postfix/                             @drybjed @imrejonk
-/ansible/playbooks/service/postfix.yml              @drybjed @imrejonk
-/ansible/roles/postldap/                            @drybjed @imrejonk
-/ansible/playbooks/service/postldap.yml             @drybjed @imrejonk
-/ansible/roles/postscreen/                          @drybjed
-/ansible/playbooks/service/postscreen.yml           @drybjed
-/ansible/roles/postwhite/                           @drybjed
-/ansible/playbooks/service/postwhite.yml            @drybjed
-/ansible/roles/roundcube/                           @drybjed @imrejonk
-/ansible/playbooks/service/roundcube.yml            @drybjed @imrejonk
-/ansible/roles/saslauthd/                           @drybjed
-/ansible/playbooks/service/saslauthd.yml            @drybjed
-/ansible/roles/smstools/                            @drybjed
-/ansible/playbooks/service/smstools.yml             @drybjed
+lib/images/                                         @drybjed @tasosalvas
+docs/news/releases.rst                              @drybjed @tasosalvas @ypid
 
 
 # Authors of new roles should add themselves below if they want to be notified
 # about changes in their roles. Include all people in the global section as
 # well, otherwise only you will be notified.
+# To avoid redundancy, the sections below must reflect those find in
+# docs/ansible/role-index.rst
+#
+# **SOFTWARE** is used with the intention to match all files with dovecot
+# SOFTWARE in the file name (with as a substring match).
 
-/ansible/roles/apt_cacher_ng/                       @drybjed @ypid
-/ansible/playbooks/service/apt_cacher_ng.yml        @drybjed @ypid
+# Applications
+**owncloud**                                        @drybjed @ypid @imrejonk
+**etesync**                                         @drybjed @ypid
+**foodsoft**                                        @drybjed @ypid
+**homeassistant**                                   @drybjed @ypid
+**volkszaehler**                                    @drybjed @ypid
+**kodi**                                            @drybjed @ypid
 
-/ansible/roles/cryptsetup/                          @drybjed @ypid
-/ansible/playbooks/service/cryptsetup*.yml          @drybjed @ypid
+# Application services
+**debops_api**                                      @drybjed @ypid
+**bitcoind**                                        @drybjed @ypid
+**x2go_server**                                     @drybjed @ypid
 
-/ansible/roles/debops_api/                          @drybjed @ypid
-/ansible/playbooks/service/debops_api.yml           @drybjed @ypid
+# Encryption
+**cryptsetup**                                      @drybjed @ypid
 
-/ansible/roles/docker_server/                       @drybjed @imrejonk
-/ansible/playbooks/service/docker_server.yml        @drybjed @imrejonk
+# Filesystems
+**persistent_paths**                                @drybjed @ypid
+**btrfs**                                           @drybjed @ypid
+**fuse**                                            @drybjed @ypid
+**snapshot_snapper**                                @drybjed @ypid
 
-/ansible/roles/etckeeper/                           @drybjed @ypid
-/ansible/playbooks/service/etckeeper.yml            @drybjed @ypid
+# Host provisioning
+**dropbear_initramfs**                              @drybjed @ypid
 
-/ansible/roles/etesync/                             @drybjed @ypid
-/ansible/playbooks/service/etesync.yml              @drybjed @ypid
+# Mail and SMS services
+**dovecot**                                         @drybjed @imrejonk
+**etc_aliases**                                     @drybjed @imrejonk
+**mailman**                                         @drybjed @imrejonk
+**nullmailer**                                      @drybjed @imrejonk
+**opendkim**                                        @drybjed @imrejonk
+**postconf**                                        @drybjed @imrejonk
+**postfix**                                         @drybjed @imrejonk
+**postldap**                                        @drybjed @imrejonk
+**postscreen**                                      @drybjed
+**postwhite**                                       @drybjed
+**roundcube**                                       @drybjed @imrejonk
+**saslauthd**                                       @drybjed
+**smstools**                                        @drybjed
 
-/ansible/roles/owncloud/                            @drybjed @imrejonk
-/ansible/playbooks/service/owncloud.yml             @drybjed @imrejonk
+# Networking
+**tor**                                             @drybjed @ypid
 
-/ansible/roles/persistent_paths/                    @drybjed @ypid
-/ansible/playbooks/service/persisten_paths.yml      @drybjed @ypid
+# Operating system packages
+**apt_cacher_ng**                                   @drybjed @ypid
 
-/ansible/roles/debops-contrib.*					    @drybjed @ypid
-/ansible/debops-contrib-playbooks/                  @drybjed @ypid
+# System configuration
+**etckeeper**                                       @drybjed @ypid
+
+# Security
+**apparmor**                                        @drybjed @ypid
+**firejail**                                        @drybjed @ypid
+
+# Virtualization
+**docker_server**                                   @drybjed @imrejonk
+
+# Not fully integrated roles.
+ansible/debops-contrib-playbooks/                   @drybjed @ypid

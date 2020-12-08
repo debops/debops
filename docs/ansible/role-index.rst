@@ -16,6 +16,10 @@ not yet integrated in DebOps.
 .. contents:: Role categories
    :local:
 
+.. The categories below are also used in ../../CODEOWNERS.
+   Please review and update this file if you make changes here.
+
+.. TODO: Each role can only be in one category.
 
 Applications
 ------------
@@ -97,7 +101,6 @@ are not accessed directly by end users.
 - :ref:`debops.tinyproxy`
 - ``debops.reprepro``
 - ``debops.sks``
-- ``debops.smstools``
 - ``debops-contrib.bitcoind``
 - ``debops-contrib.x2go_server``
 
@@ -163,7 +166,6 @@ Filesystems
 Ansible roles that manage filesystem-level services, or export filesystems to
 other hosts.
 
-- :ref:`debops.cryptsetup`
 - :ref:`debops.fhs`
 - :ref:`debops.iscsi`
 - :ref:`debops.lvm`
@@ -211,8 +213,8 @@ Logging
 - :ref:`debops.rsyslog`
 
 
-Mail services
--------------
+Mail and SMS services
+---------------------
 
 - :ref:`debops.dovecot`
 - :ref:`debops.etc_aliases`
@@ -240,7 +242,6 @@ Monitoring
 - :ref:`debops.monit`
 - :ref:`debops.proc_hidepid`
 - :ref:`debops.snmpd`
-- ``debops.smstools``
 
 
 Networking
