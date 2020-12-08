@@ -502,6 +502,9 @@ LDAP
   The Tinc :command:`systemd` service will wait for the
   ``network-online.target`` unit to start up before activation.
 
+- Fixed an issue with the role where setting :envvar:`tinc__modprobe` variable
+  to ``False`` did not turn off support for loading required kernel modules.
+
 
 `debops v2.1.0`_ - 2020-06-21
 -----------------------------
