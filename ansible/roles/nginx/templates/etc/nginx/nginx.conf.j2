@@ -37,6 +37,13 @@ events {
 
 http {
         include {{ nginx_etc_path }}/conf.d/*.conf;
+{%   if (nginx__h5bp_enabled|bool)                              %}
+	variables_hash_max_size 1024;
+        variables_hash_bucket_size 1024;
+	include {{ nginx_etc_path }}/conf.d/h5bp/media_types/character_encodings.conf;
+        include {{ nginx_etc_path }}/conf.d/h5bp/web_performance/cache_expiration.conf;
+	include {{ nginx_etc_path }}/conf.d/h5bp/web_performance/cache-file-descriptors.conf;
+{%   endif                                                      %}
         include {{ nginx_etc_path }}/snippets/ssl.conf;
         include /etc/nginx/mime.types;
         default_type application/octet-stream;

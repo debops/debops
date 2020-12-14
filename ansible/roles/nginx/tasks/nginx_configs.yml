@@ -46,6 +46,31 @@
   when: (item.name|d() and item.state|d('present') != 'absent' and
          (item.delete is undefined or not item.delete|bool))
 
+- name: Remove h5bp nginx maps if requested
+  file:
+    dest: '/etc/nginx/conf.d/map_{{ item.name }}.conf'
+    state: 'absent'
+  with_flattened:
+    - '{{ nginx__h5bp_maps }}'
+  notify: [ 'Test nginx and reload' ]
+  when: (item.name|d() and
+         ((item.state|d() and item.state == 'absent') or
+          (item.delete|d() and item.delete|bool)))
+
+- name: Configure h5bp nginx maps
+  template:
+    src: 'etc/nginx/conf.d/map.conf.j2'
+    dest: '/etc/nginx/conf.d/map_h5bp_{{ item.name }}.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_flattened:
+    - '{{ nginx__h5bp_maps }}'
+  notify: [ 'Test nginx and reload' ]
+  when: (item.name|d() and item.state|d('present') != 'absent' and
+         (item.delete is undefined or not item.delete|bool) and
+         (nginx__h5bp_enabled|bool))
+
 - name: Remove nginx upstreams if requested
   file:
     dest: '/etc/nginx/conf.d/upstream_{{ item.name }}.conf'
@@ -131,3 +156,41 @@
   notify: [ 'Test nginx and reload' ]
   when: (item.name|d() and item.state|d('present') != 'absent' and
          (item.delete is undefined or not item.delete|bool))
+
+- name: Create H5BP directory
+  file:
+    path: '/etc/nginx/conf.d/h5bp/'
+    state: directory
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: (item.name|d() and item.state|d('present') != 'absent' and
+         (item.delete is undefined or not item.delete|bool) and
+         (nginx__h5bp_enabled|bool))
+
+- name: Create H5BP sub-directories
+  file:
+    path: '/etc/nginx/conf.d/h5bp/{{ item.name | dirname }}'
+    state: directory
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  with_flattened:
+    - '{{ nginx__h5bp_files }}'
+  when: (item.name|d() and item.state|d('present') != 'absent' and
+         (item.delete is undefined or not item.delete|bool) and
+         (nginx__h5bp_enabled|bool))
+
+- name: Add HTML5 Boilerplate Files
+  get_url:
+    url: https://raw.githubusercontent.com/h5bp/server-configs-nginx/{{ nginx__h5bp_commit }}/h5bp/{{ item.name }}
+    dest: '/etc/nginx/conf.d/h5bp/{{ item.name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  with_flattened:
+    - '{{ nginx__h5bp_files }}'
+  notify: [ 'Test nginx and reload' ]
+  when: (item.name|d() and item.state|d('present') != 'absent' and
+         (item.delete is undefined or not item.delete|bool) and
+         (nginx__h5bp_enabled|bool))
