@@ -179,45 +179,45 @@
   tags: [ 'role::netbox:config' ]
 
 - name: Perform database installation or migration
-  environment:
-    VIRTUAL_ENV: '{{ netbox__virtualenv }}'
-    PATH: '{{ netbox__virtualenv_env_path }}'
   ## Commands from upgrade.sh. We cannot directly run this script as of 2.10
   ## because it also deals with virtualenv with different directory paths than
   ## this role.
   # noqa 305
-  shell: set -o nounset -o pipefail -o errexit
-         ./manage.py migrate
-         {% if (netbox__git_version|regex_replace("^(?:develop-|v)", "")) is version_compare("2.10", ">=") %}
-         ./manage.py trace_paths --no-input
-         {% endif %}
-         ./manage.py collectstatic --no-input
-         ./manage.py remove_stale_contenttypes --no-input
-         ./manage.py clearsessions
-         ./manage.py invalidate all
-  args:
+  shell:
+    cmd: |
+      set -o nounset -o pipefail -o errexit
+      ./manage.py migrate
+      ./manage.py trace_paths --no-input || :
+      ./manage.py collectstatic --no-input
+      ./manage.py remove_stale_contenttypes --no-input
+      ./manage.py clearsessions
+      ./manage.py invalidate all
     chdir: '{{ netbox__git_checkout + "/netbox" }}'
     executable: 'bash'
+  environment:
+    VIRTUAL_ENV: '{{ netbox__virtualenv }}'
+    PATH: '{{ netbox__virtualenv_env_path }}'
   become: True
   become_user: '{{ netbox__user }}'
   when: netbox__register_checkout is changed
   register: netbox__register_migration
 
 - name: Create superuser account
+  ## TODO: Does not work with 2.8 anymore. Use args stdin instead of echo and shell module.
+  shell:
+    cmd: |
+      set -o nounset -o pipefail -o errexit
+      echo "from django.contrib.auth.models import User;
+            User.objects.create_superuser('${SUPERUSER_NAME}', '${SUPERUSER_EMAIL}', '${SUPERUSER_PASSWORD}')"
+      | ./manage.py shell
+    chdir: '{{ netbox__git_checkout + "/netbox" }}'
+    executable: 'bash'
   environment:
     VIRTUAL_ENV: '{{ netbox__virtualenv }}'
     PATH: '{{ netbox__virtualenv_env_path }}'
     SUPERUSER_NAME: '{{ netbox__superuser_name }}'
     SUPERUSER_EMAIL: '{{ netbox__superuser_email }}'
     SUPERUSER_PASSWORD: '{{ netbox__superuser_password }}'
-    ## TODO: Does not work with 2.8 anymore. Use args stdin instead of echo and shell module.
-  shell: set -o nounset -o pipefail -o errexit
-         echo "from django.contrib.auth.models import User;
-               User.objects.create_superuser('${SUPERUSER_NAME}', '${SUPERUSER_EMAIL}', '${SUPERUSER_PASSWORD}')"
-         | ./manage.py shell
-  args:
-    chdir: '{{ netbox__git_checkout + "/netbox" }}'
-    executable: 'bash'
   become: True
   become_user: '{{ netbox__user }}'
   when: (not netbox__register_installed.stat.exists|bool and
