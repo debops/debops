@@ -74,7 +74,7 @@ elif sys.platform == 'darwin':  # Mac OS X
 def _set_xdg_defaults():
     """
     Set default values for XDG variables according to XDG specification
-    http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
+    https://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
     """
     for name, default in (
             ('XDG_CONFIG_HOME', os.path.expanduser('~/.config')),

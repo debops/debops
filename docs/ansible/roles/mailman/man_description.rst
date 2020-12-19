@@ -6,7 +6,7 @@ Description
 ===========
 
 The :ref:`debops.mailman` Ansible role can be used to create and manage mailing
-lists using `GNU Mailman <http://list.org/>`_ service. The role is designed to
+lists using `GNU Mailman <https://list.org/>`_ service. The role is designed to
 install and configure Mailman 3 using Debian packages, and will automatically
 integrate with PostgreSQL or MariaDB database for configuration storage and
 Postfix for SMTP services.

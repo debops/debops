@@ -41,7 +41,7 @@ statement in the dovecot configuration file, so you can also set much more
 advanced values. Check the dovecot `mail_location`_ documentation for more
 examples.
 
-.. _mail_location: http://wiki2.dovecot.org/MailLocation/
+.. _mail_location: https://wiki2.dovecot.org/MailLocation/
 
 
 Enable server-side mail filtering with sieve
@@ -52,8 +52,8 @@ rules are stored as text files on the mail server and can be managed by
 a client via `ManageSieve`_ network protocol. Dovecot provides sieve support
 via Pigeonhole sieve interpreter.
 
-.. _Sieve: http://wiki2.dovecot.org/Pigeonhole/Sieve/
-.. _ManageSieve: http://wiki2.dovecot.org/Pigeonhole/ManageSieve/
+.. _Sieve: https://wiki2.dovecot.org/Pigeonhole/Sieve/
+.. _ManageSieve: https://wiki2.dovecot.org/Pigeonhole/ManageSieve/
 
 To enable the ManageSieve protocol in your Dovecot role you have to add
 it to the ``dovecot_protocols`` list::
@@ -150,5 +150,5 @@ Postfix independently by setting e.g.::
       virtual_transport = lmtp:inet:192.168.1.123:24
 
 
-.. _LMTP: http://wiki2.dovecot.org/LMTP
+.. _LMTP: https://wiki2.dovecot.org/LMTP
 .. _ansible-ferm: https://github.com/debops/ansible-ferm

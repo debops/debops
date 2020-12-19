@@ -131,7 +131,7 @@ Other options are the same as normal ``fail2ban`` jail configuration options.
 Refer to default ``/etc/fail2ban/jail.conf`` or `fail2ban wiki`_ for possible
 options.
 
-.. _fail2ban wiki: http://www.fail2ban.org/wiki/index.php/MANUAL_0_8#Jails
+.. _fail2ban wiki: https://www.fail2ban.org/wiki/index.php/MANUAL_0_8#Jails
 
 .. _examples:
 
