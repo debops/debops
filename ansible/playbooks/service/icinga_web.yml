@@ -73,6 +73,11 @@
       nginx__dependent_upstreams:
         - '{{ icinga_web__nginx__dependent_upstreams }}'
 
+    - role: ldap
+      tags: [ 'role::ldap', 'skip::ldap' ]
+      ldap__dependent_tasks:
+        - '{{ icinga_web__ldap__dependent_tasks }}'
+
     - role: postgresql
       tags: [ 'role::postgresql', 'skip::postgresql' ]
       postgresql__dependent_roles:
