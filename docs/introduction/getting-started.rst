@@ -384,7 +384,7 @@ Each host configured by `DebOps common playbook`_ should have the same set of ba
 services. After a host is configured, you can enable additional Ansible roles
 to install and configure software and applications of your choice.
 
-We will use `DokuWiki <http://dokuwiki.org/>`_ as an example application. The
+We will use `DokuWiki <https://dokuwiki.org/>`_ as an example application. The
 role that manages the installation is called :ref:`debops.dokuwiki` it uses
 :ref:`debops.nginx` and :ref:`debops.php` roles to configure a webserver and
 PHP5 environment. The :ref:`debops.nginx` role calls some additional roles,

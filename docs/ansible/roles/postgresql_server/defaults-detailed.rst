@@ -70,7 +70,7 @@ documentation for details.
 postgresql_server__hba_*
 ------------------------
 
-`Host-Based Authentication <http://www.postgresql.org/docs/9.4/static/auth-pg-hba-conf.html>`_
+`Host-Based Authentication <https://www.postgresql.org/docs/9.4/static/auth-pg-hba-conf.html>`_
 configuration in ``debops.postgresql_server`` Ansible role is specified in
 a set of lists:
 
@@ -203,7 +203,7 @@ postgresql_server__ident_*
 --------------------------
 
 `Ident maps
-<http://www.postgresql.org/docs/9.4/static/auth-username-maps.html>`_ stored in
+<https://www.postgresql.org/docs/9.4/static/auth-username-maps.html>`_ stored in
 :file:`pg_ident.conf` configuration file is used to map local UNIX accounts to
 PostgreSQL roles. This can be used to control what UNIX accounts can login to
 the PostgreSQL server as a given role.

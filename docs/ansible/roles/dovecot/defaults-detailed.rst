@@ -88,9 +88,9 @@ waiting for more connections, restrict maximal number of IMAP processes to
         mail_max_userip_connections: 15
 
 
-.. _Dovecot Login Process: http://wiki2.dovecot.org/LoginProcess
-.. _Dovecot inet_listeners: http://wiki2.dovecot.org/Services#inet_listeners
-.. _Dovecot unix_listeners: http://wiki2.dovecot.org/Services#unix_listeners_and_fifo_listeners
+.. _Dovecot Login Process: https://wiki2.dovecot.org/LoginProcess
+.. _Dovecot inet_listeners: https://wiki2.dovecot.org/Services#inet_listeners
+.. _Dovecot unix_listeners: https://wiki2.dovecot.org/Services#unix_listeners_and_fifo_listeners
 .. _Dovecot IMAP Service: https://wiki2.dovecot.org/Services#imap.2C_pop3.2C_submission.2C_managesieve
 
 .. _dovecot_imap_listeners:
