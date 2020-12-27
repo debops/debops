@@ -1113,7 +1113,7 @@
 .. _groups.io: https://groups.io/
 .. _HWRaid: http://hwraid.le-vert.net/
 .. _Nginx: https://en.wikipedia.org/wiki/Nginx
-.. _nginx map module: http://nginx.org/en/docs/http/ngx_http_map_module.html
+.. _nginx map module: https://nginx.org/en/docs/http/ngx_http_map_module.html
 .. _MariaDB: https://en.wikipedia.org/wiki/Mariadb
 .. _PHP: https://en.wikipedia.org/wiki/PHP
 .. _Redis: https://en.wikipedia.org/wiki/Redis
@@ -1123,7 +1123,7 @@
 .. _Raspbian: https://en.wikipedia.org/wiki/Raspbian
 .. _RedRampage: https://github.com/redrampage/
 .. _Salt: https://en.wikipedia.org/wiki/SaltStack
-.. _Ubuntu 12.04 LTS (Precise Pangolin): http://releases.ubuntu.com/12.04/
+.. _Ubuntu 12.04 LTS (Precise Pangolin): https://releases.ubuntu.com/12.04/
 
 .. _sks-keyservers.net: https://sks-keyservers.net/
 .. _SKS OpenPGP keyserver pool: https://sks-keyservers.net/
@@ -1151,7 +1151,7 @@
 .. _xkcd 1205: https://xkcd.com/1205/
 .. _xkcd 1319: https://xkcd.com/1319/
 
-.. Use http://www.sphinx-doc.org/en/stable/markup/inline.html#role-rfc :) !!!
+.. Use https://www.sphinx-doc.org/en/stable/markup/inline.html#role-rfc :) !!!
    Needs to be fixed first before it can be disabled here.
    debops-optimize can fix it for you ;)
 .. _RFC2119: https://tools.ietf.org/html/rfc2119
@@ -1181,7 +1181,7 @@
 .. _Ansible module: https://docs.ansible.com/ansible/modules.html
 .. _YAML Syntax: https://docs.ansible.com/ansible/YAMLSyntax.html
 .. _reStructuredText: http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html
-.. _Sphinx: http://www.sphinx-doc.org/
+.. _Sphinx: https://www.sphinx-doc.org/
 
 .. ]]]
 

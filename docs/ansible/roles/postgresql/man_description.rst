@@ -12,4 +12,4 @@ and databases on local or remote PostgreSQL servers.
 To manage the PostgreSQL server itself, you will need to use
 ``debops.postgresql_server`` role.
 
-.. __: http://www.postgresql.org/
+.. __: https://www.postgresql.org/

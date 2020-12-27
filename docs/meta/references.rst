@@ -103,7 +103,7 @@ available.
 `Research Computing at Imperial College London`__
 -------------------------------------------------
 
-.. __: http://www.imperial.ac.uk/mathematics/for-staff/research-computing-support/
+.. __: https://www.imperial.ac.uk/mathematics/for-staff/research-computing-support/
 
 This is a homepage of the Department of Mathematics at ICL. They have their own
 HPC infrastructure `with extensive documentation`__, aimed mostly at their

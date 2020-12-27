@@ -27,7 +27,7 @@ daemon configuration is ordered, the forward statements should be set in
 a specific place in the configuration. You can of course define your own
 forwarding rules instead of using these specific variables, if you wish.
 
-You can check `the rsyslog remote forward documentation <http://www.rsyslog.com/sending-messages-to-a-remote-syslog-server/>`_ to see
+You can check `the rsyslog remote forward documentation <https://www.rsyslog.com/sending-messages-to-a-remote-syslog-server/>`_ to see
 how to forward logs to other hosts. Each configuration entry should be
 specified in a separate YAML list element. The entries can be simple FQDN
 hostnames which will be configured to use TCP connections over TLS and port

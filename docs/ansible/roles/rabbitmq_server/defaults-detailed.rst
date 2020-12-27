@@ -73,7 +73,7 @@ RabbitMQ configuration options
 RabbitMQ is written in the `Erlang <https://en.wikipedia.org/wiki/Erlang_(programming_language)>`_
 programming language, which is also used for its configuration. YAML, used by
 Ansible, does not provide enough data types to directly map them to the
-`Erlang data types <http://erlang.org/doc/reference_manual/data_types.html>`_
+`Erlang data types <https://erlang.org/doc/reference_manual/data_types.html>`_
 used in the RabbitMQ configuration file, therefore the configuration used by
 ``debops.rabbitmq_server`` focuses on description of the desired data types and
 conditional activation of the configuration sections. This means that simple
@@ -131,7 +131,7 @@ will switch to a more verbose option interpretation, using known parameters:
   - ``boolean``: a boolean ``true``/``false`` value, selected automatically if
     a YAML boolean is used as the value;
 
-  - ``bit-string``: a `bit string <http://erlang.org/doc/reference_manual/data_types.html#bit-strings-and-binaries>`_
+  - ``bit-string``: a `bit string <https://erlang.org/doc/reference_manual/data_types.html#bit-strings-and-binaries>`_
     value with special quotation marks. Only YAML strings are supported at this
     time;
 

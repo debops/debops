@@ -14,7 +14,7 @@ secure TLS connection.
 Additionally it allows you to configure a `sieve`_ service which allows you
 to store server-side rules for mail filtering.
 
-.. _Ansible: http://ansible.com/
-.. _Dovecot: http://dovecot.org/
+.. _Ansible: https://www.ansible.com/
+.. _Dovecot: https://dovecot.org/
 .. _ansible-pki: https://github.com/debops/ansible-pki/
 .. _sieve: http://sieve.info/
