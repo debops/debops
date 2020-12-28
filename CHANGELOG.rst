@@ -233,6 +233,12 @@ LDAP
 - The role will create the :file:`/srv/www/` directory by default to allow for
   home directories used by web applications.
 
+:ref:`debops.gitlab` role
+'''''''''''''''''''''''''
+
+- The :command:`systemd` services no longer require Redis to be installed on
+  the same host as GitLab itself.
+
 :ref:`debops.grub` role
 '''''''''''''''''''''''
 
