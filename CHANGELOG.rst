@@ -116,6 +116,12 @@ General
 - The official DebOps project logo has been replaced with a new design, created
   by Tasos Alvas. Thanks!
 
+:ref:`debops.gitlab` role
+'''''''''''''''''''''''''
+
+- The :command:`systemd` services no longer require Redis to be installed on
+  the same host as GitLab itself.
+
 :ref:`debops.grub` role
 '''''''''''''''''''''''
 
