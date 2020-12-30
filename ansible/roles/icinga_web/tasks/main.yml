@@ -37,6 +37,8 @@
 
     - name: 'modules/director'
 
+    - name: 'modules/x509'
+
   when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Download and install Icinga upstream modules
@@ -108,6 +110,9 @@
     - filename: 'modules/director/kickstart.ini'
       config: '{{ icinga_web__combined_director_kickstart_cfg }}'
 
+    - filename: 'modules/x509/config.ini'
+      config: '{{ icinga_web__combined_x509_cfg }}'
+
   when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Generate initial data file
@@ -159,6 +164,18 @@
   when: icinga_web__database_type == 'mariadb' and
         icinga_web__database_host == 'localhost' and
         icinga_web__database_init|bool
+
+- name: Import Icinga Web x509 database on installation into MariaDB
+  mysql_db:
+    name: '{{ icinga_web__x509_database_name }}'
+    state: 'import'
+    target: '{{ icinga_web__x509_database_schema }}'
+    login_host: '{{ icinga_web__x509_database_host }}'
+    login_port: '{{ icinga_web__x509_database_port }}'
+    login_user: '{{ icinga_web__x509_database_user }}'
+    login_password: '{{ icinga_web__x509_database_password }}'
+  when: icinga_web__x509_enabled|bool and
+        icinga_web__x509_database_init|bool
 
 - name: Ensure that initial data schema is removed
   file:
@@ -232,6 +249,11 @@
     enabled: False
     state: 'stopped'
   when: not icinga_web__director_enabled|bool
+
+- name: Import CA certificates to Icinga Web x509 truststore
+  command: 'icingacli x509 import --file /etc/ssl/certs/ca-certificates.crt'
+  when: icinga_web__x509_enabled|bool and
+        icinga_web__x509_database_init|bool
 
 - name: Make sure that Ansible local facts directory exists
   file:
