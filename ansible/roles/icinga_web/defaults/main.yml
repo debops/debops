@@ -171,6 +171,11 @@ icinga_web__default_modules:
     git_version: 'v0.5.0'
     state: 'present'
 
+  - name: 'x509'
+    git_repo: 'https://github.com/icinga/icingaweb2-module-x509'
+    git_version: 'v1.0.0'
+    state: '{{ "present" if icinga_web__x509_enabled|bool else "ignore" }}'
+
                                                                    # ]]]
 # .. envvar:: icinga_web__modules [[[
 #
@@ -493,6 +498,64 @@ icinga_web__director_kickstart_enabled: '{{ True
                                             if (ansible_local|d() and ansible_local.icinga|d() and
                                                 (ansible_local.icinga.installed|d())|bool)
                                             else False }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Icinga 2 x509 module support [[[
+# -----------------------------
+
+# .. envvar:: icinga_web__x509_enabled [[[
+#
+# Enable or disable support for Icinga 2 Web x509 module. It requires
+# MariaDB/MySQL.
+# See https://github.com/icinga/icingaweb2-module-x509 for more details
+icinga_web__x509_enabled: '{{ ansible_local.mariadb is defined }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__x509_database_name [[[
+#
+# Name of the Icinga 2 Web database used for the X509 module
+icinga_web__x509_database_name: 'icingaweb2_x509'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__x509_database_user [[[
+#
+# Name of the Icinga 2 Web x509 database user.
+icinga_web__x509_database_user: 'icingaweb2_x509'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__x509_database_password [[[
+#
+# Password for Icinga 2 Web x509 database.
+icinga_web__x509_database_password: '{{ lookup("password", secret + "/mariadb/" + ansible_local.mariadb.delegate_to +
+                                   "/credentials/" + icinga_web__x509_database_user + "/password" +
+                                   " length=48 chars=ascii_letters,digits,.-_") }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__x509_database_host [[[
+#
+# Address of the Icinga 2 X509 database server.
+icinga_web__x509_database_host: '{{ ansible_local.mariadb.server }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__x509_database_port [[[
+#
+# The port on which the Icinga 2 x509 database server listens for
+# connections.
+icinga_web__x509_database_port: '{{ ansible_local.mariadb.port }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__x5609_database_schema [[[
+#
+# Absolute path to the Icinga 2 Web internal database schema which will be
+# imported during initialization.
+icinga_web__x509_database_schema: '/usr/share/icingaweb2/modules/x509/etc/schema/mysql.schema.sql'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__x509_database_init [[[
+#
+# Enable or disable initialization of the Icinga 2 Web x509 database.
+icinga_web__x509_database_init: '{{ not ansible_local.icinga_web.x509_installed | d(False) }}'
+
                                                                    # ]]]
                                                                    # ]]]
 # Icinga 2 REST API [[[
@@ -1112,6 +1175,35 @@ icinga_web__default_resources:
 
     state: '{{ "present" if icinga_web__ldap_enabled|bool else "ignore" }}'
 
+  - name: 'icingaweb2_x509'
+    options:
+
+      - name: 'type'
+        value: 'db'
+
+      - name: 'db'
+        value: 'mysql'
+
+      - name: 'host'
+        value: '{{ icinga_web__x509_database_host }}'
+
+      - name: 'port'
+        value: '{{ icinga_web__x509_database_port }}'
+
+      - name: 'dbname'
+        value: '{{ icinga_web__x509_database_name }}'
+
+      - name: 'username'
+        value: '{{ icinga_web__x509_database_user }}'
+
+      - name: 'password'
+        value: '{{ icinga_web__x509_database_password }}'
+
+      - name: 'charset'
+        value: 'utf8'
+
+    state: '{{ "present" if icinga_web__x509_enabled|bool else "ignore" }}'
+
                                                                    # ]]]
 # .. envvar:: icinga_web__resources [[[
 #
@@ -1385,6 +1477,44 @@ icinga_web__combined_director_kickstart_cfg: '{{ icinga_web__current_director_ki
                                                  + icinga_web__director_kickstart_cfg }}'
                                                                    # ]]]
                                                                    # ]]]
+# The :file:`modules/x509/config.ini` configuration file [[[
+# --------------------------------------------------------------
+
+# These variables manage the contents of the
+# :file:`/etc/icingaweb2/modules/x509/config.ini` configuration file.
+# See :ref:`icinga_web__ref_ini_configuration` for more details.
+
+# .. envvar:: icinga_web__current_x509_cfg [[[
+#
+# The current contents of the config file, gathered during runtime.
+icinga_web__current_x509_cfg: '{{ (icinga_web__register_config.stdout
+                                       | from_json)["modules/x509/config.ini"] | d([]) }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__default_x509_cfg [[[
+#
+# The default Icinga 2 509 configuration appled by the role.
+icinga_web__default_x509_cfg:
+
+  - name: 'backend'
+    options:
+
+      - name: 'resource'
+        value: 'icingaweb2_x509'
+
+    state: '{{ "present" if icinga_web__x509_enabled|bool else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__combined_x509_cfg [[[
+#
+# The variable which combines the Icinga 2 x509 configuration from
+# different source variables and is used by the role task to generate the
+# actual file.
+icinga_web__combined_x509_cfg: '{{ icinga_web__current_x509_cfg
+                                       + icinga_web__default_x509_cfg }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
@@ -1483,9 +1613,15 @@ icinga_web__postgresql__dependent_extensions:
 icinga_web__mariadb__dependent_databases:
 
   - name: '{{ icinga_web__database_name }}'
+    state: '{{ "present" if icinga_web__database_type == "mariadb" else "ignore" }}'
 
   - name: '{{ icinga_web__director_database_name }}'
-    state: '{{ "present" if icinga_web__director_enabled|bool else "ignore" }}'
+    state: '{{ "present"
+                if (icinga_web__director_enabled|bool and icinga_web__director_database_type == "mariadb")
+                else "ignore" }}'
+
+  - name: '{{ icinga_web__x509_database_name }}'
+    state: '{{ "present" if icinga_web__x509_enabled|bool else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__mariadb__dependent_users [[[
@@ -1495,10 +1631,17 @@ icinga_web__mariadb__dependent_users:
 
   - database: '{{ icinga_web__database_name }}'
     user: '{{ icinga_web__database_user }}'
+    state: '{{ "present" if icinga_web__database_type == "mariadb" else "ignore" }}'
 
   - database: '{{ icinga_web__director_database_name }}'
     user: '{{ icinga_web__director_database_user }}'
-    state: '{{ "present" if icinga_web__director_enabled|bool else "ignore" }}'
+    state: '{{ "present"
+                if (icinga_web__director_enabled|bool and icinga_web__director_database_type == "mariadb")
+                else "ignore" }}'
+
+  - database: '{{ icinga_web__x509_database_name }}'
+    user: '{{ icinga_web__x509_database_user }}'
+    state: '{{ "present" if icinga_web__x509_enabled|bool else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__php__dependent_packages [[[
@@ -1513,6 +1656,7 @@ icinga_web__php__dependent_packages:
   - 'pgsql'
   - 'curl'
   - 'yaml'
+  - 'gmp'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__php__dependent_pools [[[
