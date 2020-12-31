@@ -84,6 +84,12 @@ LDAP
   will be enabled automatically when :ref:`debops.apache` Ansible local facts
   are detected by the role.
 
+:ref:`debops.opendkim` role
+'''''''''''''''''''''''''''
+
+- Add the ``regenerate`` parameter to DKIM key configuration which allows for
+  control when the private keys are regenerated.
+
 :ref:`debops.python` role
 '''''''''''''''''''''''''
 
