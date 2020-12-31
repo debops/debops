@@ -110,6 +110,7 @@
     path:  '{{ secret + "/opendkim/domainkeys/"
                + (item.domain | d(opendkim__domain)) + "_"
                + (item.selector | d(item.name | d(item))) + ".pem" }}'
+    regenerate: '{{ item.regenerate | d("full_idempotence") }}'
   with_flattened:
     - '{{ opendkim__combined_keys }}'
   become: False
