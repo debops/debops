@@ -120,7 +120,7 @@
   with_items: [ '{{ gitlab_repositories_path }}', '{{ gitlab_satellites_path }}' ]
 
 - name: Setup gitlab-shell
-  shell: ./bin/install ; test ! -x './bin/compile' || ./bin/compile
+  shell: ./bin/install ; make compile
   args:
     chdir: '{{ gitlab_shell_git_checkout }}'
   when: gitlab_register_shell_checkout is changed
