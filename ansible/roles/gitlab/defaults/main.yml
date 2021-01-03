@@ -480,12 +480,33 @@ gitlab_user: 'git'
 gitlab_group: 'git'
 
                                                                    # ]]]
+# .. envvar:: gitlab_system_groups_prefix [[[
+#
+# Add a prefix to the custom UNIX system group names created by DebOps.
+# By default, no prefix is added.
+#
+# If the role detects that the LDAP support has been enabled on a host by the
+# :ref:`debops.ldap` Ansible role, custom UNIX group names created locally on
+# the host will have the ``_`` prefix to indicate that they are local to
+# a given host and not create conflicts with any UNIX groups defined in LDAP.
+#
+# If the LDAP support was enabled after the system groups have been created,
+# the role will keep the current prefix value to not duplicate the UNIX groups.
+gitlab_system_groups_prefix: '{{ ansible_local.system_groups.local_prefix
+                                 if (ansible_local|d() and ansible_local.system_groups|d() and
+                                     ansible_local.system_groups.local_prefix is defined)
+                                 else ("_"
+                                       if (ansible_local|d() and ansible_local.ldap|d() and
+                                           (ansible_local.ldap.posix_enabled|d())|bool)
+                                       else "") }}'
+
+                                                                   # ]]]
 # .. envvar:: gitlab_user_append_groups [[[
 #
 # List of additional system groups to add to the GitLab user account.
 # The ``sshusers`` UNIX group is used in DebOps to limit SSH access. See the
 # :ref:`debops.system_groups` role for more details.
-gitlab_user_append_groups: [ 'sshusers', 'ssl-cert' ]
+gitlab_user_append_groups: [ '{{ system_groups__prefix }}sshusers', 'ssl-cert' ]
 
                                                                    # ]]]
 # .. envvar:: gitlab__shell [[[
