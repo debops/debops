@@ -87,9 +87,9 @@ LDAP
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
 
-- Drop Nextcloud 16 and 17 support because it is EOL. You need to upgrade Nextcloud
-  manually if you are running version 17 or below. The role now defaults to
-  Nextcloud 18 for new installations.
+- Drop Nextcloud 16, 17 and 18 support because it is EOL. You need to upgrade Nextcloud
+  manually if you are running version 18 or below. The role now defaults to
+  Nextcloud 19 for new installations.
 
 :ref:`debops.postgresql` role
 '''''''''''''''''''''''''''''
