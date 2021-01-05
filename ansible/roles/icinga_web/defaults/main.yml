@@ -583,13 +583,10 @@ icinga_web__default_account_password: '{{ lookup("password", secret + "/icinga_w
 #
 # Enable LDAP support
 icinga_web__ldap_enabled: '{{ True
-                            if (ansible_local|d() and ansible_local.ldap|d() and
-                                (ansible_local.ldap.enabled|d())|bool)
-                            else False }}'
+                              if ansible_local.ldap.enabled|d()|bool
+                              else False }}'
 
                                                                    # ]]]
-
-
 # .. envvar:: icinga_web__ldap_base_dn [[[
 #
 # The base Distinguished Name which should be used to create Distinguished
@@ -597,16 +594,36 @@ icinga_web__ldap_enabled: '{{ True
 icinga_web__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
 
                                                                    # ]]]
-# .. envvar:: icinga_web__ldap_group_base_dn [[[
+# .. envvar:: icinga_web__ldap_groups_rdn [[[
 #
-# The base Distinguished Name where Icinga Web will look for groups.
-icinga_web__ldap_group_base_dn: '{{ icinga_web__ldap_base_dn | join(",") }}'
+# The Relative Distinguished Name of the object which contains the groups stored
+# in LDAP.
+icinga_web__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn
+                                 |d("ou=Groups") }}'
 
                                                                    # ]]]
-# .. envvar:: icinga_web__user_base_dn [[[
+# .. envvar:: icinga_web__ldap_groups_dn [[[
 #
-# The base Distinguished Name where Icinga Web will look for users.
-icinga_web__ldap_user_base_dn: '{{ icinga_web__ldap_base_dn | join(",") }}'
+# The Distinguished Name where Icinga Web will look for groups, defined as a
+# YAML list.
+icinga_web__ldap_groups_dn: '{{ [ icinga_web__ldap_groups_rdn ]
+                                + icinga_web__ldap_base_dn }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__ldap_people_rdn [[[
+#
+# The Relative Distinguished Name of the object which contains the user accounts
+# stored in LDAP.
+icinga_web__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn
+                                 |d("ou=People") }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__ldap_people_dn [[[
+#
+# The base Distinguished Name where Icinga Web will look for users, defined as a
+# YAML list.
+icinga_web__ldap_people_dn: '{{ [ icinga_web__ldap_people_rdn ]
+                                + icinga_web__ldap_base_dn }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__ldap_device_dn [[[
@@ -646,7 +663,8 @@ icinga_web__ldap_self_attributes:
 #
 # The Distinguished Name of the account LDAP object used by the
 # Icinga Web service to bind to the LDAP directory.
-icinga_web__ldap_binddn: '{{ ([ icinga_web__ldap_self_rdn ] + icinga_web__ldap_device_dn) | join(",") }}'
+icinga_web__ldap_binddn: '{{ ([ icinga_web__ldap_self_rdn ]
+                              + icinga_web__ldap_device_dn) | join(",") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__ldap_bindpw [[[
@@ -654,7 +672,8 @@ icinga_web__ldap_binddn: '{{ ([ icinga_web__ldap_self_rdn ] + icinga_web__ldap_d
 # The password stored in the account LDAP object used by the Icinga Web service
 # to bind to the LDAP directory.
 icinga_web__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
-                                  + icinga_web__ldap_binddn | to_uuid + ".password length=48 "
+                                  + icinga_web__ldap_binddn | to_uuid
+                                  + ".password length=48 "
                                   + "chars=ascii_letters,digits,.-_") }}'
 
                                                                    # ]]]
@@ -675,13 +694,21 @@ icinga_web__ldap_encryption: 'starttls'
 # .. envvar:: icinga_web__ldap_port [[[
 #
 # The TCP port to use for LDAP connections.
-icinga_web__ldap_port: '{{ 636 if (icinga_web__ldap_encryption in ["ldaps"]) else 389 }}'
+icinga_web__ldap_port: '{{ 636
+                           if (icinga_web__ldap_encryption in ["ldaps"])
+                           else 389 }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__ldap_user_filter [[[
 #
 # Use this to control which LDAP users are listed as Icinga Web users.
-icinga_web__ldap_user_filter: ''
+icinga_web__ldap_user_filter: '(&
+                                 (objectClass={{ icinga_web__ldap_user_class }})
+                                 (|
+                                   (authorizedService=all)
+                                   (authorizedService=icingaweb)
+                                 )
+                               )'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__ldap_user_class [[[
@@ -699,7 +726,7 @@ icinga_web__ldap_user_name_attribute: 'uid'
 # .. envvar:: icinga_web__ldap_group_filter [[[
 #
 # Use this to control which LDAP groups are listed as Icinga Web groups.
-icinga_web__ldap_group_filter: ''
+icinga_web__ldap_group_filter: 'objectClass={{ icinga_web__ldap_group_class }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__ldap_group_class [[[
@@ -718,10 +745,8 @@ icinga_web__ldap_group_member_attribute: 'member'
 #
 # The LDAP attribute which contains the group name.
 icinga_web__ldap_group_name_attribute: 'cn'
-
                                                                    # ]]]
                                                                    # ]]]
-
 # The :file:`authentication.ini` configuration file [[[
 # -----------------------------------------------------
 
@@ -750,14 +775,14 @@ icinga_web__default_authentication:
       - name: 'resource'
         value: 'icingaweb_db'
 
-  - name: 'auth_ldap'
+  - name: 'ldap_users'
     options:
 
       - name: 'backend'
         value: 'ldap'
 
       - name: 'resource'
-        value: 'ldap'
+        value: 'ldap_db'
 
       - name: 'user_class'
         value: '{{ icinga_web__ldap_user_class }}'
@@ -881,26 +906,20 @@ icinga_web__default_groups:
       - name: 'resource'
         value: 'icingaweb_db'
 
-  - name: 'ldap'
+  - name: 'ldap_groups'
     options:
 
       - name: 'backend'
         value: 'ldap'
 
       - name: 'resource'
-        value: 'ldap'
+        value: 'ldap_db'
 
-      - name: 'user_class'
-        value: '{{ icinga_web__ldap_user_class }}'
-
-      - name: 'user_name_attribute'
-        value: '{{ icinga_web__ldap_user_name_attribute }}'
-
-      - name: 'user_base_dn'
-        value: '{{ icinga_web__ldap_user_base_dn }}'
+      - name: 'user_backend'
+        value: 'ldap_users'
 
       - name: 'base_dn'
-        value: '{{ icinga_web__ldap_group_base_dn }}'
+        value: '{{ icinga_web__ldap_groups_dn | join(",") }}'
 
       - name: 'group_class'
         value: '{{ icinga_web__ldap_group_class }}'
@@ -1070,7 +1089,7 @@ icinga_web__default_resources:
 
     state: '{{ "present" if icinga_web__director_enabled|bool else "ignore" }}'
 
-  - name: 'ldap'
+  - name: 'ldap_db'
     options:
 
       - name: 'type'
@@ -1393,7 +1412,7 @@ icinga_web__ldap__dependent_tasks:
     objectClass: '{{ icinga_web__ldap_self_object_classes }}'
     attributes: '{{ icinga_web__ldap_self_attributes }}'
     no_log: True
-    state: '{{ "present" if icinga_web__ldap_device_dn|d() else "ignore" }}'
+    state: '{{ "present" if icinga_web__ldap_enabled else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__postgresql__dependent_roles [[[
