@@ -3,8 +3,8 @@
 
 # .. Copyright (C) 2015-2016 Maciej Delmanowski <drybjed@gmail.com>
 # .. Copyright (C) 2015      Hartmut Goebel <h.goebel@crazy-compilers.com>
-# .. Copyright (C) 2015-2020 Robin Schneider <ypid@riseup.net>
-# .. Copyright (C) 2015-2020 DebOps <https://debops.org/>
+# .. Copyright (C) 2015-2021 Robin Schneider <ypid@riseup.net>
+# .. Copyright (C) 2015-2021 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _owncloud__ref_defaults:
@@ -76,6 +76,8 @@ owncloud__required_php_packages:
   # - 'posix'
   # - 'zlib'
 
+  - 'bcmath'
+  - 'gmp'
 
 # .. envvar:: owncloud__recommended_php_packages
 #
@@ -414,8 +416,7 @@ owncloud__variant_name_map:
 #
 # * ownCloud ``10.4``
 #
-# * Nextcloud ``18.0``
-# * Nextcloud ``19.0`` (untested)
+# * Nextcloud ``19.0``
 #
 # For Nextcloud refer to the `Nextcloud Maintenance and Release Schedule <https://github.com/nextcloud/server/wiki/Maintenance-and-Release-Schedule>`_.
 # and the `Nextcloud Server Changelog <https://nextcloud.com/changelog/>`_.
@@ -424,7 +425,7 @@ owncloud__variant_name_map:
 # and the `package index <https://download.owncloud.org/download/repositories/>`_ for more details.
 owncloud__release: '{{ "10.4"
                        if (owncloud__variant == "owncloud")
-                       else "18.0" }}'
+                       else "19.0" }}'
 
 
 # .. envvar:: owncloud__distribution
@@ -2192,6 +2193,9 @@ owncloud__nginx__dependent_servers:
       error_page            403             /core/templates/403.php;
       error_page            404             /core/templates/404.php;
       {% endif %}
+
+      # Default Cache-Control policy
+      expires 1m;
 
 
       # Avoid to send the security headers twice as ownCloud
