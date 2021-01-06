@@ -253,6 +253,13 @@ General
 
 - The role can now be used in check mode without throwing an AnsibleFilterError.
 
+:ref:`debops.gitlab` role
+'''''''''''''''''''''''''
+
+- Fixed an issue where the ``git`` UNIX account was not added to the
+  ``_sshusers`` local group when LDAP support was enabled on the host. This
+  prevented the usage of GitLab via SSH.
+
 :ref:`debops.iscsi` role
 ''''''''''''''''''''''''
 
