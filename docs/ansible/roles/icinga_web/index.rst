@@ -28,6 +28,7 @@ DebOps provides support for Icinga 2, split into several roles:
 
    getting-started
    defaults-detailed
+   ldap-dit
 
 .. only:: html
 
