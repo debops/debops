@@ -161,6 +161,11 @@ General
 
 - The role now automatically configures LDAP user and group support.
 
+- The role will install and configure the `Icinga Certificate Monitoring`__
+  module.
+
+  .. __: https://icinga.com/docs/icinga-certificate-monitoring/latest/
+
 :ref:`debops.lvm` role
 ''''''''''''''''''''''
 
