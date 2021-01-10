@@ -22,7 +22,9 @@
           - '{{ php__keyring__dependent_apt_keys }}'
           - '{{ nginx__keyring__dependent_apt_keys }}'
           - '{{ postgresql__keyring__dependent_apt_keys if (icinga_web__database_type == "postgresql") else [] }}'
-          - '{{ mariadb__keyring__dependent_apt_keys if (icinga_web__database_type == "mariadb") else [] }}'
+          - '{{ mariadb__keyring__dependent_apt_keys
+                if (icinga_web__database_type == "mariadb" or icinga_web__x509_enabled)
+                else [] }}'
       tags: [ 'role::keyring', 'skip::keyring',
               'role::php', 'role::nginx', 'role::postgresql', 'role::mariadb' ]
 
@@ -55,11 +57,15 @@
       tags: [ 'role::python', 'skip::python', 'role::mariadb', 'role::postgresql' ]
       python__dependent_packages3:
         - '{{ postgresql__python__dependent_packages3 if icinga_web__database_type == "postgresql" else [] }}'
-        - '{{ mariadb__python__dependent_packages3 if icinga_web__database_type == "mariadb" else [] }}'
+        - '{{ mariadb__python__dependent_packages3
+              if (icinga_web__database_type == "mariadb" or icinga_web__x509_enabled)
+              else [] }}'
         - '{{ nginx__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ postgresql__python__dependent_packages2 if icinga_web__database_type == "postgresql" else [] }}'
-        - '{{ mariadb__python__dependent_packages2 if icinga_web__database_type == "mariadb" else [] }}'
+        - '{{ mariadb__python__dependent_packages2
+              if (icinga_web__database_type == "mariadb" or icinga_web__x509_enabled)
+              else [] }}'
         - '{{ nginx__python__dependent_packages2 }}'
 
     - role: php
@@ -99,7 +105,8 @@
         - '{{ icinga_web__mariadb__dependent_databases }}'
       mariadb__dependent_users:
         - '{{ icinga_web__mariadb__dependent_users }}'
-      when: icinga_web__database_type == 'mariadb'
+      when: icinga_web__database_type == 'mariadb' or
+            icinga_web__x509_enabled|bool
 
     - role: icinga_web
       tags: [ 'role::icinga_web', 'skip::icinga_web' ]
