@@ -245,6 +245,11 @@ LDAP
 - The role will now activate both the serial console and the (previously
   disabled) native platform console when ``grub__serial_console`` is ``True``.
 
+:ref:`debops.icinga_web` role
+'''''''''''''''''''''''''''''
+
+- The role now automatically configures LDAP user and group support.
+
 :ref:`debops.lvm` role
 ''''''''''''''''''''''
 

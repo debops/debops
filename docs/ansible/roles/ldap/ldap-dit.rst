@@ -29,6 +29,7 @@ Directory structure
             - :ref:`uid=dokuwiki <dokuwiki__ref_ldap_dit>` -> :ref:`debops.dokuwiki`
             - :ref:`uid=dovecot <dovecot__ref_ldap_dit>` -> :ref:`debops.dovecot`
             - :ref:`uid=gitlab <gitlab__ref_ldap_dit>` -> :ref:`debops.gitlab`
+            - :ref:`uid=icingaweb <icinga_web__ref_ldap_dit>` -> :ref:`debops.icinga_web`
             - :ref:`uid=mailman <mailman__ref_ldap_dit>` -> :ref:`debops.mailman`
             - :ref:`uid=nslcd <nslcd__ref_ldap_dit>` -> :ref:`debops.nslcd`
             - :ref:`uid=nextcloud <owncloud__ref_ldap_dit>` -> :ref:`debops.owncloud`
