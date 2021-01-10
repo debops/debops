@@ -16,6 +16,7 @@ debops.icinga_web
    getting-started
    defaults/main
    defaults-detailed
+   ldap-dit
 
 Copyright
 ---------
