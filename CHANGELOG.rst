@@ -63,6 +63,12 @@ LDAP
   correct ``uidNumber`` and ``gidNumber`` values are stored instead of the
   default ones which might already be allocated.
 
+- The ``root`` UNIX account will now have full write access to the main
+  directory via the ``ldapi://`` external authentication and can create and
+  modify the LDAP objects and their attributes. This is required so that the
+  :ref:`debops.slapd` role can initialize the directory tree and create/remove
+  the ACL test objects as needed.
+
 :ref:`debops.apt_install` role
 ''''''''''''''''''''''''''''''
 
