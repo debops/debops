@@ -153,6 +153,11 @@ production: &base
     # The location where pages are stored (default: shared/pages).
     path: {{ gitlab_pages_path }}
 
+{% if gitlab_version is version_compare("12.10", operator="ge", strict=True) %}
+    # GitLab Pages access control
+    access_control: {{ gitlab_pages_access_control_enabled }}
+
+{% endif %}
     # The domain under which the pages are served:
     # http://group.example.com/project
     # or project path can be a group page: group.example.com
