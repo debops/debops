@@ -15,6 +15,16 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+Changes in the NetBox role
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- ``netbox__config_webhooks_enabled`` has been removed upstream.
+  No further action other than removing the variable from your inventory should
+  be needed. See `Require running the rq-worker process`__.
+
+  .. __: https://github.com/netbox-community/netbox/issues/3408
+
+
 Changes to debops.resolvconf facts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
