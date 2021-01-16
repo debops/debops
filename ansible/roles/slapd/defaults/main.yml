@@ -911,6 +911,13 @@ slapd__acl_tasks:
     state: 'exact'
 
                                                                    # ]]]
+# .. envvar:: slapd__cluster_tasks [[[
+#
+# Separate list of LDAP tasks meant to be used to configure OpenLDAP clustering
+# on multiple hosts in an Ansible inventory group.
+slapd__cluster_tasks: []
+
+                                                                   # ]]]
 # .. envvar:: slapd__structure_tasks [[[
 #
 # List of the tasks performed on the OpenLDAP server which create the basic
@@ -1132,6 +1139,7 @@ slapd__host_tasks: []
 # role tasks and templates.
 slapd__combined_tasks: '{{ slapd__default_tasks
                            + slapd__acl_tasks
+                           + slapd__cluster_tasks
                            + slapd__structure_tasks
                            + slapd__tasks
                            + slapd__group_tasks
