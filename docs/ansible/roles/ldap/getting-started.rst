@@ -31,10 +31,15 @@ Ansible Controller, or configure your own password lookup method.
 LDAP directory initialization
 -----------------------------
 
-You can use the :file:`ansible/playbooks/ldap/init-directory.yml` Ansible
-playbook to initialize new LDAP directory. This playbook is designed to be used
-with the :ref:`slapd__ref_acl` configuration and will be updated on any
-changes, if needed. To use it with the new OpenLDAP servers, run the command:
+The base directory structure used by DebOps roles is defined and managed by the
+:ref:`debops.slapd` Ansible role. The :envvar:`slapd__structure_tasks` variable
+contains a list of LDAP objects which will be created on server installation,
+which conform to the :ref:`slapd__ref_acl` configuration.
+
+The :file:`ansible/playbooks/ldap/init-directory.yml` Ansible playbooks
+contains additional configuration which can be used to create an admin account
+inside of the LDAP directory and grant it "LDAP Administrator" and "UNIX
+Administrator" roles. To use it with the new OpenLDAP servers, run the command:
 
 .. code-block:: console
 
@@ -48,8 +53,7 @@ The user will be asked for a new password used to bind to the directory; this
 password will be stored on the Ansible Controller using Password Store, and
 used for :ref:`ldap__ref_admin`.
 
-The playbook will not make any changes to existing LDAP objects. The default
-``cn=admin`` LDAP object created during OpenLDAP installation will be removed.
+The playbook will not make any changes to existing LDAP objects.
 
 .. note:: For the LDAP access to work, Ansible Controller needs to trust the
    Certificate Authority which is used by the OpenLDAP service. If you rely on

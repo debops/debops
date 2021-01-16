@@ -209,6 +209,11 @@ LDAP
   and specific services (user accounts, PAM, :command:`sshd`, :command:`sudo`)
   while leaving higher-level services unaffected.
 
+- The LDAP directory structure creation has been moved from a separate
+  :file:`ansible/playbooks/ldap/init-directory.yml` playbook into the
+  :ref:`debops.slapd` role to allow for better ACL testing. The playbook is
+  still used for administrator account creation.
+
 :ref:`debops.dhcpd` role
 ''''''''''''''''''''''''
 

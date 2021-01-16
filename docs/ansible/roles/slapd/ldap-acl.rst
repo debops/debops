@@ -19,9 +19,12 @@ that maps how various DebOps roles interact with the directory; this should
 enable easier redesign of the Access Control List according to the needs of
 one's organization.
 
-You can use the :file:`ansible/playbooks/ldap/init-directory.yml` Ansible
-playbook to initialize the new LDAP directory with the objects designed with
-the default ACL in mind. See :ref:`ldap__ref_ldap_init` for more details.
+The user-facing :envvar:`LDAP directory structure <slapd__structure_tasks>`
+that conforms to the ACL defined by the role will be initialized by the
+:ref:`debops.slapd` role as well. You can use the
+:file:`ansible/playbooks/ldap/init-directory.yml` Ansible playbook to create
+the initial LDAP Administrator account which will finish the installation. See
+:ref:`ldap__ref_ldap_init` for more details.
 
 .. only:: html
 
@@ -79,9 +82,7 @@ Directory groups
 ----------------
 
 In this section of the documentation you can find a list of LDAP groups which
-are used in the default :ref:`debops.slapd` Access Control List rules. These
-groups can be created in the directory using the
-:file:`ldap/init-directory.yml` Ansible playbook included in DebOps. The LDAP
+are used in the default :ref:`debops.slapd` Access Control List rules. he LDAP
 Distinguished Names used in the documentation assume that the ``example.org``
 DNS domain is used by the OpenLDAP server.
 
@@ -140,11 +141,9 @@ Directory roles
 ---------------
 
 In this section of the documentation you can find a list of LDAP roles which
-are used in the default :ref:`debops.slapd` Access Control List rules. These
-roles can be created in the directory using the :file:`ldap/init-directory.yml`
-Ansible playbook included in DebOps. The LDAP Distinguished Names used in the
-documentation assume that the ``example.org`` DNS domain is used by the
-OpenLDAP server.
+are used in the default :ref:`debops.slapd` Access Control List rules. The LDAP
+Distinguished Names used in the documentation assume that the ``example.org``
+DNS domain is used by the OpenLDAP server.
 
 The "Test RDN" and "Test DN" attributes refer to the
 :ref:`slapd__ref_acl_tests` and specifically to the
