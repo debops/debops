@@ -107,3 +107,13 @@
   become: True
   become_user: '{{ gitlab_user }}'
   when: gitlab_register_pages_checkout is changed
+
+- name: Setup GitLab Pages default variables
+  template:
+    src: 'etc/default/gitlab-pages.j2'
+    dest: '/etc/default/gitlab-pages'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: gitlab_version is version_compare("12.8", operator="ge", strict=True)
+  notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
