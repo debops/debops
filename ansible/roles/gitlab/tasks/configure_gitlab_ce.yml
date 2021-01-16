@@ -99,8 +99,7 @@
 - name: Install GitLab SysVinit script
   command: cp -f {{ gitlab_ce_git_checkout + "/lib/support/init.d/gitlab" }} /etc/init.d/gitlab
   register: gitlab__register_sysvinit_script
-  when: (gitlab_register_ce_checkout is changed and
-         (gitlab_use_systemd is defined and not gitlab_use_systemd))
+  when: (gitlab_use_systemd is defined and not gitlab_use_systemd)
 
 - name: Install GitLab systemd service files
   template:
@@ -117,8 +116,7 @@
           if (gitlab_version is version_compare("9.0", operator="gt", strict=True))
           else [] }}'
   register: gitlab__register_systemd_services
-  when: (gitlab_register_ce_checkout is changed and
-         (gitlab_use_systemd is defined and gitlab_use_systemd))
+  when: (gitlab_use_systemd is defined and gitlab_use_systemd)
 
 - name: Install GitLab Pages systemd service file
   template:
@@ -127,7 +125,6 @@
     mode: '0644'
   register: gitlab__register_pages_systemd_services
   when: (gitlab_enable_pages and
-         gitlab_register_ce_checkout is changed and
          (gitlab_use_systemd is defined and gitlab_use_systemd))
 
 - name: Reload systemd daemons
@@ -142,15 +139,13 @@
   service:
     name: 'gitlab'
     enabled: True
-  when: (gitlab_register_ce_checkout is changed and
-         ansible_service_mgr != 'systemd' and not gitlab_use_systemd|bool)
+  when: (ansible_service_mgr != 'systemd' and not gitlab_use_systemd|bool)
 
 - name: Enable GitLab SysVinit service (systemd)
   systemd:
     name: 'gitlab'
     enabled: True
-  when: (gitlab_register_ce_checkout is changed and
-         ansible_service_mgr == 'systemd' and not gitlab_use_systemd|bool)
+  when: (ansible_service_mgr == 'systemd' and not gitlab_use_systemd|bool)
 
 - name: Enable GitLab systemd services
   service:
@@ -165,16 +160,13 @@
     - '{{ "gitlab-gitaly.service"
           if (gitlab_version is version_compare("9.0", operator="gt", strict=True))
           else [] }}'
-  when: (gitlab_register_ce_checkout is changed and
-         gitlab_use_systemd|bool)
+  when: (gitlab_use_systemd|bool)
 
 - name: Enable GitLab Pages systemd service
   service:
     name: 'gitlab-pages.service'
     enabled: True
-  when: (gitlab_enable_pages and
-         gitlab_register_ce_checkout is changed and
-         gitlab_use_systemd|bool)
+  when: (gitlab_enable_pages and gitlab_use_systemd|bool)
 
 
 # ---- GitLab installation / upgrade ----
