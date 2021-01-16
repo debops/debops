@@ -291,45 +291,45 @@ postldap__postfix__dependent_lookup_tables:
   - name: 'ldap_virtual_alias_maps.cf'
     state: 'present'
     comment: |
-      The virtual_alias_maps setting is used to find the target mailbox
-      (configured in the attribute mail, aka the mailbox or maildrop).
+      The virtual_alias_maps setting is used to find the final delivery address
+      (configured in the attribute mailAddress).
     no_log: '{{ postldap__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
     search_base: '{{ postldap__ldap_people_dn|join(",") }}'
     query_filter: '(&
                     (objectClass=inetOrgPerson)
                     (|
-                      (mail=%s)
-                      (mailAlias=%s)
+                      (mailAddress=%s)
+                      (mailAlternateAddress=%s)
                     )
                     (|
                       (authorizedService=all)
                       (authorizedService=mail:receive)
                     )
                   )'
-    result_attribute: 'mail'
+    result_attribute: 'mailAddress'
 
   - name: 'ldap_virtual_mailbox_maps.cf'
     state: 'present'
     comment: |
       As we only want to accept mail, where we know the recipients
       (and are responsible for them), the virtual_mailbox_maps configuration is used.
+      The path for the mailbox is retrieved from the mailHomeDirectory attribute
     no_log: '{{ postldap__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
     search_base: '{{ postldap__ldap_people_dn|join(",") }}'
     query_filter: '(&
                     (objectClass=inetOrgPerson)
                     (|
-                      (mail=%s)
-                      (mailAlias=%s)
+                      (mailAddress=%s)
+                      (mailAlternateAddress=%s)
                     )
                     (|
                       (authorizedService=all)
                       (authorizedService=mail:receive)
                     )
                   )'
-    result_attribute: 'mail'
-    result_format: '/%d/%u/Maildir/'
+    result_attribute: 'mailHomeDirectory'
 
   - name: 'ldap_virtual_mailbox_domains.cf'
     state: 'present'
@@ -351,7 +351,7 @@ postldap__postfix__dependent_lookup_tables:
       The smtpd_sender_login_maps configurations performs a lookup from an incoming
       email-sender to a username. Postfix first performs a full lookup
       on user@domain, then user and then @domain.
-      The later one is also used for catchalls where the mailAlias
+      The later one is also used for catchalls where the mailAlternateAddress
       is set to e.g. @foobar.com
     no_log: '{{ postldap__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
@@ -360,8 +360,8 @@ postldap__postfix__dependent_lookup_tables:
                     (&
                       (objectClass=inetOrgPerson)
                       (|
-                        (mail=%s)
-                        (mailAlias=%s)
+                        (mailAddress=%s)
+                        (mailAlternateAddress=%s)
                       )
                       (|
                         (authorizedService=all)
@@ -378,7 +378,7 @@ postldap__postfix__dependent_lookup_tables:
                       )
                     )
                   )'
-    result_attribute: 'uid, mail, mailAlias'
+    result_attribute: 'uid, mailAddress, mailAlternateAddress'
     size_limit: 1
 
   - name: 'ldap_known_sender_relays.cf'
@@ -424,8 +424,8 @@ postldap__postfix__dependent_lookup_tables:
                     (&
                       (objectClass=inetOrgPerson)
                       (|
-                        (mail=%s)
-                        (mailAlias=%s)
+                        (mailAddress=%s)
+                        (mailAlternateAddress=%s)
                       )
                     )
                     (&
@@ -434,7 +434,7 @@ postldap__postfix__dependent_lookup_tables:
                       (host=%d)
                     )
                   )'
-    result_attribute: 'uid, mail, mailAlias'
+    result_attribute: 'uid, mailAddress, mailAlternateAddress'
     result_format: '550 Authentication Required'
 
   - name: 'ldap_unauth_domain_access.cf'
