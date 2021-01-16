@@ -146,7 +146,7 @@ def find_monorepopath(config, project_root):
         places = []
     places.append(config['paths']['monorepo-path'])
     for monorepo_path in places:
-        if os.path.exists(os.path.join(monorepo_path, "LICENSE")):
+        if os.path.exists(os.path.join(monorepo_path, "setup.py")):
             return monorepo_path
 
 
