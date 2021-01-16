@@ -86,17 +86,12 @@ are used in the default :ref:`debops.slapd` Access Control List rules. he LDAP
 Distinguished Names used in the documentation assume that the ``example.org``
 DNS domain is used by the OpenLDAP server.
 
-The "Test RDN" and "Test DN" attributes refer to the
-:ref:`slapd__ref_acl_tests` and specifically to the
-:envvar:`slapd__slapacl_test_rdn_map` variable.
-
 .. _slapd__ref_acl_group_unix_admins:
 
 UNIX Administrators
 ~~~~~~~~~~~~~~~~~~~
 
 :DN:       cn=UNIX Administrators,ou=Groups,dc=example,dc=org
-:Test RDN: ``unix_admin_rdn``
 :Obsolete: cn=UNIX Administrators,ou=System Groups,dc=example,dc=org
 
 - Members of this group have write access to the ``uid``, ``uidNumber``,
@@ -145,17 +140,12 @@ are used in the default :ref:`debops.slapd` Access Control List rules. The LDAP
 Distinguished Names used in the documentation assume that the ``example.org``
 DNS domain is used by the OpenLDAP server.
 
-The "Test RDN" and "Test DN" attributes refer to the
-:ref:`slapd__ref_acl_tests` and specifically to the
-:envvar:`slapd__slapacl_test_rdn_map` variable.
-
 .. _slapd__ref_acl_role_ldap_admin:
 
 LDAP Administrator
 ~~~~~~~~~~~~~~~~~~
 
 :DN:       cn=LDAP Administrator,ou=Roles,dc=example,dc=org
-:Test RDN: ``ldap_admin_rdn``
 :Obsolete: cn=LDAP Administrators,ou=System Groups,dc=example,dc=org
 
 - Role grants full access to the entire LDAP directory.
@@ -395,13 +385,14 @@ execution of the test script by Ansible :envvar:`can be disabled
 new ACL rules to fail the Ansible execution during development.
 
 Some of the test cases require real, existing LDAP objects to execute properly.
-The :ref:`debops.slapd` role provides the :envvar:`slapd__slapacl_test_rdn_map`
-YAML dictionary that contains Relative Distinguished Names of various LDAP
-objects like unprivileged and privileged user accounts. To enable the more
-extensive tests, you need to create the required LDAP objects, grant them the
-permissions you want and define their Relative Distinguished Names in the above
-YAML dictionary through the Ansible inventory. When the default values of the
-variable are changed, the role will enable the additional tests automatically.
+The :ref:`debops.slapd` role provides the
+:envvar:`slapd__slapacl_default_tasks` YAML list (and additional lists for use
+in the Ansible inventory) that contains definitions of various LDAP objects
+like unprivileged and privileged user accounts. To enable the more extensive
+tests, you need to set the :envvar:`slapd__slapacl_test_objects_state` variable
+to ``present`` which will tell the role to add the needed test objects in the
+directory. This functionality is meant to be used in a development environment
+to not interfere with the production database.
 
 
 References

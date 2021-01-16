@@ -340,6 +340,11 @@ LDAP
   project, to add support for storing SSH public key fingerprints in the LDAP
   directory. Existing installations shouldn't be affected.
 
+- The :command:`slapacl` test map with additional object RDNs has been
+  redesigned into a list of test LDAP objects which can be created or removed
+  by the role as needed. They will not be added to the directory by default and
+  can be enabled via Ansible inventory.
+
 Fixed
 ~~~~~
 

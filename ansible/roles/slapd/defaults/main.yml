@@ -1270,6 +1270,17 @@ slapd__host_allow: []
 slapd__slapacl_deploy_state: 'present'
 
                                                                    # ]]]
+# .. envvar:: slapd__slapacl_test_objects_state [[[
+#
+# This variable controls if the role should add or remove various LDAP objects
+# used for more extensive ACL tests. By default they are not added to avoid
+# issues with production data; they can be very useful in development
+# environments to properly check and verify that the defined ACL rules are
+# consistent with the defined access policy. The supported values are
+# ``present`` or ``absent``.
+slapd__slapacl_test_objects_state: 'absent'
+
+                                                                   # ]]]
 # .. envvar:: slapd__slapacl_run_tests [[[
 #
 # When enabled, the :command:`slapacl` test suite will be run on each
@@ -1288,39 +1299,130 @@ slapd__slapacl_run_tests: True
 slapd__slapacl_script: '/etc/ldap/slapacl-test-suite'
 
                                                                    # ]]]
-# .. envvar:: slapd__slapacl_test_rdn_map [[[
+# .. envvar:: slapd__slapacl_default_tasks [[[
 #
 # Some of the :command:`slapacl` tests require existing LDAP objects to work
-# correctly. This variable defines a YAML dictionary with Relative
-# Distinguished Names of various object types used in the default ACL test
-# cases. You should define any number of these in the inventory and point them
-# to real user accounts or service accounts - the more you define, the more
-# tests will be active.
-slapd__slapacl_test_rdn_map:
+# correctly. The ``slapd__*slapacl_*_tasks`` variables define list of LDAP
+# objects which will be created or removed, depending on the value of the
+# :envvar:`slapd__slapacl_test_objects_state` variable. The syntax of these
+# lists is the same as the :ref:`slapd__ref_tasks` variables. You can refer to
+# the created LDAP objects in the :command:`slapacl` tests defined elsewhere to
+# test ACL rules.
+#
+# This variable defines the default set of test objects to manage.
+slapd__slapacl_default_tasks:
 
-  # LDAP Administrator (see everything, write access to all)
-  ldap_admin_rdn:    'uid=<user>'
+  - name: 'Manage LDAP Administrator object for ACL tests'
+    dn: 'uid=slapacl-test-ldap-admin,ou=People,{{ slapd__basedn }}'
+    objectClass: [ 'inetOrgPerson' ]
+    attributes:
+      uid: 'slapacl-test-ldap-admin'
+      cn: 'LDAP Administrator'
+      surname: 'Administrator'
+    state: '{{ slapd__slapacl_test_objects_state }}'
 
-  # LDAP Editor (see most things, write access to most things)
-  ldap_editor_rdn:   'uid=<user>'
+  - name: 'Manage cn=LDAP Administrator role'
+    dn: 'cn=LDAP Administrator,ou=Roles,{{ slapd__basedn }}'
+    attributes:
+      roleOccupant: 'uid=slapacl-test-ldap-admin,ou=People,{{ slapd__basedn }}'
+    state: '{{ "present"
+               if (slapd__slapacl_test_objects_state == "present")
+               else "ignore" }}'
 
-  # UNIX Administrator (manages UNIX environment)
-  unix_admin_rdn:    'uid=<user>'
 
-  # Account Administrator (write access to personal objects)
-  account_admin_rdn: 'uid=<user>'
+  - name: 'Manage LDAP Editor object for ACL tests'
+    dn: 'uid=slapacl-test-ldap-editor,ou=People,{{ slapd__basedn }}'
+    objectClass: [ 'inetOrgPerson' ]
+    attributes:
+      uid: 'slapacl-test-ldap-editor'
+      cn: 'LDAP Editor'
+      surname: 'Editor'
+    state: '{{ slapd__slapacl_test_objects_state }}'
 
-  # An unprivileged user account
-  person_rdn:        'uid=<user>'
+  - name: 'Manage cn=LDAP Editor role'
+    dn: 'cn=LDAP Editor,ou=Roles,{{ slapd__basedn }}'
+    attributes:
+      roleOccupant: 'uid=slapacl-test-ldap-editor,ou=People,{{ slapd__basedn }}'
+    state: '{{ "present"
+               if (slapd__slapacl_test_objects_state == "present")
+               else "ignore" }}'
 
-  # Distinguished Name of a LDAP Replicator
-  ldap_replicator_dn: ''
 
-  # Distinguished Name of a Password Reset Agent
-  password_reset_dn: ''
+  - name: 'Manage UNIX Administrator object for ACL tests'
+    dn: 'uid=slapacl-test-unix-admin,ou=People,{{ slapd__basedn }}'
+    objectClass: [ 'inetOrgPerson' ]
+    attributes:
+      uid: 'slapacl-test-unix-admin'
+      cn: 'UNIX Administrator'
+      surname: 'Administrator'
+    state: '{{ slapd__slapacl_test_objects_state }}'
 
-  # Distinguished Name of a SMS Gateway object
-  sms_gateway_dn: ''
+  - name: 'Manage cn=UNIX Administrator group'
+    dn: 'cn=UNIX Administrators,ou=Groups,{{ slapd__basedn }}'
+    attributes:
+      member: 'uid=slapacl-test-unix-admin,ou=People,{{ slapd__basedn }}'
+    state: '{{ "present"
+               if (slapd__slapacl_test_objects_state == "present")
+               else "ignore" }}'
+
+
+  - name: 'Manage Account Administrator object for ACL tests'
+    dn: 'uid=slapacl-test-account-admin,ou=People,{{ slapd__basedn }}'
+    objectClass: [ 'inetOrgPerson' ]
+    attributes:
+      uid: 'slapacl-test-account-admin'
+      cn: 'Account Administrator'
+      surname: 'Administrator'
+    state: '{{ slapd__slapacl_test_objects_state }}'
+
+  - name: 'Manage cn=Account Administrator role'
+    dn: 'cn=Account Administrator,ou=Roles,{{ slapd__basedn }}'
+    attributes:
+      roleOccupant: 'uid=slapacl-test-account-admin,ou=People,{{ slapd__basedn }}'
+    state: '{{ "present"
+               if (slapd__slapacl_test_objects_state == "present")
+               else "ignore" }}'
+
+
+  - name: 'Manage unprivileged user object for ACL tests'
+    dn: 'uid=slapacl-test-unpriv-user,ou=People,{{ slapd__basedn }}'
+    objectClass: [ 'inetOrgPerson' ]
+    attributes:
+      uid: 'slapacl-test-unpriv-user'
+      cn: 'Unprivileged User'
+      surname: 'User'
+    state: '{{ slapd__slapacl_test_objects_state }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__slapacl_tasks [[[
+#
+# This variable defines a list of test objects to manage on all hosts in the
+# Ansible inventory. See :ref:`slapd__ref_tasks` for syntax details.
+slapd__slapacl_tasks: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__slapacl_group_tasks [[[
+#
+# This variable defines a list of test objects to manage on hosts in a specific
+# Ansible inventory group. See :ref:`slapd__ref_tasks` for syntax details.
+slapd__slapacl_group_tasks: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__slapacl_host_tasks [[[
+#
+# This variable defines a list of test objects to manage on specific hosts in
+# the Ansible inventory. See :ref:`slapd__ref_tasks` for syntax details.
+slapd__slapacl_host_tasks: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__slapacl_combined_tasks [[[
+#
+# This variable combines all lists of :command:`slapacl` test objects and is
+# used in the role tasks and templates.
+slapd__slapacl_combined_tasks: '{{ slapd__slapacl_default_tasks
+                                   + slapd__slapacl_tasks
+                                   + slapd__slapacl_group_tasks
+                                   + slapd__slapacl_host_tasks }}'
 
                                                                    # ]]]
 # .. envvar:: slapd__slapacl_default_tests [[[
@@ -1343,20 +1445,20 @@ slapd__slapacl_default_tests:
 
   - name: 'Deny regular user access to cn=config'
     dn: 'cn=config'
-    authdn: '{{ slapd__slapacl_test_rdn_map["person_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
+    authdn: 'uid=slapacl-test-unpriv-user,ou=People,{{ slapd__basedn }}'
     policy: '=0'
     dry_run: True
     state: '{{ "present"
-               if (slapd__slapacl_test_rdn_map["person_rdn"]|d("uid=<user>") != "uid=<user>")
+               if (slapd__slapacl_test_objects_state == "present")
                else "init" }}'
 
   - name: 'Deny direct admin access to cn=config'
     dn: 'cn=config'
-    authdn: '{{ slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
+    authdn: 'uid=slapacl-test-ldap-admin,ou=People,{{ slapd__basedn }}'
     policy: '=0'
     dry_run: True
     state: '{{ "present"
-               if (slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d("uid=<user>") != "uid=<user>")
+               if (slapd__slapacl_test_objects_state == "present")
                else "init" }}'
 
   - name: 'Deny anonymous access to cn=Monitor'
@@ -1372,21 +1474,21 @@ slapd__slapacl_default_tests:
     policy: 'none(=0)'
 
   - name: "Allow authentication by anonymous users"
-    dn: '{{ slapd__slapacl_test_rdn_map["person_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
+    dn: 'uid=slapacl-test-unpriv-user,ou=People,{{ slapd__basedn }}'
     authdn: ''
     query: 'userPassword'
     policy: 'auth(=xd)'
     state: '{{ "present"
-               if (slapd__slapacl_test_rdn_map["person_rdn"]|d("uid=<user>") != "uid=<user>")
+               if (slapd__slapacl_test_objects_state == "present")
                else "init" }}'
 
   - name: "Deny password read access by anonymous users"
-    dn: '{{ slapd__slapacl_test_rdn_map["person_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
+    dn: 'uid=slapacl-test-unpriv-user,ou=People,{{ slapd__basedn }}'
     authdn: ''
     query: 'userPassword/read'
     policy: 'denied'
     state: '{{ "present"
-               if (slapd__slapacl_test_rdn_map["person_rdn"]|d("uid=<user>") != "uid=<user>")
+               if (slapd__slapacl_test_objects_state == "present")
                else "init" }}'
 
   - name: 'Deny anonymous access to ou=People'
@@ -1401,25 +1503,25 @@ slapd__slapacl_default_tests:
         result: 'children: none(=0)'
 
     state: '{{ "present"
-               if (slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d("uid=<user>") != "uid=<user>")
+               if (slapd__slapacl_test_objects_state == "present")
                else "init" }}'
 
   - name: 'Deny write access to ou=People by unprivileged users'
     dn: 'ou=People,{{ slapd__basedn }}'
-    authdn: '{{ slapd__slapacl_test_rdn_map["person_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
+    authdn: 'uid=slapacl-test-unpriv-user,ou=People,{{ slapd__basedn }}'
     query: 'entry/write'
     policy: 'denied'
     state: '{{ "present"
-               if (slapd__slapacl_test_rdn_map["person_rdn"]|d("uid=<user>") != "uid=<user>")
+               if (slapd__slapacl_test_objects_state == "present")
                else "init" }}'
 
   - name: 'Allow write access to ou=People by administrators'
     dn: 'ou=People,{{ slapd__basedn }}'
-    authdn: '{{ slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
+    authdn: 'uid=slapacl-test-ldap-admin,ou=People,{{ slapd__basedn }}'
     query: 'entry/write'
     policy: 'allowed'
     state: '{{ "present"
-               if (slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d("uid=<user>") != "uid=<user>")
+               if (slapd__slapacl_test_objects_state == "present")
                else "init" }}'
 
                                                                    # ]]]
