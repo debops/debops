@@ -116,7 +116,7 @@
     src: 'etc/default/gitlab-pages.j2'
     dest: '/etc/default/gitlab-pages'
     owner: 'root'
-    group: 'root'
-    mode: '0644'
+    group: '{{ gitlab_group }}'
+    mode: '0640'
   when: gitlab_version is version_compare("12.8", operator="ge", strict=True)
   notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
