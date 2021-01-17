@@ -218,6 +218,14 @@ LDAP
   :ref:`debops.slapd` role to allow for better ACL testing. The playbook is
   still used for administrator account creation.
 
+- The base directory objects created by the :ref:`debops.slapd` role
+  (``ou=People``, ``ou=Groups``, etc.) changed their structural object type
+  from ``organizationalUnit`` to ``organizationalStructure``. Existing
+  directories should not be affected by this change, but users might want to
+  update them using the :ref:`backup and restore procedure
+  <slapd__ref_backup_restore>` to allow for more extensive ACL rules in the
+  future.
+
 :ref:`debops.dhcpd` role
 ''''''''''''''''''''''''
 
