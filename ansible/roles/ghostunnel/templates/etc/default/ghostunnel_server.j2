@@ -1,0 +1,39 @@
+# Copyright (C) 2021 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# {{ ansible_managed }}
+
+{% set ghostunnel__tpl_args = [] %}
+{% set _ = ghostunnel__tpl_args.append('--{} {}'.format('shutdown-timeout', item.shutdown_timeout|d(ghostunnel__shutdown_timeout))) %}
+{% set _ = ghostunnel__tpl_args.append('--{} {}'.format('connect-timeout', item.connect_timeout|d(ghostunnel__connect_timeout))) %}
+{% if item.status|d(False) %}
+{%   set _ = ghostunnel__tpl_args.append('--{} {}'.format('status', item.status)) %}
+{% endif %}
+{% for quiet in item.quiet|d(ghostunnel__quiet) %}
+{%   set _ = ghostunnel__tpl_args.append('--{} {}'.format('quiet', quiet)) %}
+{% endfor %}
+{% set _ = ghostunnel__tpl_args.append('--{} {}'.format('listen', item.listen)) %}
+{% set _ = ghostunnel__tpl_args.append('--{} {}'.format('target', item.target)) %}
+{% if item.allow_all|d(False) %}
+{%   set _ = ghostunnel__tpl_args.append('--{}'.format('allow-all')) %}
+{% endif %}
+{% for allow_cn in item.allow_cn|d([]) %}
+{%   set _ = ghostunnel__tpl_args.append('--{} {}'.format('allow-cn', allow_cn)) %}
+{% endfor %}
+{% for allow_ou in item.allow_ou|d([]) %}
+{%   set _ = ghostunnel__tpl_args.append('--{} {}'.format('allow-ou', allow_ou)) %}
+{% endfor %}
+{% for allow_dns in item.allow_dns|d([]) %}
+{%   set _ = ghostunnel__tpl_args.append('--{} {}'.format('allow-dns', allow_dns)) %}
+{% endfor %}
+{% for allow_uri in item.allow_uri|d([]) %}
+{%   set _ = ghostunnel__tpl_args.append('--{} {}'.format('allow-uri', allow_uri)) %}
+{% endfor %}
+{% if item.disable_authentication|d(False) %}
+{%   set _ = ghostunnel__tpl_args.append('--{}'.format('disable-authentication')) %}
+{% endif %}
+ARGS="{{ ghostunnel__tpl_args | join(' ') }}"
+CERT_PATH="{{ ghostunnel__pki_path + "/" + ghostunnel__pki_realm + "/" + ghostunnel__pki_crt }}"
+KEY_PATH="{{ ghostunnel__pki_path + "/" + ghostunnel__pki_realm + "/" + ghostunnel__pki_key }}"
+CACERT_PATH="{{ ghostunnel__pki_path + "/" + ghostunnel__pki_realm + "/" + ghostunnel__pki_ca }}"

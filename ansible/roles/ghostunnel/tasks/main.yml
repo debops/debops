@@ -1,0 +1,94 @@
+---
+# Copyright (C) 2021 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Create Ghostunnel system group
+  group:
+    name: '{{ ghostunnel__group }}'
+    state: 'present'
+    system: True
+
+- name: Create Ghostunnel system user
+  user:
+    name: '{{ ghostunnel__user }}'
+    group: '{{ ghostunnel__group }}'
+    groups: '{{ ghostunnel__combined_append_groups | join(",") | default(omit) }}'
+    home: '/var/lib/ghostunnel'
+    comment: 'Ghostunnel,,,'
+    shell: '/bin/false'
+    state: 'present'
+    system: True
+
+- name: Configure Ghostunnel servers
+  template:
+    src: 'etc/default/ghostunnel_server.j2'
+    dest: '/etc/default/ghostunnel-{{ item.name }}-server'
+    owner: '{{ ghostunnel__user }}'
+    group: '{{ ghostunnel__group }}'
+    mode: '0640'
+  with_items:
+    - '{{ ghostunnel__combined_servers }}'
+  tags: [ 'role::ghostunnel:config', 'role::ghostunnel:servers', 'role::ghostunnel:servers:config' ]
+  notify: Restart ghostunnel servers
+
+- name: Generate Ghostunnel servers systemd service unit
+  template:
+    src: 'etc/systemd/system/ghostunnel_server.service.j2'
+    dest: '/etc/systemd/system/ghostunnel-{{ item.name }}-server.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: ghostunnel__register_servers_systemd_services
+  with_items:
+    - '{{ ghostunnel__combined_servers }}'
+  tags: [ 'role::ghostunnel:servers' ]
+  notify: Restart ghostunnel servers
+
+- name: Configure Ghostunnel clients
+  template:
+    src: 'etc/default/ghostunnel_client.j2'
+    dest: '/etc/default/ghostunnel-{{ item.name }}-client'
+    owner: '{{ ghostunnel__user }}'
+    group: '{{ ghostunnel__group }}'
+    mode: '0640'
+  with_items:
+    - '{{ ghostunnel__combined_clients }}'
+  tags: [ 'role::ghostunnel:config', 'role::ghostunnel:clients', 'role::ghostunnel:clients:config' ]
+  notify: Restart ghostunnel clients
+
+- name: Generate Ghostunnel clients systemd service unit
+  template:
+    src: 'etc/systemd/system/ghostunnel_client.service.j2'
+    dest: '/etc/systemd/system/ghostunnel-{{ item.name }}-client.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: ghostunnel__register_clients_systemd_services
+  with_items:
+    - '{{ ghostunnel__combined_clients }}'
+  tags: [ 'role::ghostunnel:clients' ]
+  notify: Restart ghostunnel clients
+
+- name: Reload systemd daemons
+  systemd:
+    daemon_reload: True
+  when: (ghostunnel__register_servers_systemd_services is changed or
+         ghostunnel__register_clients_systemd_services is changed)
+  tags: [ 'role::ghostunnel:servers', 'role::ghostunnel:clients' ]
+
+- name: Enable Ghostunnel servers systemd services
+  service:
+    name: 'ghostunnel-{{ item.name }}-server.service'
+    enabled: True
+  with_items:
+    - '{{ ghostunnel__combined_servers }}'
+  tags: [ 'role::ghostunnel:servers' ]
+
+- name: Enable Ghostunnel clients systemd services
+  service:
+    name: 'ghostunnel-{{ item.name }}-client.service'
+    enabled: True
+  with_items:
+    - '{{ ghostunnel__combined_clients }}'
+  tags: [ 'role::ghostunnel:clients' ]

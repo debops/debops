@@ -1,0 +1,246 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2021 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+# .. Copyright (C) 2021 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-or-later
+
+# .. _ghostunnel__ref_defaults:
+
+# debops.ghostunnel default variables
+# ============================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Upstream configuration [[[
+# ----------------------------------------
+
+# .. envvar:: ghostunnel__version [[[
+#
+# The version of release of Ghostunnel.
+ghostunnel__release_version: 'v1.5.3'
+
+                                                                   # ]]]
+# .. envvar:: ghostunnel__release_checksum [[[
+#
+# The checksum of release of Ghostunnel.
+ghostunnel__release_checksum: 'ab39ce50e9797cd30fbf90a13d9bc87976e94d5a2231051884e1033ffe57fe45'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Basic configuration [[[
+# -----------------------
+
+# .. envvar:: ghostunnel__user [[[
+#
+# Name of the UNIX system account which is used to run Ghostunnel.
+ghostunnel__user: 'ghostunnel'
+
+                                                                   # ]]]
+# .. envvar:: ghostunnel__group [[[
+#
+# Name of the UNIX system group which is used to run Ghostunnel.
+ghostunnel__group: 'ghostunnel'
+
+                                                                   # ]]]
+# .. envvar:: ghostunnel__default_append_groups [[[
+#
+# List of default additional system groups to append to the Ghostunnel system user.
+ghostunnel__default_append_groups:
+
+  - 'ssl-cert'
+
+                                                                   # ]]]
+# .. envvar:: ghostunnel__append_groups [[[
+#
+# List of additional system groups to append to the Ghostunnel system user.
+# Some groups are required for access to sockets.
+ghostunnel__append_groups: []
+
+                                                                   # ]]]
+# .. envvar:: ghostunnel__combined_append_groups [[[
+#
+# The variable which combines all other Ghostunnel additional system groups
+# to append to the Ghostunnel system user and is used in the role tasks and templates.
+ghostunnel__combined_append_groups: '{{ ghostunnel__default_append_groups
+                                        + ghostunnel__append_groups }}'
+
+                                                                   # ]]]
+# .. envvar:: ghostunnel__servers [[[
+#
+# Ghostunnel servers to configure.
+# :ref:`ghostunnel__servers` for more details.
+ghostunnel__servers: []
+
+                                                                   # ]]]
+# .. envvar:: ghostunnel__group_servers [[[
+#
+# Ghostunnel servers to configure in specific Ansible
+# inventory group.
+ghostunnel__group_servers: []
+
+                                                                   # ]]]
+# .. envvar:: ghostunnel__host_servers [[[
+#
+# Ghostunnel servers to configure in specific Ansible
+# inventory host.
+ghostunnel__host_servers: []
+
+                                                                   # ]]]
+# .. envvar:: ghostunnel__combined_servers [[[
+#
+# The variable which combines all other Ghostunnel servers
+# configuration variables and is used in the role tasks and templates.
+ghostunnel__combined_servers: '{{ ghostunnel__servers
+                                  + ghostunnel__group_servers
+                                  + ghostunnel__host_servers }}'
+
+                                                                   # ]]]
+# .. envvar:: ghostunnel__clients [[[
+#
+# Ghostunnel clients to configure.
+# :ref:`ghostunnel__clients` for more details.
+ghostunnel__clients: []
+
+                                                                   # ]]]
+# .. envvar:: ghostunnel__group_clients [[[
+#
+# Ghostunnel clients to configure in specific Ansible
+# inventory group.
+ghostunnel__group_clients: []
+
+                                                                   # ]]]
+# .. envvar:: ghostunnel__host_clients [[[
+#
+# Ghostunnel clients to configure in specific Ansible
+# inventory host.
+ghostunnel__host_clients: []
+
+                                                                   # ]]]
+# .. envvar:: ghostunnel__combined_clients [[[
+#
+# The variable which combines all other Ghostunnel clients
+# configuration variables and is used in the role tasks and templates.
+ghostunnel__combined_clients: '{{ ghostunnel__clients
+                                  + ghostunnel__group_clients
+                                  + ghostunnel__host_clients }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Ghostunnel default arguments [[[
+# -------------------------------
+
+# .. envvar:: ghostunnel__shutdown_timeout [[[
+#
+# Graceful shutdown timeout. Terminates after timeout even if connections
+# still open.
+# For services that keep connections open like Prometheus, set a shutdown
+# timeout in '1s' for correct Ghostunnel service restarts.
+ghostunnel__shutdown_timeout: '5m'
+
+                                                                   # ]]]
+# .. envvar:: ghostunnel__connect_timeout [[[
+#
+# Timeout for establishing connections, handshakes.
+ghostunnel__connect_timeout: '10s'
+
+                                                                   # ]]]
+# .. envvar:: ghostunnel__quiet [[[
+#
+# Silence log messages (can be all, conns, conn-errs, handshake-errs;
+# repeat flag for more than one)
+ghostunnel__quiet:
+
+  - 'conns'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# SSL configuration [[[
+# ---------------------
+
+# .. envvar:: ghostunnel__pki [[[
+#
+# Enable or disable support for SSL in Ghostunnel (using :ref:`debops.pki`).
+# You can not use Ghostunnel role with pki disabled.
+ghostunnel__pki: '{{ True
+                     if (ansible_local.pki.enabled|d()|bool and
+                         ghostunnel__pki_realm in ansible_local.pki.known_realms)
+                     else False }}'
+
+                                                                   # ]]]
+# .. envvar:: ghostunnel__pki_path [[[
+#
+# Base path for PKI directory.
+ghostunnel__pki_path: '{{ ansible_local.pki.base_path|d("/etc/pki") }}'
+
+                                                                   # ]]]
+# .. envvar:: ghostunnel__pki_realm [[[
+#
+# Default PKI realm used by Ghostunnel servers and clients.
+ghostunnel__pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
+
+                                                                   # ]]]
+# .. envvar:: ghostunnel__pki_ca [[[
+#
+# Root CA certificate used by Ghostunnel servers and clients, relative to :envvar:`ghostunnel__pki_realm`.
+ghostunnel__pki_ca: 'CA.crt'
+
+                                                                   # ]]]
+# .. envvar:: ghostunnel__pki_crt [[[
+#
+# Host certificate used by Ghostunnel servers and clients, relative to :envvar:`ghostunnel__pki_realm`.
+ghostunnel__pki_crt: 'default.crt'
+
+                                                                   # ]]]
+# .. envvar:: ghostunnel__pki_key [[[
+#
+# Host private key used by Ghostunnel servers and clients, relative to :envvar:`ghostunnel__pki_realm`.
+ghostunnel__pki_key: 'default.key'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: ghostunnel__golang__dependent_packages [[[
+#
+# Configuration of the :ref:`debops.golang` role.
+ghostunnel__golang__dependent_packages:
+
+  - name: 'ghostunnel'
+    state: 'present'
+    upstream_type: 'url'
+    url:
+
+      - src: 'https://github.com/ghostunnel/ghostunnel/releases/download/{{ ghostunnel__release_version }}/ghostunnel-{{ ghostunnel__release_version }}-linux-amd64-with-pkcs11'
+        dest: 'releases/linux-amd64/ghostunnel/ghostunnel/{{ ghostunnel__release_version }}/ghostunnel-{{ ghostunnel__release_version }}-linux-amd64-with-pkcs11'
+        checksum: 'sha256:{{ ghostunnel__release_checksum }}'
+
+    url_binaries:
+
+      - src: 'releases/linux-amd64/ghostunnel/ghostunnel/{{ ghostunnel__release_version }}/ghostunnel-{{ ghostunnel__release_version }}-linux-amd64-with-pkcs11'
+        dest: 'ghostunnel'
+        notify: [ 'Restart ghostunnel servers', 'Restart ghostunnel clients' ]
+
+# .. envvar:: ghostunnel__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+ghostunnel__etc_services__dependent_list: '{{ lookup("template",
+                                              "lookup/ghostunnel__etc_services__dependent_list.j2") }}'
+
+                                                                   # ]]]
+# .. envvar:: ghostunnel__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+# Ghostunnel has his own system for authenticate clients.
+# By default Ghostunnel has client authenticate activated, so
+# ferm rules can accept any connection.
+ghostunnel__ferm__dependent_rules: '{{ lookup("template",
+                                       "lookup/ghostunnel__ferm__dependent_rules.j2") }}'
+
+                                                                   # ]]]
+                                                                   # ]]]

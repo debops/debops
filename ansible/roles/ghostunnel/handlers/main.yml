@@ -1,0 +1,16 @@
+---
+# Copyright (C) 2021 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Restart ghostunnel servers
+  service:
+    name: 'ghostunnel-{{ item.name }}-server'
+    state: 'restarted'
+  with_items: '{{ ghostunnel__combined_servers }}'
+
+- name: Restart ghostunnel clients
+  service:
+    name: 'ghostunnel-{{ item.name }}-client'
+    state: 'restarted'
+  with_items: '{{ ghostunnel__combined_clients }}'
