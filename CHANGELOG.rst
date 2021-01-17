@@ -150,6 +150,9 @@ General
 - The :command:`systemd` services no longer require Redis to be installed on
   the same host as GitLab itself.
 
+- Improved support for GitLab Pages, including optional access control and
+  fixed configuration of the :command:`systemd` service.
+
 :ref:`debops.grub` role
 '''''''''''''''''''''''
 
