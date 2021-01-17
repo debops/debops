@@ -139,6 +139,10 @@ LDAP
   overlay. This change changes the order of existing overlays in the LDAP
   database which means that the directory server will have to be rebuilt.
 
+- New :ref:`orgstructure schema <slapd__ref_orgstructure_schema>` provides the
+  ``organizationalStructure`` LDAP object class which is used to define the
+  base directory objects, such as ``ou=People``, ``ou=Groups``, etc.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 

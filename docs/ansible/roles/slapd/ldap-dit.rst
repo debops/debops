@@ -60,6 +60,8 @@ Directory structure
 
         - :ref:`nextuidgid.schema <slapd__ref_nextuidgid_schema>`
 
+        - :ref:`orgstructure.schema <slapd__ref_orgstructure_schema>`
+
         - :ref:`ppolicy.schema <slapd__ref_ppolicy_schema>`
 
         - :ref:`ldapns.schema <slapd__ref_ldapns>`
