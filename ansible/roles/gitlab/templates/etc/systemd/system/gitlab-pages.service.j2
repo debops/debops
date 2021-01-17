@@ -21,7 +21,11 @@ WorkingDirectory={{ gitlab_pages_path }}
 SyslogIdentifier=gitlab-pages
 PIDFile={{ gitlab_app_root_path }}/gitlab/tmp/pids/gitlab-pages.pid
 
+{% if gitlab_version is version_compare("12.8", operator="ge", strict=True) %}
+ExecStart={{ gitlab_app_root_path }}/gitlab-pages/gitlab-pages -config=/etc/default/gitlab-pages
+{% else %}
 ExecStart={{ gitlab_app_root_path }}/gitlab-pages/gitlab-pages -pages-domain {{ gitlab_pages_domain }} -pages-root {{ gitlab_pages_path }} -listen-proxy 127.0.0.1:{{ gitlab_pages_port }}
+{% endif %}
 
 [Install]
 WantedBy=multi-user.target

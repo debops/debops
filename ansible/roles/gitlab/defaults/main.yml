@@ -197,6 +197,45 @@ gitlab_pages_domain: ''
 # Port the ``gitlab-pages`` HTTP server listens to.
 gitlab_pages_port: '8090'
                                                                    # ]]]
+
+# .. envvar:: gitlab_pages_access_control_enabled [[[
+#
+# GitLab Pages access control can be configured per-project, and allows access to
+# a Pages site to be controlled based on a user’s membership to that project.
+# You need set also ``gitlab_pages_auth_client_id`` and ``gitlab_pages_auth_client_secret``
+# Available in Gitlab 12.10 and newer.
+# https://docs.gitlab.com/12.10/ee/administration/pages/source.html#access-control
+gitlab_pages_access_control_enabled: False
+                                                                   # ]]]
+
+# .. envvar:: gitlab_pages_auth_client_id [[[
+#
+# GitLab application Client ID
+gitlab_pages_auth_client_id: ''
+                                                                   # ]]]
+
+# .. envvar:: gitlab_pages_auth_client_secret [[[
+#
+# GitLab application Client Secret
+gitlab_pages_auth_client_secret: ''
+                                                                   # ]]]
+
+
+# .. envvar:: gitlab_pages_auth_secret_path [[[
+#
+# Path to auth secret file located on the Ansible Controller. See the
+# :ref:`debops.secret` role for more details.
+gitlab_pages_auth_secret_path: '{{ secret + "/credentials/" + inventory_hostname +
+                                   "/gitlab-pages/auth/secret" }}'
+
+                                                                   # ]]]
+
+# .. envvar:: gitlab_pages_auth_secret [[[
+#
+# Cookie store hash key, should be at least 32 bytes long.
+gitlab_pages_auth_secret: "{{ lookup('password', gitlab_pages_auth_secret_path
+                              + ' length=40 chars=hexdigits') }}"
+                                                                   # ]]]
                                                                    # ]]]
 # nginx webserver options [[[
 # ---------------------------
@@ -493,11 +532,9 @@ gitlab_group: 'git'
 # If the LDAP support was enabled after the system groups have been created,
 # the role will keep the current prefix value to not duplicate the UNIX groups.
 gitlab_system_groups_prefix: '{{ ansible_local.system_groups.local_prefix
-                                 if (ansible_local|d() and ansible_local.system_groups|d() and
-                                     ansible_local.system_groups.local_prefix is defined)
+                                 if ansible_local.system_groups.local_prefix|d()
                                  else ("_"
-                                       if (ansible_local|d() and ansible_local.ldap|d() and
-                                           (ansible_local.ldap.posix_enabled|d())|bool)
+                                       if (ansible_local.ldap.posix_enabled|d())|bool)
                                        else "") }}'
 
                                                                    # ]]]
