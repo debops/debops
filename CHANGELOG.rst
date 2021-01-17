@@ -100,6 +100,13 @@ LDAP
 - Install the ``future`` Python 2.7 and Python 3.x packages by default, to aid
   in transition to Python 3.x.
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- New :ref:`orgstructure schema <slapd__ref_orgstructure_schema>` provides the
+  ``organizationalStructure`` LDAP object class which is used to define the
+  base directory objects, such as ``ou=People``, ``ou=Groups``, etc.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 

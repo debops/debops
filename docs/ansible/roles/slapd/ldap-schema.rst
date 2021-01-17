@@ -216,6 +216,19 @@ for other purposes, for example to split the UID/GID range used in the LDAP
 directory into subranges.
 
 
+.. _slapd__ref_orgstructure_schema:
+
+The ``orgstructure`` schema
+---------------------------
+
+The ``orgstructure`` schema defines an additional LDAP object,
+``organizationalStructure``. This object is meant to replace the use of the
+``organizationalUnit`` object class in the base LDAP directory entries, such as
+``ou=People``, ``ou=Groups``, and so on. The new object contains attributes
+selected to help manage the :ref:`access control <slapd__ref_acl>` for specific
+LDAP directory subtrees.
+
+
 .. _slapd__ref_ppolicy_schema:
 
 The ``ppolicy`` schema
