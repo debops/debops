@@ -1,0 +1,55 @@
+# orgstructure.schema - Object which helps define the base tree structure
+#
+# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: MIT
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+
+# Depends upon:
+#     core.schema
+#     cosine.schema
+#     debops.schema
+
+# This LDAP schema defines the 'organizationalStructure' object, which is meant
+# to be used in base structure of the directory, for example to create such
+# objects as "ou=People,dc=example,dc=org" or "ou=Groups,dc=example,dc=org".
+#
+# These objects are usually created by using the 'organizationalUnit' object
+# type, however this may have an impact on the possible OpenLDAP ACL rules.
+# Using a separate object type permits definition of extensive access control
+# rules, for example to allow owners of a given object to modify it and its
+# subtrees, and managers to only allow modifications in the subtrees of a given
+# object.
+
+
+# The organizationalstructure.schema namespace
+objectIdentifier orgStructureSchema DebOpsLDAP:4
+
+# The organizationalstructure.schema object namespace
+objectIdentifier orgStructureSchemaObject orgStructureSchema:1
+
+# Definition of the organizationalStructure object
+objectClass ( orgStructureSchemaObject:1
+              NAME 'organizationalStructure'
+              DESC 'Object which defines the base structure of an organization'
+              SUP top STRUCTURAL
+              MAY ( o $ cn $ ou $ description $ owner $ manager $
+                    organizationalStatus $ uniqueIdentifier $ seeAlso ) )
