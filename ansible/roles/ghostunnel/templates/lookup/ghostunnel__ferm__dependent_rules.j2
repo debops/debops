@@ -8,7 +8,8 @@
    'name': 'ghostunnel_' + server.name|replace('-','_'),
    'type': 'accept',
    'dport': server.listen.split(":")[1]|string,
-   'accept_any': True,
+   'saddr': server.allow|d([]),
+   'accept_any': not server.disable_authentication|d(True)|bool,
    'role': 'ghostunnel'
 }) %}
 {% endfor %}
