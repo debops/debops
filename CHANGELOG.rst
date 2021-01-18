@@ -360,6 +360,12 @@ General
 - Fixed ``_syslog._tcp`` DNS SRV resource record detection on hosts with an
   undefined DNS domain.
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- The :command:`slapd-snapshot` script will now correctly create database
+  snapshots when the ``cn=Monitor`` database is disabled or not configured.
+
 :ref:`debops.snmpd` role
 ''''''''''''''''''''''''
 
