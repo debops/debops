@@ -537,6 +537,9 @@ LDAP
   automatically due to the :file:`mailservice.schema` being loaded into the
   database.
 
+- The :command:`slapd-snapshot` script will now correctly create database
+  snapshots when the ``cn=Monitor`` database is disabled or not configured.
+
 :ref:`debops.snmpd` role
 ''''''''''''''''''''''''
 
