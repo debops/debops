@@ -766,6 +766,9 @@ slapd__default_tasks:
       olcAccess:
         - |-
           {0}to dn.subtree="cn=Monitor"
+             by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth read
+             by group/organizationalRole/roleOccupant.exact="cn=LDAP Administrator, ou=Roles,{{ slapd__basedn }}" read
+             by group/organizationalRole/roleOccupant.exact="cn=LDAP Monitor,       ou=Roles,{{ slapd__basedn }}" read
              by group/groupOfNames/member.exact="cn=LDAP Administrators, ou=System Groups,{{ slapd__basedn }}" read
              by group/groupOfNames/member.exact="cn=LDAP Monitors,       ou=System Groups,{{ slapd__basedn }}" read
              by * none
@@ -999,6 +1002,13 @@ slapd__structure_tasks:
     attributes:
       cn: 'LDAP Replicator'
       description: 'Service accounts used for LDAP replication'
+
+  - name: 'Create cn=LDAP Monitor role'
+    dn: '{{ [ "cn=LDAP Monitor", "ou=Roles" ] + slapd__base_dn }}'
+    objectClass: 'organizationalRole'
+    attributes:
+      cn: 'LDAP Monitor'
+      description: 'Accounts which can read cn=Monitor information'
 
   - name: 'Create cn=LDAP Editor role'
     dn: '{{ [ "cn=LDAP Editor", "ou=Roles" ] + slapd__base_dn }}'

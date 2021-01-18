@@ -357,6 +357,10 @@ LDAP
   by the role as needed. They will not be added to the directory by default and
   can be enabled via Ansible inventory.
 
+- The support for OpenLDAP monitoring is improved. The ``root`` UNIX account as
+  well as members of the "LDAP Administrator" and "LDAP Monitor" roles can now
+  read the ``cn=Monitor`` information.
+
 Fixed
 ~~~~~
 

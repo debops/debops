@@ -181,6 +181,17 @@ LDAP Editor
 - Role grants write access to most of the LDAP directory, apart from the
   privileged groups and roles.
 
+.. _slapd__ref_acl_role_ldap_monitor:
+
+LDAP Monitor
+~~~~~~~~~~~~
+
+:DN:       cn=LDAP Monitor,ou=Roles,dc=example,dc=org
+
+- Role grants read access to the ``cn=Monitor`` LDAP subtree, which stores the
+  information about the OpenLDAP server. It is usually utilized by monitoring
+  services to gather data about OpenLDAP service.
+
 .. _slapd__ref_acl_role_account_admin:
 
 Account Administrator
