@@ -160,7 +160,6 @@ LDAP Replicator
 ~~~~~~~~~~~~~~~
 
 :DN:       cn=LDAP Replicator,ou=Roles,dc=example,dc=org
-:Test DN:  ``ldap_replicator_dn``
 :Obsolete: cn=LDAP Replicators,ou=System Groups,dc=example,dc=org
 
 - Role grants read-only access to the entire LDAP directory.
@@ -175,7 +174,6 @@ LDAP Editor
 ~~~~~~~~~~~
 
 :DN:       cn=LDAP Editor,ou=Roles,dc=example,dc=org
-:Test RDN: ``ldap_editor_rdn``
 :Obsolete: cn=LDAP Editors,ou=System Groups,dc=example,dc=org
 
 - Role grants write access to most of the LDAP directory, apart from the
@@ -198,7 +196,6 @@ Account Administrator
 ~~~~~~~~~~~~~~~~~~~~~
 
 :DN:       cn=Account Administrator,ou=Roles,dc=example,dc=org
-:Test RDN: ``account_admin_rdn``
 :Obsolete: cn=Account Administrators,ou=System Groups,dc=example,dc=org
 
 - Role grants write access to the ``shadowLastChange`` and write-only access to
@@ -218,7 +215,6 @@ Password Reset Agent
 ~~~~~~~~~~~~~~~~~~~~
 
 :DN:       cn=Password Reset Agent,ou=Roles,dc=example,dc=org
-:Test DN: ``password_reset_dn``
 :Obsolete: cn=Password Reset Agents,ou=System Groups,dc=example,dc=org
 
 - Role grants write-only access to the ``shadowLastChange`` and the
@@ -234,7 +230,6 @@ SMS Gateway
 ~~~~~~~~~~~
 
 :DN:       cn=SMS Gateway,ou=Roles,dc=example,dc=org
-:Test DN: ``sms_gateway_dn``
 
 - Role grants read-only access to the ``mobile`` LDAP attribute, required by
   the SMS gateways to send SMS messages.
