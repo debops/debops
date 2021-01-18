@@ -143,6 +143,9 @@ LDAP
   ``organizationalStructure`` LDAP object class which is used to define the
   base directory objects, such as ``ou=People``, ``ou=Groups``, etc.
 
+- Members of the ``cn=LDAP Administrator`` LDAP role can now manage the server
+  configuration stored in the ``cn=config`` LDAP subtree.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 

@@ -677,6 +677,17 @@ slapd__default_tasks:
     state: 'exact'
     no_log: True
 
+  - name: 'Set the cn=config database access control list'
+    dn: [ 'olcDatabase={0}config', 'cn=config' ]
+    attributes:
+      olcAccess:
+        - |-
+          {0}to dn.subtree="cn=config"
+             by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage
+             by group/organizationalRole/roleOccupant.exact="cn=LDAP Administrator, ou=Roles,{{ slapd__basedn }}" manage
+             by * break
+    state: 'exact'
+
   - name: 'Set the main database root credentials'
     dn: [ 'olcDatabase={1}mdb', 'cn=config' ]
     attributes:
