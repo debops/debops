@@ -18,18 +18,34 @@
 {% if item.allow_all|d(False) %}
 {%   set _ = ghostunnel__tpl_args.append('--{}'.format('allow-all')) %}
 {% endif %}
-{% for allow_cn in item.allow_cn|d([]) %}
-{%   set _ = ghostunnel__tpl_args.append('--{} {}'.format('allow-cn', allow_cn)) %}
-{% endfor %}
-{% for allow_ou in item.allow_ou|d([]) %}
-{%   set _ = ghostunnel__tpl_args.append('--{} {}'.format('allow-ou', allow_ou)) %}
-{% endfor %}
-{% for allow_dns in item.allow_dns|d([]) %}
-{%   set _ = ghostunnel__tpl_args.append('--{} {}'.format('allow-dns', allow_dns)) %}
-{% endfor %}
-{% for allow_uri in item.allow_uri|d([]) %}
-{%   set _ = ghostunnel__tpl_args.append('--{} {}'.format('allow-uri', allow_uri)) %}
-{% endfor %}
+{% if item.allow_cn|d([]) is string %}
+{%     set _ = ghostunnel__tpl_args.append('--{} {}'.format('allow-cn', item.allow_cn)) %}
+{% else %}
+{%   for allow_cn in item.allow_cn|d([]) %}
+{%     set _ = ghostunnel__tpl_args.append('--{} {}'.format('allow-cn', allow_cn)) %}
+{%   endfor %}
+{% endif %}
+{% if item.allow_ou|d([]) is string %}
+{%     set _ = ghostunnel__tpl_args.append('--{} {}'.format('allow-ou', item.allow_ou)) %}
+{% else %}
+{%   for allow_ou in item.allow_ou|d([]) %}
+{%     set _ = ghostunnel__tpl_args.append('--{} {}'.format('allow-ou', allow_ou)) %}
+{%   endfor %}
+{% endif %}
+{% if item.allow_dns|d([]) is string %}
+{%     set _ = ghostunnel__tpl_args.append('--{} {}'.format('allow-dns', item.allow_dns)) %}
+{% else %}
+{%   for allow_dns in item.allow_dns|d([]) %}
+{%     set _ = ghostunnel__tpl_args.append('--{} {}'.format('allow-dns', allow_dns)) %}
+{%   endfor %}
+{% endif %}
+{% if item.allow_uri|d([]) is string %}
+{%     set _ = ghostunnel__tpl_args.append('--{} {}'.format('allow-uri', item.allow_uri)) %}
+{% else %}
+{%   for allow_uri in item.allow_uri|d([]) %}
+{%     set _ = ghostunnel__tpl_args.append('--{} {}'.format('allow-uri', allow_uri)) %}
+{%   endfor %}
+{% endif %}
 {% if item.disable_authentication|d(False) %}
 {%   set _ = ghostunnel__tpl_args.append('--{}'.format('disable-authentication')) %}
 {% endif %}

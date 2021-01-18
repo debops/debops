@@ -24,18 +24,34 @@
 {% if item.connect_proxy|d(False) %}
 {%   set _ = ghostunnel__tpl_args.append('--{} {}'.format('connect-proxy', item.connect_proxy)) %}
 {% endif %}
-{% for verify_cn in item.verify_cn|d([]) %}
-{%   set _ = ghostunnel__tpl_args.append('--{} {}'.format('verify-cn', verify_cn)) %}
-{% endfor %}
-{% for verify_ou in item.verify_ou|d([]) %}
-{%   set _ = ghostunnel__tpl_args.append('--{} {}'.format('verify-ou', verify_ou)) %}
-{% endfor %}
-{% for verify_dns in item.verify_dns|d([]) %}
-{%   set _ = ghostunnel__tpl_args.append('--{} {}'.format('verify-dns', verify_dns)) %}
-{% endfor %}
-{% for verify_uri in item.verify_uri|d([]) %}
-{%   set _ = ghostunnel__tpl_args.append('--{} {}'.format('verify-uri', verify_uri)) %}
-{% endfor %}
+{% if item.verify_cn|d([]) is string %}
+{%     set _ = ghostunnel__tpl_args.append('--{} {}'.format('verify-cn', item.verify_cn)) %}
+{% else %}
+{%   for verify_cn in item.verify_cn|d([]) %}
+{%     set _ = ghostunnel__tpl_args.append('--{} {}'.format('verify-cn', verify_cn)) %}
+{%   endfor %}
+{% endif %}
+{% if item.verify_ou|d([]) is string %}
+{%     set _ = ghostunnel__tpl_args.append('--{} {}'.format('verify-ou', item.verify_ou)) %}
+{% else %}
+{%   for verify_ou in item.verify_ou|d([]) %}
+{%     set _ = ghostunnel__tpl_args.append('--{} {}'.format('verify-ou', verify_ou)) %}
+{%   endfor %}
+{% endif %}
+{% if item.verify_dns|d([]) is string %}
+{%     set _ = ghostunnel__tpl_args.append('--{} {}'.format('verify-dns', item.verify_dns)) %}
+{% else %}
+{%   for verify_dns in item.verify_dns|d([]) %}
+{%     set _ = ghostunnel__tpl_args.append('--{} {}'.format('verify-dns', verify_dns)) %}
+{%   endfor %}
+{% endif %}
+{% if item.verify_uri|d([]) is string %}
+{%     set _ = ghostunnel__tpl_args.append('--{} {}'.format('verify-uri', item.verify_uri)) %}
+{% else %}
+{%   for verify_uri in item.verify_uri|d([]) %}
+{%     set _ = ghostunnel__tpl_args.append('--{} {}'.format('verify-uri', verify_uri)) %}
+{%   endfor %}
+{% endif %}
 {% if item.enable_authentication|d(False) %}
 {%   set _ = ghostunnel__tpl_args.append('--{}'.format('disable-authentication')) %}
 {% endif %}
