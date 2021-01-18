@@ -30,7 +30,7 @@
 {% for allow_uri in item.allow_uri|d([]) %}
 {%   set _ = ghostunnel__tpl_args.append('--{} {}'.format('allow-uri', allow_uri)) %}
 {% endfor %}
-{% if item.disable_authentication|d(True) %}
+{% if item.disable_authentication|d(False) %}
 {%   set _ = ghostunnel__tpl_args.append('--{}'.format('disable-authentication')) %}
 {% endif %}
 ARGS="{{ ghostunnel__tpl_args | join(' ') }}"
