@@ -26,10 +26,6 @@ BACKUP_USER="backup"
 BACKUP_GROUP="backup"
 BACKUP_ROOT="$(getent passwd "${BACKUP_USER}" | cut -f6 -d:)/slapd"
 
-# Find all OpenLDAP databases, but skip the frontend database, and don't
-# include databases that have "olcReadOnly" attribute set.
-BACKUP_LDAP_SEARCH_FILTER="(&(olcDatabase=*)(!(objectClass=olcFrontendConfig))(!(objectClass=olcMonitorConfig))(!(olcReadOnly=*)))"
-
 if [ -f "/etc/default/slapd-snapshot" ] ; then
     # shellcheck disable=SC1091
     . "/etc/default/slapd-snapshot"
@@ -45,9 +41,31 @@ EOF
 
 
 get_databases () {
-    ldapsearch -QALLL -Y EXTERNAL -H ldapi:/// -b cn=config -s one \
-    "${BACKUP_LDAP_SEARCH_FILTER}" dn \
-    | sed -e '/./!d' -e 's/^dn: //'
+    local result
+    local search_filter
+
+    # Find all OpenLDAP databases, but skip the frontend and monitor database, and don't
+    # include databases that have "olcReadOnly" attribute set.
+    search_filter="(&(olcDatabase=*)(!(objectClass=olcFrontendConfig))(!(objectClass=olcMonitorConfig))(!(olcReadOnly=*)))"
+
+    result="$(ldapsearch -QALLL -Y EXTERNAL -H ldapi:/// -b cn=config -s one "${search_filter}" dn)"
+    if [ -n "${result}" ] ; then
+        printf "%s\n" "${result}" | sed -e '/./!d' -e 's/^dn: //'
+    else
+
+        # The first search was empty, most likely due to not enabled cn=Monitor
+        # configuration. Let's search again, without it.
+        search_filter="(&(olcDatabase=*)(!(objectClass=olcFrontendConfig))(!(olcReadOnly=*)))"
+
+        result="$(ldapsearch -QALLL -Y EXTERNAL -H ldapi:/// -b cn=config -s one "${search_filter}" dn)"
+        if [ -n "${result}" ] ; then
+            printf "%s\n" "${result}" | sed -e '/./!d' -e 's/^dn: //'
+        else
+
+            # There was no result either, give up.
+            printf "\n"
+        fi
+    fi
 }
 mapfile -t SLAPD_DATABASES < <(get_databases)
 
