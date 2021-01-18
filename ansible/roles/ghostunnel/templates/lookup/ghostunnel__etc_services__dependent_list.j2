@@ -3,10 +3,12 @@
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 {% set ghostunnel__tpl_etc_services = [] %}
-{% for server in ghostunnel__combined_servers %}
-{%   set _ = ghostunnel__tpl_etc_services.append({
-   'name': server.name,
-   'port': server.listen.split(":")[1]|string
+{% for service in ghostunnel__combined_services %}
+{%   if service.mode == 'server' %}
+{%     set _ = ghostunnel__tpl_etc_services.append({
+   'name': service.name,
+   'port': service.listen.split(":")[1]|string
 }) %}
+{%   endif %}
 {% endfor %}
 {{ ghostunnel__tpl_etc_services }}

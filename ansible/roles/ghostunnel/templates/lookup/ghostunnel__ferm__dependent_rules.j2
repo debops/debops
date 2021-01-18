@@ -3,14 +3,16 @@
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 {% set ghostunnel__tpl_ferm = [] %}
-{% for server in ghostunnel__combined_servers %}
-{%   set _ = ghostunnel__tpl_ferm.append({
-   'name': 'ghostunnel_' + server.name|replace('-','_'),
+{% for service in ghostunnel__combined_services %}
+{%   if service.mode == 'server' %}
+{%     set _ = ghostunnel__tpl_ferm.append({
+   'name': 'ghostunnel_' + service.name|replace('-','_'),
    'type': 'accept',
-   'dport': server.listen.split(":")[1]|string,
-   'saddr': server.allow|d([]),
-   'accept_any': not server.disable_authentication|d(False)|bool,
+   'dport': service.listen.split(":")[1]|string,
+   'saddr': service.allow|d([]),
+   'accept_any': not service.disable_authentication|d(False)|bool,
    'role': 'ghostunnel'
 }) %}
+{%   endif %}
 {% endfor %}
 {{ ghostunnel__tpl_ferm }}

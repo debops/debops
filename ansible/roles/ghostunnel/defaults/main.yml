@@ -8,7 +8,7 @@
 # .. _ghostunnel__ref_defaults:
 
 # debops.ghostunnel default variables
-# ============================================
+# ===================================
 
 # .. contents:: Sections
 #    :local:
@@ -17,7 +17,7 @@
 
 
 # Upstream configuration [[[
-# ----------------------------------------
+# --------------------------
 
 # .. envvar:: ghostunnel__version [[[
 #
@@ -70,92 +70,74 @@ ghostunnel__combined_append_groups: '{{ ghostunnel__default_append_groups
                                         + ghostunnel__append_groups }}'
 
                                                                    # ]]]
-# .. envvar:: ghostunnel__servers [[[
+# .. envvar:: ghostunnel__services [[[
 #
-# Ghostunnel servers to configure.
-# :ref:`ghostunnel__servers` for more details.
-ghostunnel__servers: []
+# Ghostunnel services to configure.
+# :ref:`ghostunnel__services` for more details.
+ghostunnel__services: []
 
                                                                    # ]]]
-# .. envvar:: ghostunnel__group_servers [[[
+# .. envvar:: ghostunnel__group_services [[[
 #
-# Ghostunnel servers to configure in specific Ansible
+# Ghostunnel services to configure in specific Ansible
 # inventory group.
-ghostunnel__group_servers: []
+ghostunnel__group_services: []
 
                                                                    # ]]]
-# .. envvar:: ghostunnel__host_servers [[[
+# .. envvar:: ghostunnel__host_services [[[
 #
-# Ghostunnel servers to configure in specific Ansible
+# Ghostunnel services to configure in specific Ansible
 # inventory host.
-ghostunnel__host_servers: []
+ghostunnel__host_services: []
 
                                                                    # ]]]
-# .. envvar:: ghostunnel__combined_servers [[[
+# .. envvar:: ghostunnel__dependent_services [[[
 #
-# The variable which combines all other Ghostunnel servers
+# Ghostunnel services configured by other Ansible roles using role
+# dependent variables.
+ghostunnel__dependent_services: []
+
+                                                                   # ]]]
+# .. envvar:: ghostunnel__combined_services [[[
+#
+# The variable which combines all other Ghostunnel services
 # configuration variables and is used in the role tasks and templates.
-ghostunnel__combined_servers: '{{ ghostunnel__servers
-                                  + ghostunnel__group_servers
-                                  + ghostunnel__host_servers }}'
+ghostunnel__combined_services: '{{ ghostunnel__services
+                                   + ghostunnel__group_services
+                                   + ghostunnel__host_services
+                                   + ghostunnel__dependent_services }}'
 
                                                                    # ]]]
-# .. envvar:: ghostunnel__clients [[[
+# Ghostunnel default configuration [[[
+# ------------------------------------
+
+# .. envvar:: ghostunnel__default_configuration [[[
 #
-# Ghostunnel clients to configure.
-# :ref:`ghostunnel__clients` for more details.
-ghostunnel__clients: []
+# The default configuration options which should be present in the ghostunnel
+# configuration files.
+# :ref:`ghostunnel__services` for more details.
+ghostunnel__default_configuration:
+
+  # Graceful shutdown timeout. Terminates after timeout even if connections
+  # still open.
+  # For services that keep connections open like Elasticseearch, set a shutdown
+  # timeout in '1s' for correct Ghostunnel service restarts.
+  shutdown_timeout: '5m'
+
+  # Timeout for establishing connections, handshakes.
+  connect_timeout: '10s'
+
+  # Silence log messages (can be all, conns, conn-errs, handshake-errs;
+  # or list for more than one)
+  quiet: 'conns'
 
                                                                    # ]]]
-# .. envvar:: ghostunnel__group_clients [[[
+# .. envvar:: ghostunnel__configuration [[[
 #
-# Ghostunnel clients to configure in specific Ansible
-# inventory group.
-ghostunnel__group_clients: []
-
-                                                                   # ]]]
-# .. envvar:: ghostunnel__host_clients [[[
-#
-# Ghostunnel clients to configure in specific Ansible
-# inventory host.
-ghostunnel__host_clients: []
-
-                                                                   # ]]]
-# .. envvar:: ghostunnel__combined_clients [[[
-#
-# The variable which combines all other Ghostunnel clients
-# configuration variables and is used in the role tasks and templates.
-ghostunnel__combined_clients: '{{ ghostunnel__clients
-                                  + ghostunnel__group_clients
-                                  + ghostunnel__host_clients }}'
-
-                                                                   # ]]]
-                                                                   # ]]]
-# Ghostunnel default arguments [[[
-# -------------------------------
-
-# .. envvar:: ghostunnel__shutdown_timeout [[[
-#
-# Graceful shutdown timeout. Terminates after timeout even if connections
-# still open.
-# For services that keep connections open like Prometheus, set a shutdown
-# timeout in '1s' for correct Ghostunnel service restarts.
-ghostunnel__shutdown_timeout: '5m'
-
-                                                                   # ]]]
-# .. envvar:: ghostunnel__connect_timeout [[[
-#
-# Timeout for establishing connections, handshakes.
-ghostunnel__connect_timeout: '10s'
-
-                                                                   # ]]]
-# .. envvar:: ghostunnel__quiet [[[
-#
-# Silence log messages (can be all, conns, conn-errs, handshake-errs;
-# repeat flag for more than one)
-ghostunnel__quiet:
-
-  - 'conns'
+# The global configuration options which should be present in the ghostunnel
+# configuration files. It overrides :ref:`ghostunnel__default_configuration`
+# :ref:`ghostunnel__services` for more details.
+ghostunnel__configuration: {}
 
                                                                    # ]]]
                                                                    # ]]]
@@ -224,7 +206,7 @@ ghostunnel__golang__dependent_packages:
 
       - src: 'releases/linux-amd64/ghostunnel/ghostunnel/{{ ghostunnel__release_version }}/ghostunnel-{{ ghostunnel__release_version }}-linux-amd64-with-pkcs11'
         dest: 'ghostunnel'
-        notify: [ 'Restart ghostunnel servers', 'Restart ghostunnel clients' ]
+        notify: [ 'Restart ghostunnel services' ]
 
 # .. envvar:: ghostunnel__etc_services__dependent_list [[[
 #

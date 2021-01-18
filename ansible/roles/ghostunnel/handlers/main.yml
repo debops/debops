@@ -3,14 +3,8 @@
 # Copyright (C) 2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-- name: Restart ghostunnel servers
+- name: Restart ghostunnel services
   service:
-    name: 'ghostunnel-{{ item.name }}-server'
+    name: 'ghostunnel-{{ item.name }}'
     state: 'restarted'
-  with_items: '{{ ghostunnel__combined_servers }}'
-
-- name: Restart ghostunnel clients
-  service:
-    name: 'ghostunnel-{{ item.name }}-client'
-    state: 'restarted'
-  with_items: '{{ ghostunnel__combined_clients }}'
+  with_items: '{{ ghostunnel__combined_services }}'
