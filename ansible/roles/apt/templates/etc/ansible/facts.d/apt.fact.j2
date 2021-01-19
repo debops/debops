@@ -11,6 +11,7 @@
 from __future__ import print_function
 from json import loads, dumps
 from sys import exit
+import subprocess
 import os
 
 # Workaround to use Jinja template in a Python script
@@ -129,5 +130,26 @@ output.update({
     "original_mirrors_deb": source_deb,
     "original_mirrors_deb_src": source_deb_src,
 })
+
+try:
+    main_arch = subprocess.check_output(
+        ['dpkg', '--print-architecture'],
+        stderr=subprocess.STDOUT).decode('utf-8').strip()
+    if main_arch:
+        output.update({'architecture': main_arch})
+
+except subprocess.CalledProcessError:
+    pass
+
+try:
+    foreign_arch = subprocess.check_output(
+        ['dpkg', '--print-foreign-architectures'],
+        stderr=subprocess.STDOUT).decode('utf-8').strip()
+    if foreign_arch:
+        output.update({'foreign_architectures':
+                       foreign_arch.split('\n')})
+
+except subprocess.CalledProcessError:
+    pass
 
 print(dumps(output, sort_keys=True, indent=4))
