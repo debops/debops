@@ -63,6 +63,12 @@ LDAP
   correct ``uidNumber`` and ``gidNumber`` values are stored instead of the
   default ones which might already be allocated.
 
+- The ``root`` UNIX account will now have full write access to the main
+  directory via the ``ldapi://`` external authentication and can create and
+  modify the LDAP objects and their attributes. This is required so that the
+  :ref:`debops.slapd` role can initialize the directory tree and create/remove
+  the ACL test objects as needed.
+
 :ref:`debops.apt_install` role
 ''''''''''''''''''''''''''''''
 
@@ -133,6 +139,13 @@ LDAP
   overlay. This change changes the order of existing overlays in the LDAP
   database which means that the directory server will have to be rebuilt.
 
+- New :ref:`orgstructure schema <slapd__ref_orgstructure_schema>` provides the
+  ``organizationalStructure`` LDAP object class which is used to define the
+  base directory objects, such as ``ou=People``, ``ou=Groups``, etc.
+
+- Members of the ``cn=LDAP Administrator`` LDAP role can now manage the server
+  configuration stored in the ``cn=config`` LDAP subtree.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 
@@ -202,6 +215,19 @@ LDAP
   a default variable. This will disable LDAP support in the POSIX environment
   and specific services (user accounts, PAM, :command:`sshd`, :command:`sudo`)
   while leaving higher-level services unaffected.
+
+- The LDAP directory structure creation has been moved from a separate
+  :file:`ansible/playbooks/ldap/init-directory.yml` playbook into the
+  :ref:`debops.slapd` role to allow for better ACL testing. The playbook is
+  still used for administrator account creation.
+
+- The base directory objects created by the :ref:`debops.slapd` role
+  (``ou=People``, ``ou=Groups``, etc.) changed their structural object type
+  from ``organizationalUnit`` to ``organizationalStructure``. Existing
+  directories should not be affected by this change, but users might want to
+  update them using the :ref:`backup and restore procedure
+  <slapd__ref_backup_restore>` to allow for more extensive ACL rules in the
+  future.
 
 :ref:`debops.dhcpd` role
 ''''''''''''''''''''''''
@@ -331,6 +357,15 @@ LDAP
   <slapd__ref_openssh_lpk>` instead of the version from the FusionDirectory
   project, to add support for storing SSH public key fingerprints in the LDAP
   directory. Existing installations shouldn't be affected.
+
+- The :command:`slapacl` test map with additional object RDNs has been
+  redesigned into a list of test LDAP objects which can be created or removed
+  by the role as needed. They will not be added to the directory by default and
+  can be enabled via Ansible inventory.
+
+- The support for OpenLDAP monitoring is improved. The ``root`` UNIX account as
+  well as members of the "LDAP Administrator" and "LDAP Monitor" roles can now
+  read the ``cn=Monitor`` information.
 
 Fixed
 ~~~~~
@@ -511,6 +546,9 @@ LDAP
   correctly. The role will not apply the changes on existing installations
   automatically due to the :file:`mailservice.schema` being loaded into the
   database.
+
+- The :command:`slapd-snapshot` script will now correctly create database
+  snapshots when the ``cn=Monitor`` database is disabled or not configured.
 
 :ref:`debops.snmpd` role
 ''''''''''''''''''''''''

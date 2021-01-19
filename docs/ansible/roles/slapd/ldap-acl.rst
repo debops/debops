@@ -19,9 +19,12 @@ that maps how various DebOps roles interact with the directory; this should
 enable easier redesign of the Access Control List according to the needs of
 one's organization.
 
-You can use the :file:`ansible/playbooks/ldap/init-directory.yml` Ansible
-playbook to initialize the new LDAP directory with the objects designed with
-the default ACL in mind. See :ref:`ldap__ref_ldap_init` for more details.
+The user-facing :envvar:`LDAP directory structure <slapd__structure_tasks>`
+that conforms to the ACL defined by the role will be initialized by the
+:ref:`debops.slapd` role as well. You can use the
+:file:`ansible/playbooks/ldap/init-directory.yml` Ansible playbook to create
+the initial LDAP Administrator account which will finish the installation. See
+:ref:`ldap__ref_ldap_init` for more details.
 
 .. only:: html
 
@@ -79,15 +82,9 @@ Directory groups
 ----------------
 
 In this section of the documentation you can find a list of LDAP groups which
-are used in the default :ref:`debops.slapd` Access Control List rules. These
-groups can be created in the directory using the
-:file:`ldap/init-directory.yml` Ansible playbook included in DebOps. The LDAP
+are used in the default :ref:`debops.slapd` Access Control List rules. he LDAP
 Distinguished Names used in the documentation assume that the ``example.org``
 DNS domain is used by the OpenLDAP server.
-
-The "Test RDN" and "Test DN" attributes refer to the
-:ref:`slapd__ref_acl_tests` and specifically to the
-:envvar:`slapd__slapacl_test_rdn_map` variable.
 
 .. _slapd__ref_acl_group_unix_admins:
 
@@ -95,7 +92,6 @@ UNIX Administrators
 ~~~~~~~~~~~~~~~~~~~
 
 :DN:       cn=UNIX Administrators,ou=Groups,dc=example,dc=org
-:Test RDN: ``unix_admin_rdn``
 :Obsolete: cn=UNIX Administrators,ou=System Groups,dc=example,dc=org
 
 - Members of this group have write access to the ``uid``, ``uidNumber``,
@@ -140,15 +136,9 @@ Directory roles
 ---------------
 
 In this section of the documentation you can find a list of LDAP roles which
-are used in the default :ref:`debops.slapd` Access Control List rules. These
-roles can be created in the directory using the :file:`ldap/init-directory.yml`
-Ansible playbook included in DebOps. The LDAP Distinguished Names used in the
-documentation assume that the ``example.org`` DNS domain is used by the
-OpenLDAP server.
-
-The "Test RDN" and "Test DN" attributes refer to the
-:ref:`slapd__ref_acl_tests` and specifically to the
-:envvar:`slapd__slapacl_test_rdn_map` variable.
+are used in the default :ref:`debops.slapd` Access Control List rules. The LDAP
+Distinguished Names used in the documentation assume that the ``example.org``
+DNS domain is used by the OpenLDAP server.
 
 .. _slapd__ref_acl_role_ldap_admin:
 
@@ -156,7 +146,6 @@ LDAP Administrator
 ~~~~~~~~~~~~~~~~~~
 
 :DN:       cn=LDAP Administrator,ou=Roles,dc=example,dc=org
-:Test RDN: ``ldap_admin_rdn``
 :Obsolete: cn=LDAP Administrators,ou=System Groups,dc=example,dc=org
 
 - Role grants full access to the entire LDAP directory.
@@ -171,7 +160,6 @@ LDAP Replicator
 ~~~~~~~~~~~~~~~
 
 :DN:       cn=LDAP Replicator,ou=Roles,dc=example,dc=org
-:Test DN:  ``ldap_replicator_dn``
 :Obsolete: cn=LDAP Replicators,ou=System Groups,dc=example,dc=org
 
 - Role grants read-only access to the entire LDAP directory.
@@ -186,11 +174,21 @@ LDAP Editor
 ~~~~~~~~~~~
 
 :DN:       cn=LDAP Editor,ou=Roles,dc=example,dc=org
-:Test RDN: ``ldap_editor_rdn``
 :Obsolete: cn=LDAP Editors,ou=System Groups,dc=example,dc=org
 
 - Role grants write access to most of the LDAP directory, apart from the
   privileged groups and roles.
+
+.. _slapd__ref_acl_role_ldap_monitor:
+
+LDAP Monitor
+~~~~~~~~~~~~
+
+:DN:       cn=LDAP Monitor,ou=Roles,dc=example,dc=org
+
+- Role grants read access to the ``cn=Monitor`` LDAP subtree, which stores the
+  information about the OpenLDAP server. It is usually utilized by monitoring
+  services to gather data about OpenLDAP service.
 
 .. _slapd__ref_acl_role_account_admin:
 
@@ -198,7 +196,6 @@ Account Administrator
 ~~~~~~~~~~~~~~~~~~~~~
 
 :DN:       cn=Account Administrator,ou=Roles,dc=example,dc=org
-:Test RDN: ``account_admin_rdn``
 :Obsolete: cn=Account Administrators,ou=System Groups,dc=example,dc=org
 
 - Role grants write access to the ``shadowLastChange`` and write-only access to
@@ -218,7 +215,6 @@ Password Reset Agent
 ~~~~~~~~~~~~~~~~~~~~
 
 :DN:       cn=Password Reset Agent,ou=Roles,dc=example,dc=org
-:Test DN: ``password_reset_dn``
 :Obsolete: cn=Password Reset Agents,ou=System Groups,dc=example,dc=org
 
 - Role grants write-only access to the ``shadowLastChange`` and the
@@ -234,7 +230,6 @@ SMS Gateway
 ~~~~~~~~~~~
 
 :DN:       cn=SMS Gateway,ou=Roles,dc=example,dc=org
-:Test DN: ``sms_gateway_dn``
 
 - Role grants read-only access to the ``mobile`` LDAP attribute, required by
   the SMS gateways to send SMS messages.
@@ -396,13 +391,14 @@ execution of the test script by Ansible :envvar:`can be disabled
 new ACL rules to fail the Ansible execution during development.
 
 Some of the test cases require real, existing LDAP objects to execute properly.
-The :ref:`debops.slapd` role provides the :envvar:`slapd__slapacl_test_rdn_map`
-YAML dictionary that contains Relative Distinguished Names of various LDAP
-objects like unprivileged and privileged user accounts. To enable the more
-extensive tests, you need to create the required LDAP objects, grant them the
-permissions you want and define their Relative Distinguished Names in the above
-YAML dictionary through the Ansible inventory. When the default values of the
-variable are changed, the role will enable the additional tests automatically.
+The :ref:`debops.slapd` role provides the
+:envvar:`slapd__slapacl_default_tasks` YAML list (and additional lists for use
+in the Ansible inventory) that contains definitions of various LDAP objects
+like unprivileged and privileged user accounts. To enable the more extensive
+tests, you need to set the :envvar:`slapd__slapacl_test_objects_state` variable
+to ``present`` which will tell the role to add the needed test objects in the
+directory. This functionality is meant to be used in a development environment
+to not interfere with the production database.
 
 
 References

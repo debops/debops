@@ -165,6 +165,22 @@
   when: slapd__slapacl_deploy_state == 'absent'
   tags: [ 'role::slapd:slapacl', 'role::slapd:tasks' ]
 
+- name: Perform OpenLDAP slapacl tasks
+  include_tasks: 'slapd_tasks.yml'
+  loop: '{{ q("flattened", slapd__slapacl_combined_tasks) | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"state": item.state,
+                "dn": item.dn,
+                "attributes": item.attributes|d({})} }}'
+  when: slapd__slapacl_deploy_state == 'present' and
+        item.name|d() and item.dn|d() and
+        item.state|d('present') not in [ 'init', 'ignore' ]
+  tags: [ 'role::slapd:slapacl', 'role::slapd:tasks' ]
+  no_log: '{{ item.no_log | d(True
+                              if ("userPassword" in (item.attributes|d({})).keys() or
+                                  "olcRootPW"    in (item.attributes|d({})).keys())
+                              else False) }}'
+
 - name: Generate slapacl test suite script
   template:
     src: 'etc/ldap/slapacl-test-suite.j2'

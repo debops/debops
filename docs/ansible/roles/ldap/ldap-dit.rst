@@ -18,9 +18,9 @@ Directory structure
 
   - :ref:`rootDSE <slapd__ref_ldap_dit>` -> :ref:`debops.slapd`
 
-    - :envvar:`dc=example,dc=org <ldap__base_dn>` (:envvar:`LDAP tasks <ldap__default_tasks>`)
+    - :envvar:`dc=example,dc=org <ldap__base_dn>` (:envvar:`LDAP structure tasks <slapd__structure_tasks>`)
 
-      - :envvar:`ou=Hosts <ldap__hosts_rdn>`
+      - :envvar:`ou=Hosts <ldap__hosts_rdn>` (:envvar:`LDAP structure tasks <slapd__structure_tasks>`)
 
         - :envvar:`dNSDomain=example.org <ldap__device_domain_rdn>` (:envvar:`conditional <ldap__device_separate_domains>`)
 
@@ -50,7 +50,7 @@ Directory structure
 
       - :envvar:`ou=Roles <ldap__roles_rdn>`
 
-        - ``cn=Password Reset Agent`` (via the :file:`ldap/init-directory.yml` playbook)
+        - ``cn=Password Reset Agent`` (:envvar:`LDAP structure tasks <slapd__structure_tasks>`)
 
           - ``roleOccupant``: :ref:`uid=nextcloud,cn=host.example.org,... <owncloud__ref_ldap_dit>` -> :ref:`debops.owncloud`
 

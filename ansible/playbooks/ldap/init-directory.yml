@@ -1,6 +1,6 @@
 ---
-# Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2019 DebOps <https://debops.org/>
+# Copyright (C) 2019-2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2019-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Initialize new LDAP directory
@@ -72,64 +72,6 @@
 
     ldap__dependent_tasks:
 
-      - name: 'Remove the default cn=admin object'
-        dn: '{{ [ "cn=admin" ] + ldap__base_dn }}'
-        state: 'absent'
-        entry_state: 'absent'
-
-      - name: 'Create the {{ ldap__groups_rdn }} object'
-        dn: '{{ [ ldap__groups_rdn ] + ldap__base_dn }}'
-        objectClass: 'organizationalUnit'
-
-      - name: 'Create the {{ ldap__machines_rdn }} object'
-        dn: '{{ [ ldap__machines_rdn ] + ldap__base_dn }}'
-        objectClass: 'organizationalUnit'
-
-      - name: 'Create the {{ ldap__hosts_rdn }} object'
-        dn: '{{ [ ldap__hosts_rdn ] + ldap__base_dn }}'
-        objectClass: 'organizationalUnit'
-
-      - name: 'Create the {{ ldap__people_rdn }} object'
-        dn: '{{ [ ldap__people_rdn ] + ldap__base_dn }}'
-        objectClass: 'organizationalUnit'
-
-      - name: 'Create the {{ ldap__roles_rdn }} object'
-        dn: '{{ [ ldap__roles_rdn ] + ldap__base_dn }}'
-        objectClass: 'organizationalUnit'
-
-      - name: 'Create the {{ ldap__services_rdn }} object'
-        dn: '{{ [ ldap__services_rdn ] + ldap__base_dn }}'
-        objectClass: 'organizationalUnit'
-
-      - name: 'Create the ou=Password Policies object'
-        dn: '{{ [ "ou=Password Policies" ] + ldap__base_dn }}'
-        objectClass: 'organizationalUnit'
-
-      - name: 'Create the ou=System object'
-        dn: '{{ [ "ou=System" ] + ldap__base_dn }}'
-        objectClass: 'organizationalUnit'
-
-        # Refer to slapo-ppolicy(5) for details
-      - name: 'Create the cn=Default Password Policy object'
-        dn: '{{ [ "cn=Default Password Policy", "ou=Password Policies" ] + ldap__base_dn }}'
-        objectClass: [ 'namedObject', 'pwdPolicy' ]
-        attributes:
-          cn: 'Default Password Policy'
-          pwdAttribute: 'userPassword'
-          pwdMaxAge: '0'
-          pwdInHistory: '5'
-          pwdCheckQuality: '1'
-          pwdMinLength: '10'
-          pwdExpireWarning: '3600'
-          pwdGraceAuthNLimit: '5'
-          pwdLockout: 'FALSE'
-          pwdLockoutDuration: '300'
-          pwdMaxFailure: '5'
-          pwdFailureCountInterval: '0'
-          pwdMustChange: 'FALSE'
-          pwdAllowUserChange: 'TRUE'
-          pwdSafeModify: 'FALSE'
-
       - name: 'Create personal account for {{ admin_gecos.split(",")[0]|d(admin_user) }}'
         dn: '{{ [ admin_rdn, ldap__people_rdn ] + ldap__base_dn }}'
         objectClass: [ 'inetOrgPerson', 'posixAccount', 'shadowAccount',
@@ -156,140 +98,16 @@
           host: 'posix:all'
           sshPublicKey: '{{ admin_sshkeys }}'
 
-      - name: 'Create cn=LDAP Administrator role'
+      - name: 'Add admin account to cn=LDAP Administrator role'
         dn: '{{ [ "cn=LDAP Administrator", ldap__roles_rdn ] + ldap__base_dn }}'
-        objectClass: 'organizationalRole'
         attributes:
-          cn: 'LDAP Administrator'
           roleOccupant: '{{ admin_dn }}'
-          description: 'People responsible for LDAP infrastructure'
 
-      - name: 'Create cn=LDAP Replicator role'
-        dn: '{{ [ "cn=LDAP Replicator", ldap__roles_rdn ] + ldap__base_dn }}'
-        objectClass: 'organizationalRole'
-        attributes:
-          cn: 'LDAP Replicator'
-          description: 'Service accounts used for LDAP replication'
-
-      - name: 'Create cn=LDAP Editor role'
-        dn: '{{ [ "cn=LDAP Editor", ldap__roles_rdn ] + ldap__base_dn }}'
-        objectClass: 'organizationalRole'
-        attributes:
-          cn: 'LDAP Editor'
-          description: 'People responsible for LDAP contents'
-
-      - name: 'Create cn=UNIX Administrators group'
+      - name: 'Add admin account to cn=UNIX Administrators group'
         dn: '{{ [ "cn=UNIX Administrators", ldap__groups_rdn ] + ldap__base_dn }}'
-        objectClass: [ 'groupOfNames', 'posixGroup', 'posixGroupId',
-                       'authorizedServiceObject', 'hostObject' ]
         attributes:
-          cn: 'UNIX Administrators'
-          gid: 'admins'
-          gidNumber: '{{ ldap__groupid_min }}'
           member: '{{ admin_dn }}'
           owner: '{{ admin_dn }}'
-          description: 'People responsible for UNIX-like infrastructure'
-          host: 'posix:all'
-
-      - name: 'Create cn=Account Administrator role'
-        dn: '{{ [ "cn=Account Administrator", ldap__roles_rdn ] + ldap__base_dn }}'
-        objectClass: 'organizationalRole'
-        attributes:
-          cn: 'Account Administrator'
-          description: 'People responsible for personal accounts'
-
-      - name: 'Create cn=Password Reset Agent role'
-        dn: '{{ [ "cn=Password Reset Agent", ldap__roles_rdn ] + ldap__base_dn }}'
-        objectClass: 'organizationalRole'
-        attributes:
-          cn: 'Password Reset Agent'
-          description: 'Services that can perform password changes on behalf of users'
-
-      - name: 'Create cn=SMS Gateway role'
-        dn: '{{ [ "cn=SMS Gateway", ldap__roles_rdn ] + ldap__base_dn }}'
-        objectClass: 'organizationalRole'
-        attributes:
-          cn: 'SMS Gateway'
-          description: 'Devices which send SMS messages to mobile numbers'
-
-      - name: 'Create cn=Hidden Object Viewer role'
-        dn: '{{ [ "cn=Hidden Object Viewer", ldap__roles_rdn ] + ldap__base_dn }}'
-        objectClass: 'organizationalRole'
-        attributes:
-          cn: 'Hidden Object Viewer'
-          memberOf: '{{ ([ "cn=Hidden Objects", ldap__groups_rdn ] + ldap__base_dn) | join(",") }}'
-          description: 'LDAP objects which can see hidden objects'
-
-      - name: 'Create cn=Hidden Objects group'
-        dn: '{{ [ "cn=Hidden Objects", ldap__groups_rdn ] + ldap__base_dn }}'
-        objectClass: 'groupOfNames'
-        attributes:
-          cn: 'Hidden Objects'
-          member:
-            - '{{ ([ "cn=Hidden Objects", ldap__groups_rdn ] + ldap__base_dn) | join(",") }}'
-            - '{{ ([ "cn=Hidden Object Viewer", ldap__roles_rdn ] + ldap__base_dn) | join(",") }}'
-          memberOf: '{{ ([ "cn=Hidden Objects", ldap__groups_rdn ] + ldap__base_dn) | join(",") }}'
-          owner: '{{ admin_dn }}'
-          description: 'LDAP objects which are accessible only by privileged accounts'
-
-      - name: 'Create cn=UNIX SSH users group'
-        dn: '{{ [ "cn=UNIX SSH users", ldap__groups_rdn ] + ldap__base_dn }}'
-        objectClass: [ 'groupOfNames', 'posixGroup', 'posixGroupId',
-                       'authorizedServiceObject', 'hostObject' ]
-        attributes:
-          cn: 'UNIX SSH users'
-          gid: 'sshusers'
-          gidNumber: '{{ ldap__groupid_min|int + 1 }}'
-          owner: '{{ admin_dn }}'
-          member: '{{ admin_dn }}'
-          description: 'People who can connect to UNIX-like infrastructure via SSH'
-          host: 'posix:all'
-
-      - name: 'Create cn=Next POSIX UID object'
-        dn: '{{ [ "cn=Next POSIX UID", "ou=System" ] + ldap__base_dn }}'
-        objectClass: 'uidNext'
-        attributes:
-          cn: 'Next POSIX UID'
-          uidNumber: '{{ ldap__groupid_max|int + 2 }}'
-          description: 'The next available uidNumber value'
-
-      - name: 'Create cn=Next POSIX GID object'
-        dn: '{{ [ "cn=Next POSIX GID", "ou=System" ] + ldap__base_dn }}'
-        objectClass: 'gidNext'
-        attributes:
-          cn: 'Next POSIX GID'
-          gidNumber: '{{ ldap__groupid_min|int + 2 }}'
-          description: 'The next available gidNumber value'
-
-      - name: 'Create SUDOers container'
-        dn: '{{ [ "ou=SUDOers" ] + ldap__base_dn }}'
-        objectClass: 'organizationalUnit'
-        attributes:
-          ou: 'SUDOers'
-          description: 'Container for sudoers.ldap(5) configuration'
-
-      - name: 'Create sudoer defaults LDAP entry'
-        dn: '{{ [ "cn=defaults", "ou=SUDOers" ] + ldap__base_dn }}'
-        objectClass: 'sudoRole'
-        attributes:
-          cn: 'defaults'
-          description: 'Object which contains default options for all sudo roles'
-
-      - name: 'Allow admins to gain root privileges via sudo'
-        dn: '{{ [ "cn=%admins", "ou=SUDOers" ] + ldap__base_dn }}'
-        objectClass: 'sudoRole'
-        attributes:
-          cn: '%admins'
-          description: 'Grant privileged access to UNIX accounts in the "admins" UNIX group'
-          sudoUser: '%admins'
-          sudoRunAsUser: 'ALL'
-          sudoRunAsGroup: 'ALL'
-          sudoHost: 'ALL'
-          sudoCommand: 'ALL'
-          sudoOption:
-            - '!authenticate'
-            - '!requiretty'
-            - 'env_check+=SSH_CLIENT'
 
   pre_tasks:
 

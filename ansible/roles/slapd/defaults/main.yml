@@ -58,6 +58,10 @@ slapd__default_schemas:
   # the next available POSIX UID/GID numbers
   - '{{ slapd__debops_schema_path + "/nextuidgid.schema" }}'
 
+  # Custom DebOps schema that creates LDAP object definition of the
+  # 'organizationalStructure' object, used to define basic directory structure.
+  - '{{ slapd__debops_schema_path + "/orgstructure.schema" }}'
+
   # Password Policy schema, included in the 'slapd' APT package
   - '/etc/ldap/schema/ppolicy.schema'
 
@@ -282,6 +286,45 @@ slapd__data_rootdn: '{{ ([ "cn=admin" ] + slapd__base_dn) | join(",") }}'
 slapd__data_rootpw: '{{ lookup("file", secret + "/slapd/credentials/"
                                        + slapd__data_rootdn | to_uuid
                                        + ".password").split()[0] }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# LDAP POSIX environment [[[
+# --------------------------
+
+# These variables define default parameters of the POSIX environment expected
+# by the LDAP directory, not the OpenLDAP service itself. These parameters
+# should be the same as the POSIX environment defined in the :ref:`debops.ldap`
+# Ansible role for consistency. See :ref:`ldap__ref_posix` for more details.
+
+# .. envvar:: slapd__uid_gid_min [[[
+#
+# First UID/GID which is considered to be managed by the LDAP directory and not
+# by the local NSS database.
+slapd__uid_gid_min: '2000000000'
+
+                                                                   # ]]]
+# .. envvar:: slapd__groupid_min [[[
+#
+# First UID/GID reserved for shared groups in the LDAP directory. Default: the
+# same as the start of the LDAP directory UID/GID range.
+slapd__groupid_min: '{{ slapd__uid_gid_min }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__groupid_max [[[
+#
+# Last UID/GID reserved for shared groups in the LDAP directory. Higher UID/GID
+# numbers are meant to be used for people, machine or service accounts with
+# matching User Private Groups. Default: 2001999999
+#
+# Ref: https://wiki.debian.org/UserPrivateGroups
+slapd__groupid_max: '{{ slapd__uid_gid_min|int + 1999999 }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__uid_gid_max [[[
+#
+# Last UID/GID which is considered to be managed by the LDAP directory and not
+# by the local NSS database. Default: 2099999999
+slapd__uid_gid_max: '{{ slapd__uid_gid_min|int + 99999999 }}'
                                                                    # ]]]
                                                                    # ]]]
 # LDAP database tuning [[[
@@ -634,6 +677,17 @@ slapd__default_tasks:
     state: 'exact'
     no_log: True
 
+  - name: 'Set the cn=config database access control list'
+    dn: [ 'olcDatabase={0}config', 'cn=config' ]
+    attributes:
+      olcAccess:
+        - |-
+          {0}to dn.subtree="cn=config"
+             by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage
+             by group/organizationalRole/roleOccupant.exact="cn=LDAP Administrator, ou=Roles,{{ slapd__basedn }}" manage
+             by * break
+    state: 'exact'
+
   - name: 'Set the main database root credentials'
     dn: [ 'olcDatabase={1}mdb', 'cn=config' ]
     attributes:
@@ -723,6 +777,9 @@ slapd__default_tasks:
       olcAccess:
         - |-
           {0}to dn.subtree="cn=Monitor"
+             by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth read
+             by group/organizationalRole/roleOccupant.exact="cn=LDAP Administrator, ou=Roles,{{ slapd__basedn }}" read
+             by group/organizationalRole/roleOccupant.exact="cn=LDAP Monitor,       ou=Roles,{{ slapd__basedn }}" read
              by group/groupOfNames/member.exact="cn=LDAP Administrators, ou=System Groups,{{ slapd__basedn }}" read
              by group/groupOfNames/member.exact="cn=LDAP Monitors,       ou=System Groups,{{ slapd__basedn }}" read
              by * none
@@ -744,6 +801,7 @@ slapd__acl_tasks:
 
         - |-
           to dn.subtree="{{ slapd__basedn }}"
+          by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage
           by group/organizationalRole/roleOccupant.exact="cn=LDAP Administrator, ou=Roles,{{ slapd__basedn }}" manage
           by group/organizationalRole/roleOccupant.exact="cn=LDAP Replicator,    ou=Roles,{{ slapd__basedn }}" read
           by group/groupOfNames/member.exact="cn=LDAP Administrators, ou=System Groups,{{ slapd__basedn }}" manage
@@ -871,6 +929,214 @@ slapd__acl_tasks:
     state: 'exact'
 
                                                                    # ]]]
+# .. envvar:: slapd__cluster_tasks [[[
+#
+# Separate list of LDAP tasks meant to be used to configure OpenLDAP clustering
+# on multiple hosts in an Ansible inventory group.
+slapd__cluster_tasks: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__structure_tasks [[[
+#
+# List of the tasks performed on the OpenLDAP server which create the basic
+# structure of the directory itself.
+slapd__structure_tasks:
+
+  - name: 'Remove the default cn=admin object'
+    dn: '{{ [ "cn=admin" ] + slapd__base_dn }}'
+    state: 'absent'
+    entry_state: 'absent'
+
+  - name: 'Create the ou=Groups object'
+    dn: '{{ [ "ou=Groups" ] + slapd__base_dn }}'
+    objectClass: 'organizationalStructure'
+
+  - name: 'Create the ou=Machines object'
+    dn: '{{ [ "ou=Machines" ] + slapd__base_dn }}'
+    objectClass: 'organizationalStructure'
+
+  - name: 'Create the ou=Hosts object'
+    dn: '{{ [ "ou=Hosts" ] + slapd__base_dn }}'
+    objectClass: 'organizationalStructure'
+
+  - name: 'Create the ou=People object'
+    dn: '{{ [ "ou=People" ] + slapd__base_dn }}'
+    objectClass: 'organizationalStructure'
+
+  - name: 'Create the ou=Roles object'
+    dn: '{{ [ "ou=Roles" ] + slapd__base_dn }}'
+    objectClass: 'organizationalStructure'
+
+  - name: 'Create the ou=Services object'
+    dn: '{{ [ "ou=Services" ] + slapd__base_dn }}'
+    objectClass: 'organizationalStructure'
+
+  - name: 'Create the ou=Password Policies object'
+    dn: '{{ [ "ou=Password Policies" ] + slapd__base_dn }}'
+    objectClass: 'organizationalStructure'
+
+  - name: 'Create the ou=System object'
+    dn: '{{ [ "ou=System" ] + slapd__base_dn }}'
+    objectClass: 'organizationalStructure'
+
+    # Refer to slapo-ppolicy(5) for details
+  - name: 'Create the cn=Default Password Policy object'
+    dn: '{{ [ "cn=Default Password Policy", "ou=Password Policies" ] + slapd__base_dn }}'
+    objectClass: [ 'namedObject', 'pwdPolicy' ]
+    attributes:
+      cn: 'Default Password Policy'
+      pwdAttribute: 'userPassword'
+      pwdMaxAge: '0'
+      pwdInHistory: '5'
+      pwdCheckQuality: '1'
+      pwdMinLength: '10'
+      pwdExpireWarning: '3600'
+      pwdGraceAuthNLimit: '5'
+      pwdLockout: 'FALSE'
+      pwdLockoutDuration: '300'
+      pwdMaxFailure: '5'
+      pwdFailureCountInterval: '0'
+      pwdMustChange: 'FALSE'
+      pwdAllowUserChange: 'TRUE'
+      pwdSafeModify: 'FALSE'
+
+  - name: 'Create cn=LDAP Administrator role'
+    dn: '{{ [ "cn=LDAP Administrator", "ou=Roles" ] + slapd__base_dn }}'
+    objectClass: 'organizationalRole'
+    attributes:
+      cn: 'LDAP Administrator'
+      description: 'People responsible for LDAP infrastructure'
+
+  - name: 'Create cn=LDAP Replicator role'
+    dn: '{{ [ "cn=LDAP Replicator", "ou=Roles" ] + slapd__base_dn }}'
+    objectClass: 'organizationalRole'
+    attributes:
+      cn: 'LDAP Replicator'
+      description: 'Service accounts used for LDAP replication'
+
+  - name: 'Create cn=LDAP Monitor role'
+    dn: '{{ [ "cn=LDAP Monitor", "ou=Roles" ] + slapd__base_dn }}'
+    objectClass: 'organizationalRole'
+    attributes:
+      cn: 'LDAP Monitor'
+      description: 'Accounts which can read cn=Monitor information'
+
+  - name: 'Create cn=LDAP Editor role'
+    dn: '{{ [ "cn=LDAP Editor", "ou=Roles" ] + slapd__base_dn }}'
+    objectClass: 'organizationalRole'
+    attributes:
+      cn: 'LDAP Editor'
+      description: 'People responsible for LDAP contents'
+
+  - name: 'Create cn=UNIX Administrators group'
+    dn: '{{ [ "cn=UNIX Administrators", "ou=Groups" ] + slapd__base_dn }}'
+    objectClass: [ 'groupOfEntries', 'posixGroup', 'posixGroupId',
+                   'authorizedServiceObject', 'hostObject' ]
+    attributes:
+      cn: 'UNIX Administrators'
+      gid: 'admins'
+      gidNumber: '{{ slapd__groupid_min }}'
+      description: 'People responsible for UNIX-like infrastructure'
+      host: 'posix:all'
+
+  - name: 'Create cn=Account Administrator role'
+    dn: '{{ [ "cn=Account Administrator", "ou=Roles" ] + slapd__base_dn }}'
+    objectClass: 'organizationalRole'
+    attributes:
+      cn: 'Account Administrator'
+      description: 'People responsible for personal accounts'
+
+  - name: 'Create cn=Password Reset Agent role'
+    dn: '{{ [ "cn=Password Reset Agent", "ou=Roles" ] + slapd__base_dn }}'
+    objectClass: 'organizationalRole'
+    attributes:
+      cn: 'Password Reset Agent'
+      description: 'Services that can perform password changes on behalf of users'
+
+  - name: 'Create cn=SMS Gateway role'
+    dn: '{{ [ "cn=SMS Gateway", "ou=Roles" ] + slapd__base_dn }}'
+    objectClass: 'organizationalRole'
+    attributes:
+      cn: 'SMS Gateway'
+      description: 'Devices which send SMS messages to mobile numbers'
+
+  - name: 'Create cn=Hidden Object Viewer role'
+    dn: '{{ [ "cn=Hidden Object Viewer", "ou=Roles" ] + slapd__base_dn }}'
+    objectClass: 'organizationalRole'
+    attributes:
+      cn: 'Hidden Object Viewer'
+      memberOf: '{{ ([ "cn=Hidden Objects", "ou=Groups" ] + slapd__base_dn) | join(",") }}'
+      description: 'LDAP objects which can see hidden objects'
+
+  - name: 'Create cn=Hidden Objects group'
+    dn: '{{ [ "cn=Hidden Objects", "ou=Groups" ] + slapd__base_dn }}'
+    objectClass: 'groupOfNames'
+    attributes:
+      cn: 'Hidden Objects'
+      member:
+        - '{{ ([ "cn=Hidden Objects", "ou=Groups" ] + slapd__base_dn) | join(",") }}'
+        - '{{ ([ "cn=Hidden Object Viewer", "ou=Roles" ] + slapd__base_dn) | join(",") }}'
+      memberOf: '{{ ([ "cn=Hidden Objects", "ou=Groups" ] + slapd__base_dn) | join(",") }}'
+      description: 'LDAP objects which are accessible only by privileged accounts'
+
+  - name: 'Create cn=UNIX SSH users group'
+    dn: '{{ [ "cn=UNIX SSH users", "ou=Groups" ] + slapd__base_dn }}'
+    objectClass: [ 'groupOfEntries', 'posixGroup', 'posixGroupId',
+                   'authorizedServiceObject', 'hostObject' ]
+    attributes:
+      cn: 'UNIX SSH users'
+      gid: 'sshusers'
+      gidNumber: '{{ slapd__groupid_min|int + 1 }}'
+      description: 'People who can connect to UNIX-like infrastructure via SSH'
+      host: 'posix:all'
+
+  - name: 'Create cn=Next POSIX UID object'
+    dn: '{{ [ "cn=Next POSIX UID", "ou=System" ] + slapd__base_dn }}'
+    objectClass: 'uidNext'
+    attributes:
+      cn: 'Next POSIX UID'
+      uidNumber: '{{ slapd__groupid_max|int + 2 }}'
+      description: 'The next available uidNumber value'
+
+  - name: 'Create cn=Next POSIX GID object'
+    dn: '{{ [ "cn=Next POSIX GID", "ou=System" ] + slapd__base_dn }}'
+    objectClass: 'gidNext'
+    attributes:
+      cn: 'Next POSIX GID'
+      gidNumber: '{{ slapd__groupid_min|int + 2 }}'
+      description: 'The next available gidNumber value'
+
+  - name: 'Create SUDOers container'
+    dn: '{{ [ "ou=SUDOers" ] + slapd__base_dn }}'
+    objectClass: 'organizationalStructure'
+    attributes:
+      ou: 'SUDOers'
+      description: 'Container for sudoers.ldap(5) configuration'
+
+  - name: 'Create sudoer defaults LDAP entry'
+    dn: '{{ [ "cn=defaults", "ou=SUDOers" ] + slapd__base_dn }}'
+    objectClass: 'sudoRole'
+    attributes:
+      cn: 'defaults'
+      description: 'Object which contains default options for all sudo roles'
+
+  - name: 'Allow admins to gain root privileges via sudo'
+    dn: '{{ [ "cn=%admins", "ou=SUDOers" ] + slapd__base_dn }}'
+    objectClass: 'sudoRole'
+    attributes:
+      cn: '%admins'
+      description: 'Grant privileged access to UNIX accounts in the "admins" UNIX group'
+      sudoUser: '%admins'
+      sudoRunAsUser: 'ALL'
+      sudoRunAsGroup: 'ALL'
+      sudoHost: 'ALL'
+      sudoCommand: 'ALL'
+      sudoOption:
+        - '!authenticate'
+        - '!requiretty'
+        - 'env_check+=SSH_CLIENT'
+
+                                                                   # ]]]
 # .. envvar:: slapd__tasks [[[
 #
 # List of the tasks performed on the OpenLDAP server, defined on all hosts in
@@ -898,6 +1164,8 @@ slapd__host_tasks: []
 # role tasks and templates.
 slapd__combined_tasks: '{{ slapd__default_tasks
                            + slapd__acl_tasks
+                           + slapd__cluster_tasks
+                           + slapd__structure_tasks
                            + slapd__tasks
                            + slapd__group_tasks
                            + slapd__host_tasks }}'
@@ -1027,6 +1295,17 @@ slapd__host_allow: []
 slapd__slapacl_deploy_state: 'present'
 
                                                                    # ]]]
+# .. envvar:: slapd__slapacl_test_objects_state [[[
+#
+# This variable controls if the role should add or remove various LDAP objects
+# used for more extensive ACL tests. By default they are not added to avoid
+# issues with production data; they can be very useful in development
+# environments to properly check and verify that the defined ACL rules are
+# consistent with the defined access policy. The supported values are
+# ``present`` or ``absent``.
+slapd__slapacl_test_objects_state: 'absent'
+
+                                                                   # ]]]
 # .. envvar:: slapd__slapacl_run_tests [[[
 #
 # When enabled, the :command:`slapacl` test suite will be run on each
@@ -1045,39 +1324,130 @@ slapd__slapacl_run_tests: True
 slapd__slapacl_script: '/etc/ldap/slapacl-test-suite'
 
                                                                    # ]]]
-# .. envvar:: slapd__slapacl_test_rdn_map [[[
+# .. envvar:: slapd__slapacl_default_tasks [[[
 #
 # Some of the :command:`slapacl` tests require existing LDAP objects to work
-# correctly. This variable defines a YAML dictionary with Relative
-# Distinguished Names of various object types used in the default ACL test
-# cases. You should define any number of these in the inventory and point them
-# to real user accounts or service accounts - the more you define, the more
-# tests will be active.
-slapd__slapacl_test_rdn_map:
+# correctly. The ``slapd__*slapacl_*_tasks`` variables define list of LDAP
+# objects which will be created or removed, depending on the value of the
+# :envvar:`slapd__slapacl_test_objects_state` variable. The syntax of these
+# lists is the same as the :ref:`slapd__ref_tasks` variables. You can refer to
+# the created LDAP objects in the :command:`slapacl` tests defined elsewhere to
+# test ACL rules.
+#
+# This variable defines the default set of test objects to manage.
+slapd__slapacl_default_tasks:
 
-  # LDAP Administrator (see everything, write access to all)
-  ldap_admin_rdn:    'uid=<user>'
+  - name: 'Manage LDAP Administrator object for ACL tests'
+    dn: 'uid=slapacl-test-ldap-admin,ou=People,{{ slapd__basedn }}'
+    objectClass: [ 'inetOrgPerson' ]
+    attributes:
+      uid: 'slapacl-test-ldap-admin'
+      cn: 'LDAP Administrator'
+      surname: 'Administrator'
+    state: '{{ slapd__slapacl_test_objects_state }}'
 
-  # LDAP Editor (see most things, write access to most things)
-  ldap_editor_rdn:   'uid=<user>'
+  - name: 'Manage cn=LDAP Administrator role'
+    dn: 'cn=LDAP Administrator,ou=Roles,{{ slapd__basedn }}'
+    attributes:
+      roleOccupant: 'uid=slapacl-test-ldap-admin,ou=People,{{ slapd__basedn }}'
+    state: '{{ "present"
+               if (slapd__slapacl_test_objects_state == "present")
+               else "ignore" }}'
 
-  # UNIX Administrator (manages UNIX environment)
-  unix_admin_rdn:    'uid=<user>'
 
-  # Account Administrator (write access to personal objects)
-  account_admin_rdn: 'uid=<user>'
+  - name: 'Manage LDAP Editor object for ACL tests'
+    dn: 'uid=slapacl-test-ldap-editor,ou=People,{{ slapd__basedn }}'
+    objectClass: [ 'inetOrgPerson' ]
+    attributes:
+      uid: 'slapacl-test-ldap-editor'
+      cn: 'LDAP Editor'
+      surname: 'Editor'
+    state: '{{ slapd__slapacl_test_objects_state }}'
 
-  # An unprivileged user account
-  person_rdn:        'uid=<user>'
+  - name: 'Manage cn=LDAP Editor role'
+    dn: 'cn=LDAP Editor,ou=Roles,{{ slapd__basedn }}'
+    attributes:
+      roleOccupant: 'uid=slapacl-test-ldap-editor,ou=People,{{ slapd__basedn }}'
+    state: '{{ "present"
+               if (slapd__slapacl_test_objects_state == "present")
+               else "ignore" }}'
 
-  # Distinguished Name of a LDAP Replicator
-  ldap_replicator_dn: ''
 
-  # Distinguished Name of a Password Reset Agent
-  password_reset_dn: ''
+  - name: 'Manage UNIX Administrator object for ACL tests'
+    dn: 'uid=slapacl-test-unix-admin,ou=People,{{ slapd__basedn }}'
+    objectClass: [ 'inetOrgPerson' ]
+    attributes:
+      uid: 'slapacl-test-unix-admin'
+      cn: 'UNIX Administrator'
+      surname: 'Administrator'
+    state: '{{ slapd__slapacl_test_objects_state }}'
 
-  # Distinguished Name of a SMS Gateway object
-  sms_gateway_dn: ''
+  - name: 'Manage cn=UNIX Administrator group'
+    dn: 'cn=UNIX Administrators,ou=Groups,{{ slapd__basedn }}'
+    attributes:
+      member: 'uid=slapacl-test-unix-admin,ou=People,{{ slapd__basedn }}'
+    state: '{{ "present"
+               if (slapd__slapacl_test_objects_state == "present")
+               else "ignore" }}'
+
+
+  - name: 'Manage Account Administrator object for ACL tests'
+    dn: 'uid=slapacl-test-account-admin,ou=People,{{ slapd__basedn }}'
+    objectClass: [ 'inetOrgPerson' ]
+    attributes:
+      uid: 'slapacl-test-account-admin'
+      cn: 'Account Administrator'
+      surname: 'Administrator'
+    state: '{{ slapd__slapacl_test_objects_state }}'
+
+  - name: 'Manage cn=Account Administrator role'
+    dn: 'cn=Account Administrator,ou=Roles,{{ slapd__basedn }}'
+    attributes:
+      roleOccupant: 'uid=slapacl-test-account-admin,ou=People,{{ slapd__basedn }}'
+    state: '{{ "present"
+               if (slapd__slapacl_test_objects_state == "present")
+               else "ignore" }}'
+
+
+  - name: 'Manage unprivileged user object for ACL tests'
+    dn: 'uid=slapacl-test-unpriv-user,ou=People,{{ slapd__basedn }}'
+    objectClass: [ 'inetOrgPerson' ]
+    attributes:
+      uid: 'slapacl-test-unpriv-user'
+      cn: 'Unprivileged User'
+      surname: 'User'
+    state: '{{ slapd__slapacl_test_objects_state }}'
+
+                                                                   # ]]]
+# .. envvar:: slapd__slapacl_tasks [[[
+#
+# This variable defines a list of test objects to manage on all hosts in the
+# Ansible inventory. See :ref:`slapd__ref_tasks` for syntax details.
+slapd__slapacl_tasks: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__slapacl_group_tasks [[[
+#
+# This variable defines a list of test objects to manage on hosts in a specific
+# Ansible inventory group. See :ref:`slapd__ref_tasks` for syntax details.
+slapd__slapacl_group_tasks: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__slapacl_host_tasks [[[
+#
+# This variable defines a list of test objects to manage on specific hosts in
+# the Ansible inventory. See :ref:`slapd__ref_tasks` for syntax details.
+slapd__slapacl_host_tasks: []
+
+                                                                   # ]]]
+# .. envvar:: slapd__slapacl_combined_tasks [[[
+#
+# This variable combines all lists of :command:`slapacl` test objects and is
+# used in the role tasks and templates.
+slapd__slapacl_combined_tasks: '{{ slapd__slapacl_default_tasks
+                                   + slapd__slapacl_tasks
+                                   + slapd__slapacl_group_tasks
+                                   + slapd__slapacl_host_tasks }}'
 
                                                                    # ]]]
 # .. envvar:: slapd__slapacl_default_tests [[[
@@ -1100,20 +1470,20 @@ slapd__slapacl_default_tests:
 
   - name: 'Deny regular user access to cn=config'
     dn: 'cn=config'
-    authdn: '{{ slapd__slapacl_test_rdn_map["person_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
+    authdn: 'uid=slapacl-test-unpriv-user,ou=People,{{ slapd__basedn }}'
     policy: '=0'
     dry_run: True
     state: '{{ "present"
-               if (slapd__slapacl_test_rdn_map["person_rdn"]|d("uid=<user>") != "uid=<user>")
+               if (slapd__slapacl_test_objects_state == "present")
                else "init" }}'
 
   - name: 'Deny direct admin access to cn=config'
     dn: 'cn=config'
-    authdn: '{{ slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
+    authdn: 'uid=slapacl-test-ldap-admin,ou=People,{{ slapd__basedn }}'
     policy: '=0'
     dry_run: True
     state: '{{ "present"
-               if (slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d("uid=<user>") != "uid=<user>")
+               if (slapd__slapacl_test_objects_state == "present")
                else "init" }}'
 
   - name: 'Deny anonymous access to cn=Monitor'
@@ -1129,21 +1499,21 @@ slapd__slapacl_default_tests:
     policy: 'none(=0)'
 
   - name: "Allow authentication by anonymous users"
-    dn: '{{ slapd__slapacl_test_rdn_map["person_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
+    dn: 'uid=slapacl-test-unpriv-user,ou=People,{{ slapd__basedn }}'
     authdn: ''
     query: 'userPassword'
     policy: 'auth(=xd)'
     state: '{{ "present"
-               if (slapd__slapacl_test_rdn_map["person_rdn"]|d("uid=<user>") != "uid=<user>")
+               if (slapd__slapacl_test_objects_state == "present")
                else "init" }}'
 
   - name: "Deny password read access by anonymous users"
-    dn: '{{ slapd__slapacl_test_rdn_map["person_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
+    dn: 'uid=slapacl-test-unpriv-user,ou=People,{{ slapd__basedn }}'
     authdn: ''
     query: 'userPassword/read'
     policy: 'denied'
     state: '{{ "present"
-               if (slapd__slapacl_test_rdn_map["person_rdn"]|d("uid=<user>") != "uid=<user>")
+               if (slapd__slapacl_test_objects_state == "present")
                else "init" }}'
 
   - name: 'Deny anonymous access to ou=People'
@@ -1158,25 +1528,25 @@ slapd__slapacl_default_tests:
         result: 'children: none(=0)'
 
     state: '{{ "present"
-               if (slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d("uid=<user>") != "uid=<user>")
+               if (slapd__slapacl_test_objects_state == "present")
                else "init" }}'
 
   - name: 'Deny write access to ou=People by unprivileged users'
     dn: 'ou=People,{{ slapd__basedn }}'
-    authdn: '{{ slapd__slapacl_test_rdn_map["person_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
+    authdn: 'uid=slapacl-test-unpriv-user,ou=People,{{ slapd__basedn }}'
     query: 'entry/write'
     policy: 'denied'
     state: '{{ "present"
-               if (slapd__slapacl_test_rdn_map["person_rdn"]|d("uid=<user>") != "uid=<user>")
+               if (slapd__slapacl_test_objects_state == "present")
                else "init" }}'
 
   - name: 'Allow write access to ou=People by administrators'
     dn: 'ou=People,{{ slapd__basedn }}'
-    authdn: '{{ slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d() }},ou=People,{{ slapd__basedn }}'
+    authdn: 'uid=slapacl-test-ldap-admin,ou=People,{{ slapd__basedn }}'
     query: 'entry/write'
     policy: 'allowed'
     state: '{{ "present"
-               if (slapd__slapacl_test_rdn_map["ldap_admin_rdn"]|d("uid=<user>") != "uid=<user>")
+               if (slapd__slapacl_test_objects_state == "present")
                else "init" }}'
 
                                                                    # ]]]
