@@ -258,11 +258,11 @@ the next available UID and GID separately:
 
 The ``Next POSIX UID`` object is meant to track user accounts with their
 corresponding User Private Groups; it will be initialized by the
-:file:`ldap/init-directory.yml` playbook with the next available UID after the
-admin account is created. The ``Next POSIX UID`` object is similarly
-initialized by the same playbook after all required groups are created. Users
-can create additional sets of UID/GID tracking objects for various purposes
-using the ``uidNext`` or ``gidNext`` LDAP object classes.
+:ref:`debops.slapd` Ansible role with the next available UID after the admin
+account is created. The ``Next POSIX UID`` object is similarly initialized by
+the same role after all required groups are created. Users can create
+additional sets of UID/GID tracking objects for various purposes using the
+``uidNext`` or ``gidNext`` LDAP object classes.
 
 The ``uidNumber`` and ``gidNumber`` values can be modified by the members of
 the ``cn=UNIX Administrators`` group. The ``unique`` overlay ensures that these

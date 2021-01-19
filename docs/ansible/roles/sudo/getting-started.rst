@@ -20,8 +20,8 @@ defined in the LDAP directory. When the LDAP support and :ref:`LDAP-POSIX
 integration <ldap__ref_posix>` is enabled on a host, the role will register its
 own LDAP account object (using :ref:`debops.ldap` as a dependency) and
 configure access to the LDAP directory using simple bind. The
-``ldap/init-directory.yml`` Ansible playbook will create the needed LDAP
-directory structure required for ``sudoers`` rules.
+:ref:`debops.slapd` role will create the needed LDAP directory structures
+required for ``sudoers`` rules.
 
 See the :man:`sudoers.ldap(5)` manual page for more details about the LDAP
 support in :command:`sudo`.

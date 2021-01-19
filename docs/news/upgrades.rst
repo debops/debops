@@ -57,6 +57,14 @@ Changes in the OpenLDAP support
   installations and it is recommended to re-create the directory from scratch
   to apply new schema cleanly.
 
+- Some variables in the :ref:`debops.slapd` role have been modified:
+
+  +---------------------------------+----------------------------------------+---------------+
+  | Old variable name               | New variable name                      | Changed value |
+  +=================================+========================================+===============+
+  | ``slapd__slapacl_test_rdn_map`` | :envvar:`slapd__slapacl_default_tasks` | Yes, a list   |
+  +---------------------------------+----------------------------------------+---------------+
+
 ISC DHCP Server role rewrite
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

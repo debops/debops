@@ -88,7 +88,7 @@ it. Additional OpenLDAP servers will be used as fallback when
 easy to replace the OpenLDAP servers with new ones on the DNS level, without
 the need to reconfigure LDAP clients everywhere.
 
-Part of the cluster that is used for testing an development should be
+Part of the cluster that is used for testing and development should be
 configured to connect directly to the ``ldap-test.example.org`` server and not
 use the ``SRV`` records.
 
@@ -154,6 +154,11 @@ role documentation stored in the DebOps monorepo.
 
 Configuration notes
 ~~~~~~~~~~~~~~~~~~~
+
+- Cluster configuration is defined in a separate variable,
+  :envvar:`slapd__cluster_tasks`, which will be included after the ACL tasks,
+  but before the directory structure tasks. This should ensure that the cluster
+  configuration is present before initial directory structure creation.
 
 - The support for the ``X-ORDERED`` LDAP extension via the ``ordered``
   parameter is not used here, because the tasks contain attributes not
