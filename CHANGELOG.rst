@@ -69,6 +69,14 @@ LDAP
   :ref:`debops.slapd` role can initialize the directory tree and create/remove
   the ACL test objects as needed.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- The role facts now include the main APT architecture (``amd64``, for example)
+  and a list of foreign architectures if any are enabled. The
+  ``ansible_local.apt.architecture`` fact can be used in other roles that need
+  that information.
+
 :ref:`debops.apt_install` role
 ''''''''''''''''''''''''''''''
 
