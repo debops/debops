@@ -1,7 +1,7 @@
 ---
 # Copyright (C) 2016 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C)      2020 Robin Schneider <ypid@riseup.net>
-# Copyright (C) 2016-2020 DebOps <https://debops.org/>
+# Copyright (C)      2021 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2016-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - import_role:
@@ -44,6 +44,7 @@
     - '{{ netbox__data }}'
     - '{{ netbox__config_media_root }}'
     - '{{ netbox__config_reports_root }}'
+    - '{{ netbox__config_scripts_root }}'
 
 - name: Clone NetBox source code
   git:
@@ -114,7 +115,7 @@
   become_user: '{{ netbox__user }}'
   register: netbox__register_checkout
   until: netbox__register_checkout is succeeded
-  notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver' ]
+  notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver', 'Restart netbox Request Queue Worker' ]
   when: (netbox__register_source.before is undefined or
          (netbox__register_source.before|d() and netbox__register_target_branch.stdout|d() and
           netbox__register_source.before != netbox__register_target_branch.stdout) or
@@ -153,7 +154,7 @@
   until: netbox__register_pip_install is succeeded
   become: True
   become_user: '{{ netbox__user }}'
-  notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver' ]
+  notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver', 'Restart netbox Request Queue Worker' ]
   when: netbox__register_checkout is changed
 
 - name: Install additional Python modules in virtualenv
@@ -174,7 +175,7 @@
     owner: '{{ netbox__user }}'
     group: '{{ netbox__group }}'
     mode: '0640'
-  notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver' ]
+  notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver', 'Restart netbox Request Queue Worker' ]
   register: netbox__register_configuration
   tags: [ 'role::netbox:config' ]
 

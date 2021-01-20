@@ -1,3 +1,10 @@
+<!--
+Copyright (C) 2018-2020 Maciej Delmanowski <drybjed@gmail.com>
+Copyright (C) 2018-2020 DebOps <https://debops.org/>
+
+SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
 # [![DebOps logo][debops-logo]](https://debops.org/) DebOps
 
 *Your Debian-based data center in a box*
@@ -177,8 +184,8 @@ contribute to DebOps.
 
 ## Licensing
 
-The DebOps project is licensed under the [GNU General Public License 3.0][gpl-3.0].
-You can find full text of the license in the [LICENSE][license] file.
+The DebOps project is licensed under the [GNU General Public License 3.0 or later][GPL-3.0-or-later].
+You can find full text of the license in the [LICENSES/GPL-3.0-or-later.txt] file.
 
 Some files included with the DebOps project use a different license.
 The licenses are marked in these files using the [SPDX license identifiers][spdx-ids]
@@ -187,7 +194,7 @@ project tarballs, Ansible Collections and Python packages. The project uses the
 [REUSE Specification][reuse-specification] and its associated tool to check and
 verify copyright and license information in all files.
 
-[gpl-3.0]: https://www.gnu.org/licenses/gpl-3.0
-[license]: https://github.com/debops/debops/blob/master/LICENSE
+[GPL-3.0-or-later]: https://www.gnu.org/licenses/gpl-3.0
+[LICENSES/GPL-3.0-or-later.txt]: https://github.com/debops/debops/blob/master/LICENSES/GPL-3.0-or-later.txt
 [spdx-ids]: https://spdx.org/ids
 [reuse-specification]: https://reuse.software/spec/
