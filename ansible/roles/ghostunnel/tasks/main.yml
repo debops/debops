@@ -55,3 +55,20 @@
     enabled: True
   with_items:
     - '{{ ghostunnel__combined_services }}'
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save Ghostunnel local facts
+  template:
+    src: 'etc/ansible/facts.d/ghostunnel.fact.j2'
+    dest: '/etc/ansible/facts.d/ghostunnel.fact'
+    mode: '0755'
+  register: ghostunnel__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: ghostunnel__register_facts is changed

@@ -28,6 +28,7 @@
       keyring__dependent_gpg_user: '{{ golang__keyring__dependent_gpg_user }}'
       keyring__dependent_gpg_keys:
         - '{{ golang__keyring__dependent_gpg_keys }}'
+        - '{{ ghostunnel__keyring__dependent_gpg_keys }}'
 
     - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences', 'role::golang' ]
@@ -37,12 +38,12 @@
     - role: etc_services
       tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services__dependent_list:
-        - '{{ ghostunnel__etc_services__dependent_list_env }}'
+        - '{{ ghostunnel__env_etc_services__dependent_list }}'
 
     - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
-        - '{{ ghostunnel__ferm__dependent_rules_env }}'
+        - '{{ ghostunnel__env_ferm__dependent_rules }}'
 
     - role: golang
       tags: [ 'role::golang', 'skip::golang' ]
