@@ -18,22 +18,20 @@
 # Example: ALLOWED_HOSTS = ['netbox.example.com', 'netbox.internal.local']
 ALLOWED_HOSTS = [ '{{ ( [ netbox__config_allowed_hosts ] if netbox__config_allowed_hosts is string else netbox__config_allowed_hosts) | join("', '") }}' ]
 
-# PostgreSQL database configuration.
+# PostgreSQL database configuration. See the Django documentation for a complete list of available parameters:
+#   https://docs.djangoproject.com/en/stable/ref/settings/#databases
 DATABASE = {
     'NAME': '{{ netbox__database_name }}',         # Database name
-    'USER': '{{ netbox__database_user }}',               # PostgreSQL username
-    'PASSWORD': '{{ netbox__database_password }}',           # PostgreSQL password
-    'HOST': '{{ netbox__database_host }}',      # Database server
-    'PORT': '{{ netbox__database_port }}',               # Database port (leave blank for default)
+    'USER': '{{ netbox__database_user }}',         # PostgreSQL username
+    'PASSWORD': '{{ netbox__database_password }}', # PostgreSQL password
+    'HOST': '{{ netbox__database_host }}',         # Database server
+    'PORT': '{{ netbox__database_port }}',         # Database port (leave blank for default)
+    'CONN_MAX_AGE': 300,                           # Max database connection age
 }
 
-# This key is used for secure generation of random numbers and strings. It must never be exposed outside of this file.
-# For optimal security, SECRET_KEY should be at least 50 characters in length and contain a mix of letters, numbers, and
-# symbols. NetBox will not run without this defined. For more information, see
-# https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-SECRET_KEY
-SECRET_KEY = '{{ netbox__config_secret_key }}'
-
-# Redis database settings. The Redis database is used for caching and background processing such as webhooks
+# Redis database settings. Redis is used for caching and for queuing background tasks such as webhook events. A separate
+# configuration exists for each. Full connection details are required in both sections, and it is strongly recommended
+# to use two separate database IDs.
 REDIS = {
     'tasks': {
         'HOST': '{{ netbox__redis_host }}',
@@ -50,6 +48,13 @@ REDIS = {
         'SSL': {{ netbox__redis_ssl }},
     }
 }
+
+# This key is used for secure generation of random numbers and strings. It must never be exposed outside of this file.
+# For optimal security, SECRET_KEY should be at least 50 characters in length and contain a mix of letters, numbers, and
+# symbols. NetBox will not run without this defined. For more information, see
+# https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-SECRET_KEY
+SECRET_KEY = '{{ netbox__config_secret_key }}'
+
 
 #########################
 #                       #
@@ -68,6 +73,11 @@ ADMINS = [
 {% endif %}
 ]
 
+# URL schemes that are allowed within links in NetBox
+ALLOWED_URL_SCHEMES = (
+    'file', 'ftp', 'ftps', 'http', 'https', 'irc', 'mailto', 'sftp', 'ssh', 'tel', 'telnet', 'tftp', 'vnc', 'xmpp',
+)
+
 # Optionally display a persistent banner at the top and/or bottom of every page. HTML is allowed. To display the same
 # content in both banners, define BANNER_TOP and set BANNER_BOTTOM = BANNER_TOP.
 BANNER_TOP = '{{ netbox__config_banner_top }}'
@@ -76,7 +86,7 @@ BANNER_BOTTOM = '{{ netbox__config_banner_bottom }}'
 # Text to include on the login page above the login form. HTML is allowed.
 BANNER_LOGIN = '{{ netbox__config_banner_login }}'
 
-# Base URL path if accessing NetBox within a directory. For example, if installed at http://example.com/netbox/, set:
+# Base URL path if accessing NetBox within a directory. For example, if installed at https://example.com/netbox/, set:
 # BASE_PATH = 'netbox/'
 BASE_PATH = '{{ netbox__config_base_path }}'
 
@@ -91,7 +101,7 @@ CHANGELOG_RETENTION = {{ netbox__config_changelog_retention }}
 # CORS_ORIGIN_REGEX_WHITELIST. For more information, see https://github.com/ottoyiu/django-cors-headers
 CORS_ORIGIN_ALLOW_ALL = {{ netbox__config_cors_origin_allow_all | bool }}
 CORS_ORIGIN_WHITELIST = [
-    # 'hostname.example.com',
+    # 'https://hostname.example.com',
 {% if netbox__config_cors_origin_whitelist %}
 {%   for element in netbox__config_cors_origin_whitelist %}
     '{{ element }}',
@@ -118,6 +128,8 @@ EMAIL = {
     'PORT': {{ netbox__config_email_port }},
     'USERNAME': '{{ netbox__config_email_username }}',
     'PASSWORD': '{{ netbox__config_email_password }}',
+    'USE_SSL': {{ netbox__config_email_use_tls | bool }},
+    'USE_TLS': {{ netbox__config_email_use_tls | bool }},
     'TIMEOUT': {{ netbox__config_email_timeout }},  # seconds
     'FROM_EMAIL': '{{ netbox__config_email_from }}',
 }
@@ -134,8 +146,18 @@ EXEMPT_VIEW_PERMISSIONS = [
 {% endfor %}
 ]
 
+# HTTP proxies NetBox should use when sending outbound HTTP requests (e.g. for webhooks).
+# HTTP_PROXIES = {
+#     'http': 'http://10.10.1.10:3128',
+#     'https': 'http://10.10.1.10:1080',
+# }
+
+# IP addresses recognized as internal to the system. The debugging toolbar will be available only to clients accessing
+# NetBox from an internal IP.
+INTERNAL_IPS = ('127.0.0.1', '::1')
+
 # Enable custom logging. Please see the Django documentation for detailed guidance on configuring custom logs:
-#   https://docs.djangoproject.com/en/1.11/topics/logging/
+#   https://docs.djangoproject.com/en/stable/topics/logging/
 LOGGING = {{ netbox__config_logging | to_nice_json }}
 
 # Setting this to True will permit only authenticated users to access any part of NetBox. By default, anonymous users
@@ -157,6 +179,16 @@ MAX_PAGE_SIZE = {{ netbox__config_max_page_size }}
 # The file path where uploaded media such as image attachments are stored. A trailing slash is not needed. Note that
 # the default value of this setting is derived from the installed location.
 MEDIA_ROOT = '{{ netbox__config_media_root }}'
+
+# By default uploaded media is stored on the local filesystem. Using Django-storages is also supported. Provide the
+# class path of the storage driver in STORAGE_BACKEND and any configuration options in STORAGE_CONFIG. For example:
+# STORAGE_BACKEND = 'storages.backends.s3boto3.S3Boto3Storage'
+# STORAGE_CONFIG = {
+#     'AWS_ACCESS_KEY_ID': 'Key ID',
+#     'AWS_SECRET_ACCESS_KEY': 'Secret',
+#     'AWS_STORAGE_BUCKET_NAME': 'netbox',
+#     'AWS_S3_REGION_NAME': 'eu-west-1',
+# }
 
 # Expose Prometheus monitoring metrics at the HTTP endpoint '/metrics'
 METRICS_ENABLED = {{ netbox__config_metrics_enabled }}
@@ -190,6 +222,13 @@ PREFER_IPV4 = {{ netbox__config_prefer_ipv4 | bool }}
 # this setting is derived from the installed location.
 REPORTS_ROOT = '{{ netbox__config_reports_root }}'
 
+# Maximum execution time for background tasks, in seconds.
+RQ_DEFAULT_TIMEOUT = 300
+
+# The file path where custom scripts will be stored. A trailing slash is not needed. Note that the default value of
+# this setting is derived from the installed location.
+SCRIPTS_ROOT = '{{ netbox__config_scripts_root }}'
+
 # By default, NetBox will store session data in the database. Alternatively, a file path can be specified here to use
 # local file storage instead. (This can be useful for enabling authentication on a standby instance with read-only
 # database access.) Note that the user as which NetBox runs must have read and write permissions to this path.
@@ -198,12 +237,8 @@ SESSION_FILE_PATH = {{ netbox__config_session_file_path }}
 # Time zone (default: UTC)
 TIME_ZONE = '{{ netbox__config_time_zone }}'
 
-# The webhooks backend is disabled by default. Set this to True to enable it. Note that this requires a Redis
-# database be configured and accessible by NetBox.
-WEBHOOKS_ENABLED = {{ netbox__config_webhooks_enabled }}
-
 # Date/time formatting. See the following link for supported formats:
-# https://docs.djangoproject.com/en/dev/ref/templates/builtins/#date
+# https://docs.djangoproject.com/en/stable/ref/templates/builtins/#date
 DATE_FORMAT = '{{ netbox__config_date_format }}'
 SHORT_DATE_FORMAT = '{{ netbox__config_short_date_format }}'
 TIME_FORMAT = '{{ netbox__config_time_format }}'

@@ -62,7 +62,7 @@ here might be more to your liking.
 `Open Source Infrastructure`__
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This is a website that aggreagates information about, and links to, Open Source
+This is a website that aggregates information about, and links to, Open Source
 infrastructure projects.
 
 .. __: https://opensourceinfra.org/

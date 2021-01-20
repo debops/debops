@@ -168,7 +168,7 @@ without conflicts.
 
 This will allow the project to provide a set of "stacks" written as Ansible
 playbooks that use multiple Ansible roles together to deploy complex
-applications - a WorPress blog, a VM hypervisor host, a container cluster will
+applications - a WordPress blog, a VM hypervisor host, a container cluster will
 be composed of the same set of building blocks, which allows creation of
 customized environments, tailored for a particular organization.
 

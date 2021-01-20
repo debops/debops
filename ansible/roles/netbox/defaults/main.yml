@@ -135,7 +135,7 @@ netbox__git_repo: 'https://github.com/netbox-community/netbox.git'
 # .. envvar:: netbox__git_version [[[
 #
 # The :command:`git` branch or tag which will be installed.
-netbox__git_version: 'v2.10.1'
+netbox__git_version: 'v2.10.3'
 
                                                                    # ]]]
 # .. envvar:: netbox__git_dest [[[
@@ -337,7 +337,7 @@ netbox__config_cors_origin_allow_all: False
                                                                    # ]]]
 # .. envvar:: netbox__config_cors_origin_whitelist [[[
 #
-# List of allowed OCRS origin hostnames.
+# List of allowed CORS origin hostnames.
 netbox__config_cors_origin_whitelist: []
 
                                                                    # ]]]
@@ -350,7 +350,7 @@ netbox__config_cors_origin_regex_whitelist: []
 # .. envvar:: netbox__config_email_server [[[
 #
 # The address of the SMTP server used by NetBox. By default the application
-# uses locally-installed SMTP server.
+# uses a locally-installed SMTP server.
 netbox__config_email_server: 'localhost'
 
                                                                    # ]]]
@@ -370,6 +370,12 @@ netbox__config_email_username: ''
 #
 # The password used to login to the SMTP server.
 netbox__config_email_password: ''
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_email_use_tls [[[
+#
+# Use TLS (previously known as SSL) when connecting to the SMTP server.
+netbox__config_email_use_tls: True
 
                                                                    # ]]]
 # .. envvar:: netbox__config_email_timeout [[[
@@ -551,13 +557,6 @@ netbox__config_exempt_view_permissions: []
 netbox__config_metrics_enabled: False
 
                                                                    # ]]]
-# .. envvar:: netbox__config_webhooks_enabled [[[
-#
-# The webhooks backend is disabled by default. Set this to True to enable it. Note that this requires a Redis
-# # database be configured and accessible by NetBox.
-netbox__config_webhooks_enabled: False
-
-                                                                   # ]]]
 # .. envvar:: netbox__config_session_file_path [[[
 #
 # By default, NetBox will store session data in the database. Alternatively,
@@ -578,6 +577,12 @@ netbox__config_media_root: '{{ netbox__data + "/media" }}'
 #
 # Absolute path where Netbox reports (Python modules) are stored.
 netbox__config_reports_root: '{{ netbox__data + "/reports" }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__config_scripts_root [[[
+#
+# Absolute path where Netbox scripts (Python modules) are stored.
+netbox__config_scripts_root: '{{ netbox__data + "/scripts" }}'
 
                                                                    # ]]]
 # .. envvar:: netbox__config_plugins [[[
