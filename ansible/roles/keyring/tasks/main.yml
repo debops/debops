@@ -121,9 +121,9 @@
          {%     elif (item.keyserver | d(keyring__keyserver if keyring__keyserver|d() else False)) %}
          || ( printf "Adding key...\n" && gpg --keyserver {{ item.keyserver | d(keyring__keyserver if keyring__keyserver else "") }} \
                                               --batch --recv-key {{ (item.id | d(item)) | replace(" ","") }} && gpgconf --kill all )
-         {%     else %}
-         || ( printf "Adding key...\n" && {{ gpg_command }} --import - )
          {%     endif %}
+         {%   else %}
+         || ( printf "Adding key...\n" && {{ gpg_command }} --import - )
          {%   endif %}
          {% endif %}
   args:
