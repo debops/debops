@@ -179,7 +179,7 @@
   loop_control:
     label: '{{ {"name": (item.0.prefix | d(system_users__prefix)) + item.0.name,
                 "state": item.0.state | d("present"), "home_acl": item.1} }}'
-  when: (system_users__enabled|bool and system_users__home_acl_enabled|bool and
+  when: (system_users__enabled|bool and system_users__acl_enabled|bool and
          item.0.name|d() and item.0.name != 'root' and
          item.0.state|d('present') not in [ 'absent', 'ignore' ] and (item.0.create_home|d(True))|bool and
          item.0.home_acl|d() and (item.user|d(True))|bool)
