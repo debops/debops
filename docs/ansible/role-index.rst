@@ -253,6 +253,7 @@ Networking
 - :ref:`debops.dhcrelay`
 - :ref:`debops.dnsmasq`
 - :ref:`debops.freeradius`
+- :ref:`debops.ghostunnel`
 - :ref:`debops.ifupdown`
 - :ref:`debops.netbase`
 - :ref:`debops.radvd`

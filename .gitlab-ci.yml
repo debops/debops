@@ -780,6 +780,21 @@ stages:
 
 # --- g --- [[[2
 
+'ghostunnel role':
+  <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'etc_services role'
+    - 'ferm role'
+    - 'golang role'
+  variables:
+    JANE_TEST_FACT: 'ghostunnel.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ghostunnel.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_ghostunnel'
+    JANE_DIFF_PATTERN: '.*/roles/ghostunnel/.*'
+    JANE_LOG_PATTERN: '\[ghostunnel\]'
+
 'gitlab role':
   <<: *test_role_4th_deps
   needs:
