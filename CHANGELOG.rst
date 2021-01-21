@@ -415,6 +415,8 @@ General
 - Ensure that the ``ansible_connection`` variable has a default value if it's
   not defined in the Ansible inventory.
 
+- The role uses the correct variable name to enable or disable ACL support.
+
 :ref:`debops.tinc` role
 '''''''''''''''''''''''
 
