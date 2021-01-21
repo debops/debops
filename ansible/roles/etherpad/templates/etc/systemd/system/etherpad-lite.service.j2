@@ -20,6 +20,8 @@ Group={{ etherpad_group }}
 WorkingDirectory={{ etherpad_home + "/" + etherpad_repository }}
 ExecStart=/usr/bin/nodejs {{ etherpad_home + "/" + etherpad_repository }}/node_modules/ep_etherpad-lite/node/server.js
 Restart=always
+StandardOutput=append:{{ etherpad_log_dir }}/production.log
+StandardError=inherit
 
 [Install]
 WantedBy=multi-user.target
