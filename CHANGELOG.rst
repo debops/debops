@@ -373,6 +373,8 @@ General
 - Ensure that the ``ansible_connection`` variable has a default value if it's
   not defined in the Ansible inventory.
 
+- The role uses the correct variable name to enable or disable ACL support.
+
 
 `debops v2.0.6`_ - 2020-08-30
 -----------------------------
