@@ -237,6 +237,16 @@ LDAP
   <slapd__ref_backup_restore>` to allow for more extensive ACL rules in the
   future.
 
+:ref:`debops.core` role
+'''''''''''''''''''''''
+
+- The fact script will generate the list of private e-mail addresses used to
+  send administrative mail notifications based on the list of admin accounts
+  and the detected domain of the host; this can be overriden via the
+  :envvar:`core__admin_private_email` variable. The change is done to avoid
+  sending mail messages to 'account-only' addresses on hosts without local mail
+  support.
+
 :ref:`debops.dhcpd` role
 ''''''''''''''''''''''''
 
