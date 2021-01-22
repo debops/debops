@@ -313,6 +313,11 @@ General
   called via the Ansible ``--tags`` argument and persistent journal is
   disabled.
 
+:ref:`debops.librenms` role
+'''''''''''''''''''''''''''
+
+- Fixed installation procedure which has been changed in upstream.
+
 :ref:`debops.logrotate` role
 ''''''''''''''''''''''''''''
 
