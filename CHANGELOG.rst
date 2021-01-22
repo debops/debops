@@ -257,6 +257,12 @@ General
   simulate creating a filesystem, but this failed when the underlying LVM volume
   did not actually exist (which is to be expected when running in check mode).
 
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- The role will try to clone the NetBox source code multiple times in case of
+  timeouts or network failures.
+
 :ref:`debops.nfs` role
 ''''''''''''''''''''''
 
