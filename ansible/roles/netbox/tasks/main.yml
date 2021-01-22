@@ -52,6 +52,7 @@
   become: True
   become_user: '{{ netbox__user }}'
   register: netbox__register_source
+  until: netbox__register_source is succeeded
 
 - name: Check if NetBox is installed
   stat:
