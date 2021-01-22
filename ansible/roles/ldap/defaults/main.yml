@@ -692,44 +692,12 @@ ldap__admin_become_user: 'root'
 # List of LDAP tasks to perform in the LDAP directory, defined by the role.
 ldap__default_tasks:
 
-  - name: 'Ensure that {{ ldap__people_rdn }} object exists in LDAP directory'
-    dn: '{{ [ ldap__people_rdn ] + ldap__base_dn }}'
-    objectClass: [ 'organizationalUnit' ]
-    attributes:
-      ou: '{{ ldap__people_rdn.split("=")[1] }}'
-
-  - name: 'Ensure that {{ ldap__groups_rdn }} object exists in LDAP directory'
-    dn: '{{ [ ldap__groups_rdn ] + ldap__base_dn }}'
-    objectClass: [ 'organizationalUnit' ]
-    attributes:
-      ou: '{{ ldap__groups_rdn.split("=")[1] }}'
-
   - name: 'Ensure that {{ ldap__hosts_rdn }} object exists in LDAP directory'
     dn: '{{ [ ldap__hosts_rdn ] + ldap__base_dn }}'
     objectClass: [ 'organizationalUnit' ]
     attributes:
       ou: '{{ ldap__hosts_rdn.split("=")[1] }}'
       description: 'Servers and other data center equipment'
-
-  - name: 'Ensure that {{ ldap__machines_rdn }} object exists in LDAP directory'
-    dn: '{{ [ ldap__machines_rdn ] + ldap__base_dn }}'
-    objectClass: [ 'organizationalUnit' ]
-    attributes:
-      ou: '{{ ldap__machines_rdn.split("=")[1] }}'
-      description: 'Client machines'
-
-  - name: 'Ensure that {{ ldap__roles_rdn }} object exists in LDAP directory'
-    dn: '{{ [ ldap__roles_rdn ] + ldap__base_dn }}'
-    objectClass: [ 'organizationalUnit' ]
-    attributes:
-      ou: '{{ ldap__roles_rdn.split("=")[1] }}'
-
-  - name: 'Ensure that {{ ldap__services_rdn }} object exists in LDAP directory'
-    dn: '{{ [ ldap__services_rdn ] + ldap__base_dn }}'
-    objectClass: [ 'organizationalUnit' ]
-    attributes:
-      ou: '{{ ldap__services_rdn.split("=")[1] }}'
-      description: 'Accounts for cluster-wide services not bound to one host'
 
   - name: 'Create domain object for {{ ldap__device_dn | join(",") }}'
     dn: '{{ [ ldap__device_domain_rdn, ldap__device_branch_rdn ]

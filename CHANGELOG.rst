@@ -385,6 +385,18 @@ LDAP
   well as members of the "LDAP Administrator" and "LDAP Monitor" roles can now
   read the ``cn=Monitor`` information.
 
+Removed
+~~~~~~~
+
+:ref:`debops.ldap` role
+'''''''''''''''''''''''
+
+- Creation of various LDAP directory objects (``ou=People``, ``ou=Groups``,
+  ...) has been removed from the default list of LDAP tasks performed by the
+  role. These objects are now automatically created by the :ref:`debops.slapd`
+  role. The :ref:`debops.ldap` role will still ensure that all LDAP objects
+  needed to maintain the hosts' directory information are present.
+
 Fixed
 ~~~~~
 
