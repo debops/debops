@@ -375,6 +375,13 @@ General
 - Fixed ``_syslog._tcp`` DNS SRV resource record detection on hosts with an
   undefined DNS domain.
 
+:ref:`debops.saslauthd` role
+''''''''''''''''''''''''''''
+
+- Fixed SMTP AUTH e-mail authentication for satellite hosts. Mail messages sent
+  by :command:`nullmailer` and authenticated using LDAP should now be accepted
+  by the SMTP server.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
