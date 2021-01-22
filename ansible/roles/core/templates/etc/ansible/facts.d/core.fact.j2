@@ -6,6 +6,7 @@ from __future__ import print_function
 from json import loads, dumps
 from sys import exit, version_info
 from grp import getgrall
+import socket
 
 
 PY2 = version_info[0] == 2
@@ -121,7 +122,10 @@ if admin_users:
 
 if not output['admin_private_email']:
     if output['admin_users']:
-        output.update({"admin_private_email": sorted(list(admin_users))})
+        output.update({"admin_private_email":
+                       sorted(list(
+                           [s + '@' + socket.getfqdn().split('.', 1)[1]
+                            for s in admin_users]))})
     else:
         output.update({"admin_private_email": ["root"]})
 
