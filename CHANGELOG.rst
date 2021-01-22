@@ -494,6 +494,11 @@ LDAP
   sensitive information and should not be gzipped to prevent successful BREACH
   attacks.
 
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- Fixed initial superuser account creation.
+
 :ref:`debops.nslcd` role
 ''''''''''''''''''''''''
 
