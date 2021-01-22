@@ -122,11 +122,12 @@
     working_dir: '{{ librenms__install_path }}'
   register: librenms__register_composer
   until: librenms__register_composer is succeeded
+  when: (librenms__register_database_status|d() and librenms__register_database_status is changed)
   become: True
   become_user: '{{ librenms__user }}'
 
 - name: Initialize database
-  command: php build-base.php
+  command: './daily.sh'
   args:
     chdir: '{{ librenms__install_path }}'
   become: True
@@ -210,7 +211,7 @@
   tags: [ 'role::librenms:config', 'role::librenms:devices' ]
 
 - name: Add specified hosts to LibreNMS
-  command: php addhost.php {{ item }}
+  command: php addhost.php {{ item }} any v3
   args:
     chdir: '{{ librenms__install_path }}'
   become: True

@@ -244,6 +244,11 @@ General
 
 - Fixed uninitialized local fact ``ansible_local.iscsi.discovered_portals``.
 
+:ref:`debops.librenms` role
+'''''''''''''''''''''''''''
+
+- Fixed installation procedure which has been changed in upstream.
+
 :ref:`debops.logrotate` role
 ''''''''''''''''''''''''''''
 
