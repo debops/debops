@@ -333,6 +333,12 @@ General
   therefore the role has been updated to reflect that fact, which should fix
   issues with building LXD from source.
 
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- The role will try to clone the NetBox source code multiple times in case of
+  timeouts or network failures.
+
 :ref:`debops.nfs` role
 ''''''''''''''''''''''
 
