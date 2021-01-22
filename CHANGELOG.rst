@@ -134,6 +134,16 @@ General
 - The official DebOps project logo has been replaced with a new design, created
   by Tasos Alvas. Thanks!
 
+:ref:`debops.core` role
+'''''''''''''''''''''''
+
+- The fact script will generate the list of private e-mail addresses used to
+  send administrative mail notifications based on the list of admin accounts
+  and the detected domain of the host; this can be overriden via the
+  :envvar:`core__admin_private_email` variable. The change is done to avoid
+  sending mail messages to 'account-only' addresses on hosts without local mail
+  support.
+
 :ref:`debops.gitlab` role
 '''''''''''''''''''''''''
 
