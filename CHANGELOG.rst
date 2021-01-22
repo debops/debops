@@ -336,6 +336,13 @@ General
   the database service. You might need to update the inventory configuration if
   you use this parameter.
 
+:ref:`debops.saslauthd` role
+''''''''''''''''''''''''''''
+
+- Fixed SMTP AUTH e-mail authentication for satellite hosts. Mail messages sent
+  by :command:`nullmailer` and authenticated using LDAP should now be accepted
+  by the SMTP server.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
