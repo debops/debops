@@ -551,6 +551,13 @@ LDAP
   value will now be defined using the ``streamDriverPermittedPeers`` parameter
   in :command:`rsyslog` configuration.
 
+:ref:`debops.saslauthd` role
+''''''''''''''''''''''''''''
+
+- Fixed SMTP AUTH e-mail authentication for satellite hosts. Mail messages sent
+  by :command:`nullmailer` and authenticated using LDAP should now be accepted
+  by the SMTP server.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
