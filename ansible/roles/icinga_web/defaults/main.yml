@@ -550,22 +550,23 @@ icinga_web__x509_database_user: 'icingaweb2_x509'
 # .. envvar:: icinga_web__x509_database_password [[[
 #
 # Password for Icinga 2 Web x509 database.
-icinga_web__x509_database_password: '{{ lookup("password", secret + "/mariadb/" + ansible_local.mariadb.delegate_to +
-                                   "/credentials/" + icinga_web__x509_database_user + "/password" +
-                                   " length=48 chars=ascii_letters,digits,.-_") }}'
+icinga_web__x509_database_password: '{{ lookup("password", secret + "/mariadb/"
+                                        + ansible_local.mariadb.delegate_to|d(inventory_hostname)
+                                        + "/credentials/" + icinga_web__x509_database_user + "/password"
+                                        + " length=48 chars=ascii_letters,digits,.-_") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__x509_database_host [[[
 #
 # Address of the Icinga 2 X509 database server.
-icinga_web__x509_database_host: '{{ ansible_local.mariadb.server }}'
+icinga_web__x509_database_host: '{{ ansible_local.mariadb.server|d("localhost") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__x509_database_port [[[
 #
 # The port on which the Icinga 2 x509 database server listens for
 # connections.
-icinga_web__x509_database_port: '{{ ansible_local.mariadb.port }}'
+icinga_web__x509_database_port: '{{ ansible_local.mariadb.port|d("3306") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__x5609_database_schema [[[
