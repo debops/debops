@@ -6,14 +6,6 @@
 - import_role:
     name: 'ansible_plugins'
 
-- import_role:
-    name: 'secret'
-  vars:
-    secret__directories:
-      - '{{ (journald__fss_verify_key_path | dirname)
-            if journald__fss_enabled|bool
-            else [] }}'
-
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'
@@ -30,6 +22,14 @@
 - name: Update Ansible facts if they were modified
   action: setup
   when: journald__register_facts is changed
+
+- import_role:
+    name: 'secret'
+  vars:
+    secret__directories:
+      - '{{ (journald__fss_verify_key_path | dirname)
+            if journald__fss_enabled|bool
+            else [] }}'
 
 - name: Move persistent journal to volatile storage if requested
   command: 'journalctl --relinquish-var'
