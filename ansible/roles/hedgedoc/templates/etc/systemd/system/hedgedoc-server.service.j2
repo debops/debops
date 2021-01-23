@@ -1,0 +1,24 @@
+[Unit]
+Description=CodiMD collaborative markdown notes
+Documentation=https://github.com/hedgedoc/server
+After=network.target
+
+[Service]
+Type=exec
+RestartSec=2s
+User={{ hedgedoc__user }}
+Group={{ hedgedoc__group }}
+WorkingDirectory={{ hedgedoc__home + "/" + hedgedoc__repository }}
+Environment=CMD_HOST=127.0.0.1
+Environment=CMD_PROTOCOL_USESSL=true
+Environment=CMD_DOMAIN={{ hedgedoc__domain }}
+Environment=NODE_ENV=production
+ExecStart=/usr/local/bin/yarn start
+Restart=always
+PrivateTmp=true
+PrivateDevices=true
+StandardOutput=append:{{ hedgedoc__log_dir }}/production.log
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,69 @@
+---
+- name: Manage Hedgedoc service
+  hosts: [ 'debops_service_hedgedoc' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: keyring
+      tags: [ 'role::keyring', 'skip::keyring',
+              'role::nodejs', 'role::mariadb', 'role::nginx' ]
+      keyring__dependent_apt_keys:
+        - '{{ nodejs__keyring__dependent_apt_keys }}'
+        - '{{ mariadb__keyring__dependent_apt_keys }}'
+        - '{{ nginx__keyring__dependent_apt_keys }}'
+
+    - role: etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ hedgedoc__etc_services__dependent_list }}'
+
+    - role: logrotate
+      tags: [ 'role::logrotate', 'skip::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ hedgedoc__logrotate__dependent_config }}'
+
+    - role: apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ nginx__apt_preferences__dependent_list }}'
+        - '{{ nodejs__apt_preferences__dependent_list }}'
+        - '{{ hedgedoc__apt_preferences__dependent_list }}'
+
+    - role: nodejs
+      tags: [ 'role::nodejs', 'skip::nodejs' ]
+
+    - role: ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ nginx__ferm__dependent_rules }}'
+
+    - role: python
+      tags: [ 'role::python', 'skip::python', 'role::mariadb', 'role::postgresql' ]
+      python__dependent_packages3:
+        - '{{ mariadb__python__dependent_packages3 }}'
+        - '{{ nginx__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ mariadb__python__dependent_packages2 }}'
+        - '{{ nginx__python__dependent_packages2 }}'
+
+    - role: mariadb
+      tags: [ 'role::mariadb', 'skip::mariadb' ]
+      mariadb__dependent_users:
+        - '{{ hedgedoc__mariadb__dependent_users }}'
+      mariadb__dependent_databases:
+        - '{{ hedgedoc__mariadb__dependent_databases }}'
+
+    - role: nginx
+      tags: [ 'role::nginx', 'skip::nginx' ]
+      nginx__dependent_servers:
+        - '{{ hedgedoc__nginx__dependent_servers }}'
+      nginx__dependent_upstreams:
+        - '{{ hedgedoc__nginx__dependent_upstreams }}'
+
+    - role: hedgedoc
+      tags: [ 'role::hedgedoc', 'skip::hedgedoc' ]
