@@ -115,6 +115,12 @@ LDAP
 - Add the ``regenerate`` parameter to DKIM key configuration which allows for
   control when the private keys are regenerated.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- The role can now specify what release channel should be used to deploy the
+  application.
+
 :ref:`debops.python` role
 '''''''''''''''''''''''''
 
