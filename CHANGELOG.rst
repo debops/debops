@@ -313,6 +313,9 @@ General
   called via the Ansible ``--tags`` argument and persistent journal is
   disabled.
 
+- Fixed the issue with non-existent :file:`secret/journald/` subdirectories by
+  reordering the role tasks.
+
 :ref:`debops.librenms` role
 '''''''''''''''''''''''''''
 
