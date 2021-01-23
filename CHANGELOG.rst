@@ -230,12 +230,23 @@ LDAP
   still used for administrator account creation.
 
 - The base directory objects created by the :ref:`debops.slapd` role
-  (``ou=People``, ``ou=Groups``, etc.) changed their structural object type
-  from ``organizationalUnit`` to ``organizationalStructure``. Existing
-  directories should not be affected by this change, but users might want to
-  update them using the :ref:`backup and restore procedure
-  <slapd__ref_backup_restore>` to allow for more extensive ACL rules in the
-  future.
+  (``ou=People``, ``ou=Groups``, etc.) as well as other DebOps roles
+  (:ref:`debops.dokuwiki`, :ref:`debops.ldap`, :ref:`debops.postldap`) changed
+  their structural object type from ``organizationalUnit`` to
+  ``organizationalStructure``. Existing directories should not be affected by
+  this change, but users might want to update them using the :ref:`backup and
+  restore procedure <slapd__ref_backup_restore>` to allow for more extensive
+  ACL rules in the future.
+
+:ref:`debops.core` role
+'''''''''''''''''''''''
+
+- The fact script will generate the list of private e-mail addresses used to
+  send administrative mail notifications based on the list of admin accounts
+  and the detected domain of the host; this can be overriden via the
+  :envvar:`core__admin_private_email` variable. The change is done to avoid
+  sending mail messages to 'account-only' addresses on hosts without local mail
+  support.
 
 :ref:`debops.dhcpd` role
 ''''''''''''''''''''''''
@@ -375,6 +386,18 @@ LDAP
   well as members of the "LDAP Administrator" and "LDAP Monitor" roles can now
   read the ``cn=Monitor`` information.
 
+Removed
+~~~~~~~
+
+:ref:`debops.ldap` role
+'''''''''''''''''''''''
+
+- Creation of various LDAP directory objects (``ou=People``, ``ou=Groups``,
+  ...) has been removed from the default list of LDAP tasks performed by the
+  role. These objects are now automatically created by the :ref:`debops.slapd`
+  role. The :ref:`debops.ldap` role will still ensure that all LDAP objects
+  needed to maintain the hosts' directory information are present.
+
 Fixed
 ~~~~~
 
@@ -471,6 +494,11 @@ LDAP
   sensitive information and should not be gzipped to prevent successful BREACH
   attacks.
 
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- Fixed initial superuser account creation.
+
 :ref:`debops.nslcd` role
 ''''''''''''''''''''''''
 
@@ -540,6 +568,13 @@ LDAP
   defines what server is accepted by the client during TLS handshakes. The
   value will now be defined using the ``streamDriverPermittedPeers`` parameter
   in :command:`rsyslog` configuration.
+
+:ref:`debops.saslauthd` role
+''''''''''''''''''''''''''''
+
+- Fixed SMTP AUTH e-mail authentication for satellite hosts. Mail messages sent
+  by :command:`nullmailer` and authenticated using LDAP should now be accepted
+  by the SMTP server.
 
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''

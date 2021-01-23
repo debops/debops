@@ -57,6 +57,7 @@
   become: True
   become_user: '{{ netbox__user }}'
   register: netbox__register_source
+  until: netbox__register_source is succeeded
 
 - name: Check if NetBox is installed
   stat:
@@ -203,22 +204,13 @@
   when: netbox__register_checkout is changed
   register: netbox__register_migration
 
-- name: Create superuser account
-  ## TODO: Does not work with 2.8 anymore. Use args stdin instead of echo and shell module.
-  shell:
-    cmd: |
-      set -o nounset -o pipefail -o errexit
-      echo "from django.contrib.auth.models import User;
-            User.objects.create_superuser('${SUPERUSER_NAME}', '${SUPERUSER_EMAIL}', '${SUPERUSER_PASSWORD}')"
-      | ./manage.py shell
-    chdir: '{{ netbox__git_checkout + "/netbox" }}'
-    executable: 'bash'
+- name: Create Django superuser account
   environment:
-    VIRTUAL_ENV: '{{ netbox__virtualenv }}'
-    PATH: '{{ netbox__virtualenv_env_path }}'
-    SUPERUSER_NAME: '{{ netbox__superuser_name }}'
-    SUPERUSER_EMAIL: '{{ netbox__superuser_email }}'
-    SUPERUSER_PASSWORD: '{{ netbox__superuser_password }}'
+    DJANGO_SUPERUSER_PASSWORD: '{{ netbox__superuser_password }}'
+  django_manage:
+    command: 'createsuperuser --noinput --username={{ netbox__superuser_name }} --email={{ netbox__superuser_email }}'
+    app_path: '{{ netbox__git_checkout + "/netbox" }}'
+    virtualenv: '{{ netbox__virtualenv }}'
   become: True
   become_user: '{{ netbox__user }}'
   when: (not netbox__register_installed.stat.exists|bool and

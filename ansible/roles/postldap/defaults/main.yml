@@ -712,7 +712,7 @@ postldap__ldap__dependent_tasks:
 
   - name: 'Create Postfix group container for {{ postldap__ldap_device_dn | join(",") }}'
     dn: '{{ postldap__ldap_groups_dn }}'
-    objectClass: 'organizationalUnit'
+    objectClass: 'organizationalStructure'
     attributes:
       ou: '{{ postldap__ldap_groups_rdn.split("=")[1] }}'
       description: 'User groups used in Postfix'
@@ -724,7 +724,7 @@ postldap__ldap__dependent_tasks:
 
   - name: 'Create Postfix domains container for {{ postldap__ldap_device_dn | join(",") }}'
     dn: '{{ postldap__ldap_domains_dn }}'
-    objectClass: 'organizationalUnit'
+    objectClass: 'organizationalStructure'
     attributes:
       ou: '{{ postldap__ldap_domains_rdn.split("=")[1] }}'
       description: 'Virtual Mail Domains used in Postfix'
