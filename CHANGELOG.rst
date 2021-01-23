@@ -144,6 +144,12 @@ General
   sending mail messages to 'account-only' addresses on hosts without local mail
   support.
 
+:ref:`debops.etherpad` role
+'''''''''''''''''''''''''''
+
+- The role can now configure the Etherpad :command:`systemd` service to log to
+  a file instead of :command:`syslog` daemon.
+
 :ref:`debops.gitlab` role
 '''''''''''''''''''''''''
 
