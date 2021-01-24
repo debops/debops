@@ -254,6 +254,10 @@ General
   :file:`file_src`, :file:`template_src`) which resulted in Ansible 2.10 not
   finding them correctly.
 
+- Fixed issue on Asible 2.10 where some roles used the ``src`` parameter with
+  ``file`` module unconditionally, which caused errors with operations on
+  symlinks.
+
 :ref:`debops.docker_server` role
 ''''''''''''''''''''''''''''''''
 
