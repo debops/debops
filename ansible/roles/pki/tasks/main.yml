@@ -535,9 +535,8 @@
   register: pki_register_facts
   notify: [ 'Gather PKI facts' ]
 
-- name: Flush handlers for PKI if needed
+- name: Flush handlers for PKI
   meta: flush_handlers
-  when: pki_register_facts is changed
 
 - name: DebOps post_tasks hook
   include: "{{ lookup('task_src', 'pki/post_main.yml') }}"
