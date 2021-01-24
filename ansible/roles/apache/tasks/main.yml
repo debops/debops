@@ -83,7 +83,13 @@
 - name: Enable/disable configuration snippets
   file:
     path: '{{ apache__config_path + "/conf-enabled/" + item.key + ".conf" }}'
-    src: '../conf-available/{{ item.key }}.conf'
+    src: '{{ (((item.value.enabled|d(True)
+                  if (item.value is mapping)
+                  else item.value|d(True)))
+                 if (item.value.state|d("present") != "absent")
+                 else False) | bool
+                 | ternary("../conf-available/" + item.key + ".conf",
+                           omit) }}'
     mode: '0644'
     force: '{{ ansible_check_mode|d() | bool }}'
     state: '{{ (((item.value.enabled|d(True)
@@ -148,9 +154,12 @@
     path: '{{ apache__config_path }}/sites-enabled/{{ item.filename | d(item.name
                                                                         if (item.name is string)
                                                                         else item.name[0] | d("default")) }}.conf'
-    src: '../sites-available/{{ item.filename | d(item.name
-                                                  if (item.name is string)
-                                                  else item.name[0] | d("default")) }}.conf'
+    src: '{{ ("../sites-available/" + item.filename
+                                      | d(item.name
+                                          if (item.name is string)
+                                          else item.name[0] | d("default")) + ".conf")
+             if (item.enabled|d(True) | bool)
+             else omit }}'
     force: '{{ ansible_check_mode|d() | bool }}'
     state: '{{ item.enabled|d(True) | bool | ternary("link", "absent")
                if (item.state|d("present") != "absent")
