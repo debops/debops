@@ -289,12 +289,19 @@ ldap__device_aliases: [ '{{ ansible_hostname }}' ]
 # LDAP device object ``ipHostNumber`` attributes.
 #
 # Only the externally accessible addresses will be added, any internal bridges
-# or other network interfaces not reachable directly from the outise of the
+# or other network interfaces not reachable directly from outside the
 # host will be skipped. The :rfc:`1918` addresses will also be added in the
 # attributes, if they are configured to be reachable from outside of the host.
 ldap__device_ip_addresses: '{{ q("template",
                                  "lookup/ldap__device_ip_addresses.j2")
                                  | from_yaml | flatten }}'
+
+                                                                   # ]]]
+# .. envvar:: ldap__device_ip_iface_regex [[[
+#
+# Regex used to determine which network interfaces to consider for inclusion
+# in the LDAP device object ``ipHostNumber`` attributes.
+ldap__device_ip_iface_regex: '^(bond|en|eth|vlan|mv-)'
 
                                                                    # ]]]
 # .. envvar:: ldap__device_mac_addresses [[[
@@ -313,6 +320,13 @@ ldap__device_ip_addresses: '{{ q("template",
 ldap__device_mac_addresses: '{{ q("template",
                                   "lookup/ldap__device_mac_addresses.j2")
                                   | from_yaml | flatten | unique }}'
+
+                                                                   # ]]]
+# .. envvar:: ldap__device_mac_iface_regex [[[
+#
+# Regex used to determine which network interfaces to consider for inclusion
+# in the LDAP device object ``macAddress`` attributes.
+ldap__device_mac_iface_regex: '^(en|eth|mv-)'
 
                                                                    # ]]]
 # .. envvar:: ldap__device_self_rdn [[[
