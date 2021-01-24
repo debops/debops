@@ -77,6 +77,13 @@ LDAP
 - Role can configure more parameters for Docker executor, related to memory,
   CPU and process management inside of the containers.
 
+:ref:`debops.ldap` role
+'''''''''''''''''''''''
+
+- Users can now specify a regex pattern which will be used to detect what
+  network interfaces should be used to gather IP and MAC addresses to add in
+  the host LDAP object.
+
 :ref:`debops.lvm` role
 ''''''''''''''''''''''
 
