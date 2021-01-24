@@ -308,6 +308,13 @@ LDAP
 
 - Linux Software RAID devices are now scanned by default.
 
+:ref:`debops.lxd` role
+''''''''''''''''''''''
+
+- During installation, the role will enable trust for the GitHub's GPG signing
+  key to allow for verification of the LXD source code. Check the
+  :ref:`lxd__ref_install_details` for more information.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
