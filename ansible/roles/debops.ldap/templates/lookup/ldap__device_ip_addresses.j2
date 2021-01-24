@@ -3,14 +3,13 @@
 {% set ldap__tpl_device_ip_addresses = [] %}
 {% for item in ansible_interfaces %}
 {%   set iface = (item | replace('-','_') | regex_replace('^(.*)$', 'ansible_\\1')) %}
-{%   if iface.startswith(('ansible_bond', 'ansible_en', 'ansible_eth', 'ansible_vlan')) %}
-{%     set _ = ldap__tpl_device_interfaces.append(item) %}
+{%   if item | regex_search(ldap__device_ip_iface_regex) %}
+{%     set _ = ldap__tpl_device_interfaces.append(iface) %}
 {%   elif hostvars[inventory_hostname][iface].type|d('ether') == 'bridge' %}
-{%     set _ = ldap__tpl_device_masters.append(item) %}
+{%     set _ = ldap__tpl_device_masters.append(iface) %}
 {%   endif %}
 {% endfor %}
-{% for item in ldap__tpl_device_interfaces %}
-{%   set iface = (item | replace('-','_') | regex_replace('^(.*)$', 'ansible_\\1')) %}
+{% for iface in ldap__tpl_device_interfaces %}
 {%   if hostvars[inventory_hostname][iface].ipv6|d() %}
 {%     for element in hostvars[inventory_hostname][iface].ipv6 %}
 {%       set address = ((element.address + '/' + element.prefix) | ipaddr('host/prefix')) %}
@@ -30,8 +29,7 @@
 {%     endif %}
 {%   endif %}
 {% endfor %}
-{% for item in ldap__tpl_device_masters %}
-{%   set iface = (item | replace('-','_') | regex_replace('^(.*)$', 'ansible_\\1')) %}
+{% for iface in ldap__tpl_device_masters %}
 {%   if hostvars[inventory_hostname][iface].interfaces|d() %}
 {%     if hostvars[inventory_hostname][iface].interfaces | intersect(ldap__tpl_device_interfaces) %}
 {%       if hostvars[inventory_hostname][iface].ipv6|d() %}
