@@ -214,8 +214,9 @@ General
   pyOpenSSL was used only to generate private RSA keys for the
   :ref:`debops.opendkim` role. Switching to ``cryptography`` is also a security
   precaution and the Python Cryptographic Authority
-  [recommends](https://github.com/pyca/cryptography/blob/master/docs/faq.rst#why-use-cryptography)
-  doing so.
+  `recommends`__ doing so.
+
+  .. __: https://github.com/pyca/cryptography/blob/master/docs/faq.rst#why-use-cryptography)
 
 LDAP
 ''''
