@@ -377,6 +377,13 @@ General
   ``postgresql_privs`` Ansible module not detecting changes in the ``PUBLIC``
   PostgreSQL role.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- The ``python-pip`` APT package will be installed only on older OS releases,
+  since it has been removed from newer OS releases like Debian Bullseye and
+  Ubuntu Focal.
+
 :ref:`debops.saslauthd` role
 ''''''''''''''''''''''''''''
 
