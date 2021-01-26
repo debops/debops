@@ -2,13 +2,13 @@
 
 *Your Debian-based data center in a box*
 
-[![Travis CI][travis-ci]](https://travis-ci.org/debops/debops)
+[![GitHub CI][github-ci]](https://github.com/debops/debops/actions?query=workflow%3A%22Continuous+Integration%22)
 [![GitLab CI][gitlab-ci]](https://gitlab.com/debops/debops/pipelines)
 [![CII Best Practices][cii-best-practices]](https://bestpractices.coreinfrastructure.org/en/projects/237)
 [![RSS commits][rss-commits]](https://github.com/debops/debops/commits/master.atom)
 
 [debops-logo]: https://raw.githubusercontent.com/debops/debops/master/lib/images/debops-small.png
-[travis-ci]: https://img.shields.io/travis/debops/debops.svg?style=flat
+[github-ci]: https://github.com/debops/debops/workflows/Continuous%20Integration/badge.svg
 [gitlab-ci]: https://gitlab.com/debops/debops/badges/master/pipeline.svg
 [cii-best-practices]: https://bestpractices.coreinfrastructure.org/projects/237/badge
 [rss-commits]: https://img.shields.io/badge/RSS-commits-orange.svg
