@@ -793,6 +793,7 @@ stages:
     - 'logrotate role'
     - 'ferm role'
     - 'ruby role'
+    - 'postgresql_server role'
     - 'postgresql role'
     - 'ldap role'
     - 'nginx role'
@@ -973,6 +974,7 @@ stages:
 'icinga_db/postgresql role':
   <<: *test_role_2nd_deps
   needs:
+    - 'postgresql_server role'
     - 'postgresql role'
   variables:
     JANE_TEST_FACT: 'icinga_db.fact'
@@ -1320,6 +1322,8 @@ stages:
     - 'apt_preferences role'
     - 'ferm role'
     - 'python role'
+    - 'postgresql_server role'
+    - 'postgresql role'
     - 'ldap role'
     - 'postfix role'
     - 'nginx role'
