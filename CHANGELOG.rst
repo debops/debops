@@ -83,8 +83,9 @@ LDAP
 - The role now installs CPU microcode packages on physical hosts by default.
   These firmware updates correct CPU behaviour and mitigate vulnerabilities like
   Spectre and Meltdown. You still need to take measures to protect your virtual
-  machines; for this, take a look at the QEMU documentation:
-  https://www.qemu.org/docs/master/system/target-i386.html#important-cpu-features-for-intel-x86-hosts
+  machines; for this, take a look at the `QEMU documentation`__.
+
+  .. __: https://www.qemu.org/docs/master/system/target-i386.html#important-cpu-features-for-intel-x86-hosts
 
 :ref:`debops.icinga` role
 '''''''''''''''''''''''''
@@ -213,8 +214,9 @@ General
   pyOpenSSL was used only to generate private RSA keys for the
   :ref:`debops.opendkim` role. Switching to ``cryptography`` is also a security
   precaution and the Python Cryptographic Authority
-  [recommends](https://github.com/pyca/cryptography/blob/master/docs/faq.rst#why-use-cryptography)
-  doing so.
+  `recommends`__ doing so.
+
+  .. __: https://github.com/pyca/cryptography/blob/master/docs/faq.rst#why-use-cryptography)
 
 LDAP
 ''''
