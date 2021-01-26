@@ -407,6 +407,10 @@ General
   the database service. You might need to update the inventory configuration if
   you use this parameter.
 
+- Fixed an issue with the role always reporting "changed" state due to
+  ``postgresql_privs`` Ansible module not detecting changes in the ``PUBLIC``
+  PostgreSQL role.
+
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
 
