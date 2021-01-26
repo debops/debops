@@ -11,6 +11,8 @@ Getting started
       :local:
 
 
+.. _lxd__ref_install_details:
+
 LXD installation details
 ------------------------
 
@@ -38,6 +40,19 @@ Due to the build dependency on the ``lxc-dev`` APT package, which pulls the
 ``lxc`` APT package automatically, the :ref:`debops.lxc` role and its
 dependencies will be used to configure the LXC environment. The ``lxcbr0``
 network brige will be automatically disabled in this case.
+
+.. warning:: Merge commits in the `lxc/lxd`__ GitHub repository might be signed
+   with the `GPG key issued by GitHub`__, used for `signing commits done in the web
+   interface`__. It has to be done, because tagged LXD releases `have problems
+   with their dependency chains`__ and due to that the :ref:`debops.lxd` role
+   relies on stable branches in the LXD repository. The trust is limited to the
+   ``_golang`` UNIX account and might have an impact for any Go applications
+   built in that specific environment.
+
+   .. __: https://github.com/lxc/lxd
+   .. __: https://help.github.com/articles/about-gpg/
+   .. __: https://security.stackexchange.com/a/173494
+   .. __: https://github.com/lxc/lxd/issues/8293
 
 
 Example inventory
