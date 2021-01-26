@@ -1,0 +1,37 @@
+---
+# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+name: Super-Linter
+on: [ 'workflow_dispatch' ]
+
+jobs:
+  "Super-Linter":
+    runs-on: 'ubuntu-20.04'
+    steps:
+
+      - name: Clone the repository
+        uses: 'actions/checkout@v2'
+        with:
+          fetch-depth: 0
+
+      - name: Lint codebase
+        uses: 'github/super-linter@v3'
+        env:
+          DEFAULT_BRANCH: 'master'
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+
+          # Check the entire codebase by default. This workflow is executed
+          # manually for now, until all issues in the codebase found by the
+          # Super-Linter are fixed.
+          VALIDATE_ALL_CODEBASE: True
+
+          # Most of the scripts in the repository are meant to be installed by
+          # Ansible and executed on the remote hosts and don't need an
+          # executable bit in the repository itself.
+          VALIDATE_BASH_EXEC: False
+
+          # Some of the files are incorrectly detected or use Jinja syntax for
+          # templating; they should be ignored by the linters
+          FILTER_REGEX_EXCLUDE: '(/ansible/roles/grub/templates/etc/grub.d/01_users.j2|/ansible/roles/slapd/templates/etc/ldap/slapacl-test-suite.j2|/ansible/roles/dropbear_initramfs/templates/etc/initramfs-tools/scripts/local-bottom/debops_dropbear_initramfs.j2)'
