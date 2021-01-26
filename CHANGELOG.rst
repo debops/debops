@@ -25,6 +25,14 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+General
+'''''''
+
+- The code in the DebOps monorepo is now checked using `GitHub Actions`__,
+  which will replace Travis-CI. Thank you, Travis, for years of service. :)
+
+  .. __: https://github.com/features/actions
+
 LDAP
 ''''
 

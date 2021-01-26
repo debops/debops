@@ -1,0 +1,27 @@
+---
+# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+name: Prepare CI pipeline environment
+on: [ 'push', 'pull_request' ]
+
+runs:
+  using: 'composite'
+  steps:
+
+    - name: Add ~/.local/bin to $PATH
+      run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
+      shell: 'bash'
+
+    - name: Prepare test environment
+      run: |
+        sudo apt-get -qq update
+        sudo apt-get remove --purge -yq ansible python python2.7 python2.7-minimal
+        pip3 install --user --upgrade pip wheel setuptools
+        pip3 install --user --upgrade ansible
+        pip3 install --user .
+        debops-init ~/src/controller
+        printf "[debops_all_hosts]\nlocalhost ansible_connection=local\n" \
+                >> ~/src/controller/ansible/inventory/hosts
+      shell: 'bash'
