@@ -1,0 +1,91 @@
+---
+# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# TODO: The CI pipeline is not finished yet, it needs more work around
+# preparing the environment and Ansible configuration for execution.
+
+name: DebOps CI pipeline
+on: [ 'workflow_dispatch' ]
+
+jobs:
+  apt_role:
+    runs-on: 'ubuntu-20.04'
+    steps:
+
+      - name: Check out the repository
+        uses: 'actions/checkout@v2'
+
+      - name: Prepare the CI pipeline environment
+        uses: './.github/workflows/prepare-ci-pipeline'
+
+      - name: Apply the role on the host
+        env:
+          PY_COLORS: 1
+          ANSIBLE_FORCE_COLOR: 1
+        run: |
+          cd ~/src/controller
+          debops service/apt --diff
+          debops service/apt --diff
+
+
+  apt_listchanges_role:
+    runs-on: 'ubuntu-20.04'
+    steps:
+
+      - name: Check out the repository
+        uses: 'actions/checkout@v2'
+
+      - name: Prepare the CI pipeline environment
+        uses: './.github/workflows/prepare-ci-pipeline'
+
+      - name: Apply the role on the host
+        env:
+          PY_COLORS: 1
+          ANSIBLE_FORCE_COLOR: 1
+        run: |
+          cd ~/src/controller
+          debops service/apt_listchanges --diff
+          debops service/apt_listchanges --diff
+
+
+  python_role:
+    runs-on: 'ubuntu-20.04'
+    steps:
+
+      - name: Check out the repository
+        uses: 'actions/checkout@v2'
+
+      - name: Prepare the CI pipeline environment
+        uses: './.github/workflows/prepare-ci-pipeline'
+
+      - name: Apply the role on the host
+        env:
+          PY_COLORS: 1
+          ANSIBLE_FORCE_COLOR: 1
+        run: |
+          cd ~/src/controller
+          printf "[debops_service_python]\nlocalhost\n" >> ansible/inventory/hosts
+          debops service/python --diff
+          debops service/python --diff
+
+
+  common_playbook:
+    runs-on: 'ubuntu-20.04'
+    steps:
+
+      - name: Check out the repository
+        uses: 'actions/checkout@v2'
+
+      - name: Prepare the CI pipeline environment
+        uses: './.github/workflows/prepare-ci-pipeline'
+
+      - name: Apply the playbook on the host
+        env:
+          PY_COLORS: 1
+          ANSIBLE_FORCE_COLOR: 1
+        run: |
+          cd ~/src/controller
+          debops common --diff
+          debops common --diff

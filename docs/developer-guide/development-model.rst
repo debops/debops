@@ -26,7 +26,7 @@ to the end users:
        drybjed_make_test [shape="diamond", style="rounded,filled" fillcolor="tomato2" label="make test"];
        monorepo_drybjed_local [shape="record" style="filled" fillcolor="mediumseagreen" label="<pull> Pulls |<code> ~/src/debops/debops"];
 
-       travis_ci [label="Travis CI" shape="diamond" style="rounded,filled" fillcolor="tomato2"];
+       github_ci [label="GitHub Actions" shape="diamond" style="rounded,filled" fillcolor="tomato2"];
        docker_hub [label="Docker Hub" style="filled" fillcolor="deepskyblue3"];
        readthedocs [label="ReadTheDocs" style="filled" fillcolor="slategray4"];
        pypi [label="PyPI" style="filled" fillcolor="steelblue3"];
@@ -57,7 +57,7 @@ to the end users:
 
        fork_devel_github    -> fork_drybjed_local -> gitlab_drybjed_local [style="dashed" color="coral3" fontcolor="coral3" label="Integration pulls"];
 
-       monorepo:pr -> travis_ci [dir="both" color="tomato2" fontcolor="tomato2" label="PR tests"];
+       monorepo:pr -> github_ci [dir="both" color="tomato2" fontcolor="tomato2" label="PR tests"];
 
        monorepo:pr -> monorepo_drybjed_local:pull -> drybjed [color="darkgreen" fontcolor="darkgreen" label="Approved PRs"];
        drybjed -> monorepo_drybjed_local:code [color="purple" fontcolor="purple" label="Code signing"];
@@ -80,7 +80,7 @@ The yellow rectangles represent monorepo forks on GitHub, which are cloned to
 the local :command:`git` repositories, shown in blue. Local development is
 performed there, developers can use the :command:`make test` command to check
 if the code passes the tests (code linting; the same tests are performed on all
-pull requests using Travis CI).
+pull requests using GitHub Actions).
 
 A separate test infrastructure based on GitLab and GitLab Runners can be used
 to test DebOps roles and playbooks directly. This is done locally by the
