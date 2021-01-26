@@ -151,7 +151,11 @@ python__core_packages2:
 # opration on the remote host.
 python__base_packages2:
   - 'python-httplib2'
-  - 'python-pip'
+  - '{{ "python-pip"
+        if (ansible_distribution_release in
+            [ "wheezy", "jessie", "stretch", "buster",
+              "precise", "trusty", "xenial", "bionic" ])
+           else [] }}'
   - 'python-setuptools'
   - 'python-pycurl'
   - 'python-future'
