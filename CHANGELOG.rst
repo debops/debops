@@ -62,8 +62,9 @@ LDAP
 - The role now installs CPU microcode packages on physical hosts by default.
   These firmware updates correct CPU behaviour and mitigate vulnerabilities like
   Spectre and Meltdown. You still need to take measures to protect your virtual
-  machines; for this, take a look at the QEMU documentation:
-  https://www.qemu.org/docs/master/system/target-i386.html#important-cpu-features-for-intel-x86-hosts
+  machines; for this, take a look at the `QEMU documentation`__.
+
+  .. __: https://www.qemu.org/docs/master/system/target-i386.html#important-cpu-features-for-intel-x86-hosts
 
 :ref:`debops.dovecot` role
 ''''''''''''''''''''''''''
