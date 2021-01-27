@@ -14,10 +14,10 @@ DebOps
 
 *Your Debian-based data center in a box*
 
-|Travis CI| |GitLab CI| |CII Best Practices| |REUSE Status|
+|GitHub CI| |GitLab CI| |CII Best Practices| |REUSE Status|
 
-.. |Travis CI| image:: https://img.shields.io/travis/debops/debops.svg?style=flat
-   :target: https://travis-ci.org/debops/debops
+.. |GitHub CI| image:: https://github.com/debops/debops/workflows/Continuous%20Integration/badge.svg
+   :target: https://github.com/debops/debops/actions?query=workflow%3A%22Continuous+Integration%22
 
 .. |GitLab CI| image:: https://gitlab.com/debops/debops/badges/master/pipeline.svg
    :target: https://gitlab.com/debops/debops/pipelines

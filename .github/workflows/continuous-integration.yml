@@ -1,0 +1,279 @@
+---
+# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+name: Continuous Integration
+on: [ 'push', 'pull_request' ]
+
+jobs:
+  reuse-spdx:
+    runs-on: 'ubuntu-20.04'
+    steps:
+
+      - name: Add ~/.local/bin to $PATH
+        run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
+
+      - name: Clone the repository
+        uses: 'actions/checkout@v2'
+
+      - name: Prepare test environment
+        run: |
+          pip3 install --user --upgrade pip wheel setuptools
+          pip3 install --user --upgrade reuse
+
+      - name: Check codebase with REUSE linter
+        run: |
+          reuse --version
+          make test-spdx
+          make check
+
+  ansible-lint:
+    runs-on: 'ubuntu-20.04'
+    steps:
+
+      - name: Add ~/.local/bin to $PATH
+        run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
+
+      - name: Clone the repository
+        uses: 'actions/checkout@v2'
+
+      - name: Prepare test environment
+        run: |
+          sudo apt-get remove --purge -yq ansible
+          pip3 install --upgrade pip wheel setuptools
+          pip3 install --user --upgrade ansible ansible-lint
+
+      - name: Verify playbook with ansible-lint
+        run: |
+          ansible-lint --version
+          make test-ansible-lint
+          make check
+
+  ansible-playbook:
+    runs-on: 'ubuntu-20.04'
+    steps:
+
+      - name: Add ~/.local/bin to $PATH
+        run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
+
+      - name: Clone the repository
+        uses: 'actions/checkout@v2'
+
+      - name: Prepare test environment
+        run: |
+          sudo apt-get remove --purge -yq ansible
+          pip3 install --user --upgrade pip wheel setuptools
+          pip3 install --user --upgrade ansible
+
+      - name: Check playbook syntax with ansible-playbook
+        run: |
+          ansible --version
+          make test-playbook-syntax
+          make check
+
+  ansible-galaxy:
+    runs-on: 'ubuntu-20.04'
+    steps:
+
+      - name: Add ~/.local/bin to $PATH
+        run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
+
+      - name: Clone the repository
+        uses: 'actions/checkout@v2'
+        with:
+          fetch-depth: 0
+
+      - name: Prepare test environment
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -yq install pandoc pandoc-data
+          sudo apt-get remove --purge -yq ansible
+          pip3 install --user --upgrade pip wheel setuptools
+          pip3 install --user --upgrade ansible ansible-lint yamllint galaxy-importer reuse
+
+      - name: Build DebOps Collections for Ansible Galaxy
+        env:
+          DEBOPS_VERSION: '0.0.0'
+        run: |
+          yamllint --version
+          ansible --version
+          ansible-lint --version
+          make collection
+          make check
+
+  yamllint:
+    runs-on: 'ubuntu-20.04'
+    steps:
+
+      - name: Add ~/.local/bin to $PATH
+        run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
+
+      - name: Clone the repository
+        uses: 'actions/checkout@v2'
+
+      - name: Prepare test environment
+        run: |
+          pip3 install --user --upgrade pip wheel setuptools
+          pip3 install --user --upgrade yamllint
+
+      - name: Check codebase with yamllint
+        run: |
+          yamllint --version
+          make test-yaml
+          make check
+
+  pycodestyle:
+    runs-on: 'ubuntu-20.04'
+    steps:
+
+      - name: Add ~/.local/bin to $PATH
+        run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
+
+      - name: Clone the repository
+        uses: 'actions/checkout@v2'
+
+      - name: Prepare test environment
+        run: |
+          pip3 install --user --upgrade pip wheel setuptools
+          pip3 install --user --upgrade pycodestyle
+
+      - name: Check codebase with pycodestyle
+        run: |
+          printf "pycodestyle %s\\n" "$(pycodestyle --version)"
+          make test-pep8
+          make check
+
+  shellcheck:
+    runs-on: 'ubuntu-20.04'
+    steps:
+
+      - name: Add ~/.local/bin to $PATH
+        run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
+
+      - name: Clone the repository
+        uses: 'actions/checkout@v2'
+
+      - name: Prepare test environment
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get install -yq shellcheck
+
+      - name: Check shell scripts with shellcheck
+        run: |
+          shellcheck --version
+          make test-shell
+          make check
+
+  docker-image:
+    runs-on: 'ubuntu-20.04'
+    steps:
+
+      - name: Clone the repository
+        uses: 'actions/checkout@v2'
+
+      - name: Build and verify Docker image
+        # https://github.com/actions/runner/issues/241
+        shell: 'script -q -e -c "bash {0}"'
+        run: 'make test-docker-build'
+
+  debops-unit-test:
+    runs-on: 'ubuntu-20.04'
+    steps:
+
+      - name: Add ~/.local/bin to $PATH
+        run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
+
+      - name: Clone the repository
+        uses: 'actions/checkout@v2'
+        with:
+          fetch-depth: 0
+
+      - name: Prepare test environment
+        run: |
+          pip3 install --user --upgrade pip wheel setuptools pypandoc
+          pip3 install --user --upgrade cov-core future nose2 unittest2 pyyaml
+
+      - name: Run DebOps unit tests
+        run: |
+          make clean-tests
+          make test-debops-tools test-debops-ansible_plugins
+          make check
+
+  debops-wheel:
+    runs-on: 'ubuntu-20.04'
+    steps:
+
+      - name: Add ~/.local/bin to $PATH
+        run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
+
+      - name: Clone the repository
+        uses: 'actions/checkout@v2'
+        with:
+          fetch-depth: 0
+
+      - name: Prepare test environment
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -yq install pandoc pandoc-data graphviz
+          pip3 install --user --upgrade pip wheel setuptools pypandoc
+          pip3 install --user --upgrade sphinx sphinx-autobuild sphinx_rtd_theme
+
+      - name: Build DebOps Python wheel package
+        run: |
+          make clean-tests
+          make check
+          make test-man wheel-quiet
+          pip3 install --user dist/*
+          pip3 list | grep debops
+
+  debops-sdist:
+    runs-on: 'ubuntu-20.04'
+    steps:
+
+      - name: Add ~/.local/bin to $PATH
+        run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
+
+      - name: Clone the repository
+        uses: 'actions/checkout@v2'
+        with:
+          fetch-depth: 0
+
+      - name: Prepare test environment
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -yq install pandoc pandoc-data graphviz
+          pip3 install --user --upgrade pip wheel setuptools pypandoc
+          pip3 install --user --upgrade sphinx sphinx-autobuild sphinx_rtd_theme
+
+      - name: Build DebOps Python sdist package
+        run: |
+          make clean-tests
+          make check
+          make test-man sdist-quiet
+          pip3 install --user dist/*
+          pip3 list | grep debops
+
+  documentation:
+    runs-on: 'ubuntu-20.04'
+    steps:
+
+      - name: Add ~/.local/bin to $PATH
+        run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
+
+      - name: Clone the repository
+        uses: 'actions/checkout@v2'
+
+      - name: Prepare test environment
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get install -yq graphviz
+          pip3 install --user --upgrade pip wheel setuptools
+          pip3 install --user --upgrade sphinx sphinx-autobuild sphinx_rtd-theme
+
+      - name: Build documentation site
+        run: |
+          sphinx-build --version
+          dot -V
+          make test-docs
+          make check

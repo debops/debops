@@ -49,6 +49,11 @@ General
 - The :file:`tools/reboot.yml` can be used to reboot DebOps hosts even if they
   are secured by the ``molly-guard`` package.
 
+- The code in the DebOps monorepo is now checked using `GitHub Actions`__,
+  which will replace Travis-CI. Thank you, Travis, for years of service. :)
+
+  .. __: https://github.com/features/actions
+
 LDAP
 ''''
 
