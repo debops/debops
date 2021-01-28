@@ -351,6 +351,22 @@ LDAP
   since Postfix 3.0. This allows specifying parameter values that contain
   whitespace.
 
+- The `DSN command`__ is now disabled by default. DSN (:rfc:`3464`) gives
+  senders control over successful and failed delivery status notifications. This
+  allows spammers to learn about an organization's internal mail infrastructure,
+  and gives them the ability to confirm that an address is in use. When DSN
+  support is disabled, Postfix will still let the SMTP client know that their
+  message has been received as part of the SMTP transaction; they just will not
+  get successful delivery notices from your internal systems.
+
+  .. __: http://www.postfix.org/DSN_README.html
+
+- The `ETRN command`__ is now disabled by default. ETRN, also known as Remote
+  Message Queue Starting (:rfc:`1985`), was designed for sites that have
+  intermittent Internet connectivity, but is rarely used nowadays.
+
+  .. __: http://www.postfix.org/ETRN_README.html
+
 :ref:`debops.resolvconf` role
 '''''''''''''''''''''''''''''
 
