@@ -191,6 +191,12 @@ General
 - Improved support for GitLab Pages, including optional access control and
   fixed configuration of the :command:`systemd` service.
 
+:ref:`debops.gitlab_runner` role
+''''''''''''''''''''''''''''''''
+
+- The Amazon S3 cache configuration is now defined under its own configuration
+  key in the generated configuration file, due to changes in upstream.
+
 :ref:`debops.grub` role
 '''''''''''''''''''''''
 

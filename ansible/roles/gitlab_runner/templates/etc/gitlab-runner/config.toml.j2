@@ -456,13 +456,14 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
 {%     if ((runner.cache|d() and runner.cache|bool) or gitlab_runner__cache|bool) %}
   [runners.cache]
     Type = "{{ runner.cache_type | d(gitlab_runner__cache_type) }}"
-    ServerAddress = "{{ runner.cache_server_address | d(gitlab_runner__cache_server_address) }}"
-    AccessKey = "{{ runner.cache_access_key | d(gitlab_runner__cache_access_key) }}"
-    SecretKey = "{{ runner.cache_secret_key | d(gitlab_runner__cache_secret_key) }}"
-    BucketName = "{{ runner.cache_bucket_name | d(gitlab_runner__cache_bucket_name) }}"
-    BucketLocation = "{{ runner.cache_bucket_location | d(gitlab_runner__cache_bucket_location) }}"
-    Insecure = {{ (runner.cache_insecure | d(gitlab_runner__cache_insecure)) | bool | lower }}
     Shared = {{ (runner.cache_shared | d(gitlab_runner__cache_shared)) | bool | lower }}
+    [runners.cache.s3]
+      ServerAddress = "{{ runner.cache_server_address | d(gitlab_runner__cache_server_address) }}"
+      AccessKey = "{{ runner.cache_access_key | d(gitlab_runner__cache_access_key) }}"
+      SecretKey = "{{ runner.cache_secret_key | d(gitlab_runner__cache_secret_key) }}"
+      BucketName = "{{ runner.cache_bucket_name | d(gitlab_runner__cache_bucket_name) }}"
+      BucketLocation = "{{ runner.cache_bucket_location | d(gitlab_runner__cache_bucket_location) }}"
+      Insecure = {{ (runner.cache_insecure | d(gitlab_runner__cache_insecure)) | bool | lower }}
 {%     endif %}
 
 {%   endif %}
