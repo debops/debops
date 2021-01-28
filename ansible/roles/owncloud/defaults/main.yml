@@ -819,6 +819,14 @@ owncloud__role_config:
     state: '{{ "present" if (owncloud__temp_path != "") else "absent" }}'
     value: '{{ owncloud__temp_path }}'
 
+# .. envvar:: owncloud__release_channel
+#
+# The channel for tracking Nextcloud upstream releases.
+# Refer to the `official Nextcloud documentation <https://nextcloud.com/release-channels/>`__ for details.
+owncloud__release_channel: '{{ "stable"
+                               if (owncloud__variant == "nextcloud" and
+                                   owncloud__release is version("17.0", ">="))
+                               else "production" }}'
 
 # .. envvar:: owncloud__role_recommended_config
 #
@@ -845,11 +853,8 @@ owncloud__role_recommended_config:
   ## ISO 8601 datetime: 2004-02-12T15:19:21+00:00
   logdateformat: 'Y-m-d H:i:s.u'
 
-  ## Default is "stable" as of Nextcloud 11.
-  ## "production" is the most conservative channel which is preferred by the role maintainers.
-  ## https://owncloud.org/release-channels/
-  'updater.release.channel': 'production'
-
+  ## Release channel
+  'updater.release.channel': '{{ owncloud__release_channel }}'
 
 # .. envvar:: owncloud__config
 #
