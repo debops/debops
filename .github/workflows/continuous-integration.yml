@@ -7,27 +7,6 @@ name: Continuous Integration
 on: [ 'push', 'pull_request' ]
 
 jobs:
-  reuse-spdx:
-    runs-on: 'ubuntu-20.04'
-    steps:
-
-      - name: Add ~/.local/bin to $PATH
-        run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
-
-      - name: Clone the repository
-        uses: 'actions/checkout@v2'
-
-      - name: Prepare test environment
-        run: |
-          pip3 install --user --upgrade pip wheel setuptools
-          pip3 install --user --upgrade reuse
-
-      - name: Check codebase with REUSE linter
-        run: |
-          reuse --version
-          make test-spdx
-          make check
-
   ansible-lint:
     runs-on: 'ubuntu-20.04'
     steps:
