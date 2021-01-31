@@ -135,12 +135,12 @@ you can install DebOps in various ways.
 Current release schedule
 ------------------------
 
-- Latest "stable" release: ``stable-2.1`` (`GitHub branch`__, `differences from
+- Latest "stable" release: ``stable-2.2`` (`GitHub branch`__, `differences from
   master`__, `Changelog`__)
 
-.. __: https://github.com/debops/debops/tree/stable-2.1
-.. __: https://github.com/debops/debops/compare/stable-2.1
-.. __: https://docs.debops.org/en/stable-2.1/news/changelog.html
+.. __: https://github.com/debops/debops/tree/stable-2.2
+.. __: https://github.com/debops/debops/compare/stable-2.2
+.. __: https://docs.debops.org/en/stable-2.2/news/changelog.html
 
 =============== ============ =============== ================
  Branch/Tag      Status       First release   End of support

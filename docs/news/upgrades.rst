@@ -15,6 +15,10 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+
+v2.2.0 (2021-01-31)
+-------------------
+
 Changes in the NetBox role
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -123,6 +127,7 @@ Changes in :ref:`debops.lvm`
 - Changed default behaviour: the role now mounts LVM volumes even when
   ``item.fs`` is not defined. This of course still requires setting the mount
   point with ``item.mount``.
+
 
 v2.1.0 (2020-06-21)
 -------------------
