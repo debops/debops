@@ -51,36 +51,6 @@ jobs:
           make test-playbook-syntax
           make check
 
-  ansible-galaxy:
-    runs-on: 'ubuntu-20.04'
-    steps:
-
-      - name: Add ~/.local/bin to $PATH
-        run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
-
-      - name: Clone the repository
-        uses: 'actions/checkout@v2'
-        with:
-          fetch-depth: 0
-
-      - name: Prepare test environment
-        run: |
-          sudo apt-get -qq update
-          sudo apt-get -yq install pandoc pandoc-data
-          sudo apt-get remove --purge -yq ansible
-          pip3 install --user --upgrade pip wheel setuptools
-          pip3 install --user --upgrade ansible ansible-lint yamllint galaxy-importer reuse
-
-      - name: Build DebOps Collections for Ansible Galaxy
-        env:
-          DEBOPS_VERSION: '0.0.0'
-        run: |
-          yamllint --version
-          ansible --version
-          ansible-lint --version
-          make collection
-          make check
-
   yamllint:
     runs-on: 'ubuntu-20.04'
     steps:
