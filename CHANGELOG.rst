@@ -22,6 +22,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.1: https://github.com/debops/debops/compare/v2.1.0...stable-2.1
 
+Changed
+~~~~~~~
+
+:ref:`debops.redis_server` role
+'''''''''''''''''''''''''''''''
+
+- Improved control over what parameters are in a list in the Redis
+  configuration files.
+
 
 `debops v2.1.3`_ - 2021-01-31
 -----------------------------
