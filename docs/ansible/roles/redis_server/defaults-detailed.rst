@@ -144,6 +144,18 @@ Define additional instance configuration:
    :language: yaml
    :lines: 1,5-
 
+To replace options which are lists you have to reset them first:
+
+.. literalinclude:: examples/instance_configuration_reset_list.yml
+   :language: yaml
+   :lines: 1,5-
+
+You can also remove some items from the list:
+
+.. literalinclude:: examples/instance_configuration_remove_list_item.yml
+   :language: yaml
+   :lines: 1,5-
+
 Syntax
 ~~~~~~
 
