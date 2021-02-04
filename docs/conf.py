@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # DebOps documentation build configuration file
-# Copyright (C) 2014-2020 DebOps Project https://debops.org/
+# Copyright (C) 2014-2021 DebOps <https://debops.org/>
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -117,7 +117,7 @@ master_doc = 'index'
 # General information about the project.
 project = u'DebOps'
 author = u'Maciej Delmanowski, Nick Janetakis, Robin Schneider and others'
-copyright = u'2014-2020, {}'.format(author)
+copyright = u'2014-2021, {}'.format(author)
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
