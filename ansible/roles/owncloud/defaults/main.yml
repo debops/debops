@@ -2207,6 +2207,16 @@ owncloud__nginx__dependent_servers:
         options: |
           deny all;
 
+      # deny access to dav root dir for not leaking user
+      - pattern: '~ ^/remote.php/dav/(adressbooks|avatars|calendars|comments|files|principals|provisioning|trashbin|uploads|versions)/$'
+        options: |
+          return 403;
+
+      # deny access to dav root dir for not leaking user
+      - pattern: '~ ^/remote.php/dav/(adressbooks|avatars|calendars|comments|files|principals|provisioning|trashbin|uploads|versions)$'
+        options: |
+          return 403;
+
       - pattern: '~ ^\/(?:index|remote|public|cron|core\/ajax\/update|status|ocs\/v[12]|updater\/.+|oc[ms]-provider\/.+|.+\/richdocumentscode\/proxy)\.php(?:$|\/)'
         options: |
           include fastcgi_params;
