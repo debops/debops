@@ -27,6 +27,14 @@ Changed
 - Improved control over what parameters are in a list in the Redis
   configuration files.
 
+Fixed
+~~~~~
+
+ref:`debops.iscsi` role
+'''''''''''''''''''''''
+
+- Fixed a typo that caused the iSCSI target discovery task to fail.
+
 
 `debops v2.0.7`_ - 2021-01-31
 -----------------------------
