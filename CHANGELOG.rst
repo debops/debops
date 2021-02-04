@@ -23,6 +23,14 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v2.2.0...master
 
+Fixed
+~~~~~
+
+ref:`debops.iscsi` role
+'''''''''''''''''''''''
+
+- Fixed a typo that caused the iSCSI target discovery task to fail.
+
 
 `debops v2.2.0`_ - 2021-01-31
 -----------------------------
