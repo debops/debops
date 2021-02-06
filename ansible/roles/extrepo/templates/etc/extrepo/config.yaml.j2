@@ -1,0 +1,14 @@
+---
+{# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2021 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# {{ ansible_managed }}
+{% set extrepo__tpl_configuration = {} %}
+{% for element in extrepo__combined_configuration | parse_kv_items %}
+{%   if element.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%     set combined_config = extrepo__tpl_configuration | combine(element.config, recursive=True) %}
+{%     set _ = extrepo__tpl_configuration.update(combined_config) %}
+{%   endif %}
+{% endfor %}
+{{ extrepo__tpl_configuration | to_nice_yaml }}
