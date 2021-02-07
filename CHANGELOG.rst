@@ -35,6 +35,14 @@ New DebOps roles
 
   .. __: https://grep.be/blog/en/computer/debian/Announcing_extrepo/
 
+Fixed
+~~~~~
+
+ref:`debops.iscsi` role
+'''''''''''''''''''''''
+
+- Fixed a typo that caused the iSCSI target discovery task to fail.
+
 
 `debops v2.2.0`_ - 2021-01-31
 -----------------------------
