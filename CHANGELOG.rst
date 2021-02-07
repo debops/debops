@@ -63,6 +63,14 @@ General
 
 - Fixed a typo that caused the iSCSI target discovery task to fail.
 
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- NetBox crashed when it tried to send Emails.
+  For example when an exception occured during page loading, the reponse was
+  just "Internal Server Error". The service as a whole survives this.
+  The bug in the configuration template has been fixed.
+
 :ref:`debops.system_users` role
 '''''''''''''''''''''''''''''''
 
