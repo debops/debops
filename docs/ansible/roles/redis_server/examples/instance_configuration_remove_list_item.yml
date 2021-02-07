@@ -1,0 +1,17 @@
+---
+# Copyright (C) 2018 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2018 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Remove single save command and add another one.
+redis_server__configuration:
+
+  - name: 'main'
+    options:
+
+      - name: 'save'
+        value:
+          - '90 1000'
+          - name: '60 10000'
+            state: 'absent'
+        dynamic: True
