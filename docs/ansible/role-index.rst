@@ -277,6 +277,7 @@ packages.
 - :ref:`debops.apt_preferences`
 - :ref:`debops.apt_proxy`
 - :ref:`debops.debops_legacy`
+- :ref:`debops.extrepo`
 - :ref:`debops.keyring`
 - :ref:`debops.unattended_upgrades`
 - ``debops.reprepro``

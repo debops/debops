@@ -23,6 +23,18 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v2.2.0...master
 
+Added
+~~~~~
+
+New DebOps roles
+''''''''''''''''
+
+- The :ref:`debops.extrepo` role provides an interface for the `extrepo`__
+  Debian package, an external APT source manager. It can be used to configure
+  third-party APT repositories.
+
+  .. __: https://grep.be/blog/en/computer/debian/Announcing_extrepo/
+
 
 `debops v2.2.0`_ - 2021-01-31
 -----------------------------

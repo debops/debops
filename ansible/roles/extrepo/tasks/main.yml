@@ -1,0 +1,90 @@
+---
+# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- import_role:
+    name: 'ansible_plugins'
+
+- name: Install required packages
+  package:
+    name: '{{ q("flattened", (extrepo__base_packages
+                              + extrepo__packages)) }}'
+    state: 'present'
+  register: extrepo__register_packages
+  until: extrepo__register_packages is succeeded
+  when: extrepo__enabled|bool
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save extrepo local facts
+  template:
+    src: 'etc/ansible/facts.d/extrepo.fact.j2'
+    dest: '/etc/ansible/facts.d/extrepo.fact'
+    mode: '0755'
+  register: extrepo__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: extrepo__register_facts is changed
+
+- name: Divert original extrepo configuration
+  dpkg_divert:
+    path: '/etc/extrepo/config.yaml'
+    state: 'present'
+  when: extrepo__enabled|bool and ansible_pkg_mgr == 'apt'
+
+- name: Generate extrepo configuration file
+  template:
+    src: 'etc/extrepo/config.yaml.j2'
+    dest: '/etc/extrepo/config.yaml'
+    mode: '0644'
+  register: extrepo__register_config
+  when: extrepo__enabled|bool
+
+- name: Update external APT sources if required
+  command: 'extrepo update {{ item.name }}'
+  loop: '{{ q("flattened", extrepo__combined_sources) | parse_kv_config }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state} }}'
+  register: extrepo__register_updated_sources
+  when: extrepo__enabled|bool and item.name in ansible_local.extrepo.sources and
+        item.state|d('present') not in [ 'absent', 'init', 'ignore' ] and
+        extrepo__register_config is changed
+
+- name: Remove external APT sources when requested
+  file:
+    path: '{{ "/etc/apt/sources.list.d/extrepo_" + item.name + ".sources" }}'
+    state: 'absent'
+  loop: '{{ q("flattened", extrepo__combined_sources) | parse_kv_config }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state} }}'
+  register: extrepo__register_removed_sources
+  when: extrepo__enabled|bool and item.name and item.state|d('present') == 'absent'
+
+- name: Enable external APT sources
+  command: 'extrepo enable {{ item.name }}'
+  loop: '{{ q("flattened", extrepo__combined_sources) | parse_kv_config }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state} }}'
+  register: extrepo__register_enabled_sources
+  when: extrepo__enabled|bool and item.name not in ansible_local.extrepo.sources and
+        item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
+
+- name: Update APT cache if required
+  apt:
+    update_cache: True
+  register: extrepo__register_apt_cache
+  until: extrepo__register_apt_cache is succeeded
+  when: (extrepo__enabled|bool and
+         (extrepo__register_updated_sources is changed or
+          extrepo__register_removed_sources is changed or
+          extrepo__register_enabled_sources is changed))
+
+- name: Update Ansible facts if APT cache was modified
+  action: setup
+  when: extrepo__register_apt_cache is changed

@@ -1,0 +1,129 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2021 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-or-later
+
+# .. _extrepo__ref_defaults:
+
+# debops.extrepo default variables
+# ================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Installation and packages [[[
+# -----------------------------
+
+# .. envvar:: extrepo__enabled [[[
+#
+# Enable or disable configuration of external APT repositories using the
+# :command:`extrepo` command.
+extrepo__enabled: '{{ False
+                      if (ansible_distribution != "Debian" or
+                          ansible_distribution_release in
+                          [ "wheezy", "jessie", "stretch" ])
+                      else True }}'
+
+                                                                   # ]]]
+# .. envvar:: extrepo__base_packages [[[
+#
+# List of the default APT packages to install for :command:`extrepo` support.
+# On Debian Buster, the ``extrepo`` package is available via the
+# ``buster-backports`` repository.
+extrepo__base_packages: [ 'extrepo' ]
+
+                                                                   # ]]]
+# .. envvar:: extrepo__packages [[[
+#
+# List of additional packages to install with :command:`extrepo`.
+extrepo__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Main configuration file [[[
+# ---------------------------
+
+# These variables define the contents of the :file:`/etc/extrepo/config.yaml`
+# configuration file. See :ref:`extrepo__ref_configuration` for more details.
+
+# .. envvar:: extrepo__default_configuration [[[
+#
+# The list with default contents of the configuration file defined by the role.
+extrepo__default_configuration:
+
+  - name: 'defaults'
+    config:
+      url: 'https://extrepo-team.pages.debian.net/extrepo-data'
+      dist: '{{ ansible_distribution | lower }}'
+      version: '{{ ansible_distribution_release }}'
+
+  - name: 'policies'
+    config:
+      enabled_policies: '{{ ansible_local.apt.components | d([ "main" ]) }}'
+
+                                                                   # ]]]
+# .. envvar:: extrepo__configuration [[[
+#
+# List of custom contents of the configuration file defined by the user.
+extrepo__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: extrepo__combined_configuration [[[
+#
+# The variable which combines the lists of configuration file contents and is
+# used in role tasks and templates.
+extrepo__combined_configuration: '{{ extrepo__default_configuration
+                                     + extrepo__configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# External APT sources [[[
+# ------------------------
+
+# These lists define what external APT sources should be enabled on a givem
+# host. You can find a list of available APT sources by running the
+# :command:`extrepo search` command.
+#
+# See :ref:`extrepo__ref_sources` for more details.
+
+# .. envvar:: extrepo__sources [[[
+#
+# List of the external APT sources which should be enabled on all hosts in the
+# Ansible inventory.
+extrepo__sources: []
+
+                                                                   # ]]]
+# .. envvar:: extrepo__group_sources [[[
+#
+# List of the external APT sources which should be enabled on hosts in
+# a specific Ansible inventory group.
+extrepo__group_sources: []
+
+                                                                   # ]]]
+# .. envvar:: extrepo__host_sources [[[
+#
+# List of the external APT sources which should be enabled on specific hosts in
+# the Ansible inventory.
+extrepo__host_sources: []
+
+                                                                   # ]]]
+# .. envvar:: extrepo__dependent_sources [[[
+#
+# List of the external APT sources defined by other Ansible roles via role
+# dependent variables.
+extrepo__dependent_sources: []
+
+                                                                   # ]]]
+# .. envvar:: extrepo__combined_sources [[[
+#
+# Variable which combines all lists of external APT sources and is used in role
+# tasks and templates.
+extrepo__combined_sources: '{{ extrepo__dependent_sources
+                               + extrepo__sources
+                               + extrepo__group_sources
+                               + extrepo__host_sources }}'
+                                                                   # ]]]
+                                                                   # ]]]

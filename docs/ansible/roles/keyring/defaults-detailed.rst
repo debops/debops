@@ -135,6 +135,13 @@ The YAML dictionaries are defined using specific parameters:
   standalone, to more efficiently configure APT (for example if multiple GPG
   keys are configured at once).
 
+``extrepo``
+  Optional. Specify the name of the APT source configured by the
+  :command:`extrepo` external repository manager (see :ref:`debops.extrepo` for
+  more details). If the specified APT source is already enabled, the
+  :ref:`debops.keyring` role will skip APT-related tasks (GPG key managemnt,
+  APT repository configuration) to avoid creating duplicate entries.
+
 ``filename``
   Optional. The name of the configuration file in the
   :file:`/etc/sources.list.d/` directory which will be used to store the APT
