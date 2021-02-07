@@ -25,6 +25,12 @@ You can read information about required changes between releases in the
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
+  has been updated to the next point release, 10.8.
+
 :ref:`debops.redis_server` role
 '''''''''''''''''''''''''''''''
 
