@@ -52,7 +52,9 @@
   register: keyring__register_apt_key
   until: keyring__register_apt_key is succeeded
   when: keyring__enabled|bool and ansible_pkg_mgr == 'apt' and
-        (item.id|d() or item is string)
+        (item.id|d() or item is string) and
+        (item.extrepo is undefined or
+         item.extrepo not in (ansible_local.extrepo.sources|d([])))
   tags: [ 'role::keyring:apt_key' ]
 
 - name: Configure specified upstream APT repositories
@@ -63,7 +65,9 @@
     update_cache: False
   loop: '{{ q("flattened", (keyring__dependent_apt_keys)) }}'
   register: keyring__register_apt_repository
-  when: keyring__enabled|bool and ansible_pkg_mgr == 'apt' and item.repo|d()
+  when: keyring__enabled|bool and ansible_pkg_mgr == 'apt' and item.repo|d() and
+        (item.extrepo is undefined or
+         item.extrepo not in (ansible_local.extrepo.sources|d([])))
   tags: [ 'role::keyring:apt_repository' ]
 
 - name: Update APT cache when needed
