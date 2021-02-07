@@ -40,6 +40,12 @@ ref:`debops.iscsi` role
 
 - Fixed a typo that caused the iSCSI target discovery task to fail.
 
+:ref:`debops.system_users` role
+'''''''''''''''''''''''''''''''
+
+- Use the Python version detected on the Ansible Controller instead of the
+  remote host to run the UNIX account fact gathering script.
+
 
 `debops v2.2.0`_ - 2021-01-31
 -----------------------------
