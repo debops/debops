@@ -37,7 +37,7 @@ readarray -t redis_dynamic_config_map << EOF
 {%           endif %}
 {%         endif %}
 {%       elif element.value is iterable and element.value is not string and element.value is not mapping %}
-{{ '{}={}'.format(element.name, element.value | map(attribute='name') | list | join(' ')) }}
+{{ '{}={}'.format(element.name, element.value | selectattr("state", "equalto", "present") | map(attribute='name') | list | join(' ')) }}
 {%       endif %}
 {%     endif %}
 {%   endfor %}
