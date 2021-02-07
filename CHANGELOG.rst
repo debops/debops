@@ -34,8 +34,8 @@ Changed
 Fixed
 ~~~~~
 
-ref:`debops.iscsi` role
-'''''''''''''''''''''''
+:ref:`debops.iscsi` role
+''''''''''''''''''''''''
 
 - Fixed a typo that caused the iSCSI target discovery task to fail.
 
