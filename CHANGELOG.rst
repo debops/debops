@@ -38,6 +38,12 @@ Updates of upstream application versions
 - Improved control over what parameters are in a list in the Redis
   configuration files.
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- Changed the time of the password expiration warning from 1 hour (too short)
+  to 2 weeks.
+
 Fixed
 ~~~~~
 
