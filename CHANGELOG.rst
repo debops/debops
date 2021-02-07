@@ -18,10 +18,10 @@ You can read information about required changes between releases in the
 :ref:`upgrade_notes` documentation.
 
 
-`debops master`_ - unreleased
------------------------------
+`debops stable-2.2`_ - unreleased
+---------------------------------
 
-.. _debops master: https://github.com/debops/debops/compare/v2.2.0...master
+.. _debops stable-2.2: https://github.com/debops/debops/compare/v2.2.0...stable-2.2
 
 
 `debops v2.2.0`_ - 2021-01-31
