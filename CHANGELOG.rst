@@ -23,6 +23,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.2: https://github.com/debops/debops/compare/v2.2.0...stable-2.2
 
+Added
+~~~~~
+
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- Added wrapper around :file:`manage.py` called :file:`netbox-manage` for
+  NetBox power users.
+
 Changed
 ~~~~~~~
 
