@@ -37,6 +37,12 @@ Updates of upstream application versions
 - Improved control over what parameters are in a list in the Redis
   configuration files.
 
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- The value of the :envvar:`sshd__ferm_ports` will be the same as the value of
+  :envvar:`sshd__ports` to make multi-port configuration easier.
+
 Fixed
 ~~~~~
 
