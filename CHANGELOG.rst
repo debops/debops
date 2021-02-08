@@ -35,6 +35,12 @@ New DebOps roles
 
   .. __: https://grep.be/blog/en/computer/debian/Announcing_extrepo/
 
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- Added wrapper around :file:`manage.py` called :file:`netbox-manage` for
+  NetBox power users.
+
 Changed
 ~~~~~~~
 
