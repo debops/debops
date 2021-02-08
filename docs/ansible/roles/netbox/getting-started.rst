@@ -52,6 +52,16 @@ detects if the ``debops.gunicorn`` role has been deployed on a host and
 switches between these modes as needed.
 
 
+manage.py for NetBox power users
+--------------------------------
+
+The NetBox goody :file:`manage.py` is conveniently accessible using a script
+that the role installs called :file:`netbox-manage`. It uses :command:`sudo` to
+switch to the NetBox user, activates the virtualenv and run :file:`manage.py`.
+Call it without parameters to see the available subcommands. The user calling
+the script must have privileges to run commands as the NetBox system user.
+
+
 Example inventory
 -----------------
 

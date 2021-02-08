@@ -254,6 +254,14 @@
   when: (netbox__app_internal_appserver|bool and ansible_service_mgr == 'systemd' and
          netbox__register_systemd is changed and not netbox__register_installed.stat.exists|bool)
 
+- name: Generate NetBox netbox-manage script
+  template:
+    src: 'usr/local/bin/netbox-manage.j2'
+    dest: '{{ netbox__bin + "/netbox-manage" }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'
