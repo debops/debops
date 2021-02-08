@@ -47,6 +47,12 @@ Updates of upstream application versions
 - Changed the time of the password expiration warning from 1 hour (too short)
   to 2 weeks.
 
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- The value of the :envvar:`sshd__ferm_ports` will be the same as the value of
+  :envvar:`sshd__ports` to make multi-port configuration easier.
+
 Fixed
 ~~~~~
 
