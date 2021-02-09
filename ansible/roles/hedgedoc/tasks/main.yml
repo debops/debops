@@ -1,5 +1,9 @@
 ---
 
+# .. Copyright (C) 2021 Émile <emile@globenet.org>
+# .. Copyright (C) 2021 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
 - name: Install required Hedgedoc packages
   package:
     name: '{{ q("flattened", (hedgedoc__base_packages
@@ -128,7 +132,7 @@
   args:
     chdir: '{{ hedgedoc__home + "/" + hedgedoc__repository }}'
   notify: [ 'Restart hedgedoc-server' ]
-  when: ( hedgedoc__version is version("1.7.0", "<") ) #and
+  when: ( hedgedoc__version is version("1.7.0", "<") ) and
         ( (hedgedoc__register_source is defined and hedgedoc__register_source is changed) or
         (hedgedoc__register_directory is defined and not hedgedoc__register_directory.stat.exists|bool) )
 
