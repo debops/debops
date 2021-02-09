@@ -1,4 +1,21 @@
 ---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2021 Émile <emile@globenet.org>
+# .. Copyright (C) 2021 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _etherpad__ref_defaults:
+
+# debops.etherpad default variables [[[
+# =====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
 
 # APT packages [[[
 # ----------------
@@ -121,7 +138,8 @@ hedgedoc__database_name: '{{ hedgedoc__system_name }}'
 # Database password for the Hedgedoc database user.
 hedgedoc__database_password: "{{ lookup('password', secret + '/'
                                 + 'mariadb/' + ansible_domain
-                                + '/credentials/' + hedgedoc__database_user + '/password chars=ascii_letters,digits length=48') }}"
+                                + '/credentials/' + hedgedoc__database_user
+                                + '/password chars=ascii_letters,digits length=48') }}"
 
                                                                    # ]]]
 # .. envvar:: hedgedoc__database_config [[[
@@ -216,7 +234,7 @@ hedgedoc__nginx__dependent_servers:
 
       '/': |
         proxy_http_version 1.1;
-        
+
         # set header for proxy protocol
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -224,24 +242,24 @@ hedgedoc__nginx__dependent_servers:
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
-        
+
         # setup for image upload
         client_max_body_size 8192m;
-        
+
         # adjust proxy buffer setting
-        proxy_buffers 8 32k; 
-        proxy_buffer_size 32k; 
+        proxy_buffers 8 32k;
+        proxy_buffer_size 32k;
         proxy_busy_buffers_size 64k;
 
         proxy_max_temp_file_size 8192m;
-        
+
         proxy_read_timeout 300;
         proxy_connect_timeout 300;
         proxy_pass http://{{ hedgedoc__system_name }};
 
 # .. envvar:: hedgedoc__apt_preferences__dependent_list [[[
 #
-# Take yarnpkg from buster-backport (hedgedoc 1.7 need yarnpkg 1.22) 
+# Take yarnpkg from buster-backport (hedgedoc 1.7 need yarnpkg 1.22)
 hedgedoc__apt_preferences__dependent_list:
 
   - packages: [ 'yarnpkg' ]
