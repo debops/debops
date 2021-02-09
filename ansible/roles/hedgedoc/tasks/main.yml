@@ -119,7 +119,7 @@
 
 - name: Run Hedgedoc setup
   become_user: '{{ hedgedoc__user }}'
-  shell: ./bin/setup
+  command: ./bin/setup
   args:
     chdir: '{{ hedgedoc__home + "/" + hedgedoc__repository }}'
   notify: [ 'Restart hedgedoc-server' ]
@@ -128,7 +128,7 @@
 
 - name: Run yarn build
   become_user: '{{ hedgedoc__user }}'
-  shell: yarn run build
+  command: yarn run build
   args:
     chdir: '{{ hedgedoc__home + "/" + hedgedoc__repository }}'
   notify: [ 'Restart hedgedoc-server' ]
