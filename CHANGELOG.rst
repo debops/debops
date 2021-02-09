@@ -41,6 +41,9 @@ General
 
 - Fixed various issues detected by the :command:`ansible-lint` v5.0.0 linter.
 
+- DebOps Dockerfile will use the ``python3-cryptography`` Debian package to
+  avoid Rust compiler dependency issues.
+
 :ref:`debops.iscsi` role
 ''''''''''''''''''''''''
 
