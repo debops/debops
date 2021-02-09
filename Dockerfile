@@ -34,6 +34,7 @@ RUN apt-get -q update \
        python3-pip \
        python3-wheel \
        python3-setuptools \
+       python3-cryptography \
        procps \
        sudo \
        tree \
