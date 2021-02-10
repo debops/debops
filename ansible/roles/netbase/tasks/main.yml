@@ -50,7 +50,7 @@
   when: netbase__enabled|bool and netbase__hosts_config_type == 'template'
 
 - name: Manage entries in /etc/hosts
-  lineinfile:
+  lineinfile:  # noqa no-tabs
     dest:    '/etc/hosts'
     regexp:  '^{{ item.name | replace(".","\.") }}\s+'
     line:    "{{ item.name }}\t{{ ('\t' if (item.name | string | length < 8) else '') }}{{ item.value
@@ -65,7 +65,7 @@
   when: netbase__enabled|bool and netbase__hosts_config_type == 'lineinfile' and item.name|d()
 
 - name: Manage entries in /etc/networks
-  lineinfile:
+  lineinfile:  # noqa no-tabs
     dest:    '/etc/networks'
     regexp:  '^{{ item.key | replace(".","\.") }}\s+'
     line:    "{{ item.key }}\t{{ item.value if (item.value is string) else (item.value|d() | join(' ')) }}"
