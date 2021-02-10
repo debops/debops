@@ -47,6 +47,11 @@ Updates of upstream application versions
 - The address autocompletion will show only a specific e-mail address instead
   of all available ones for a given recipient.
 
+- The role will configure Roundcube to search the LDAP directory for a given
+  user's Distinguished Name when their LDAP entry uses a different attribute
+  than ``uid`` as RDN. Directory will be searched using the Roundcube's own
+  login credentials. See :ref:`roundcube__ref_ldap_dit` for details.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
