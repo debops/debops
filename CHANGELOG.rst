@@ -47,6 +47,12 @@ Updates of upstream application versions
 - In the :ref:`debops.roundcube` role, the Roundcube version installed by
   default has been updated to ``1.4.11``.
 
+:ref:`debops.roundcube` role
+''''''''''''''''''''''''''''
+
+- The address autocompletion will show only a specific e-mail address instead
+  of all available ones for a given recipient.
+
 Fixed
 ~~~~~
 
