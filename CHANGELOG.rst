@@ -33,6 +33,12 @@ Updates of upstream application versions
 - Improved control over what parameters are in a list in the Redis
   configuration files.
 
+:ref:`debops.roundcube` role
+''''''''''''''''''''''''''''
+
+- The address autocompletion will show only a specific e-mail address instead
+  of all available ones for a given recipient.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
