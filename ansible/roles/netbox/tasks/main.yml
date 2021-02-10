@@ -31,7 +31,7 @@
     state: 'present'
     system: True
 
-- name: Create additional directories used by Netbox
+- name: Create additional directories used by NetBox
   file:
     path: '{{ item }}'
     state: 'directory'
@@ -227,7 +227,7 @@
   notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver' ]
   when: netbox__app_internal_appserver|bool
 
-- name: Generate Netbox RQ systemd service unit
+- name: Generate NetBox RQ systemd service unit
   template:
     src: 'etc/systemd/system/netbox-rq.service.j2'
     dest: '/etc/systemd/system/netbox-rq.service'
