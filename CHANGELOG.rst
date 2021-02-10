@@ -52,6 +52,13 @@ Updates of upstream application versions
   than ``uid`` as RDN. Directory will be searched using the Roundcube's own
   login credentials. See :ref:`roundcube__ref_ldap_dit` for details.
 
+- The ``new_user_identity`` plugin will be re-enabled by default and adjusted
+  to use the ``mail`` attribute to search for user identities. Roundcube v1.4.x
+  installations `might need to be patched`__ for the plugin to work correctly
+  with user-based LDAP logins.
+
+  .. __: https://github.com/roundcube/roundcubemail/issues/7667
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
