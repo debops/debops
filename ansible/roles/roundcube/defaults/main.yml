@@ -3357,9 +3357,10 @@ roundcube__default_plugins:
         value: '{{ "https://cloud." + ansible_domain + "/" }}'
 
     # This plugin uses the LDAP directory to create the user identity at login.
-    # Currently it's disabled by default due to not working correctly during development.
+    # Roundcube 1.4.x might need to be patched for this to work correctly.
+    # See: https://github.com/roundcube/roundcubemail/issues/7667
   - name: 'new_user_identity'
-    state: '{{ "ignore" if roundcube__ldap_enabled|bool else "ignore" }}'
+    state: '{{ "enabled" if roundcube__ldap_enabled|bool else "ignore" }}'
     options:
 
       - name: 'new_user_identity_addressbook'
@@ -3373,7 +3374,7 @@ roundcube__default_plugins:
         comment: |
           When automatically setting a user's full name in their
           new identity, match the user's login name against this field.
-        value: 'cn'
+        value: 'mail'
 
       - name: 'new_user_identity_onlogin'
         comment: |
