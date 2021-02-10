@@ -816,7 +816,7 @@ owncloud__role_config:
       password: '{{ owncloud__redis_password }}'
 
   'tempdirectory':
-    state: '{{ "present" if (owncloud__temp_path != "") else "absent" }}'
+    state: '{{ "present" if (owncloud__temp_path|d()) else "absent" }}'
     value: '{{ owncloud__temp_path }}'
 
 # .. envvar:: owncloud__release_channel
@@ -2106,7 +2106,7 @@ owncloud__apache__dependent_vhosts:
       ## Tested while uploading with:
       ## while true; do df -h /tmp|tail -n 1; sleep 0.1; done
       ## Currently configured in PHP Apache scope: owncloud__php__dependent_configuration
-      {% if owncloud__php_temp_path != "" %}
+      {% if owncloud__php_temp_path|d() %}
       <IfModule mod_php5.c>
         php_value sys_temp_dir '{{ owncloud__php_temp_path }}'
       </IfModule>
@@ -2362,7 +2362,7 @@ owncloud__php__dependent_configuration:
   - filename: 'debops.owncloud'
     path: 'apache2/conf.d/'
     by_role: 'debops.owncloud'
-    state: '{{ (owncloud__php_temp_path != "" and owncloud__webserver == "apache") | ternary("present", "absent") }}'
+    state: '{{ (owncloud__php_temp_path|d() and owncloud__webserver == "apache") | ternary("present", "absent") }}'
     sections:
 
       - options: |
