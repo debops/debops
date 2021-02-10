@@ -113,7 +113,7 @@ gitlab_use_systemd: '{{ (ansible_local.gitlab.systemd_services
 #
 # Whether to enable ``gitlab-pages``. Available in Gitlab 8.17 and newer.
 gitlab_enable_pages: '{{ gitlab_version is version_compare("8.17",
-                         operator="ge", strict=True) and gitlab_pages_domain != "" }}'
+                         operator="ge", strict=True) and gitlab_pages_domain|d() }}'
                                                                    # ]]]
                                                                    # ]]]
 # Application FQDN and DNS addresses [[[
