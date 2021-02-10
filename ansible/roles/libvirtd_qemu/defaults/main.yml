@@ -21,7 +21,7 @@
 libvirtd_qemu__kvm_support: '{{ True
                                 if (ansible_virtualization_type == "kvm" and
                                     (ansible_virtualization_role == "host" or
-                                     libvirtd_qemu__register_hw_virt.stdout != ""))
+                                     libvirtd_qemu__register_hw_virt.stdout|d()))
                                 else False }}'
                                                                    # ]]]
                                                                    # ]]]
