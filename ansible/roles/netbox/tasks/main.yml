@@ -106,7 +106,7 @@
   changed_when: netbox__register_target_branch.stdout != netbox__register_source.before
 
 - name: Checkout NetBox
-  environment:
+  environment:  # noqa no-handler
     GIT_WORK_TREE: '{{ netbox__git_checkout }}'
   command: git checkout -f {{ netbox__git_version }}
   args:
@@ -184,7 +184,6 @@
   ## Commands from upgrade.sh. We cannot directly run this script as of 2.10
   ## because it also deals with virtualenv with different directory paths than
   ## this role.
-  # noqa 305
   shell:
     cmd: |
       set -o nounset -o pipefail -o errexit
