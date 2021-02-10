@@ -446,7 +446,7 @@ etesync__nginx__dependent_servers:
           proxy_set_header X-Forwarded-Host $server_name;
           proxy_set_header X-Real-IP $remote_addr;
           proxy_set_header X-Forwarded-Proto $scheme;
-          {% if etesync__http_psk_subpath != "" %}
+          {% if etesync__http_psk_subpath|d() %}
           proxy_set_header SCRIPT_NAME /{{ etesync__http_psk_subpath }};
           {% endif %}
           proxy_connect_timeout {{ etesync__app_timeout }};
@@ -454,14 +454,14 @@ etesync__nginx__dependent_servers:
           proxy_read_timeout {{ etesync__app_timeout }};
 
       - pattern: '{{ (("/" + etesync__http_psk_subpath)
-                      if (etesync__http_psk_subpath != "")
+                      if (etesync__http_psk_subpath|d())
                       else "") + "/admin" }}'
         options: |-
           proxy_pass http://etesync;
           proxy_set_header X-Forwarded-Host $server_name;
           proxy_set_header X-Real-IP $remote_addr;
           proxy_set_header X-Forwarded-Proto $scheme;
-          {% if etesync__http_psk_subpath != "" %}
+          {% if etesync__http_psk_subpath|d() %}
           proxy_set_header SCRIPT_NAME /{{ etesync__http_psk_subpath }};
           {% endif %}
           proxy_connect_timeout {{ etesync__app_timeout }};
