@@ -3062,6 +3062,16 @@ roundcube__default_configuration:
         base_dn: '{{ roundcube__ldap_people_dn | join(",") }}'
         bind_dn: '{{ "uid=%u," + roundcube__ldap_people_dn | join(",") }}'
         bind_pass: ''
+        search_base_dn: '{{ roundcube__ldap_base_dn | join(",") }}'
+        search_filter: '(&
+                          (objectClass=mailRecipient)
+                          (|
+                            (uid=%u)
+                            (mail=%fu)
+                          )
+                        )'
+        search_bind_dn: '{{ roundcube__ldap_binddn }}'
+        search_bind_pw: '{{ roundcube__ldap_bindpw }}'
         filter: '(objectClass=inetOrgPerson)'
         scope: 'sub'
         searchonly: True
