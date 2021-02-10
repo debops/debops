@@ -47,6 +47,24 @@ Updates of upstream application versions
 - In the :ref:`debops.roundcube` role, the Roundcube version installed by
   default has been updated to ``1.4.11``.
 
+:ref:`debops.roundcube` role
+''''''''''''''''''''''''''''
+
+- The address autocompletion will show only a specific e-mail address instead
+  of all available ones for a given recipient.
+
+- The role will configure Roundcube to search the LDAP directory for a given
+  user's Distinguished Name when their LDAP entry uses a different attribute
+  than ``uid`` as RDN. Directory will be searched using the Roundcube's own
+  login credentials. See :ref:`roundcube__ref_ldap_dit` for details.
+
+- The ``new_user_identity`` plugin will be re-enabled by default and adjusted
+  to use the ``mail`` attribute to search for user identities. Roundcube v1.4.x
+  installations `might need to be patched`__ for the plugin to work correctly
+  with user-based LDAP logins.
+
+  .. __: https://github.com/roundcube/roundcubemail/issues/7667
+
 Fixed
 ~~~~~
 
