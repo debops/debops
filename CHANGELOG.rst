@@ -71,6 +71,15 @@ Updates of upstream application versions
 
   .. __: https://github.com/roundcube/roundcubemail/issues/7667
 
+Changes to DebOps Enhancement Proposals
+'''''''''''''''''''''''''''''''''''''''
+
+- DEP 3 - Sources of software used by DebOps now requires for roles that
+  configure upstream APT repositories to use ``debops.extrepo`` instead of the
+  previously used way of including the OpenPGP fingerprint and repo details in
+  the role. This applies to all new roles. Existing roles will be updated over
+  time.
+
 Fixed
 ~~~~~
 
