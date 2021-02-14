@@ -111,6 +111,7 @@ infrastructure environments.
    developer-guide/contributing
    developer-guide/contribution-workflow
    developer-guide/contributing-docs
+   developer-guide/new-role
    developer-guide/testing
    developer-guide/development-model
    dep/index
