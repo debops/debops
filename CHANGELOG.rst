@@ -91,6 +91,11 @@ General
   'bullseye/updates' suite name. This is incorrect, the Bullseye security suite
   is called 'bullseye-security'.
 
+:ref:`debops.etesync` role
+''''''''''''''''''''''''''
+
+- The EteSync playbook is now included in the default DebOps playbook.
+
 :ref:`debops.iscsi` role
 ''''''''''''''''''''''''
 
