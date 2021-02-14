@@ -510,7 +510,11 @@ apt__security_sources:
   - uri:          'http://security.debian.org/'
     comment:      'Debian Security repository'
     type:         '{{ apt__source_types }}'
-    suite:        '{{ apt__distribution_release + "/updates" }}'
+    suite:        '{{ apt__distribution_release
+                      + ("/updates"
+                         if apt__distribution_release in
+                            [ "jessie", "stretch", "buster" ]
+                         else "-security") }}'
     components:   '{{ apt__distribution_components }}'
     distribution: 'Debian'
     state:        '{{ apt__security_sources_state

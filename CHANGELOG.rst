@@ -68,6 +68,13 @@ General
 - DebOps Dockerfile will use the ``python3-cryptography`` Debian package to
   avoid Rust compiler dependency issues.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- The role configured the Debian Bullseye security repository with the
+  'bullseye/updates' suite name. This is incorrect, the Bullseye security suite
+  is called 'bullseye-security'.
+
 :ref:`debops.iscsi` role
 ''''''''''''''''''''''''
 
