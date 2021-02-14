@@ -115,6 +115,11 @@ General
 - Use the Python version detected on the Ansible Controller instead of the
   remote host to run the UNIX account fact gathering script.
 
+:ref:`debops.etesync` role
+''''''''''''''''''''''''''
+
+- The EteSync playbook is now included in the default DebOps playbook.
+
 
 `debops v2.2.0`_ - 2021-01-31
 -----------------------------
