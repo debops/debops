@@ -81,6 +81,15 @@ Fixed
 
 - Fixed a typo that caused the iSCSI target discovery task to fail.
 
+:ref:`debops.sudo` role
+'''''''''''''''''''''''
+
+- The role no longer adds a duplicate includedir line to /etc/sudoers. This was
+  an issue with sudo 1.9.1 (and later), which `changed`__ the includedir syntax
+  from '#includedir' to '\@includedir'.
+
+  .. __: https://www.sudo.ws/stable.html#1.9.1
+
 :ref:`debops.system_users` role
 '''''''''''''''''''''''''''''''
 
