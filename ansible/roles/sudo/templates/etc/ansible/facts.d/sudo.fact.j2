@@ -9,8 +9,8 @@
 
 from __future__ import print_function
 from json import dumps
-from sys import exit
 import os
+import subprocess
 
 
 def cmd_exists(cmd):
@@ -22,5 +22,10 @@ def cmd_exists(cmd):
 
 output = {'configured': True,
           'installed': cmd_exists('sudo')}
+
+if output['installed']:
+    output['version'] = subprocess.check_output(
+        ['sudo', '--version'], stderr=subprocess.STDOUT
+    ).decode('utf-8').replace('\n', ' ').split(' ')[2]
 
 print(dumps(output, sort_keys=True, indent=4))
