@@ -68,6 +68,13 @@ Updates of upstream application versions
 Fixed
 ~~~~~
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- The role configured the Debian Bullseye security repository with the
+  'bullseye/updates' suite name. This is incorrect, the Bullseye security suite
+  is called 'bullseye-security'.
+
 :ref:`debops.netbox` role
 '''''''''''''''''''''''''
 
