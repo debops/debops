@@ -40,6 +40,11 @@ Updates of upstream application versions
 Fixed
 ~~~~~
 
+General
+'''''''
+
+- Fixed various issues detected by the :command:`ansible-lint` v5.0.0 linter.
+
 :ref:`debops.iscsi` role
 ''''''''''''''''''''''''
 
