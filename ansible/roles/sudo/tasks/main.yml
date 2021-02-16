@@ -27,11 +27,34 @@
   until: sudo__register_packages is succeeded
   when: sudo__enabled|bool
 
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save sudo local facts
+  template:
+    src: 'etc/ansible/facts.d/sudo.fact.j2'
+    dest: '/etc/ansible/facts.d/sudo.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  register: sudo__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: sudo__register_facts is changed
+
 - name: Ensure that '/etc/sudoers' includes '/etc/sudoers.d'
   lineinfile:
     dest: '/etc/sudoers'
-    regexp: '^#includedir\s+/etc/sudoers.d$'
-    line: '#includedir /etc/sudoers.d'
+    regexp: '^(?:@|#)includedir\s+\/etc\/sudoers.d$'
+    line: '{{ ("#"
+               if ansible_local.sudo.version|d("0.0.0") is version("1.9.1", "<")
+               else "@") + "includedir /etc/sudoers.d" }}'
     insertafter: 'EOF'
     state: 'present'
     validate: 'visudo -cf "%s"'
@@ -69,25 +92,7 @@
     mode: '0644'
   when: sudo__enabled|bool and sudo__logind_session|bool
 
-- name: Make sure that Ansible local facts directory exists
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Save sudo local facts
-  template:
-    src: 'etc/ansible/facts.d/sudo.fact.j2'
-    dest: '/etc/ansible/facts.d/sudo.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  register: sudo__register_facts
-
 - name: Update Ansible facts if they were modified
   action: setup
-  when: sudo__register_facts is changed or
-        sudo__register_sudoers_removed is changed or
+  when: sudo__register_sudoers_removed is changed or
         sudo__register_sudoers_created is changed
