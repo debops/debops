@@ -38,6 +38,7 @@ Directory structure
             - :ref:`uid=roundcube <roundcube__ref_ldap_dit>` -> :ref:`debops.roundcube`
             - :ref:`uid=saslauthd <saslauthd__ref_ldap_dit>` -> :ref:`debops.saslauthd`
             - :ref:`uid=sshd <sshd__ref_ldap_dit>` -> :ref:`debops.sshd`
+            - :ref:`uid=sssd <sssd__ref_ldap_dit>` -> :ref:`debops.sssd`
             - :ref:`uid=sudo <sudo__ref_ldap_dit>` -> :ref:`debops.sudo`
 
       - :envvar:`ou=People <ldap__people_rdn>`
