@@ -144,17 +144,29 @@
     - role: ldap
       tags: [ 'role::ldap', 'skip::ldap' ]
       ldap__dependent_tasks:
-        - '{{ nslcd__ldap__dependent_tasks }}'
         - '{{ sudo__ldap__dependent_tasks }}'
         - '{{ sshd__ldap__dependent_tasks }}'
+        - '{{ nslcd__ldap__dependent_tasks if (nsswitch__daemon|d("nslcd") == "nslcd") else
+              sssd__ldap__dependent_tasks if (nsswitch__daemon|d("nslcd") == "sssd") else
+              [] }}'
 
     - role: nslcd
       tags: [ 'role::nslcd', 'skip::nslcd' ]
-      when: (ansible_local.ldap.posix_enabled|d())|bool
+      when:
+        - ansible_local.ldap.posix_enabled|d()|bool
+        - nsswitch__daemon|d("nslcd") == "nslcd"
 
     - role: nscd
       tags: [ 'role::nscd', 'skip::nscd' ]
-      when: (ansible_local.ldap.posix_enabled|d())|bool
+      when:
+        - ansible_local.ldap.posix_enabled|d()|bool
+        - nsswitch__daemon|d("nslcd") == "nslcd"
+
+    - role: sssd
+      tags: [ 'role::sssd', 'skip::sssd' ]
+      when:
+        - ansible_local.ldap.posix_enabled|d()|bool
+        - nsswitch__daemon|d("nslcd") == "sssd"
 
     - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::yadm' ]
@@ -173,7 +185,9 @@
     - role: nsswitch
       tags: [ 'role::nsswitch', 'skip::nsswitch' ]
       nsswitch__dependent_services:
-        - '{{ nslcd__nsswitch__dependent_services }}'
+        - '{{ nslcd__nsswitch__dependent_services if (nsswitch__daemon|d("nslcd") == "nslcd") else
+              sssd__nsswitch__dependent_services if (nsswitch__daemon|d("nslcd") == "sssd") else
+              [] }}'
 
     - role: libuser
       tags: [ 'role::libuser', 'skip::libuser' ]
