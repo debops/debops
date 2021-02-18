@@ -1,0 +1,463 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2019 DebOps <https://debops.org/>
+# .. Copyright (C) 2021 David Härdeman <david@hardeman.nu>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _sssd__ref_defaults:
+
+# debops.sssd default variables
+# ==============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: sssd__base_packages [[[
+#
+# List of APT packages required for LDAP lookups via NSS and PAM.
+sssd__base_packages:
+  - [ 'sssd', 'libnss-sss' ]
+
+                                                                   # ]]]
+# .. envvar:: sssd__packages [[[
+#
+# List of additional APT packages to install with :command:`sssd` package.
+sssd__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# UNIX environment [[[
+# --------------------
+
+# .. envvar:: sssd__mkhomedir_umask [[[
+#
+# Default umask for new home directories created by the ``pam_mkhomedir`` PAM
+# module.
+sssd__mkhomedir_umask: '{{ ansible_local.core.homedir_umask|d("0027") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# LDAP environment [[[
+# --------------------
+
+# .. envvar:: sssd__ldap_base_dn [[[
+#
+# The base Distinguished Name which should be used to create Distinguished
+# Names of the LDAP directory objects, defined as a YAML list. If this variable
+# is empty, :file:`/etc/sssd/sssd.conf` configuration file will not be generated.
+sssd__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
+
+                                                                   # ]]]
+# .. envvar:: sssd__ldap_device_dn [[[
+#
+# The Distinguished Name of the current host LDAP object, defined as a YAML
+# list. It will be used as a base for the :command:`sssd` service account LDAP
+# object. If the list is empty, the role will not create the account LDAP
+# object automatically.
+sssd__ldap_device_dn: '{{ ansible_local.ldap.device_dn|d([]) }}'
+
+                                                                   # ]]]
+# .. envvar:: sssd__ldap_self_rdn [[[
+#
+# The Relative Distinguished Name of the account LDAP object used by the
+# :command:`sssd` service to access the LDAP directory.
+sssd__ldap_self_rdn: 'uid=sssd'
+
+                                                                   # ]]]
+# .. envvar:: sssd__ldap_self_object_classes [[[
+#
+# List of the LDAP object classes which will be used to create the LDAP object
+# used by the :command:`sssd` service to access the LDAP directory.
+sssd__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
+
+                                                                   # ]]]
+# .. envvar:: sssd__ldap_self_attributes [[[
+#
+# YAML dictionary that defines the attributes of the LDAP object used by the
+# :command:`sssd` service to access the LDAP directory.
+sssd__ldap_self_attributes:
+  uid: '{{ sssd__ldap_self_rdn.split("=")[1] }}'
+  userPassword: '{{ sssd__ldap_bindpw }}'
+  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  description: 'Account used by the "sssd" service to access the LDAP directory'
+
+                                                                   # ]]]
+# .. envvar:: sssd__ldap_binddn [[[
+#
+# The Distinguished Name of the account LDAP object used by the
+# :command:`sssd` service to bind to the LDAP directory.
+sssd__ldap_binddn: '{{ ([ sssd__ldap_self_rdn ] + sssd__ldap_device_dn) | join(",") }}'
+
+                                                                   # ]]]
+# .. envvar:: sssd__ldap_bindpw [[[
+#
+# The password stored in the account LDAP object used by the :command:`sssd`
+# service to bind to the LDAP directory.
+sssd__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
+                              + sssd__ldap_binddn | to_uuid + ".password length=32") }}'
+
+                                                                   # ]]]
+# .. envvar:: sssd__ldap_posix_urns [[[
+#
+# List of LDAP search filters which are derived from URN-like patterns defined
+# for a given host in the :ref:`debops.ldap` role.
+# See :ref:`ldap__ref_ldap_access_host` for more details.
+sssd__ldap_posix_urns: '{{ (ansible_local.ldap.urn_patterns
+                            if (ansible_local.ldap.urn_patterns|d())
+                            else [])
+                           | map("regex_replace", "^(.*)$", "(host=posix:urn:\1)")
+                           | list }}'
+
+                                                                   # ]]]
+# .. envvar:: sssd__ldap_host_filter [[[
+#
+# The LDAP filter used in ``passwd`` and ``group`` filters to
+# control the access to UNIX environment on specific hosts or domains.
+sssd__ldap_host_filter: '(|
+                           (host=posix:all)
+                           (host=posix:{{ ansible_fqdn }})
+                           (host=posix:\2a.{{ ansible_domain }})
+                           {{ sssd__ldap_posix_urns | join(" ") }}
+                         )'
+                                                                   # ]]]
+                                                                   # ]]]
+# Service configuration [[[
+# -------------------------
+
+# These variables define the contents of the :file:`/etc/sssd/sssd.conf`
+# configuration file. See :ref:`sssd__ref_configuration` for more details, and
+# :man:`sssd.conf(5)` together with the service-specific man pages (such as
+# :man:`sssd-ldap(5)` and :man:`sssd-krb5(5)`) for possible configuration
+# parameters.
+
+# .. envvar:: sssd__default_configuration [[[
+#
+# The default :command:`sssd` configuration options defined by the role.
+sssd__default_configuration:
+
+  - name: 'config_file_version'
+    comment: 'Indicates the syntax of the config file, SSSD 0.6.0 and later uses version 2'
+    value: '2'
+    section: 'sssd'
+
+  - name: 'domains'
+    comment: 'A domain is a label for a source of user information, sssd supports multiple domains'
+    value: 'default'
+    section: 'sssd'
+
+  - name: 'services'
+    comment: 'Services to offer (nss, pam, sudo, autofs, ssh, pac, ifp)'
+    value: 'nss, pam, sudo, ssh'
+    section: 'sssd'
+
+  - name: 'debug_level'
+    comment: |
+      Note that debug level is a bitmap and only applies to a given section
+      of the config file, so you might want to set it in other sections as
+      well if you want to enable debugging (see sssd.conf(5)).
+    value: '0x0770'
+    state: 'comment'
+    section: 'sssd'
+
+  - name: 'filter_users'
+    comment: 'Users which should be excluded from being fetched via sss (default: root)'
+    value: 'root'
+    state: 'comment'
+    section: 'nss'
+
+  - name: 'filter_groups'
+    comment: 'Groups which should be excluded from being fetched via sss (default: root)'
+    value: 'root'
+    state: 'comment'
+    section: 'nss'
+
+  - name: 'offline_credentials_expiration'
+    comment: 'How long should offline logins be allowed (in days since last successful online login, default: 0 - no limit)'
+    value: '0'
+    state: 'comment'
+    section: 'pam'
+
+  - name: 'offline_failed_login_attempts'
+    comment: 'How many failed offline login attempts are allowed'
+    value: '5'
+    section: 'pam'
+
+  - name: 'offline_failed_login_delay'
+    comment: 'Delay (in minutes) between login attempts after offline_failed_login_attempts has been reached'
+    value: '1'
+    section: 'pam'
+
+  - name: 'sudo_timed'
+    comment: 'Whether to evaluate the sudoNotBefore and sudoNotAfter attributes'
+    value: 'false'
+    state: 'comment'
+    section: 'sudo'
+
+  - name: 'ssh_hash_known_hosts'
+    comment: 'Whether to hash the managed known_hosts file'
+    value: 'true'
+    state: 'comment'
+    section: 'ssh'
+
+  - name: 'ssh_known_hosts_timeout'
+    comment: 'How many seconds to keep a host in the managed known_hosts file'
+    value: '180'
+    state: 'comment'
+    section: 'ssh'
+
+  - name: 'id_provider'
+    comment: |
+      The identification provider to use for the domain. Possible providers
+      include e.g. ldap, ipa and ad (see the corresponding sssd-* man pages).
+    value: 'ldap'
+    section: 'domain/default'
+
+  - name: 'auth_provider'
+    comment: |
+      The authentication provider to use for the domain. Possible providers
+      include e.g. ldap, krb5, ipa and ad (see the corresponding sssd-* man
+      pages).
+    value: 'ldap'
+    section: 'domain/default'
+
+  - name: 'chpass_provider'
+    comment: |
+      The password change provider to use for the domain. Possible providers
+      include e.g. ldap, krb5, ipa and ad (see the corresponding sssd-* man
+      pages).
+    value: 'ldap'
+    section: 'domain/default'
+
+  - name: 'sudo_provider'
+    comment: |
+      The SUDO rules provider to use for the domain. Possible providers
+      include e.g. ldap, ipa and ad (see the corresponding sssd-* man
+      pages).
+    value: 'ldap'
+    section: 'domain/default'
+
+  - name: 'ldap_uri'
+    comment: 'The location at which the LDAP server(s) should be reachable.'
+    value: '{{ ansible_local.ldap.uri|d("") }}'
+    section: 'domain/default'
+
+  - name: 'ldap_default_bind_dn'
+    comment: 'The DN to bind with for normal lookups.'
+    value: '{{ sssd__ldap_binddn }}'
+    section: 'domain/default'
+
+  - name: 'ldap_default_authtok'
+    value: '{{ sssd__ldap_bindpw }}'
+    section: 'domain/default'
+
+  - name: 'ldap_schema'
+    comment: 'Specifies the schema used on the LDAP server (rfc2307, rfc2307bis, ipa, ad)'
+    value: 'rfc2307bis'
+    section: 'domain/default'
+
+  - name: 'ldap_pwd_policy'
+    comment: 'Which policy should be used to evaluate password expiration (shadow, mit_kerberos)'
+    value: 'shadow'
+    state: 'comment'
+    section: 'domain/default'
+
+  - name: 'ldap_connection_expire_timeout'
+    comment: |
+      The idle timelimit for connections with the LDAP server. This should be
+      lower than the server's olcIdleTimeout (default: 900).
+    value: '600'
+    section: 'domain/default'
+
+  - name: 'min_id'
+    comment: |
+      First valid UID/GID number expected to be in the LDAP directory.
+      UIDs/GIDs lower than this value will be ignored.
+    value: '{{ ansible_local.ldap.uid_gid_min|d("10000") }}'
+    section: 'domain/default'
+
+  - name: 'max_id'
+    comment: |
+      Last valid UID/GID number expected to be in the LDAP directory.
+      UIDs/GIDs higher than this value will be ignored (0 = no limit).
+    value: '{{ ansible_local.ldap.uid_gid_max|d("0") }}'
+    section: 'domain/default'
+
+  - name: 'cache_credentials'
+    comment: |
+      Whether user credentials should also be cached (in hashed form) in a
+      local cache in order to allow offline logins (see also the
+      "offline_credentials_expiration" parameter in the [pam] section).
+    value: 'true'
+    section: 'domain/default'
+
+  - name: 'enumerate'
+    comment: |
+      Enumeration means that sssd will download and cache ALL users and
+      groups from the remote server. This means that they will be available
+      in case of sudden network outages, etc, but is not suitable for
+      large environments.
+    value: 'false'
+    section: 'domain/default'
+
+  - name: 'ldap_enumeration_refresh_timeout'
+    comment: 'Specifies how often re-enumeration should be performed (in seconds).'
+    value: '300'
+    section: 'domain/default'
+
+  - name: 'ldap_id_use_start_tls'
+    comment: 'SSL options'
+    value: '{{ "true"
+               if (ansible_local|d() and ansible_local.ldap|d() and
+                   (ansible_local.ldap.start_tls|d())|bool)
+               else "false" }}'
+    section: 'domain/default'
+
+  - name: 'ldap_tls_reqcert'
+    value: 'demand'
+    section: 'domain/default'
+
+  - name: 'ldap_tls_cacert'
+    value: '/etc/ssl/certs/ca-certificates.crt'
+    section: 'domain/default'
+
+  - name: 'ldap_group_name'
+    comment: |
+      Use the 'gid' attribute instead of 'cn' as the POSIX group name.
+    value: 'gid'
+    section: 'domain/default'
+
+  - name: 'ldap_group_object_class'
+    comment: |
+      Groups use the 'posixGroupId' object class rather than 'posixGroup'.
+    value: 'posixGroupId'
+    section: 'domain/default'
+
+  - name: 'ldap_search_base'
+    comment: |
+      The search base that will be used for queries. "ldap_search_base"
+      defines the default search base which will be used unless a more
+      specific "ldap_*_search_base" has been defined.
+      Format: search_base[?scope?[filter][?search_base?scope?[filter]]*]
+    value: '{{ sssd__ldap_base_dn | join(",") }}'
+    section: 'domain/default'
+
+  - name: 'ldap_user_search_base'
+    value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?(&(objectClass=posixAccount)" + sssd__ldap_host_filter + ")" }}'
+    section: 'domain/default'
+
+  - name: 'ldap_group_search_base'
+    value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?(&(objectClass=posixGroupId)" + sssd__ldap_host_filter + ")" }}'
+    section: 'domain/default'
+
+  - name: 'ldap_sudo_search_base'
+    value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?(&(objectClass=sudoRole))" }}'
+    section: 'domain/default'
+
+                                                                   # ]]]
+# .. envvar:: sssd__configuration [[[
+#
+# The :command:`sssd` configuration options defined on all hosts in the
+# Ansible inventory.
+sssd__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: sssd__group_configuration [[[
+#
+# The :command:`sssd` configuration options defined on hosts in a specific
+# Ansible inventory group.
+sssd__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: sssd__host_configuration [[[
+#
+# The :command:`sssd` configuration options defined on specific hosts in the
+# Ansible inventory.
+sssd__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: sssd__combined_configuration [[[
+#
+# The variable that combines other :command:`sssd` configuration options and
+# is used in the role template.
+sssd__combined_configuration: '{{ sssd__default_configuration
+                                   + sssd__configuration
+                                   + sssd__group_configuration
+                                   + sssd__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Main configuration sections [[[
+# -------------------------------
+
+# The variables below define the configuration sections inside the
+# :file:`/etc/sssd/sssd.conf` configuration file.
+# See :ref:`sssd__ref_configuration_sections` for more details.
+
+# .. envvar:: sssd__default_configuration_sections [[[
+#
+# The default configuration sections defined by the role.
+sssd__default_configuration_sections:
+
+  - name: 'sssd'
+    title: 'Global directives'
+
+  - name: 'nss'
+    title: 'Name Service Switch directives'
+
+  - name: 'pam'
+    title: 'Pluggable Authentication Modules directives'
+
+  - name: 'sudo'
+    title: 'Sudo directives'
+
+  - name: 'ssh'
+    title: 'Secure SHell directives'
+
+  - name: 'domain/default'
+    title: 'Default domain directives'
+
+                                                                   # ]]]
+# .. envvar:: sssd__configuration_sections [[[
+#
+# The configuration sections defined by the user.
+sssd__configuration_sections: []
+
+                                                                   # ]]]
+# .. envvar:: sssd__combined_configuration_sections [[[
+#
+# The variable which combines all configuration sections variables and is used
+# in the role tasks and templates.
+sssd__combined_configuration_sections: '{{ sssd__default_configuration_sections
+                                           + sssd__configuration_sections }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: sssd__ldap__dependent_tasks [[[
+#
+# Configuration for the :ref:`debops.ldap` Ansible role.
+sssd__ldap__dependent_tasks:
+
+  - name: 'Create sssd account for {{ sssd__ldap_device_dn | join(",") }}'
+    dn: '{{ sssd__ldap_binddn }}'
+    objectClass: '{{ sssd__ldap_self_object_classes }}'
+    attributes: '{{ sssd__ldap_self_attributes }}'
+    no_log: True
+    state: '{{ "present"
+               if ((ansible_local.ldap.posix_enabled|d())|bool and
+                   sssd__ldap_device_dn|d())
+               else "ignore" }}'
+
+                                                                   # ]]]
+# .. envvar:: sssd__nsswitch__dependent_services [[[
+#
+# Configuration for the :ref:`debops.nsswitch` Ansible role.
+sssd__nsswitch__dependent_services: [ 'sss' ]
+                                                                   # ]]]
+                                                                   # ]]]
