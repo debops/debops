@@ -72,6 +72,9 @@ General
 - DebOps Dockerfile will use the ``python3-cryptography`` Debian package to
   avoid Rust compiler dependency issues.
 
+- The :command:`debops-defaults` script should now correctly display role
+  defaults, without trying to add the ``debops.`` prefix to the role names..
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
