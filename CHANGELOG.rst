@@ -68,6 +68,12 @@ Updates of upstream application versions
 Fixed
 ~~~~~
 
+General
+'''''''
+
+- The :command:`debops-defaults` script should now correctly display role
+  defaults, without trying to add the ``debops.`` prefix to the role names..
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
