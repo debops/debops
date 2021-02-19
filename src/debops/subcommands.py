@@ -28,27 +28,26 @@ class Subcommands(object):
 
         parser = argparse.ArgumentParser(
                 description="DebOps CLI",
-                usage='''debops <command> [<args>]
+                usage='''debops <section> [<args>]
 
-Commands:
-    init     initialize new project directory
-    status   display project information
+Sections:
+    project  manage project directories
     run      run Ansible playbook(s) against hosts
     check    run Ansible playbook(s) in check mode
     config   display DebOps configuration options''')
 
-        parser.add_argument('command', help='Subcommand to run')
+        parser.add_argument('section', help='Section to run')
         parser.add_argument('--version', action='version',
                             version='%(prog)s {version}'
                                     .format(version=__version__))
 
-        self.subcommand = parser.parse_args(self.args[1:2])
-        self.command = self.subcommand.command
-        if not hasattr(self, 'do_' + self.subcommand.command):
-            print('Error: unrecognized command:', self.subcommand.command)
+        self._section = parser.parse_args(self.args[1:2])
+        self.section = self._section.section
+        if not hasattr(self, 'do_' + self._section.section):
+            print('Error: unrecognized section:', self._section.section)
             parser.print_help()
             exit(1)
-        getattr(self, 'do_' + self.subcommand.command)()
+        getattr(self, 'do_' + self._section.section)()
 
     def add_bool_argument(self, parser, name, default=False,
                           required=False, help=None, no_help=None):
@@ -60,10 +59,28 @@ Commands:
                            help=no_help, action='store_false')
         parser.set_defaults(**{name: default})
 
-    def do_init(self):
+    def do_project(self):
+        parser = argparse.ArgumentParser(
+                description='manage project directory',
+                usage='''debops project <command> [<args>]
+
+Commands:
+    init    initialize new project directory
+    refresh refresh existing project directory
+    status  display project information''')
+        parser.add_argument('command', help='project command to run')
+        self._command = parser.parse_args(self.args[2:3])
+        self.command = self._command.command
+        if not hasattr(self, 'do_project_' + self._command.command):
+            print('Error: unrecognized command:', self._command.command)
+            parser.print_help()
+            exit(1)
+        getattr(self, 'do_project_' + self._command.command)()
+
+    def do_project_init(self):
         parser = argparse.ArgumentParser(
                 description='initialize new project directory',
-                usage='debops init [<args>] <project_dir>')
+                usage='debops project init [<args>] <project_dir>')
         self.add_bool_argument(parser, 'git',
                                help='enable git support (default)',
                                no_help='disable git support')
@@ -73,13 +90,26 @@ Commands:
         parser.add_argument('project_dir', type=str, nargs='?',
                             default=os.getcwd(),
                             help='path to the project directory')
-        self.args = parser.parse_args(self.args[2:])
+        self.args = parser.parse_args(self.args[3:])
 
-    def do_status(self):
+    def do_project_refresh(self):
+        parser = argparse.ArgumentParser(
+                description='refresh existing project directory',
+                usage='debops project refresh [<args>] <project_dir>')
+        self.add_bool_argument(parser, 'git',
+                               help='enable git support (default)',
+                               no_help='disable git support')
+        parser.add_argument('project_dir', type=str, nargs='?',
+                            default=os.getcwd(),
+                            help='path to the project directory')
+        self.args = parser.parse_args(self.args[3:])
+
+    def do_project_status(self):
         parser = argparse.ArgumentParser(
                 parents=[self.global_parser],
+                usage='debops project status [<args>]',
                 description='display project information')
-        self.args = parser.parse_args(self.args[2:])
+        self.args = parser.parse_args(self.args[3:])
 
     def do_run(self):
         parser = argparse.ArgumentParser(
