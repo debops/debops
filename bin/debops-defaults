@@ -37,7 +37,7 @@ import glob
 import argparse
 import errno
 
-from debops import ROLE_PREFIX, read_config
+from debops import read_config
 from debops.cmds import find_debops_project, require_commands
 from debops.cmds import find_playbookpath
 
@@ -74,8 +74,6 @@ def aggregate_defaults(playbooks_path, role_list, outstream):
             role_list.append(os.path.basename(role_path))
 
     for role in role_list:
-        if '.' not in role:
-            role = ROLE_PREFIX + '.' + role
         if os.path.exists(os.path.join(
                           roles_path, role, 'defaults', 'main.yml')):
             fn = os.path.join(roles_path, role, 'defaults', 'main.yml')
