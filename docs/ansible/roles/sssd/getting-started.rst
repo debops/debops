@@ -42,15 +42,11 @@ Ansible inventory at once:
    debops_all_hosts
 
 The :command:`sssd` service can also be installed and configured by other
-playbooks, for example ``bootstrap-ldap.yml``. In such cases the custom
+playbooks, for example ``bootstrap-sss.yml``. In such cases the custom
 playbook will configure the :command:`sssd` service on a host, but the role
 playbook will not work on a host automatically; you will have to include that
 host in the ``[debops_service_sssd]`` Ansible inventory group via one of the
 methods above to be able to change the service configuration.
-
-Note that you currently need to set the :envvar:`nsswitch__daemon` variable in
-:ref:`debops.nsswitch` to ``sssd`` in order for ``bootstrap-ldap.yml`` to
-install :command:`sssd` instead of :command:`nslcd` and :command:`nscd`.
 
 
 Example playbook
