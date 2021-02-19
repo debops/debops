@@ -172,6 +172,7 @@ test-playbook-syntax:
 	@ANSIBLE_ROLES_PATH="ansible/roles" ANSIBLE_HOST_PATTERN_MISMATCH=ignore \
 	 ansible-playbook --syntax-check ansible/playbooks/bootstrap.yml \
 		                         ansible/playbooks/bootstrap-ldap.yml \
+		                         ansible/playbooks/bootstrap-sss.yml \
 		                         ansible/playbooks/site.yml
 
 .PHONY: test-ansible-lint
