@@ -79,8 +79,8 @@ class ProjectDir(object):
         self.config.merge(os.path.join(self.path, '.debops', 'conf.d'))
         self.ansible_cfg = AnsibleConfig(
                 os.path.join(self.path, 'ansible.cfg'),
-                debops_config=self.config.raw,
                 project_type=self.project_type)
+        self.ansible_cfg.load_config()
 
     def _find_up_dir(self, path, filenames):
         path = os.path.abspath(path)
@@ -190,11 +190,13 @@ class ProjectDir(object):
                              hostname=socket.gethostname(),
                              fqdn=socket.getfqdn()))
 
+        debops_cfg = (self.config.raw['projects'][self.name]
+                      ['views']['system']['ansible'])
         self.ansible_cfg = AnsibleConfig(
                 os.path.join(self.path, 'ansible.cfg'),
-                debops_config=self.config.raw,
-                project_type=self.project_type,
-                refresh=refresh)
+                project_type=self.project_type)
+        self.ansible_cfg.load_config()
+        self.ansible_cfg.merge_config(debops_cfg)
         self.ansible_cfg.write_config()
         if refresh:
             print('Refreshed DebOps project in', path)
@@ -204,8 +206,8 @@ class ProjectDir(object):
     def status(self):
         self.ansible_cfg = AnsibleConfig(
                 os.path.join(self.path, 'ansible.cfg'),
-                debops_config=self.config.raw,
                 project_type=self.project_type)
+        self.ansible_cfg.load_config()
         collections = self.ansible_cfg.get_option(
                 'collections_paths')
         print('Project type:', self.project_type)
