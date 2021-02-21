@@ -16,7 +16,7 @@ import platform
 class ProjectDir(object):
 
     def __init__(self, path=os.getcwd(), project_type='legacy', create=False,
-                 refresh=False, config=None):
+                 config=None):
         self.config = config
         self.path = os.path.abspath(path)
         self.name = os.path.basename(self.path)
@@ -26,23 +26,6 @@ class ProjectDir(object):
         if self.path == os.path.expanduser('~'):
             raise IsADirectoryError("You cannot create a project here, "
                                     "it's a home directory")
-
-        # We can create a project if it doesn't exist
-        if create:
-
-            # First let's make sure that we are not inside another project
-            self._legacy_config_path = self._find_up_dir(self.path,
-                                                         ['.debops.cfg'])
-            if self._legacy_config_path and not refresh:
-                raise IsADirectoryError('You are inside another '
-                                        'DebOps project directory')
-
-            self.config.merge_env(self.path)
-            self.config.merge(os.path.join(self.path, '.debops.cfg'))
-            self.config.merge(os.path.join(self.path, '.debops', 'conf.d'))
-            # Let's make a new project
-            if self.project_type == 'legacy':
-                self._create_legacy_project(self.path, refresh=refresh)
 
         # Find the project again in case that it was just created
         self._legacy_config_path = self._find_up_dir(self.path,
@@ -54,7 +37,7 @@ class ProjectDir(object):
             self.project_type = None
 
         # If we didn't find a proper project, report an error
-        if self.project_type is None:
+        if self.project_type is None and not create:
             raise NotADirectoryError('DebOps project directory not found '
                                      'in ' + self.path)
 
@@ -102,7 +85,8 @@ class ProjectDir(object):
             with open(filename, "w") as fh:
                 fh.writelines(content)
 
-    def _create_legacy_project(self, path, refresh=False):
+    def _create_legacy_project(self, path):
+        self.project_type = 'legacy'
         skel_dirs = (
             os.path.join("ansible", "inventory", "group_vars", "all"),
             os.path.join("ansible", "inventory", "host_vars"),
@@ -163,7 +147,22 @@ class ProjectDir(object):
         self._write_file(os.path.join(path, '.debops.cfg'),
                          default_debops_cfg.render(env=os.environ)
                          + '\n')
-        self.config.merge(os.path.join(self.path, '.debops.cfg'))
+
+        project_data = {'projects': {
+                self.name: {
+                    'path': self.path,
+                    'name': self.name,
+                    'type': self.project_type,
+                    'views': {
+                        'system': {}
+                    }
+                }
+            }
+        }
+
+        project_data['projects'][self.name]['views']['system'].update(
+                self.config.load(os.path.join(self.path, '.debops.cfg')))
+        self.config.merge(project_data)
 
         # Create .gitattributes
         self._write_file(os.path.join(path, '.gitattributes'),
@@ -198,10 +197,30 @@ class ProjectDir(object):
         self.ansible_cfg.load_config()
         self.ansible_cfg.merge_config(debops_cfg)
         self.ansible_cfg.write_config()
-        if refresh:
-            print('Refreshed DebOps project in', path)
-        else:
-            print('Created new DebOps project in', path)
+        print('Created new DebOps project in', path)
+
+    def create(self):
+        # First let's make sure that we are not inside another project
+        self._legacy_config_path = self._find_up_dir(self.path,
+                                                     ['.debops.cfg'])
+        if self._legacy_config_path:
+            raise IsADirectoryError('You are inside another '
+                                    'DebOps project directory')
+
+        # Let's make a new project
+        self._create_legacy_project(self.path)
+
+    def refresh(self):
+        debops_cfg = {}
+        if self.project_type == 'legacy':
+            debops_cfg = (self.config.raw['projects'][self.name]
+                          ['views']['system']['ansible'])
+        self.ansible_cfg = AnsibleConfig(
+                os.path.join(self.path, 'ansible.cfg'),
+                project_type=self.project_type)
+        self.ansible_cfg.merge_config(debops_cfg)
+        self.ansible_cfg.write_config()
+        print('Refreshed DebOps project in', self.path)
 
     def status(self):
         self.ansible_cfg = AnsibleConfig(

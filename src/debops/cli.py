@@ -35,6 +35,7 @@ class Interpreter(object):
         try:
             project = ProjectDir(path=args.project_dir, config=self.config,
                                  create=True)
+            project.create()
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError) as errmsg:
             print('Error:', errmsg)
@@ -42,8 +43,8 @@ class Interpreter(object):
 
     def do_project_refresh(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config,
-                                 create=False, refresh=True)
+            project = ProjectDir(path=args.project_dir, config=self.config)
+            project.refresh()
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError) as errmsg:
             print('Error:', errmsg)
