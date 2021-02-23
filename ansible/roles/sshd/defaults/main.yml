@@ -1,9 +1,9 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# .. Copyright (C) 2013-2016 Maciej Delmanowski <drybjed@gmail.com>
-# .. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-# .. Copyright (C) 2014-2017 DebOps <https://debops.org/>
+# .. Copyright (C) 2013-2020      Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2015-2017,2020 Robin Schneider <ypid@riseup.net>
+# .. Copyright (C) 2014-2020      DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _sshd__ref_defaults:
@@ -233,10 +233,8 @@ sshd__log_level: 'INFO'
 # sysadmin accounts via the :ref:`debops.system_users` disable password-based
 # access.
 sshd__permit_root_login: '{{ "without-password"
-                             if ((ansible_local|d() and ansible_local.root_account|d() and
-                                  (ansible_local.root_account.ssh_authorized_keys|d())|bool) or
-                                 (ansible_local|d() and ansible_local.system_users|d() and
-                                  (ansible_local.system_users.configured|d())|bool))
+                             if (ansible_local.root_account.ssh_authorized_keys|d()|bool or
+                                 ansible_local.system_users.configured|d()|bool)
                              else "yes" }}'
 
                                                                    # ]]]
@@ -248,10 +246,8 @@ sshd__permit_root_login: '{{ "without-password"
 # configured by the :ref:`debops.system_users` role disables password
 # authentication.
 sshd__password_authentication: '{{ "no"
-                                   if ((ansible_local|d() and ansible_local.root_account|d() and
-                                        (ansible_local.root_account.ssh_authorized_keys|d())|bool) or
-                                       (ansible_local|d() and ansible_local.system_users|d() and
-                                        (ansible_local.system_users.configured|d())|bool))
+                                   if (ansible_local.root_account.ssh_authorized_keys|d()|bool or
+                                       ansible_local.system_users.configured|d()|bool)
                                    else "yes" }}'
 
                                                                    # ]]]
@@ -536,10 +532,7 @@ sshd__paranoid: False
 #
 # Enable support for looking up authorized public keys in external data sources
 # (currently LDAP is supported). This function works only with OpenSSH 6.2+.
-sshd__authorized_keys_lookup: '{{ ansible_local.ldap.posix_enabled
-                                  if (ansible_local|d() and ansible_local.ldap|d() and
-                                      (ansible_local.ldap.posix_enabled|d())|bool)
-                                  else False }}'
+sshd__authorized_keys_lookup: '{{ ansible_local.ldap.posix_enabled|d()|bool }}'
 
                                                                    # ]]]
 # .. envvar:: sshd__authorized_keys_lookup_user [[[
@@ -641,9 +634,7 @@ sshd__ldap_filter: '{{ sshd__ldap_filter_map["service+host"] }}'
 # List of LDAP search filters which are derived from URN-like patterns defined
 # for a given host in the :ref:`debops.ldap` role.
 # See :ref:`ldap__ref_ldap_access_host` for more details.
-sshd__ldap_posix_urns: '{{ (ansible_local.ldap.urn_patterns
-                            if (ansible_local.ldap.urn_patterns|d())
-                            else [])
+sshd__ldap_posix_urns: '{{ ansible_local.ldap.urn_patterns|d([])
                            | map("regex_replace", "^(.*)$", "(host=posix:urn:\1)")
                            | list }}'
 
@@ -710,8 +701,7 @@ sshd__pam_deploy_state: 'present'
 # Specify the absolute path of the PAM access file to use for the ``sshd``
 # service.
 sshd__pam_access_file: '{{ "/etc/security/access-sshd.conf"
-                           if (ansible_local|d() and ansible_local.pam_access|d() and
-                               "sshd" in ansible_local.pam_access.rules|d([]))
+                           if ("sshd" in ansible_local.pam_access.rules|d([]))
                            else "/etc/security/access.conf" }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -930,9 +920,7 @@ sshd__pam_access__dependent_rules:
           Grant access via SSH to members of UNIX groups defined on this host
         permission: 'allow'
         groups: '{{ ansible_local.system_groups.access.sshd
-                   if (ansible_local.system_groups.access|d() and
-                       ansible_local.system_groups.access.sshd|d())
-                   else [ "admins", "sshusers", "sftponly" ] }}'
+                    |d([ "admins", "sshusers", "sftponly" ]) }}'
         origins: 'ALL'
 
       - name: 'allow-ldap-groups'
@@ -942,8 +930,7 @@ sshd__pam_access__dependent_rules:
         groups: [ 'admins', 'sshusers', 'sftponly' ]
         origins: 'ALL'
         state: '{{ "present"
-                   if (ansible_local|d() and ansible_local.ldap|d() and
-                       (ansible_local.ldap.posix_enabled|d())|bool)
+                   if (ansible_local.ldap.posix_enabled|d()|bool)
                    else "absent" }}'
 
       - name: 'allow-domain'
