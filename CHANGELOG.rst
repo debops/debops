@@ -40,6 +40,12 @@ Updates of upstream application versions
 - In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
   has been updated to the next point release, 10.8.
 
+Continuous Integration
+''''''''''''''''''''''
+
+- The Vagrant provisioning script now installs Cryptography from the Debian
+  archive instead of from PyPI.
+
 :ref:`debops.redis_server` role
 '''''''''''''''''''''''''''''''
 
