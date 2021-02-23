@@ -44,6 +44,12 @@ Updates of upstream application versions
 - In the :ref:`debops.roundcube` role, the Roundcube version installed by
   default has been updated to ``1.4.11``.
 
+Continuous Integration
+''''''''''''''''''''''
+
+- The Vagrant provisioning script now installs Cryptography from the Debian
+  archive instead of from PyPI.
+
 :ref:`debops.redis_server` role
 '''''''''''''''''''''''''''''''
 
