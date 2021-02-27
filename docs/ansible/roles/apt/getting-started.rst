@@ -49,13 +49,13 @@ exclusively, you could compose your inventory like this:
 
    # Don't use the default mirrors
    apt__default_sources_state: 'absent'
-   
+
    # Don't use the default security mirrors
    apt__security_sources_state: 'absent'
-   
+
    # Replace the original APT mirror
    apt__original_sources: []
-   
+
    # Define local APT mirror
    apt__group_sources:
      - uri:          'http://mirrors.domain.fqdn/debian'
