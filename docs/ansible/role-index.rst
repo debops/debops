@@ -11,6 +11,11 @@ This is a curated index of DebOps roles, categorized by their type and purpose.
 Roles that are not linked don't have complete documentation available, or are
 not yet integrated in DebOps.
 
+See also `DebOps roles in development`__ and `open pull requests`__.
+
+  .. __: https://github.com/debops/debops/wiki/DebOps-roles-in-development
+  .. __: https://github.com/debops/debops/pulls?q=is%3Aopen+is%3Apr+label%3A%22new+feature%22
+
 .. include:: ../includes/global.rst
 
 .. contents:: Role categories
