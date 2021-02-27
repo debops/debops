@@ -58,7 +58,7 @@ Examples::
 
         - submatch: '1:08:00:2b:a1:11:31'
           options: |
-            option root-path "samsara:/var/diskless/alphapc";        
+            option root-path "samsara:/var/diskless/alphapc";
             filename "/tftpboot/netbsd.alphapc-diskless";
 
 .. _dhcpd__ref_failovers:
@@ -105,7 +105,7 @@ Split configuration between two failover DHCP servers (you must specify one of
 
 ``split``
   Split value between ``0`` and ``255``.
-  
+
   Specifies the split between the primary and secondary servers for the purpose
   of load balancing. Whenever a client makes a DHCP request, the DHCP server
   runs a hash on the client identification, resulting in a value from 0 to 255.

@@ -73,9 +73,9 @@ List of local ``fail2ban`` filters that should be present or absent when configu
   Optional. Custom definitions used by the filter.
 
 ``failregex``
-  Required. A string of regular expression(s) used by the filter to detect 
-  break-in attempts. You can have the filter try to match multiple regular 
-  expressions by using the ``|`` character (the YAML literal style operator). Each 
+  Required. A string of regular expression(s) used by the filter to detect
+  break-in attempts. You can have the filter try to match multiple regular
+  expressions by using the ``|`` character (the YAML literal style operator). Each
   regular expression should be on its own line. Refer to the `examples`_ section.
 
 ``filename``
