@@ -1,8 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# .. Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
-# .. Copyright (C) 2021 David Härdeman <david@hardeman.nu>
+# .. Copyright (C) 2019-2021 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2021      David Härdeman <david@hardeman.nu>
 # .. Copyright (C) 2019-2021 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
@@ -141,223 +141,211 @@ sssd__ldap_host_filter: '(|
 # The default :command:`sssd` configuration options defined by the role.
 sssd__default_configuration:
 
-  - name: 'config_file_version'
-    comment: 'Indicates the syntax of the config file, SSSD 0.6.0 and later uses version 2'
-    value: '2'
-    section: 'sssd'
+  - section: 'sssd'
+    title: 'Global directives'
+    options:
 
-  - name: 'domains'
-    comment: 'A domain is a label for a source of user information, sssd supports multiple domains'
-    value: 'default'
-    section: 'sssd'
+      - name: 'config_file_version'
+        comment: 'Indicates the syntax of the config file, SSSD 0.6.0 and later uses version 2'
+        value: '2'
 
-  - name: 'services'
-    comment: 'Services to offer (nss, pam, sudo, autofs, ssh, pac, ifp)'
-    value: 'nss, pam, sudo, ssh'
-    section: 'sssd'
+      - name: 'domains'
+        comment: 'A domain is a label for a source of user information, sssd supports multiple domains'
+        value: 'default'
 
-  - name: 'debug_level'
-    comment: |
-      Note that debug level is a bitmap and only applies to a given section
-      of the config file, so you might want to set it in other sections as
-      well if you want to enable debugging (see sssd.conf(5)).
-    value: '0x0770'
-    state: 'comment'
-    section: 'sssd'
+      - name: 'services'
+        comment: 'Services to offer (nss, pam, sudo, autofs, ssh, pac, ifp)'
+        value: 'nss, pam, sudo, ssh'
 
-  - name: 'filter_users'
-    comment: 'Users which should be excluded from being fetched via sss (default: root)'
-    value: 'root'
-    state: 'comment'
-    section: 'nss'
+      - name: 'debug_level'
+        comment: |
+          Note that debug level is a bitmap and only applies to a given section
+          of the config file, so you might want to set it in other sections as
+          well if you want to enable debugging (see sssd.conf(5)).
+        value: '0x0770'
+        state: 'comment'
 
-  - name: 'filter_groups'
-    comment: 'Groups which should be excluded from being fetched via sss (default: root)'
-    value: 'root'
-    state: 'comment'
-    section: 'nss'
+  - section: 'nss'
+    title: 'Name Service Switch directives'
+    options:
 
-  - name: 'offline_credentials_expiration'
-    comment: 'How long should offline logins be allowed (in days since last successful online login, default: 0 - no limit)'
-    value: '0'
-    state: 'comment'
-    section: 'pam'
+      - name: 'filter_users'
+        comment: 'Users which should be excluded from being fetched via sss (default: root)'
+        value: 'root'
+        state: 'comment'
 
-  - name: 'offline_failed_login_attempts'
-    comment: 'How many failed offline login attempts are allowed'
-    value: '5'
-    section: 'pam'
+      - name: 'filter_groups'
+        comment: 'Groups which should be excluded from being fetched via sss (default: root)'
+        value: 'root'
+        state: 'comment'
 
-  - name: 'offline_failed_login_delay'
-    comment: 'Delay (in minutes) between login attempts after offline_failed_login_attempts has been reached'
-    value: '1'
-    section: 'pam'
+  - section: 'pam'
+    title: 'Pluggable Authentication Modules directives'
+    options:
 
-  - name: 'sudo_timed'
-    comment: 'Whether to evaluate the sudoNotBefore and sudoNotAfter attributes'
-    value: 'false'
-    state: 'comment'
-    section: 'sudo'
+      - name: 'offline_credentials_expiration'
+        comment: 'How long should offline logins be allowed (in days since last successful online login, default: 0 - no limit)'
+        value: '0'
+        state: 'comment'
 
-  - name: 'ssh_hash_known_hosts'
-    comment: 'Whether to hash the managed known_hosts file'
-    value: 'true'
-    state: 'comment'
-    section: 'ssh'
+      - name: 'offline_failed_login_attempts'
+        comment: 'How many failed offline login attempts are allowed'
+        value: '5'
 
-  - name: 'ssh_known_hosts_timeout'
-    comment: 'How many seconds to keep a host in the managed known_hosts file'
-    value: '180'
-    state: 'comment'
-    section: 'ssh'
+      - name: 'offline_failed_login_delay'
+        comment: 'Delay (in minutes) between login attempts after offline_failed_login_attempts has been reached'
+        value: '1'
 
-  - name: 'id_provider'
-    comment: |
-      The identification provider to use for the domain. Possible providers
-      include e.g. ldap, ipa and ad (see the corresponding sssd-* man pages).
-    value: 'ldap'
-    section: 'domain/default'
+  - section: 'sudo'
+    title: 'Sudo directives'
+    options:
 
-  - name: 'auth_provider'
-    comment: |
-      The authentication provider to use for the domain. Possible providers
-      include e.g. ldap, krb5, ipa and ad (see the corresponding sssd-* man
-      pages).
-    value: 'ldap'
-    section: 'domain/default'
+      - name: 'sudo_timed'
+        comment: 'Whether to evaluate the sudoNotBefore and sudoNotAfter attributes'
+        value: 'false'
+        state: 'comment'
 
-  - name: 'chpass_provider'
-    comment: |
-      The password change provider to use for the domain. Possible providers
-      include e.g. ldap, krb5, ipa and ad (see the corresponding sssd-* man
-      pages).
-    value: 'ldap'
-    section: 'domain/default'
+  - section: 'ssh'
+    title: 'Secure SHell directives'
+    options:
 
-  - name: 'sudo_provider'
-    comment: |
-      The SUDO rules provider to use for the domain. Possible providers
-      include e.g. ldap, ipa and ad (see the corresponding sssd-* man
-      pages).
-    value: 'ldap'
-    section: 'domain/default'
+      - name: 'ssh_hash_known_hosts'
+        comment: 'Whether to hash the managed known_hosts file'
+        value: 'true'
+        state: 'comment'
 
-  - name: 'ldap_uri'
-    comment: 'The location at which the LDAP server(s) should be reachable.'
-    value: '{{ ansible_local.ldap.uri|d("") }}'
-    section: 'domain/default'
+      - name: 'ssh_known_hosts_timeout'
+        comment: 'How many seconds to keep a host in the managed known_hosts file'
+        value: '180'
+        state: 'comment'
 
-  - name: 'ldap_default_bind_dn'
-    comment: 'The DN to bind with for normal lookups.'
-    value: '{{ sssd__ldap_binddn }}'
-    section: 'domain/default'
+  - section: 'domain/default'
+    title: 'Default domain directives'
+    options:
 
-  - name: 'ldap_default_authtok'
-    value: '{{ sssd__ldap_bindpw }}'
-    section: 'domain/default'
+      - name: 'id_provider'
+        comment: |
+          The identification provider to use for the domain. Possible providers
+          include e.g. ldap, ipa and ad (see the corresponding sssd-* man pages).
+        value: 'ldap'
 
-  - name: 'ldap_schema'
-    comment: 'Specifies the schema used on the LDAP server (rfc2307, rfc2307bis, ipa, ad)'
-    value: 'rfc2307bis'
-    section: 'domain/default'
+      - name: 'auth_provider'
+        comment: |
+          The authentication provider to use for the domain. Possible providers
+          include e.g. ldap, krb5, ipa and ad (see the corresponding sssd-* man
+          pages).
+        value: 'ldap'
 
-  - name: 'ldap_pwd_policy'
-    comment: 'Which policy should be used to evaluate password expiration (shadow, mit_kerberos)'
-    value: 'shadow'
-    state: 'comment'
-    section: 'domain/default'
+      - name: 'chpass_provider'
+        comment: |
+          The password change provider to use for the domain. Possible providers
+          include e.g. ldap, krb5, ipa and ad (see the corresponding sssd-* man
+          pages).
+        value: 'ldap'
 
-  - name: 'ldap_connection_expire_timeout'
-    comment: |
-      The idle timelimit for connections with the LDAP server. This should be
-      lower than the server's olcIdleTimeout (default: 900).
-    value: '600'
-    section: 'domain/default'
+      - name: 'sudo_provider'
+        comment: |
+          The SUDO rules provider to use for the domain. Possible providers
+          include e.g. ldap, ipa and ad (see the corresponding sssd-* man
+          pages).
+        value: 'ldap'
 
-  - name: 'min_id'
-    comment: |
-      First valid UID/GID number expected to be in the LDAP directory.
-      UIDs/GIDs lower than this value will be ignored.
-    value: '{{ ansible_local.ldap.uid_gid_min|d("10000") }}'
-    section: 'domain/default'
+      - name: 'ldap_uri'
+        comment: 'The location at which the LDAP server(s) should be reachable.'
+        value: '{{ ansible_local.ldap.uri|d("") }}'
 
-  - name: 'max_id'
-    comment: |
-      Last valid UID/GID number expected to be in the LDAP directory.
-      UIDs/GIDs higher than this value will be ignored (0 = no limit).
-    value: '{{ ansible_local.ldap.uid_gid_max|d("0") }}'
-    section: 'domain/default'
+      - name: 'ldap_default_bind_dn'
+        comment: 'The DN to bind with for normal lookups.'
+        value: '{{ sssd__ldap_binddn }}'
 
-  - name: 'cache_credentials'
-    comment: |
-      Whether user credentials should also be cached (in hashed form) in a
-      local cache in order to allow offline logins (see also the
-      "offline_credentials_expiration" parameter in the [pam] section).
-    value: 'true'
-    section: 'domain/default'
+      - name: 'ldap_default_authtok'
+        value: '{{ sssd__ldap_bindpw }}'
 
-  - name: 'enumerate'
-    comment: |
-      Enumeration means that sssd will download and cache ALL users and
-      groups from the remote server. This means that they will be available
-      in case of sudden network outages, etc, but is not suitable for
-      large environments.
-    value: 'false'
-    section: 'domain/default'
+      - name: 'ldap_schema'
+        comment: 'Specifies the schema used on the LDAP server (rfc2307, rfc2307bis, ipa, ad)'
+        value: 'rfc2307bis'
 
-  - name: 'ldap_enumeration_refresh_timeout'
-    comment: 'Specifies how often re-enumeration should be performed (in seconds).'
-    value: '300'
-    section: 'domain/default'
+      - name: 'ldap_pwd_policy'
+        comment: 'Which policy should be used to evaluate password expiration (shadow, mit_kerberos)'
+        value: 'shadow'
+        state: 'comment'
 
-  - name: 'ldap_id_use_start_tls'
-    comment: 'SSL options'
-    value: '{{ "true"
-               if (ansible_local|d() and ansible_local.ldap|d() and
-                   (ansible_local.ldap.start_tls|d())|bool)
-               else "false" }}'
-    section: 'domain/default'
+      - name: 'ldap_connection_expire_timeout'
+        comment: |
+          The idle timelimit for connections with the LDAP server. This should be
+          lower than the server's olcIdleTimeout (default: 900).
+        value: '600'
 
-  - name: 'ldap_tls_reqcert'
-    value: 'demand'
-    section: 'domain/default'
+      - name: 'min_id'
+        comment: |
+          First valid UID/GID number expected to be in the LDAP directory.
+          UIDs/GIDs lower than this value will be ignored.
+        value: '{{ ansible_local.ldap.uid_gid_min|d("10000") }}'
 
-  - name: 'ldap_tls_cacert'
-    value: '/etc/ssl/certs/ca-certificates.crt'
-    section: 'domain/default'
+      - name: 'max_id'
+        comment: |
+          Last valid UID/GID number expected to be in the LDAP directory.
+          UIDs/GIDs higher than this value will be ignored (0 = no limit).
+        value: '{{ ansible_local.ldap.uid_gid_max|d("0") }}'
 
-  - name: 'ldap_group_name'
-    comment: |
-      Use the 'gid' attribute instead of 'cn' as the POSIX group name.
-    value: 'gid'
-    section: 'domain/default'
+      - name: 'cache_credentials'
+        comment: |
+          Whether user credentials should also be cached (in hashed form) in a
+          local cache in order to allow offline logins (see also the
+          "offline_credentials_expiration" parameter in the [pam] section).
+        value: 'true'
 
-  - name: 'ldap_group_object_class'
-    comment: |
-      Groups use the 'posixGroupId' object class rather than 'posixGroup'.
-    value: 'posixGroupId'
-    section: 'domain/default'
+      - name: 'enumerate'
+        comment: |
+          Enumeration means that sssd will download and cache ALL users and
+          groups from the remote server. This means that they will be available
+          in case of sudden network outages, etc, but is not suitable for
+          large environments.
+        value: 'false'
 
-  - name: 'ldap_search_base'
-    comment: |
-      The search base that will be used for queries. "ldap_search_base"
-      defines the default search base which will be used unless a more
-      specific "ldap_*_search_base" has been defined.
-      Format: search_base[?scope?[filter][?search_base?scope?[filter]]*]
-    value: '{{ sssd__ldap_base_dn | join(",") }}'
-    section: 'domain/default'
+      - name: 'ldap_enumeration_refresh_timeout'
+        comment: 'Specifies how often re-enumeration should be performed (in seconds).'
+        value: '300'
 
-  - name: 'ldap_user_search_base'
-    value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?(&(objectClass=posixAccount)" + sssd__ldap_host_filter + ")" }}'
-    section: 'domain/default'
+      - name: 'ldap_id_use_start_tls'
+        comment: 'SSL options'
+        value: '{{ "true"
+                  if (ansible_local|d() and ansible_local.ldap|d() and
+                      (ansible_local.ldap.start_tls|d())|bool)
+                  else "false" }}'
 
-  - name: 'ldap_group_search_base'
-    value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?(&(objectClass=posixGroupId)" + sssd__ldap_host_filter + ")" }}'
-    section: 'domain/default'
+      - name: 'ldap_tls_reqcert'
+        value: 'demand'
 
-  - name: 'ldap_sudo_search_base'
-    value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?(&(objectClass=sudoRole))" }}'
-    section: 'domain/default'
+      - name: 'ldap_tls_cacert'
+        value: '/etc/ssl/certs/ca-certificates.crt'
+
+      - name: 'ldap_group_name'
+        comment: |
+          Use the 'gid' attribute instead of 'cn' as the POSIX group name.
+        value: 'gid'
+
+      - name: 'ldap_group_object_class'
+        comment: |
+          Groups use the 'posixGroupId' object class rather than 'posixGroup'.
+        value: 'posixGroupId'
+
+      - name: 'ldap_search_base'
+        comment: |
+          The search base that will be used for queries. "ldap_search_base"
+          defines the default search base which will be used unless a more
+          specific "ldap_*_search_base" has been defined.
+          Format: search_base[?scope?[filter][?search_base?scope?[filter]]*]
+        value: '{{ sssd__ldap_base_dn | join(",") }}'
+
+      - name: 'ldap_user_search_base'
+        value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?(&(objectClass=posixAccount)" + sssd__ldap_host_filter + ")" }}'
+
+      - name: 'ldap_group_search_base'
+        value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?(&(objectClass=posixGroupId)" + sssd__ldap_host_filter + ")" }}'
+
+      - name: 'ldap_sudo_search_base'
+        value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?(&(objectClass=sudoRole))" }}'
 
                                                                    # ]]]
 # .. envvar:: sssd__configuration [[[
@@ -389,51 +377,6 @@ sssd__combined_configuration: '{{ sssd__default_configuration
                                    + sssd__configuration
                                    + sssd__group_configuration
                                    + sssd__host_configuration }}'
-                                                                   # ]]]
-                                                                   # ]]]
-# Main configuration sections [[[
-# -------------------------------
-
-# The variables below define the configuration sections inside the
-# :file:`/etc/sssd/sssd.conf` configuration file.
-# See :ref:`sssd__ref_configuration_sections` for more details.
-
-# .. envvar:: sssd__default_configuration_sections [[[
-#
-# The default configuration sections defined by the role.
-sssd__default_configuration_sections:
-
-  - name: 'sssd'
-    title: 'Global directives'
-
-  - name: 'nss'
-    title: 'Name Service Switch directives'
-
-  - name: 'pam'
-    title: 'Pluggable Authentication Modules directives'
-
-  - name: 'sudo'
-    title: 'Sudo directives'
-
-  - name: 'ssh'
-    title: 'Secure SHell directives'
-
-  - name: 'domain/default'
-    title: 'Default domain directives'
-
-                                                                   # ]]]
-# .. envvar:: sssd__configuration_sections [[[
-#
-# The configuration sections defined by the user.
-sssd__configuration_sections: []
-
-                                                                   # ]]]
-# .. envvar:: sssd__combined_configuration_sections [[[
-#
-# The variable which combines all configuration sections variables and is used
-# in the role tasks and templates.
-sssd__combined_configuration_sections: '{{ sssd__default_configuration_sections
-                                           + sssd__configuration_sections }}'
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[

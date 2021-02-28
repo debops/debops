@@ -1,5 +1,5 @@
-{# Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
- # Copyright (C) 2021 David Härdeman <david@hardeman.nu>
+{# Copyright (C) 2019-2021 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2021      David Härdeman <david@hardeman.nu>
  # Copyright (C) 2019-2021 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
@@ -8,27 +8,25 @@
 # /etc/sssd/sssd.conf	Configuration file for sssd.
 #
 #			For more information, see sssd.conf(5)
-{% for section in sssd__combined_configuration_sections | parse_kv_config %}
-{%   if section.name|d() and section.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
-{%     set section_config = (sssd__combined_configuration | parse_kv_config
-                             | selectattr("section", "equalto", section.name) | list) %}
-{%     if section_config|d() %}
+{% for section in sssd__combined_configuration | parse_kv_items(name='section') %}
+{%   if section.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%     if section.options|d() %}
 {%       if section.state != 'hidden' %}
-{%         if (['present', 'comment'] | intersect(section_config | map(attribute='state') | list)) %}
-{%           set section_title = (' ' + ((section.title | d(section.name)) | upper) + ' ') %}
+{%         if (['present', 'comment'] | intersect(section.options | map(attribute='state') | list)) %}
+{%           set section_title = (' ' + ((section.title | d(section.section)) | upper) + ' ') %}
 {%           set section_width = section_title | length + 8 %}
 {{           '' }}
 {{           '' }}
 {{           ("{:#^" + section_width|string + "}").format('#') }}
 {{           ("{:#^" + section_width|string + "}").format(section_title) }}
 {{           ("{:#^" + section_width|string + "}").format('#') }}
-{{           ("[{}]").format(section.name) }}
+{{           ("[{}]").format(section.section) }}
 {{           '' }}
 {%         endif %}
 {%       else %}
 {{         '' }}
 {%       endif %}
-{%       for element in section_config %}
+{%       for element in section.options %}
 {%         if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
 {%           if element.comment|d() %}
 {%             if not loop.first %}
