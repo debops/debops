@@ -327,8 +327,8 @@ sssd__default_configuration:
 
       - name: 'ldap_group_object_class'
         comment: |
-          Groups use the 'posixGroupId' object class rather than 'posixGroup'.
-        value: 'posixGroupId'
+          Groups use the 'posixGroup' object class.
+        value: 'posixGroup'
 
       - name: 'ldap_search_base'
         comment: |
@@ -342,7 +342,7 @@ sssd__default_configuration:
         value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?(&(objectClass=posixAccount)" + sssd__ldap_host_filter + ")" }}'
 
       - name: 'ldap_group_search_base'
-        value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?(&(objectClass=posixGroupId)" + sssd__ldap_host_filter + ")" }}'
+        value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?(&(objectClass=posixGroup)" + sssd__ldap_host_filter + ")" }}'
 
       - name: 'ldap_sudo_search_base'
         value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?(&(objectClass=sudoRole))" }}'
