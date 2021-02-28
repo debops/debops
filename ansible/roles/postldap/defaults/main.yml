@@ -298,16 +298,16 @@ postldap__postfix__dependent_lookup_tables:
     connection: '{{ postldap__postfix_ldap_connection }}'
     search_base: '{{ postldap__ldap_people_dn|join(",") }}'
     query_filter: '(&
-                    (objectClass=inetOrgPerson)
-                    (|
-                      (mailAddress=%s)
-                      (mailAlternateAddress=%s)
-                    )
-                    (|
-                      (authorizedService=all)
-                      (authorizedService=mail:receive)
-                    )
-                  )'
+                     (objectClass=inetOrgPerson)
+                     (|
+                       (mailAddress=%s)
+                       (mailAlternateAddress=%s)
+                     )
+                     (|
+                       (authorizedService=all)
+                       (authorizedService=mail:receive)
+                     )
+                   )'
     result_attribute: 'mailAddress'
 
   - name: 'ldap_virtual_groups_maps.cf'
