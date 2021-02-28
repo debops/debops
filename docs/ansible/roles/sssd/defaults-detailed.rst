@@ -58,7 +58,7 @@ enumeration is not suitable for large environments:
        options:
 
          - name: 'enumerate'
-           value: 'true'
+           value: True
 
 
 Syntax
@@ -109,7 +109,8 @@ the following parameters:
 
   ``value``
     Required. The value of a given configuration option. It can be either
-    a string, or a YAML list (elements will be joined with spaces).
+    a string, a boolean, a number, or a YAML list (elements will be joined with
+    commas).
 
   ``raw``
     Optional. String or YAML text block which will be included in the

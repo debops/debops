@@ -32,7 +32,7 @@
 {%             if not loop.first %}
 {{               '' }}
 {%             endif %}
-{{             element.comment | regex_replace('\n$', '') | comment(prefix='', decoration='#', postfix='') -}}
+{{             element.comment | regex_replace('\n$', '') | comment(prefix='', decoration='# ', postfix='') -}}
 {%           endif %}
 {%           if element.raw|d() %}
 {%             if element.state|d('present') == 'comment' %}
@@ -41,7 +41,30 @@
 {{               '{}'.format(element.raw | regex_replace('\n$', '')) }}
 {%             endif %}
 {%           else %}
-{{ '{}{} = {}'.format(('#' if (element.state|d('present') == 'comment') else ''), element.name, (element.value if element.value is string else (element.value | selectattr("name", "defined") | map(attribute="name") | list | join(' ')))) }}
+{%             if element.value is string and not element.value | bool %}
+{%               set element_value = element.value %}
+{%             elif element.value | bool and element.value is not iterable %}
+{%               if element.value | string == '1' %}
+{%                 set element_value = element.value %}
+{%               else %}
+{%                 set element_value = 'true' %}
+{%               endif %}
+{%             elif not element.value | bool and element.value is not iterable %}
+{%               if element.value is not none %}
+{%                 if element.value | int %}
+{%                   set element_value = element.value %}
+{%                 else %}
+{%                   if element.value | string == '0' %}
+{%                     set element_value = element.value %}
+{%                   else %}
+{%                     set element_value = 'false' %}
+{%                   endif %}
+{%                 endif %}
+{%               endif %}
+{%             else %}
+{%               set element_value = (element.value | selectattr("name", "defined") | map(attribute="name") | list | join(', ')) %}
+{%             endif %}
+{{ '{}{} = {}'.format(('#' if (element.state|d('present') == 'comment') else ''), element.name, element_value) }}
 {%           endif %}
 {%         endif %}
 {%       endfor %}

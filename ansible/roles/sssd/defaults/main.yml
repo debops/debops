@@ -147,7 +147,7 @@ sssd__default_configuration:
 
       - name: 'config_file_version'
         comment: 'Indicates the syntax of the config file, SSSD 0.6.0 and later uses version 2'
-        value: '2'
+        value: 2
 
       - name: 'domains'
         comment: 'A domain is a label for a source of user information, sssd supports multiple domains'
@@ -155,7 +155,7 @@ sssd__default_configuration:
 
       - name: 'services'
         comment: 'Services to offer (nss, pam, sudo, autofs, ssh, pac, ifp)'
-        value: 'nss, pam, sudo, ssh'
+        value: [ 'nss', 'pam', 'sudo', 'ssh' ]
 
       - name: 'debug_level'
         comment: |
@@ -185,16 +185,16 @@ sssd__default_configuration:
 
       - name: 'offline_credentials_expiration'
         comment: 'How long should offline logins be allowed (in days since last successful online login, default: 0 - no limit)'
-        value: '0'
+        value: 0
         state: 'comment'
 
       - name: 'offline_failed_login_attempts'
         comment: 'How many failed offline login attempts are allowed'
-        value: '5'
+        value: 5
 
       - name: 'offline_failed_login_delay'
         comment: 'Delay (in minutes) between login attempts after offline_failed_login_attempts has been reached'
-        value: '1'
+        value: 1
 
   - section: 'sudo'
     title: 'Sudo directives'
@@ -202,7 +202,7 @@ sssd__default_configuration:
 
       - name: 'sudo_timed'
         comment: 'Whether to evaluate the sudoNotBefore and sudoNotAfter attributes'
-        value: 'false'
+        value: False
         state: 'comment'
 
   - section: 'ssh'
@@ -211,12 +211,12 @@ sssd__default_configuration:
 
       - name: 'ssh_hash_known_hosts'
         comment: 'Whether to hash the managed known_hosts file'
-        value: 'true'
+        value: True
         state: 'comment'
 
       - name: 'ssh_known_hosts_timeout'
         comment: 'How many seconds to keep a host in the managed known_hosts file'
-        value: '180'
+        value: 180
         state: 'comment'
 
   - section: 'domain/default'
@@ -274,7 +274,7 @@ sssd__default_configuration:
         comment: |
           The idle timelimit for connections with the LDAP server. This should be
           lower than the server's olcIdleTimeout (default: 900).
-        value: '600'
+        value: 600
 
       - name: 'min_id'
         comment: |
@@ -293,7 +293,7 @@ sssd__default_configuration:
           Whether user credentials should also be cached (in hashed form) in a
           local cache in order to allow offline logins (see also the
           "offline_credentials_expiration" parameter in the [pam] section).
-        value: 'true'
+        value: True
 
       - name: 'enumerate'
         comment: |
@@ -301,18 +301,18 @@ sssd__default_configuration:
           groups from the remote server. This means that they will be available
           in case of sudden network outages, etc, but is not suitable for
           large environments.
-        value: 'false'
+        value: False
 
       - name: 'ldap_enumeration_refresh_timeout'
         comment: 'Specifies how often re-enumeration should be performed (in seconds).'
-        value: '300'
+        value: 300
 
       - name: 'ldap_id_use_start_tls'
         comment: 'SSL options'
-        value: '{{ "true"
+        value: '{{ True
                   if (ansible_local|d() and ansible_local.ldap|d() and
                       (ansible_local.ldap.start_tls|d())|bool)
-                  else "false" }}'
+                  else False }}'
 
       - name: 'ldap_tls_reqcert'
         value: 'demand'
