@@ -139,6 +139,7 @@ postldap__mailbox_base: '/var/vmail'
 # Note: these lookups are recursive.
 postldap__virtual_alias_maps:
   - '$alias_maps'
+  - 'ldap:/etc/postfix/ldap_virtual_groups_maps.cf'
   - 'ldap:/etc/postfix/ldap_virtual_alias_maps.cf'
                                                                    # ]]]
                                                                    # ]]]
@@ -308,6 +309,24 @@ postldap__postfix__dependent_lookup_tables:
                     )
                   )'
     result_attribute: 'mailAddress'
+
+  - name: 'ldap_virtual_groups_maps.cf'
+    state: 'present'
+    comment: |
+      The virtual_groups_maps setting is used to find the delivery addresses of
+      the members of a group (mailAlias or mailDistributionList) (configured in
+      the attribute mailForwardTo).
+    no_log: '{{ postldap__no_log|d(True) }}'
+    connection: '{{ postldap__postfix_ldap_connection }}'
+    search_base: '{{ postldap__ldap_groups_dn|join(",") }}'
+    query_filter: '(&
+                     (|
+                       (objectClass=mailAlias)
+                       (objectClass=mailDistributionList)
+                     )
+                     (mailAddress=%s)
+                   )'
+    result_attribute: 'mailForwardTo'
 
   - name: 'ldap_virtual_mailbox_maps.cf'
     state: 'present'
