@@ -35,6 +35,17 @@ New DebOps roles
 
   .. __: https://grep.be/blog/en/computer/debian/Announcing_extrepo/
 
+- The :ref:`debops.sssd` role can be used to manage the System Security
+  Services Daemon (``sssd``), an alternative approach to centralized
+  credentials managed by remote databases like LDAP or Active Directory.
+
+General
+~~~~~~~
+
+- The new :file:`bootstrap-sss.yml` Ansible playbook can be used to provision
+  a new host with LDAP support based on the :command:`sssd` service instead of
+  the :command:`nslcd` and :command:`nscd` services.
+
 :ref:`debops.netbox` role
 '''''''''''''''''''''''''
 
