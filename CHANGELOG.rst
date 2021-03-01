@@ -95,6 +95,9 @@ General
 - The :command:`debops-defaults` script should now correctly display role
   defaults, without trying to add the ``debops.`` prefix to the role names..
 
+- The :command:`debops-update` script should now correctly detect cloned DebOps
+  monorepo.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
