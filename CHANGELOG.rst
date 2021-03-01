@@ -35,6 +35,12 @@ New DebOps roles
 
   .. __: https://grep.be/blog/en/computer/debian/Announcing_extrepo/
 
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- Added wrapper around :file:`manage.py` called :file:`netbox-manage` for
+  NetBox power users.
+
 Changed
 ~~~~~~~
 
@@ -65,6 +71,15 @@ Updates of upstream application versions
 
   .. __: https://github.com/roundcube/roundcubemail/issues/7667
 
+Changes to DebOps Enhancement Proposals
+'''''''''''''''''''''''''''''''''''''''
+
+- DEP 3 - Sources of software used by DebOps now requires for roles that
+  configure upstream APT repositories to use ``debops.extrepo`` instead of the
+  previously used way of including the OpenPGP fingerprint and repo details in
+  the role. This applies to all new roles. Existing roles will be updated over
+  time.
+
 Fixed
 ~~~~~
 
@@ -84,7 +99,7 @@ General
 :ref:`debops.netbox` role
 '''''''''''''''''''''''''
 
-- NetBox crashed when it tried to send Emails. 
+- NetBox crashed when it tried to send Emails.
   For example when an exception occured during page loading, the reponse was
   just "Internal Server Error". The service as a whole survives this.
   The bug in the configuration template has been fixed.
@@ -108,6 +123,11 @@ General
 
 - Use the Python version detected on the Ansible Controller instead of the
   remote host to run the UNIX account fact gathering script.
+
+:ref:`debops.etesync` role
+''''''''''''''''''''''''''
+
+- The EteSync playbook is now included in the default DebOps playbook.
 
 
 `debops v2.2.0`_ - 2021-01-31

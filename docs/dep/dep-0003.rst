@@ -118,11 +118,20 @@ Ansible roles or playbooks. However unless the software is not available in
 Debian Software Repository, upstream repositories MUST require a condition
 that enables them.  This should give the local system administrators an option
 to install either Debian or upstream version of the package as they see fit.
+
 Configuration required to enable these repositories (installation of an OpenPGP
-key and configuration of APT sources) should be performed using tools available
-in Ansible, and not using external scripts provided by the vendor. The OpenPGP
-key used to sign the packages MUST be imported by its key fingerprint. Those
-measures should ensure idempotency and reliability.
+key and configuration of APT sources) should be performed using the
+``debops.extrepo`` role. If the software vendor repository is missing
+in the `extrepo default list`__, it should be added to it.
+
+In certain cases, for example support for other Linux distributions,
+selection of alternative mirrors or variants of an APT repository,
+configuration of APT sources should be performed using Ansible
+primitives (``apt_key``, ``apt_repository`` Ansible modules) instead of
+the scripts provided by the software vendor. The ``debops.keyring`` role
+provides a convenient mechanism to configure these details.
+
+.. __: https://salsa.debian.org/extrepo-team/extrepo-data
 
 
 Open Source software distributed as binary archives
@@ -179,8 +188,8 @@ Copyright
 .. code-block:: none
 
    Copyright (C) 2016-2018 Maciej Delmanowski <drybjed@gmail.com>
-   Copyright (C) 2016      Robin Schneider <ypid@riseup.net>
-   Copyright (C) 2016-2018 DebOps https://debops.org/
+   Copyright (C) 2016,2021 Robin Schneider <ypid@riseup.net>
+   Copyright (C) 2016-2021 DebOps https://debops.org/
 
    This document is part of DebOps.
 

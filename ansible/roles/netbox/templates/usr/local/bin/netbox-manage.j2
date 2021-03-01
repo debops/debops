@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+# Copyright (C) 2021 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Activate virtualenv and run `manage.py` as NetBox user.
+
+# {{ ansible_managed }}
+
+set -o nounset -o pipefail -o errexit
+
+sudo -u "{{ netbox__user }}" bash -c '
+	source "{{ netbox__virtualenv }}/bin/activate"
+	"{{ netbox__git_checkout }}/netbox/manage.py" "$@"
+' "inline_script_name" "$@"
