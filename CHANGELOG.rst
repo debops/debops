@@ -93,7 +93,10 @@ General
 '''''''
 
 - The :command:`debops-defaults` script should now correctly display role
-  defaults, without trying to add the ``debops.`` prefix to the role names..
+  defaults, without trying to add the ``debops.`` prefix to the role names.
+
+- The :command:`debops-update` script should now correctly detect cloned DebOps
+  monorepo.
 
 :ref:`debops.apt` role
 ''''''''''''''''''''''
@@ -102,6 +105,16 @@ General
   'bullseye/updates' suite name. This is incorrect, the Bullseye security suite
   is called 'bullseye-security'.
 
+:ref:`debops.etesync` role
+''''''''''''''''''''''''''
+
+- The EteSync playbook is now included in the default DebOps playbook.
+
+:ref:`debops.iscsi` role
+''''''''''''''''''''''''
+
+- Fixed a typo that caused the iSCSI target discovery task to fail.
+
 :ref:`debops.netbox` role
 '''''''''''''''''''''''''
 
@@ -109,11 +122,6 @@ General
   For example when an exception occured during page loading, the reponse was
   just "Internal Server Error". The service as a whole survives this.
   The bug in the configuration template has been fixed.
-
-:ref:`debops.iscsi` role
-''''''''''''''''''''''''
-
-- Fixed a typo that caused the iSCSI target discovery task to fail.
 
 :ref:`debops.sudo` role
 '''''''''''''''''''''''
@@ -129,11 +137,6 @@ General
 
 - Use the Python version detected on the Ansible Controller instead of the
   remote host to run the UNIX account fact gathering script.
-
-:ref:`debops.etesync` role
-''''''''''''''''''''''''''
-
-- The EteSync playbook is now included in the default DebOps playbook.
 
 
 `debops v2.2.0`_ - 2021-01-31
