@@ -118,13 +118,23 @@ postldap__vmail_posix_gidnumber: '{{ ansible_local.postldap.vmail_posix_gidnumbe
 # All mailboxes are stored directly in the file system of the server.
 #
 # This setting describes the prefix that the virtual delivery agent prepends to all pathname results from
-# `$virtual_mailbox_maps` table lookups.
+# ``ldap_virtual_mailbox_maps`` table lookups.
 # The directories under this base contain the users MailDirs.
 # This directory must be created in advance and must be writeable by all potential mail users.
 # To achieve this, either use the same GID across all mail users and set group ownership to that GID,
 # or make the directory world writable.
 postldap__mailbox_base: '/var/vmail'
 
+                                                                   # ]]]
+# .. envvar:: postldap__virtual_mailbox_maps_attribute [[[
+#
+# The attributes needed to reconstruct the mailbox path use by the ``ldap_virtual_mailbox_maps`` lookup table.
+postldap__virtual_mailbox_maps_attribute: 'uid'
+                                                                   # ]]]
+# .. envvar:: postldap__virtual_mailbox_maps_format [[[
+#
+# The relative path format to the user mailbox use by the ``ldap_virtual_mailbox_maps`` lookup table.
+postldap__virtual_mailbox_maps_format: '/%u/Maildir/'
                                                                    # ]]]
 # .. envvar:: postldap__virtual_alias_maps [[[
 #
@@ -321,7 +331,6 @@ postldap__postfix__dependent_lookup_tables:
     comment: |
       As we only want to accept mail, where we know the recipients
       (and are responsible for them), the virtual_mailbox_maps configuration is used.
-      The path for the mailbox is retrieved from the mailHomeDirectory attribute
     no_log: '{{ postldap__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
     search_base: '{{ postldap__ldap_people_dn|join(",") }}'
@@ -336,7 +345,8 @@ postldap__postfix__dependent_lookup_tables:
                       (authorizedService=mail:receive)
                     )
                   )'
-    result_attribute: 'mailHomeDirectory'
+    result_attribute: '{{ postldap__virtual_mailbox_maps_attribute }}'
+    result_format: '{{ postldap__virtual_mailbox_maps_format }}'
 
   - name: 'ldap_virtual_mailbox_domains.cf'
     state: 'present'
