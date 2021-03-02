@@ -29,7 +29,6 @@ received messages will be distributed into ``/var/vmail/mydomain.net/user1``.
    objectClass: authorizedServiceObject
    authorizedService: all
    mail: user1@mydomain.net
-   mail: alias1@mydomain.net
    mailAddress: user1@mydomain.net
    mailAlternateAddress: alias1@mydomain.net
    mailHomeDirectory: /var/vmail/mydomain.net/user1
@@ -45,6 +44,8 @@ e-mail aliases:
 .. code-block:: none
 
    objectClass: mailAlias
+   objectClass: authorizedServiceObject
+   authorizedService: all
    mail: alias@mydomain.net
    mailAddress: alias@mydomain.net
    mailForwardTo: user1@mydomain.net
@@ -57,6 +58,8 @@ It is also possible to attach an email existing entity using the
 
    objectClass: organizationalUnit
    objectClass: mailDistributionList
+   objectClass: authorizedServiceObject
+   authorizedService: all
    ou: IT Department
    mail: itdept@mydomain.net
    mailAddress: itdept@mydomain.net

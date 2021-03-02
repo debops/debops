@@ -139,7 +139,6 @@ postldap__mailbox_base: '/var/vmail'
 # Note: these lookups are recursive.
 postldap__virtual_alias_maps:
   - '$alias_maps'
-  - 'ldap:/etc/postfix/ldap_virtual_groups_maps.cf'
   - 'ldap:/etc/postfix/ldap_virtual_alias_maps.cf'
                                                                    # ]]]
                                                                    # ]]]
@@ -292,13 +291,18 @@ postldap__postfix__dependent_lookup_tables:
   - name: 'ldap_virtual_alias_maps.cf'
     state: 'present'
     comment: |
-      The virtual_alias_maps setting is used to find the final delivery address
-      (configured in the attribute mailAddress).
+      The virtual_alias_maps setting is used to find the final delivery address,
+      given an alias or distribution list address.
     no_log: '{{ postldap__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
-    search_base: '{{ postldap__ldap_people_dn|join(",") }}'
+    search_base: '{{ postldap__ldap_base_dn|join(",") }}'
     query_filter: '(&
-                     (objectClass=inetOrgPerson)
+                     (|
+                       (objectClass=mailAlias)
+                       (objectClass=mailDistributionList)
+                       (objectClass=mailRecipient)
+                     )
+                     (objectClass=mailRecipient)
                      (|
                        (mailAddress=%s)
                        (mailAlternateAddress=%s)
@@ -308,25 +312,9 @@ postldap__postfix__dependent_lookup_tables:
                        (authorizedService=mail:receive)
                      )
                    )'
-    result_attribute: 'mailAddress'
-
-  - name: 'ldap_virtual_groups_maps.cf'
-    state: 'present'
-    comment: |
-      The virtual_groups_maps setting is used to find the delivery addresses of
-      the members of a group (mailAlias or mailDistributionList) (configured in
-      the attribute mailForwardTo).
-    no_log: '{{ postldap__no_log|d(True) }}'
-    connection: '{{ postldap__postfix_ldap_connection }}'
-    search_base: '{{ postldap__ldap_groups_dn|join(",") }}'
-    query_filter: '(&
-                     (|
-                       (objectClass=mailAlias)
-                       (objectClass=mailDistributionList)
-                     )
-                     (mailAddress=%s)
-                   )'
     result_attribute: 'mailForwardTo'
+    special_result_attribute: 'member'
+    leaf_result_attribute: 'mailAddress'
 
   - name: 'ldap_virtual_mailbox_maps.cf'
     state: 'present'
