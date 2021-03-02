@@ -96,6 +96,11 @@ General
   'bullseye/updates' suite name. This is incorrect, the Bullseye security suite
   is called 'bullseye-security'.
 
+:ref:`debops.gitlab_runner` role
+''''''''''''''''''''''''''''''''
+
+- Fix the ``[runners.docker.tmpfs]`` option name in configuration template.
+
 :ref:`debops.iscsi` role
 ''''''''''''''''''''''''
 
