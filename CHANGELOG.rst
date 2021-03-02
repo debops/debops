@@ -105,6 +105,11 @@ General
 
 - The EteSync playbook is now included in the default DebOps playbook.
 
+:ref:`debops.gitlab_runner` role
+''''''''''''''''''''''''''''''''
+
+- Fix the ``[runners.docker.tmpfs]`` option name in configuration template.
+
 :ref:`debops.iscsi` role
 ''''''''''''''''''''''''
 
