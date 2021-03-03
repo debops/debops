@@ -367,9 +367,9 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
     pull_policy = "{{ runner.docker_pull_policy }}"
 {%       endif %}
 {%       if runner.docker_tmpfs|d() %}
-    [runners.docker_tmpfs]
+    [runners.docker.tmpfs]
 {%         for directory, options in runner.docker_tmpfs.items() %}
-      "{{ directory }}"= "{{ options }}"
+      "{{ directory }}" = "{{ options }}"
 {%         endfor %}
 {%       endif %}
 {%       if runner.docker_services_tmpfs|d() %}
