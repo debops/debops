@@ -371,28 +371,26 @@ postldap__postfix__dependent_lookup_tables:
     no_log: '{{ postldap__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
     search_base: '{{ postldap__ldap_base_dn|join(",") }}'
-    query_filter: '(|
-                    (&
-                      (objectClass=mailRecipient)
-                      (|
-                        (mailAddress=%s)
-                        (mailAlternateAddress=%s)
-                      )
-                      (|
-                        (authorizedService=all)
-                        (authorizedService=mail:send)
-                      )
-                    )
-                    (&
-                      (objectClass=account)
-                      (uid=%u)
-                      (host=%d)
-                      (|
-                        (authorizedService=all)
-                        (authorizedService=mail:send)
-                      )
-                    )
-                  )'
+    query_filter: '(&
+                     (|
+                       (&
+                         (objectClass=mailRecipient)
+                         (|
+                           (mailAddress=%s)
+                           (mailAlternateAddress=%s)
+                         )
+                       )
+                       (&
+                         (objectClass=account)
+                         (uid=%u)
+                         (host=%d)
+                       )
+                     )
+                     (|
+                       (authorizedService=all)
+                       (authorizedService=mail:send)
+                     )
+                   )'
     result_attribute: ''
     special_result_attribute: 'member'
     leaf_result_attribute: 'uid'
