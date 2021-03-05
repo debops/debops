@@ -1,0 +1,60 @@
+---
+# Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2019-2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- import_role:
+    name: 'ansible_plugins'
+
+- import_role:
+    name: 'secret'
+
+- name: Configure pam-mkhomedir to create home directories
+  template:
+    src: 'usr/share/pam-configs/mkhomedir.j2'
+    dest: '/usr/share/pam-configs/mkhomedir'
+    mode: '0644'
+  register: sssd__register_mkhomedir
+
+- name: Enable mkhomedir PAM module
+  shell: pam-auth-update --package --remove mkhomedir 2>/dev/null && pam-auth-update --package --enable mkhomedir 2>/dev/null
+  when: sssd__register_mkhomedir is changed
+
+- name: Install packages for sssd support
+  package:
+    name: '{{ q("flattened", sssd__base_packages + sssd__packages) }}'
+    state: 'present'
+  register: sssd__register_packages
+  until: sssd__register_packages is succeeded
+
+- name: Generate sssd configuration
+  template:
+    src: 'etc/sssd/sssd.conf.j2'
+    dest: '/etc/sssd/sssd.conf'
+    mode: '0600'
+  register: sssd__register_config
+  when: sssd__ldap_base_dn|d()
+
+- name: Restart sssd if its configuration was modified
+  service:
+    name: 'sssd'
+    state: 'restarted'
+  when: sssd__register_config is changed
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save sssd local facts
+  template:
+    src: 'etc/ansible/facts.d/sssd.fact.j2'
+    dest: '/etc/ansible/facts.d/sssd.fact'
+    mode: '0755'
+  register: sssd__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: sssd__register_facts is changed

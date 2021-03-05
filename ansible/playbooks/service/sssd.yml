@@ -1,0 +1,37 @@
+---
+# Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2019-2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Manage sssd service
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_sssd' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: python
+      tags: [ 'role::python', 'skip::python', 'role::ldap' ]
+      python__dependent_packages3:
+        - '{{ ldap__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ ldap__python__dependent_packages2 }}'
+
+    - role: ldap
+      tags: [ 'role::ldap', 'skip::ldap' ]
+      ldap__dependent_tasks:
+        - '{{ sssd__ldap__dependent_tasks }}'
+
+    - role: sssd
+      tags: [ 'role::sssd', 'skip::sssd' ]
+
+    - role: nsswitch
+      tags: [ 'role::nsswitch', 'skip::nsswitch' ]
+      nsswitch__dependent_services:
+        - '{{ sssd__nsswitch__dependent_services }}'

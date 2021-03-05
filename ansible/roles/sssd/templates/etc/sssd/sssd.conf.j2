@@ -1,0 +1,73 @@
+{# Copyright (C) 2019-2021 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2021      David Härdeman <david@hardeman.nu>
+ # Copyright (C) 2019-2021 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+# /etc/sssd/sssd.conf	Configuration file for sssd.
+#
+#			For more information, see sssd.conf(5)
+{% for section in sssd__combined_configuration | parse_kv_items(name='section') %}
+{%   if section.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%     if section.options|d() %}
+{%       if section.state != 'hidden' %}
+{%         if (['present', 'comment'] | intersect(section.options | map(attribute='state') | list)) %}
+{%           set section_title = (' ' + ((section.title | d(section.section)) | upper) + ' ') %}
+{%           set section_width = section_title | length + 8 %}
+{{           '' }}
+{{           '' }}
+{{           ("{:#^" + section_width|string + "}").format('#') }}
+{{           ("{:#^" + section_width|string + "}").format(section_title) }}
+{{           ("{:#^" + section_width|string + "}").format('#') }}
+{{           ("[{}]").format(section.section) }}
+{{           '' }}
+{%         endif %}
+{%       else %}
+{{         '' }}
+{%       endif %}
+{%       for element in section.options %}
+{%         if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%           if element.comment|d() %}
+{%             if not loop.first %}
+{{               '' }}
+{%             endif %}
+{{             element.comment | regex_replace('\n$', '') | comment(prefix='', decoration='# ', postfix='') -}}
+{%           endif %}
+{%           if element.raw|d() %}
+{%             if element.state|d('present') == 'comment' %}
+{{               '{}'.format(element.raw | regex_replace('\n$', '') | comment(prefix='', decoration='#', postfix='')) -}}
+{%             else %}
+{{               '{}'.format(element.raw | regex_replace('\n$', '')) }}
+{%             endif %}
+{%           else %}
+{%             if element.value is string and not element.value | bool %}
+{%               set element_value = element.value %}
+{%             elif element.value | bool and element.value is not iterable %}
+{%               if element.value | string == '1' %}
+{%                 set element_value = element.value %}
+{%               else %}
+{%                 set element_value = 'true' %}
+{%               endif %}
+{%             elif not element.value | bool and element.value is not iterable %}
+{%               if element.value is not none %}
+{%                 if element.value | int %}
+{%                   set element_value = element.value %}
+{%                 else %}
+{%                   if element.value | string == '0' %}
+{%                     set element_value = element.value %}
+{%                   else %}
+{%                     set element_value = 'false' %}
+{%                   endif %}
+{%                 endif %}
+{%               endif %}
+{%             else %}
+{%               set element_value = (element.value | selectattr("name", "defined") | map(attribute="name") | list | join(', ')) %}
+{%             endif %}
+{{ '{}{} = {}'.format(('#' if (element.state|d('present') == 'comment') else ''), element.name, element_value) }}
+{%           endif %}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{% endfor %}

@@ -1,6 +1,7 @@
 ---
 # Copyright (C) 2019-2020 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2019-2020 DebOps <https://debops.org/>
+# Copyright (C) 2021 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2019-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 # This playbook can be used to bootstrap new Debian/Ubuntu host to be used with
@@ -12,17 +13,18 @@
 # DebOps 'common.yml' playbook on a host afterwards to complete the initial
 # configuration, for example firewall/TCP Wrappers setup.
 #
-# Note that an alternative is provided by bootstrap-sss which relies on the
-# sssd daemon rather than the nslcd/nscd daemons.
+# Note that this playbook is an alternative to the bootstrap-ldap playbook,
+# which sets up the target system with nslcd/nscd integration, whereas this
+# playbook instead relies on sssd (but should otherwise be identical).
 #
 # Usage:
 # To connect directly as root, run:
 #
-#     debops bootstrap-ldap -u root -k --limit host
+#     debops bootstrap-sss -u root -k --limit host
 #
 # To connect as normal user and switch to sudo, run:
 #
-#     debops bootstrap-ldap --become --limit host
+#     debops bootstrap-sss --become --limit host
 
 
 - name: Bootstrap Python support on a host
@@ -147,17 +149,13 @@
     - role: ldap
       tags: [ 'role::ldap', 'skip::ldap' ]
       ldap__dependent_tasks:
-        - '{{ nslcd__ldap__dependent_tasks }}'
         - '{{ sudo__ldap__dependent_tasks }}'
         - '{{ sshd__ldap__dependent_tasks }}'
+        - '{{ sssd__ldap__dependent_tasks }}'
 
-    - role: nslcd
-      tags: [ 'role::nslcd', 'skip::nslcd' ]
-      when: (ansible_local.ldap.posix_enabled|d())|bool
-
-    - role: nscd
-      tags: [ 'role::nscd', 'skip::nscd' ]
-      when: (ansible_local.ldap.posix_enabled|d())|bool
+    - role: sssd
+      tags: [ 'role::sssd', 'skip::sssd' ]
+      when: ansible_local.ldap.posix_enabled|d()|bool
 
     - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::yadm' ]
@@ -176,7 +174,7 @@
     - role: nsswitch
       tags: [ 'role::nsswitch', 'skip::nsswitch' ]
       nsswitch__dependent_services:
-        - '{{ nslcd__nsswitch__dependent_services }}'
+        - '{{ sssd__nsswitch__dependent_services }}'
 
     - role: libuser
       tags: [ 'role::libuser', 'skip::libuser' ]
