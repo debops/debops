@@ -69,7 +69,7 @@ cron__crontab_offset_seeds: '{{ ansible_local.cron.crontab_offset_seeds
                                 else ((ansible_all_ipv4_addresses
                                        + ansible_all_ipv6_addresses
                                        + (ansible_default_ipv4.values() | d([])) | list
-                                       + [ ansible_machine_id, ansible_memtotal_mb ]
+                                       + [ ansible_machine_id|d(), ansible_memtotal_mb ]
                                        + [ ansible_product_name, ansible_product_version ]
                                        + [ ansible_kernel ])
                                       | map("regex_replace", "^(.*)$",
