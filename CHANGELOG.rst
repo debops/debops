@@ -18,6 +18,14 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.0: https://github.com/debops/debops/compare/v2.0.0...stable-2.0
 
+Fixed
+~~~~~
+
+:ref:`debops.cron` role
+'''''''''''''''''''''''
+
+- Fix role execution on hosts without :command:`systemd` as the service manager.
+
 
 `debops v2.0.8`_ - 2021-03-03
 -----------------------------
