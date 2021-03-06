@@ -116,6 +116,11 @@ General
   'bullseye/updates' suite name. This is incorrect, the Bullseye security suite
   is called 'bullseye-security'.
 
+:ref:`debops.cron` role
+'''''''''''''''''''''''
+
+- Fix role execution on hosts without :command:`systemd` as the service manager.
+
 :ref:`debops.etesync` role
 ''''''''''''''''''''''''''
 
