@@ -149,6 +149,7 @@ postldap__virtual_mailbox_maps_format: '/%u/Maildir/'
 # Note: these lookups are recursive.
 postldap__virtual_alias_maps:
   - '$alias_maps'
+  - 'ldap:/etc/postfix/ldap_virtual_forward_maps.cf'
   - 'ldap:/etc/postfix/ldap_virtual_alias_maps.cf'
                                                                    # ]]]
                                                                    # ]]]
@@ -302,14 +303,12 @@ postldap__postfix__dependent_lookup_tables:
     state: 'present'
     comment: |
       The virtual_alias_maps setting is used to find the final delivery address,
-      given an alias or distribution list address.
+      given an alias.
     no_log: '{{ postldap__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
     search_base: '{{ postldap__ldap_base_dn|join(",") }}'
     query_filter: '(&
                      (|
-                       (objectClass=mailAlias)
-                       (objectClass=mailDistributionList)
                        (objectClass=mailRecipient)
                      )
                      (|
@@ -321,9 +320,33 @@ postldap__postfix__dependent_lookup_tables:
                        (authorizedService=mail:receive)
                      )
                    )'
-    result_attribute: 'mailForwardTo'
+    result_attribute: ''
     special_result_attribute: 'member'
     leaf_result_attribute: 'mailAddress'
+
+  - name: 'ldap_virtual_forward_maps.cf'
+    state: 'present'
+    comment: |
+      The virtual_forward_maps setting is used to find the final delivery address,
+      given a distribution list.
+    no_log: '{{ postldap__no_log|d(True) }}'
+    connection: '{{ postldap__postfix_ldap_connection }}'
+    search_base: '{{ postldap__ldap_base_dn|join(",") }}'
+    query_filter: '(&
+                     (|
+                       (objectClass=mailAlias)
+                       (objectClass=mailDistributionList)
+                     )
+                     (|
+                       (mailAddress=%s)
+                       (mailAlternateAddress=%s)
+                     )
+                     (|
+                       (authorizedService=all)
+                       (authorizedService=mail:receive)
+                     )
+                   )'
+    result_attribute: 'mailForwardTo'
 
   - name: 'ldap_virtual_mailbox_maps.cf'
     state: 'present'
