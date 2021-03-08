@@ -19,8 +19,7 @@ attribute as an uniqueness constraint for the ``mailAddress``,
 ``mailAlternateAddress`` and other attributes across LDAP entries. The 'mail'
 attribute itself is not used in e-mail service operation.
 For example, the following LDAP entry sets the user ``user1`` with
-user1@mydomain.net as main address and alias1@mydomain.net as alias. His
-received messages will be distributed into ``/var/vmail/mydomain.net/user1``.
+user1@mydomain.net as main address and alias1@mydomain.net as alias.
 
 .. code-block:: none
 
@@ -31,7 +30,6 @@ received messages will be distributed into ``/var/vmail/mydomain.net/user1``.
    mail: user1@mydomain.net
    mailAddress: user1@mydomain.net
    mailAlternateAddress: alias1@mydomain.net
-   mailHomeDirectory: /var/vmail/mydomain.net/user1
 
 Local mail is enabled by default, support for mail aliases is provided by
 the :ref:`debops.etc_aliases` Ansible role and the LDAP user attribute
