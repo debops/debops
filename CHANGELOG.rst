@@ -73,6 +73,11 @@ General
 
 - Fix role execution on hosts without :command:`systemd` as the service manager.
 
+:ref:`debops.php` role
+''''''''''''''''''''''
+
+- The role should now work correctly on Ubuntu Groovy Gorilla distribution.
+
 :ref:`debops.python` role
 '''''''''''''''''''''''''
 
