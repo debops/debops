@@ -20,7 +20,7 @@ printf "%s " "Searching for Python scripts"
 counter=0
 
 while read -r in ; do
-    if file -i "${in}" | grep -q x-python ; then
+    if file -i "${in}" | grep -q x-python\\\|x-script\.python ; then
         file_list+=("${in}")
         counter=$(( counter + 1 ))
         counter_state=$(( counter % 5 ))
