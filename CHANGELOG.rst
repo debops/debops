@@ -51,6 +51,13 @@ Continuous Integration
 
 - Fixed the Python script detection in Debian Bullseye.
 
+General
+'''''''
+
+- The :command:`debops-defaults` script should now correctly use the roles from
+  DebOps repository cloned into the :file:`debops/` directory inside of the
+  project directory.
+
 :ref:`debops.core` role
 '''''''''''''''''''''''
 
