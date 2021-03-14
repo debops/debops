@@ -50,6 +50,11 @@ Continuous Integration
 Fixed
 ~~~~~
 
+Continuous Integration
+''''''''''''''''''''''
+
+- Fixed the Python script detection in Debian Bullseye.
+
 :ref:`debops.core` role
 '''''''''''''''''''''''
 
