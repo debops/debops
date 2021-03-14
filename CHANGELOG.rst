@@ -87,6 +87,10 @@ General
 - Fixes for various issues found by the :command:`ansible-lint` command have been
   backported from the ``master`` branch.
 
+- The :command:`debops-defaults` script should now correctly use the roles from
+  DebOps repository cloned into the :file:`debops/` directory inside of the
+  project directory.
+
 :ref:`debops.core` role
 '''''''''''''''''''''''
 

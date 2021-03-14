@@ -155,7 +155,8 @@ def find_playbookpath(config, project_root):
     Search for playbooks in various locations.
     """
     if project_root:
-        places = [os.path.join(project_root, "ansible", "playbooks")]
+        places = [os.path.join(project_root, "ansible", "playbooks"),
+                  os.path.join(project_root, "debops", "ansible", "playbooks")]
     else:
         places = []
     places.extend(config['paths']['playbooks-paths'])
