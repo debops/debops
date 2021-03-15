@@ -88,6 +88,12 @@ Continuous Integration
 
   .. __: https://github.com/roundcube/roundcubemail/issues/7667
 
+:ref:`debops.saslauthd` role
+''''''''''''''''''''''''''''
+
+- The SMTPd service will search for ``mailRecipient`` LDAP Object Class instead
+  of the ``inetOrgPerson`` Object Class to authenticate mail senders.
+
 Changes to DebOps Enhancement Proposals
 '''''''''''''''''''''''''''''''''''''''
 
@@ -138,6 +144,12 @@ General
   For example when an exception occured during page loading, the reponse was
   just "Internal Server Error". The service as a whole survives this.
   The bug in the configuration template has been fixed.
+
+:ref:`debops.saslauthd` role
+''''''''''''''''''''''''''''
+
+- The :command:`saslauthd` daemon should correctly use the local and realm
+  parts in the ``user@realm`` logins for authentication using LDAP directory.
 
 :ref:`debops.sudo` role
 '''''''''''''''''''''''
