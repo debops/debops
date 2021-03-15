@@ -22,6 +22,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.1: https://github.com/debops/debops/compare/v2.1.0...stable-2.1
 
+Changed
+~~~~~~~
+
+:ref:`debops.saslauthd` role
+''''''''''''''''''''''''''''
+
+- The SMTPd service will search for ``mailRecipient`` LDAP Object Class instead
+  of the ``inetOrgPerson`` Object Class to authenticate mail senders.
+
 Fixed
 ~~~~~
 
@@ -29,6 +38,12 @@ Fixed
 '''''''''''''''''''''''
 
 - Fix role execution on hosts without :command:`systemd` as the service manager.
+
+:ref:`debops.saslauthd` role
+''''''''''''''''''''''''''''
+
+- The :command:`saslauthd` daemon should correctly use the local and realm
+  parts in the ``user@realm`` logins for authentication using LDAP directory.
 
 
 `debops v2.1.4`_ - 2021-03-03
