@@ -22,6 +22,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.1: https://github.com/debops/debops/compare/v2.1.0...stable-2.1
 
+Added
+~~~~~
+
+:ref:`debops.lxc` role
+''''''''''''''''''''''
+
+- The default backing store for LXC containers created by the role can now be
+  configured via Ansible inventory.
+
 Changed
 ~~~~~~~
 
