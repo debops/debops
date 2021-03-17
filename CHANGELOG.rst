@@ -43,6 +43,12 @@ Added
     system boot by tools like :command:`systemd-tmpfiles` are present on the
     host.
 
+:ref:`debops.lxc` role
+''''''''''''''''''''''
+
+- The default backing store for LXC containers created by the role can now be
+  configured via Ansible inventory.
+
 Changed
 ~~~~~~~
 
