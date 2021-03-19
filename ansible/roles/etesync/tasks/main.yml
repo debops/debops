@@ -3,7 +3,12 @@
 # Copyright (C) 2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 # Install packages [[[1
@@ -74,7 +79,7 @@
   # when: etesync__register_source is changed
 
 - name: Install EteSync requirements in virtualenv
-  pip:
+  pip:  # noqa no-handler
     virtualenv: '{{ etesync__virtualenv }}'
     virtualenv_python: 'python3'
     virtualenv_site_packages: True
@@ -89,7 +94,7 @@
 
 - name: Clean up stale Python bytecode
   command: find . -name '*.pyc' -delete
-  args:
+  args:  # noqa no-handler
     chdir: '{{ etesync__git_checkout }}'
   become: True
   become_user: '{{ etesync__user }}'
@@ -145,7 +150,7 @@
     set -o pipefail -o errexit;
     source {{ etesync__virtualenv }}/bin/activate
     ./manage.py migrate
-  args:
+  args:  # noqa no-handler
     chdir: '{{ etesync__git_checkout }}'
     executable: 'bash'
   become: True
@@ -201,8 +206,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: etesync__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: etesync__register_facts is changed
+  meta: 'flush_handlers'
