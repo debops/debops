@@ -166,6 +166,14 @@ General
   just "Internal Server Error". The service as a whole survives this.
   The bug in the configuration template has been fixed.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- Fixed an issue where the "raw" Python play used during host bootstrapping
+  hanged indefinitely, stopping the playbook execution. The role will now reset
+  the connection to the host after preparing the Python environment, allowing
+  Ansible to re-estabilish the communication channel properly.
+
 :ref:`debops.saslauthd` role
 ''''''''''''''''''''''''''''
 
