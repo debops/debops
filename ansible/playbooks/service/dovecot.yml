@@ -16,12 +16,14 @@
 
   pre_tasks:
 
-    - import_role:
+    - name: Prepare dovecot environment
+      import_role:
         name: 'dovecot'
         tasks_from: 'main_env'
       tags: [ 'role::dovecot', 'role::secret', 'role::ferm' ]
 
-    - import_role:
+    - name: Prepare postfix environment
+      import_role:
         name: 'postfix'
         tasks_from: 'main_env'
       vars:

@@ -4,10 +4,12 @@
 # Copyright (C) 2015-2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
 - name: Pre hooks
@@ -54,11 +56,10 @@
     src: 'etc/ansible/facts.d/dovecot.fact.j2'
     dest: '/etc/ansible/facts.d/dovecot.fact'
     mode: '0755'
-  register: dovecot__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: dovecot__register_facts is changed
+  meta: 'flush_handlers'
 
 - name: Divert original Dovecot configuration
   command: dpkg-divert --quiet --local
