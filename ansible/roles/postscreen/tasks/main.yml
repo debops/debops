@@ -3,7 +3,8 @@
 # Copyright (C) 2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
 - name: Generate Postscreen configuration files
@@ -33,8 +34,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: postscreen__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: postscreen__register_facts is changed
+  meta: 'flush_handlers'
