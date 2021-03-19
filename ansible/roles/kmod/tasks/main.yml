@@ -4,8 +4,13 @@
 # Copyright (C) 2018-2019 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
 
 - name: Check if modprobe is available
   stat:
@@ -35,11 +40,10 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: kmod__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: kmod__register_facts is changed
+  meta: 'flush_handlers'
 
 - name: Configure kernel modules
   include_tasks: 'modprobe.yml'
@@ -85,10 +89,9 @@
     name: '{{ item.name }}'
     state: 'present'
   with_items: '{{ kmod__combined_load | parse_kv_items }}'
-  register: kmod__register_load
+  notify: [ 'Refresh host facts' ]
   when: kmod__enabled|bool and item.name|d() and item.state|d('present') not in [ 'config', 'absent', 'ignore' ] and
         item.modules is undefined and ansible_local.kmod.modules|d() and item.name not in ansible_local.kmod.modules
 
 - name: Update Ansible facts if modules were loaded
-  action: setup
-  when: kmod__register_load is changed
+  meta: 'flush_handlers'
