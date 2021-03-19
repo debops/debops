@@ -62,6 +62,12 @@ Continuous Integration
 Fixed
 ~~~~~
 
+:ref:`debops.core` role
+'''''''''''''''''''''''
+
+- The role playbook will be applied correctly on hosts in the
+  ``[debops_service_bootstrap]`` Ansible inventory group.
+
 :ref:`debops.cron` role
 '''''''''''''''''''''''
 
