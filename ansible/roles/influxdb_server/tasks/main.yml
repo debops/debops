@@ -5,13 +5,16 @@
 # Copyright (C) 2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
-- import_role:
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 - name: Restart database server on first install (influx bug)
@@ -105,7 +108,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: influxdb_server__register_local_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Save InfluxDB local facts
   template:
@@ -114,9 +117,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: influxdb__register_local_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Re-read local facts if they have been modified
-  action: setup
-  when: influxdb_server__register_local_facts is changed or
-        influxdb__register_local_facts is changed
+  meta: 'flush_handlers'
