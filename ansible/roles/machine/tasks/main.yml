@@ -3,8 +3,13 @@
 # Copyright (C) 2018 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
 
 - name: Install requested packages
   package:
@@ -88,13 +93,12 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  notify: [ 'Create temporary files' ]
   register: machine__register_tmpfiles
   when: machine__enabled|bool and ansible_distribution_release in [ 'jessie' ]
 
 - name: Create /run/motd.dynamic symlink
-  command: systemd-tmpfiles --create
-  when: machine__enabled|bool and ansible_service_mgr == 'systemd' and
-        machine__register_tmpfiles is changed
+  meta: 'flush_handlers'
 
 - name: Check current MOTD diversions
   environment:
@@ -158,7 +162,7 @@
          -name '*-{{ item.item.name }}'
          ! -name '{{ ("%02d" | format((item.item.weight | d("0"))|int))|string + "-" + item.item.name }}'
          -exec rm -vf {} +
-  with_items:
+  with_items:  # noqa no-handler
     - '{{ machine__register_motd_scripts_removed.results }}'
     - '{{ machine__register_motd_scripts_created.results }}'
   when: (item.item.name|d() and not (item.item.divert|d())|bool and
@@ -199,8 +203,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: machine__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: machine__register_facts is changed
+  meta: 'flush_handlers'
