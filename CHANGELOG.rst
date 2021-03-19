@@ -73,6 +73,14 @@ Fixed
 
 - Fix role execution on hosts without :command:`systemd` as the service manager.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- Fixed an issue where the "raw" Python play used during host bootstrapping
+  hanged indefinitely, stopping the playbook execution. The role will now reset
+  the connection to the host after preparing the Python environment, allowing
+  Ansible to re-estabilish the communication channel properly.
+
 :ref:`debops.saslauthd` role
 ''''''''''''''''''''''''''''
 
