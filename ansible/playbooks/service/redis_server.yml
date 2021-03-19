@@ -15,12 +15,14 @@
 
   pre_tasks:
 
-    - import_role:
+    - name: Prepare sysfs environment
+      import_role:
         name: 'sysfs'
         tasks_from: 'main_env'
       tags: [ 'role::sysfs', 'role::secret' ]
 
-    - import_role:
+    - name: Prepare redis_server environment
+      import_role:
         name: 'redis_server'
         tasks_from: 'main_env'
       tags: [ 'role::redis_server', 'role::ferm' ]
