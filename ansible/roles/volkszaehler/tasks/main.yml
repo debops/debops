@@ -3,7 +3,12 @@
 # Copyright (C) 2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 # System packages [[[
@@ -66,7 +71,7 @@
   when: (volkszaehler__deploy_state == "present")
 
 - name: Install PHP dependencies with composer
-  composer:
+  composer:  # noqa no-handler
     command: 'require'
     working_dir: '{{ volkszaehler__git_dest }}'
   environment:
@@ -90,7 +95,7 @@
               else False))
 
 - name: Import database initialization SQL dump
-  mysql_db:
+  mysql_db:  # noqa no-handler
     name: '{{ volkszaehler__database_name }}'
     target: '{{ (volkszaehler__home_path + "/create_db.sql")|quote }}'
     state: 'import'
@@ -133,10 +138,9 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: volkszaehler__register_local_facts
+  notify: [ 'Refresh host facts' ]
   when: (volkszaehler__deploy_state == "present")
 
 - name: Gather facts if they were modified
-  action: setup
-  when: volkszaehler__register_local_facts is changed
+  meta: 'flush_handlers'
 # ]]]
