@@ -19,7 +19,8 @@ is meant to be used by importing it in other Ansible roles:
 
 .. code-block:: yaml
 
-   - import_role:
+   - name: Import DebOps global handlers
+     import_role:
        name: 'global_handlers'
 
 Afterwards, the role can notify the known handlers in its tasks. The handlers
@@ -77,5 +78,8 @@ local fact. This fact can then be checked by a given handler to determine if
 the service is available and can be acted upon.
 
 If a role has an internal :file:`handlers/main.yml` file with additional
-handlers defined within, they will be executed **after** the handlers defined
-in the :ref:`debops.global_handlers` role.
+handlers defined within, they will be executed **before** the handlers defined
+in the :ref:`debops.global_handlers` role. In some cases this might result in
+a wrong execution order, therefore roles can create copies of needed handlers
+as necessary. Copied handlers need to have unique names to not clash with their
+originals.
