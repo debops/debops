@@ -3,13 +3,16 @@
 # Copyright (C) 2015 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
-- import_role:
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 - name: DebOps pre_tasks hook
@@ -43,7 +46,7 @@
   no_log: True
 
 - name: Restart iSCSI service if initial configuration changed
-  service:
+  service:  # noqa no-handler
     name:  'open-iscsi'
     state: 'restarted'
   when: iscsi__enabled|d() and iscsi__register_initiatorname|d() and iscsi__register_initiatorname is changed
