@@ -11,7 +11,7 @@
   with_items: [ '{{ ansible_hostname }}', 'localhost' ]
 
 - name: Remove test database on first install
-  mysql_db:
+  mysql_db:  # noqa no-handler
     db: 'test'
     state: 'absent'
   when: ((mariadb_server__register_version|d() and not mariadb_server__register_version.stdout) and
