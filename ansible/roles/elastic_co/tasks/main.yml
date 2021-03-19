@@ -3,6 +3,10 @@
 # Copyright (C) 2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
 - name: Configure Elastic APT repository
   apt_repository:
     update_cache: True
@@ -19,6 +23,7 @@
                               + elastic_co__host_packages
                               + elastic_co__dependent_packages)) }}'
     state: 'present'
+  notify: [ 'Refresh host facts' ]
   register: elastic_co__register_install
   until: elastic_co__register_install is succeeded
 
@@ -37,9 +42,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: elastic_co__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: (elastic_co__register_facts is changed or
-         elastic_co__register_install is changed)
+  meta: 'flush_handlers'
