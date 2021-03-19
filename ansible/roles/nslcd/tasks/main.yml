@@ -3,10 +3,16 @@
 # Copyright (C) 2019 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 - name: Configure pam-mkhomedir to create home directories
@@ -17,7 +23,7 @@
   register: nslcd__register_mkhomedir
 
 - name: Enable mkhomedir PAM module
-  shell: pam-auth-update --package --remove mkhomedir 2>/dev/null && pam-auth-update --package --enable mkhomedir 2>/dev/null
+  shell: 'pam-auth-update --package --remove mkhomedir 2>/dev/null && pam-auth-update --package --enable mkhomedir 2>/dev/null'  # noqa no-handler
   when: nslcd__register_mkhomedir is changed
 
 - name: Install packages for nslcd support
@@ -37,7 +43,7 @@
   when: nslcd__ldap_base_dn|d()
 
 - name: Restart nslcd if its configuration was modified
-  service:
+  service:  # noqa no-handler
     name: 'nslcd'
     state: 'restarted'
   when: nslcd__register_config is changed
@@ -53,8 +59,7 @@
     src: 'etc/ansible/facts.d/nslcd.fact.j2'
     dest: '/etc/ansible/facts.d/nslcd.fact'
     mode: '0755'
-  register: nslcd__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: nslcd__register_facts is changed
+  meta: 'flush_handlers'
