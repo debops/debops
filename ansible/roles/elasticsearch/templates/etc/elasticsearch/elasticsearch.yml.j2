@@ -20,7 +20,7 @@
 
 {% set elasticsearch__tpl_config = {} %}
 {% set elasticsearch__tpl_comment = {} %}
-{% for item in elasticsearch__combined_configuration %}
+{% for item in elasticsearch__combined_configuration | parse_kv_config %}
 {%   if item is mapping %}
 {%     if item.name|d() %}
 {%       if item.state|d('present') != 'absent' %}
@@ -224,10 +224,10 @@
 {%         endif %}
 {%       elif value is not string and value is not mapping %}
 {%         if value | count <= 4 %}
-{{ '%s: %s' | format(key_prefix + '.' + key, '[ "' + value | join('", "') + '" ]') }}
+{{ '%s: %s' | format(key_prefix + '.' + key, '[ "' + value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list | join('", "') + '" ]') }}
 {%         else %}
 {{ key_prefix + '.' + key }}:
-{%           for element in value %}
+{%           for element in value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list %}
   - "{{ element }}"
 {%           endfor %}
 

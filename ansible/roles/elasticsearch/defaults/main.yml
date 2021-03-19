@@ -344,12 +344,15 @@ elasticsearch__default_configuration:
     value: '{{ elasticsearch__cluster_name }}'
     comment: 'Use a descriptive name for your cluster'
 
-  - name: 'node.meta.host_type'
+  - name: 'node.master'
     comment: 'Type of the node'
-    options:
-      'master': '{{ elasticsearch__node_master }}'
-      'data':   '{{ elasticsearch__node_data }}'
-      'ingest': '{{ elasticsearch__node_ingest }}'
+    value: '{{ elasticsearch__node_master }}'
+
+  - name: 'node.data'
+    value: '{{ elasticsearch__node_data }}'
+
+  - name: 'node.ingest'
+    value: '{{ elasticsearch__node_ingest }}'
 
   - name: 'node.name'
     value: '{{ elasticsearch__node_name }}'
