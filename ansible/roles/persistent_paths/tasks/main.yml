@@ -5,6 +5,10 @@
 # Copyright (C) 2016-2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
 - when: persistent_paths__qubes_os_enabled|bool
   tags: [ 'role::persistent_paths:qubes_os' ]
   block:
@@ -52,9 +56,8 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: persistent_paths__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Reload facts if they were modified
-  action: setup
-  when: persistent_paths__register_facts is changed
+  meta: 'flush_handlers'
 # ]]]
