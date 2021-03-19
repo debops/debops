@@ -60,7 +60,7 @@
          (item.name|d() or item.dest|d() or item.path|d()) and item.src)
 
 - name: Restart 'local-fs.target' systemd unit
-  systemd:
+  systemd:  # noqa no-handler
     name: 'local-fs.target'
     state: 'restarted'
     daemon_reload: True
@@ -70,7 +70,7 @@
            if item.opts|d() else 'defaults') is match(".*x-systemd.automount.*")))
 
 - name: Restart 'remote-fs.target' systemd unit
-  systemd:
+  systemd:  # noqa no-handler
     name: 'remote-fs.target'
     state: 'restarted'
     daemon_reload: True
