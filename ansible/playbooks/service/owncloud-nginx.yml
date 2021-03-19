@@ -17,7 +17,8 @@
 
   pre_tasks:
 
-    - import_role:
+    - name: Apply keyring configuration for php environment
+      import_role:
         name: 'keyring'
       vars:
         keyring__dependent_apt_keys:
@@ -32,12 +33,14 @@
               'role::mariadb', 'role::postgresql',
               'role::nginx', 'role::owncloud' ]
 
-    - import_role:
+    - name: Prepare php environment
+      import_role:
         name: 'php'
         tasks_from: 'main_env'
       tags: [ 'role::php', 'role::php:env', 'role::logrotate' ]
 
-    - import_role:
+    - name: Prepare owncloud environment
+      import_role:
         name: 'owncloud'
         tasks_from: 'main_env'
       tags: [ 'role::owncloud', 'role::owncloud:env', 'role::nginx' ]

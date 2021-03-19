@@ -32,11 +32,10 @@
     src: 'etc/ansible/facts.d/owncloud.fact.j2'
     dest: '/etc/ansible/facts.d/owncloud.fact'
     mode: '0755'
-  register: owncloud__register_local_facts_ldap
+  notify: [ 'Refresh host facts' ]
 
 - name: Gather facts if they were modified
-  action: setup
-  when: owncloud__register_local_facts_ldap is changed
+  meta: 'flush_handlers'
 
 - name: Configure LDAP parameters
   command: php --file '{{ owncloud__app_home }}/occ' ldap:set-config '{{ owncloud__ldap_config_id }}' '{{ item.name }}' '{{ item.value }}'
