@@ -6,10 +6,12 @@
 # Copyright (C) 2015-2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
-- import_role:
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 # Package installation [[[1
@@ -75,7 +77,7 @@
   notify: [ 'Reload tinc' ]
 
 - name: Disable tinc networks in systemd if requested
-  service:
+  service:  # noqa no-handler
     name: 'tinc@{{ item.value.name | d(item.key) }}'
     enabled: False
     state: '{{ (item.state|d("present") in ["absent"]) | ternary("started", "stopped") }}'
@@ -309,14 +311,14 @@
   when: tinc__systemd | bool
 
 - name: Reload systemd daemon configuration
-  systemd:
+  systemd:  # noqa no-handler
     daemon_reload: True
     name: 'tinc.service'
     enabled: True
   when: tinc__register_systemd is changed
 
 - name: Start tinc VPN networks on first install
-  service:
+  service:  # noqa no-handler
     name: 'tinc'
     state: 'restarted'
   when: not tinc__systemd|bool and tinc__register_install is changed
@@ -348,8 +350,7 @@
     group: 'root'
     mode: '0644'
     unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
-  register: tinc__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Reload facts if they were modified
-  action: setup
-  when: tinc__register_facts is changed
+  meta: 'flush_handlers'
