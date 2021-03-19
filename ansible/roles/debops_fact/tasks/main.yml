@@ -3,6 +3,10 @@
 # Copyright (C) 2016 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
 - name: Ensure that the private fact group exists
   group:
     name: '{{ debops_fact__private_group }}'
@@ -26,7 +30,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: debops_fact__register_facts
+  notify: [ 'Refresh host facts' ]
   when: debops_fact__enabled|bool
 
 - name: Initialize public DebOps fact file
@@ -50,5 +54,4 @@
   when: debops_fact__enabled|bool
 
 - name: Reload facts if they were modified
-  action: setup
-  when: debops_fact__enabled|bool and debops_fact__register_facts is changed
+  meta: 'flush_handlers'
