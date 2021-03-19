@@ -3,6 +3,10 @@
 # Copyright (C) 2015 DebOps <http://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
 - name: Install required packages
   package:
     name: '{{ q("flattened", fcgiwrap__packages) }}'
@@ -40,7 +44,7 @@
   when: fcgiwrap__instances and item.user | d(False)
 
 - name: Disable default fcgiwrap init script
-  service:
+  service:  # noqa no-handler
     name: 'fcgiwrap'
     state: 'stopped'
     enabled: False

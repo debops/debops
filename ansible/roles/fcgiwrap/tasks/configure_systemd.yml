@@ -11,18 +11,17 @@
     group: 'root'
     mode: '0644'
   register: fcgiwrap__register_systemd
+  notify: [ 'Reload service manager' ]
   with_nested:
     - '{{ fcgiwrap__instances }}'
     - [ 'socket', 'service' ]
   when: fcgiwrap__instances
 
 - name: Reload systemd units
-  systemd:
-    daemon_reload: True
-  when: fcgiwrap__register_systemd is changed
+  meta: 'flush_handlers'
 
 - name: Enable and start systemd units
-  service:
+  service:  # noqa no-handler
     name: 'fcgiwrap-{{ item.0.name }}.{{ item.1 }}'
     state: 'started'
     enabled: True
