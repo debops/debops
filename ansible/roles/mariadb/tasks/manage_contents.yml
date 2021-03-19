@@ -25,7 +25,7 @@
   register: mariadb__register_database_status
 
 - name: Copy database source file to remote host
-  copy:
+  copy:  # noqa no-handler
     src: '{{ item.0.source }}'
     dest: '{{ item.0.target }}'
     owner: 'root'
@@ -43,7 +43,7 @@
          (item.0.name == item.1.db and item.1 is changed))
 
 - name: Import source file contents into database
-  mysql_db:
+  mysql_db:  # noqa no-handler
     name: '{{ item.0.database | d(item.0.name) }}'
     target: '{{ item.0.target }}'
     state: 'import'
