@@ -3,8 +3,13 @@
 # Copyright (C) 2018 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
 
 - name: Install required packages
   package:
@@ -30,16 +35,15 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: netbase__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: netbase__register_facts is changed
+  meta: 'flush_handlers'
 
 - name: Manage the hostname
   hostname:
     name: '{{ netbase__hostname }}'
-  register: netbase__register_hostname
+  notify: [ 'Refresh host facts' ]
   when: netbase__enabled|bool and netbase__hostname_config_enabled|bool
 
 - name: Generate /etc/hosts database
@@ -49,7 +53,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: netbase__register_hosts_template
+  notify: [ 'Refresh host facts' ]
   when: netbase__enabled|bool and netbase__hosts_config_type == 'template'
 
 - name: Manage entries in /etc/hosts
@@ -64,7 +68,7 @@
   loop: '{{ netbase__combined_hosts | parse_kv_config }}'
   loop_control:
     label: '{{ {item.name: (item.value|d([])) | selectattr("name", "defined") | map(attribute="name") | list} }}'
-  register: netbase__register_hosts_lineinfile
+  notify: [ 'Refresh host facts' ]
   when: netbase__enabled|bool and netbase__hosts_config_type == 'lineinfile' and item.name|d()
 
 - name: Manage entries in /etc/networks
@@ -75,14 +79,10 @@
     state:   '{{ "present" if item.value|d() else "absent" }}'
     mode:    '0644'
   with_dict: '{{ netbase__networks | combine(netbase__group_networks, netbase__host_networks) }}'
-  register: netbase__register_networks
+  notify: [ 'Refresh host facts' ]
   when: netbase__enabled|bool
 
   # This task is here in case that the hostname or domain of the host was
   # changed, to ensure that the Ansible facts are updated
 - name: Update Ansible facts if databases were modified
-  action: setup
-  when: netbase__register_hostname is changed or
-        netbase__register_hosts_template is changed or
-        netbase__register_hosts_lineinfile is changed or
-        netbase__register_networks is changed
+  meta: 'flush_handlers'
