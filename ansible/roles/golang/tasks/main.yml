@@ -4,7 +4,8 @@
 # Copyright (C) 2015-2019 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
 
 - name: Build and install Go packages
@@ -27,6 +28,8 @@
     mode: '0755'
   register: golang__register_facts
 
+  # An exception to the rule. Role needs to refresh facts without executing any
+  # other pending handlers.
 - name: Update Ansible facts if they were modified
-  action: setup
+  action: 'setup'  # noqa no-handler
   when: golang__register_facts is changed

@@ -233,8 +233,10 @@
   register: golang__register_build_database
   when: build.url_binaries|d() or build.git_binaries|d()
 
+  # An exception to the rule. Role needs to refresh facts without executing any
+  # other pending handlers.
 - name: Update Ansible local facts if they were modified
-  action: setup
+  action: 'setup'  # noqa no-handler
   when: (ansible_local|d() and ansible_local.golang|d() and
          (ansible_local.golang.configured|d())|bool and
          (golang__register_build_database is changed or
