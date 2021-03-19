@@ -5,6 +5,10 @@
 # Copyright (C) 2016-2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
 # Manage required system packages [[[1
 - name: Ensure base packages are in there desired state
   package:
@@ -32,8 +36,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: apache__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Reload facts if they were modified
-  action: setup
-  when: apache__register_facts is changed
+  meta: 'flush_handlers'
