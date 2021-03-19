@@ -23,7 +23,7 @@
   register: nfs__register_config
 
 - name: Restart nfs-common service
-  service:
+  service:  # noqa no-handler
     name: 'nfs-common'
     state: 'restarted'
   when: nfs__register_config is changed and
@@ -61,7 +61,7 @@
   when: item.path|d() and item.src|d()
 
 - name: Restart 'remote-fs.target' systemd unit
-  systemd:
+  systemd:  # noqa no-handler
     name: 'remote-fs.target'
     state: 'restarted'
     daemon_reload: True
