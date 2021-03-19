@@ -3,6 +3,10 @@
 # Copyright (C) 2019 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
 - name: Get list of local GPG key fingerprints on Ansible Controller
   set_fact:
     keyring__fact_local_keys: '{{ (q("fileglob", (keyring__local_path + "/*.asc"))
@@ -27,11 +31,10 @@
     src: 'etc/ansible/facts.d/keyring.fact.j2'
     dest: '/etc/ansible/facts.d/keyring.fact'
     mode: '0755'
-  register: keyring__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Re-read local facts if they have been modified
-  action: setup
-  when: keyring__register_facts is changed
+  meta: 'flush_handlers'
 
 - name: Import specified GPG keys to APT keyring
   apt_key:
@@ -67,7 +70,7 @@
   tags: [ 'role::keyring:apt_repository' ]
 
 - name: Update APT cache when needed
-  apt:
+  apt:  # noqa no-handler
     update_cache: True
   when: keyring__enabled|bool and ansible_pkg_mgr == 'apt' and
         keyring__register_apt_repository is changed
