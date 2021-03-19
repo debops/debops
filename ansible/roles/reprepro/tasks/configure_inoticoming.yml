@@ -23,14 +23,10 @@
 - name: Install inoticoming service script
   command: install -T -o root -g root -m 755 /usr/share/doc/inoticoming/examples/inoticoming.init
            /etc/init.d/inoticoming creates=/etc/init.d/inoticoming
-  register: reprepro_register_inotincoming_init
-  notify: [ 'Restart inoticoming' ]
+  notify: [ 'Reload service manager', 'Restart inoticoming' ]
 
 - name: Reload systemd configuration
-  systemd:
-    daemon_reload: True
-  when: (ansible_service_mgr == 'systemd' and
-         reprepro_register_inotincoming_init is changed)
+  meta: 'flush_handlers'
 
 - name: Enable inoticoming service
   service:

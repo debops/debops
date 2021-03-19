@@ -4,7 +4,9 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Initialize reprepro repositories
-  command: reprepro export chdir=~
+  command: 'reprepro export'  # noqa no-handler
+  args:
+    chdir: '~'
   become: True
   become_user: '{{ reprepro_user }}'
   when: reprepro_register_conf_distributions is defined and
