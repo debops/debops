@@ -50,15 +50,16 @@
   become: True
   become_user: '{{ roundcube__user }}'
   register: roundcube__register_git
+  notify: [ 'Refresh host facts' ]
 
 - name: Read PHP composer data from upstream
-  slurp:
+  slurp:  # noqa no-handler
     src: '{{ roundcube__git_dest + "/composer.json-dist" }}'
   register: roundcube__register_composer_dist
   when: roundcube__register_git is changed
 
 - name: Read currently deployed PHP composer data
-  slurp:
+  slurp:  # noqa no-handler
     src: '{{ roundcube__git_dest + "/composer.json" }}'
   register: roundcube__register_composer_installed
   when: (ansible_local|d() and ansible_local.roundcube|d() and
@@ -66,7 +67,7 @@
         roundcube__register_git is changed)
 
 - name: Update PHP composer data
-  template:
+  template:  # noqa no-handler
     src: 'srv/www/sites/roundcube/public/composer.json.j2'
     dest: '{{ roundcube__git_dest + "/composer.json" }}'
     owner: '{{ roundcube__user }}'
@@ -77,7 +78,7 @@
 # ---- Post deployment ----
 
 - name: Install or upgrade PHP packages via Composer
-  composer:
+  composer:  # noqa no-handler
     command: '{{ "upgrade"
                  if (ansible_local|d() and ansible_local.roundcube|d() and
                      (ansible_local.roundcube.installed|d())|bool)
