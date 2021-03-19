@@ -70,6 +70,10 @@ Continuous Integration
 - The Vagrant provisioning script now installs Cryptography from the Debian
   archive instead of from PyPI.
 
+- The :command:`ansible-lint` check will now use Ansible playbooks as the
+  starting point to test the whole codebase. Roles and playbooks not included
+  in the :file:`site.yml` playbook can be tested manually if needed.
+
 :ref:`debops.roundcube` role
 ''''''''''''''''''''''''''''
 
