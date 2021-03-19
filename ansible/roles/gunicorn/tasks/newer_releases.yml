@@ -72,7 +72,7 @@
   with_flattened:
     - '{{ gunicorn__applications }}'
     - '{{ gunicorn__dependent_applications }}'
-  register: gunicorn__register_systemd_remove
+  notify: [ 'Reload systemd daemon (gunicorn)' ]
   when: ansible_service_mgr == 'systemd' and
         gunicorn__register_systemd_templated.stat|d() and
         gunicorn__register_systemd_templated.stat.exists|bool and
@@ -86,7 +86,7 @@
     group: 'root'
     mode: '0644'
   with_items: [ 'gunicorn.service', 'gunicorn@.service' ]
-  register: gunicorn__register_systemd_config
+  notify: [ 'Reload systemd daemon (gunicorn)' ]
   when: ansible_service_mgr == 'systemd'
 
 - name: Remove per-instance systemd configuration
@@ -96,7 +96,7 @@
   with_flattened:
     - '{{ gunicorn__applications }}'
     - '{{ gunicorn__dependent_applications }}'
-  register: gunicorn__register_systemd_remove
+  notify: [ 'Reload systemd daemon (gunicorn)' ]
   when: ansible_service_mgr == 'systemd' and
         item.name|d() and item.state|d('present') == 'absent'
 
@@ -123,18 +123,9 @@
   with_flattened:
     - '{{ gunicorn__applications }}'
     - '{{ gunicorn__dependent_applications }}'
-  notify: [ 'Start Green Unicorn instances' ]
-  register: gunicorn__register_systemd_per_instance
+  notify: [ 'Reload systemd daemon (gunicorn)', 'Start Green Unicorn instances' ]
   when: ansible_service_mgr == 'systemd' and
         item.name|d() and item.state|d('present') != 'absent'
-
-- name: Reload systemd configuration
-  systemd:
-    daemon_reload: True
-  when: (ansible_service_mgr == 'systemd' and
-         (gunicorn__register_systemd_config is changed or
-          gunicorn__register_systemd_remove is changed or
-          gunicorn__register_systemd_per_instance is changed))
 
 - name: Remove Unicorn instance configuration
   file:
@@ -157,6 +148,9 @@
     - '{{ gunicorn__applications }}'
     - '{{ gunicorn__dependent_applications }}'
   when: item.name|d() and item.state|d('present') != 'absent'
+
+- name: Reload systemd configuration
+  meta: 'flush_handlers'
 
 - name: Enable Unicorn instances in systemd
   systemd:
