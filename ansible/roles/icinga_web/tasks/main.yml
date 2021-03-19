@@ -3,10 +3,16 @@
 # Copyright (C) 2018 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 - name: Install required Icinga Web packages
@@ -273,8 +279,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: icinga_web__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: icinga_web__register_facts is changed
+  meta: 'flush_handlers'
