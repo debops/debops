@@ -8,6 +8,10 @@
 
 # APT packages, directories [[[
 
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
 - name: Get available PHP packages for selected version
   environment:
     LC_ALL: 'C'
@@ -231,9 +235,8 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: php__register_local_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Gather facts if they were modified
-  action: setup
-  when: php__register_local_facts is changed
+  meta: 'flush_handlers'
                                                                    # ]]]

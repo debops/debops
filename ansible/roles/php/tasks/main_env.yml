@@ -6,16 +6,19 @@
 # Copyright (C) 2016-2019 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
 - name: Reset PHP Ansible local facts
   file:
     path: '/etc/ansible/facts.d/php.fact'
     state: 'absent'
-  register: php__register_local_facts_reset
+  notify: [ 'Refresh host facts' ]
   when: php__reset|bool
 
 - name: Gather facts on reset
-  action: setup
-  when: php__register_local_facts_reset is changed
+  meta: 'flush_handlers'
 
 - name: Detect PHP version from available packages
   environment:
