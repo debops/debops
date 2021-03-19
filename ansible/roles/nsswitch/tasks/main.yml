@@ -3,6 +3,10 @@
 # Copyright (C) 2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'
@@ -18,11 +22,10 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: nsswitch__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: nsswitch__register_facts is changed
+  meta: 'flush_handlers'
 
 - name: Generate Name Service Switch configuration
   template:
@@ -39,7 +42,7 @@
   # not reloaded automatically on changes.
   # Ref: https://bugzilla.redhat.com/show_bug.cgi?id=132608#c4
 - name: Restart systemd-logind to fix NSS lookups
-  service:
+  service:  # noqa no-handler
     name: 'systemd-logind'
     state: 'restarted'
   when: ansible_service_mgr == 'systemd' and nsswitch__register_config is changed and
