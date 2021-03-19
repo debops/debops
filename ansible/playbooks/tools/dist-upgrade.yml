@@ -122,18 +122,18 @@
             dist_upgrade_new_release is defined and dist_upgrade_new_release
 
     - name: Remove all APT preferences for backported packages
-      shell: >
-              grep -lrIZ 'Pin: release .*={{ dist_upgrade_current_release }}-backports' /etc/apt/preferences.d | xargs -0 rm -f --
+      shell: "set -o nounset -o pipefail -o errexit && grep -lrIZ 'Pin: release .*={{ dist_upgrade_current_release }}-backports' /etc/apt/preferences.d | xargs -0 rm -f --"  # noqa no-handler
       when: dist_upgrade_register_replace is defined and dist_upgrade_register_replace is changed
 
     - name: Create a lockfile
-      file:
+      file:  # noqa no-handler
         path: '{{ dist_upgrade_lockfile }}'
         state: 'touch'
+        mode: '0644'
       when: dist_upgrade_register_replace is defined and dist_upgrade_register_replace is changed
 
     - name: Perform apt-get dist-upgrade (this might take a while)
-      apt:
+      apt:  # noqa no-handler
         update_cache: True
         upgrade: 'dist'
       register: dist_upgrade_register_upgrade
@@ -149,7 +149,7 @@
       register: dist_upgrade_register_init
 
     - name: Install dbus package (required by systemd)
-      apt:
+      apt:  # noqa package-latest
         name: 'dbus'
         state: 'latest'
         install_recommends: False
@@ -157,19 +157,19 @@
             dist_upgrade_register_init.stat.lnk_source == '/lib/systemd/systemd'
 
     - name: Automatically remove packages that are no longer needed
-      command: apt-get --yes autoremove
+      command: 'apt-get --yes autoremove'  # noqa no-handler command-instead-of-module
       register: dist_upgrade_register_autoremove
       when: dist_upgrade_register_upgrade is defined and
             dist_upgrade_register_upgrade is changed
 
     - name: Clean APT package cache
-      command: apt-get autoclean
+      command: 'apt-get autoclean'  # noqa no-handler command-instead-of-module
       register: dist_upgrade_register_autoclean
       when: dist_upgrade_register_upgrade is defined and
             dist_upgrade_register_upgrade is changed
 
     - name: Check if /etc/services.d exists
-      stat:
+      stat:  # noqa no-handler
         path: '/etc/services.d'
       register: dist_upgrade_register_etc_services
       when: dist_upgrade_register_upgrade is defined and
@@ -187,7 +187,7 @@
             dist_upgrade_register_etc_services.stat.exists
 
     - name: Send mail with information about the upgrade
-      mail:
+      mail:  # noqa no-handler
         from: '{{ "root@" + ansible_fqdn }}'
         to: '{{ dist_upgrade_mail_to | join(",") }}'
         subject: '{{ dist_upgrade_mail_subject }}'
