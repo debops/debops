@@ -37,13 +37,13 @@
   when: (item.state|d("present") != 'absent' and not ansible_check_mode)
 
 - name: Initialize swap files
-  command: mkswap {{ item.item.path | d(item.item) }}
+  command: 'mkswap {{ item.item.path | d(item.item) }}'  # noqa no-handler
   register: swapfile__register_init
   with_items: '{{ swapfile__register_allocation.results|d([]) }}'
   when: (item is changed and item.state|d("present") != 'absent')
 
 - name: Enable swap files
-  command: swapon -p {{ item.item.priority | d(swapfile__priority) }} {{ item.item.path | d(item.item) }}
+  command: 'swapon -p {{ item.item.priority | d(swapfile__priority) }} {{ item.item.path | d(item.item) }}'  # noqa no-handler
   with_items: '{{ swapfile__register_allocation.results|d([]) }}'
   when: (item is changed and item.state|d("present") != 'absent' and
          ((ansible_system_capabilities_enforced|d())|bool and
