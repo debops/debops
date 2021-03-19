@@ -25,7 +25,7 @@
         rails_deploy_register_repo_status is changed
   changed_when: False
   become: True
-  become_user: '{{ rails_deploy_service }}'
+  become_user: '{{ rails_deploy_service }}'  # noqa no-handler
 
 - name: Update gems
   command: bundle install --deployment
@@ -35,11 +35,11 @@
   when: rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed
   become: True
-  become_user: '{{ rails_deploy_service }}'
+  become_user: '{{ rails_deploy_service }}'  # noqa no-handler
 
 - name: Restart the background worker asynchronously
   service: name={{ rails_deploy_worker }} state=restarted
-  async: 90
+  async: 90  # noqa no-handler
   when: rails_deploy_worker_enabled and
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed
@@ -54,7 +54,7 @@
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed
   become: True
-  become_user: '{{ rails_deploy_service }}'
+  become_user: '{{ rails_deploy_service }}'  # noqa no-handler
 
 - name: Store mtime of the config folder
   stat: path={{ rails_deploy_src }}/config
@@ -75,7 +75,7 @@
         rails_deploy_register_repo_status is changed
   with_items: '{{ rails_deploy_pre_migrate_shell_commands }}'
   become: True
-  become_user: '{{ rails_deploy_service }}'
+  become_user: '{{ rails_deploy_service }}'  # noqa no-handler
 
 - name: Migrate the database
   shell: '{{ rails_deploy_env_source }} && bundle exec rake db:migrate chdir={{ rails_deploy_src }}'
@@ -88,7 +88,7 @@
         ansible_local.rails_deploy[rails_deploy_service].mtime.schema is undefined))
   register: rails_deploy_register_migration
   become: True
-  become_user: '{{ rails_deploy_service }}'
+  become_user: '{{ rails_deploy_service }}'  # noqa no-handler
 
 - name: Execute shell commands after migration
   shell: '{{ rails_deploy_env_source }} && {{ item }} chdir={{ rails_deploy_src }}'
@@ -97,7 +97,7 @@
         rails_deploy_register_repo_status is changed
   with_items: '{{ rails_deploy_post_migrate_shell_commands }}'
   become: True
-  become_user: '{{ rails_deploy_service }}'
+  become_user: '{{ rails_deploy_service }}'  # noqa no-handler
 
 - name: Reload the backend server
   service: name={{ rails_deploy_service }} state=reloaded
@@ -110,7 +110,7 @@
         and
         not rails_deploy_backend_always_restart)
   delegate_to: '{{ item }}'
-  with_items: '{{ groups[rails_deploy_hosts_group] }}'
+  with_items: '{{ groups[rails_deploy_hosts_group] }}'  # noqa no-handler
 
 - name: Restart the backend server
   service: name={{ rails_deploy_service }} state=restarted
@@ -126,14 +126,14 @@
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed))
   delegate_to: '{{ item }}'
-  with_items: '{{ groups[rails_deploy_hosts_group] }}'
+  with_items: '{{ groups[rails_deploy_hosts_group] }}'  # noqa no-handler
 
 - name: Set the extra services state
   service: name={{ item.name }}
            state={{ item.changed_state | default('reloaded') }}
   when: rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed and rails_deploy_extra_services
-  with_items: '{{ rails_deploy_extra_services }}'
+  with_items: '{{ rails_deploy_extra_services }}'  # noqa no-handler
 
 - name: Set the initial backend server state
   service: name={{ rails_deploy_service }}
@@ -157,7 +157,7 @@
   with_items: '{{ rails_deploy_extra_services }}'
 
 - name: Execute shell commands after the backend is ready
-  shell: '{{ rails_deploy_env_source }} && {{ item }} chdir={{ rails_deploy_src }}'
+  shell: '{{ rails_deploy_env_source }} && {{ item }} chdir={{ rails_deploy_src }}'  # noqa no-handler
   when: rails_deploy_post_restart_shell_commands and rails_deploy_git_location and
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed
@@ -166,7 +166,7 @@
   become_user: '{{ rails_deploy_service }}'
 
 - name: Disable the temporary deploy page
-  file:
+  file:  # noqa no-handler
     path: '{{ rails_deploy_src + "/public/index.html" }}'
     state: 'absent'
   when: register_rails_deploy_public_deploy_page.stat.exists and
