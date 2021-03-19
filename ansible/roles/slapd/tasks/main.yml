@@ -3,15 +3,16 @@
 # Copyright (C) 2016-2019 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-# Problem with ansible-lint not detecting custom Ansible modules
-# Ref: https://github.com/ansible/ansible-lint/issues/644
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
-- import_role:
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 - name: Prepare OpenLDAP installation to use the rfc2307bis schema
@@ -58,7 +59,7 @@
   register: slapd__register_environment
 
 - name: Restart slapd if its configuration was modified
-  service:
+  service:  # noqa no-handler
     name: 'slapd'
     state: 'restarted'
   when: slapd__register_unix_groups is changed or
@@ -137,11 +138,10 @@
     src: 'etc/ansible/facts.d/slapd.fact.j2'
     dest: '/etc/ansible/facts.d/slapd.fact'
     mode: '0755'
-  register: slapd__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: slapd__register_facts is changed
+  meta: 'flush_handlers'
 
 - name: Perform OpenLDAP tasks
   include_tasks: 'slapd_tasks.yml'
