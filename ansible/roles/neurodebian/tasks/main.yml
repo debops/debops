@@ -4,6 +4,10 @@
 # Copyright (C) 2017-2019 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
 - name: Configure NeuroDebian APT repository
   template:
     src: 'etc/apt/sources.list.d/neurodebian.sources.list.j2'
@@ -39,7 +43,7 @@
          not neurodebian__upstream|bool)
 
 - name: Update APT repository cache
-  apt:
+  apt:  # noqa no-handler
     update_cache: True
   # Not using a handler here as the handler would need to be flushed at this
   # point which is discouraged in DebOps because that would also flush all
@@ -72,8 +76,7 @@
     src: 'etc/ansible/facts.d/neurodebian.fact.j2'
     dest: '/etc/ansible/facts.d/neurodebian.fact'
     mode: '0755'
-  register: neurodebian__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: neurodebian__register_facts is changed
+  meta: 'flush_handlers'
