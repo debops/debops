@@ -3,7 +3,12 @@
 # Copyright (C) 2015-2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 - name: Get default PostgreSQL version
@@ -69,12 +74,10 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: postgresql__register_local_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Re-read local facts if they have been modified
-  action: setup
-  when: postgresql__register_local_facts|d() and
-        postgresql__register_local_facts is changed
+  meta: 'flush_handlers'
 
 - name: Drop PostgreSQL roles if requested
   postgresql_user:

@@ -4,7 +4,8 @@
 # Copyright (C) 2016-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 - name: Install required packages
@@ -139,7 +140,7 @@
                  netbox__register_virtualenv.stdout is search('New python executable in'))
 
 - name: Clean up stale Python bytecode
-  command: find . -name '*.pyc' -delete
+  command: "find . -name '*.pyc' -delete"  # noqa no-handler
   args:
     chdir: '{{ netbox__git_checkout + "/netbox" }}'
   become: True
@@ -147,7 +148,7 @@
   when: netbox__register_checkout is changed
 
 - name: Install NetBox requirements in virtualenv
-  pip:
+  pip:  # noqa no-handler
     virtualenv: '{{ netbox__virtualenv }}'
     requirements: '{{ netbox__git_checkout + "/requirements.txt" }}'
     extra_args: '--upgrade'
@@ -159,7 +160,7 @@
   when: netbox__register_checkout is changed
 
 - name: Install additional Python modules in virtualenv
-  pip:
+  pip:  # noqa no-handler
     name:       '{{ item.name | d(item) }}'
     version:    '{{ item.version | d(omit) }}'
     virtualenv: '{{ netbox__virtualenv }}'
@@ -184,7 +185,7 @@
   ## Commands from upgrade.sh. We cannot directly run this script as of 2.10
   ## because it also deals with virtualenv with different directory paths than
   ## this role.
-  shell:
+  shell:  # noqa no-handler
     cmd: |
       set -o nounset -o pipefail -o errexit
       ./manage.py migrate
@@ -223,8 +224,10 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: netbox__register_systemd_netbox_main
-  notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver' ]
+  notify:
+    - 'Reload systemd daemon (netbox)'
+    - 'Restart gunicorn for netbox'
+    - 'Restart netbox internal appserver'
   when: netbox__app_internal_appserver|bool
 
 - name: Generate NetBox RQ systemd service unit
@@ -234,33 +237,10 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: netbox__register_systemd_netbox_rq
-  notify: [ 'Restart netbox Request Queue Worker' ]
+  notify:
+    - 'Reload systemd daemon (netbox)'
+    - 'Restart netbox Request Queue Worker'
   when: netbox__app_internal_appserver|bool
-
-
-- name: Reload systemd configuration
-  systemd:
-    daemon_reload: True
-  when: (ansible_service_mgr == 'systemd' and
-         (netbox__register_systemd_netbox_main is changed) or
-         (netbox__register_systemd_netbox_rq is changed))
-
-- name: Enable and start netbox internal appserver
-  service:
-    name: 'netbox'
-    state: 'started'
-    enabled: True
-  when: (netbox__app_internal_appserver|bool and ansible_service_mgr == 'systemd' and
-         netbox__register_systemd_netbox_main is changed and not netbox__register_installed.stat.exists|bool)
-
-- name: Enable and start netbox Request Queue Worker
-  service:
-    name: 'netbox-rq'
-    state: 'started'
-    enabled: True
-  when: (ansible_service_mgr == 'systemd' and
-         netbox__register_systemd_netbox_rq is changed and not netbox__register_installed.stat.exists|bool)
 
 - name: Generate NetBox netbox-manage script
   template:
@@ -285,8 +265,3 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: netbox__register_facts
-
-- name: Update Ansible facts if they were modified
-  action: setup
-  when: netbox__register_facts is changed

@@ -4,8 +4,13 @@
 # Copyright (C) 2014-2018 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
 
 - name: DebOps pre_tasks hook
   include: "{{ lookup('task_src', 'lxc/pre_main.yml') }}"
@@ -33,11 +38,10 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: lxc__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: lxc__register_facts is changed
+  meta: 'flush_handlers'
 
 - name: Create required directories
   file:
@@ -171,7 +175,7 @@
   tags: [ 'role::lxc:net' ]
 
 - name: Reconfigure systemd services when modified
-  systemd:
+  systemd:  # noqa no-handler
     name: '{{ "lxc-net.service" if (lxc__net_deploy_state == "present") else omit }}'
     state: '{{ "restarted" if (lxc__net_deploy_state == "present") else omit }}'
     daemon_reload: True
@@ -274,7 +278,7 @@
   tags: [ 'role::lxc:containers' ]
 
 - name: Reload systemd configuration when needed
-  systemd:
+  systemd:  # noqa no-handler
     daemon_reload: True
   when: ansible_service_mgr == 'systemd' and
         lxc__register_systemd_create_override is changed or
@@ -373,7 +377,7 @@
   tags: [ 'role::lxc:containers' ]
 
 - name: Restart LXC containers when modified
-  systemd:
+  systemd:  # noqa no-handler
     name: 'lxc@{{ item.0.name | d(item.0) }}.service'
     state: 'restarted'
   loop: '{{ lxc__containers | zip(lxc__register_systemd_create_override.results|d([])) | list }}'

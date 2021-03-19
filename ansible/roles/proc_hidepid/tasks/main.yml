@@ -3,6 +3,10 @@
 # Copyright (C) 2018 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
 - name: Install required packages
   package:
     name: '{{ q("flattened", (proc_hidepid__base_packages
@@ -27,11 +31,10 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: proc_hidepid__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: proc_hidepid__register_facts is changed
+  meta: 'flush_handlers'
 
 - name: Ensure that UNIX system group with /proc access exists
   group:
@@ -48,7 +51,7 @@
     fstype: 'proc'
     opts: 'defaults,hidepid={{ proc_hidepid__level }},gid={{ proc_hidepid__group }}'
     state: 'mounted'
-  register: proc_hidepid__register_mount
+  notify: [ 'Refresh host facts' ]
   when: proc_hidepid__enabled|bool and proc_hidepid__remount|bool
 
   # This is a workaround for Ubuntu bug: https://bugs.launchpad.net/ubuntu/+source/mountall/+bug/1039887
@@ -76,14 +79,9 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: proc_hidepid__register_tmpfiles
+  notify: [ 'Create temporary files' ]
   when: proc_hidepid__enabled|bool and ansible_service_mgr == 'systemd' and
         proc_hidepid__secure_scheduler_enabled|bool
-
-- name: Secure /proc/sched_debug file access
-  command: systemd-tmpfiles --create
-  when: proc_hidepid__enabled|bool and ansible_service_mgr == 'systemd' and
-        proc_hidepid__register_tmpfiles is changed
 
 - name: Create the systemd-logind configuration directory
   file:
@@ -101,14 +99,8 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: proc_hidepid__register_logind
+  notify: [ 'Reload service manager' ]
   when: proc_hidepid__enabled|bool and ansible_service_mgr == 'systemd'
 
-- name: Reload systemd daemons
-  systemd:
-    daemon_reload: True
-  when: proc_hidepid__register_logind is changed
-
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: proc_hidepid__register_mount is changed
+  meta: 'flush_handlers'

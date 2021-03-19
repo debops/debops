@@ -5,10 +5,12 @@
 # Copyright (C) 2014-2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
-- import_role:
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 - name: Install required Etherpad packages
@@ -73,7 +75,7 @@
   tags: [ 'role::etherpad:source' ]
 
 - name: Create Etherpad directory
-  file:
+  file:  # noqa no-handler
     path: '{{ etherpad_home + "/" + etherpad_repository }}'
     state: 'directory'
     owner: '{{ etherpad_user }}'
@@ -84,7 +86,7 @@
   tags: [ 'role::etherpad:source' ]
 
 - name: Prepare Etherpad worktree
-  template:
+  template:  # noqa no-handler
     src: 'var/local/etherpad-lite/etherpad-lite/git.j2'
     dest: '{{ etherpad_home + "/" + etherpad_repository }}/.git'
     owner: '{{ etherpad_user }}'
@@ -95,7 +97,7 @@
   tags: [ 'role::etherpad:source' ]
 
 - name: Checkout Etherpad
-  command: git checkout --force {{ etherpad_version }}
+  command: 'git checkout --force {{ etherpad_version }}'  # noqa no-handler
   args:
     chdir: '{{ etherpad_src_dir + "/" + etherpad_repository }}'
     warn: False
@@ -135,7 +137,7 @@
     mode: '0755'
 
 - name: Install Etherpad dependencies
-  command: bin/installDeps.sh
+  command: 'bin/installDeps.sh'  # noqa no-handler
   args:
     chdir: '{{ etherpad_home + "/" + etherpad_repository }}'
     creates: '{{ etherpad_home }}/.node-gyp'
@@ -173,6 +175,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
+  notify: [ 'Reload service manager' ]
   register: etherpad__register_sysvinit
   when: ansible_service_mgr != 'systemd'
 
@@ -183,18 +186,15 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  notify: [ 'Reload service manager' ]
   register: etherpad__register_systemd
   when: ansible_service_mgr == 'systemd'
 
 - name: Reload systemd daemons
-  systemd:
-    daemon_reload: True
-  when: (ansible_service_mgr == 'systemd' and
-         (etherpad__register_sysvinit is changed or
-          etherpad__register_systemd is changed))
+  meta: 'flush_handlers'
 
 - name: Ensure that etherpad-lite is started
-  service:
+  service:  # noqa no-handler
     name: 'etherpad-lite'
     state: 'started'
     enabled: True
@@ -250,8 +250,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: etherpad__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: etherpad__register_facts is changed
+  meta: 'flush_handlers'

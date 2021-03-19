@@ -3,10 +3,12 @@
 # Copyright (C) 2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
-- import_role:
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 - name: Make sure that required UNIX group exists
@@ -112,11 +114,10 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: rabbitmq_server__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: rabbitmq_server__register_facts is changed
+  meta: 'flush_handlers'
 
 - name: Generate RabbitMQ configuration
   template:

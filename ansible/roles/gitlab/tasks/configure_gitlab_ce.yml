@@ -98,7 +98,7 @@
 
 - name: Install GitLab SysVinit script
   command: cp -f {{ gitlab_ce_git_checkout + "/lib/support/init.d/gitlab" }} /etc/init.d/gitlab
-  register: gitlab__register_sysvinit_script
+  notify: [ 'Reload service manager' ]
   when: (gitlab_use_systemd is defined and not gitlab_use_systemd)
 
 - name: Install GitLab systemd service files
@@ -115,7 +115,7 @@
     - '{{ "gitlab-gitaly.service"
           if (gitlab_version is version_compare("9.0", operator="gt", strict=True))
           else [] }}'
-  register: gitlab__register_systemd_services
+  notify: [ 'Reload service manager' ]
   when: (gitlab_use_systemd is defined and gitlab_use_systemd)
 
 - name: Install GitLab Pages systemd service file
@@ -123,17 +123,12 @@
     src: 'etc/systemd/system/gitlab-pages.service.j2'
     dest: '/etc/systemd/system/gitlab-pages.service'
     mode: '0644'
-  register: gitlab__register_pages_systemd_services
+  notify: [ 'Reload service manager' ]
   when: (gitlab_enable_pages and
          (gitlab_use_systemd is defined and gitlab_use_systemd))
 
 - name: Reload systemd daemons
-  systemd:
-    daemon_reload: True
-  when: (ansible_service_mgr == "systemd" and
-         (gitlab__register_sysvinit_script is changed or
-          gitlab__register_systemd_services is changed or
-          gitlab__register_pages_systemd_services is changed))
+  meta: 'flush_handlers'
 
 - name: Enable GitLab SysVinit service
   service:
@@ -173,7 +168,7 @@
 
 - name: NPM install
   command: npm install --production
-  args:
+  args:  # noqa no-handler
     chdir: '{{ gitlab_ce_git_checkout }}'
   become: True
   become_user: '{{ gitlab_user }}'
@@ -182,7 +177,7 @@
 
 - name: Yarn install
   command: yarn install --production
-  args:
+  args:  # noqa no-handler
     chdir: '{{ gitlab_ce_git_checkout }}'
   become: True
   become_user: '{{ gitlab_user }}'
@@ -197,7 +192,7 @@
                         --without {{ gitlab_ce_bundle_install_without[gitlab__database] }}
                         --retry 9999 >> /tmp/gitlab-bundle-install.log 2>&1 &&
          rm -f /tmp/gitlab-bundle-install.log
-  args:
+  args:  # noqa no-handler
     executable: 'bash'
     chdir: '{{ gitlab_ce_git_checkout }}'
   become: True
@@ -205,7 +200,7 @@
   when: gitlab_register_ce_checkout is changed
 
 - name: Initialize GitLab database (PostgreSQL)
-  environment:
+  environment:  # noqa no-handler
     RAILS_ENV: 'production'
     GITLAB_ROOT_EMAIL: '{{ gitlab_admin_email }}'
   command: '{{ "bundle exec rake "
@@ -227,7 +222,7 @@
 
 - name: Migrate GitLab database
   command: bundle exec rake db:migrate RAILS_ENV=production
-  args:
+  args:  # noqa no-handler
     chdir: '{{ gitlab_ce_git_checkout }}'
   become: True
   become_user: '{{ gitlab_user }}'
@@ -239,7 +234,7 @@
 
 - name: Clean GitLab assets
   command: bundle exec rake {{ gitlab_assets_clean }} RAILS_ENV=production
-  args:
+  args:  # noqa no-handler
     chdir: '{{ gitlab_ce_git_checkout }}'
   become: True
   become_user: '{{ gitlab_user }}'
@@ -250,7 +245,7 @@
 - name: Precompile GitLab assets
   command: bundle exec rake {{ gitlab_assets_compile }} RAILS_ENV=production NODE_ENV=production
            NODE_OPTIONS='--max_old_space_size=4096'
-  args:
+  args:  # noqa no-handler
     chdir: '{{ gitlab_ce_git_checkout }}'
   become: True
   become_user: '{{ gitlab_user }}'
@@ -260,7 +255,7 @@
 
 - name: Clear GitLab cache
   command: bundle exec rake cache:clear RAILS_ENV=production
-  args:
+  args:  # noqa no-handler
     chdir: '{{ gitlab_ce_git_checkout }}'
   become: True
   become_user: '{{ gitlab_user }}'

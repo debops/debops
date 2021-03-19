@@ -3,12 +3,16 @@
 # Copyright (C) 2019 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-# Problem with ansible-lint not detecting custom Ansible modules
-# Ref: https://github.com/ansible/ansible-lint/issues/644
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 - name: Take note of the current LDAP configuration
@@ -58,13 +62,11 @@
     src: 'etc/ansible/facts.d/ldap.fact.j2'
     dest: '/etc/ansible/facts.d/ldap.fact'
     mode: '0755'
-  register: ldap__register_facts
+  notify: [ 'Refresh host facts' ]
   when: ldap__enabled|bool and not ldap__dependent_play|bool
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: ldap__enabled|bool and not ldap__dependent_play|bool and
-        ldap__register_facts is changed
+  meta: 'flush_handlers'
 
 - name: Check if LDAP admin password is available
   set_fact:

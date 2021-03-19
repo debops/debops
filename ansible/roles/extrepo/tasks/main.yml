@@ -3,8 +3,13 @@
 # Copyright (C) 2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
 
 - name: Install required packages
   package:
@@ -26,11 +31,10 @@
     src: 'etc/ansible/facts.d/extrepo.fact.j2'
     dest: '/etc/ansible/facts.d/extrepo.fact'
     mode: '0755'
-  register: extrepo__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: extrepo__register_facts is changed
+  meta: 'flush_handlers'
 
 - name: Divert original extrepo configuration
   dpkg_divert:
@@ -47,7 +51,7 @@
   when: extrepo__enabled|bool
 
 - name: Update external APT sources if required
-  command: 'extrepo update {{ item.name }}'
+  command: 'extrepo update {{ item.name }}'  # noqa no-handler
   loop: '{{ q("flattened", extrepo__combined_sources) | parse_kv_config }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state} }}'
@@ -76,8 +80,9 @@
         item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
 
 - name: Update APT cache if required
-  apt:
+  apt:  # noqa no-handler
     update_cache: True
+  notify: [ 'Refresh host facts' ]
   register: extrepo__register_apt_cache
   until: extrepo__register_apt_cache is succeeded
   when: (extrepo__enabled|bool and
@@ -86,5 +91,4 @@
           extrepo__register_enabled_sources is changed))
 
 - name: Update Ansible facts if APT cache was modified
-  action: setup
-  when: extrepo__register_apt_cache is changed
+  meta: 'flush_handlers'

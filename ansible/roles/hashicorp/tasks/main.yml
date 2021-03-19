@@ -5,8 +5,13 @@
 # Copyright (C) 2016-2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
 
 # APT package installation [[[1
 
@@ -204,7 +209,7 @@
          ; find . -maxdepth 1 -type f -name 'terraform-*'
                   -exec install -m 755 -o root -g root -t {{ hashicorp__bin }} {} +
          {% endif %}
-  args:
+  args:  # noqa no-handler
     chdir: '{{ hashicorp__lib + "/" + item.0 + "/" + hashicorp__combined_version_map[item.0] }}'
   with_together:
     - '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
@@ -220,7 +225,7 @@
   shell: 'rsync --delete --recursive --prune-empty-dirs
          {{ hashicorp__lib + "/" + item + "/" + hashicorp__combined_version_map[item] + "/web_ui/" }}
          {{ hashicorp__consul_webui_path }} && chown -R root:root {{ hashicorp__consul_webui_path }}'
-  args:
+  args:  # noqa no-handler
     warn: False
   with_items: '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
   when: (hashicorp__consul_webui|bool and item == 'consul' and hashicorp__register_unpack_webui is changed)
@@ -244,10 +249,8 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: hashicorp__register_facts
+  notify: [ 'Refresh host facts' ]
   when: (hashicorp__applications or hashicorp__dependent_applications)
 
 - name: Reload facts if they were modified
-  action: setup
-  when: ((hashicorp__applications or hashicorp__dependent_applications) and
-         hashicorp__register_facts is changed)
+  meta: 'flush_handlers'

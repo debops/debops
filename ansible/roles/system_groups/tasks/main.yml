@@ -3,8 +3,13 @@
 # Copyright (C) 2018 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
 
 - name: Create a fact that knows the Ansible connection type
   set_fact:
@@ -72,15 +77,10 @@
     group: 'root'
     mode: '0644'
   with_items: '{{ system_groups__combined_list | parse_kv_items }}'
-  register: system_groups__register_tmpfiles
+  notify: [ 'Create temporary files' ]
   when: system_groups__enabled|bool and ansible_service_mgr == 'systemd' and
         item.name|d() and item.state|d('present') not in [ 'init', 'absent', 'ignore' ] and
         item.tmpfiles|d()
-
-- name: Ensure that missing tmpfiles are present
-  command: systemd-tmpfiles --create
-  when: system_groups__enabled|bool and ansible_service_mgr == 'systemd' and
-        system_groups__register_tmpfiles is changed
 
 - name: Make sure that Ansible local facts directory exists
   file:
@@ -97,8 +97,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: system_groups__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: system_groups__register_facts is changed
+  meta: 'flush_handlers'

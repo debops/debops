@@ -4,7 +4,8 @@
 # Copyright (C) 2015-2019 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
 - name: Make sure that docker.service.d override directory exists
@@ -25,11 +26,12 @@
                  else [])) | flatten }}'
     state: 'absent'
     install_recommends: False
+  notify: [ 'Reload service manager' ]
   register: docker_server__register_other_version_removed
   until: docker_server__register_other_version_removed is succeeded
 
 - name: Remove startup file(s) if present
-  file:
+  file:  # noqa no-handler
     path: '{{ item }}'
     state: 'absent'
   tags: [ 'role::docker_server:config' ]
@@ -40,14 +42,8 @@
     - '/etc/docker/daemon.json'
     - '/etc/systemd/system/docker.service.d/http-proxy.conf'
     - '/etc/systemd/system/docker.service.d/execstart-override.conf'
+  notify: [ 'Reload service manager' ]
   when: (docker_server__register_other_version_removed is changed)
-
-- name: Reload systemd daemons
-  systemd:
-    daemon_reload: True
-  when: (ansible_service_mgr == 'systemd' and
-         docker_server__register_other_version_removed is changed)
-  tags: [ 'role::docker_server:config' ]
 
 - name: Install required packages
   apt:
@@ -57,6 +53,7 @@
                + docker_server__packages) | flatten }}'
     state: 'present'
     install_recommends: False
+  notify: [ 'Refresh host facts' ]
   register: docker_server__register_packages
   until: docker_server__register_packages is succeeded
 
@@ -75,12 +72,10 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: docker_server__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: (docker_server__register_packages is changed or
-         docker_server__register_facts is changed)
+  meta: 'flush_handlers'
 
 - name: Install Python packages in virtualenv
   pip:
@@ -154,15 +149,8 @@
     mode: '0644'
   loop: [ 'execstart-override.conf', 'http-proxy.conf' ]
   register: docker_server__register_systemd_overrides
-  notify: ['Restart docker' ]
+  notify: [ 'Reload service manager', 'Restart docker' ]
   when: ansible_service_mgr == 'systemd'
-  tags: [ 'role::docker_server:config' ]
-
-- name: Reload systemd daemons
-  systemd:
-    daemon_reload: True
-  when: (ansible_service_mgr == 'systemd' and
-         docker_server__register_systemd_overrides is changed)
   tags: [ 'role::docker_server:config' ]
 
 - name: Add specified users to 'docker' group
@@ -173,3 +161,6 @@
   with_items: '{{ docker_server__admins }}'
   when: item|d()
   tags: [ 'role::docker_server:config', 'role::docker_server:admins' ]
+
+- name: Execute pending handlers
+  meta: 'flush_handlers'

@@ -4,13 +4,16 @@
 # Copyright (C) 2014-2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
-- import_role:
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 - name: Pre hooks
@@ -27,12 +30,10 @@
     src: 'etc/ansible/facts.d/sshd.fact.j2'
     dest: '/etc/ansible/facts.d/sshd.fact'
     mode: '0755'
-  register: sshd__register_fact_script
+  notify: [ 'Refresh host facts' ]
 
 - name: Reload Ansible local facts
-  setup:
-    filter: ansible_local
-  when: sshd__register_fact_script is changed
+  meta: 'flush_handlers'
 
 - name: Make sure that OpenSSH configuration directory exists
   file:
@@ -103,12 +104,11 @@
                else "latest" }}'
     install_recommends: False
   register: sshd__register_packages
+  notify: [ 'Refresh host facts' ]
   until: sshd__register_packages is succeeded
 
 - name: Reload Ansible local facts
-  setup:
-    filter: ansible_local
-  when: sshd__register_packages is changed
+  meta: 'flush_handlers'
 
 - name: Check OpenSSH server version
   environment:

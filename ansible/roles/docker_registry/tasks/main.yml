@@ -3,13 +3,16 @@
 # Copyright (C) 2019 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
-- import_role:
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 - name: Install required packages
@@ -116,7 +119,7 @@
       register: docker_registry__register_build
 
 - name: Install Docker Registry binary
-  copy:
+  copy:  # noqa no-handler
     src: '{{ docker_registry__git_dest + "/bin/registry" }}'
     dest: '/usr/local/bin/docker-registry'
     remote_src: True
@@ -136,11 +139,10 @@
     src: 'etc/ansible/facts.d/docker_registry.fact.j2'
     dest: '/etc/ansible/facts.d/docker_registry.fact'
     mode: '0755'
-  register: docker_registry__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: docker_registry__register_facts is changed
+  meta: 'flush_handlers'
 
 - name: Generate Docker Registry configuration
   template:

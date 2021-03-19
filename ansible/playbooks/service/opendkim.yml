@@ -15,12 +15,14 @@
 
   pre_tasks:
 
-    - import_role:
+    - name: Prepare opendkim environment
+      import_role:
         name: 'opendkim'
         tasks_from: 'main_env'
       tags: [ 'role::opendkim', 'role::secret' ]
 
-    - import_role:
+    - name: Prepare postfix environment
+      import_role:
         name: 'postfix'
         tasks_from: 'main_env'
       vars:

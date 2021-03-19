@@ -7,13 +7,16 @@
 # Copyright (C) 2015-2018 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
-- import_role:
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 - name: Create /etc/default/grub.d directory
@@ -69,7 +72,7 @@
          {{ "" if grub__salt_length|d() == "default" else ("--salt=" + grub__salt_length) }}
          {{ "" if grub__hash_length|d() == "default" else ("--buflen=" + grub__hash_length) }}
          | perl -ne 's/^(:?Your PBKDF2|PBKDF2 hash of your password) is //ms && print'
-  args:
+  args:  # noqa no-handler
     executable: 'bash'
   register: grub__register_pw_hashes
   with_together:
@@ -124,7 +127,7 @@
   register: grub__register_linux_divert
 
 - name: Copy /etc/grub.d/10_linux.dpkg-divert to its original location
-  command: cp /etc/grub.d/10_linux.dpkg-divert /etc/grub.d/10_linux
+  command: cp /etc/grub.d/10_linux.dpkg-divert /etc/grub.d/10_linux  # noqa no-handler
   when: grub__register_linux_divert is changed
 
 - name: Apply patch to allow to configure the default menu entry parameters
@@ -161,8 +164,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: grub__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: grub__register_facts is changed
+  meta: 'flush_handlers'

@@ -3,8 +3,13 @@
 # Copyright (C) 2018 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
 
 - name: Install packages required for System News
   package:
@@ -74,8 +79,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: sysnews__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: sysnews__register_facts is changed
+  meta: 'flush_handlers'

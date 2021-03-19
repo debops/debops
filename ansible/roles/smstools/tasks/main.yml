@@ -3,7 +3,8 @@
 # Copyright (C) 2015-2019 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
 - name: Install SMS Tools packages
@@ -93,7 +94,7 @@
         (ansible_virtualization_role is defined and ansible_virtualization_role == 'guest')
 
 - name: Fix permissions manually if installed
-  command: /usr/local/lib/smstools/fix-device-permissions
+  command: '/usr/local/lib/smstools/fix-device-permissions'  # noqa no-handler
   when: smstools_register_fixpermissions is defined and smstools_register_fixpermissions is changed
 
 - name: Configure SMS gateway test on reboot

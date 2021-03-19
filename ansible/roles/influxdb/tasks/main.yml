@@ -5,7 +5,12 @@
 # Copyright (C) 2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 - name: Check if database server is installed
@@ -41,11 +46,10 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: influxdb__register_local_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Re-read local facts if they have been modified
-  action: setup
-  when: influxdb__register_local_facts is change
+  meta: 'flush_handlers'
 
 - name: Manage database contents
   include: 'manage_contents.yml'

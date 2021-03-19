@@ -3,6 +3,10 @@
 # Copyright (C) 2018 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
 - name: Install required packages
   package:
     name: '{{ q("flattened", (ansible__base_packages
@@ -34,8 +38,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: ansible__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Re-read local facts if they have been modified
-  action: setup
-  when: ansible__register_facts is changed
+  meta: 'flush_handlers'

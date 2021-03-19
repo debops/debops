@@ -3,7 +3,8 @@
 # Copyright (C) 2018-2019 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 - name: Install required APT packages
@@ -65,8 +66,7 @@
     src: 'etc/ansible/facts.d/backup2l.fact.j2'
     dest: '/etc/ansible/facts.d/backup2l.fact'
     mode: '0755'
-  register: backup2l__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: backup2l__register_facts is changed
+  meta: 'flush_handlers'

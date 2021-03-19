@@ -3,13 +3,16 @@
 # Copyright (C) 2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
-- import_role:
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 - name: Install OpenDKIM support
@@ -19,7 +22,6 @@
     state: 'present'
   register: opendkim__register_packages
   until: opendkim__register_packages is succeeded
-  notify: [ 'Check opendkim and restart' ]
   when: ansible_pkg_mgr == 'apt'
 
 - name: Divert original OpenDKIM configuration
@@ -44,11 +46,10 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: opendkim__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Re-read local facts if they have been modified
-  action: setup
-  when: opendkim__register_facts is changed
+  meta: 'flush_handlers'
 
 - name: Generate OpenDKIM configuration from /etc
   template:
@@ -84,19 +85,10 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: opendkim__register_pid_socket
-  notify: [ 'Check opendkim and reload' ]
+  notify: [ 'Reload service manager', 'Check opendkim and restart' ]
   when: (ansible_service_mgr == 'systemd' and
          ansible_distribution_release not in
          [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial', 'bionic' ])
-
-- name: Update systemd runtime configuration
-  systemd:
-    daemon_reload: True
-  when: (ansible_service_mgr == 'systemd' and
-         ansible_distribution_release not in
-         [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial', 'bionic' ] and
-         opendkim__register_pid_socket is changed)
 
 - name: Ensure that DomainKey directory exists
   file:

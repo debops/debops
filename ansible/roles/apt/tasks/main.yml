@@ -6,6 +6,10 @@
 # Copyright (C) 2014-2018 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
 - name: Install required packages
   apt:
     name: '{{ (apt__base_packages + apt__packages) | flatten }}'
@@ -30,11 +34,10 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: apt__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: (apt__enabled|bool and apt__register_facts is changed)
+  meta: 'flush_handlers'
 
 - name: Ensure that APT default configuration is absent
   file:
@@ -185,10 +188,9 @@
     line: '    "configured": true,'
     state: 'present'
     mode: '0755'
-  register: apt__register_facts_status
+  notify: [ 'Refresh host facts' ]
   when: (apt__enabled|bool and ansible_local|d() and ansible_local.apt|d() and
          not ansible_local.apt.configured|bool)
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: (apt__enabled|bool and apt__register_facts_status is changed)
+  meta: 'flush_handlers'

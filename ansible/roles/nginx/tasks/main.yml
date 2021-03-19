@@ -4,13 +4,16 @@
 # Copyright (C) 2014-2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
-- import_role:
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 - name: DebOps pre_tasks hook
@@ -70,12 +73,11 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: nginx_register_local_facts
+  notify: [ 'Refresh host facts' ]
   when: (nginx__deploy_state in [ 'present' ])
 
 - name: Gather facts if they were modified
-  action: setup
-  when: (nginx_register_local_facts is changed and nginx__deploy_state in [ 'present' ])
+  meta: 'flush_handlers'
 
 - name: Create default nginx directories
   file:
@@ -262,11 +264,10 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: nginx_register_local_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Gather facts if they were modified
-  action: setup
-  when: (nginx_register_local_facts is changed and nginx__deploy_state in [ 'present' ])
+  meta: 'flush_handlers'
 
 - name: DebOps post_tasks hook
   include: '{{ lookup("task_src", "nginx/post_main.yml") }}'

@@ -4,10 +4,12 @@
 # Copyright (C) 2016-2018 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
 - name: Make sure that Ansible local facts directory exists
@@ -25,11 +27,10 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: etckeeper__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: etckeeper__register_facts is changed
+  meta: 'flush_handlers'
 
 ## Diverting the main configuration of etckeeper away leaves the VCS
 ## uninitiated until it has been fully configured.
@@ -146,7 +147,7 @@
 - name: Commit changes in configuration
   command: etckeeper commit '{{ etckeeper__commit_message_update
                                 if etckeeper__installed|bool
-                                else etckeeper__commit_message_init }}'
+                                else etckeeper__commit_message_init }}'  # noqa no-handler
   when: (etckeeper__enabled|bool and
          (etckeeper__register_init is changed or
           etckeeper__register_config is changed or

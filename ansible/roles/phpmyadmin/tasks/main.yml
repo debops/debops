@@ -3,7 +3,8 @@
 # Copyright (C) 2015-2019 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 - name: Install dbconfig-common
@@ -26,8 +27,10 @@
   register: phpmyadmin_database
 
 - name: Import PHPMyAdmin schema
-  mysql_db: name={{ phpmyadmin_control_database | default('phpmyadmin') }} state=import
-            target=/usr/share/dbconfig-common/data/phpmyadmin/install/mysql
+  mysql_db:  # noqa no-handler
+    name: '{{ phpmyadmin_control_database | default("phpmyadmin") }}'
+    state: 'import'
+    target: '/usr/share/dbconfig-common/data/phpmyadmin/install/mysql'
   when: phpmyadmin_database is defined and phpmyadmin_database is changed
 
 - name: Create PHPMyAdmin control user

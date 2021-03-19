@@ -3,6 +3,12 @@
 # Copyright (C) 2016 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+# A separate handler is needed to ensure the correct order of execution
+- name: Reload systemd daemon (netbox)
+  systemd:
+    daemon_reload: True
+  when: ansible_service_mgr == 'systemd'
+
 - name: Restart gunicorn for netbox
   service:
     name: 'gunicorn@netbox'

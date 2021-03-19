@@ -52,6 +52,23 @@ General
 - Added wrapper around :file:`manage.py` called :file:`netbox-manage` for
   NetBox power users.
 
+:ref:`debops.global_handlers` role
+''''''''''''''''''''''''''''''''''
+
+- New global handlers available to roles:
+
+  - ``Refresh host facts``: re-gather host facts using the ``setup`` Ansible
+    module, required to ensure that Ansible has accurate information about the
+    current host state.
+
+  - ``Reload service manager``: update the :command:`init` daemon runtime
+    configuration, useful when new services are added or their
+    :command:`systemd` configuration changes.
+
+  - ``Create temporary files``: ensure that files and directories created at
+    system boot by tools like :command:`systemd-tmpfiles` are present on the
+    host.
+
 Changed
 ~~~~~~~
 
@@ -69,6 +86,10 @@ Continuous Integration
 
 - The Vagrant provisioning script now installs Cryptography from the Debian
   archive instead of from PyPI.
+
+- The :command:`ansible-lint` check will now use Ansible playbooks as the
+  starting point to test the whole codebase. Roles and playbooks not included
+  in the :file:`site.yml` playbook can be tested manually if needed.
 
 :ref:`debops.roundcube` role
 ''''''''''''''''''''''''''''
@@ -144,6 +165,14 @@ General
   For example when an exception occured during page loading, the reponse was
   just "Internal Server Error". The service as a whole survives this.
   The bug in the configuration template has been fixed.
+
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- Fixed an issue where the "raw" Python play used during host bootstrapping
+  hanged indefinitely, stopping the playbook execution. The role will now reset
+  the connection to the host after preparing the Python environment, allowing
+  Ansible to re-estabilish the communication channel properly.
 
 :ref:`debops.saslauthd` role
 ''''''''''''''''''''''''''''

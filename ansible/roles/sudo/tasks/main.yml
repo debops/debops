@@ -3,10 +3,16 @@
 # Copyright (C) 2018 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 - name: Configure access to LDAP directory
@@ -42,11 +48,10 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: sudo__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: sudo__register_facts is changed
+  meta: 'flush_handlers'
 
 - name: Ensure that '/etc/sudoers' includes '/etc/sudoers.d'
   lineinfile:
@@ -66,7 +71,7 @@
     path: '/etc/sudoers.d/{{ item.filename | d(item.name) }}'
     state: 'absent'
   with_items: '{{ sudo__combined_sudoers | parse_kv_items }}'
-  register: sudo__register_sudoers_removed
+  notify: [ 'Refresh host facts' ]
   when: sudo__enabled|bool and
         item.name|d() and item.state|d('present') == 'absent'
 
@@ -79,7 +84,7 @@
     mode: '0440'
     validate: 'visudo -cf %s'
   with_items: '{{ sudo__combined_sudoers | parse_kv_items }}'
-  register: sudo__register_sudoers_created
+  notify: [ 'Refresh host facts' ]
   when: sudo__enabled|bool and
         item.name|d() and item.state|d('present') not in [ 'init', 'absent', 'ignore' ]
 
@@ -93,6 +98,4 @@
   when: sudo__enabled|bool and sudo__logind_session|bool
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: sudo__register_sudoers_removed is changed or
-        sudo__register_sudoers_created is changed
+  meta: 'flush_handlers'

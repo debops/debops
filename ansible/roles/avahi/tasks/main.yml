@@ -8,7 +8,8 @@
 # result in a dpkg error. More information:
 # https://lists.linuxcontainers.org/pipermail/lxc-devel/2012-April/002395.html
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
 - name: Make sure that Avahi config directory exists
@@ -37,7 +38,7 @@
   notify: [ 'Restart avahi-daemon' ]
 
 - name: Create a stub mDNS hosts configuration file
-  file:
+  file:  # noqa no-handler
     state: 'touch'
     dest: '/etc/avahi/hosts'
     owner: 'root'
@@ -131,8 +132,7 @@
     src: 'etc/ansible/facts.d/avahi.fact.j2'
     dest: '/etc/ansible/facts.d/avahi.fact'
     mode: '0755'
-  register: avahi__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: avahi__register_facts is changed
+  meta: 'flush_handlers'

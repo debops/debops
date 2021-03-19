@@ -15,13 +15,15 @@
 
   pre_tasks:
 
-    - import_role:
+    - name: Prepare minio environment
+      import_role:
         name: 'minio'
         tasks_from: 'main_env'
       tags: [ 'role::minio', 'role::etc_services', 'role::ferm',
               'role::keyring', 'role::golang', 'role::nginx' ]
 
-    - import_role:
+    - name: Prepare sysfs environment
+      import_role:
         name: 'sysfs'
         tasks_from: 'main_env'
       tags: [ 'role::sysfs', 'role::secret' ]
@@ -53,11 +55,6 @@
       etc_services__dependent_list:
         - '{{ minio__etc_services__dependent_list }}'
 
-    - role: golang
-      tags: [ 'role::golang', 'skip::golang' ]
-      golang__dependent_packages:
-        - '{{ minio__golang__dependent_packages }}'
-
     - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
@@ -87,6 +84,11 @@
         - '{{ minio__nginx__dependent_upstreams }}'
       nginx__dependent_servers:
         - '{{ minio__nginx__dependent_servers }}'
+
+    - role: golang
+      tags: [ 'role::golang', 'skip::golang' ]
+      golang__dependent_packages:
+        - '{{ minio__golang__dependent_packages }}'
 
     - role: minio
       tags: [ 'role::minio', 'skip::minio' ]

@@ -15,7 +15,7 @@
   when: ((item.name|d()) and (item.state|d() in [ 'inactive', 'undefined', 'absent' ]))
 
 - name: Delete storage pools if requested
-  virt_pool:
+  virt_pool:  # noqa no-handler
     name: '{{ item.item.name }}'
     uri: '{{ libvirt__connections[item.item.uri | d(libvirt__uri)] }}'
     command: 'delete'
@@ -47,7 +47,7 @@
   when: ((item.name|d()) and (item.state|d('active') not in [ 'undefined', 'absent' ]))
 
 - name: Build new storage pools
-  virt_pool:
+  virt_pool:  # noqa no-handler
     name: '{{ item.item.name }}'
     uri: '{{ libvirt__connections[item.item.uri | d(libvirt__uri)] }}'
     command: 'build'

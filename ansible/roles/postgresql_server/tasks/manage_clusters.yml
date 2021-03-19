@@ -241,7 +241,7 @@
           (item.start_conf is undefined or item.start_conf == 'auto')))
 
 - name: Reload PostgreSQL clusters when needed
-  command: pg_ctlcluster {{ item.item.version | d(postgresql_server__version) }} {{ item.item.name }} reload
+  command: 'pg_ctlcluster {{ item.item.version | d(postgresql_server__version) }} {{ item.item.name }} reload'  # noqa no-handler
   with_flattened:
     - '{{ postgresql_server__register_config.results }}'
     - '{{ postgresql_server__register_config_hba.results }}'
@@ -253,7 +253,7 @@
   tags: [ 'role::postgresql_server:config' ]
 
 - name: Reload PostgreSQL clusters when needed (systemd)
-  service:
+  service:  # noqa no-handler
     name: 'postgresql@{{ item.item.version | d(postgresql_server__version) }}-{{ item.item.name }}.service'
     state: 'reloaded'
   with_flattened:

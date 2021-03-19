@@ -45,9 +45,8 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: owncloud__register_local_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Gather facts if they were modified
-  action: setup
-  when: owncloud__register_local_facts is changed
+  meta: 'flush_handlers'
                                                                    # ]]]

@@ -18,7 +18,7 @@
   when: (owncloud__variant in ["owncloud"])
 
 - name: Update APT repository cache
-  apt:
+  apt:  # noqa no-handler
     update_cache: True
   register: owncloud__register_apt_cache
   until: owncloud__register_apt_cache is succeeded
@@ -67,7 +67,7 @@
   ## FIXME: Remove when the DPKG hook is 100 % reliable and/or
   ## ownCloud/NextCloud provide a native hook/support.
 - name: Ensure that the ownCloud upgrade has completed
-  command: '{{ owncloud__dpkg_hook_script }}'
+  command: '{{ owncloud__dpkg_hook_script }}'  # noqa no-handler
   when: (owncloud__variant in ["owncloud"] and
          owncloud__register_apt_install is changed and
          (ansible_local.owncloud.auto_security_updates_enabled|d()|bool))

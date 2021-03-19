@@ -15,17 +15,20 @@
 
   pre_tasks:
 
-    - import_role:
+    - name: Prepare volkszaehler environment
+      import_role:
         name: 'volkszaehler'
         tasks_from: 'main_env'
       tags: [ 'role::volkszaehler', 'role::volkszaehler:env', 'role::mariadb' ]
 
-    - import_role:
+    - name: Prepare php environment
+      import_role:
         name: 'php'
         tasks_from: 'main_env'
       tags: [ 'role::php', 'role::php:env', 'role::logrotate' ]
 
-    - import_role:
+    - name: Prepare apache environment
+      import_role:
         name: 'apache'
         tasks_from: 'main_env'
       tags: [ 'role::apache', 'role::apache:env' ]
@@ -59,9 +62,6 @@
       tags: [ 'role::logrotate' ]
       logrotate__dependent_config:
         - '{{ php__logrotate__dependent_config }}'
-
-    - role: geerlingguy.composer
-      tags: [ 'role::composer' ]
 
     - role: apache
       tags: [ 'role::apache' ]

@@ -4,10 +4,12 @@
 # Copyright (C) 2014-2019 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
 - name: Install required packages
@@ -33,11 +35,10 @@
     group: 'root'
     mode: '0755'
     unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
-  register: dnsmasq__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Reload facts if they were modified
-  action: setup
-  when: dnsmasq__register_facts is changed
+  meta: 'flush_handlers'
 
   # This directory is required, otherwise dnsmasq won't start when TFTP support
   # is enabled
