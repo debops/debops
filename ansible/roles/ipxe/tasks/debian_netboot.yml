@@ -92,5 +92,5 @@
              >> {{ ipxe__debian_netboot_pxe_root + "/" + item.item.release + "/" + item.item.architecture + "/"
                    + item.item.netboot_version + (item.item.netboot_subdir | d("")) + "/debian-installer/"
                    + item.item.architecture + "/initrd.gz" }}
-  loop: '{{ ipxe__register_debian_installer.results }}'
+  loop: '{{ ipxe__register_debian_installer.results }}'  # noqa no-handler
   when: ipxe__debian_netboot_firmware|bool and item.item.firmware_version|d() and item is changed
