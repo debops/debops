@@ -3,7 +3,8 @@
 # Copyright (C) 2015-2016 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 - name: Install required packages
@@ -124,7 +125,7 @@
   tags: [ 'role::librenms:config', 'role::librenms:database' ]
 
 - name: Install missing PHP packages via Composer
-  composer:
+  composer:  # noqa no-handler
     command: 'install'
     working_dir: '{{ librenms__install_path }}'
   register: librenms__register_composer
@@ -134,7 +135,7 @@
   become_user: '{{ librenms__user }}'
 
 - name: Initialize database
-  command: './daily.sh'
+  command: './daily.sh'  # noqa no-handler
   args:
     chdir: '{{ librenms__install_path }}'
   become: True
