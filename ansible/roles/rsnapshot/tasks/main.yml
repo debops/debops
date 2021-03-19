@@ -3,8 +3,13 @@
 # Copyright (C) 2015-2019 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
 
 - name: Install required APT packages
   package:
@@ -53,7 +58,7 @@
   loop: '{{ q("flattened", (rsnapshot__ssh_default_identities + rsnapshot__ssh_identities)) | parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
-  register: rsnapshot__register_ssh_identities
+  notify: [ 'Refresh host facts' ]
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ]
 
 - name: Make sure /root/.ssh/known_hosts file exists
@@ -73,12 +78,10 @@
     src: 'etc/ansible/facts.d/rsnapshot.fact.j2'
     dest: '/etc/ansible/facts.d/rsnapshot.fact'
     mode: '0755'
-  register: rsnapshot__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: (rsnapshot__register_ssh_identities is changed or
-         rsnapshot__register_facts is changed)
+  meta: 'flush_handlers'
 
   # The host facts are needed so that we have the real "ansible_fqdn" value
   # that the backup host will use which could be different from the
@@ -158,7 +161,7 @@
          (not rsnapshot__limit|d() or (item.name in rsnapshot__limit)))
 
 - name: Remove old SSH host fingerprints if keys were modified
-  environment:
+  environment:  # noqa no-handler
     item_fqdn: '{{ item.item.fqdn | d(hostvars[item.item.name].ansible_fqdn if hostvars[item.item.name]|d() else item.item.name) }}'
   shell: |
     set -o nounset -o pipefail -o errorexit
