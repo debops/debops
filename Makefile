@@ -1,5 +1,8 @@
 # DebOps Makefile
 
+# Use the Bash shell by default
+SHELL := /bin/bash
+
 .PHONY: all
 all: help
 
@@ -165,7 +168,11 @@ test-playbook-syntax:
 .PHONY: test-ansible-lint
 test-ansible-lint:
 	@printf "%s\n" "Checking Ansible roles using ansible-lint..."
-	@ansible-lint ansible/roles/*
+	@ansible-lint -v ansible/playbooks/bootstrap.yml ansible/playbooks/bootstrap-*.yml \
+			ansible/playbooks/site.yml \
+			ansible/playbooks/ldap/*.yml ansible/playbooks/tools/*.yml \
+			ansible/debops-contrib-playbooks/service/all.yml \
+			2>| >(grep -v "Overriding detected file kind 'yaml' with 'playbook'")
 
 .PHONY: test-yaml
 test-yaml:

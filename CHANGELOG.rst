@@ -21,6 +21,13 @@ You can read information about required changes between releases in the
 Changed
 ~~~~~~~
 
+Continuous Integration
+''''''''''''''''''''''
+
+- The :command:`ansible-lint` check will now use Ansible playbooks as the
+  starting point to test the whole codebase. Roles and playbooks not included
+  in the :file:`site.yml` playbook can be tested manually if needed.
+
 :ref:`debops.saslauthd` role
 ''''''''''''''''''''''''''''
 
