@@ -3,10 +3,13 @@
 # Copyright (C) 2019 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-# Problem with ansible-lint not detecting custom Ansible modules
-# Ref: https://github.com/ansible/ansible-lint/issues/644
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
 
 # The custom libraries were built during LXD installation via the
 # 'debops.golang' role and need to be installed system-wide for the lxc/lxd
@@ -59,7 +62,7 @@
   when: lxd__upstream_enabled|bool and ansible_service_mgr == 'systemd'
 
 - name: Enable systemd units
-  systemd:
+  systemd:  # noqa no-handler
     daemon_reload: True
     name: '{{ item }}'
     state: 'started'
@@ -86,8 +89,7 @@
     src: 'etc/ansible/facts.d/lxd.fact.j2'
     dest: '/etc/ansible/facts.d/lxd.fact'
     mode: '0755'
-  register: lxd__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: lxd__register_facts is changed
+  meta: 'flush_handlers'
