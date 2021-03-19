@@ -3,7 +3,8 @@
 # Copyright (C) 2015-2016 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
 - name: Create required directories
@@ -71,7 +72,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  notify: [ 'Restart docker-gen' ]
+  notify: [ 'Reload service manager', 'Restart docker-gen' ]
   when: ansible_service_mgr != 'systemd'
 
 - name: Configure docker-gen systemd service
@@ -82,16 +83,14 @@
     group: 'root'
     mode: '0644'
   register: docker_gen__register_service
-  notify: [ 'Restart docker-gen' ]
+  notify: [ 'Reload service manager', 'Restart docker-gen' ]
+  when: ansible_service_mgr == 'systemd'
 
 - name: Reload systemd daemons
-  systemd:
-    daemon_reload: True
-  when: ((ansible_service_mgr == 'systemd') and
-         (docker_gen__register_service|d() and docker_gen__register_service is changed))
+  meta: 'flush_handlers'
 
 - name: Start docker-gen on install
-  service:
+  service:  # noqa no-handler
     name: 'docker-gen'
     state: 'started'
     enabled: True
