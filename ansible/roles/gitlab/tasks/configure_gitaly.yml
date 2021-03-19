@@ -95,7 +95,7 @@
          not gitlab_register_gitaly_cloned.stat.exists
 
 - name: Stop gitaly service for an upgrade
-  service:
+  service:  # noqa no-handler
     name: 'gitlab-gitaly.service'
     state: 'stopped'
   when: (ansible_local|d() and ansible_local.gitlab|d() and
@@ -104,14 +104,14 @@
          gitlab_register_gitlab__gitaly_checkout is changed)
 
 - name: Setup gitaly
-  make:
+  make:  # noqa no-handler
     chdir: '{{ gitlab__gitaly_checkout }}'
   become: True
   become_user: '{{ gitlab_user }}'
   when: gitlab_register_gitlab__gitaly_checkout is changed
 
 - name: Start gitaly service after an upgrade
-  service:
+  service:  # noqa no-handler
     name: 'gitlab-gitaly.service'
     state: 'started'
   when: (ansible_local|d() and ansible_local.gitlab|d() and
