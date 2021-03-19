@@ -4,6 +4,10 @@
 # Copyright (C) 2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
 - name: Configure InfluxData APT repository
   apt_repository:
     repo: '{{ influxdata__repository }}'
@@ -17,6 +21,7 @@
                               + influxdata__host_packages
                               + influxdata__dependent_packages)) }}'
     state: 'present'
+  notify: [ 'Refresh host facts' ]
   register: influxdata__register_install
   until: influxdata__register_install is succeeded
 
@@ -35,9 +40,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: influxdata__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: (influxdata__register_facts is changed or
-         influxdata__register_install is changed)
+  meta: 'flush_handlers'
