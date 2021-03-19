@@ -47,7 +47,7 @@
   when: (homeassistant__deploy_state == "present")
 
 - name: Install hass without virtualenv
-  pip:
+  pip:  # noqa no-handler
     name: '.'
     chdir: '{{ homeassistant__git_dest }}'
     executable: 'pip3'
@@ -58,7 +58,7 @@
   notify: [ 'Restart Home Assistant' ]
 
 - name: Install hass in virtualenv
-  pip:
+  pip:  # noqa no-handler
     name: '.'
     chdir: '{{ homeassistant__git_dest }}'
     extra_args: '--upgrade'
