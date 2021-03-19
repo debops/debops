@@ -4,6 +4,10 @@
 # Copyright (C) 2015-2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'
@@ -15,11 +19,10 @@
     src: 'etc/ansible/facts.d/ifupdown.fact.j2'
     dest: '/etc/ansible/facts.d/ifupdown.fact'
     mode: '0755'
-  register: ifupdown__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they have been modified
-  action: setup
-  when: ifupdown__register_facts is changed
+  meta: 'flush_handlers'
 
 - name: Install required packages
   package:
@@ -95,13 +98,13 @@
                                       | d(item.item.value.type | d("default"))] | d("90"))|int
                      + (item.item.value.weight | d("0"))|int) }}_iface_{{ item.item.value.iface | d(item.item.key) }}'
          -exec rm -vf {} +
-  with_items:
+  with_items:  # noqa no-handler
     - '{{ ifupdown__register_interfaces_removed.results }}'
     - '{{ ifupdown__register_interfaces_created.results }}'
   when: (item.item.key|d() and item is changed)
 
 - name: Mark modified interfaces for processing
-  copy:
+  copy:  # noqa no-handler
     content: |
       {{ ("created"
           if ((item.item.key|replace(':','_')|replace('.','_')) not in ansible_interfaces and
