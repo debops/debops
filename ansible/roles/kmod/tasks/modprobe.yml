@@ -8,6 +8,7 @@
   file:
     dest: '/etc/modprobe.d/{{ module.filename | d(module.name | replace("_","-") + ".conf") }}'
     state: 'absent'
+  notify: [ 'Refresh host facts' ]
   register: kmod__register_module_config_delete
   when: module.name|d() and module.state|d('present') == 'absent'
 
@@ -18,11 +19,12 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  notify: [ 'Refresh host facts' ]
   register: kmod__register_module_config_create
   when: module.name|d() and module.state|d('present') != 'absent'
 
 - name: Unload kernel module if configuration changed
-  modprobe:
+  modprobe:  # noqa no-handler
     name: '{{ module.name }}'
     state: 'absent'
   when: ((kmod__register_module_config_delete is changed or
@@ -33,15 +35,10 @@
          module.state|d('present') not in [ 'config' ])
 
 - name: Load kernel module if configuration changed
-  modprobe:
+  modprobe:  # noqa no-handler
     name: '{{ module.name }}'
     state: 'present'
   when: ((kmod__register_module_config_delete is changed or
           kmod__register_module_config_create is changed) and
          module.blacklist is not defined and
          module.state|d('present') not in [ 'config', 'absent', 'blacklist' ])
-
-- name: Update Ansible facts if the list of loaded kernel modules might have changed
-  action: setup
-  when: (kmod__register_module_config_delete is changed or
-         kmod__register_module_config_create is changed)
