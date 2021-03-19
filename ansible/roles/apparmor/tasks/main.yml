@@ -142,12 +142,12 @@
   with_dict: '{{ apparmor__local_config }}'
 
 - name: Reload changed profiles
-  command: apparmor_parser --replace "/etc/apparmor.d/{{ item.item.key }}"
+  command: 'apparmor_parser --replace "/etc/apparmor.d/{{ item.item.key }}"'  # noqa no-handler
   when: (item is changed and apparmor__register_tunables is not changed)
   with_items: '{{ apparmor__register_local_config.results }}'
 
 - name: Reload AppArmor all profiles
-  service:
+  service:  # noqa no-handler
     name: 'apparmor'
     state: 'reloaded'
   when: apparmor__fact_apparmor_enabled_and_loaded|bool and apparmor__register_tunables is changed
