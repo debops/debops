@@ -3,10 +3,12 @@
 # Copyright (C) 2014-2018 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
 - name: Install required packages
@@ -32,14 +34,11 @@
     group: 'root'
     mode: '0644'
   loop: [ 'dhcp-probe@.service', 'dhcp-probe.service' ]
-  register: dhcp_probe__register_systemd
+  notify: [ 'Reload service manager' ]
   when: ansible_service_mgr == 'systemd'
 
 - name: Reload systemd configuration when needed
-  systemd:
-    daemon_reload: True
-  when: ansible_service_mgr == 'systemd' and
-        dhcp_probe__register_systemd is changed
+  meta: 'flush_handlers'
 
 - name: Disable DHCP Probe instances if requested
   systemd:
@@ -105,8 +104,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: dhcp_probe__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Reload facts if they were modified
-  action: setup
-  when: dhcp_probe__register_facts is changed
+  meta: 'flush_handlers'
