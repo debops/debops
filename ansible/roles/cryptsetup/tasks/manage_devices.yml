@@ -150,7 +150,7 @@
     - '{{ cryptsetup__register_ciphertext_device.results|d([]) }}'
 
 - name: Fail when ciphertext block device does not exist but the keyfile has changed
-  fail:
+  fail:  # noqa no-handler
     msg: |
       Ciphertext block device {{ item.0.ciphertext_block_device }} does not
       exist but the keyfile has just been generated. You will need to make the
@@ -393,7 +393,7 @@
            {{ ("/dev/mapper/" + item.item.name) | quote }}
   when: (item is changed and (item.item.swap|d(False) | bool) and
          (item.item.state|d(cryptsetup__state) in ['mounted', 'ansible_controller_mounted']))
-  with_items: '{{ cryptsetup__register_swap_fstab.results|d([]) }}'
+  with_items: '{{ cryptsetup__register_swap_fstab.results|d([]) }}'  # noqa no-handler
 ## ]]]
 
 ## Close crypto layer and remove [[[
@@ -406,7 +406,7 @@
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 
 - name: Stop plaintext device mapper target
-  command: cryptdisks_stop "{{ item.0.name }}"
+  command: 'cryptdisks_stop "{{ item.0.name }}"'  # noqa no-handler
   register: cryptsetup__register_cryptdisks_stop
   changed_when: ("(stopping)" in cryptsetup__register_cryptdisks_stop.stdout)
   failed_when: (
