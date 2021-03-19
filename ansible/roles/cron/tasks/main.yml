@@ -3,10 +3,13 @@
 # Copyright (C) 2016-2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-# Problem with ansible-lint not detecting custom Ansible modules
-# Ref: https://github.com/ansible/ansible-lint/issues/644
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
 
 - name: Install cron packages
   package:
@@ -29,12 +32,11 @@
     src: 'etc/ansible/facts.d/cron.fact.j2'
     dest: '/etc/ansible/facts.d/cron.fact'
     mode: '0755'
-  register: cron__register_facts
+  notify: [ 'Refresh host facts' ]
   tags: [ 'role::cron:crontab' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: cron__register_facts is changed
+  meta: 'flush_handlers'
   tags: [ 'role::cron:crontab' ]
 
 - name: Divert the original crontab configuration
