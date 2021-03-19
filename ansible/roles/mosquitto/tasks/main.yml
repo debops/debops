@@ -3,10 +3,12 @@
 # Copyright (C) 2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
-- import_role:
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 - name: Check if supported version of libwebsockets is available
@@ -222,10 +224,9 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: mosquitto__register_facts
+  notify: [ 'Refresh host facts' ]
   tags: [ 'role::mosquitto:passwd' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: mosquitto__register_facts is changed
+  meta: 'flush_handlers'
   tags: [ 'role::mosquitto:passwd' ]
