@@ -3,7 +3,8 @@
 # Copyright (C) 2018 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
 
 - name: Configure APT autoremove options
@@ -84,8 +85,3 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: apt_mark__register_facts
-
-- name: Update Ansible facts if they were modified
-  action: setup
-  when: apt_mark__register_facts is changed
