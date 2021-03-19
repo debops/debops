@@ -3,6 +3,10 @@
 # Copyright (C) 2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
 - name: Install locale packages
   package:
     name: '{{ q("flattened", (locales__base_packages
@@ -32,7 +36,7 @@
   when: ansible_pkg_mgr == 'apt' and locales__system_lang|d()
 
 - name: Update /etc/default/locale
-  command: 'update-locale LANG={{ locales__system_lang }}'
+  command: 'update-locale LANG={{ locales__system_lang }}'  # noqa no-handler
   when: ansible_pkg_mgr == 'apt' and locales__register_system_lang is changed
 
 - name: Make sure that Ansible local facts directory exists
@@ -50,8 +54,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: locales__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: locales__register_facts is changed
+  meta: 'flush_handlers'
