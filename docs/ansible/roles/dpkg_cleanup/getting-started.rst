@@ -43,7 +43,8 @@ In the :file:`tasks/main.yml` file of the ``application`` role, add:
 
 .. code-block:: yaml
 
-   - import_role:
+   - name: Prepare cleanup during package removal
+     import_role:
        name: 'dpkg_cleanup'
      vars:
        dpkg_cleanup__dependent_packages:
