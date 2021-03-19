@@ -4,7 +4,8 @@
 # Copyright (C) 2015-2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
   # When nested KVM is enabled on a host, Ansible does not recognize the
@@ -50,11 +51,10 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  register: libvirtd__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  action: setup
-  when: libvirtd__register_facts is changed
+  meta: 'flush_handlers'
 
 - name: Divert managed configuration files
   command: 'dpkg-divert --quiet --local --divert {{ item }}.dpkg-divert --rename {{ item }}'
