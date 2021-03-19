@@ -45,7 +45,7 @@
 
 - name: Copy diverted configuration file to original location
   command: cp {{ item }}.dpkg-divert {{ item }}
-  args:
+  args:  # noqa no-handler
     creates: '{{ item }}'
   when: snapshot_snapper__updatedb_diverted_register is changed
   with_flattened: '{{ snapshot_snapper__divert_files }}'
