@@ -23,6 +23,26 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.2: https://github.com/debops/debops/compare/v2.2.0...stable-2.2
 
+Added
+~~~~~
+
+:ref:`debops.global_handlers` role
+''''''''''''''''''''''''''''''''''
+
+- New global handlers available to roles:
+
+  - ``Refresh host facts``: re-gather host facts using the ``setup`` Ansible
+    module, required to ensure that Ansible has accurate information about the
+    current host state.
+
+  - ``Reload service manager``: update the :command:`init` daemon runtime
+    configuration, useful when new services are added or their
+    :command:`systemd` configuration changes.
+
+  - ``Create temporary files``: ensure that files and directories created at
+    system boot by tools like :command:`systemd-tmpfiles` are present on the
+    host.
+
 Changed
 ~~~~~~~
 
