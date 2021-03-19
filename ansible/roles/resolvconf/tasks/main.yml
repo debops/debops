@@ -3,10 +3,12 @@
 # Copyright (C) 2019 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import custom Ansible plugins
+  import_role:
     name: 'ansible_plugins'
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
     name: 'global_handlers'
 
 - name: Install required packages
@@ -38,15 +40,8 @@
     src: 'etc/systemd/system/resolvconf.service.d/static.conf.j2'
     dest: '/etc/systemd/system/resolvconf.service.d/static.conf'
     mode: '0644'
-  register: resolvconf__register_systemd
+  notify: [ 'Reload service manager' ]
   when: resolvconf__enabled|bool and resolvconf__static_enabled|bool
-
-- name: Reload systemd daemons
-  systemd:
-    daemon_reload: True
-  when: resolvconf__enabled|bool and resolvconf__static_enabled|bool and
-        ansible_service_mgr == 'systemd' and
-        resolvconf__register_systemd is changed
 
 - name: Divert original interface-order file
   command: dpkg-divert --quiet --local
@@ -54,7 +49,7 @@
                        --rename '/etc/resolvconf/interface-order'
   args:
     creates: '/etc/resolvconf/interface-order.dpkg-divert'
-  register: resolvconf__register_interface_order_divert
+  notify: [ 'Refresh /etc/resolv.conf' ]
   when: resolvconf__enabled|bool and resolvconf__deploy_state == 'present'
 
 - name: Generate /etc/resolvconf/interface-order configuration
@@ -62,7 +57,7 @@
     src: 'etc/resolvconf/interface-order.j2'
     dest: '/etc/resolvconf/interface-order'
     mode: '0644'
-  register: resolvconf__register_interface_order_config
+  notify: [ 'Refresh /etc/resolv.conf' ]
   when: resolvconf__enabled|bool and resolvconf__deploy_state == 'present'
 
 - name: Revert the original interface-order configuration
@@ -72,15 +67,8 @@
   args:
     removes: '/etc/resolvconf/interface-order.dpkg-divert'
     warn: False
-  register: resolvconf__register_interface_order_revert
+  notify: [ 'Refresh /etc/resolv.conf' ]
   when: resolvconf__enabled|bool and resolvconf__deploy_state == 'absent'
-
-- name: Regenerate /etc/resolv.conf
-  command: resolvconf -u
-  when: (resolvconf__enabled|bool and
-         (resolvconf__register_interface_order_divert is changed or
-          resolvconf__register_interface_order_config is changed or
-          resolvconf__register_interface_order_revert is changed))
 
 - name: Make sure Ansible fact directory exists
   file:
@@ -93,8 +81,7 @@
     src: 'etc/ansible/facts.d/resolvconf.fact.j2'
     dest: '/etc/ansible/facts.d/resolvconf.fact'
     mode: '0755'
-  register: resolvconf__register_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Reload facts if they were modified
-  action: setup
-  when: resolvconf__register_facts is changed
+  meta: 'flush_handlers'
