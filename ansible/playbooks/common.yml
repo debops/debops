@@ -43,17 +43,20 @@
 
   pre_tasks:
 
-    - import_role:
+    - name: Prepare nullmailer environment
+      import_role:
         name: 'nullmailer'
         tasks_from: 'main_env'
       tags: [ 'role::nullmailer', 'role::ferm', 'role::tcpwrappers' ]
 
-    - import_role:
+    - name: Prepare pki environment
+      import_role:
         name: 'pki'
         tasks_from: 'main_env'
       tags: [ 'role::pki', 'role::pki:secret', 'role::secret' ]
 
-    - import_role:
+    - name: Prepare sshd environment
+      import_role:
         name: 'sshd'
         tasks_from: 'main_env'
       tags: [ 'role::sshd', 'role::ldap' ]
