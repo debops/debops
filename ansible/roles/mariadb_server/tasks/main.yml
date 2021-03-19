@@ -3,7 +3,12 @@
 # Copyright (C) 2015-2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  import_role:
     name: 'secret'
 
 # We want to have our configuration enabled as soon as possible for UTF-8
@@ -37,7 +42,7 @@
   until: mariadb_server__register_install_status is succeeded
 
 - name: Stop database server on first install
-  service:
+  service:  # noqa no-handler
     name: 'mysql'
     state: 'stopped'
   when: ((mariadb_server__register_version|d() and not mariadb_server__register_version.stdout) and
@@ -65,7 +70,7 @@
     mode: '0755'
 
 - name: Move MariaDB data files to data directory
-  shell:
+  shell:  # noqa no-handler
     'mv {{ mariadb_server__default_datadir }}/* {{ mariadb_server__datadir }}'
   when: ((mariadb_server__register_version|d() and not mariadb_server__register_version.stdout) and
          (mariadb_server__register_install_status|d() and mariadb_server__register_install_status is changed) and
@@ -85,7 +90,7 @@
   tags: [ 'role::mariadb_server:configure' ]
 
 - name: Start database server on first install
-  service:
+  service:  # noqa no-handler
     name: 'mysql'
     state: 'started'
   when: ((mariadb_server__register_version|d() and not mariadb_server__register_version.stdout) and
@@ -110,8 +115,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  register: mariadb_server__register_local_facts
+  notify: [ 'Refresh host facts' ]
 
 - name: Re-read local facts if they have been modified
-  action: setup
-  when: mariadb_server__register_local_facts is changed
+  meta: 'flush_handlers'
