@@ -19,7 +19,6 @@
       import_role:
         name: 'rabbitmq_server'
         tasks_from: 'main_env'
-      when: rabbitmq_management__local|bool
       tags: [ 'role::rabbitmq_server', 'role::secret', 'role::rabbitmq_server:config' ]
 
   roles:
@@ -33,13 +32,11 @@
       tags: [ 'role::secret', 'role::rabbitmq_server', 'role::rabbitmq_server:config' ]
       secret__directories:
         - '{{ rabbitmq_server__secret__directories }}'
-      when: rabbitmq_management__local|bool
 
     - role: etc_services
       tags: [ 'role::etc_services', 'skip::etc_services' ]
       etc_services__dependent_list:
         - '{{ rabbitmq_management__etc_services__dependent_list }}'
-      when: rabbitmq_management__local|bool
 
     - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
@@ -71,7 +68,6 @@
       rabbitmq_server__dependent_state: '{{ rabbitmq_management__deploy_state }}'
       rabbitmq_server__dependent_config:
         - '{{ rabbitmq_management__rabbitmq_server__dependent_config }}'
-      when: rabbitmq_management__local|bool
 
     - role: rabbitmq_management
       tags: [ 'role::rabbitmq_management', 'skip::rabbitmq_management' ]

@@ -53,6 +53,14 @@ Continuous Integration
   starting point to test the whole codebase. Roles and playbooks not included
   in the :file:`site.yml` playbook can be tested manually if needed.
 
+:ref:`debops.rabbitmq_management` role
+''''''''''''''''''''''''''''''''''''''
+
+- The role playbook has been modified to explicitly install the RabbitMQ
+  service locally with the RabbitMQ web management interface, due to an issue
+  with Ansible ``flush_handlers`` functionality. A separate playbook for
+  management-only server can be added later if necessary.
+
 :ref:`debops.saslauthd` role
 ''''''''''''''''''''''''''''
 
