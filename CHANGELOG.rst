@@ -101,6 +101,12 @@ General
 - The :command:`saslauthd` daemon should correctly use the local and realm
   parts in the ``user@realm`` logins for authentication using LDAP directory.
 
+:ref:`debops.sudo` role
+'''''''''''''''''''''''
+
+- The role will correctly handle nested lists of :file:`/etc/sudoers.d/`
+  configuration files defined by other roles via dependent variables.
+
 
 `debops v2.2.1`_ - 2021-03-03
 -----------------------------
