@@ -70,6 +70,12 @@ Continuous Integration
 Fixed
 ~~~~~
 
+General
+'''''''
+
+- Fixes for various issues found by the :command:`ansible-lint` command have been
+  backported from the ``master`` branch.
+
 :ref:`debops.core` role
 '''''''''''''''''''''''
 
