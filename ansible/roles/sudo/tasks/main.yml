@@ -70,7 +70,7 @@
   file:
     path: '/etc/sudoers.d/{{ item.filename | d(item.name) }}'
     state: 'absent'
-  with_items: '{{ sudo__combined_sudoers | parse_kv_items }}'
+  with_items: '{{ sudo__combined_sudoers | flatten | parse_kv_items }}'
   notify: [ 'Refresh host facts' ]
   when: sudo__enabled|bool and
         item.name|d() and item.state|d('present') == 'absent'
@@ -83,7 +83,7 @@
     group: 'root'
     mode: '0440'
     validate: 'visudo -cf %s'
-  with_items: '{{ sudo__combined_sudoers | parse_kv_items }}'
+  with_items: '{{ sudo__combined_sudoers | flatten | parse_kv_items }}'
   notify: [ 'Refresh host facts' ]
   when: sudo__enabled|bool and
         item.name|d() and item.state|d('present') not in [ 'init', 'absent', 'ignore' ]
