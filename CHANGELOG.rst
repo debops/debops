@@ -52,6 +52,12 @@ Added
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
+  has been updated to the next point release, 10.9.
+
 Continuous Integration
 ''''''''''''''''''''''
 
