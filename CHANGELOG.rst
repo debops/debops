@@ -31,6 +31,12 @@ Added
 - The default backing store for LXC containers created by the role can now be
   configured via Ansible inventory.
 
+:ref:`debops.postgresql_server` role
+''''''''''''''''''''''''''''''''''''
+
+- Provide control over the file permissions of backup files created by the
+  :command:`autopostgresqlbackup` script using a default role variable.
+
 Changed
 ~~~~~~~
 
