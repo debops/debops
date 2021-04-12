@@ -260,7 +260,7 @@ exec 2> "$LOGERR"   # stderr replaced with file $LOGERR.
 dbdump () {
   rm -f "$2"
   touch "$2"
-  chmod 600 "$2"
+  chmod "$BACKUPPERM" "$2"
   for db in $1 ; do
     if [ -n "$SU_USERNAME" ]; then
       if [ "$db" = "$GLOBALS_OBJECTS" ]; then
