@@ -1,0 +1,68 @@
+{# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2021 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+{% set output = [] %}
+{% for identity in (q("flattened", authorized_keys__combined_identities) | parse_kv_items(merge_keys=["accounts"])) %}
+{%   if (identity.state|d('present') not in [ 'init', 'ignore' ] and (identity.sshkeys|d() or identity.url|d())) %}
+{%     for account in identity.accounts | d([]) %}
+{%       set parsed_account = {'identity': identity.name,
+                               'user': account.name} %}
+{%       if identity.sshkeys|d() %}
+{%         set _ = parsed_account.update({'key': ([ identity.sshkeys ]
+                                                  if identity.sshkeys is string
+                                                  else identity.sshkeys)
+                                                 | join('\n')}) %}
+{%       elif identity.url|d() %}
+{%         set _ = parsed_account.update({'key': identity.url}) %}
+{%       endif %}
+{%       set _ = parsed_account.update({'state': ('present'
+                                                  if (account.state|d('present') != 'absent'
+                                                      and identity.state|d('present') != 'absent')
+                                                  else 'absent')
+                                       }) %}
+{%       if (account.home | d() ) | bool %}
+{%         set _ = parsed_account.update({'manage_dir': True, 'home': True}) %}
+{%       else %}
+{%         set _ = parsed_account.update({'manage_dir': False,
+                                          'home':       False,
+                                          'path':       (authorized_keys__path + '/' + account.name),
+                                          'owner':      (account.owner      | d('root')),
+                                          'group':      (account.group      | d(account.name)),
+                                          'system':     (account.system     | d(authorized_keys__system)),
+                                          'mode':       (account.mode       | d('0640')),
+                                          'file_state': (account.file_state | d('present'))
+                                         }) %}
+{%         if account.gid | d() %}
+{%           set _ = parsed_account.update({'gid': account.gid}) %}
+{%         endif %}
+{%       endif %}
+{%       if (account.comment | d(identity.comment | d())) %}
+{%         set _ = parsed_account.update({'comment': (account.comment | d(identity.comment))}) %}
+{%       endif %}
+{%       set key_options = [] %}
+{%       if identity.options | d() %}
+{%         set _ = key_options.extend(identity.options | map(attribute='name') | list) %}
+{%       endif %}
+{%       if account.options | d() %}
+{%         set _ = key_options.extend(account.options | map(attribute='name') | list) %}
+{%       endif %}
+{%       for key, value in ((identity.environment|d({}))|combine(account.environment|d({}))) | dictsort %}
+{%         set _ = key_options.append('environment="' + key + '=' + value + '"') %}
+{%       endfor %}
+{%       if account.command | d() %}
+{%         set _ = key_options.append('command="' + account.command + '"') %}
+{%       elif identity.command | d() %}
+{%         set _ = key_options.append('command="' + identity.command + '"') %}
+{%       endif %}
+{%       if key_options %}
+{%         set _ = parsed_account.update({'key_options': key_options | unique | join(',')}) %}
+{%       endif %}
+{%       if (account.exclusive | d()) | bool %}
+{%         set _ = parsed_account.update({'exclusive': True}) %}
+{%       endif %}
+{%       set _ = output.append(parsed_account) %}
+{%     endfor %}
+{%   endif %}
+{% endfor %}
+{{ output | to_nice_yaml }}
