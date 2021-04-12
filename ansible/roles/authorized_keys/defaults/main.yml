@@ -1,14 +1,14 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# .. Copyright (C) 2016-2017 Maciej Delmanowski <drybjed@gmail.com>
-# .. Copyright (C) 2016-2017 DebOps <https://debops.org/>
+# .. Copyright (C) 2016-2021 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2016-2021 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _authorized_keys__ref_defaults:
 
-# debops.authorized_keys default variables [[[
-# ============================================
+# debops.authorized_keys default variables
+# ========================================
 
 # .. contents:: Sections
 #    :local:
@@ -31,13 +31,6 @@ authorized_keys__enabled: True
 authorized_keys__path: '/etc/ssh/authorized_keys'
 
                                                                    # ]]]
-# .. envvar:: authorized_keys__readonly [[[
-#
-# Enable or disable support for read-only SSH public keys, which cannot be
-# modified by their respective users.
-authorized_keys__readonly: True
-
-                                                                   # ]]]
 # .. envvar:: authorized_keys__system [[[
 #
 # If enabled, new groups created by the role will be "system" groups with
@@ -45,66 +38,47 @@ authorized_keys__readonly: True
 authorized_keys__system: True
                                                                    # ]]]
                                                                    # ]]]
-# SSH public key options [[[
-# --------------------------
+# SSH public key identities [[[
+# -----------------------------
 
-# .. envvar:: authorized_keys__options_map [[[
+# These lists define SSH public key identities managed by the role with
+# coorresponding UNIX accounts. See :ref:`authorized_keys__ref_identities` for
+# more details.
+
+# .. envvar:: authorized_keys__identities [[[
 #
-# This is a handy YAML dictionary with different sets of possible SSH options
-# that can be used in other variables to add common options to SSH keys.
-authorized_keys__options_map:
-
-  'no-forwarding': [ 'no-agent-forwarding', 'no-port-forwarding',
-                     'no-X11-forwarding' ]
-
-  'strict':        [ 'no-agent-forwarding', 'no-port-forwarding',
-                     'no-X11-forwarding', 'no-pty', 'no-user-rc' ]
+# The list of SSH key identities defined on all hosts in the Ansible inventory.
+authorized_keys__identities: []
 
                                                                    # ]]]
-# .. envvar:: authorized_keys__default_options [[[
+# .. envvar:: authorized_keys__group_identities [[[
 #
-# List of default SSH options added to all public keys. If it's set to
-# ``{{ omit }}``, no options will be added automatically. The list of options can be
-# overridden by the ``item.options`` parameter.
-authorized_keys__default_options: '{{ omit }}'
+# The list of SSH key identities defined on hosts in a specific Ansible
+# inventory group.
+authorized_keys__group_identities: []
 
                                                                    # ]]]
-# .. envvar:: authorized_keys__force_options [[[
+# .. envvar:: authorized_keys__host_identities [[[
 #
-# This is an alternative list of SSH options which will always be added to all
-# SSH keys managed by the role.
-authorized_keys__force_options: []
-                                                                   # ]]]
-                                                                   # ]]]
-# SSH public key lists [[[
-# ------------------------
+# The list of SSH key identities defined on specific hosts in the Ansible
+# inventory.
+authorized_keys__host_identities: []
 
-# These lists configure SSH public keys in a central location.
-# See :ref:`authorized_keys__ref_list` for more details.
-
-# .. envvar:: authorized_keys__list [[[
+                                                                   # ]]]
+# .. envvar:: authorized_keys__dependent_identities [[[
 #
-# List of SSH public keys configured on all hosts in Ansible inventory.
-authorized_keys__list: []
+# The list of SSH key identities defined by other Ansible roles via role
+# dependent variables.
+authorized_keys__dependent_identities: []
 
                                                                    # ]]]
-# .. envvar:: authorized_keys__group_list [[[
+# .. envvar:: authorized_keys__combined_identities [[[
 #
-# List of SSH public keys configured on a group of hosts in Ansible inventory.
-authorized_keys__group_list: []
-
-                                                                   # ]]]
-# .. envvar:: authorized_keys__host_list [[[
-#
-# List of SSH public keys configured on specific hosts in Ansible inventory.
-authorized_keys__host_list: []
-
-                                                                   # ]]]
-# .. envvar:: authorized_keys__dependent_list [[[
-#
-# List of SSH public keys configured by other Ansible roles via dependent
-# variables.
-authorized_keys__dependent_list: []
-                                                                   # ]]]
+# Variable which combines all of the SSH key identities lists and is used in
+# role tasks and templates.
+authorized_keys__combined_identities: '{{ authorized_keys__identities
+                                          + authorized_keys__group_identities
+                                          + authorized_keys__host_identities
+                                          + authorized_keys__dependent_identities }}'
                                                                    # ]]]
                                                                    # ]]]

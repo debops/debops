@@ -1,0 +1,13 @@
+#!/bin/sh
+# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# /usr/local/bin/gitserve
+# See also: https://www.reddit.com/r/git/comments/2s0yi6/
+set -ef
+if [ -n "$SSH_ORIGINAL_COMMAND" ] ; then
+    exec git-shell -c "$SSH_ORIGINAL_COMMAND"
+else
+    exec git-shell
+fi

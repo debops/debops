@@ -15,6 +15,32 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+Redesigned ``authorized_keys`` role
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The :ref:`debops.authorized_keys` role has been redesigned, here are changes
+  in the Ansible inventory variables used by the role:
+
+  +--------------------------------------+-------------------------------------------------+---------------+
+  | Old variable name                    | New variable name                               | Changed value |
+  +======================================+=================================================+===============+
+  | ``authorized_keys__readonly``        | Removed                                         | No            |
+  +--------------------------------------+-------------------------------------------------+---------------+
+  | ``authorized_keys__options_map``     | Removed                                         | No            |
+  +--------------------------------------+-------------------------------------------------+---------------+
+  | ``authorized_keys__default_options`` | Removed                                         | No            |
+  +--------------------------------------+-------------------------------------------------+---------------+
+  | ``authorized_keys__force_options``   | Removed                                         | No            |
+  +--------------------------------------+-------------------------------------------------+---------------+
+  | ``authorized_keys__list``            | :envvar:`authorized_keys__identities`           | Yes           |
+  +--------------------------------------+-------------------------------------------------+---------------+
+  | ``authorized_keys__group_list``      | :envvar:`authorized_keys__group_identities`     | Yes           |
+  +--------------------------------------+-------------------------------------------------+---------------+
+  | ``authorized_keys__host_list``       | :envvar:`authorized_keys__host_identities`      | Yes           |
+  +--------------------------------------+-------------------------------------------------+---------------+
+  | ``authorized_keys__dependent_list``  | :envvar:`authorized_keys__dependent_identities` | Yes           |
+  +--------------------------------------+-------------------------------------------------+---------------+
+
 
 v2.2.0 (2021-01-31)
 -------------------

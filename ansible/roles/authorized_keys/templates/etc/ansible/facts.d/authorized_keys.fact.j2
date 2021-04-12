@@ -1,0 +1,21 @@
+#!{{ ansible_python['executable'] }}
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps, loads
+from sys import exit
+import os
+
+
+output = loads('''{{ {"configured": True,
+                      "enabled": authorized_keys__enabled|bool,
+                      "datastore": authorized_keys__path
+                     } | to_nice_json }}''')
+
+print(dumps(output, sort_keys=True, indent=4))

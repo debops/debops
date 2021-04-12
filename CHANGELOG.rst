@@ -91,6 +91,17 @@ Continuous Integration
   starting point to test the whole codebase. Roles and playbooks not included
   in the :file:`site.yml` playbook can be tested manually if needed.
 
+:ref:`debops.authorized_keys` role
+''''''''''''''''''''''''''''''''''
+
+- The management of the SSH public keys has been redesigned. Instead of
+  focusing on UNIX accounts with one or more keys, the role now focuses on
+  separate public keys as "SSH identities" that are configured on one or more
+  UNIX accounts. This should provide more flexibility in environments where
+  small number of users utilizes large number of UNIX accounts, for example
+  small development team with multiple applications deployed on separate
+  accounts.
+
 :ref:`debops.roundcube` role
 ''''''''''''''''''''''''''''
 

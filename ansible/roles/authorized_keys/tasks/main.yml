@@ -1,13 +1,21 @@
 ---
-# Copyright (C) 2016-2017 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2016-2017 DebOps <https://debops.org/>
+# Copyright (C) 2016-2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2016-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import custom Ansible plugins
+  import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
 
 - name: Import DebOps secret role
   import_role:
     name: 'secret'
 
-- name: Ensure that /etc/ssh/authorized_keys/ exists
+- name: Ensure that SSH identity datastore exists
   file:
     path: '{{ authorized_keys__path }}'
     state: 'directory'
@@ -18,21 +26,16 @@
 
 - name: Ensure the required groups exist
   group:
-    name: '{{ item.group | d(item.name) }}'
+    name: '{{ item.group }}'
     gid: '{{ item.gid | d(omit) }}'
-    system: '{{ (True
-                 if (authorized_keys__system|bool and (item.system is undefined or item.system|bool))
-                 else False) | bool }}'
+    system: '{{ item.system | bool }}'
     state: 'present'
-  with_flattened:
-    - '{{ authorized_keys__list }}'
-    - '{{ authorized_keys__group_list }}'
-    - '{{ authorized_keys__host_list }}'
-    - '{{ authorized_keys__dependent_list }}'
-    - '{{ sshkeys_list | d([]) }}'
-    - '{{ sshkeys_group_list | d([]) }}'
-    - '{{ sshkeys_host_list | d([]) }}'
-  when: authorized_keys__enabled|bool and item.group|d()
+  loop: '{{ lookup("template", "lookup/authorized_keys__identities.j2") | from_yaml }}'
+  loop_control:
+    label: '{{ {"identity": item.identity, "group": item.group} }}'
+  when: authorized_keys__enabled|bool and item.group|d() and
+        item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
+        item.file_state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Get list of all groups
   getent:
@@ -48,69 +51,65 @@
 
 - name: Configure authorized keys for users
   authorized_key:
-    key: "{{ ((item.sshkeys
-               if item.sshkeys is string
-               else (item.sshkeys | unique | join('\n') | string))
-              if item.sshkeys|d() else '')
-             + (('https://github.com/' + item.github + '.keys') if item.github|d() else '') }}"
-    key_options: '{{ ((item.options
-                       if item.options is string
-                       else item.options|join(","))
-                      if item.options is defined
-                      else ((authorized_keys__default_options
-                             if authorized_keys__default_options is string
-                             else authorized_keys__default_options|join(","))
-                            if authorized_keys__default_options != omit
-                            else ""))
-                     + ((("," + item.key_options)
-                         if item.key_options is string
-                         else ("," + item.key_options|join(",")))
-                        if item.key_options|d()
-                        else "")
-                     + (("," + authorized_keys__force_options)
-                        if authorized_keys__force_options is string
-                        else ("," + authorized_keys__force_options|join(","))) }}'
-    path: '{{ authorized_keys__path }}/{{ item.name }}'
-    user: '{{ item.name if item.name in getent_passwd.keys() else "root" }}'
-    state: '{{ item.state | d("present") }}'
-    exclusive: '{{ item.exclusive | d(omit) }}'
-    manage_dir: False
-  with_flattened:
-    - '{{ authorized_keys__list }}'
-    - '{{ authorized_keys__group_list }}'
-    - '{{ authorized_keys__host_list }}'
-    - '{{ authorized_keys__dependent_list }}'
-    - '{{ sshkeys_list | d([]) }}'
-    - '{{ sshkeys_group_list | d([]) }}'
-    - '{{ sshkeys_host_list | d([]) }}'
+    key:         '{{ item.key }}'
+    user:        '{{ item.user if (item.home|d())|bool else "root" }}'
+    manage_dir:  '{{ item.manage_dir }}'
+    state:       '{{ item.state       | d("present") }}'
+    key_options: '{{ item.key_options | d(omit) }}'
+    comment:     '{{ item.comment     | d(omit) }}'
+    path:        '{{ item.path        | d(omit) }}'
+    exclusive:   '{{ item.exclusive   | d(omit) }}'
+  loop: '{{ lookup("template", "lookup/authorized_keys__identities.j2") | from_yaml }}'
+  loop_control:
+    label: '{{ {"identity": item.identity,
+                "state": (item.state|d("present")
+                          if (item.user in getent_passwd.keys() and (item.home|d())|bool)
+                          else ("no user"
+                                if (item.user not in getent_passwd.keys() and (item.home|d())|bool)
+                                else item.state|d("present"))),
+                "user": item.user,
+                "path": item.path|d("~" + item.user + "/.ssh/authorized_keys")} }}'
   when: (authorized_keys__enabled|bool and
-         (item.name|d() and (item.sshkeys|d() or item.github|d()) and
-          item.file_state|d('present') != 'absent'))
+         item.file_state|d('present') != 'absent' and
+         ((item.home|d())|bool and item.user in getent_passwd.keys()) or
+          not (item.home|d())|bool)
 
 - name: Enforce state of authorized_keys user files
   file:
-    path:  '{{ authorized_keys__path + "/" + item.name }}'
+    path:  '{{ item.path }}'
     owner: '{{ item.owner if (item.owner|d() and item.owner in getent_passwd.keys()) else "root" }}'
     group: '{{ (item.group
-                if (item.group|d() and item.group in getent_group.keys())
-                else (getent_passwd[item.name][2] if item.name in getent_passwd else omit)) }}'
-    mode:  '{{ item.mode | d("640"
-                             if ((item.readonly|d() and item.readonly|bool) or
-                                 (item.readonly|d(authorized_keys__readonly|bool)))
-                             else "600") }}'
-    state: '{{ "absent" if (item.file_state|d() and item.file_state == "absent") else omit }}'
-  with_flattened:
-    - '{{ authorized_keys__list }}'
-    - '{{ authorized_keys__group_list }}'
-    - '{{ authorized_keys__host_list }}'
-    - '{{ authorized_keys__dependent_list }}'
-    - '{{ sshkeys_list | d([]) }}'
-    - '{{ sshkeys_group_list | d([]) }}'
-    - '{{ sshkeys_host_list | d([]) }}'
-  when: (authorized_keys__enabled|bool and item.name|d() and
-         ((item.readonly|d() and item.readonly|bool) or item.mode|d() or
-          (item.file_state|d() and item.file_state == 'absent') or
-          (authorized_keys__readonly|bool and (item.sshkeys|d() or item.github|d()) and
-           (item.readonly is undefined or item.readonly|bool) and
-           (item.file_state is undefined or item.file_state != 'absent') and
-           (item.state is undefined or item.state != 'absent'))))
+                if (item.group|d() and item.group in (getent_group|d({})).keys())
+                else (getent_passwd[item.owner][2]|d({})
+                      if (item.owner in getent_passwd|d({}))
+                      else omit)) }}'
+    mode:  '{{ item.mode }}'
+    state: '{{ "absent" if (item.file_state|d("present") == "absent") else omit }}'
+  loop: '{{ lookup("template", "lookup/authorized_keys__identities.j2") | from_yaml }}'
+  loop_control:
+    label: '{{ {"identity": item.identity,
+                "state": item.file_state|d("present"),
+                "group": (item.group
+                          if (item.group|d() and item.group in (getent_group|d({})).keys())
+                          else (getent_passwd[item.owner|d("root")][2]|d({})
+                                if (item.owner|d("root") in getent_passwd|d({}))
+                                else "root")),
+                "path": item.path} }}'
+  when: authorized_keys__enabled|bool and item.path|d() and not item.manage_dir|bool and
+        item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save authorized_keys local facts
+  template:
+    src: 'etc/ansible/facts.d/authorized_keys.fact.j2'
+    dest: '/etc/ansible/facts.d/authorized_keys.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+
+- name: Re-read local facts if they have been modified
+  meta: 'flush_handlers'
