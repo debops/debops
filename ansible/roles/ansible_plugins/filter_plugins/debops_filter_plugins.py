@@ -203,87 +203,91 @@ def parse_kv_config(*args, **kwargs):
             element = {name: element}
 
         if isinstance(element, dict):
-            if (any(x in [name] for x in element) and
-                    element.get('state', 'present') != 'ignore'):
+            if any(x in [name] for x in element):
 
-                param_name = element.get(name)
+                if element.get('state', 'present') != 'ignore':
 
-                if element.get('state', 'present') == 'append':
+                    param_name = element.get(name)
 
-                    # In append mode, don't create new config entries
-                    if (parsed_config.get(param_name, {})
-                            .get('state', 'present') == 'init'):
-                        continue
+                    if element.get('state', 'present') == 'append':
 
-                current_param = (parsed_config[param_name].copy()
-                                 if param_name in parsed_config
-                                 else {})
+                        # In append mode, don't create new config entries
+                        if (parsed_config.get(param_name, {})
+                                .get('state', 'present') == 'init'):
+                            continue
 
-                if element.get('state', 'present') == 'append':
-                    current_param['state'] = current_param.get(
-                            'state', 'present')
-                else:
-                    current_param['state'] = (
-                        element.get('state', current_param.get(
-                            'state', 'present')))
+                    current_param = (parsed_config[param_name].copy()
+                                     if param_name in parsed_config
+                                     else {})
 
-                if (current_param['state'] == 'init' and
-                    (element.get('state', 'present') != 'init' and
-                        _check_if_key_in_nested_dict(
-                        'value', current_param))):
-                    current_param['state'] = 'present'
+                    if element.get('state', 'present') == 'append':
+                        current_param['state'] = current_param.get(
+                                'state', 'present')
+                    else:
+                        current_param['state'] = (
+                            element.get('state', current_param.get(
+                                'state', 'present')))
 
-                current_param.update({
-                    name: param_name,  # in case of a new entry
-                    'id': int(current_param.get('id', (element_index * 10))),
-                    'weight': int(current_param.get('weight', 0)),
-                    'separator': element.get('separator',
-                                             current_param.get('separator',
-                                                               False)),
-                    'section': element.get('section',
-                                           current_param.get('section',
-                                                             'unknown'))
-                })
+                    if (current_param['state'] == 'init' and
+                        (element.get('state', 'present') != 'init' and
+                            _check_if_key_in_nested_dict(
+                            'value', current_param))):
+                        current_param['state'] = 'present'
 
-                _handle_copy_id_from(parsed_config, element, current_param)
-                _handle_weight(element, current_param)
+                    current_param.update({
+                        name: param_name,  # in case of a new entry
+                        'id': int(current_param.get('id',
+                                                    (element_index * 10))),
+                        'weight': int(current_param.get('weight', 0)),
+                        'separator': element.get('separator',
+                                                 current_param.get('separator',
+                                                                   False)),
+                        'section': element.get('section',
+                                               current_param.get('section',
+                                                                 'unknown'))
+                    })
 
-                current_param['real_weight'] = _get_real_weight(current_param)
+                    _handle_copy_id_from(parsed_config, element, current_param)
+                    _handle_weight(element, current_param)
 
-                _parse_kv_value(current_param, element,
-                                current_param.get('id'))
+                    current_param['real_weight'] = (
+                            _get_real_weight(current_param))
 
-                if 'option' in element:
-                    current_param['option'] = element.get('option')
+                    _parse_kv_value(current_param, element,
+                                    current_param.get('id'))
 
-                if 'comment' in element:
-                    current_param['comment'] = element.get('comment')
+                    if 'option' in element:
+                        current_param['option'] = element.get('option')
 
-                merge_keys = []
-                if isinstance(kwargs.get('merge_keys'), list):
-                    merge_keys.extend(kwargs.get('merge_keys'))
+                    if 'comment' in element:
+                        current_param['comment'] = element.get('comment')
 
-                if 'options' not in merge_keys:
-                    merge_keys.append('options')
+                    merge_keys = []
+                    if isinstance(kwargs.get('merge_keys'), list):
+                        merge_keys.extend(kwargs.get('merge_keys'))
 
-                for key_name in merge_keys:
-                    if key_name in element:
-                        current_options = current_param.get(key_name, [])
-                        current_param[key_name] = parse_kv_config(
-                            current_options + element.get(key_name),
-                            merge_keys=merge_keys)
+                    if 'options' not in merge_keys:
+                        merge_keys.append('options')
 
-                # Include any unknown keys
-                for unknown_key in element.keys():
-                    if (unknown_key not in merge_keys
-                        and unknown_key not in [name, 'state', 'id',
-                                                'weight', 'real_weight',
-                                                'separator', 'value',
-                                                'comment', 'option',
-                                                'section']):
-                        current_param[unknown_key] = element.get(unknown_key)
+                    for key_name in merge_keys:
+                        if key_name in element:
+                            current_options = current_param.get(key_name, [])
+                            current_param[key_name] = parse_kv_config(
+                                current_options + element.get(key_name),
+                                merge_keys=merge_keys)
 
-                parsed_config.update({param_name: current_param})
+                    # Include any unknown keys
+                    for unknown_key in element.keys():
+                        if (unknown_key not in merge_keys
+                            and unknown_key not in [name, 'state', 'id',
+                                                    'weight', 'real_weight',
+                                                    'separator', 'value',
+                                                    'comment', 'option',
+                                                    'section']):
+                            current_param[unknown_key] = (
+                                    element.get(unknown_key))
+
+                    parsed_config.update({param_name: current_param})
 
             # These parameters are special and should not be interpreted
             # directly as configuration options
@@ -583,6 +587,176 @@ if __name__ == '__main__':
               separator: false
               state: present
               value: null
+              weight: 0
+            '''))
+
+            items = parse_kv_config(input_items)
+
+            #  print(yaml.dump(items, default_flow_style=False))
+            #  print(yaml.dump(expected_items, default_flow_style=False))
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_config_absent(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'local'
+              value: 'test'
+            - name: 'local2'
+              value: 'test2'
+            - name: 'local'
+              value: 'test3'
+            - name: 'local_null'
+              value: null
+              state: 'absent'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - id: 0
+              name: local
+              real_weight: 0
+              section: unknown
+              separator: false
+              state: present
+              value: test3
+              weight: 0
+            - id: 10
+              name: local2
+              real_weight: 10
+              section: unknown
+              separator: false
+              state: present
+              value: test2
+              weight: 0
+            - id: 30
+              name: local_null
+              real_weight: 30
+              section: unknown
+              separator: false
+              state: absent
+              value: null
+              weight: 0
+            '''))
+
+            items = parse_kv_config(input_items)
+
+            #  print(yaml.dump(items, default_flow_style=False))
+            #  print(yaml.dump(expected_items, default_flow_style=False))
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_config_init(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'local'
+              value: 'test'
+            - name: 'local2'
+              value: 'test2'
+            - name: 'local'
+              value: 'test3'
+            - name: 'local_null'
+              value: null
+              state: 'init'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - id: 0
+              name: local
+              real_weight: 0
+              section: unknown
+              separator: false
+              state: present
+              value: test3
+              weight: 0
+            - id: 10
+              name: local2
+              real_weight: 10
+              section: unknown
+              separator: false
+              state: present
+              value: test2
+              weight: 0
+            - id: 30
+              name: local_null
+              real_weight: 30
+              section: unknown
+              separator: false
+              state: init
+              value: null
+              weight: 0
+            '''))
+
+            items = parse_kv_config(input_items)
+
+            #  print(yaml.dump(items, default_flow_style=False))
+            #  print(yaml.dump(expected_items, default_flow_style=False))
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_config_ignore(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'local'
+              value: 'test'
+            - name: 'local2'
+              value: 'test2'
+            - name: 'local'
+              value: 'test3'
+            - name: 'local_null'
+              value: null
+              state: 'ignore'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - id: 0
+              name: local
+              real_weight: 0
+              section: unknown
+              separator: false
+              state: present
+              value: test3
+              weight: 0
+            - id: 10
+              name: local2
+              real_weight: 10
+              section: unknown
+              separator: false
+              state: present
+              value: test2
+              weight: 0
+            '''))
+
+            items = parse_kv_config(input_items)
+
+            #  print(yaml.dump(items, default_flow_style=False))
+            #  print(yaml.dump(expected_items, default_flow_style=False))
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_config_ignore_existing(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'local'
+              value: 'test'
+            - name: 'local2'
+              value: 'test2'
+            - name: 'local'
+              value: 'test3'
+              state: 'ignore'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - id: 0
+              name: local
+              real_weight: 0
+              section: unknown
+              separator: false
+              state: present
+              value: test
+              weight: 0
+            - id: 10
+              name: local2
+              real_weight: 10
+              section: unknown
+              separator: false
+              state: present
+              value: test2
               weight: 0
             '''))
 
@@ -1234,6 +1408,50 @@ if __name__ == '__main__':
             '''))
 
             items = parse_kv_items(input_items1, input_items2, name='renamed')
+
+            #  print(yaml.dump(items, default_flow_style=False))
+            #  print(yaml.dump(expected_items, default_flow_style=False))
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_items_ignore_raw(self):
+            input_items1 = yaml.safe_load(textwrap.dedent('''
+            - name: 'test-item'
+              options:
+
+                - name: 'test-option'
+                  raw: 'test-is-present'
+                  state: 'present'
+            '''))
+
+            input_items2 = yaml.safe_load(textwrap.dedent('''
+            - name: 'test-item'
+              options:
+
+                - name: 'test-option'
+                  raw: 'test-is-ignored'
+                  state: 'ignore'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - id: 0
+              name: test-item
+              options:
+              - id: 0
+                name: test-option
+                real_weight: 0
+                section: unknown
+                separator: false
+                state: present
+                raw: test-is-present
+                weight: 0
+              real_weight: 0
+              separator: false
+              state: present
+              weight: 0
+            '''))
+
+            items = parse_kv_items(input_items1, input_items2)
 
             #  print(yaml.dump(items, default_flow_style=False))
             #  print(yaml.dump(expected_items, default_flow_style=False))

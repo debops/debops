@@ -147,6 +147,12 @@ General
 - The :command:`debops-update` script should now correctly detect cloned DebOps
   monorepo.
 
+:ref:`debops.ansible_plugins` role
+''''''''''''''''''''''''''''''''''
+
+- In the ``parse_kv_config`` custom Ansible filter, correctly skip
+  configuration entries which have been marked with the ``ignore`` state.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
