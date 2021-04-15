@@ -592,6 +592,176 @@ if __name__ == '__main__':
 
             self.assertEqual(items, expected_items)
 
+        def test_parse_kv_config_absent(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'local'
+              value: 'test'
+            - name: 'local2'
+              value: 'test2'
+            - name: 'local'
+              value: 'test3'
+            - name: 'local_null'
+              value: null
+              state: 'absent'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - id: 0
+              name: local
+              real_weight: 0
+              section: unknown
+              separator: false
+              state: present
+              value: test3
+              weight: 0
+            - id: 10
+              name: local2
+              real_weight: 10
+              section: unknown
+              separator: false
+              state: present
+              value: test2
+              weight: 0
+            - id: 30
+              name: local_null
+              real_weight: 30
+              section: unknown
+              separator: false
+              state: absent
+              value: null
+              weight: 0
+            '''))
+
+            items = parse_kv_config(input_items)
+
+            #  print(yaml.dump(items, default_flow_style=False))
+            #  print(yaml.dump(expected_items, default_flow_style=False))
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_config_init(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'local'
+              value: 'test'
+            - name: 'local2'
+              value: 'test2'
+            - name: 'local'
+              value: 'test3'
+            - name: 'local_null'
+              value: null
+              state: 'init'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - id: 0
+              name: local
+              real_weight: 0
+              section: unknown
+              separator: false
+              state: present
+              value: test3
+              weight: 0
+            - id: 10
+              name: local2
+              real_weight: 10
+              section: unknown
+              separator: false
+              state: present
+              value: test2
+              weight: 0
+            - id: 30
+              name: local_null
+              real_weight: 30
+              section: unknown
+              separator: false
+              state: init
+              value: null
+              weight: 0
+            '''))
+
+            items = parse_kv_config(input_items)
+
+            #  print(yaml.dump(items, default_flow_style=False))
+            #  print(yaml.dump(expected_items, default_flow_style=False))
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_config_ignore(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'local'
+              value: 'test'
+            - name: 'local2'
+              value: 'test2'
+            - name: 'local'
+              value: 'test3'
+            - name: 'local_null'
+              value: null
+              state: 'ignore'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - id: 0
+              name: local
+              real_weight: 0
+              section: unknown
+              separator: false
+              state: present
+              value: test3
+              weight: 0
+            - id: 10
+              name: local2
+              real_weight: 10
+              section: unknown
+              separator: false
+              state: present
+              value: test2
+              weight: 0
+            '''))
+
+            items = parse_kv_config(input_items)
+
+            #  print(yaml.dump(items, default_flow_style=False))
+            #  print(yaml.dump(expected_items, default_flow_style=False))
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_config_ignore_existing(self):
+            input_items = yaml.safe_load(textwrap.dedent('''
+            - name: 'local'
+              value: 'test'
+            - name: 'local2'
+              value: 'test2'
+            - name: 'local'
+              value: 'test3'
+              state: 'ignore'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - id: 0
+              name: local
+              real_weight: 0
+              section: unknown
+              separator: false
+              state: present
+              value: test
+              weight: 0
+            - id: 10
+              name: local2
+              real_weight: 10
+              section: unknown
+              separator: false
+              state: present
+              value: test2
+              weight: 0
+            '''))
+
+            items = parse_kv_config(input_items)
+
+            #  print(yaml.dump(items, default_flow_style=False))
+            #  print(yaml.dump(expected_items, default_flow_style=False))
+
+            self.assertEqual(items, expected_items)
+
         def test_parse_kv_config_simple_string(self):
             input_items = yaml.safe_load(textwrap.dedent('''
             - 'simple_string'
@@ -1233,6 +1403,50 @@ if __name__ == '__main__':
             '''))
 
             items = parse_kv_items(input_items1, input_items2, name='renamed')
+
+            #  print(yaml.dump(items, default_flow_style=False))
+            #  print(yaml.dump(expected_items, default_flow_style=False))
+
+            self.assertEqual(items, expected_items)
+
+        def test_parse_kv_items_ignore_raw(self):
+            input_items1 = yaml.safe_load(textwrap.dedent('''
+            - name: 'test-item'
+              options:
+
+                - name: 'test-option'
+                  raw: 'test-is-present'
+                  state: 'present'
+            '''))
+
+            input_items2 = yaml.safe_load(textwrap.dedent('''
+            - name: 'test-item'
+              options:
+
+                - name: 'test-option'
+                  raw: 'test-is-ignored'
+                  state: 'ignore'
+            '''))
+
+            expected_items = yaml.safe_load(textwrap.dedent('''
+            - id: 0
+              name: test-item
+              options:
+              - id: 0
+                name: test-option
+                real_weight: 0
+                section: unknown
+                separator: false
+                state: present
+                raw: test-is-present
+                weight: 0
+              real_weight: 0
+              separator: false
+              state: present
+              weight: 0
+            '''))
+
+            items = parse_kv_items(input_items1, input_items2)
 
             #  print(yaml.dump(items, default_flow_style=False))
             #  print(yaml.dump(expected_items, default_flow_style=False))
