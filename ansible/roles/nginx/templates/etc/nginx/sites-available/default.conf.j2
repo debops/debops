@@ -1,6 +1,7 @@
 {# Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@drybjed.net>
  # Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
  # Copyright (C) 2014-2017 DebOps <https://debops.org/>
+ # Copyright (C) 2020-2020 Sebastian Vaisov <sebastian@vaisov.lt>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 {% import 'debops__tpl_macros.j2' as debops__tpl_macros with context %}
@@ -208,7 +209,10 @@
 {% elif nginx_tpl_ssl and item.redirect_ssl|d()                                          %}
         return {{ item.redirect_code | default(nginx_tpl_default_redirect_code) }} {{ item.redirect_ssl }};
 {% else                                                                                  %}
-        keepalive_timeout {{ item.keepalive | default(nginx_default_keepalive_timeout) | string }};
+{% if not (nginx__h5bp_enabled|bool)                                           %}
+	keepalive_timeout {{ item.keepalive | default(nginx_default_keepalive_timeout) | string }};
+{% endif                                                                       %}
+
 
 {%     block nginx_tpl_block_log                                                    %}
 {%         if item.name|d() %}
@@ -218,13 +222,21 @@
 {%             elif nginx_access_log_format is defined                              %}
 {%                 set nginx_tpl_access_log_format = ' ' +  nginx_access_log_format %}
 {%             endif                                                                %}
-{%             if item.access_log_enabled|d(True) | bool %}
+{%             if item.access_log_enabled|d(True) | bool                            %}
+{%               if item.log_syslog|d(False) | bool                                 %}
+        access_log {{ item.access_syslog_path }};
+{%               else                                                               %}
         access_log {{ (item.log_path | d(nginx_log_path)) + '/' + item.access_log | d(item.filename | d(item.name if item.name is string else item.name[0]) + '_access') }}.log{{ nginx_tpl_access_log_format }};
+{%               endif                                                              %}
 {%             else %}
         access_log off;
 {%             endif %}
-{%             if item.error_log_enabled|d(True) | bool %}
+{%             if item.error_log_enabled|d(True) | bool                             %}
+{%               if item.log_syslog|d(False) | bool                                 %}
+        error_log {{ item.error_syslog_path }};
+{%               else                                                               %}
         error_log {{ (item.log_path | d(nginx_log_path)) + '/' + item.error_log | d(item.filename | d(item.name if item.name is string else item.name[0]) + '_error') }}.log;
+{%               endif                                                              %}
 {%             else %}
         error_log off;
 {%             endif %}
@@ -632,6 +644,7 @@ server {
 
         ssl_certificate           {{ nginx_tpl_ssl_certificate }};
         ssl_certificate_key       {{ nginx_tpl_ssl_certificate_key }};
+{%   if not (nginx__h5bp_enabled|bool)                      %}
         ssl_protocols             {{ (item.tls_protocols | d(nginx_default_tls_protocols)) | join(" ") }};
         ssl_prefer_server_ciphers {{ "off"
                                       if nginx_default_tls_protocols|length == 1 and
@@ -642,9 +655,11 @@ server {
 {%     else %}
         #ssl_ciphers              "default set of ciphers used by this nginx install";
 {%     endif %}
+{%   endif                                                  %}
 {%     if nginx_tpl_ssl_dhparam and nginx_tpl_ssl_dhparam != '' %}
         ssl_dhparam               {{ nginx_tpl_ssl_dhparam }};
 {%     endif                                                %}
+{%   if not (nginx__h5bp_enabled|bool)                      %}
 {%     if item.ssl_curve | default(nginx_default_ssl_curve) %}
         ssl_ecdh_curve            {{ item.ssl_curve | default(nginx_default_ssl_curve) }};
 {%     endif                                                %}
@@ -657,6 +672,9 @@ server {
         resolver                  {{ (item.ocsp_resolvers | d(nginx_ocsp_resolvers)) | ipwrap | join(" ") }} valid=300s;
         resolver_timeout          5s;
 {%     endif                                                        %}
+{%   elif (nginx__h5bp_enabled|bool)                        %}
+        ssl_trusted_certificate   {{ nginx_tpl_ssl_trusted_certificate }};
+{%   endif                                                  %}
 {%     if (item.ssl_verify_client | d(nginx_default_ssl_verify_client)) | bool      %}
 {%         if item.ssl_client_certificate | d(nginx_default_ssl_client_certificate) %}
         ssl_verify_client         on;
@@ -666,15 +684,18 @@ server {
         ssl_crl                   {{ item.ssl_crl | d(nginx_default_ssl_crl) }};
 {%         endif                                                %}
 {%     endif                                                    %}
+{%   if not (nginx__h5bp_enabled|bool)                          %}
 {%     if item.hsts_enabled|d(True) | bool                      %}
         add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age }}{{ "; includeSubDomains" if nginx_hsts_subdomains|bool else "" }}{{ "; preload" if ((item.hsts_preload | d(nginx_hsts_preload)) | bool) else "" }}"{% if nginx_version is version_compare('1.7.5','>=') %} always{% endif %};
-{% endif                                                    %}
-{% if item.csp_enabled|d(False) | bool %}
+{%     endif                                                    %}
+{%     if item.csp_enabled|d(False) | bool %}
         add_header                Content-Security-Policy "{{ item.csp|d("default-src https: ;") + (" " + item.csp_append|d(nginx__http_csp_append) if (item.csp_append|d(nginx__http_csp_append)) else "") }}";
-{% endif %}
-{% if item.csp_report_enabled|d(False) | bool %}
+{%     endif %}
+{%   endif                                                  %}
+{%     if item.csp_report_enabled|d(False) | bool %}
         add_header                Content-Security-Policy-Report-Only "{{ item.csp_report|d(item.csp|d("default-src https: ;")) + (" " + item.csp_append|d(nginx__http_csp_append) if (item.csp_append|d(nginx__http_csp_append)) else "") }}";
-{% endif %}
+{%     endif %}
+{%   if not (nginx__h5bp_enabled|bool)                          %}
 {%     if item.content_type_options|d(True) != omit             %}
         add_header                X-Content-Type-Options "{{ item.content_type_options | d('nosniff') }}"{% if nginx_version is version_compare('1.7.5','>=') %} always{% endif %};
 {%     endif                                                    %}
@@ -687,6 +708,15 @@ server {
 {%     if item.http_referrer_policy | d(nginx__http_referrer_policy) != omit %}
         add_header                Referrer-Policy "{{ item.http_referrer_policy | d(nginx__http_referrer_policy) }}";
 {%     endif                                                    %}
+{%   elif nginx__h5bp_enabled|bool                              %}
+	include {{ nginx_etc_path }}/conf.d/h5bp/internet_explorer/x-ua-compatible.conf;
+        include {{ nginx_etc_path }}/conf.d/h5bp/location/security_file_access.conf;
+	include {{ nginx_etc_path }}/conf.d/h5bp/security/strict-transport-security.conf;
+        include {{ nginx_etc_path }}/conf.d/h5bp/security/content-security-policy.conf;
+	include {{ nginx_etc_path }}/conf.d/h5bp/security/referrer-policy.conf;
+	include {{ nginx_etc_path }}/conf.d/h5bp/security/x-frame-options.conf;
+	include {{ nginx_etc_path }}/conf.d/h5bp/security/x-xss-protection.conf;
+{%   endif                                                  %}
 {%     for robots_tag in nginx_tpl_robots_tag                   %}
         add_header                X-Robots-Tag "{{ robots_tag }}";
 {%     endfor                                                   %}
@@ -713,7 +743,10 @@ server {
 {{     print_root() }}
 {%     if nginx_tpl_acme | bool                                 %}
         include snippets/acme-challenge.conf;
-
+{%   if (nginx__h5bp_enabled|bool)                              %}
+	include {{ nginx_etc_path }}/conf.d/h5bp/ssl/ocsp_stapling.conf;
+	include {{ nginx_etc_path }}/conf.d/h5bp/ssl/ssl_engine.conf;
+{%   endif                                                      %}
 {%     endif                                                    %}
 {% endif                                                        %}
 {# ---- end of nginx_tpl_ssl ---- #}

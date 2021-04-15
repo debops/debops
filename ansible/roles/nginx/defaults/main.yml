@@ -4,6 +4,7 @@
 # .. Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@drybjed.net>
 # .. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
 # .. Copyright (C) 2014-2017 DebOps <https://debops.org/>
+# .. Copyright (C) 2020-2020 Sebastian Vaisov <sebastian@vaisov.lt>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _nginx__ref_defaults:
@@ -1216,3 +1217,73 @@ nginx__python__dependent_packages2:
 
                                                                    # ]]]
                                                                    # ]]]
+# H5BP configuration [[[
+# ----------------------------------------
+
+# .. envvar:: nginx__h5bp_enabled [[[
+#
+# Enable H5BP settings
+nginx__h5bp_enabled: false
+                                                                   # ]]]
+# .. envvar:: nginx__h5bp_commit [[[
+#
+# H5BP commit to use
+nginx__h5bp_commit: 3.2.0
+                                                                   # ]]]
+# .. envvar:: nginx__h5bp_files [[[
+#
+# H5BP files to use
+nginx__h5bp_files:
+  - name: internet_explorer/x-ua-compatible.conf
+    state: present
+  - name: location/security_file_access.conf
+    state: present
+  - name: media_types/character_encodings.conf
+    state: present
+  - name: security/strict-transport-security.conf
+    state: present
+  - name: security/content-security-policy.conf
+    state: present
+  - name: security/referrer-policy.conf
+    state: present
+  - name: security/x-frame-options.conf
+    state: present
+  - name: security/x-xss-protection.conf
+    state: present
+  - name: ssl/ocsp_stapling.conf
+    state: present
+  - name: ssl/ssl_engine.conf
+    state: present
+  - name: web_performance/cache_expiration.conf
+    state: present
+  - name: web_performance/cache-file-descriptors.conf
+    state: present
+
+                                                                   # ]]]
+# .. envvar:: nginx__h5bp_maps [[[
+#
+# H5BP maps
+nginx__h5bp_maps:
+  # https://github.com/h5bp/server-configs-nginx/blob/3.2.0/h5bp/security/referrer-policy.conf
+  - name: referrer_policy
+    map: '$sent_http_content_type $referrer_policy'
+    mapping: '~*text/(css|html|javascript)|application\/pdf|xml "strict-origin-when-cross-origin";'
+  # https://github.com/h5bp/server-configs-nginx/blob/3.2.0/h5bp/security/x-frame-options.conf
+  - name: x_frame_options
+    map: '$sent_http_content_type $x_frame_options'
+    mapping: '~*text/html DENY;'
+  # https://github.com/h5bp/server-configs-nginx/blob/3.2.0/h5bp/security/content-security-policy.conf
+  - name: content_security_policy
+    map: '$sent_http_content_type $content_security_policy'
+    mapping: |
+      ~*text/(html|javascript)|application/pdf|xml "default-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests";
+  # https://github.com/h5bp/server-configs-nginx/blob/3.2.0/h5bp/internet_explorer/x-ua-compatible.conf
+  - name: x-ua-compatible
+    map: '$sent_http_content_type $x_ua_compatible'
+    mapping: '~*text/html "IE=edge";'
+  # https://github.com/h5bp/server-configs-nginx/blob/3.2.0/h5bp/security/x-xss-protection.conf
+  - name: x-xss-protection
+    map: '$sent_http_content_type $x_xss_protection'
+    mapping: '~*text/html "1; mode=block";'
+                                                                       # ]]]
+                                                                       # ]]]
