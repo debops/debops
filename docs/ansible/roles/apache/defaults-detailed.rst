@@ -483,6 +483,14 @@ HTTP security headers
   draft as of 2016-10-11 but it is already supported by the majority of web
   browsers.
 
+``floc_optout``
+  Optional, boolean. If not specified or ``True``, the server will send the
+  ``Permissions-Policy`` HTTP header which will tell the browser to opt-out
+  from the `Federated Learning of Cohorts`__ feature. If ``False``, the header
+  will not be configured for a given website.
+
+  .. __: https://github.com/WICG/floc
+
 
 .. _apache__ref_vhost_apache_status:
 
