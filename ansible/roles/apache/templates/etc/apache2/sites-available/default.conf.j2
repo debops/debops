@@ -281,6 +281,9 @@ Header {{ apache__tpl_directive_options }} Content-Security-Policy "{{ item.csp|
 {% if item.csp_report_enabled|d(False) | bool %}
 Header {{ apache__tpl_directive_options }} Content-Security-Policy-Report-Only "{{ item.csp_report|d(item.csp|d("default-src https: ;")) + (" " + item.csp_append|d(apache__http_csp_append) if (item.csp_append|d(apache__http_csp_append)) else "") }}"
 {% endif %}
+{% if (item.floc_optout|d(True))|bool %}
+Header {{ apache__tpl_directive_options }} Permissions-Policy "interest-cohort=()"
+{% endif %}
 {% if item.http_frame_options|d(apache__http_frame_options) != omit %}
 Header {{ apache__tpl_directive_options }} X-Frame-Options "{{ item.http_frame_options|d(apache__http_frame_options) }}"
 {% endif %}
