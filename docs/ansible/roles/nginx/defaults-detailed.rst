@@ -556,6 +556,14 @@ HTTP security headers
   Optional, string. Value of the ``X-Frame-Options`` HTTP header field. Set to ``{{ omit }}``
   to not send the header field. Defaults to ``SAMEORIGIN``.
 
+``floc_optout``
+  Optional, boolean. If not specified or ``True``, the server will send the
+  ``Permissions-Policy`` HTTP header which will tell the browser to opt-out
+  from the `Federated Learning of Cohorts`__ feature. If ``False``, the header
+  will not be configured for a given website.
+
+  .. __: https://github.com/WICG/floc
+
 Search engine optimization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 

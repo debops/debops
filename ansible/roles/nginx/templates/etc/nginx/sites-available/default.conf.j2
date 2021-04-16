@@ -670,6 +670,9 @@ server {
 {% if item.csp_report_enabled|d(False) | bool %}
         add_header                Content-Security-Policy-Report-Only "{{ item.csp_report|d(item.csp|d("default-src https: ;")) + (" " + item.csp_append|d(nginx__http_csp_append) if (item.csp_append|d(nginx__http_csp_append)) else "") }}";
 {% endif %}
+{% if (item.floc_optout|d(True))|bool %}
+        add_header                Permissions-Policy "interest-cohort=()";
+{% endif %}
 {%     if item.content_type_options|d(True) != omit             %}
         add_header                X-Content-Type-Options "{{ item.content_type_options | d('nosniff') }}"{% if nginx_version is version_compare('1.7.5','>=') %} always{% endif %};
 {%     endif                                                    %}
