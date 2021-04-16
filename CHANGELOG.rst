@@ -25,6 +25,15 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+General
+~~~~~~~
+
+- The :ref:`debops.apache` and :ref:`debops.nginx` roles will configure the
+  managed websites to opt-out from the `Federated Learning of Cohorts`__ (FLoC)
+  feature by default. This can be turned off on a site-by-site basis.
+
+  .. __: https://github.com/WICG/floc
+
 :ref:`debops.lxc` role
 ''''''''''''''''''''''
 
