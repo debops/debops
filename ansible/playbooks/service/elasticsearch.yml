@@ -29,10 +29,10 @@
 
   roles:
 
-    - role: keyring
-      tags: [ 'role::keyring', 'skip::keyring', 'role::elastic_co' ]
-      keyring__dependent_apt_keys:
-        - '{{ elastic_co__keyring__dependent_apt_keys }}'
+    - role: extrepo
+      tags: [ 'role::extrepo', 'skip::extrepo', 'role::elasticsearch' ]
+      extrepo__dependent_sources:
+        - '{{ elasticsearch__extrepo__dependent_sources }}'
 
     - role: secret
       tags: [ 'role::secret', 'role::elasticsearch', 'role::elasticsearch:config' ]
@@ -43,7 +43,6 @@
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
         - '{{ java__apt_preferences__dependent_list }}'
-        - '{{ elastic_co__apt_preferences__dependent_list }}'
 
     - role: etc_services
       tags: [ 'role::etc_services', 'skip::etc_services' ]
@@ -62,11 +61,6 @@
 
     - role: java
       tags: [ 'role::java', 'skip::java' ]
-
-    - role: elastic_co
-      tags: [ 'role::elastic_co', 'skip::elastic_co' ]
-      elastic_co__dependent_packages:
-        - '{{ elasticsearch__elastic_co__dependent_packages }}'
 
     - role: elasticsearch
       tags: [ 'role::elasticsearch', 'skip::elasticsearch' ]

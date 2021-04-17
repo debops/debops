@@ -17,6 +17,15 @@
   import_role:
     name: 'secret'
 
+- name: Install Elasticsearch packages
+  package:
+    name: '{{ q("flattened", (elasticsearch__base_packages
+                              + elasticsearch__packages)) }}'
+    state: 'present'
+  notify: [ 'Refresh host facts' ]
+  register: elasticsearch__register_packages
+  until: elasticsearch__register_packages is succeeded
+
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'
