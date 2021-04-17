@@ -94,9 +94,6 @@
     mode: '0644'
   notify: [ 'Reload service manager' ]
 
-- name: Reload systemd daemons
-  meta: 'flush_handlers'
-
 - name: Generate Elasticsearch configuration
   template:
     src: 'etc/elasticsearch/elasticsearch.yml.j2'
@@ -127,6 +124,9 @@
     mode:    '0750'
   with_flattened:
     - '{{ elasticsearch__path_data }}'
+
+- name: Reload systemd daemons
+  meta: 'flush_handlers'
 
 - name: Check state of installed Elasticsearch plugins
   command: bin/elasticsearch-plugin list
