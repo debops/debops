@@ -105,6 +105,13 @@ elasticsearch__inventory_group_lb: 'debops_service_elasticsearch_lb'
 elasticsearch__inventory_master_hosts: '{{ (groups[elasticsearch__inventory_group_master]
                                             | d(groups[elasticsearch__inventory_group_all]))
                                            if elasticsearch__allow_tcp else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__initial_master_nodes [[[
+#
+# List of Elasticsearch nodes which will be bootstrapped as masters on the
+# first cluster execution.
+elasticsearch__initial_master_nodes: [ '{{ elasticsearch__node_name }}' ]
                                                                    # ]]]
                                                                    # ]]]
 # Firewall configuration [[[
@@ -372,7 +379,9 @@ elasticsearch__default_configuration:
     value: '{{ elasticsearch__transport_tcp_port }}'
     comment: 'Set a custom port for TCP transport'
 
-  - name: 'discovery.zen.ping.unicast.hosts'
+  - name: '{{ "discovery.zen.ping.unicast.hosts"
+              if (elasticsearch__version is version("7.0.0", "<"))
+              else "discovery.seed_hosts" }}'
     value: '{{ elasticsearch__discovery_hosts }}'
     state: '{{ "present" if elasticsearch__discovery_hosts else "absent" }}'
     comment: |
@@ -384,6 +393,13 @@ elasticsearch__default_configuration:
     comment: |
       Prevent the "split brain" by configuring the majority of nodes
       (total number of master-eligible nodes / 2 + 1)
+
+  - name: 'cluster.initial_master_nodes'
+    value: '{{ elasticsearch__initial_master_nodes }}'
+    state: '{{ "absent"
+               if (elasticsearch__version is version("7.0.0", "<"))
+               else "present" }}'
+    comment: 'Bootstrap the cluster using an initial set of master-eligible nodes:'
 
   - name: 'gateway.recover_after_nodes'
     comment: 'Block initial recovery after a full cluster restart until N nodes are started'
