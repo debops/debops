@@ -17,6 +17,26 @@
   import_role:
     name: 'secret'
 
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save Elasticsearch local facts
+  template:
+    src: 'etc/ansible/facts.d/elasticsearch.fact.j2'
+    dest: '/etc/ansible/facts.d/elasticsearch.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+
+- name: Update Ansible facts if they were modified
+  meta: 'flush_handlers'
+
 - name: Check if the dependent config file exists
   stat:
     path: '{{ secret + "/elasticsearch/dependent_config/" + inventory_hostname + "/config.json" }}'
@@ -137,23 +157,3 @@
   become: False
   delegate_to: 'localhost'
   tags: [ 'role::elasticsearch:config' ]
-
-- name: Make sure that Ansible local facts directory exists
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Save Elasticsearch local facts
-  template:
-    src: 'etc/ansible/facts.d/elasticsearch.fact.j2'
-    dest: '/etc/ansible/facts.d/elasticsearch.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  notify: [ 'Refresh host facts' ]
-
-- name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
