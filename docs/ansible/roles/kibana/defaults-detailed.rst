@@ -84,33 +84,6 @@ a ``name`` key. The dictionaries support specific parameters:
   ``comment``, the option will be present but commented out (it's an internal
   feature and may not work reliably for all cases).
 
-``options``
-  Optional, a YAML dictionary with keys being the "leaf" configuration names of
-  the primary key, and value being their values. This parameter can be used to
-  group several similar configuration options together in the generated
-  configuration file, for readability. When this parameter is used, the "leaf"
-  part of the main configuration name is discarded, and only used as a marker
-  for these parameters. An example configuration:
-
-  .. code-block:: yaml
-
-     kibana__configuration:
-       - name: 'node.meta.host_type'
-         comment: 'Node type'
-         options:
-           'master': True
-           'data':   True
-           'ingest': True
-
-  The above configuration should result in:
-
-  .. code-block:: yaml
-
-     # Node type
-     node.master: true
-     node.data: true
-     node.ingest: true
-
 ``raw``
   Optional, a YAML text block. The name of the configuration option will be
   discarded and used only as a marker for these parameters. The contents of the
