@@ -15,6 +15,15 @@
   import_role:
     name: 'secret'
 
+- name: Install Filebeat packages
+  package:
+    name: '{{ q("flattened", (filebeat__base_packages
+                              + filebeat__packages)) }}'
+    state: 'present'
+  notify: [ 'Refresh host facts' ]
+  register: filebeat__register_packages
+  until: filebeat__register_packages is succeeded
+
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'
