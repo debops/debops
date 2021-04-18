@@ -11,6 +11,15 @@
   import_role:
     name: 'secret'
 
+- name: Install Kibana packages
+  package:
+    name: '{{ q("flattened", (kibana__base_packages
+                              + kibana__packages)) }}'
+    state: 'present'
+  notify: [ 'Refresh host facts' ]
+  register: kibana__register_packages
+  until: kibana__register_packages is succeeded
+
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'
