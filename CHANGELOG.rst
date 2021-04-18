@@ -87,6 +87,14 @@ Updates of upstream application versions
 - In the :ref:`debops.roundcube` role, the Roundcube version installed by
   default has been updated to ``1.4.11``.
 
+- The :ref:`debops.elasticsearch`, :ref:`debops.kibana` and
+  :ref:`debops.filebeat` roles were updated to use the :ref:`debops.extrepo`
+  role to configure the Elastic.co APT repositories. This will result in
+  installation of ES, Kibana and Filebeat 7.x versions by default on new
+  installations; existing installations will not be automatically upgraded by
+  the roles, but the packages themselves might be upgraded by other APT
+  mechanisms.
+
 Continuous Integration
 ''''''''''''''''''''''
 
