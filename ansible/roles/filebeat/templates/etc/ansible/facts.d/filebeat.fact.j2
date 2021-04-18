@@ -9,6 +9,7 @@
 
 from __future__ import print_function
 from json import loads, dumps
+import subprocess
 import os
 
 
@@ -22,5 +23,14 @@ def cmd_exists(cmd):
 output = {'installed': cmd_exists('filebeat'),
           'inputs': '/etc/filebeat/inputs.d',
           'modules': '/etc/filebeat/modules.d'}
+
+try:
+    version_stdout = subprocess.check_output(
+            ["dpkg-query", "-W", "-f=${Version}",
+             "filebeat"]).decode('utf-8')
+    output['version'] = version_stdout
+
+except Exception:
+    pass
 
 print(dumps(output, sort_keys=True, indent=4))
