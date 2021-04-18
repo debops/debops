@@ -6,7 +6,7 @@
 
 {% set kibana__tpl_config = {} %}
 {% set kibana__tpl_comment = {} %}
-{% for item in kibana__combined_configuration %}
+{% for item in kibana__combined_configuration | parse_kv_config %}
 {%   if item is mapping %}
 {%     if item.name|d() %}
 {%       if item.state|d('present') != 'absent' %}
@@ -138,10 +138,10 @@
 {{ '# %s: %s' | format(key_prefix + '.' + option_key, option_value) }}
 {%                   elif option_value is not string and option_value is not mapping %}
 {%                     if option_value | count <= 4 %}
-{{ '# %s: %s' | format(key_prefix + '.' + option_key, '[ "' + option_value | join('", "') + '" ]') }}
+{{ '# %s: %s' | format(key_prefix + '.' + option_key, '[ "' + option_value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list | join('", "') + '" ]') }}
 {%                     else %}
 # {{ key_prefix + '.' + option_key }}:
-{%                       for element in option_value %}
+{%                       for element in option_value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list %}
 #  - "{{ element }}"
 {%                       endfor %}
 
@@ -160,10 +160,10 @@
 {%             endif %}
 {%           elif value.comment is not string and value.comment is not mapping %}
 {%             if value.comment | count <= 4 %}
-{{ '# %s: %s' | format(key_prefix + '.' + key, '[ "' + value.comment | join('", "') + '" ]') }}
+{{ '# %s: %s' | format(key_prefix + '.' + key, '[ "' + value.comment | selectattr('state', 'equalto', 'present') | map(attribute='name') | list | join('", "') + '" ]') }}
 {%             else %}
 # {{ key_prefix + '.' + key }}:
-{%               for element in value.comment %}
+{%               for element in value.comment | selectattr('state', 'equalto', 'present') | map(attribute='name') | list %}
 #  - "{{ element }}"
 {%               endfor %}
 
@@ -188,10 +188,10 @@
 {{ '%s: %s' | format(key_prefix + '.' + option_key, option_value) }}
 {%               elif option_value is not string and option_value is not mapping %}
 {%                 if option_value | count <= 4 %}
-{{ '%s: %s' | format(key_prefix + '.' + option_key, '[ "' + option_value | join('", "') + '" ]') }}
+{{ '%s: %s' | format(key_prefix + '.' + option_key, '[ "' + option_value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list | join('", "') + '" ]') }}
 {%                 else %}
 {{ key_prefix + '.' + option_key }}:
-{%                  for element in option_value %}
+{%                  for element in option_value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list %}
   - "{{ element }}"
 {%                  endfor %}
 
@@ -210,10 +210,10 @@
 {%         endif %}
 {%       elif value is not string and value is not mapping %}
 {%         if value | count <= 4 %}
-{{ '%s: %s' | format(key_prefix + '.' + key, '[ "' + value | join('", "') + '" ]') }}
+{{ '%s: %s' | format(key_prefix + '.' + key, '[ "' + value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list | join('", "') + '" ]') }}
 {%         else %}
 {{ key_prefix + '.' + key }}:
-{%           for element in value %}
+{%           for element in value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list %}
   - "{{ element }}"
 {%           endfor %}
 

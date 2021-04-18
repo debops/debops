@@ -40,7 +40,7 @@ filebeat__packages: []
 #
 # Store the detected Filebeat version in a convenient variable for conditional
 # configuration.
-filebeat__version: '{{ ansible_local.elastic_co.packages.filebeat | d("0.0.0") }}'
+filebeat__version: '{{ ansible_local.filebeat.version | d("0.0.0") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Main Filebeat configuration file [[[
@@ -507,11 +507,10 @@ filebeat__combined_keys: '{{ filebeat__keys
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
-# .. envvar:: filebeat__elastic_co__dependent_packages [[[
+# .. envvar:: filebeat__extrepo__dependent_sources [[[
 #
-# Configuration for the :ref:`debops.elastic_co` Ansible role.
-filebeat__elastic_co__dependent_packages:
-  - '{{ filebeat__base_packages }}'
-  - '{{ filebeat__packages }}'
+# Configuration for the :ref:`debops.extrepo` Ansible role.
+filebeat__extrepo__dependent_sources:
+  - 'elastic'
                                                                    # ]]]
                                                                    # ]]]

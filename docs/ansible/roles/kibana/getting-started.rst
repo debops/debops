@@ -14,16 +14,16 @@ Getting started
 Upstream package is used by default
 -----------------------------------
 
-The Debian and Ubuntu archives contain the ``elasticsearch`` packages, however
-they are very old releases (1.x). The `security support for the package in Debian has been discontinued <https://lists.debian.org/debian-security-announce/2015/msg00290.html>`_
-due to issues with upstream security policy (`Debian Bug #803713 <https://bugs.debian.org/803713>`_).
-Debian Developers suggest that `in production environments the upstream version should be used <https://bugs.debian.org/829078>`_
-to provide adequate security updates.
+The :ref:`debops.kibana` role depends on the :ref:`debops.extrepo`
+Ansible role to configure access to the Elastic.co APT repository. This means
+that usually the latest available Kibana release will be installed by
+default. If you require older releases, you can use the
+:ref:`debops.apt_preferences` role to select the desired package version.
 
-Due to the above reasons, the role is focused on the upstream Kibana release
-only (5.x+) to keep compatibility with upstream Elasticsearch. The package
-installation itself is handled by the ``debops.elastic_co`` Ansible role which
-also manages upstream APT repository configuration.
+Alternatively, you can "mask" the
+:envvar:`kibana__extrepo__dependent_sources` variable in the Ansible
+inventory and configure the APT repositories yourself via the :ref:`debops.apt`
+role.
 
 
 Kibana is insecure by default

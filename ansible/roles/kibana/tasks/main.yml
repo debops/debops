@@ -11,6 +11,35 @@
   import_role:
     name: 'secret'
 
+- name: Install Kibana packages
+  package:
+    name: '{{ q("flattened", (kibana__base_packages
+                              + kibana__packages)) }}'
+    state: 'present'
+  notify: [ 'Refresh host facts' ]
+  register: kibana__register_packages
+  until: kibana__register_packages is succeeded
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save Kibana local facts
+  template:
+    src: 'etc/ansible/facts.d/kibana.fact.j2'
+    dest: '/etc/ansible/facts.d/kibana.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+
+- name: Update Ansible facts if they were modified
+  meta: 'flush_handlers'
+
 - name: Check if the dependent config file exists
   stat:
     path: '{{ secret + "/kibana/dependent_config/" + inventory_hostname + "/config.json" }}'
@@ -94,23 +123,3 @@
   become: False
   delegate_to: 'localhost'
   tags: [ 'role::kibana:config' ]
-
-- name: Make sure that Ansible local facts directory exists
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-
-- name: Save Kibana local facts
-  template:
-    src: 'etc/ansible/facts.d/kibana.fact.j2'
-    dest: '/etc/ansible/facts.d/kibana.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  notify: [ 'Refresh host facts' ]
-
-- name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'

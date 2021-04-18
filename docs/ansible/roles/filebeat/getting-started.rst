@@ -11,6 +11,21 @@ Getting started
       :local:
 
 
+Upstream package is used by default
+-----------------------------------
+
+The :ref:`debops.filebeat` role depends on the :ref:`debops.extrepo` Ansible
+role to configure access to the Elastic.co APT repository. This means that
+usually the latest available Filebeat release will be installed by default. If
+you require older releases, you can use the :ref:`debops.apt_preferences` role
+to select the desired package version.
+
+Alternatively, you can "mask" the
+:envvar:`filebeat__extrepo__dependent_sources` variable in the Ansible
+inventory and configure the APT repositories yourself via the :ref:`debops.apt`
+role.
+
+
 Default configuration
 ---------------------
 

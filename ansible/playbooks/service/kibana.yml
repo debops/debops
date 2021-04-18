@@ -23,11 +23,15 @@
 
   roles:
 
+    - role: extrepo
+      tags: [ 'role::extrepo', 'skip::extrepo', 'role::kibana' ]
+      extrepo__dependent_sources:
+        - '{{ kibana__extrepo__dependent_sources }}'
+
     - role: keyring
       tags: [ 'role::keyring', 'skip::keyring', 'role::nginx', 'role::elastic_co' ]
       keyring__dependent_apt_keys:
         - '{{ nginx__keyring__dependent_apt_keys }}'
-        - '{{ elastic_co__keyring__dependent_apt_keys }}'
 
     - role: secret
       tags: [ 'role::secret', 'role::kibana', 'role::kibana:config' ]
@@ -37,7 +41,6 @@
     - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
-        - '{{ elastic_co__apt_preferences__dependent_list }}'
         - '{{ nginx__apt_preferences__dependent_list }}'
 
     - role: etc_services
@@ -63,11 +66,6 @@
         - '{{ kibana__nginx__dependent_servers }}'
       nginx__dependent_upstreams:
         - '{{ kibana__nginx__dependent_upstreams }}'
-
-    - role: elastic_co
-      tags: [ 'role::elastic_co', 'skip::elastic_co' ]
-      elastic_co__dependent_packages:
-        - '{{ kibana__elastic_co__dependent_packages }}'
 
     - role: kibana
       tags: [ 'role::kibana', 'skip::kibana' ]
