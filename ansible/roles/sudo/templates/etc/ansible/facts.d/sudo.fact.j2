@@ -20,7 +20,7 @@ output = {'configured': True,
 
 if output['installed']:
     output['version'] = subprocess.check_output(
-        ['sudo', '--version'], stderr=subprocess.STDOUT
+        ['LC_ALL=C', 'sudo', '--version'], stderr=subprocess.STDOUT
     ).decode('utf-8').replace('\n', ' ').split(' ')[2]
 
 print(dumps(output, sort_keys=True, indent=4))
