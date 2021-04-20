@@ -158,6 +158,9 @@ General
 - The role will correctly handle nested lists of :file:`/etc/sudoers.d/`
   configuration files defined by other roles via dependent variables.
 
+- Use the English locale to read the :command:`sudo` version information since
+  the output differs in different languages.
+
 
 `debops v2.2.1`_ - 2021-03-03
 -----------------------------
