@@ -115,6 +115,12 @@ General
 - The :command:`saslauthd` daemon should correctly use the local and realm
   parts in the ``user@realm`` logins for authentication using LDAP directory.
 
+:ref:`debops.sudo` role
+'''''''''''''''''''''''
+
+- Use the English locale to read the :command:`sudo` version information since
+  the output differs in different languages.
+
 
 `debops v2.0.8`_ - 2021-03-03
 -----------------------------
