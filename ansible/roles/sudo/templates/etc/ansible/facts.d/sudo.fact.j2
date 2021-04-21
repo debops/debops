@@ -11,6 +11,9 @@ from __future__ import print_function
 from json import dumps
 import os
 import subprocess
+import locale
+
+locale.setlocale(locale.LC_ALL, 'C')
 
 
 def cmd_exists(cmd):
@@ -25,7 +28,7 @@ output = {'configured': True,
 
 if output['installed']:
     output['version'] = subprocess.check_output(
-        ['LC_ALL=C', 'sudo', '--version'], stderr=subprocess.STDOUT
+        ['sudo', '--version'], stderr=subprocess.STDOUT
     ).decode('utf-8').replace('\n', ' ').split(' ')[2]
 
 print(dumps(output, sort_keys=True, indent=4))
