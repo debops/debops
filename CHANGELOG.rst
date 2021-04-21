@@ -220,6 +220,9 @@ General
 
   .. __: https://www.sudo.ws/stable.html#1.9.1
 
+- Use the English locale to read the :command:`sudo` version information since
+  the output differs in different languages.
+
 :ref:`debops.system_users` role
 '''''''''''''''''''''''''''''''
 
