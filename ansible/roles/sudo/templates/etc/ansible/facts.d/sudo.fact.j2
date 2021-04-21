@@ -27,8 +27,6 @@ output = {'configured': True,
           'installed': cmd_exists('sudo')}
 
 if output['installed']:
-    fact_env = os.environ.copy()
-    fact_env['LC_MESSAGES'] = 'C'
     output['version'] = subprocess.check_output(
         ['sudo', '--version'], stderr=subprocess.STDOUT
     ).decode('utf-8').replace('\n', ' ').split(' ')[2]
