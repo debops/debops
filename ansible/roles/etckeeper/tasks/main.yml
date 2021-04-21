@@ -126,6 +126,16 @@
   when: etckeeper__enabled|bool and etckeeper__vcs == 'git' and
         etckeeper__vcs_user|d() and etckeeper__vcs_email|d()
 
+- name: Create etckeeper commit.d 99email
+  template:
+    src: 'etc/etckeeper/commit.d/99email.j2'
+    dest: '/etc/etckeeper/commit.d/99email'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  notify: [ 'Commit changes in etckeeper' ]
+  when: etckeeper__email_on_commit|bool
+
 - name: Configure other VCS software
   include_tasks: 'other_vcs.yml'
   when: etckeeper__enabled|bool and etckeeper__vcs != 'git' and

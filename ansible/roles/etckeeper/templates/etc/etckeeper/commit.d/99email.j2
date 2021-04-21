@@ -1,0 +1,14 @@
+#!/bin/sh
+# Copyright (C) 2021 Émile <emile@bleuchtang.fr>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+#
+# {{ ansible_managed }}
+
+EMAIL_ON_COMMIT="{{ etckeeper__email_on_commit_email }}"
+
+if [ "$VCS" = git ] && [ -d .git ]; then
+        git log -p -1 | mail -s "[$(hostname -f)] etckeeper changes" "$EMAIL_ON_COMMIT"
+else
+        echo "EMAIL_ON_COMMIT not yet supported for $VCS" >&2
+fi
