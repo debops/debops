@@ -76,8 +76,12 @@ using :command:`git bisect`. Commits signed by a valid GPG key are preferred.
    # ... pick changes to commit ...
    git commit
 
+`Conventional Commits v1.0.0 <https://www.conventionalcommits.org/en/v1.0.0/>`_
+is suggested to be followed.
+See `#1687 <https://github.com/debops/debops/pull/1687>`_ for specifics and discussion.
 Read `How to Write a Git Commit Message <https://chris.beams.io/posts/git-commit/>`_
-to learn the best practices about :command:`git` commit messages.
+to learn the best practices about the description part of the :command:`git`
+commit messages.
 
 Rewriting history and squashing commits is frowned upon, because this may make
 bisecting harder. Small, focused changes are preferable, unless you are
