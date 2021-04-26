@@ -81,7 +81,7 @@ hashicorp__shell: '/usr/sbin/nologin'
 # .. envvar:: hashicorp__gpg_key_id [[[
 #
 # The OpenPGP key fingerprint of the HashiCorp_ company.
-hashicorp__gpg_key_id: '91A6 E7F8 5D05 C656 30BE F189 5185 2D87 348F FC4C'
+hashicorp__gpg_key_id: 'C874 011F 0AB4 0511 0D02 1055 3436 5D94 72D7 468F'
 
                                                                    # ]]]
 # .. envvar:: hashicorp__keyserver [[[
@@ -300,6 +300,12 @@ hashicorp__keyring__dependent_gpg_keys:
     state: '{{ "present"
                if (hashicorp__applications or hashicorp__dependent_applications)
                else "absent" }}'
+
+    # The old GPG key has been revoked
+    # https://discuss.hashicorp.com/t/hcsec-2021-12-codecov-security-event-and-hashicorp-gpg-key-exposure/23512
+  - user: '{{ hashicorp__user }}'
+    id: '91A6 E7F8 5D05 C656 30BE F189 5185 2D87 348F FC4C'
+    state: 'absent'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

@@ -70,7 +70,7 @@ key used by HashiCorp_ is:
 
 .. code-block:: none
 
-   91A6 E7F8 5D05 C656 30BE F189 5185 2D87 348F FC4C
+   C874 011F 0AB4 0511 0D02 1055 3436 5D94 72D7 468F
 
 The HashiCorp_ OpenPGP key is published on the keybase.io_ website, on the
 `hashicorp account <https://keybase.io/hashicorp>`_. The key is tracked by
@@ -82,7 +82,7 @@ and can be imported from there using the :command:`gpg` command:
 .. code-block:: console
 
    user@host:~$ gpg --keyserver hkp://pool.sks-keyservers.net \
-                    --recv-key 91A6E7F85D05C65630BEF18951852D87348FFC4C
+                    --recv-key C874011F0AB405110D02105534365D9472D7468F
 
 
 Software installation procedure
