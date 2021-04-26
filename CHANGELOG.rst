@@ -34,6 +34,12 @@ General
 
   .. __: https://github.com/WICG/floc
 
+:ref:`debops.etckeeper` role
+''''''''''''''''''''''''''''
+
+- The :command:`etckeeper` script can be configured to send e-mail messages
+  with changes to the system administrator.
+
 :ref:`debops.lxc` role
 ''''''''''''''''''''''
 
