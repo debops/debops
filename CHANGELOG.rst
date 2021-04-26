@@ -161,6 +161,18 @@ General
 - Use the English locale to read the :command:`sudo` version information since
   the output differs in different languages.
 
+Security
+~~~~~~~~
+
+:ref:`debops.hashicorp` role
+''''''''''''''''''''''''''''
+
+- Due to a `security incident`__, the existing Hashicorp release GPG key has
+  been rotated. The role will remove the revoked GPG key and install new one
+  when applied on a host.
+
+  .. __: https://discuss.hashicorp.com/t/hcsec-2021-12-codecov-security-event-and-hashicorp-gpg-key-exposure/23512
+
 
 `debops v2.2.1`_ - 2021-03-03
 -----------------------------
