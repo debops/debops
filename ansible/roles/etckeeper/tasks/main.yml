@@ -123,7 +123,14 @@
   when: etckeeper__enabled|bool and etckeeper__vcs == 'git' and
         etckeeper__vcs_user|d() and etckeeper__vcs_email|d()
 
-- name: Create etckeeper commit.d 99email
+- name: Remove e-mail notification hook script
+  file:
+    path: '/etc/etckeeper/commit.d/99email'
+    state: 'absent'
+  when: etckeeper__enabled|bool and
+        etckeeper__email_on_commit_state == 'absent'
+
+- name: Install e-mail notification hook script
   template:
     src: 'etc/etckeeper/commit.d/99email.j2'
     dest: '/etc/etckeeper/commit.d/99email'
@@ -131,7 +138,8 @@
     group: 'root'
     mode: '0755'
   notify: [ 'Commit changes in etckeeper' ]
-  when: etckeeper__email_on_commit|bool
+  when: etckeeper__enabled|bool and
+        etckeeper__email_on_commit_state == 'present'
 
 - name: Configure other VCS software
   include_tasks: 'other_vcs.yml'
