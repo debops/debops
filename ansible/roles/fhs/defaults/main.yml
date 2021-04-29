@@ -120,6 +120,9 @@ fhs__default_directories:
   # Path where log files are stored, optionally with a separate subdirectory.
   - name: 'log'
     path: '/var/log'
+    mode: '{{ "u=rwX,g=rwX,o=rX"
+              if (ansible_distribution in [ "Ubuntu", "Linux Mint" ])
+              else omit }}'
 
   # Path where spool files are stored, optionally with a separate subdirectory.
   - name: 'spool'
