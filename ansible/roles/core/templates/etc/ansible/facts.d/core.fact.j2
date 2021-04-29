@@ -124,9 +124,16 @@ if admin_users:
 
 if not output['admin_private_email']:
     if output['admin_users']:
+
+        try:
+            mail_domain = socket.getfqdn().split('.', 1)[1]
+        except IndexError:
+            # Oh no, we don't have a real domain...
+            mail_domain = socket.getfqdn()
+
         output.update({"admin_private_email":
                        sorted(list(
-                           [s + '@' + socket.getfqdn().split('.', 1)[1]
+                           [s + '@' + mail_domain
                             for s in admin_users]))})
     else:
         output.update({"admin_private_email": ["root"]})
