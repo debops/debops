@@ -329,8 +329,8 @@ apt__distribution_components_nonfree:
 #
 # List of APT repository components which should be enabled in the distribution
 # package sources.
-apt__distribution_components: '{{ apt__distribution_components_free[apt__distribution] +
-                                  (apt__distribution_components_nonfree[apt__distribution]
+apt__distribution_components: '{{ apt__distribution_components_free[apt__distribution]|d([]) +
+                                  (apt__distribution_components_nonfree[apt__distribution]|d([])
                                    if apt__nonfree|bool else []) }}'
                                                                    # ]]]
                                                                    # ]]]
