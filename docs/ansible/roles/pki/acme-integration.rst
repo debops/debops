@@ -54,11 +54,14 @@ The Let's Encrypt ACME Certificate Authority has
 related to the number of certificate requests and the number of domains permitted per
 certificate.
 
-To avoid triggering the limits too quickly due to a mistake, ``debops.pki``
-disables the requests when the :file:`acme/error.log` file is present in the PKI
-realm directory. You can check contents of this file to find out what might be
-the issue, and after fixing it you need to remove the file to let the
-:program:`pki-realm` script make the request again.
+When a certificate request fails, useful error output will be written to
+:file:`acme/error.log`. This file will also prevent the :program:`pki-realm`
+script from quickly retrying the request and potentially hitting a rate limit.
+If this file exists and it was modified less than two days ago, the
+:program:`pki-realm` script will not perform the request. If the file is older
+than two days, it will move the file out of the way and perform the request as
+usual. If you want to retry the request straightaway, you can just move
+:file:`acme/error.log` out of the way yourself.
 
 How ACME certificates are managed
 ---------------------------------
