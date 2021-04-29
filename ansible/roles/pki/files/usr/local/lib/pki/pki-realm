@@ -1078,6 +1078,14 @@ convert_der_to_pem () {
 
 request_acme_tiny_certificate () {
 
+    # Rotate acme/error.log if it was modified more than two days ago. This
+    # allows another renewal attempt, but still prevents hitting rate limits.
+    # Let's Encrypt limits duplicate certificate requests to five per week
+    # (https://letsencrypt.org/docs/rate-limits/).
+    if [[ -e acme/error.log ]] && [[ $(find acme/error.log -mtime +1) ]]; then
+        mv acme/error.log "acme/error-$(date +%s).log"
+    fi
+
     if [ "${config['pki_acme']}" = "true" ] && [ -x "${config['acme_client_script']}" ] && [ -d "${config['acme_challenge_dir']}" ] && [ ! -e acme/error.log ] && [ -r acme/request.pem ] ; then
 
         if ! ( check_expiration_time acme/cert.pem "${config['acme_expiration_seconds']}" && check_openssl_key_crt_match private/key.pem acme/cert.pem ) ; then
