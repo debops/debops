@@ -216,6 +216,18 @@ General
   just "Internal Server Error". The service as a whole survives this.
   The bug in the configuration template has been fixed.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- The pki-realm script will now attempt another ACME certificate request in case
+  the previous attempt failed and was more than two days ago. The previous
+  situation was that the script would not perform any ACME requests if the
+  acme/error.log file was present in the PKI realm, because performing multiple
+  certificate issuance requests could easily trigger a rate limit. The downside
+  of this was that the script would also completely give up on renewal attempts
+  if the first attempt happened to fail (e.g. due to some issue at Let's
+  Encrypt).
+
 :ref:`debops.python` role
 '''''''''''''''''''''''''
 
