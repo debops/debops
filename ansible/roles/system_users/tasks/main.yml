@@ -276,8 +276,10 @@
   tags: [ 'role::system_users:forward', 'skip::system_users:forward', 'skip::check' ]
 
 - name: Manage system users dotfiles
+  environment:
+    LC_MESSAGES: 'C'
   shell: |
-    if ! [ -e "$HOME/.yadm/repo.git" ] ; then
+    if ! yadm status > /dev/null ; then
         yadm clone --bootstrap "{{ item.dotfiles_repo | d(system_users__dotfiles_repo) }}"
     else
         yadm pull
