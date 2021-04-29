@@ -5,6 +5,7 @@
 from __future__ import print_function
 from json import dumps, loads
 import os
+import subprocess
 
 
 def cmd_exists(cmd):
@@ -22,5 +23,10 @@ if not os.path.exists(output['dotfiles']):
     output['dotfiles'] = ''
 
 output['installed'] = cmd_exists('yadm')
+
+if output['installed']:
+    output['version'] = subprocess.check_output(
+        ['yadm', 'version'], stderr=subprocess.STDOUT
+    ).decode('utf-8').strip().split()[1]
 
 print(dumps(output, sort_keys=True, indent=4))
