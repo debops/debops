@@ -85,6 +85,12 @@ General
 - In the ``parse_kv_config`` custom Ansible filter, correctly skip
   configuration entries which have been marked with the ``ignore`` state.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- Fixed an issue where role did not work correctly on Linux Mint and other OS
+  distributions not known to it.
+
 :ref:`debops.core` role
 '''''''''''''''''''''''
 
