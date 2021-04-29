@@ -90,6 +90,12 @@ Continuous Integration
   starting point to test the whole codebase. Roles and playbooks not included
   in the :file:`site.yml` playbook can be tested manually if needed.
 
+:ref:`debops.fhs` role
+''''''''''''''''''''''
+
+- Use a custom mode for the :file:`/var/log/` directory on specific OS
+  distributions to support unprivileged :command:`syslog` operation.
+
 :ref:`debops.rabbitmq_management` role
 ''''''''''''''''''''''''''''''''''''''
 
