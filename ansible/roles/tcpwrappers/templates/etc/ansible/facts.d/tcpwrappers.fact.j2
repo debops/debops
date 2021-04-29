@@ -3,6 +3,11 @@
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 {% set tcpwrappers__tpl_ansible_controllers = [] %}
+{% if (ansible_local.core.ansible_controllers|d()) %}
+{%   for element in ansible_local.core.ansible_controllers %}
+{%     set _ = tcpwrappers__tpl_ansible_controllers.append(element) %}
+{%   endfor %}
+{% endif %}
 {% if (ansible_local.tcpwrappers.ansible_controllers|d()) %}
 {%   for element in ansible_local.tcpwrappers.ansible_controllers %}
 {%     set _ = tcpwrappers__tpl_ansible_controllers.append(element) %}
