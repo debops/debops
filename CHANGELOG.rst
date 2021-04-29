@@ -150,6 +150,13 @@ General
 - Use the English locale to read the :command:`sudo` version information since
   the output differs in different languages.
 
+:ref:`debops.tcpwrappers` role
+''''''''''''''''''''''''''''''
+
+- Correctly store the IP addresses of Ansible Controllers known by the
+  :ref:`debops.core` role in local facts and use them in
+  :file:`/etc/hosts.allow` configuration file.
+
 Security
 ~~~~~~~~
 
