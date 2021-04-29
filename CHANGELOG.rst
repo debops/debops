@@ -120,6 +120,16 @@ General
 - The role playbook will be applied correctly on hosts in the
   ``[debops_service_bootstrap]`` Ansible inventory group.
 
+- Fixed local fact script execution on hosts without a defined DNS domain. You
+  might need to remove the :file:`core.fact` script from the remote host
+  manually so that Ansible can gather facts correctly before the fixed version
+  of the script can be installed. To do that on all affected hosts, execute the
+  command:
+
+  .. code-block:: console
+
+     ansible all -b -m file -a 'path=/etc/ansible/facts.d/core.fact state=absent'
+
 :ref:`debops.cron` role
 '''''''''''''''''''''''
 
