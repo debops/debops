@@ -135,6 +135,12 @@ General
 
 - Fix role execution on hosts without :command:`systemd` as the service manager.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- Fixed an issue wich resulted in HTTP 404 errors on specific paths in various
+  PHP applications.
+
 :ref:`debops.php` role
 ''''''''''''''''''''''
 
