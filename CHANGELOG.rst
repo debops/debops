@@ -104,6 +104,13 @@ Continuous Integration
 - The SMTPd service will search for ``mailRecipient`` LDAP Object Class instead
   of the ``inetOrgPerson`` Object Class to authenticate mail senders.
 
+:ref:`debops.yadm` role
+'''''''''''''''''''''''
+
+- Instead of checking the presence of a :command:`git` repository in a specific
+  path, role will use the :command:`yadm status` command to detect the state,
+  to avoid issues with changes introduced in the :command:`yadm` v2.x release.
+
 Fixed
 ~~~~~
 
