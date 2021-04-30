@@ -102,7 +102,7 @@ Updates of upstream application versions
   mechanisms.
 
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
-  ``v2.11.1``.
+  ``v2.11.2``.
 
 Continuous Integration
 ''''''''''''''''''''''
