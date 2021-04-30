@@ -97,7 +97,7 @@ provided script to a convenient directory:
 .. code-block:: console
 
    sudo apt install rsync
-   sudo gzip -d -c /usr/share/doc/rsync/scripts/rrsync.gz > /usr/local/bin/rrsync
+   sudo cp -v /usr/share/doc/rsync/scripts/rrsync /usr/local/bin/rrsync
    sudo chmod +x /usr/local/bin/rrsync
 
 When the :command:`rrsync` script is set up, you will have to add one of the
