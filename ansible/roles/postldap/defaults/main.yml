@@ -118,7 +118,7 @@ postldap__vmail_posix_gidnumber: '{{ ansible_local.postldap.vmail_posix_gidnumbe
 # All mailboxes are stored directly in the file system of the server.
 #
 # This setting describes the prefix that the virtual delivery agent prepends to all pathname results from
-# `$virtual_mailbox_maps` table lookups.
+# ``$virtual_mailbox_maps`` table lookups.
 # The directories under this base contain the users MailDirs.
 # This directory must be created in advance and must be writeable by all potential mail users.
 # To achieve this, either use the same GID across all mail users and set group ownership to that GID,
@@ -126,6 +126,40 @@ postldap__vmail_posix_gidnumber: '{{ ansible_local.postldap.vmail_posix_gidnumbe
 postldap__mailbox_base: '/var/vmail'
 
                                                                    # ]]]
+# .. envvar:: postldap__virtual_mailbox_maps_attribute [[[
+#
+# The attributes needed to reconstruct the mailbox path use by the ``ldap_virtual_mailbox_maps`` lookup table.
+postldap__virtual_mailbox_maps_attribute: 'uid'
+                                                                   # ]]]
+# .. envvar:: postldap__virtual_mailbox_maps_format [[[
+#
+# The relative path format to the user mailbox use by the ``ldap_virtual_mailbox_maps`` lookup table.
+#
+# By default the path to the user mailbox is ``/<uid>/Maildir/``.
+#
+postldap__virtual_mailbox_maps_format: '/%u/Maildir/'
+
+# The path can be easily configured to other values. For example to set it as
+# ``<domain>/<localpart>/Maildir/`` by configuring
+# ``postldap__virtual_mailbox_maps_attribute`` and
+# ``postldap__virtual_mailbox_maps_format`` as follow:
+#
+# ::
+#
+#   postldap__virtual_mailbox_maps_attribute: 'mailAddress'
+#
+#   postldap__virtual_mailbox_maps_format: '/%d/%u/Maildir/'
+#
+# You can also take advantage of the ``mailHomeDirectory`` attribute provided by the
+# mailservice schema to store an arbitrary path for each user. It can be achieve
+# by setting the two variables to the following values:
+#
+# ::
+#
+#   postldap__virtual_mailbox_maps_attribute: 'mailHomeDirectory'
+#
+#   postldap__virtual_mailbox_maps_format: '%s'
+#
 # .. envvar:: postldap__virtual_alias_maps [[[
 #
 # Optional lookup tables that alias specific mail addresses or domains
@@ -139,6 +173,7 @@ postldap__mailbox_base: '/var/vmail'
 # Note: these lookups are recursive.
 postldap__virtual_alias_maps:
   - '$alias_maps'
+  - 'ldap:/etc/postfix/ldap_virtual_forward_maps.cf'
   - 'ldap:/etc/postfix/ldap_virtual_alias_maps.cf'
                                                                    # ]]]
                                                                    # ]]]
@@ -291,23 +326,50 @@ postldap__postfix__dependent_lookup_tables:
   - name: 'ldap_virtual_alias_maps.cf'
     state: 'present'
     comment: |
-      The virtual_alias_maps setting is used to find the target mailbox
-      (configured in the attribute mail, aka the mailbox or maildrop).
+      The virtual_alias_maps setting is used to find the final delivery address,
+      given an alias.
     no_log: '{{ postldap__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
-    search_base: '{{ postldap__ldap_people_dn|join(",") }}'
+    search_base: '{{ postldap__ldap_base_dn|join(",") }}'
     query_filter: '(&
-                    (objectClass=inetOrgPerson)
-                    (|
-                      (mail=%s)
-                      (mailAlias=%s)
-                    )
-                    (|
-                      (authorizedService=all)
-                      (authorizedService=mail:receive)
-                    )
-                  )'
-    result_attribute: 'mail'
+                     (|
+                       (objectClass=mailRecipient)
+                     )
+                     (|
+                       (mailAddress=%s)
+                       (mailAlternateAddress=%s)
+                     )
+                     (|
+                       (authorizedService=all)
+                       (authorizedService=mail:receive)
+                     )
+                   )'
+    special_result_attribute: 'member'
+    leaf_result_attribute: 'mailAddress'
+
+  - name: 'ldap_virtual_forward_maps.cf'
+    state: 'present'
+    comment: |
+      The virtual_forward_maps setting is used to find the final delivery address,
+      given a distribution list.
+    no_log: '{{ postldap__no_log|d(True) }}'
+    connection: '{{ postldap__postfix_ldap_connection }}'
+    search_base: '{{ postldap__ldap_base_dn|join(",") }}'
+    query_filter: '(&
+                     (|
+                       (objectClass=mailAlias)
+                       (objectClass=mailDistributionList)
+                     )
+                     (|
+                       (mailAddress=%s)
+                       (mailAlternateAddress=%s)
+                     )
+                     (|
+                       (authorizedService=all)
+                       (authorizedService=mail:receive)
+                     )
+                   )'
+    result_attribute: 'mailForwardTo'
 
   - name: 'ldap_virtual_mailbox_maps.cf'
     state: 'present'
@@ -316,20 +378,19 @@ postldap__postfix__dependent_lookup_tables:
       (and are responsible for them), the virtual_mailbox_maps configuration is used.
     no_log: '{{ postldap__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
-    search_base: '{{ postldap__ldap_people_dn|join(",") }}'
+    search_base: '{{ postldap__ldap_base_dn|join(",") }}'
     query_filter: '(&
-                    (objectClass=inetOrgPerson)
+                    (objectClass=mailRecipient)
                     (|
-                      (mail=%s)
-                      (mailAlias=%s)
+                      (mailAddress=%s)
                     )
                     (|
                       (authorizedService=all)
                       (authorizedService=mail:receive)
                     )
                   )'
-    result_attribute: 'mail'
-    result_format: '/%d/%u/Maildir/'
+    result_attribute: '{{ postldap__virtual_mailbox_maps_attribute }}'
+    result_format: '{{ postldap__virtual_mailbox_maps_format }}'
 
   - name: 'ldap_virtual_mailbox_domains.cf'
     state: 'present'
@@ -351,34 +412,33 @@ postldap__postfix__dependent_lookup_tables:
       The smtpd_sender_login_maps configurations performs a lookup from an incoming
       email-sender to a username. Postfix first performs a full lookup
       on user@domain, then user and then @domain.
-      The later one is also used for catchalls where the mailAlias
+      The later one is also used for catchalls where the mailAlternateAddress
       is set to e.g. @foobar.com
     no_log: '{{ postldap__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
     search_base: '{{ postldap__ldap_base_dn|join(",") }}'
-    query_filter: '(|
-                    (&
-                      (objectClass=inetOrgPerson)
-                      (|
-                        (mail=%s)
-                        (mailAlias=%s)
-                      )
-                      (|
-                        (authorizedService=all)
-                        (authorizedService=mail:send)
-                      )
-                    )
-                    (&
-                      (objectClass=account)
-                      (uid=%u)
-                      (host=%d)
-                      (|
-                        (authorizedService=all)
-                        (authorizedService=mail:send)
-                      )
-                    )
-                  )'
-    result_attribute: 'uid, mail, mailAlias'
+    query_filter: '(&
+                     (|
+                       (&
+                         (objectClass=mailRecipient)
+                         (|
+                           (mailAddress=%s)
+                           (mailAlternateAddress=%s)
+                         )
+                       )
+                       (&
+                         (objectClass=account)
+                         (uid=%u)
+                         (host=%d)
+                       )
+                     )
+                     (|
+                       (authorizedService=all)
+                       (authorizedService=mail:send)
+                     )
+                   )'
+    special_result_attribute: 'member'
+    leaf_result_attribute: 'uid, mailAddress, mailAlternateAddress'
     size_limit: 1
 
   - name: 'ldap_known_sender_relays.cf'
@@ -422,10 +482,10 @@ postldap__postfix__dependent_lookup_tables:
     search_base: '{{ postldap__ldap_base_dn|join(",") }}'
     query_filter: '(|
                     (&
-                      (objectClass=inetOrgPerson)
+                      (objectClass=mailRecipient)
                       (|
-                        (mail=%s)
-                        (mailAlias=%s)
+                        (mailAddress=%s)
+                        (mailAlternateAddress=%s)
                       )
                     )
                     (&
@@ -434,7 +494,7 @@ postldap__postfix__dependent_lookup_tables:
                       (host=%d)
                     )
                   )'
-    result_attribute: 'uid, mail, mailAlias'
+    result_attribute: 'uid, mailAddress, mailAlternateAddress'
     result_format: '550 Authentication Required'
 
   - name: 'ldap_unauth_domain_access.cf'
