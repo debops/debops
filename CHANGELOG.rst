@@ -101,6 +101,9 @@ Updates of upstream application versions
   the roles, but the packages themselves might be upgraded by other APT
   mechanisms.
 
+- In the :ref:`debops.netbox` role, the NetBox version has been updated to
+  ``v2.11.2``.
+
 Continuous Integration
 ''''''''''''''''''''''
 
