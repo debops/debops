@@ -111,6 +111,9 @@ Updates of upstream application versions
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
   ``v2.11.2``.
 
+- In the :ref:`debops.owncloud` role, the Nextcloud version has been updated to
+  ``v20.0``. ``19.0`` support has been dropped.
+
 Continuous Integration
 ''''''''''''''''''''''
 
@@ -144,6 +147,13 @@ Continuous Integration
   will be used to specify the mail home directory relative to the mail root
   directory, instead of generating one which depends on the domain and username
   of a given account.
+
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- ownCloud is not supported in the latest version of DebOps due to lack of
+  maintainers. Use DebOps v2.2.x if you need it and consider becoming a
+  maintainer.
 
 :ref:`debops.postgresql_server` role
 ''''''''''''''''''''''''''''''''''''

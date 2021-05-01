@@ -414,9 +414,15 @@ owncloud__variant_name_map:
 #
 # Supported releases:
 #
-# * ownCloud ``10.4``
+# * Nextcloud ``20.0``
 #
-# * Nextcloud ``19.0``
+# Upcoming:
+#
+# * Nextcloud ``21.0`` (Implemented based on documentation changes but untested).
+#
+# Unsupported:
+#
+# * ownCloud ``10.4`` (Not supported in the latest version of DebOps due to lack of maintainers. Use DebOps v2.2.x if you need it and consider becoming a maintainer.)
 #
 # For Nextcloud refer to the `Nextcloud Maintenance and Release Schedule <https://github.com/nextcloud/server/wiki/Maintenance-and-Release-Schedule>`_.
 # and the `Nextcloud Server Changelog <https://nextcloud.com/changelog/>`_.
@@ -425,7 +431,7 @@ owncloud__variant_name_map:
 # and the `package index <https://download.owncloud.org/download/repositories/>`_ for more details.
 owncloud__release: '{{ "10.4"
                        if (owncloud__variant == "owncloud")
-                       else "19.0" }}'
+                       else "20.0" }}'
 
 
 # .. envvar:: owncloud__distribution
@@ -2164,6 +2170,21 @@ owncloud__nginx__dependent_servers:
     options: |
       add_header X-Download-Options noopen;
 
+      # Remove X-Powered-By, which is an information leak
+      fastcgi_hide_header X-Powered-By;
+
+      # Specify how to handle directories -- specifying `/index.php$request_uri`
+      # here as the fallback means that Nginx always exhibits the desired behaviour
+      # when a client requests a path that corresponds to a directory that exists
+      # on the server. In particular, if that directory contains an index.php file,
+      # that file is correctly served; if it doesn't, then the request is passed to
+      # the front-end controller. This consistent behaviour means that we don't need
+      # to specify custom rules for certain paths (e.g. images and other assets,
+      # `/updater`, `/ocm-provider`, `/ocs-provider`), and thus
+      # `try_files $uri $uri/ /index.php$request_uri`
+      # always provides the desired behaviour.
+      index index.php index.html /index.php$request_uri;
+
       # Set max upload size.
       client_max_body_size {{ owncloud__upload_size }};
       {% if owncloud__nginx_client_body_temp_path %}
@@ -2208,49 +2229,69 @@ owncloud__nginx__dependent_servers:
       fastcgi_param modHeadersAvailable true;
 
     location_list:
-      - pattern: '= /robots.txt'
-        options: |
-          log_not_found off;
-
-      - pattern: '= /.well-known/carddav'
-        options: |
-          return 301 $scheme://$host/remote.php/dav;
-
-      - pattern: '= /.well-known/caldav'
-        options: |
-          return 301 $scheme://$host/remote.php/dav;
-
       - pattern: '= /'
         options: |
-          ## Not used in the Nginx configuration example of ownCloud.
-          ## Needed because `security.limit_extensions` defaults to `.php` in DebOps.
+          # Rule borrowed from `.htaccess` to handle Microsoft DAV clients
+          if ( $http_user_agent ~ ^DavClnt ) {
+              return 302 /remote.php/webdav/$is_args$args;
+          }
+
+          # Not used in the Nginx configuration example of Nextcloud/ownCloud.
+          # Needed because `security.limit_extensions` defaults to `.php` in DebOps.
           rewrite ^ /index.php;
 
-      - pattern: '/'
+      - pattern: '= /robots.txt'
         options: |
-          rewrite ^ /index.php;
+          allow all;
+          log_not_found off;
+
+      - pattern: '^~ /.well-known'
+        options: |
+          # Make a regex exception for `/.well-known` so that clients can still
+          # access it despite the existence of the regex rule
+          # `location ~ /(\.|autotest|...)` which would otherwise handle requests
+          # for `/.well-known`.
+
+          # The following 6 rules are borrowed from `.htaccess`
+          rewrite ^/\.well-known/host-meta\.json  /public.php?service=host-meta-json  last;
+          rewrite ^/\.well-known/host-meta        /public.php?service=host-meta       last;
+          rewrite ^/\.well-known/webfinger        /public.php?service=webfinger       last;
+          rewrite ^/\.well-known/nodeinfo         /public.php?service=nodeinfo        last;
+
+          location = /.well-known/carddav     { return 301 /remote.php/dav/; }
+          location = /.well-known/caldav      { return 301 /remote.php/dav/; }
+
+          try_files $uri $uri/ =404;
 
       - pattern: '~ ^\/(?:build|tests|config|lib|3rdparty|templates|data)\/'
         options: |
-          deny all;
+          return 404;
 
       - pattern: '~ ^\/(?:\.|autotest|occ|issue|indie|db_|console)'
         options: |
-          deny all;
+          return 404;
 
-      - pattern: '~ ^\/(?:index|remote|public|cron|core\/ajax\/update|status|ocs\/v[12]|updater\/.+|oc[ms]-provider\/.+|.+\/richdocumentscode\/proxy)\.php(?:$|\/)'
+      - pattern: '~ \.php(?:$|/)'
         options: |
-          include fastcgi_params;
+          # Ensure this block, which passes PHP files to the PHP process, is above the blocks
+          # which handle static assets (as seen below). If this block is not declared first,
+          # then Nginx will encounter an infinite rewriting loop when it prepends `/index.php`
+          # to the URI, resulting in a HTTP 500 error response.
+
           fastcgi_split_path_info ^(.+?\.php)(\/.*|)$;
           set $path_info $fastcgi_path_info;
+
           try_files $fastcgi_script_name =404;
+
+          include fastcgi_params;
           fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
           fastcgi_param PATH_INFO $path_info;
           fastcgi_param HTTPS on;
-          #Avoid sending the security headers twice
-          fastcgi_param modHeadersAvailable true;
-          # Enable pretty urls
-          fastcgi_param front_controller_active true;
+
+          fastcgi_param modHeadersAvailable true;         # Avoid sending the security headers twice
+          fastcgi_param front_controller_active true;     # Enable pretty urls
+          fastcgi_pass php_owncloud;
+
           fastcgi_intercept_errors on;
           {% if (ansible_local.nginx.version
                  if (ansible_local.nginx.version|d())
@@ -2259,44 +2300,30 @@ owncloud__nginx__dependent_servers:
           fastcgi_request_buffering off;
           {% endif %}
 
-          fastcgi_pass php_owncloud;
-
           fastcgi_read_timeout {{ owncloud__timeout }};
 
-      - pattern: '~ ^\/(?:updater|oc[ms]-provider)(?:$|\/)'
+      - pattern: '~ \.(?:css|js|svg|gif)$'
         options: |
-          try_files $uri/ =404;
-          index index.php;
-
-      - pattern: '~ \.(?:css|js|woff2?|svg|gif|map)$'
-        options: |
-          # Adding the cache control header for js, css and map files
-          # Make sure it is BELOW the PHP block
-
           try_files $uri /index.php$request_uri;
-          add_header Cache-Control "public, max-age=15778463";
-
-          add_header X-Content-Type-Options nosniff;
-          add_header X-Download-Options noopen;
-          {% if not (owncloud__variant == "nextcloud" and
-                     owncloud__release is version("17.0", "<")) %}
-          add_header X-Frame-Options "SAMEORIGIN";
-          {% endif %}
-          add_header X-Permitted-Cross-Domain-Policies none;
-          add_header X-Robots-Tag none;
-          add_header X-XSS-Protection "1; mode=block";
+          expires 6M;         # Cache-Control policy borrowed from `.htaccess`
+          access_log off;     # Optional: Don't log access to assets
 
           {% if not (owncloud__nginx_access_log_assets|bool) %}
           access_log off;
           {% endif %}
 
-      - pattern: '~ \.(?:png|html|ttf|ico|jpg|jpeg|bcmap|mp4|webm)$'
+      - pattern: '~ \.woff2?$'
         options: |
           try_files $uri /index.php$request_uri;
+          expires 7d;         # Cache-Control policy borrowed from `.htaccess`
 
           {% if not (owncloud__nginx_access_log_assets|bool) %}
           access_log off;
           {% endif %}
+
+      - pattern: '/'
+        options: |
+          try_files $uri $uri/ /index.php$request_uri;
 
     ## Not used so that the exact order of locations from the upstream nginx example can be used.
     # type: 'php'

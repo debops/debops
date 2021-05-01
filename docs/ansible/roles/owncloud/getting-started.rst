@@ -95,15 +95,17 @@ Supported webservers:
 * Nginx_
 * Apache_
 
-This role started out using Nginx_ as Webserver. However, ownCloud_ and
-NextCloud_ don’t officially support Nginx_. As of ``debops.owncloud`` v0.4.0,
-support for the `Apache HTTP Server`_ has been added to the role using
+This role started out using Nginx_ as Webserver. However, ownCloud_ don’t
+officially support Nginx_. Support for the `Apache HTTP Server`_ has been added
+to the role using
 :ref:`debops.apache` as role dependency.
+NextCloud_ lists Nginx as supported but still recommends Apache.
+
 
 The current default Webserver is Nginx_. Because despite the fact that only
-Apache_ is officially supported, Nginx_ has been successfully used with this
-role for some time now. If you have trouble with ownCloud then this would be a
-good time to try to run it with Apache.
+Apache_ is officially supported/recommended, Nginx_ has been successfully used
+with this role for some time now. If you have trouble then this would be a good
+time to try to run it with Apache.
 
 The `ownCloud System Requirements`_ don’t use PHP-FPM in their default
 configuration. You can set the following in your inventory to not install FPM
@@ -136,6 +138,23 @@ Then run the site playbook or just the playbook of the unwanted webserver
 followed by the debops.owncloud playbook.
 This will render ``${not_chosen_webserver}`` the unwanted webserver harmless
 and setup the chosen webserver.
+
+Upgrade
+-------
+
+All upgrades be it major or patch need to be done manually for now. The role
+currently does not automate this.
+
+Upgrade the application using the build-in upgrade feature, then rerun the
+service playbook for this role to ensure the matching settings are applied.
+
+If the application complains under ``/settings/admin/overview`` then you might need to run:
+
+.. code-block:: console
+
+   occ upgrade; occ db:add-missing-indice; occ db:add-missing-columns; occ db:convert-filecache-bigint; occ db:add-missing-primary-keys
+
+It also does not hurt to run that by default.
 
 Example inventory
 -----------------
