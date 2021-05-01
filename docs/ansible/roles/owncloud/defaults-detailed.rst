@@ -221,9 +221,3 @@ each dictionary defines a single configuration entry using specific parameters:
   be set in the database. If ``absent``, the configuration will not be set
   (existing configuration value stays intact). If ``ignore``, a given
   configuration entry will not be evaluated during role execution.
-
-``no_log``
-  Optional, boolean. If not specified or ``False``, a given configuration entry
-  will not be obfuscated during execution. If ``True``, or if the configuration
-  entry ``name`` is ``ldapAgentPassword``, the configuration entry will be
-  obfuscated during execution to avoid password leaking.

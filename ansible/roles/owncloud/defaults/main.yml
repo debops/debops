@@ -2000,7 +2000,7 @@ owncloud__ldap__dependent_tasks:
     dn: '{{ owncloud__ldap_binddn }}'
     objectClass: '{{ owncloud__ldap_self_object_classes }}'
     attributes: '{{ owncloud__ldap_self_attributes }}'
-    no_log: True
+    no_log: '{{ debops__no_log | d(True) }}'
     state: '{{ "present" if owncloud__ldap_device_dn|d() else "ignore" }}'
 
   - name: 'Enable password management by {{ owncloud__ldap_binddn }}'

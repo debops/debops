@@ -92,7 +92,7 @@
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
   when: item.state|d('present') == 'absent'
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Create PostgreSQL roles
   postgresql_user:
