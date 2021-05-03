@@ -122,6 +122,14 @@ Continuous Integration
   small development team with multiple applications deployed on separate
   accounts.
 
+:ref:`debops.dovecot` role
+''''''''''''''''''''''''''
+
+- The LDAP user filer has been changed to use the ``mailRecipient`` LDAP object
+  class from the :ref:`mailservice LDAP schema <slapd__ref_mailservice>` to
+  lookup mail accounts. Ensure that your LDAP directory has correct information
+  before applying the change in production.
+
 :ref:`debops.postldap` role
 '''''''''''''''''''''''''''
 
