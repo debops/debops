@@ -254,6 +254,13 @@ General
   if the first attempt happened to fail (e.g. due to some issue at Let's
   Encrypt).
 
+:ref:`debops.php` role
+''''''''''''''''''''''
+
+- Fixed an issue where role did not have a list of PHP packages for an unknown
+  OS release which stopped its execution. Now the role should fallback to
+  a defult list in this case.
+
 :ref:`debops.python` role
 '''''''''''''''''''''''''
 
