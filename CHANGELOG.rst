@@ -125,6 +125,29 @@ Continuous Integration
   small development team with multiple applications deployed on separate
   accounts.
 
+:ref:`debops.dovecot` role
+''''''''''''''''''''''''''
+
+- The LDAP user filer has been changed to use the ``mailRecipient`` LDAP object
+  class from the :ref:`mailservice LDAP schema <slapd__ref_mailservice>` to
+  lookup mail accounts. Ensure that your LDAP directory has correct information
+  before applying the change in production.
+
+- If the LDAP entry of a mail user has the ``mailHomeDirectory`` attribute, it
+  will be used to specify the mail home directory relative to the mail root
+  directory, instead of generating one which depends on the domain and username
+  of a given account.
+
+:ref:`debops.postldap` role
+'''''''''''''''''''''''''''
+
+- The Postfix LDAP integration is redesigned to use the :ref:`mailservice LDAP
+  schema <slapd__ref_mailservice>` for account and mailbox management. There
+  are extensive changes in how the Postfix service utilizes the LDAP directory;
+  existing installations will have to update their LDAP directory entries.
+  Please test these changes in a development environment before applying them
+  in production.
+
 :ref:`debops.roundcube` role
 ''''''''''''''''''''''''''''
 
