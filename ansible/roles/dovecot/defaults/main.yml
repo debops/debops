@@ -78,13 +78,22 @@ dovecot_user_accounts: '{{ [ "deny", "ldap" ]
 dovecot_deny_users: [ 'root' ]
 
                                                                    # ]]]
+# .. envvar:: dovecot_vmail_base [[[
+#
+# The base directory where user mail directories are located. This value is
+# used to construct the virtual mail home directory paths as well as defines
+# a prefix added to the ``mailHomeDirectory`` LDAP attribute if it's found in
+# the LDAP lookups.
+dovecot_vmail_base: '/var/vmail'
+
+                                                                   # ]]]
 # .. envvar:: dovecot_vmail_home [[[
 #
 # The vmail home directory is a per-user directory where Dovecot can save user-specific files.
 # Dovecot's home directories have nothing to do with system users' home directories.
 # It's irrelevant if it's under /home/ or /var/mail/ or wherever.
 # For more information see: `Home Directories for Virtual Users <https://wiki.dovecot.org/VirtualUsers/Home>`_.
-dovecot_vmail_home: '/var/vmail/%d/%n'
+dovecot_vmail_home: '{{ dovecot_vmail_base ~ "/%d/%n" }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_mail_location [[[
