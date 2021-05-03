@@ -1,6 +1,6 @@
 {# Copyright (C) 2015      Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
- # Copyright (C) 2017-2020 Maciej Delmanowski <drybjed@gmail.com>
- # Copyright (C) 2015-2020 DebOps <https://debops.org/>
+ # Copyright (C) 2017-2021 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2015-2021 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 # {{ ansible_managed }}
@@ -29,7 +29,8 @@ dn = {{ dovecot__ldap_binddn }}
 dnpass = {{ dovecot__ldap_bindpw }}
 
 user_attrs = \
-    uid=%u,\
+    uid=home={{ dovecot_vmail_base }}/%d/%{ldap:uid},\
+    mailHomeDirectory=home={{ dovecot_vmail_base }}%{ldap:mailHomeDirectory},\
     mailQuota=quota_rule=*:bytes=%{ldap:{{ dovecot__ldap_quota_attribute }}}:storage=%$,\
     mailGroupACL=acl_groups,\
     mailExpungeTrash=namespace/inbox/Maildir/Trash/autoexpunge

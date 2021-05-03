@@ -130,6 +130,11 @@ Continuous Integration
   lookup mail accounts. Ensure that your LDAP directory has correct information
   before applying the change in production.
 
+- If the LDAP entry of a mail user has the ``mailHomeDirectory`` attribute, it
+  will be used to specify the mail home directory relative to the mail root
+  directory, instead of generating one which depends on the domain and username
+  of a given account.
+
 :ref:`debops.postldap` role
 '''''''''''''''''''''''''''
 
