@@ -128,8 +128,10 @@ postldap__mailbox_base: '/var/vmail'
                                                                    # ]]]
 # .. envvar:: postldap__virtual_mailbox_maps_attribute [[[
 #
-# The attributes needed to reconstruct the mailbox path use by the ``ldap_virtual_mailbox_maps`` lookup table.
-postldap__virtual_mailbox_maps_attribute: 'uid'
+# The attribute needed to reconstruct the mailbox path used by the
+# :file:`ldap_virtual_mailbox_maps.cf` lookup table.
+postldap__virtual_mailbox_maps_attribute: 'mailAddress'
+
                                                                    # ]]]
 # .. envvar:: postldap__virtual_mailbox_maps_format [[[
 #
@@ -137,7 +139,6 @@ postldap__virtual_mailbox_maps_attribute: 'uid'
 #
 # By default the path to the user mailbox is ``/<uid>/Maildir/``.
 #
-postldap__virtual_mailbox_maps_format: '/%u/Maildir/'
 
 # The path can be easily configured to other values. For example to set it as
 # ``<domain>/<localpart>/Maildir/`` by configuring
@@ -160,6 +161,9 @@ postldap__virtual_mailbox_maps_format: '/%u/Maildir/'
 #
 #   postldap__virtual_mailbox_maps_format: '%s'
 #
+postldap__virtual_mailbox_maps_format: '/%d/%u/Maildir/'
+
+                                                                   # ]]]
 # .. envvar:: postldap__virtual_alias_maps [[[
 #
 # Optional lookup tables that alias specific mail addresses or domains
