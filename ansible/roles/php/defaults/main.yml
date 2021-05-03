@@ -167,7 +167,8 @@ php__reset: False
 # you might need to adjust this list for proper package resolution.
 php__included_packages: '{{ php__php_included_packages
                             if php__sury
-                            else php__release_included_map[ansible_distribution_release] }}'
+                            else (php__release_included_map[ansible_distribution_release]
+                                  | d(php__php_included_packages)) }}'
 
                                                                    # ]]]
 # .. envvar:: php__release_included_map [[[

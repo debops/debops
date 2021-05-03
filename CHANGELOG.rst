@@ -121,6 +121,10 @@ General
 
 - The role should now work correctly on Ubuntu Groovy Gorilla distribution.
 
+- Fixed an issue where role did not have a list of PHP packages for an unknown
+  OS release which stopped its execution. Now the role should fallback to
+  a defult list in this case.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
