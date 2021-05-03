@@ -123,6 +123,9 @@ postldap__vmail_posix_gidnumber: '{{ ansible_local.postldap.vmail_posix_gidnumbe
 # This directory must be created in advance and must be writeable by all potential mail users.
 # To achieve this, either use the same GID across all mail users and set group ownership to that GID,
 # or make the directory world writable.
+#
+# This variable should be synchronized with the :envvar:`mailbox base directory
+# <dovecot_vmail_base>` value in Dovecot or other IMAP/POP3 server.
 postldap__mailbox_base: '/var/vmail'
 
                                                                    # ]]]
@@ -135,32 +138,34 @@ postldap__virtual_mailbox_maps_attribute: 'mailAddress'
                                                                    # ]]]
 # .. envvar:: postldap__virtual_mailbox_maps_format [[[
 #
-# The relative path format to the user mailbox use by the ``ldap_virtual_mailbox_maps`` lookup table.
+# The relative path to the user mailbox used by the
+# :file:`ldap_virtual_mailbox_maps.cf` lookup table. The value will be expanded
+# according to the LDAP attribute specified above; expansion syntax can be
+# found in the :man:`ldap_table(5)` manual page.
 #
-# By default the path to the user mailbox is ``/<uid>/Maildir/``.
+# The path should be synchronized with the :envvar:`mailbox home
+# <dovecot_vmail_home>` and :envvar:`Maildir base <dovecot_mail_location>`
+# locations in Dovecot or other IMAP/POP3 server.
 #
-
-# The path can be easily configured to other values. For example to set it as
-# ``<domain>/<localpart>/Maildir/`` by configuring
-# ``postldap__virtual_mailbox_maps_attribute`` and
-# ``postldap__virtual_mailbox_maps_format`` as follow:
+# By default the path to the user mailbox is formatted as ``/%d/%u/Maildir/``
+# which corresponds to the "domain" and "local" parts of the primary e-mail
+# address. This requires the ``mailAddress`` attribute from the LDAP lookup.
+# Other possibilities include:
 #
-# ::
+# - ``/%u/Maildir/``, used with the ``uid`` LDAP attribute, to have only one
+#   level of mailboxes based on the usernames;
 #
-#   postldap__virtual_mailbox_maps_attribute: 'mailAddress'
+# - ``%s/Maildir/``, used with the ``mailHomeDirectory`` LDAP attribute, which
+#   will be used as a path relative to the :envvar:`postldap__mailbox_base`
+#   directory to point to the user's mail storage directory. The
+#   ``mailHomeDirectory`` LDAP attribute needs to be defined for all accounts in
+#   this case;
 #
-#   postldap__virtual_mailbox_maps_format: '/%d/%u/Maildir/'
-#
-# You can also take advantage of the ``mailHomeDirectory`` attribute provided by the
-# mailservice schema to store an arbitrary path for each user. It can be achieve
-# by setting the two variables to the following values:
-#
-# ::
-#
-#   postldap__virtual_mailbox_maps_attribute: 'mailHomeDirectory'
-#
-#   postldap__virtual_mailbox_maps_format: '%s'
-#
+# If you use Dovecot as the virtual mail delivery transport, Dovecot will
+# expand the user mailbox path independently and this value will not be used.
+# This might be useful in case where only specific accounts use
+# ``mailHomeDirectory`` LDAP attribute and the rest use standardized directory
+# structure.
 postldap__virtual_mailbox_maps_format: '/%d/%u/Maildir/'
 
                                                                    # ]]]
