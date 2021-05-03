@@ -167,12 +167,8 @@ test-playbook-syntax:
 
 .PHONY: test-ansible-lint
 test-ansible-lint:
-	@printf "%s\n" "Checking Ansible roles using ansible-lint..."
-	@ansible-lint -v ansible/playbooks/bootstrap.yml ansible/playbooks/bootstrap-*.yml \
-			ansible/playbooks/site.yml \
-			ansible/playbooks/ldap/*.yml ansible/playbooks/tools/*.yml \
-			ansible/debops-contrib-playbooks/service/all.yml \
-			2>| >(grep -v "Overriding detected file kind 'yaml' with 'playbook'")
+	@printf "%s\n" "Checking Ansible content using ansible-lint..."
+	@ansible-lint -v
 
 .PHONY: test-yaml
 test-yaml:

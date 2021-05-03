@@ -54,9 +54,10 @@ Updates of upstream application versions
 Continuous Integration
 ''''''''''''''''''''''
 
-- The :command:`ansible-lint` check will now use Ansible playbooks as the
-  starting point to test the whole codebase. Roles and playbooks not included
-  in the :file:`site.yml` playbook can be tested manually if needed.
+- The :command:`ansible-lint` check will use autodetection mode to find Ansible
+  playbooks and roles to validate. This is consistent with how
+  :command:`ansible-lint` project uses the DebOps repository to validate their
+  codebase and helps avoid breaking both projects' test suites.
 
 :ref:`debops.saslauthd` role
 ''''''''''''''''''''''''''''
