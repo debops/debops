@@ -122,6 +122,16 @@ Continuous Integration
   small development team with multiple applications deployed on separate
   accounts.
 
+:ref:`debops.postldap` role
+'''''''''''''''''''''''''''
+
+- The Postfix LDAP integration is redesigned to use the :ref:`mailservice LDAP
+  schema <slapd__ref_mailservice>` for account and mailbox management. There
+  are extensive changes in how the Postfix service utilizes the LDAP directory;
+  existing installations will have to update their LDAP directory entries.
+  Please test these changes in a development environment before applying them
+  in production.
+
 :ref:`debops.roundcube` role
 ''''''''''''''''''''''''''''
 
