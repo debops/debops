@@ -13,9 +13,59 @@ support for a ``virtual user mail system``, i.e. where the senders and
 recipients do not correspond to the Linux system users.
 Hence it is possible to host emails for other domains.
 The users, email alias and domains will be managed with LDAP.
+This role use the organization defined in the mailservice schema setup by
+:ref:`debops.slapd` by default. The schema is designed to use the 'mail' LDAP
+attribute as an uniqueness constraint for the ``mailAddress``,
+``mailAlternateAddress`` and other attributes across LDAP entries. The 'mail'
+attribute itself is not used in e-mail service operation.
+For example, the following LDAP entry sets the user ``user1`` with
+user1@mydomain.net as main address and alias1@mydomain.net as alias.
+
+.. code-block:: none
+
+   objectClass: inetOrgPerson
+   objectClass: mailRecipient
+   objectClass: authorizedServiceObject
+   authorizedService: all
+   mail: user1@mydomain.net
+   mailAddress: user1@mydomain.net
+   mailAlternateAddress: alias1@mydomain.net
+
 Local mail is enabled by default, support for mail aliases is provided by
 the :ref:`debops.etc_aliases` Ansible role and the LDAP user attribute
-``mailAlias``.
+``mailAlternateAddress``.
+
+From a single address it is also possible to deliver the message to several
+recipients by using the ``mailAlias`` structural object to define a standalone
+e-mail aliases:
+
+.. code-block:: none
+
+   objectClass: mailAlias
+   objectClass: authorizedServiceObject
+   authorizedService: all
+   mail: alias@mydomain.net
+   mailAddress: alias@mydomain.net
+   mailForwardTo: user1@mydomain.net
+   mailForwardTo: user2@mydomain.net
+
+It is also possible to attach an email existing entity using the
+'mailDistributionList' auxiliary object:
+
+.. code-block:: none
+
+   objectClass: organizationalUnit
+   objectClass: mailDistributionList
+   objectClass: authorizedServiceObject
+   authorizedService: all
+   ou: IT Department
+   mail: itdept@mydomain.net
+   mailAddress: itdept@mydomain.net
+   mailForwardTo: admin1@mydomain.net
+   mailForwardTo: admin2@mydomain.net
+
+The ``mailAddress`` attribute of the different objects will ensure that the
+addess is unique in the mail system.
 
 This role only works when **LDAP support is explicitly enabled** and the
 environment has a working LDAP infrastructure. See the :ref:`debops.ldap` role
