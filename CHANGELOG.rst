@@ -59,6 +59,12 @@ General
 - The default backing store for LXC containers created by the role can now be
   configured via Ansible inventory.
 
+:ref:`debops.mariadb_server` role
+'''''''''''''''''''''''''''''''''
+
+- The role can now define a list of databases which should be excluded from
+  regular backups by the :command:`automysqlbackup` script.
+
 :ref:`debops.postgresql_server` role
 ''''''''''''''''''''''''''''''''''''
 

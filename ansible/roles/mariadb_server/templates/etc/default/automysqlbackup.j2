@@ -28,7 +28,13 @@ DBHOST=localhost
 # reading the mysql folder content. Feel free to replace by something else.
 # DBNAMES=`find /var/lib/mysql -mindepth 1 -maxdepth 1 -type d | cut -d'/' -f5 | grep -v ^mysql\$ | tr \\\r\\\n ,\ `
 # This one does a list of dbs using a MySQL statement.
-DBNAMES=`mysql --defaults-file=/etc/mysql/debian.cnf --execute="SHOW DATABASES" | awk '{print $1}' | grep -v ^Database$ | grep -v ^mysql$ | grep -v ^performance_schema$ | grep -v ^information_schema$ | tr \\\r\\\n ,\ `
+{% set mariadb_server__tpl_backup_database_names = []                     %}
+{% for item in mariadb_server__backup_exclude_databases                   %}
+{%   set _ = mariadb_server__tpl_backup_database_names.append('grep -v ') %}
+{%   set _ = mariadb_server__tpl_backup_database_names.append(item)       %}
+{%   set _ = mariadb_server__tpl_backup_database_names.append(' | ')      %}
+{% endfor                                                                 %}
+DBNAMES=`mysql --defaults-file=/etc/mysql/debian.cnf --execute="SHOW DATABASES" | awk '{print $1}' | grep -v ^Database$ | grep -v ^mysql$ | grep -v ^performance_schema$ | grep -v ^information_schema$ | {{ mariadb_server__tpl_backup_database_names|join('') }}tr \\\r\\\n ,\ `
 
 # Backup directory location e.g /backups
 # Folders inside this one will be created (daily, weekly, etc.), and the
