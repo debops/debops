@@ -14,6 +14,7 @@ debops.system_users
    :maxdepth: 2
 
    getting-started
+   control-user
    defaults/main
    defaults-detailed
 
