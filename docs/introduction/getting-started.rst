@@ -12,7 +12,7 @@ Getting Started with DebOps
 
 Welcome to DebOps!
 
-You have installed `DebOps <installation>` and are wondering where to go next?
+You have :ref:`installed DebOps <install>` and are wondering where to go next?
 Here you can read about creating your first DebOps project and managing remote hosts.
 
 .. contents::
@@ -32,12 +32,13 @@ configured. Everything else will be installed as needed.
 
 .. note::
 
-   If you are using Debian Jessie or other distributions based on it as the
-   base install, by default OpenSSH server configured by the installer will
-   disallow password authentication on the ``root`` account. You can either
-   enable it manually in the :file:`/etc/ssh/sshd_config` file, use public key
-   authentication (see 'man authorized_keys' and 'man ssh-copy-id'), or
-   configure a separate admin account and use that to bootstrap the host.
+   If you are using Debian Jessie or later, or other distributions based on it
+   as the base install, by default OpenSSH server configured by the installer
+   will disallow password authentication on the ``root`` account. You can
+   either enable it manually in the :file:`/etc/ssh/sshd_config` file, use
+   public key authentication (see :man:`authorized_keys(5)` and
+   :man:`ssh-copy-id(1)`), or configure a separate admin account and use that
+   to bootstrap the host.
 
 An important part of the environment is correctly configured DNS. Some of the
 DebOps roles expect a configured domain - it doesn't need to be a real, global
@@ -130,36 +131,30 @@ ansible_user
 This is an internal Ansible variable which is used to determine what remote
 user account will be used to login to the server. If it's not explicitly set,
 Ansible depends on SSH defaults which conventionally use the name of the
-current user as the remote username. It's customary to specify this variable
-directly in the ``hosts`` file, that way it can be unique for each host:
+current user as the remote username.
+
+You can use the ``ansible_user`` inventory variable to create a shared
+administrator account if multiple admins are involved. In such case you also
+should define the same name for the account managed by the
+:ref:`debops.system_users` role (see :ref:`system_users__ref_control_user` for
+more details).
+
+It's customary to specify this variable directly in the
+:file:`ansible/inventory/hosts` file, that way it can be unique for each host:
 
 .. code-block:: none
 
    [debops_all_hosts]
-   server    ansible_ssh_host=server.example.com ansible_user=ansible-admin
+   server    ansible_host=server.example.com ansible_user=ansible-admin
+   server    system_users__self_name=ansible-admin
 
-In DebOps this variable can be used to change the name of the default
-administrator account, it's also used as a primary user account for various
-tasks, like database and application administrative accounts.
-
-On a specific platforms you can set this variable to an automatically created
+On specific platforms you can set this variable to an automatically created
 username to make the remote host administration easier:
 
 - Ubuntu-based hosts usually use the ``ubuntu`` username;
 
 - Raspberry Pi / Pi 2 Linux distributions use the ``pi`` user account for this
   purpose;
-
-However, it is advisable to not use the default user accounts, and instead
-either create ones based on your own username (the default behavior) or create
-completely separate Ansible accounts with administrative access. If you
-configure the ``ansible_user`` variable before bootstrapping the host, the
-specified username will be used to create an administrator account.
-
-If you define this variable in the inventory, you might also want to define the
-:envvar:`system_users__self_name` variable to the same value. This variable is
-used by the :ref:`debops.system_users` role to create and manage a local
-administrator account, by default based on your own local UNIX account.
 
 netbase__domain
 ~~~~~~~~~~~~~~~

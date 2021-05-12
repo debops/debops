@@ -13,6 +13,7 @@ debops.system_users
    man_synopsis
    man_description
    getting-started
+   control-user
    defaults-detailed
 
 ..
