@@ -30,6 +30,12 @@ General
 
   .. __: https://github.com/WICG/floc
 
+:ref:`debops.core` role
+'''''''''''''''''''''''
+
+- The role will ignore the ``pi`` UNIX account used on Raspbian and other
+  Raspberry Pi OSes and not include it in a list of administrator accounts.
+
 :ref:`debops.lxc` role
 ''''''''''''''''''''''
 
