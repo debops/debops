@@ -178,7 +178,24 @@ system_users__self: '{{ False
 # private UNIX group, UNIX account, home directory. The account name can
 # contain the "prefix" specified in the :envvar:`system_users__prefix`
 # variable; it will be automatically stripped when necessary.
+#
+# See the :ref:`system_users__ref_control_user` documentation for more details
+# about configuring a shared "control user" account.
 system_users__self_name: '{{ lookup("env", "USER") }}'
+
+                                                                   # ]]]
+# .. envvar:: system_users__self_comment [[[
+#
+# The value of the GECOS field of the control user account, used when local
+# UNIX account information is not available.
+system_users__self_comment: 'Ansible Control User'
+
+                                                                   # ]]]
+# .. envvar:: system_users__self_shell [[[
+#
+# The default UNIX shell used by the control user account, used when local UNIX
+# account information is not available.
+system_users__self_shell: '/bin/bash'
                                                                    # ]]]
                                                                    # ]]]
 # Lists of managed UNIX system groups and accounts [[[
@@ -220,12 +237,15 @@ system_users__dependent_groups: []
 # List of default UNIX system user accounts managed by Ansible.
 system_users__default_accounts:
 
-  - name: '{{ system_users__self_name | regex_replace("^" + system_users__prefix, "") }}'
-    group: '{{ system_users__self_name | regex_replace("^" + system_users__prefix, "") }}'
-    comment: '{{ system_users__fact_self_comment | d("") | regex_replace(",,,$","") }}'
+  - name: '{{ system_users__self_name }}'
+    group: '{{ system_users__self_name }}'
+    prefix: '{{ "" if ansible_user|d() else system_users__prefix }}'
+    comment: '{{ system_users__fact_self_comment
+                 | d(system_users__self_comment)
+                 | regex_replace(",,,$","") }}'
     # home path is generated automatically
-    shell: '{{ (system_users__fact_self_shell | d("/bin/bash"))
-               if ((system_users__fact_self_shell | d("/bin/bash"))
+    shell: '{{ (system_users__fact_self_shell | d(system_users__self_shell))
+               if ((system_users__fact_self_shell | d(system_users__self_shell))
                    in system_users__shell_package_map.keys())
                else omit }}'
     admin: True
