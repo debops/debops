@@ -86,7 +86,10 @@ html_context = {
 # Source: https://github.com/rtfd/sphinx_rtd_theme/issues/117
 def setup(app):
     # app.add_javascript("custom.js")
-    app.add_stylesheet("theme_overrides.css")
+    try:
+        app.add_stylesheet("theme_overrides.css")
+    except AttributeError:
+        app.add_css_file("theme_overrides.css")
 
 
 # -- General configuration ------------------------------------------------
