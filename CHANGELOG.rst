@@ -65,6 +65,15 @@ Continuous Integration
   :command:`ansible-lint` project uses the DebOps repository to validate their
   codebase and helps avoid breaking both projects' test suites.
 
+:ref:`debops.ldap` role
+'''''''''''''''''''''''
+
+- The role will not use the value of the ``ansible_user`` variable to create an
+  LDAP Distinguished Name of an admin account to perform LDAP admin tasks;
+  instead it will use the name of the local UNIX account with expectation that
+  the administrator has his/her own LDAP account with privileged access to the
+  directory.
+
 :ref:`debops.saslauthd` role
 ''''''''''''''''''''''''''''
 
