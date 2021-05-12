@@ -135,7 +135,9 @@ core__admin_users: '{{ ((ansible_local.core.admin_users
                          else [])
                         + [ (ansible_user
                               if (ansible_user is defined and
-                                  ansible_user != "root")
+                                  ansible_user not in
+                                  (core__admin_blacklist_default_users
+                                   + core__admin_blacklist_users))
                               else lookup("env", "USER")) ])
                         | unique }}'
 

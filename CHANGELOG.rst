@@ -131,6 +131,9 @@ General
 
      ansible all -b -m file -a 'path=/etc/ansible/facts.d/core.fact state=absent'
 
+- The role should now correctly ignore UNIX accounts with blacklisted names and
+  not add them to the list of administrator accounts.
+
 :ref:`debops.cron` role
 '''''''''''''''''''''''
 
