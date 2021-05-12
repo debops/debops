@@ -105,6 +105,9 @@ General
 - The role playbook will be applied correctly on hosts in the
   ``[debops_service_bootstrap]`` Ansible inventory group.
 
+- The role should now correctly ignore UNIX accounts with blacklisted names and
+  not add them to the list of administrator accounts.
+
 :ref:`debops.cron` role
 '''''''''''''''''''''''
 
