@@ -103,6 +103,15 @@ Continuous Integration
 - Use a custom mode for the :file:`/var/log/` directory on specific OS
   distributions to support unprivileged :command:`syslog` operation.
 
+:ref:`debops.ldap` role
+'''''''''''''''''''''''
+
+- The role will not use the value of the ``ansible_user`` variable to create an
+  LDAP Distinguished Name of an admin account to perform LDAP admin tasks;
+  instead it will use the name of the local UNIX account with expectation that
+  the administrator has his/her own LDAP account with privileged access to the
+  directory.
+
 :ref:`debops.rabbitmq_management` role
 ''''''''''''''''''''''''''''''''''''''
 

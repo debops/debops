@@ -626,10 +626,7 @@ ldap__admin_passwordstore_path: 'debops/ldap/credentials'
 # name which is assumed to be the same in the LDAP directory. This account
 # should have sufficient privileges to manage the LDAP directory objects
 # operated on by the playbooks.
-ldap__admin_rdn: '{{ "uid=" + (ansible_user
-                               if (ansible_user | d() and
-                                   ansible_user != "root")
-                               else lookup("env", "USER")) }}'
+ldap__admin_rdn: '{{ "uid=" + lookup("env", "USER") }}'
 
                                                                    # ]]]
 # .. envvar:: ldap__admin_dn [[[

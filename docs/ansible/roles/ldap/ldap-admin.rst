@@ -19,11 +19,12 @@ and examples of usage.
 Authentication to the LDAP directory
 ------------------------------------
 
-If the ``ansible_user`` variable is defined in the Ansible inventory, the
-:ref:`debops.ldap` role will use it as the value of the ``uid=`` attribute to
-bind to the LDAP directory. Otherwise, the role will use the username of the
-current Ansible user (from the Ansible Controller host) to do the same, by
-default binding as a Distinguished Name:
+The role will use the username of the current Ansible user (from the Ansible
+Controller host) as the value of the ``uid=`` attribute to bind to the LDAP
+directory. This is done to avoid sharing passwords between users of a single
+administrator account in the LDAP directory.
+
+By default LDAP connection will be bound as a Distinguished Name:
 
 .. code-block:: none
 
