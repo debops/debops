@@ -58,6 +58,13 @@ General
 - The :command:`etckeeper` script can be configured to send e-mail messages
   with changes to the system administrator.
 
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- You can now configure the :command:`iptables` backend (``nft`` or ``legacy``)
+  after installing :command:`ferm` service using the alternatives system. This
+  might be needed on newer OS releases to keep :command:`ferm` usable.
+
 :ref:`debops.netbox` role
 '''''''''''''''''''''''''
 
@@ -137,6 +144,12 @@ Continuous Integration
   will be used to specify the mail home directory relative to the mail root
   directory, instead of generating one which depends on the domain and username
   of a given account.
+
+:ref:`debops.postgresql_server` role
+''''''''''''''''''''''''''''''''''''
+
+- The :command:`autopostgresqlbackup` script will not be installed on Debian
+  Bullseye because the package was dropped from that release.
 
 :ref:`debops.postldap` role
 '''''''''''''''''''''''''''
