@@ -145,6 +145,12 @@ Continuous Integration
   directory, instead of generating one which depends on the domain and username
   of a given account.
 
+:ref:`debops.postgresql_server` role
+''''''''''''''''''''''''''''''''''''
+
+- The :command:`autopostgresqlbackup` script will not be installed on Debian
+  Bullseye because the package was dropped from that release.
+
 :ref:`debops.postldap` role
 '''''''''''''''''''''''''''
 
