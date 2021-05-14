@@ -36,6 +36,13 @@ General
 - The role will ignore the ``pi`` UNIX account used on Raspbian and other
   Raspberry Pi OSes and not include it in a list of administrator accounts.
 
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- You can now configure the :command:`iptables` backend (``nft`` or ``legacy``)
+  after installing :command:`ferm` service using the alternatives system. This
+  might be needed on newer OS releases to keep :command:`ferm` usable.
+
 :ref:`debops.lxc` role
 ''''''''''''''''''''''
 
