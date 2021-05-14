@@ -41,6 +41,26 @@ ferm__enabled: '{{ True
 ferm__flush: '{{ ferm__enabled | bool }}'
 
                                                                    # ]]]
+# .. envvar:: ferm__iptables_backend_enabled [[[
+#
+# Enable or disable configuration of the :command:`iptables` backend symlink
+# using the "alternatives" system.
+ferm__iptables_backend_enabled: True
+
+                                                                   # ]]]
+# ..envvar:: ferm__iptables_backend_path [[[
+#
+# Select which iptables backend should be used on the host. Known backends:
+#
+# - ``/usr/sbin/iptables-legacy``
+#
+# - ``/usr/sbin/iptables-nft``
+#
+# Newer OS releases might need to use the legacy variant to be compatible with
+# :command:`ferm` manager.
+ferm__iptables_backend_path: '/usr/sbin/iptables-nft'
+
+                                                                   # ]]]
 # .. envvar:: ferm__base_packages [[[
 #
 # List of base APT packages to install.

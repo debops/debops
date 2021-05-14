@@ -22,6 +22,12 @@
   until: ferm__register_packages is succeeded
   when: ferm__enabled | bool
 
+- name: Manage iptables backend using alternatives
+  alternatives:
+    name: 'iptables'
+    path: '{{ ferm__iptables_backend_path }}'
+  when: ferm__enabled | bool and ferm__iptables_backend_enabled|bool
+
 - name: Make sure required directories exist
   file:
     path: '{{ item }}'

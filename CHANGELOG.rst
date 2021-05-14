@@ -46,6 +46,13 @@ General
 - The :command:`etckeeper` script can be configured to send e-mail messages
   with changes to the system administrator.
 
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- You can now configure the :command:`iptables` backend (``nft`` or ``legacy``)
+  after installing :command:`ferm` service using the alternatives system. This
+  might be needed on newer OS releases to keep :command:`ferm` usable.
+
 :ref:`debops.lxc` role
 ''''''''''''''''''''''
 
