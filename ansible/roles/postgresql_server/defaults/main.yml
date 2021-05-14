@@ -479,7 +479,9 @@ postgresql_server__cluster_main:
 #
 # Global toggle to enable/disable support for local ``autopostgresqlbackup``
 # snapshots.
-postgresql_server__autopostgresqlbackup: True
+postgresql_server__autopostgresqlbackup: '{{ False
+                                             if (ansible_distribution_release in [ "bullseye" ])
+                                             else True }}'
 
                                                                    # ]]]
 # .. envvar:: postgresql_server__auto_backup [[[

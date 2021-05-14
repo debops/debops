@@ -81,6 +81,12 @@ Continuous Integration
   the administrator has his/her own LDAP account with privileged access to the
   directory.
 
+:ref:`debops.postgresql_server` role
+''''''''''''''''''''''''''''''''''''
+
+- The :command:`autopostgresqlbackup` script will not be installed on Debian
+  Bullseye because the package was dropped from that release.
+
 :ref:`debops.saslauthd` role
 ''''''''''''''''''''''''''''
 
