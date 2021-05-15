@@ -121,6 +121,12 @@ General
 - In the ``parse_kv_config`` custom Ansible filter, correctly skip
   configuration entries which have been marked with the ``ignore`` state.
 
+:ref:`debops.apache` role
+'''''''''''''''''''''''''
+
+- Fixed management of virtual hosts marked as ``dont-create`` type, which are
+  expected to be already configured on the remote hosts.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
