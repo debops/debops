@@ -332,7 +332,7 @@
         item.state|d("started") == "started"
   tags: [ 'role::lxc:containers' ]
 
-- name: Include fstab parameter in LXC container configuration
+- name: Include fstab parameter in LXC container configuration for lxc<4.0
   lineinfile:
     path: '/var/lib/lxc/{{ item.name | d(item) }}/config'
     regexp: '^lxc\.mount\s+=\s+'
@@ -347,7 +347,7 @@
         lxc__version is version("4.0", operator="lt", strict=True)
   tags: [ 'role::lxc:containers' ]
 
-- name: Include fstab parameter in LXC container configuration
+- name: Include fstab parameter in LXC container configuration for lxc>=4.0
   lineinfile:
     path: '/var/lib/lxc/{{ item.name | d(item) }}/config'
     regexp: '^lxc\.mount\.fstab\s+=\s+'
