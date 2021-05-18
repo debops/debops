@@ -149,7 +149,7 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Test apache and reload' ]
-  when: (item.state|d("present") != "absent" and item.type|d(apache__vhost_type) not in ["divert"])
+  when: (item.state|d("present") != "absent" and item.type|d(apache__vhost_type) not in ["divert", "dont-create"])
   with_flattened: '{{ apache__combined_vhosts }}'
   tags: [ 'role::apache:vhosts' ]
 
