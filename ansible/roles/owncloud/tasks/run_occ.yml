@@ -53,7 +53,7 @@
   failed_when: ((owncloud__occ_run.rc != 0 and 'already exists' not in owncloud__occ_run.stdout and
                  'already installed' not in owncloud__occ_run.stdout) or
                 ('An unhandled exception has been thrown:' in owncloud__occ_run.stdout))
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
   register: owncloud__occ_run
   become: True
   become_user: '{{ owncloud__app_user }}'
