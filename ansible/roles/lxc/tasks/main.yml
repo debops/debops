@@ -340,7 +340,7 @@
   when: ansible_local|d() and ansible_local.lxc|d() and
         (item.name | d(item)) not in ansible_local.lxc.containers|d() and
         item.state|d("started") == "started" and item.fstab|d() and
-        lxc__version is version("4.0", operator="lt" strict=True)
+        lxc__version is version("4.0", operator="lt", strict=True)
   tags: [ 'role::lxc:containers' ]
 
 - name: Include fstab parameter in LXC container configuration
