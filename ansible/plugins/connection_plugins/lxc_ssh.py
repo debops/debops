@@ -1,4 +1,5 @@
 # Copyright 2016 Pierre Chifflier <pollux@wzdftpd.net>
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
 # SSH + lxc-attach connection module for Ansible 2.0
 #
