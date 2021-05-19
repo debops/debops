@@ -138,8 +138,13 @@ def gen_ansible_cfg(filename, config, project_root, playbooks_path,
     ansible_version_out = subprocess.check_output([ANSIBLE_PLAYBOOK,
                                                    "--version"]).decode()
 
-    # Get first line and split by spaces to get second 'word'.
-    ansible_version = str(ansible_version_out.splitlines()[0].split()[1])
+    # Ansible < 4: Get first line and split by spaces to get second 'word'.
+    # Ansible >= 4: Version line looks like 'ansible-playbook [core 2.11.0]'.
+    ansible_version_line = ansible_version_out.splitlines()[0].strip()
+    if ansible_version_line.endswith(']'):
+        ansible_version = ansible_version_line[:-1].split()[-1]
+    else:
+        ansible_version = str(ansible_version_line.split()[1])
 
     for plugin_type in ('action', 'callback', 'connection',
                         'filter', 'lookup', 'vars'):
