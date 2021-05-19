@@ -170,6 +170,9 @@ General
   DebOps repository cloned into the :file:`debops/` directory inside of the
   project directory.
 
+- The :command:`debops` script was updated to correctly detect version of
+  Ansible v4.0.0+.
+
 :ref:`debops.ansible_plugins` role
 ''''''''''''''''''''''''''''''''''
 
