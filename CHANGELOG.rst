@@ -114,6 +114,11 @@ Updates of upstream application versions
 - In the :ref:`debops.owncloud` role, the Nextcloud version has been updated to
   ``v20.0``. ``19.0`` support has been dropped.
 
+- The ``lxc_ssh.py`` connection plugin that enables management of LXC
+  containers without the need of an :command:`sshd` server installed inside of
+  the containers has been refreshed to get latest changes in the upstream
+  project and make it work correctly on newer Ansible releases.
+
 Continuous Integration
 ''''''''''''''''''''''
 
