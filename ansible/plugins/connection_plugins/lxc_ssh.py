@@ -444,11 +444,7 @@ def _ssh_retry(func):
         cmd_summary = "%s..." % args[0]
         for attempt in range(remaining_tries):
             cmd = args[0]
-            if (
-                attempt != 0
-                and self._play_context.password
-                and isinstance(cmd, list)
-            ):
+            if attempt != 0 and self._play_context.password and isinstance(cmd, list):
                 # If this is a retry, the fd/pipe for sshpass is closed,
                 # and we need a new one
                 self.sshpass_pipe = os.pipe()
@@ -468,9 +464,7 @@ def _ssh_retry(func):
                 except (AnsibleControlPersistBrokenPipeError) as e:
                     # Retry one more time because of the ControlPersist
                     # broken pipe (see #16731)
-                    display.vvv(
-                        "RETRYING BECAUSE OF CONTROLPERSIST BROKEN PIPE"
-                    )
+                    display.vvv("RETRYING BECAUSE OF CONTROLPERSIST BROKEN PIPE")
                     return_tuple = func(self, *args, **kwargs)
 
                 if return_tuple[0] != 255:
@@ -517,9 +511,7 @@ class Connection(ConnectionBase):
     transport = "lxc_ssh"
 
     def __init__(self, play_context, new_stdin, *args, **kwargs):
-        super(Connection, self).__init__(
-            play_context, new_stdin, *args, **kwargs
-        )
+        super(Connection, self).__init__(play_context, new_stdin, *args, **kwargs)
         self.host = self._play_context.remote_addr
         self.port = self._play_context.port
         self.user = self._play_context.remote_user
@@ -529,9 +521,7 @@ class Connection(ConnectionBase):
 
         # LXC v1 uses 'lxc-info', 'lxc-attach' and so on
         # LXC v2 uses just 'lxc'
-        (returncode2, stdout2, stderr2) = self._exec_command(
-            "which lxc", None, False
-        )
+        (returncode2, stdout2, stderr2) = self._exec_command("which lxc", None, False)
         (returncode1, stdout1, stderr1) = self._exec_command(
             "which lxc-info", None, False
         )
@@ -621,8 +611,7 @@ class Connection(ConnectionBase):
                   The b_command list has the new arguments appended.
         """
         display.vvvvv(
-            "SSH: %s: (%s)"
-            % (explanation, ")(".join(to_text(a) for a in b_args)),
+            "SSH: %s: (%s)" % (explanation, ")(".join(to_text(a) for a in b_args)),
             host=self._play_context.remote_addr,
         )
         b_command += b_args
@@ -641,9 +630,7 @@ class Connection(ConnectionBase):
         """
 
         b_command = []
-        conn_password = (
-            self.get_option("password") or self._play_context.password
-        )
+        conn_password = self.get_option("password") or self._play_context.password
 
         #
         # First, the command to invoke
@@ -690,9 +677,7 @@ class Connection(ConnectionBase):
         if subsystem == "sftp" and self.get_option("sftp_batch_mode"):
             if conn_password:
                 b_args = [b"-o", b"BatchMode=no"]
-                self._add_args(
-                    b_command, b_args, "disable batch mode for sshpass"
-                )
+                self._add_args(b_command, b_args, "disable batch mode for sshpass")
             b_command += [b"-b", b"-"]
 
         if self._play_context.verbosity > 3:
@@ -739,9 +724,7 @@ class Connection(ConnectionBase):
             b_args = (
                 b"-o",
                 b'IdentityFile="'
-                + to_bytes(
-                    os.path.expanduser(key), errors="surrogate_or_strict"
-                )
+                + to_bytes(os.path.expanduser(key), errors="surrogate_or_strict")
                 + b'"',
             )
             self._add_args(
@@ -772,8 +755,7 @@ class Connection(ConnectionBase):
                 b_command,
                 (
                     b"-o",
-                    b'User="%s"'
-                    % to_bytes(self.user, errors="surrogate_or_strict"),
+                    b'User="%s"' % to_bytes(self.user, errors="surrogate_or_strict"),
                 ),
                 "ANSIBLE_REMOTE_USER/remote_user/ansible_user/user/-u set",
             )
@@ -902,9 +884,7 @@ class Connection(ConnectionBase):
                 )
                 self._flags["become_prompt"] = True
                 suppress_output = True
-            elif self._play_context.success_key and self.check_become_success(
-                b_line
-            ):
+            elif self._play_context.success_key and self.check_become_success(b_line):
                 display.debug(
                     "become_success: (source=%s, state=%s): '%s'"
                     % (source, state, display_line)
@@ -945,9 +925,7 @@ class Connection(ConnectionBase):
         """
 
         display_cmd = list(map(shlex_quote, map(to_text, cmd)))
-        display.vvv(
-            "SSH: EXEC {0}".format(" ".join(display_cmd)), host=self.host
-        )
+        display.vvv("SSH: EXEC {0}".format(" ".join(display_cmd)), host=self.host)
 
         # Start the given command. If we don't need to pipeline data, we can try
         # to use a pseudo-tty (ssh will have been invoked with -tt). If we are
@@ -1048,8 +1026,7 @@ class Connection(ConnectionBase):
                 # wait for a password prompt.
                 state = states.index("awaiting_prompt")
                 display.debug(
-                    "Initial state: %s: %s"
-                    % (states[state], self._play_context.prompt)
+                    "Initial state: %s: %s" % (states[state], self._play_context.prompt)
                 )
             elif self._play_context.become and self._play_context.success_key:
                 # We're requesting escalation without a password, so we have to
@@ -1187,12 +1164,8 @@ class Connection(ConnectionBase):
 
                 if states[state] == "awaiting_prompt":
                     if self._flags["become_prompt"]:
-                        display.debug(
-                            "Sending become_pass in response to prompt"
-                        )
-                        stdin.write(
-                            to_bytes(self._play_context.become_pass) + b"\n"
-                        )
+                        display.debug("Sending become_pass in response to prompt")
+                        stdin.write(to_bytes(self._play_context.become_pass) + b"\n")
                         self._flags["become_prompt"] = False
                         state += 1
                     elif self._flags["become_success"]:
@@ -1211,16 +1184,14 @@ class Connection(ConnectionBase):
                         self._terminate_process(p)
                         self._flags["become_error"] = False
                         raise AnsibleError(
-                            "Incorrect %s password"
-                            % self._play_context.become_method
+                            "Incorrect %s password" % self._play_context.become_method
                         )
                     elif self._flags["become_nopasswd_error"]:
                         display.debug("Escalation requires password")
                         self._terminate_process(p)
                         self._flags["become_nopasswd_error"] = False
                         raise AnsibleError(
-                            "Missing %s password"
-                            % self._play_context.become_method
+                            "Missing %s password" % self._play_context.become_method
                         )
                     elif self._flags["become_prompt"]:
                         # This shouldn't happen, because we should see the
@@ -1229,8 +1200,7 @@ class Connection(ConnectionBase):
                         self._terminate_process(p)
                         self._flags["become_prompt"] = False
                         raise AnsibleError(
-                            "Incorrect %s password"
-                            % self._play_context.become_method
+                            "Incorrect %s password" % self._play_context.become_method
                         )
 
                 # Once we're sure that the privilege escalation prompt,
@@ -1319,9 +1289,7 @@ class Connection(ConnectionBase):
     def _exec_command(self, cmd, in_data=None, sudoable=True):
         """run a command on the remote host"""
 
-        super(Connection, self).exec_command(
-            cmd, in_data=in_data, sudoable=sudoable
-        )
+        super(Connection, self).exec_command(cmd, in_data=in_data, sudoable=sudoable)
 
         display.vvv(
             "ESTABLISH SSH CONNECTION FOR USER: {0}".format(
@@ -1339,13 +1307,9 @@ class Connection(ConnectionBase):
         if in_data:
             cmd = self._build_command(ssh_executable, "ssh", self.host, cmd)
         else:
-            cmd = self._build_command(
-                ssh_executable, "ssh", "-tt", self.host, cmd
-            )
+            cmd = self._build_command(ssh_executable, "ssh", "-tt", self.host, cmd)
 
-        (returncode, stdout, stderr) = self._run(
-            cmd, in_data, sudoable=sudoable
-        )
+        (returncode, stdout, stderr) = self._run(cmd, in_data, sudoable=sudoable)
 
         return (returncode, stdout, stderr)
 
@@ -1354,7 +1318,7 @@ class Connection(ConnectionBase):
             try:
                 attr_value = getattr(obj, attr_name)
                 print(attr_name, attr_value, callable(attr_value))
-            except:
+            except AttributeError:
                 pass
 
     #
@@ -1363,9 +1327,7 @@ class Connection(ConnectionBase):
     def exec_command(self, cmd, in_data=None, sudoable=False):
         """run a command on the chroot"""
         display.vvv("XXX exec_command: %s" % cmd)
-        super(Connection, self).exec_command(
-            cmd, in_data=in_data, sudoable=sudoable
-        )
+        super(Connection, self).exec_command(cmd, in_data=in_data, sudoable=sudoable)
 
         ssh_executable = self.get_option("ssh_executable")
         h = self.container_name
@@ -1382,12 +1344,8 @@ class Connection(ConnectionBase):
         if in_data:
             cmd = self._build_command(ssh_executable, "ssh", self.host, lxc_cmd)
         else:
-            cmd = self._build_command(
-                ssh_executable, "ssh", "-tt", self.host, lxc_cmd
-            )
-        (returncode, stdout, stderr) = self._run(
-            cmd, in_data, sudoable=sudoable
-        )
+            cmd = self._build_command(ssh_executable, "ssh", "-tt", self.host, lxc_cmd)
+        (returncode, stdout, stderr) = self._run(cmd, in_data, sudoable=sudoable)
         return (returncode, stdout, stderr)
 
     def put_file(self, in_path, out_path):
@@ -1413,12 +1371,9 @@ class Connection(ConnectionBase):
                     cmd = "cat > %s; echo -n done" % pipes.quote(out_path)
                 h = self.container_name
                 if self.lxc_version == 2:
-                    lxc_cmd = (
-                        "lxc exec %s --mode=non-interactive -- /bin/sh -c %s"
-                        % (
-                            pipes.quote(h),
-                            pipes.quote(cmd),
-                        )
+                    lxc_cmd = "lxc exec %s --mode=non-interactive -- /bin/sh -c %s" % (
+                        pipes.quote(h),
+                        pipes.quote(cmd),
                     )
                 elif self.lxc_version == 1:
                     lxc_cmd = "lxc-attach --name %s -- /bin/sh -c %s" % (
@@ -1426,16 +1381,12 @@ class Connection(ConnectionBase):
                         pipes.quote(cmd),
                     )
                 if in_data:
-                    cmd = self._build_command(
-                        ssh_executable, "ssh", self.host, lxc_cmd
-                    )
+                    cmd = self._build_command(ssh_executable, "ssh", self.host, lxc_cmd)
                 else:
                     cmd = self._build_command(
                         ssh_executable, "ssh", "-tt", self.host, lxc_cmd
                     )
-                (returncode, stdout, stderr) = self._run(
-                    cmd, in_data, sudoable=False
-                )
+                (returncode, stdout, stderr) = self._run(cmd, in_data, sudoable=False)
                 return (returncode, stdout, stderr)
         else:
             with open(in_path, "r") as in_f:
@@ -1449,12 +1400,9 @@ class Connection(ConnectionBase):
                     cmd = "cat > %s; echo -n done" % pipes.quote(out_path)
                 h = self.container_name
                 if self.lxc_version == 2:
-                    lxc_cmd = (
-                        "lxc exec %s --mode=non-interactive -- /bin/sh -c %s"
-                        % (
-                            pipes.quote(h),
-                            pipes.quote(cmd),
-                        )
+                    lxc_cmd = "lxc exec %s --mode=non-interactive -- /bin/sh -c %s" % (
+                        pipes.quote(h),
+                        pipes.quote(cmd),
                     )
                 elif self.lxc_version == 1:
                     lxc_cmd = "lxc-attach --name %s -- /bin/sh -c %s" % (
@@ -1462,24 +1410,18 @@ class Connection(ConnectionBase):
                         pipes.quote(cmd),
                     )
                 if in_data:
-                    cmd = self._build_command(
-                        ssh_executable, "ssh", self.host, lxc_cmd
-                    )
+                    cmd = self._build_command(ssh_executable, "ssh", self.host, lxc_cmd)
                 else:
                     cmd = self._build_command(
                         ssh_executable, "ssh", "-tt", self.host, lxc_cmd
                     )
-                (returncode, stdout, stderr) = self._run(
-                    cmd, in_data, sudoable=False
-                )
+                (returncode, stdout, stderr) = self._run(cmd, in_data, sudoable=False)
                 return (returncode, stdout, stderr)
 
     def fetch_file(self, in_path, out_path):
         """fetch a file from lxc to local"""
         super(Connection, self).fetch_file(in_path, out_path)
-        display.vvv(
-            "FETCH {0} TO {1}".format(in_path, out_path), host=self.host
-        )
+        display.vvv("FETCH {0} TO {1}".format(in_path, out_path), host=self.host)
         ssh_executable = self.get_option("ssh_executable")
 
         cmd = "cat < %s" % pipes.quote(in_path)
