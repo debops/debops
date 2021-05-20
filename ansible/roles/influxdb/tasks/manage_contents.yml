@@ -34,6 +34,7 @@
   delegate_to: '{{ influxdb__delegate_to }}'
   when: ((item.database|d(False) or item.name|d(False)) and
          (item.state is undefined or item.state != 'absent'))
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Create retention policies
   influxdb_retention_policy:
@@ -66,6 +67,7 @@
   delegate_to: '{{ influxdb__delegate_to }}'
   when: ((item.user|d(False) or item.name|d(False)) and
          (item.state is defined and item.state == "absent"))
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Create user accounts
   influxdb_user:
@@ -87,3 +89,4 @@
   delegate_to: '{{ influxdb__delegate_to }}'
   when: ((item.user|d(False) or item.name|d(False)) and
          (item.state is undefined or item.state != "absent"))
+  no_log: '{{ debops__no_log | d(True) }}'
