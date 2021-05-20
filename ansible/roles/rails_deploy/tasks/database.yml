@@ -15,6 +15,7 @@
     encrypted: False
     state: 'present'
     role_attr_flags: '{{ rails_deploy_database_user_role_attrs }}'
+  no_log: '{{ debops__no_log | d(True) }}'
 
   when: rails_deploy_database_adapter == 'postgresql' and
         inventory_hostname == rails_deploy_hosts_master
@@ -37,6 +38,7 @@
         inventory_hostname == rails_deploy_hosts_master
   become: True
   become_user: '{{ rails_deploy_postgresql_super_username }}'
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Create MySQL user
   mysql_user:
@@ -51,6 +53,7 @@
         inventory_hostname == rails_deploy_hosts_master
   become: True
   become_user: '{{ rails_deploy_mysql_super_username }}'
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Create MySQL database if enabled
   mysql_db:
@@ -66,3 +69,4 @@
         inventory_hostname == rails_deploy_hosts_master
   become: True
   become_user: '{{ rails_deploy_mysql_super_username }}'
+  no_log: '{{ debops__no_log | d(True) }}'

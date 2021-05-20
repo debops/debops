@@ -185,6 +185,7 @@
     login_password: '{{ icinga_web__x509_database_password }}'
   when: icinga_web__x509_enabled|bool and
         icinga_web__x509_database_init|bool
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Ensure that initial data schema is removed
   file:
