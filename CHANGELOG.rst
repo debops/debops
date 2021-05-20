@@ -70,6 +70,11 @@ Updates of upstream application versions
 - In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
   has been updated to the next point release, 10.9.
 
+- The ``lxc_ssh.py`` connection plugin that enables management of LXC
+  containers without the need of an :command:`sshd` server installed inside of
+  the containers has been refreshed to get latest changes in the upstream
+  project and make it work correctly on newer Ansible releases.
+
 Continuous Integration
 ''''''''''''''''''''''
 
