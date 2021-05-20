@@ -159,6 +159,7 @@
     - '{{ resources__host_urls }}'
   when: (resources__enabled|bool and (item.url|d() or item.src|d()) and
          (item.dest|d() or item.name|d() or item.path|d()))
+  no_log: '{{ debops__no_log | d(True if item.url_password|d() else omit) }}'
   tags: [ 'role::resources:urls' ]
 
 # Manage custom archives [[[1
