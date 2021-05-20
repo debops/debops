@@ -38,6 +38,7 @@
       http:
       https:
   when: not (ansible_local.influxdb_server.installed|d(false)|bool)
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Stop database server on first install
   service:
