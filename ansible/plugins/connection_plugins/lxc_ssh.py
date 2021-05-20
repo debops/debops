@@ -18,7 +18,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
-#
 
 from __future__ import absolute_import, division, print_function
 
@@ -895,9 +894,6 @@ class Connection(ConnectionBase):
             display_line = to_text(b_line).rstrip("\r\n")
             suppress_output = False
 
-            # @stefangweichinger: I don't know how to correctly write *this* one
-            # display.debug("Examining line (source=%s, state=%s):
-            # '%s'" % (source, state, display_line))
             if self._play_context.prompt and self.check_password_prompt(b_line):
                 display.debug(
                     "become_prompt: (source=%s, state=%s): '%s'"
