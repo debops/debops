@@ -115,6 +115,12 @@ Continuous Integration
   :command:`ansible-lint` project uses the DebOps repository to validate their
   codebase and helps avoid breaking both projects' test suites.
 
+``debops.boxbackup`` role
+'''''''''''''''''''''''''
+
+- Some of the default variables in the role have been renamed to aoid using
+  uppercase letters in variables.
+
 :ref:`debops.fhs` role
 ''''''''''''''''''''''
 
