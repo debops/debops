@@ -140,6 +140,12 @@ Continuous Integration
   small development team with multiple applications deployed on separate
   accounts.
 
+``debops.boxbackup`` role
+'''''''''''''''''''''''''
+
+- Some of the default variables in the role have been renamed to aoid using
+  uppercase letters in variables.
+
 :ref:`debops.dovecot` role
 ''''''''''''''''''''''''''
 
