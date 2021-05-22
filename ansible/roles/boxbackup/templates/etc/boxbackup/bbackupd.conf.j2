@@ -29,14 +29,14 @@ UpdateStoreInterval = {{ (boxbackup_interval | default(60) * 60|int)|round|int|s
 {#
 	# The minimum age of a file, in seconds, that will be uploaded. Avoids
 	# repeated uploads of a file which is constantly being modified. #}
-MinimumFileAge = {{ (boxbackup_MinimumFileAge | default(6) * 60 * 60|int)|round|int|string }}
+MinimumFileAge = {{ (boxbackup_minimumfileage | default(6) * 60 * 60|int)|round|int|string }}
 {#
 	# If a file is modified repeated, it won't be uploaded immediately in case
 	# it's modified again, due to the MinimumFileAge specified above. However, it
 	# should be uploaded eventually even if it is being modified repeatedly. This
 	# is how long we should wait, in seconds, after first noticing a change.
 	# (86400 seconds = 1 day) #}
-MaxUploadWait = {{ (boxbackup_MaxUploadWait | default(24) * 60 * 60|int)|round|int|string }}
+MaxUploadWait = {{ (boxbackup_maxuploadwait | default(24) * 60 * 60|int)|round|int|string }}
 {#
 	# If the connection is idle for some time (e.g. over 10 minutes or 600
 	# seconds, not sure exactly how long) then the server will give up and
@@ -67,11 +67,11 @@ MaxUploadWait = 0
 
 {#	# Files above this size (in bytes) are tracked, and if they are renamed they will simply be
 	# renamed on the server, rather than being uploaded again. (64k - 1) #}
-FileTrackingSizeThreshold = {{ boxbackup_FileTrackingSizeThreshold | default('65535') }}
+FileTrackingSizeThreshold = {{ boxbackup_filetrackingsizethreshold | default('65535') }}
 {#
 	# The daemon does "changes only" uploads for files above this size (in bytes).
 	# Files less than it are uploaded whole without this extra processing. #}
-DiffingUploadSizeThreshold = {{ boxbackup_DiffingUploadSizeThreshold | default('8192') }}
+DiffingUploadSizeThreshold = {{ boxbackup_diffinguploadsizethreshold | default('8192') }}
 {#
 	# The limit on how much time is spent diffing files, in seconds. Most files
 	# shouldn't take very long, but if you have really big files you can use this
@@ -82,7 +82,7 @@ DiffingUploadSizeThreshold = {{ boxbackup_DiffingUploadSizeThreshold | default('
 	# * Increase if you have large files, and think the upload of changes is too
 	#   large and you want bbackupd to spend more time searching for unchanged
 	#   blocks. #}
-MaximumDiffingTime = {{ boxbackup_MaximumDiffingTime | default('120') }}
+MaximumDiffingTime = {{ boxbackup_maximumdiffingtime | default('120') }}
 
 {#	# More verbose logging #}
 ExtendedLogging = {{ boxbackup_verbose | default('no') }}
@@ -102,8 +102,8 @@ ExtendedLogging = {{ boxbackup_verbose | default('no') }}
 	# store. For example, you could use this on a laptop to only backup when on a
 	# specific network, or when it has a working Internet connection.
 	# SyncAllowScript = /path/to/intepreter/or/exe script-name parameters etc #}
-{% if boxbackup_SyncAllowScript is defined and boxbackup_SyncAllowScript %}
-SyncAllowScript = {{ boxbackup_SyncAllowScript }}
+{% if boxbackup_syncallowscript is defined and boxbackup_syncallowscript %}
+SyncAllowScript = {{ boxbackup_syncallowscript }}
 
 {% endif %}
 {# # Where the command socket is created in the filesystem. #}
