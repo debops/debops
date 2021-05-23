@@ -133,6 +133,14 @@ Continuous Integration
 - The SMTPd service will search for ``mailRecipient`` LDAP Object Class instead
   of the ``inetOrgPerson`` Object Class to authenticate mail senders.
 
+:ref:`debops.tinc` role
+'''''''''''''''''''''''
+
+- The role will now use the ``ipaddr('host')`` Ansible filter to parse IP
+  addresses configured in the Tinc VPN. This change will permit use of IPv4
+  addresses without specified CIDR prefix, which will default to ``/32`` prefix
+  in such case.
+
 :ref:`debops.yadm` role
 '''''''''''''''''''''''
 
