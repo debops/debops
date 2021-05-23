@@ -34,13 +34,13 @@ readarray -t interface_addresses << EOF
 {%   set _ = tinc__tpl_addresses.extend(([ item.value.address ]
                                          if item.value.address is string
                                          else item.value.address)
-                                        | ipaddr('host/prefix')) %}
+                                        | ipaddr('host')) %}
 {% endif %}
 {% if item.value.addresses|d() %}
 {%   set _ = tinc__tpl_addresses.extend(([ item.value.addresses ]
                                          if item.value.addresses is string
                                          else item.value.addresses)
-                                        | ipaddr('host/prefix')) %}
+                                        | ipaddr('host')) %}
 {% endif %}
 {% for entry in tinc__tpl_addresses %}
 {{ entry }}
