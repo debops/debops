@@ -276,6 +276,12 @@ General
   just "Internal Server Error". The service as a whole survives this.
   The bug in the configuration template has been fixed.
 
+:ref:`debops.opendkim` role
+'''''''''''''''''''''''''''
+
+- Restored compatibility with Ansible versions prior to 2.10 by omitting the
+  ``regenerate`` parameter of the openssl_privatekey module on those versions.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
