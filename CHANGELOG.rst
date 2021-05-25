@@ -218,6 +218,12 @@ General
 - Fixed an issue wich resulted in HTTP 404 errors on specific paths in various
   PHP applications.
 
+:ref:`debops.opendkim` role
+'''''''''''''''''''''''''''
+
+- Restored compatibility with Ansible versions prior to 2.10 by omitting the
+  ``regenerate`` parameter of the openssl_privatekey module on those versions.
+
 :ref:`debops.php` role
 ''''''''''''''''''''''
 
