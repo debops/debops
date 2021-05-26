@@ -182,6 +182,13 @@ Continuous Integration
   Please test these changes in a development environment before applying them
   in production.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- The support for Python 2.7 environment will be enabled only when explicitly
+  requested using the :envvar:`python__v2` variable. This should avoid issues
+  with installation of Python 2.7 packages on Debian Bullseye and later.
+
 :ref:`debops.roundcube` role
 ''''''''''''''''''''''''''''
 
