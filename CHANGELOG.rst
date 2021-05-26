@@ -142,6 +142,13 @@ Continuous Integration
 - The :command:`autopostgresqlbackup` script will not be installed on Debian
   Bullseye because the package was dropped from that release.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- The support for Python 2.7 environment will be enabled only when explicitly
+  requested using the :envvar:`python__v2` variable. This should avoid issues
+  with installation of Python 2.7 packages on Debian Bullseye and later.
+
 :ref:`debops.rabbitmq_management` role
 ''''''''''''''''''''''''''''''''''''''
 
