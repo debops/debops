@@ -38,8 +38,10 @@ ferm__flush: '{{ ferm__enabled | bool }}'
 # .. envvar:: ferm__iptables_backend_enabled [[[
 #
 # Enable or disable configuration of the :command:`iptables` backend symlink
-# using the "alternatives" system.
-ferm__iptables_backend_enabled: True
+# using the "alternatives" system, supported on Debian 10 and later.
+ferm__iptables_backend_enabled: '{{ False
+                                    if ansible_distribution_release in [ "wheezy", "jessie", "stretch", "trusty", "xenial" ]
+                                    else True }}'
 
                                                                    # ]]]
 # ..envvar:: ferm__iptables_backend_path [[[
