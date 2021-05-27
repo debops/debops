@@ -233,6 +233,12 @@ General
 
 - Fix role execution on hosts without :command:`systemd` as the service manager.
 
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- The management of the :command:`iptables` backend symlink using the
+  'alternatives' system is disabled on Debian 9, where it is unsupported.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
