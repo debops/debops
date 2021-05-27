@@ -270,6 +270,12 @@ General
 
 - The EteSync playbook is now included in the default DebOps playbook.
 
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- The management of the :command:`iptables` backend symlink using the
+  'alternatives' system is disabled on Debian 9, where it is unsupported.
+
 :ref:`debops.iscsi` role
 ''''''''''''''''''''''''
 
