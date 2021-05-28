@@ -83,7 +83,7 @@
                                                                                                | d(item.key) }}'
     owner: 'root'
     group: 'root'
-    mode: '{{ item.value.mode | d(0644) }}'
+    mode: '{{ item.value.mode | d("0644") }}'
   with_dict: '{{ ifupdown__combined_interfaces }}'
   register: ifupdown__register_interfaces_created
   when: item.value.state|d('present') not in [ 'absent', 'ignore' ]

@@ -206,6 +206,12 @@ General
 - The management of the :command:`iptables` backend symlink using the
   'alternatives' system is disabled on Debian 9, where it is unsupported.
 
+:ref:`debops.ifupdown` role
+'''''''''''''''''''''''''''
+
+- Fixed an issue where role stopped with an "unexpected token" error during
+  configuration of network interfaces.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
