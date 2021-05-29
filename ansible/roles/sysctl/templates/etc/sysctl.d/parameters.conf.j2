@@ -20,9 +20,11 @@
 {{ value -}}
 {%   endif %}
 {% endmacro %}
+
 {% if item.comment|d() %}
 {{ item.comment | regex_replace('\n$','') | comment(prefix='', postfix='') }}
 {% endif %}
+
 {% set param_tracker = [] %}
 {% set tracker = {'seen_comment': False} %}
 {% for element in item.options %}

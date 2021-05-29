@@ -16,7 +16,14 @@ port={{ minidlna__http_port }}
 media_dir={{item}}
 {% endfor %}
 
-{% for item in minidlna__configuration %}
+{% for item in minidlna__combined_configuration %}
 {{ item.name }}={{ item.value }}
+{% endfor %}
+
+# List of file names to look for when searching for album art.
+# Names should be delimited with a forward slash ("/").
+# This option can be specified more than once.
+{% for item in minidlna__combined_album_art_names %}
+album_art_names={{ item }}
 {% endfor %}
 

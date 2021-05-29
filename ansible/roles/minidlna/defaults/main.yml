@@ -38,13 +38,6 @@ minidlna__packages: []
 minidlna__http_port: 8200
 
                                                                    # ]]]
-
-# .. envvar:: minidlna__allow [[[
-#
-# YAML dictionary that contains the configuration of the Tinc mesh networks
-# configured on all hosts in the Ansible inventory.
-minidlna__config: {}
-
 # .. envvar:: media_dirs [[[
 #
 # List of media directories to scan and present to end user.
@@ -59,10 +52,33 @@ minidlna__config: {}
 minidlna__media_dirs: []
 
                                                                    # ]]]
-# .. envvar:: minidlna__conf [[[
+# .. envvar:: minidlna__default_configuration [[[
+#
+# YAML dictionary of {name, value} for configuration file.
+minidlna__default_configuration:
+  - name: "inotify"
+    value: "yes"
+                                                                   # ]]]
+# .. envvar:: minidlna__configuration [[[
 #
 # YAML dictionary of {name, value} for configuration file.
 minidlna__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: minidlna__default_album_art_names [[[
+#
+# YAML dictionary of {name, value} for album_art_names file.
+minidlna__default_album_art_names:
+  - "Cover.jpg/cover.jpg/AlbumArtSmall.jpg/albumartsmall.jpg"
+  - "AlbumArt.jpg/albumart.jpg/Album.jpg/album.jpg"
+  - "Folder.jpg/folder.jpg/Thumb.jpg/thumb.jpg"
+                                                                   # ]]]
+# .. envvar:: minidlna__album_art_names [[[
+#
+# List of file names to look for when searching for album art.
+# Names should be delimited with a forward slash ("/").
+# This option can be specified more than once.
+minidlna__album_art_names: []
 
                                                                    # ]]]
 # .. envvar:: minidlna__allow [[[
@@ -100,7 +116,6 @@ minidlna__ferm__dependent_rules:
     weight: '50'
     by_role: 'debops.minidlna'
                                                                    # ]]]
-
 # .. envvar:: minidlna_server__etc_services__dependent_list [[[
 #
 # Configuration for the :ref:`debops.etc_services` Ansible role.
@@ -114,5 +129,17 @@ minidlna_server__etc_services__dependent_list:
     port: '8200'
     comment: 'MiniDLNA Server'
 
+                                                                   # ]]]
+# .. envvar:: minidlna__combined_configuration [[[
+#
+# Cofiguration merged into one.
+minidlna__combined_configuration: '{{ minidlna__default_configuration
+                                      + minidlna__configuration }}'
+                                                                   # ]]]
+# .. envvar:: minidlna__combined_album_art_names [[[
+#
+# Cofiguration merged into one.
+minidlna__combined_album_art_names: '{{ minidlna__default_album_art_names
+                                      + minidlna__album_art_names }}'
                                                                    # ]]]
                                                                    # ]]]
