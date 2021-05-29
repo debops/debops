@@ -26,7 +26,7 @@
   args:
     creates: '/etc/minidlna.conf.dpkg-divert'
 
-- name: Generate main configuration file
+- name: Generate MiniDLNA configuration file
   template:
     src: 'etc/minidlna.conf.j2'
     dest: '/etc/minidlna.conf'
@@ -34,6 +34,16 @@
     group: 'root'
     mode: '0644'
     unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+  register: minidlna__register_configuration
+
+- name: Conditionnally restart MiniDLNA service
+  systemd:
+    name: 'minidlna.service'
+    enabled: true
+    daemon_reload: '{{ True if (minidlna__register_configuration is changed) else omit }}'
+    state: '{{ "restarted" if (minidlna__register_configuration is changed) else "started" }}'
+  when: ansible_service_mgr == 'systemd'
+
 # Ansible facts [[[1
 - name: Make sure that Ansible local fact directory exists
   file:
@@ -55,4 +65,3 @@
 
 - name: Reload facts if they were modified
   meta: 'flush_handlers'
-
