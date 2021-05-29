@@ -1,0 +1,31 @@
+{# Copyright (C) 2021 Julien Lecomte <julien@lecomte.at>
+ # Copyright (C) 2021 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+#
+# This is the configuration file for the MiniDLNA daemon, a DLNA/UPnP-AV media
+# server.
+
+# Port number for HTTP traffic (descriptions, SOAP, media transfer).
+# This option is mandatory (or it must be specified on the command-line using
+# "-p").
+port={{ minidlna__http_port }}
+
+{% for element in minidlna__media_dirs %}
+media_dir={{element}}
+{% endfor %}
+
+{% for element in minidlna__combined_configuration | parse_kv_config %}
+{%   if element.name|d() and element.state|d('present') not in [ 'absent', 'ignore' ] %}
+{{ element.name|d() }}={{ element.value }}
+{%   endif %}
+{% endfor %}
+
+# List of file names to look for when searching for album art.
+# Names should be delimited with a forward slash ("/").
+# This option can be specified more than once.
+{% for element in minidlna__combined_album_art_names %}
+album_art_names={{ element }}
+{% endfor %}
+
