@@ -1,0 +1,118 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2021 Julien Lecomte <julien@lecomte.at>
+# .. Copyright (C) 2021 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _minidlna__ref_defaults:
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: minidlna__base_packages [[[
+#
+# List of APT packages to install for :command:`dlna` support.
+minidlna__base_packages: [ 'minidlna' ]
+
+                                                                   # ]]]
+# .. envvar:: minidlna__packages [[[
+#
+# List of additional APT packages to install during :command:`dlna`
+# configuration.
+minidlna__packages: []
+
+                                                                   # ]]]
+                                                                   # ]]]
+# MiniDLNA configuration [[[
+# ---------------------------
+
+# .. envvar:: minidlna__http_port [[[
+#
+# Port for HTTP traffic. Defaults to 8200.
+minidlna__http_port: 8200 
+
+                                                                   # ]]]
+
+# .. envvar:: minidlna__allow [[[
+#
+# YAML dictionary that contains the configuration of the Tinc mesh networks
+# configured on all hosts in the Ansible inventory.
+minidlna__config: {}
+
+# .. envvar:: media_dirs [[[
+#
+# List of media directories to scan and present to end user.
+# 
+# If you want to restrict a media_dir to a specific content type, you can
+# prepend the directory name with a letter representing the type (A, P or V),
+# followed by a comma, as so:
+#   * "A" for audio    (eg. media_dir=A,/var/lib/minidlna/music)
+#   * "P" for pictures (eg. media_dir=P,/var/lib/minidlna/pictures)
+#   * "V" for video    (eg. media_dir=V,/var/lib/minidlna/videos)
+#   * "PV" for pictures and video (eg. media_dir=PV,/var/lib/minidlna/digital_camera)
+minidlna__media_dirs: []
+
+                                                                   # ]]]
+# .. envvar:: minidlna__conf [[[
+#
+# YAML dictionary of {name, value} for configuration file.
+minidlna__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: minidlna__allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# MiniDLNA instances over the network, on all hosts in the Ansible
+# inventory. This variable configures the firewall for all instances at the
+# same time, for individual instance configuration you should modify the
+# :envvar:`minidlna_server__ferm__dependent_rules` variable directly.
+minidlna__allow: {}
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: minidlna__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+minidlna__ferm__dependent_rules:
+
+  - name: 'minidlna_allow_tcp'
+    type: 'accept'
+    dport: [ "{{ minidlna__http_port }}" ]
+    protocol: [ 'tcp' ]
+    saddr: '{{ minidlna__allow }}'
+    weight: '50'
+    by_role: 'debops.minidlna'
+
+  - name: 'minidlna_allow_udp'
+    type: 'accept'
+    dport: [ 1900 ]
+    protocol: [ 'udp' ]
+    saddr: '{{ minidlna__allow }}'
+    weight: '50'
+    by_role: 'debops.minidlna'
+                                                                   # ]]]
+
+# .. envvar:: minidlna_server__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+minidlna_server__etc_services__dependent_list:
+
+  - name: 'ssdp'
+    port: '1900'
+    comment: 'Simple Service Discovery Protocol'
+
+  - name: 'minidlna'
+    port: '8200'
+    comment: 'MiniDLNA Server'
+
+                                                                   # ]]]
+                                                                   # ]]]

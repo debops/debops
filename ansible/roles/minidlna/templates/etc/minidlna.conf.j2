@@ -1,0 +1,22 @@
+{# Copyright (C) 2021 Julien Lecomte <julien@lecomte.at>
+ # Copyright (C) 2021 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+#
+# This is the configuration file for the MiniDLNA daemon, a DLNA/UPnP-AV media
+# server.
+
+# Port number for HTTP traffic (descriptions, SOAP, media transfer).
+# This option is mandatory (or it must be specified on the command-line using
+# "-p").
+port={{ minidlna__http_port }}
+
+{% for item in minidlna__media_dirs %}
+media_dir={{item}}
+{% endfor %}
+
+{% for item in minidlna__configuration %}
+{{ item.name }}={{ item.value }}
+{% endfor %}
+
