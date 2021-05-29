@@ -13,24 +13,24 @@
 # .. include:: ../../../../includes/global.rst
 
 # Packages and installation [[[
-# -----------------------------
+# -------------------------
 
 # .. envvar:: minidlna__base_packages [[[
 #
-# List of APT packages to install for :command:`dlna` support.
+# List of APT packages to install for :command:`minidlna` support.
 minidlna__base_packages: [ 'minidlna' ]
 
                                                                    # ]]]
 # .. envvar:: minidlna__packages [[[
 #
-# List of additional APT packages to install during :command:`dlna`
+# List of additional APT packages to install during :command:`minidlna`
 # configuration.
 minidlna__packages: []
 
                                                                    # ]]]
                                                                    # ]]]
 # MiniDLNA configuration [[[
-# ---------------------------
+# ----------------------
 
 # .. envvar:: minidlna__http_port [[[
 #
@@ -38,17 +38,19 @@ minidlna__packages: []
 minidlna__http_port: 8200
 
                                                                    # ]]]
-# .. envvar:: media_dirs [[[
+# .. envvar:: minidlna__media_dirs [[[
 #
 # List of media directories to scan and present to end user.
 #
 # If you want to restrict a media_dir to a specific content type, you can
 # prepend the directory name with a letter representing the type (A, P or V),
 # followed by a comma, as so:
-#   * "A" for audio    (eg. media_dir=A,/var/lib/minidlna/music)
-#   * "P" for pictures (eg. media_dir=P,/var/lib/minidlna/pictures)
-#   * "V" for video    (eg. media_dir=V,/var/lib/minidlna/videos)
-#   * "PV" for pictures and video (eg. media_dir=PV,/var/lib/minidlna/digital_camera)
+#
+# * "A" for audio    (eg. media_dir=A,/var/lib/minidlna/music)
+# * "P" for pictures (eg. media_dir=P,/var/lib/minidlna/pictures)
+# * "V" for video    (eg. media_dir=V,/var/lib/minidlna/videos)
+# * "PV" for pictures and video (eg. media_dir=PV,/var/lib/minidlna/digital_camera)
+#
 minidlna__media_dirs: []
 
                                                                    # ]]]
@@ -67,7 +69,8 @@ minidlna__configuration: []
                                                                    # ]]]
 # .. envvar:: minidlna__default_album_art_names [[[
 #
-# YAML dictionary of {name, value} for album_art_names file.
+# List of file names to look for when searching for album art.
+# Names should be delimited with a forward slash ("/").
 minidlna__default_album_art_names:
   - "Cover.jpg/cover.jpg/AlbumArtSmall.jpg/albumartsmall.jpg"
   - "AlbumArt.jpg/albumart.jpg/Album.jpg/album.jpg"
@@ -77,7 +80,6 @@ minidlna__default_album_art_names:
 #
 # List of file names to look for when searching for album art.
 # Names should be delimited with a forward slash ("/").
-# This option can be specified more than once.
 minidlna__album_art_names: []
 
                                                                    # ]]]
@@ -87,13 +89,13 @@ minidlna__album_art_names: []
 # MiniDLNA instances over the network, on all hosts in the Ansible
 # inventory. This variable configures the firewall for all instances at the
 # same time, for individual instance configuration you should modify the
-# :envvar:`minidlna_server__ferm__dependent_rules` variable directly.
+# :envvar:`minidlna__ferm__dependent_rules` variable directly.
 minidlna__allow: {}
 
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[
-# -----------------------------------------
+# -------------------------------------
 
 # .. envvar:: minidlna__ferm__dependent_rules [[[
 #
@@ -138,7 +140,7 @@ minidlna__combined_configuration: '{{ minidlna__default_configuration
                                                                    # ]]]
 # .. envvar:: minidlna__combined_album_art_names [[[
 #
-# Cofiguration merged into one.
+# Album art configuration merged into one.
 minidlna__combined_album_art_names: '{{ minidlna__default_album_art_names
                                       + minidlna__album_art_names }}'
                                                                    # ]]]
