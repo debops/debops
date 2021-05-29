@@ -1,0 +1,29 @@
+---
+# Copyright (C) 2021-2021 Julien Lecomte <julien@lecomte.at>
+# Copyright (C) 2021-2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Install and manage MiniDLNA
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_minidlna' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ minidlna_server__etc_services__dependent_list }}'
+
+    - role: ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ minidlna__ferm__dependent_rules }}'
+
+    - role: minidlna
+      tags: [ 'role::minidlna', 'skip::minidlna' ]
