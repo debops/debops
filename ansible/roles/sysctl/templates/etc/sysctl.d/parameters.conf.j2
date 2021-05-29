@@ -24,14 +24,12 @@
 {% if item.comment|d() %}
 {{ item.comment | regex_replace('\n$','') | comment(prefix='', postfix='') }}
 {% endif %}
-
 {% set param_tracker = [] %}
 {% set tracker = {'seen_comment': False} %}
 {% for element in item.options %}
 {%   if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
 {%     if element.comment|d() %}
 {%       if not loop.first and param_tracker and not tracker.seen_comment|bool %}
-
 {%       endif %}
 {%       set _ = tracker.update({'seen_comment': True}) %}
 {{ element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
