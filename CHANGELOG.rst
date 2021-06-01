@@ -159,6 +159,14 @@ Continuous Integration
   directory, instead of generating one which depends on the domain and username
   of a given account.
 
+:ref:`debops.lxc` role
+''''''''''''''''''''''
+
+- On hosts which use LXC v4.0.x, for example with Debian Bullseye as the
+  operating system, the role will configure new LXC containers to not drop the
+  ``CAP_SYS_ADMIN`` capability by default. This is required for correct
+  container operation on this version of LXC.
+
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
 
