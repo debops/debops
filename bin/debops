@@ -33,6 +33,7 @@ from __future__ import print_function
 import sys
 import os
 import subprocess
+import re
 try:
     import configparser
 except ImportError:
@@ -75,6 +76,26 @@ def write_config(filename, config):
     with open(filename, "w") as fh:
         print(ConfigFileHeader, file=fh)
         cfgparser.write(fh)
+
+
+def find_ansible_version():
+    # get the whole out put for the subprocess comand "ansible-playbook --version".
+    ansible_version_searchstring = subprocess.check_output(
+        ["ansible-playbook", "--version"]).decode()
+
+    # rearrange the output in a list.
+    ansible_version_searchlist = list(ansible_version_searchstring.split("\n"))
+    # create empty string to hold the correct line of the list
+    ansible_version_line = ""
+    # search for the line that starts with "ansible-playbook"
+    for line in ansible_version_searchlist:
+        if line.startswith("ansible-playbook"):
+            ansible_version_line = line
+
+    # extract the version number from that line.
+    ansible_version_search_result = re.search('[\\d][\\d.]*', ansible_version_line)
+    # return everything as a string
+    return str(ansible_version_search_result.group(0))
 
 
 def gen_ansible_cfg(filename, config, project_root, playbooks_path,
@@ -136,17 +157,7 @@ def gen_ansible_cfg(filename, config, project_root, playbooks_path,
             os.path.join(playbooks_path, "roles"),
             "/etc/ansible/roles")))
 
-    ansible_version_out = subprocess.check_output([ANSIBLE_PLAYBOOK,
-                                                   "--version"]).decode()
-
-    # Ansible < 4: Get first line and split by spaces to get second 'word'.
-    # Ansible >= 4: Version line looks like 'ansible-playbook [core 2.11.0]'.
-    ansible_version_line = ansible_version_out.splitlines()[0].strip()
-    if ansible_version_line.endswith(']'):
-        ansible_version = ansible_version_line[:-1].split()[-1]
-    else:
-        ansible_version = str(ansible_version_line.split()[1])
-
+    ansible_version = find_ansible_version()
     for plugin_type in ('action', 'callback', 'connection',
                         'filter', 'lookup', 'vars'):
         plugin_type = plugin_type+"_plugins"
