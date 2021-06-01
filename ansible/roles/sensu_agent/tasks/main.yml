@@ -46,6 +46,15 @@
   tags: [ 'role::sensu_agent:config' ]
   notify: restart sensu-agent
 
+- name: Enable and start sensu agent in first install
+  service:
+    name: 'sensu-agent'
+    state: 'started'
+    enabled: True
+  when: ansible_service_mgr == 'systemd' and
+        ansible_local.sensu_agent.installed is defined and
+        ansible_local.sensu_agent.installed|bool
+
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'
