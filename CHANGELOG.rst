@@ -136,6 +136,14 @@ Continuous Integration
   the administrator has his/her own LDAP account with privileged access to the
   directory.
 
+:ref:`debops.lxc` role
+''''''''''''''''''''''
+
+- On hosts which use LXC v4.0.x, for example with Debian Bullseye as the
+  operating system, the role will configure new LXC containers to not drop the
+  ``CAP_SYS_ADMIN`` capability by default. This is required for correct
+  container operation on this version of LXC.
+
 :ref:`debops.postgresql_server` role
 ''''''''''''''''''''''''''''''''''''
 
