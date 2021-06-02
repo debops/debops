@@ -242,6 +242,9 @@ General
 - The :command:`debops-update` script should now correctly detect cloned DebOps
   monorepo.
 
+- The :command:`debops` script will no longer check Ansible version to work
+  around an issue that was fixed in Ansible 2.0.
+
 :ref:`debops.ansible_plugins` role
 ''''''''''''''''''''''''''''''''''
 
