@@ -136,29 +136,10 @@ def gen_ansible_cfg(filename, config, project_root, playbooks_path,
             os.path.join(playbooks_path, "roles"),
             "/etc/ansible/roles")))
 
-    ansible_version_out = subprocess.check_output([ANSIBLE_PLAYBOOK,
-                                                   "--version"]).decode()
-
-    # Ansible < 4: Get first line and split by spaces to get second 'word'.
-    # Ansible >= 4: Version line looks like 'ansible-playbook [core 2.11.0]'.
-    ansible_version_line = ansible_version_out.splitlines()[0].strip()
-    if ansible_version_line.endswith(']'):
-        ansible_version = ansible_version_line[:-1].split()[-1]
-    else:
-        ansible_version = str(ansible_version_line.split()[1])
-
     for plugin_type in ('action', 'callback', 'connection',
                         'filter', 'lookup', 'vars'):
         plugin_type = plugin_type+"_plugins"
         defaults[plugin_type] = PATHSEP.join(custom_paths(plugin_type))
-
-        if (ver(ansible_version) >= ver("1.7") and
-                ver(ansible_version) < ver("2.0")):
-            # work around a bug obviously introduced in 1.7, see
-            # https://github.com/ansible/ansible/issues/8555
-            if ' ' in defaults[plugin_type]:
-                defaults[plugin_type] = PATHSEP.join(
-                    '"%s"' % p for p in defaults[plugin_type].split(PATHSEP))
 
     defaults['library'] = PATHSEP.join(custom_paths('library'))
 
