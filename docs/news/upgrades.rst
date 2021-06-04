@@ -15,6 +15,10 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+
+v2.3.0 (2021-06-04)
+-------------------
+
 Redesigned ``authorized_keys`` role
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
