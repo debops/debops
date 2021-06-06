@@ -41,7 +41,7 @@ class AnsibleConfig(object):
                              'ansible_collections', 'debops', 'debops',
                              'roles')
                 .replace(os.path.expanduser('~'), '~', 1),
-                'ansible/roles',
+                'ansible/playbooks/roles',
         ]
 
         if project_type == 'legacy':

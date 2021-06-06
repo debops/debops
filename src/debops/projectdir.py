@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .ansibleconfig import AnsibleConfig
+from .ansible.inventory import AnsibleInventory
 import os
 import pkgutil
 import jinja2
@@ -87,13 +88,9 @@ class ProjectDir(object):
 
     def _create_legacy_project(self, path):
         self.project_type = 'legacy'
-        skel_dirs = (
-            os.path.join("ansible", "inventory", "group_vars", "all"),
-            os.path.join("ansible", "inventory", "host_vars"),
-            os.path.join("ansible", "collections", "ansible_collections"),
-            os.path.join("ansible", "playbooks"),
-            os.path.join("ansible", "roles"),
-        )
+
+        inventory = AnsibleInventory(self, self.name)
+        inventory.create()
 
         default_debops_cfg = jinja2.Template(
                 pkgutil.get_data('debops',
@@ -122,26 +119,10 @@ class ProjectDir(object):
                                               'gitignore.j2'))
                 .decode('utf-8'), trim_blocks=True)
 
-        default_hosts = jinja2.Template(
-                pkgutil.get_data('debops',
-                                 os.path.join('_data',
-                                              'templates',
-                                              'projectdir',
-                                              'legacy',
-                                              'ansible',
-                                              'inventory',
-                                              'hosts.j2'))
-                .decode('utf-8'), trim_blocks=True)
-
         try:
             os.makedirs(path)
         except FileExistsError:
             pass
-
-        for skel_dir in skel_dirs:
-            skel_dir = os.path.join(path, skel_dir)
-            if not os.path.isdir(skel_dir):
-                os.makedirs(skel_dir)
 
         # Create .debops.cfg
         self._write_file(os.path.join(path, '.debops.cfg'),
@@ -174,20 +155,6 @@ class ProjectDir(object):
                          default_gitignore.render(secret_name='secret',
                                                   encfs_prefix='.encfs.')
                          + '\n')
-
-        # Create hosts file
-        if (platform.system() == "Linux" and
-                (distro.linux_distribution(full_distribution_name=False)[0]
-                 ).lower() in ("debian", "ubuntu")):
-            host_as_controller = True
-        else:
-            host_as_controller = False
-
-        self._write_file(os.path.join(path, 'ansible', 'inventory', 'hosts'),
-                         default_hosts.render(
-                             host_as_controller=host_as_controller,
-                             hostname=socket.gethostname(),
-                             fqdn=socket.getfqdn()))
 
         debops_cfg = (self.config.raw['projects'][self.name]
                       ['views']['system']['ansible'])
