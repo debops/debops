@@ -668,13 +668,14 @@ rsyslog__default_rules:
                 target="{{ (element.target | d(element)) | regex_replace("\.$","") }}"
                 port="{{ element.port | d('6514') }}"
                 protocol="{{ element.protocol | d('tcp') }}"
-                streamDriver="gtls"
-                streamDriverMode="1"
-                streamDriverAuthMode="{{ rsyslog__default_driver_authmode }}"
-                action.resumeRetryCount="{{ element.resume_retry_count | d('100') }}"
                 queue.type="{{ element.queue_type | d('linkedList') }}"
                 queue.size="{{ element.queue_size | d('10000') }}"
-          {% if rsyslog__default_driver_authmode != "anon" %}
+                action.resumeRetryCount="{{ element.resume_retry_count | d('100') }}"
+                streamDriver="{{ element.driver | d('gtls') }}"
+                streamDriverMode="{{ element.drivermode | d('1') }}"
+                streamDriverAuthMode="{{ element.driverauthmode | d(rsyslog__default_driver_authmode) }}"
+          {% if rsyslog__default_driver_authmode != "anon"
+             and ( element.driverauthmode is defined and element.driverauthmode != "anon" ) %}
           {%   if rsyslog__send_permitted_peers is string %}
                 streamDriverPermittedPeers="{{ rsyslog__send_permitted_peers }}"
           {%   else %}
