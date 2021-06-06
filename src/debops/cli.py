@@ -22,6 +22,10 @@ class Interpreter(object):
                 self.do_project_init(self.parsed_args.args)
             elif self.parsed_args.command == 'refresh':
                 self.do_project_refresh(self.parsed_args.args)
+            elif self.parsed_args.command == 'lock':
+                self.do_project_lock(self.parsed_args.args)
+            elif self.parsed_args.command == 'unlock':
+                self.do_project_unlock(self.parsed_args.args)
             elif self.parsed_args.command == 'status':
                 self.do_project_status(self.parsed_args.args)
 
@@ -45,6 +49,24 @@ class Interpreter(object):
         try:
             project = ProjectDir(path=args.project_dir, config=self.config)
             project.refresh()
+        except (IsADirectoryError, NotADirectoryError,
+                PermissionError) as errmsg:
+            print('Error:', errmsg)
+            exit(1)
+
+    def do_project_lock(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config)
+            project.lock()
+        except (IsADirectoryError, NotADirectoryError,
+                PermissionError) as errmsg:
+            print('Error:', errmsg)
+            exit(1)
+
+    def do_project_unlock(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config)
+            project.unlock()
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError) as errmsg:
             print('Error:', errmsg)

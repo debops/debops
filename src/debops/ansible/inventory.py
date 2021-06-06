@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2020 DebOps <https://debops.org/>
+# Copyright (C) 2020-2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import pkgutil
@@ -9,7 +9,20 @@ import jinja2
 import platform
 import distro
 import socket
+import subprocess
+import sys
 import os
+import stat
+
+try:
+    # shlex.quote is new in Python 3.3
+    from shlex import quote as shquote
+except ImportError:
+    # implement subset of shlex.quote
+    def shquote(s):
+        if not s:
+            return "''"
+        return "'" + s.replace("'", "'\"'\"'") + "'"
 
 
 class AnsibleInventory(object):
@@ -18,6 +31,20 @@ class AnsibleInventory(object):
         self.name = name
         self.args = args
         self.kwargs = kwargs
+
+        self.encrypted = False
+        self.crypt_method = ''
+
+        self.encfs_keyfile = '.encfs6.keyfile'
+        self.encfs_configfile = '.encfs6.xml'
+        self.encfs_mounted = False
+
+        self._commands = {
+            'gpg': project.config.raw['binaries']['gpg'],
+            'encfs': project.config.raw['binaries']['encfs'],
+            'umount': project.config.raw['binaries']['umount'],
+            'fusermount': project.config.raw['binaries']['fusermount']
+        }
 
         if project.project_type == 'legacy':
             self.root_path = os.path.join(project.path, 'ansible')
@@ -28,6 +55,13 @@ class AnsibleInventory(object):
                                           self.name)
 
         self.path = os.path.join(self.root_path, 'inventory')
+        self.secret_path = os.path.join(self.root_path, 'secret')
+        self.encfs_path = os.path.join(self.root_path, '.encfs.secret')
+        if os.path.exists(self.encfs_path):
+            self.encrypted = True
+            self.crypt_method = 'encfs'
+            if os.path.ismount(self.secret_path):
+                self.encfs_mounted = True
 
     def create(self):
 
@@ -78,3 +112,60 @@ class AnsibleInventory(object):
                         host_as_controller=host_as_controller,
                         hostname=socket.gethostname(),
                         fqdn=socket.getfqdn()))
+
+    def unlock(self):
+        if self.encrypted:
+            if self.crypt_method == 'encfs':
+                keyfile = os.path.join(self.encfs_path, self.encfs_keyfile)
+                configfile = os.path.join(self.encfs_path, self.encfs_configfile)
+                crypted_configfile = os.path.join(self.encfs_path,
+                                                  self.encfs_configfile + '.asc')
+
+                if os.path.ismount(self.secret_path):
+                    self.encfs_mounted = True
+                    return False
+                else:
+                    if not os.path.isdir(self.secret_path):
+                        os.makedirs(self.secret_path)
+
+                    if not os.path.exists(configfile):
+                        os.mkfifo(configfile)
+                    elif not stat.S_ISFIFO(os.stat(configfile).st_mode):
+                        raise IOError(17, configfile + ' exists but is not a fifo')
+
+                    subprocess_env = {
+                        'LC_ALL': 'C'
+                    }
+                    encfs = subprocess.Popen([
+                        self._commands['encfs'], self.encfs_path, self.secret_path,
+                        '--extpass',
+                        '{} --decrypt --no-mdc-warning --output - {}'.format(
+                                self._commands['gpg'], shquote(keyfile))],
+                        env=subprocess_env)
+                    with open(configfile, 'w') as fh:
+                        gpg = subprocess.Popen(
+                                [self._commands['gpg'],
+                                 '--decrypt', '--no-mdc-warning',
+                                 '--output', '-', crypted_configfile],
+                                stdout=fh, env=subprocess_env)
+                    gpg.communicate()
+                    encfs.communicate()
+                    os.remove(configfile)
+                    self.encfs_mounted = True
+                    return True
+        else:
+            return False
+
+    def lock(self):
+        if self.encrypted:
+            if self.crypt_method == 'encfs':
+                if os.path.ismount(self.secret_path):
+                    if sys.platform == 'darwin':
+                        subprocess.call([self._commands['umount'], self.secret_path])
+                    else:
+                        subprocess.call([self._commands['fusermount'],
+                                         '-u', self.secret_path])
+                    self.encfs_mounted = False
+                    return True
+        else:
+            return False

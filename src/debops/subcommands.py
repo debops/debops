@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2020 DebOps <https://debops.org/>
+# Copyright (C) 2020-2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import argparse
@@ -67,6 +67,8 @@ Sections:
 Commands:
     init    initialize new project directory
     refresh refresh existing project directory
+    unlock  decrypt secrets in project directory
+    lock    encrypt secrets in project directory
     status  display project information''')
         parser.add_argument('command', help='project command to run')
         self._command = parser.parse_args(self.args[2:3])
@@ -93,6 +95,24 @@ Commands:
         parser = argparse.ArgumentParser(
                 description='refresh existing project directory',
                 usage='debops project refresh [<args>] <project_dir>')
+        parser.add_argument('project_dir', type=str, nargs='?',
+                            default=os.getcwd(),
+                            help='path to the project directory')
+        self.args = parser.parse_args(self.args[3:])
+
+    def do_project_lock(self):
+        parser = argparse.ArgumentParser(
+                description='encrypt secrets inside project directory',
+                usage='debops project lock [<args>] <project_dir>')
+        parser.add_argument('project_dir', type=str, nargs='?',
+                            default=os.getcwd(),
+                            help='path to the project directory')
+        self.args = parser.parse_args(self.args[3:])
+
+    def do_project_unlock(self):
+        parser = argparse.ArgumentParser(
+                description='decrypt secrets inside project directory',
+                usage='debops project unlock [<args>] <project_dir>')
         parser.add_argument('project_dir', type=str, nargs='?',
                             default=os.getcwd(),
                             help='path to the project directory')

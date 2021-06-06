@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2020 DebOps <https://debops.org/>
+# Copyright (C) 2020-2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .ansibleconfig import AnsibleConfig
+from .ansible.inventory import AnsibleInventory
 import subprocess
 import os
 
@@ -14,6 +15,8 @@ class AnsiblePlaybookRunner(object):
     def __init__(self, project, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
+
+        self.inventory = AnsibleInventory(project)
 
         self._inventory_paths = (
                 project.ansible_cfg.get_option('inventory').split(','))
@@ -182,6 +185,7 @@ class AnsiblePlaybookRunner(object):
         print(' '.join(self._ansible_command))
 
     def execute(self):
+        unlocked = False
         if not self._found_playbooks:
             print('No playbooks specified, aborting')
             exit(1)
@@ -189,11 +193,16 @@ class AnsiblePlaybookRunner(object):
         for key, value in self._ansible_env.items():
             os.environ[key] = value
         try:
+            unlocked = self.inventory.unlock()
+
             print('Executing Ansible playbooks:')
             for playbook in self._found_playbooks:
                 print(playbook.replace(os.path.expanduser('~'), '~'))
             return subprocess.call(self._ansible_command)
         except KeyboardInterrupt:
+            if unlocked:
+                self.inventory.lock()
             raise SystemExit('... aborted by user')
         finally:
-            pass
+            if unlocked:
+                self.inventory.lock()

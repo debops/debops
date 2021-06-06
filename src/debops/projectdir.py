@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2020 DebOps <https://debops.org/>
+# Copyright (C) 2020-2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .ansibleconfig import AnsibleConfig
@@ -189,6 +189,14 @@ class ProjectDir(object):
         self.ansible_cfg.write_config()
         print('Refreshed DebOps project in', self.path)
 
+    def unlock(self):
+        inventory = AnsibleInventory(self, self.name)
+        inventory.unlock()
+
+    def lock(self):
+        inventory = AnsibleInventory(self, self.name)
+        inventory.lock()
+
     def status(self):
         self.ansible_cfg = AnsibleConfig(
                 os.path.join(self.path, 'ansible.cfg'),
@@ -196,8 +204,14 @@ class ProjectDir(object):
         self.ansible_cfg.load_config()
         collections = self.ansible_cfg.get_option(
                 'collections_paths')
+        inventory = AnsibleInventory(self, self.name)
         print('Project type:', self.project_type)
         print('Project root:', self.path)
+        if inventory.encrypted:
+            print('Inventory secrets are encrypted using ' + inventory.crypt_method)
+            if inventory.crypt_method == 'encfs':
+                if inventory.encfs_mounted:
+                    print('Secret directory is mounted')
         print('Ansible Collection paths:')
         for path in collections.strip('"').split(':'):
             print('   ', path)
