@@ -42,19 +42,18 @@ class ProjectDir(object):
             raise NotADirectoryError('DebOps project directory not found '
                                      'in ' + self.path)
 
-        project_data = {'projects': {
-                self.name: {
-                    'path': self.path,
-                    'name': self.name,
-                    'type': self.project_type,
-                    'views': {
-                        'system': {}
-                    }
-                }
+        project_data = {
+            'project': {
+                'path': self.path,
+                'name': self.name,
+                'type': self.project_type,
+            },
+            'views': {
+                'system': {}
             }
         }
 
-        project_data['projects'][self.name]['views']['system'].update(
+        project_data['views']['system'].update(
                 self.config.load(os.path.join(self.path, '.debops.cfg')))
 
         self.config.merge_env(self.path)
@@ -129,19 +128,18 @@ class ProjectDir(object):
                          default_debops_cfg.render(env=os.environ)
                          + '\n')
 
-        project_data = {'projects': {
-                self.name: {
-                    'path': self.path,
-                    'name': self.name,
-                    'type': self.project_type,
-                    'views': {
-                        'system': {}
-                    }
-                }
+        project_data = {
+            'project': {
+                'path': self.path,
+                'name': self.name,
+                'type': self.project_type,
+            },
+            'views': {
+                'system': {}
             }
         }
 
-        project_data['projects'][self.name]['views']['system'].update(
+        project_data['views']['system'].update(
                 self.config.load(os.path.join(self.path, '.debops.cfg')))
         self.config.merge(project_data)
 
@@ -156,8 +154,7 @@ class ProjectDir(object):
                                                   encfs_prefix='.encfs.')
                          + '\n')
 
-        debops_cfg = (self.config.raw['projects'][self.name]
-                      ['views']['system']['ansible'])
+        debops_cfg = (self.config.raw['views']['system']['ansible'])
         self.ansible_cfg = AnsibleConfig(
                 os.path.join(self.path, 'ansible.cfg'),
                 project_type=self.project_type)
@@ -180,8 +177,7 @@ class ProjectDir(object):
     def refresh(self):
         debops_cfg = {}
         if self.project_type == 'legacy':
-            debops_cfg = (self.config.raw['projects'][self.name]
-                          ['views']['system']['ansible'])
+            debops_cfg = (self.config.raw['views']['system']['ansible'])
         self.ansible_cfg = AnsibleConfig(
                 os.path.join(self.path, 'ansible.cfg'),
                 project_type=self.project_type)
