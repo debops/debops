@@ -37,10 +37,6 @@ class AnsibleConfig(object):
                 '/etc/ansible/roles',
                 '/usr/share/ansible/roles',
                 '~/.ansible/roles',
-                os.path.join(DEBOPS_PACKAGE_DATA, 'ansible', 'collections',
-                             'ansible_collections', 'debops', 'debops',
-                             'roles')
-                .replace(os.path.expanduser('~'), '~', 1),
                 'ansible/playbooks/roles',
         ]
 
