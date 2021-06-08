@@ -23,6 +23,16 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.3: https://github.com/debops/debops/compare/v2.3.0...stable-2.3
 
+Changed
+~~~~~~~
+
+:ref:`debops.system_users` role
+'''''''''''''''''''''''''''''''
+
+- The role assumes that Ansible Controller has Python 3 available and will not
+  check for Python 2.7 anymore while gathering local UNIX account details, to
+  avoid issues with non-existent host facts.
+
 
 `debops v2.3.0`_ - 2021-06-04
 -----------------------------
