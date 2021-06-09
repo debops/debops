@@ -18,6 +18,16 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.0: https://github.com/debops/debops/compare/v2.0.0...stable-2.0
 
+Fixed
+~~~~~
+
+:ref:`debops.netbase` role
+''''''''''''''''''''''''''
+
+- Fixed an issue where the fact script broke when it tried to find the host's
+  IP address using DNS and the host does not have an entry in the DNS or in
+  :file:`/etc/hosts` database.
+
 
 `debops v2.0.9`_ - 2021-06-04
 -----------------------------

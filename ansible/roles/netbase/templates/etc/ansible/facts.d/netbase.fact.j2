@@ -44,6 +44,16 @@ from json import dumps
 import socket
 
 
+def get_dns_address():
+    try:
+        return socket.gethostbyname(socket.getfqdn())
+    except socket.gaierror:
+        try:
+            return socket.gethostbyname(socket.gethostname())
+        except socket.gaierror:
+            return ''
+
+
 def get_dns_domain():
     try:
         return socket.getfqdn().split('.', 1)[1]
@@ -52,7 +62,7 @@ def get_dns_domain():
 
 
 output = {'configured': True,
-          'self_address': socket.gethostbyname(socket.getfqdn()),
+          'self_address': get_dns_address(),
           'self_domain': get_dns_domain(),
           'self_fqdn': socket.getfqdn(),
           'self_local_hostname': False,
