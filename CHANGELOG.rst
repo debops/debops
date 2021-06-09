@@ -33,6 +33,16 @@ Changed
   check for Python 2.7 anymore while gathering local UNIX account details, to
   avoid issues with non-existent host facts.
 
+Fixed
+~~~~~
+
+:ref:`debops.netbase` role
+''''''''''''''''''''''''''
+
+- Fixed an issue where the fact script broke when it tried to find the host's
+  IP address using DNS and the host does not have an entry in the DNS or in
+  :file:`/etc/hosts` database.
+
 
 `debops v2.2.2`_ - 2021-06-04
 -----------------------------
