@@ -34,13 +34,12 @@ variables:
 
 stages:
 
+  - 'DebOps roles (pre)'
   - 'DebOps roles (no deps)'
   - 'DebOps roles (1st deps)'
   - 'DebOps roles (2nd deps)'
   - 'DebOps roles (3rd deps)'
   - 'DebOps roles (4th deps)'
-  - 'DebOps roles (5th deps)'
-  - 'DebOps roles (6th deps)'
 
 
 # === Workflow === [[[1
@@ -62,9 +61,9 @@ workflow:
     - when: always
 
 
-# === Role testing templates === [[[1
+# === Vagrant Role testing templates === [[[1
 
-.tpl_test_role_base: &test_role_base
+.tpl_vagrant_role_base: &vagrant_role_base
   tags: [ 'shell', 'vagrant' ]
   before_script:
     - './lib/tests/jane gitlab before_script'
@@ -74,33 +73,73 @@ workflow:
     - './lib/tests/jane gitlab after_script'
 
 
-.tpl_test_role_no_deps: &test_role_no_deps
-  <<: *test_role_base
+.tpl_vagrant_role_no_deps: &vagrant_role_no_deps
+  <<: *vagrant_role_base
   stage: 'DebOps roles (no deps)'
 
-.tpl_test_role_1st_deps: &test_role_1st_deps
-  <<: *test_role_base
+.tpl_vagrant_role_1st_deps: &vagrant_role_1st_deps
+  <<: *vagrant_role_base
   stage: 'DebOps roles (1st deps)'
 
-.tpl_test_role_2nd_deps: &test_role_2nd_deps
-  <<: *test_role_base
+.tpl_vagrant_role_2nd_deps: &vagrant_role_2nd_deps
+  <<: *vagrant_role_base
   stage: 'DebOps roles (2nd deps)'
 
-.tpl_test_role_3rd_deps: &test_role_3rd_deps
-  <<: *test_role_base
+.tpl_vagrant_role_3rd_deps: &vagrant_role_3rd_deps
+  <<: *vagrant_role_base
   stage: 'DebOps roles (3rd deps)'
 
-.tpl_test_role_4th_deps: &test_role_4th_deps
-  <<: *test_role_base
+.tpl_vagrant_role_4th_deps: &vagrant_role_4th_deps
+  <<: *vagrant_role_base
   stage: 'DebOps roles (4th deps)'
 
-.tpl_test_role_5th_deps: &test_role_5th_deps
-  <<: *test_role_base
-  stage: 'DebOps roles (5th deps)'
 
-.tpl_test_role_6th_deps: &test_role_6th_deps
-  <<: *test_role_base
-  stage: 'DebOps roles (6th deps)'
+# === Molecule Role testing templates === [[[1
+
+.tpl_molecule_role_base:
+  variables:
+    USER: root
+  tags:
+    - shell
+  before_script:
+    - python3 -mvenv .venv
+    - source .venv/bin/activate
+    - python3 -mpip install --upgrade wheel pip setuptools
+    - python3 -mpip install -r requirements-dev.txt
+    - python3 -mpip uninstall -y docker-py docker
+    - python3 -mpip install docker-py
+  script:
+    - cd ansible
+    - molecule test -s ${CI_JOB_NAME%% *}
+
+
+'bootstrap playbook':
+  extends: .tpl_molecule_role_base
+  stage: 'DebOps roles (pre)'
+
+
+.tpl_molecule_no_deps:
+  extends: .tpl_molecule_role_base
+  stage: 'DebOps roles (no deps)'
+  needs:
+    - 'bootstrap playbook'
+
+
+.tpl_molecule_1st_deps:
+  extends: .tpl_molecule_role_base
+  stage: 'DebOps roles (1st deps)'
+
+.tpl_molecule_2nd_deps:
+  extends: .tpl_molecule_role_base
+  stage: 'DebOps roles (2nd deps)'
+
+.tpl_molecule_3rd_deps:
+  extends: .tpl_molecule_role_base
+  stage: 'DebOps roles (3rd deps)'
+
+.tpl_molecule_4th_deps:
+  extends: .tpl_molecule_role_base
+  stage: 'DebOps roles (4th deps)'
 
 
 # === Ansible roles === [[[1
@@ -108,7 +147,7 @@ workflow:
 # --- ansible --- [[[2
 
 'ansible role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -123,7 +162,7 @@ workflow:
 # --- apache --- [[[2
 
 'apache role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'ferm role'
   variables:
@@ -137,7 +176,7 @@ workflow:
 # --- apt --- [[[2
 
 'apt role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'apt.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml'
@@ -145,7 +184,7 @@ workflow:
     JANE_LOG_PATTERN: '\[apt\]'
 
 'apt_cacher_ng role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'etc_services role'
@@ -161,7 +200,7 @@ workflow:
     JANE_LOG_PATTERN: '\[apt_cacher_ng\]'
 
 'apt_install role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'apt_preferences role'
   variables:
@@ -171,7 +210,7 @@ workflow:
     JANE_LOG_PATTERN: '\[apt_install\]'
 
 'apt_listchanges role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'apt_listchanges.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt_listchanges.yml'
@@ -179,7 +218,7 @@ workflow:
     JANE_LOG_PATTERN: '\[apt_listchanges\]'
 
 'apt_mark role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'apt_mark.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt_mark.yml'
@@ -187,7 +226,7 @@ workflow:
     JANE_LOG_PATTERN: '\[apt_mark\]'
 
 'apt_preferences role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'apt_preferences.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt_preferences.yml'
@@ -195,7 +234,7 @@ workflow:
     JANE_LOG_PATTERN: '\[apt_preferences\]'
 
 'apt_proxy role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'apt_proxy.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt_proxy.yml'
@@ -206,7 +245,7 @@ workflow:
 # --- atd --- [[[2
 
 'atd role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'atd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/atd.yml'
@@ -217,7 +256,7 @@ workflow:
 # --- auth --- [[[2
 
 'auth role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'auth.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/auth.yml'
@@ -225,7 +264,7 @@ workflow:
     JANE_LOG_PATTERN: '\[auth\]'
 
 'authorized_keys role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'authorized_keys.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/authorized_keys.yml'
@@ -236,7 +275,7 @@ workflow:
 # --- avahi --- [[[2
 
 'avahi role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'python role'
     - 'ferm role'
@@ -252,7 +291,7 @@ workflow:
 # --- b --- [[[2
 
 'backup2l role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'backup2l.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/backup2l.yml'
@@ -262,7 +301,7 @@ workflow:
 
 # At the moment BoxBackup role is broken, needs to be updated.
 #'boxbackup role':
-#  <<: *test_role_1st_deps
+#  <<: *vagrant_role_1st_deps
 #  variables:
 #    JANE_TEST_FACT: 'boxbackup.fact'
 #    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/boxbackup.yml'
@@ -274,7 +313,7 @@ workflow:
 # --- c --- [[[2
 
 'common playbook':
-  <<: *test_role_4th_deps
+  <<: *vagrant_role_4th_deps
   needs:
     - 'debops_fact role'
     - 'environment role'
@@ -332,14 +371,14 @@ workflow:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'console role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/console.yml'
     JANE_DIFF_PATTERN: '.*/roles/console/.*'
     JANE_LOG_PATTERN: '\[console\]'
 
 'controller role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -353,7 +392,7 @@ workflow:
     JANE_LOG_PATTERN: '\[controller\]'
 
 'core role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'core.fact tags.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/core.yml'
@@ -361,7 +400,7 @@ workflow:
     JANE_LOG_PATTERN: '\[core\]'
 
 'cran role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -374,7 +413,7 @@ workflow:
     JANE_LOG_PATTERN: '\[cran\]'
 
 'cron role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'cron.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/cron.yml'
@@ -382,7 +421,7 @@ workflow:
     JANE_LOG_PATTERN: '\[cron\]'
 
 'cryptsetup role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   variables:
     JANE_TEST_FACT: 'cryptsetup.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/cryptsetup.yml'
@@ -392,7 +431,7 @@ workflow:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'cryptsetup/persistent_paths role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'persistent_paths role'
   variables:
@@ -408,7 +447,7 @@ workflow:
 
 # The 'debops_api' role is currently broken, needs to be updated.
 #'debops_api role':
-#  <<: *test_role_2nd_deps
+#  <<: *vagrant_role_2nd_deps
 #  variables:
 #    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/debops_api.yml'
 #    JANE_INVENTORY_GROUPS: 'debops_service_debops_api'
@@ -416,7 +455,7 @@ workflow:
 #    JANE_LOG_PATTERN: '\[debops_api\]'
 
 'debops_fact role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'debops_fact.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/debops_fact.yml'
@@ -424,14 +463,14 @@ workflow:
     JANE_LOG_PATTERN: '\[debops_fact\]'
 
 'debops_legacy role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/debops_legacy.yml'
     JANE_DIFF_PATTERN: '.*/roles/debops_legacy/.*'
     JANE_LOG_PATTERN: '\[debops_legacy\]'
 
 'dhcp_probe role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'dhcp_probe.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/dhcp_probe.yml'
@@ -440,7 +479,7 @@ workflow:
     JANE_LOG_PATTERN: '\[dhcp_probe\]'
 
 'dhcpd role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'dhcpd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/dhcpd.yml'
@@ -449,7 +488,7 @@ workflow:
     JANE_LOG_PATTERN: '\[dhcpd\]'
 
 'dhcrelay role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'dhcrelay.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/dhcrelay.yml'
@@ -458,7 +497,7 @@ workflow:
     JANE_LOG_PATTERN: '\[dhcrelay\]'
 
 'dhparam role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'dhparam.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/dhparam.yml'
@@ -466,7 +505,7 @@ workflow:
     JANE_LOG_PATTERN: '\[dhparam\]'
 
 'dnsmasq role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'resolvconf role'
     - 'python role'
@@ -486,7 +525,7 @@ workflow:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'dnsmasq/persistent_paths role':
-  <<: *test_role_4th_deps
+  <<: *vagrant_role_4th_deps
   needs:
     - 'resolvconf role'
     - 'python role'
@@ -508,7 +547,7 @@ workflow:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'docker_gen role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'docker_gen.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/docker_gen.yml'
@@ -517,7 +556,7 @@ workflow:
     JANE_LOG_PATTERN: '\[docker_gen\]'
 
 'docker_registry role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -536,7 +575,7 @@ workflow:
     JANE_LOG_PATTERN: '\[docker_registry\]'
 
 'docker_server role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'resolvconf role'
     - 'keyring role'
@@ -552,7 +591,7 @@ workflow:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'dokuwiki role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -570,7 +609,7 @@ workflow:
     JANE_LOG_PATTERN: '\[dokuwiki\]'
 
 'dovecot role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'secret role'
     - 'ferm role'
@@ -589,7 +628,7 @@ workflow:
 # --- e --- [[[2
 
 'elastic_co role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -601,7 +640,7 @@ workflow:
     JANE_LOG_PATTERN: '\[elastic_co\]'
 
 'elasticsearch role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'secret role'
@@ -619,7 +658,7 @@ workflow:
     JANE_LOG_PATTERN: '\[elasticsearch\]'
 
 'environment role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'environment.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/environment.yml'
@@ -627,7 +666,7 @@ workflow:
     JANE_LOG_PATTERN: '\[environment\]'
 
 'etc_aliases role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'secret role'
   variables:
@@ -638,7 +677,7 @@ workflow:
     JANE_LOG_PATTERN: '\[etc_aliases\]'
 
 'etc_services role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'etc_services.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/etc_services.yml'
@@ -646,7 +685,7 @@ workflow:
     JANE_LOG_PATTERN: '\[etc_services\]'
 
 'etckeeper role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'etckeeper.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/etckeeper.yml'
@@ -655,7 +694,7 @@ workflow:
     JANE_LOG_PATTERN: '\[etckeeper\]'
 
 'etherpad role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'etc_services role'
@@ -673,7 +712,7 @@ workflow:
     JANE_LOG_PATTERN: '\[etherpad\]'
 
 'etherpad/mariadb role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'keyring role'
     - 'etc_services role'
@@ -696,7 +735,7 @@ workflow:
     JANE_IGNORE_IDEMPOTENCY: 'Issues with mysql_user Ansible module (https://github.com/ansible/ansible/issues/60567)'
 
 'etherpad/postgresql role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'keyring role'
     - 'etc_services role'
@@ -719,7 +758,7 @@ workflow:
     JANE_LOG_PATTERN: '\[etherpad\]'
 
 'etesync role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -736,7 +775,7 @@ workflow:
     JANE_LOG_PATTERN: '\[etesync\]'
 
 'extrepo role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'extrepo.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml ${DEBOPS_PLAYBOOKS}/service/extrepo.yml'
@@ -748,7 +787,7 @@ workflow:
 # --- f --- [[[2
 
 'fail2ban role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'fail2ban.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/fail2ban.yml'
@@ -757,7 +796,7 @@ workflow:
     JANE_LOG_PATTERN: '\[fail2ban\]'
 
 'fcgiwrap role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'fcgiwrap.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/fcgiwrap.yml'
@@ -765,16 +804,8 @@ workflow:
     JANE_DIFF_PATTERN: '.*/roles/fcgiwrap/.*'
     JANE_LOG_PATTERN: '\[fcgiwrap\]'
 
-'ferm role':
-  <<: *test_role_no_deps
-  variables:
-    JANE_TEST_FACT: 'ferm.fact'
-    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ferm.yml'
-    JANE_DIFF_PATTERN: '.*/roles/ferm/.*'
-    JANE_LOG_PATTERN: '\[ferm\]'
-
 'fhs role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'fhs.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/fhs.yml'
@@ -782,7 +813,7 @@ workflow:
     JANE_LOG_PATTERN: '\[fhs\]'
 
 'filebeat role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -795,7 +826,7 @@ workflow:
     JANE_LOG_PATTERN: '\[filebeat\]'
 
 'freeradius role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'ferm role'
     - 'logrotate role'
@@ -810,7 +841,7 @@ workflow:
 # --- g --- [[[2
 
 'gitlab role':
-  <<: *test_role_4th_deps
+  <<: *vagrant_role_4th_deps
   needs:
     - 'keyring role'
     - 'system_groups role'
@@ -837,7 +868,7 @@ workflow:
   tags: [ 'shell', 'vagrant-vm', 'mem-6GB' ]
 
 'gitlab_runner role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'keyring role'
   variables:
@@ -848,7 +879,7 @@ workflow:
     JANE_LOG_PATTERN: '\[gitlab_runner\]'
 
 'gitlab_runner/docker_server role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'resolvconf role'
     - 'keyring role'
@@ -866,7 +897,7 @@ workflow:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'gitlab_runner/libvirt role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'python role'
@@ -880,7 +911,7 @@ workflow:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'gitlab_runner/lxc role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'resolvconf role'
     - 'root_account role'
@@ -899,7 +930,7 @@ workflow:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'gitusers role':
-  <<: *test_role_4th_deps
+  <<: *vagrant_role_4th_deps
   needs:
     - 'system_groups role'
     - 'authorized_keys role'
@@ -911,7 +942,7 @@ workflow:
     JANE_LOG_PATTERN: '\[gitusers\]'
 
 'golang role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -923,7 +954,7 @@ workflow:
     JANE_LOG_PATTERN: '\[golang\]'
 
 'grub role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'grub.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/grub.yml'
@@ -933,7 +964,7 @@ workflow:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'gunicorn role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'apt_preferences role'
     - 'logrotate role'
@@ -949,7 +980,7 @@ workflow:
 # --- h --- [[[2
 
 'hashicorp role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'keyring role'
   variables:
@@ -961,7 +992,7 @@ workflow:
     JANE_LOG_PATTERN: '\[hashicorp\]'
 
 'hwraid role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'keyring role'
   variables:
@@ -975,7 +1006,7 @@ workflow:
 # --- i --- [[[2
 
 'icinga role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'keyring role'
     - 'secret role'
@@ -990,7 +1021,7 @@ workflow:
     JANE_LOG_PATTERN: '\[icinga\]'
 
 'icinga_db/mariadb role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'mariadb role'
   variables:
@@ -1001,7 +1032,7 @@ workflow:
     JANE_LOG_PATTERN: '\[icinga_db\]'
 
 'icinga_db/postgresql role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'postgresql_server role'
     - 'postgresql role'
@@ -1014,7 +1045,7 @@ workflow:
     JANE_LOG_PATTERN: '\[icinga_db\]'
 
 'icinga_web role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'apt role'
     - 'secret role'
@@ -1040,7 +1071,7 @@ workflow:
     JANE_LOG_PATTERN: '\[icinga_web\]'
 
 'ifupdown role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'resolvconf role'
     - 'python role'
@@ -1057,7 +1088,7 @@ workflow:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'influxdata role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'keyring role'
   variables:
@@ -1068,7 +1099,7 @@ workflow:
     JANE_LOG_PATTERN: '\[influxdata\]'
 
 'influxdb_server role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'etc_services role'
@@ -1083,7 +1114,7 @@ workflow:
     JANE_LOG_PATTERN: '\[influxdb_server\]'
 
 'influxdb role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'python role'
   variables:
@@ -1094,7 +1125,7 @@ workflow:
     JANE_LOG_PATTERN: '\[influxdb\]'
 
 'ipxe role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'ipxe.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/ipxe.yml'
@@ -1103,7 +1134,7 @@ workflow:
     JANE_LOG_PATTERN: '\[ipxe\]'
 
 'iscsi role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'unattended_upgrades role'
     - 'lvm role'
@@ -1119,7 +1150,7 @@ workflow:
 # --- j --- [[[2
 
 'java role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'apt_preferences role'
   variables:
@@ -1130,7 +1161,7 @@ workflow:
     JANE_LOG_PATTERN: '\[java\]'
 
 'journald role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'journald.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/journald.yml'
@@ -1141,7 +1172,7 @@ workflow:
 # --- k --- [[[2
 
 'keyring role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'keyring.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/keyring.yml'
@@ -1150,7 +1181,7 @@ workflow:
     JANE_LOG_PATTERN: '\[keyring\]'
 
 'kibana role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'secret role'
@@ -1170,7 +1201,7 @@ workflow:
   tags: [ 'mem-2GB' ]
 
 'kmod role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'python role'
   variables:
@@ -1184,7 +1215,7 @@ workflow:
 # --- l --- [[[2
 
 'ldap role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'python role'
   variables:
@@ -1196,7 +1227,7 @@ workflow:
     JANE_LOG_PATTERN: '\[ldap\]'
 
 'librenms role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'apt role'
     - 'keyring role'
@@ -1219,7 +1250,7 @@ workflow:
     JANE_IGNORE_IDEMPOTENCY: 'Issues with mysql_user Ansible module (https://github.com/ansible/ansible/issues/60567)'
 
 'libuser role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'libuser.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/libuser.yml'
@@ -1228,7 +1259,7 @@ workflow:
     JANE_LOG_PATTERN: '\[libuser\]'
 
 'libvirt role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'python role'
   variables:
@@ -1240,7 +1271,7 @@ workflow:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'libvirtd role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'apt_preferences role'
     - 'nsswitch role'
@@ -1256,7 +1287,7 @@ workflow:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'libvirtd_qemu role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'ferm role'
   variables:
@@ -1268,7 +1299,7 @@ workflow:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'locales role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'locales.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/locales.yml'
@@ -1276,7 +1307,7 @@ workflow:
     JANE_LOG_PATTERN: '\[locales\]'
 
 'logrotate role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'logrotate.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/logrotate.yml'
@@ -1284,7 +1315,7 @@ workflow:
     JANE_LOG_PATTERN: '\[logrotate\]'
 
 'lvm role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'lvm.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/lvm.yml'
@@ -1294,7 +1325,7 @@ workflow:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'lxc role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'resolvconf role'
     - 'root_account role'
@@ -1311,7 +1342,7 @@ workflow:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'lxd role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'resolvconf role'
     - 'root_account role'
@@ -1336,7 +1367,7 @@ workflow:
 # --- m --- [[[2
 
 'machine role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'machine.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/machine.yml'
@@ -1344,7 +1375,7 @@ workflow:
     JANE_LOG_PATTERN: '\[machine\]'
 
 'mailman role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'keyring role'
     - 'secret role'
@@ -1365,7 +1396,7 @@ workflow:
     JANE_LOG_PATTERN: '\[mailman\]'
 
 'mariadb role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'keyring role'
     - 'python role'
@@ -1377,7 +1408,7 @@ workflow:
     JANE_LOG_PATTERN: '\[mariadb\]'
 
 'mariadb_server role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'keyring role'
     - 'ferm role'
@@ -1391,7 +1422,7 @@ workflow:
     JANE_LOG_PATTERN: '\[mariadb_server\]'
 
 'mariadb_server/client role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'ferm role'
@@ -1408,7 +1439,7 @@ workflow:
     JANE_IGNORE_IDEMPOTENCY: 'Issues with mysql_user Ansible module (https://github.com/ansible/ansible/issues/60567)'
 
 'mcli role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -1421,7 +1452,7 @@ workflow:
     JANE_LOG_PATTERN: '\[mcli\]'
 
 'memcached role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'memcached.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/memcached.yml'
@@ -1430,7 +1461,7 @@ workflow:
     JANE_LOG_PATTERN: '\[memcached\]'
 
 'minio role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'secret role'
@@ -1450,7 +1481,7 @@ workflow:
     JANE_LOG_PATTERN: '\[minio\]'
 
 'minio/pki role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'secret role'
@@ -1472,7 +1503,7 @@ workflow:
     JANE_LOG_PATTERN: '\[minio\]'
 
 'monit role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'monit.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/monit.yml'
@@ -1481,7 +1512,7 @@ workflow:
     JANE_LOG_PATTERN: '\[monit\]'
 
 'mosquitto role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'keyring role'
     - 'etc_services role'
@@ -1496,7 +1527,7 @@ workflow:
     JANE_LOG_PATTERN: '\[mosquitto\]'
 
 'mosquitto/nginx role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -1514,7 +1545,7 @@ workflow:
     JANE_LOG_PATTERN: '\[mosquitto\]'
 
 'mount role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'mount.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/mount.yml'
@@ -1526,7 +1557,7 @@ workflow:
 # --- n --- [[[2
 
 'netbase role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'python role'
   variables:
@@ -1537,7 +1568,7 @@ workflow:
     JANE_LOG_PATTERN: '\[netbase\]'
 
 'netbox role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'secret role'
     - 'keyring role'
@@ -1563,7 +1594,7 @@ workflow:
     JANE_LOG_PATTERN: '\[netbox\]'
 
 'neurodebian role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -1575,7 +1606,7 @@ workflow:
     JANE_LOG_PATTERN: '\[neurodebian\]'
 
 'nfs role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'nfs.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/nfs.yml'
@@ -1584,7 +1615,7 @@ workflow:
     JANE_LOG_PATTERN: '\[nfs\]'
 
 'nfs_server role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'etc_services role'
     - 'ferm role'
@@ -1597,7 +1628,7 @@ workflow:
     JANE_LOG_PATTERN: '\[nfs_server\]'
 
 'nginx role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -1611,7 +1642,7 @@ workflow:
     JANE_LOG_PATTERN: '\[nginx\]'
 
 'nginx/passenger role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -1627,7 +1658,7 @@ workflow:
     JANE_LOG_PATTERN: '\[nginx\]'
 
 'nodejs role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -1639,7 +1670,7 @@ workflow:
     JANE_LOG_PATTERN: '\[nodejs\]'
 
 'nscd role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'nscd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/nscd.yml'
@@ -1648,7 +1679,7 @@ workflow:
     JANE_LOG_PATTERN: '\[nscd\]'
 
 'nslcd role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'python role'
     - 'ldap role'
@@ -1662,7 +1693,7 @@ workflow:
     JANE_LOG_PATTERN: '\[nslcd\]'
 
 'nsswitch role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'nsswitch.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/nsswitch.yml'
@@ -1670,7 +1701,7 @@ workflow:
     JANE_LOG_PATTERN: '\[nsswitch\]'
 
 'ntp role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'ferm role'
   variables:
@@ -1680,7 +1711,7 @@ workflow:
     JANE_LOG_PATTERN: '\[ntp\]'
 
 'nullmailer role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'python role'
     - 'ldap role'
@@ -1696,7 +1727,7 @@ workflow:
 # --- o --- [[[2
 
 'opendkim role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'secret role'
     - 'postfix role'
@@ -1708,7 +1739,7 @@ workflow:
     JANE_LOG_PATTERN: '\[opendkim\]'
 
 'owncloud/apache role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -1730,7 +1761,7 @@ workflow:
     JANE_IGNORE_IDEMPOTENCY: 'Issues with mysql_user Ansible module (https://github.com/ansible/ansible/issues/60567)'
 
 'owncloud/nginx role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -1755,7 +1786,7 @@ workflow:
 # --- p --- [[[2
 
 'pam_access role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'pam_access.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/pam_access.yml'
@@ -1764,7 +1795,7 @@ workflow:
     JANE_LOG_PATTERN: '\[pam_access\]'
 
 'persistent_paths role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'persistent_paths.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/persistent_paths.yml'
@@ -1773,7 +1804,7 @@ workflow:
     JANE_LOG_PATTERN: '\[persistent_paths\]'
 
 'php role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -1786,7 +1817,7 @@ workflow:
     JANE_LOG_PATTERN: '\[php\]'
 
 'phpipam role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -1805,7 +1836,7 @@ workflow:
     JANE_IGNORE_IDEMPOTENCY: 'Issues with mysql_user Ansible module (https://github.com/ansible/ansible/issues/60567)'
 
 'phpmyadmin role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -1823,7 +1854,7 @@ workflow:
     JANE_LOG_PATTERN: '\[phpmyadmin\]'
 
 'pki role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'secret role'
     - 'cron role'
@@ -1834,7 +1865,7 @@ workflow:
     JANE_LOG_PATTERN: '\[pki\]'
 
 'postconf role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'secret role'
     - 'ferm role'
@@ -1847,7 +1878,7 @@ workflow:
     JANE_LOG_PATTERN: '\[postconf\]'
 
 'postfix role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'secret role'
     - 'ferm role'
@@ -1861,7 +1892,7 @@ workflow:
     JANE_LOG_PATTERN: '\[postfix\]'
 
 'postgresql role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -1874,7 +1905,7 @@ workflow:
     JANE_LOG_PATTERN: '\[postgresql\]'
 
 'postgresql_server role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -1890,7 +1921,7 @@ workflow:
     JANE_LOG_PATTERN: '\[postgresql_server\]'
 
 'postgresql_server/client role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -1908,7 +1939,7 @@ workflow:
     JANE_LOG_PATTERN: '\[postgresql\]'
 
 'postldap role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'secret role'
     - 'ldap role'
@@ -1921,7 +1952,7 @@ workflow:
     JANE_LOG_PATTERN: '\[postldap\]'
 
 'postscreen role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'secret role'
     - 'postfix role'
@@ -1933,7 +1964,7 @@ workflow:
     JANE_LOG_PATTERN: '\[postscreen\]'
 
 'postwhite role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'secret role'
     - 'postfix role'
@@ -1945,7 +1976,7 @@ workflow:
     JANE_LOG_PATTERN: '\[postscreen\]'
 
 'preseed role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -1960,7 +1991,7 @@ workflow:
     JANE_LOG_PATTERN: '\[preseed\]'
 
 'proc_hidepid role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'proc_hidepid.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/proc_hidepid.yml'
@@ -1969,7 +2000,7 @@ workflow:
     JANE_LOG_PATTERN: '\[proc_hidepid\]'
 
 'prosody/pki role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'ferm role'
   variables:
@@ -1980,7 +2011,7 @@ workflow:
     JANE_LOG_PATTERN: '\[prosody\]'
 
 'python role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'python.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/python.yml'
@@ -1989,7 +2020,7 @@ workflow:
     JANE_LOG_PATTERN: '\[python\]'
 
 'python/raw role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/python_raw.yml'
     # Ansible from upstream requires Python 2 environment, so don't wipe it,
@@ -2003,7 +2034,7 @@ workflow:
 # --- r --- [[[2
 
 'rabbitmq_management role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'secret role'
@@ -2021,7 +2052,7 @@ workflow:
     JANE_LOG_PATTERN: '\[rabbitmq_management\]'
 
 'rabbitmq_server role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'secret role'
     - 'apt_preferences role'
@@ -2035,7 +2066,7 @@ workflow:
     JANE_LOG_PATTERN: '\[rabbitmq_server\]'
 
 'radvd role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'resolvconf role'
     - 'python role'
@@ -2054,7 +2085,7 @@ workflow:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'redis_sentinel role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'apt_preferences role'
     - 'etc_services role'
@@ -2068,7 +2099,7 @@ workflow:
     JANE_LOG_PATTERN: '\[redis_sentinel\]'
 
 'redis_server role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'secret role'
     - 'apt_preferences role'
@@ -2085,7 +2116,7 @@ workflow:
     JANE_LOG_PATTERN: '\[redis_server\]'
 
 'reprepro role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -2101,7 +2132,7 @@ workflow:
     JANE_LOG_PATTERN: '\[reprepro\]'
 
 'resolvconf role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'resolvconf.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/resolvconf.yml'
@@ -2110,7 +2141,7 @@ workflow:
     JANE_LOG_PATTERN: '\[resolvconf\]'
 
 'resources role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'resources.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/resources.yml'
@@ -2118,7 +2149,7 @@ workflow:
     JANE_LOG_PATTERN: '\[resources\]'
 
 'root_account role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'root_account.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/root_account.yml'
@@ -2126,7 +2157,7 @@ workflow:
     JANE_LOG_PATTERN: '\[root_account\]'
 
 'roundcube role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -2145,7 +2176,7 @@ workflow:
     JANE_LOG_PATTERN: '\[roundcube\]'
 
 'roundcube/mariadb role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -2170,7 +2201,7 @@ workflow:
   tags: [ 'mem-6GB' ]
 
 'rsnapshot role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'rsnapshot.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/rsnapshot.yml'
@@ -2179,7 +2210,7 @@ workflow:
     JANE_LOG_PATTERN: '\[rsnapshot\]'
 
 'rstudio_server role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'keyring role'
     - 'etc_services role'
@@ -2199,7 +2230,7 @@ workflow:
     JANE_LOG_PATTERN: '\[rstudio_server\]'
 
 'rsyslog role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'etc_services role'
     - 'apt_preferences role'
@@ -2212,7 +2243,7 @@ workflow:
     JANE_LOG_PATTERN: '\[rsyslog\]'
 
 'ruby role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'apt_preferences role'
   variables:
@@ -2226,7 +2257,7 @@ workflow:
 # --- s --- [[[2
 
 'salt role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -2241,7 +2272,7 @@ workflow:
     JANE_LOG_PATTERN: '\[salt\]'
 
 'samba role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'ferm role'
   variables:
@@ -2253,7 +2284,7 @@ workflow:
     JANE_LOG_PATTERN: '\[samba\]'
 
 'saslauthd role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'python role'
     - 'ldap role'
@@ -2265,14 +2296,14 @@ workflow:
     JANE_LOG_PATTERN: '\[saslauthd\]'
 
 'secret role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/secret.yml'
     JANE_DIFF_PATTERN: '.*/roles/secret/.*'
     JANE_LOG_PATTERN: '\[secret\]'
 
 'sks role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -2288,7 +2319,7 @@ workflow:
     JANE_LOG_PATTERN: '\[sks\]'
 
 'slapd role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'ferm role'
     - 'tcpwrappers role'
@@ -2305,7 +2336,7 @@ workflow:
     JANE_LOG_PATTERN: '\[slapd\]'
 
 'slapd/pki role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'secret role'
     - 'cron role'
@@ -2324,7 +2355,7 @@ workflow:
     JANE_LOG_PATTERN: '\[slapd\]'
 
 'smstools role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'secret role'
     - 'etc_services role'
@@ -2340,7 +2371,7 @@ workflow:
     JANE_LOG_PATTERN: '\[smstools\]'
 
 'snmpd role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'apt_preferences role'
     - 'ferm role'
@@ -2353,7 +2384,7 @@ workflow:
     JANE_LOG_PATTERN: '\[snmpd\]'
 
 'sshd role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'apt_preferences role'
     - 'ferm role'
@@ -2369,7 +2400,7 @@ workflow:
     JANE_LOG_PATTERN: '\[sshd\]'
 
 'stunnel role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'etc_services role'
     - 'ferm role'
@@ -2382,7 +2413,7 @@ workflow:
     JANE_LOG_PATTERN: '\[stunnel\]'
 
 'sudo role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'python role'
     - 'ldap role'
@@ -2394,7 +2425,7 @@ workflow:
     JANE_LOG_PATTERN: '\[sudo\]'
 
 'swapfile role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'swapfile.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/swapfile.yml'
@@ -2404,7 +2435,7 @@ workflow:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'sysctl role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'sysctl.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/sysctl.yml'
@@ -2413,7 +2444,7 @@ workflow:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'sysfs role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'secret role'
   variables:
@@ -2426,7 +2457,7 @@ workflow:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'sysnews role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'sysnews.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/sysnews.yml'
@@ -2435,7 +2466,7 @@ workflow:
     JANE_LOG_PATTERN: '\[sysnews\]'
 
 'system_groups role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'python role'
     - 'ldap role'
@@ -2448,7 +2479,7 @@ workflow:
     JANE_LOG_PATTERN: '\[system_groups\]'
 
 'system_users role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'libuser role'
   variables:
@@ -2461,7 +2492,7 @@ workflow:
 # --- t --- [[[2
 
 'tcpwrappers role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'tcpwrappers.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/tcpwrappers.yml'
@@ -2469,7 +2500,7 @@ workflow:
     JANE_LOG_PATTERN: '\[tcpwrappers\]'
 
 'tftpd role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'ferm role'
     - 'tcpwrappers role'
@@ -2481,7 +2512,7 @@ workflow:
     JANE_LOG_PATTERN: '\[tftpd\]'
 
 'tgt role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'apt_preferences role'
     - 'ferm role'
@@ -2493,7 +2524,7 @@ workflow:
     JANE_LOG_PATTERN: '\[tgt\]'
 
 'tinc/gateway role':
-  <<: *test_role_3rd_deps
+  <<: *vagrant_role_3rd_deps
   needs:
     - 'resolvconf role'
     - 'python role'
@@ -2515,7 +2546,7 @@ workflow:
   tags: [ 'shell', 'vagrant-vm' ]
 
 'tinyproxy role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'etc_services role'
     - 'ferm role'
@@ -2527,7 +2558,7 @@ workflow:
     JANE_LOG_PATTERN: '\[tinyproxy\]'
 
 'tzdata role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'tzdata.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/tzdata.yml'
@@ -2537,7 +2568,7 @@ workflow:
 # --- u --- [[[2
 
 'unattended_upgrades role':
-  <<: *test_role_no_deps
+  <<: *vagrant_role_no_deps
   variables:
     JANE_TEST_FACT: 'unattended_upgrades.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/unattended_upgrades.yml'
@@ -2545,7 +2576,7 @@ workflow:
     JANE_LOG_PATTERN: '\[unattended_upgrades\]'
 
 'unbound role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'resolvconf role'
     - 'apt_preferences role'
@@ -2559,7 +2590,7 @@ workflow:
     JANE_LOG_PATTERN: '\[unbound\]'
 
 'users role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'libuser role'
   variables:
@@ -2572,7 +2603,7 @@ workflow:
 # --- w --- [[[2
 
 'wpcli role':
-  <<: *test_role_2nd_deps
+  <<: *vagrant_role_2nd_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -2589,7 +2620,7 @@ workflow:
 # --- y --- [[[2
 
 'yadm role':
-  <<: *test_role_1st_deps
+  <<: *vagrant_role_1st_deps
   needs:
     - 'keyring role'
     - 'apt_preferences role'
@@ -2600,3 +2631,31 @@ workflow:
     JANE_INVENTORY_HOSTVARS: 'yadm__dotfiles_enabled=true'
     JANE_DIFF_PATTERN: '.*/roles/yadm/.*'
     JANE_LOG_PATTERN: '\[yadm\]'
+
+
+# === Ansible no dependencies roles === [[[2
+
+'ferm role':
+  extends: .tpl_molecule_no_deps
+  needs:
+    - 'bootstrap playbook'
+
+# === Ansible 1st dependencies roles === [[[2
+
+'minidlna role':
+  extends: .tpl_molecule_1st_deps
+  needs:
+    - 'ferm role'
+  rules:
+    - if: '$CI_REF_PROTECTED'
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || ($CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH)'
+      changes:
+        - ansible/playbooks/service/ferm.yml
+        - ansible/roles/ferm/*
+        - ansible/molecule/ferm/*
+        - ansible/playbooks/service/minidlna.yml
+        - ansible/roles/minidlna/*
+        - ansible/molecule/minidlna/*
+        - ansible/molecule/bootstrap/prepare.yml
+      when: always

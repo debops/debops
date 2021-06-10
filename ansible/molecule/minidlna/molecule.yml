@@ -1,0 +1,25 @@
+---
+#
+# Copyright (C) 2021 Julien Lecomte <julien@lecomte.at>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+#
+
+platforms:
+  - name: debops-minidlna-stretch
+    image: registry.gitlab.com/dockerio/debian:stretch
+    groups:
+      - debops_service_bootstrap
+      - debops_service_minidlna
+
+  - name: debops-minidlna-buster
+    image: registry.gitlab.com/dockerio/debian:buster
+    groups:
+      - debops_service_bootstrap
+      - debops_service_minidlna
+
+provisioner:
+  name: ansible
+  playbooks:
+    prepare: ../bootstrap/prepare.yml
+

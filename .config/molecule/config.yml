@@ -1,0 +1,34 @@
+---
+#
+# Copyright (C) 2021 Julien Lecomte <julien@lecomte.at>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+#
+
+dependency:
+  enabled: False
+
+driver:
+  name: docker
+
+# https://molecule.readthedocs.io/en/latest/configuration.html#molecule.scenario.Scenario
+scenario:
+  create_sequence:
+    - create
+    - prepare
+  converge_sequence:
+    - create
+    - prepare
+    - converge
+  destroy_sequence:
+    - destroy
+  test_sequence:
+    - destroy
+    - create
+    - prepare
+    - converge
+    - idempotence
+    - verify
+    - destroy
+
+

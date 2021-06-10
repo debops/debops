@@ -125,7 +125,7 @@ twine-upload:    ## Upload Python packages to PyPI
 	@twine upload dist/*
 
 .PHONY: test-all
-test-all: clean-tests test-spdx test-pep8 test-debops-tools test-debops-ansible_plugins test-docs test-man test-playbook-syntax test-ansible-lint test-yaml test-shell
+test-all: clean-tests test-spdx test-pep8 test-debops-tools test-debops-ansible_plugins test-docs test-man test-playbook-syntax test-ansible-lint test-yaml test-shell test-molecule
 
 .PHONY: test-pep8
 test-pep8:
@@ -145,6 +145,10 @@ test-docker-build:
 .PHONY: test-spdx
 test-spdx:
 	@reuse lint
+
+.PHONY: test-molecule
+test-molecule:
+	cd ansible && molecule test --all
 
 .PHONY: clean-tests
 clean-tests:
