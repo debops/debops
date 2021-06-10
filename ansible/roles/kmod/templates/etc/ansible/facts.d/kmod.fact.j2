@@ -23,7 +23,7 @@ except ImportError:
         for line in lsmod_output.splitlines():
             if not line.decode('utf-8').startswith('Module '):
                 kernel_modules.append(line.decode('utf-8').split()[0])
-    except subprocess.CalledProcessError:
+    except (subprocess.CalledProcessError, FileNotFoundError):
         pass
 
 
