@@ -43,6 +43,14 @@ Fixed
   IP address using DNS and the host does not have an entry in the DNS or in
   :file:`/etc/hosts` database.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- Access to the ACME challenge directories is now always allowed, even if a
+  server-wide allowlist configuration or HTTP basic authentication enforcement
+  has been applied. This ensures that it is always possible to request and renew
+  certificates through the ACME protocol.
+
 
 `debops v2.2.2`_ - 2021-06-04
 -----------------------------
