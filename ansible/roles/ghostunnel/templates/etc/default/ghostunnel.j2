@@ -30,6 +30,8 @@
 {% endfor %}
 # Set the command-line arguments to pass to the service.
 ARGS="{{ ghostunnel__tpl_args | join(' ') }}"
+{% if not item.disable_authentication | d(False) %}
 CERT_PATH="{{ ghostunnel__pki_path + "/" + ghostunnel__pki_realm + "/" + ghostunnel__pki_crt }}"
 KEY_PATH="{{ ghostunnel__pki_path + "/" + ghostunnel__pki_realm + "/" + ghostunnel__pki_key }}"
 CACERT_PATH="{{ ghostunnel__pki_path + "/" + ghostunnel__pki_realm + "/" + ghostunnel__pki_ca }}"
+{% endif %}
