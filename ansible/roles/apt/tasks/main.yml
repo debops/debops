@@ -48,6 +48,15 @@
     - 'etc/apt/apt.conf.d/25no-recommends.conf'
   when: apt__enabled|bool
 
+- name: Enable extra architectures
+  command: dpkg --add-architecture {{ item }}
+  with_flattened:
+    - '{{ apt__extra_architectures }}'
+    - '{{ apt__group_extra_architectures }}'
+    - '{{ apt__host_extra_architectures }}'
+  when: item not in ansible_facts.ansible_local.apt.foreign_architectures|d()
+  notify: [ 'Refresh host facts' ]
+
 - name: Check current APT diversions
   environment:
     LC_ALL: 'C'
