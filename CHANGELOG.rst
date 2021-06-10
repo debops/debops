@@ -21,6 +21,13 @@ You can read information about required changes between releases in the
 Fixed
 ~~~~~
 
+:ref:`debops.kmod` role
+'''''''''''''''''''''''
+
+- Fixed an issue with role facts where the script ended with axception when the
+  ``kmod`` package wasn't installed and the :command:`lsmod` command was not
+  available.
+
 :ref:`debops.netbase` role
 ''''''''''''''''''''''''''
 
