@@ -52,6 +52,11 @@ Changed
 Fixed
 ~~~~~
 
+:ref:`debops.apt_cacher_ng` role
+''''''''''''''''''''''''''''''''
+
+- The role no longer creates an unnecessary NGINX webroot directory.
+
 :ref:`debops.kmod` role
 '''''''''''''''''''''''
 

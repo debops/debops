@@ -562,6 +562,7 @@ apt_cacher_ng__nginx__servers:
     enabled: True
     allow: '{{ apt_cacher_ng__allow + apt_cacher_ng__group_allow + apt_cacher_ng__host_allow }}'
     ssl: False
+    webroot_create: False
     type: 'proxy'
     proxy_pass: 'http://apt-cacher-ng'
     proxy_options: |
@@ -582,6 +583,7 @@ apt_cacher_ng__nginx__servers:
     allow: '{{ apt_cacher_ng__allow + apt_cacher_ng__group_allow + apt_cacher_ng__host_allow }}'
     state: '{{ "present" if (ansible_local.pki|d()) else "absent" }}'
     listen: False
+    webroot_create: False
     type: 'proxy'
     proxy_pass: 'http://apt-cacher-ng'
     proxy_options: |
