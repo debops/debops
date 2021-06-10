@@ -8,6 +8,7 @@
 # Return the ACME challenge present in the server public root.
 # If not found, switch to global web server root.
 location ^~ /.well-known/acme-challenge/ {
+        allow all;
         default_type "text/plain";
         try_files $uri @well-known-acme-challenge;
 }
@@ -15,6 +16,7 @@ location ^~ /.well-known/acme-challenge/ {
 # Return the ACME challenge present in the global server public root.
 # If not present, redirect request to a specified domain.
 location @well-known-acme-challenge {
+        allow all;
         root {{ nginx_acme_root }};
         default_type "text/plain";
 {% if nginx_acme_domain %}
