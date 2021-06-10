@@ -1,9 +1,10 @@
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# Test DebOps roles and playbooks using Gitlab CI, Vagrant and Jane
+# Test DebOps roles and playbooks using GitLab CI, Molecule,
+# Vagrant and Jane
 #
-# Copyright (C) 2017-2020 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2017-2020 DebOps <https://debops.org/>
+# Copyright (C) 2017-2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2017-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -40,6 +41,25 @@ stages:
   - 'DebOps roles (4th deps)'
   - 'DebOps roles (5th deps)'
   - 'DebOps roles (6th deps)'
+
+
+# === Workflow === [[[1
+
+# Run a single pipeline when duplicate cases are possible
+# https://docs.gitlab.com/ee/ci/yaml/README.html#switch-between-branch-pipelines-and-merge-request-pipelines
+workflow:
+  rules:
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS && $CI_PIPELINE_SOURCE == "push"'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: always
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
+      when: never
+    - if: '$CI_COMMIT_BRANCH'
+      when: always
+    - if: '$CI_REF_PROTECTED'
+      when: always
+    - when: always
 
 
 # === Role testing templates === [[[1
