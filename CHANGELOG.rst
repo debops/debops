@@ -26,6 +26,13 @@ You can read information about required changes between releases in the
 Changed
 ~~~~~~~
 
+:ref:`debops.postldap` role
+'''''''''''''''''''''''''''
+
+- A few changes to the Postfix LDAP lookup tables were made, most notably a
+  better split between alias lookups (ldap_virtual_alias_maps.cf) and
+  distribution list lookups (ldap_virtual_forward_maps.cf).
+
 :ref:`debops.system_users` role
 '''''''''''''''''''''''''''''''
 
