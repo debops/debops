@@ -341,20 +341,14 @@ postldap__postfix__dependent_lookup_tables:
     connection: '{{ postldap__postfix_ldap_connection }}'
     search_base: '{{ postldap__ldap_base_dn|join(",") }}'
     query_filter: '(&
-                     (|
-                       (objectClass=mailRecipient)
-                     )
-                     (|
-                       (mailAddress=%s)
-                       (mailAlternateAddress=%s)
-                     )
+                     (objectClass=mailRecipient)
+                     (mailAlternateAddress=%s)
                      (|
                        (authorizedService=all)
                        (authorizedService=mail:receive)
                      )
                    )'
-    special_result_attribute: 'member'
-    leaf_result_attribute: 'mailAddress'
+    result_attribute: 'mailAddress'
 
   - name: 'ldap_virtual_forward_maps.cf'
     state: 'present'
