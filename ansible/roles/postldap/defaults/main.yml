@@ -363,16 +363,15 @@ postldap__postfix__dependent_lookup_tables:
                        (objectClass=mailAlias)
                        (objectClass=mailDistributionList)
                      )
-                     (|
-                       (mailAddress=%s)
-                       (mailAlternateAddress=%s)
-                     )
+                     (mailAddress=%s)
                      (|
                        (authorizedService=all)
                        (authorizedService=mail:receive)
                      )
                    )'
     result_attribute: 'mailForwardTo'
+    special_result_attribute: 'member'
+    leaf_result_attribute: 'mailAddress'
 
   - name: 'ldap_virtual_mailbox_maps.cf'
     state: 'present'
