@@ -22,6 +22,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.1: https://github.com/debops/debops/compare/v2.1.0...stable-2.1
 
+Added
+~~~~~
+
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- The ``sshd__ferm_interface`` variable can now be used to limit access to SSH
+  via the host firewall based on interface.
+
 Changed
 ~~~~~~~
 
