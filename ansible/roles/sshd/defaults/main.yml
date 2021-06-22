@@ -164,6 +164,14 @@ sshd__ferm_limit_target: 'REJECT'
 # port numbers or service names from :file:`/etc/services`.
 sshd__ferm_ports: '{{ sshd__ports }}'
                                                                    # ]]]
+# .. envvar:: sshd__ferm_interface [[[
+#
+# List of interfaces to open in the firewall for SSH connections.
+# Consider settings this to ``{{ [ ansible_default_ipv4.interface ] }}``
+# for example if the host has multiple network interfaces like when it is
+# running a VPN.
+sshd__ferm_interface: []
+                                                                   # ]]]
                                                                    # ]]]
 # OpenSSH server configuration [[[
 # --------------------------------
@@ -773,6 +781,7 @@ sshd__ferm__dependent_rules:
 
   - type: 'accept'
     dport: '{{ sshd__ferm_ports }}'
+    interface: '{{ sshd__ferm_interface }}'
     weight: '0'
     weight_class: 'sshd-chain'
     name: 'sshd_jump-filter-ssh'
@@ -780,10 +789,11 @@ sshd__ferm__dependent_rules:
     rule_state: '{{ "present" if sshd__ferm_limit|bool else "absent" }}'
     comment: 'Create a separate "iptables" chain for SSH rules'
 
-  - chain: '{{ sshd__ferm_limit_chain if sshd__ferm_limit | bool else "INPUT" }}'
+  - chain: '{{ sshd__ferm_limit_chain if (sshd__ferm_limit|bool) else "INPUT" }}'
     type: 'accept'
     dport: '{{ sshd__ferm_ports }}'
     saddr: '{{ sshd__whitelist + sshd__group_whitelist + sshd__host_whitelist }}'
+    interface: '{{ [] if (sshd__ferm_limit|bool) else sshd__ferm_interface }}'
     weight: '1'
     weight_class: 'sshd-chain'
     name: 'sshd_whitelist'
@@ -795,6 +805,7 @@ sshd__ferm__dependent_rules:
     type: 'accept'
     dport: '{{ sshd__ferm_ports }}'
     saddr: '{{ sshd__allow + sshd__group_allow + sshd__host_allow }}'
+    interface: '{{ [] if (sshd__ferm_limit|bool) else sshd__ferm_interface }}'
     weight: '2'
     weight_class: 'sshd-chain'
     name: 'sshd_allow'
