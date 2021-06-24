@@ -87,6 +87,12 @@ Fixed
   has been applied. This ensures that it is always possible to request and renew
   certificates through the ACME protocol.
 
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- Role now allows configuration of log streaming in cleartext, useful in
+  trusted networks.
+
 
 `debops v2.3.0`_ - 2021-06-04
 -----------------------------
