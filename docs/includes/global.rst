@@ -1125,10 +1125,6 @@
 .. _Salt: https://en.wikipedia.org/wiki/SaltStack
 .. _Ubuntu 12.04 LTS (Precise Pangolin): https://releases.ubuntu.com/12.04/
 
-.. _sks-keyservers.net: https://sks-keyservers.net/
-.. _SKS OpenPGP keyserver pool: https://sks-keyservers.net/
-.. Prefer the last one.
-
 .. _Elastic: https://www.elastic.co/
 .. _InfluxData: https://www.influxdata.com/
 .. _OpenPGP Best Practices: https://help.riseup.net/en/security/message-security/openpgp/best-practices
