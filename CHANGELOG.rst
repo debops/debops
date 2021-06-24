@@ -35,6 +35,15 @@ Added
 - The ``sshd__ferm_interface`` variable can now be used to limit access to SSH
   via the host firewall based on interface.
 
+Changed
+~~~~~~~
+
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
+  has been updated to the next point release, 10.10.
+
 Fixed
 ~~~~~
 
