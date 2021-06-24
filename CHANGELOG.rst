@@ -49,6 +49,14 @@ Updates of upstream application versions
 - In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
   has been updated to the next point release, 10.10.
 
+:ref:`debops.keyring` role
+''''''''''''''''''''''''''
+
+- The default keyserver used by the role has been changed to `OpenPGP
+  keyserver`__ due to deprecation of the SKS Keyserver pool.
+
+  .. __: https://keys.openpgp.org/about
+
 :ref:`debops.postldap` role
 '''''''''''''''''''''''''''
 
