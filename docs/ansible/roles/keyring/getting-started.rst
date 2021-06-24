@@ -1,5 +1,5 @@
-.. Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2019 DebOps <https://debops.org/>
+.. Copyright (C) 2019-2021 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2019-2021 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 Getting started
@@ -11,17 +11,21 @@ Getting started
       :local:
 
 
-SKS Keyserver pool used by default
-----------------------------------
+OpenPGP keyserver used by default
+---------------------------------
 
-By default the :ref:`debops.keyring` role uses the `SKS Keyserver pool`__ to
+By default the :ref:`debops.keyring` role uses the `OpenPGP keyserver`__ to
 retrieve the GPG keys based on their fingerprints. The default keyserver is
 configured using the :envvar:`keyring__keyserver` variable. For increased
 security, or if your infrastructure is located behind a firewall that blocks
-connections to the SKS keyserver pool, you can use the ``debops.sks``
-Ansible role to set up a local instance of a SKS keyserver and import the GPG
-keys to it for easy retrieval.
+connections to the OpenPGP keyserver, you can use the ``debops.sks`` Ansible
+role to set up a local instance of a SKS keyserver and import the GPG keys to
+it for easy retrieval.
 
+Previously used `SKS Keyserver pool`__ has been deprecated and won't be
+maintained anymore. Thanks to the maintainers for years of great service!
+
+.. __: https://keys.openpgp.org/about
 .. __: https://sks-keyservers.net/
 
 
