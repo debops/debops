@@ -21,6 +21,14 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- The role can now enable additional Debian architectures on a given host,
+  which allows for `Multiarch`__ installations.
+
+  .. __: https://wiki.debian.org/Multiarch/HOWTO
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
