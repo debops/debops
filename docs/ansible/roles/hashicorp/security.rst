@@ -72,15 +72,15 @@ The HashiCorp_ OpenPGP key is published on the keybase.io_ website, on the
 `hashicorp account <https://keybase.io/hashicorp>`_. The key is tracked by
 several other users of the site.
 
-The HashiCorp_ OpenPGP key is published in the `OpenPGP keyserver`__
+The HashiCorp_ OpenPGP key is published in the `Ubuntu keyserver`__
 and can be imported from there using the :command:`gpg` command:
 
 .. code-block:: console
 
-   user@host:~$ gpg --keyserver hkps://keys.openpgp.org \
+   user@host:~$ gpg --keyserver hkp://keyserver.ubuntu.com \
                     --recv-key C874011F0AB405110D02105534365D9472D7468F
 
-.. __: https://keys.openpgp.org/about
+.. __: https://keyserver.ubuntu.com/
 
 
 Software installation procedure
