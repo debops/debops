@@ -333,6 +333,13 @@ for collection in "${collections[@]}" ; do
         fi
     done
 
+    # Create meta/runtime.yml metadata file
+    mkdir "${workdir_map[${collection}]}/meta"
+    cat <<EOF > "${workdir_map[${collection}]}/meta/runtime.yml"
+---
+requires_ansible: ">=2.10"
+EOF
+
     # Convert Ansible plugin use to Ansible Collection format
     for plugin in task_src template_src parse_kv_config parse_kv_items etc_aliases_parse_recipients ; do
 
