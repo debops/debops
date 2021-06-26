@@ -51,10 +51,10 @@ Updates of upstream application versions
 :ref:`debops.keyring` role
 ''''''''''''''''''''''''''
 
-- The default keyserver used by the role has been changed to `OpenPGP
+- The default keyserver used by the role has been changed to `Ubuntu
   keyserver`__ due to deprecation of the SKS Keyserver pool.
 
-  .. __: https://keys.openpgp.org/about
+  .. __: https://keyserver.ubuntu.com/
 
 :ref:`debops.system_users` role
 '''''''''''''''''''''''''''''''
