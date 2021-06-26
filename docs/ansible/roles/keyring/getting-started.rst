@@ -7,10 +7,10 @@ Getting started
       :local:
 
 
-OpenPGP keyserver used by default
----------------------------------
+Default remote keyserver
+------------------------
 
-By default the :ref:`debops.keyring` role uses the `OpenPGP keyserver`__ to
+By default the :ref:`debops.keyring` role uses the `Ubuntu keyserver`__ to
 retrieve the GPG keys based on their fingerprints. The default keyserver is
 configured using the :envvar:`keyring__keyserver` variable. For increased
 security, or if your infrastructure is located behind a firewall that blocks
@@ -21,7 +21,7 @@ it for easy retrieval.
 Previously used `SKS Keyserver pool`__ has been deprecated and won't be
 maintained anymore. Thanks to the maintainers for years of great service!
 
-.. __: https://keys.openpgp.org/about
+.. __: https://keyserver.ubuntu.com/
 .. __: https://sks-keyservers.net/
 
 
