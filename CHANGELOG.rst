@@ -34,6 +34,13 @@ Added
 
   .. __: https://wiki.debian.org/Multiarch/HOWTO
 
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- It is now possible to override the default ``netstream_driver``,
+  ``driver_mode`` and ``driver_authmode`` parameters in every
+  :ref:`rsyslog__ref_forward` forwarding rule.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
@@ -63,6 +70,12 @@ Updates of upstream application versions
 - A few changes to the Postfix LDAP lookup tables were made, most notably a
   better split between alias lookups (ldap_virtual_alias_maps.cf) and
   distribution list lookups (ldap_virtual_forward_maps.cf).
+
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- The default NetStream driver mode and authentication mode are now set based
+  on whether the ``gtls`` driver is enabled.
 
 :ref:`debops.system_users` role
 '''''''''''''''''''''''''''''''
@@ -100,6 +113,12 @@ Fixed
   server-wide allowlist configuration or HTTP basic authentication enforcement
   has been applied. This ensures that it is always possible to request and renew
   certificates through the ACME protocol.
+
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- The rsyslog role always configured the streamDriverPermittedPeers option,
+  even when the ``anon`` network driver authentication mode was selected.
 
 
 `debops v2.3.0`_ - 2021-06-04
