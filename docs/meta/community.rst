@@ -37,7 +37,7 @@ can access it over the Web or via a mobile app using the `Element`__ Matrix
 client. Matrix provides us with notifications from GitHub about new issues and
 pull requests in the DebOps monorepo.
 
-The room is bridged to the FreeNode IRC channel, so both communities can talk
+The room is bridged to the Libera.Chat IRC channel, so both communities can talk
 to each other.
 
 .. __: https://matrix.org/
@@ -50,18 +50,15 @@ IRC channels
 
 The ``#debops`` IRC channel on the `Libera.Chat`__ IRC network can be used to
 talk about DebOps, Debian, Ansible and general sysadmin related stuff. Feel
-free to come over and say hello. The channel is not yet bridged to the DebOps
-room on the Matrix network, we will do that as soon as possible.
+free to come over and say hello. The channel is bridged to the DebOps room on
+the Matrix network, so both communities can talk with each other.
 
 .. __: https://libera.chat/
 
-The ``#debops`` IRC channel on the `FreeNode`__ IRC network has been active for
-almost as long as the DebOps project itself. You can use it to chat in real
-time about DebOps, get help with any pressing issues and compare notes with
-other DebOps users. It is connected to the DebOps room on the Matrix network as
-well, so both communities can talk with each other.
-
-.. __: https://freenode.net/
+The ``#debops`` IRC channel on the reeNode IRC network has been active for
+almost as long as the DebOps project itself. Unfortunately with recent change
+of Freenode ownership it had to be retired. Come over to the Libera.Chat or
+Matrix networks for a chat.
 
 
 Mailing list
