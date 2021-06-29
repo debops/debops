@@ -67,6 +67,12 @@ Fixed
   ``kmod`` package wasn't installed and the :command:`lsmod` command was not
   available.
 
+:ref:`debops.lxd` role
+''''''''''''''''''''''
+
+- The LXD build dependencies and build script have been updated to reflect
+  changes in upstream.
+
 :ref:`debops.netbase` role
 ''''''''''''''''''''''''''
 

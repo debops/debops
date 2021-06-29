@@ -230,7 +230,8 @@ lxd__golang__dependent_packages:
     apt_dev_packages: [ 'autoconf', 'automake', 'tcl', 'libacl1-dev', 'libcap-dev',
                         'liblxc1', 'lxc-dev', 'libtool', 'libuv1-dev', 'make',
                         'pkg-config', 'libapparmor-dev', 'libseccomp-dev',
-                        'libcap-dev', 'libudev-dev', 'libsqlite3-dev' ]
+                        'libcap-dev', 'libudev-dev', 'libsqlite3-dev',
+                        'liblz4-dev' ]
     gpg: '{{ lxd__upstream_gpg_key }}'
     git:
       - repo: '{{ lxd__upstream_git_repository }}'
@@ -242,7 +243,7 @@ lxd__golang__dependent_packages:
           export CGO_CFLAGS="-I${HOME}/go/deps/sqlite/ -I${HOME}/go/deps/libco/ -I${HOME}/go/deps/raft/include/ -I${HOME}/go/deps/dqlite/include/"
           export CGO_LDFLAGS="-L${HOME}/go/deps/sqlite/.libs/ -L${HOME}/go/deps/libco/ -L${HOME}/go/deps/raft/.libs -L${HOME}/go/deps/dqlite/.libs/"
           export LD_LIBRARY_PATH="${HOME}/go/deps/sqlite/.libs/:${HOME}/go/deps/libco/:${HOME}/go/deps/raft/.libs/:${HOME}/go/deps/dqlite/.libs/"
-          export CGO_LDFLAGS_ALLOW="-Wl,-wrap,pthread_create"
+          export CGO_LDFLAGS_ALLOW="(-Wl,-wrap,pthread_create)|(-Wl,-z,now)"
           make
     git_binaries:
 
