@@ -57,6 +57,18 @@ specific parameters:
 ``queue_size``
   The size of the message queue, by default ``10000``.
 
+``netstream_driver``
+  The NetStream driver used by the ``imtcp`` module, defaults to the value of
+  :envvar:`rsyslog__default_netstream_driver`.
+
+``driver_mode``
+  The NetStream driver mode, defaults to the value of
+  :envvar:`rsyslog__default_driver_mode`.
+
+``driver_authmode``
+  The NetStream driver authentication mode, defaults to the value of
+  :envvar:`rsyslog__default_driver_authmode`.
+
 
 .. _rsyslog__ref_configuration:
 

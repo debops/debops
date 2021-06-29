@@ -210,7 +210,7 @@ rsyslog__pki_key: '{{ ansible_local.pki.key|d("default.key") }}'
                                                                    # ]]]
 # .. envvar:: rsyslog__default_netstream_driver [[[
 #
-# Specify the default netstrap driver used by the ``imtcp`` module. The
+# Specify the default NetStream driver used by the ``imtcp`` module. The
 # ``gtls`` will be enabled by default if the support for PKI is enabled,
 # otherwise ``ptcp`` will be used.
 rsyslog__default_netstream_driver: '{{ "gtls"
@@ -218,11 +218,25 @@ rsyslog__default_netstream_driver: '{{ "gtls"
                                        else "ptcp" }}'
 
                                                                    # ]]]
+# .. envvar:: rsyslog__default_driver_mode [[[
+#
+# The NetStream driver mode. The ptcp driver only supports mode 0 (unencrypted
+# transmission). The gtls driver supports modes 0 (unencrypted transmission,
+# just like the ptcp driver) and 1 (TLS-protected operation).
+# Ref: https://rsyslog.readthedocs.io/en/latest/concepts/netstrm_drvr.html
+rsyslog__default_driver_mode: '{{ "1"
+                                  if rsyslog__default_netstream_driver == "gtls"
+                                  else "0" }}'
+
+                                                                   # ]]]
 # .. envvar:: rsyslog__default_driver_authmode [[[
 #
 # Specify the default network driver authetication mode. Currently only
 # `x509/name` or `anon` are available:
-rsyslog__default_driver_authmode: "x509/name"
+rsyslog__default_driver_authmode: '{{ "x509/name"
+                                      if rsyslog__default_netstream_driver == "gtls" and
+                                         rsyslog__default_driver_mode == "1"
+                                      else "anon" }}'
 
                                                                    # ]]]
 # .. envvar:: rsyslog__domain [[[
@@ -671,11 +685,10 @@ rsyslog__default_rules:
                 queue.type="{{ element.queue_type | d('linkedList') }}"
                 queue.size="{{ element.queue_size | d('10000') }}"
                 action.resumeRetryCount="{{ element.resume_retry_count | d('100') }}"
-                streamDriver="{{ element.driver | d('gtls') }}"
-                streamDriverMode="{{ element.drivermode | d('1') }}"
-                streamDriverAuthMode="{{ element.driverauthmode | d(rsyslog__default_driver_authmode) }}"
-          {% if rsyslog__default_driver_authmode != "anon"
-             and ( element.driverauthmode is defined and element.driverauthmode != "anon" ) %}
+                streamDriver="{{ element.netstream_driver | d(rsyslog__default_netstream_driver) }}"
+                streamDriverMode="{{ element.driver_mode | d(rsyslog__default_driver_mode) }}"
+                streamDriverAuthMode="{{ element.driver_authmode | d(rsyslog__default_driver_authmode) }}"
+          {% if element.driver_authmode | d(rsyslog__default_driver_authmode) != "anon" %}
           {%   if rsyslog__send_permitted_peers is string %}
                 streamDriverPermittedPeers="{{ rsyslog__send_permitted_peers }}"
           {%   else %}
