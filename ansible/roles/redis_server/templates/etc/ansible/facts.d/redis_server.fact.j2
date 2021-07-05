@@ -77,6 +77,9 @@ if output['installed']:
                                 elif line.startswith('masterauth'):
                                     instance['password'] = unwrap_quotes(line)
 
+                        if 'password' not in instance:
+                            instance['password'] = None
+
                         try:
                             r = redis.StrictRedis(
                                     host=instance['bind'],
