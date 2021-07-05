@@ -60,6 +60,11 @@ Fixed
   :command:`pki-realm` script to renew Let's Encrypt/ACME certificates include
   SubjectAltNames defined in the PKI realm.
 
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- Fixed wrong variable name in file:`sshd_config.j2` template.
+
 :ref:`debops.system_users` role
 '''''''''''''''''''''''''''''''
 
