@@ -33,7 +33,7 @@ HostKey /etc/ssh/ssh_host_{{ hostkey }}_key
 
 {% if sshd__register_host_certs is defined and 'stdout_lines' in sshd__register_host_certs %}
 # List of host key certificates signed by CA
-{%   for cert in sshd__host_key_cert_files.stdout_lines %}
+{%   for cert in sshd__register_host_certs.stdout_lines %}
 {%     set sshd__key_matching_cert = cert | regex_replace('-cert', '') %}
 {%     set sshd__key_matching_host_keys = sshd__key_matching_cert | regex_replace('ssh_host_(\w+)_key', '\\1') %}
 {%     if sshd__key_matching_cert in sshd__register_host_keys.stdout_lines and sshd__key_matching_host_keys in sshd__host_keys %}
