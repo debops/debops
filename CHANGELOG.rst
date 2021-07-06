@@ -99,6 +99,13 @@ Fixed
   ``kmod`` package wasn't installed and the :command:`lsmod` command was not
   available.
 
+:ref:`debops.lxc` role
+''''''''''''''''''''''
+
+- Use the Ubuntu GPG keyserver by default to download LXC container signing
+  keys when the container is created by the :command:`lxc-new-unprivileged`
+  script (the SKS keyserver pool has been deprecated).
+
 :ref:`debops.netbase` role
 ''''''''''''''''''''''''''
 
