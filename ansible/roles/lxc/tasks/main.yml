@@ -184,6 +184,22 @@
           lxc__register_systemd_overrides_remove|d({}) is changed))
   tags: [ 'role::lxc:net', 'role::lxc:dnsmasq' ]
 
+- name: Remove default SSH keys for root in containers if none are defined
+  file:
+    path: '/etc/lxc/root_authorized_keys'
+    state: 'absent'
+  when: not lxc__default_container_ssh_root_sshkeys|d()
+
+- name: Define default SSH keys for root account in containers
+  authorized_key:
+    key: "{{ lxc__default_container_ssh_root_sshkeys | join('\n') }}"
+    path: '/etc/lxc/root_authorized_keys'
+    manage_dir: False
+    user: 'root'
+    state: 'present'
+    exclusive: True
+  when: lxc__default_container_ssh_root_sshkeys|d()
+
 - name: Remove LXC configuration if requested
   file:
     path: '/etc/lxc/{{ item.filename | d(item.name + ".conf") }}'
