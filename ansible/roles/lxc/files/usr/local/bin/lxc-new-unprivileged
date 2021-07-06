@@ -23,6 +23,10 @@ readonly DISTRIBUTION="$(lsb_release -i | awk '{print $NF}' | tr '[:upper:]' '[:
 readonly RELEASE="$(lsb_release -c | awk '{print $NF}' | tr '[:upper:]' '[:lower:]')"
 readonly ARCHITECTURE="$(dpkg --print-architecture)"
 
+# The SKS keyservers are deprecated, so we need to provide an alternative
+readonly DOWNLOAD_KEYSERVER="${DOWNLOAD_KEYSERVER:-hkp://keyserver.ubuntu.com}"
+export DOWNLOAD_KEYSERVER
+
 container_exists () {
     local container
     container="${1}"
