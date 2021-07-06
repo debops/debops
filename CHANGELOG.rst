@@ -34,6 +34,13 @@ Added
 
   .. __: https://wiki.debian.org/Multiarch/HOWTO
 
+:ref:`debops.lxc` role
+''''''''''''''''''''''
+
+- The role can define a list of SSH identities added to the ``root`` UNIX
+  account in new LXC containers by default. This can be used to grant multiple
+  system administrators access to the containers.
+
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
 
@@ -98,6 +105,13 @@ Fixed
 - Fixed an issue with role facts where the script ended with axception when the
   ``kmod`` package wasn't installed and the :command:`lsmod` command was not
   available.
+
+:ref:`debops.lxc` role
+''''''''''''''''''''''
+
+- Use the Ubuntu GPG keyserver by default to download LXC container signing
+  keys when the container is created by the :command:`lxc-new-unprivileged`
+  script (the SKS keyserver pool has been deprecated).
 
 :ref:`debops.netbase` role
 ''''''''''''''''''''''''''

@@ -14,6 +14,12 @@ set -o nounset -o pipefail -o errexit
 readonly SCRIPT="$(basename "${0}")"
 readonly CONTAINER="${1:-}"
 
+if [ -f "/etc/lxc/root_authorized_keys" ] ; then
+    readonly ROOT_AUTHORIZED_KEYS="/etc/lxc/root_authorized_keys"
+else
+    readonly ROOT_AUTHORIZED_KEYS=""
+fi
+
 if [ -n "${SUDO_USER:-}" ] ; then
     readonly SUDO_USER_HOME="$(getent passwd "${SUDO_USER}" | cut -d: -f6)"
     readonly SUDO_AUTHORIZED_KEYS="${SUDO_USER_HOME}/.ssh/authorized_keys"
@@ -101,6 +107,7 @@ ${SCRIPT}: add authorized SSH keys to an LXC container
 Usage: ${SCRIPT} <container-name>
 
 The keys will be taken from files:
+    /etc/lxc/root_authorized_keys
     \${SUDO_USER}/.ssh/authorized_keys
 If enabled, LDAP directory will be checked for SSH authorized_keys
 EOF
@@ -113,7 +120,9 @@ error_msg () {
 main () {
     local container
     container="${CONTAINER}"
+    local -a root_authorized_keys
     local -a authorized_keys
+    root_authorized_keys=( "${ROOT_AUTHORIZED_KEYS}" )
     authorized_keys=( "${SUDO_AUTHORIZED_KEYS}" )
     local ldap_authorized_keys
     ldap_authorized_keys="${LDAP_AUTHORIZED_KEYS:-}"
@@ -132,6 +141,11 @@ main () {
                 lxc-wait -n "${container}" -s RUNNING
             fi
             prepare_openssh "${container}"
+            for key_file in "${root_authorized_keys[@]}" ; do
+                if [ -f "${key_file}" ] ; then
+                    prepare_authorized_keys "${container}" "${key_file}"
+                fi
+            done
             for key_file in "${authorized_keys[@]}" ; do
                 if [ -f "${key_file}" ] ; then
                     prepare_authorized_keys "${container}" "${key_file}"

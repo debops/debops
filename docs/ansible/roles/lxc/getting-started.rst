@@ -194,6 +194,14 @@ source of SSH public keys. Alternatively, you can specify a custom file with
 authorized SSH keys to add in the container's
 :file:`/root/.ssh/authorized_keys` file.
 
+The :envvar:`lxc__default_container_ssh_root_sshkeys` list can be used to
+specify a list of SSH identities which should be added to new LXC containers by
+default. The identities will be stored in the
+:file:`/etc/lxc/root_authorized_keys` file on the LXC host; the
+:command:`lxc-prepare-ssh` script will add them in specified LXC containers.
+This can be useful to define a set of default system administrators that should
+have access to all containers.
+
 If :ref:`the LDAP support <debops.ldap>` is configured on a host and SSH key
 lookup in LDAP is enabled by the :ref:`debops.sshd` role, the script will look
 up the current user keys in LDAP directory as well - this ensures that the SSH
