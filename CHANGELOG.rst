@@ -23,6 +23,16 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.3: https://github.com/debops/debops/compare/v2.3.0...stable-2.3
 
+Added
+~~~~~
+
+:ref:`debops.lxc` role
+''''''''''''''''''''''
+
+- The role can define a list of SSH identities added to the ``root`` UNIX
+  account in new LXC containers by default. This can be used to grant multiple
+  system administrators access to the containers.
+
 Fixed
 ~~~~~
 
