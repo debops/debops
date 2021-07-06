@@ -34,6 +34,13 @@ Added
 
   .. __: https://wiki.debian.org/Multiarch/HOWTO
 
+:ref:`debops.lxc` role
+''''''''''''''''''''''
+
+- The role can define a list of SSH identities added to the ``root`` UNIX
+  account in new LXC containers by default. This can be used to grant multiple
+  system administrators access to the containers.
+
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
 
