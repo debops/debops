@@ -113,6 +113,9 @@ Fixed
 - Fixed an issue with the :ref:`debops.nginx` configuration where some
   Nextcloud pages (LDAP configuration, for example) did not work correctly.
 
+- Enable the APC module in PHP cli to fix issue with the :command:`occ` script
+  not working in Nextcloud >= 21.0.
+
 :ref:`debops.redis_server` role
 '''''''''''''''''''''''''''''''
 
