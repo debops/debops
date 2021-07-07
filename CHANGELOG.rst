@@ -32,6 +32,9 @@ Added
 
   .. __: https://man7.org/linux/man-pages/man7/lvmthin.7.html
 
+- It is now possible to apply custom options to :ref:`lvm__thin_pools` and
+  :ref:`lvm__logical_volumes`.
+
 :ref:`debops.lxc` role
 ''''''''''''''''''''''
 
