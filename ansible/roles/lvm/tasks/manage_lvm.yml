@@ -48,6 +48,7 @@
     vg:       '{{ item.vg }}'
     thinpool: '{{ item.thinpool }}'
     size:     '{{ item.size }}'
+    opts:     '{{ item.opts | d(omit) }}'
   with_items: '{{ lvm__thin_pools }}'
   when: lvm__thin_pools|d(False) and
         item.vg|d() and item.thinpool|d() and item.size|d() and
@@ -58,6 +59,7 @@
     lv:         '{{ item.lv }}'
     vg:         '{{ item.vg }}'
     size:       '{{ item.size }}'
+    opts:       '{{ item.opts | d(omit) }}'
     thinpool:   '{{ item.thinpool | d(omit) }}'
     force:      '{{ item.force | d(omit) }}'
     shrink:     '{{ item.force | d(False) }}'

@@ -93,6 +93,11 @@ List of required parameters:
   Size of the LVM Thin Pool, use the same format as these supported by
   ``lvol`` Ansible module.
 
+List of optional LVM parameters:
+
+``opts``
+  Free-form options to be passed to the :command:`lvcreate` command.
+
 Create a LVM Thin Pool::
 
     lvm__thin_pools:
@@ -100,6 +105,15 @@ Create a LVM Thin Pool::
       - vg: 'vg_alpha'
         thinpool: 'pool0'
         size: '1T'
+
+Create a LVM Thin Pool with custom size of metadata volume::
+
+    lvm__thin_pools:
+
+      - vg: 'vg_alpha'
+        thinpool: 'pool0'
+        size: '1T'
+        opts: '--poolmetadatasize 16G'
 
 .. _lvm__logical_volumes:
 
@@ -137,6 +151,9 @@ List of optional LVM parameters:
 ``force``
   Boolean. If present and ``True`` allows ``lvol`` module to shrink or remove
   Logical Volumes.
+
+``opts``
+  Free-form options to be passed to the :command:`lvcreate` command.
 
 List of optional filesystem parameters:
 
