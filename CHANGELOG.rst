@@ -26,6 +26,13 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+:ref:`debops.lvm` role
+''''''''''''''''''''''
+
+- The role can now manage `LVM Thin Pool Logical Volumes`__.
+
+  __: https://man7.org/linux/man-pages/man7/lvmthin.7.html
+
 :ref:`debops.lxc` role
 ''''''''''''''''''''''
 
