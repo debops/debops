@@ -148,6 +148,12 @@ Fixed
 - The rsyslog role always configured the streamDriverPermittedPeers option,
   even when the ``anon`` network driver authentication mode was selected.
 
+:ref:`debops.system_users` role
+'''''''''''''''''''''''''''''''
+
+- The ``create_home`` parameter was not functional because of typos in the
+  Ansible task.
+
 
 `debops v2.3.0`_ - 2021-06-04
 -----------------------------
