@@ -1403,11 +1403,11 @@ check_files () {
 
             if [[ ${name} != *.* && ${name} != *@* ]] ; then
 
-                "create_${acme_library}_config" "acme/${acme_library}.conf" acme "${config['acme_subject']:-${config['acme_default_subject']}}" "${config['acme_domains']:-${config['acme_default_domain']}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}"
+                "create_${acme_library}_config" "acme/${acme_library}.conf" acme "${config['acme_subject']:-${config['acme_default_subject']}}" "${config['acme_domains']:-${config['acme_default_domain']}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}" "${config['acme_alt_names']:-}"
 
             elif [[ ${name} == *.* && ${name} != *@* ]] ; then
 
-                "create_${acme_library}_config" "acme/${acme_library}.conf" acme "${config['acme_subject']:-cn=${name}}" "${config['acme_domains']:-${name:-${config['acme_default_domain']}}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}"
+                "create_${acme_library}_config" "acme/${acme_library}.conf" acme "${config['acme_subject']:-cn=${name}}" "${config['acme_domains']:-${name:-${config['acme_default_domain']}}}" "${config['acme_subdomains']:-${config['acme_default_subdomains']}}" "${config['acme_alt_names']:-}"
 
             fi
 
