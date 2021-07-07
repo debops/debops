@@ -107,6 +107,12 @@ Fixed
 - The deprecated ``resolver.query()`` function call in the role fact script has
   been replaced with ``resolver.resolve()`` function call.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Enable the APC module in PHP cli to fix issue with the :command:`occ` script
+  not working in Nextcloud >= 21.0.
+
 :ref:`debops.redis_server` role
 '''''''''''''''''''''''''''''''
 
