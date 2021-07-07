@@ -56,6 +56,12 @@ Fixed
   :command:`pki-realm` script to renew Let's Encrypt/ACME certificates include
   SubjectAltNames defined in the PKI realm.
 
+:ref:`debops.system_users` role
+'''''''''''''''''''''''''''''''
+
+- The ``create_home`` parameter was not functional because of typos in the
+  Ansible task.
+
 
 `debops v2.1.6`_ - 2021-06-30
 -----------------------------
