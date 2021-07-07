@@ -2334,9 +2334,10 @@ owncloud__php__dependent_configuration:
 
   - filename: '10-owncloud'
     by_role: 'debops.owncloud'
-    state: '{{ "present"
-               if ((owncloud__apcu_enabled|bool) and (owncloud__release is match("8\.1")))
-               else "absent" }}'
+    state: '{{ "present" if (((owncloud__apcu_enabled|bool) and (owncloud__release is match("8\.1"))) or
+            ((owncloud__variant in ["nextcloud"]) and
+            (owncloud__release is version_compare("21.0", ">="))))
+            else "absent" }}'
     options: |
       ; Workaround for: https://github.com/owncloud/core/issues/17329
       apc.enable_cli = 1
