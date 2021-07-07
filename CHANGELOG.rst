@@ -39,7 +39,7 @@ Added
 
 - The role can now manage `LVM Thin Pool Logical Volumes`__.
 
-  __: https://man7.org/linux/man-pages/man7/lvmthin.7.html
+  .. __: https://man7.org/linux/man-pages/man7/lvmthin.7.html
 
 :ref:`debops.lxc` role
 ''''''''''''''''''''''
