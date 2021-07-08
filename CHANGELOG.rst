@@ -60,6 +60,12 @@ Fixed
   :command:`pki-realm` script to renew Let's Encrypt/ACME certificates include
   SubjectAltNames defined in the PKI realm.
 
+:ref:`debops.resolvconf` role
+'''''''''''''''''''''''''''''
+
+- Ensure that the fact script correctly includes information about upstream
+  nameservers when :command:`systemd-resolved` service is used.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
