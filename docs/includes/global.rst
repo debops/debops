@@ -1177,7 +1177,8 @@
 .. _Ansible module: https://docs.ansible.com/ansible/modules.html
 .. _YAML Syntax: https://docs.ansible.com/ansible/YAMLSyntax.html
 .. _reStructuredText: http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html
-.. _Sphinx: http://www.sphinx-doc.org/
+.. _Sphinx: https://www.sphinx-doc.org/
+.. _Graylog: https://www.graylog.org/
 
 .. ]]]
 
