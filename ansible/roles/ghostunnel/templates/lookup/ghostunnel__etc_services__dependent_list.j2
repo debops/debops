@@ -1,0 +1,14 @@
+{# Copyright (C) 2021 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+ # Copyright (C) 2021 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+{% set ghostunnel__tpl_etc_services = [] %}
+{% for service in ghostunnel__combined_services %}
+{%   if service.mode == 'server' %}
+{%     set _ = ghostunnel__tpl_etc_services.append({
+   'name': service.name,
+   'port': service.listen.split(":")[1]|string
+}) %}
+{%   endif %}
+{% endfor %}
+{{ ghostunnel__tpl_etc_services }}

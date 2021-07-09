@@ -1,0 +1,55 @@
+---
+# Copyright (C) 2021 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Manage Ghostunnel service
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_ghostunnel' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  pre_tasks:
+
+    - import_role:
+        name: 'ghostunnel'
+        tasks_from: 'main_env'
+      tags: [ 'role::ghostunnel', 'role::ghostunnel:env',
+              'role::etc_services', 'role::ferm' ]
+
+  roles:
+
+    - role: keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::golang' ]
+      keyring__dependent_gpg_user: '{{ golang__keyring__dependent_gpg_user }}'
+      keyring__dependent_gpg_keys:
+        - '{{ golang__keyring__dependent_gpg_keys }}'
+      golang__dependent_packages:
+        - '{{ ghostunnel__golang__dependent_packages }}'
+
+    - role: apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences', 'role::golang' ]
+      apt_preferences__dependent_list:
+        - '{{ golang__apt_preferences__dependent_list }}'
+
+    - role: etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ ghostunnel__env_etc_services__dependent_list }}'
+
+    - role: ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ ghostunnel__env_ferm__dependent_rules }}'
+
+    - role: golang
+      tags: [ 'role::golang', 'skip::golang' ]
+      golang__dependent_packages:
+        - '{{ ghostunnel__golang__dependent_packages }}'
+
+    - role: ghostunnel
+      tags: [ 'role::ghostunnel', 'skip::ghostunnel' ]
