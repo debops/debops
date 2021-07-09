@@ -1,0 +1,21 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description="HashiCorp Consul - A service mesh solution"
+Documentation=https://www.consul.io/
+Requires=network-online.target
+After=network-online.target
+ConditionFileNotEmpty={{ consul__config_dir }}config.json
+
+[Service]
+Type=notify
+User={{ consul__user }}
+Group={{ consul__group }}
+ExecStart={{ consul__binary }} agent -config-dir={{ consul__config_dir}}
+ExecReload={{ consul__binary }} reload
+KillMode=process
+Restart=on-failure
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

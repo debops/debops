@@ -1,0 +1,48 @@
+---
+
+- name: Manage Consul service
+  hosts: [ 'debops_service_consul',
+           'debops_service_consul_server' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::golang' ]
+      keyring__dependent_gpg_user: '{{ golang__keyring__dependent_gpg_user }}'
+      keyring__dependent_gpg_keys:
+        - '{{ golang__keyring__dependent_gpg_keys }}'
+      golang__dependent_packages:
+        - '{{ consul__golang__dependent_packages }}'
+
+    - role: secret
+      tags: [ 'role::secret', 'role::consul' ]
+      secret__directories:
+        - '{{ consul__secret__directories | d([]) }}'
+
+    - role: apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ golang__apt_preferences__dependent_list }}'
+
+    - role: etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ consul__etc_services__dependent_list }}'
+
+    - role: golang
+      tags: [ 'role::golang', 'skip::golang' ]
+      golang__dependent_packages:
+        - '{{ consul__golang__dependent_packages }}'
+
+    # - role: ferm
+    #   tags: [ 'role::ferm', 'skip::ferm' ]
+    #   ferm__dependent_rules:
+    #     - '{{ minio__ferm__dependent_rules }}'
+
+    - role: consul
+      tags: [ 'role::consul', 'skip::consul' ]

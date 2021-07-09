@@ -1,0 +1,32 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+import subprocess
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+output = {'installed': cmd_exists('consul')}
+
+try:
+    consul_version_stdout = subprocess.check_output(
+            ["consul", "version"]
+            ).decode('utf-8').strip()
+
+    for line in consul_version_stdout.split('\n'):
+        if line.lower().startswith('consul v'):
+            output['version'] = line.split('consul v')[1]
+
+except Exception:
+    pass
+
+print(dumps(output, sort_keys=True, indent=4))

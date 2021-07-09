@@ -1,0 +1,552 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _consul__ref_defaults:
+
+# debops.consul default variables
+# ===============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+# UNIX environment [[[
+# --------------------
+
+# .. envvar:: consul__user [[[
+#
+# The name of the UNIX system account used by the Consul service.
+consul__user: 'consul'
+
+                                                                   # ]]]
+# .. envvar:: consul__group [[[
+#
+# The name of the UNIX system group used by the Consul service.
+consul__group: 'consul'
+
+                                                                   # ]]]
+# .. envvar:: consul__additional_groups [[[
+#
+# List of additional UNIX groups to add to the Consul UNIX account, required for
+# access to additional resources.
+consul__additional_groups: '{{ [ "ssl-cert" ] if consul__pki_enabled|bool else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: consul__home [[[
+#
+# The absolute path of the Consul UNIX account home directory.
+consul__home: '{{ (ansible_local.root.home
+                   if (ansible_local|d() and ansible_local.root|d() and
+                       ansible_local.root.home|d())
+                   else "/var/local") + "/" + consul__user }}'
+
+                                                                   # ]]]
+# .. envvar:: consul__shell [[[
+#
+# The UNIX shell used by the Consul account.
+consul__shell: '/usr/sbin/nologin'
+
+                                                                   # ]]]
+# .. envvar:: consul__comment [[[
+#
+# The GECOS field set on the Consul UNIX account.
+consul__comment: 'Consul'
+                                                                   # ]]]
+                                                                   # ]]]
+# Go application deployment [[[
+# -----------------------------
+
+# These variables control how the :command:`consul` binary is installed on the
+# host. The installation is performed by the :ref:`debops.golang` role, refer
+# to its documentation for details. The installation definition can be found in
+# the :envvar:`consul__golang__dependent_packages` variable.
+
+# .. envvar:: consul__cluster_name [[[
+#
+# The cluster identifier. Change it when there are multiple :command:`consul`
+# clusters managed by the same inventory file (ex: test, prod, stage).
+# This variable is used to save the encrypt key in separate folders by
+# the :ref:`debops.secret` role
+consul__cluster_name: 'default'
+
+                                                                   # ]]]
+# .. envvar:: consul__datacenter [[[
+#
+# The datacenter identifier. Usefull when you deploy a :command:`consul`
+# cluster in multiple datacenters
+consul__datacenter: 'dc1'
+
+                                                                   # ]]]
+# .. envvar:: consul__domain [[[
+#
+# The DNS domain used by the role to get the consul servers from
+# external DNS server
+consul__domain: '{{ ansible_local.core.domain
+                    if (ansible_local|d() and ansible_local.core|d() and
+                        ansible_local.core.domain|d())
+                    else ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: consul__server_nodes_srv_rr [[[
+#
+# List which contains the result of the :command:`dig` query for consul
+# servers ``SRV`` resource records in the host's domain.
+# See :rfc:`6186` for details.
+consul__server_nodes_srv_rr: '{{ q("dig", "_consul._tcp."
+                                 + consul__domain + "./SRV", "flat=0") }}'
+                                                                   # ]]]
+# .. envvar:: consul__server_nodes [[[
+#
+# List of server nodes that will be part of the cluster
+consul__server_nodes: '{{ (consul__server_nodes_srv_rr | selectattr("target", "defined")
+                           | map(attribute="target")
+                           | map("regex_replace", "\.$","")
+                           | list )
+                          if ("NXDOMAIN" not in consul__server_nodes_srv_rr)
+                          else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: consul__service_port_dns [[[
+#
+# Used to resolve DNS queries.
+#
+# See https://www.consul.io/docs/install/ports.html
+consul__service_port_dns: 8600
+
+                                                                   # ]]]
+# .. envvar:: consul__service_port_http [[[
+#
+# This is used by clients to talk to the HTTP API.
+#
+# See https://www.consul.io/docs/install/ports.html
+consul__service_port_http: 8500
+
+                                                                   # ]]]
+# .. envvar:: consul__service_port_https [[[
+#
+# (Optional) Is off by default, but port 8501 is a convention
+# used by various tools as the default.
+#
+# See https://www.consul.io/docs/install/ports.html
+consul__service_port_https: 8501
+
+                                                                   # ]]]
+# .. envvar:: consul__service_port_grpc [[[
+#
+# (Optional). Currently gRPC is only used to expose the xDS API to
+# Envoy proxies. It is off by default, but port 8502 is a convention
+# used by various tools as the default.
+#
+# See https://www.consul.io/docs/install/ports.html
+consul__service_port_grpc: -1
+
+                                                                   # ]]]
+# .. envvar:: consul__service_port_serf_lan [[[
+#
+# This is used to handle gossip in the LAN. Required by all agents.
+# See https://www.consul.io/docs/install/ports.html
+consul__service_port_serf_lan: 8301
+
+                                                                   # ]]]
+# .. envvar:: consul__service_port_serf_wan [[[
+#
+# This is used by servers to gossip over the WAN, to other servers.
+# See https://www.consul.io/docs/install/ports.html
+consul__service_port_serf_wan: 8302
+
+                                                                   # ]]]
+# .. envvar:: consul__service_port_rpc [[[
+#
+# This is used by servers to handle incoming requests from other agents.
+# See https://www.consul.io/docs/install/ports.html
+consul__service_port_rpc: 8300
+
+                                                                   # ]]]
+# .. envvar:: consul__upstream_enabled [[[
+#
+# If consul should be installed from upstream or from apt packages.
+consul__upstream_enabled: '{{ True
+                              if (ansible_distribution_release in
+                                  [ "jessie", "stretch",
+                                    "xenial", "bionic" ])
+                              else False }}'
+
+                                                                   # ]]]
+# .. envvar:: consul__upstream_version [[[
+#
+# The version that will be installed from upstream
+consul__upstream_version: '1.6.2'
+
+                                                                   # ]]]
+# .. envvar:: consul__upstream_gpg_key [[[
+#
+# The fingerprint of the GPG key which is used to sign the Consul releases. It
+# will be used to verify the downloaded signature file.
+# As tags are not signed, it will n't be used for :command:`git`
+consul__upstream_gpg_key: '91A6 E7F8 5D05 C656 30BE F189 5185 2D87 348F FC4C'
+
+                                                                   # ]]]
+# .. envvar:: consul__upstream_type [[[
+#
+# Specify the method which should be used to install Consul binary. Either
+# ``url`` to download the configured binary directly and virify it using the
+# specified GPG key, or ``git`` to clone the Consul :command:`git` repository
+# and build the specified version from source.
+consul__upstream_type: 'url'
+
+                                                                   # ]]]
+# .. envvar:: consul__upstream_url_mirror [[[
+#
+# The base URL of the Consul download page, should end with the ``/`` character.
+consul__upstream_url_mirror: 'https://releases.hashicorp.com/consul/'
+
+                                                                   # ]]]
+# .. envvar:: consul__upstream_platform [[[
+#
+# Specify the OS type and platform architecture to use for installation. The
+# list of supported architectures and OS types can be found on the
+# https://www.consul.io/downloads.html page.
+consul__upstream_platform: 'linux_amd64'
+
+                                                                   # ]]]
+# .. envvar:: consul__upstream_git_repository [[[
+#
+# The URL of the upstream :command:`git` repository which contains Consul source
+# code.
+consul__upstream_git_repository: 'https://github.com/hashicorp/consul'
+
+                                                                   # ]]]
+# .. envvar:: consul__upstream_git_release [[[
+#
+# The version of Consul to build from source on a given host.
+consul__upstream_git_release: 'v1.6.2'
+
+                                                                   # ]]]
+# .. envvar:: consul__binary [[[
+#
+# Absolute path to the :command:`consul` Go binary installed on the host.
+# See the :ref:`debops.golang` role for more details.
+consul__binary: '{{ ansible_local.golang.binaries["consul"]
+                  if (ansible_local|d() and ansible_local.golang|d() and
+                      ansible_local.golang.binaries|d() and
+                      ansible_local.golang.binaries.consul|d())
+                  else "" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Filesystem layout [[[
+# ---------------------
+
+# .. envvar:: consul__config_dir [[[
+#
+# The directory which contains Consul configuration files
+consul__config_dir: '/etc/consul.d/'
+
+                                                                   # ]]]
+# .. envvar:: consul__data_dir [[[
+#
+# The directory where consul will store state.
+# The directory should be durable across reboots.
+consul__data_dir: '/var/consul/'
+
+                                                                   # ]]]
+# .. envvar:: consul__run_dir [[[
+#
+# The directory for process identifier (PID) file
+consul__run_dir: '/var/run/consul/'
+
+                                                                   # ]]]
+# .. envvar:: consul__log_dir [[[
+#
+# The directory where logs are saved
+consul__log_dir: '/var/log/consul/'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Transport Layer Security (TLS) support [[[
+# ------------------------------------------
+
+# These variables are used to configure the `TLS support in Consul`__.
+# The :ref:`debops.pki` Ansible is used to manage the private keys and X.509
+# certificates.
+#
+# .. __: https://www.consul.io/docs/agent/options.html#example-configuration-file-with-tls
+
+# .. envvar:: consul__pki_enabled [[[
+#
+# Enable or disable support for encrypted communication between Consul instances
+# via TLS. The support will be enabled in the :ref:`debops.pki` Ansible role is
+# configured on a host.
+consul__pki_enabled: '{{ ansible_local.pki.enabled
+                       if (ansible_local|d() and ansible_local.pki|d() and
+                           ansible_local.pki.enabled is defined)
+                       else False }}'
+
+                                                                   # ]]]
+# .. envvar:: consul__pki_base_path [[[
+#
+# The absolute path to the directory which contains the PKI realm
+# subdirectories.
+consul__pki_base_path: '{{ ansible_local.pki.base_path
+                         if (ansible_local|d() and ansible_local.pki|d() and
+                             ansible_local.pki.base_path|d())
+                         else "/etc/pki/realms" }}'
+
+                                                                   # ]]]
+# .. envvar:: consul__pki_realm [[[
+#
+# Name of the PKI realm to use by the Consul service.
+consul__pki_realm: '{{ ansible_local.pki.realm
+                     if (ansible_local|d() and ansible_local.pki|d() and
+                         ansible_local.pki.realm|d())
+                     else "domain" }}'
+
+                                                                   # ]]]
+# .. envvar:: consul__pki_key [[[
+#
+# The name of the file which contains the private key used by the X.509
+# certificate, relative to the PKI realm directory.
+consul__pki_key: '{{ ansible_local.pki.key
+                   if (ansible_local|d() and ansible_local.pki|d() and
+                       ansible_local.pki.key|d())
+                   else "default.key" }}'
+
+                                                                   # ]]]
+# .. envvar:: consul__pki_crt [[[
+#
+# The name of the file which contains the X.509 certificate used by
+# Consul, relative to the PKI realm directory.
+consul__pki_crt: '{{ ansible_local.pki.crt
+                   if (ansible_local|d() and ansible_local.pki|d() and
+                       ansible_local.pki.crt|d())
+                   else "default.crt" }}'
+                                                                   # ]]]
+# .. envvar:: consul__pki_ca [[[
+#
+# The name of the file which contains the CA X.509 certificate used by
+# Consul, relative to the PKI realm directory.
+consul__pki_ca: '{{ ansible_local.pki.ca
+                   if (ansible_local|d() and ansible_local.pki|d() and
+                       ansible_local.pki.ca|d())
+                   else "CA.crt" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Consul configuration files [[[
+# ------------------------------
+
+# These variables define the contents of the :command:`consul` configuration
+# files located in the :file:`/etc/consul.d/` directory.
+
+# .. envvar:: consul__default_configuration [[[
+#
+# The configuration defined by the role by default.
+# See https://www.consul.io/docs/agent/options.html
+consul__default_configuration:
+
+  - name: 'common'
+    config:
+      addresses:
+        dns: 127.0.0.1
+        grpc: 127.0.0.1
+        http: 127.0.0.1
+        https: 127.0.0.1
+      alt_domain: '{{ consul__domain }}'
+      bind_addr: '{{ "{{" }} GetPrivateIP {{ "}}" }}'
+      client_addr: 127.0.0.1
+      data_dir: '{{ consul__data_dir }}'
+      datacenter: '{{ consul__datacenter }}'
+      disable_update_check: false
+      enable_local_script_checks: false
+      enable_script_checks: false
+      encrypt: '{{ consul__raw_key }}'
+      performance:
+        leave_drain_time: '5s'
+        raft_multiplier: 1
+        rpc_hold_timeout: '7s'
+      ports:
+        dns: '{{ consul__service_port_dns }}'
+        grpc: '{{ consul__service_port_grpc }}'
+        http: '{{ consul__service_port_http }}'
+        https: '{{ consul__service_port_https }}'
+        serf_lan: '{{ consul__service_port_serf_lan }}'
+        serf_wan: '{{ consul__service_port_serf_wan }}'
+        server: '{{ consul__service_port_rpc }}'
+      raft_protocol: 3
+      retry_interval: '30s'
+      retry_interval_wan: '30s'
+      retry_join: '{{ consul__server_nodes }}'
+      retry_max: 0
+      retry_max_wan: 0
+      server: '{{ True if ("debops_service_consul_server" in group_names) else False }}'
+      ui: '{{ True if ("debops_service_consul_server" in group_names) else False }}'
+
+  - name: 'bootstrap'
+    state: '{{ "present" if consul__bootstrap|d(False) else "absent" }}'
+    config:
+      bootstrap: '{{ consul__bootstrap|d(False) }}'
+
+  - name: 'bootstrap_expect'
+    state: '{{ "present" if ("debops_service_consul_server" in group_names
+                              and not consul__bootstrap|d(False))
+                         else "absent" }}'
+    config:
+      bootstrap_expect: 3
+
+  - name: 'logs'
+    state: 'absent'
+    config:
+      log_file: '/var/log/consul/consul.log'
+      log_level: 'INFO'
+      log_rotate_bytes: 0
+      log_rotate_duration: '24h'
+      log_rotate_max_files: 0
+
+  - name: 'tls'
+    state: '{{ "present" if consul__pki_enabled else "absent" }}'
+    config:
+      key_file: '{{ consul__pki_base_path + "/" + consul__pki_realm + "/" + consul__pki_key }}'
+      cert_file: '{{ consul__pki_base_path + "/" + consul__pki_realm + "/" + consul__pki_crt }}'
+      ca_file: '{{ consul__pki_base_path + "/" + consul__pki_realm + "/" + consul__pki_ca }}'
+      # verify_incoming: True
+      # verify_outgoing: True
+      # verify_incoming_https: True
+      tls_prefer_server_cipher_suites: True
+
+                                                                   # ]]]
+# .. envvar:: consul__configuration [[[
+#
+# The configuration which should be present on all hosts in the Ansible
+# inventory.
+consul__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: consul__group_configuration [[[
+#
+# The configuration which should be present on hosts in a specific Ansible
+# inventory group.
+consul__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: consul__host_configuration [[[
+#
+# The configuration which should be present on specific hosts in the Ansible
+# inventory.
+consul__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: consul__combined_configuration [[[
+#
+# The variable which combines all of the other configuration variables and is
+# used in the Ansible tasks.
+consul__combined_configuration: '{{ consul__default_configuration
+                                     + consul__configuration
+                                     + consul__group_configuration
+                                     + consul__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: consul__golang__dependent_packages [[[
+#
+# Configuration for the :ref:`debops.golang` Ansible role.
+consul__golang__dependent_packages:
+
+  - name: 'consul'
+    apt_packages: consul
+    apt_required_packages: 'unzip'
+    upstream: '{{ consul__upstream_enabled }}'
+    upstream_type: '{{ consul__upstream_type }}'
+    gpg: '{{ consul__upstream_gpg_key }}'
+    url:
+
+      - src: '{{ consul__upstream_url_mirror + consul__upstream_version + "/"
+                 +  "consul_" + consul__upstream_version + "_" + consul__upstream_platform + ".zip" }}'
+        dest: '{{ "releases/" + consul__upstream_platform + "/consul/"
+                  + consul__upstream_version + "/consul_" + consul__upstream_version + ".zip" }}'
+        unarchive_creates: '{{ "releases/" + consul__upstream_platform + "/consul/"
+                  + consul__upstream_version + "/consul" }}'
+        checksum: 'sha256:{{ consul__upstream_url_mirror + consul__upstream_version + "/"
+                 +  "consul_" + consul__upstream_version }}_SHA256SUMS'
+        unarchive: True
+
+      - src: '{{ consul__upstream_url_mirror + consul__upstream_version + "/"
+                 +  "consul_" + consul__upstream_version }}_SHA256SUMS'
+        dest: '{{ "releases/" + consul__upstream_platform + "/consul/"
+                  + consul__upstream_version + "/consul_" + consul__upstream_version + "_SHA256SUMS" }}'
+
+      - src: '{{ consul__upstream_url_mirror + consul__upstream_version + "/"
+                 +  "consul_" + consul__upstream_version }}_SHA256SUMS.sig'
+        dest: 'releases/{{ consul__upstream_platform }}/consul/{{ consul__upstream_version }}/consul_{{ consul__upstream_version }}_SHA256SUMS.sig'
+        gpg_verify: True
+
+    url_binaries:
+      - src: '{{ "releases/" + consul__upstream_platform + "/consul/"
+                  + consul__upstream_version + "/consul" }}'
+        dest: 'consul'
+        notify: 'Restart consul'
+    git:
+      - repo: '{{ consul__upstream_git_repository }}'
+        version: '{{ consul__upstream_git_release }}'
+        build_script: |
+          make tools
+    git_binaries:
+      - src: '{{ consul__upstream_git_repository.split("://")[1] + "/bin/consul" }}'
+        dest: 'consul'
+        notify: 'Restart consul'
+
+                                                                   # ]]]
+# .. envvar:: consul__secret__directories [[[
+#
+# Configuration for the :ref:`debops.secret` Ansible role
+consul__secret__directories:
+  - '{{ "consul/dependent_config/" + consul__cluster_name }}'
+
+                                                                   # ]]]
+# .. envvar:: consul__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role
+consul__etc_services__dependent_list:
+  - name: 'consul.dns'
+    port: '{{ consul__service_port_dns }}'
+    comment: 'DNS: The DNS server'
+    state: '{{ "present" if consul__service_port_dns > 0 else "absent" }}'
+
+  - name: 'consul.http'
+    port: '{{ consul__service_port_http }}'
+    comment: 'HTTP: The HTTP API'
+    state: '{{ "present" if consul__service_port_http > 0 else "absent" }}'
+
+  - name: 'consul.https'
+    port: '{{ consul__service_port_https }}'
+    comment: 'HTTPS: The HTTPs API'
+    state: '{{ "present" if consul__service_port_https > 0 else "absent" }}'
+
+  - name: 'consul.gRPC'
+    port: '{{ consul__service_port_grpc }}'
+    comment: 'gRPC: The gRPC API'
+    state: '{{ "present" if consul__service_port_grpc > 0 else "absent" }}'
+
+  - name: 'consul.serf_lan'
+    port: '{{ consul__service_port_serf_lan }}'
+    comment: 'LAN Serf: The Serf LAN port'
+
+  - name: 'consul.wan-serf'
+    port: '{{ consul__service_port_serf_wan }}'
+    comment: 'WAN Serf: The Serf LAN port'
+    state: '{{ "present" if consul__service_port_serf_wan > 0 else "absent" }}'
+
+  - name: 'consul.rpc'
+    port: '{{ consul__service_port_rpc }}'
+    comment: 'server: Server RPC address'
+    state: '{{ "present" if consul__service_port_rpc > 0 else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: consul__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role
+# TODO - Find a way to enable firewall foreach port
+consul__ferm__dependent_rules: []
+
+                                                                   # ]]]
+                                                                   # ]]]
