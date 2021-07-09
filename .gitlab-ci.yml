@@ -698,6 +698,25 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/etherpad/.*'
     JANE_LOG_PATTERN: '\[etherpad\]'
 
+'hedgedoc role':
+  <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'etc_services role'
+    - 'logrotate role'
+    - 'apt_preferences role'
+    - 'nodejs role'
+    - 'ferm role'
+    - 'python role'
+    - 'mariadb role'
+    - 'nginx role'
+  variables:
+    JANE_TEST_FACT: 'hedgedoc.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/hedgedoc.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_hedgedoc'
+    JANE_DIFF_PATTERN: '.*/roles/hedgedoc/.*'
+    JANE_LOG_PATTERN: '\[hedgedoc\]'
+
 'etesync role':
   <<: *test_role_2nd_deps
   needs:

@@ -1,0 +1,275 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2021 Émile <emile@globenet.org>
+# .. Copyright (C) 2021 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _etherpad__ref_defaults:
+
+# debops.etherpad default variables [[[
+# =====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: hedgedoc__base_packages [[[
+#
+# List of base APT packages required for Hedgedoc.
+hedgedoc__base_packages: [ 'build-essential', 'pkg-config', 'libssl-dev',
+                           'libpq-dev', 'curl', 'git' ]
+
+                                                                   # ]]]
+# .. envvar:: hedgedoc__packages [[[
+#
+# List of additional APT packages to install with Hedgedoc.
+hedgedoc__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Application user, group, directories [[[
+# ----------------------------------------
+
+# .. envvar:: hedgedoc__system_name [[[
+#
+# Base name for Hedgedoc instance
+hedgedoc__system_name: 'hedgedoc-server'
+
+                                                                   # ]]]
+# .. envvar:: hedgedoc__user [[[
+#
+# Name of the system user account for Hedgedoc.
+hedgedoc__user: '{{ hedgedoc__system_name }}'
+
+                                                                   # ]]]
+# .. envvar:: hedgedoc__group [[[
+#
+# Name of the system group account for Hedgedoc.
+hedgedoc__group: '{{ hedgedoc__system_name }}'
+
+                                                                   # ]]]
+# .. envvar:: hedgedoc__home [[[
+#
+# Home directory of Hedgedoc.
+hedgedoc__home: '{{ (ansible_local.fhs.app | d("/var/local"))
+                   + "/" + hedgedoc__user }}'
+
+                                                                   # ]]]
+# .. envvar:: hedgedoc__shell [[[
+#
+# The default shell used by the Hedgedoc account.
+hedgedoc__shell: '/usr/sbin/nologin'
+
+                                                                   # ]]]
+# .. envvar:: hedgedoc__src_dir [[[
+#
+# Hedgedoc sources root directory.
+hedgedoc__src_dir: '{{ (ansible_local.fhs.src | d("/usr/local/src"))
+                      + "/" + hedgedoc__system_name }}'
+
+                                                                   # ]]]
+# .. envvar:: hedgedoc__log_dir [[[
+#
+# Path where Hedgedoc logs are stored.
+hedgedoc__log_dir: '{{ (ansible_local.fhs.log | d("/var/log"))
+                      + "/" + hedgedoc__system_name }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Basic configuration [[[
+# -----------------------
+
+# .. envvar:: hedgedoc_version [[[
+#
+# Hedgedoc git version to install.
+hedgedoc__version: '1.7.2'
+
+                                                                   # ]]]
+# .. envvar:: hedgedoc_source_address [[[
+#
+# git repository address.
+hedgedoc__source_address: 'https://github.com/hedgedoc'
+
+                                                                   # ]]]
+# .. envvar:: hedgedoc_repository [[[
+#
+# git repository name.
+hedgedoc__repository: 'hedgedoc'
+
+                                                                   # ]]]
+# .. envvar:: hedgedoc_domain [[[
+#
+# What domain will be configured for Hedgedoc.
+hedgedoc__domain: [ 'hedgedoc.{{ ansible_domain }}' ]
+
+                                                                   # ]]]
+# ]]]
+# ]]]
+
+# Database and network [[[
+# ------------------------
+
+# .. envvar:: hedgedoc__database_server [[[
+#
+# FQDN of the database host. It will be configured by
+# the :ref:`debops.mariadb` or :ref:`debops.postgresql` role.
+hedgedoc__database_server: '::1'
+
+                                                                   # ]]]
+# .. envvar:: hedgedoc__database_user [[[
+#
+# Database user to use for Hedgedoc.
+hedgedoc__database_user: '{{ hedgedoc__system_name }}'
+
+                                                                   # ]]]
+# .. envvar:: hedgedoc__database_name [[[
+#
+# Name of the database to use for Hedgedoc.
+hedgedoc__database_name: '{{ hedgedoc__system_name }}'
+
+                                                                   # ]]]
+# .. envvar:: hedgedoc__database_password [[[
+#
+# Database password for the Hedgedoc database user.
+hedgedoc__database_password: "{{ lookup('password', secret + '/'
+                                + 'mariadb/' + ansible_domain
+                                + '/credentials/' + hedgedoc__database_user
+                                + '/password chars=ascii_letters,digits length=48') }}"
+
+                                                                   # ]]]
+# .. envvar:: hedgedoc__database_config [[[
+#
+# Hedgedoc database configuration map.
+hedgedoc__database_config: 'mysql://{{ hedgedoc__database_user }}:{{ hedgedoc__database_password }}@[::1]:3306/{{ hedgedoc__database_name }}'
+                                                                   # ]]]
+# .. envvar:: hedgedoc__bind [[[
+#
+# IP address where hedgedoc-server daemon will listen for connections.
+hedgedoc__bind: '127.0.0.1'
+
+                                                                   # ]]]
+# .. envvar:: hedgedoc__port [[[
+#
+# Port where hedgedoc-server daemon will listen for connections.
+hedgedoc__port: '3000'
+                                                                   # ]]]
+                                                                   # ]]]
+
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: hedgedoc__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+hedgedoc__etc_services__dependent_list:
+
+  - name: 'hedgedoc-server'
+    port: '{{ hedgedoc__port }}'
+    comment: 'Hedgedoc Server'
+
+                                                                   # ]]]
+# .. envvar:: hedgedoc__logrotate__dependent_config [[[
+#
+# Configuration for the :ref:`debops.logrotate` Ansible role.
+hedgedoc__logrotate__dependent_config:
+
+  - filename: 'hedgedoc-server'
+    log: '{{ hedgedoc__log_dir + "/*.log" }}'
+    options: |
+      weekly
+      missingok
+      rotate 4
+      compress
+      notifempty
+      create 644 {{ hedgedoc__user }} {{ hedgedoc__group }}
+    comment: 'Logrotate configuration for hedgedoc-server'
+
+                                                                   # ]]]
+# .. envvar:: hedgedoc__mariadb__dependent_users [[[
+#
+# User configuration for the :ref:`debops.mariadb` Ansible role.
+hedgedoc__mariadb__dependent_users:
+
+  - name: '{{ hedgedoc__database_user }}'
+    password: '{{ hedgedoc__database_password }}'
+    owner: '{{ hedgedoc__user }}'
+    group: '{{ hedgedoc__group }}'
+    home: '{{ hedgedoc__home }}'
+
+                                                                   # ]]]
+# .. envvar:: hedgedoc__mariadb__dependent_databases [[[
+#
+# Database configuration for the :ref:`debops.mariadb` Ansible role.
+hedgedoc__mariadb__dependent_databases:
+
+  - database: '{{ hedgedoc__database_name }}'
+
+                                                                   # ]]]
+# .. envvar:: hedgedoc__nginx__dependent_upstreams [[[
+#
+# Upstream configuration for the :ref:`debops.nginx` Ansible role.
+hedgedoc__nginx__dependent_upstreams:
+
+  - name: '{{ hedgedoc__system_name }}'
+    enabled: True
+    server: '127.0.0.1:{{ hedgedoc__port }}'
+
+                                                                   # ]]]
+# .. envvar:: hedgedoc__nginx__dependent_servers [[[
+#
+# Server configuration for the :ref:`debops.nginx` Ansible role.
+hedgedoc__nginx__dependent_servers:
+  - by_role: 'debops_hedgedoc'
+    enabled: True
+    favicon: False
+    name: '{{ hedgedoc__domain }}'
+    filename: 'debops.hedgedoc'
+
+    location:
+
+      '/': |
+        proxy_http_version 1.1;
+
+        # set header for proxy protocol
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+
+        # setup for image upload
+        client_max_body_size 8192m;
+
+        # adjust proxy buffer setting
+        proxy_buffers 8 32k;
+        proxy_buffer_size 32k;
+        proxy_busy_buffers_size 64k;
+
+        proxy_max_temp_file_size 8192m;
+
+        proxy_read_timeout 300;
+        proxy_connect_timeout 300;
+        proxy_pass http://{{ hedgedoc__system_name }};
+
+# .. envvar:: hedgedoc__apt_preferences__dependent_list [[[
+#
+# Take yarnpkg from buster-backport (hedgedoc 1.7 need yarnpkg 1.22)
+hedgedoc__apt_preferences__dependent_list:
+
+  - packages: [ 'yarnpkg' ]
+    backports: [ 'buster' ]
+    priority: '100'
+    reason: 'Unsupported yarn version, parity with next Debian release'
+    by_role: 'debops_hedgedoc'
+    filename: 'debops_hedgedoc.pref'
+
+  - packages: [ 'nodejs', 'nodejs-*', 'node-*', 'libssl1.0.0', 'libssl-dev', 'npm', 'libuv1', 'libuv1-dev' ]
+    backports: [ 'buster' ]
+    reason: 'Unsupported NodeJS version, parity with next Debian release'
+    by_role: 'debops_hedgedoc'
+    filename: 'debops_hedgedoc.pref'

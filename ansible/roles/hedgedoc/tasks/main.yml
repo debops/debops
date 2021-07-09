@@ -1,0 +1,168 @@
+---
+
+# .. Copyright (C) 2021 Émile <emile@globenet.org>
+# .. Copyright (C) 2021 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+- name: Install required Hedgedoc packages
+  package:
+    name: '{{ q("flattened", (hedgedoc__base_packages
+                              + hedgedoc__packages)) }}'
+    state: 'present'
+  register: hedgedoc__register_packages
+  until: hedgedoc__register_packages is succeeded
+
+- name: Create Hedgedoc system group
+  group:
+    name: '{{ hedgedoc__group }}'
+    system: yes
+    state: 'present'
+
+- name: Create Hedgedoc user
+  user:
+    name: '{{ hedgedoc__user }}'
+    group: '{{ hedgedoc__group }}'
+    home: '{{ hedgedoc__home }}'
+    shell: '{{ hedgedoc__shell }}'
+    comment: 'Hedgedoc'
+    system: yes
+    state: 'present'
+
+- name: Secure Hedgedoc home directory
+  file:
+    path: '{{ hedgedoc__home }}'
+    state: 'directory'
+    owner: '{{ hedgedoc__user }}'
+    group: '{{ hedgedoc__group }}'
+    mode: '0750'
+
+- name: Create Hedgedoc source directory
+  file:
+    path: '{{ hedgedoc__src_dir }}'
+    state: 'directory'
+    owner: '{{ hedgedoc__user }}'
+    group: '{{ hedgedoc__group }}'
+    mode: '0750'
+
+- name: Clone Hedgedoc source code
+  git:
+    repo: '{{ hedgedoc__source_address + "/" + hedgedoc__repository }}'
+    dest: '{{ hedgedoc__src_dir + "/" + hedgedoc__repository }}'
+    version: '{{ hedgedoc__version }}'
+    bare: yes
+    update: yes
+  become: True
+  become_user: '{{ hedgedoc__user }}'
+  register: hedgedoc__register_source
+  tags: [ 'role::hedgedoc:source' ]
+
+- name: Check if Hedgedoc is checked out
+  stat:
+    path: '{{ hedgedoc__home + "/" + hedgedoc__repository }}'
+  register: hedgedoc__register_directory
+  tags: [ 'role::hedgedoc:source' ]
+
+- name: Create Hedgedoc directory
+  file:
+    path: '{{ hedgedoc__home + "/" + hedgedoc__repository }}'
+    state: 'directory'
+    owner: '{{ hedgedoc__user }}'
+    group: '{{ hedgedoc__group }}'
+    mode: '0755'
+  when: (hedgedoc__register_source is defined and hedgedoc__register_source is changed) or
+        (hedgedoc__register_directory is defined and not hedgedoc__register_directory.stat.exists|bool)
+  tags: [ 'role::hedgedoc:source' ]
+
+- name: Prepare Hedgedoc worktree
+  template:
+    src: 'var/local/hedgedoc/hedgedoc-server/git.j2'
+    dest: '{{ hedgedoc__home + "/" + hedgedoc__repository }}/.git'
+    owner: '{{ hedgedoc__user }}'
+    group: '{{ hedgedoc__group }}'
+    mode: '0644'
+  when: (hedgedoc__register_source is defined and hedgedoc__register_source is changed) or
+        (hedgedoc__register_directory is defined and not hedgedoc__register_directory.stat.exists|bool)
+  tags: [ 'role::hedgedoc:source' ]
+
+- name: Checkout Hedgedoc
+  command: git checkout --force {{ hedgedoc__version }}
+  args:
+    chdir: '{{ hedgedoc__src_dir + "/" + hedgedoc__repository }}'
+    warn: False
+  environment:
+    GIT_WORK_TREE: '{{ hedgedoc__home + "/" + hedgedoc__repository }}'
+  become: True
+  become_user: '{{ hedgedoc__user }}'
+  register: hedgedoc__register_checkout
+  notify: [ 'Restart hedgedoc-server' ]
+  when: (hedgedoc__register_source is defined and hedgedoc__register_source is changed) or
+        (hedgedoc__register_directory is defined and not hedgedoc__register_directory.stat.exists|bool)
+  tags: [ 'role::hedgedoc:source' ]
+
+- name: Generate Hedgedoc .sequelizerc
+  template:
+    src: 'var/local/hedgedoc/hedgedoc-server/sequelizerc.j2'
+    dest: '{{ hedgedoc__home + "/" + hedgedoc__repository }}/.sequelizerc'
+    owner: '{{ hedgedoc__user }}'
+    group: '{{ hedgedoc__group }}'
+    mode: '0644'
+  notify: [ 'Restart hedgedoc-server' ]
+  tags: [ 'role::hedgedoc:config' ]
+
+- name: Create log directory
+  file:
+    path: '{{ hedgedoc__log_dir }}'
+    state: 'directory'
+    owner: '{{ hedgedoc__user }}'
+    group: 'adm'
+    mode: '0755'
+
+- name: Run Hedgedoc setup
+  become_user: '{{ hedgedoc__user }}'
+  command: ./bin/setup
+  args:
+    chdir: '{{ hedgedoc__home + "/" + hedgedoc__repository }}'
+  notify: [ 'Restart hedgedoc-server' ]
+  when: (hedgedoc__register_source is defined and hedgedoc__register_source is changed) or
+        (hedgedoc__register_directory is defined and not hedgedoc__register_directory.stat.exists|bool)
+
+- name: Run yarn build
+  become_user: '{{ hedgedoc__user }}'
+  command: yarn run build
+  args:
+    chdir: '{{ hedgedoc__home + "/" + hedgedoc__repository }}'
+  notify: [ 'Restart hedgedoc-server' ]
+  when: ( hedgedoc__version is version("1.7.0", "<") ) and
+        ( (hedgedoc__register_source is defined and hedgedoc__register_source is changed) or
+        (hedgedoc__register_directory is defined and not hedgedoc__register_directory.stat.exists|bool) )
+
+- name: Generate Hedgedoc configuration
+  template:
+    src: 'var/local/hedgedoc/hedgedoc-server/config.json.j2'
+    dest: '{{ hedgedoc__home + "/" + hedgedoc__repository }}/config.json'
+    owner: '{{ hedgedoc__user }}'
+    group: '{{ hedgedoc__group }}'
+    mode: '0644'
+  notify: [ 'Restart hedgedoc-server' ]
+  tags: [ 'role::hedgedoc:config' ]
+
+- name: Install hedgedoc-server systemd unit
+  template:
+    src: 'etc/systemd/system/hedgedoc-server.service.j2'
+    dest: '/etc/systemd/system/hedgedoc-server.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: hedgedoc__register_systemd
+
+- name: Ensure that hedgedoc-server is started
+  service:
+    name: 'hedgedoc-server'
+    state: 'started'
+    enabled: True
+  when: hedgedoc__register_systemd is changed
+
+- name: Wait for Hedgedoc application port to be reachable
+  wait_for:
+    port: '{{ hedgedoc__port }}'
+    timeout: 30
