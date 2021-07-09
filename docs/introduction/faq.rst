@@ -91,7 +91,7 @@ and services, using the `password lookup plugin`__. To ensure idempotency,
 plaintext passwords are stored on the Ansible Controller host in the
 :file:`secret/` directory alongside the Ansible inventory.
 
-.. __: https://docs.ansible.com/ansible/devel/plugins/lookup/password.html
+.. __: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/password_lookup.html
 
 The :command:`ansible-vault` command does not support automatic generation of
 random passwords - you would need to `create each one by hand`__, which gets

@@ -10,6 +10,8 @@ Getting started
    .. contents::
       :local:
 
+.. include:: ../../../includes/global.rst
+
 
 Ansible Controller requirements
 -------------------------------
@@ -137,9 +139,7 @@ List of other useful resources related to the ``debops.ldap`` Ansible role:
 
   .. __: https://wiki.debian.org/LDAP
 
-- `Ansible ldap_entry module`__, used to manage LDAP entries.
-
-  .. __: https://docs.ansible.com/ansible/latest/modules/ldap_entry_module.html
+- `Ansible community.general.ldap_entry module`_, used to manage LDAP entries.
 
 - The role does not rely on the Ansible ``ldap_attr`` module, instead it uses
   the ``ldap_attrs`` module included in the ``debops.ansible_plugins`` role to

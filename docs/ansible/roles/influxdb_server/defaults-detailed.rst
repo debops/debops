@@ -50,7 +50,7 @@ specific parameters:
       Each element of the options list is a YAML dictionary with specific parameters.
 
       For more information, refer to the InfluxDB documentation at
-      https://docs.influxdata.com/influxdb/latest/administration/config/
+      https://docs.influxdata.com/influxdb/latest/reference/config-options/
 
 Examples
 ~~~~~~~~
