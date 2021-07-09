@@ -35,7 +35,7 @@ resources__src: '{{ inventory_dir | realpath + "/../resources/" }}'
                                                                    # ]]]
 # .. envvar:: resources__time_format [[[
 #
-# Time format to be used for the `Ansible file module`_.
+# Time format to be used for the `Ansible ansible.builtin.file module`_.
 # This is used for example when the ``access_time`` is specified.
 # It is set here to `ISO 8601`_ because the Ansible
 # default format is hardly human readable
@@ -139,9 +139,9 @@ resources__host_templates: [ '{{ resources__src + "templates/by-host/" + invento
 # -----------------------
 
 # These lists allow you to manage file and directory paths on remote hosts
-# using `Ansible file module`_. By default role treats specified paths as
-# directory names which should be present on the remote host. You can use all
-# parameters supported by the `Ansible file module`_.
+# using `Ansible ansible.builtin.file module`_. By default role treats specified
+# paths as directory names which should be present on the remote host. You can
+# use all parameters supported by the `Ansible ansible.builtin.file module`_.
 #
 # See :ref:`resources__ref_paths` for more details.
 
@@ -167,8 +167,8 @@ resources__host_paths: []
 # ---------------------------
 
 # These lists allow you to manage :command:`git` repositories on remote hosts
-# using the `Ansible git module`_. See :ref:`resources__ref_repositories` for
-# more details.
+# using the `Ansible ansible.builtin.git module`_. See
+# :ref:`resources__ref_repositories` for more details.
 
 # .. envvar:: resources__repositories [[[
 #
@@ -194,8 +194,8 @@ resources__host_repositories: []
 # ----------------------------------
 
 # These lists allow you to specify remote resources to download to the hosts
-# using the `Ansible get_url module`. You can download files over HTTP, HTTPS,
-# FTP and use all options supported by this module.
+# using the `Ansible ansible.builtin.get_url module`. You can download files
+# over HTTP, HTTPS, FTP and use all options supported by this module.
 #
 # See :ref:`resources__ref_urls` for more details.
 
@@ -221,8 +221,8 @@ resources__host_urls: []
 # --------------------------
 
 # These lists allow you to unpack archives stored on Ansible Controller to
-# remote hosts using the `Ansible unarchive module`_. You can use all of the
-# parameters supported by this module.
+# remote hosts using the `Ansible ansible.builtin.unarchive module`_. You can
+# use all of the parameters supported by this module.
 #
 # See :ref:`resources__ref_archives` for more details.
 
@@ -249,8 +249,8 @@ resources__host_archives: []
 
 # These lists allow you to manage file contents on remote hosts, either by
 # copying files from the Ansible Controller, or providing the contents directly in
-# Ansible inventory. You can use all parameters supported by the `Ansible copy
-# module`_.
+# Ansible inventory. You can use all parameters supported by the
+# `Ansible ansible.builtin.copy module`_.
 #
 # See :ref:`resources__ref_files` for more details.
 
@@ -277,7 +277,8 @@ resources__host_files: []
 
 # These lists allow you to manipulate file privileges using the Linux
 # :manpage:`capabilities(7)` system.
-# You can use all parameters supported by the `Ansible capabilities module`_.
+# You can use all parameters supported by the
+# `Ansible community.general.capabilities module`_.
 #
 # See :ref:`resources__ref_capabilities` for more details.
 
@@ -311,7 +312,7 @@ resources__combined_file_capabilities: '{{ resources__file_capabilities
 # -------------------------------
 
 # These lists allow you to manage file and directory paths on remote hosts
-# using the `Ansible file module`_.
+# using the `Ansible ansible.builtin.file module`_.
 # The lists can be used exactly the same as
 # :regexp:`resources__(?:group_|host_)?paths` from the `Manage custom paths`_ section.
 # The only difference is that the custom delayed paths are handled after all

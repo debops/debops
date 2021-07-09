@@ -94,9 +94,9 @@ resources__paths
 
 These lists can be used to create directories, symlinks, set permissions and
 ownership, etc. Each element of the list is a YAML dictionary with a set of
-parameters. See the documentation of the `Ansible file module`_ for details
-about what parameters can be used and their format. Here's are additional
-details for certain parameters:
+parameters. See the documentation of the `Ansible ansible.builtin.file module`_
+for details about what parameters can be used and their format. Here's are
+additional details for certain parameters:
 
 ``item.path`` or ``item.dest`` or ``item.name``
   Specify absolute path of the target directory/file on the remote host. If not
@@ -110,8 +110,8 @@ details for certain parameters:
   Optional. Please take a look :ref:`resources__ref_acl` section.
 
 ``item.access_time`` and ``item.modification_time``
-  Optional. As documented by the `Ansible file module`_ except that DebOps
-  defines a more human readable and standard compliant format.
+  Optional. As documented by the `Ansible ansible.builtin.file module`_ except
+  that DebOps defines a more human readable and standard compliant format.
   Example: ``2023-05-23T23:42:42``
 
 ``item.access_time_format`` and ``item.modification_time_format``
@@ -261,8 +261,8 @@ resources__archives
 
 These lists can be used to unpack archives located on Ansible Controller to
 remote hosts. Each element of the list is a YAML dictionary with parameters
-recognized by the `Ansible unarchive module`_. For details about their use,
-see the module documentation.
+recognized by the `Ansible ansible.builtin.unarchive module`_. For details about
+their use, see the module documentation.
 
 The :envvar:`resources__src` variable can be used to point the role to a custom,
 central location, by default located in the DebOps project directory.
@@ -300,8 +300,8 @@ resources__files
 
 These lists can be used to manage content or copy files from the Ansible
 Controller to remote hosts. Each element of a list is a YAML dictionary with
-parameters used by the `Ansible copy module`_. See its documentation for
-parameter advanced usage and syntax.
+parameters used by the `Ansible ansible.builtin.copy module`_. See its
+documentation for parameter advanced usage and syntax.
 
 The :envvar:`resources__src` variable can be used to point the role to a custom,
 central location, by default located in the DebOps project directory.
@@ -398,9 +398,9 @@ Parameters related to ACL
 ``item.acl``
   Optional. Configure filesystem ACL entries of the current file or directory.
   This parameter is a list of YAML dictionaries. See the documentation of the
-  `Ansible acl module`_ for details about each parameters (what they can be
-  used to and their format) as well as the :man:`acl(5)`, :man:`setfacl(1)`
-  and :man:`getfacl` manual pages. Some useful parameters:
+  `Ansible ansible.posix.acl module`_ for details about each parameters (what
+  they can be used to and their format) as well as the :man:`acl(5)`,
+  :man:`setfacl(1)` and :man:`getfacl` manual pages. Some useful parameters:
 
   ``default``
     Optional, boolean. If ``True``, set a given ACL entry as the default for
@@ -523,8 +523,9 @@ resources__capabilities
 
 These lists allow you to manipulate file privileges using the Linux
 :manpage:`capabilities(7)` system.
-You can use all parameters supported by the `Ansible capabilities module`_.
-The role recognizes these additional alias for parameters:
+You can use all parameters supported by the
+`Ansible community.general.capabilities module`_. The role recognizes these
+additional alias for parameters:
 
 ``item.path`` or ``item.name``
   Required. Specifies the path to the file to be managed

@@ -111,7 +111,8 @@ Each list item is a dict with the following keys:
   Optional. If not specified, or if specified and ``present``, the file(s) will
   be created. If specified and ``absent``, file will be removed.
 
-Additionally, all parameters of the `Ansible copy module`_ are supported.
+Additionally, all parameters of the `Ansible ansible.builtin.copy module`_ are
+supported.
 
 The reason why these lists exist (instead of using :ref:`debops.resources`) is that
 ownCloud needs to be aware of any changes.

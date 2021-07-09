@@ -27,8 +27,8 @@ apt__conf
 This list, along with ``apt__group_conf`` and ``apt__host_conf`` can be used
 to manage APT configuration files through Ansible inventory. Each entry is a
 YAML dictionary with keys and values the same as the ones used by the
-`Ansible copy module`_. See its documentation for parameter advanced usage
-and syntax.
+`Ansible ansible.builtin.copy module`_. See its documentation for parameter
+advanced usage and syntax.
 
 Here are some more important parameters:
 
@@ -318,10 +318,10 @@ in one entry, they will be filtered according to the current OS. Example:
      - Debian: 'http://ftp.debian.org/debian'
 
 The third version of an APT sources entry is similar to the `Ansible
-apt_repository module`_, and should be defined as an YAML dictionary with
-``repo`` as the key and complete APT source specification as the value. These
-entries are not filtered by the role, and they are not checked for duplicates.
-Example:
+ansible.builtin.apt_repository module`_, and should be defined as a YAML
+dictionary with ``repo`` as the key and complete APT source specification as the
+value. These entries are not filtered by the role, and they are not checked for
+duplicates. Example:
 
 .. code-block:: yaml
 
