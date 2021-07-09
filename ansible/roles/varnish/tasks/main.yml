@@ -1,0 +1,47 @@
+---
+
+- name: DebOps pre_tasks hook
+  include: "{{ lookup('task_src', 'varnish/pre_main.yml') }}"
+
+- name: Install required APT packages
+  package:
+    name: '{{ q("flattened", varnish__base_packages
+                             + varnish__packages) }}'
+    state: 'present'
+  register: varnish__register_packages
+  until: varnish__register_packages is succeeded
+  notify: [ 'Restart varnish' ]
+
+- name: Generate default varnish configuration
+  template:
+    src: '{{ lookup("template_src", "varnish/" + varnish__config_template_name) }}'
+    dest: '/etc/varnish/default.vcl'
+    mode: '0644'
+  notify: [ 'Restart varnish' ]
+
+- name: Generate varnish.service file
+  template:
+    src: '{{ lookup("template_src", "varnish/varnish.service") }}'
+    dest: '/lib/systemd/system/varnish.service'
+    mode: '0644'
+  notify: [ 'Reload daemon' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save Varnish local facts
+  template:
+    src: 'etc/ansible/facts.d/varnish.fact.j2'
+    dest: '/etc/ansible/facts.d/varnish.fact'
+    mode: '0755'
+  register: varnish__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: varnish__register_facts is changed
+
+- name: DebOps post_tasks hook
+  include: "{{ lookup('task_src', 'varnish/post_main.yml') }}"

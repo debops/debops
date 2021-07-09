@@ -1,0 +1,17 @@
+[Unit]
+Description=Varnish HTTP accelerator
+Documentation=https://www.varnish-cache.org/docs/4.1/ man:varnishd
+
+[Service]
+Type=simple
+LimitNOFILE=131072
+LimitMEMLOCK=82000
+ExecStart=/usr/sbin/varnishd -j {{ varnish__jailing_mechanism }} -F -a :{{ varnish__listen_port }} -T {{ varnish__management_listen_host }}:{{ varnish__management_port }} -f {{ varnish__config_path }}/default.vcl -S {{ varnish__config_path }}/secret -s {{ varnish__storage }}
+ExecReload=/usr/share/varnish/varnishreload
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+
+[Install]
+WantedBy=multi-user.target
