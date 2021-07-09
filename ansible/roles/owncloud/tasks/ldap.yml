@@ -14,7 +14,9 @@
   register: owncloud__register_ldap_default_config_exits
   become: True
   become_user: '{{ owncloud__app_user }}'
-  ignore_errors: True
+  #ignore_errors: True
+  failed_when: (owncloud__register_ldap_default_config_exits.rc != 0 and 
+                'Invalid configID' not in owncloud__register_ldap_default_config_exits.stdout)
 
 - name: Create empty LDAP configuration
   environment:
