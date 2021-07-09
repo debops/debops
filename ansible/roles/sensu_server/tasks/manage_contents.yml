@@ -1,0 +1,158 @@
+---
+
+- name: Drop assets if requested
+  sensu_asset:
+    auth:
+      url: '{{ sensu_server__api_url }}'
+      password: '{{ sensu_server__admin_account_password }}'
+    name: '{{ item.name }}'
+    state: 'absent'
+  with_items: '{{ sensu_server__assets|d([]) }}'
+  when: (item.name|d(False) and (item.state is defined and item.state == 'absent'))
+  tags: [ 'role::sensu_server:contents:assets' ]
+
+- name: Create assets
+  sensu_asset:
+    auth:
+      url: '{{ sensu_server__api_url }}'
+      password: '{{ sensu_server__admin_account_password }}'
+    name: '{{ item.name }}'
+    state: 'present'
+    builds: '{{ item.builds | d([]) }}'
+    namespace: '{{ item.namespace | d("default") }}'
+    labels: '{{ item.labels | d({}) }}'
+    annotations: '{{ item.annotations | d({}) }}'
+  with_items: '{{ sensu_server__assets|d([]) }}'
+  when: (item.name|d(False) and (item.state is undefined or item.state != 'absent'))
+  tags: [ 'role::sensu_server:contents:assets' ]
+
+- name: Drop filters if requested
+  sensu_filter:
+    auth:
+      url: '{{ sensu_server__api_url }}'
+      password: '{{ sensu_server__admin_account_password }}'
+    name: '{{ item.name }}'
+    state: 'absent'
+  with_items: '{{ sensu_server__filters|d([]) }}'
+  when: (item.name|d(False) and (item.state is defined and item.state == 'absent'))
+  tags: [ 'role::sensu_server:contents:filters' ]
+
+- name: Create filters
+  sensu_filter:
+    auth:
+      url: '{{ sensu_server__api_url }}'
+      password: '{{ sensu_server__admin_account_password }}'
+    name: '{{ item.name }}'
+    state: 'present'
+    action: '{{ item.action }}'
+    expressions: '{{ item.expressions | d([]) }}'
+    runtime_assets: '{{ item.runtime_assets | d([]) }}'
+    namespace: '{{ item.namespace | d("default") }}'
+    labels: '{{ item.labels | d({}) }}'
+    annotations: '{{ item.annotations | d({}) }}'
+  with_items: '{{ sensu_server__filters|d([]) }}'
+  when: (item.name|d(False) and (item.state is undefined or item.state != 'absent'))
+  tags: [ 'role::sensu_server:contents:filters' ]
+
+- name: Drop pipe handlers if requested
+  sensu_pipe_handler:
+    auth:
+      url: '{{ sensu_server__api_url }}'
+      password: '{{ sensu_server__admin_account_password }}'
+    name: '{{ item.name }}'
+    state: 'absent'
+  with_items: '{{ sensu_server__pipe_handlers|d([]) }}'
+  when: (item.name|d(False) and (item.state is defined and item.state == 'absent'))
+  no_log: True
+  tags: [ 'role::sensu_server:contents:handlers' ]
+
+- name: Create pipe handlers
+  sensu_pipe_handler:
+    auth:
+      url: '{{ sensu_server__api_url }}'
+      password: '{{ sensu_server__admin_account_password }}'
+    name: '{{ item.name }}'
+    state: 'present'
+    command: '{{ item.command }}'
+    filters: '{{ item.filters  | d([]) }}'
+    mutator: '{{ item.mutator | d(omit) }}'
+    timeout: '{{ item.timeout | d(0) }}'
+    env_vars: '{{ item.env_vars | d({}) }}'
+    runtime_assets: '{{ item.runtime_assets | d([]) }}'
+    namespace: '{{ item.namespace | d("default") }}'
+    labels: '{{ item.labels | d({}) }}'
+    annotations: '{{ item.annotations | d({}) }}'
+  with_items: '{{ sensu_server__pipe_handlers|d([]) }}'
+  when: (item.name|d(False) and (item.state is undefined or item.state != 'absent'))
+  no_log: True
+  tags: [ 'role::sensu_server:contents:handlers' ]
+
+- name: Drop handler sets if requested
+  sensu_handler_set:
+    auth:
+      url: '{{ sensu_server__api_url }}'
+      password: '{{ sensu_server__admin_account_password }}'
+    name: '{{ item.name }}'
+    state: 'absent'
+  with_items: '{{ sensu_server__handler_sets|d([]) }}'
+  when: (item.name|d(False) and (item.state is defined and item.state == 'absent'))
+  tags: [ 'role::sensu_server:contents:handlers' ]
+
+- name: Create handler sets
+  sensu_handler_set:
+    auth:
+      url: '{{ sensu_server__api_url }}'
+      password: '{{ sensu_server__admin_account_password }}'
+    name: '{{ item.name }}'
+    state: 'present'
+    handlers: '{{ item.handlers | d([]) }}'
+    namespace: '{{ item.namespace | d("default") }}'
+    labels: '{{ item.labels | d({}) }}'
+    annotations: '{{ item.annotations | d({}) }}'
+  with_items: '{{ sensu_server__handler_sets|d([]) }}'
+  when: (item.name|d(False) and (item.state is undefined or item.state != 'absent'))
+  tags: [ 'role::sensu_server:contents:handlers' ]
+
+- name: Drop checks if requested
+  sensu_check:
+    auth:
+      url: '{{ sensu_server__api_url }}'
+      password: '{{ sensu_server__admin_account_password }}'
+    name: '{{ item.name }}'
+    state: 'absent'
+  with_items: '{{ sensu_server__checks|d([]) }}'
+  when: (item.name|d(False) and (item.state is defined and item.state == 'absent'))
+  tags: [ 'role::sensu_server:contents:checks' ]
+
+- name: Create checks
+  sensu_check:
+    auth:
+      url: '{{ sensu_server__api_url }}'
+      password: '{{ sensu_server__admin_account_password }}'
+    name: '{{ item.name }}'
+    state: 'present'
+    command: '{{ item.command }}'
+    subscriptions: '{{ item.subscriptions | d([]) }}'
+    handlers: '{{ item.handlers | d([]) }}'
+    interval: '{{ item.interval | d(omit) }}'
+    cron: '{{ item.cron | d(omit) }}'
+    publish: '{{ item.publish | d(True) }}'
+    timeout: '{{ item.timeout | d(omit) }}'
+    ttl: '{{ item.ttl | d(omit) }}'
+    stdin: '{{ item.stdin | d(False) }}'
+    low_flap_threshold: '{{ item.low_flap_threshold | d(omit) }}'
+    high_flap_threshold: '{{ item.high_flap_threshold | d(omit) }}'
+    runtime_assets: '{{ item.runtime_assets | d([]) }}'
+    check_hooks: '{{ item.check_hooks | d({}) }}'
+    proxy_entity_name: '{{ item.proxy_entity_name | d(omit) }}'
+    proxy_requests: '{{ item.proxy_requests | d(omit) }}'
+    output_metric_format: '{{ item.output_metric_format | d(omit) }}'
+    output_metric_handlers: '{{ item.output_metric_handlers | d([]) }}'
+    round_robin: '{{ item.round_robin | d(False) }}'
+    env_vars: '{{ item.env_vars | d({}) }}'
+    namespace: '{{ item.namespace | d("default") }}'
+    labels: '{{ item.labels | d({}) }}'
+    annotations: '{{ item.annotations | d({}) }}'
+  with_items: '{{ sensu_server__checks|d([]) }}'
+  when: (item.name|d(False) and (item.state is undefined or item.state != 'absent'))
+  tags: [ 'role::sensu_server:contents:checks' ]

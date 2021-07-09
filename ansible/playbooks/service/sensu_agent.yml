@@ -1,0 +1,31 @@
+---
+
+- name: Manage Sensu agent
+  hosts: [ 'debops_service_sensu_agent' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::sensu_agent' ]
+      keyring__dependent_apt_keys:
+        - '{{ sensu_agent__keyring__dependent_apt_keys }}'
+
+    - role: python
+      tags: [ 'role::python', 'skip::python', 'role::sensu_agent', 'skip::sensu_agent' ]
+      python__dependent_packages3:
+        - '{{ sensu_agent__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ sensu_agent__python__dependent_packages2 }}'
+
+    - role: sensu_agent
+      tags: [ 'role::sensu_agent', 'skip::sensu_agent' ]
+
+    - role: resources
+      tags: [ 'role::resources', 'skip::resources', 'role::sensu_agent', 'skip::sensu_agent' ]
+      resources__files:
+        - '{{ sensu_agent__resources__files }}'

@@ -1,0 +1,76 @@
+---
+# {{ ansible_managed }}
+
+# Sensu agent configuration
+
+##
+# agent overview
+##
+name: "{{ sensu_agent__name }}"
+namespace: "{{ sensu_agent__namespace }}"
+subscriptions: {{ sensu_agent__subscriptions | to_yaml }}
+{% set sensu_agent__tpl_labels = {} %}
+{% set _ = sensu_agent__tpl_labels.__setitem__("labels", sensu_agent__labels) %}
+{% set sensu_agent__tpl_annotations = {} %}
+{% set _ = sensu_agent__tpl_annotations.__setitem__("annotations", sensu_agent__annotations) %}
+{{ sensu_agent__tpl_labels | to_nice_yaml }}
+{{ sensu_agent__tpl_annotations | to_nice_yaml }}
+
+##
+# agent configuration
+##
+backend-url: {{ sensu_agent__backend_url | to_yaml }}
+cache-dir: "{{ sensu_agent__cache_directory }}"
+config-file: "/etc/sensu/agent.yml"
+disable-assets: {{ sensu_agent__disable_assets }}
+log-level: "{{ sensu_agent__log_level }}"
+
+##
+# api configuration
+##
+api-host: "{{ sensu_agent__api_host }}"
+api-port: {{ sensu_agent__api_port }}
+disable-api: {{ sensu_agent__disable_api }}
+events-burst-limit: {{ sensu_agent__events_burst_limit }}
+events-rate-limit: {{ sensu_agent__events_rate_limit }}
+
+##
+# authentication configuration
+##
+user: "{{ sensu_agent__user }}"
+password: "{{ sensu_agent__password }}"
+
+##
+# monitoring configuration
+##
+deregister: {{ sensu_agent__deregister }}
+deregistration-handler: "{{ sensu_agent__deregistration_handler }}"
+keepalive-timeout: {{ sensu_agent__keepalive_timeout }}
+keepalive-interval: {{ sensu_agent__keepalive_interval }}
+
+##
+# security configuration
+##
+insecure-skip-tls-verify: {{ sensu_agent__insecure_skip_tls_verify }}
+redact: {{ sensu_agent__redact | to_yaml }}
+{% if sensu_agent__pki %}
+trusted-ca-file: "{{ sensu_agent__pki_path + "/" + sensu_agent__pki_realm + "/" + sensu_agent__pki_ca }}"
+{% else %}
+#trusted-ca-file: "/path/to/trusted-certificate-authorities.pem"
+{% endif %}
+
+##
+# socket configuration
+##
+disable-sockets: {{ sensu_agent__disable_sockets }}
+socket-host: "{{ sensu_agent__socket_host }}"
+socket-port: {{ sensu_agent__socket_port }}
+
+##
+# statsd configuration
+##
+statsd-disable: {{ sensu_agent__statsd_disable }}
+statsd-event-handlers: {{ sensu_agent__statsd_event_handlers | to_yaml }}
+statsd-flush-interval: {{ sensu_agent__statsd_flush_interval }}
+statsd-metrics-host: "{{ sensu_agent__statsd_metrics_host }}"
+statsd-metrics-port: {{ sensu_agent__statsd_metrics_port }}

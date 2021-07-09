@@ -1,0 +1,76 @@
+---
+# {{ ansible_managed }}
+
+# Sensu backend configuration
+
+##
+# backend configuration
+##
+state-dir: "{{ sensu_server__state_directory }}"
+cache-dir: "{{ sensu_server__cache_directory }}"
+config-file: "/etc/sensu/backend.yml"
+debug: {{ sensu_server__debug }}
+log-level: "{{ sensu_server__log_level }}" # available log levels: panic, fatal, error, warn, info, debug
+{% if sensu_server__deregistration_handler %}
+deregistration-handler: "{{ sensu_server__deregistration_handler }}"
+{% else %}
+#deregistration-handler: "example_handler"
+{% endif %}
+
+##
+# agent configuration
+##
+agent-host: "{{ sensu_server__agent_host }}"
+agent-port: {{ sensu_server__agent_port }}
+{% if sensu_server__agent_auth|bool and sensu_server__pki|bool %}
+agent-auth-cert-file: "{{ sensu_server__pki_path + "/" + sensu_server__pki_realm + "/" + sensu_server__pki_crt }}"
+agent-auth-key-file: "{{ sensu_server__pki_path + "/" + sensu_server__pki_realm + "/" + sensu_server__pki_key }}"
+agent-auth-trusted-ca-file: "{{ sensu_server__pki_path + "/" + sensu_server__pki_realm + "/" + sensu_server__pki_ca }}"
+{% endif %}
+
+##
+# api configuration
+##
+api-listen-address: "{{ sensu_server__api_listen_address }}"
+api-url: "{{ sensu_server__api_url }}"
+
+##
+# dashboard configuration
+##
+#dashboard-cert-file: "/path/to/ssl/cert.pem"
+#dashboard-key-file: "/path/to/ssl/key.pem"
+dashboard-host: "{{ sensu_server__dashboard_host }}"
+dashboard-port: {{ sensu_server__dashboard_port }}
+
+##
+# ssl configuration
+##
+{% if sensu_server__pki|bool %}
+cert-file: "{{ sensu_server__pki_path + "/" + sensu_server__pki_realm + "/" + sensu_server__pki_crt }}"
+key-file: "{{ sensu_server__pki_path + "/" + sensu_server__pki_realm + "/" + sensu_server__pki_key }}"
+trusted-ca-file: "{{ sensu_server__pki_path + "/" + sensu_server__pki_realm + "/" + sensu_server__pki_ca }}"
+{% endif %}
+insecure-skip-tls-verify: {{ sensu_server__insecure_skip_tls_verify }}
+
+##
+# store configuration
+##
+etcd-client-cert-auth: {{ sensu_server__etcd_client_cert_auth }}
+etcd-advertise-client-urls: "{{ sensu_server__etcd_advertise_client_urls }}"
+etcd-initial-advertise-peer-urls: "{{ sensu_server__etcd_advertise_peer_urls }}"
+etcd-listen-client-urls: "{{ sensu_server__etcd_listen_client_urls }}"
+etcd-listen-peer-urls: "{{ sensu_server__etcd_listen_peer_urls }}"
+etcd-name: "{{ sensu_server__etcd_name }}"
+etcd-initial-cluster: "{{ sensu_server__etcd_initial_cluster }}"
+etcd-initial-cluster-state: "{{ sensu_server__etcd_initial_cluster_state }}"
+etcd-initial-cluster-token: "{{ sensu_server__etcd_initial_cluster_token }}"
+no-embed-etcd: {{ sensu_server__no_embed_etcd }}
+{% if sensu_server__pki|bool %}
+etcd-cert-file: "{{ sensu_server__pki_path + "/" + sensu_server__pki_realm + "/" + sensu_server__pki_crt }}"
+etcd-key-file: "{{ sensu_server__pki_path + "/" + sensu_server__pki_realm + "/" + sensu_server__pki_key }}"
+etcd-trusted-ca-file: "{{ sensu_server__pki_path + "/" + sensu_server__pki_realm + "/" + sensu_server__pki_ca }}"
+etcd-peer-cert-file: "{{ sensu_server__pki_path + "/" + sensu_server__pki_realm + "/" + sensu_server__pki_crt }}"
+etcd-peer-key-file: "{{ sensu_server__pki_path + "/" + sensu_server__pki_realm + "/" + sensu_server__pki_key }}"
+etcd-peer-trusted-ca-file: "{{ sensu_server__pki_path + "/" + sensu_server__pki_realm + "/" + sensu_server__pki_ca }}"
+etcd-cipher-suits: {{ sensu_server__etcd_cipher_suits | to_yaml }}
+{% endif %}

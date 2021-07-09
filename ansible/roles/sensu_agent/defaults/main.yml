@@ -1,0 +1,379 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. _sensu_agent__ref_defaults:
+
+# debops.sensu_agent default variables
+# =====================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# APT packages [[[
+# -------------------------------
+
+# .. envvar:: sensu_agent__base_packages [[[
+#
+# List of the default APT packages to install for Sensu Agent support.
+sensu_agent__base_packages: [ 'sensu-go-agent' ]
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__packages [[[
+#
+# List of additional APT packages to install with Sensu Agent.
+sensu_agent__packages: []
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__pip_packages [[[
+#
+# List of additional PIP packages to install with Sensu Agent.
+sensu_agent__pip_packages: []
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Basic configuration [[[
+# -----------------------
+
+# .. envvar:: sensu_agent__name [[[
+#
+# Entity name assigned to the agent entity.
+sensu_agent__name: '{{ ansible_hostname }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__namespace [[[
+#
+# Agent namespace .
+# NOTE: Agents are represented in the backend as a class of entity. Entities
+# can only belong to a single namespace.
+sensu_agent__namespace: 'default'
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__subscriptions [[[
+#
+# An array of agent subscriptions which determine which monitoring checks
+# are executed by the agent.
+sensu_agent__subscriptions: '{{ [ ansible_hostname, "common"] | union(group_names) | list }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__labels [[[
+#
+# Custom attributes to include with event data, which can be accessed using
+# filters and tokens.
+#
+# In contrast to annotations, you can use labels to create meaningful
+# collections that can be selected with API filtering and sensuctl filtering.
+# Overusing labels can impact Sensu’s internal performance, so we recommend
+# moving complex, non-identifying metadata to annotations.
+#
+# Map of key-value pairs. Keys can contain only letters, numbers, and
+# underscores, but must start with a letter. Values can be any valid UTF-8
+# string.
+sensu_agent__labels: {}
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__annotations [[[
+#
+# Non-identifying metadata to include with event data, which can be accessed
+# using filters and tokens. You can use annotations to add data that’s
+# meaningful to people or external tools interacting with Sensu.
+#
+# In contrast to labels, annotations cannot be used in API filtering or sensuctl
+# filtering and do not impact Sensu’s internal performance.
+#
+# Map of key-value pairs. Keys and values can be any valid UTF-8 string.
+sensu_agent__annotations: {}
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Agent configuration [[[
+# ------------------------
+
+# .. envvar:: sensu_agent__backend_inventory_group [[[
+#
+# Name of the Ansible inventory group which contains Sensu backend server host in
+# a "homogeneous" configuration (each node having the same functions as every
+# other node).
+sensu_agent__backend_inventory_group: 'debops_service_sensu_server'
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__backend-url [[[
+#
+# ws or wss URL of the Sensu backend server.
+sensu_agent__backend_url: '{{ lookup("template",
+                              "lookup/sensu_agent__backend_url.j2") }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__cache_directory [[[
+#
+# Path to store cached data
+sensu_agent__cache_directory: '/var/cache/sensu/sensu-agent'
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__disable_assets [[[
+#
+# When set to true, disables assets for the agent. In the event that an agent
+# attempts to execute a check that requires an asset, the agent will respond
+# with a status of 3, and a message indicating that the agent could not
+# execute the check because assets are disabled.
+sensu_agent__disable_assets: false
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__log_level [[[
+#
+# Logging level
+# Available log levels: panic, fatal, error, warn, info, debug
+sensu_agent__log_level: 'warn'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# API configuration [[[
+# ------------------------
+
+# .. envvar:: sensu_agent__api_host [[[
+#
+# Bind address for the Sensu agent HTTP API
+sensu_agent__api_host: '127.0.0.1'
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__api_port [[[
+#
+# URL used to connect to the API
+sensu_agent__api_port: '3031'
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__disable_api [[[
+#
+# Disable the agent HTTP API
+sensu_agent__disable_api: false
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__events_burst_limit [[[
+#
+# The maximum amount of burst allowed in a rate interval for the agent events
+# API.
+sensu_agent__events_burst_limit: 10
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__events_rate_limit [[[
+#
+# The maximum number of events per second that can be transmitted to the
+# backend using the agent events API.
+sensu_agent__events_rate_limit: 10.0
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Authentication configuration [[[
+# ------------------------
+
+# .. envvar:: sensu_agent__user [[[
+#
+# Sensu RBAC username used by the agent. Agents require get, list, create,
+# update, and delete permissions for events across all namespaces.
+sensu_agent__user: 'agent'
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__password [[[
+#
+# Sensu RBAC password used by the agent
+sensu_agent__password: '{{ lookup("password",
+                           secret + "/sensu_server/accounts/agent/password") }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Monitoring configuration [[[
+# ------------------------
+
+# .. envvar:: sensu_agent__deregister [[[
+#
+# Indicates whether a deregistration event should be created upon Sensu agent
+# process stop
+sensu_agent__deregister: false
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__deregistration_handler [[[
+#
+# The name of a deregistration handler that processes agent deregistration
+# events. This flag overrides any handlers applied by the deregistration-handler
+# backend configuration flag.
+sensu_agent__deregistration_handler: ''
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__keepalive_interval [[[
+#
+# Number of seconds between keepalive events
+sensu_agent__keepalive_interval: 20
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__keepalive_timeout [[[
+#
+# Number of seconds after a missing keepalive event until the agent is
+# considered unresponsive by the Sensu backend.
+sensu_agent__keepalive_timeout: 120
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Security configuration [[[
+# ---------------------
+
+# .. envvar:: sensu_agent__insecure_skip_tls_verify [[[
+#
+# Skip SSL verification.
+# WARNING: This configuration flag is intended for use in development
+# systems only. Do not use this flag in production.
+sensu_agent__insecure_skip_tls_verify: false
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__redact [[[
+#
+# List of fields to redact when displaying the entity
+# NOTE: Redacted secrets are sent via the websocket connection and are
+# stored in etcd. They are not logged nor displayed via the Sensu API.
+sensu_agent__redact:
+  - password
+  - passwd
+  - pass
+  - api_key
+  - api_token
+  - access_key
+  - secret_key
+  - private_key
+  - secret
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Socket configuration [[[
+# ---------------------
+
+# .. envvar:: sensu_agent__disable_sockets [[[
+#
+# Disable the agent TCP and UDP event sockets
+sensu_agent__disable_sockets: false
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__socket_host [[[
+#
+# Address to bind the Sensu agent socket to
+sensu_agent__socket_host: '127.0.0.1'
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__socket_port [[[
+#
+# Port the Sensu agent socket listens on
+sensu_agent__socket_port: '3030'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Statsd configuration [[[
+# ---------------------
+
+# .. envvar:: sensu_agent__statsd_disable [[[
+#
+# Disables the StatsD listener and metrics server
+sensu_agent__statsd_disable: false
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__statsd_event_handlers [[[
+#
+# List of event handlers for StatsD metrics
+sensu_agent__statsd_event_handlers: []
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__statsd_flush_interval [[[
+#
+# Number of seconds between StatsD flush
+sensu_agent__statsd_flush_interval: 10
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__statsd_metrics_host [[[
+#
+# Address used for the StatsD metrics server
+sensu_agent__statsd_metrics_host: '127.0.0.1'
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__statsd_metrics_port [[[
+#
+# Port used for the StatsD metrics server
+sensu_agent__statsd_metrics_port: '8125'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# SSL configuration [[[
+# ---------------------
+
+# .. envvar:: sensu_agent__append_groups [[[
+#
+# List of additional system groups to append to the Sensu system user.
+# ``ssl-cert`` group is required for access to certificate private keys.
+sensu_agent__append_groups: [ 'ssl-cert' ]
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__pki [[[
+#
+# Enable or disable support for SSL in Sensu (using :ref:`debops.pki`).
+sensu_agent__pki: '{{ (True
+                       if (ansible_local|d() and ansible_local.pki|d() and
+                           ansible_local.pki.enabled|d() and
+                           sensu_agent__pki_realm in ansible_local.pki.known_realms)
+                       else False) | bool }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__pki_path [[[
+#
+# Base path for PKI directory.
+sensu_agent__pki_path: '{{ (ansible_local.pki.base_path
+                            if (ansible_local|d() and ansible_local.pki|d() and
+                                ansible_local.pki.base_path|d())
+                            else "/etc/pki") }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__pki_realm [[[
+#
+# Default PKI realm used by Sensu agent.
+sensu_agent__pki_realm: '{{ ansible_local.pki.realm
+                            if (ansible_local|d() and ansible_local.pki|d() and
+                                ansible_local.pki.realm|d())
+                            else "domain" }}'
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__pki_ca [[[
+#
+# Root CA certificate used by Sensu, relative to :envvar:`sensu_agent__pki_realm`.
+sensu_agent__pki_ca: 'CA.crt'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: sensu_agent__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+sensu_agent__python__dependent_packages3: []
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+sensu_agent__python__dependent_packages2: []
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__resources__files [[[
+#
+# Configuration for the :ref:`debops.resources` Ansible role.
+sensu_agent__resources__files: []
+
+                                                                   # ]]]
+# .. envvar:: sensu_agent__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+sensu_agent__keyring__dependent_apt_keys:
+
+  - id: 'CB16 05C4 E988 C91F 4382  49E3 A5BC 3FB7 0A3F 7426'
+    url: 'https://packagecloud.io/sensu/stable/gpgkey'
+    repo: 'deb https://packagecloud.io/sensu/stable/debian/ {{ ansible_distribution_release }} main'
+
+                                                                   # ]]]
+                                                                   # ]]]
