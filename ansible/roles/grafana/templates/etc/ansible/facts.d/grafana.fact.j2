@@ -1,0 +1,23 @@
+#!{{ ansible_python['executable'] }}
+
+# {{ ansible_managed }}
+
+# This file is managed remotely, all changes will be lost
+
+from __future__ import print_function
+from json import dumps, loads
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+output = {}
+
+output['installed'] = cmd_exists('grafana-server')
+
+print(dumps(output, sort_keys=True, indent=4))

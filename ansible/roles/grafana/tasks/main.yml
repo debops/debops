@@ -1,0 +1,47 @@
+---
+
+- name: DebOps pre_tasks hook
+  include: "{{ lookup('task_src', 'grafana/pre_main.yml') }}"
+
+- name: Install requested packages
+  package:
+    name: '{{ q("flattened", grafana__base_packages
+                             + grafana__packages) }}'
+    state: 'present'
+  register: grafana__register_packages
+  until: grafana__register_packages is succeeded
+  notify: [ 'Restart grafana' ]
+
+- name: Divert the original grafana configuration file
+  command: dpkg-divert --quiet --local --divert /etc/grafana/grafana.ini.dpkg-divert --rename /etc/grafana/grafana.ini
+  args:
+    creates: '/etc/grafana/grafana.ini.dpkg-divert'
+
+- name: Configure main grafana config file
+  template:
+    src: 'grafana.ini.j2'
+    dest: '/etc/grafana/grafana.ini'
+    owner: 'root'
+    group: 'grafana'
+    mode: '0640'
+  notify: [ 'Restart grafana' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save grafana local facts
+  template:
+    src: 'etc/ansible/facts.d/grafana.fact.j2'
+    dest: '/etc/ansible/facts.d/grafana.fact'
+    mode: '0755'
+  register: grafana__register_facts
+
+- name: Update Ansible facts if they were modified
+  action: setup
+  when: grafana__register_facts is changed
+
+- name: DebOps post_tasks hook
+  include: "{{ lookup('task_src', 'grafana/post_main.yml') }}"
