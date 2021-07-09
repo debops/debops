@@ -10,6 +10,8 @@ Getting started
    .. contents::
       :local:
 
+.. include:: ../../../includes/global.rst
+
 
 Example inventory
 -----------------
@@ -54,9 +56,7 @@ List of other useful resources related to the ``debops.mount`` Ansible role:
 - Manual pages: :man:`fstab(5)`, :man:`systemd.mount(5)`,
   :man:`systemd.automount(5)`
 
-- `Ansible 'mount' module documentation`__
-
-  .. __: https://docs.ansible.com/ansible/latest/modules/mount_module.html
+- `Ansible ansible.posix.mount module`_ documentation
 
 - `Debian Wiki: fstab`__
 

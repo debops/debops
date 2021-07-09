@@ -2,6 +2,8 @@
 .. Copyright (C) 2016-2017 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
+.. include:: ../../../includes/global.rst
+
 .. _cron__ref_defaults_detailed:
 
 Default variable details
@@ -33,9 +35,8 @@ application-specific :command:`cron` jobs should be configured via the
 Examples
 ~~~~~~~~
 
-The syntax is similar to that used by the `cron Ansible module`__.
-
-.. __: https://docs.ansible.com/ansible/latest/modules/cron_module.html
+The syntax is similar to that used by the
+`Ansible ansible.builtin.cron module`_.
 
 Define a :command:`cron` job which will be executed every minute:
 

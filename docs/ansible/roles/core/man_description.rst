@@ -11,4 +11,4 @@ leveraging functionality of `Ansible local facts`_ stored on remote hosts to
 ensure that the variables are always evaluated by Ansible, even when playbook
 is run with or without different sets of role tags.
 
-.. _Ansible local facts: https://docs.ansible.com/ansible/playbooks_variables.html#local-facts-facts-d
+.. _Ansible local facts: https://docs.ansible.com/ansible/latest/user_guide/playbooks_vars_facts.html#facts-d-or-local-facts

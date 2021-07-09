@@ -15,6 +15,8 @@ simple strings or lists, here you can find documentation and examples for them.
       :local:
       :depth: 1
 
+.. include:: ../../../includes/global.rst
+
 
 .. _lxc__ref_configuration:
 
@@ -245,11 +247,10 @@ The variable contains a list of LXC container names, or (as the extended
 format) YAML dictionaries, each dictionary defines a aprticular LXC container
 using specific parameters.
 
-The parameters listed below correspond to the `lxc_container`__ Ansible module
-parameters. See its documentation for details. Most common parameters used to
-manage LXC containers are:
-
-.. __: https://docs.ansible.com/ansible/devel/modules/lxc_container_module.html
+The parameters listed below correspond to the
+`Ansible community.general.lxc_container module`_ parameters. See its
+documentation for details. Most common parameters used to manage LXC containers
+are:
 
 ``name``
   Required. Name of an LXC container to manage. The names should be unique

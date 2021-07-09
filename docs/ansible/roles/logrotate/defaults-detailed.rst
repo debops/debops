@@ -32,7 +32,7 @@ following keys:
 
 ``divert``
   Boolean, optional. When specified and ``True``, the original configuration
-  file will be diverted using :man:`dpkg-divert(8)`. If a configuration file is
+  file will be diverted using :man:`dpkg-divert(1)`. If a configuration file is
   due to be removed, the original file will be reverted back into place.
 
 ``sections``

@@ -5,7 +5,7 @@
 Description
 ===========
 
-Cyrus SASL library <https://www.cyrusimap.org/docs/cyrus-sasl/2.1.25/>`_ is
+`Cyrus SASL library <https://www.cyrusimap.org/sasl/>`_ is
 part of the Cyrus IMAP project and can be used to authenticate access to
 different services that implement
 `Simple Authentication Security Layer <https://en.wikipedia.org/wiki/Simple_Authentication_and_Security_Layer>`_

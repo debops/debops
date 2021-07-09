@@ -24,8 +24,8 @@ apt_install__debconf
 -------------------------
 
 These YAML lists can be used to add some values to Debconf database. Each entry
-has the same keys as the ones used by `Ansible debconf module`_. See its
-documentation for parameter advanced usage and syntax.
+has the same keys as the ones used by `Ansible ansible.builtin.debconf module`_.
+See its documentation for parameter advanced usage and syntax.
 
 ``name``
   Required. Name of the package to configure.

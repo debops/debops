@@ -63,7 +63,7 @@ password using the `passwordstore`__ Ansible lookup plugin. The plugin uses the
 :command:`pass` `password manager`__ as a backend to store credentials
 encrypted using the GPG key of the user.
 
-.. __: https://docs.ansible.com/ansible/latest/plugins/lookup/passwordstore.html
+.. __: https://docs.ansible.com/ansible/latest/collections/community/general/passwordstore_lookup.html
 .. __: https://www.passwordstore.org/
 
 The path in the :command:`pass` storage directory where the :ref:`debops.ldap`
