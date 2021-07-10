@@ -1,4 +1,5 @@
 {# Copyright (C) 2021 Julien Lecomte <julien@lecomte.at>
+ # Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
  # Copyright (C) 2021 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
@@ -6,25 +7,54 @@
 #
 # This is the configuration file for the MiniDLNA daemon, a DLNA/UPnP-AV media
 # server.
-
-# Port number for HTTP traffic (descriptions, SOAP, media transfer).
-# This option is mandatory (or it must be specified on the command-line using
-# "-p").
-port={{ minidlna__http_port }}
-
-{% for element in minidlna__media_dirs %}
-media_dir={{element}}
-{% endfor %}
+#
+# Unless otherwise noted, the commented out options show their default value.
+#
+# On Debian, you can also refer to the minidlna.conf(5) man page for
+# documentation about this file.
 
 {% for element in minidlna__combined_configuration | parse_kv_config %}
-{%   if element.name|d() and element.state|d('present') not in [ 'absent', 'ignore' ] %}
-{{ element.name|d() }}={{ element.value }}
-{%   endif %}
-{% endfor %}
+{%   if element.name|d() and element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%     if element.comment|d() %}
+{%       if not loop.first %}
 
-# List of file names to look for when searching for album art.
-# Names should be delimited with a forward slash ("/").
-# This option can be specified more than once.
-{% for element in minidlna__combined_album_art_names %}
-album_art_names={{ element }}
+{%       endif %}
+{{       element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%     endif %}
+{%     set element_comment = ('#' if element.state|d('present') == 'comment' else '') %}
+{%     if element.value is defined %}
+{%       if element.value is string and not element.value | bool %}
+{%         set element_value = element.value %}
+{%       elif element.value | bool and element.value is not iterable %}
+{%         if element.value | string == '1' %}
+{%           set element_value = element.value %}
+{%         else %}
+{%           set element_value = 'yes' %}
+{%         endif %}
+{%       elif not element.value | bool and element.value is not iterable %}
+{%         if element.value is not none %}
+{%           if element.value | int %}
+{%             set element_value = element.value %}
+{%           else %}
+{%             if element.value | string == '0' %}
+{%               set element_value = element.value %}
+{%             else %}
+{%               set element_value = 'no' %}
+{%             endif %}
+{%           endif %}
+{%         endif %}
+{%       else %}
+{%         set element_value = element.value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list %}
+{%       endif %}
+{%     else %}
+{%       set element_value = element.value|d() %}
+{%     endif %}
+{%     if element_value is not string and element_value is not mapping and element_value is iterable %}
+{%       for thing in element_value %}
+{{         '{}{}={}'.format(element_comment, element.name, thing) }}
+{%       endfor %}
+{%     else %}
+{{       '{}{}={}'.format(element_comment, element.name, element_value) }}
+{%     endif %}
+{%   endif %}
 {% endfor %}

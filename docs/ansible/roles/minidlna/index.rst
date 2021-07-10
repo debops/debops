@@ -14,6 +14,7 @@ debops.minidlna
    :maxdepth: 2
 
    getting-started
+   defaults-detailed
    defaults/main
 
 Copyright

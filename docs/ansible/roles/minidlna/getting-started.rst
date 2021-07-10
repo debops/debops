@@ -8,8 +8,10 @@ Getting started
 Default configuration
 ---------------------
 
-The role does not specify any DLNA media directories by default. You will need
-to configure them using the provided variable :envvar:`minidlna__media_dirs`.
+The service will be configured to serve media files from the
+:file:`/var/lib/minidlna` directory. You might want to include additional media
+directories in the configuration, see :ref:`minidlna__ref_configuration`
+variable documentation for details and examples.
 
 Example inventory
 -----------------
