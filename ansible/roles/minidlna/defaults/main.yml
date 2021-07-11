@@ -48,10 +48,10 @@ minidlna__allow: []
 # These variables define the contents of the :file:`/etc/minidlna.conf`
 # configuration file. See :ref:`minidlna__ref_configuration` for more details.
 
-# .. envvar:: minidlna__default_configuration [[[
+# .. envvar:: minidlna__original_configuration [[[
 #
-# List of the default MiniDLNA configuration options defined by the role.
-minidlna__default_configuration:
+# List of the default MiniDLNA configuration options defined in the Debian package.
+minidlna__original_configuration:
 
   - name: 'user'
     comment: |
@@ -247,6 +247,19 @@ minidlna__default_configuration:
     state: 'comment'
 
                                                                    # ]]]
+# .. envvar:: minidlna__default_configuration [[[
+#
+# List of the default MiniDLNA configuration options defined by the role.
+minidlna__default_configuration:
+
+  # The default notification interval results in the MiniDLNA broadcasting its
+  # presence every 14 minutes(!). This is too long for a reasonable setup where
+  # you might expect to see a DLNA server appear almost immediately.
+  - name: 'notify_interval'
+    value: 30
+    state: 'present'
+
+                                                                   # ]]]
 # .. envvar:: minidlna__configuration [[[
 #
 # List of MiniDLNA configuration options defined on all hosts in the Ansible inventory.
@@ -271,7 +284,8 @@ minidlna__host_configuration: []
 #
 # Variable which combines MiniDLNA configuration lists and is used in role
 # tasks and templates.
-minidlna__combined_configuration: '{{ minidlna__default_configuration
+minidlna__combined_configuration: '{{ minidlna__original_configuration
+                                      + minidlna__default_configuration
                                       + minidlna__configuration
                                       + minidlna__group_configuration
                                       + minidlna__host_configuration }}'
