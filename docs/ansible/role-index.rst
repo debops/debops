@@ -363,6 +363,7 @@ Web services
 Virtualization
 --------------
 
+- :ref:`debops.docker`
 - :ref:`debops.docker_gen`
 - :ref:`debops.docker_registry`
 - :ref:`debops.docker_server`

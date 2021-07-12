@@ -1177,6 +1177,11 @@ Added
 New DebOps roles
 ''''''''''''''''
 
+- The :ref:`debops.docker` role adds Docker client management to DebOps. It can
+  be used to manages the Docker CLI, connections to remote Docker hosts and
+  Docker components like networks, registry accounts and containers. The old
+  debops.docker role has been renamed to :ref:`debops.docker_server`.
+
 - The :ref:`debops.etesync` role allows to setup a EteSync__ server.
   EteSync is a cross-platform project to provide secure, end-to-end encrypted,
   and privacy respecting sync for your contacts, calendars and tasks.

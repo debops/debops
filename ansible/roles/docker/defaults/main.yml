@@ -1,0 +1,453 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2019 CipherMail B.V. https://www.ciphermail.com/
+# .. Copyright (C) 2019 Imre Jonk <imre@imrejonk.nl>
+# .. Copyright (C) 2019 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# debops.docker default variables
+# ===============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: docker__server_installed [[[
+#
+# Whether the Docker server is installed. If it is, this role won't touch APT
+# sources and keys. It also won't install the CLI package as it already comes
+# with the Docker server packages in both Debian and upstream repositories.
+docker__server_installed: '{{ True
+                              if (ansible_local|d() and
+                                  ansible_local.docker_server|d() and
+                                  ansible_local.docker_server.installed|d())
+                              else False }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__distribution [[[
+#
+# The OS distribution which is used to select upstream APT repository.
+docker__distribution: '{{ ansible_local.core.distribution
+                          if (ansible_local|d() and ansible_local.core|d() and
+                              ansible_local.core.distribution|d())
+                          else ansible_distribution }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__distribution_release [[[
+#
+# The OS distribution release which is used to select upstream APT repository.
+docker__distribution_release: '{{ ansible_local.core.distribution_release
+                                  if (ansible_local|d() and
+                                      ansible_local.core|d() and
+                                      ansible_local.core.distribution_release|d())
+                                  else ansible_distribution_release }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__upstream_edition [[[
+#
+# The Docker CLI edition to be installed: ce or ee. Note that Docker EE is not
+# supported on Debian.
+docker__upstream_edition: 'ce'
+
+                                                                   # ]]]
+# .. envvar:: docker__upstream_channel [[[
+#
+# Upstream repository channel, either stable or edge.
+docker__upstream_channel: 'stable'
+
+                                                                   # ]]]
+# .. envvar:: docker__upstream_key [[[
+#
+# APT GPG key id used to sign the upstream Docker packages.
+docker__upstream_key: '{{ "9DC858229FC7DD38854AE2D88D81803C0EBFCD88"
+                          if (docker__upstream_edition == "ce")
+                          else "DD911E995A64A202E85907D6BC14F10B6D085F96" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__upstream_arch_map [[[
+#
+# A YAML dictionary that maps the ``ansible_architecture`` variable with its
+# corresponding processor architecture used in the Docker repository URLs.
+docker__upstream_arch_map:
+  'x86_64': 'amd64'
+  'armhf':  'armhf'
+  'armv7l':  'armhf'
+
+                                                                   # ]]]
+# .. envvar:: docker__upstream_repository [[[
+#
+# Address of the Docker upstream APT repository.
+docker__upstream_repository: '{{ "deb [arch="
+        + docker__upstream_arch_map[ansible_architecture]
+        + "] https://download.docker.com/linux/"
+        + docker__distribution|lower + " "
+        + docker__distribution_release + " " + docker__upstream_channel }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__mandatory_packages [[[
+#
+# List of mandatory packages to install with the Docker CLI.
+docker__mandatory_packages:
+
+  - 'apt-transport-https'
+  - 'ca-certificates'
+
+                                                                   # ]]]
+# .. envvar:: docker__base_packages [[[
+#
+# List of base packages to install with the Docker CLI.
+docker__base_packages:
+
+  - '{{ []
+        if (docker__server_installed)
+        else "docker-" + docker__upstream_edition + "-cli" }}'
+  - 'docker-compose'
+
+                                                                   # ]]]
+# .. envvar:: docker__packages [[[
+#
+# List of additional packages to install with the Docker CLI.
+docker__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Docker host connection [[[
+# --------------------------
+
+# .. envvar:: docker__docker_host_fqdn [[[
+#
+# FQDN of the Docker host, needed when connecting over TCP.
+docker__docker_host_fqdn: 'docker.{{ ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__docker_host [[[
+#
+# The default URL or Unix socket path used to connect to the Docker host.
+# Defaults to the local Unix socket if Docker is installed with debops.docker,
+# otherwise it connects to the daemon on ``docker.<domain>`` over TCP. To
+# connect to another host, provide the TCP connection string. For example,
+# 'tcp://192.0.2.23:2376'. The 'tcp' in the connection URL will automatically
+# be replaced with 'https' if TLS is used to secure the connection.
+docker__docker_host: '{{ "unix:///var/run/docker.sock"
+                         if (ansible_local|d() and
+                             ansible_local.docker_server|d() and
+                             ansible_local.docker_server.installed|d())
+                         else "tcp://" + docker__docker_host_fqdn + ":2376" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__api_version [[[
+#
+# The version of the Docker API running on the Docker host. Defaults to the
+# latest version of the API supported by docker-py.
+docker__api_version: 'auto'
+
+                                                                   # ]]]
+# .. envvar:: docker__timeout [[[
+#
+# The maximum amount of time in seconds to wait on a response from the API, by
+# default.
+docker__timeout: 60
+                                                                   # ]]]
+                                                                   # ]]]
+# PKI/TLS configuration [[[
+# -------------------------
+
+# .. envvar:: docker__pki [[[
+#
+# Enable or disable support for secure TLS connections to the Docker host by
+# default.
+docker__pki: '{{ (False
+                  if (ansible_local|d() and
+                      ansible_local.docker_server|d() and
+                      ansible_local.docker_server.installed|d())
+                  else True
+                  if (ansible_local|d() and ansible_local.pki|d() and
+                      ansible_local.pki.enabled|d() and
+                      docker__pki_realm in ansible_local.pki.known_realms)
+                  else False) | bool }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__pki_path [[[
+#
+# Base path for PKI directory.
+docker__pki_path: '{{ ansible_local.pki.base_path
+                      if (ansible_local|d() and ansible_local.pki|d() and
+                          ansible_local.pki.base_path|d())
+                      else "/etc/pki/realms" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__pki_realm [[[
+#
+# Default PKI realm used by the Docker client.
+docker__pki_realm: '{{ ansible_local.pki.realm
+                       if (ansible_local|d() and ansible_local.pki|d() and
+                           ansible_local.pki.realm|d())
+                       else "domain" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__pki_ca_path [[[
+#
+# Absolute path to the root CA certificate used by the Docker client.
+docker__pki_ca_path: '{{ docker__pki_path + "/" + docker__pki_realm
+                         + "/CA.crt" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__pki_crt_path [[[
+#
+# Absolute path to the certificate used by the Docker client.
+docker__pki_crt_path: '{{ docker__pki_path + "/" + docker__pki_realm
+                          + "/default.crt" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__pki_key_path [[[
+#
+# Absolute path to the private key used by the Docker client.
+docker__pki_key_path: '{{ docker__pki_path + "/" + docker__pki_realm
+                          + "/default.key" }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__tls_hostname [[[
+#
+# The default server name used to verify the authenticity of the Docker host.
+docker__tls_hostname: '{{ ""
+                          if (ansible_local|d() and
+                              ansible_local.docker_server|d() and
+                              ansible_local.docker_server.installed|d())
+                          else docker__docker_host_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__ssl_version [[[
+#
+# The default ssl.py SSL/TLS version used to connect to the Docker host.
+docker__ssl_version: 'TLSv1_2'
+                                                                   # ]]]
+                                                                   # ]]]
+# Default container configuration [[[
+# -----------------------------------
+
+# .. envvar:: docker__auto_remove [[[
+#
+# If True, enable auto-removal of containers by default. This will remove a
+# container as soon as the container's process exits.
+docker__auto_remove: False
+
+                                                                   # ]]]
+# .. envvar:: docker__debug [[[
+#
+# Enable or disable debug mode.
+docker__debug: False
+
+                                                                   # ]]]
+# .. envvar:: docker__pull [[[
+#
+# If True, always pull the latest version of an image by default. Otherwise,
+# will only pull an image when missing.
+docker__pull: False
+
+                                                                   # ]]]
+# .. envvar:: docker__restart_policy [[[
+#
+# The default container restart policy. Supported values:
+#
+# - no
+# - on-failure
+# - always
+# - unless-stopped
+docker__restart_policy: 'unless-stopped'
+                                                                   # ]]]
+                                                                   # ]]]
+# Docker containers [[[
+# ---------------------
+
+# These variables define containers to manage on the Docker host. See
+# :ref:`docker__ref_containers` for more details.
+
+# .. envvar:: docker__containers [[[
+#
+# List of containers to manage on all hosts in Ansible inventory.
+docker__containers: []
+
+                                                                   # ]]]
+# .. envvar:: docker__group_containers [[[
+#
+# List of containers to manage on hosts in a specific group in Ansible
+# inventory.
+docker__group_containers: []
+
+                                                                   # ]]]
+# .. envvar:: docker__host_containers [[[
+#
+# List of containers to manage on specific hosts in Ansible inventory.
+docker__host_containers: []
+
+                                                                   # ]]]
+# .. envvar:: docker__dependent_containers [[[
+#
+# List of containers managed by another Ansible role.
+docker__dependent_containers: []
+
+                                                                   # ]]]
+# .. envvar:: docker__combined_containers [[[
+#
+# List of containers selected by the role for configuration. This variable is
+# used in the role tasks.
+docker__combined_containers: '{{ docker__containers
+                                 + docker__group_containers
+                                 + docker__host_containers
+                                 + docker__dependent_containers }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Docker networks [[[
+# -------------------
+
+# These variables define networks to manage on the Docker host. See
+# :ref:`docker__ref_networks` for more details.
+
+# .. envvar:: docker__networks [[[
+#
+# List of networks to manage on all hosts in Ansible inventory.
+docker__networks: []
+
+                                                                   # ]]]
+# .. envvar:: docker__group_networks [[[
+#
+# List of networks to manage on hosts in a specific group in Ansible inventory.
+docker__group_networks: []
+
+                                                                   # ]]]
+# .. envvar:: docker__host_networks [[[
+#
+# List of networks to manage on specific hosts in Ansible inventory.
+docker__host_networks: []
+
+                                                                   # ]]]
+# .. envvar:: docker__dependent_networks [[[
+#
+# List of networks managed by another Ansible role.
+docker__dependent_networks: []
+
+                                                                   # ]]]
+# .. envvar:: docker__combined_networks [[[
+#
+# List of networks selected by the role for configuration. This variable is
+# used in the role tasks.
+docker__combined_networks: '{{ docker__networks
+                               + docker__group_networks
+                               + docker__host_networks
+                               + docker__dependent_networks }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Docker registry accounts [[[
+# ----------------------------
+
+# These variables define registry accounts to manage on the Docker host. See
+# :ref:`docker__ref_registry_accounts` for more details.
+
+# .. envvar:: docker__registry_accounts [[[
+#
+# List of registry accounts to manage on all hosts in Ansible inventory.
+docker__registry_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: docker__group_registry_accounts [[[
+#
+# List of registry accounts to manage on hosts in a specific group in Ansible
+# inventory.
+docker__group_registry_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: docker__host_registry_accounts [[[
+#
+# List of registry accounts to manage on specific hosts in Ansible inventory.
+docker__host_registry_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: docker__dependent_registry_accounts [[[
+#
+# List of registry accounts managed by another Ansible role.
+docker__dependent_registry_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: docker__combined_registry_accounts [[[
+#
+# List of registry accounts selected by the role for configuration. This
+# variable is used in the role tasks.
+docker__combined_registry_accounts: '{{ docker__registry_accounts
+                                        + docker__group_registry_accounts
+                                        + docker__host_registry_accounts
+                                        + docker__dependent_registry_accounts }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: docker__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` role.
+docker__keyring__dependent_apt_keys:
+
+  - '{{ []
+        if docker__server_installed
+        else [ {"id": docker__upstream_key},
+               {"repo": docker__upstream_repository} ] }}'
+
+                                                                   # ]]]
+# .. envvar:: docker__apt_preferences__dependent_list [[[
+#
+# Configuration for the :ref:`debops.apt_preferences` role.
+docker__apt_preferences__dependent_list:
+
+  - packages:
+      - 'docker-compose'
+      - 'python3-docker'
+      - 'python3-dockerpycreds'
+      - 'python3-texttable'
+      - 'python-docker'
+    backports: [ 'stretch' ]
+    reason:  'Support for Docker Compose version 3 and recent Docker APIs'
+    by_role: 'debops.docker'
+
+                                                                   # ]]]
+# .. envvar:: docker__environment__dependent_variables [[[
+#
+# Configuration for the :ref:`debops.environment` role.
+docker__environment__dependent_variables:
+
+  - name: 'DOCKER_HOST'
+    value: '{{ docker__docker_host }}'
+  - name: 'DOCKER_SSL_VERSION'
+    value: '{{ docker__ssl_version }}'
+  - name: 'DOCKER_TIMEOUT'
+    value: '{{ docker__timeout }}'
+  - name: 'DOCKER_TLS_HOSTNAME'
+    value: '{{ docker__tls_hostname }}'
+    state: '{{ "present" if docker__tls_hostname else "absent" }}'
+  - name: 'DOCKER_TLS_VERIFY'
+    value: 1
+    state: '{{ "present" if docker__pki else "absent"}}'
+
+                                                                   # ]]]
+# .. envvar:: docker__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+docker__python__dependent_packages3:
+
+  - 'python3-docker'
+
+                                                                   # ]]]
+# .. envvar:: docker__python__dependent_packages2 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+docker__python__dependent_packages2:
+
+  - 'python-docker'
+  - '{{ "python-backports.ssl-match-hostname"
+        if ansible_distribution_release == "stretch"
+        else [] }}'
+                                                                   # ]]]
+                                                                   # ]]]

@@ -487,6 +487,15 @@ stages:
     JANE_LOG_PATTERN: '\[dnsmasq\]'
   tags: [ 'shell', 'vagrant-vm' ]
 
+'docker role':
+  <<: *test_role_1st_deps
+  variables:
+    JANE_TEST_FACT: 'docker.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/docker.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_docker'
+    JANE_DIFF_PATTERN: '.*/roles/docker/.*'
+    JANE_LOG_PATTERN: '\[debops\.docker\]'
+
 'docker_gen role':
   <<: *test_role_no_deps
   variables:
