@@ -35,11 +35,52 @@ minidlna__packages: []
 # .. envvar:: minidlna__allow [[[
 #
 # List of IP addresses or CIDR subnets which are allowed to connect to the
-# MiniDLNA instances over the network, on all hosts in the Ansible
-# inventory. This variable configures the firewall for all instances at the
-# same time, for individual instance configuration you should modify the
-# :envvar:`minidlna__ferm__dependent_rules` variable directly.
+# MiniDLNA instances over the network, on all hosts in the Ansible inventory.
+# If not specified, all hosts can connect to MiniDLNA service.
 minidlna__allow: []
+
+                                                                   # ]]]
+# .. envvar:: minidlna__group_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# MiniDLNA instances over the network, on hosts in a specific Ansible inventory
+# group. If not specified, all hosts can connect to MiniDLNA service.
+minidlna__group_allow: []
+
+                                                                   # ]]]
+# .. envvar:: minidlna__host_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# MiniDLNA instances over the network, on specific hosts in the Ansible
+# inventory. If not specified, all hosts can connect to MiniDLNA service.
+minidlna__host_allow: []
+
+                                                                   # ]]]
+# .. envvar:: minidlna__ssdp_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to send packets to the
+# 1900/udp port used by Simple Service Discovery Protocol, configured on all
+# hosts in the Ansible inventory. This is required only when UPnP port
+# fowarding is desired.
+minidlna__ssdp_allow: []
+
+                                                                   # ]]]
+# .. envvar:: minidlna__ssdp_group_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to send packets to the
+# 1900/udp port used by Simple Service Discovery Protocol, configured on hosts
+# in a specific Ansible inventory group. This is required only when UPnP port
+# fowarding is desired.
+minidlna__ssdp_group_allow: []
+
+                                                                   # ]]]
+# .. envvar:: minidlna__ssdp_host_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to send packets to the
+# 1900/udp port used by Simple Service Discovery Protocol, configured on
+# specific hosts in the Ansible inventory. This is required only when UPnP port
+# fowarding is desired.
+minidlna__ssdp_host_allow: []
                                                                    # ]]]
                                                                    # ]]]
 # MiniDLNA configuration [[[
@@ -303,7 +344,7 @@ minidlna__ferm__dependent_rules:
     type: 'accept'
     dport: [ 'minidlna' ]
     protocol: [ 'tcp' ]
-    saddr: '{{ minidlna__allow }}'
+    saddr: '{{ minidlna__allow + minidlna__group_allow + minidlna__host_allow }}'
     weight: '50'
     by_role: 'debops.minidlna'
 
@@ -311,7 +352,8 @@ minidlna__ferm__dependent_rules:
     type: 'accept'
     dport: [ 'ssdp' ]
     protocol: [ 'udp' ]
-    saddr: '{{ minidlna__allow }}'
+    saddr: '{{ minidlna__ssdp_allow + minidlna__ssdp_group_allow + minidlna__ssdp_host_allow }}'
+    accept_any: False
     weight: '50'
     by_role: 'debops.minidlna'
 
