@@ -169,6 +169,12 @@ General
 - Do not remove the whole PKI hook directory when the :command:`nginx` hook
   script is removed by the role.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Correctly handle the exit code of the :command:`occ ldap:show-config` command
+  when the LDAP configuration is not yet available.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
