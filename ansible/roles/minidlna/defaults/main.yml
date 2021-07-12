@@ -1,0 +1,376 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2021 Julien Lecomte <julien@lecomte.at>
+# .. Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2021 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _minidlna__ref_defaults:
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: minidlna__base_packages [[[
+#
+# List of APT packages to install for :command:`minidlna` support.
+minidlna__base_packages: [ 'minidlna' ]
+
+                                                                   # ]]]
+# .. envvar:: minidlna__packages [[[
+#
+# List of additional APT packages to install during :command:`minidlna`
+# configuration.
+minidlna__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Network configuration [[[
+# -------------------------
+
+# .. envvar:: minidlna__allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# MiniDLNA instances over the network, on all hosts in the Ansible inventory.
+# If not specified, all hosts can connect to MiniDLNA service.
+minidlna__allow: []
+
+                                                                   # ]]]
+# .. envvar:: minidlna__group_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# MiniDLNA instances over the network, on hosts in a specific Ansible inventory
+# group. If not specified, all hosts can connect to MiniDLNA service.
+minidlna__group_allow: []
+
+                                                                   # ]]]
+# .. envvar:: minidlna__host_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# MiniDLNA instances over the network, on specific hosts in the Ansible
+# inventory. If not specified, all hosts can connect to MiniDLNA service.
+minidlna__host_allow: []
+
+                                                                   # ]]]
+# .. envvar:: minidlna__ssdp_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to send packets to the
+# 1900/udp port used by Simple Service Discovery Protocol, configured on all
+# hosts in the Ansible inventory. This is required only when UPnP port
+# fowarding is desired.
+minidlna__ssdp_allow: []
+
+                                                                   # ]]]
+# .. envvar:: minidlna__ssdp_group_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to send packets to the
+# 1900/udp port used by Simple Service Discovery Protocol, configured on hosts
+# in a specific Ansible inventory group. This is required only when UPnP port
+# fowarding is desired.
+minidlna__ssdp_group_allow: []
+
+                                                                   # ]]]
+# .. envvar:: minidlna__ssdp_host_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to send packets to the
+# 1900/udp port used by Simple Service Discovery Protocol, configured on
+# specific hosts in the Ansible inventory. This is required only when UPnP port
+# fowarding is desired.
+minidlna__ssdp_host_allow: []
+                                                                   # ]]]
+                                                                   # ]]]
+# MiniDLNA configuration [[[
+# --------------------------
+
+# These variables define the contents of the :file:`/etc/minidlna.conf`
+# configuration file. See :ref:`minidlna__ref_configuration` for more details.
+
+# .. envvar:: minidlna__original_configuration [[[
+#
+# List of the default MiniDLNA configuration options defined in the Debian package.
+minidlna__original_configuration:
+
+  - name: 'user'
+    comment: |
+      Specify the user name or uid to run as (root by default).
+      On Debian system command line option (from /etc/default/minidlna) overrides this.
+    value: 'minidlna'
+    state: 'comment'
+
+  - name: 'media_dir'
+    comment: |
+      Path to the directory you want scanned for media files.
+
+      This option can be specified more than once if you want multiple directories
+      scanned.
+
+      If you want to restrict a media_dir to a specific content type, you can
+      prepend the directory name with a letter representing the type (A, P or V),
+      followed by a comma, as so:
+        * "A" for audio    (eg. media_dir=A,/var/lib/minidlna/music)
+        * "P" for pictures (eg. media_dir=P,/var/lib/minidlna/pictures)
+        * "V" for video    (eg. media_dir=V,/var/lib/minidlna/videos)
+        * "PV" for pictures and video (eg. media_dir=PV,/var/lib/minidlna/digital_camera)
+    value: [ '/var/lib/minidlna' ]
+
+  - name: 'merge_media_dirs'
+    comment: |
+      Set this to merge all media_dir base contents into the root container
+      (The default is no.)
+    value: False
+    state: 'comment'
+
+  - name: 'db_dir'
+    comment: 'Path to the directory that should hold the database and album art cache.'
+    value: '/var/cache/minidlna'
+    state: 'comment'
+
+  - name: 'log_dir'
+    comment: 'Path to the directory that should hold the log file.'
+    value: '/var/log/minidlna'
+    state: 'comment'
+
+  - name: 'log_level'
+    comment: |
+      Type and minimum level of importance of messages to be logged.
+
+      The types are "artwork", "database", "general", "http", "inotify",
+      "metadata", "scanner", "ssdp" and "tivo".
+
+      The levels are "off", "fatal", "error", "warn", "info" or "debug".
+      "off" turns of logging entirely, "fatal" is the highest level of importance
+      and "debug" the lowest.
+
+      The types are comma-separated, followed by an equal sign ("="), followed by a
+      level that applies to the preceding types. This can be repeated, separating
+      each of these constructs with a comma.
+
+      The default is to log all types of messages at the "warn" level.
+    value: 'general,artwork,database,inotify,scanner,metadata,http,ssdp,tivo=warn'
+    state: 'comment'
+
+  - name: 'root_container'
+    comment: |
+      Use a different container as the root of the directory tree presented to
+      clients. The possible values are:
+        * "." - standard container
+        * "B" - "Browse Directory"
+        * "M" - "Music"
+        * "P" - "Pictures"
+        * "V" - "Video"
+        * Or, you can specify the ObjectID of your desired root container
+          (eg. 1$F for Music/Playlists)
+      If you specify "B" and the client device is audio-only then "Music/Folders"
+      will be used as root.
+    value: '.'
+    state: 'comment'
+
+  - name: 'network_interface'
+    comment: |
+      Network interface(s) to bind to (e.g. eth0), comma delimited.
+      This option can be specified more than once.
+    value: []
+    state: 'comment'
+
+  - name: 'port'
+    comment: |
+      Port number for HTTP traffic (descriptions, SOAP, media transfer).
+      This option is mandatory (or it must be specified on the command-line using
+      "-p").
+    value: 8200
+
+  - name: 'presentation_url'
+    comment: |
+      URL presented to clients (e.g. http://example.com:80).
+    value: '/'
+    state: 'comment'
+
+  - name: 'friendly_name'
+    comment: |
+      Name that the DLNA server presents to clients.
+      Defaults to "hostname: username".
+    value: ''
+    state: 'comment'
+
+  - name: 'serial'
+    comment: |
+      Serial number the server reports to clients.
+      Defaults to the MAC address of nework interface.
+    value: ''
+    state: 'comment'
+
+  - name: 'uuid'
+    comment: |
+      Specify device's UPnP UUID minidlna should use. By default MAC address is
+      used to build uniq UUID.
+    value: ''
+    state: 'comment'
+
+  - name: 'model_name'
+    comment: 'Model name the server reports to clients.'
+    value: 'Windows Media Connect compatible (MiniDLNA)'
+    state: 'comment'
+
+  - name: 'model_number'
+    comment: |
+      Model number the server reports to clients.
+      Defaults to the version number of minidlna.
+    value: ''
+    state: 'comment'
+
+  - name: "inotify"
+    comment: 'Automatic discovery of new files in the media_dir directory.'
+    value: True
+    state: 'comment'
+
+  - name: 'album_art_names'
+    comment: |
+      List of file names to look for when searching for album art.
+      Names should be delimited with a forward slash ("/").
+      This option can be specified more than once.
+    value:
+      - 'Cover.jpg/cover.jpg/AlbumArtSmall.jpg/albumartsmall.jpg'
+      - 'AlbumArt.jpg/albumart.jpg/Album.jpg/album.jpg'
+      - 'Folder.jpg/folder.jpg/Thumb.jpg/thumb.jpg'
+
+  - name: 'strict_dlna'
+    comment: |
+      Strictly adhere to DLNA standards.
+      This allows server-side downscaling of very large JPEG images, which may
+      decrease JPEG serving performance on (at least) Sony DLNA products.
+    value: False
+    state: 'comment'
+
+  - name: 'enable_tivo'
+    comment: 'Support for streaming .jpg and .mp3 files to a TiVo supporting HMO.'
+    value: False
+    state: 'comment'
+
+  - name: 'tivo_discovery'
+    comment: |
+      Which method to use for registering in TiVo: 'bonjour' (default) or
+      legacy 'beacon'
+    value: 'bonjour'
+    state: 'comment'
+
+  - name: 'notify_interval'
+    comment: 'SSDP notify interval, in seconds.'
+    value: 895
+    state: 'comment'
+
+  - name: 'minissdpdsocket'
+    comment: 'Path to the MiniSSDPd socket, for MiniSSDPd support.'
+    value: '/run/minissdpd.sock'
+    state: 'comment'
+
+  - name: 'force_sort_criteria'
+    comment: |
+      Always set SortCriteria to this value, regardless of the SortCriteria
+      passed by the client
+      e.g. force_sort_criteria=+upnp:class,+upnp:originalTrackNumber,+dc:title
+    value: ''
+    state: 'comment'
+
+  - name: 'max_connections'
+    comment: |
+      maximum number of simultaneous connections
+      note: many clients open several simultaneous connections while streaming
+    value: 50
+    state: 'comment'
+
+  - name: 'wide_links'
+    comment: 'set this to yes to allow symlinks that point outside user-defined media_dirs.'
+    value: False
+    state: 'comment'
+
+                                                                   # ]]]
+# .. envvar:: minidlna__default_configuration [[[
+#
+# List of the default MiniDLNA configuration options defined by the role.
+minidlna__default_configuration:
+
+  # The default notification interval results in the MiniDLNA broadcasting its
+  # presence every 14 minutes(!). This is too long for a reasonable setup where
+  # you might expect to see a DLNA server appear almost immediately.
+  - name: 'notify_interval'
+    value: 30
+    state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: minidlna__configuration [[[
+#
+# List of MiniDLNA configuration options defined on all hosts in the Ansible inventory.
+minidlna__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: minidlna__group_configuration [[[
+#
+# List of MiniDLNA configuration options defined on hosts in a specific Ansible
+# inventory group.
+minidlna__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: minidlna__host_configuration [[[
+#
+# List of MiniDLNA configuration options defined on specific hosts in the
+# Ansible inventory.
+minidlna__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: minidlna__combined_configuration [[[
+#
+# Variable which combines MiniDLNA configuration lists and is used in role
+# tasks and templates.
+minidlna__combined_configuration: '{{ minidlna__original_configuration
+                                      + minidlna__default_configuration
+                                      + minidlna__configuration
+                                      + minidlna__group_configuration
+                                      + minidlna__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: minidlna__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+minidlna__ferm__dependent_rules:
+
+  - name: 'minidlna_allow_http'
+    type: 'accept'
+    dport: [ 'minidlna' ]
+    protocol: [ 'tcp' ]
+    saddr: '{{ minidlna__allow + minidlna__group_allow + minidlna__host_allow }}'
+    weight: '50'
+    by_role: 'debops.minidlna'
+
+  - name: 'minidlna_allow_ssdp'
+    type: 'accept'
+    dport: [ 'ssdp' ]
+    protocol: [ 'udp' ]
+    saddr: '{{ minidlna__ssdp_allow + minidlna__ssdp_group_allow + minidlna__ssdp_host_allow }}'
+    accept_any: False
+    weight: '50'
+    by_role: 'debops.minidlna'
+
+                                                                   # ]]]
+# .. envvar:: minidlna_server__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+minidlna_server__etc_services__dependent_list:
+
+  - name: 'ssdp'
+    port: '1900'
+    protocol: [ 'udp' ]
+    comment: 'Simple Service Discovery Protocol'
+
+  - name: 'minidlna'
+    port: '8200'
+    protocol: [ 'tcp' ]
+    comment: 'MiniDLNA media server Web Interface'
+                                                                   # ]]]
+                                                                   # ]]]

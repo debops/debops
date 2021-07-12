@@ -26,6 +26,13 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+New DebOps roles
+''''''''''''''''
+
+- The :ref:`debops.minidlna` role configures the MiniDLNA service that can be
+  used to provide media (video, music, images) to other devices on the local
+  network that support the DLNA protocol.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 

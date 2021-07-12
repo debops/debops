@@ -1409,6 +1409,18 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/memcached/.*'
     JANE_LOG_PATTERN: '\[memcached\]'
 
+'minidlna role':
+  <<: *test_role_1st_deps
+  needs:
+    - 'etc_services role'
+    - 'ferm role'
+  variables:
+    JANE_TEST_FACT: 'mariadb.fact minidlna.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/minidlna.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_minidlna'
+    JANE_DIFF_PATTERN: '.*/roles/minidlna/.*'
+    JANE_LOG_PATTERN: '\[minidlna\]'
+
 'minio role':
   <<: *test_role_2nd_deps
   needs:
