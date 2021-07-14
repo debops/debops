@@ -270,7 +270,7 @@ March 2016
 - The DebOps mailing list `is moved to a self-hosted Mailman installation`__
   based on DebOps, to ensure that `the project is "eating its own dog food"`__.
 
-.. __: https://lists.debops.org/pipermail/debops-users/2016-March/000066.html
+.. __: https://lists.debops.org/hyperkitty/list/debops-users@lists.debops.org/thread/R6YWMZLGSQDJSOHJV4U5DZJBB2CFSWY5/
 .. __: https://en.wikipedia.org/wiki/Eating_your_own_dog_food
 
 April 2016
@@ -310,7 +310,7 @@ August 2017
   together into one DebOps monorepo. The plan is to resolve all pending pull
   requests in various repositories before merging starts.
 
-.. __: https://lists.debops.org/pipermail/debops-users/2017-August/000078.html
+.. __: https://lists.debops.org/hyperkitty/list/debops-users@lists.debops.org/thread/E25T2ZZHRPU3JSKT5DLJXICGSJO3B6M4/
 
 September 2017
 ~~~~~~~~~~~~~~
@@ -332,7 +332,7 @@ October 2017
   code from separate :command:`git` repositories is merged into `single monorepo`__,
   which becomes the main development repository.
 
-.. __: https://lists.debops.org/pipermail/debops-users/2017-October/000102.html
+.. __: https://lists.debops.org/hyperkitty/list/debops-users@lists.debops.org/thread/SG2GHX7A7TMBBD7AI3N3YRFRRGI67LP7/
 .. __: https://github.com/debops/debops
 
 - `debops v0.6.0`__ is released, along with updated scripts that support
@@ -409,7 +409,7 @@ May 2019
 
 - `First DebOps stable release - v1.0.0`__.
 
-.. __: https://lists.debops.org/pipermail/debops-users/2019-May/000196.html
+.. __: https://lists.debops.org/hyperkitty/list/debops-users@lists.debops.org/thread/KUYXVG34AUL2F65VPJAPJII5DXVMO4QM/
 
 July 2019
 ~~~~~~~~~

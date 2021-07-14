@@ -29,8 +29,8 @@ can override these environment variables if necessary.
 
 The ``inventory__*_environment`` variables are the best place to set variables
 if you want to have the same environment during Ansible playbook execution and
-on the host itself over ``ssh`` or via ``cron``, etc. See the documentation  of
-`inventory__variables <https://docs.debops.org/en/latest/debops-playbooks/custom-environment.html>`_
+on the host itself over ``ssh`` or via ``cron``, etc. See the documentation on
+`custom environment variables <https://docs.debops.org/en/latest/user-guide/custom-environment.html>`_
 for more details.
 
 

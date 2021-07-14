@@ -13,6 +13,8 @@ DebOps installation
    :local:
    :depth: 2
 
+.. include:: ../includes/global.rst
+
 
 Installation types
 ------------------
@@ -79,14 +81,12 @@ Ansible:
 
 `python-ldap`__
   This is a Python library which can be used to interface with the LDAP
-  servers, Ansible `ldap_attr`__ and `ldap_entry`__ modules use it. You will
-  need to install it if you want to manage LDAP using DebOps roles. It's
-  available as ``python-ldap`` APT package in Debian, it can also be installed
-  via PyPI.
+  servers. The `Ansible community.general.ldap_attr module`_ and
+  `Ansible community.general.ldap_entry module`_ use it. You will need to
+  install it if you want to manage LDAP using DebOps roles. It's available as
+  ``python-ldap`` APT package in Debian, it can also be installed via PyPI.
 
 .. __: https://www.python-ldap.org/en/latest/
-.. __: https://docs.ansible.com/ansible/latest/modules/ldap_attr_module.html
-.. __: https://docs.ansible.com/ansible/latest/modules/ldap_entry_module.html
 
 `future`__
   This module provides a compatibility layer between Python 2.7 and Python 3.x
@@ -111,7 +111,7 @@ Ansible:
   Debian as the ``python-passlib`` APT package, it can also be installed via
   PyPI.
 
-.. __: https://bitbucket.org/ecollins/passlib/wiki/Home
+.. __: https://passlib.readthedocs.io/en/stable/
 
 You can install them using your distribution packages on Debian or
 Ubuntu by running the command:

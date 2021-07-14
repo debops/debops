@@ -10,6 +10,8 @@ Getting started
    .. contents::
       :local:
 
+.. include:: ../../../includes/global.rst
+
 
 Default remote keyserver
 ------------------------
@@ -103,6 +105,4 @@ List of other useful resources related to the ``debops.keyring`` Ansible role:
 
   .. __: https://wiki.debian.org/SecureApt
 
-- Documentation of the `apt_key Ansible module`__
-
-  .. __: https://docs.ansible.com/ansible/latest/modules/apt_key_module.html
+- Documentation of the `Ansible ansible.builtin.apt_key module`_

@@ -246,4 +246,4 @@ persistence. You can set ``core__unsafe_writes`` directly in your inventory
 without the need to run the ``debops.core`` role for this special case.
 Refer to `Templating or updating persistent files`_ for details.
 
-.. _Templating or updating persistent files: https://docs.debops.org/en/latest/ansible/roles/debops.persistent_paths/guides.html#templating-or-updating-persistent-files
+.. _Templating or updating persistent files: https://docs.debops.org/en/latest/ansible/roles/persistent_paths/guides.html#templating-or-updating-persistent-files

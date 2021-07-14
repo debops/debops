@@ -473,8 +473,7 @@ documentation are currently outdated - if a given role has only one page, you
 should check the role files directly.
 
 You can check the :ref:`DebOps Changelog <changelog>` for updates
-related to roles and playbooks (there's also an `Atom feed
-<https://log.debops.org/atom.xml>`_ available for your feed reader).
+related to roles and playbooks.
 
 ..
  Local Variables:

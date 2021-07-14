@@ -71,7 +71,7 @@ following supported keys:
   Optional, dictionary.
   Use a provided profile by copying it from the Ansible controller into the
   :envvar:`firejail__config_path` directory of the remote system using the
-  `Ansible copy module`_.
+  `Ansible ansible.builtin.copy module`_.
   ``profile`` is basically just passed to the module. Refer to it’s
   documentation for details with the exception that the ``state`` parameter is
   handled properly. ``state`` defaults to ``present`` but can be set to
