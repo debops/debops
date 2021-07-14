@@ -1178,6 +1178,7 @@
 .. _YAML Syntax: https://docs.ansible.com/ansible/YAMLSyntax.html
 .. _reStructuredText: http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html
 .. _Sphinx: https://www.sphinx-doc.org/
+.. _Graylog: https://www.graylog.org/
 
 .. ]]]
 
