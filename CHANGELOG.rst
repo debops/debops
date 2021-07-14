@@ -33,6 +33,12 @@ General
   roles, provided using a custom Ansible plugin. The filters require the
   ``toml`` Python package to be installed on the Ansible Controller.
 
+:ref:`debops.apache` role
+'''''''''''''''''''''''''
+
+- The paths to the ErrorLog and CustomLog files for each Apache vhost are now
+  configurable.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
