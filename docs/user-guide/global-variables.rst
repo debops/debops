@@ -2,6 +2,8 @@
 .. Copyright (C) 2020 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
+.. include:: ../includes/global.rst
+
 .. _global_variables:
 
 Global role variables
@@ -92,7 +94,7 @@ bind-mounted files or directories. The :envvar:`debops__unsafe_writes` variable
 allows activation of this mode per-host using Ansible inventory, for all roles
 that implement it.
 
-.. __: https://docs.ansible.com/ansible/latest/modules/copy_module.html#parameter-unsafe_writes
+.. __: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/copy_module.html#parameter-unsafe_writes
 
 To have an effect, roles that depend on the unsafe writes to function, should
 use the parameter in relevant tasks, like this:

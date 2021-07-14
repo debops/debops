@@ -89,8 +89,8 @@ check the `UID/GID allocation page`__ in the documentation published by the
 University of Cambridge Computer Laboratory.
 
 .. __: https://www.freedesktop.org/wiki/Software/systemd/
-.. __: https://systemd.io/UIDS-GIDS.html
-.. __: https://www.debian.org/doc/manuals/securing-debian-howto/ch12.en.html#s-faq-os-users
+.. __: https://systemd.io/UIDS-GIDS/
+.. __: https://www.debian.org/doc/manuals/securing-debian-manual/ch12.en.html#faq-os-users
 .. __: https://wiki.cam.ac.uk/cl-sys-admin/UID/GID_allocation
 
 For convenience, here's a summary of the UID/GID ranges typically used on Linux

@@ -76,5 +76,5 @@ Note that bind mounted files (and directories) don’t allow `rename` nor
 bind mounting it, updates to the file needs to be done using the
 ``unsafe_writes`` parameter which many file related Ansible modules support.
 
-Refer to the `debops.core usage guide <https://docs.debops.org/en/latest/ansible/roles/debops.core/guides.html#global-unsafe-writes>`_
+Refer to the `debops.core usage guide <https://docs.debops.org/en/latest/ansible/roles/core/guides.html#global-unsafe-writes>`_
 for details.
