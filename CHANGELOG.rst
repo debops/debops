@@ -39,6 +39,9 @@ General
 - The paths to the ErrorLog and CustomLog files for each Apache vhost are now
   configurable.
 
+- The ``alias_path`` parameter can be used to define an Alias target path if it
+  should be different than the DocumentRoot used by default.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 

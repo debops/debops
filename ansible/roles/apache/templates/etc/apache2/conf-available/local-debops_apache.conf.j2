@@ -213,7 +213,7 @@ DocumentRoot {{ item.root|d(item.document_root) | quote }}
 DirectoryIndex {{ get_yaml_list_for_elem(item.index)|from_yaml | join(" ") }}
 {% endif %}
 {% if item.alias|d() %}
-{{ get_alias(item.alias, item.root|d(item.document_root)) }}
+{{ get_alias(item.alias, item.alias_path|d(item.root)|d(item.document_root)) }}
 {%- endif %}
 <Directory {{ item.root|d(item.document_root) | quote }}>
     {{ debops_indent(get_document_root_directives(item), 4) }}
