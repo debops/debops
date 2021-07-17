@@ -1,3 +1,6 @@
+.. Copyright (C) 2021 DebOps <https://debops.org/>
+.. SPDX-License-Identifier: GPL-3.0-only
+
 .. _debops.grafana:
 
 debops.grafana
