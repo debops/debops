@@ -6,11 +6,6 @@
 # .. Copyright (C) 2021 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
-
-
-- name: DebOps pre_tasks hook
-  include: "{{ lookup('task_src', 'grafana/pre_main.yml') }}"
-
 - name: Install requested packages
   package:
     name: '{{ q("flattened", grafana__base_packages
@@ -51,5 +46,3 @@
   action: setup
   when: grafana__register_facts is changed
 
-- name: DebOps post_tasks hook
-  include: "{{ lookup('task_src', 'grafana/post_main.yml') }}"
