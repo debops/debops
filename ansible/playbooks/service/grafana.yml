@@ -1,12 +1,12 @@
 ---
-# .. vim: foldmarker=[[[,]]]:foldmethod=marker
-
 # .. Copyright (C) 2019 Innobyte Bechea Leonardo <https://www.innobyte.com/>
 # .. Copyright (C) 2019 Innobyte Alin Alexandru <https://www.innobyte.com/>
 # .. Copyright (C) 2021 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 - name: Manage Grafana
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_grafana', 'debops_grafana' ]
   become: True
 
@@ -30,7 +30,6 @@
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
         - '{{ grafana__ferm__dependent_rules }}'
-        - '{{ nginx__ferm__dependent_rules if (grafana__nginx_enabled|bool) else [] }}'
 
     - role: nginx
       tags: [ 'role::nginx', 'skip::nginx' ]

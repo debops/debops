@@ -6,43 +6,59 @@
 # .. Copyright (C) 2021 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
-- name: Install requested packages
-  package:
-    name: '{{ q("flattened", grafana__base_packages
-                             + grafana__packages) }}'
+- name: Import custom Ansible plugins
+  import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
+# Package installation [[[1
+- name: Install Grafana packages
+  apt:
+    name: '{{ (grafana__base_packages
+             + grafana__packages)
+             | flatten }}'
     state: 'present'
   register: grafana__register_packages
   until: grafana__register_packages is succeeded
-  notify: [ 'Restart grafana' ]
 
-- name: Divert the original grafana configuration file
-  command: dpkg-divert --quiet --local --divert /etc/grafana/grafana.ini.dpkg-divert --rename /etc/grafana/grafana.ini
+# Grafana configuration [[[1
+- name: Divert the Grafana configuration file
+  command: dpkg-divert --quiet --local --divert /etc/grafana/grafana.ini.dpkg-divert
+                       --rename /etc/grafana/grafana.ini
   args:
     creates: '/etc/grafana/grafana.ini.dpkg-divert'
 
-- name: Configure main grafana config file
+- name: Generate Grafana configuration file
   template:
     src: 'etc/grafana/grafana.ini.j2'
     dest: '/etc/grafana/grafana.ini'
     owner: 'root'
     group: 'grafana'
     mode: '0640'
-  notify: [ 'Restart grafana' ]
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+  register: grafana__register_configuration
 
-- name: Make sure that Ansible local facts directory exists
+# Ansible facts [[[1
+- name: Make sure that Ansible local fact directory exists
   file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
+    owner: 'root'
+    group: 'root'
     mode: '0755'
 
-- name: Save grafana local facts
+- name: Create local facts of Grafana
   template:
     src: 'etc/ansible/facts.d/grafana.fact.j2'
     dest: '/etc/ansible/facts.d/grafana.fact'
+    owner: 'root'
+    group: 'root'
     mode: '0755'
-  register: grafana__register_facts
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+  notify: [ 'Refresh host facts' ]
 
-- name: Update Ansible facts if they were modified
-  action: setup
-  when: grafana__register_facts is changed
-
+- name: Reload facts if they were modified
+  meta: 'flush_handlers'

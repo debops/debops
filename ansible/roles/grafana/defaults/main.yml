@@ -6,64 +6,13 @@
 # .. Copyright (C) 2021 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
-# debops.grafana default variables
-# ================================
+# .. _grafana__ref_defaults:
 
 # .. contents:: Sections
 #    :local:
 #
 # .. include:: ../../../../includes/global.rst
 
-
-# Domain name configuration [[[
-# -----------------------------
-
-# .. envvar:: grafana__hostname [[[
-#
-# The hostname part of the Grafana installation
-grafana__hostname: 'grafana'
-                                                                   # ]]]
-
-# .. envvar:: grafana__fqdn [[[
-#
-# String  of the Fully Qualified domain names on which the Grafana
-# application will be available, used by the webserver. It will be
-# used as the e-mail sender domain name.
-grafana__fqdn: '{{ grafana__hostname }}.{{ grafana__domain }}'
-
-                                                                   # ]]]
-# .. envvar:: grafana__domain [[[
-#
-# The DNS domain used by other variables in the ``debops.grafana`` role.
-grafana__domain: '{{ ansible_local.core.domain
-                    if (ansible_local|d() and ansible_local.core|d() and
-                        ansible_local.core.domain|d())
-                    else ansible_domain }}'
-
-                                                                   # ]]]
-                                                                   # ]]]
-# Grafana configuration [[[
-# -------------------------
-
-# .. envvar:: grafana__nginx_enabled: True [[[
-#
-# Enable or disable Nginx dependencies.
-grafana__nginx_enabled: True
-
-                                                                   # ]]]
-# .. envvar:: grafana__upstream_apt_id [[[
-#
-# The Grafana fingerprint.
-grafana__upstream_apt_id: '4E40 DDF6 D76E 284A 4A67  80E4 8C8C 34C5 2409 8CB6'
-
-                                                                   # ]]]
-# .. envvar:: grafana__upstream_apt_repository [[[
-#
-# The APT repository URI of the upstream Grafana repository.
-grafana__upstream_apt_repository: 'deb https://packages.grafana.com/oss/deb stable main'
-
-                                                                   # ]]]
-                                                                   # ]]]
 # Installation, APT packages [[[
 # ------------------------------
 
@@ -79,72 +28,482 @@ grafana__base_packages: [ 'grafana' ]
 grafana__packages: []
 
                                                                    # ]]]
-# .. envvar:: grafana__allow [[[
-#
-# List of IP addresses or CIDR subnets which will be allowed to connect to the
-# Grafana in :command:`ip(6)tables` and TCP wrappers. If it's empty, remote
-# connections are not allowed.
-grafana__allow: []
-
-                                                                   # ]]]
 # .. envvar:: grafana__port [[[
 #
 # Port number on which this Grafana listens on.
-grafana__port: '3001'
+grafana__port: '3000'
+
+                                                                   # ]]]
+# .. envvar:: grafana__fqdn [[[
+#
+# FQDN of the Grafana instance.
+grafana__fqdn: 'grafana.{{ ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: grafana__nginx_enabled [[[
+#
+# Enable nginx as a proxy frontend to Grafana.
+grafana__nginx_enabled: true
 
                                                                    # ]]]
                                                                    # ]]]
-# Grafana configuration file [[[
-# ------------------------------
+# Network configuration [[[
+# -------------------------
 
-# The variables below define the contents of the
-# :file:`/etc/grafana/grafana.ini` configuration file.
+# .. envvar:: grafana__allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# Grafana instances over the network, on all hosts in the Ansible inventory.
+# If not specified, all hosts can connect to Grafana service.
+grafana__allow: []
 
-# .. envvar:: grafana__default_configuration [[[
+                                                                   # ]]]
+# .. envvar:: grafana__group_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# Grafana instances over the network, on hosts in a specific Ansible inventory
+# group. If not specified, all hosts can connect to Grafana service.
+grafana__group_allow: []
+
+                                                                   # ]]]
+# .. envvar:: grafana__host_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# Grafana instances over the network, on specific hosts in the Ansible
+# inventory. If not specified, all hosts can connect to Grafana service.
+grafana__host_allow: []
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Grafana configuration [[[
+# -------------------------
+
+# .. envvar:: grafana__original_configuration [[[
 #
 # The default configuration options which should be present in the main
 # configuration file.
+#
+grafana__original_configuration:
+
+  - name: ''                                                       # [[[
+    options:
+      - name: 'app_mode'
+        comment: |
+          possible values : production, development
+        value: 'production'
+        state: 'comment'
+
+      - name: 'instance_name'
+        comment: |
+          instance name, defaults to HOSTNAME environment variable value or hostname if HOSTNAME var is empty
+        value: '${HOSTNAME}'
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'server'                                                 # [[[
+    options:
+      - name: 'protocol'
+        comment: |
+          Protocol (http, https, h2, socket)
+        value: 'http'
+        state: 'comment'
+
+      - name: 'http_addr'
+        comment: |
+          The ip address to bind to, empty will bind to all interfaces
+        value: ''
+        state: 'comment'
+
+      - name: 'http_port'
+        comment: |
+          The http port  to use
+        value: '{{ grafana__port }}'
+
+      - name: 'domain'
+        comment: |
+          The public facing domain name used to access grafana from a browser
+        value: '{{ ansible_fqdn }}'
+
+      - name: 'enforce_domain'
+        comment: |
+          Redirect to correct domain if host header does not match domain. Prevents DNS rebinding attacks
+        value: false
+        state: 'comment'
+
+      - name: 'root_url'
+        comment: |
+          The full public facing url you use in browser, used for redirects and emails If you use reverse proxy and sub path specify full url (with sub path)
+        value: "%(protocol)s://%(domain)s:%(http_port)s/"
+        state: 'comment'
+
+      - name: 'serve_from_sub_path'
+        comment: |
+          Serve Grafana from subpath specified in `root_url` setting. By default it is set to `false` for compatibility reasons.
+        value: false
+        state: 'comment'
+
+      - name: 'router_logging'
+        comment: |
+          Log web requests
+        value: false
+        state: 'comment'
+
+      - name: 'static_root_path'
+        comment: |
+          the path relative working path
+        value: 'public'
+        state: 'comment'
+
+      - name: 'enable_gzip'
+        comment: |
+          enable gzip
+        value: false
+        state: 'comment'
+
+      - name: 'cert_file'
+        comment: |
+          https cert file
+        value: ""
+        state: 'comment'
+
+      - name: 'key_file'
+        comment: |
+          https key file
+        value: ""
+        state: 'comment'
+
+      - name: 'socket'
+        comment: |
+          Unix socket path
+        value: ""
+        state: 'comment'
+
+      - name: 'cdn_url'
+        comment: |
+          CDN Url
+        value: ""
+        state: 'comment'
+
+      - name: 'read_timeout'
+        comment: |
+          Sets the maximum time using a duration format (5s/5m/5ms) before timing out read of an incoming request and closing idle connections. `0` means there is no timeout for reading the request.
+        value: 0
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'users'                                                  # [[[
+    options:
+    - name: 'allow_sign_up'
+      comment: |
+        disable user signup / registration
+      value: 'true'
+      state: 'comment'
+
+    - name: 'allow_org_create'
+      comment: |
+        Allow non admin users to create organizations
+      value: 'true'
+      state: 'comment'
+
+    - name: 'auto_assign_org'
+      value: 'true'
+      state: 'comment'
+      comment: |
+        Set to true to automatically assign new users to the default organization (id 1)
+
+    - name: 'auto_assign_org_id'
+      value: '1'
+      state: 'comment'
+      comment: |
+        Set this value to automatically add new users to the provided organization (if auto_assign_org above is set to true)
+
+    - name: 'auto_assign_org_role'
+      comment: |
+        Default role new users will be automatically assigned (if disabled above is set to true)
+      value: 'Viewer'
+      state: 'comment'
+
+    - name: 'verify_email_enabled'
+      comment: |
+        Require email validation before sign up completes
+      value: 'false'
+      state: 'comment'
+
+    - name: 'default_theme'
+      comment: |
+        Default UI theme ('dark' or 'light')
+      value: 'dark'
+      state: 'comment'
+
+    - name: 'home_page'
+      comment: |
+        Path to a custom home page. Users are only redirected to this if the default home dashboard is used. It should match a frontend route and contain a leading slash.
+      value: ''
+      state: 'comment'
+
+    - name: 'viewers_can_edit'
+      value: 'false'
+      state: 'comment'
+      comment: |
+        Viewers can edit/inspect dashboard settings in the browser. But not save the dashboard.
+
+    - name: 'editors_can_admin'
+      comment: |
+        Editors can administrate dashboard, folders and teams they create
+      value: 'false'
+      state: 'comment'
+
+                                                                   # ]]]
+  - name: 'auth.anonymous'                                         # [[[
+    options:
+      - name: 'enabled'
+        comment: |
+          enable anonymous access
+        state: 'comment'
+        value: false
+
+      - name: 'org_name'
+        comment: |
+          specify organization name that should be used for unauthenticated users
+        value: 'Main Org.'
+        state: 'comment'
+
+      - name: 'org_role'
+        comment: |
+          specify role for unauthenticated users
+        value: 'Viewer'
+        state: 'comment'
+
+      - name: 'hide_version'
+        comment: |
+          mask the Grafana version number for unauthenticated users
+        value: false
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'security'                                               # [[[
+    options:
+      - name: 'disable_initial_admin_creation'
+        comment: |
+          disable creation of admin user on first start of grafana
+        value: 'false'
+        state: 'comment'
+
+      - name: 'admin_user'
+        comment: |
+          default admin user, created on startup
+        value: 'admin'
+        state: 'comment'
+
+      - name: 'admin_password'
+        comment: |
+          default admin password, can be changed before first start of grafana,  or in profile settings
+        value: 'admin'
+        state: 'comment'
+
+      - name: 'secret_key'
+        comment: |
+          used for signing
+        value: 'SW2YcwTIb9zpOOhoPsMm'
+        state: 'comment'
+
+      - name: 'disable_gravatar'
+        comment: |
+          disable gravatar profile images
+        value: 'false'
+        state: 'comment'
+
+      - name: 'data_source_proxy_whitelist'
+        comment: |
+          data source proxy whitelist (ip_or_domain:port separated by spaces)
+        state: 'comment'
+        value: ''
+
+      - name: 'cookie_secure'
+        comment: |
+          set to true if you host Grafana behind HTTPS. default is false.
+        value: 'false'
+        state: 'comment'
+
+      - name: 'cookie_samesite'
+        comment: |
+          set cookie SameSite attribute. defaults to `lax`. can be set to 'lax', 'strict', 'none' and 'disabled'
+        value: 'lax'
+        state: 'comment'
+
+      - name: 'allow_embedding'
+        comment: |
+          set to true if you want to allow browsers to render Grafana in a <frame>, <iframe>, <embed> or <object>. default is false.
+        value: 'false'
+        state: 'comment'
+
+      - name: 'strict_transport_security'
+        comment: |
+          Set to true if you want to enable http strict transport security (HSTS) response header.
+        value: 'false'
+        state: 'comment'
+
+      - name: 'strict_transport_security_max_age_seconds'
+        comment: |
+          Sets how long a browser should cache HSTS. Only applied if strict_transport_security is enabled.
+        value: '86400'
+        state: 'comment'
+
+      - name: 'strict_transport_security_preload'
+        comment: |
+          Set to true if to enable HSTS preloading option. Only applied if strict_transport_security is enabled.
+        value: 'false'
+        state: 'comment'
+
+      - name: 'strict_transport_security_subdomains'
+        comment: |
+          Set to true if to enable the HSTS includeSubDomains option. Only applied if strict_transport_security is enabled.
+        value: 'false'
+        state: 'comment'
+
+      - name: 'x_content_type_options'
+        comment: |
+          Set to true to enable the X-Content-Type-Options response header.
+        value: 'true'
+        state: 'comment'
+
+      - name: 'x_xss_protection'
+        comment: |
+          Set to true to enable the X-XSS-Protection header, which tells browsers to stop pages from loading when they detect reflected cross-site scripting (XSS) attacks.
+        value: 'true'
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'explore'                                                # [[[
+    options:
+      - name: 'enabled'
+        comment: |
+          Enable the Explore section
+        value: true
+        state: 'comment'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# .. envvar:: grafana__default_configuration [[[
+#
+# List of the default Grafana configuration options defined by the role.
 grafana__default_configuration:
 
-  - name: 'server'
+  - name: 'auth.anonymous'                                         # [[[
     options:
-      - http_port: '{{ grafana__port }}'
-        domain: '{{ grafana__fqdn }}'
-      - name: 'root_url'
-        value: 'https://%(domain)s'
-        state: '{{ "present" if (grafana__nginx_enabled | bool) else "absent" }}'
+      - name: 'enabled'
+        comment: |
+          enable anonymous access
+        value: true
+        state: 'present'
 
+      - name: 'hide_version'
+        comment: |
+          mask the Grafana version number for unauthenticated users
+        value: true
+        state: 'present'
+
+                                                                   # ]]]
+  - name: 'analytics'                                              # [[[
+    options:
+      - name: 'reporting_enabled'
+        comment: |
+          Server reporting, sends usage counters to stats.grafana.org every 24 hours.
+        value: false
+        state: 'present'
+
+      - name: 'check_for_updates'
+        comment: |
+          Set to false to disable all checks to https://grafana.net
+        value: false
+        state: 'present'
+
+                                                                   # ]]]
+  - name: 'users'                                                  # [[[
+    options:
+    - name: 'allow_sign_up'
+      comment: |
+        disable user signup / registration
+      value: 'false'
+      state: 'present'
+
+                                                                   # ]]]
+  - name: 'explore'                                                # [[[
+    options:
+      - name: 'enabled'
+        comment: |
+          Enable the Explore section
+        value: false
+        state: 'present'
+
+                                                                   # ]]]
                                                                    # ]]]
 # .. envvar:: grafana__configuration [[[
 #
-# List of configuration options defined on all hosts in the Grafana inventory.
+# List of Grafana configuration options defined on all hosts in the Ansible inventory.
 grafana__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: grafana__group_configuration [[[
+#
+# List of Grafana configuration options defined on hosts in a specific Ansible
+# inventory group.
+grafana__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: grafana__host_configuration [[[
+#
+# List of Grafana configuration options defined on specific hosts in the
+# Ansible inventory.
+grafana__host_configuration: []
 
                                                                    # ]]]
 # .. envvar:: grafana__combined_configuration [[[
 #
-# Actual list of Grafana configuration options passed to the
-# configuration template. This list defines the order in which the options from
-# different variables are processed.
-grafana__combined_configuration: '{{ grafana__default_configuration + grafana__configuration }}'
-
+# Variable which combines Grafana configuration lists and is used in role
+# tasks and templates.
+grafana__combined_configuration: '{{ grafana__original_configuration
+                                     + grafana__default_configuration
+                                     + grafana__configuration
+                                     + grafana__group_configuration
+                                     + grafana__host_configuration }}'
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
+# .. envvar:: grafana__upstream_apt_id [[[
+#
+# The Grafana fingerprint.
+grafana__upstream_apt_id: '4E40 DDF6 D76E 284A 4A67  80E4 8C8C 34C5 2409 8CB6'
+
+                                                                   # ]]]
+# .. envvar:: grafana__upstream_apt_repository [[[
+#
+# The APT repository URI of the upstream Grafana repository.
+grafana__upstream_apt_repository: 'deb https://packages.grafana.com/oss/deb stable main'
+
+                                                                   # ]]]
+# .. envvar:: grafana__keyring__dependent_apt_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+grafana__keyring__dependent_apt_keys:
+  - id: '{{ grafana__upstream_apt_id }}'
+    repo: '{{ grafana__upstream_apt_repository }}'
+
+                                                                   # ]]]
 # .. envvar:: grafana__ferm__dependent_rules [[[
 #
-# Configuration for :ref:`debops.ferm` Ansible role.
+# Configuration for the :ref:`debops.ferm` Ansible role.
 grafana__ferm__dependent_rules:
 
-  - type: 'accept'
+  - name: 'grafana_allow_http'
+    type: 'accept'
     dport: [ 'grafana' ]
-    saddr: '{{ grafana__allow }}'
-    accept_any: True
-    weight: '40'
-    role: 'grafana'
-    rule_state: '{{ "absent" if (grafana__nginx_enabled | bool) else "present" }}'
+    protocol: [ 'tcp' ]
+    saddr: '{{ grafana__allow + grafana__group_allow + grafana__host_allow }}'
+    weight: '50'
+    by_role: 'debops.Grafana'
 
                                                                    # ]]]
 # .. envvar:: grafana__etc_services__dependent_list [[[
@@ -154,34 +513,42 @@ grafana__etc_services__dependent_list:
 
   - name: 'grafana'
     port: '{{ grafana__port }}'
-
-                                                                   # ]]]
-# .. envvar:: grafana__keyring__dependent_apt_keys [[[
-#
-# Configuration for the :ref:`debops.keyring` Ansible role.
-grafana__keyring__dependent_apt_keys:
-
-  - id: '{{ grafana__upstream_apt_id }}'
-    repo: '{{ grafana__upstream_apt_repository }}'
-
+    protocol: [ 'tcp' ]
+    comment: 'Grafana Web Interface'
                                                                    # ]]]
 # .. envvar:: grafana__nginx__dependent_upstreams [[[
 #
-# Upstream configuration for the :ref:`debops.nginx` Ansible role.
+# Configuration of the Grafana nginx upstream, used by the debops.nginx_
+# Ansible role.
 grafana__nginx__dependent_upstreams:
+
   - name: 'grafana'
-    server: [ 'localhost' ]
-    port: '{{ grafana__port }}'
+    type: 'default'
+    state: 'present'
+    enabled: True
+    server: 'localhost:{{ grafana__port }}'
 
                                                                    # ]]]
 # .. envvar:: grafana__nginx__dependent_servers [[[
 #
-# Server configuration for the :ref:`debops.nginx` Ansible role.
+# Configuration of the Grafana nginx server, used by the debops.nginx_
+# Ansible role.
 grafana__nginx__dependent_servers:
   - name: '{{ grafana__fqdn }}'
-    by_role: 'debops.grafana'
     filename: 'debops.grafana'
-    type: proxy
-    proxy_pass: 'http://grafana/'
+    state: 'present'
+    type: 'proxy'
+    proxy_pass: 'http://{ grafana__fqdn }}'
+    options: |-
+      proxy_buffering off;
+    proxy_options: |-
+      proxy_redirect http:// https://;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+    location:
+      '/': |
+        proxy_pass http://{{ grafana__fqdn }};
+
                                                                    # ]]]
                                                                    # ]]]

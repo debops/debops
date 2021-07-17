@@ -8,20 +8,26 @@
 # This is the configuration file for the Grafana daemon, a open source
 # analytics & monitoring solution for every database
 #
+# Commented options show their default value.
+{% for element in grafana__combined_configuration | parse_kv_config %}
+{%   if element.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%     if not loop.first %}
 
-{% for element in grafana__combined_configuration | parse_kv_items %}
-{%   if element.name|d() and element.state|d('present') not in [ 'absent', 'ignore' ] %}
-
-{%     set element_comment = ('#' if element.state|d('present') == 'comment' else '') %}
-{%     if element.value is defined %}
-{{ '[{}]'.format(element.name) }}
-{%     else %}
-{{ '{}'.format(element.name) }}
 {%     endif %}
-{%     if element.options|d() %}
-{%       for thing in element.options %}
-{%         if thing.name|d() and thing.value|d() and thing.state|d('present') != 'absent' %}
-{{ '{} = {}'.format(thing.name, thing.value) }}
+{%   if element.name == "" %}
+{{ element.name }}
+{%   else %}
+[{{ element.name }}]
+{%   endif %}
+{%     if element.options is defined %}
+{%       for item in element.options %}
+{%         set item_prefix = (';' if item.state|d('present') == 'comment' else '') %}
+{%         if item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%           if not loop.first %}
+
+{%           endif %}
+{%           if item.comment|d() != '' %}{{ '# {}'.format(item.comment) }}{% endif %}
+{{           '{}{} = {}'.format(item_prefix, item.name, item.value) }}
 {%         endif %}
 {%       endfor %}
 {%     endif %}
