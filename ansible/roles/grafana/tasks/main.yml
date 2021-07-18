@@ -14,6 +14,10 @@
   import_role:
     name: 'global_handlers'
 
+- name: Import DebOps secret role
+  import_role:
+    name: 'secret'
+
 # Package installation [[[1
 - name: Install Grafana packages
   apt:
@@ -41,6 +45,18 @@
     unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
   register: grafana__register_configuration
 
+# Systemd service [[[1
+- name: Start Grafana
+  service:  # noqa no-handler
+    name: 'grafana-server'
+    state: 'restarted'
+  when: grafana__register_configuration is changed
+
+- name: Start Grafana
+  service:  # noqa no-handler
+    name: 'grafana-server'
+    state: 'started'
+
 # Ansible facts [[[1
 - name: Make sure that Ansible local fact directory exists
   file:
@@ -62,3 +78,4 @@
 
 - name: Reload facts if they were modified
   meta: 'flush_handlers'
+
