@@ -59,6 +59,13 @@ Added
 
 - The role can now install ``nginx-light`` flavor package if requested.
 
+:ref:`debops.sysctl` role
+'''''''''''''''''''''''''
+
+- The role can now disable "TCP Slow Start" algorithm if requested, to improve
+  the network connection performance. See
+  :envvar:`sysctl__tcp_performance_enabled` variable for more details.
+
 Changed
 ~~~~~~~
 
