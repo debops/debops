@@ -105,6 +105,17 @@ sysctl__hardening_ipv6_disabled: False
 sysctl__hardening_experimental_enabled: False
                                                                    # ]]]
                                                                    # ]]]
+
+# Performance parameters [[[
+# --------------------------
+
+# .. envvar:: sysctl__tcp_performance_enabled [[[
+#
+# Should the TCP performance options be applied?
+sysctl__tcp_performance_enabled: False
+
+                                                                   # ]]]
+                                                                   # ]]]
 # Kernel parameters [[[
 # ---------------------
 
@@ -234,6 +245,13 @@ sysctl__default_parameters:
                     not (ansible_virtualization_role == "guest" and
                          ansible_virtualization_type == "openvz"))
                   | ternary("present", "absent") }}'
+
+      - name: 'net.ipv4.tcp_slow_start_after_idle'
+        value: '{{ sysctl__tcp_performance_enabled|bool | ternary(0, 1) }}'
+        comment: |
+          If set, provide RFC2861 behavior and time out the congestion window after an idle period.
+          An idle period is defined at the current RTO. If unset, the congestion window will not be timed out after an idle period.
+        state: 'present'
 
   # The '/proc/sys/fs/' namespace is usually read-only in unprivileged LXC
   # containers. The default 'protect-links.conf' file that comes with the
