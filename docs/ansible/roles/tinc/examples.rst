@@ -34,6 +34,34 @@ Create a separate Tinc network with a specific group of hosts included in the
        connect_to: '{{ groups.tinc_vpn }}'
 
 
+Star network
+------------
+
+Create a star network with 192.168.26.0/24 with the master connecting to the slaves:
+
+.. code-block:: yaml
+
+   # master node:
+   tinc__host_networks:
+     'star0':
+       address: "192.168.26.254/24"
+       connect_to: 'slave01'
+       connect_to: 'slave02'
+       bridge: [ 'br0' ]
+
+   # slave01 node:
+   tinc__host_networks:
+     'star0':
+       address: "192.168.26.1/24"
+       host_address: "{{ ansible_host }}"
+
+   # slave02 node:
+   tinc__host_networks:
+     'star0':
+       address: "192.168.26.2/24"
+       host_address: "{{ ansible_host }}"
+
+
 IPv6 over IPv4 tunnel
 ---------------------
 
