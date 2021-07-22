@@ -6,6 +6,11 @@
 # .. Copyright (C) 2021 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
+# .. _grafana__ref_configuration:
+
+# Grafana configuration file [[[
+# ------------------------------
+#
 # .. envvar:: grafana__original_configuration [[[
 #
 # The default configuration options which should be present in the main
@@ -2182,42 +2187,44 @@ grafana__default_configuration:
   - name: 'server'                                                 # [[[
     options:
       - name: 'protocol'
-        value: '{{ "socket" if grafana__nginx_enabled else "http" }}'
-        state: 'comment'
-        comment: |
-          Protocol (http, https, h2, socket)
+        value: 'http'
+        state: '{{ "present" if grafana__nginx_enabled else "comment" }}'
 
       - name: 'http_port'
         value: '{{ grafana__port }}'
-        comment: |
-          The http port to use
         state: 'present'
 
       - name: 'domain'
-        value: '{{ ansible_fqdn }}'
-        comment: |
-          The public facing domain name used to access grafana from a browser
+        value: '{{ grafana__fqdn.split(".")[0] }}'
         state: 'present'
 
-      - name: 'root_url'
-        value: "%(protocol)s://%(domain)s:%(http_port)s/"
-        comment: |
-          The full public facing url you use in browser, used for redirects and emails If you use reverse proxy and sub path specify full url (with sub path)
-        state: 'comment'
+                                                                   # ]]]
+  - name: 'security'                                               # [[[
+    options:
+      - name: 'cookie_secure'
+        value: '{{ true if grafana__nginx_enabled and pki_enabled else false }}'
+        state: 'present'
+
+      - name: 'secret_key'
+        value: "{{ grafana__secret_key | d('SW2YcwTIb9zpOOhoPsMm') }}"
+        state: 'present'
 
                                                                    # ]]]
   - name: 'auth.anonymous'                                         # [[[
     options:
       - name: 'enabled'
-        comment: |
-          enable anonymous access
         value: true
         state: 'present'
 
       - name: 'hide_version'
-        comment: |
-          mask the Grafana version number for unauthenticated users
         value: true
+        state: 'present'
+
+                                                                   # ]]]
+  - name: 'security'                                               # [[[
+    options:
+      - name: 'admin_password'
+        value: '{{ grafana__admin_password | d("admin") }}'
         state: 'present'
 
                                                                    # ]]]
@@ -2251,4 +2258,5 @@ grafana__combined_configuration: '{{ grafana__original_configuration
                                      + grafana__configuration
                                      + grafana__group_configuration
                                      + grafana__host_configuration }}'
+                                                                   # ]]]
                                                                    # ]]]

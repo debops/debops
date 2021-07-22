@@ -10,8 +10,6 @@
 
 # .. contents:: Sections
 #    :local:
-#
-# .. include:: ../../../../includes/global.rst
 
 # Installation, APT packages [[[
 # ------------------------------
@@ -26,24 +24,6 @@ grafana__base_packages: [ 'grafana' ]
 #
 # List of APT packages to install on all hosts in Grafana inventory.
 grafana__packages: []
-
-                                                                   # ]]]
-# .. envvar:: grafana__port [[[
-#
-# Port number on which this Grafana listens on.
-grafana__port: '3000'
-
-                                                                   # ]]]
-# .. envvar:: grafana__fqdn [[[
-#
-# FQDN of the Grafana instance.
-grafana__fqdn: '{{ ansible_fqdn }}'
-
-                                                                   # ]]]
-# .. envvar:: grafana__nginx_enabled [[[
-#
-# Enable nginx as a proxy frontend to Grafana.
-grafana__nginx_enabled: true
 
                                                                    # ]]]
                                                                    # ]]]
@@ -77,6 +57,52 @@ grafana__host_allow: []
                                                                    # ]]]
 # Grafana configuration [[[
 # -------------------------
+# .. envvar:: grafana__port [[[
+#
+# Port number on which this Grafana listens on.
+grafana__port: '3000'
+
+                                                                   # ]]]
+# .. envvar:: grafana__domain [[[
+#
+# Domain of the Grafana instance.
+grafana__domain: '{{ ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: grafana__fqdn [[[
+#
+# FQDN of the Grafana instance.
+grafana__fqdn: 'grafana.{{ grafana__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: grafana__additional_domains [[[
+#
+# Additional DNS names used by the grafana webserver. The users will be
+# automatically redirected to the main FQDN of the service.
+grafana__additional_domains: []
+
+                                                                   # ]]]
+# .. envvar:: grafana__nginx_enabled [[[
+#
+# Enable nginx as a proxy frontend to Grafana.
+grafana__nginx_enabled: true
+
+                                                                   # ]]]
+# .. envvar:: grafana__secret_key [[[
+#
+# Secret key used for signing
+grafana__secret_key: '{{ lookup("password", secret
+                       + "/grafana/credentials/" + inventory_hostname
+                       + "/secret_key length=20 chars=ascii_letters,digits") }}'
+                                                                   # ]]]
+# .. envvar:: grafana_admin__password [[[
+#
+# Password set on admin account, saved in secrets. If not specified,
+# a random password will be generated for the admin account.
+grafana__admin_password: '{{ lookup("password", secret
+                           + "/grafana/credentials/" + inventory_hostname
+                           + "/admin_password length=12 chars=ascii_letters,digits") }}'
+                                                                   # ]]]
                                                                    # ]]]
 
 # Configuration for other Ansible roles [[[
@@ -126,6 +152,17 @@ grafana__ferm__dependent_rules:
                     if grafana__nginx_enabled|bool
                     else "absent" }}'
 
+  - type: 'accept'
+    dport: [ 'https' ]
+    protocol: [ 'tcp' ]
+    saddr: '{{ grafana__allow + grafana__group_allow + grafana__host_allow }}'
+    weight: '50'
+    by_role: 'debops.grafana'
+    rule_state: '{{ "present"
+                    if grafana__nginx_enabled|bool and pki_enabled|bool
+                    else "absent" }}'
+
+
                                                                    # ]]]
 # .. envvar:: grafana__etc_services__dependent_list [[[
 #
@@ -138,7 +175,7 @@ grafana__etc_services__dependent_list:
                                                                    # ]]]
 # .. envvar:: grafana__nginx__dependent_upstreams [[[
 #
-# Configuration of the Grafana nginx upstream, used by the debops.nginx_
+# Configuration of the Grafana nginx upstream, used by the :ref:`debops.nginx`
 # Ansible role.
 grafana__nginx__dependent_upstreams:
   - name: 'grafana'
@@ -147,17 +184,17 @@ grafana__nginx__dependent_upstreams:
                                                                    # ]]]
 # .. envvar:: grafana__nginx__dependent_servers [[[
 #
-# Configuration of the Grafana nginx server, used by the debops.nginx_
+# Configuration of the Grafana nginx server, used by the :ref:`debops.nginx`
 # Ansible role.
 grafana__nginx__dependent_servers:
-  - name: '{{ grafana__fqdn }}'
-    by_role: 'debops.grafana'
+  - by_role: 'debops.grafana'
+    name: '{{ [ grafana__fqdn ] + grafana__additional_domains }}'
     filename: 'debops.grafana'
-    welcome: False
+    redirect_from: True
     favicon: False
     location:
       '/': |
-        proxy_pass 'http://localhost:3000';
+        proxy_pass 'http://localhost:{{ grafana__port }}';
         proxy_set_header X-Forwarded-Host $server_name;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-Proto $scheme;

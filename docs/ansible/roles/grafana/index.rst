@@ -13,7 +13,8 @@ Ubuntu host. Grafana will be installed from upstream APT repository.
    :maxdepth: 2
 
    getting-started
-   defaults/main
+   defaults/main/main
+   defaults/main/configuration
 
 Copyright
 ---------
