@@ -1,0 +1,88 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Copyright (C) 2021-2021 Julien Lecomte <julien@lecomte.at>
+# Copyright (C) 2021-2021 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import custom Ansible plugins
+  import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
+# Package installation [[[1
+- name: Install Transmission packages
+  apt:
+    name: '{{ (transmission__base_packages
+             + transmission__packages)
+             | flatten }}'
+    state: 'present'
+  register: transmission__register_packages
+  until: transmission__register_packages is succeeded
+
+# Transmission configuration [[[1
+- name: Divert the Transmission configuration file
+  command: dpkg-divert --quiet --local --divert /etc/transmission-daemon/settings.json.dpkg-divert
+                       --rename /etc/transmission-daemon/settings.json
+  args:
+    creates: '/etc/transmission-daemon/settings.json.dpkg-divert'
+
+# When transmission stops, the settings are overwritten.
+# In order to work around this, detect if configuration file should change.
+# If it should, stop the daemon, generate, re-start.
+- name: Generate transmission configuration file
+  template:
+    src: 'etc/transmission-daemon/settings.json.j2'
+    dest: '/etc/transmission-daemon/settings.json'
+    owner: 'debian-transmission'
+    group: 'debian-transmission'
+    mode: '0600'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+  register: transmission__register_configuration
+
+# Systemd service [[[1
+- name: Stop transmission
+  service:  # noqa no-handler
+    name: 'transmission-daemon'
+    state: 'stopped'
+  when: transmission__register_configuration is changed
+
+- name: Generate transmission configuration file
+  template:
+    src: 'etc/transmission-daemon/settings.json.j2'
+    dest: '/etc/transmission-daemon/settings.json'
+    owner: 'debian-transmission'
+    group: 'debian-transmission'
+    mode: '0600'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+  register: transmission__register_configuration
+
+- name: Start transmission
+  service:  # noqa no-handler
+    name: 'transmission-daemon'
+    state: 'started'
+
+# Ansible facts [[[1
+- name: Make sure that Ansible local fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Create local facts of transmission
+  template:
+    src: 'etc/ansible/facts.d/transmission.fact.j2'
+    dest: '/etc/ansible/facts.d/transmission.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+  notify: [ 'Refresh host facts' ]
+
+- name: Reload facts if they were modified
+  meta: 'flush_handlers'

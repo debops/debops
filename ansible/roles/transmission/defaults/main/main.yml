@@ -1,0 +1,172 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Copyright (C) 2021-2021 Julien Lecomte <julien@lecomte.at>
+# Copyright (C) 2021-2021 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _transmission__ref_defaults:
+
+# .. contents:: Sections
+#    :local:
+
+# Installation, APT packages [[[
+# ------------------------------
+
+# .. envvar:: transmission__base_packages [[[
+#
+# List of APT packages to install for :command:`transmission` support.
+transmission__base_packages: [ 'transmission-daemon', 'transmission-cli' ]
+
+                                                                   # ]]]
+# .. envvar:: transmission__packages [[[
+#
+# List of additional APT packages to install during :command:`transmission`
+# configuration.
+transmission__packages: []
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Network configuration [[[
+# -------------------------
+
+# .. envvar:: transmission__allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# transmission instances over the network, on all hosts in the Ansible inventory.
+# If not specified, all hosts can connect to transmission service.
+transmission__allow: []
+
+                                                                   # ]]]
+# .. envvar:: transmission__group_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# transmission instances over the network, on hosts in a specific Ansible inventory
+# group. If not specified, all hosts can connect to transmission service.
+transmission__group_allow: []
+
+                                                                   # ]]]
+# .. envvar:: transmission__host_allow [[[
+#
+# List of IP addresses or CIDR subnets which are allowed to connect to the
+# transmission instances over the network, on specific hosts in the Ansible
+# inventory. If not specified, all hosts can connect to transmission service.
+transmission__host_allow: []
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Transmission configuration [[[
+# ------------------------------
+
+# .. envvar:: transmission__rpc_port [[[
+#
+# Port number on which this Transmission RPC server listens on.
+transmission__rpc_port: '9091'
+
+                                                                   # ]]]
+# .. envvar:: transmission__domain [[[
+#
+# Domain of the Transmission instance.
+transmission__domain: '{{ ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: transmission__fqdn [[[
+#
+# FQDN of the Transmission instance.
+transmission__fqdn: 'torrent.{{ transmission__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: transmission__additional_domains [[[
+#
+# Additional DNS names used by the transmission webserver. The users will be
+# automatically redirected to the main FQDN of the service.
+transmission__additional_domains: []
+
+                                                                   # ]]]
+# .. envvar:: transmission__nginx_enabled [[[
+#
+# Enable nginx as a proxy frontend to Transmission.
+transmission__nginx_enabled: true
+
+                                                                   # ]]]
+                                                                   # ]]]
+
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+                                                                   # ]]]
+# .. envvar:: transmission__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+transmission__ferm__dependent_rules:
+  - type: 'accept'
+    dport: [ 'transmission' ]
+    protocol: [ 'tcp' ]
+    saddr: '{{ transmission__allow + transmission__group_allow + transmission__host_allow }}'
+    weight: '50'
+    by_role: 'debops.transmission'
+    rule_state: '{{ "absent"
+                    if transmission__nginx_enabled|bool
+                    else "present" }}'
+
+  - type: 'accept'
+    dport: [ 'http' ]
+    protocol: [ 'tcp' ]
+    saddr: '{{ transmission__allow + transmission__group_allow + transmission__host_allow }}'
+    weight: '50'
+    by_role: 'debops.transmission'
+    rule_state: '{{ "present"
+                    if transmission__nginx_enabled|bool
+                    else "absent" }}'
+
+  - type: 'accept'
+    dport: [ 'https' ]
+    protocol: [ 'tcp' ]
+    saddr: '{{ transmission__allow + transmission__group_allow + transmission__host_allow }}'
+    weight: '50'
+    by_role: 'debops.transmission'
+    rule_state: '{{ "present"
+                    if transmission__nginx_enabled|bool and pki_enabled|bool
+                    else "absent" }}'
+
+
+                                                                   # ]]]
+# .. envvar:: transmission__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+transmission__etc_services__dependent_list:
+
+  - name: 'transmission'
+    port: '{{ transmission__rpc_port }}'
+    protocol: [ 'tcp' ]
+    comment: 'Transmission RPC interface'
+    state: 'present'
+                                                                   # ]]]
+# .. envvar:: transmission__nginx__dependent_upstreams [[[
+#
+# Configuration of the transmission nginx upstream, used by the :ref:`debops.nginx`
+# Ansible role.
+transmission__nginx__dependent_upstreams:
+  - name: 'transmission'
+    server: 'localhost:{{ transmission__rpc_port }}'
+
+                                                                   # ]]]
+# .. envvar:: transmission__nginx__dependent_servers [[[
+#
+# Configuration of the transmission nginx server, used by the :ref:`debops.nginx`
+# Ansible role.
+transmission__nginx__dependent_servers:
+  - by_role: 'debops.transmission'
+    name: '{{ [ transmission__fqdn ] + transmission__additional_domains }}'
+    filename: 'debops.torrent'
+    redirect_from: True
+    favicon: False
+    location:
+      '/': |
+        proxy_pass 'http://localhost:{{ transmission__rpc_port }}';
+        proxy_set_header X-Forwarded-Host $server_name;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+                                                                   # ]]]
+                                                                   # ]]]

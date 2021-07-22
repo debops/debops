@@ -1,0 +1,21 @@
+{#
+ # Copyright (C) 2021-2021 Julien Lecomte <julien@lecomte.at>
+ # Copyright (C) 2021-2021 DebOps <https://debops.org/>
+ # .. SPDX-License-Identifier: GPL-3.0-only
+ #}
+{
+{% for item in transmission__combined_configuration | parse_kv_items %}
+{%   if item.state|d('present') not in [ 'absent', 'ignore', 'comment' ] %}
+{%     if item.value is false %}
+{{       '"{}": false,'.format(item.name) }}
+{%     elif item.value is true %}
+{{       '"{}": true,'.format(item.name) }}
+{%     elif item.value is number %}
+{{       '"{}": {},'.format(item.name, item.value) }}
+{%     else %}
+{{       '"{}": "{}",'.format(item.name, item.value) }}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+  "dummy": ""
+}

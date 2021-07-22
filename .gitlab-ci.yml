@@ -2518,6 +2518,20 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/tinyproxy/.*'
     JANE_LOG_PATTERN: '\[tinyproxy\]'
 
+'transmission role':
+  <<: *test_role_2nd_deps
+  needs:
+    - 'etc_services role'
+    - 'ferm role'
+    - 'nginx role'
+  variables:
+    JANE_TEST_FACT: 'transmission.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/transmission.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_transmission'
+    JANE_DIFF_PATTERN: '.*/roles/transmission/.*'
+    JANE_LOG_PATTERN: '\[transmission\]'
+    JANE_IGNORE_IDEMPOTENCY: 'Issues with transmission (file:///etc/transmission-daemon/README.json)'
+
 'tzdata role':
   <<: *test_role_no_deps
   variables:

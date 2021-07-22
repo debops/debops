@@ -1,0 +1,246 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Copyright (C) 2021-2021 Julien Lecomte <julien@lecomte.at>
+# Copyright (C) 2021-2021 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _transmission__ref_configuration:
+
+# Transmission configuration file [[[
+# -----------------------------------
+#
+# .. envvar:: transmission__original_configuration [[[
+#
+# The default configuration options which should be present in the main
+# configuration file.
+transmission__original_configuration:
+  - name: "alt-speed-down"
+    value: 50
+
+  - name: "alt-speed-enabled"
+    value: false
+
+  - name: "alt-speed-time-begin"
+    value: 540
+
+  - name: "alt-speed-time-day"
+    value: 127
+
+  - name: "alt-speed-time-enabled"
+    value: false
+
+  - name: "alt-speed-time-end"
+    value: 1020
+
+  - name: "alt-speed-up"
+    value: 50
+
+  - name: "bind-address-ipv4"
+    value: "0.0.0.0"
+
+  - name: "bind-address-ipv6"
+    value: "::"
+
+  - name: "blocklist-enabled"
+    value: false
+
+  - name: "blocklist-url"
+    value: "http://www.example.com/blocklist"
+
+  - name: "cache-size-mb"
+    value: 4
+
+  - name: "dht-enabled"
+    value: true
+
+  - name: "download-dir"
+    value: "/var/lib/transmission-daemon/Downloads"
+
+  - name: "download-queue-enabled"
+    value: true
+
+  - name: "download-queue-size"
+    value: 5
+
+  - name: "encryption"
+    value: 1
+
+  - name: "idle-seeding-limit"
+    value: 30
+
+  - name: "idle-seeding-limit-enabled"
+    value: false
+
+  - name: "incomplete-dir"
+    value: "/var/lib/transmission-daemon/Downloads"
+
+  - name: "incomplete-dir-enabled"
+    value: false
+
+  - name: "lpd-enabled"
+    value: false
+
+  - name: "message-level"
+    value: 1
+
+  - name: "peer-congestion-algorithm"
+    value: ""
+
+  - name: "peer-id-ttl-hours"
+    value: 6
+
+  - name: "peer-limit-global"
+    value: 200
+
+  - name: "peer-limit-per-torrent"
+    value: 50
+
+  - name: "peer-port"
+    value: 51413
+
+  - name: "peer-port-random-high"
+    value: 65535
+
+  - name: "peer-port-random-low"
+    value: 49152
+
+  - name: "peer-port-random-on-start"
+    value: false
+
+  - name: "peer-socket-tos"
+    value: "default"
+
+  - name: "pex-enabled"
+    value: true
+
+  - name: "port-forwarding-enabled"
+    value: true
+
+  - name: "preallocation"
+    value: 1
+
+  - name: "prefetch-enabled"
+    value: true
+
+  - name: "queue-stalled-enabled"
+    value: true
+
+  - name: "queue-stalled-minutes"
+    value: 30
+
+  - name: "ratio-limit"
+    value: 2
+
+  - name: "ratio-limit-enabled"
+    value: false
+
+  - name: "rename-partial-files"
+    value: true
+
+  - name: "rpc-authentication-required"
+    value: false
+
+  - name: "rpc-bind-address"
+    value: "0.0.0.0"
+
+  - name: "rpc-enabled"
+    value: true
+
+  - name: "rpc-host-whitelist"
+    value: ""
+
+  - name: "rpc-host-whitelist-enabled"
+    value: true
+
+  - name: "rpc-password"
+    value: ""
+
+  - name: "rpc-port"
+    value: 9091
+
+  - name: "rpc-url"
+    value: "/transmission/"
+
+  - name: "rpc-username"
+    value: ""
+
+  - name: "rpc-whitelist"
+    value: "127.0.0.1"
+
+  - name: "rpc-whitelist-enabled"
+    value: true
+
+  - name: "scrape-paused-torrents-enabled"
+    value: true
+
+  - name: "script-torrent-done-enabled"
+    value: false
+
+  - name: "script-torrent-done-filename"
+    value: ""
+
+  - name: "seed-queue-enabled"
+    value: false
+
+  - name: "seed-queue-size"
+    value: 10
+
+  - name: "speed-limit-down"
+    value: 100
+
+  - name: "speed-limit-down-enabled"
+    value: false
+
+  - name: "speed-limit-up"
+    value: 100
+
+  - name: "speed-limit-up-enabled"
+    value: false
+
+  - name: "start-added-torrents"
+    value: true
+
+  - name: "trash-original-torrent-files"
+    value: false
+
+  - name: "umask"
+    value: 18
+
+  - name: "upload-slots-per-torrent"
+    value: 14
+
+  - name: "utp-enabled"
+    value: true
+
+                                                                  # ]]]
+# .. envvar:: transmission__configuration [[[
+#
+# List of Transmission configuration options defined on all hosts in the Ansible inventory.
+transmission__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: transmission__group_configuration [[[
+#
+# List of Transmission configuration options defined on hosts in a specific Ansible
+# inventory group.
+transmission__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: transmission__host_configuration [[[
+#
+# List of Transmission configuration options defined on specific hosts in the
+# Ansible inventory.
+transmission__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: transmission__combined_configuration [[[
+#
+# Variable which combines Transmission configuration lists and is used in role
+# tasks and templates.
+transmission__combined_configuration: '{{ transmission__original_configuration
+                                     + transmission__configuration
+                                     + transmission__group_configuration
+                                     + transmission__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
