@@ -253,3 +253,59 @@ The LMTP transport target will only be configured in Postfix when 'lmtp'
 is enabled in ``dovecot_protocols``.
 
 For most people the default configuration will be sufficient.
+
+.. _dovecot_mailbox_definitions:
+
+dovecot_mailbox_definitions
+---------------------------
+
+Configuration dictionary for mailbox specific settings. Valid keys are
+``name`` (mandatory), ``comment``, ``special_use``, ``auto``, ``imap_comment``
+and ``state``.
+
+``name`` is the name of the mailbox. ``comment`` includes a comment in the
+generated configuration file. ``state`` can either be ``comment`` (in which
+case the mailbox entry will be included in the generated configuration file
+but commented out) or ``present`` (in which case the mailbox entry will be
+included in the generated configuration, this is also the default if ``state``
+is not set). Other values will lead to the mailbox entry being silently
+ignored.
+
+``auto`` controls whether a mailbox with the given ``name`` will be
+automatically created and whether users will be automatically subscribed.
+Possible values are ``no`` (don't create automatically, the default),
+``create`` (autocreate but don't autosubscribe) and ``subscribe``
+(autocreate and autosubscribe).
+
+``special_use`` marks a mailbox with special-use flags (see 
+`RFC6154`_) which assist mail clients in autoconfiguring
+new mail accounts. A mailbox can be tagged with one or more special-use
+flags (defined as a string or list of strings), but mail clients are unlikely
+to recognize anything else than the standard ones, which are:
+
+\All
+  This (virtual) mailbox presents all messages in the user's message store.
+\Archive
+  This mailbox is used to archive messages.
+\Drafts
+  This mailbox is used to hold draft messages.
+\Flagged
+  This (virtual) mailbox presents all messages in the
+  user's message store marked with the IMAP \Flagged flag.
+\Important
+  This (virtual) mailbox presents all messages in the
+  user's message store deemed important to the user.
+\Junk
+  This mailbox is where messages deemed to be junk mail
+  are held.
+\Sent
+  This mailbox is used to hold copies of messages that
+  have been sent.
+\Trash
+  This mailbox is used to hold messages that have been
+  deleted.
+
+``imap_comment`` adds a comment for a mailbox which is made available to
+mail clients via the IMAP METADATA protocol.
+
+.. _RFC6154: https://datatracker.ietf.org/doc/html/rfc6154#page-4

@@ -67,7 +67,7 @@
            --rename /etc/dovecot/conf.d/{{ item }}
            creates=/etc/dovecot/conf.d/{{ item }}.dpkg-divert
   with_flattened:
-    - [ '10-auth.conf', '10-mail.conf', '10-master.conf', '10-ssl.conf', '15-lda.conf' ]
+    - [ '10-auth.conf', '10-mail.conf', '10-master.conf', '10-ssl.conf', '15-lda.conf', '15-mailboxes.conf' ]
     - [ '{{ "20-imap.conf" if "imap" in dovecot_protocols else [] }}' ]
     - [ '{{ "20-pop3.conf" if "pop3" in dovecot_protocols else [] }}' ]
     - [ '{{ "20-lmtp.conf" if "lmtp" in dovecot_protocols else [] }}' ]
@@ -138,7 +138,7 @@
     group: 'root'
     mode: '0644'
   with_flattened:
-    - [ '10-auth.conf', '10-mail.conf', '10-master.conf', '10-ssl.conf', '15-lda.conf' ]
+    - [ '10-auth.conf', '10-mail.conf', '10-master.conf', '10-ssl.conf', '15-lda.conf', '15-mailboxes.conf' ]
     - [ '{{ "20-imap.conf" if "imap" in dovecot_protocols else [] }}' ]
     - [ '{{ "20-pop3.conf" if "pop3" in dovecot_protocols else [] }}' ]
     - [ '{{ "20-lmtp.conf" if "lmtp" in dovecot_protocols else [] }}' ]

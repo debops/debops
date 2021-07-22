@@ -585,6 +585,42 @@ dovecot_auth_config_map:
         mode: '0600'
 
                                                                    # ]]]
+# .. envvar:: dovecot_mailbox_definitions [[[
+#
+# Custom mailbox definitions. For more details, see
+# :ref:`dovecot_mailbox_definitions`.
+dovecot_mailbox_definitions:
+  - name: 'Drafts'
+    comment: 'These mailboxes are widely used and could perhaps be created automatically:'
+    special_use: '\Drafts'
+  - name: 'Junk'
+    special_use: '\Junk'
+  - name: 'Trash'
+    special_use: '\Trash'
+  - name: 'Sent'
+    comment: |
+      For \Sent mailboxes there are two widely used names. We'll mark both of
+      them as \Sent. User typically deletes one of them if duplicates are created.
+    special_use: '\Sent'
+  - name: 'Sent Messages'
+    special_use: '\Sent'
+  - name: 'virtual/All'
+    comment: 'If you have a virtual "All messages" mailbox:'
+    special_use: '\All'
+    imap_comment: 'All my messages'
+    state: 'comment'
+  - name: 'virtual/Flagged'
+    comment: 'If you have a virtual "Flagged" mailbox:'
+    special_use: '\Flagged'
+    imap_comment: 'All my flagged messages'
+    state: 'comment'
+  - name: 'virtual/Important'
+    comment: 'If you have a virtual "Important" mailbox:'
+    special_use: '\Important'
+    imap_comment: 'All my important messages'
+    state: 'comment'
+
+                                                                   # ]]]
 # .. envvar:: dovecot_custom_localconf [[[
 #
 # Dovecot custom configuration added at the end of ``/etc/dovecot/local.conf``

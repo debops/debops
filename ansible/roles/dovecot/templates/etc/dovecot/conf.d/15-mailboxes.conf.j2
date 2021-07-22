@@ -1,0 +1,87 @@
+{# Copyright (C) 2021 David Härdeman <david@hardeman.nu>
+ # Copyright (C) DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+{#
+
+This file follows the upstream default configuration except for the parts
+that are configurable via DebOps variables. If you need a more customized
+setup, you can provide your own template via the DebOps template_src
+lookup mechanism.
+
+#}
+
+##
+## Mailbox definitions
+##
+
+# Each mailbox is specified in a separate mailbox section. The section name
+# specifies the mailbox name. If it has spaces, you can put the name
+# "in quotes". These sections can contain the following mailbox settings:
+#
+# auto:
+#   Indicates whether the mailbox with this name is automatically created
+#   implicitly when it is first accessed. The user can also be automatically
+#   subscribed to the mailbox after creation. The following values are
+#   defined for this setting:
+# 
+#     no        - Never created automatically.
+#     create    - Automatically created, but no automatic subscription.
+#     subscribe - Automatically created and subscribed.
+#  
+# special_use:
+#   A space-separated list of SPECIAL-USE flags (RFC 6154) to use for the
+#   mailbox. There are no validity checks, so you could specify anything
+#   you want in here, but it's not a good idea to use flags other than the
+#   standard ones specified in the RFC:
+#
+#     \All       - This (virtual) mailbox presents all messages in the
+#                  user's message store.
+#     \Archive   - This mailbox is used to archive messages.
+#     \Drafts    - This mailbox is used to hold draft messages.
+#     \Flagged   - This (virtual) mailbox presents all messages in the
+#                  user's message store marked with the IMAP \Flagged flag.
+#     \Important - This (virtual) mailbox presents all messages in the
+#                  user's message store deemed important to user.
+#     \Junk      - This mailbox is where messages deemed to be junk mail
+#                  are held.
+#     \Sent      - This mailbox is used to hold copies of messages that
+#                  have been sent.
+#     \Trash     - This mailbox is used to hold messages that have been
+#                  deleted.
+#
+# comment:
+#   Defines a default comment or note associated with the mailbox. This
+#   value is accessible through the IMAP METADATA mailbox entries
+#   "/shared/comment" and "/private/comment". Users with sufficient
+#   privileges can override the default value for entries with a custom
+#   value.
+
+# NOTE: Assumes "namespace inbox" has been defined in 10-mail.conf.
+namespace inbox {
+{% for mailbox in dovecot_mailbox_definitions %}
+{%   if 'name' in mailbox and mailbox.state|d('present') in [ 'present', 'comment' ] %}
+{%     if 'comment' in mailbox %}
+{{       '{}'.format(mailbox.comment | regex_replace('\n$', '') | comment(prefix='', decoration='  # ', postfix='')) -}}
+{%     endif %}
+{%     if mailbox.state|d('present') == 'comment' %}
+{%       set comment_prefix = '# ' %}
+{%     else %}
+{%       set comment_prefix = '' %}
+{%     endif %}
+{{     '  {}mailbox "{}" {{'.format(comment_prefix, mailbox.name | regex_replace('\n$', '')) }}
+{%     if 'auto' in mailbox %}
+{{       '  {}  auto = {}'.format(comment_prefix, mailbox.auto | regex_replace('\n$', '')) }}
+{%     endif %}
+{%     if 'special_use' in mailbox %}
+{{       '  {}  special_use = {}'.format(comment_prefix, [ mailbox.special_use ] | flatten | join(' ') | regex_replace('\n$', '')) }}
+{%     endif %}
+{%     if 'imap_comment' in mailbox %}
+{{       '  {}  comment = {}'.format(comment_prefix, mailbox.imap_comment | regex_replace('\n$', '')) }}
+{%     endif %}
+{{     '  {}}}'.format(comment_prefix) }}
+{{     '' }}
+{%   endif %}
+{% endfor %}
+}
