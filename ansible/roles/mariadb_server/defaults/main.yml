@@ -450,6 +450,27 @@ mariadb_server__keyring__dependent_apt_keys:
   - '{{ mariadb_server__apt_key }}'
 
                                                                    # ]]]
+# .. envvar:: mariadb_server__etc_services__dependent_rules [[[
+#
+# Configuration for :ref:`debops.etc_services` Ansible role.
+mariadb_server__etc_services__dependent_rules:
+
+  - name: 'galera-cluster-rep'
+    port: '4567'
+    protocols: [ 'tcp', 'udp' ]
+    comment: 'Galera Cluster Replication'
+
+  - name: 'galera-ist'
+    port: '4568'
+    protocols: [ 'tcp' ]
+    comment: 'Galera Incremental State Transfer'
+
+  - name: 'galera-sst'
+    port: '4444'
+    protocols: [ 'tcp' ]
+    comment: 'Galera State Snapshot Transfer'
+
+                                                                   # ]]]
 # .. envvar:: mariadb_server__ferm__dependent_rules [[[
 #
 # Configuration for :ref:`debops.ferm` Ansible role.
