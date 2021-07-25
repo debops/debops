@@ -43,6 +43,12 @@ Added
   account in new LXC containers by default. This can be used to grant multiple
   system administrators access to the containers.
 
+:ref:`debops.mariadb_server` role
+'''''''''''''''''''''''''''''''''
+
+- The role will reserve TCP ports used by Galera Cluster in the
+  :file:`/etc/services` database.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
