@@ -59,6 +59,12 @@ Updates of upstream application versions
 Fixed
 ~~~~~
 
+:ref:`debops.apt_preferences` role
+''''''''''''''''''''''''''''''''''
+
+- The APT pin priority for the NeuroDebian repositories is lowered to allow
+  easier migration to repositories managed by the ``exrepo`` project.
+
 :ref:`debops.libvirt` role
 ''''''''''''''''''''''''''
 
