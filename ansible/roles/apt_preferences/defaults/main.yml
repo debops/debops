@@ -101,10 +101,18 @@ apt_preferences__debian_stable_default_preset_list:
       Pin: release o=Debian Backports,n={{ ansible_distribution_release }}-backports
       Pin-Priority: 400
 
+      Explanation: Pin NeuroDebian with priority 80 which is lower then the official Debian backports (100).
+      Explanation: This also works with this pinning configuration where Debian backports is
+      Explanation: set to 400 and Debian testing is decreased to 50.
+      Explanation: It is done here additionally to the neurodebian role to allow soft migration to extrepo.
+      Package: *
+      Pin: release o=NeuroDebian
+      Pin-Priority: 80
+
       Explanation: In case ansible_distribution_release is not (anymore) the current stable release don’t automatically upgrade to it.
       Package: *
       Pin: release o=Debian,a=stable
-      Pin-Priority: 100
+      Pin-Priority: 60
 
       Explanation: Install packages from testing if no package with the same name is available in release archives or backports or other archives.
       Package: *
