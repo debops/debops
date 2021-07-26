@@ -503,16 +503,10 @@ dovecot_sieve_port: 4190
 
                                                                    # ]]]
 
-# .. envvar:: dovecot_sieve_active_script [[[
-#
-# Location of link to active sieve script
-dovecot_sieve_active_script: '~/.dovecot.sieve'
-
-                                                                   # ]]]
-# .. envvar:: dovecot_sieve_dir [[[
+# .. envvar:: dovecot__sieve_dir [[[
 #
 # Storage directory for sieve scripts uploaded by ManageSieve
-dovecot_sieve_dir: 'file:~/sieve'
+dovecot__sieve_dir: 'file:~/sieve;active=~/.dovecot.sieve'
 
                                                                    # ]]]
 # .. envvar:: dovecot_managesieve_listeners [[[
@@ -534,8 +528,7 @@ dovecot_managesieve_config_map:
         port: '{{ dovecot_sieve_port|int }}'
 
   plugin:
-    sieve: '{{ dovecot_sieve_dir }}'
-    active: '{{ dovecot_sieve_active_script }}'
+    sieve: '{{ dovecot__sieve_dir }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_lda_config_map [[[
