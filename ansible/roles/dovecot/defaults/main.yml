@@ -418,6 +418,57 @@ dovecot__ssl_dh_file: '{{ ansible_local.dhparam[dovecot__dhparam_set]
 # Dovecot custom configuration [[[
 # --------------------------------
 
+# These variables define the contents of the :file:`/etc/dovecot/dovecot.conf`
+# configuration file.
+
+# .. envvar:: dovecot__default_configuration [[[
+#
+# The default :command:`dovecot` configuration options defined by the role.
+dovecot__default_configuration:
+
+  - section: 'main'
+    title: 'Main Configuration'
+    options:
+
+      - name: 'protocols'
+        comment: 'Currently active protocols'
+        value: "{{ dovecot_protocols |
+                   map('regex_replace', '^(imap|pop3)s$', '\\1') |
+                   map('regex_replace', '^manage(sieve)$', '\\1') |
+                   list | unique | join(' ') }}"
+
+                                                                   # ]]]
+# .. envvar:: dovecot__configuration [[[
+#
+# The :command:`dovecot` configuration options defined for all hosts in the
+# Ansible inventory.
+dovecot__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: dovecot__group_configuration [[[
+#
+# The :command:`dovecot` configuration options defined for hosts in a
+# specific Ansible inventory group.
+dovecot__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: dovecot__host_configuration [[[
+#
+# The :command:`dovecot` configuration options defined for a specific host
+# in the Ansible inventory.
+dovecot__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: dovecot__combined_configuration [[[
+#
+# The variable that combines other :command:`dovecot` configuration options and
+# is used in the dovecot.conf template.
+dovecot__combined_configuration: '{{ dovecot__default_configuration
+                                      + dovecot__configuration
+                                      + dovecot__group_configuration
+                                      + dovecot__host_configuration }}'
+
+                                                                   # ]]]
 # .. envvar:: dovecot_imap_listeners [[[
 #
 # List of IMAP ``inet_listeners`` which will be enabled. See
