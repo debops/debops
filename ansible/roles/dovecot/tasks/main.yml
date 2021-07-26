@@ -133,13 +133,10 @@
     state: 'absent'
   notify: [ 'Restart dovecot' ]
 
-- name: Generate Dovecot local configuration
-  template:
-    src: "{{ lookup('debops.debops.template_src', 'etc/dovecot/local.conf.j2') }}"
-    dest: '/etc/dovecot/local.conf'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
+- name: Remove old local configuration
+  file:
+    path: '/etc/dovecot/local.conf'
+    state: 'absent'
   notify: [ 'Restart dovecot' ]
   tags: [ "role::dovecot:conf" ]
 
