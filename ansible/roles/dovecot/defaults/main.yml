@@ -509,6 +509,28 @@ dovecot__default_configuration:
                 value: '{{ 993 if ("imaps" in dovecot_protocols and dovecot_pki|d(True)) else 0 }}'
                 comment: 'Disabled if no PKI is configured'
 
+      - name: 'service pop3-login'
+        state: '{{ "present" if ("pop3" in dovecot_protocols or "pop3s" in dovecot_protocols) else "absent" }}'
+        options:
+
+          - name: 'inet_listener pop3'
+            options:
+
+              - name: 'address'
+                value: '127.0.0.1, [::1]'
+                comment: 'Only localhost if no PKI is configured'
+                state: '{{ "present" if not dovecot_pki|d(True) else "comment" }}'
+
+              - name: 'port'
+                value: '{{ 110 if "pop3" in dovecot_protocols else 0 }}'
+
+          - name: 'inet_listener pop3s'
+            options:
+
+              - name: 'port'
+                value: '{{ 995 if ("pop3s" in dovecot_protocols and dovecot_pki|d(True)) else 0 }}'
+                comment: 'Disabled if no PKI is configured'
+
       - name: 'service lmtp'
         state: '{{ "present" if "lmtp" in dovecot_protocols else "absent" }}'
         options:
@@ -546,6 +568,18 @@ dovecot__default_configuration:
 
           - name: 'imap_idle_notify_interval'
             value: '29 mins'
+            state: 'comment'
+
+      - name: 'protocol pop3'
+        state: '{{ "present" if ("pop3" in dovecot_protocols or "pop3s" in dovecot_protocols) else "absent" }}'
+        options:
+
+          - name: 'mail_plugins'
+            value: '$mail_plugins'
+            state: 'comment'
+
+          - name: 'mail_max_userip_connections'
+            value: '10'
             state: 'comment'
 
       - name: 'protocol lda'
@@ -685,23 +719,6 @@ dovecot__combined_configuration: '{{ dovecot__default_configuration
 dovecot_mail_plugins: '$mail_plugins {{ "sieve"
                                         if ("managesieve" in dovecot_protocols|d([]) and
                                         dovecot_sieve_enabled|bool) else "" }}'
-
-                                                                   # ]]]
-# .. envvar:: dovecot_pop3_listeners [[[
-#
-# List of POP3 ``inet_listeners`` which will be enabled. See
-# :ref:`dovecot_pop3_listeners` for more details.
-dovecot_pop3_listeners: '{{ [ "pop3", "pop3s" ]
-                              if ( dovecot_pki|d(True) )
-                              else
-                                [ "pop3" ] }}'
-
-                                                                   # ]]]
-# .. envvar:: dovecot_pop3_config_map [[[
-#
-# Custom POP3 configuration properties. See :ref:`dovecot_pop3_config_map`
-# for more details.
-dovecot_pop3_config_map: {}
 
                                                                    # ]]]
 # .. envvar:: dovecot_sieve_enabled [[[

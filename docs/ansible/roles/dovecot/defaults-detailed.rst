@@ -16,23 +16,6 @@ them.
       :local:
       :depth: 1
 
-.. _dovecot_pop3_config_map:
-
-dovecot_pop3_config_map
------------------------
-
-Configuration dictionary related to the POP3 protocol configuration. Please
-to the :ref:`dovecot_imap_config_map` for a description of the dict layout.
-
-.. _dovecot_pop3_listeners:
-
-dovecot_pop3_listeners
-----------------------
-
-List of POP3 network listener names which will be used to decide which
-default listeners to create. Their configuration can be customized via
-:ref:`dovecot_pop3_config_map`.
-
 .. _dovecot_auth_config_map:
 
 dovecot_auth_config_map
