@@ -21,22 +21,23 @@
 # General Dovecot configuration [[[
 # ---------------------------------
 
-# .. envvar:: dovecot_protocols [[[
+# .. envvar:: dovecot__features [[[
 #
-# List of protocols which should be installed and enabled. Currently
-# supported protocols are:
+# List of features which should be installed and enabled. Currently
+# supported features are:
 #
 #  - ``imap``
 #  - ``imaps``
 #  - ``pop3``
 #  - ``pop3s``
-#  - ``managesieve``
+#  - ``sieve``
 #  - ``lmtp``
+#  - ``quota``
 #
 # Note that ``imaps`` and ``pop3s`` (implicit TLS) are recommended
 # over ``imap`` and ``pop3``(explicit TLS) by RFC8314. Furthermore,
 # LMTP is recommended over LDA by the Dovecot project.
-dovecot_protocols: [ 'imap', 'imaps', 'lmtp' ]
+dovecot__features: [ 'imap', 'imaps', 'lmtp', 'sieve', 'quota' ]
 
                                                                    # ]]]
 # .. envvar:: dovecot_auth_mechanisms [[[
@@ -637,7 +638,7 @@ dovecot__default_configuration:
     options:
 
       - name: 'service imap-login'
-        state: '{{ "present" if ("imap" in dovecot_protocols or "imaps" in dovecot_protocols) else "absent" }}'
+        state: '{{ "present" if ("imap" in dovecot__features or "imaps" in dovecot__features) else "absent" }}'
         options:
 
           - name: 'inet_listener imap'
@@ -649,17 +650,17 @@ dovecot__default_configuration:
                 state: '{{ "present" if not dovecot_pki|d(True) else "comment" }}'
 
               - name: 'port'
-                value: '{{ 143 if "imap" in dovecot_protocols else 0 }}'
+                value: '{{ 143 if "imap" in dovecot__features else 0 }}'
 
           - name: 'inet_listener imaps'
             options:
 
               - name: 'port'
-                value: '{{ 993 if ("imaps" in dovecot_protocols and dovecot_pki|d(True)) else 0 }}'
+                value: '{{ 993 if ("imaps" in dovecot__features and dovecot_pki|d(True)) else 0 }}'
                 comment: 'Disabled if no PKI is configured'
 
       - name: 'service pop3-login'
-        state: '{{ "present" if ("pop3" in dovecot_protocols or "pop3s" in dovecot_protocols) else "absent" }}'
+        state: '{{ "present" if ("pop3" in dovecot__features or "pop3s" in dovecot__features) else "absent" }}'
         options:
 
           - name: 'inet_listener pop3'
@@ -671,17 +672,17 @@ dovecot__default_configuration:
                 state: '{{ "present" if not dovecot_pki|d(True) else "comment" }}'
 
               - name: 'port'
-                value: '{{ 110 if "pop3" in dovecot_protocols else 0 }}'
+                value: '{{ 110 if "pop3" in dovecot__features else 0 }}'
 
           - name: 'inet_listener pop3s'
             options:
 
               - name: 'port'
-                value: '{{ 995 if ("pop3s" in dovecot_protocols and dovecot_pki|d(True)) else 0 }}'
+                value: '{{ 995 if ("pop3s" in dovecot__features and dovecot_pki|d(True)) else 0 }}'
                 comment: 'Disabled if no PKI is configured'
 
       - name: 'service lmtp'
-        state: '{{ "present" if "lmtp" in dovecot_protocols else "absent" }}'
+        state: '{{ "present" if "lmtp" in dovecot__features else "absent" }}'
         options:
 
           - name: 'user'
@@ -698,7 +699,7 @@ dovecot__default_configuration:
                 value: 'postfix'
 
       - name: 'service managesieve-login'
-        state: '{{ "present" if "managesieve" in dovecot_protocols else "absent" }}'
+        state: '{{ "present" if "sieve" in dovecot__features else "absent" }}'
         options:
 
           - name: 'inet_listener sieve'
@@ -721,7 +722,7 @@ dovecot__default_configuration:
 
           - name: 'unix_listener auth-userdb'
             state: '{{ "present" if (dovecot__vmail_enabled|d(False) and
-                         "lmtp" in dovecot_protocols) else "absent" }}'
+                         "lmtp" in dovecot__features) else "absent" }}'
             options:
               - name: 'mode'
                 value: '0660'
@@ -735,7 +736,7 @@ dovecot__default_configuration:
     options:
 
       - name: 'protocol imap'
-        state: '{{ "present" if ("imap" in dovecot_protocols or "imaps" in dovecot_protocols) else "absent" }}'
+        state: '{{ "present" if ("imap" in dovecot__features or "imaps" in dovecot__features) else "absent" }}'
         options:
 
           - name: 'mail_plugins'
@@ -750,7 +751,7 @@ dovecot__default_configuration:
             state: 'comment'
 
       - name: 'protocol pop3'
-        state: '{{ "present" if ("pop3" in dovecot_protocols or "pop3s" in dovecot_protocols) else "absent" }}'
+        state: '{{ "present" if ("pop3" in dovecot__features or "pop3s" in dovecot__features) else "absent" }}'
         options:
 
           - name: 'mail_plugins'
@@ -761,7 +762,7 @@ dovecot__default_configuration:
             state: 'comment'
 
       - name: 'protocol lda'
-        state: '{{ "present" if "lmtp" not in dovecot_protocols else "absent" }}'
+        state: '{{ "present" if "lmtp" not in dovecot__features else "absent" }}'
         options:
 
           - name: 'mail_plugins'
@@ -771,7 +772,7 @@ dovecot__default_configuration:
             value: 'postmaster@{{ ansible_domain }}'
 
       - name: 'protocol lmtp'
-        state: '{{ "present" if "lmtp" in dovecot_protocols else "absent" }}'
+        state: '{{ "present" if "lmtp" in dovecot__features else "absent" }}'
         options:
 
           - name: 'mail_plugins'
@@ -862,7 +863,11 @@ dovecot__default_configuration:
 
         - name: 'sieve'
           value: '{{ dovecot__sieve_dir }}'
-          state: '{{ "present" if "managesieve" in dovecot_protocols else "absent" }}'
+          state: '{{ "present" if "sieve" in dovecot__features else "absent" }}'
+
+        - name: 'quota'
+          value: 'maildir:User quota'
+          state: '{{ "present" if "quota" in dovecot__features else "absent" }}'
 
 
                                                                    # ]]]
@@ -900,14 +905,17 @@ dovecot__combined_configuration: '{{ dovecot__default_configuration
 # .. envvar:: dovecot__mail_plugins [[[
 #
 # Default mail plugins for all protocols.
-dovecot__mail_plugins: [ '$mail_plugins' ]
+dovecot__mail_plugins: '{{ [ "$mail_plugins" ]
+                              + [ "quota" if "quota" in dovecot__features ] }}'
+
 
                                                                    # ]]]
 # .. envvar:: dovecot__mail_plugins_imap [[[
 #
 # Enabled mail plugins for the IMAP protocol.
 dovecot__mail_plugins_imap: '{{ dovecot__mail_plugins
-                                 + [ "imap_sieve" if "managesieve" in dovecot_protocols ] }}'
+                                 + [ "imap_sieve" if "sieve" in dovecot__features ]
+                                 + [ "imap_quota" if "quota" in dovecot__features ] }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__mail_plugins_pop3 [[[
@@ -920,14 +928,14 @@ dovecot__mail_plugins_pop3: '{{ dovecot__mail_plugins }}'
 #
 # Enabled mail plugins for the LDA protocol.
 dovecot__mail_plugins_lda: '{{ dovecot__mail_plugins
-                                + [ "sieve" if "managesieve" in dovecot_protocols ] }}'
+                                + [ "sieve" if "sieve" in dovecot__features ] }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__mail_plugins_ltmp [[[
 #
 # Enabled mail plugins for the LMTP protocol.
 dovecot__mail_plugins_lmtp: '{{ dovecot__mail_plugins
-                                 + [ "sieve" if "managesieve" in dovecot_protocols ] }}'
+                                 + [ "sieve" if "sieve" in dovecot__features ] }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__sieve_dir [[[
@@ -1213,7 +1221,7 @@ dovecot__postfix__dependent_maincf:
     value: '{{ "none"
                if dovecot_postfix_transport.startswith("lmtp:unix:")
                else "may" }}'
-    state: '{{ "present" if "lmtp" in dovecot_protocols else "ignore" }}'
+    state: '{{ "present" if "lmtp" in dovecot__features else "ignore" }}'
 
   # We don't care about the STARTTLS offer when we talk to Dovecot over an UNIX
   # socket.
@@ -1221,19 +1229,19 @@ dovecot__postfix__dependent_maincf:
     value: '{{ False
                if dovecot_postfix_transport.startswith("lmtp:unix:")
                else True }}'
-    state: '{{ "present" if "lmtp" in dovecot_protocols else "ignore" }}'
+    state: '{{ "present" if "lmtp" in dovecot__features else "ignore" }}'
 
   - name: 'virtual_transport'
     value: '{{ dovecot_postfix_transport }}'
     state: '{{ "present"
-               if ("lmtp" in dovecot_protocols and
+               if ("lmtp" in dovecot__features and
                    dovecot__ldap_enabled|bool)
                else "ignore" }}'
 
   - name: 'mailbox_transport'
     value: '{{ dovecot_postfix_transport }}'
     state: '{{ "present"
-               if ("lmtp" in dovecot_protocols and
+               if ("lmtp" in dovecot__features and
                    not dovecot__ldap_enabled|bool)
                else "ignore" }}'
 
@@ -1255,7 +1263,7 @@ dovecot__ferm__dependent_rules:
     saddr: '{{ dovecot__allow_imap }}'
     accept_any: '{{ dovecot__accept_any }}'
     rule_state: '{{ "present"
-                    if ("imap" in dovecot_protocols|d([]))
+                    if ("imap" in dovecot__features|d([]))
                     else "absent" }}'
 
   - name: 'dovecot_imaps'
@@ -1265,7 +1273,7 @@ dovecot__ferm__dependent_rules:
     saddr: '{{ dovecot__allow_imaps }}'
     accept_any: '{{ dovecot__accept_any }}'
     rule_state: '{{ "present"
-                    if ("imaps" in dovecot_protocols|d([])
+                    if ("imaps" in dovecot__features|d([])
                          and dovecot_pki|d(True))
                     else "absent" }}'
 
@@ -1276,7 +1284,7 @@ dovecot__ferm__dependent_rules:
     saddr: '{{ dovecot__allow_pop3 }}'
     accept_any: '{{ dovecot__accept_any }}'
     rule_state: '{{ "present"
-                    if ("pop3" in dovecot_protocols|d([]))
+                    if ("pop3" in dovecot__features|d([]))
                     else "absent" }}'
 
   - name: 'dovecot_pop3s'
@@ -1286,7 +1294,7 @@ dovecot__ferm__dependent_rules:
     saddr: '{{ dovecot__allow_pop3s }}'
     accept_any: '{{ dovecot__accept_any }}'
     rule_state: '{{ "present"
-                    if ("pop3s" in dovecot_protocols|d([])
+                    if ("pop3s" in dovecot__features|d([])
                          and dovecot_pki|d(True))
                     else "absent" }}'
 
@@ -1297,7 +1305,7 @@ dovecot__ferm__dependent_rules:
     saddr: '{{ dovecot__allow_sieve }}'
     accept_any: '{{ dovecot__accept_any }}'
     rule_state: '{{ "present"
-                    if ("managesieve" in dovecot_protocols|d([])
+                    if ("sieve" in dovecot__features|d([])
                          and dovecot_pki|d(True))
                     else "absent" }}'
                                                                    # ]]]

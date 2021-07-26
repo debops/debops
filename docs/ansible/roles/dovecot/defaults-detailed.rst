@@ -23,9 +23,7 @@ dovecot_postfix_transport
 
 LMTP socket name which will be configured in Postfix to send mails for
 delivery. The value is a file system path relative to */var/spool/postfix*
-Make sure there is a corresponding LMTP ``unix_listener`` defined in
-:ref:`dovecot_lmtp_config_map` and enabled via :ref:`dovecot_lmtp_listeners`.
 The LMTP transport target will only be configured in Postfix when 'lmtp'
-is enabled in ``dovecot_protocols``.
+is enabled in ``dovecot__features``.
 
 For most people the default configuration will be sufficient.

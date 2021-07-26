@@ -20,15 +20,15 @@
   package:
     name: '{{ q("flattened", ([ "dovecot-core" ]
                               + ([ "dovecot-imapd" ]
-                                 if ("imap" in dovecot_protocols or
-                                     "imaps" in dovecot_protocols)
+                                 if ("imap" in dovecot__features or
+                                     "imaps" in dovecot__features)
                                  else [])
                               + ([ "dovecot-pop3d" ]
-                                 if ("pop3" in dovecot_protocols or
-                                     "pop3s" in dovecot_protocols)
+                                 if ("pop3" in dovecot__features or
+                                     "pop3s" in dovecot__features)
                                  else [])
                               + ([ "dovecot-lmtpd" ]
-                                 if "lmtp" in dovecot_protocols
+                                 if "lmtp" in dovecot__features
                                  else [])
                               + ([ "dovecot-mysql" ]
                                  if "mysql" in dovecot_user_accounts
@@ -43,7 +43,7 @@
                                  if "ldap" in dovecot_user_accounts
                                  else [])
                               + ([ "dovecot-managesieved" ]
-                                 if "managesieve" in dovecot_protocols
+                                 if "sieve" in dovecot__features
                                  else []))) }}'
     state: 'present'
   register: dovecot__register_packages
@@ -106,15 +106,15 @@
 - name: Uninstall disabled Dovecot protocols
   package:
     pkg: '{{ q("flattened", (([ "dovecot-imapd" ]
-                              if ("imap" not in dovecot_protocols and
-                                  "imaps" not in dovecot_protocols)
+                              if ("imap" not in dovecot__features and
+                                  "imaps" not in dovecot__features)
                               else [])
                              + ([ "dovecot-pop3d" ]
-                                if ("pop3" not in dovecot_protocols and
-                                    "pop3s" not in dovecot_protocols)
+                                if ("pop3" not in dovecot__features and
+                                    "pop3s" not in dovecot__features)
                                 else [])
                              + ([ "dovecot-lmtpd" ]
-                                if "lmtp" not in dovecot_protocols
+                                if "lmtp" not in dovecot__features
                                 else [])
                              + ([ "dovecot-mysql" ]
                                  if "mysql" not in dovecot_user_accounts
@@ -129,7 +129,7 @@
                                 if ("ldap" not in dovecot_user_accounts)
                                 else [])
                              + ([ "dovecot-managesieved" ]
-                                if "managesieve" not in dovecot_protocols
+                                if "sieve" not in dovecot__features
                                 else []))) }}'
     state: 'absent'
   notify: [ 'Restart dovecot' ]
