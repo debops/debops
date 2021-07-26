@@ -437,6 +437,21 @@ dovecot__default_configuration:
                    map('regex_replace', '^manage(sieve)$', '\\1') |
                    list | unique | join(' ') }}"
 
+  - section: 'authentication'
+    title: 'Client Configuration'
+    options:
+
+      - name: 'passdb_deny'
+        option: 'passdb'
+        state: '{{ "present" if "deny" in dovecot_user_accounts else "absent" }}'
+        options:
+          - name: 'driver'
+            value: 'passwd-file'
+          - name: 'deny'
+            value: 'yes'
+          - name: 'args'
+            value: '/etc/dovecot/dovecot.deny'
+
   - section: 'tls'
     title: 'TLS Configuration'
     state: '{{ "present" if dovecot_pki is defined and dovecot_pki else "absent" }}'

@@ -34,12 +34,6 @@ auth_default_realm = {{ dovecot__auth_default_realm }}
 ## Password and user databases
 ##
 
-{% if 'deny' not in dovecot_user_accounts %}
-# 'deny' not in dovecot_user_accounts: {{ dovecot_user_accounts }}
-# dovecot_deny_users: {{ dovecot_deny_users }}
-{% elif dovecot_deny_users is defined and dovecot_deny_users %}
-!include auth-deny.conf.ext
-{% endif %}
 {% if 'system' in dovecot_user_accounts %}
 !include auth-system.conf.ext
 {% endif %}
