@@ -64,6 +64,25 @@
 - name: Update Ansible facts if they were modified
   meta: 'flush_handlers'
 
+- name: Divert original Dovecot main configuration file
+  command: dpkg-divert --quiet --local
+           --divert /etc/dovecot/dovecot.conf.dpkg-divert
+           --rename /etc/dovecot/dovecot.conf
+  args:
+    creates: /etc/dovecot/dovecot.conf.dpkg-divert
+  notify: [ 'Restart dovecot' ]
+  tags: [ "role::dovecot:conf" ]
+
+- name: Generate Dovecot main configuration file
+  template:
+    src: '{{ lookup("template_src", "etc/dovecot/dovecot.conf.j2") }}'
+    dest: '/etc/dovecot/dovecot.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart dovecot' ]
+  tags: [ "role::dovecot:conf" ]
+
 - name: Divert original Dovecot configuration
   command: dpkg-divert --quiet --local
            --divert /etc/dovecot/conf.d/{{ item }}.dpkg-divert
