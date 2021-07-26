@@ -22,14 +22,20 @@
 
 # .. envvar:: dovecot_protocols [[[
 #
-# List of protocols which should be installed and enabled. Supported are:
+# List of protocols which should be installed and enabled. Currently
+# supported protocols are:
 #
 #  - ``imap``
+#  - ``imaps``
 #  - ``pop3``
+#  - ``pop3s``
 #  - ``managesieve``
 #  - ``lmtp``
 #
-dovecot_protocols: [ 'imap' ]
+# Note that ``imaps`` and ``pop3s`` (implicit TLS) are recommended
+# over ``imap`` and ``pop3``(explicit TLS) by RFC8314. Furthermore,
+# LMTP is recommended over LDA by the Dovecot project.
+dovecot_protocols: [ 'imap', 'imaps', 'lmtp' ]
 
                                                                    # ]]]
 # .. envvar:: dovecot_auth_mechanisms [[[
@@ -939,7 +945,7 @@ dovecot__ferm__dependent_rules:
     saddr: '{{ dovecot__allow_imaps }}'
     accept_any: '{{ dovecot__accept_any }}'
     rule_state: '{{ "present"
-                    if ("imap" in dovecot_protocols|d([])
+                    if ("imaps" in dovecot_protocols|d([])
                          and dovecot_pki|d(True))
                     else "absent" }}'
 
@@ -960,7 +966,7 @@ dovecot__ferm__dependent_rules:
     saddr: '{{ dovecot__allow_pop3s }}'
     accept_any: '{{ dovecot__accept_any }}'
     rule_state: '{{ "present"
-                    if ("pop3" in dovecot_protocols|d([])
+                    if ("pop3s" in dovecot_protocols|d([])
                          and dovecot_pki|d(True))
                     else "absent" }}'
 

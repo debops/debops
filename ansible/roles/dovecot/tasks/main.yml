@@ -19,10 +19,12 @@
   package:
     name: '{{ q("flattened", ([ "dovecot-core" ]
                               + ([ "dovecot-imapd" ]
-                                 if "imap" in dovecot_protocols
+                                 if ("imap" in dovecot_protocols or
+                                     "imaps" in dovecot_protocols)
                                  else [])
                               + ([ "dovecot-pop3d" ]
-                                 if "pop3" in dovecot_protocols
+                                 if ("pop3" in dovecot_protocols or
+                                     "pop3s" in dovecot_protocols)
                                  else [])
                               + ([ "dovecot-lmtpd" ]
                                  if "lmtp" in dovecot_protocols
@@ -37,7 +39,7 @@
                                  if "sqlite" in dovecot_user_accounts
                                  else [])
                               + ([ "dovecot-ldap" ]
-                                 if ("ldap" in dovecot_user_accounts)
+                                 if "ldap" in dovecot_user_accounts
                                  else [])
                               + ([ "dovecot-managesieved" ]
                                  if "managesieve" in dovecot_protocols
@@ -69,8 +71,8 @@
            creates=/etc/dovecot/conf.d/{{ item }}.dpkg-divert
   with_flattened:
     - [ '10-auth.conf', '10-mail.conf', '10-master.conf', '10-ssl.conf', '15-lda.conf' ]
-    - [ '{{ "20-imap.conf" if "imap" in dovecot_protocols else [] }}' ]
-    - [ '{{ "20-pop3.conf" if "pop3" in dovecot_protocols else [] }}' ]
+    - [ '{{ "20-imap.conf" if ("imap" in dovecot_protocols or "imaps" in dovecot_protocols) else [] }}' ]
+    - [ '{{ "20-pop3.conf" if ("pop3" in dovecot_protocols or "pop3s" in dovecot_protocols) else [] }}' ]
     - [ '{{ "20-lmtp.conf" if "lmtp" in dovecot_protocols else [] }}' ]
     - [ '{{ "auth-deny.conf.ext" if "deny" in dovecot_user_accounts else [] }}' ]
     - [ '{{ "auth-system.conf.ext" if "system" in dovecot_user_accounts else [] }}' ]
@@ -86,8 +88,8 @@
     dest: '/etc/dovecot/conf.d/{{ item }}'
     state: absent
   with_flattened:
-    - [ '{{ "20-imap.conf" if "imap" not in dovecot_protocols else [] }}' ]
-    - [ '{{ "20-pop3.conf" if "pop3" not in dovecot_protocols else [] }}' ]
+    - [ '{{ "20-imap.conf" if ("imap" not in dovecot_protocols and "imaps" not in dovecot_protocols) else [] }}' ]
+    - [ '{{ "20-pop3.conf" if ("pop3" not in dovecot_protocols and "pop3s" not in dovecot_protocols) else [] }}' ]
     - [ '{{ "20-lmtp.conf" if "lmtp" not in dovecot_protocols else [] }}' ]
     - [ '{{ [ "20-managesieve.conf", "90-sieve.conf", "90-sieve-extprograms.conf" ]
             if "managesieve" not in dovecot_protocols else [] }}' ]
@@ -97,8 +99,8 @@
   command: dpkg-divert --quiet --local --rename --remove /etc/dovecot/conf.d/{{ item }}
            removes=/etc/dovecot/conf.d/{{ item }}.dpkg-divert
   with_flattened:
-    - [ '{{ "20-imap.conf" if "imap" not in dovecot_protocols else [] }}' ]
-    - [ '{{ "20-pop3.conf" if "pop3" not in dovecot_protocols else [] }}' ]
+    - [ '{{ "20-imap.conf" if ("imap" not in dovecot_protocols and "imaps" not in dovecot_protocols) else [] }}' ]
+    - [ '{{ "20-pop3.conf" if ("pop3" not in dovecot_protocols and "pop3s" not in dovecot_protocols) else [] }}' ]
     - [ '{{ "20-lmtp.conf" if "lmtp" not in dovecot_protocols else [] }}' ]
     - [ '{{ [ "20-managesieve.conf", "90-sieve.conf", "90-sieve-extprograms.conf" ]
             if "managesieve" not in dovecot_protocols else [] }}' ]
@@ -106,10 +108,12 @@
 - name: Uninstall disabled Dovecot protocols
   package:
     pkg: '{{ q("flattened", (([ "dovecot-imapd" ]
-                              if "imap" not in dovecot_protocols
+                              if ("imap" not in dovecot_protocols and
+                                  "imaps" not in dovecot_protocols)
                               else [])
                              + ([ "dovecot-pop3d" ]
-                                if "pop3" not in dovecot_protocols
+                                if ("pop3" not in dovecot_protocols and
+                                    "pop3s" not in dovecot_protocols)
                                 else [])
                              + ([ "dovecot-lmtpd" ]
                                 if "lmtp" not in dovecot_protocols
@@ -141,8 +145,8 @@
     mode: '0644'
   with_flattened:
     - [ '10-auth.conf', '10-mail.conf', '10-master.conf', '10-ssl.conf', '15-lda.conf' ]
-    - [ '{{ "20-imap.conf" if "imap" in dovecot_protocols else [] }}' ]
-    - [ '{{ "20-pop3.conf" if "pop3" in dovecot_protocols else [] }}' ]
+    - [ '{{ "20-imap.conf" if ("imap" in dovecot_protocols or "imaps" in dovecot_protocols) else [] }}' ]
+    - [ '{{ "20-pop3.conf" if ("pop3" in dovecot_protocols or "pop3s" in dovecot_protocols) else [] }}' ]
     - [ '{{ "20-lmtp.conf" if "lmtp" in dovecot_protocols else [] }}' ]
     - [ '{{ "auth-deny.conf.ext" if "deny" in dovecot_user_accounts else [] }}' ]
     - [ '{{ "auth-system.conf.ext" if "system" in dovecot_user_accounts else [] }}' ]
