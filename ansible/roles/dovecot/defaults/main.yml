@@ -101,15 +101,6 @@ dovecot_mail_location: 'maildir:~/Maildir'
 dovecot__auth_default_realm: '{{ ansible_domain }}'
 
                                                                    # ]]]
-# .. envvar:: dovecot_mail_dotlock [[[
-#
-# Mailbox Locking. The only standard way to lock an mbox is using a method
-# called ``dotlock``. This means that a file named <mailbox-name>.lock is
-# created in the same directory as the mailbox being locked. `Documentation
-# Location <https://wiki.dovecot.org/MboxLocking>`_
-dovecot_mail_dotlock: True
-
-                                                                   # ]]]
                                                                    # ]]]
 # Virtual Mail [[[
 # ----------------
@@ -803,14 +794,6 @@ dovecot__default_configuration:
       - name: 'mail_location'
         value: '{{ dovecot_mail_location|d() }}'
         state: '{{ "present" if dovecot_mail_location|d() else "comment" }}'
-
-      - name: 'dotlock_use_excl'
-        value: 'no'
-        state: '{{ "present" if not dovecot_mail_dotlock|d(True) else "absent" }}'
-
-      - name: 'mbox_write_locks'
-        value: 'fcntl'
-        state: '{{ "present" if not dovecot_mail_dotlock|d(True) else "absent" }}'
 
   - section: 'mailbox_namespaces'
     title: 'Mailbox Namespaces'
