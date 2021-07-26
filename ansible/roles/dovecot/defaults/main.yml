@@ -441,6 +441,16 @@ dovecot__default_configuration:
     title: 'Client Configuration'
     options:
 
+      - name: 'mail_uid'
+        value: '{{ dovecot__vmail_posix_user }}'
+        state: '{{ "present" if "ldap" in dovecot_user_accounts else "absent" }}'
+        comment: 'FIXME: vmail is useful for other auth types as well'
+
+      - name: 'mail_gid'
+        value: '{{ dovecot__vmail_posix_group }}'
+        state: '{{ "present" if "ldap" in dovecot_user_accounts else "absent" }}'
+        comment: 'FIXME: vmail is useful for other auth types as well'
+
       - name: 'passdb_deny'
         option: 'passdb'
         state: '{{ "present" if "deny" in dovecot_user_accounts else "absent" }}'
@@ -489,6 +499,24 @@ dovecot__default_configuration:
             value: 'sql'
           - name: 'args'
             value: '/etc/dovecot/dovecot-sql.conf.ext'
+
+      - name: 'passdb_ldap'
+        option: 'passdb'
+        state: '{{ "present" if "ldap" in dovecot_user_accounts else "absent" }}'
+        options:
+          - name: 'driver'
+            value: 'ldap'
+          - name: 'args'
+            value: '/etc/dovecot/dovecot-ldap-passdb.conf'
+
+      - name: 'userdb_ldap'
+        option: 'userdb'
+        state: '{{ "present" if "ldap" in dovecot_user_accounts else "absent" }}'
+        options:
+          - name: 'driver'
+            value: 'ldap'
+          - name: 'args'
+            value: '/etc/dovecot/dovecot-ldap-passdb.conf'
 
   - section: 'tls'
     title: 'TLS Configuration'

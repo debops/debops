@@ -98,6 +98,7 @@
     - [ 'auth-deny.conf.ext' ]
     - [ 'auth-system.conf.ext' ]
     - [ 'auth-sql.conf.ext' ]
+    - [ 'auth-ldap.conf.ext' ]
 
 - name: Divert original Dovecot configuration
   command: dpkg-divert --quiet --local
@@ -106,7 +107,6 @@
            creates=/etc/dovecot/conf.d/{{ item }}.dpkg-divert
   with_flattened:
     - [ '10-auth.conf' ]
-    - [ '{{ "auth-ldap.conf.ext" if "ldap" in dovecot_user_accounts else [] }}' ]
     - [ '{{ "auth-checkpassword.conf.ext" if "checkpassword" in dovecot_user_accounts else [] }}' ]
   notify: [ 'Restart dovecot' ]
 
@@ -150,7 +150,6 @@
     mode: '0644'
   with_flattened:
     - [ '10-auth.conf' ]
-    - [ '{{ "auth-ldap.conf.ext" if "ldap" in dovecot_user_accounts else [] }}' ]
     - [ '{{ "auth-passwdfile.conf.ext" if "passwdfile" in dovecot_user_accounts else [] }}' ]
     - [ '{{ "auth-checkpassword.conf.ext" if "checkpassword" in dovecot_user_accounts else [] }}' ]
   notify: [ 'Restart dovecot' ]
