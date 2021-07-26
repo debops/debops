@@ -483,6 +483,85 @@ dovecot__default_configuration:
       - name: 'ssl'
         value: 'no'
 
+  - section: 'mailbox_locations'
+    title: 'Mailbox Locations'
+    options:
+
+      - name: 'mail_home'
+        value: '{{ dovecot_vmail_home }}'
+        state: '{{ "present" if "ldap" in dovecot_user_accounts else "absent" }}'
+        comment: 'FIXME: This should also be set for other virtual user accounts'
+
+      - name: 'mail_location'
+        value: '{{ dovecot_mail_location|d() }}'
+        state: '{{ "present" if dovecot_mail_location|d() else "comment" }}'
+
+      - name: 'dotlock_use_excl'
+        value: 'no'
+        state: '{{ "present" if not dovecot_mail_dotlock|d(True) else "absent" }}'
+
+      - name: 'mbox_write_locks'
+        value: 'fcntl'
+        state: '{{ "present" if not dovecot_mail_dotlock|d(True) else "absent" }}'
+
+  - section: 'mailbox_namespaces'
+    title: 'Mailbox Namespaces'
+    options:
+
+      - name: 'namespace inbox'
+        options:
+          - name: 'inbox'
+            value: 'yes'
+            comment: 'There can be only one INBOX, and this setting defines which namespace has it.'
+
+          - name: 'mailbox Drafts'
+            options:
+              - name: 'special_use'
+                value: '\Drafts'
+          - name: 'mailbox Junk'
+            options:
+              - name: 'special_use'
+                value: '\Junk'
+          - name: 'mailbox Trash'
+            options:
+              - name: 'special_use'
+                value: '\Trash'
+          - name: 'mailbox Sent'
+            comment: |
+              For \Sent mailboxes there are two widely used names. We'll mark both of
+              them as \Sent. User typically deletes one of them if duplicates are created.
+            options:
+              - name: 'special_use'
+                value: '\Sent'
+          - name: 'mailbox "Sent Messages"'
+            options:
+              - name: 'special_use'
+                value: '\Sent'
+          - name: 'mailbox virtual/All'
+            comment: 'If you have a virtual "All Messages" mailbox:'
+            state: 'comment'
+            options:
+              - name: 'special_use'
+                value: '\All'
+              - name: 'comment'
+                value: 'All my messages'
+          - name: 'mailbox virtual/Flagged'
+            comment: 'If you have a virtual "Flagged" mailbox:'
+            state: 'comment'
+            options:
+              - name: 'special_use'
+                value: '\Flagged'
+              - name: 'comment'
+                value: 'All my flagged messages'
+          - name: 'mailbox virtual/Important'
+            comment: 'If you have a virtual "Important" mailbox:'
+            state: 'comment'
+            options:
+              - name: 'special_use'
+                value: '\Important'
+              - name: 'comment'
+                value: 'All my important messages'
+
                                                                    # ]]]
 # .. envvar:: dovecot__configuration [[[
 #
