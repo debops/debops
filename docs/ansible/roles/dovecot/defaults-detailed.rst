@@ -16,10 +16,10 @@ them.
       :local:
       :depth: 1
 
-.. _dovecot_postfix_lmtp_transport:
+.. _dovecot__postfix_lmtp_transport:
 
 dovecot__postfix_lmtp_transport
--------------------------
+-------------------------------
 
 LMTP socket name which will be configured in Postfix to send mails for
 delivery. The value is a file system path relative to */var/spool/postfix*

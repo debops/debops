@@ -120,7 +120,7 @@ case Postfix will be automatically added as a dependency and configured
 accordingly.
 
 To enable mail plugins specifically to LMTP only, they can be added to
-the ``mail_plugins`` parameter in :ref:`dovecot_lmtp_config_map`::
+the ``mail_plugins`` parameter in ``dovecot_lmtp_config_map``::
 
     dovecot_lmtp_config_map:
       protocol:

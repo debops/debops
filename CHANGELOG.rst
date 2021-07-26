@@ -2302,9 +2302,9 @@ Mail Transport Agents
 - Add option to enable ManageSieve by default without the need to update the config_maps,
   to allow configuration of Sieve filter scripts.
 
-- Restored :envvar:`dovecot_mail_location` to original value of `maildir:~/Maildir`. It was
+- Restored :envvar:`dovecot__mail_location` to original value of `maildir:~/Maildir`. It was
   wrongfully changed to `/var/vmail/%d/%n/mailbox` if LDAP was enabled. See also
-  :envvar:`dovecot_vmail_home`.
+  :envvar:`dovecot__vmail_home`.
 
 - If the LDAP support is enabled, the role will no longer configure Postfix via
   the :ref:`debops.postfix` role to deliver local mail via Dovecot LMTP
