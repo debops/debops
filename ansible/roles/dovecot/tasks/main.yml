@@ -92,7 +92,7 @@
     executable: 'bash'
     removes: '/etc/dovecot/conf.d/{{ item }}.dpkg-divert'
   with_flattened:
-    - [ '10-mail.conf', '10-ssl.conf', '15-lda.conf' ]
+    - [ '10-master.conf', '10-mail.conf', '10-ssl.conf', '15-lda.conf' ]
     - [ '20-pop3.conf', '20-imap.conf', '20-lmtp.conf' ]
     - [ '20-managesieve.conf', '90-sieve.conf', '90-sieve-extprograms.conf' ]
 
@@ -102,7 +102,7 @@
            --rename /etc/dovecot/conf.d/{{ item }}
            creates=/etc/dovecot/conf.d/{{ item }}.dpkg-divert
   with_flattened:
-    - [ '10-auth.conf', '10-master.conf' ]
+    - [ '10-auth.conf' ]
     - [ '{{ "auth-deny.conf.ext" if "deny" in dovecot_user_accounts else [] }}' ]
     - [ '{{ "auth-system.conf.ext" if "system" in dovecot_user_accounts else [] }}' ]
     - [ '{{ "auth-sql.conf.ext" if "sql" in dovecot_user_accounts else [] }}' ]
@@ -149,7 +149,7 @@
     group: 'root'
     mode: '0644'
   with_flattened:
-    - [ '10-auth.conf', '10-master.conf' ]
+    - [ '10-auth.conf' ]
     - [ '{{ "auth-deny.conf.ext" if "deny" in dovecot_user_accounts else [] }}' ]
     - [ '{{ "auth-system.conf.ext" if "system" in dovecot_user_accounts else [] }}' ]
     - [ '{{ "auth-sql.conf.ext" if (dovecot_user_accounts | d([]) | intersect(["mysql", "pgsql", "sqlite"])) else [] }}' ]

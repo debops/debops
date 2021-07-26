@@ -559,6 +559,29 @@ dovecot__default_configuration:
               - name: 'port'
                 value: '4190'
 
+      - name: 'service auth'
+        options:
+
+          - name: 'unix_listener /var/spool/postfix/private/auth'
+            options:
+              - name: 'mode'
+                value: '0660'
+              - name: 'group'
+                value: 'postfix'
+              - name: 'user'
+                value: 'postfix'
+
+          - name: 'unix_listener auth-userdb'
+            state: 'absent'
+            comment: 'FIXME: only with vmail user'
+            options:
+              - name: 'mode'
+                value: '0660'
+              - name: 'group'
+                value: 'vmail'
+              - name: 'user'
+                value: 'vmail'
+
   - section: 'protocols'
     title: 'Protocol settings'
     options:
@@ -761,27 +784,6 @@ dovecot__sieve_dir: 'file:~/sieve;active=~/.dovecot.sieve'
 # Postfix mail transport target if LMTP is enabled. For more details see
 # :ref:`dovecot_postfix_transport`.
 dovecot_postfix_transport: 'lmtp:unix:private/dovecot-lmtp'
-
-                                                                   # ]]]
-# .. envvar:: dovecot_auth_listeners [[[
-#
-# List of AUTH ``unix_listeners`` which will be enabled.
-# See :ref:`dovecot_auth_listeners` for more details.
-dovecot_auth_listeners: [ '/var/spool/postfix/private/auth' ]
-
-                                                                   # ]]]
-# .. envvar:: dovecot_auth_config_map [[[
-#
-# Custom AUTH service configuration properties. See :ref:`dovecot_auth_config_map`
-# for more details.
-dovecot_auth_config_map:
-  service:
-    # Postfix smtp-auth socket.
-    unix_listener:
-      /var/spool/postfix/private/auth:
-        user: 'postfix'
-        group: 'postfix'
-        mode: '0600'
 
                                                                    # ]]]
 # .. envvar:: dovecot_custom_localconf [[[
