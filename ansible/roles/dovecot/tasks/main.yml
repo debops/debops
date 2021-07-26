@@ -93,6 +93,7 @@
     removes: '/etc/dovecot/conf.d/{{ item }}.dpkg-divert'
   with_flattened:
     - [ '10-mail.conf', '10-ssl.conf', '15-lda.conf' ]
+    - [ '20-lmtp.conf' ]
 
 - name: Divert original Dovecot configuration
   command: dpkg-divert --quiet --local
@@ -103,7 +104,6 @@
     - [ '10-auth.conf', '10-master.conf' ]
     - [ '{{ "20-imap.conf" if ("imap" in dovecot_protocols or "imaps" in dovecot_protocols) else [] }}' ]
     - [ '{{ "20-pop3.conf" if ("pop3" in dovecot_protocols or "pop3s" in dovecot_protocols) else [] }}' ]
-    - [ '{{ "20-lmtp.conf" if "lmtp" in dovecot_protocols else [] }}' ]
     - [ '{{ "auth-deny.conf.ext" if "deny" in dovecot_user_accounts else [] }}' ]
     - [ '{{ "auth-system.conf.ext" if "system" in dovecot_user_accounts else [] }}' ]
     - [ '{{ "auth-sql.conf.ext" if "sql" in dovecot_user_accounts else [] }}' ]
@@ -120,7 +120,6 @@
   with_flattened:
     - [ '{{ "20-imap.conf" if ("imap" not in dovecot_protocols and "imaps" not in dovecot_protocols) else [] }}' ]
     - [ '{{ "20-pop3.conf" if ("pop3" not in dovecot_protocols and "pop3s" not in dovecot_protocols) else [] }}' ]
-    - [ '{{ "20-lmtp.conf" if "lmtp" not in dovecot_protocols else [] }}' ]
     - [ '{{ [ "20-managesieve.conf", "90-sieve.conf", "90-sieve-extprograms.conf" ]
             if "managesieve" not in dovecot_protocols else [] }}' ]
   notify: [ 'Restart dovecot' ]
@@ -131,7 +130,6 @@
   with_flattened:
     - [ '{{ "20-imap.conf" if ("imap" not in dovecot_protocols and "imaps" not in dovecot_protocols) else [] }}' ]
     - [ '{{ "20-pop3.conf" if ("pop3" not in dovecot_protocols and "pop3s" not in dovecot_protocols) else [] }}' ]
-    - [ '{{ "20-lmtp.conf" if "lmtp" not in dovecot_protocols else [] }}' ]
     - [ '{{ [ "20-managesieve.conf", "90-sieve.conf", "90-sieve-extprograms.conf" ]
             if "managesieve" not in dovecot_protocols else [] }}' ]
 
@@ -177,7 +175,6 @@
     - [ '10-auth.conf', '10-master.conf' ]
     - [ '{{ "20-imap.conf" if ("imap" in dovecot_protocols or "imaps" in dovecot_protocols) else [] }}' ]
     - [ '{{ "20-pop3.conf" if ("pop3" in dovecot_protocols or "pop3s" in dovecot_protocols) else [] }}' ]
-    - [ '{{ "20-lmtp.conf" if "lmtp" in dovecot_protocols else [] }}' ]
     - [ '{{ "auth-deny.conf.ext" if "deny" in dovecot_user_accounts else [] }}' ]
     - [ '{{ "auth-system.conf.ext" if "system" in dovecot_user_accounts else [] }}' ]
     - [ '{{ "auth-sql.conf.ext" if (dovecot_user_accounts | d([]) | intersect(["mysql", "pgsql", "sqlite"])) else [] }}' ]

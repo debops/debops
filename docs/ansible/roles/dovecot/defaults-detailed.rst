@@ -136,29 +136,6 @@ List of POP3 network listener names which will be used to decide which
 default listeners to create. Their configuration can be customized via
 :ref:`dovecot_pop3_config_map`.
 
-.. _dovecot_lmtp_config_map:
-
-dovecot_lmtp_config_map
------------------------
-
-Configuration dictionary related to the LMTP protocol configuration. Please
-refer to the :ref:`dovecot_imap_config_map` for a description of the dict
-layout.
-
-In contrast to the other protocol maps, LMTP ``inet_listeners`` must always
-be listed in ``dovecot_lmtp_config_map`` and define the ``port`` property,
-as Dovecot doesn't define a default port for LMTP network listeners.
-
-.. _dovecot_lmtp_listeners:
-
-dovecot_lmtp_listeners
-----------------------
-
-List of LMTP network and unix listener names which will be created. The LMTP
-listeners configuration works a bit different from other network protocols.
-Each listeners mentioned in ``dovecot_lmtp_listeners`` must also be defined
-in :ref:`dovecot_lmtp_config_map`.
-
 .. _dovecot_auth_config_map:
 
 dovecot_auth_config_map

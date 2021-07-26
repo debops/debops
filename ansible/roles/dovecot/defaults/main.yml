@@ -483,12 +483,44 @@ dovecot__default_configuration:
       - name: 'ssl'
         value: 'no'
 
+  - section: 'services'
+    title: 'Dovecot services'
+    options:
+
+      - name: 'service lmtp'
+        state: '{{ "present" if "lmtp" in dovecot_protocols else "absent" }}'
+        options:
+
+          - name: 'user'
+            value: 'vmail'
+            comment: 'FIXME: only with vmail user'
+            state: 'absent'
+
+          - name: 'unix_listener /var/spool/postfix/private/dovecot-lmtp'
+            options:
+              - name: 'mode'
+                value: '0660'
+              - name: 'group'
+                value: 'postfix'
+              - name: 'user'
+                value: 'postfix'
+
   - section: 'protocols'
     title: 'Protocol settings'
     options:
 
       - name: 'protocol lda'
         state: '{{ "present" if "lmtp" not in dovecot_protocols else "absent" }}'
+        options:
+
+          - name: 'mail_plugins'
+            value: '{{ dovecot_mail_plugins }}'
+
+          - name: 'postmaster_address'
+            value: 'postmaster@{{ ansible_domain }}'
+
+      - name: 'protocol lmtp'
+        state: '{{ "present" if "lmtp" in dovecot_protocols else "absent" }}'
         options:
 
           - name: 'mail_plugins'
@@ -719,29 +751,6 @@ dovecot_managesieve_config_map:
 
   plugin:
     sieve: '{{ dovecot__sieve_dir }}'
-
-                                                                   # ]]]
-# .. envvar:: dovecot_lmtp_listeners [[[
-#
-# List of LMTP ``inet_listeners`` or ``unix_listeners`` which will be enabled.
-# See :ref:`dovecot_lmtp_listeners` for more details.
-dovecot_lmtp_listeners: [ '/var/spool/postfix/private/dovecot-lmtp' ]
-
-                                                                   # ]]]
-# .. envvar:: dovecot_lmtp_config_map [[[
-#
-# Custom LMTP configuration properties. See :ref:`dovecot_lmtp_config_map`
-# for more details.
-dovecot_lmtp_config_map:
-  service:
-    unix_listener:
-      /var/spool/postfix/private/dovecot-lmtp:
-        user: 'postfix'
-        group: 'postfix'
-        mode: '0600'
-
-  protocol:
-    mail_plugins: '{{ dovecot_mail_plugins }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_postfix_transport [[[
