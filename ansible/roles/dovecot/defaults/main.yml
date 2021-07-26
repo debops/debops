@@ -470,6 +470,26 @@ dovecot__default_configuration:
           - name: 'args'
             value: 'blocking=no'
 
+      - name: 'passdb_sql'
+        option: 'passdb'
+        state: '{{ "present" if (dovecot_user_accounts | d([]) |
+                     intersect(["mysql", "pgsql", "sqlite"])) else "absent" }}'
+        options:
+          - name: 'driver'
+            value: 'sql'
+          - name: 'args'
+            value: '/etc/dovecot/dovecot-sql.conf.ext'
+
+      - name: 'userdb_sql'
+        option: 'userdb'
+        state: '{{ "present" if (dovecot_user_accounts | d([]) |
+                     intersect(["mysql", "pgsql", "sqlite"])) else "absent" }}'
+        options:
+          - name: 'driver'
+            value: 'sql'
+          - name: 'args'
+            value: '/etc/dovecot/dovecot-sql.conf.ext'
+
   - section: 'tls'
     title: 'TLS Configuration'
     state: '{{ "present" if dovecot_pki is defined and dovecot_pki else "absent" }}'
