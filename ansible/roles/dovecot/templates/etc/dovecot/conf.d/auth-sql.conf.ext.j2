@@ -12,8 +12,7 @@ setup, you can provide your own template via lookup mechanism.
 
 #}
 
-{% if dovecot_user_accounts is defined and dovecot_user_accounts %}
-{%   if 'sql' in dovecot_user_accounts %}
+{% if dovecot_user_accounts | d([]) | intersect(['mysql', 'pgsql', 'sqlite']) %}
 # Authentication for SQL users. Included from 10-auth.conf.
 
 passdb {
@@ -29,9 +28,6 @@ userdb {
     driver  = sql
     args    = /etc/dovecot/dovecot-sql.conf.ext
 }
-{%   else %}
-# DebOps variable dovecot_user_accounts={{ dovecot_user_accounts }}
-{%   endif %}
 {% else %}
 # DebOps variable dovecot_user_accounts={{ dovecot_user_accounts|default([]) }}
 {% endif %}

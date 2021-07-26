@@ -58,15 +58,16 @@ dovecot__version: '{{ ansible_local.dovecot.version|d("0.0.0") }}'
 
 # .. envvar:: dovecot_user_accounts [[[
 #
-# User account lookup. So far supported are:
+# User account lookup. Supported mechanisms are:
 #
 # - ``deny``: Deny access for users
 # - ``system``: Mail users are Linux system users
-# - ``sql``: Mail users are stored in a SQL database
+# - ``mysql``: Mail users are stored in a MySQL/MariaDB database
+# - ``pgsql``: Mail users are stored in a PostgreSQL database
+# - ``sqlite``: Mail users are stored in a SQLite database
 # - ``ldap``: Mail users are stored in an LDAP directory
-# - ``passwdfile``: Users password are stored in a file
-# - ``checkpassword``: Users password are stored in an external program
-#
+# - ``passwdfile``: User passwords are stored in a file
+# - ``checkpassword``: User passwords are stored in an external program
 dovecot_user_accounts: '{{ [ "deny", "ldap" ]
                            if dovecot__ldap_enabled|bool
                            else [ "deny", "system" ] }}'
@@ -120,10 +121,41 @@ dovecot__auth_default_realm: '{{ ansible_domain }}'
 dovecot_mail_dotlock: True
 
                                                                    # ]]]
-# .. envvar:: dovecot_sql_driver [[[
+# .. envvar:: dovecot_sql_connect [[[
 #
-# The SQL driver defines which SQL is used. This can be either ``mysql``
-# or ``pgsql``.
+# Driver-specific database connection string.
+#
+# pgsql:
+#   For available options, see the PostgreSQL documention for the
+#   PQconnectdb function of libpq.
+#   Use maxconns=n (default 5) to change how many connections Dovecot can
+#   create to pgsql.
+#
+# mysql:
+#   Basic options emulate PostgreSQL option names:
+#     host, port, user, password, dbname
+#
+#   But also adds some new settings:
+#     client_flags           - See MySQL manual
+#     ssl_ca, ssl_ca_path    - Set either one or both to enable SSL
+#     ssl_cert, ssl_key      - For sending client-side certificates to server
+#     ssl_cipher             - Set minimum allowed cipher security (default: HIGH)
+#     ssl_verify_server_cert - Verify that the name in the server SSL certificate
+#                              matches the host (default: no)
+#     option_file            - Read options from the given file instead of
+#                              the default my.cnf location
+#     option_group           - Read options from the given group (default: client)
+#
+#   You can connect to UNIX sockets by using host: host=/var/run/mysql.sock
+#   Note that currently you can't use spaces in parameters.
+#
+# sqlite:
+#   The path to the database file.
+#
+# Examples:
+#   connect = host=192.168.1.1 dbname=users
+#   connect = host=sql.example.com dbname=virtual user=virtual password=blarg
+#   connect = /etc/dovecot/authdb.sqlite
 #
 # The database should have a structure like this:
 #
@@ -138,32 +170,8 @@ dovecot_mail_dotlock: True
 #     `gid` int(11) NOT NULL,
 #     `active` char(1) NOT NULL DEFAULT 'Y',
 #     `maildir` varchar(255) NOT NULL
-#
-dovecot_sql_driver: 'mysql'
-
-                                                                   # ]]]
-# .. envvar:: dovecot_sql_host [[[
-#
-# The hostname of the SQL server.
-dovecot_sql_host: ''
-
-                                                                   # ]]]
-# .. envvar:: dovecot_sql_dbname [[[
-#
-# The SQL database name.
-dovecot_sql_dbname: ''
-
-                                                                   # ]]]
-# .. envvar:: dovecot_sql_user [[[
-#
-# The username to access the SQL server.
-dovecot_sql_user: ''
-
-                                                                   # ]]]
-# .. envvar:: dovecot_sql_password [[[
-#
-# The password to login into the SQL server.
-dovecot_sql_password: ''
+#   );
+dovecot_sql_connect: ''
 
                                                                    # ]]]
 # .. envvar:: dovecot_sql_default_pass_scheme [[[

@@ -28,12 +28,13 @@
                                  if "lmtp" in dovecot_protocols
                                  else [])
                               + ([ "dovecot-mysql" ]
-                                 if (("sql" in dovecot_user_accounts) and
-                                     ("mysql" in dovecot_sql_driver))
+                                 if "mysql" in dovecot_user_accounts
                                  else [])
                               + ([ "dovecot-pgsql" ]
-                                 if (("sql" in dovecot_user_accounts) and
-                                     ("pgsql" in dovecot_sql_driver))
+                                 if "pgsql" in dovecot_user_accounts
+                                 else [])
+                              + ([ "dovecot-sqlite" ]
+                                 if "sqlite" in dovecot_user_accounts
                                  else [])
                               + ([ "dovecot-ldap" ]
                                  if ("ldap" in dovecot_user_accounts)
@@ -114,12 +115,13 @@
                                 if "lmtp" not in dovecot_protocols
                                 else [])
                              + ([ "dovecot-mysql" ]
-                                 if (("sql" not in dovecot_user_accounts) or
-                                     ("mysql" not in dovecot_sql_driver))
+                                 if "mysql" not in dovecot_user_accounts
                                  else [])
                              + ([ "dovecot-pgsql" ]
-                                if (("sql" not in dovecot_user_accounts) or
-                                    ("pgsql" not in dovecot_sql_driver))
+                                if "pgsql" not in dovecot_user_accounts
+                                else [])
+                             + ([ "dovecot-sqlite" ]
+                                if "sqlite" not in dovecot_user_accounts
                                 else [])
                              + ([ "dovecot-ldap" ]
                                 if ("ldap" not in dovecot_user_accounts)
@@ -144,7 +146,7 @@
     - [ '{{ "20-lmtp.conf" if "lmtp" in dovecot_protocols else [] }}' ]
     - [ '{{ "auth-deny.conf.ext" if "deny" in dovecot_user_accounts else [] }}' ]
     - [ '{{ "auth-system.conf.ext" if "system" in dovecot_user_accounts else [] }}' ]
-    - [ '{{ "auth-sql.conf.ext" if "sql" in dovecot_user_accounts else [] }}' ]
+    - [ '{{ "auth-sql.conf.ext" if (dovecot_user_accounts | d([]) | intersect(["mysql", "pgsql", "sqlite"])) else [] }}' ]
     - [ '{{ "auth-ldap.conf.ext" if "ldap" in dovecot_user_accounts else [] }}' ]
     - [ '{{ "auth-passwdfile.conf.ext" if "passwdfile" in dovecot_user_accounts else [] }}' ]
     - [ '{{ "auth-checkpassword.conf.ext" if "checkpassword" in dovecot_user_accounts else [] }}' ]
@@ -171,7 +173,7 @@
     group: 'root'
     mode: '0600'
   notify: [ 'Restart dovecot' ]
-  when: "'sql' in dovecot_user_accounts"
+  when: "dovecot_user_accounts | d([]) | intersect(['mysql', 'pgsql', 'sqlite'])"
   tags: [ "role::dovecot:conf", "role::dovecot:conf:sql" ]
 
 - name: Generate Dovecot ldap configuration

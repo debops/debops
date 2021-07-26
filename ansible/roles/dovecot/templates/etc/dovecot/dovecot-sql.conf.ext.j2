@@ -11,26 +11,6 @@ that are configurable via DebOps variables. If you need a more customized
 setup, you can provide your own template via lookup mechanism.
 
 #}
-{% if dovecot_sql_host is defined and dovecot_sql_host                  %}
-{%   set dovecot_tpl_sql_host = ' host='+dovecot_sql_host               %}
-{% else                                                                 %}
-{%   set dovecot_tpl_sql_host = ''                                      %}
-{% endif                                                                %}
-{% if dovecot_sql_dbname is defined and dovecot_sql_dbname              %}
-{%   set dovecot_tpl_sql_dbname = ' dbname='+dovecot_sql_dbname         %}
-{% else                                                                 %}
-{%   set dovecot_tpl_sql_dbname = ''                                    %}
-{% endif                                                                %}
-{% if dovecot_sql_user is defined and dovecot_sql_user                  %}
-{%   set dovecot_tpl_sql_user = ' user='+dovecot_sql_user               %}
-{% else                                                                 %}
-{%   set dovecot_tpl_sql_user = ''                                      %}
-{% endif                                                                %}
-{% if dovecot_sql_password is defined and dovecot_sql_password          %}
-{%   set dovecot_tpl_sql_password = ' password='+dovecot_sql_password   %}
-{% else                                                                 %}
-{%   set dovecot_tpl_sql_password = ''                                  %}
-{% endif                                                                %}
 
 # This file is commonly accessed via passdb {} or userdb {} section in
 # conf.d/auth-sql.conf.ext
@@ -63,10 +43,7 @@ setup, you can provide your own template via lookup mechanism.
 # );
 
 # Database driver: mysql, pgsql, sqlite
-#driver =
-{% if dovecot_sql_driver is defined and dovecot_sql_driver %}
-driver = {{ dovecot_sql_driver }}
-{% endif %}
+driver = {{ dovecot_user_accounts | d([]) | intersect(['mysql', 'pgsql', 'sqlite']) | first | d() }}
 
 # Database connection string. This is driver-specific setting.
 #
@@ -106,7 +83,7 @@ driver = {{ dovecot_sql_driver }}
 #   connect = /etc/dovecot/authdb.sqlite
 #
 #connect =
-connect ={{ dovecot_tpl_sql_host }}{{ dovecot_tpl_sql_dbname }}{{ dovecot_tpl_sql_user }}{{dovecot_tpl_sql_password }}
+connect = {{ dovecot_sql_connect }}
 
 # Default password scheme.
 #
