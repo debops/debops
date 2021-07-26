@@ -16,9 +16,9 @@ them.
       :local:
       :depth: 1
 
-.. _dovecot_postfix_transport:
+.. _dovecot_postfix_lmtp_transport:
 
-dovecot_postfix_transport
+dovecot__postfix_lmtp_transport
 -------------------------
 
 LMTP socket name which will be configured in Postfix to send mails for

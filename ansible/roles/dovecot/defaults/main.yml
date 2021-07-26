@@ -944,13 +944,6 @@ dovecot__mail_plugins_lmtp: '{{ dovecot__mail_plugins
 dovecot__sieve_dir: 'file:~/sieve;active=~/.dovecot.sieve'
 
                                                                    # ]]]
-# .. envvar:: dovecot_postfix_transport [[[
-#
-# Postfix mail transport target if LMTP is enabled. For more details see
-# :ref:`dovecot_postfix_transport`.
-dovecot_postfix_transport: 'lmtp:unix:private/dovecot-lmtp'
-
-                                                                   # ]]]
                                                                    # ]]]
 # Firewall configuration [[[
 # --------------------------
@@ -1188,6 +1181,13 @@ dovecot__ldap_combined_config: '{{ dovecot__ldap_default_config
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
+# .. envvar:: dovecot__postfix_lmtp_transport [[[
+#
+# Postfix mail transport target if LMTP is enabled. For more details see
+# :ref:`dovecot__postfix_lmtp_transport`.
+dovecot__postfix_lmtp_transport: 'lmtp:unix:private/dovecot-lmtp'
+
+                                                                   # ]]]
 # .. envvar:: dovecot__ldap__dependent_tasks [[[
 #
 # Configuration for the :ref:`debops.ldap` Ansible role.
@@ -1219,7 +1219,7 @@ dovecot__postfix__dependent_maincf:
     comment: |
       Security level overridden via local Dovecot installation
     value: '{{ "none"
-               if dovecot_postfix_transport.startswith("lmtp:unix:")
+               if dovecot__postfix_lmtp_transport.startswith("lmtp:unix:")
                else "may" }}'
     state: '{{ "present" if "lmtp" in dovecot__features else "ignore" }}'
 
@@ -1227,19 +1227,19 @@ dovecot__postfix__dependent_maincf:
   # socket.
   - name: 'lmtp_tls_note_starttls_offer'
     value: '{{ False
-               if dovecot_postfix_transport.startswith("lmtp:unix:")
+               if dovecot__postfix_lmtp_transport.startswith("lmtp:unix:")
                else True }}'
     state: '{{ "present" if "lmtp" in dovecot__features else "ignore" }}'
 
   - name: 'virtual_transport'
-    value: '{{ dovecot_postfix_transport }}'
+    value: '{{ dovecot__postfix_lmtp_transport }}'
     state: '{{ "present"
                if ("lmtp" in dovecot__features and
                    dovecot__ldap_enabled|bool)
                else "ignore" }}'
 
   - name: 'mailbox_transport'
-    value: '{{ dovecot_postfix_transport }}'
+    value: '{{ dovecot__postfix_lmtp_transport }}'
     state: '{{ "present"
                if ("lmtp" in dovecot__features and
                    not dovecot__ldap_enabled|bool)
