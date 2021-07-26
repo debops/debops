@@ -86,24 +86,6 @@ dovecot_user_accounts: '{{ [ "deny", "ldap" ]
 dovecot_deny_users: [ 'root' ]
 
                                                                    # ]]]
-# .. envvar:: dovecot_vmail_base [[[
-#
-# The base directory where user mail directories are located. This value is
-# used to construct the virtual mail home directory paths as well as defines
-# a prefix added to the ``mailHomeDirectory`` LDAP attribute if it's found in
-# the LDAP lookups.
-dovecot_vmail_base: '/var/vmail'
-
-                                                                   # ]]]
-# .. envvar:: dovecot_vmail_home [[[
-#
-# The vmail home directory is a per-user directory where Dovecot can save user-specific files.
-# Dovecot's home directories have nothing to do with system users' home directories.
-# It's irrelevant if it's under /home/ or /var/mail/ or wherever.
-# For more information see: `Home Directories for Virtual Users <https://wiki.dovecot.org/VirtualUsers/Home>`_.
-dovecot_vmail_home: '{{ dovecot_vmail_base ~ "/%d/%n" }}'
-
-                                                                   # ]]]
 # .. envvar:: dovecot_mail_location [[[
 #
 # Mailbox location. For mbox set something like ``mbox:~/mail:INBOX=/var/mail/%u``.
@@ -128,6 +110,60 @@ dovecot__auth_default_realm: '{{ ansible_domain }}'
 dovecot_mail_dotlock: True
 
                                                                    # ]]]
+                                                                   # ]]]
+# Virtual Mail [[[
+# ----------------
+#
+# These settings enable `postfix` to host multiple (virtual) domains and to
+# manage mail for users which do not necessarily need to have local system
+# account.
+#
+
+# .. envvar:: dovecot__vmail_enabled [[[
+#
+# Whether the virtual mail support should be enabled.
+dovecot__vmail_enabled: '{{ True if (dovecot_user_accounts | intersect(["mysql", "pgsql", "sqlite", "ldap", "passwdfile" ])) else False }}'
+
+# .. envvar:: dovecot__vmail_posix_user [[[
+#
+# Virtual Mail POSIX username
+# For the accesses to the mailbox directories a separate user `vmail` (`Virtual Mail`) is created,
+# under which the accesses of Postfix, Dovecot and other components of the mail server should take place.
+# On the one hand this prevents mail server components from accessing sensitive system directories,
+# on the other hand it protects the mailboxes from external access.
+# Only vmail (and root) are allowed to access the mailboxes.
+dovecot__vmail_posix_user: '{{ ansible_local.postldap.vmail_posix_user|d("vmail") }}'
+                                                                   # ]]]
+# .. envvar:: dovecot__vmail_posix_group [[[
+#
+# Virtual Mail POSIX group
+#
+dovecot__vmail_posix_group: '{{ ansible_local.postldap.vmail_posix_group|d("vmail") }}'
+                                                                   # ]]]
+# .. envvar:: dovecot__vmail_base [[[
+#
+# The base directory where user mail directories are located, which also
+# serves as the `home` directory for the ``dovecot__vmail_posix_user``.
+# This directory is used as the base for the virtual mail home directory paths
+# and is used e.g. as a prefix for the ``mailHomeDirectory`` LDAP attribute if
+# it's found in the LDAP lookups.
+dovecot__vmail_base: '/var/vmail'
+
+                                                                   # ]]]
+# .. envvar:: dovecot__vmail_home [[[
+#
+# The vmail home directory is a per-user directory where Dovecot can save user-specific files.
+# Dovecot's home directories have nothing to do with system users' home directories.
+# It's irrelevant if it's under /home/ or /var/mail/ or wherever.
+# For more information see: `Home Directories for Virtual Users <https://wiki.dovecot.org/VirtualUsers/Home>`_.
+dovecot__vmail_home: '{{ dovecot__vmail_base ~ "/%d/%n" }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# SQL Authentication Settings [[[
+# ---------------------------
+#
+
 # .. envvar:: dovecot_sql_connect [[[
 #
 # Driver-specific database connection string.
@@ -231,34 +267,9 @@ dovecot_passwdfile_path: '/etc/dovecot/private/'
                                                                    # ]]]
 # .. envvar:: dovecot_passwdfile_name [[[
 #
-# Name to the dovecot password file
+# Name of the dovecot password file
 dovecot_passwdfile_name: 'passwd'
 
-                                                                   # ]]]
-# .. envvar:: dovecot_passwdfile_uid [[[
-#
-# uid use by Dovecot when it store mail in mailbox
-dovecot_passwdfile_uid: 'dovecot-vmail'
-
-                                                                   # ]]]
-# .. envvar:: dovecot_passwdfile_gid [[[
-#
-# gid use by Dovecot when it store mail in mailbox
-dovecot_passwdfile_gid: 'dovecot-vmail'
-
-                                                                   # ]]]
-# .. envvar:: dovecot_passwdfile_home [[[
-#
-# Path to the mailbox
-dovecot_passwdfile_home: '{{ (ansible_local.fhs.home | d("/var/local"))
-                             + "/" + dovecot_passwdfile_uid }}'
-
-                                                                   # ]]]
-# .. envvar:: dovecot_passwdfile_mailbox_path [[[
-#
-# Path inside the mailbox home directory
-dovecot_passwdfile_mailbox_path: '%u'
-                                                                   # ]]]
                                                                    # ]]]
 # .. envvar:: dovecot_checkpassword_passdb_command [[[
 #
@@ -453,13 +464,15 @@ dovecot__default_configuration:
 
       - name: 'mail_uid'
         value: '{{ dovecot__vmail_posix_user }}'
-        state: '{{ "present" if "ldap" in dovecot_user_accounts else "absent" }}'
-        comment: 'FIXME: vmail is useful for other auth types as well'
+        state: '{{ "present" if dovecot__vmail_enabled|d(False) else "absent" }}'
 
       - name: 'mail_gid'
         value: '{{ dovecot__vmail_posix_group }}'
-        state: '{{ "present" if "ldap" in dovecot_user_accounts else "absent" }}'
-        comment: 'FIXME: vmail is useful for other auth types as well'
+        state: '{{ "present" if dovecot__vmail_enabled|d(False) else "absent" }}'
+
+      - name: 'mail_privileged_group'
+        value: '{{ dovecot__vmail_posix_user }}'
+        state: '{{ "present" if dovecot__vmail_enabled|d(False) else "absent" }}'
 
       - name: 'passdb_deny'
         option: 'passdb'
@@ -535,7 +548,7 @@ dovecot__default_configuration:
           - name: 'driver'
             value: 'passwd-file'
           - name: 'args'
-            value: 'scheme={{dovecot_passwdfile_scheme}} {{dovecot_passwdfile_path}}/{{dovecot_passwdfile_name}}'
+            value: 'scheme={{ dovecot_passwdfile_scheme }} {{ dovecot_passwdfile_path }}/{{ dovecot_passwdfile_name }}'
 
       - name: 'userdb_passwd'
         option: 'userdb'
@@ -544,7 +557,7 @@ dovecot__default_configuration:
           - name: 'driver'
             value: 'static'
           - name: 'args'
-            value: 'uid={{dovecot_passwdfile_uid}} gid={{dovecot_passwdfile_gid}} home={{dovecot_passwdfile_home}}/{{dovecot_passwdfile_mailbox_path}}'
+            value: 'uid={{ dovecot__vmail_posix_user }} gid={{ dovecot__vmail_posix_group }} home={{ dovecot__vmail_home }}'
           - name: 'default_fields'
             value: 'quota_rule=*:storage=1G'
             comment: 'Default fields that can be overridden by passwd-file'
@@ -681,9 +694,8 @@ dovecot__default_configuration:
         options:
 
           - name: 'user'
-            value: 'vmail'
-            comment: 'FIXME: only with vmail user'
-            state: 'absent'
+            value: '{{ dovecot__vmail_posix_user }}'
+            state: '{{ "present" if dovecot__vmail_enabled|d(False) else "absent" }}'
 
           - name: 'unix_listener /var/spool/postfix/private/dovecot-lmtp'
             options:
@@ -717,15 +729,15 @@ dovecot__default_configuration:
                 value: 'postfix'
 
           - name: 'unix_listener auth-userdb'
-            state: 'absent'
-            comment: 'FIXME: only with vmail user'
+            state: '{{ "present" if (dovecot__vmail_enabled|d(False) and
+                         "lmtp" in dovecot_protocols) else "absent" }}'
             options:
               - name: 'mode'
                 value: '0660'
               - name: 'group'
-                value: 'vmail'
+                value: '{{ dovecot__vmail_posix_group }}'
               - name: 'user'
-                value: 'vmail'
+                value: '{{ dovecot__vmail_posix_user }}'
 
   - section: 'protocols'
     title: 'Protocol settings'
@@ -785,9 +797,8 @@ dovecot__default_configuration:
     options:
 
       - name: 'mail_home'
-        value: '{{ dovecot_vmail_home }}'
-        state: '{{ "present" if "ldap" in dovecot_user_accounts else "absent" }}'
-        comment: 'FIXME: This should also be set for other virtual user accounts'
+        value: '{{ dovecot__vmail_home }}'
+        state: '{{ "present" if dovecot__vmail_enabled else "absent" }}'
 
       - name: 'mail_location'
         value: '{{ dovecot_mail_location|d() }}'
@@ -974,31 +985,6 @@ dovecot__allow_pop3s: []
 #
 # List of hosts/networks that can access the ``ManageSieve Protocol`` port (4190).
 dovecot__allow_sieve: []
-                                                                   # ]]]
-                                                                   # ]]]
-# Virtual Mail [[[
-# ----------------
-#
-# This settings help to configure to enable `postfix` to host multiple (virtual) domains,
-# and thus provide email to several domains with just one `mail server`.
-# Currently the Virtual Mail support works only with LDAP enabled, in the future `mariaDB` could be enabled.
-#
-
-# .. envvar:: dovecot__vmail_posix_user [[[
-#
-# Virtual Mail POSIX username
-# For the accesses to the mailbox directories a separate user `vmail` (`Virtual Mail`) is created,
-# under which the accesses of Postfix, Dovecot and other components of the mail server should take place.
-# On the one hand this prevents mail server components from accessing sensitive system directories,
-# on the other hand it protects the mailboxes from external access.
-# Only vmail (and root) are allowed to access the mailboxes.
-dovecot__vmail_posix_user: '{{ ansible_local.postldap.vmail_posix_user|d("vmail") }}'
-                                                                   # ]]]
-# .. envvar:: dovecot__vmail_posix_group [[[
-#
-# Virtual Mail POSIX group
-#
-dovecot__vmail_posix_group: '{{ ansible_local.postldap.vmail_posix_group|d("vmail") }}'
                                                                    # ]]]
                                                                    # ]]]
 # LDAP [[[

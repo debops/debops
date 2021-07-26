@@ -183,20 +183,39 @@
     mode: '0650'
   when: "'passwdfile' in dovecot_user_accounts"
 
-- name: Create group used in passwdfile
-  user:
-    name: "{{ dovecot_passwdfile_gid }}"
-    system: yes
-  when: "'passwdfile' in dovecot_user_accounts"
+- name: Make sure virtual mail user POSIX group exists
+  group:
+    name: '{{ dovecot__vmail_posix_group |
+              d(dovecot__vmail_posix_user) }}'
+    state: 'present'
+    system: True
+  when: 'dovecot__vmail_enabled | d(False)'
+  tags: [ 'role::dovecot:user', 'role::dovecot:group' ]
 
-- name: Create user used in passwdfile
+- name: Make sure virtual mail user POSIX system account exists
   user:
-    name: "{{ dovecot_passwdfile_uid }}"
-    group: "{{ dovecot_passwdfile_gid }}"
-    home: "{{ dovecot_passwdfile_home }}"
-    shell: "/usr/sbin/nologin"
-    system: yes
-  when: "'passwdfile' in dovecot_user_accounts"
+    name: '{{ dovecot__vmail_posix_user }}'
+    state: 'present'
+    comment: 'Postfix Virtual Mail user'
+    group: '{{ dovecot__vmail_posix_group |
+               d(dovecot__vmail_posix_user) }}'
+    home: '{{ dovecot__vmail_base }}'
+    create_home: True
+    system: True
+    shell: '/usr/sbin/nologin'
+    skeleton: null
+  when: 'dovecot__vmail_enabled | d(False)'
+  tags: [ 'role::dovecot:user' ]
+
+- name: "Make sure virtual mail user home directory ({{ dovecot__vmail_base }}) exists"
+  file:
+    dest: '{{ dovecot__vmail_base }}'
+    state: 'directory'
+    owner: '{{ dovecot__vmail_posix_user }}'
+    group: '{{ dovecot__vmail_posix_group }}'
+    mode: '0750'
+  when: 'dovecot__vmail_enabled | d(False)'
+  tags: [ 'role::dovecot:user' ]
 
 - name: Make sure that PKI hook directory exists
   file:
