@@ -435,9 +435,9 @@ dovecot__default_configuration:
 
       - name: 'protocols'
         comment: 'Currently active protocols'
-        value: "{{ dovecot_protocols |
+        value: "{{ dovecot__features |
+                   intersect(['imap', 'imaps', 'pop3', 'pop3s', 'sieve', 'lmtp']) |
                    map('regex_replace', '^(imap|pop3)s$', '\\1') |
-                   map('regex_replace', '^manage(sieve)$', '\\1') |
                    list | unique | join(' ') }}"
 
   - section: 'authentication'
@@ -739,9 +739,7 @@ dovecot__default_configuration:
         options:
 
           - name: 'mail_plugins'
-            value: '$mail_plugins quota imap_quota imap_sieve'
-            comment: 'FIXME: imap_sieve, etc'
-            state: 'comment'
+            value: '{{ dovecot__mail_plugins_imap | flatten | join(" ") }}'
 
           - name: 'mail_max_userip_connections'
             value: '20'
@@ -756,8 +754,7 @@ dovecot__default_configuration:
         options:
 
           - name: 'mail_plugins'
-            value: '$mail_plugins'
-            state: 'comment'
+            value: '{{ dovecot__mail_plugins_pop3 | flatten | join(" ") }}'
 
           - name: 'mail_max_userip_connections'
             value: '10'
@@ -768,7 +765,7 @@ dovecot__default_configuration:
         options:
 
           - name: 'mail_plugins'
-            value: '{{ dovecot_mail_plugins }}'
+            value: '{{ dovecot__mail_plugins_lda | flatten | join(" ") }}'
 
           - name: 'postmaster_address'
             value: 'postmaster@{{ ansible_domain }}'
@@ -778,7 +775,7 @@ dovecot__default_configuration:
         options:
 
           - name: 'mail_plugins'
-            value: '{{ dovecot_mail_plugins }}'
+            value: '{{ dovecot__mail_plugins_lmtp | flatten | join(" ") }}'
 
           - name: 'postmaster_address'
             value: 'postmaster@{{ ansible_domain }}'
@@ -900,21 +897,39 @@ dovecot__combined_configuration: '{{ dovecot__default_configuration
                                       + dovecot__host_configuration }}'
 
                                                                    # ]]]
-# .. envvar:: dovecot_mail_plugins [[[
+# .. envvar:: dovecot__mail_plugins [[[
 #
-# Mail plugins enabled in dovecot.
-dovecot_mail_plugins: '$mail_plugins {{ "sieve"
-                                        if ("managesieve" in dovecot_protocols|d([]) and
-                                        dovecot_sieve_enabled|bool) else "" }}'
+# Default mail plugins for all protocols.
+dovecot__mail_plugins: [ '$mail_plugins' ]
 
                                                                    # ]]]
-# .. envvar:: dovecot_sieve_enabled [[[
+# .. envvar:: dovecot__mail_plugins_imap [[[
 #
-# Enable/disable the sieve mail plugin
-dovecot_sieve_enabled: true
+# Enabled mail plugins for the IMAP protocol.
+dovecot__mail_plugins_imap: '{{ dovecot__mail_plugins
+                                 + [ "imap_sieve" if "managesieve" in dovecot_protocols ] }}'
 
                                                                    # ]]]
+# .. envvar:: dovecot__mail_plugins_pop3 [[[
+#
+# Enabled mail plugins for the POP3 protocol.
+dovecot__mail_plugins_pop3: '{{ dovecot__mail_plugins }}'
 
+                                                                   # ]]]
+# .. envvar:: dovecot__mail_plugins_lda [[[
+#
+# Enabled mail plugins for the LDA protocol.
+dovecot__mail_plugins_lda: '{{ dovecot__mail_plugins
+                                + [ "sieve" if "managesieve" in dovecot_protocols ] }}'
+
+                                                                   # ]]]
+# .. envvar:: dovecot__mail_plugins_ltmp [[[
+#
+# Enabled mail plugins for the LMTP protocol.
+dovecot__mail_plugins_lmtp: '{{ dovecot__mail_plugins
+                                 + [ "sieve" if "managesieve" in dovecot_protocols ] }}'
+
+                                                                   # ]]]
 # .. envvar:: dovecot__sieve_dir [[[
 #
 # Storage directory for sieve scripts uploaded by ManageSieve
