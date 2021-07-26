@@ -487,6 +487,28 @@ dovecot__default_configuration:
     title: 'Dovecot services'
     options:
 
+      - name: 'service imap-login'
+        state: '{{ "present" if ("imap" in dovecot_protocols or "imaps" in dovecot_protocols) else "absent" }}'
+        options:
+
+          - name: 'inet_listener imap'
+            options:
+
+              - name: 'address'
+                value: '127.0.0.1, [::1]'
+                comment: 'Only localhost if no PKI is configured'
+                state: '{{ "present" if not dovecot_pki|d(True) else "comment" }}'
+
+              - name: 'port'
+                value: '{{ 143 if "imap" in dovecot_protocols else 0 }}'
+
+          - name: 'inet_listener imaps'
+            options:
+
+              - name: 'port'
+                value: '{{ 993 if ("imaps" in dovecot_protocols and dovecot_pki|d(True)) else 0 }}'
+                comment: 'Disabled if no PKI is configured'
+
       - name: 'service lmtp'
         state: '{{ "present" if "lmtp" in dovecot_protocols else "absent" }}'
         options:
@@ -508,6 +530,23 @@ dovecot__default_configuration:
   - section: 'protocols'
     title: 'Protocol settings'
     options:
+
+      - name: 'protocol imap'
+        state: '{{ "present" if ("imap" in dovecot_protocols or "imaps" in dovecot_protocols) else "absent" }}'
+        options:
+
+          - name: 'mail_plugins'
+            value: '$mail_plugins quota imap_quota imap_sieve'
+            comment: 'FIXME: imap_sieve, etc'
+            state: 'comment'
+
+          - name: 'mail_max_userip_connections'
+            value: '20'
+            state: 'comment'
+
+          - name: 'imap_idle_notify_interval'
+            value: '29 mins'
+            state: 'comment'
 
       - name: 'protocol lda'
         state: '{{ "present" if "lmtp" not in dovecot_protocols else "absent" }}'
@@ -640,59 +679,12 @@ dovecot__combined_configuration: '{{ dovecot__default_configuration
                                       + dovecot__host_configuration }}'
 
                                                                    # ]]]
-# .. envvar:: dovecot_imap_listeners [[[
-#
-# List of IMAP ``inet_listeners`` which will be enabled. See
-# :ref:`dovecot_imap_listeners` for more details.
-dovecot_imap_listeners: '{{ [ "imap", "imaps" ]
-                            if ( dovecot_pki|d(True) )
-                            else [ "imap" ] }}'
-
-                                                                   # ]]]
-# .. envvar:: dovecot_imap_default_config_map [[[
-#
-# Default IMAP configuration properties. See :ref:`dovecot_imap_config_map`
-# for more details.
-dovecot_imap_default_config_map:
-  login-service:
-    inet_listener:
-      imap:
-        # Use only localhost when PKI is false, otherwise listen on all IPs
-        address: '{{ "0.0.0.0, [::]"
-                      if (dovecot_pki|d(True))
-                      else
-                        "127.0.0.1, [::0]" }}'
-        port: 143
-      imaps:
-        address: '0.0.0.0, [::]'
-        # Disable IMAPS if PKI is false
-        port: '{{ 993 if (dovecot_pki|d(True)) else 0 }}'
-        ssl: 'yes'
-
-                                                                   # ]]]
-
 # .. envvar:: dovecot_mail_plugins [[[
 #
 # Mail plugins enabled in dovecot.
 dovecot_mail_plugins: '$mail_plugins {{ "sieve"
                                         if ("managesieve" in dovecot_protocols|d([]) and
                                         dovecot_sieve_enabled|bool) else "" }}'
-
-                                                                   # ]]]
-# .. envvar:: dovecot_imap_config_map [[[
-#
-# Custom IMAP configuration properties. See :ref:`dovecot_imap_config_map`
-# for more details.
-dovecot_imap_config_map: {}
-
-                                                                   # ]]]
-# .. envvar:: dovecot_imap_combined_config_map [[[
-#
-# Combined IMAP configuration properties.
-dovecot_imap_combined_config_map: '{{ dovecot_imap_default_config_map
-                                      |combine(
-                                        dovecot_imap_config_map,
-                                        recursive=True) }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_pop3_listeners [[[
