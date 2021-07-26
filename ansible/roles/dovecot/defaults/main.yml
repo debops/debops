@@ -452,6 +452,24 @@ dovecot__default_configuration:
           - name: 'args'
             value: '/etc/dovecot/dovecot.deny'
 
+      - name: 'passdb_system'
+        option: 'passdb'
+        state: '{{ "present" if "system" in dovecot_user_accounts else "absent" }}'
+        options:
+          - name: 'driver'
+            value: 'pam'
+          - name: 'args'
+            value: 'session=yes dovecot'
+
+      - name: 'userdb_system'
+        option: 'userdb'
+        state: '{{ "present" if "system" in dovecot_user_accounts else "absent" }}'
+        options:
+          - name: 'driver'
+            value: 'passwd'
+          - name: 'args'
+            value: 'blocking=no'
+
   - section: 'tls'
     title: 'TLS Configuration'
     state: '{{ "present" if dovecot_pki is defined and dovecot_pki else "absent" }}'

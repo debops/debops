@@ -34,9 +34,6 @@ auth_default_realm = {{ dovecot__auth_default_realm }}
 ## Password and user databases
 ##
 
-{% if 'system' in dovecot_user_accounts %}
-!include auth-system.conf.ext
-{% endif %}
 {% if dovecot_user_accounts | d([]) | intersect(['mysql', 'pgsql', 'sqlite']) %}
 !include auth-sql.conf.ext
 {% endif %}
