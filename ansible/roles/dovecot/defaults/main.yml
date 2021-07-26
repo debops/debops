@@ -544,6 +544,34 @@ dovecot__default_configuration:
             comment: 'Override fields from passwd-file'
             state: 'comment'
 
+      - name: 'passdb_checkpassword'
+        option: 'passdb'
+        state: '{{ "present" if ("checkpassword" in dovecot_user_accounts and
+                     dovecot_checkpassword_passdb_command|d()) else "absent" }}'
+        options:
+          - name: 'driver'
+            value: 'checkpassword'
+          - name: 'args'
+            value: '{{ dovecot_checkpassword_passdb_command }}'
+
+      - name: 'userdb_checkpassword_pre'
+        option: 'userdb'
+        state: '{{ "present" if ("checkpassword" in dovecot_user_accounts and
+                     dovecot_checkpassword_userdb_command|d()) else "absent" }}'
+        options:
+          - name: 'driver'
+            value: 'prefetch'
+
+      - name: 'userdb_checkpassword_main'
+        option: 'userdb'
+        state: '{{ "present" if ("checkpassword" in dovecot_user_accounts and
+                     dovecot_checkpassword_userdb_command|d()) else "absent" }}'
+        options:
+          - name: 'driver'
+            value: 'checkpassword'
+          - name: 'args'
+            value: '{{ dovecot_checkpassword_userdb_command }}'
+
   - section: 'tls'
     title: 'TLS Configuration'
     state: '{{ "present" if dovecot_pki is defined and dovecot_pki else "absent" }}'

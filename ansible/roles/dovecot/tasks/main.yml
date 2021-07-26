@@ -100,6 +100,7 @@
     - [ 'auth-sql.conf.ext' ]
     - [ 'auth-ldap.conf.ext' ]
     - [ 'auth-passwdfile.conf.ext' ]
+    - [ 'auth-checkpassword.conf.ext' ]
 
 - name: Divert original Dovecot configuration
   command: dpkg-divert --quiet --local
@@ -108,7 +109,6 @@
            creates=/etc/dovecot/conf.d/{{ item }}.dpkg-divert
   with_flattened:
     - [ '10-auth.conf' ]
-    - [ '{{ "auth-checkpassword.conf.ext" if "checkpassword" in dovecot_user_accounts else [] }}' ]
   notify: [ 'Restart dovecot' ]
 
 - name: Uninstall disabled Dovecot protocols
@@ -151,7 +151,6 @@
     mode: '0644'
   with_flattened:
     - [ '10-auth.conf' ]
-    - [ '{{ "auth-checkpassword.conf.ext" if "checkpassword" in dovecot_user_accounts else [] }}' ]
   notify: [ 'Restart dovecot' ]
   tags: [ "role::dovecot:conf" ]
 
