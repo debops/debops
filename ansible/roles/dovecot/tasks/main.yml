@@ -92,7 +92,7 @@
     executable: 'bash'
     removes: '/etc/dovecot/conf.d/{{ item }}.dpkg-divert'
   with_flattened:
-    - [ '10-master.conf', '10-mail.conf', '10-ssl.conf', '15-lda.conf' ]
+    - [ '10-auth.conf', '10-master.conf', '10-mail.conf', '10-ssl.conf', '15-lda.conf' ]
     - [ '20-pop3.conf', '20-imap.conf', '20-lmtp.conf' ]
     - [ '20-managesieve.conf', '90-sieve.conf', '90-sieve-extprograms.conf' ]
     - [ 'auth-deny.conf.ext' ]
@@ -101,15 +101,6 @@
     - [ 'auth-ldap.conf.ext' ]
     - [ 'auth-passwdfile.conf.ext' ]
     - [ 'auth-checkpassword.conf.ext' ]
-
-- name: Divert original Dovecot configuration
-  command: dpkg-divert --quiet --local
-           --divert /etc/dovecot/conf.d/{{ item }}.dpkg-divert
-           --rename /etc/dovecot/conf.d/{{ item }}
-           creates=/etc/dovecot/conf.d/{{ item }}.dpkg-divert
-  with_flattened:
-    - [ '10-auth.conf' ]
-  notify: [ 'Restart dovecot' ]
 
 - name: Uninstall disabled Dovecot protocols
   package:
@@ -141,18 +132,6 @@
                                 else []))) }}'
     state: 'absent'
   notify: [ 'Restart dovecot' ]
-
-- name: Generate Dovecot configuration
-  template:
-    src: '{{ lookup("debops.debops.template_src", "etc/dovecot/conf.d/" + item + ".j2") }}'
-    dest: '/etc/dovecot/conf.d/{{ item }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  with_flattened:
-    - [ '10-auth.conf' ]
-  notify: [ 'Restart dovecot' ]
-  tags: [ "role::dovecot:conf" ]
 
 - name: Generate Dovecot local configuration
   template:

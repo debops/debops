@@ -441,6 +441,15 @@ dovecot__default_configuration:
     title: 'Client Configuration'
     options:
 
+      - name: 'auth_mechanisms'
+        value: '{{ dovecot_auth_mechanisms | join(" ") }}'
+
+      - name: 'disable_plaintext_auth'
+        value: 'yes'
+
+      - name: 'auth_default_realm'
+        value: '{{ dovecot__auth_default_realm }}'
+
       - name: 'mail_uid'
         value: '{{ dovecot__vmail_posix_user }}'
         state: '{{ "present" if "ldap" in dovecot_user_accounts else "absent" }}'
