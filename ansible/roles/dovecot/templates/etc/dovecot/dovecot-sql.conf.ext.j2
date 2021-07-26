@@ -43,7 +43,7 @@ setup, you can provide your own template via lookup mechanism.
 # );
 
 # Database driver: mysql, pgsql, sqlite
-driver = {{ dovecot_user_accounts | d([]) | intersect(['mysql', 'pgsql', 'sqlite']) | first | d() }}
+driver = {{ dovecot__user_accounts | d([]) | intersect(['mysql', 'pgsql', 'sqlite']) | first | d() }}
 
 # Database connection string. This is driver-specific setting.
 #
@@ -83,7 +83,7 @@ driver = {{ dovecot_user_accounts | d([]) | intersect(['mysql', 'pgsql', 'sqlite
 #   connect = /etc/dovecot/authdb.sqlite
 #
 #connect =
-connect = {{ dovecot_sql_connect }}
+connect = {{ dovecot__sql__connect }}
 
 # Default password scheme.
 #
@@ -91,8 +91,8 @@ connect = {{ dovecot_sql_connect }}
 # https://wiki2.dovecot.org/Authentication/PasswordSchemes
 #
 #default_pass_scheme = MD5
-{% if dovecot_sql_default_pass_scheme is defined and dovecot_sql_default_pass_scheme %}
-default_pass_scheme = {{ dovecot_sql_default_pass_scheme }}
+{% if dovecot__sql__default_pass_scheme is defined and dovecot__sql__default_pass_scheme %}
+default_pass_scheme = {{ dovecot__sql__default_pass_scheme }}
 {% endif %}
 
 # passdb query to retrieve the password. It can return fields:
@@ -125,8 +125,8 @@ default_pass_scheme = {{ dovecot_sql_default_pass_scheme }}
 #password_query = \
 #  SELECT username, domain, password \
 #  FROM users WHERE username = '%n' AND domain = '%d'
-{% if dovecot_sql_password_query is defined and dovecot_sql_password_query %}
-password_query = {{ dovecot_sql_password_query }}
+{% if dovecot__sql__password_query is defined and dovecot__sql__password_query %}
+password_query = {{ dovecot__sql__password_query }}
 {% endif %}
 
 # userdb query to retrieve the user information. It can return fields:
@@ -148,8 +148,8 @@ password_query = {{ dovecot_sql_password_query }}
 #user_query = \
 #  SELECT home, uid, gid \
 #  FROM users WHERE username = '%n' AND domain = '%d'
-{% if dovecot_sql_user_query is defined and dovecot_sql_user_query %}
-user_query = {{ dovecot_sql_user_query }}
+{% if dovecot__sql__user_query is defined and dovecot__sql__user_query %}
+user_query = {{ dovecot__sql__user_query }}
 {% endif %}
 
 # If you wish to avoid two SQL lookups (passdb + userdb), you can use
@@ -163,6 +163,6 @@ user_query = {{ dovecot_sql_user_query }}
 
 # Query to get a list of all usernames.
 #iterate_query = SELECT username AS user FROM users
-{% if dovecot_sql_iterate_query is defined and dovecot_sql_iterate_query %}
-iterate_query = {{ dovecot_sql_iterate_query }}
+{% if dovecot__sql__iterate_query is defined and dovecot__sql__iterate_query %}
+iterate_query = {{ dovecot__sql__iterate_query }}
 {% endif %}

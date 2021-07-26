@@ -31,16 +31,16 @@
                                  if "lmtp" in dovecot__features
                                  else [])
                               + ([ "dovecot-mysql" ]
-                                 if "mysql" in dovecot_user_accounts
+                                 if "mysql" in dovecot__user_accounts
                                  else [])
                               + ([ "dovecot-pgsql" ]
-                                 if "pgsql" in dovecot_user_accounts
+                                 if "pgsql" in dovecot__user_accounts
                                  else [])
                               + ([ "dovecot-sqlite" ]
-                                 if "sqlite" in dovecot_user_accounts
+                                 if "sqlite" in dovecot__user_accounts
                                  else [])
                               + ([ "dovecot-ldap" ]
-                                 if "ldap" in dovecot_user_accounts
+                                 if "ldap" in dovecot__user_accounts
                                  else [])
                               + ([ "dovecot-managesieved" ]
                                  if "sieve" in dovecot__features
@@ -117,16 +117,16 @@
                                 if "lmtp" not in dovecot__features
                                 else [])
                              + ([ "dovecot-mysql" ]
-                                 if "mysql" not in dovecot_user_accounts
+                                 if "mysql" not in dovecot__user_accounts
                                  else [])
                              + ([ "dovecot-pgsql" ]
-                                if "pgsql" not in dovecot_user_accounts
+                                if "pgsql" not in dovecot__user_accounts
                                 else [])
                              + ([ "dovecot-sqlite" ]
-                                if "sqlite" not in dovecot_user_accounts
+                                if "sqlite" not in dovecot__user_accounts
                                 else [])
                              + ([ "dovecot-ldap" ]
-                                if ("ldap" not in dovecot_user_accounts)
+                                if ("ldap" not in dovecot__user_accounts)
                                 else [])
                              + ([ "dovecot-managesieved" ]
                                 if "sieve" not in dovecot__features
@@ -149,7 +149,7 @@
     group: 'root'
     mode: '0600'
   notify: [ 'Restart dovecot' ]
-  when: "dovecot_user_accounts | d([]) | intersect(['mysql', 'pgsql', 'sqlite'])"
+  when: "dovecot__user_accounts | d([]) | intersect(['mysql', 'pgsql', 'sqlite'])"
   tags: [ "role::dovecot:conf", "role::dovecot:conf:sql" ]
 
 - name: Generate Dovecot ldap configuration
@@ -163,7 +163,7 @@
   loop:
     - 'dovecot-ldap-userdb.conf'
     - 'dovecot-ldap-passdb.conf'
-  when: "'ldap' in dovecot_user_accounts"
+  when: "'ldap' in dovecot__user_accounts"
   tags: [ "role::dovecot:conf", "role::dovecot:conf:ldap" ]
 
 - name: Generate Dovecot deny user list
@@ -176,12 +176,12 @@
 
 - name: Create private directory to store passwdfile
   file:
-    path: "{{ dovecot_passwdfile_path }}"
+    path: "{{ dovecot__passwdfile_path }}"
     state: directory
     owner: 'root'
     group: 'dovecot'
     mode: '0650'
-  when: "'passwdfile' in dovecot_user_accounts"
+  when: "'passwdfile' in dovecot__user_accounts"
 
 - name: Make sure virtual mail user POSIX group exists
   group:
@@ -219,27 +219,27 @@
 
 - name: Make sure that PKI hook directory exists
   file:
-    path: '{{ dovecot_pki_hook_path }}'
+    path: '{{ dovecot__pki_hook_path }}'
     state: 'directory'
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: dovecot_pki|bool
+  when: dovecot__pki|bool
 
 - name: Manage PKI postfix hook
   template:
     src: 'etc/pki/hooks/dovecot.j2'
-    dest: '{{ dovecot_pki_hook_path + "/" + dovecot_pki_hook_name }}'
+    dest: '{{ dovecot__pki_hook_path + "/" + dovecot__pki_hook_name }}'
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: dovecot_pki|bool
+  when: dovecot__pki|bool
 
 - name: Ensure the PKI postfix hook is absent
   file:
-    path: '{{ dovecot_pki_hook_path }}'
+    path: '{{ dovecot__pki_hook_path }}'
     state: 'absent'
-  when: not (dovecot_pki|bool)
+  when: not (dovecot__pki|bool)
 
 - name: Post hooks
   include: "{{ lookup('debops.debops.task_src', 'dovecot/post_main.yml') }}"

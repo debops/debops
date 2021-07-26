@@ -40,17 +40,11 @@
 dovecot__features: [ 'imap', 'imaps', 'lmtp', 'sieve', 'quota' ]
 
                                                                    # ]]]
-# .. envvar:: dovecot_auth_mechanisms [[[
+# .. envvar:: dovecot__auth_mechanisms [[[
 #
 # List of authentication mechanisms enabled. So far supported are:
 # ``plain``, ``login``
-dovecot_auth_mechanisms: [ 'plain', 'login' ]
-
-                                                                   # ]]]
-# .. envvar:: dovecot_dependencies [[[
-#
-# Should the Dovecot role manage it's own dependencies?
-dovecot_dependencies: True
+dovecot__auth_mechanisms: [ 'plain', 'login' ]
 
                                                                    # ]]]
 # .. envvar:: dovecot__version [[[
@@ -64,7 +58,7 @@ dovecot__version: '{{ ansible_local.dovecot.version|d("0.0.0") }}'
 # User database/mailbox configuration [[[
 # ---------------------------------------
 
-# .. envvar:: dovecot_user_accounts [[[
+# .. envvar:: dovecot__user_accounts [[[
 #
 # User account lookup. Supported mechanisms are:
 #
@@ -76,23 +70,23 @@ dovecot__version: '{{ ansible_local.dovecot.version|d("0.0.0") }}'
 # - ``ldap``: Mail users are stored in an LDAP directory
 # - ``passwdfile``: User passwords are stored in a file
 # - ``checkpassword``: User passwords are stored in an external program
-dovecot_user_accounts: '{{ [ "deny", "ldap" ]
-                           if dovecot__ldap_enabled|bool
-                           else [ "deny", "system" ] }}'
+dovecot__user_accounts: '{{ [ "deny", "ldap" ]
+                            if dovecot__ldap_enabled|bool
+                            else [ "deny", "system" ] }}'
 
                                                                    # ]]]
-# .. envvar:: dovecot_deny_users [[[
+# .. envvar:: dovecot__deny_users [[[
 #
 # List of users for which mail acess is disabled.
-dovecot_deny_users: [ 'root' ]
+dovecot__deny_users: [ 'root' ]
 
                                                                    # ]]]
-# .. envvar:: dovecot_mail_location [[[
+# .. envvar:: dovecot__mail_location [[[
 #
 # Mailbox location. For mbox set something like ``mbox:~/mail:INBOX=/var/mail/%u``.
 # For more information about the supported format, check `Dovecot Mail
 # Location <https://doc.dovecot.org/configuration_manual/mail_location/>`_
-dovecot_mail_location: 'maildir:~/Maildir'
+dovecot__mail_location: 'maildir:~/Maildir'
 
                                                                    # ]]]
 # .. envvar:: dovecot__auth_default_realm [[[
@@ -114,7 +108,7 @@ dovecot__auth_default_realm: '{{ ansible_domain }}'
 # .. envvar:: dovecot__vmail_enabled [[[
 #
 # Whether the virtual mail support should be enabled.
-dovecot__vmail_enabled: '{{ True if (dovecot_user_accounts | intersect(["mysql", "pgsql", "sqlite", "ldap", "passwdfile" ])) else False }}'
+dovecot__vmail_enabled: '{{ True if (dovecot__user_accounts | intersect(["mysql", "pgsql", "sqlite", "ldap", "passwdfile" ])) else False }}'
 
 # .. envvar:: dovecot__vmail_posix_user [[[
 #
@@ -156,7 +150,7 @@ dovecot__vmail_home: '{{ dovecot__vmail_base ~ "/%d/%n" }}'
 # ---------------------------
 #
 
-# .. envvar:: dovecot_sql_connect [[[
+# .. envvar:: dovecot__sql__connect [[[
 #
 # Driver-specific database connection string.
 #
@@ -206,25 +200,25 @@ dovecot__vmail_home: '{{ dovecot__vmail_base ~ "/%d/%n" }}'
 #     `active` char(1) NOT NULL DEFAULT 'Y',
 #     `maildir` varchar(255) NOT NULL
 #   );
-dovecot_sql_connect: ''
+dovecot__sql__connect: ''
 
                                                                    # ]]]
-# .. envvar:: dovecot_sql_default_pass_scheme [[[
+# .. envvar:: dovecot__sql__default_pass_scheme [[[
 #
 # Default passwort scheme for passwords, stored in a SQL database.
 # For more information about the supported schemes, check `Authentication /
 # PasswordSchemes <https://doc.dovecot.org/configuration_manual/authentication/password_schemes/>`_
-dovecot_sql_default_pass_scheme: 'SSHA512'
+dovecot__sql__default_pass_scheme: 'SSHA512'
 
                                                                    # ]]]
-# .. envvar:: dovecot_sql_password_query [[[
+# .. envvar:: dovecot__sql__password_query [[[
 #
 # SQL query string to get the password. This function should return the values
 # ``username``, ``domain`` and ``password``.
-dovecot_sql_password_query: "SELECT userid AS username, domain, password FROM users WHERE userid = '%n' AND domain = '%d'"
+dovecot__sql__password_query: "SELECT userid AS username, domain, password FROM users WHERE userid = '%n' AND domain = '%d'"
 
                                                                    # ]]]
-# .. envvar:: dovecot_sql_user_query [[[
+# .. envvar:: dovecot__sql__user_query [[[
 #
 # SQL query string to get the userdb. This function should return the values
 # ``home``, ``uid`` and ``gid``.
@@ -232,68 +226,68 @@ dovecot_sql_password_query: "SELECT userid AS username, domain, password FROM us
 # Optional the mail_location can be defined with the option ``mail``.
 # For more information about the mail_location, check `MailLocation
 # <https://doc.dovecot.org/configuration_manual/mail_location/>`_
-dovecot_sql_user_query: "SELECT home, uid, gid FROM users WHERE userid = '%n' AND domain = '%d'"
+dovecot__sql__user_query: "SELECT home, uid, gid FROM users WHERE userid = '%n' AND domain = '%d'"
 
                                                                    # ]]]
-# .. envvar:: dovecot_sql_iterate_query [[[
+# .. envvar:: dovecot__sql__iterate_query [[[
 #
 # SQL query string to get a list of users. This function should return all values
 # ``user`` or both ``username`` and ``domain``.
 #
 # For more information about the iterate query , check `AuthDatabase/SQL
 # <https://wiki2.dovecot.org/AuthDatabase/SQL#User_iteration>` _
-dovecot_sql_iterate_query: "SELECT userid AS username, domain FROM users"
+dovecot__sql__iterate_query: "SELECT userid AS username, domain FROM users"
 
                                                                    # ]]]
-# .. envvar:: dovecot_passwdfile_scheme [[[
+# .. envvar:: dovecot__passwdfile_scheme [[[
 #
 # Scheme method use by dovecot with password authentication
-dovecot_passwdfile_scheme: 'sha512-crypt'
+dovecot__passwdfile_scheme: 'sha512-crypt'
 
                                                                    # ]]]
-# .. envvar:: dovecot_passwdfile_path [[[
+# .. envvar:: dovecot__passwdfile_path [[[
 #
 # Path to the dovecot password file
-dovecot_passwdfile_path: '/etc/dovecot/private/'
+dovecot__passwdfile_path: '/etc/dovecot/private/'
 
                                                                    # ]]]
-# .. envvar:: dovecot_passwdfile_name [[[
+# .. envvar:: dovecot__passwdfile_name [[[
 #
 # Name of the dovecot password file
-dovecot_passwdfile_name: 'passwd'
+dovecot__passwdfile_name: 'passwd'
 
                                                                    # ]]]
-# .. envvar:: dovecot_checkpassword_passdb_command [[[
+# .. envvar:: dovecot__checkpassword_passdb_command [[[
 #
 # Command to fetch password database in checkpassword auth mode
-dovecot_checkpassword_passdb_command: '/usr/bin/checkpassword'
+dovecot__checkpassword_passdb_command: '/usr/bin/checkpassword'
                                                                    # ]]]
                                                                    # ]]]
-# .. envvar:: dovecot_checkpassword_userdb_command [[[
+# .. envvar:: dovecot__checkpassword_userdb_command [[[
 #
 # Command to fetch user database in checkpassword auth mode
-dovecot_checkpassword_userdb_command: '/usr/bin/checkpassword'
+dovecot__checkpassword_userdb_command: '/usr/bin/checkpassword'
                                                                    # ]]]
                                                                    # ]]]
 # PKI / TLS configuration [[[
 # ---------------------------
 
-# .. envvar:: dovecot_pki [[[
+# .. envvar:: dovecot__pki [[[
 #
 # Enable or disable support for TLS in Dovecot (using debops.pki)
-dovecot_pki: '{{ ansible_local.pki.enabled|d() | bool }}'
+dovecot__pki: '{{ ansible_local.pki.enabled|d() | bool }}'
 
                                                                    # ]]]
-# .. envvar:: dovecot_pki_path [[[
+# .. envvar:: dovecot__pki_path [[[
 #
 # Base PKI directory
-dovecot_pki_path: '{{ ansible_local.pki.path|d("/etc/pki/realms") }}'
+dovecot__pki_path: '{{ ansible_local.pki.path|d("/etc/pki/realms") }}'
 
                                                                    # ]]]
-# .. envvar:: dovecot_pki_realm [[[
+# .. envvar:: dovecot__pki_realm [[[
 #
 # Default PKI realm used by Dovecot
-dovecot_pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
+dovecot__pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__pki_ca [[[
@@ -303,16 +297,16 @@ dovecot_pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
 dovecot__pki_ca: '{{ ansible_local.pki.ca|d("CA.crt") }}'
 
                                                                    # ]]]
-# .. envvar:: dovecot_pki_crt [[[
+# .. envvar:: dovecot__pki_crt [[[
 #
-# Default certificate, relative to ``dovecot_pki_realm`` variable
-dovecot_pki_crt: '{{ ansible_local.pki.crt|d("default.crt") }}'
+# Default certificate, relative to ``dovecot__pki_realm`` variable
+dovecot__pki_crt: '{{ ansible_local.pki.crt|d("default.crt") }}'
 
                                                                    # ]]]
-# .. envvar:: dovecot_pki_key [[[
+# .. envvar:: dovecot__pki_key [[[
 #
-# Default private key, relative to ``dovecot_pki_realm`` variable
-dovecot_pki_key: '{{ ansible_local.pki.key|d("default.key") }}'
+# Default private key, relative to ``dovecot__pki_realm`` variable
+dovecot__pki_key: '{{ ansible_local.pki.key|d("default.key") }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__tls_ca_cert_dir [[[
@@ -322,71 +316,71 @@ dovecot_pki_key: '{{ ansible_local.pki.key|d("default.key") }}'
 # SSL/TLS connections. The files each contain one CA  certificate.
 dovecot__tls_ca_cert_dir: '/etc/ssl/certs/'
                                                                    # ]]]
-# .. envvar:: dovecot_ssl_required [[[
+# .. envvar:: dovecot__ssl_required [[[
 #
 # Requires SSL/TLS also for non-plaintext authentication. For more
 # information check ``ssl_required`` in `Dovecot SSL Configuration
 # <https://wiki.dovecot.org/SSL/DovecotConfiguration>`_
-dovecot_ssl_required: True
+dovecot__ssl_required: True
 
                                                                    # ]]]
-# .. envvar:: dovecot_ssl_min_protocol [[[
+# .. envvar:: dovecot__ssl_min_protocol [[[
 #
 # SSL ciphers to use. On new distros you only specify the minimum ssl
 # protocol version Dovecot accepts, defaulting to TLSv1.2.
-dovecot_ssl_min_protocol: '{{ "!SSLv2 !SSLv3"
+dovecot__ssl_min_protocol: '{{ "!SSLv2 !SSLv3"
                               if (ansible_distribution_release in
                                 [ "jessie", "precise", "trusty" ])
                               else "TLSv1.2" }}'
 
                                                                    # ]]]
-# .. envvar:: dovecot_ssl_dh_parameters_length [[[
+# .. envvar:: dovecot__ssl_dh_parameters_length [[[
 #
 # Diffie-Hellman parameters length
 # Only needed for Dovecot v2.2.x in old-distros.
-dovecot_ssl_dh_parameters_length: 4096
+dovecot__ssl_dh_parameters_length: 4096
 
                                                                    # ]]]
-# .. envvar:: dovecot_ssl_cipher_list [[[
+# .. envvar:: dovecot__ssl_cipher_list [[[
 #
 # SSL ciphers to use
-dovecot_ssl_cipher_list: '{{ dovecot_ssl_cipher_list_default }}'
+dovecot__ssl_cipher_list: '{{ dovecot__ssl_cipher_list_default }}'
 
                                                                    # ]]]
-# .. envvar:: dovecot_ssl_cipher_list_default [[[
+# .. envvar:: dovecot__ssl_cipher_list_default [[[
 #
 # Default SSL ciphers
-dovecot_ssl_cipher_list_default: 'ALL:!kRSA:!SRP:!kDHd:!DSS:!aNULL:!eNULL:!EXPORT:!DES:!3DES:!MD5:!PSK:!RC4:!ADH:!LOW@STRENGTH'
+dovecot__ssl_cipher_list_default: 'ALL:!kRSA:!SRP:!kDHd:!DSS:!aNULL:!eNULL:!EXPORT:!DES:!3DES:!MD5:!PSK:!RC4:!ADH:!LOW@STRENGTH'
 
                                                                    # ]]]
-# .. envvar:: dovecot_ssl_cipher_list_better_crypto [[[
+# .. envvar:: dovecot__ssl_cipher_list_better_crypto [[[
 #
 # https://bettercrypto.org/
-dovecot_ssl_cipher_list_better_crypto: 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA256:EECDH:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH:CAMELLIA128-SHA:AES128-SHA'
+dovecot__ssl_cipher_list_better_crypto: 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA256:EECDH:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH:CAMELLIA128-SHA:AES128-SHA'
 
                                                                    # ]]]
-# .. envvar:: dovecot_ssl_cipher_list_ncsc_nl [[[
+# .. envvar:: dovecot__ssl_cipher_list_ncsc_nl [[[
 #
 # 'good' cipher suite from NCSC-NL TLS Guidelines v2.1
 # https://english.ncsc.nl/publications/publications/2021/january/19/it-security-guidelines-for-transport-layer-security-2.1
-dovecot_ssl_cipher_list_ncsc_nl: 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-RSA-AES128-GCM-SHA256'
+dovecot__ssl_cipher_list_ncsc_nl: 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-RSA-AES128-GCM-SHA256'
                                                                    # ]]]
-# .. envvar:: dovecot_pki_hook_name [[[
+# .. envvar:: dovecot__pki_hook_name [[[
 #
 # Name of the hook script which will be stored in hook directory.
-dovecot_pki_hook_name: 'dovecot'
+dovecot__pki_hook_name: 'dovecot'
 
                                                                    # ]]]
-# .. envvar:: dovecot_pki_hook_path [[[
+# .. envvar:: dovecot__pki_hook_path [[[
 #
 # Directory with PKI hooks.
-dovecot_pki_hook_path: '{{ ansible_local.pki.hooks|d("/etc/pki/hooks") }}'
+dovecot__pki_hook_path: '{{ ansible_local.pki.hooks|d("/etc/pki/hooks") }}'
 
                                                                    # ]]]
-# .. envvar:: dovecot_pki_hook_action [[[
+# .. envvar:: dovecot__pki_hook_action [[[
 #
 # Specify how changes in PKI should affect dovecot, either 'reload' or 'restart'.
-dovecot_pki_hook_action: 'reload'
+dovecot__pki_hook_action: 'reload'
                                                                    # ]]]
                                                                    # ]]]
 # Diffie-Hellman parameters [[[
@@ -446,7 +440,7 @@ dovecot__default_configuration:
     options:
 
       - name: 'auth_mechanisms'
-        value: '{{ dovecot_auth_mechanisms | join(" ") }}'
+        value: '{{ dovecot__auth_mechanisms | join(" ") }}'
 
       - name: 'disable_plaintext_auth'
         value: 'yes'
@@ -468,7 +462,7 @@ dovecot__default_configuration:
 
       - name: 'passdb_deny'
         option: 'passdb'
-        state: '{{ "present" if "deny" in dovecot_user_accounts else "absent" }}'
+        state: '{{ "present" if "deny" in dovecot__user_accounts else "absent" }}'
         options:
           - name: 'driver'
             value: 'passwd-file'
@@ -479,7 +473,7 @@ dovecot__default_configuration:
 
       - name: 'passdb_system'
         option: 'passdb'
-        state: '{{ "present" if "system" in dovecot_user_accounts else "absent" }}'
+        state: '{{ "present" if "system" in dovecot__user_accounts else "absent" }}'
         options:
           - name: 'driver'
             value: 'pam'
@@ -488,7 +482,7 @@ dovecot__default_configuration:
 
       - name: 'userdb_system'
         option: 'userdb'
-        state: '{{ "present" if "system" in dovecot_user_accounts else "absent" }}'
+        state: '{{ "present" if "system" in dovecot__user_accounts else "absent" }}'
         options:
           - name: 'driver'
             value: 'passwd'
@@ -497,7 +491,7 @@ dovecot__default_configuration:
 
       - name: 'passdb_sql'
         option: 'passdb'
-        state: '{{ "present" if (dovecot_user_accounts | d([]) |
+        state: '{{ "present" if (dovecot__user_accounts | d([]) |
                      intersect(["mysql", "pgsql", "sqlite"])) else "absent" }}'
         options:
           - name: 'driver'
@@ -507,7 +501,7 @@ dovecot__default_configuration:
 
       - name: 'userdb_sql'
         option: 'userdb'
-        state: '{{ "present" if (dovecot_user_accounts | d([]) |
+        state: '{{ "present" if (dovecot__user_accounts | d([]) |
                      intersect(["mysql", "pgsql", "sqlite"])) else "absent" }}'
         options:
           - name: 'driver'
@@ -517,7 +511,7 @@ dovecot__default_configuration:
 
       - name: 'passdb_ldap'
         option: 'passdb'
-        state: '{{ "present" if "ldap" in dovecot_user_accounts else "absent" }}'
+        state: '{{ "present" if "ldap" in dovecot__user_accounts else "absent" }}'
         options:
           - name: 'driver'
             value: 'ldap'
@@ -526,7 +520,7 @@ dovecot__default_configuration:
 
       - name: 'userdb_ldap'
         option: 'userdb'
-        state: '{{ "present" if "ldap" in dovecot_user_accounts else "absent" }}'
+        state: '{{ "present" if "ldap" in dovecot__user_accounts else "absent" }}'
         options:
           - name: 'driver'
             value: 'ldap'
@@ -535,16 +529,16 @@ dovecot__default_configuration:
 
       - name: 'passdb_passwd'
         option: 'passdb'
-        state: '{{ "present" if "passwdfile" in dovecot_user_accounts else "absent" }}'
+        state: '{{ "present" if "passwdfile" in dovecot__user_accounts else "absent" }}'
         options:
           - name: 'driver'
             value: 'passwd-file'
           - name: 'args'
-            value: 'scheme={{ dovecot_passwdfile_scheme }} {{ dovecot_passwdfile_path }}/{{ dovecot_passwdfile_name }}'
+            value: 'scheme={{ dovecot__passwdfile_scheme }} {{ dovecot__passwdfile_path }}/{{ dovecot__passwdfile_name }}'
 
       - name: 'userdb_passwd'
         option: 'userdb'
-        state: '{{ "present" if "passwdfile" in dovecot_user_accounts else "absent" }}'
+        state: '{{ "present" if "passwdfile" in dovecot__user_accounts else "absent" }}'
         options:
           - name: 'driver'
             value: 'static'
@@ -561,61 +555,61 @@ dovecot__default_configuration:
 
       - name: 'passdb_checkpassword'
         option: 'passdb'
-        state: '{{ "present" if ("checkpassword" in dovecot_user_accounts and
-                     dovecot_checkpassword_passdb_command|d()) else "absent" }}'
+        state: '{{ "present" if ("checkpassword" in dovecot__user_accounts and
+                     dovecot__checkpassword_passdb_command|d()) else "absent" }}'
         options:
           - name: 'driver'
             value: 'checkpassword'
           - name: 'args'
-            value: '{{ dovecot_checkpassword_passdb_command }}'
+            value: '{{ dovecot__checkpassword_passdb_command }}'
 
       - name: 'userdb_checkpassword_pre'
         option: 'userdb'
-        state: '{{ "present" if ("checkpassword" in dovecot_user_accounts and
-                     dovecot_checkpassword_userdb_command|d()) else "absent" }}'
+        state: '{{ "present" if ("checkpassword" in dovecot__user_accounts and
+                     dovecot__checkpassword_userdb_command|d()) else "absent" }}'
         options:
           - name: 'driver'
             value: 'prefetch'
 
       - name: 'userdb_checkpassword_main'
         option: 'userdb'
-        state: '{{ "present" if ("checkpassword" in dovecot_user_accounts and
-                     dovecot_checkpassword_userdb_command|d()) else "absent" }}'
+        state: '{{ "present" if ("checkpassword" in dovecot__user_accounts and
+                     dovecot__checkpassword_userdb_command|d()) else "absent" }}'
         options:
           - name: 'driver'
             value: 'checkpassword'
           - name: 'args'
-            value: '{{ dovecot_checkpassword_userdb_command }}'
+            value: '{{ dovecot__checkpassword_userdb_command }}'
 
   - section: 'tls'
     title: 'TLS Configuration'
-    state: '{{ "present" if dovecot_pki is defined and dovecot_pki else "absent" }}'
+    state: '{{ "present" if dovecot__pki is defined and dovecot__pki else "absent" }}'
     options:
 
       - name: 'ssl'
-        value: '{{ "required" if dovecot_ssl_required else "yes" }}'
+        value: '{{ "required" if dovecot__ssl_required else "yes" }}'
 
       - name: 'ssl_prefer_server_ciphers'
         value: 'yes'
         comment: 'Prefer the server''s order of ciphers over the client''s. (dovecot >= 2.2.6)'
 
       - name: 'ssl_cert'
-        value: '<{{ dovecot_pki_path ~ "/" ~ dovecot_pki_realm ~ "/" ~ dovecot_pki_crt }}'
+        value: '<{{ dovecot__pki_path ~ "/" ~ dovecot__pki_realm ~ "/" ~ dovecot__pki_crt }}'
 
       - name: 'ssl_key'
-        value: '<{{ dovecot_pki_path ~ "/" ~ dovecot_pki_realm ~ "/" ~ dovecot_pki_key }}'
+        value: '<{{ dovecot__pki_path ~ "/" ~ dovecot__pki_realm ~ "/" ~ dovecot__pki_key }}'
 
       - name: 'ssl_protocols'
-        value: '{{ dovecot_ssl_min_protocol }}'
+        value: '{{ dovecot__ssl_min_protocol }}'
         state: '{{ "present" if dovecot__version is version("2.3.0", "<") else "absent" }}'
 
       - name: 'ssl_dh_parameters_length'
-        value: '{{ dovecot_ssl_dh_parameters_length }}'
+        value: '{{ dovecot__ssl_dh_parameters_length }}'
         state: '{{ "present" if dovecot__version is version("2.3.0", "<") else "absent" }}'
         comment: 'Diffie-Hellman parameters length (default 1024, dovecot >= 2.2.7, optional in dovecot >= 2.3.3)'
 
       - name: 'ssl_min_protocol'
-        value: '{{ dovecot_ssl_min_protocol }}'
+        value: '{{ dovecot__ssl_min_protocol }}'
         state: '{{ "present" if dovecot__version is version("2.3.0", ">=") else "absent" }}'
 
       - name: 'ssl_dh'
@@ -623,11 +617,11 @@ dovecot__default_configuration:
         state: '{{ "present" if dovecot__version is version("2.3.0", ">=") else "absent" }}'
 
       - name: 'ssl_cipher_list'
-        value: '{{ dovecot_ssl_cipher_list }}'
+        value: '{{ dovecot__ssl_cipher_list }}'
 
   - section: 'no_tls'
     title: 'TLS Non-Configuration'
-    state: '{{ "absent" if dovecot_pki is defined and dovecot_pki else "present" }}'
+    state: '{{ "absent" if dovecot__pki is defined and dovecot__pki else "present" }}'
     options:
 
       - name: 'ssl'
@@ -647,7 +641,7 @@ dovecot__default_configuration:
               - name: 'address'
                 value: '127.0.0.1, [::1]'
                 comment: 'Only localhost if no PKI is configured'
-                state: '{{ "present" if not dovecot_pki|d(True) else "comment" }}'
+                state: '{{ "present" if not dovecot__pki|d(True) else "comment" }}'
 
               - name: 'port'
                 value: '{{ 143 if "imap" in dovecot__features else 0 }}'
@@ -656,7 +650,7 @@ dovecot__default_configuration:
             options:
 
               - name: 'port'
-                value: '{{ 993 if ("imaps" in dovecot__features and dovecot_pki|d(True)) else 0 }}'
+                value: '{{ 993 if ("imaps" in dovecot__features and dovecot__pki|d(True)) else 0 }}'
                 comment: 'Disabled if no PKI is configured'
 
       - name: 'service pop3-login'
@@ -669,7 +663,7 @@ dovecot__default_configuration:
               - name: 'address'
                 value: '127.0.0.1, [::1]'
                 comment: 'Only localhost if no PKI is configured'
-                state: '{{ "present" if not dovecot_pki|d(True) else "comment" }}'
+                state: '{{ "present" if not dovecot__pki|d(True) else "comment" }}'
 
               - name: 'port'
                 value: '{{ 110 if "pop3" in dovecot__features else 0 }}'
@@ -678,7 +672,7 @@ dovecot__default_configuration:
             options:
 
               - name: 'port'
-                value: '{{ 995 if ("pop3s" in dovecot__features and dovecot_pki|d(True)) else 0 }}'
+                value: '{{ 995 if ("pop3s" in dovecot__features and dovecot__pki|d(True)) else 0 }}'
                 comment: 'Disabled if no PKI is configured'
 
       - name: 'service lmtp'
@@ -790,8 +784,8 @@ dovecot__default_configuration:
         state: '{{ "present" if dovecot__vmail_enabled else "absent" }}'
 
       - name: 'mail_location'
-        value: '{{ dovecot_mail_location|d() }}'
-        state: '{{ "present" if dovecot_mail_location|d() else "comment" }}'
+        value: '{{ dovecot__mail_location }}'
+        state: '{{ "present" if dovecot__mail_location|d() else "comment" }}'
 
   - section: 'mailbox_namespaces'
     title: 'Mailbox Namespaces'
@@ -1274,7 +1268,7 @@ dovecot__ferm__dependent_rules:
     accept_any: '{{ dovecot__accept_any }}'
     rule_state: '{{ "present"
                     if ("imaps" in dovecot__features|d([])
-                         and dovecot_pki|d(True))
+                         and dovecot__pki|d(True))
                     else "absent" }}'
 
   - name: 'dovecot_pop3'
@@ -1295,7 +1289,7 @@ dovecot__ferm__dependent_rules:
     accept_any: '{{ dovecot__accept_any }}'
     rule_state: '{{ "present"
                     if ("pop3s" in dovecot__features|d([])
-                         and dovecot_pki|d(True))
+                         and dovecot__pki|d(True))
                     else "absent" }}'
 
   - name: 'dovecot_sieve'
@@ -1306,7 +1300,7 @@ dovecot__ferm__dependent_rules:
     accept_any: '{{ dovecot__accept_any }}'
     rule_state: '{{ "present"
                     if ("sieve" in dovecot__features|d([])
-                         and dovecot_pki|d(True))
+                         and dovecot__pki|d(True))
                     else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]
