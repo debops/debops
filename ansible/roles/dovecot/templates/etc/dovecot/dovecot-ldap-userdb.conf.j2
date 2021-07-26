@@ -33,6 +33,6 @@ user_attrs = \
     mailHomeDirectory=home={{ dovecot__vmail_base }}%{ldap:mailHomeDirectory},\
     mailQuota=quota_rule=*:bytes=%{ldap:{{ dovecot__ldap_quota_attribute }}}:storage=%$,\
     mailGroupACL=acl_groups,\
-    mailExpungeTrash=namespace/inbox/Maildir/Trash/autoexpunge
+    mailExpungeTrash={{ dovecot__ldap_trash_field }}
 
 user_filter = {{ dovecot__ldap_user_filter }}

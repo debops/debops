@@ -831,6 +831,9 @@ dovecot__default_configuration:
               - name: 'special_use'
                 value: '\Junk'
           - name: 'mailbox Trash'
+            comment: |
+              If you change the name of this mailbox and use LDAP,
+              dovecot__ldap_trash_field also needs to be updated.
             options:
               - name: 'special_use'
                 value: '\Trash'
@@ -1130,6 +1133,13 @@ dovecot__ldap_quota_attribute: 'mailQuota'
 #
 # User default LDAP quota. Use human-readable values, e.g. "2 GB".
 dovecot__ldap_quota_default: '10 GB'
+                                                                   # ]]]
+# .. envvar:: dovecot__ldap_trash_field [[[
+#
+# The Dovecot internal field name which corresponds to the trash mailbox, used
+# to control the automatic expunction of mails via the ``mailExpungeTrash``
+# LDAP attribute.
+dovecot__ldap_trash_field: 'namespace/inbox/mailbox/Trash/autoexpunge'
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_default_config [[[
 #
