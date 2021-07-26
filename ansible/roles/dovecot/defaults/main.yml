@@ -437,6 +437,52 @@ dovecot__default_configuration:
                    map('regex_replace', '^manage(sieve)$', '\\1') |
                    list | unique | join(' ') }}"
 
+  - section: 'tls'
+    title: 'TLS Configuration'
+    state: '{{ "present" if dovecot_pki is defined and dovecot_pki else "absent" }}'
+    options:
+
+      - name: 'ssl'
+        value: '{{ "required" if dovecot_ssl_required else "yes" }}'
+
+      - name: 'ssl_prefer_server_ciphers'
+        value: 'yes'
+        comment: 'Prefer the server''s order of ciphers over the client''s. (dovecot >= 2.2.6)'
+
+      - name: 'ssl_cert'
+        value: '<{{ dovecot_pki_path ~ "/" ~ dovecot_pki_realm ~ "/" ~ dovecot_pki_crt }}'
+
+      - name: 'ssl_key'
+        value: '<{{ dovecot_pki_path ~ "/" ~ dovecot_pki_realm ~ "/" ~ dovecot_pki_key }}'
+
+      - name: 'ssl_protocols'
+        value: '{{ dovecot_ssl_min_protocol }}'
+        state: '{{ "present" if dovecot__version is version("2.3.0", "<") else "absent" }}'
+
+      - name: 'ssl_dh_parameters_length'
+        value: '{{ dovecot_ssl_dh_parameters_length }}'
+        state: '{{ "present" if dovecot__version is version("2.3.0", "<") else "absent" }}'
+        comment: 'Diffie-Hellman parameters length (default 1024, dovecot >= 2.2.7, optional in dovecot >= 2.3.3)'
+
+      - name: 'ssl_min_protocol'
+        value: '{{ dovecot_ssl_min_protocol }}'
+        state: '{{ "present" if dovecot__version is version("2.3.0", ">=") else "absent" }}'
+
+      - name: 'ssl_dh'
+        value: '{{ dovecot__ssl_dh_file }}'
+        state: '{{ "present" if dovecot__version is version("2.3.0", ">=") else "absent" }}'
+
+      - name: 'ssl_cipher_list'
+        value: '{{ dovecot_ssl_cipher_list }}'
+
+  - section: 'no_tls'
+    title: 'TLS Non-Configuration'
+    state: '{{ "absent" if dovecot_pki is defined and dovecot_pki else "present" }}'
+    options:
+
+      - name: 'ssl'
+        value: 'no'
+
                                                                    # ]]]
 # .. envvar:: dovecot__configuration [[[
 #
