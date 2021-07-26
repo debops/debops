@@ -483,6 +483,20 @@ dovecot__default_configuration:
       - name: 'ssl'
         value: 'no'
 
+  - section: 'protocols'
+    title: 'Protocol settings'
+    options:
+
+      - name: 'protocol lda'
+        state: '{{ "present" if "lmtp" not in dovecot_protocols else "absent" }}'
+        options:
+
+          - name: 'mail_plugins'
+            value: '{{ dovecot_mail_plugins }}'
+
+          - name: 'postmaster_address'
+            value: 'postmaster@{{ ansible_domain }}'
+
   - section: 'mailbox_locations'
     title: 'Mailbox Locations'
     options:
@@ -705,15 +719,6 @@ dovecot_managesieve_config_map:
 
   plugin:
     sieve: '{{ dovecot__sieve_dir }}'
-
-                                                                   # ]]]
-# .. envvar:: dovecot_lda_config_map [[[
-#
-# Custom LDA configuration properties. See :ref:`dovecot_lda_config_map`
-# for more details.
-dovecot_lda_config_map:
-  protocol:
-    mail_plugins: '{{ dovecot_mail_plugins }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_lmtp_listeners [[[

@@ -159,16 +159,6 @@ listeners configuration works a bit different from other network protocols.
 Each listeners mentioned in ``dovecot_lmtp_listeners`` must also be defined
 in :ref:`dovecot_lmtp_config_map`.
 
-.. _dovecot_lda_config_map:
-
-dovecot_lda_config_map
------------------------
-
-Configuration dictionary related to the Dovecot LDA protocol configuration.
-The only valid key is ``protocol`` which references a YAML dict defining the
-``protocol lda {}`` section. The ``protocol`` dict then accepts the upstream
-Dovecot configuration options such as ``mail_plugins``.
-
 .. _dovecot_auth_config_map:
 
 dovecot_auth_config_map
