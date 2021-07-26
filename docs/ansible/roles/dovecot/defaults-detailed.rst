@@ -50,43 +50,6 @@ Enable ``sieve`` mail plugin with local mail delivery::
       protocol:
         mail_plugins: '$mail_plugins sieve'
 
-.. _dovecot_managesieve_config_map:
-
-dovecot_managesieve_config_map
-------------------------------
-
-Configuration dictionary related to the ManageSieve protocol configuration.
-Please refer to the :ref:`dovecot_imap_config_map` for a description of the
-dict layout.
-
-.. _dovecot_managesieve_listeners:
-
-dovecot_managesieve_listeners
------------------------------
-
-List of ManageSieve network listener names which will be used to decide
-which default listeners to create when ``managesieve`` is enabled in
-``dovecot_protocols``. Their configuration can be customized via
-:ref:`dovecot_managesieve_config_map`.
-
-Example
-~~~~~~~
-
-If you want to enable a second ManageSieve listener, you need to add
-its name to the ``dovecot_managesieve_listeners`` list and define its
-properties in the ``dovecot_managesieve_config_map``. For example to
-bind a second listener to a specific address on port 2000::
-
-    dovecot_managesieve_listeners: [ 'sieve', 'sieve_deprecated' ]
-
-    dovecot_managesieve_config_map:
-
-      login-service:
-        inet_listeners:
-          sieve_deprecated:
-            address: 192.168.1.42
-            port: 2000
-
 .. _dovecot_postfix_transport:
 
 dovecot_postfix_transport

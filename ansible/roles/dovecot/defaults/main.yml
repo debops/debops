@@ -549,6 +549,16 @@ dovecot__default_configuration:
               - name: 'user'
                 value: 'postfix'
 
+      - name: 'service managesieve-login'
+        state: '{{ "present" if "managesieve" in dovecot_protocols else "absent" }}'
+        options:
+
+          - name: 'inet_listener sieve'
+            options:
+
+              - name: 'port'
+                value: '4190'
+
   - section: 'protocols'
     title: 'Protocol settings'
     options:
@@ -681,6 +691,18 @@ dovecot__default_configuration:
               - name: 'comment'
                 value: 'All my important messages'
 
+  - section: 'plugins'
+    title: 'Mail Plugins'
+    options:
+
+      - name: 'plugin'
+        options:
+
+        - name: 'sieve'
+          value: '{{ dovecot__sieve_dir }}'
+          state: '{{ "present" if "managesieve" in dovecot_protocols else "absent" }}'
+
+
                                                                    # ]]]
 # .. envvar:: dovecot__configuration [[[
 #
@@ -727,39 +749,11 @@ dovecot_mail_plugins: '$mail_plugins {{ "sieve"
 dovecot_sieve_enabled: true
 
                                                                    # ]]]
-# .. envvar:: dovecot_sieve_port [[[
-#
-# Managesieve port
-dovecot_sieve_port: 4190
-
-                                                                   # ]]]
 
 # .. envvar:: dovecot__sieve_dir [[[
 #
 # Storage directory for sieve scripts uploaded by ManageSieve
 dovecot__sieve_dir: 'file:~/sieve;active=~/.dovecot.sieve'
-
-                                                                   # ]]]
-# .. envvar:: dovecot_managesieve_listeners [[[
-#
-# List of ManageSieve ``inet_listeners`` which will be enabled. See
-# :ref:`dovecot_managesieve_listeners` for more details.
-dovecot_managesieve_listeners: [ 'sieve' ]
-
-                                                                   # ]]]
-# .. envvar:: dovecot_managesieve_config_map [[[
-#
-# Custom ManageSieve configuration properties. See :ref:`dovecot_managesieve_config_map`
-# for more details.
-dovecot_managesieve_config_map:
-
-  login-service:
-    inet_listener:
-      sieve:
-        port: '{{ dovecot_sieve_port|int }}'
-
-  plugin:
-    sieve: '{{ dovecot__sieve_dir }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot_postfix_transport [[[
