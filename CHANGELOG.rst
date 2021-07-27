@@ -43,6 +43,11 @@ Added
   account in new LXC containers by default. This can be used to grant multiple
   system administrators access to the containers.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The role can now install ``nginx-light`` flavor package if requested.
+
 Changed
 ~~~~~~~
 
