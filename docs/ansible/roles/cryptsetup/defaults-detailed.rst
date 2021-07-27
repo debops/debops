@@ -84,7 +84,7 @@ Each item of those lists is a dictionary with the following documented keys:
   Setting this to ``False`` for (very large) regular files used as `ciphertext block device` 
   avoids long checksum computation times.
 
-  Default to ``False``.
+  Default to ``True``.
 
 .. _cryptsetup__devices_mode:
 
