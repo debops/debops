@@ -17,26 +17,9 @@
 # .. include:: ../../../../includes/global.rst
 
 
-# .. envvar:: nginx_allow [[[
-#
-# List of IP addresses or CIDR networks allowed to connect to HTTP or HTTPS
-# service. It will be configured in iptables firewall via 'ferm' role. If there
-# are no entries, nginx will accept connections from any IP address or network.
-# If you have multiple web services on a host, you might want to control access
-# using 'item.location_allow' option instead.
-nginx_allow: []
+# Basic Settings [[[
+# ------------------
 
-                                                                   # ]]]
-# .. envvar:: nginx_group_allow [[[
-#
-nginx_group_allow: []
-
-                                                                   # ]]]
-# .. envvar:: nginx_host_allow [[[
-#
-nginx_host_allow: []
-
-                                                                   # ]]]
 # .. envvar:: nginx__deploy_state [[[
 #
 # What is the desired state which this role should achieve? Possible options:
@@ -176,7 +159,9 @@ nginx_run_path: '/run'
 nginx_log_path: '/var/log/nginx'
 
                                                                    # ]]]
-# ---- Phusion Passenger support ----
+                                                                   # ]]]
+# Phusion Passenger support [[[
+# -----------------------------
 
 # .. envvar:: nginx_passenger_root [[[
 #
@@ -210,7 +195,9 @@ nginx_passenger_options: False
 nginx_passenger_default_min_instances: '{{ ansible_processor_cores }}'
 
                                                                    # ]]]
-# ---- Global server access and authentication ----
+                                                                   # ]]]
+# Global server access and authentication [[[
+# -------------------------------------------
 
 # .. envvar:: nginx_http_allow [[[
 #
@@ -778,21 +765,9 @@ nginx__htpasswd_crypt_scheme: 'sha512_crypt'
 # .. envvar:: nginx__htpasswd [[[
 #
 # List of htpasswd files with user accounts managed by ``debops.nginx``. Example
-# entries below
+# entries are included below
 nginx__htpasswd: []
 
-                                                                   # ]]]
-# .. envvar:: nginx__default_htpasswd [[[
-#
-nginx__default_htpasswd:
-  - '{{ nginx__http_auth_htpasswd }}'
-
-                                                                   # ]]]
-# .. envvar:: nginx__dependent_htpasswd [[[
-#
-nginx__dependent_htpasswd: []
-
-                                                                   # ]]]
   # Create specified user accounts
   #- name: 'server_domain'
   #  users: [ 'username1', 'username2@domain' ]
@@ -807,8 +782,22 @@ nginx__dependent_htpasswd: []
   #  users: []
   #  state: 'absent'
 
+                                                                   # ]]]
+# .. envvar:: nginx__default_htpasswd [[[
+#
+nginx__default_htpasswd:
+  - '{{ nginx__http_auth_htpasswd }}'
 
-# ---- nginx server access policy ----
+                                                                   # ]]]
+# .. envvar:: nginx__dependent_htpasswd [[[
+#
+nginx__dependent_htpasswd: []
+
+                                                                   # ]]]
+                                                                   # ]]]
+# Nginx server access policy [[[
+# ------------------------------
+
 
 # Using the dicts below you can define a named "access policy" consisting of a list
 # of allowed hosts/CIDR networks and/or a name of a htpasswd file in
@@ -907,6 +896,7 @@ nginx_upstream_php5_www_data:
   type: 'php5'
   php5: 'www-data'
 
+                                                                   # ]]]
                                                                    # ]]]
 # Nginx servers [[[
 # -----------------
@@ -1069,27 +1059,6 @@ nginx__apt_preferences__dependent_list:
     state: '{{ ((nginx__deploy_state in [ "present" ]) and (nginx_flavor in [ "passenger" ])) | ternary("present", "absent") }}'
 
                                                                    # ]]]
-# .. envvar:: nginx_ferm_dependent_rules [[[
-#
-# Configuration of the :command:`iptables` firewall using :program:`ferm`.
-nginx_ferm_dependent_rules: '{{ nginx__ferm__dependent_rules }}'
-
-                                                                   # ]]]
-# .. envvar:: nginx__ferm__dependent_rules [[[
-#
-nginx__ferm__dependent_rules:
-
-  - type: 'accept'
-    dport: [ 'http', 'https' ]
-    saddr: '{{ nginx_allow + nginx_group_allow + nginx_host_allow }}'
-    accept_any: True
-    weight: '40'
-    by_role: 'nginx'
-    name: 'http_https'
-    multiport: True
-    delete: '{{ nginx__deploy_state != "present" }}'
-
-                                                                   # ]]]
 # .. envvar:: nginx_php5_status [[[
 #
 # Name of the php5 fpm status page location
@@ -1184,6 +1153,52 @@ nginx_ssl_ciphers:
   # default set of SSL ciphers for a given platform will be used.
   # This is recommended when TLSv1.3 is the only protocol in use.
   default: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Firewall Configuration [[[
+# --------------------------
+
+# .. envvar:: nginx_allow [[[
+#
+# List of IP addresses or CIDR networks allowed to connect to HTTP or HTTPS
+# service. It will be configured in iptables firewall via the
+# :ref:`debops.ferm` role. If there are no entries, nginx will accept
+# connections from any IP address or network.
+# If you have multiple web services on a host, you might want to control access
+# using 'item.location_allow' option instead.
+nginx_allow: []
+
+                                                                   # ]]]
+# .. envvar:: nginx_group_allow [[[
+#
+nginx_group_allow: []
+
+                                                                   # ]]]
+# .. envvar:: nginx_host_allow [[[
+#
+nginx_host_allow: []
+
+                                                                   # ]]]
+# .. envvar:: nginx_ferm_dependent_rules [[[
+#
+# Configuration of the :command:`iptables` firewall using :program:`ferm`.
+nginx_ferm_dependent_rules: '{{ nginx__ferm__dependent_rules }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx__ferm__dependent_rules [[[
+#
+nginx__ferm__dependent_rules:
+
+  - type: 'accept'
+    dport: [ 'http', 'https' ]
+    saddr: '{{ nginx_allow + nginx_group_allow + nginx_host_allow }}'
+    accept_any: True
+    weight: '40'
+    by_role: 'nginx'
+    name: 'http_https'
+    multiport: True
+    delete: '{{ nginx__deploy_state != "present" }}'
+
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[
