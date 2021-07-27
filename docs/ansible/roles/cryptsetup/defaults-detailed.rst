@@ -74,6 +74,18 @@ Each item of those lists is a dictionary with the following documented keys:
 
   Default to :envvar:`cryptsetup__use_uuid`.
 
+.. _cryptsetup__devices_check_with_checksum:
+
+``check_with_checksum``
+  Optional, boolean.
+  Compute checksum of the `ciphertext block device` given by
+  :ref:`item.ciphertext_block_device <cryptsetup__devices_ciphertext_block_device>`.
+
+  Setting this to ``False`` for (very large) regular files used as `ciphertext block device` 
+  avoids long checksum computation times.
+
+  Default to ``False``.
+
 .. _cryptsetup__devices_mode:
 
 ``mode``
