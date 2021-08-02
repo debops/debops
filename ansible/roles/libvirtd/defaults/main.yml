@@ -79,10 +79,11 @@ libvirtd__network_packages:
 # correct operation.
 libvirtd__misc_packages:
   - 'gawk'
-  - 'virt-top'
   - 'netcat-openbsd'
   - 'pm-utils'
   - 'sysfsutils'
+  - '{{ [] if (ansible_distribution_release in [ "bullseye" ])
+           else "virt-top" }}'
 
                                                                    # ]]]
 # .. envvar:: libvirtd__packages [[[
