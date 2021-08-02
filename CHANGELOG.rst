@@ -142,6 +142,10 @@ Fixed
   keys when the container is created by the :command:`lxc-new-unprivileged`
   script (the SKS keyserver pool has been deprecated).
 
+- Enable AppArmor nesting configuration in LXC v4.0.x version, used in Debian
+  Bullseye. Without this, various :command:`systemd` services inside of the
+  LXC containers cannot start and SSH/console login is delayed ~25 seconds.
+
 :ref:`debops.netbase` role
 ''''''''''''''''''''''''''
 
