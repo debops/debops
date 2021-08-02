@@ -1,0 +1,12 @@
+{# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2021 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+# Override required in unified cgroupv2 hierarchy when hidepid= option is used
+# with the /proc filesystem.
+# Ref: https://github.com/systemd/systemd/issues/12955
+
+[Service]
+SupplementaryGroups={{ proc_hidepid__group }}
