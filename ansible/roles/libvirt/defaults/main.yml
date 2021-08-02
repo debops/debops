@@ -24,7 +24,9 @@
 #
 # List of base packages to install with Libvirt.
 libvirt__base_packages:
-  - [ 'gawk', 'netcat-openbsd', 'virt-top', 'virtinst' ]
+  - [ 'gawk', 'netcat-openbsd', 'virtinst' ]
+  - '{{ [] if (ansible_distribution_release in [ "bullseye" ])
+           else "virt-top" }}'
   - '{{ "virt-goodies"
         if (ansible_local|d() and ansible_local.python|d() and
             (ansible_local.python.installed2|d())|bool)
