@@ -120,9 +120,10 @@ pki_vcs_ignore_patterns_host: []
 #
 # Enable or disable support for ACME certificates.
 pki_acme: '{{ (True
-               if ((ansible_all_ipv4_addresses|d([]) +
+               if (((ansible_all_ipv4_addresses|d([]) +
                     ansible_all_ipv6_addresses|d([])) | ipaddr("public") and
                     pki_default_domain)
+                  or pki_acme_type != "acme-tiny" )
                else False) | bool }}'
 
                                                                    # ]]]
@@ -169,8 +170,10 @@ pki_acme_default_subdomains: []
                                                                    # ]]]
 # .. envvar:: pki_acme_type [[[
 #
-# ACME client to use to interact with the ACME Certificate Authority. At the
-# moment only :program:`acme-tiny` is supported.
+# ACME client to use to interact with the ACME Certificate Authority.
+# Supported values: 'acme-tiny', 'dns-cloudflare', 'dns-digitalocean',
+# 'dns-dnsimple', 'dns-gehirn', 'dns-google', 'dns-linode',
+# 'dns-ovh', 'dns-rfc2136', 'dns-route53', 'dns-sakuracloud', 'dns-gandi'
 pki_acme_type: 'acme-tiny'
 
                                                                    # ]]]
@@ -259,12 +262,29 @@ pki_base_packages: [ 'ssl-cert', 'make', 'ca-certificates',
 #
 # List of APT packages required by ACME support.
 pki_acme_packages:
-  - 'curl'
-  - 'git'
-  - '{{ [] if (ansible_distribution_release in
+  - '{{ "curl" if (pki_acme_type == "acme-tiny" and pki_acme_install|bool) else [] }}'
+  - '{{ "git" if (pki_acme_type == "acme-tiny" and pki_acme_install|bool) else [] }}'
+  - '{{ [] if (pki_acme_install|bool == false or ansible_distribution_release in
                [ "wheezy", "jessie", "stretch",
                  "precise", "trusty", "xenial", "bionic" ])
-           else "acme-tiny" }}'
+           else "acme-tiny" if (pki_acme_type == "acme-tiny") else [] }}'
+  - '{{ "python3-certbot-dns-cloudflare" if (pki_acme_type == "dns-cloudflare" and pki_acme_install|bool) else [] }}'
+  - '{{ "python3-certbot-dns-digitalocean" if (pki_acme_type == "dns-digitalocean" and pki_acme_install|bool) else [] }}'
+  - '{{ "python3-certbot-dns-dnsimple" if (pki_acme_type == "dns-dnsimple" and pki_acme_install|bool) else [] }}'
+  - '{{ "python3-certbot-dns-gehirn" if (pki_acme_type == "dns-gehirn" and pki_acme_install|bool) else [] }}'
+  - '{{ "python3-certbot-dns-google" if (pki_acme_type == "dns-google" and pki_acme_install|bool) else [] }}'
+  - '{{ "python3-certbot-dns-linode" if (pki_acme_type == "dns-linode" and pki_acme_install|bool) else [] }}'
+  - '{{ "python3-certbot-dns-ovh" if (pki_acme_type == "dns-ovh" and pki_acme_install|bool) else [] }}'
+  - '{{ "python3-certbot-dns-rfc2136" if (pki_acme_type == "dns-rfc2136" and pki_acme_install|bool) else [] }}'
+  - '{{ "python3-certbot-dns-route53" if (pki_acme_type == "dns-route53" and pki_acme_install|bool) else [] }}'
+  - '{{ "python3-certbot-dns-sakuracloud" if (pki_acme_type == "dns-sakuracloud" and pki_acme_install|bool) else [] }}'
+  - '{{ "python3-certbot-dns-gandi" if (pki_acme_type == "dns-gandi" and pki_acme_install|bool) else [] }}'
+  - '{{ "certbot" if (pki_acme_type in
+                [ "dns-cloudflare", "dns-digitalocean",
+                  "dns-dnsimple", "dns-gehirn", "dns-google",
+                  "dns-linode", "dns-ovh", "dns-rfc2136",
+                  "dns-route53", "dns-sakuracloud", "dns-gandi" ]
+           and pki_acme_install|bool) else [] }}'
 
                                                                    # ]]]
 # .. envvar:: pki_packages [[[
