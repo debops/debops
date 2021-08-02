@@ -68,6 +68,12 @@ Fixed
   Bullseye. Without this, various :command:`systemd` services inside of the
   LXC containers cannot start and SSH/console login is delayed ~25 seconds.
 
+:ref:`debops.netbase` role
+''''''''''''''''''''''''''
+
+- Ignore commented out lines in :file:`/etc/hosts` database during fact
+  gathering.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
