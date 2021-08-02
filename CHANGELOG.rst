@@ -123,6 +123,18 @@ Fixed
   ``kmod`` package wasn't installed and the :command:`lsmod` command was not
   available.
 
+:ref:`debops.libvirt` role
+''''''''''''''''''''''''''
+
+- The ``virt-top`` APT package is not part of the Debian Bullseye release,
+  therefore the role will not try to install it by default.
+
+:ref:`debops.libvirtd` role
+'''''''''''''''''''''''''''
+
+- The ``virt-top`` APT package is not part of the Debian Bullseye release,
+  therefore the role will not try to install it by default.
+
 :ref:`debops.lxc` role
 ''''''''''''''''''''''
 
