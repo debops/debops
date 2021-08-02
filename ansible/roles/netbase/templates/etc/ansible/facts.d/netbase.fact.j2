@@ -77,23 +77,24 @@ output = {'configured': True,
 # accidentally
 with open('/etc/hosts', 'r') as hosts:
     for line in hosts:
-        if (output['self_fqdn'] in line.split()[1:]
-                and output['self_address'] in line.split()[0]):
-            output['self_local_hostname'] = True
-            output['self_domain_source'] = 'standalone'
-            aliases = ([e for e in line.split()
-                       if (e not in ([output['self_fqdn'],
-                                      output['self_address'],
-                                      output['self_domain']]))])
-            if aliases:
-                output['self_aliases'] = aliases
+        if not line.startswith('#'):
+            if (output['self_fqdn'] in line.split()[1:]
+                    and output['self_address'] in line.split()[0]):
+                output['self_local_hostname'] = True
+                output['self_domain_source'] = 'standalone'
+                aliases = ([e for e in line.split()
+                            if (e not in ([output['self_fqdn'],
+                                           output['self_address'],
+                                           output['self_domain']]))])
+                if aliases:
+                    output['self_aliases'] = aliases
 
-        if (output['self_fqdn'] in line.split()
-                and '.' in output['self_fqdn']
-                and output['self_address'] in line.split()[0]
-                and (output['self_domain'] in
-                     '.'.join(line.split()[1].split('.')[1:]))):
-            output['self_domain_source'] = 'localhost'
+            if (output['self_fqdn'] in line.split()
+                    and '.' in output['self_fqdn']
+                    and output['self_address'] in line.split()[0]
+                    and (output['self_domain'] in
+                         '.'.join(line.split()[1].split('.')[1:]))):
+                output['self_domain_source'] = 'localhost'
 
     if output['self_domain_source'] == 'localhost':
         try:
