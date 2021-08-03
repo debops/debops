@@ -298,6 +298,8 @@
   tags: [ 'role::lxc:containers' ]
 
 - name: Manage LXC containers
+  environment:
+    DOWNLOAD_KEYSERVER: '{{ ansible_local.keyring.keyserver | d("hkp://keyserver.ubuntu.com") }}'
   vars:
     template_options:
       - '--dist {{ (item.distribution | d(lxc__default_container_distribution)) | lower }}'
