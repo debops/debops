@@ -83,22 +83,24 @@
   when: proc_hidepid__enabled|bool and ansible_service_mgr == 'systemd' and
         proc_hidepid__secure_scheduler_enabled|bool
 
-- name: Create the systemd-logind configuration directory
+- name: Create the systemd override directories
   file:
-    path: '/etc/systemd/system/systemd-logind.service.d'
+    path: '{{ "/etc/systemd/system/" + item }}'
     state: 'directory'
     owner: 'root'
     group: 'root'
     mode: '0755'
+  loop: [ 'systemd-logind.service.d', 'user@.service.d' ]
   when: proc_hidepid__enabled|bool and ansible_service_mgr == 'systemd'
 
-- name: Ensure that logind is exempt from hidepid
+- name: Ensure that systemd services are exempt from hidepid
   template:
-    src: 'etc/systemd/system/systemd-logind.service.d/hidepid.conf.j2'
-    dest: '/etc/systemd/system/systemd-logind.service.d/hidepid.conf'
+    src: '{{ "etc/systemd/system/" + item + "/hidepid.conf.j2" }}'
+    dest: '{{ "/etc/systemd/system/" + item + "/hidepid.conf" }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
+  loop: [ 'systemd-logind.service.d', 'user@.service.d' ]
   notify: [ 'Reload service manager' ]
   when: proc_hidepid__enabled|bool and ansible_service_mgr == 'systemd'
 

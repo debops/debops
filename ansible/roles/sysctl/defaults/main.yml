@@ -252,11 +252,46 @@ sysctl__default_parameters:
       See https://www.kernel.org/doc/Documentation/sysctl/fs.txt
     options:
 
+      - name: 'fs.protected_fifos'
+        value: 1
+
       - name: 'fs.protected_hardlinks'
         value: 1
 
+      - name: 'fs.protected_regular'
+        value: 2
+
       - name: 'fs.protected_symlinks'
         value: 1
+
+  # The '/proc/sys/kernel/' namespace is usually read-only in uprivileged LXC
+  # containers. The '/usr/lib/sysctl.d/50-pid-max.conf' file included in the
+  # 'systemd' Debian package has the 'kernel.*' parameters uncommented and this
+  # can cause issues inside unprivileged LXC containers. The configuration
+  # below creates a "masked" configuration file with kernel parameters
+  # commented out when they cannot be modified.
+  - name: 'pid-max'
+    filename: '50-pid-max.conf'
+    comment: |
+      This file is part of systemd.
+
+      systemd is free software; you can redistribute it and/or modify it
+      under the terms of the GNU Lesser General Public License as published by
+      the Free Software Foundation; either version 2.1 of the License, or
+      (at your option) any later version.
+
+      See sysctl.d(5) and core(5) for documentation.
+
+      To override settings in this file, create a local file in /etc
+      (e.g. /etc/sysctl.d/90-override.conf), and put any assignments
+      there.
+    options:
+
+      - name: 'kernel.pid_max'
+        comment: |
+          Bump the numeric PID range to its maximum of 2^22 (from the in-kernel default
+          of 2^16), to make PID collisions less likely.
+        value: 4194304
 
                                                                    # ]]]
 # .. envvar:: sysctl__parameters [[[
