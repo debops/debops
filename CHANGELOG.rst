@@ -63,7 +63,8 @@ Fixed
 
 - Use the Ubuntu GPG keyserver by default to download LXC container signing
   keys when the container is created by the :command:`lxc-new-unprivileged`
-  script (the SKS keyserver pool has been deprecated).
+  script as well as through the ``lxc_container`` Ansible module (the SKS
+  keyserver pool has been deprecated).
 
 - Enable AppArmor nesting configuration in LXC v4.0.x version, used in Debian
   Bullseye. Without this, various :command:`systemd` services inside of the
