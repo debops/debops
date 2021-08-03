@@ -159,6 +159,12 @@ Updates of upstream application versions
 - The default NetStream driver mode and authentication mode are now set based
   on whether the ``gtls`` driver is enabled.
 
+:ref:`debops.sysctl` role
+'''''''''''''''''''''''''
+
+- The role will configure protection for FIFOs and regular files along with
+  protection for symlinks and hardlinks, introduced in Debian Bullseye.
+
 :ref:`debops.system_users` role
 '''''''''''''''''''''''''''''''
 
