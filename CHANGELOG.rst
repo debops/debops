@@ -122,6 +122,17 @@ Added
 - The ``sshd__ferm_interface`` variable can now be used to limit access to SSH
   via the host firewall based on interface.
 
+:ref:`debops.sysctl` role
+'''''''''''''''''''''''''
+
+- The ``systemd`` Debian package in Debian Bullseye provides
+  a :command:`sysctl` configuration file which increases the maximum number of
+  PIDs allowed by the kernel. The role will create a "masked" configuration
+  file to ensure that :command:`sysctl` configuration works in LXC containers,
+  where the ``kernel.pid_max`` parameter will be commented out since it cannot
+  be modified from inside of a container. On hardware and VM hosts the
+  configuration will be applied as expected.
+
 Changed
 ~~~~~~~
 
