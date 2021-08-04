@@ -63,9 +63,9 @@ Here's an example playbook which uses ``debops.fail2ban`` role to install ``fail
     ---
 
     - name: Install fail2ban
-      hosts: debops_service_fail2ban
+      hosts: [ 'debops_service_fail2ban' ]
 
       roles:
-        - role: debops.fail2ban
-          tags: fail2ban
+        - role: fail2ban
+          tags: [ 'role::fail2ban', 'skip::fail2ban' ]
 
