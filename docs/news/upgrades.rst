@@ -15,6 +15,22 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+Changes in the OpenLDAP support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- In the :ref:`debops.slapd` role, the :file:`mailservice.schema` LDAP schema
+  includes two new LDAP attributes, ``mailPrivateAddress`` and
+  ``mailContactAddress``. The server will enforce the ``mailPrivateAddress``
+  attribute to be unique and that all its values are also included in the
+  ``mail`` attribute.
+
+  The above constraints result in the role not working correctly when the new
+  :file:`mailservice.schema` is not applied in the OpenLDAP service. The role
+  cannot "re-apply" an already installed LDAP schema, therefore the service
+  needs to be rebuilt for the new changes to take effect. Refer to the
+  :ref:`slapd__ref_backup_restore` documentation for help with rebuilding the
+  directory.
+
 
 v2.3.0 (2021-06-04)
 -------------------
