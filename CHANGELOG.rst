@@ -112,6 +112,14 @@ Updates of upstream application versions
 - The default NetStream driver mode and authentication mode are now set based
   on whether the ``gtls`` driver is enabled.
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- The :file:`mailservice.schema` LDAP schema has been modified to add new LDAP
+  attributes, ``mailPrivateAddress`` and ``mailContactAddress``. This change
+  includes additional constraints on uniqueness and requires a rebuild of the
+  OpenLDAP service. See :ref:`upgrade_notes` for details.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 
