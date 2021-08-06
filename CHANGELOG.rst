@@ -43,6 +43,15 @@ Added
   account in new LXC containers by default. This can be used to grant multiple
   system administrators access to the containers.
 
+Changed
+~~~~~~~
+
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- The :file:`lxc_ssh.py` Ansible connection plugin has been updated to include
+  latest changes and bugfixes.
+
 Fixed
 ~~~~~
 
