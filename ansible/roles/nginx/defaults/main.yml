@@ -1,15 +1,15 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# .. Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@drybjed.net>
+# .. Copyright (C) 2014-2021 Maciej Delmanowski <drybjed@drybjed.net>
 # .. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-# .. Copyright (C) 2014-2017 DebOps <https://debops.org/>
+# .. Copyright (C) 2014-2021 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _nginx__ref_defaults:
 
-# debops.nginx default variables [[[
-# ==================================
+# debops.nginx default variables
+# ==============================
 
 # .. contents:: Sections
 #    :local:
@@ -133,6 +133,7 @@ nginx_www: '/srv/www'
 # public folder foreach website
 # It cat be overwritten per servers
 nginx_public_dir_name: 'public'
+
                                                                    # ]]]
 # .. envvar:: nginx_etc_path [[[
 #
@@ -157,7 +158,6 @@ nginx_run_path: '/run'
 #
 # Directory where :program:`nginx` log files are stored.
 nginx_log_path: '/var/log/nginx'
-
                                                                    # ]]]
                                                                    # ]]]
 # Phusion Passenger support [[[
@@ -193,7 +193,6 @@ nginx_passenger_options: False
 #
 # Minimum Passenger instances per nginx server.
 nginx_passenger_default_min_instances: '{{ ansible_processor_cores }}'
-
                                                                    # ]]]
                                                                    # ]]]
 # Global server access and authentication [[[
@@ -386,7 +385,6 @@ nginx_real_ip_recursive: False
 nginx_default_keepalive_timeout: 60
 
                                                                    # ]]]
-
 # .. envvar:: nginx_multi_accept [[[
 #
 # If enabled a worker proccess will accept all new connections at a time,
@@ -394,7 +392,6 @@ nginx_default_keepalive_timeout: 60
 nginx_multi_accept: 'off'
 
                                                                    # ]]]
-
 # .. envvar:: nginx_pki [[[
 #
 # Enable or disable support for PKI/SSL/TLS in nginx.
@@ -792,12 +789,10 @@ nginx__default_htpasswd:
 # .. envvar:: nginx__dependent_htpasswd [[[
 #
 nginx__dependent_htpasswd: []
-
                                                                    # ]]]
                                                                    # ]]]
 # Nginx server access policy [[[
 # ------------------------------
-
 
 # Using the dicts below you can define a named "access policy" consisting of a list
 # of allowed hosts/CIDR networks and/or a name of a htpasswd file in
@@ -895,7 +890,6 @@ nginx_upstream_php5_www_data:
   name: 'php5_www-data'
   type: 'php5'
   php5: 'www-data'
-
                                                                    # ]]]
                                                                    # ]]]
 # Nginx servers [[[
@@ -989,11 +983,13 @@ nginx__log_format: []
 
   #- name: 'main'
   #  log_format: '$remote_addr - $remote_user [$time_local] "$request_method $scheme://$host$request_uri $server_protocol" $status $body_bytes_sent "$http_referer" "$http_user_agent" "$http_x_forwarded_for"'
+
                                                                    # ]]]
 # .. envvar:: nginx__dependent_log_format [[[
 #
 # log_format nginx configuration in /etc/nginx/conf.d/
 nginx__dependent_log_format: []
+
                                                                    # ]]]
 # .. envvar:: nginx__custom_config [[[
 #
@@ -1032,7 +1028,7 @@ nginx__http_permitted_cross_domain_policies: '{{ omit }}'
 # Default value for :ref:`robots_tag
 # <nginx__ref_http_robots_tag>`.
 nginx__http_robots_tag: '{{ omit }}'
-                                                                   # ]]]
+
                                                                    # ]]]
 # .. envvar:: nginx_apt_preferences_dependent_list [[[
 #
@@ -1198,7 +1194,6 @@ nginx__ferm__dependent_rules:
     name: 'http_https'
     multiport: True
     delete: '{{ nginx__deploy_state != "present" }}'
-
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[
@@ -1231,6 +1226,5 @@ nginx__python__dependent_packages3:
 nginx__python__dependent_packages2:
 
   - 'python-passlib'
-
                                                                    # ]]]
                                                                    # ]]]
