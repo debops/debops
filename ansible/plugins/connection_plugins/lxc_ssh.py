@@ -402,13 +402,18 @@ DOCUMENTATION = """
             The lxc host to connect to.
         env:
             - name: LXC_HOST
+            - name: LXC_CONTAINER
         ini:
             - key: lxc_host
               section: lxc_ssh_connection
+            - key: lxc_container
+              section: lxc_ssh_connection
         vars:
           - name: lxc_host
+          - name: lxc_container
         cli:
           - name: lxc_host
+          - name: lxc_container
 """
 
 
@@ -517,8 +522,8 @@ class Connection(ConnectionBase):
         self.user = self._play_context.remote_user
         self.control_path = None
         self.control_path_dir = None
-        self.lxc_version = None
 
+    def _set_version(self):
         # LXC v1 uses 'lxc-info', 'lxc-attach' and so on
         # LXC v2 uses just 'lxc'
         (returncode2, stdout2, stderr2) = self._exec_command("which lxc", None, False)
@@ -534,6 +539,10 @@ class Connection(ConnectionBase):
         else:
             raise AnsibleConnectionFailure("Cannot identify LXC version")
             sys.exit(1)
+
+    def set_options(self, *args, **kwargs):
+        super(Connection, self).set_options(*args, **kwargs)
+        self._set_version()
 
     # The connection is created by running ssh/scp/sftp from the exec_command,
     # put_file, and fetch_file methods, so we don't need to do any connection
@@ -690,7 +699,7 @@ class Connection(ConnectionBase):
                 to_bytes(a, errors="surrogate_or_strict")
                 for a in self._split_ssh_args(ssh_args)
             ]
-            self._add_args(b_command, b_args, "ansible.cfg set ssh_args")
+            self._add_args(b_command, b_args, u"ansible.cfg set ssh_args")
 
         # Now we add various arguments that have their own specific settings
         # defined in docs above.
@@ -750,6 +759,7 @@ class Connection(ConnectionBase):
             )
 
         self.user = self.get_option("remote_user")
+
         if self.user:
             self._add_args(
                 b_command,
