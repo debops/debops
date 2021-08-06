@@ -58,16 +58,19 @@ nginx__flavor_distribution_release: '{{ ansible_local.core.distribution_release
                                                                    # ]]]
 # .. envvar:: nginx__flavor_apt_key_id [[[
 #
+# The APT GPG key id of the currently selected flavor.
 nginx__flavor_apt_key_id: '{{ nginx__flavor_apt_key_id_map[nginx_flavor]|d() }}'
 
                                                                    # ]]]
 # .. envvar:: nginx__flavor_apt_repository [[[
 #
+# The APT repository of the currently selected flavor.
 nginx__flavor_apt_repository: '{{ nginx__flavor_apt_repository_map[nginx_flavor]|d() }}'
 
                                                                    # ]]]
 # .. envvar:: nginx__flavor_apt_key_id_map [[[
 #
+# Dicrionary which maps the APT GPG key ids to their respective flavors.
 nginx__flavor_apt_key_id_map:
   'nginx.org': '573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62'
   'passenger': '16378A33A6EF16762922526E561F9B9CAC40B2F7'
@@ -75,6 +78,7 @@ nginx__flavor_apt_key_id_map:
                                                                    # ]]]
 # .. envvar:: nginx__flavor_apt_repository_map [[[
 #
+# Dicrionary which maps the APT GPG repositories to their respective flavors.
 nginx__flavor_apt_repository_map:
   'nginx.org': 'deb https://nginx.org/packages/{{ ansible_distribution | lower }}/ {{ nginx__flavor_distribution_release }} nginx'
   'passenger': 'deb https://oss-binaries.phusionpassenger.com/apt/passenger {{ nginx__flavor_distribution_release }} main'
@@ -82,6 +86,8 @@ nginx__flavor_apt_repository_map:
                                                                    # ]]]
 # .. envvar:: nginx__flavor_packages [[[
 #
+# The list of APT packages installed depending on the currently selected
+# flavor.
 nginx__flavor_packages: '{{ nginx_flavor_package_map[nginx_flavor] }}'
 
                                                                    # ]]]
@@ -117,7 +123,7 @@ nginx_flavor_package_map:
                                                                    # ]]]
 # .. envvar:: nginx_user [[[
 #
-# System user used by nginx
+# System user used by nginx.
 nginx_user: 'www-data'
 
                                                                    # ]]]
@@ -428,16 +434,22 @@ nginx_pki_crt: 'default.crt'
                                                                    # ]]]
 # .. envvar:: nginx_pki_key [[[
 #
+# The name of the file which contains the private key file of the X.509
+# certificate, relative to the 'nginx_pki_realm' variable.
 nginx_pki_key: 'default.key'
 
                                                                    # ]]]
 # .. envvar:: nginx_pki_ca [[[
 #
+# The name of the file which contains the Root Certificate used to authenticate
+# other servers, relative to the 'nginx_pki_realm' variable.
 nginx_pki_ca:  'CA.crt'
 
                                                                    # ]]]
 # .. envvar:: nginx_pki_trusted [[[
 #
+# The name of the file which contains the Root Certificate used to authenticate
+# client certificates, relative to the 'nginx_pki_realm' variable.
 nginx_pki_trusted: 'trusted.crt'
 
                                                                    # ]]]
@@ -514,7 +526,7 @@ nginx_default_ssl_curve: 'secp384r1'
                                                                    # ]]]
 # .. envvar:: nginx_default_ssl_verify_client [[[
 #
-# Default ssl verify client
+# Default ssl verify client.
 nginx_default_ssl_verify_client: False
 
                                                                    # ]]]
@@ -633,28 +645,33 @@ nginx_webroot_create: True
                                                                    # ]]]
 # .. envvar:: nginx_webroot_owner [[[
 #
+# The name of the UNIX account which will be the default owner of the webroot
+# directories created by the role, if not specified otherwise.
 nginx_webroot_owner: 'root'
 
                                                                    # ]]]
 # .. envvar:: nginx_webroot_group [[[
 #
+# The name of the UNIX group which will be the default group of the webroot
+# directories created by the role, if not specified otherwise.
 nginx_webroot_group: 'root'
 
                                                                    # ]]]
 # .. envvar:: nginx_webroot_mode [[[
 #
+# The default mode of the webroot directories created by the role.
 nginx_webroot_mode: '0755'
 
                                                                    # ]]]
 # .. envvar:: nginx_welcome_template [[[
 #
-# Name of the Jinja2 template used as a welcome page
+# Name of the Jinja2 template used as a welcome page.
 nginx_welcome_template: 'srv/www/sites/welcome/public/index.html.j2'
 
                                                                    # ]]]
 # .. envvar:: nginx_welcome_domain [[[
 #
-# The domain used on the default welcome page
+# The domain used on the default welcome page.
 nginx_welcome_domain: '{{ ansible_domain }}'
 
                                                                    # ]]]
@@ -782,12 +799,15 @@ nginx__htpasswd: []
                                                                    # ]]]
 # .. envvar:: nginx__default_htpasswd [[[
 #
+# List of the default htpasswd file configuration created by the role.
 nginx__default_htpasswd:
   - '{{ nginx__http_auth_htpasswd }}'
 
                                                                    # ]]]
 # .. envvar:: nginx__dependent_htpasswd [[[
 #
+# List of htpasswd file configurations defined by other roles via role
+# dependent variables.
 nginx__dependent_htpasswd: []
                                                                    # ]]]
                                                                    # ]]]
@@ -906,13 +926,14 @@ nginx__servers: []
                                                                    # ]]]
 # .. envvar:: nginx__default_servers [[[
 #
+# List of default nginx servers defined by the role.
 nginx__default_servers:
   - '{{ nginx_server_welcome }}'
 
                                                                    # ]]]
 # .. envvar:: nginx__internal_servers [[[
 #
-# List of internal nginx servers
+# List of internal nginx servers.
 nginx__internal_servers:
   - '{{ nginx_server_localhost }}'
   - '{{ nginx_server_acme }}'
@@ -920,7 +941,7 @@ nginx__internal_servers:
                                                                    # ]]]
 # .. envvar:: nginx__dependent_servers [[[
 #
-# List of nginx servers defined in Ansible roles
+# List of nginx servers defined in Ansible roles.
 nginx__dependent_servers: []
 
                                                                    # ]]]
@@ -1038,6 +1059,7 @@ nginx_apt_preferences_dependent_list: '{{ nginx__apt_preferences__dependent_list
                                                                    # ]]]
 # .. envvar:: nginx__apt_preferences__dependent_list [[[
 #
+# Configuration for the :ref:`debops.apt_preferences` Ansible role.
 nginx__apt_preferences__dependent_list:
 
   - package: 'nginx nginx-*'
@@ -1063,11 +1085,13 @@ nginx_php5_status: False
                                                                    # ]]]
 # .. envvar:: nginx_php5_status_name [[[
 #
+# Name of the PHP5 status page used in the URL.
 nginx_php5_status_name: 'php5_status'
 
                                                                    # ]]]
 # .. envvar:: nginx_php5_ping_name [[[
 #
+# Name of the PHP5 ping page used in the URL.
 nginx_php5_ping_name: 'php5_ping'
 
                                                                    # ]]]
@@ -1167,11 +1191,16 @@ nginx_allow: []
                                                                    # ]]]
 # .. envvar:: nginx_group_allow [[[
 #
+# List of the CIDR subnets or IP addresses which are allowed to connect to the
+# HTTP or HTTPS service, configured on hosts in a specific Ansible inventory
+# group.
 nginx_group_allow: []
 
                                                                    # ]]]
 # .. envvar:: nginx_host_allow [[[
 #
+# List of the CIDR subnets or IP addresses which are allowed to connect to the
+# HTTP or HTTPS service, configured on specifc hosts in the Ansible inventory.
 nginx_host_allow: []
 
                                                                    # ]]]
@@ -1183,6 +1212,7 @@ nginx_ferm_dependent_rules: '{{ nginx__ferm__dependent_rules }}'
                                                                    # ]]]
 # .. envvar:: nginx__ferm__dependent_rules [[[
 #
+# Configuration for the :ref:`debops.ferm` Ansible role.
 nginx__ferm__dependent_rules:
 
   - type: 'accept'
