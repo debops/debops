@@ -31,6 +31,17 @@ Changes in the OpenLDAP support
   :ref:`slapd__ref_backup_restore` documentation for help with rebuilding the
   directory.
 
+Changes in inventory variables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- In the :ref:`debops.nginx` role some variables were renamed:
+
+  +-----------------------+-----------------------------+---------------+
+  | Old variable name     | New variable name           | Changed value |
+  +=======================+=============================+===============+
+  | ``nginx_enable_sdpy`` | :envvar:`nginx_enable_spdy` | No            |
+  +-----------------------+-----------------------------+---------------+
+
 
 v2.3.0 (2021-06-04)
 -------------------
