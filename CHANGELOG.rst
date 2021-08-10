@@ -41,6 +41,17 @@ New DebOps roles
 
   .. __: https://wiki.debian.org/Multiarch/HOWTO
 
+:ref:`debops.elasticsearch` role
+''''''''''''''''''''''''''''''''
+
+- In a cluster deployment on hosts with PKI environment configured, the role
+  will automatically enable the X-Pack plugin and configure TLS encryption for
+  HTTP client and inter-cluster communication.
+
+  .. warning:: This change might cause disruption in already deployed clusters
+     due to Elasticsearch user/role management not implemented yet. Ensure proper
+     testing before new changes are deployed in a production environment.
+
 :ref:`debops.lvm` role
 ''''''''''''''''''''''
 

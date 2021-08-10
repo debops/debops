@@ -1,7 +1,7 @@
 .. Copyright (C) 2014-2016 Nick Janetakis <nick.janetakis@gmail.com>
-.. Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2014-2021 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2016      Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
-.. Copyright (C) 2014-2017 DebOps <https://debops.org/>
+.. Copyright (C) 2014-2021 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 Getting started
@@ -28,14 +28,27 @@ inventory and configure the APT repositories yourself via the :ref:`debops.apt`
 role.
 
 
-Elasticsearch is insecure by default
-------------------------------------
+Elasticsearch is insecure in standalone mode
+--------------------------------------------
 
 The Elasticsearch service in the default configuration supports only plaintext
-connections between the cluster nodes themselves, and between the cluster and
-clients. There's no client authentication or authorization policies as well.
-Due to that you should take care to not expose your Elasticsearch cluster to
-the outside world without proper encryption and authentication.
+connections between the standalone host and clients. There's no client
+authentication or authorization policies as well. Due to that you should take
+care to not expose your standalone Elasticsearch service to the outside world
+without proper encryption and authentication.
+
+In cluster mode, and with :ref:`debops.pki` role configured on the host, the
+:ref:`debops.elasticsearch` role will automatically enable the `X-Pack`__
+plugin and configure TLS encryption for HTTP clients and Transport
+communication between cluster nodes. This is possible due to changes in the
+Elastic licensing (the default installation comes with the Basic subscription
+which provides support for TLS and user/group management via the X-Pack
+plugin).
+
+.. note:: User and role management is not implement yet. Refer to the
+   Elasticsearch documentation for details about enabling this manually.
+
+.. __: https://www.elastic.co/products/x-pack/
 
 You can install additional plugins that provide encrypted connections,
 authentication, authorization and access control:

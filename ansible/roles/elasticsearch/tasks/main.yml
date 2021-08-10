@@ -1,8 +1,8 @@
 ---
 # Copyright (C) 2014-2016 Nick Janetakis <nick.janetakis@gmail.com>
-# Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2014-2021 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2016      Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
-# Copyright (C) 2014-2017 DebOps <https://debops.org/>
+# Copyright (C) 2014-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
@@ -25,6 +25,13 @@
   notify: [ 'Refresh host facts' ]
   register: elasticsearch__register_packages
   until: elasticsearch__register_packages is succeeded
+
+- name: Add Elasticsearch UNIX account to selected groups
+  user:
+    name: '{{ elasticsearch__user }}'
+    groups: '{{ elasticsearch__additional_groups }}'
+    append: True
+  when: elasticsearch__additional_groups|d()
 
 - name: Make sure that Ansible local facts directory exists
   file:
@@ -74,6 +81,7 @@
     - '/etc/elasticsearch/elasticsearch.yml'
     - '/etc/elasticsearch/jvm.options'
     - '/usr/lib/sysctl.d/elasticsearch.conf'
+    - '/usr/share/elasticsearch/jdk/conf/security/java.policy'
   notify: [ 'Start elasticsearch' ]
   tags: [ 'role::elasticsearch:config' ]
 
@@ -114,6 +122,13 @@
   notify: [ 'Restart elasticsearch' ]
   when: elasticsearch__version is version_compare("5.0.0", ">=")
   tags: [ 'role::elasticsearch:config' ]
+
+- name: Generate Java Policy configuration file
+  template:
+    src: 'usr/share/elasticsearch/jdk/conf/security/java.policy.j2'
+    dest: '/usr/share/elasticsearch/jdk/conf/security/java.policy'
+    mode: '0644'
+  notify: [ 'Restart elasticsearch' ]
 
 - name: Manage data paths
   file:
