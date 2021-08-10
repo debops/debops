@@ -338,15 +338,87 @@ elasticsearch__path_data:
 # See :ref:`elasticsearch__ref_configuration` for the details and configuration
 # syntax.
 
+# .. envvar:: elasticsearch__original_configuration [[[
+#
+# The original configuration options present in the default Elasticsearch
+# configuration file.
+elasticsearch__original_configuration:
+
+  - name: 'cluster.name'
+    comment: 'Use a descriptive name for your cluster'
+    value: 'node-1'
+    state: 'comment'
+
+  - name: 'node.name'
+    comment: 'Use a descriptive name for the node'
+    value: 'node-1'
+    state: 'comment'
+
+  - name: 'node.attr.rack'
+    comment: 'Add custom attributes to the node'
+    value: 'r1'
+    state: 'comment'
+
+  - name: 'path.data'
+    comment: |
+      Path to directory where to store the data
+      (separate multiple locations by comma)
+    value: '/var/lib/elasticsearch'
+
+  - name: 'path.logs'
+    comment: 'Path to log files'
+    value: '/var/log/elasticsearch'
+
+  - name: 'bootstrap.memory_lock'
+    comment: |
+      Lock the memory on startup
+
+      Make sure that the heap size is set to about half the memory available
+      on the system and that the owner of the process is allowed to use this
+      limit.
+
+      Elasticsearch performs poorly when the system is swapping the memory.
+    value: True
+    state: 'comment'
+
+  - name: 'network.host'
+    comment: 'Set the bind address to a specific IP (IPv4 or IPv6)'
+    value: '192.160.0.1'
+    state: 'comment'
+
+  - name: 'http.port'
+    comment: 'Set a custom port for HTTP'
+    value: '9200'
+    state: 'comment'
+
+  - name: '{{ "discovery.zen.ping.unicast.hosts"
+              if (elasticsearch__version is version("7.0.0", "<"))
+              else "discovery.seed_hosts" }}'
+    comment: |
+      Pass an initial list of hosts to perform discovery when new node is started:
+      The default list of hosts is ["127.0.0.1", "[::1]"]
+    value: [ 'host1', 'host2' ]
+    state: 'comment'
+
+  - name: 'cluster.initial_master_nodes'
+    comment: 'Bootstrap the cluster using an initial set of master-eligible nodes:'
+    value: [ 'node-1', 'node-2' ]
+    state: 'comment'
+
+  - name: 'action.destructive_requires_name'
+    comment: 'Require explicit names when deleting indices'
+    value: True
+    state: 'comment'
+
+                                                                   # ]]]
 # .. envvar:: elasticsearch__default_configuration [[[
 #
-# The default configuration options which should be present in the main
-# configuration file.
+# List of default configuration options defined by the role.
 elasticsearch__default_configuration:
 
   - name: 'cluster.name'
     value: '{{ elasticsearch__cluster_name }}'
-    comment: 'Use a descriptive name for your cluster'
+    state: 'present'
 
   - name: 'node.master'
     comment: 'Type of the node'
@@ -360,46 +432,50 @@ elasticsearch__default_configuration:
 
   - name: 'node.name'
     value: '{{ elasticsearch__node_name }}'
-    comment: 'Use a descriptive name for the node'
-
-  - name: 'node.attr.rack'
-    value: 'r1'
-    comment: 'Add custom attributes to the node'
-    state: 'comment'
+    state: 'present'
 
   - name: 'network.host'
     value: '{{ elasticsearch__network_host }}'
-    comment: 'Set the bind address to a specific IP (IPv4 or IPv6)'
+    state: 'present'
 
   - name: 'http.port'
     value: '{{ elasticsearch__http_port }}'
-    comment: 'Set a custom port for HTTP'
+    state: 'present'
 
   - name: 'transport.tcp.port'
-    value: '{{ elasticsearch__transport_tcp_port }}'
     comment: 'Set a custom port for TCP transport'
+    value: '{{ elasticsearch__transport_tcp_port }}'
+    state: 'present'
+
+    # Reset the default host list
+  - name: '{{ "discovery.zen.ping.unicast.hosts"
+              if (elasticsearch__version is version("7.0.0", "<"))
+              else "discovery.seed_hosts" }}'
+    value: ''
+    state: 'present'
 
   - name: '{{ "discovery.zen.ping.unicast.hosts"
               if (elasticsearch__version is version("7.0.0", "<"))
               else "discovery.seed_hosts" }}'
     value: '{{ elasticsearch__discovery_hosts }}'
     state: '{{ "present" if elasticsearch__discovery_hosts else "absent" }}'
-    comment: |
-      Pass an initial list of hosts to perform discovery when new node is started:
-      The default list of hosts is ["127.0.0.1", "[::1]"]
 
   - name: 'discovery.zen.minimum_master_nodes'
-    value: '{{ elasticsearch__discovery_minimum_master_nodes }}'
     comment: |
       Prevent the "split brain" by configuring the majority of nodes
       (total number of master-eligible nodes / 2 + 1)
+    value: '{{ elasticsearch__discovery_minimum_master_nodes }}'
+
+    # Reset the default host list
+  - name: 'cluster.initial_master_nodes'
+    value: ''
+    state: 'present'
 
   - name: 'cluster.initial_master_nodes'
     value: '{{ elasticsearch__initial_master_nodes }}'
     state: '{{ "absent"
                if (elasticsearch__version is version("7.0.0", "<"))
                else "present" }}'
-    comment: 'Bootstrap the cluster using an initial set of master-eligible nodes:'
 
   - name: 'gateway.recover_after_nodes'
     comment: 'Block initial recovery after a full cluster restart until N nodes are started'
@@ -407,28 +483,16 @@ elasticsearch__default_configuration:
 
   - name: 'action.destructive_requires_name'
     value: True
-    comment: 'Require explicit names when deleting indices'
+    state: 'present'
 
   - name: 'bootstrap.memory_lock'
     value: '{{ True if elasticsearch__memory_lock|bool else False }}'
-    comment: |
-      Lock the memory on startup
-
-      Make sure that the heap size is set to about half the memory available
-      on the system and that the owner of the process is allowed to use this
-      limit.
-
-      Elasticsearch performs poorly when the system is swapping the memory.
+    state: 'present'
 
   - name: 'path.data'
     value: '{{ elasticsearch__path_data }}'
-    comment: |
-      Path to directory where to store the data
-      (separate multiple locations by comma)
+    state: 'present'
 
-  - name: 'path.logs'
-    value: '/var/log/elasticsearch'
-    comment: 'Path to log files'
 
                                                                    # ]]]
 # .. envvar:: elasticsearch__configuration [[[
@@ -529,7 +593,8 @@ elasticsearch__dependent_configuration_filter: '{{ lookup("template",
 # Actual list of Elasticsearch configuration options passed to the
 # configuration template. This list defines the order in which the options from
 # different variables are processed.
-elasticsearch__combined_configuration: '{{ lookup("flattened", (elasticsearch__default_configuration
+elasticsearch__combined_configuration: '{{ lookup("flattened", (elasticsearch__original_configuration
+                                           + elasticsearch__default_configuration
                                            + elasticsearch__plugin_configuration
                                            + elasticsearch__dependent_configuration_filter
                                            + elasticsearch__configuration

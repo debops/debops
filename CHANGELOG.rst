@@ -94,6 +94,14 @@ Updates of upstream application versions
 - The :file:`lxc_ssh.py` Ansible connection plugin has been updated to include
   latest changes and bugfixes.
 
+:ref:`debops.elasticsearch` role
+''''''''''''''''''''''''''''''''
+
+- The main configuration is reorganized, original contents of the configuration
+  file are set in the :envvar:`elasticsearch__original_configuration` variable
+  and the options changed by the role are set in the
+  :envvar:`elasticsearch__default_configuration` variable.
+
 :ref:`debops.keyring` role
 ''''''''''''''''''''''''''
 
