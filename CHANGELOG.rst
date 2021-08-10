@@ -75,6 +75,13 @@ General
 - DebOps tasks that import local SSH keys will now recognize FIDO U2F security
   keys used via the SSH agent.
 
+:ref:`debops.ldap` role
+'''''''''''''''''''''''
+
+- The role will include the ``host*`` network interfaces created by
+  :command:`systemd-nspawn` command in the list of network interface MAC
+  addresses saved in the host LDAP objects.
+
 :ref:`debops.redis_server` role
 '''''''''''''''''''''''''''''''
 
