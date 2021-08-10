@@ -52,6 +52,14 @@ New DebOps roles
      due to Elasticsearch user/role management not implemented yet. Ensure proper
      testing before new changes are deployed in a production environment.
 
+:ref:`debops.kibana` role
+'''''''''''''''''''''''''
+
+- If the username and password for connection to the Elasticsearch service are
+  provided, the role will configure Kibana to use TLS encryption for
+  communication with the Elasticsearch cluster, based on the PKI environment
+  managed by the :ref:`debops.pki` Ansible role.
+
 :ref:`debops.lvm` role
 ''''''''''''''''''''''
 

@@ -1,8 +1,8 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# .. Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
-# .. Copyright (C) 2017 DebOps <https://debops.org/>
+# .. Copyright (C) 2017-2021 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2017-2021 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _kibana__ref_defaults:
@@ -55,6 +55,14 @@ kibana__user: 'kibana'
 #
 # Name of the UNIX primary group used by Kibana.
 kibana__group: 'kibana'
+
+                                                                   # ]]]
+# .. envvar:: kibana__additional_groups [[[
+#
+# List of additional UNIX groups to which the Kibana user will belong.
+kibana__additional_groups: '{{ [ "ssl-cert" ]
+                               if kibana__pki_enabled|bool
+                               else [] }}'
                                                                    # ]]]
                                                                    # ]]]
 # Frontend webserver options [[[
@@ -165,6 +173,88 @@ kibana__index: '.kibana'
 #
 # The default Kibana 'application' to load on start.
 kibana__default_app_id: 'discover'
+                                                                   # ]]]
+                                                                   # ]]]
+# Connection encryption, TLS [[[
+# ------------------------------
+
+# .. envvar:: kibana__secure_connection [[[
+#
+# Enable or disable configuration of secure connection to the Elasticsearch
+# cluster. By default this will be enable if username and password are defined.
+kibana__secure_connection: '{{ True
+                               if (kibana__elasticsearch_username|d() and
+                                   kibana__elasticsearch_password|d())
+                               else False }}'
+
+                                                                   # ]]]
+# .. envvar:: kibana__pki_enabled [[[
+#
+# Enable or disable support for TLS connection encryption based on DebOps PKI,
+# managed by the :ref:`debops.pki` Ansible role.
+kibana__pki_enabled: '{{ (ansible_local.pki.enabled|d())|bool }}'
+
+                                                                   # ]]]
+# .. envvar:: kibana__pki_base_path [[[
+#
+# The absolute path of th location of PKI realms.
+kibana__pki_base_path: '{{ ansible_local.pki.base_path | d("/etc/pki/realms") }}'
+
+                                                                   # ]]]
+# .. envvar:: kibana__pki_realm [[[
+#
+# The PKI realm used by Kibana for the HTTP communication with Elasticsearch
+# cluster.
+kibana__pki_realm: '{{ ansible_local.pki.realm | d("domain") }}'
+
+                                                                   # ]]]
+# .. envvar:: kibana__pki_ca_file [[[
+#
+# Name of the file which contains Certificate Authorities trusted by
+# Kibana, relative to the PKI realm directory.
+kibana__pki_ca_file: '{{ ansible_local.pki.ca | d("CA.crt") }}'
+
+                                                                   # ]]]
+# .. envvar:: kibana__pki_key_file [[[
+#
+# Name of the file which contains the private key used by Kibana for HTTP
+# communication with the Elasticsearch cluster, relative to the PKI realm
+# directory.
+kibana__pki_key_file: '{{ ansible_local.pki.key | d("default.key") }}'
+
+                                                                   # ]]]
+# .. envvar:: kibana__pki_crt_file [[[
+#
+# Name of the file which contains the X.509 certificate chain used by Kibana
+# for HTTP communication with the Elasticsearch cluster, relative to the PKI
+# realm directory. Java applications don't work well with Diffie-Hellman
+# parameters embedded in the certificate chain, so let's use the "plain" one
+# instead.
+kibana__pki_crt_file: 'public/cert_intermediate.pem'
+
+                                                                   # ]]]
+# .. envvar:: kibana__tls_ca_certificate [[[
+#
+# Absolute path of the Certificate Authority certificate used by Kibana
+kibana__tls_ca_certificate: '{{ kibana__pki_base_path + "/"
+                                + kibana__pki_realm + "/"
+                                + kibana__pki_ca_file }}'
+
+                                                                   # ]]]
+# .. envvar:: kibana__tls_private_key [[[
+#
+# Absolute path of the private key used by Kibana.
+kibana__tls_private_key: '{{ kibana__pki_base_path + "/"
+                             + kibana__pki_realm + "/"
+                             + kibana__pki_key_file }}'
+
+                                                                   # ]]]
+# .. envvar:: kibana__tls_certificate [[[
+#
+# Absolute path of the X.509 certificate used by Kibana.
+kibana__tls_certificate: '{{ kibana__pki_base_path + "/"
+                             + kibana__pki_realm + "/"
+                             + kibana__pki_crt_file }}'
                                                                    # ]]]
                                                                    # ]]]
 # Kibana configuration file [[[
@@ -291,6 +381,31 @@ kibana__default_configuration:
     comment: |
       Optional setting that enables you to specify a path to the PEM file for the certificate
       authority for your Elasticsearch instance.
+
+    # Reset the list of default certificate authorities.
+  - name: 'elasticsearch.ssl.certificateAuthorities'
+    value: ''
+    state: '{{ "present" if (kibana__secure_connection|bool and
+                             kibana__pki_enabled|bool)
+                         else "ignore" }}'
+
+  - name: 'elasticsearch.ssl.certificateAuthorities'
+    value: [ '{{ kibana__tls_ca_certificate }}' ]
+    state: '{{ "present" if (kibana__secure_connection|bool and
+                             kibana__pki_enabled|bool)
+                         else "ignore" }}'
+
+  - name: 'elasticsearch.ssl.certificate'
+    value: '{{ kibana__tls_certificate }}'
+    state: '{{ "present" if (kibana__secure_connection|bool and
+                             kibana__pki_enabled|bool)
+                         else "ignore" }}'
+
+  - name: 'elasticsearch.ssl.key'
+    value: '{{ kibana__tls_private_key }}'
+    state: '{{ "present" if (kibana__secure_connection|bool and
+                             kibana__pki_enabled|bool)
+                         else "ignore" }}'
 
   - name: 'elasticsearch.ssl.verificationMode'
     value: 'full'
