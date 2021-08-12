@@ -144,6 +144,13 @@ Fixed
 
 - The role no longer creates an unnecessary NGINX webroot directory.
 
+:ref:`debops.dhcpd` role
+''''''''''''''''''''''''
+
+- host-identifier parameters are now always quoted in dhcpd6.conf. This is
+  needed when the host-identifier contains periods (e.g. fully qualified
+  domain names).
+
 :ref:`debops.kmod` role
 '''''''''''''''''''''''
 
