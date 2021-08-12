@@ -151,6 +151,12 @@ General
 - Do not remove the whole PKI hook directory when the :command:`prosody` hook
   script is removed by the role.
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- The role will install the ``libldap-common`` APT package to ensure that all
+  needed OpenLDAP dependencies are installed in minimal Debian environments.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
