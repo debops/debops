@@ -119,6 +119,13 @@ General
 - The APT pin priority for the NeuroDebian repositories is lowered to allow
   easier migration to repositories managed by the ``exrepo`` project.
 
+:ref:`debops.dhcpd` role
+''''''''''''''''''''''''
+
+- host-identifier parameters are now always quoted in dhcpd6.conf. This is
+  needed when the host-identifier contains periods (e.g. fully qualified
+  domain names).
+
 :ref:`debops.libvirt` role
 ''''''''''''''''''''''''''
 
