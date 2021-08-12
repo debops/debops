@@ -165,6 +165,12 @@ General
 - Ensure that the fact script correctly includes information about upstream
   nameservers when :command:`systemd-resolved` service is used.
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- The role will install the ``libldap-common`` APT package to ensure that all
+  needed OpenLDAP dependencies are installed in minimal Debian environments.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
