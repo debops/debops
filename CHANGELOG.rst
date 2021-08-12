@@ -82,6 +82,21 @@ General
   instead of ``localhost`` by default to allow both IPv4 and IPv6
   communication.
 
+:ref:`debops.sssd` role
+'''''''''''''''''''''''
+
+- The role will install the ``libsss-sudo`` APT package to inferface with the
+  :command:`sudo` command to support NSS queries via the :command:`sssd`
+  service.
+
+:ref:`debops.sudo` role
+'''''''''''''''''''''''
+
+- The :command:`sudo` command will not be configured to interface with LDAP
+  directory when the :command:`sssd` service is configured by DebOps. Instead,
+  ``libsss-sudo`` package will be used to interface :command:`sudo` command
+  with the :command:`sssd` service.
+
 Fixed
 ~~~~~
 
