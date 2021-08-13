@@ -1,0 +1,69 @@
+---
+# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Initialize built-in users in Elasticsearch
+  shell: "set -o nounset -o pipefail -o errexit &&
+          bin/elasticsearch-setup-passwords auto --batch | awk '$1 ~ /^PASSWORD/ {print $2, $4}'"
+  args:
+    executable: 'bash'
+    chdir: '/usr/share/elasticsearch'
+  register: elasticsearch__register_builtin_users
+  changed_when: False
+  when: not (ansible_local.elasticsearch.configured|d())|bool
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Create required directories on Ansible Controller
+  file:
+    path: '{{ secret + "/elasticsearch/credentials/built-in/" + item.split()[0] }}'
+    state: 'directory'
+    mode: '0755'
+  loop: '{{ elasticsearch__register_builtin_users.stdout_lines }}'
+  become: False
+  delegate_to: 'localhost'
+  when: elasticsearch__register_builtin_users.stdout_lines|d()
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Save generated user passwords on Ansible Controller
+  copy:
+    content: '{{ item.split()[1] }}'
+    dest: '{{ secret + "/elasticsearch/credentials/built-in/" + item.split()[0] + "/password" }}'
+    mode: '0644'
+  loop: '{{ elasticsearch__register_builtin_users.stdout_lines }}'
+  become: False
+  delegate_to: 'localhost'
+  when: elasticsearch__register_builtin_users.stdout_lines|d()
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Manage native roles in Elasticsearch
+  uri:
+    url: '{{ elasticsearch__api_base_url + "/_security/role/" + item.name }}'
+    method:      '{{ "DELETE"         if (item.state|d("present") in [ "absent" ]) else "POST" }}'
+    body_format: '{{ omit             if (item.state|d("present") in [ "absent" ]) else "json" }}'
+    body:        '{{ omit             if (item.state|d("present") in [ "absent" ]) else (item.data | to_json) }}'
+    status_code: '{{ [ "200", "404" ] if (item.state|d("present") in [ "absent" ]) else "200" }}'
+    user: "{{ elasticsearch__api_username }}"
+    password: "{{ elasticsearch__api_password }}"
+    force_basic_auth: True
+  loop: '{{ elasticsearch__combined_native_roles | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
+  when: elasticsearch__api_base_url and item.state|d('present') not in [ 'init', 'ignore' ]
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Manage native users in Elasticsearch
+  uri:
+    url: '{{ elasticsearch__api_base_url + "/_security/user/" + item.name }}'
+    method:      '{{ "DELETE"         if (item.state|d("present") in [ "absent" ]) else "POST" }}'
+    body_format: '{{ omit             if (item.state|d("present") in [ "absent" ]) else "json" }}'
+    body:        '{{ omit             if (item.state|d("present") in [ "absent" ]) else (item.data | to_json) }}'
+    status_code: '{{ [ "200", "404" ] if (item.state|d("present") in [ "absent" ]) else "200" }}'
+    user: "{{ elasticsearch__api_username }}"
+    password: "{{ elasticsearch__api_password }}"
+    force_basic_auth: True
+  loop: '{{ elasticsearch__combined_native_users | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
+  when: elasticsearch__api_base_url and item.state|d('present') not in [ 'init', 'ignore' ]
+  no_log: '{{ debops__no_log | d(True) }}'

@@ -41,6 +41,14 @@ to configure HTTP Basic Auth in the :command:`nginx` frontend. Keep in mind
 that once a user is authenticated using this method, he/she has full access to
 the Elasticsearch cluster.
 
+If the first host used for connections to the Elasticsearch cluster uses
+a ``https://`` connection, Kibana will try to use the ``kibana_system``
+Elasticsearch user account and password stored in the
+:file:`secret/elasticsearch/credentials/` directory (managed by the
+:ref:`debops.secret` role) to autorize itself with the cluster and set up its
+own configuration. After that, you can use other users (notably ``elastic``
+superuser account) to access the web interface.
+
 You can install additional plugins that provide encrypted connections,
 authentication, authorization and access control:
 

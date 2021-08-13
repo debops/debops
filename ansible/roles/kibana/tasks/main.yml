@@ -20,6 +20,13 @@
   register: kibana__register_packages
   until: kibana__register_packages is succeeded
 
+- name: Add Kibana UNIX account to selected groups
+  user:
+    name: '{{ kibana__user }}'
+    groups: '{{ kibana__additional_groups }}'
+    append: True
+  when: kibana__additional_groups|d()
+
 - name: Make sure that Ansible local facts directory exists
   file:
     path: '/etc/ansible/facts.d'

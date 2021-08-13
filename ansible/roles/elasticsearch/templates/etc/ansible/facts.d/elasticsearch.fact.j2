@@ -13,8 +13,9 @@ from __future__ import print_function
 from json import load, loads, dumps
 from sys import exit
 import subprocess
+import os
 
-output = {'installed': True}
+output = {'installed': True, 'configured': False}
 
 try:
     version_stdout = subprocess.check_output(
@@ -24,5 +25,10 @@ try:
 
 except Exception:
     pass
+
+marker = '/etc/elasticsearch/elasticsearch.yml.dpkg-divert'
+
+if (os.path.exists(marker) and os.path.isfile(marker)):
+    output['configured'] = True
 
 print(dumps(output, sort_keys=True, indent=4))
