@@ -231,6 +231,101 @@ elasticsearch__xpack_enabled: '{{ True
                                   else False }}'
                                                                    # ]]]
                                                                    # ]]]
+# Elasticsearch users and roles management [[[
+# --------------------------------------------
+
+# .. envvar:: elasticsearch__api_base_url [[[
+#
+# The URL of the Elasticsearch API endpoint used to manage user accounts and
+# roles in the cluster, for example: ``https://example.org:9200``. If not
+# specified, the role will not perform any API-based tasks.
+#
+# Tasks are executed on one of the Elasticsearch hosts, only single host is
+# used if multiple are in a given Ansible run.
+elasticsearch__api_base_url: ''
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__api_username [[[
+#
+# Name of the Elasticsearch user account used to access the API. The built-in
+# ``elastic`` user account has superuser privileges.
+elasticsearch__api_username: 'elastic'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__api_password [[[
+#
+# The password used to access the Elasticsearch API, stored in the
+# :file:`secret/` directory, managed by the :ref:`debops.secret` Ansible role.
+elasticsearch__api_password: '{{ lookup("password", secret + "/elasticsearch/credentials/"
+                                       + "built-in/" + elasticsearch__api_username + "/password") }}'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__native_roles [[[
+#
+# List of Elasticsearch "role" definitions which will be defined on all hosts
+# in the Ansible inventory. See :ref:`elasticsearch__ref_native_roles` for more
+# details.
+elasticsearch__native_roles: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__group_native_roles [[[
+#
+# List of Elasticsearch "role" definitions which will be defined on hosts in
+# a specific Ansible inventory group.
+# See :ref:`elasticsearch__ref_native_roles` for more details.
+elasticsearch__group_native_roles: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__host_native_roles [[[
+#
+# List of Elasticsearch "role" definitions which will be defined on specific
+# hosts in the Ansible inventory. See :ref:`elasticsearch__ref_native_roles`
+# for more details.
+elasticsearch__host_native_roles: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__combined_native_roles [[[
+#
+# The variable which combines all "native role" lists and is used in role tasks
+# and templates.
+elasticsearch__combined_native_roles: '{{ elasticsearch__native_roles
+                                          + elasticsearch__group_native_roles
+                                          + elasticsearch__host_native_roles }}'
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__native_users [[[
+#
+# List of Elasticsearch "user" definitions which will be defined on all hosts
+# in the Ansible inventory. See :ref:`elasticsearch__ref_native_users` for more
+# details.
+elasticsearch__native_users: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__group_native_users [[[
+#
+# List of Elasticsearch "user" definitions which will be defined on hosts in
+# a specific Ansible inventory group.
+# See :ref:`elasticsearch__ref_native_users` for more details.
+elasticsearch__group_native_users: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__host_native_users [[[
+#
+# List of Elasticsearch "user" definitions which will be defined on specific
+# hosts in the Ansible inventory. See :ref:`elasticsearch__ref_native_users`
+# for more details.
+elasticsearch__host_native_users: []
+
+                                                                   # ]]]
+# .. envvar:: elasticsearch__combined_native_users [[[
+#
+# The variable which combines all "native user" lists and is used in role tasks
+# and templates.
+elasticsearch__combined_native_users: '{{ elasticsearch__native_users
+                                          + elasticsearch__group_native_users
+                                          + elasticsearch__host_native_users }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # Elasticsearch network options [[[
 # ---------------------------------
 

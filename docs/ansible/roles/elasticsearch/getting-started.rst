@@ -45,10 +45,18 @@ Elastic licensing (the default installation comes with the Basic subscription
 which provides support for TLS and user/group management via the X-Pack
 plugin).
 
-.. note:: User and role management is not implement yet. Refer to the
-   Elasticsearch documentation for details about enabling this manually.
+With secure cluster communication over TLS, the :ref:`debops.elasticsearch`
+role can use the Elasticsearch API to manage user accounts and role definitions
+in the cluster. A default set of `built-in users`__ will be created
+automatically; passwords of these users will be stored in the
+:file:`secret/elasticsearch/credentials/built-in/` directory on the Ansible
+Controller (managed by the :ref:`debops.secret` role). After that, with the
+base URL of the Elasticsearch API set in the
+:envvar:`elasticsearch__api_base_url` variable, the role can manage
+Elasticsearch roles and user accounts using the ``elastic`` superuser account.
 
 .. __: https://www.elastic.co/products/x-pack/
+.. __: https://www.elastic.co/guide/en/elasticsearch/reference/current/built-in-users.html
 
 You can install additional plugins that provide encrypted connections,
 authentication, authorization and access control:

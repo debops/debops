@@ -48,9 +48,10 @@ New DebOps roles
   will automatically enable the X-Pack plugin and configure TLS encryption for
   HTTP client and inter-cluster communication.
 
-  .. warning:: This change might cause disruption in already deployed clusters
-     due to Elasticsearch user/role management not implemented yet. Ensure proper
-     testing before new changes are deployed in a production environment.
+- Elasticsearch user accounts and role definitions can be managed via Ansible
+  using the API access, when the encrypted communication and X-Pack plugin is
+  enabled. The role will initialize a set of built-in user accounts in the
+  Elasticsearch cluster automatically.
 
 :ref:`debops.kibana` role
 '''''''''''''''''''''''''
