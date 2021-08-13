@@ -33,6 +33,7 @@
 #  - ``sieve``
 #  - ``lmtp``
 #  - ``quota``
+#  - ``dsync``
 #
 # Note that ``imaps`` and ``pop3s`` (implicit TLS) are recommended
 # over ``imap`` and ``pop3`` (explicit TLS) by RFC8314. Furthermore,
@@ -143,6 +144,58 @@ dovecot__vmail_base: '/var/vmail'
 # It's irrelevant if it's under /home/ or /var/mail/ or wherever.
 # For more information see: `Home Directories for Virtual Users <https://wiki.dovecot.org/VirtualUsers/Home>`_.
 dovecot__vmail_home: '{{ dovecot__vmail_base ~ "/%d/%n" }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# DSync Settings [[[
+# --------------
+#
+# Dovecot supports master/master replication using dsync.
+# The replication is done asynchronously, so high latency between the replicas
+# isn't a problem. The replication is done by looking at Dovecot index files
+# (not what exists in filesystem), so no mails get lost due to filesystem
+# corruption or an accidental rm -rf, they will simply be replicated back.
+#
+# Replication works only between server pairs. Currently dsync is only
+# supported together with a virtual email user since dsync would need root
+# access otherwise.
+#
+# For more information, see the Dovecot `Replication
+# <https://wiki.dovecot.org/Replication>`_ wiki page.
+
+# .. envvar:: dovecot__dsync_port [[[
+# Port to use for dsync, defaults to 12345.
+dovecot__dsync_port: '12345'
+
+                                                                   # ]]]
+# .. envvar:: dovecot__dsync_host [[[
+# Remote host to sync with, required.
+dovecot__dsync_host: ''
+
+                                                                   # ]]]
+# .. envvar:: dovecot__dsync_replica [[[
+#
+# Remote host to sync with, specified in the form `tcp[s]:host[:port]`.
+dovecot__dsync_replica: '{{ ("tcps" if dovecot__pki|d(True) else "tcp") ~ ":" ~
+                            dovecot__dsync_host ~ ":" ~
+                            dovecot__dsync_port }}'
+
+                                                                   # ]]]
+# .. envvar:: dovecot__dsync_password_path [[[
+#
+# Directory on the Ansible Host where the dsync password will be stored.
+# By default it's stored relative to the :file:`secret/` directory in the
+# DebOps project directory. See :ref:`debops.secret` role for more details.
+dovecot__dsync_password_path: '{{ "dovecot/credentials/dsync.password" }}'
+
+                                                                   # ]]]
+# .. envvar:: dovecot__dsync_password [[[
+#
+# Password to use for the dsync protocol. Must be the same on both
+# hosts of a replica pair.
+dovecot__dsync_password: '{{ lookup("password", secret + "/"
+                                    + dovecot__dsync_password_path
+                                    + " length=32") }}'
 
                                                                    # ]]]
                                                                    # ]]]
@@ -617,6 +670,10 @@ dovecot__default_configuration:
       - name: 'ssl_cipher_list'
         value: '{{ dovecot__ssl_cipher_list }}'
 
+      - name: 'ssl_client_ca_dir'
+        value: '/etc/ssl/certs'
+        state: '{{ "present" if "dsync" in dovecot__features else "absent" }}'
+
   - section: 'no_tls'
     title: 'TLS Non-Configuration'
     state: '{{ "absent" if dovecot__pki is defined and dovecot__pki else "present" }}'
@@ -699,6 +756,64 @@ dovecot__default_configuration:
 
               - name: 'port'
                 value: '4190'
+
+      - name: 'service replicator'
+        state: '{{ "present" if "dsync" in dovecot__features else "absent" }}'
+        options:
+
+          - name: 'process_min_avail'
+            value: '1'
+
+          - name: 'unix_listener replicator-doveadm'
+            options:
+
+              - name: 'mode'
+                value: '0600'
+
+              - name: 'user'
+                value: 'vmail'
+
+      - name: 'service aggregator'
+        state: '{{ "present" if "dsync" in dovecot__features else "absent" }}'
+        options:
+
+          - name: 'fifo_listener replication-notify-fifo'
+            options:
+
+              - name: 'user'
+                value: 'vmail'
+
+          - name: 'unix_listener replication-notify'
+            options:
+
+              - name: 'user'
+                value: 'vmail'
+
+      - name: 'service doveadm'
+        state: '{{ "present" if "dsync" in dovecot__features else "absent" }}'
+        options:
+
+          - name: 'inet_listener doveadm'
+            options:
+
+              - name: 'port'
+                value: '{{ dovecot__dsync_port }}'
+
+              - name: 'ssl'
+                value: 'yes'
+                state: '{{ "present" if (dovecot__pki|d(True)) else "absent" }}'
+
+      - name: 'replication_max_conns'
+        value: '10'
+        state: '{{ "present" if "dsync" in dovecot__features else "absent" }}'
+
+      - name: 'doveadm_port'
+        value: '{{ dovecot__dsync_port }}'
+        state: '{{ "present" if "dsync" in dovecot__features else "absent" }}'
+
+      - name: 'doveadm_password'
+        value: '{{ dovecot__dsync_password }}'
+        state: '{{ "present" if "dsync" in dovecot__features else "absent" }}'
 
       - name: 'service auth'
         options:
@@ -861,6 +976,17 @@ dovecot__default_configuration:
             value: 'maildir:User quota'
             state: '{{ "present" if "quota" in dovecot__features else "absent" }}'
 
+          - name: 'mail_replica'
+            value: '{{ dovecot__dsync_replica }}'
+            state: '{{ "present" if "dsync" in dovecot__features else "absent" }}'
+
+          - name: 'replication_sync_timeout'
+            value: '2'
+            comment: |
+              When saving a new mail via IMAP or delivering a mail via LDA/LMTP,
+              wait for the mail to be synced to the remote site. If it doesn't finish
+              in X seconds, return success anyway.
+            state: '{{ "present" if "dsync" in dovecot__features else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__configuration [[[
@@ -898,6 +1024,8 @@ dovecot__combined_configuration: '{{ dovecot__default_configuration
 #
 # Default mail plugins for all protocols.
 dovecot__mail_plugins: '{{ [ "$mail_plugins" ]
+                              + [ "notify" if "dsync" in dovecot__features ]
+                              + [ "replication" if "dsync" in dovecot__features ]
                               + [ "quota" if "quota" in dovecot__features ] }}'
 
 
@@ -974,6 +1102,12 @@ dovecot__allow_pop3: []
 #
 # List of hosts/networks that can access the ``pop3s`` port (995).
 dovecot__allow_pop3s: []
+                                                                   # ]]]
+# .. envvar:: dovecot__allow_doveadm [[[
+#
+# List of hosts/networks that can access the ``doveadm`` port (12345, used for dsync).
+dovecot__allow_doveadm:
+  - '{{ dovecot__dsync_host }}'
                                                                    # ]]]
 # .. envvar:: dovecot__allow_sieve [[[
 #
@@ -1288,6 +1422,16 @@ dovecot__ferm__dependent_rules:
     rule_state: '{{ "present"
                     if ("pop3s" in dovecot__features|d([])
                          and dovecot__pki|d(True))
+                    else "absent" }}'
+
+  - name: 'dovecot_doveadm'
+    type: 'accept'
+    by_role: 'debops.dovecot'
+    dport: [ '{{ dovecot__dsync_port }}' ]
+    saddr: '{{ dovecot__allow_doveadm }}'
+    accept_any: '{{ dovecot__accept_any }}'
+    rule_state: '{{ "present"
+                    if ("dsync" in dovecot__features|d([]))
                     else "absent" }}'
 
   - name: 'dovecot_sieve'
