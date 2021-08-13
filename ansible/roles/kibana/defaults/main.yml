@@ -153,14 +153,20 @@ kibana__elasticsearch_hosts: [ 'http://localhost:9200' ]
 #
 # The username used by Kibana for internal maintenance on password-protected
 # Elasticsearch clusters.
-kibana__elasticsearch_username: ''
+kibana__elasticsearch_username: '{{ ""
+                                    if (kibana__elasticsearch_hosts[0].startswith("http://"))
+                                    else "kibana_system" }}'
 
                                                                    # ]]]
 # .. envvar:: kibana__elasticsearch_password [[[
 #
 # The password used by Kibana for internal maintenance on password-protected
 # Elasticsearch clusters.
-kibana__elasticsearch_password: ''
+kibana__elasticsearch_password: '{{ ""
+                                    if (kibana__elasticsearch_hosts[0].startswith("http://"))
+                                    else (lookup("password", secret + "/elasticsearch/credentials/"
+                                          + "built-in/" + kibana__elasticsearch_username
+                                          + "/password")) }}'
 
                                                                    # ]]]
 # .. envvar:: kibana__index [[[
