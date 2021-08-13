@@ -18,6 +18,160 @@ examples for them.
       :depth: 1
 
 
+.. _elasticsearch__ref_native_roles:
+
+elasticsearch__native_roles
+---------------------------
+
+The ``elasticsearch__*_native_roles`` variables provide a way to manage the
+Elasticsearch roles used in `Role-based access control`__ mechanisms. Roles can
+be defined using DebOps' :ref:`universal_configuration`; different features
+might require activation of specific Elastic License subscriptions.
+
+This feature requires the X-Pack plugin to be enabled as well as connection to
+the Elasticsearch cluster secured by the TLS encryption. Both of these will be
+enabled by the :ref:`debops.elasticsearch` role in a clustered configuration.
+Native roles will be managed via the `Elasticsearch Role API`__, the base URL
+of which needs to be specified using the :envvar:`elasticsearch__api_base_url`
+variable to be available.
+
+.. __: https://www.elastic.co/guide/en/elasticsearch/reference/current/authorization.html
+.. __: https://www.elastic.co/guide/en/elasticsearch/reference/current/security-api-put-role.html
+
+Examples
+~~~~~~~~
+
+Create ``my_admin_role`` Elasticsearch role, based on the example included in
+the Roles API documentation:
+
+.. code-block:: yaml
+
+   elasticsearch__native_roles:
+
+     - name: 'my_admin_role'
+       data:
+         cluster: [ 'all' ]
+         indices:
+           - names: [ 'index1', 'index2' ]
+             privileges: [ 'all' ]
+             #field_security:  # requires a license
+             #  grant: [ 'title', 'body' ]
+             #query: "{\"match\": {\"title\": \"foo\"}}"
+         applications:
+           - application: 'myapp'
+             privileges: [ 'admin', 'read' ]
+             resources: [ "*" ]
+         run_as: [ 'other_user' ]
+         metadata:
+           version: 1
+
+Syntax
+~~~~~~
+
+The Elasticsearch roles are defined using a list of YAML dictionaries with
+specific parameters:
+
+``name``
+  Required. The name of the Elasticsearch native role defined via the API.
+  Configuration entries with the same name are merged and can modify each other
+  in order of appearance.
+
+``data``
+  Required. A YAML dictionary with Elasticsearch configuration for the role
+  which will be passed via the API as JSON data. When multiple configuration
+  entries are merged, the ``data`` parameter is overwritten by the next entry
+  in the list.
+
+``state``
+  Optional. If not defined or ``present``, the defined Elasticsearch role will
+  be created or updated on each :ref:`debops.elasticsearch` Ansible role
+  execution. If ``absent``, the defined role will be deleted from the cluster
+  configuration. If ``ignore``, a given configuration entry will not be
+  processed by the :ref:`debops.elasticsearch` role during execution - this is
+  a good way to avoid updating the role on each Ansible run, once it is
+  configured.
+
+
+.. _elasticsearch__ref_native_users:
+
+elasticsearch__native_users
+---------------------------
+
+The ``elasticsearch__*_native_users`` variables provide a way to manage the
+`Elasticsearch users`__ used in `Role-based access control`__ authentication.
+Users can be defined using DebOps' :ref:`universal_configuration`.
+
+This feature requires the X-Pack plugin to be enabled as well as connection to
+the Elasticsearch cluster secured by the TLS encryption. Both of these will be
+enabled by the :ref:`debops.elasticsearch` role in a clustered configuration.
+Native users will be managed via the `Elasticsearch User API`__, the base URL
+of which needs to be specified using the :envvar:`elasticsearch__api_base_url`
+variable to be available.
+
+.. __: https://www.elastic.co/guide/en/elasticsearch/reference/current/setting-up-authentication.html
+.. __: https://www.elastic.co/guide/en/elasticsearch/reference/current/authorization.html
+.. __: https://www.elastic.co/guide/en/elasticsearch/reference/current/security-api-put-user.html
+
+Examples
+~~~~~~~~
+
+Create ``jacknich`` Elasticsearch user, based on the example included in the
+User API documentation:
+
+.. code-block:: yaml
+
+   elasticsearch__native_users:
+
+     - name: 'jacknich'
+       data:
+         password: '{{ lookup("password", secret + "/elasticsearch/credentials/"
+                              + "native/jacknich/password") }}'
+         roles: [ 'admin', 'other_role1' ]
+         full_name: 'Jack Nicholson'
+         email: 'jacknich@example.com'
+         metadata:
+           intelligence: 7
+
+An example user account with superuser privileges, equivalent to the
+``elastic`` user:
+
+.. code-block:: yaml
+
+   - name: 'admin'
+     data:
+       full_name: 'Elastic Administrator'
+       password: 'testpassword'  # don't do this
+       email: 'admin@example.net'
+       roles: [ 'superuser' ]
+     state: 'present'  # change to 'ignore' afterwards
+
+Syntax
+~~~~~~
+
+The Elasticsearch users are defined using a list of YAML dictionaries with
+specific parameters:
+
+``name``
+  Required. The name of the Elasticsearch native user defined via the API.
+  Configuration entries with the same name are merged and can modify each other
+  in order of appearance.
+
+``data``
+  Required. A YAML dictionary with Elasticsearch configuration for the user
+  which will be passed via the API as JSON data. When multiple configuration
+  entries are merged, the ``data`` parameter is overwritten by the next entry
+  in the list.
+
+``state``
+  Optional. If not defined or ``present``, the defined Elasticsearch user will
+  be created or updated on each :ref:`debops.elasticsearch` Ansible role
+  execution. If ``absent``, the defined user will be deleted from the cluster
+  configuration. If ``ignore``, a given configuration entry will not be
+  processed by the :ref:`debops.elasticsearch` role during execution - this is
+  a good way to avoid updating the user on each Ansible run, once it is
+  configured.
+
+
 .. _elasticsearch__ref_configuration:
 
 elasticsearch__configuration

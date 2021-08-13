@@ -41,6 +41,26 @@ New DebOps roles
 
   .. __: https://wiki.debian.org/Multiarch/HOWTO
 
+:ref:`debops.elasticsearch` role
+''''''''''''''''''''''''''''''''
+
+- In a cluster deployment on hosts with PKI environment configured, the role
+  will automatically enable the X-Pack plugin and configure TLS encryption for
+  HTTP client and inter-cluster communication.
+
+- Elasticsearch user accounts and role definitions can be managed via Ansible
+  using the API access, when the encrypted communication and X-Pack plugin is
+  enabled. The role will initialize a set of built-in user accounts in the
+  Elasticsearch cluster automatically.
+
+:ref:`debops.kibana` role
+'''''''''''''''''''''''''
+
+- If the username and password for connection to the Elasticsearch service are
+  provided, the role will configure Kibana to use TLS encryption for
+  communication with the Elasticsearch cluster, based on the PKI environment
+  managed by the :ref:`debops.pki` Ansible role.
+
 :ref:`debops.lvm` role
 ''''''''''''''''''''''
 
@@ -93,6 +113,14 @@ Updates of upstream application versions
 
 - The :file:`lxc_ssh.py` Ansible connection plugin has been updated to include
   latest changes and bugfixes.
+
+:ref:`debops.elasticsearch` role
+''''''''''''''''''''''''''''''''
+
+- The main configuration is reorganized, original contents of the configuration
+  file are set in the :envvar:`elasticsearch__original_configuration` variable
+  and the options changed by the role are set in the
+  :envvar:`elasticsearch__default_configuration` variable.
 
 :ref:`debops.keyring` role
 ''''''''''''''''''''''''''
