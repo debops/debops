@@ -982,14 +982,6 @@ dovecot__default_configuration:
             value: '{{ dovecot__dsync_replica }}'
             state: '{{ "present" if "dsync" in dovecot__features else "absent" }}'
 
-          - name: 'replication_sync_timeout'
-            value: '2'
-            comment: |
-              When saving a new mail via IMAP or delivering a mail via LDA/LMTP,
-              wait for the mail to be synced to the remote site. If it doesn't finish
-              in X seconds, return success anyway.
-            state: '{{ "present" if "dsync" in dovecot__features else "absent" }}'
-
                                                                    # ]]]
 # .. envvar:: dovecot__configuration [[[
 #
