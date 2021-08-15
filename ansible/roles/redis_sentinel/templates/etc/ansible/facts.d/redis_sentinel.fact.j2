@@ -43,7 +43,7 @@ output['installed'] = cmd_exists('redis-sentinel')
 if output['installed']:
     try:
         redis_sentinel_version_stdout = subprocess.check_output(
-                ["dpkg-query", "-W", "-f=${Version}\n'",
+                ["dpkg-query", "-W", "-f=${Version}",
                  "redis-sentinel"]).decode('utf-8').split('-')[0]
         output['version'] = redis_sentinel_version_stdout.split(':')[1]
 
