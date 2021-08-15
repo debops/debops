@@ -29,7 +29,7 @@
     admin_gecos: '{{ getent_passwd[admin_user][3] }}'
 
     # SSH public keys in the 'ssh-agent'
-    admin_sshkeys: "{{ lookup('pipe','ssh-add -L | grep ^ssh || cat ~/.ssh/*.pub || true').split('\n') }}"
+    admin_sshkeys: '{{ lookup("pipe", "ssh-add -L | grep ^\\\(sk-\\\)\\\?ssh || cat ~/.ssh/*.pub || true").split("\n") }}'
 
     # Password of the administrator account, stored in the Password Store on
     # the Ansible Controller
