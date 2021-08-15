@@ -70,7 +70,7 @@ accounts in the virtual machine or OS images used for provisioning. For
 example, on Debian-based VMs such account can be called ``debian``, on
 Ubuntu-based VMs it might be ``ubuntu``, on Raspberry Pi system images the
 account is usually called ``pi``, Vagrant boxes use the ``vagrant`` account,
-and so on. In such case, you might want to use the account name alreayd present
+and so on. In such case, you might want to use the account name already present
 to avoid creating a separate administrator account.
 
 The remote UNIX account definition can be further augmented using the
