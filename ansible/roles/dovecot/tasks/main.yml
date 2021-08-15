@@ -230,7 +230,7 @@
     mode: '0755'
   when: dovecot__pki|bool
 
-- name: Manage PKI postfix hook
+- name: Manage PKI dovecot hook
   template:
     src: 'etc/pki/hooks/dovecot.j2'
     dest: '{{ dovecot__pki_hook_path + "/" + dovecot__pki_hook_name }}'
@@ -239,7 +239,7 @@
     mode: '0755'
   when: dovecot__pki|bool
 
-- name: Ensure the PKI postfix hook is absent
+- name: Ensure the PKI dovecot hook is absent
   file:
     path: '{{ dovecot__pki_hook_path + "/" + dovecot__pki_hook_name }}'
     state: 'absent'
