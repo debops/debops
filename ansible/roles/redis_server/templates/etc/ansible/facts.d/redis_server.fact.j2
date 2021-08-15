@@ -45,8 +45,8 @@ output['installed'] = cmd_exists('redis-server')
 if output['installed']:
     try:
         redis_server_version_stdout = subprocess.check_output(
-                ["dpkg-query", "-W", "-f=${Version}\n'",
-                 "redis-server"]).split('-')[0]
+                ["dpkg-query", "-W", "-f=${Version}",
+                 "redis-server"]).decode('utf-8').split('-')[0]
         output['version'] = redis_server_version_stdout.split(':')[1]
 
     except Exception:
