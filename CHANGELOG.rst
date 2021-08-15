@@ -72,6 +72,12 @@ Updates of upstream application versions
 Fixed
 ~~~~~
 
+General
+'''''''
+
+- Version checks in a few role fact scripts which used :command:`dpkg-query` to
+  check the package version have been updated to output the strings correctly.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 
