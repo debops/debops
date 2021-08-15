@@ -69,6 +69,13 @@ Updates of upstream application versions
 - The :file:`lxc_ssh.py` Ansible connection plugin has been updated to include
   latest changes and bugfixes.
 
+:ref:`debops.redis_server` role
+'''''''''''''''''''''''''''''''
+
+- The Redis service will listen on ``127.0.0.1`` and ``::1`` IP addresses
+  instead of ``localhost`` by default to allow both IPv4 and IPv6
+  communication.
+
 Fixed
 ~~~~~
 
