@@ -96,6 +96,7 @@ are not accessed directly by end users.
 - :ref:`debops.freeradius`
 - :ref:`debops.gunicorn`
 - :ref:`debops.keepalived`
+- :ref:`debops.imapproxy`
 - :ref:`debops.ldap`
 - :ref:`debops.mcli`
 - :ref:`debops.memcached`
@@ -228,6 +229,7 @@ Mail and SMS services
 
 - :ref:`debops.dovecot`
 - :ref:`debops.etc_aliases`
+- :ref:`debops.imapproxy`
 - :ref:`debops.mailman`
 - :ref:`debops.nullmailer`
 - :ref:`debops.opendkim`
