@@ -882,4 +882,13 @@ icinga__ferm__dependent_rules:
     by_role: 'icinga'
     name: 'icinga_api'
                                                                    # ]]]
+# .. envvar:: icinga__unattended_upgrades__dependent_origins [[[
+#
+# List of origin patterns managed by the :ref:`debops.unattended_upgrades` role.
+icinga__unattended_upgrades__dependent_origins:
+
+  - origin: 'site=packages.icinga.com'
+    by_role: 'debops.icinga'
+    state: '{{ "present" if icinga__upstream|bool else "absent" }}'
+                                                                   # ]]]
                                                                    # ]]]
