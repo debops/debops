@@ -26,6 +26,12 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+:ref:`debops.icinga` role
+'''''''''''''''''''''''''
+
+- Upstream Icinga APT packages will now be considered for upgrades by the
+  :command:`unattended-upgrades` service.
+
 :ref:`debops.lvm` role
 ''''''''''''''''''''''
 
