@@ -42,6 +42,10 @@
       etc_services__dependent_list:
         - '{{ icinga__etc_services__dependent_list }}'
 
+    - role: unattended_upgrades
+      tags: [ 'role::unattended_upgrades', 'skip::unattended_upgrades' ]
+      unattended_upgrades__dependent_origins: '{{ icinga__unattended_upgrades__dependent_origins }}'
+
     - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:
