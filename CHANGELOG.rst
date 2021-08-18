@@ -114,6 +114,12 @@ General
 - Ignore commented out lines in :file:`/etc/hosts` database during fact
   gathering.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- Do not remove the whole PKI hook directory when the :command:`nginx` hook
+  script is removed by the role.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
@@ -121,12 +127,24 @@ General
   :command:`pki-realm` script to renew Let's Encrypt/ACME certificates include
   SubjectAltNames defined in the PKI realm.
 
+:ref:`debops.postfix` role
+''''''''''''''''''''''''''
+
+- Do not remove the whole PKI hook directory when the :command:`postfix` hook
+  script is removed by the role.
+
 :ref:`debops.proc_hidepid` role
 '''''''''''''''''''''''''''''''
 
 - Add the ``procadmins`` UNIX group as a supplementary group in the
   :file:`user@.service` :command:`systemd` unit to fix an issue where the user
   service does not start when unified cgroupv2 hierarchy is used.
+
+:ref:`debops.prosody` role
+''''''''''''''''''''''''''
+
+- Do not remove the whole PKI hook directory when the :command:`prosody` hook
+  script is removed by the role.
 
 :ref:`debops.resolvconf` role
 '''''''''''''''''''''''''''''
