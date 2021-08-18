@@ -115,6 +115,13 @@ Fixed
 
 - Fixed wrong variable name in file:`sshd_config.j2` template.
 
+:ref:`debops.sudo` role
+'''''''''''''''''''''''
+
+- Fixed an issue in the fact script which resulted in a wrong string being
+  picked up as the version number when :command:`sudo` was configured to use
+  LDAP, but the LDAP service was not available.
+
 :ref:`debops.system_users` role
 '''''''''''''''''''''''''''''''
 
