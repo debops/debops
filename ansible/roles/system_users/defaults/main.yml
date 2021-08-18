@@ -249,7 +249,7 @@ system_users__default_accounts:
                    in system_users__shell_package_map.keys())
                else omit }}'
     admin: True
-    sshkeys: '{{ lookup("pipe","ssh-add -L | grep ^ssh || cat ~/.ssh/*.pub || true") }}'
+    sshkeys: '{{ lookup("pipe", "ssh-add -L | grep ^\\\(sk-\\\)\\\?ssh || cat ~/.ssh/*.pub || true") }}'
     state: '{{ "present"
                if system_users__self|bool
                else "ignore" }}'
