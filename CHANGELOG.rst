@@ -244,6 +244,13 @@ Fixed
 - The rsyslog role always configured the streamDriverPermittedPeers option,
   even when the ``anon`` network driver authentication mode was selected.
 
+:ref:`debops.sudo` role
+'''''''''''''''''''''''
+
+- Fixed an issue in the fact script which resulted in a wrong string being
+  picked up as the version number when :command:`sudo` was configured to use
+  LDAP, but the LDAP service was not available.
+
 :ref:`debops.system_users` role
 '''''''''''''''''''''''''''''''
 
