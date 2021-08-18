@@ -69,6 +69,12 @@ Updates of upstream application versions
 - The :file:`lxc_ssh.py` Ansible connection plugin has been updated to include
   latest changes and bugfixes.
 
+General
+'''''''
+
+- DebOps tasks that import local SSH keys will now recognize FIDO U2F security
+  keys used via the SSH agent.
+
 :ref:`debops.redis_server` role
 '''''''''''''''''''''''''''''''
 
