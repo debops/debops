@@ -24,8 +24,8 @@ output = {'installed': cmd_exists('freeradius')}
 
 try:
     version_stdout = subprocess.check_output(
-            ["dpkg-query", "-W", "-f=${Version}\n'",
-             "freeradius"]).split('+')[0]
+            ["dpkg-query", "-W", "-f=${Version}",
+             "freeradius"]).decode('utf-8').split('+')[0]
     output['version'] = version_stdout
 
 except Exception:
