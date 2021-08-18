@@ -145,7 +145,7 @@
   when: (apt__enabled|bool and item.repo|d())
 
 # Manage configuration files [[[
-- name: Generate additionnal APT configuration files
+- name: Generate additional APT configuration files
   copy:
     dest:     "/etc/apt/apt.conf.d/{{ (item.priority | d('60')) + (item.dest | d(item.path | d(item.name))) }}"
     src:      '{{ item.src       | d(omit) }}'
