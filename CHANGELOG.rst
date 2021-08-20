@@ -82,6 +82,11 @@ General
 - DebOps tasks that import local SSH keys will now recognize FIDO U2F security
   keys used via the SSH agent.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- The role defaults have been updated, Bullseye is the new Stable.
+
 :ref:`debops.ldap` role
 '''''''''''''''''''''''
 
