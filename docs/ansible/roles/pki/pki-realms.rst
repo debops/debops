@@ -264,8 +264,9 @@ Controller in the :file:`secret/` directory:
 These directories are created at the beginning, so that Ansible can copy
 private files before the actual PKI realm creation on remote hosts. This can be
 used to provide a set of identical private RSA keys to multiple hosts at once
-(using the directories in :file:`private/` subdirectories) or custom scripts that
-access external Certificate Authorities (using :file:`external/` subdirectories).
+(using the directories in :file:`private/` subdirectories), custom scripts that
+access external Certificate Authorities (using :file:`external/` subdirectories),
+or DNS challenge API keys.
 
 Next, PKI realm directories are created on the remote host:
 
