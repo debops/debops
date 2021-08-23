@@ -137,6 +137,12 @@ General
   and the options changed by the role are set in the
   :envvar:`elasticsearch__default_configuration` variable.
 
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- You can now define what kernel parameters are used by default in the Debian
+  Installer, using an iPXE variable.
+
 :ref:`debops.keyring` role
 ''''''''''''''''''''''''''
 
