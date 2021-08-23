@@ -73,8 +73,9 @@ Changed
 Updates of upstream application versions
 ''''''''''''''''''''''''''''''''''''''''
 
-- The :file:`lxc_ssh.py` Ansible connection plugin has been updated to include
-  latest changes and bugfixes.
+- Debian 11 (Bullseye) has been released. The :ref:`debops.ipxe` role will now
+  prepare a netboot installer with this release and set Bullseye as the default
+  Stable installation option.
 
 General
 '''''''
