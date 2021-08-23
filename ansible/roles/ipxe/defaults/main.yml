@@ -243,6 +243,10 @@ ipxe__default_scripts:
         comment: 'Default keymap to set for the preseeding'
         value: 'us'
 
+      - name: 'debian_installer_kernel_params'
+        comment: 'Kernel parameters passed to the Debian Installer at boot'
+        value: [ 'quiet' ]
+
       - name: 'ipxe_boot_path'
         comment: 'Subdirectory with boot configuration files'
         value: 'boot/'
@@ -445,7 +449,7 @@ ipxe__default_scripts:
 
       set mirrorcfg mirror/suite=${version} mirror/country=manual mirror/http/hostname=${debian_installer_mirror} mirror/http/directory=/${os}
 
-      set boot_params -- quiet
+      set boot_params -- ${debian_installer_kernel_params}
 
       :deb_boot_type_init
       set type text
