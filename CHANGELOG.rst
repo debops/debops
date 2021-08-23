@@ -130,6 +130,12 @@ General
   needed when the host-identifier contains periods (e.g. fully qualified
   domain names).
 
+:ref:`debops.docker_server` role
+''''''''''''''''''''''''''''''''
+
+- The ``aufs-tools`` APT package has been removed in Debian Bullseye and will
+  not be installed on newer releases.
+
 :ref:`debops.libvirt` role
 ''''''''''''''''''''''''''
 
