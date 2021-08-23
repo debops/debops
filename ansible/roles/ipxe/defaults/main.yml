@@ -106,7 +106,7 @@ ipxe__debian_netboot_firmware_mirror: 'https://cdimage.debian.org/cdimage/unoffi
 #
 # Specify which Debian releases will be prepared for iPXE boot on a given host.
 # The releases need to be defined in the OS release map below.
-ipxe__debian_netboot_releases: [ 'jessie', 'stretch', 'buster' ]
+ipxe__debian_netboot_releases: [ 'jessie', 'stretch', 'buster', 'bullseye' ]
 
                                                                    # ]]]
 # .. envvar:: ipxe__debian_netboot_architectures [[[
@@ -178,6 +178,23 @@ ipxe__debian_netboot_default_release_map:
     netboot_checksum: 'sha256:15ca058e2005ec418b788eb663ebc832dbf58d9aaca448725330e96393b287e2'  # netboot.tar.gz
     firmware_version: '20210619'
     firmware_checksum: 'sha256:42fb9b5bce06d1c27e61817dfa9f29081c6c6a8dd29c611a9434a79bf077d124'  # firmware.cpio.gz
+
+  - name: 'bullseye-amd64'
+    release: 'bullseye'
+    architecture: 'amd64'
+    netboot_version: '20210731'
+    netboot_checksum: 'sha256:11125a4e864ba868d750714e03a055f16503c5a6440c1720102531fc68bc89bc'  # netboot.tar.gz
+    firmware_version: '20210814'
+    firmware_checksum: 'sha256:6575e363cb74e10f65ebcc61e0c7f439c725f2df0cbd07ab8929a36f3e02410c'  # firmware.cpio.gz
+
+  - name: 'bullseye-amd64-gtk'
+    release: 'bullseye'
+    architecture: 'amd64'
+    netboot_subdir: '/gtk'
+    netboot_version: '20210731'
+    netboot_checksum: 'sha256:49a4d55446be9d09a7eb7d7182526cf214bcea46d3db539b627fb747dd7f6234'  # netboot.tar.gz
+    firmware_version: '20210814'
+    firmware_checksum: 'sha256:6575e363cb74e10f65ebcc61e0c7f439c725f2df0cbd07ab8929a36f3e02410c'  # firmware.cpio.gz
 
                                                                    # ]]]
 # .. envvar:: ipxe__debian_netboot_release_map [[[
@@ -414,11 +431,12 @@ ipxe__default_scripts:
 
       menu Install Debian GNU/Linux / ${arch_a}
       item --gap Select suite:
-      item --key e buster ${space} Debian Stable (Buster) [e]
-      # Enable this when Debian Bullseye gets an installer
-      #item bullseye ${space} Debian Testing (Bullseye)
+      item --key e bullseye ${space} Debian Stable (Bullseye) [e]
+      # Enable this when Debian Bookworm gets an installer
+      #item bookworm ${space} Debian Testing (Bookworm)
       item
       item --gap Select release:
+      item bullseye ${space} Debian GNU/Linux 11 (bullseye)
       item buster ${space} Debian GNU/Linux 10 (buster)
       item stretch ${space} Debian GNU/Linux 9 (stretch)
       item jessie ${space} Debian GNU/Linux 8 (jessie)
