@@ -88,6 +88,12 @@ General
 
 - The role defaults have been updated, Bullseye is the new Stable.
 
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- You can now define what kernel parameters are used by default in the Debian
+  Installer, using an iPXE variable.
+
 :ref:`debops.ldap` role
 '''''''''''''''''''''''
 

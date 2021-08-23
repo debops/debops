@@ -206,7 +206,8 @@ specified as a YAML dictionary with specific parameters:
   ``value``
     Optional. If ``raw`` parameter is not specified, this parameter defines the
     third element of the script line. By default this defines a value of
-    a given iPXE variable.
+    a given iPXE variable. You can specify a string or a list which will be
+    concatenated with spaces as separators.
 
   ``command``
     Optional. If ``raw`` parameter is not specified, this parameter defines the
