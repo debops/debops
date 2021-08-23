@@ -122,6 +122,12 @@ General
 - The APT pin priority for the NeuroDebian repositories is lowered to allow
   easier migration to repositories managed by the ``exrepo`` project.
 
+:ref:`debops.docker_server` role
+''''''''''''''''''''''''''''''''
+
+- The ``aufs-tools`` APT package has been removed in Debian Bullseye and will
+  not be installed on newer releases.
+
 :ref:`debops.libvirt` role
 ''''''''''''''''''''''''''
 

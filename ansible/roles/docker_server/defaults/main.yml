@@ -119,7 +119,10 @@ docker_server__mandatory_packages:
 #
 # List of base packages to install with Docker.
 docker_server__base_packages:
-  - "aufs-tools"
+  - '{{ [ "aufs-tools" ]
+        if (ansible_distribution_release in
+            ["trusty", "wheezy", "jessie", "stretch", "buster" ])
+        else [] }}'
   - '{{ [ "virtualenv" ] if docker_server__install_virtualenv else [] }}'
   - "bridge-utils"
   - '{{ [ "cgroup-lite" ] if (ansible_distribution_release in ["trusty"]) else [] }}'
