@@ -111,6 +111,10 @@ Updates of upstream application versions
 - In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
   has been updated to the next point release, 10.10.
 
+  Debian 11 (Bullseye) has been released. The :ref:`debops.ipxe` role will now
+  prepare a netboot installer with this release and set Bullseye as the default
+  Stable installation option.
+
 - The :file:`lxc_ssh.py` Ansible connection plugin has been updated to include
   latest changes and bugfixes.
 
@@ -132,6 +136,12 @@ General
   file are set in the :envvar:`elasticsearch__original_configuration` variable
   and the options changed by the role are set in the
   :envvar:`elasticsearch__default_configuration` variable.
+
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- You can now define what kernel parameters are used by default in the Debian
+  Installer, using an iPXE variable.
 
 :ref:`debops.keyring` role
 ''''''''''''''''''''''''''

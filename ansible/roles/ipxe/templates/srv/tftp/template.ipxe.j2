@@ -28,7 +28,12 @@
 {%       if element.comment|d() %}
 {{ element.comment | regex_replace("\n$", "") | comment(prefix="", postfix="") -}}
 {%       endif %}
-{{ '{} {} {}'.format(element.command | d('set'), element.name, element.value) }}
+{%       if element.value is string %}
+{%         set element_value = element.value %}
+{%       else %}
+{%         set element_value = element.value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list | join(' ') %}
+{%       endif %}
+{{ '{} {} {}'.format(element.command | d('set'), element.name, element_value) }}
 {%     endif %}
 {%   endfor %}
 {% endif %}
