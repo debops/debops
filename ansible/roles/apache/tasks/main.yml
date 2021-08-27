@@ -164,7 +164,7 @@
                                           else item.name[0] | d("default")) + ".conf")
              if (item.enabled|d(True) | bool)
              else omit }}'
-    force: '{{ ansible_check_mode|d() | bool }}'
+    force: '{{ item.force|d(ansible_check_mode) | bool }}'
     state: '{{ item.enabled|d(True) | bool | ternary("link", "absent")
                if (item.state|d("present") != "absent")
                else "absent" }}'
