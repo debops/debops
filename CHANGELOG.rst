@@ -60,6 +60,10 @@ Added
 
 - The role can now install ``nginx-light`` flavor package if requested.
 
+- The role can be used in "config-only" mode where the :command:`nginx`
+  packages are not installed but are expected to be present and in
+  configuration compatible with DebOps.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 
