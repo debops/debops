@@ -78,6 +78,13 @@ New DebOps roles
   account in new LXC containers by default. This can be used to grant multiple
   system administrators access to the containers.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The role can be used in "config-only" mode where the :command:`nginx`
+  packages are not installed but are expected to be present and in
+  configuration compatible with DebOps.
+
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
 
