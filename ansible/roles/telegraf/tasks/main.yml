@@ -1,6 +1,6 @@
 ---
 # Copyright (C) 2021 Dr. Serge Victor <https://dr.sergevictor.eu/>
-# Copyright (C) 2021 DebOps <https://debops.org/>
+# Copyright (C) 2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 - name: Import custom Ansible plugins
@@ -11,18 +11,12 @@
   import_role:
     name: 'global_handlers'
 
-- name: Stop Telegraf instance on first install
-  service:
-    name: 'telegraf'
-    state: 'stopped'
-  when: not (ansible_local.telegraf.installed|d(false)|bool)
-
 - name: Divert the original telegraf main configuration file
   dpkg_divert:
     path: '/etc/telegraf/telegraf.conf'
     state: 'present'
-    delete: True
-  tags: [ 'role::telegraf:config' ]
+    delete: true
+  notify: [ 'Restart Telegraf' ]
 
 - name: Configure Telegraf instance leading file
   template:
@@ -31,18 +25,29 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  tags: [ 'role::telegraf:config' ]
+  notify: [ 'Restart Telegraf' ]
 
 - name: Remove plugins configuration if requested
   file:
     path: '/etc/telegraf/telegraf.d/{{ item.name }}.conf'
     state: 'absent'
-  with_flattened:
-    - '{{ telegraf__plugins_combined }}'
-  when: (item.name|d() and
-         ((item.state|d() and item.state == 'absent') or
-          (item.delete|d() and item.delete|bool)))
-  tags: [ 'role::telegraf:config' ]
+  loop: '{{ telegraf__configuration_combined | parse_kv_items }}'
+  when: item.state|d('present') == 'absent' and item.config|d()
+  notify: [ 'Restart Telegraf' ]
+
+- name: Find plugins which are in filesystem
+  find:
+    paths: /etc/telegraf/telegraf.d
+    patterns: '*.conf'
+  register: telegraf_existing_plugins_filenames
+
+- name: Backup and disactivate plugins unexisting in desired configuration
+  command:
+    cmd: mv -f '{{ item.path | quote }}' '{{ item.path | quote }}.inactive'
+    removes: item.path
+  loop: '{{ telegraf_existing_plugins_filenames.files }}'
+  when: item.path | basename | splitext | first not in telegraf__configuration_combined | parse_kv_items | map(attribute="name")
+  notify: [ 'Restart Telegraf' ]
 
 - name: Configure plugins
   template:
@@ -51,16 +56,10 @@
     owner: 'root'
     group: 'telegraf'
     mode: '0640'
-  with_flattened:
-    - '{{ telegraf__plugins_combined }}'
-  when: (item.name|d() and item.state|d('present') != 'absent' and
-         (item.delete is undefined or not item.delete|bool))
-  tags: [ 'role::telegraf:config' ]
-
-- name: Start or restart Telegraf
-  service:
-    name: 'telegraf'
-    state: 'restarted'
+  loop: '{{ telegraf__configuration_combined | parse_kv_items }}'
+  when: item.state|d('present') not in [ 'absent', 'ignore' ] and item.config|d()
+  no_log: '{{ debops__no_log | d(True) }}'
+  notify: [ 'Restart Telegraf' ]
 
 - name: Make sure that Ansible local facts directory exists
   file:

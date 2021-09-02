@@ -2,13 +2,13 @@
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
 # .. Copyright (C) 2021 Dr. Serge Victor <https://dr.sergevictor.eu/>
-# .. Copyright (C) 2021 DebOps <https://debops.org/>
+# .. Copyright (C) 2020 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-or-later
 
 # .. _telegraf__ref_defaults:
 
 # debops.telegraf default variables
-# ========================================
+# =================================
 
 # .. contents:: Sections
 #    :local:
@@ -17,7 +17,7 @@
 
 
 # APT packages [[[
-# -------------------------------
+# ------------
 
 # .. envvar:: telegraf__base_packages [[[
 #
@@ -40,70 +40,50 @@ telegraf__packages: []
 # :file:`/etc/telegraf/telegraf.d` configuration directory.
 # Definition of minimum one input and one output is mandatory.
 
-# .. envvar:: telegraf__plugins_input [[[
+# .. envvar:: telegraf__configuration [[[
 #
-# Input plugins list
-telegraf__plugins_input:
-  - '{{ telegraf__input_proxy_default }}'
+# All plugins you want to run on all hosts
+telegraf__configuration:
+
+  - name: 'input_influxdb_local'
+    config: |
+      [[inputs.influxdb_v2_listener]]
+        service_address = "127.0.0.1:38086"
+    state: 'present'
+
+  - name: 'output_discard'
+    config: |
+      [[outputs.discard]]
+    state: 'present'
                                                                    # ]]]
 
-# .. envvar:: telegraf__plugins_output [[[
+# .. envvar:: telegraf__group_configuration [[[
 #
-# Output plugins list
-telegraf__plugins_output:
-  - '{{ telegraf__output_proxy_default }}'
-
-                                                                   # ]]]
-
-# .. envvar:: telegraf__plugins_aggregator [[[
-#
-# Aggregator plugins list
-telegraf__plugins_aggregator: []
-
-                                                                   # ]]]
-
-# .. envvar:: telegraf__plugins_processor [[[
-#
-# Processor plugins list
-telegraf__plugins_processor: []
+# All plugins you want to run in group.
+telegraf__group_configuration: []
 
                                                                    # ]]]
 
-# .. envvar:: telegraf__input_proxy_default [[[
+# .. envvar:: telegraf_host_configuration [[[
 #
-# Default dummy proxy input
-telegraf__input_proxy_default:
-  name: 'input_proxy_default'
-  content: |
-    [[inputs.influxdb_v2_listener]]
-      service_address = ":38086"
-  state: 'present'
+# All plugins you want to run in a particulr host.
+telegraf__host_configuration: []
 
                                                                    # ]]]
 
-# .. envvar:: telegraf__output_proxy_default [[[
 #
-# Default dummy proxy output
-telegraf__output_proxy_default:
-  name: 'output_proxy_default'
-  content: |
-    [[outputs.influxdb_v2]]
-  state: 'present'
-                                                                   # ]]]
-
 # .. envvar:: telegraf__combined_configuration [[[
 #
 # Full list of Telegraf configuration options passed to the
 # configuration template dir.
-telegraf__plugins_combined: '{{ telegraf__plugins_input +
-                                  telegraf__plugins_output +
-                                  telegraf__plugins_aggregator +
-                                  telegraf__plugins_processor }}'
+telegraf__configuration_combined: '{{ telegraf__configuration
+                                      + telegraf__group_configuration
+                                      + telegraf__host_configuration }}'
 
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[
-# -----------------------------------------
+# -------------------------------------
 
 # .. envvar:: telegraf__influxdata__dependent_packages [[[
 #
