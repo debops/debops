@@ -53,6 +53,22 @@
     group: 'root'
     mode: '0600'
 
+- name: Ensure configuration folder exists
+  file:
+    path: '/etc/zabbix/zabbix_agentd.conf.d'
+    state: 'directory'
+    owner: '{{ zabbix_agent__user }}'
+    group: 'root'
+    mode: '0755'
+
+- name: Ensure log folder exists
+  file:
+    path: '/var/log/zabbix-agent'
+    state: 'directory'
+    owner: '{{ zabbix_agent__user }}'
+    group: 'root'
+    mode: '0755'
+
 - name: Conditionally restart Zabbix agent service
   systemd:
     name: 'zabbix-agent.service'
