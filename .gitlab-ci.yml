@@ -2604,3 +2604,18 @@ stages:
     JANE_INVENTORY_HOSTVARS: 'yadm__dotfiles_enabled=true'
     JANE_DIFF_PATTERN: '.*/roles/yadm/.*'
     JANE_LOG_PATTERN: '\[yadm\]'
+
+
+# --- z --- [[[2
+
+'zabbix_agent role':
+  <<: *test_role_1st_deps
+  needs:
+    - 'etc_services role'
+    - 'ferm role'
+  variables:
+    JANE_TEST_FACT: 'zabbix_agent.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/zabbix_agent.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_zabbix_agent'
+    JANE_DIFF_PATTERN: '.*/roles/zabbix_agent/.*'
+    JANE_LOG_PATTERN: '\[zabbix_agent\]'
