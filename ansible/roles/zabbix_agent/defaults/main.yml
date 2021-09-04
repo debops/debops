@@ -64,16 +64,29 @@ zabbix_agent__host_allow: []
 # :file:`/etc/zabbix/zabbix_agentd.conf` configuration file.
 # See :ref:`zabbix_agent_configuration` for more details.
 
+# .. envvar:: zabbix_agent__user [[[
+#
+# User to use to run Zabbix agent
+zabbix_agent__user: 'zabbix'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__tls_psk_identity [[[
+#
+# Unique, case sensitive string used to identify the pre-shared key.
+zabbix_agent__tls_psk_identity: '{{ lookup("password", secret
+                       + "/zabbix/" + inventory_hostname
+                       + "/identity.key length=32 chars=alpha,digits") }}'
+                                                                   # ]]]
 # .. envvar:: zabbix_agent__original_configuration [[[
 #
 # List of the default configuration options defined in the Debian package.
 zabbix_agent__original_configuration:
 
-  - name: 'PidFile'                                                                              
-    comment: |                                                                                   
-      Name of PID file.                                                                          
-    value: '/var/run/zabbix/zabbix_agentd.pid'                                                   
-    state: 'present'                                                                             
+  - name: 'PidFile'
+    comment: |
+      Name of PID file.
+    value: '/var/run/zabbix/zabbix_agentd.pid'
+    state: 'present'
 
   - name: 'LogType'
     comment: |
@@ -83,14 +96,14 @@ zabbix_agent__original_configuration:
         console - standard output
     value: 'file'
     state: 'comment'
-  
+
   - name: 'LogFile'
     comment: |
       Log file name for LogType 'file' parameter.
       Mandatory: yes, if LogType is set to file, otherwise no
     value: '/var/log/zabbix-agent/zabbix_agentd.log'
     state: 'present'
-  
+
   - name: 'LogFileSize'
     comment: |
       Maximum size of log file in MB.
@@ -104,7 +117,7 @@ zabbix_agent__original_configuration:
       Name of PID file.
     value: '/var/run/zabbix/zabbix_agentd.pid'
     state: 'present'
-  
+
   - name: 'DebugLevel'
     comment: |
       Specifies debug level:
@@ -115,30 +128,30 @@ zabbix_agent__original_configuration:
       4 - for debugging (produces lots of information)
       5 - extended debugging (produces even more information)
     value: 3
-    state: 'present'
-  
+    state: 'comment'
+
   - name: 'SourceIP'
     comment: |
       Source IP address for outgoing connections.
     value: ''
-    present: 'comment'
-  
+    state: 'comment'
+
   - name: 'EnableRemoteCommands'
     comment: |
       Whether remote commands from Zabbix server are allowed.
       0 - not allowed
       1 - allowed
-    value: 0
-    present: 'comment'
-  
+    value: "0"
+    state: 'comment'
+
   - name: 'LogRemoteCommands'
     comment: |
       Enable logging of executed shell commands as warnings.
       0 - disabled
       1 - enabled
-    value: 0
+    value: "0"
     state: 'comment'
-  
+
   - name: 'Server'
     comment: |
       List of comma delimited IP addresses, optionally in CIDR notation, or DNS names of Zabbix servers and Zabbix proxies.
@@ -149,22 +162,22 @@ zabbix_agent__original_configuration:
       Example: Server=127.0.0.1,192.168.1.0/24,::1,2001:db8::/32,zabbix.example.com
       Mandatory: yes, if StartAgents is not explicitly set to 0
     value: '127.0.0.1'
-    state: 'comment'
-  
+    state: 'present'
+
   - name: 'ListenPort'
     comment: |
       Agent will listen on this port for connections from the server.
       Range: 1024-32767
     value: 10050
     state: 'comment'
-  
+
   - name: 'ListenIP'
     comment: |
       List of comma delimited IP addresses that the agent should listen on.
       First IP address is sent to Zabbix server if connecting to it to retrieve list of active checks.
     value: '0.0.0.0'
     state: 'comment'
-  
+
   - name: 'StartAgents'
     comment: |
       Number of pre-forked instances of zabbix_agentd that process passive checks.
@@ -172,7 +185,7 @@ zabbix_agent__original_configuration:
       Range: 0-100
     value: 3
     state: 'comment'
-  
+
   - name: 'ServerActive'
     comment: |
       List of comma delimited IP:port (or DNS name:port) pairs of Zabbix servers and Zabbix proxies for active checks.'
@@ -182,8 +195,8 @@ zabbix_agent__original_configuration:
       If this parameter is not specified, active checks are disabled.
       Example: ServerActive=127.0.0.1:20051,zabbix.domain,[::1]:30051,::1,[12fc::1]
     value: '127.0.0.1'
-    state: 'comment'
-  
+    state: 'present'
+
   - name: 'Hostname'
     comment: |
       Unique, case sensitive hostname.
@@ -191,14 +204,14 @@ zabbix_agent__original_configuration:
       Value is acquired from HostnameItem if undefined.
     value: ''
     state: 'comment'
-  
+
   - name: 'HostnameItem'
     comment: |
       Item used for generating Hostname if it is undefined. Ignored if Hostname is defined.
       Does not support UserParameters or aliases.
     value: 'system.hostname'
     state: 'comment'
-  
+
   - name: 'HostMetadata'
     comment: |
       Optional parameter that defines host metadata.
@@ -208,7 +221,7 @@ zabbix_agent__original_configuration:
       Range: 0-255 characters
     value: ''
     state: 'comment'
-  
+
   - name: 'HostMetadataItem'
     comment: |
       Optional parameter that defines an item used for getting host metadata.
@@ -218,21 +231,21 @@ zabbix_agent__original_configuration:
       This option is only used when HostMetadata is not defined.
     value: ''
     state: 'comment'
-  
+
   - name: 'RefreshActiveChecks'
     comment: |
       How often list of active checks is refreshed, in seconds.
       Range: 60-3600
     value: 120
     state: 'comment'
-  
+
   - name: 'BufferSend'
     comment: |
       Do not keep data longer than N seconds in buffer.
       Range: 1-3600
     value: 5
     state: 'comment'
-  
+
   - name: 'BufferSize'
     comment: |
       Maximum number of values in a memory buffer. The agent will send
@@ -240,7 +253,7 @@ zabbix_agent__original_configuration:
       Range: 2-65535
     value: 100
     state: 'comment'
-  
+
   - name: 'MaxLinesPerSecond'
     comment: |
       Maximum number of new lines the agent will send per second to Zabbix Server
@@ -250,7 +263,7 @@ zabbix_agent__original_configuration:
       Range: 1-1000
     value: 20
     state: 'comment'
-  
+
   - name: 'Alias'
     comment: |
       Sets an alias for an item key. It can be used to substitute long and complex item key with a smaller and simpler one.
@@ -262,14 +275,14 @@ zabbix_agent__original_configuration:
       Aliases can be used in HostMetadataItem but not in HostnameItem parameters.
     value: ''
     state: 'comment'
-  
+
   - name: 'Timeout'
     comment: |
       Spend no more than Timeout seconds on processing
       Range: 1-30
     value: 3
     state: 'comment'
-  
+
   - name: 'AllowRoot'
     comment: |
       Allow the agent to run as 'root'. If disabled and the agent is started by 'root', the agent
@@ -279,21 +292,21 @@ zabbix_agent__original_configuration:
       1 - allow
     value: 0
     state: 'comment'
-  
+
   - name: 'User'
     comment: |
       Drop privileges to a specific, existing user on the system.
       Only has effect if run as 'root' and AllowRoot is disabled.
     value: 'zabbix'
     state: 'comment'
-  
+
   - name: 'Include'
     comment: |
       You may include individual files or all files in a directory in the configuration file.
       Installing Zabbix will create include directory in /etc/zabbix, unless modified during the compile time.
     value: '/etc/zabbix/zabbix_agentd.conf.d/*.conf'
     state: 'present'
-  
+
   - name: 'UnsafeUserParameters'
     comment: |
       Allow all characters to be passed in arguments to user-defined parameters.
@@ -304,7 +317,7 @@ zabbix_agent__original_configuration:
         1 - allow
     value: 0
     state: 'comment'
-  
+
   - name: 'UserParameter'
     comment: |
       User-defined parameter to monitor. There can be several user-defined parameters.
@@ -312,7 +325,7 @@ zabbix_agent__original_configuration:
       See 'zabbix_agentd' directory for examples.
     value: ''
     state: 'comment'
-  
+
   - name: 'LoadModulePath'
     comment: |
       Full path to location of agent modules.
@@ -320,7 +333,7 @@ zabbix_agent__original_configuration:
       To see the default path run command "zabbix_agentd --help".
     value: '${libdir}/modules'
     state: 'comment'
-  
+
   - name: 'LoadModule'
     comment: |
       Module to load at agent startup. Modules are used to extend functionality of the agent.
@@ -329,7 +342,7 @@ zabbix_agent__original_configuration:
       It is allowed to include multiple LoadModule parameters.
     value: ''
     state: 'comment'
-  
+
   - name: 'TLSConnect'
     comment: |
       How the agent should connect to server or proxy. Used for active checks.
@@ -340,7 +353,7 @@ zabbix_agent__original_configuration:
       Mandatory: yes, if TLS certificate or PSK parameters are defined (even for 'unencrypted' connection)
     value: 'unencrypted'
     state: 'comment'
-  
+
   - name: 'TLSAccept'
     comment: |
       What incoming connections to accept.
@@ -351,50 +364,50 @@ zabbix_agent__original_configuration:
       Mandatory: yes, if TLS certificate or PSK parameters are defined (even for 'unencrypted' connection)
     value: 'unencrypted'
     state: 'comment'
-  
+
   - name: 'TLSCAFile'
     comment: |
       Full pathname of a file containing the top-level CA(s) certificates for
       peer certificate verification.
     value: ''
     state: 'comment'
-  
+
   - name: 'TLSCRLFile'
     comment: |
       Full pathname of a file containing revoked certificates.
     value: ''
     state: 'comment'
-  
+
   - name: 'TLSServerCertIssuer'
     comment: |
       Allowed server certificate issuer.
     value: ''
     state: 'comment'
-  
+
   - name: 'TLSServerCertSubject'
     comment: |
       Allowed server certificate subject.
     value: ''
     state: 'comment'
-  
+
   - name: 'TLSCertFile'
     comment: |
       Full pathname of a file containing the agent certificate or certificate chain.
     value: ''
     state: 'comment'
-  
+
   - name: 'TLSKeyFile'
     comment: |
       Full pathname of a file containing the agent private key.
     value: ''
     state: 'comment'
-  
+
   - name: 'TLSPSKIdentity'
     comment: |
       Unique, case sensitive string used to identify the pre-shared key.
     value: ''
     state: 'comment'
-  
+
   - name: 'TLSPSKFile'
     comment: |
       Full pathname of a file containing the pre-shared key.
@@ -404,7 +417,27 @@ zabbix_agent__original_configuration:
 # .. envvar:: zabbix_agent__default_configuration [[[
 #
 # List of the default configuration options defined by the role.
-zabbix_agent__default_configuration: []
+zabbix_agent__default_configuration:
+
+  - name: 'TLSPSKIdentity'
+    value: '{{ zabbix_agent__tls_psk_identity | d() }}'
+    state: 'present'
+
+  - name: 'TLSPSKFile'
+    value: '/etc/zabbix/secret.key'
+    state: 'present'
+
+  - name: 'User'
+    value: '{{ zabbix_agent__user }}'
+    state: 'present'
+
+  - name: 'TLSConnect'
+    value: 'psk'
+    state: 'present'
+
+  - name: 'TLSAccept'
+    value: 'psk'
+    state: 'present'
 
                                                                    # ]]]
 # .. envvar:: zabbix_agent__configuration [[[

@@ -21,8 +21,7 @@
 - name: Install Zabbix agent packages
   apt:
     name: '{{ (zabbix_agent__base_packages
-             + zabbix_agent__packages)
-             | flatten }}'
+             + zabbix_agent__packages) | flatten }}'
     state: 'present'
   register: zabbix_agent__register_packages
   until: zabbix_agent__register_packages is succeeded
@@ -32,11 +31,27 @@
   template:
     src: 'etc/zabbix/zabbix_agentd.conf.j2'
     dest: '/etc/zabbix/zabbix_agentd.conf'
-    owner: 'root'
+    owner: '{{ zabbix_agent__user }}'
     group: 'root'
-    mode: '0644'
+    mode: '0640'
     unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
   register: zabbix_agent__register_configuration
+
+- name: Create secret key
+  shell: 'test -f {{ item }} || openssl rand -hex 16 > {{ item }}'
+  args:
+    creates: '{{ item }}'
+  with_items: '{{ secret + "/zabbix/" + inventory_hostname + "/secret.key" }}'
+  delegate_to: localhost
+  become: false
+
+- name: Install secret key
+  copy:
+    src: '{{ secret + "/zabbix/" + inventory_hostname + "/secret.key" }}'
+    dest: '/etc/zabbix/secret.key'
+    owner: '{{ zabbix_agent__user }}'
+    group: 'root'
+    mode: '0600'
 
 - name: Conditionally restart Zabbix agent service
   systemd:
