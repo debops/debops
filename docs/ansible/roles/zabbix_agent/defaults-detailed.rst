@@ -18,7 +18,7 @@ them.
 .. _zabbix_agent__ref_configuration:
 
 zabbix_agent__configuration
------------------------
+---------------------------
 
 The ``zabbix_agent__*_configuration`` variables define the contents of the
 :file:`/etc/zabbix_agent.conf` configuration file. The variables are combined in
