@@ -1256,7 +1256,7 @@ owncloud__ldap_binddn: '{{ ([ owncloud__ldap_self_rdn ] + owncloud__ldap_device_
 # to bind to the LDAP directory.
 owncloud__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
                                   + owncloud__ldap_binddn | to_uuid + ".password length=32 "
-                                  + "chars=alpha,digits,!@_#$%^&*") }}'
+                                  + "chars=ascii_letters,digits,!@_#$%^&*") }}'
 
                                                                    # ]]]
 # .. envvar:: owncloud__ldap_uri [[[
