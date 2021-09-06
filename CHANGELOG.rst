@@ -42,6 +42,14 @@ General
   roles in the :file:`common.yml` playbook has been moved to a separate play to
   ensure feature parity with the bootstrap playbooks.
 
+:ref:`debops.mariadb` role
+''''''''''''''''''''''''''
+
+- The ``percona`` entry in the :envvar:`mariadb__package_map` dictionary has
+  been corrected to ``percona-8.0`` to bring them in line with the flavor
+  comments. If you use Percona on your hosts, you might need to update the
+  Ansible inventory to point the role to the correct package configuration map.
+
 Fixed
 ~~~~~
 
