@@ -1,0 +1,40 @@
+---
+# Copyright (C) 2016-2017 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2021 Julien Lecomte <julien@lecomte.at>
+# Copyright (C) 2016-2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import custom Ansible plugins
+  import_role:
+    name: 'ansible_plugins'
+
+- name: Uninstall requested APT packages
+  apt:
+    name: '{{ q("flattened", (apt_uninstall__packages
+                              + apt_uninstall__group_packages
+                              + apt_uninstall__host_packages
+                              + apt_uninstall__dependent_packages)) }}'
+    state: 'absent'
+  register: apt_uninstall__register_packages
+  until: apt_uninstall__register_packages is succeeded
+  when: apt_uninstall__enabled|bool
+
+- name: Make sure that Ansible fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: apt_uninstall__enabled|bool
+
+- name: Save local Ansible facts
+  template:
+    src: 'etc/ansible/facts.d/apt_uninstall.fact.j2'
+    dest: '/etc/ansible/facts.d/apt_uninstall.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: apt_uninstall__enabled|bool
+

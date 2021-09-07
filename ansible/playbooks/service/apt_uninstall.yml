@@ -1,0 +1,20 @@
+---
+# Copyright (C) 2016-2017 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2016-2017 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Uninstall APT packages
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_all_hosts', 'debops_service_apt_uninstall' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: apt_uninstall
+      tags: [ 'role::apt_uninstall', 'skip::apt_uninstall' ]

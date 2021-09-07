@@ -64,6 +64,7 @@ methods.
 
 - :ref:`debops.apt_install`
 - :ref:`debops.apt_preferences`
+- :ref:`debops.apt_uninstall`
 - :ref:`debops.cran` - `The Comprehensive R Archive Network`_
 - :ref:`debops.elastic_co` - `Elastic`_ applications
 - :ref:`debops.golang`
