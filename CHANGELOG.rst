@@ -23,6 +23,19 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.3: https://github.com/debops/debops/compare/v2.3.0...stable-2.3
 
+Fixed
+~~~~~
+
+:ref:`debops.netbase` role
+''''''''''''''''''''''''''
+
+- Fixed an issue where the initial bootstrap and common playbook execution
+  didn't provide the correct configuration for the :ref:`debops.netbase` role,
+  resulting in a non-idempotent execution and wrong :file:`/etc/hosts` database
+  contents. The order of the :ref:`debops.python` role in bootstrap and common
+  playbooks has been adjusted to ensure that the Python packages required by
+  the :ref:`debops.netbase` role are installed before its execution.
+
 
 `debops v2.3.2`_ - 2021-09-01
 -----------------------------
