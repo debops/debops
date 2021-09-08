@@ -525,7 +525,9 @@ ipxe__default_scripts:
       echo -n Set preseed URL for ${os} ${version} [${debian_installer_preseed}]: && read preseedurl || goto deb_boot_type
       isset ${hostname} || goto deb_preseed_get_hostname
       :deb_preseed_has_hostname
-      isset ${preseedurl} && set install_params auto=true priority=critical preseed/url=${preseedurl} keymap=${debian_installer_keymap} netcfg/hostname=${hostname} domain=${domain} ||
+      isset ${preseedurl} && set install_params auto=true priority=critical preseed/url=${preseedurl} keymap=${debian_installer_keymap} netcfg/hostname=${hostname} domain=${domain} || goto deb_default_preseed
+      goto deb_text
+      :deb_default_preseed
       set install_params auto=true priority=critical preseed/url=${debian_installer_preseed} keymap=${debian_installer_keymap} netcfg/hostname=${hostname} domain=${domain} ||
       goto deb_text
 

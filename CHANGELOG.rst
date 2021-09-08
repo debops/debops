@@ -209,6 +209,12 @@ Fixed
   needed when the host-identifier contains periods (e.g. fully qualified
   domain names).
 
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- Make sure that the correct Preseed flavor is used when the user changes it
+  using the menu item.
+
 :ref:`debops.kmod` role
 '''''''''''''''''''''''
 
