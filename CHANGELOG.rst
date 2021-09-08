@@ -131,6 +131,10 @@ General
 - DebOps tasks that import local SSH keys will now recognize FIDO U2F security
   keys used via the SSH agent.
 
+- The APT configuration by the :ref:`debops.apt` and :ref:`debops.apt_proxy`
+  roles in the :file:`common.yml` playbook has been moved to a separate play to
+  ensure feature parity with the bootstrap playbooks.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
@@ -164,6 +168,15 @@ General
 - A few changes to the Postfix LDAP lookup tables were made, most notably a
   better split between alias lookups (ldap_virtual_alias_maps.cf) and
   distribution list lookups (ldap_virtual_forward_maps.cf).
+
+:ref:`debops.preseed` role
+''''''''''''''''''''''''''
+
+- The role has been redesigned from the ground up and uses
+  :ref:`universal_configuration` to manage Preseed configuration files.
+  Multiple "flavors" are provided to permit installation of Debian in a variety
+  of environments. See the :ref:`upgrade_notes` for details about upgrading an
+  existing installation.
 
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
@@ -207,12 +220,25 @@ Fixed
   needed when the host-identifier contains periods (e.g. fully qualified
   domain names).
 
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- Make sure that the correct Preseed flavor is used when the user changes it
+  using the menu item.
+
 :ref:`debops.kmod` role
 '''''''''''''''''''''''
 
 - Fixed an issue with role facts where the script ended with exception when the
   ``kmod`` package wasn't installed and the :command:`lsmod` command was not
   available.
+
+:ref:`debops.ldap` role
+'''''''''''''''''''''''
+
+- The role will refresh the local facts when the :file:`/etc/ldap/ldap.conf`
+  configuration changes to ensure that other roles have correct information
+  available, for example when a new set of LDAP servers is used.
 
 :ref:`debops.libvirt` role
 ''''''''''''''''''''''''''
@@ -244,6 +270,13 @@ Fixed
 - Fixed an issue where the fact script broke when it tried to find the host's
   IP address using DNS and the host does not have an entry in the DNS or in
   :file:`/etc/hosts` database.
+
+- Fixed an issue where the initial bootstrap and common playbook execution
+  didn't provide the correct configuration for the :ref:`debops.netbase` role,
+  resulting in a non-idempotent execution and wrong :file:`/etc/hosts` database
+  contents. The order of the :ref:`debops.python` role in bootstrap and common
+  playbooks has been adjusted to ensure that the Python packages required by
+  the :ref:`debops.netbase` role are installed before its execution.
 
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
@@ -306,6 +339,15 @@ Fixed
 
 - The ``create_home`` parameter was not functional because of typos in the
   Ansible task.
+
+Removed
+~~~~~~~
+
+:ref:`debops.preseed` role
+''''''''''''''''''''''''''
+
+- Support for installing and configuring Salt Minions during host provisioning
+  has been removed.
 
 
 `debops v2.3.0`_ - 2021-06-04
