@@ -1,7 +1,7 @@
 ---
-# Copyright (C) 2015-2016 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2021 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2015-2016 Robin Schneider <ypid@riseup.net>
-# Copyright (C) 2015-2016 DebOps <https://debops.org/>
+# Copyright (C) 2015-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
@@ -12,53 +12,69 @@
   import_role:
     name: 'secret'
 
-- name: Create Preseed system group
-  group:
-    name: '{{ preseed__group }}'
-    system: True
-    state: 'present'
-
-- name: Create Preseed system user
-  user:
-    name: '{{ preseed__user }}'
-    group: '{{ preseed__group }}'
-    home: '{{ preseed__home }}'
-    shell: '/bin/false'
-    comment: 'Debian Preseed configuration'
-    createhome: False
-    system: True
-    state: 'present'
+- name: Remove configuration directories if requested
+  file:
+    path: '{{ preseed__www + "/" + item.flavor + "/d-i/" + item.release }}'
+    state: 'absent'
+  loop: '{{ preseed__combined_definitions | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state, "flavor": item.flavor, "release": item.release} }}'
+  when: item.state|d('present') in [ 'absent' ]
 
 - name: Create configuration directories
   file:
-    path: '{{ preseed__www + "/" + item.name + "/d-i/" + item.release | default(preseed__release) }}'
+    path: '{{ preseed__www + "/" + item.flavor + "/d-i/" + item.release }}'
     state: 'directory'
-    owner: '{{ preseed__user }}'
-    group: '{{ preseed__group }}'
     mode: '0755'
-  with_items: '{{ preseed__configs }}'
-  when: item.name|d()
+  loop: '{{ preseed__combined_definitions | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state, "flavor": item.flavor, "release": item.release} }}'
+  when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
-- name: Generate Preseed configuration
+- name: Generate Preseed configuration files
   template:
-    src: '{{ lookup("template_src", "srv/www/preseed/configs/d-i/"
-             + item.type | default(preseed__distribution | lower) + ".cfg.j2") }}'
-    dest: '{{ preseed__www + "/" + item.name + "/d-i/"
-              + item.release | default(preseed__release) + "/preseed.cfg" }}'
-    owner: '{{ preseed__user }}'
-    group: '{{ preseed__group }}'
-    mode: '0644'
-  with_items: '{{ preseed__configs }}'
-  when: item.name|d()
+    src: 'srv/www/sites/debian-preseed/public/preseed.cfg.j2'
+    dest: '{{ preseed__www + "/" + item.flavor + "/d-i/"
+              + item.release + "/preseed.cfg" }}'
+    owner: 'root'
+    group: 'www-data'
+    mode: '0640'
+  loop: '{{ preseed__combined_definitions
+            | parse_kv_items(defaults={
+                "options": preseed__combined_configuration | parse_kv_config
+              }) }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state, "flavor": item.flavor, "release": item.release} }}'
+  when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Generate postinst scripts
   template:
-    src: '{{ lookup("template_src", "srv/www/preseed/configs/d-i/"
-                    + item.type | default(preseed__distribution | lower) + ".sh.j2") }}'
-    dest: '{{ preseed__www + "/" + item.name + "/d-i/"
-              + item.release | default(preseed__release) + "/postinst.sh" }}'
-    owner: '{{ preseed__user }}'
-    group: '{{ preseed__group }}'
-    mode: '0644'
-  with_items: '{{ preseed__configs }}'
-  when: item.name|d()
+    src: 'srv/www/sites/debian-preseed/public/postinst.sh.j2'
+    dest: '{{ preseed__www + "/" + item.flavor + "/d-i/"
+              + item.release + "/postinst.sh" }}'
+    owner: 'root'
+    group: 'www-data'
+    mode: '0640'
+  loop: '{{ preseed__combined_definitions
+            | parse_kv_items(defaults={
+                "options": preseed__combined_configuration | parse_kv_config
+              }) }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state, "flavor": item.flavor, "release": item.release} }}'
+  when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save Preseed local facts
+  template:
+    src: 'etc/ansible/facts.d/preseed.fact.j2'
+    dest: '/etc/ansible/facts.d/preseed.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+
+- name: Update Ansible facts if they were modified
+  meta: 'flush_handlers'

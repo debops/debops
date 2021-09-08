@@ -158,6 +158,15 @@ General
   better split between alias lookups (ldap_virtual_alias_maps.cf) and
   distribution list lookups (ldap_virtual_forward_maps.cf).
 
+:ref:`debops.preseed` role
+''''''''''''''''''''''''''
+
+- The role has been redesigned from the ground up and uses
+  :ref:`universal_configuration` to manage Preseed configuration files.
+  Multiple "flavors" are provided to permit installation of Debian in a variety
+  of environments. See the :ref:`upgrade_notes` for details about upgrading an
+  existing installation.
+
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
 
@@ -299,6 +308,15 @@ Fixed
 
 - The ``create_home`` parameter was not functional because of typos in the
   Ansible task.
+
+Removed
+~~~~~~~
+
+:ref:`debops.preseed` role
+''''''''''''''''''''''''''
+
+- Support for installing and configuring Salt Minions during host provisioning
+  has been removed.
 
 
 `debops v2.3.0`_ - 2021-06-04

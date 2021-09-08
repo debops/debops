@@ -1,6 +1,6 @@
-.. Copyright (C) 2015-2016 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015-2021 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2015-2016 Robin Schneider <ypid@riseup.net>
-.. Copyright (C) 2015-2016 DebOps <https://debops.org/>
+.. Copyright (C) 2015-2021 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 Getting started
@@ -11,79 +11,132 @@ Getting started
    .. contents::
       :local:
 
+iPXE integration
+----------------
+
+The :ref:`debops.preseed` role integrates very well with the Debian-Installer
+configuration provided with the :ref:`debops.ipxe` role. You can use the menu
+system defined there to select different Preseed flavors and provide needed
+parameters like hostname and Debian mirror to use.
+
+
+How Debian Installer preseeding works
+-------------------------------------
+
+The Debian Installer can use automatic :file:`preseed.cfg` lookup system when
+specific kernel parameters are defined during the boot process. These
+parameters are:
+
+.. code-block:: none
+
+   auto=true url=<seed>
+
+If a simple string and not a full URL is specified as ``<seed>``, Debian
+Installer will expand it to:
+
+.. code-block:: none
+
+   http://<seed>/d-i/<release>/preseed.cfg
+
+To enable Preseeded installation, after starting the Debian Installer, navigate
+the menu to "Advanced options" -> "Automated Install". Next, press the
+``<Tab>`` key, this will let you enter additional boot options. Now you can
+specify the URL of the Preseed file. The menu system implemented in the
+:ref:`debops.ipxe` role can do this automatically for you when you selet
+preseed installation method.
+
+
+Default set of Preseed flavors
+------------------------------
+
+Debian Preseeding can be used to provision various types of hardware or virtual
+machines. Not all of them are the same however, and to facilitate that, the
+:ref:`debops.preseed` role implements a system of preseed "flavors" which can
+be selected to enable different configuration options. The current set of
+"flavors" available by default is:
+
++---------------------------------------------------+---------------+---------------------+
+|                                                   | root-only     | administrative user |
++---------------------------------------------------+---------------+---------------------+
+| hardware, non-free APT repos, manual partitioning | ``debian``    | ``debian-user``     |
++---------------------------------------------------+---------------+---------------------+
+| virtual machine, guided single LVM parition       | ``debian-vm`` | ``debian-vm-user``  |
++---------------------------------------------------+---------------+---------------------+
+
+If we assume that the DNS domain of the cluster is ``example.org``, the Preseed
+flavors are presented as DNS subdomains of the main server domain by default
+defined as ``seed.example.org``. For this to work reliably, DNS database needs
+to contain CNAME records that point to the Preseed server, for example:
+
+- ``debian.seed.example.org``
+- ``debian-vm.seed.example.org``
+- ``debian-user.seed.example.org``
+- ``debian-vm-user.seed.example.org``
+
+For convenience, you might also want to create a short DNS records for the
+``*.seed`` "domain" that can be used in the menu system implemented by
+the :ref:`debops.ipxe` role:
+
+- ``debian.seed``
+- ``debian-vm.seed``
+- ``debian-user.seed``
+- ``debian-vm-user.seed``
+
+You can create your own Preseed "flavors" in the same way, just remember to add
+the needed CNAME DNS records.
+
+
 Example inventory
 -----------------
 
-To configure the Preseed server, you can add a host to
-``[debops_service_preseed]`` group::
+To configure the Preseed server, you can add a host to the
+``[debops_service_preseed]`` group:
 
-    [debops_service_preseed]
-    hostname
+.. code-block:: none
 
-Default configuration will prepare Preseed files for Debian Wheezy and Debian
-Jessie, which system administrator account named after either
-``ansible_ssh_user`` or the username present on Ansible Controller host.
+   [debops_all_hosts]
+   hostname
+
+   [debops_service_preseed]
+   hostname
+
 
 Example playbook
 ----------------
 
-Here's an example playbook which uses ``debops.preseed`` role:
+If you are using this role without DebOps, here's an example Ansible playbook
+that uses the ``debops.preseed`` role:
 
 .. literalinclude:: ../../../../ansible/playbooks/service/preseed.yml
    :language: yaml
    :lines: 1,6-
 
 
-How to use Debian Preseed configuration
----------------------------------------
+Ansible tags
+------------
 
-``debops.preseed`` will use :ref:`debops.nginx` role to set up a webserver for the
-Preseed files. They will be served on a separate subdomain, by default
-``seed``. The FQDN given the ``example.org`` domain will be for example::
+You can use Ansible ``--tags`` or ``--skip-tags`` parameters to limit what
+tasks are performed during Ansible run. This can be used after a host was first
+configured to speed up playbook execution, when you are sure that most of the
+configuration is already in the desired state.
 
-    debian.seed.example.org
-    debian-vm.seed.example.org
+Available role tags:
 
-You will need to define these subdomains in your DNS server, preferably as
-a ``CNAME`` records pointed to the Preseed server.
+``role::preseed``
+  Main role tag, should be used in the playbook to execute all of the role
+  tasks as well as role dependencies.
 
-If you have correctly configured DHCP server, which advertises your domain, you
-will be able to access the Preseed configuration using a shorter form::
 
-    debian.seed
-    debian-vm.seed
+Other resources
+---------------
 
-The Debian Installer will automatically add your domain to the specified URL to get
-the Preseed files.
+List of other useful resources related to the :ref:`debops.preseed` Ansible
+role:
 
-To enable Preseeded installation, after starting the Debian Installer (tested
-with Wheezy and Jessie),
-navigate the menu to "Advanced options" -> "Automated Install".
+- `"Hands-Off" Debian Installation`__
 
-Next, press the ``<Tab>`` key, this will let you enter additional boot options. Now
-you can specify the URL of the Preseed file.
+  .. __: https://hands.com/d-i/
 
-An example boot command line in Debian Installer::
+- The `Debian Installer Pressed page`__ on Debian Wiki
 
-    auto=true url=debian.seed hostname=<host>
-
-After you press ``<Enter>``, the Debian Installer should start the installation
-process. If you specified ``debian.seed`` as the Preseed file, the Debian Installer
-should pause during the installation and let you configure the disk partitions
-as you see fit. After configuring the partitions, the automatic installation will
-resume and when it's finished the host will be automatically rebooted. After that
-you should be able to SSH to it using the configured admin account.
-
-The alternative Pressed configuration, ``debian-vm.seed`` is configured to
-automatically partition and format the first hard drive with its full capacity,
-without asking the user. This Preseed configuration is designed primary for
-virtual machines, which usually have 1 partition stored in an image file or
-a block device.
-
-If you are not able to add `*.seed` to your DNS, you might use
-:envvar:`preseed__base_domain` to make the server listen on a hostname
-available via DNS. For this case the boot command line in Debian
-Installer would require a different URL, like in this example (for
-jessie)::
-
-    auto url=<myhost>/debian/d-i/jessie hostname=<host>
+  .. __: https://wiki.debian.org/DebianInstaller/Preseed
