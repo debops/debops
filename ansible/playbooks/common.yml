@@ -72,6 +72,15 @@
     - role: resolvconf
       tags: [ 'role::resolvconf', 'skip::resolvconf' ]
 
+    - role: python
+      tags: [ 'role::python', 'skip::python', 'role::netbase', 'role::ldap' ]
+      python__dependent_packages3:
+        - '{{ netbase__python__dependent_packages3 }}'
+        - '{{ ldap__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ netbase__python__dependent_packages2 }}'
+        - '{{ ldap__python__dependent_packages2 }}'
+
     - role: netbase
       tags: [ 'role::netbase', 'skip::netbase' ]
 
@@ -82,15 +91,6 @@
 
     - role: fhs
       tags: [ 'role::fhs', 'skip::fhs' ]
-
-    - role: python
-      tags: [ 'role::python', 'skip::python', 'role::netbase', 'role::ldap' ]
-      python__dependent_packages3:
-        - '{{ netbase__python__dependent_packages3 }}'
-        - '{{ ldap__python__dependent_packages3 }}'
-      python__dependent_packages2:
-        - '{{ netbase__python__dependent_packages2 }}'
-        - '{{ ldap__python__dependent_packages2 }}'
 
     - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]

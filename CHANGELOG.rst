@@ -253,6 +253,13 @@ Fixed
   IP address using DNS and the host does not have an entry in the DNS or in
   :file:`/etc/hosts` database.
 
+- Fixed an issue where the initial bootstrap and common playbook execution
+  didn't provide the correct configuration for the :ref:`debops.netbase` role,
+  resulting in a non-idempotent execution and wrong :file:`/etc/hosts` database
+  contents. The order of the :ref:`debops.python` role in bootstrap and common
+  playbooks has been adjusted to ensure that the Python packages required by
+  the :ref:`debops.netbase` role are installed before its execution.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
