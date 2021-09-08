@@ -44,6 +44,7 @@
     src: 'etc/ldap/ldap.conf.j2'
     dest: '/etc/ldap/ldap.conf'
     mode: '0644'
+  notify: [ 'Refresh host facts' ]
   when: ldap__enabled|bool and not ldap__dependent_play|bool
 
 - name: Make sure that Ansible local facts directory exists
