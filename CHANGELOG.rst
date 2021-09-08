@@ -22,6 +22,16 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.1: https://github.com/debops/debops/compare/v2.1.0...stable-2.1
 
+Changed
+~~~~~~~
+
+General
+'''''''
+
+- The APT configuration by the :ref:`debops.apt` and :ref:`debops.apt_proxy`
+  roles in the :file:`common.yml` playbook has been moved to a separate play to
+  ensure feature parity with the bootstrap playbooks.
+
 Fixed
 ~~~~~
 
