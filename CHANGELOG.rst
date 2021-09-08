@@ -124,6 +124,10 @@ General
 - DebOps tasks that import local SSH keys will now recognize FIDO U2F security
   keys used via the SSH agent.
 
+- The APT configuration by the :ref:`debops.apt` and :ref:`debops.apt_proxy`
+  roles in the :file:`common.yml` playbook has been moved to a separate play to
+  ensure feature parity with the bootstrap playbooks.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
