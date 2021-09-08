@@ -36,6 +36,9 @@ Fixed
   playbooks has been adjusted to ensure that the Python packages required by
   the :ref:`debops.netbase` role are installed before its execution.
 
+- The deprecated ``resolver.query()`` function call in the role fact script has
+  been replaced with ``resolver.resolve()`` function call.
+
 
 `debops v2.2.4`_ - 2021-09-01
 -----------------------------
