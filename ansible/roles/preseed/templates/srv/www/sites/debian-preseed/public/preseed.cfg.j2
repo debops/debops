@@ -1,0 +1,77 @@
+{# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2021 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+#_preseed_V1
+
+# {{ ansible_managed }}
+
+# Documentation: https://www.debian.org/releases/stable/amd64/apbs03.en.html
+# Example preseed: https://www.debian.org/releases/stable/example-preseed.txt
+
+{% for element in item.options|d([]) %}
+{%   set element_owner = element.owner  | d("d-i") %}
+{%   set element_name  = element.option | d(element.name) %}
+{%   set element_type  = element.type   | d('string') %}
+{%   set element_seen  = element.seen   | d(True) %}
+{%   if element.name|d() and element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%     if element.comment|d() %}
+{%       if not loop.first %}
+
+{%       endif %}
+{%       set comment_string = element.comment | regex_replace('\${flavor}', item.flavor) | regex_replace('\${release}', item.release) %}
+{{       comment_string | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%     endif %}
+{%     set element_comment = ('#' if element.state|d('present') == 'comment' else '') %}
+{%     if element.value is defined %}
+{%       if element.value is string and not element.value | bool %}
+{%         set element_value = element.value %}
+{%       elif element.value | bool and element.value is not iterable %}
+{%         if element.value | string == '1' %}
+{%           set element_value = element.value %}
+{%         else %}
+{%           set element_type  = element.type | d('boolean') %}
+{%           set element_value = 'true' %}
+{%         endif %}
+{%       elif not element.value | bool and element.value is not iterable %}
+{%         if element.value is not none %}
+{%           if element.value | int %}
+{%             set element_value = element.value %}
+{%           else %}
+{%             if element.value | string == '0' %}
+{%               set element_value = element.value %}
+{%             else %}
+{%               set element_type  = element.type | d('boolean') %}
+{%               set element_value = 'false' %}
+{%             endif %}
+{%           endif %}
+{%         endif %}
+{%       else %}
+{%         set element_value = element.value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list | join(' ') %}
+{%       endif %}
+{%     else %}
+{%       set element_value = element.value|d() %}
+{%     endif %}
+{%     if element.state|d('present') not in [ 'hidden' ] %}
+{%       if element_value %}
+{%         set element_value = element_value | regex_replace('\${flavor}', item.flavor) | regex_replace('\${release}', item.release) %}
+{%         if element_value.split('\n') | length > 1 %}
+{%           if element_comment %}
+{{             '{}{} {} {} \\'.format(element_comment, element_owner, element_name, element_type) }}
+{{             element_value | regex_replace('\n$', '') | indent(4, true) | regex_replace('^', '#', multiline=True) }}
+{%           else %}
+{{             '{}{} {} {} \\'.format(element_comment, element_owner, element_name, element_type) }}
+{{             element_value | regex_replace('\n$', '') | indent(4, true) }}
+{%           endif %}
+{%         else %}
+{{           '{}{} {} {} {}'.format(element_comment, element_owner, element_name, element_type, element_value) }}
+{%         endif %}
+{%       else %}
+{{         '{}{} {} {}'.format(element_comment, element_owner, element_name, element_type) }}
+{%       endif %}
+{%       if not element_seen %}
+{{         '{}{} {} {} {}'.format(element_comment, element_owner, element_name, 'seen', 'false') }}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
