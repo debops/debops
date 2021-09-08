@@ -103,14 +103,14 @@ with open('/etc/hosts', 'r') as hosts:
             resolver.timeout = 0.8
             resolver.lifetime = 0.8
             try:
-                resolver.query(output['self_fqdn'], 'AAAA')
+                resolver.resolve(output['self_fqdn'], 'AAAA')
                 output['self_domain_source'] = 'dns'
 
             except Exception:
                 pass
 
             try:
-                resolver.query(output['self_fqdn'], 'A')
+                resolver.resolve(output['self_fqdn'], 'A')
                 output['self_domain_source'] = 'dns'
 
             except Exception:
