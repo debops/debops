@@ -226,6 +226,13 @@ Fixed
   ``kmod`` package wasn't installed and the :command:`lsmod` command was not
   available.
 
+:ref:`debops.ldap` role
+'''''''''''''''''''''''
+
+- The role will refresh the local facts when the :file:`/etc/ldap/ldap.conf`
+  configuration changes to ensure that other roles have correct information
+  available, for example when a new set of LDAP servers is used.
+
 :ref:`debops.libvirt` role
 ''''''''''''''''''''''''''
 
