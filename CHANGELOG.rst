@@ -33,6 +33,13 @@ New DebOps roles
   used to provide media (video, music, images) to other devices on the local
   network that support the DLNA protocol.
 
+General
+'''''''
+
+- New Jinja filters ``from_toml`` and ``to_toml`` are available to DebOps
+  roles, provided using a custom Ansible plugin. The filters require the
+  ``toml`` Python package to be installed on the Ansible Controller.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
