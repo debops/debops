@@ -14,8 +14,8 @@ debops.telegraf
    :maxdepth: 2
 
    getting-started
+   defaults-detailed
    defaults/main
-   real-world-example
 
 Copyright
 ---------

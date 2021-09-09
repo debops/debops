@@ -13,7 +13,7 @@ debops.telegraf
    man_synopsis
    man_description
    getting-started
-   real-world-example
+   defaults-detailed
 
 ..
  Local Variables:

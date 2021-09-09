@@ -1,7 +1,23 @@
 {# Copyright (C) 2021 Dr. Serge Victor <https://dr.sergevictor.eu/>
+ # Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
  # Copyright (C) 2021 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-or-later
  #}
 # {{ ansible_managed }}
-#
-{{ item.config }}
+
+{% if item.comment|d() %}
+{{   item.comment | regex_replace('\n$', '') | comment(prefix='', postfix='') }}
+{% endif %}
+{% if item.raw|d() %}
+{%   if item.state|d('present') == 'comment' %}
+{{     item.raw | regex_replace('\n$', '') | regex_replace('^', '#', multiline=True) }}
+{%   else %}
+{{     item.raw | regex_replace('\n$', '') }}
+{%   endif %}
+{% elif item.config|d() %}
+{%   if item.state|d('present') == 'comment' %}
+{{     item.config | to_toml | regex_replace('^', '#', multiline=True) }}
+{%   else %}
+{{     item.config | to_toml }}
+{%   endif %}
+{% endif %}
