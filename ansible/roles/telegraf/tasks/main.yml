@@ -16,7 +16,7 @@
     path: '/etc/telegraf/telegraf.conf'
     state: 'present'
     delete: true
-  notify: [ 'Restart Telegraf' ]
+  notify: [ 'Check telegraf and restart' ]
 
 - name: Configure Telegraf instance leading file
   template:
@@ -25,7 +25,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  notify: [ 'Restart Telegraf' ]
+  notify: [ 'Check telegraf and restart' ]
 
 - name: Remove plugins configuration if requested
   file:
@@ -33,7 +33,7 @@
     state: 'absent'
   loop: '{{ telegraf__configuration_combined | parse_kv_items }}'
   when: item.state|d('present') == 'absent' and item.config|d()
-  notify: [ 'Restart Telegraf' ]
+  notify: [ 'Check telegraf and restart' ]
 
 - name: Find plugins which are in filesystem
   find:
@@ -47,7 +47,7 @@
     removes: item.path
   loop: '{{ telegraf_existing_plugins_filenames.files }}'
   when: item.path | basename | splitext | first not in telegraf__configuration_combined | parse_kv_items | map(attribute="name")
-  notify: [ 'Restart Telegraf' ]
+  notify: [ 'Check telegraf and restart' ]
 
 - name: Configure plugins
   template:
@@ -59,7 +59,7 @@
   loop: '{{ telegraf__configuration_combined | parse_kv_items }}'
   when: item.state|d('present') not in [ 'absent', 'ignore' ] and item.config|d()
   no_log: '{{ debops__no_log | d(True) }}'
-  notify: [ 'Restart Telegraf' ]
+  notify: [ 'Check telegraf and restart' ]
 
 - name: Make sure that Ansible local facts directory exists
   file:
