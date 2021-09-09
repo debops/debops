@@ -187,6 +187,18 @@
   until: apt__register_apt_update is succeeded
   when: apt__enabled|bool
 
+- name: Purge APT packages if requested
+  apt:
+    name: '{{ (apt__purge_packages
+               + apt__purge_group_packages
+               + apt__purge_host_packages) | flatten }}'
+    state: 'absent'
+    purge: True
+    autoremove: True
+  register: apt__register_purge_packages
+  until: apt__register_purge_packages is succeeded
+  when: apt__enabled|bool
+
 - name: Update the role status in local facts
   lineinfile:
     dest: '/etc/ansible/facts.d/apt.fact'
