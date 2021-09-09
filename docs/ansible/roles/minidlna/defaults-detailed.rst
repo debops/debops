@@ -57,7 +57,7 @@ specified as simple "key: value" dictionaries, or if the ``name`` parameter is
 used, can be defined using specific parameters:
 
 ``name``
-  Required. THe name of the configuration option. See :man:`minidlna.conf(5)`
+  Required. The name of the configuration option. See :man:`minidlna.conf(5)`
   to see more details about MiniDLNA configuration file and available options.
   Multiple entries with the same ``name`` parameter are merged together in
   order of appearance and can affect each other.
@@ -78,4 +78,4 @@ used, can be defined using specific parameters:
   configuration entry will not be processed during role execution.
 
 ``comment``
-  Optional. A comment about a gicen configuration option.
+  Optional. A comment about a given configuration option.
