@@ -11,12 +11,6 @@
   import_role:
     name: 'global_handlers'
 
-- name: Divert the original telegraf main configuration file
-  dpkg_divert:
-    path: '/etc/telegraf/telegraf.conf'
-    state: 'present'
-    delete: true
-  notify: [ 'Check telegraf and restart' ]
 
 - name: Configure Telegraf instance leading file
   template:
