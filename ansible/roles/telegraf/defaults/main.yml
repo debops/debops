@@ -29,10 +29,8 @@ telegraf__base_packages: [ 'telegraf' ]
 #
 # List of additional APT packages ta install with Telegraf.
 telegraf__packages: []
-
                                                                    # ]]]
                                                                    # ]]]
-
 # Telegraf configuration directory [[[
 # --------------------------------
 
@@ -42,7 +40,7 @@ telegraf__packages: []
 
 # .. envvar:: telegraf__configuration [[[
 #
-# All plugins you want to run on all hosts
+# All plugins you want to run on all hosts.
 telegraf__configuration:
 
   - name: 'input_influxdb_local'
@@ -55,23 +53,20 @@ telegraf__configuration:
     config: |
       [[outputs.discard]]
     state: 'present'
-                                                                   # ]]]
 
+                                                                   # ]]]
 # .. envvar:: telegraf__group_configuration [[[
 #
 # All plugins you want to run in group.
 telegraf__group_configuration: []
 
                                                                    # ]]]
-
 # .. envvar:: telegraf_host_configuration [[[
 #
 # All plugins you want to run in a particulr host.
 telegraf__host_configuration: []
 
                                                                    # ]]]
-
-#
 # .. envvar:: telegraf__combined_configuration [[[
 #
 # Full list of Telegraf configuration options passed to the
@@ -79,7 +74,6 @@ telegraf__host_configuration: []
 telegraf__configuration_combined: '{{ telegraf__configuration
                                       + telegraf__group_configuration
                                       + telegraf__host_configuration }}'
-
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[
@@ -91,6 +85,5 @@ telegraf__configuration_combined: '{{ telegraf__configuration
 telegraf__influxdata__dependent_packages:
   - '{{ telegraf__base_packages }}'
   - '{{ telegraf__packages }}'
-
                                                                    # ]]]
                                                                    # ]]]
