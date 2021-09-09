@@ -2279,6 +2279,10 @@ owncloud__nginx__dependent_servers:
           # then Nginx will encounter an infinite rewriting loop when it prepends `/index.php`
           # to the URI, resulting in a HTTP 500 error response.
 
+          # Required for legacy support
+          # https://github.com/nextcloud/documentation/pull/2197#issuecomment-721432337
+          rewrite ^/(?!index|remote|public|cron|core\/ajax\/update|status|ocs\/v[12]|updater\/.+|oc[ms]-provider\/.+|.+\/richdocumentscode\/proxy) /index.php$request_uri;
+
           fastcgi_split_path_info ^(.+?\.php)(\/.*|)$;
           set $path_info $fastcgi_path_info;
 
@@ -2333,7 +2337,8 @@ owncloud__nginx__dependent_servers:
     # php5_location: '^/(?:index|remote|public|cron|core/ajax/update|status|ocs/v[12]|updater/.+|ocs-provider/.+|core/templates/40[34])\.php(?:$|/)'
     # php_options: |
     #   fastcgi_read_timeout {{ owncloud__timeout }};
-
+https://github:
+  com/nextcloud/server/issues/27871#issuecomment-895047595:
 
 # .. envvar:: owncloud__nginx__dependent_upstreams
 #
