@@ -353,6 +353,20 @@ Removed
 - Support for installing and configuring Salt Minions during host provisioning
   has been removed.
 
+Security
+~~~~~~~~
+
+General
+'''''''
+
+- Specific DebOps roles (:ref:`debops.dovecot`, :ref:`debops.owncloud`,
+  :ref:`debops.postldap`) used password generation lookups with invalid
+  parameters which might have resulted in a weaker passwords generated during
+  their deployment. The parameters in the password lookups have been fixed; you
+  might consider regenerating the passwords created by them by removing
+  existing ones from the :ref:`debops.secret` storage on the Ansible Controller
+  and re-running the roles.
+
 
 `debops v2.3.0`_ - 2021-06-04
 -----------------------------
