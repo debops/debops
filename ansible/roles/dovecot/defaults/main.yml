@@ -732,7 +732,7 @@ dovecot__ldap_binddn: '{{ ([ dovecot__ldap_self_rdn ]
 # to bind to the LDAP directory.
 dovecot__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
                           + dovecot__ldap_binddn | to_uuid + ".password length=32 "
-                          + "chars=alpha,digits,!@_$%^&*") }}'
+                          + "chars=ascii_letters,digits,!@_$%^&*") }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_people_rdn [[[
