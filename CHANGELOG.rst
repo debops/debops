@@ -25,6 +25,13 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+General
+'''''''
+
+- New Jinja filters ``from_toml`` and ``to_toml`` are available to DebOps
+  roles, provided using a custom Ansible plugin. The filters require the
+  ``toml`` Python package to be installed on the Ansible Controller.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
