@@ -37,17 +37,9 @@
     unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
   register: zabbix_agent__register_configuration
 
-- name: Create secret key
-  shell: 'test -f {{ item }} || openssl rand -hex 16 > {{ item }}'
-  args:
-    creates: '{{ item }}'
-  with_items: '{{ secret + "/zabbix/" + inventory_hostname + "/secret.key" }}'
-  delegate_to: localhost
-  become: false
-
 - name: Install secret key
   copy:
-    src: '{{ secret + "/zabbix/" + inventory_hostname + "/secret.key" }}'
+    content: '{{ zabbix_agent__tls_psk_secret }}'
     dest: '/etc/zabbix/secret.key'
     owner: '{{ zabbix_agent__user }}'
     group: 'root'
