@@ -31,22 +31,22 @@
   file:
     path: '/etc/telegraf/telegraf.d/{{ item.name }}.conf'
     state: 'absent'
-  loop: '{{ telegraf__configuration_combined | parse_kv_items }}'
+  loop: '{{ telegraf__combined_configuration | parse_kv_items }}'
   when: item.state|d('present') == 'absent' and item.config|d()
   notify: [ 'Check telegraf and restart' ]
 
 - name: Find plugins which are in filesystem
   find:
-    paths: /etc/telegraf/telegraf.d
+    paths: '/etc/telegraf/telegraf.d'
     patterns: '*.conf'
-  register: telegraf_existing_plugins_filenames
+  register: telegraf__register_existing_plugins_filenames
 
 - name: Backup and disactivate plugins unexisting in desired configuration
   command:
     cmd: mv -f '{{ item.path | quote }}' '{{ item.path | quote }}.inactive'
-    removes: item.path
-  loop: '{{ telegraf_existing_plugins_filenames.files }}'
-  when: item.path | basename | splitext | first not in telegraf__configuration_combined | parse_kv_items | map(attribute="name")
+    removes: '{{ item.path }}'
+  loop: '{{ telegraf__register_existing_plugins_filenames.files }}'
+  when: item.path | basename | splitext | first not in telegraf__combined_configuration | parse_kv_items | map(attribute="name")
   notify: [ 'Check telegraf and restart' ]
 
 - name: Configure plugins
@@ -56,7 +56,7 @@
     owner: 'root'
     group: 'telegraf'
     mode: '0640'
-  loop: '{{ telegraf__configuration_combined | parse_kv_items }}'
+  loop: '{{ telegraf__combined_configuration | parse_kv_items }}'
   when: item.state|d('present') not in [ 'absent', 'ignore' ] and item.config|d()
   no_log: '{{ debops__no_log | d(True) }}'
   notify: [ 'Check telegraf and restart' ]
