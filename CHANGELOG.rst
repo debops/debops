@@ -23,6 +23,16 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.2: https://github.com/debops/debops/compare/v2.2.0...stable-2.2
 
+Added
+~~~~~
+
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- You can now purge specific APT packages along with their configuration and
+  unused dependencies. This might be useful during bootstrap or provisioning
+  process to remove unused or conflicting services installed by the provider.
+
 Changed
 ~~~~~~~
 
