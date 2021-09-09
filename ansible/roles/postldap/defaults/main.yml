@@ -607,7 +607,7 @@ postldap__ldap_binddn: '{{ ([ postldap__ldap_self_rdn ]
 # to bind to the LDAP directory.
 postldap__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
                            + postldap__ldap_binddn | to_uuid + ".password length=32 "
-                           + "chars=alpha,digits,!@_#$%^&*") }}'
+                           + "chars=ascii_letters,digits,!@_#$%^&*") }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_people_rdn [[[
