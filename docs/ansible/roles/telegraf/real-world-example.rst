@@ -1,4 +1,5 @@
-.. Copyright (C) 2020 DebOps <https://debops.org/>
+.. Copyright (C) 2021 Dr. Serge Victor <https://dr.sergevictor.eu/>
+.. Copyright (C) 2021 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 Real world use
