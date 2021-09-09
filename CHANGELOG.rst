@@ -41,6 +41,10 @@ New DebOps roles
 
   .. __: https://wiki.debian.org/Multiarch/HOWTO
 
+- You can now purge specific APT packages along with their configuration and
+  unused dependencies. This might be useful during bootstrap or provisioning
+  process to remove unused or conflicting services installed by the provider.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
