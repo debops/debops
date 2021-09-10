@@ -35,19 +35,20 @@ act as integration tests for other roles that manage webservers, databases,
 etc.
 
 - :ref:`debops.dokuwiki`
+- :ref:`debops.etesync`
 - :ref:`debops.etherpad`
 - :ref:`debops.gitlab`
 - :ref:`debops.icinga`
 - :ref:`debops.kibana`
 - :ref:`debops.librenms`
 - :ref:`debops.mailman`
+- :ref:`debops.minidlna`
 - :ref:`debops.netbox`
 - :ref:`debops.owncloud`
-- :ref:`debops.etesync`
+- :ref:`debops.phpipam`
 - :ref:`debops.prosody`
 - :ref:`debops.roundcube`
 - :ref:`debops.rstudio_server`
-- :ref:`debops.phpipam`
 - ``debops.phpmyadmin``
 - ``debops-contrib.foodsoft``
 - ``debops-contrib.homeassistant``
