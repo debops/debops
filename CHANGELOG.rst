@@ -305,6 +305,12 @@ Fixed
 - Do not remove the whole PKI hook directory when the :command:`nginx` hook
   script is removed by the role.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Fixed an issue with the :ref:`debops.nginx` configuration where some
+  Nextcloud pages (LDAP configuration, for example) did not work correctly.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
