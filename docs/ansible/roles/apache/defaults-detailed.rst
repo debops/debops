@@ -286,6 +286,11 @@ Common webserver options
   Optional, string.
   Alias to ``item.root`` configured using the `Alias directive`_.
 
+``alias_path``
+  Optional, string.
+  Alternative path which should be aliased. If not specified, DocumentRoot will
+  be used as the alias target.
+
 ``root_directives``
   Optional, string.
   Additional raw Apache directives to apply to ``item.root``.
