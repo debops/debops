@@ -15,6 +15,14 @@
   import_role:
     name: 'secret'
 
+- name: Add Telegraf UNIX account to required groups
+  user:
+    name: 'telegraf'
+    groups: '{{ telegraf__additional_groups | flatten | join(",") }}'
+    state: 'present'
+    append: True
+  notify: [ 'Check telegraf and restart' ]
+
 - name: Configure Telegraf instance leading file
   template:
     src: 'etc/telegraf/telegraf.conf.j2'

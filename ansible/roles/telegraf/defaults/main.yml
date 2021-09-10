@@ -31,6 +31,22 @@ telegraf__base_packages: [ 'telegraf' ]
 telegraf__packages: []
                                                                    # ]]]
                                                                    # ]]]
+# UNIX environment [[[
+# --------------------
+
+# .. envvar:: telegraf__additional_groups [[[
+#
+# List of UNIX groups to which the Telegraf UNIX account should belong to
+# provide access.
+telegraf__additional_groups:
+
+  # Integration with the 'debops.proc_hidepid' role to provide system-wide
+  # access to the /proc filesystem.
+  - '{{ (ansible_local.proc_hidepid.group|d("procadmins"))
+        if (ansible_local.proc_hidepid.enabled|d())|bool
+        else [] }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # Telegraf configuration file [[[
 # -------------------------------
 
