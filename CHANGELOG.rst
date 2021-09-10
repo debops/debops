@@ -33,6 +33,18 @@ New DebOps roles
   used to provide media (video, music, images) to other devices on the local
   network that support the DLNA protocol.
 
+- The :ref:`debops.telegraf` role can be used to install and manage the
+  `Telegraf`__ metrics server, which can send data to various other services.
+
+  .. __: https://www.influxdata.com/time-series-platform/telegraf/
+
+General
+'''''''
+
+- New Jinja filters ``from_toml`` and ``to_toml`` are available to DebOps
+  roles, provided using a custom Ansible plugin. The filters require the
+  ``toml`` Python package to be installed on the Ansible Controller.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 

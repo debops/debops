@@ -103,6 +103,7 @@ are not accessed directly by end users.
 - :ref:`debops.rabbitmq_management`
 - :ref:`debops.rabbitmq_server`
 - :ref:`debops.salt`
+- :ref:`debops.telegraf`
 - :ref:`debops.tinyproxy`
 - ``debops.reprepro``
 - ``debops.sks``
@@ -248,6 +249,7 @@ Monitoring
 - :ref:`debops.monit`
 - :ref:`debops.proc_hidepid`
 - :ref:`debops.snmpd`
+- :ref:`debops.telegraf`
 
 
 Networking

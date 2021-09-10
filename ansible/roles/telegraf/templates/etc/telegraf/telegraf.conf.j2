@@ -1,0 +1,22 @@
+{# Copyright (C) 2021 Dr. Serge Victor <https://dr.sergevictor.eu/>
+ # Copyright (C) 2021 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# {{ ansible_managed }}
+
+{% set telegraf__tpl_configuration = {} %}
+{% for element in telegraf__combined_configuration | parse_kv_config %}
+{%   if element.name|d() and element.state|d('present') not in [ 'absent', 'init', 'ignore' ] and element.config|d() %}
+{%     set combined_config = telegraf__tpl_configuration | combine(element.config, recursive=True) %}
+{%     set _ = telegraf__tpl_configuration.update(combined_config) %}
+{%   endif %}
+{% endfor %}
+{% if telegraf__tpl_configuration %}
+{{   telegraf__tpl_configuration | to_toml | regex_replace('\n$','') }}
+{% else %}
+# This Telegraf instance is configured in:
+#
+#   /etc/telegraf/telegraf.d/
+#
+# directory only.
+{% endif %}
