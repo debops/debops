@@ -94,3 +94,8 @@ Available role tags:
 ``role::apt``
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
+
+``role::apt:keys``
+  Deploy only keys defined in inventory. Usefull, if some keys are expired and
+  the apt role refuses to work. Or start using debops on existing hosts with
+  expired keys.
