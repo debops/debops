@@ -90,6 +90,12 @@ Fixed
 - The deprecated ``resolver.query()`` function call in the role fact script has
   been replaced with ``resolver.resolve()`` function call.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Fixed an issue with the :ref:`debops.nginx` configuration where some
+  Nextcloud pages (LDAP configuration, for example) did not work correctly.
+
 :ref:`debops.redis_server` role
 '''''''''''''''''''''''''''''''
 
