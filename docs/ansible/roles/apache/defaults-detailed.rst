@@ -323,6 +323,16 @@ Common webserver options
   Allows to specify raw Apache directives which are inlined in the appropriate
   virtual host context.
 
+``custom_log``
+  Optional, string.
+  Specify absolute path to the access log file which should be used by this
+  vhost. You also need to specify the access log format to use.
+
+``error_log``
+  Optional, string.
+  Specify absolute path to the error log file which should be used by this
+  vhost.
+
 ``custom_log_condition``
   Optional, string.
   Allows to specify condition which controls whether or not to log a particular
