@@ -331,6 +331,12 @@ Fixed
 - Do not remove the whole PKI hook directory when the :command:`prosody` hook
   script is removed by the role.
 
+:ref:`debops.redis_server` role
+'''''''''''''''''''''''''''''''
+
+- Fixed an issue with facts not showing Redis instances correctly when password
+  is empty.
+
 :ref:`debops.resolvconf` role
 '''''''''''''''''''''''''''''
 
