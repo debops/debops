@@ -90,6 +90,12 @@ Fixed
 - The deprecated ``resolver.query()`` function call in the role fact script has
   been replaced with ``resolver.resolve()`` function call.
 
+:ref:`debops.redis_server` role
+'''''''''''''''''''''''''''''''
+
+- Fixed an issue with facts not showing Redis instances correctly when password
+  is empty.
+
 Security
 ~~~~~~~~
 
