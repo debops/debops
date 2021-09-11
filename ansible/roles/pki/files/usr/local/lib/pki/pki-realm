@@ -1249,10 +1249,10 @@ request_acme_dns_certificate() {
 
     if test ${config['acme_ca']} == 'le-live-v2'; then
       # shellcheck disable=SC2086
-      certbot certonly -n --${config['acme_type']} --agree-tos "${email}" --${config['acme_type']}-credentials ${credentials} ${all_dns_str}
+      certbot certonly -n --${config['acme_type']} --expand --agree-tos "${email}" --${config['acme_type']}-credentials ${credentials} ${all_dns_str}
     elif test ${config['acme_ca']} == 'le-staging-v2'; then
       # shellcheck disable=SC2086
-      certbot certonly --test-cert -n --${config['acme_type']} --agree-tos "${email}" --${config['acme_type']}-credentials ${credentials} ${all_dns_str}
+      certbot certonly --test-cert -n --${config['acme_type']} --expand --agree-tos "${email}" --${config['acme_type']}-credentials ${credentials} ${all_dns_str}
     fi
 
     local folder=$(printf '%s\n' "${all_dns[@]}" | xargs | cut -d' ' -f1)
