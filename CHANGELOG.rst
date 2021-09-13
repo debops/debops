@@ -38,6 +38,11 @@ New DebOps roles
 
   .. __: https://www.influxdata.com/time-series-platform/telegraf/
 
+- The :ref:`debops.lldpd` role provides support for managing and configuring
+  the :command:`lldpd` service, which can be used to locate other network
+  devices connected to a given host using the Link-Layer Discovery Protocol.
+  The role is included in the :file:`common.yml` playbook by default.
+
 General
 '''''''
 

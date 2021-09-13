@@ -1247,6 +1247,14 @@ stages:
     JANE_LOG_PATTERN: '\[libvirtd_qemu\]'
   tags: [ 'shell', 'vagrant-vm' ]
 
+'lldpd role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_FACT: 'lldpd.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/lldpd.yml'
+    JANE_DIFF_PATTERN: '.*/roles/lldpd/.*'
+    JANE_LOG_PATTERN: '\[lldpd\]'
+
 'locales role':
   <<: *test_role_no_deps
   variables:
