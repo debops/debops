@@ -1247,20 +1247,22 @@ request_acme_dns_certificate() {
     # shellcheck disable=SC2086
     all_dns_str=$(echo " "${all_dns_str} | sed 's/ / -d/g')
 
-    if test ${config['acme_ca']} == 'le-live-v2'; then
+    if test "${config['acme_ca']}" == 'le-live-v2'; then
       # shellcheck disable=SC2086
       certbot certonly -n --${config['acme_type']} --expand --agree-tos "${email}" --${config['acme_type']}-credentials ${credentials} ${all_dns_str}
-    elif test ${config['acme_ca']} == 'le-staging-v2'; then
+    elif test "${config['acme_ca']}" == 'le-staging-v2'; then
       # shellcheck disable=SC2086
       certbot certonly --test-cert -n --${config['acme_type']} --expand --agree-tos "${email}" --${config['acme_type']}-credentials ${credentials} ${all_dns_str}
     fi
 
-    local folder=$(printf '%s\n' "${all_dns[@]}" | xargs | cut -d' ' -f1)
-    local letsencrypt=/etc/letsencrypt/live/${folder}
-    if [ -f ${letsencrypt}/privkey.pem ]; then
-        ln -vsfT ${letsencrypt}/privkey.pem   ${pkirealm}/private/key.pem
-        ln -vsfT ${letsencrypt}/fullchain.pem ${pkirealm}/private/key_chain.pem
-        ln -vsfT ${letsencrypt}/cert.pem      ${pkirealm}/acme/cert.pem
+    local folder
+    local letsencrypt
+    folder=$(printf '%s\n' "${all_dns[@]}" | xargs | cut -d' ' -f1)
+    letsencrypt="/etc/letsencrypt/live/${folder}"
+    if [ -f "${letsencrypt}/privkey.pem" ]; then
+        ln -vsfT "${letsencrypt}/privkey.pem"   "${pkirealm}/private/key.pem"
+        ln -vsfT "${letsencrypt}/fullchain.pem" "${pkirealm}/private/key_chain.pem"
+        ln -vsfT "${letsencrypt}/cert.pem"      "${pkirealm}/acme/cert.pem"
     else
       echo "error: could not symlink let's encrypt certificates into pki realm" >&2
     fi
