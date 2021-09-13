@@ -31,8 +31,8 @@
   template:
     src: 'etc/zabbix/zabbix_agentd.conf.j2'
     dest: '/etc/zabbix/zabbix_agentd.conf'
-    owner: '{{ zabbix_agent__user }}'
-    group: 'root'
+    owner: 'root'
+    group: '{{ zabbix_agent__group }}'
     mode: '0640'
     unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
   register: zabbix_agent__register_configuration
@@ -41,15 +41,15 @@
   copy:
     content: '{{ zabbix_agent__tls_psk_secret }}'
     dest: '/etc/zabbix/secret.key'
-    owner: '{{ zabbix_agent__user }}'
-    group: 'root'
-    mode: '0600'
+    owner: 'root'
+    group: '{{ zabbix_agent__group }}'
+    mode: '0640'
 
 - name: Ensure configuration folder exists
   file:
     path: '/etc/zabbix/zabbix_agentd.conf.d'
     state: 'directory'
-    owner: '{{ zabbix_agent__user }}'
+    owner: 'root'
     group: 'root'
     mode: '0755'
 
@@ -58,7 +58,7 @@
     path: '/var/log/zabbix-agent'
     state: 'directory'
     owner: '{{ zabbix_agent__user }}'
-    group: 'root'
+    group: '{{ zabbix_agent__group }}'
     mode: '0755'
 
 - name: Conditionally restart Zabbix agent service
