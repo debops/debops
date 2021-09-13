@@ -26,6 +26,13 @@
   register: zabbix_agent__register_packages
   until: zabbix_agent__register_packages is succeeded
 
+- name: Add Zabbix UNIX account to required groups
+  user:
+    name: '{{ zabbix_agent__user }}'
+    groups: '{{ zabbix_agent__additional_groups | flatten | join(",") }}'
+    state: 'present'
+    append: True
+
 # Zabbix agent configuration [[[1
 - name: Generate Zabbix agent configuration file
   template:

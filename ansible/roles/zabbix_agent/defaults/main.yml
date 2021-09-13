@@ -71,6 +71,17 @@ zabbix_agent__user: 'zabbix'
 zabbix_agent__group: 'zabbix'
 
                                                                    # ]]]
+# .. envvar:: zabbix_agent__additional_groups [[[
+#
+# List of additional UNIX groups which should include the Zabbix agent account.
+zabbix_agent__additional_groups:
+
+  # Integration with the 'debops.proc_hidepid' role to provide system-wide
+  # access to the /proc filesystem.
+  - '{{ (ansible_local.proc_hidepid.group|d("procadmins"))
+        if (ansible_local.proc_hidepid.enabled|d())|bool
+        else [] }}'
+                                                                   # ]]]
                                                                    # ]]]
 # Zabbix agent configuration [[[
 # ------------------------------
