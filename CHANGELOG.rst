@@ -38,6 +38,11 @@ New DebOps roles
 
   .. __: https://www.influxdata.com/time-series-platform/telegraf/
 
+- The :ref:`debops.lldpd` role provides support for managing and configuring
+  the :command:`lldpd` service, which can be used to locate other network
+  devices connected to a given host using the Link-Layer Discovery Protocol.
+  The role is included in the :file:`common.yml` playbook by default.
+
 General
 '''''''
 
@@ -376,6 +381,13 @@ Removed
 
 - Support for installing and configuring Salt Minions during host provisioning
   has been removed.
+
+:ref:`debops.snmpd` role
+''''''''''''''''''''''''
+
+- The tasks and other code which managed the :command:`lldpd` daemon has been
+  removed from the role. The :ref:`debops.lldpd` role now provides the LLDP
+  support and automatically integrates with SNMP daemon when it is detected.
 
 Security
 ~~~~~~~~

@@ -263,6 +263,7 @@ Networking
 - :ref:`debops.dnsmasq`
 - :ref:`debops.freeradius`
 - :ref:`debops.ifupdown`
+- :ref:`debops.lldpd`
 - :ref:`debops.netbase`
 - :ref:`debops.radvd`
 - :ref:`debops.resolvconf`

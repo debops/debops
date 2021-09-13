@@ -1,0 +1,28 @@
+{# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2021 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# {{ ansible_managed }}
+
+{% if item.comment|d() %}
+{{   item.comment | regex_replace('\n$', '') | comment(prefix='', postfix='') }}
+{% endif %}
+{% if item.raw|d() %}
+{%   if item.state|d('present') == 'comment' %}
+{{     item.raw | regex_replace('\n$', '') | regex_replace('^', '#', multiline=True) }}
+{%   else %}
+{{     item.raw | regex_replace('\n$', '') }}
+{%   endif %}
+{% elif item.options|d() %}
+{%   for element in item.options %}
+{%     if element.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%       set element_comment = ('#' if (item.state|d('present') == 'comment') else '') %}
+{%       set element_name = (element.option | d(element.name)) %}
+{%       if element.value|d() %}
+{{         '{}{} "{}"'.format(element_comment, element_name, element.value) }}
+{%       else %}
+{{         '{}{}'.format(element_comment, element_name) }}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
