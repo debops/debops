@@ -32,6 +32,7 @@
     groups: '{{ zabbix_agent__additional_groups | flatten | join(",") }}'
     state: 'present'
     append: True
+  notify: [ 'Check zabbix-agent and restart' ]
 
 # Zabbix agent configuration [[[1
 - name: Generate Zabbix agent configuration file
@@ -42,7 +43,7 @@
     group: '{{ zabbix_agent__group }}'
     mode: '0640'
     unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
-  register: zabbix_agent__register_configuration
+  notify: [ 'Check zabbix-agent and restart' ]
 
 - name: Install secret key
   copy:
@@ -52,6 +53,7 @@
     group: '{{ zabbix_agent__group }}'
     mode: '0640'
   no_log: '{{ debops__no_log | d(True) }}'
+  notify: [ 'Check zabbix-agent and restart' ]
 
 - name: Ensure configuration folder exists
   file:
@@ -68,14 +70,6 @@
     owner: '{{ zabbix_agent__user }}'
     group: '{{ zabbix_agent__group }}'
     mode: '0755'
-
-- name: Conditionally restart Zabbix agent service
-  systemd:
-    name: 'zabbix-agent.service'
-    enabled: true
-    daemon_reload: '{{ True if (zabbix_agent__register_configuration is changed) else omit }}'
-    state: '{{ "restarted" if (zabbix_agent__register_configuration is changed) else "started" }}'
-  when: ansible_service_mgr == 'systemd'
 
 # Ansible facts [[[1
 - name: Make sure that Ansible local fact directory exists
