@@ -109,6 +109,17 @@ General
   packages are not installed but are expected to be present and in
   configuration compatible with DebOps.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- The role gained experimental support for `Certbot`__ tool as an alternative
+  to :command:`acme-tiny` script. Certbot provides `Lets' Encrypt DNS-01
+  challenge`__ functionality with wildcard and internal certificates. See role
+  documentation for more details.
+
+  .. __: https://certbot.eff.org/
+  .. __: https://letsencrypt.org/docs/challenge-types/#dns-01-challenge
+
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
 
