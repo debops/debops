@@ -43,6 +43,9 @@ New DebOps roles
   devices connected to a given host using the Link-Layer Discovery Protocol.
   The role is included in the :file:`common.yml` playbook by default.
 
+- The :ref:`debops.zabbix_agent` role can install and configure Zabbix Agent,
+  used for monitoring and metrics.
+
 General
 '''''''
 
