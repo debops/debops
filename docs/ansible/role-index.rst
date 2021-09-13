@@ -251,6 +251,7 @@ Monitoring
 - :ref:`debops.proc_hidepid`
 - :ref:`debops.snmpd`
 - :ref:`debops.telegraf`
+- :ref:`debops.zabbix_agent`
 
 
 Networking

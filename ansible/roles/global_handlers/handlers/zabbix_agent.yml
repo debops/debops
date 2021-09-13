@@ -1,0 +1,13 @@
+---
+# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Check zabbix-agent and restart
+  command: '/usr/sbin/zabbix_agentd --print'
+  notify: [ 'Restart zabbix-agent' ]
+
+- name: Restart zabbix-agent
+  service:
+    name: 'zabbix-agent'
+    state: 'restarted'

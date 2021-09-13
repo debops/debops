@@ -1,0 +1,26 @@
+#!{{ ansible_python['executable'] }}
+#
+# Copyright (C) 2021 Julien Lecomte <julien@lecomte.at>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+#
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+
+output = {
+    'ListenPort': 10050
+}
+
+try:
+    with open("/etc/zabbix/zabbix_agentd.conf", 'r') as fp:
+        output["configured"] = True
+        for line in fp:
+            if line.startswith("ListenPort="):
+                output["ListenPort"] = line[11:].strip()
+    pass
+except Exception:
+    pass
+
+print(dumps(output, sort_keys=True, indent=4))
