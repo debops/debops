@@ -382,6 +382,13 @@ Removed
 - Support for installing and configuring Salt Minions during host provisioning
   has been removed.
 
+:ref:`debops.snmpd` role
+''''''''''''''''''''''''
+
+- The tasks and other code which managed the :command:`lldpd` daemon has been
+  removed from the role. The :ref:`debops.lldpd` role now provides the LLDP
+  support and automatically integrates with SNMP daemon when it is detected.
+
 Security
 ~~~~~~~~
 
