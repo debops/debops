@@ -35,6 +35,13 @@ lldpd__base_packages: [ 'lldpd' ]
 #
 # List of additional APT packages installed with LLDP service.
 lldpd__packages: []
+
+                                                                   # ]]]
+# .. envvar:: lldpd__version [[[
+#
+# Variable which holds the :command:`lldpd` version information gathered via
+# local facts. It can be used in conditional configuration.
+lldpd__version: '{{ ansible_local.lldpd.version | d("0.0.0") }}'
                                                                    # ]]]
                                                                    # ]]]
 # LLDP daemon configuration [[[
@@ -113,7 +120,8 @@ lldpd__default_configuration:
                    else "absent" }}'
 
     state: '{{ "present"
-               if (ansible_virtualization_role == "guest")
+               if (ansible_virtualization_role == "guest" and
+                   lldpd__version is version("1.0.0", ">="))
                else "absent" }}'
 
                                                                    # ]]]
