@@ -35,6 +35,13 @@ lldpd__base_packages: [ 'lldpd' ]
 #
 # List of additional APT packages installed with LLDP service.
 lldpd__packages: []
+
+                                                                   # ]]]
+# .. envvar:: lldpd__version [[[
+#
+# Variable which holds the :command:`lldpd` version information gathered via
+# local facts. It can be used in conditional configuration.
+lldpd__version: '{{ ansible_local.lldpd.version | d("0.0.0") }}'
                                                                    # ]]]
                                                                    # ]]]
 # LLDP daemon configuration [[[
@@ -84,6 +91,13 @@ lldpd__default_configuration:
       across all neighbors, otherwise LLDP information is mangled.
     options:
 
+      - name: 'chassis-container'
+        option: 'configure system chassisid'
+        value: 'Container ({{ ansible_hostname }})'
+        state: '{{ "present"
+                   if (ansible_virtualization_type == "container")
+                   else "absent" }}'
+
       - name: 'chassis-docker'
         option: 'configure system chassisid'
         value: 'Docker container ({{ ansible_hostname }})'
@@ -105,15 +119,58 @@ lldpd__default_configuration:
                    if (ansible_virtualization_type == "lxc")
                    else "absent" }}'
 
+      - name: 'chassis-openstack'
+        option: 'configure system chassisid'
+        value: 'Openstack virtual machine ({{ ansible_hostname }})'
+        state: '{{ "present"
+                   if (ansible_virtualization_type == "openstack")
+                   else "absent" }}'
+
+      - name: 'chassis-openvz'
+        option: 'configure system chassisid'
+        value: 'OpenVZ container ({{ ansible_hostname }})'
+        state: '{{ "present"
+                   if (ansible_virtualization_type == "openvz")
+                   else "absent" }}'
+
+      - name: 'chassis-podman'
+        option: 'configure system chassisid'
+        value: 'Podman container ({{ ansible_hostname }})'
+        state: '{{ "present"
+                   if (ansible_virtualization_type == "podman")
+                   else "absent" }}'
+
+      - name: 'chassis-virtualbox'
+        option: 'configure system chassisid'
+        value: 'VirtualBox virtual machine ({{ ansible_hostname }})'
+        state: '{{ "present"
+                   if (ansible_virtualization_type == "virtualbox")
+                   else "absent" }}'
+
+      - name: 'chassis-virtualpc'
+        option: 'configure system chassisid'
+        value: 'VirtualPC virtual machine ({{ ansible_hostname }})'
+        state: '{{ "present"
+                   if (ansible_virtualization_type == "VirtualPC")
+                   else "absent" }}'
+
       - name: 'chassis-vmware'
         option: 'configure system chassisid'
         value: 'VMware virtual machine ({{ ansible_hostname }})'
         state: '{{ "present"
-                   if (ansible_virtualization_type == "vmware")
+                   if (ansible_virtualization_type == "VMware")
+                   else "absent" }}'
+
+      - name: 'chassis-xen'
+        option: 'configure system chassisid'
+        value: 'Xen virtual machine ({{ ansible_hostname }})'
+        state: '{{ "present"
+                   if (ansible_virtualization_type == "xen")
                    else "absent" }}'
 
     state: '{{ "present"
-               if (ansible_virtualization_role == "guest")
+               if (ansible_virtualization_role == "guest" and
+                   lldpd__version is version("1.0.0", ">="))
                else "absent" }}'
 
                                                                    # ]]]
