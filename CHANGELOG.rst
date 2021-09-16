@@ -144,6 +144,12 @@ Fixed
 - Fixed an issue with facts not showing Redis instances correctly when password
   is empty.
 
+debops.reprepro role
+''''''''''''''''''''
+
+- Added missing architectures (all expected architectures for Bookworm, and
+  some missing architectures for older releases).
+
 Security
 ~~~~~~~~
 
