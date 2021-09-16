@@ -91,6 +91,12 @@ General
   comments. If you use Percona on your hosts, you might need to update the
   Ansible inventory to point the role to the correct package configuration map.
 
+:ref:`debops.php` role
+''''''''''''''''''''''
+
+- php7.4 has been added to the ``php__version_preference`` list. This ensures
+  that PHP-related packages are installed on Debian 11 (Bullseye) systems.
+
 Fixed
 ~~~~~
 
