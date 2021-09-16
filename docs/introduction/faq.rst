@@ -117,7 +117,7 @@ developed which allows to "inject" custom changes in the roles without
 modifying the main files. These custom lookup plugins are not part of the
 official Ansible distribution, and are `provided with the DebOps playbooks`__.
 
-.. __: https://github.com/debops/debops/tree/master/ansible/roles/debops.ansible_plugins/lookup_plugins
+.. __: https://github.com/debops/debops/tree/master/ansible/roles/ansible_plugins/lookup_plugins
 
 The error about lookup plugins not being present might show up if you use
 DebOps roles separately from the main playbook, for example downloaded through
