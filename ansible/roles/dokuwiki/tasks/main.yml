@@ -3,6 +3,12 @@
 # Copyright (C) 2015-2019 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- import_role:
+    name: 'ansible_plugins'
+
+- name: Pre hooks
+  include: '{{ lookup("task_src", "dokuwiki/pre_main.yml") }}'
+
 - name: Install requested packages
   package:
     name: '{{ q("flattened", (dokuwiki__base_packages
@@ -231,3 +237,6 @@
   command: /etc/cron.weekly/dokuwiki-wikipedia-blacklist
   args:
     creates: '{{ dokuwiki__git_checkout + "/conf/wordblock.local.conf" }}'
+
+- name: Post hooks
+  include: '{{ lookup("task_src", "dokuwiki/post_main.yml") }}'
