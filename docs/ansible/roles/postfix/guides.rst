@@ -71,18 +71,23 @@ The last piece of the puzzle is the Postfix configuration in the
 
      - name: 'smtp_sasl_auth_enable'
        value: True
+       state: present
 
      - name: 'smtp_tls_security_level'
        value: 'encrypt'
+       state: present
 
      - name: 'smtp_sasl_tls_security_options'
        value: 'noanonymous'
+       state: present
 
      - name: 'relayhost'
        value: '[smtp.example.org]'
+       state: present
 
      - name: 'smtp_sasl_password_maps'
        value: [ 'hash:${config_directory}/smtp_sasl_password_maps' ]
+       state: present
 
 When you run the ``debops.postfix`` role with the above configuration, Postfix
 should now send all e-mails to the ``smtp.example.org`` relayhost with SMTP
