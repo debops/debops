@@ -238,5 +238,44 @@
   args:
     creates: '{{ dokuwiki__git_checkout + "/conf/wordblock.local.conf" }}'
 
+- name: Delete extra files on remote host
+  file:
+    path:  '{{ item.dest | d(item.path | d(item.name)) }}'
+    state: 'absent'
+  with_flattened:
+    - '{{ dokuwiki__extra_files }}'
+    - '{{ dokuwiki__group_extra_files }}'
+    - '{{ dokuwiki__host_extra_files }}'
+  when: (item.dest|d() or item.path|d() or item.name|d()) and
+        (item.state|d('present') == 'absent')
+  tags: [ 'role::dokuwiki' ]
+
+- name: Copy extra files to remote host
+  copy:
+    dest:     '{{ item.dest     | d(item.path | d(item.name)) }}'
+    src:      '{{ item.src      | d(omit) }}'
+    content:  '{{ item.content  | d(omit) }}'
+    owner:    '{{ item.owner    | d(omit) }}'
+    group:    '{{ item.group    | d(omit) }}'
+    mode:     '{{ item.mode     | d(omit) }}'
+    selevel:  '{{ item.selevel  | d(omit) }}'
+    serole:   '{{ item.serole   | d(omit) }}'
+    setype:   '{{ item.setype   | d(omit) }}'
+    seuser:   '{{ item.seuser   | d(omit) }}'
+    follow:   '{{ item.follow   | d(omit) }}'
+    force:    '{{ item.force    | d(omit) }}'
+    backup:   '{{ item.backup   | d(omit) }}'
+    validate: '{{ item.validate | d(omit) }}'
+    remote_src: '{{ item.remote_src | d(omit) }}'
+    directory_mode: '{{ item.directory_mode | d(omit) }}'
+  with_flattened:
+    - '{{ dokuwiki__extra_files }}'
+    - '{{ dokuwiki__group_extra_files }}'
+    - '{{ dokuwiki__host_extra_files }}'
+  when: (item.src|d() or item.content is defined) and
+        (item.dest|d() or item.path|d() or item.name|d()) and
+        (item.state|d('present') != 'absent')
+  tags: [ 'role::dokuwiki' ]
+
 - name: Post hooks
   include: '{{ lookup("task_src", "dokuwiki/post_main.yml") }}'
