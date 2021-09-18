@@ -70,6 +70,12 @@ General
   roles in the :file:`common.yml` playbook has been moved to a separate play to
   ensure feature parity with the bootstrap playbooks.
 
+:ref:`debops.dokuwiki` role
+'''''''''''''''''''''''''''
+
+- The :command:`git` repository URL of the "codemirror" DokuWiki plugin has
+  been switch from GitHub to GitLab, since the upstream moved the repository.
+
 :ref:`debops.mariadb` role
 ''''''''''''''''''''''''''
 
