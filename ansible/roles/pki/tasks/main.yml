@@ -132,6 +132,12 @@
   when: (pki_enabled|bool and
          (pki_acme|bool or pki_acme_install|bool))
 
+- name: Configure certbot support
+  include: certbot.yml
+  when: (pki_enabled|bool and
+         (pki_acme|bool or pki_acme_install|bool) and
+          pki_acme_type != 'acme-tiny')
+
 # Initialize PKI realms [[[
 
 - name: Ensure that /etc/pki directory exists
