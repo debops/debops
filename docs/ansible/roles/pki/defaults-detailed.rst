@@ -406,3 +406,121 @@ List of supported parameters:
                                + "permitted;DNS:.example.net,"
                                + "permitted;DNS:example.com,"
                                + "permitted;DNS:.example.com" }}'
+
+.. _pki_ref_certbot_configuration:
+
+pki_certbot_configuration
+-------------------------
+
+The ``pki_certbot_*_configuration`` variables can be used to define the
+contents of the :file:`/etc/letsencrypt/cli.ini` configuration file, which
+contains `global certbot configuration`__.
+
+.. __: https://certbot.eff.org/docs/using.html#configuration-file
+
+Examples
+~~~~~~~~
+
+Recreate the official example configuration file using DebOps:
+
+.. code-block:: yaml
+
+   pki_certbot_configuration:
+
+     - name: 'key-type'
+       comment: 'Use ECC for the private key'
+       value: 'ecdsa'
+
+     - 'elliptic-curve': 'secp384r1'
+
+     - name: 'rsa-key-size'
+       comment: 'Use a 4096 bit RSA key instead of 2048'
+       value: 4096
+
+     - name: 'email'
+       comment: 'Uncomment and update to register with the specified e-mail address'
+       value: 'foo@example.com'
+       state: 'comment'
+
+     - name: 'authenticator-standalone'
+       option: 'authenticator'
+       comment: 'Uncomment to use the standalone authenticator on port 443'
+       value: 'standalone'
+       state: 'comment'
+
+     - name: 'authenticator-webroot'
+       option: 'authenticator'
+       comment: |
+         Uncomment to use the webroot authenticator. Replace webroot-path with the
+         path to the public_html / webroot folder being served by your web server.
+       value: 'webroot'
+       state: 'comment'
+
+     - name: 'webroot-path'
+       value: '/usr/share/nginx/html'
+       state: 'comment'
+
+     - name: 'agree-tos'
+       comment: 'Uncomment to automatically agree to the terms of service of the ACME server'
+       value: True
+       state: 'comment'
+
+     - name: 'server'
+       comment: 'An example of using an alternate ACME server that uses EAB credentials'
+       value: 'https://acme.sectigo.com/v2/InCommonRSAOV'
+       state: 'comment'
+
+     - name: 'eab-kid'
+       value: 'somestringofstuffwithoutquotes'
+       state: 'comment'
+
+     - name: 'eab-hmac-key'
+       value: 'yaddayaddahexhexnotquoted'
+       state: 'comment'
+
+Define manual hook scripts used for certificate renewal and cleanup:
+
+.. code-block:: yaml
+
+   pki_certbot_configuration:
+
+     - 'authenticator': 'manual'
+     - 'manual-auth-hook': '/etc/letsencrypt/scripts/authenticator.php'
+     - 'manual-cleanup-hook': '/etc/letsencrypt/scripts/cleanup.php'
+     - 'manual-public-ip-logging-ok': True
+
+Syntax
+~~~~~~
+
+The contents of the configuration file are defined using the
+:ref:`universal_configuration` system. The variables are list of YAML
+dictionaries. You can use a dictionary key to define a parameter name, and
+a dictionary value as the value.
+
+If you use ``name`` as the key, the configuration options can be defined in
+a more extended format using specific parameters:
+
+``name``
+  Required. Name of the configuration option. Entries with the same ``name``
+  are merged together and can affect each other; this can be used to activate
+  configuration options conditionally.
+
+``option``
+  Optional. If you need to specify the same configuration option multiple
+  times, you need to use unique ``name`` parameters. In that case you can add
+  the ``option`` parameter to define the actual option name which will be used
+  in the configuration file.
+
+``value``
+  The value of a configuration option, added in the configuration file as-is.
+
+``state``
+  Optional. If not specified or ``present``, a given configuration option will
+  be included in the generated configuration file. If ``absent``, a given
+  option will not be included in the configuration file. If ``comment``, the
+  option will be included but commented out. if ``ignore``, a given entry will
+  not be processed by the role during execution.
+
+``comment``
+  Optional. String or YAML text block with a comment about a given
+  configuration option added in the generated file.
