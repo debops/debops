@@ -265,6 +265,13 @@ pki_certbot_default_configuration:
       internal certbot logrotation.
     value: 0
 
+  - name: 'post-hook'
+    comment: |
+      The certbot script does not execute post-hooks on initial certificate
+      issuance, only renewals. This should ensure that the permissions are
+      fixed when certificates are created.
+    value: '/etc/letsencrypt/renewal-hooks/post/000-fix-permissions'
+
                                                                    # ]]]
 # .. envvar:: pki_certbot_configuration [[[
 #
