@@ -1,0 +1,29 @@
+---
+# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# The 'certbot' package and its dependencies should be installed at this point.
+
+- name: Make sure that the post-hook directory exists
+  file:
+    path: '/etc/letsencrypt/renewal-hooks/post'
+    state: 'directory'
+    mode: '0755'
+
+- name: Install post-hook scripts
+  copy:
+    src: 'etc/letsencrypt/renewal-hooks/post/'
+    dest: '/etc/letsencrypt/renewal-hooks/post/'
+    mode: '0755'
+
+- name: Divert the original certbot configuration file
+  dpkg_divert:
+    path: '/etc/letsencrypt/cli.ini'
+    state: 'present'
+
+- name: Generate certbot configuration file
+  template:
+    src: 'etc/letsencrypt/cli.ini.j2'
+    dest: '/etc/letsencrypt/cli.ini'
+    mode: '0644'
