@@ -63,6 +63,15 @@ General
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- The Elastic APT repository configured on new installations by
+  :ref:`debops.elastic_co` has been updated to version 7.x. Updating the
+  repository configuration on existing hosts requires that you manually update
+  the local facts or to set the ``elastic_co__version`` variable to '7.x' before
+  running the playbook.
+
 General
 '''''''
 
