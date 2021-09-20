@@ -247,6 +247,39 @@ pki_create_acme_challenge_dir: '{{ True if (ansible_local.nginx.acme|d() and
                                             ansible_local.nginx.acme|bool) else False }}'
                                                                    # ]]]
                                                                    # ]]]
+# Certbot configuration [[[
+# -------------------------
+
+# The lists below define the contents of the :file:`/etc/letsencrypt/cli.ini`
+# configuration file. See :ref:`pki_ref_certbot_configuration` for more
+# details.
+
+# .. envvar:: pki_certbot_default_configuration [[[
+#
+# The default contents of the Certbot configuration file defined by the role.
+pki_certbot_default_configuration:
+
+  - name: 'max-log-backups'
+    comment: |
+      Because we are using logrotate for greater flexibility, disable the
+      internal certbot logrotation.
+    value: 0
+
+                                                                   # ]]]
+# .. envvar:: pki_certbot_configuration [[[
+#
+# The contents of the Certbot configuration file defined by the user.
+pki_certbot_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: pki_certbot_combined_configuration [[[
+#
+# The variable which combines the Certbot configuration variables and is used
+# in role tasks and templates.
+pki_certbot_combined_configuration: '{{ pki_certbot_default_configuration
+                                        + pki_certbot_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # Required software packages [[[
 # ------------------------------
 
