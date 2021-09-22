@@ -10,7 +10,9 @@ Elasticsearch clustering
 ========================
 
 The Elasticsearch service can be deployed either on a single host in
-a "standalone" mode, or in a cluster of multiple hosts. The cluster mode will be enabled automatically after a few important variables and inventory groups are configured.
+a "standalone" mode, or in a cluster of multiple hosts. The cluster mode will
+be enabled automatically after a few important variables and inventory groups
+are configured.
 
 .. only:: html
 
@@ -123,3 +125,19 @@ don't need to enable it unless you need a direct access to the Elasticsearch
 HTTP REST interface from remote hosts. Kibana and Logstash installed on the
 same host as an Elasticsearch service should be able to talk to it over
 ``localhost`` with no issues.
+
+
+Elasticsearch API access
+------------------------
+
+The :ref:`debops.elasticsearch` role relies on the Elasticsearch API to manage
+different parts of the cluster, currently user accounts and their roles. This
+is enabled with X-Pack support and TLS encryption are configured in the
+cluster. To provide access to the API, define in the Ansible inventory:
+
+.. code-block:: yaml
+
+   elasticsearch__api_base_url: 'https://es.example.com:9200'
+
+When this variable is defined, the role will execute tasks against the API from
+a single host in the cluster at a time.

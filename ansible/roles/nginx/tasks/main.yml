@@ -64,7 +64,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: (nginx__deploy_state in [ 'present' ])
+  when: (nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Save nginx local facts
   template:
@@ -74,7 +74,7 @@
     group: 'root'
     mode: '0755'
   notify: [ 'Refresh host facts' ]
-  when: (nginx__deploy_state in [ 'present' ])
+  when: (nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Gather facts if they were modified
   meta: 'flush_handlers'
@@ -91,24 +91,24 @@
     - '/etc/nginx/sites-available'
     - '/etc/nginx/sites-enabled'
     - '/etc/nginx/snippets'
-  when: (nginx__deploy_state in [ 'present' ])
+  when: (nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Divert default.conf in case nginx nginx.org flavor is used
   command: dpkg-divert --quiet --local --divert /etc/nginx/conf.d/default.conf.dpkg-divert
            --rename /etc/nginx/conf.d/default.conf
   args:
     creates: '/etc/nginx/conf.d/default.conf.dpkg-divert'
-  when: (nginx_flavor == 'nginx.org' and nginx__deploy_state in [ 'present' ])
+  when: (nginx_flavor == 'nginx.org' and nginx__deploy_state in [ 'present', 'config' ])
 
 - include: 'passenger_config.yml'
-  when: (nginx_flavor == 'passenger' and nginx__deploy_state in [ 'present' ])
+  when: (nginx_flavor == 'passenger' and nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Restart nginx on first install to bypass missing pid bug
   service:
     name: 'nginx'
     state: 'restarted'
   when: (nginx_register_installed|d() and not nginx_register_installed.stat.exists and
-         nginx__deploy_state in [ 'present' ])
+         nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Get list of nameservers configured in /etc/resolv.conf
   shell: awk '$1=="nameserver" {if(/%/){sub(/[0-9a-fA-F:]+/, "[&]", $2)}; print $2}' /etc/resolv.conf
@@ -117,7 +117,7 @@
   register: nginx_register_nameservers
   changed_when: False
   check_mode: False
-  when: (nginx__deploy_state in [ 'present' ])
+  when: (nginx__deploy_state in [ 'present', 'config' ])
   tags: [ 'role::nginx:servers' ]
 
 - name: Convert list of nameservers to Ansible list
@@ -126,7 +126,7 @@
   when: ((nginx_register_nameservers.stdout is defined and nginx_register_nameservers.stdout) and
          (nginx_ocsp_resolvers is undefined or
          (nginx_ocsp_resolvers is defined and not nginx_ocsp_resolvers)) and
-         (nginx__deploy_state in [ 'present' ]))
+         (nginx__deploy_state in [ 'present', 'config' ]))
   tags: [ 'role::nginx:servers' ]
 
 - name: Ensure that webadmins privileged group exists
@@ -134,7 +134,7 @@
     name: '{{ nginx_privileged_group }}'
     state: 'present'
     system: True
-  when: (nginx__deploy_state in [ 'present' ])
+  when: (nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Create directory for webadmins configuration
   file:
@@ -143,7 +143,7 @@
     owner: 'root'
     group: '{{ nginx_privileged_group }}'
     mode: '0775'
-  when: (nginx__deploy_state in [ 'present' ])
+  when: (nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Allow webadmins to control nginx system service using sudo
   template:
@@ -154,14 +154,14 @@
     mode: '0440'
   when: (ansible_local|d() and ansible_local.sudo|d() and
          (ansible_local.sudo.installed|d())|bool and
-         nginx__deploy_state in [ 'present' ])
+         nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Divert original /etc/nginx/nginx.conf
   command: dpkg-divert --quiet --local --divert /etc/nginx/nginx.conf.dpkg-divert
            --rename /etc/nginx/nginx.conf
   args:
     creates: '/etc/nginx/nginx.conf.dpkg-divert'
-  when: (nginx__deploy_state in [ 'present' ])
+  when: (nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Setup /etc/nginx/nginx.conf
   template:
@@ -171,7 +171,7 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Test nginx and reload' ]
-  when: (nginx__deploy_state in [ 'present' ])
+  when: (nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Generate custom nginx snippets
   template:
@@ -181,7 +181,7 @@
     group: 'root'
     mode: '0644'
   with_items: [ 'acme-challenge', 'ssl' ]
-  when: (nginx__deploy_state in [ 'present' ])
+  when: (nginx__deploy_state in [ 'present', 'config' ])
   notify: [ 'Test nginx and reload' ]
 
 - name: Disable default nginx site
@@ -189,7 +189,7 @@
     path: '/etc/nginx/sites-enabled/default'
     state: 'absent'
   notify: [ 'Test nginx and reload' ]
-  when: (nginx__deploy_state in [ 'present' ])
+  when: (nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Manage local server definitions - create symlinks
   file:
@@ -199,7 +199,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: (item.value and nginx__deploy_state in [ 'present' ])
+  when: (item.value and nginx__deploy_state in [ 'present', 'config' ])
   with_dict: '{{ nginx_local_servers|d({}) }}'
   notify: [ 'Test nginx and reload' ]
 
@@ -207,7 +207,7 @@
   file:
     path: '/etc/nginx/sites-enabled/{{ item.key }}'
     state: 'absent'
-  when: ((not item.value|d()) and nginx__deploy_state in [ 'present' ])
+  when: ((not item.value|d()) and nginx__deploy_state in [ 'present', 'config' ])
   with_dict: '{{ nginx_local_servers|d({}) }}'
   notify: [ 'Test nginx and reload' ]
 
@@ -220,18 +220,18 @@
     executable: 'sh'
     creates: '/etc/ansible/facts.d/nginx.fact'
     warn: False
-  when: (nginx__deploy_state in [ 'present' ])
+  when: (nginx__deploy_state in [ 'present', 'config' ])
 
 - include: 'nginx_htpasswd.yml'
-  when: (nginx__deploy_state in [ 'present' ])
+  when: (nginx__deploy_state in [ 'present', 'config' ])
 
 - include: 'nginx_configs.yml'
   tags: [ 'role::nginx:servers' ]
-  when: (nginx__deploy_state in [ 'present' ])
+  when: (nginx__deploy_state in [ 'present', 'config' ])
 
 - include: 'nginx_servers.yml'
   tags: [ 'role::nginx:servers' ]
-  when: (nginx__deploy_state in [ 'present' ])
+  when: (nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Make sure that PKI hook directory exists
   file:
@@ -240,7 +240,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: (nginx_pki|bool and nginx__deploy_state in [ 'present' ])
+  when: (nginx_pki|bool and nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Manage PKI nginx hook
   template:
@@ -249,11 +249,11 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: (nginx_pki|bool and nginx__deploy_state in [ 'present' ])
+  when: (nginx_pki|bool and nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Ensure the PKI nginx hook is absent
   file:
-    path: '{{ nginx_pki_hook_path }}'
+    path: '{{ nginx_pki_hook_path + "/" + nginx_pki_hook_name }}'
     state: 'absent'
   when: (nginx__deploy_state in [ 'absent' ])
 

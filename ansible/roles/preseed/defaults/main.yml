@@ -1,15 +1,15 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# .. Copyright (C) 2015-2016 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2015-2021 Maciej Delmanowski <drybjed@gmail.com>
 # .. Copyright (C) 2015-2016 Robin Schneider <ypid@riseup.net>
-# .. Copyright (C) 2015-2016 DebOps <https://debops.org/>
+# .. Copyright (C) 2015-2021 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _preseed__ref_defaults:
 
-# Default variables
-# =================
+# debops.preseed default variables
+# ================================
 
 # .. contents:: Sections
 #    :local:
@@ -17,495 +17,1445 @@
 # .. include:: ../../../../includes/global.rst
 
 
-# .. Preseed server configuration [[[1
-#
-# --------------------------------
-#   Preseed server configuration
+# Preseed server configuration [[[
 # --------------------------------
 
-# .. envvar:: preseed__subdomain
+# .. envvar:: preseed__subdomain [[[
 #
 # Name of the subdomain which will be used to serve Preseed files.
 preseed__subdomain: 'seed'
 
-
-# .. envvar:: preseed__base_domain
+                                                                   # ]]]
+# .. envvar:: preseed__base_domain [[[
 #
 # Full base domain on which the Preseed files are located, required for download of
 # postinst scripts.
 preseed__base_domain: '{{ preseed__subdomain + "." + ansible_domain }}'
 
-
-# .. envvar:: preseed__domains
+                                                                   # ]]]
+# .. envvar:: preseed__domains [[[
 #
-# A set of domains configured in nginx which server Preseed files. First
-# element of the list should be a "normal" domain, the rest are regular
-# expressions which look up correct subdirectories to serve files.
+# A set of domains configured in the :command:`nginx` server that serves the
+# Preseed files. First element of the list should be a "normal" domain, the
+# rest are regular expressions which look up correct subdirectories to serve
+# files.
 preseed__domains:
   - '{{ preseed__base_domain }}'
   - '{{ preseed__base_domain | split(".") | first }}'
   - '{{ "~^(?<preseed>.+)\." + preseed__base_domain | replace(".","\.") + "$" }}'
-  - '{{ "~^(?<preseed>.+)\." + ansible_domain      | replace(".","\.") + "$" }}'
+  - '{{ "~^(?<preseed>.+)\." + ansible_domain       | replace(".","\.") + "$" }}'
   - '{{ "~^(?<preseed>.+)\." + preseed__subdomain   | replace(".","\.") + "$" }}'
   - '{{ "~^(?<preseed>.+)$" }}'
 
-
-# .. envvar:: preseed__www
+                                                                   # ]]]
+# .. envvar:: preseed__www [[[
 #
 # Path to main directory where Preseed files are served from.
-preseed__www: '{{ ansible_local.nginx.www|d("/srv/www") + "/preseed/configs" }}'
+preseed__www: '{{ (ansible_local.fhs.www|d("/srv/www"))
+                  + "/sites/debian-preseed/public" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Preseed post-install configuration [[[
+# --------------------------------------
 
-
-# .. envvar:: preseed__www_webserver
+# .. envvar:: preseed__root_sshkeys [[[
 #
-# Path to "current" Preseed root directory, configured in the webserver
-preseed__www_webserver: '{{ preseed__www + "/$preseed" }}'
+# List of SSH public keys installed on the ``root`` UNIX account of the
+# preseeded host.
+preseed__root_sshkeys: [ '{{ lookup("pipe", "ssh-add -L | grep ^\\\(sk-\\\)\\\?ssh || cat ~/.ssh/id_rsa.pub || true") }}' ]
 
-
-# .. envvar:: preseed__nginx_auth_realm
+                                                                   # ]]]
+# .. envvar:: preseed__admin_name [[[
 #
-# Text displayed in the web browser login dialog when :ref:`debops.nginx` access
-# policy is enabled.
-preseed__nginx_auth_realm: 'Preseed access is restricted'
+# Name of the administrative UNIX account which will be created on selected
+# Preseed flavors and given full :command:`sudo` access.
+preseed__admin_name: 'ansible'
 
-
-# .. envvar:: preseed__nginx_access_policy
+                                                                   # ]]]
+# .. envvar:: preseed__admin_fullname [[[
 #
-# Name of the :program:`nginx` access policy to configure for Preseed server.
-# See :ref:`debops.nginx` role for more details.
-preseed__nginx_access_policy: ''
+# The administrative account GECOS information which will be set in
+# :file:`/etc/passwd` database.
+preseed__admin_fullname: 'Ansible Control User'
 
-
-# .. envvar:: preseed__user
+                                                                   # ]]]
+# .. envvar:: preseed__admin_sshkeys [[[
 #
-# System user account which owns the Preseed files.
-preseed__user: 'preseed'
+# List of SSH public keys installed on the administrative UNIX account of the
+# preseeded host.
+preseed__admin_sshkeys: [ '{{ lookup("pipe", "ssh-add -L | grep ^\\\(sk-\\\)\\\?ssh || cat ~/.ssh/id_rsa.pub || true") }}' ]
 
-
-# .. envvar:: preseed__group
+                                                                   # ]]]
+# .. envvar:: preseed__debian_postinst_commands [[[
 #
-# System group which owns the Preseed files.
-preseed__group: 'preseed'
+# YAML text block which can contain a set of simple Bash commands, executed at
+# the end of the postinst script. Commands are executed one at a time.
+preseed__debian_postinst_commands: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Preseed base template configuration [[[
+# ---------------------------------------
 
-
-# .. envvar:: preseed__home
+# .. envvar:: preseed__debian_packages [[[
 #
-# Home directory of the Pressed user account.
-preseed__home: '{{ (ansible_local.fhs.home | d("/var/local"))
-                   + "/" + preseed__user }}'
+# List of APT packages to install on the preseeded host, included in all
+# Preseed flavors using the ``pkgsel/include`` Preseed option.
+preseed__debian_packages: [ 'python3', 'python3-apt', 'python3-pip',
+                            'lsb-release', 'git', 'curl' ]
 
-
-# .. Default Preseed list [[[1
+                                                                   # ]]]
+# .. envvar:: preseed__debian_kernel_arguments [[[
 #
-# ------------------------
-#   Default Preseed list
-# ------------------------
-
-# .. envvar:: preseed__distribution
+# List of additional Linux kernel arguments which should be added to
+# :command:`grub` during installation on all Preseed flavors, using the
+# ``debian-installer/add-kernel-opts`` Preseed option.
 #
-# Linux distribution configured by default for preseeding
-preseed__distribution: '{{ ansible_distribution }}'
-
-
-# .. envvar:: preseed__release
-#
-# Linux distribution release configured by default for preseeding
-preseed__release: '{{ ansible_distribution_release }}'
-
-
-# .. envvar:: preseed__configs
-#
-# List of Preseed definitions. See :ref:`preseed__ref_configs` for more details.
-preseed__configs:
-
-  # Debian - default configuration which will ask the user for disk
-  # configuration during installation.
-  - name: 'debian'
-    type: 'debian'
-    release: 'wheezy'
-
-  - name: 'debian'
-    type: 'debian'
-    release: 'jessie'
-
-  # Automated Debian configuration which will format the first disk as a ``/``
-  # (system) partition. Useful for virtual machines, but nothing else. Use at
-  # your own risk.
-  - name: 'debian-vm'
-    type: 'debian-destroy'
-    release: 'wheezy'
-
-  - name: 'debian-vm'
-    type: 'debian-destroy'
-    release: 'jessie'
-
-
-# .. Administrator account options [[[1
-#
-# ---------------------------------
-#   Administrator account options
-# ---------------------------------
-
-# .. envvar:: preseed__admin
-#
-# Enable or disable creation of an administrator account using a
-# :file:`postinst.sh` script.
-preseed__admin: True
-
-
-# .. envvar:: preseed__admin_system
-#
-# If enabled, administrator account will be created as a "system" account (UID
-# < 1000, usually ~104). If disabled (default), administrator account will be
-# a regular user account (UID >= 1000).
-preseed__admin_system: True
-
-
-# .. envvar:: preseed__admin_name
-#
-# Name of the administrator account. By default the same as the
-# user that runs Ansible, taken from Ansible Controller.
-preseed__admin_name: '{{ (ansible_ssh_user
-                          if (ansible_ssh_user|d() and
-                              ansible_ssh_user != "root")
-                          else lookup("env","USER")) }}'
-
-
-# .. envvar:: preseed__admin_groups
-#
-# Default system groups to add the administrator account to. They will be
-# created if not present.
-preseed__admin_groups: [ 'admins', 'staff', 'adm' ]
-
-
-# .. envvar:: preseed__admin_home
-#
-# Home directory of the administrator account, when it's a regular user
-# account.
-preseed__admin_home: '{{ "/home/" + preseed__admin_name }}'
-
-
-# .. envvar:: preseed__admin_system_home
-#
-# Home directory of the administrator account, when it's a system account.
-preseed__admin_system_home: '{{ (ansible_local.fhs.home | d("/var/local"))
-                                + "/" + preseed__admin_name }}'
-
-
-# .. envvar:: preseed__admin_home_group
-#
-# Specify administrator account home directory group
-preseed__admin_home_group: '{{ preseed__admin_groups[0] }}'
-
-
-# .. envvar:: preseed__admin_home_mode
-#
-# Specify permissions for administrator account home directory
-preseed__admin_home_mode: '0750'
-
-
-# .. envvar:: preseed__admin_comment
-#
-# A contents of the GECOS field of the administrator account.
-preseed__admin_comment: "System Administrator"
-
-
-# .. envvar:: preseed__admin_shell
-#
-# Shell set by default on administrator account.
-preseed__admin_shell: '/bin/bash'
-
-
-# .. envvar:: preseed__sudo
-#
-# If enabled, specified admin group will be configured in :command:`sudo` to allow
-# access to ``root`` account without password.
-preseed__sudo: True
-
-
-# .. envvar:: preseed__sudo_group
-#
-# Name of the system group which will be configured with passwordless :command:`sudo`
-# access. By default it's the first group set in :envvar:`preseed__admin_groups`.
-preseed__sudo_group: '{{ preseed__admin_groups[0] }}'
-
-
-# .. envvar:: preseed__admin_sshkeys
-#
-# List of SSH public keys installed on administrator account, as well as the
-# ``root`` account.
-preseed__admin_sshkeys: [ '{{ lookup("pipe", "ssh-add -L | grep ^ssh || cat ~/.ssh/id_rsa.pub || true") }}' ]
-
-
-# .. Debian Preseed configuration [[[1
-#
-# --------------------------------
-#   Debian Preseed configuration
-# --------------------------------
-#
-# This is a non-exhaustive list of parameters that can be used to configure
-# Debian Preseed provided with the role. More parameters can be found inside
-# the :file:`preseed.cfg` as well as the :file:`postinst.sh` script.
-
-
-# .. envvar:: preseed__debian_locale
-#
-# Default locale configuration enabled during installation.
-preseed__debian_locale: 'en_US.UTF-8'
-
-
-# .. envvar:: preseed__debian_keyboard_keymap
-#
-# Keyboard layout enabled during installation.
-# The current keymap layout can be looked up via :command:`setxkbmap -query`.
-preseed__debian_keyboard_keymap: 'en'
-
-
-# .. envvar:: preseed__debian_language
-#
-# Default interface language enabled during installation.
-preseed__debian_language: 'English'
-
-
-# .. envvar:: preseed__debian_timezone
-#
-# Time zone configured on the host during installation.
-preseed__debian_timezone: 'Etc/UTC'
-
-
-# .. envvar:: preseed__debian_ntp_server
-#
-# NTP server to get the time from when installing.
-# If False, the default will not be changed.
-preseed__debian_ntp_server: False
-
-
-# .. envvar:: preseed__debian_mirror_hostname
-#
-# Address of HTTP mirror used during installation.
-preseed__debian_mirror_hostname: 'httpredir.debian.org'
-
-
-# .. envvar:: preseed__debian_mirror_directory
-#
-# Subdirectory on the HTTP mirror which holds the Debian repository.
-preseed__debian_mirror_directory: '/debian'
-
-
-# .. envvar:: preseed__debian_mirror_proxy
-#
-# Proxy server to use for APT. Be careful when you set because of a bug which
-# causes this proxy to be used for all programs and not just apt as one might
-# expect. The default scripts use a workaround to still allow the apt proxy
-# preseeding.
-preseed__debian_mirror_proxy: ''
-
-
-# .. envvar:: preseed__debian_packages
-#
-# List of base Debian packages to install on the new host
-preseed__debian_packages: [ 'ed', 'lsb-release', 'wget',
-                            'make', 'sudo', 'gnupg-curl', 'git',
-                            'curl', 'rsync', 'netcat-openbsd', 'vlan',
-                            'bridge-utils', 'openssh-server', 'bsdutils',
-                            'acl', 'apt-transport-https', 'resolvconf' ]
-
-
-# .. envvar:: preseed__debian_root_password_length
-#
-# Length of the ``root`` account password generated by Ansible
-preseed__debian_root_password_length: '32'
-
-
-# .. envvar:: preseed__debian_root_password
-#
-# Encrypted random ``root`` password generated by Ansible and saved in
-# :file:`secret/` directory. See :ref:`debops.secret` role for more details.
-preseed__debian_root_password: "{{ lookup('password', secret + '/credentials/' + inventory_hostname +
-                                  '/preseed/debian/root/password encrypt=sha512_crypt length=' +
-                                  preseed__debian_root_password_length) }}"
-
-
-# .. envvar:: preseed__debian_ask_for_additional_install_media
-#
-# Should the installer when configuring APT ask for additional installation media?
-# This seems to be only relevant when not installing from network/PXE.
-preseed__debian_ask_for_additional_install_media: False
-
-
-# .. Debian Preseed GRUB configuration [[[[1
-#
-# -------------------------------------
-#   Debian Preseed GRUB configuration
-# -------------------------------------
-
-# .. envvar:: preseed__grub_preseed
-#
-# Should GRUB be configured by this role?
-# If set to ``False``, all following options in the ``preseed__grub_``
-# namespace will not have any effect.
-preseed__grub_preseed: True
-
-
-# .. envvar:: preseed__grub_timeout
-#
-# GRUB timeout for devices.
-# :ref:`debops.grub` can be used to set different
-# timeout values for phyisical and virtual machines.
-preseed__grub_timeout: 1
-
-
-# .. envvar:: preseed__grub_kernel_options
-#
-# Kernel options.
-preseed__grub_kernel_options:
-
-  ## Linux I/O Scheduler
-  - 'elevator=noop'
-
+# The default set of arguments enables memory and swap cgroup accounting,
+# useful in containerization and process management.
+preseed__debian_kernel_arguments:
   - 'cgroup_enable=memory'
-
   - 'swapaccount=1'
 
-
-# .. SaltStack options [[[1
+                                                                   # ]]]
+# .. envvar:: preseed__debian_password_length [[[
 #
-# ---------------------
-#   SaltStack options
-# ---------------------
+# Length of the UNIX account passwords generated by Ansible.
+preseed__debian_password_length: '32'
 
-# .. envvar:: preseed__salt
+                                                                   # ]]]
+# .. envvar:: preseed__debian_root_password [[[
 #
-# Enable SaltStack support, ``salt-minion`` will be installed on the host and
-# started at boot.
-preseed__salt: False
+# The :man:`crypt(3)` hash of the ``root`` UNIX account password generated by
+# Ansible and saved in the :file:`secret/` directory, managed by the
+# :ref:`debops.secret` Ansible role. The hash will be stored in the generated
+# Preseed configuration files and will be readable by the public via the
+# webserver.
+preseed__debian_root_password: "{{ lookup('password', secret + '/credentials/' + inventory_hostname
+                                          + '/preseed/debian/root/password '
+                                          + 'encrypt=sha512_crypt length=' + preseed__debian_password_length) }}"
 
-
-# .. envvar:: preseed__salt_packages
+                                                                   # ]]]
+# .. envvar:: preseed__debian_admin_password [[[
 #
-# List of packages to install for Salt.
-preseed__salt_packages: [ 'salt-minion' ]
+# The :man:`crypt(3)` hash of the administrative UNIX account password
+# generated by Ansible and saved in the :file:`secret/` directory, managed by
+# the :ref:`debops.secret` Ansible role. The hash will be stored in the
+# generated Preseed configuration files and will be readable by the public via
+# the webserver.
+preseed__debian_admin_password: "{{ lookup('password', secret + '/credentials/' + inventory_hostname
+                                           + '/preseed/debian/' + preseed__admin_name + '/password '
+                                           + 'encrypt=sha512_crypt length=' + preseed__debian_password_length) }}"
+                                                                   # ]]]
+                                                                   # ]]]
+# Preseed definitions [[[
+# -----------------------
 
+# These lists define what :file:`preseed.cfg` configuration files and
+# :file:`postinst.sh` scripts will be generated by the role, as well as what
+# will be their contents. See :ref:`preseed__ref_definitions` for more details.
 
-# .. envvar:: preseed__salt_apt_key_url
+# .. envvar:: preseed__default_definitions [[[
 #
-# SaltStack Debian repository GPG key.
-preseed__salt_apt_key_url: 'http://debian.saltstack.com/debian-salt-team-joehealy.gpg.key'
+# List of Preseed definitions created by default by the role.
+preseed__default_definitions:
 
+  - name: 'debian-wheezy'
+    flavor: 'debian'
+    release: 'wheezy'
+    options: '{{ preseed__options_interactive_partman
+                 + preseed__options_enable_nonfree }}'
 
-# .. envvar:: preseed__salt_upstream_repository
+  - name: 'debian-jessie'
+    flavor: 'debian'
+    release: 'jessie'
+    options: '{{ preseed__options_interactive_partman
+                 + preseed__options_enable_nonfree }}'
+
+  - name: 'debian-stretch'
+    flavor: 'debian'
+    release: 'stretch'
+    options: '{{ preseed__options_interactive_partman
+                 + preseed__options_enable_nonfree }}'
+
+  - name: 'debian-buster'
+    flavor: 'debian'
+    release: 'buster'
+    options: '{{ preseed__options_interactive_partman
+                 + preseed__options_enable_nonfree }}'
+
+  - name: 'debian-bullseye'
+    flavor: 'debian'
+    release: 'bullseye'
+    options: '{{ preseed__options_interactive_partman
+                 + preseed__options_enable_nonfree }}'
+
+  - name: 'debian-wheezy-user'
+    flavor: 'debian-user'
+    release: 'wheezy'
+    options: '{{ preseed__options_interactive_partman
+                 + preseed__options_ansible_user
+                 + preseed__options_enable_nonfree }}'
+    admin_username: '{{ preseed__admin_name }}'
+
+  - name: 'debian-jessie-user'
+    flavor: 'debian-user'
+    release: 'jessie'
+    options: '{{ preseed__options_interactive_partman
+                 + preseed__options_ansible_user
+                 + preseed__options_enable_nonfree }}'
+    admin_username: '{{ preseed__admin_name }}'
+
+  - name: 'debian-stretch-user'
+    flavor: 'debian-user'
+    release: 'stretch'
+    options: '{{ preseed__options_interactive_partman
+                 + preseed__options_ansible_user
+                 + preseed__options_enable_nonfree }}'
+    admin_username: '{{ preseed__admin_name }}'
+
+  - name: 'debian-buster-user'
+    flavor: 'debian-user'
+    release: 'buster'
+    options: '{{ preseed__options_interactive_partman
+                 + preseed__options_ansible_user
+                 + preseed__options_enable_nonfree }}'
+    admin_username: '{{ preseed__admin_name }}'
+
+  - name: 'debian-bullseye-user'
+    flavor: 'debian-user'
+    release: 'bullseye'
+    options: '{{ preseed__options_interactive_partman
+                 + preseed__options_ansible_user
+                 + preseed__options_enable_nonfree }}'
+    admin_username: '{{ preseed__admin_name }}'
+
+  - name: 'debian-wheezy-vm'
+    flavor: 'debian-vm'
+    release: 'wheezy'
+
+  - name: 'debian-jessie-vm'
+    flavor: 'debian-vm'
+    release: 'jessie'
+
+  - name: 'debian-stretch-vm'
+    flavor: 'debian-vm'
+    release: 'stretch'
+
+  - name: 'debian-buster-vm'
+    flavor: 'debian-vm'
+    release: 'buster'
+
+  - name: 'debian-bullseye-vm'
+    flavor: 'debian-vm'
+    release: 'bullseye'
+
+  - name: 'debian-wheezy-vm-user'
+    flavor: 'debian-vm-user'
+    release: 'wheezy'
+    options: '{{ preseed__options_ansible_user }}'
+    admin_username: '{{ preseed__admin_name }}'
+
+  - name: 'debian-jessie-vm-user'
+    flavor: 'debian-vm-user'
+    release: 'jessie'
+    options: '{{ preseed__options_ansible_user }}'
+    admin_username: '{{ preseed__admin_name }}'
+
+  - name: 'debian-stretch-vm-user'
+    flavor: 'debian-vm-user'
+    release: 'stretch'
+    options: '{{ preseed__options_ansible_user }}'
+    admin_username: '{{ preseed__admin_name }}'
+
+  - name: 'debian-buster-vm-user'
+    flavor: 'debian-vm-user'
+    release: 'buster'
+    options: '{{ preseed__options_ansible_user }}'
+    admin_username: '{{ preseed__admin_name }}'
+
+  - name: 'debian-bullseye-vm-user'
+    flavor: 'debian-vm-user'
+    release: 'bullseye'
+    options: '{{ preseed__options_ansible_user }}'
+    admin_username: '{{ preseed__admin_name }}'
+
+                                                                   # ]]]
+# .. envvar:: preseed__definitions [[[
 #
-# SaltStack Debian APT repository.
-preseed__salt_upstream_repository: 'deb http://debian.saltstack.com/debian {{ ansible_distribution_release.split("/")[0] }}-saltstack main'
+# List of Preseed definitions created on all hosts in the Ansible inventory.
+preseed__definitions: []
 
-
-# .. envvar:: preseed__salt_options
+                                                                   # ]]]
+# .. envvar:: preseed__group_definitions [[[
 #
-# Additional options for Salt defined as a text block; they will be added to
-# the :file:`/etc/salt/minion.d/ansible.conf` file.
-preseed__salt_options: ''
+# List of Preseed definitions created on hosts in a specific Ansible inventory
+# group.
+preseed__group_definitions: []
 
-
-# .. Role-dependent configuration [[[1
+                                                                   # ]]]
+# .. envvar:: preseed__host_definitions [[[
 #
-# --------------------------------
-#   Role-dependent configuration
-# --------------------------------
+# List of Preseed definitions created on specific hosts in the Ansible
+# inventory.
+preseed__host_definitions: []
 
-# .. envvar:: preseed__nginx__server_location
+                                                                   # ]]]
+# .. envvar:: preseed__combined_definitions [[[
 #
-# :program:`nginx` server locations managed by the :ref:`debops.nginx` role.
-preseed__nginx__server_location:
-  '/': |
-    try_files $uri $uri/ $uri.html /index.html =404;
-    autoindex on;
-    types {
-            text/plain cfg sh;
-    }
+# Variable which combines all Preseed definition lists and is used in role
+# tasks and templates.
+preseed__combined_definitions: '{{ preseed__default_definitions
+                                   + preseed__definitions
+                                   + preseed__group_definitions
+                                   + preseed__host_definitions }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Preseed configuration templates [[[
+# -----------------------------------
 
-  '~ /d-i/': |
-    index index.html index.htm preseed.cfg ;
-    try_files $uri $uri/ $uri.html /index.html =404;
-    autoindex on;
-    types {
-            text/plain cfg sh;
-    }
+# The lists below define a "template configuration" for all Preseed
+# definitions. The configuration can then be modified per-definition if
+# necessary. See :ref:`preseed__ref_configuration` for more details.
 
-
-# .. envvar:: preseed__nginx__server_http
+# .. envvar:: preseed__original_configuration [[[
 #
-# HTTP :program:`nginx` server configurations managed by the :ref:`debops.nginx`
-# role.
-preseed__nginx__server_http:
-  by_role: 'debops.preseed'
-  enabled: True
-  ssl: False
-  filename: '{{ preseed__domains[0] + "_http" }}'
-  name: '{{ preseed__domains }}'
-  root: '{{ preseed__www_webserver }}'
-  webroot_create: False
-
-  access_policy: '{{ preseed__nginx_access_policy }}'
-  auth_basic_realm: '{{ preseed__nginx_auth_realm }}'
-
-  location: '{{ preseed__nginx__server_location }}'
-
-
-# .. envvar:: preseed__nginx__server_https
+# This is the `Example Debian Stable (bullseye) Preseed`__ configuration file,
+# formatted to be compatible with the :ref:`debops.preseed` format.
 #
-# HTTPS :program:`nginx` server configurations managed by the :ref:`debops.nginx`
-# role.
-preseed__nginx__server_https:
-  by_role: 'debops.preseed'
-  enabled: True
-  listen: False
-  filename: '{{ preseed__domains[0] + "_https" }}'
-  name: '{{ preseed__domains }}'
-  root: '{{ preseed__www_webserver }}'
-  webroot_create: False
-  state: '{{ "present"
-             if (ansible_local|d() and ansible_local.pki|d() and
-                 (ansible_local.pki.enabled|d())|bool)
-             else "absent" }}'
+# .. __: https://www.debian.org/releases/stable/example-preseed.txt
+#
+preseed__original_configuration:
 
-  access_policy: '{{ preseed__nginx_access_policy }}'
-  auth_basic_realm: '{{ preseed__nginx_auth_realm }}'
+  - name: 'comment_contents'
+    comment: 'Contents of the preconfiguration file (for ${flavor} on ${release})'
+    state: 'hidden'
 
-  location: '{{ preseed__nginx__server_location }}'
+  - name: 'debian-installer/locale'
+    comment: |
+      Localization
+      Preseeding only locale sets language, country and locale
+    value: 'en_US'
 
+  - name: 'debian-installer/language'
+    comment: 'The values can also be preseeded individually for greater flexibility.'
+    value: 'en'
+    state: 'comment'
 
-# .. envvar:: preseed__nginx__servers
+  - name: 'debian-installer/country'
+    value: 'NL'
+    state: 'comment'
+
+  - name: 'comment_debian-installer/locale'
+    option: 'debian-installer/locale'
+    value: 'en_GB.UTF-8'
+    state: 'comment'
+
+  - name: 'localechooser/supported-locales'
+    comment: 'Optionally specify additional locales to be generated.'
+    type: 'multiselect'
+    value: 'en_US.UTF-8, nl_NL.UTF-8'
+    state: 'comment'
+
+  - name: 'keyboard-configuration/xkb-keymap'
+    comment: 'Keyboard selection.'
+    type: 'select'
+    value: 'en'
+
+  - name: 'keyboard-configuration/toggle'
+    type: 'select'
+    value: 'No toggling'
+    state: 'comment'
+
+  - name: 'netcfg/enable'
+    comment: |
+      Network configuration
+      Disable network configuration entirely. This is useful for cdrom
+      installations on non-networked devices where the network questions,
+      warning and long timeouts are a nuisance.
+    value: False
+    state: 'comment'
+
+  - name: 'netcfg/choose_interface'
+    comment: |
+      netcfg will choose an interface that has link if possible. This makes it
+      skip displaying a list if there is more than one interface.
+    type: 'select'
+    value: 'auto'
+
+  - name: 'comment_netcfg/choose_interface'
+    option: 'netcfg/choose_interface'
+    comment: 'To pick a particular interface instead:'
+    type: 'select'
+    value: 'eth1'
+    state: 'comment'
+
+  - name: 'netcfg/link_wait_timeout'
+    comment: |
+      To set a different link detection timeout (default is 3 seconds).
+      Values are interpreted as seconds.
+    value: '10'
+    state: 'comment'
+
+  - name: 'netcfg/dhcp_timeout'
+    comment: |
+      If you have a slow dhcp server and the installer times out waiting for
+      it, this might be useful.
+    value: '60'
+    state: 'comment'
+
+  - name: 'netcfg/dhcpv6_timeout'
+    value: '60'
+    state: 'comment'
+
+  - name: 'netcfg/disable_autoconfig'
+    comment: |
+      If you prefer to configure the network manually, uncomment this line and
+      the static network configuration below.
+    value: True
+    state: 'comment'
+
+  - name: 'netcfg/dhcp_failed'
+    comment: |
+      If you want the preconfiguration file to work on systems both with and
+      without a dhcp server, uncomment these lines and the static network
+      configuration below.
+    type: 'note'
+    state: 'comment'
+
+  - name: 'netcfg/dhcp_options'
+    type: 'select'
+    value: 'Configure network manually'
+    state: 'comment'
+
+  - name: 'netcfg/get_ipaddress'
+    comment: |
+      Static network configuration.
+      IPv4 example
+    value: '192.0.2.42'
+    state: 'comment'
+
+  - name: 'netcfg/get_netmask'
+    value: '255.255.255.0'
+    state: 'comment'
+
+  - name: 'netcfg/get_gateway'
+    value: '192.0.2.1'
+    state: 'comment'
+
+  - name: 'netcfg/get_nameservers'
+    value: '192.0.2.1'
+    state: 'comment'
+
+  - name: 'netcfg/confirm_static'
+    value: True
+    state: 'comment'
+
+  - name: 'ipv6_netcfg/get_ipaddress'
+    comment: 'IPv6 example'
+    option: 'netcfg/get_ipaddress'
+    value: '2001:db8::2'
+    state: 'comment'
+
+  - name: 'ipv6_netcfg/get_netmask'
+    option: 'netcfg/get_netmask'
+    value: 'ffff:ffff:ffff:ffff::'
+    state: 'comment'
+
+  - name: 'ipv6_netcfg/get_gateway'
+    option: 'netcfg/get_gateway'
+    value: '2001:db8::1'
+    state: 'comment'
+
+  - name: 'ipv6_netcfg/get_nameservers'
+    option: 'netcfg/get_nameservers'
+    value: '2001:db8::1'
+    state: 'comment'
+
+  - name: 'ipv6_netcfg/confirm_static'
+    option: 'netcfg/confirm_static'
+    value: True
+    state: 'comment'
+
+  - name: 'netcfg/get_hostname'
+    comment: |
+      Any hostname and domain names assigned from dhcp take precedence over
+      values set here. However, setting the values still prevents the questions
+      from being shown, even if values come from dhcp.
+    value: 'unassigned-hostname'
+
+  - name: 'netcfg/get_domain'
+    value: 'unassigned-domain'
+
+  - name: 'netcfg/hostname'
+    comment: |
+      If you want to force a hostname, regardless of what either the DHCP
+      server returns or what the reverse DNS entry for the IP is, uncomment
+      and adjust the following line.
+    value: 'somehost'
+    state: 'comment'
+
+  - name: 'netcfg/wireless_wep'
+    comment: 'Disable that annoying WEP key dialog.'
+    value: ''
+
+  - name: 'netcfg/dhcp_hostname'
+    comment: |
+      The wacky dhcp hostname that some ISPs use as a password of sorts.
+    value: 'radish'
+    state: 'comment'
+
+  - name: 'hw-detect/load_firmware'
+    comment: |
+      If non-free firmware is needed for the network or other hardware, you can
+      configure the installer to always try to load it, without prompting. Or
+      change to false to disable asking.
+    value: True
+    state: 'comment'
+
+  - name: 'anna/choose_modules'
+    comment: |
+      Network console
+      Use the following settings if you wish to make use of the network-console
+      component for remote installation over SSH. This only makes sense if you
+      intend to perform the remainder of the installation manually.
+    value: 'network-console'
+    state: 'comment'
+
+  - name: 'network-console/authorized_keys_url'
+    value: 'http://192.0.2.1/openssh-key'
+    state: 'comment'
+
+  - name: 'network-console/password'
+    type: 'password'
+    value: 'r00tme'
+    state: 'comment'
+
+  - name: 'network-console/password-again'
+    type: 'password'
+    value: 'r00tme'
+    state: 'comment'
+
+  - name: 'mirror/protocol'
+    comment: |
+      Mirror settings
+      If you select ftp, the mirror/country string does not need to be set.
+    value: 'ftp'
+    state: 'comment'
+
+  - name: 'mirror/country'
+    value: 'manual'
+
+  - name: 'mirror/http/hostname'
+    value: 'http.us.debian.org'
+
+  - name: 'mirror/http/directory'
+    value: '/debian'
+
+  - name: 'mirror/http/proxy'
+    value: ''
+
+  - name: 'mirror/suite'
+    comment: 'Suite to install.'
+    value: 'testing'
+    state: 'comment'
+
+  - name: 'mirror/udeb/suite'
+    comment: 'Suite to use for loading installer components (optional)'
+    value: 'testing'
+    state: 'comment'
+
+  - name: 'passwd/root-login'
+    comment: |
+      Account setup
+      Skip creation of a root account (normal user account will be able to
+      use sudo).
+    value: False
+    state: 'comment'
+
+  - name: 'passwd/make-user'
+    comment: 'Alternatively, to skip creation of a normal user account.'
+    value: False
+    state: 'comment'
+
+  - name: 'passwd/root-password'
+    comment: 'Root password, either in clear text'
+    type: 'password'
+    value: 'r00tme'
+    state: 'comment'
+
+  - name: 'passwd/root-password-again'
+    type: 'password'
+    value: 'r00tme'
+    state: 'comment'
+
+  - name: 'passwd/root-password-crypted'
+    comment: 'or encrypted using a crypt(3) hash.'
+    type: 'password'
+    value: '[crypt(3) hash]'
+    state: 'comment'
+
+  - name: 'passwd/user-fullname'
+    comment: 'To create a normal user account.'
+    value: 'Debian User'
+    state: 'comment'
+
+  - name: 'passwd/username'
+    value: 'debian'
+    state: 'comment'
+
+  - name: 'passwd/user-password'
+    comment: "Normal user's password, either in clear text"
+    type: 'password'
+    value: 'insecure'
+    state: 'comment'
+
+  - name: 'passwd/user-password-again'
+    type: 'password'
+    value: 'insecure'
+    state: 'comment'
+
+  - name: 'passwd/user-password-crypted'
+    comment: 'or encrypted using a crypt(3) hash.'
+    type: 'password'
+    value: '[crypt(3) hash]'
+    state: 'comment'
+
+  - name: 'passwd/user-uid'
+    comment: 'Create the first user with the specified UID instead of the default.'
+    value: '1010'
+    state: 'comment'
+
+  - name: 'passwd/user-default-groups'
+    comment: |
+      The user account will be added to some standard initial groups.
+      To override that, use this.
+    value: [ 'audio', 'cdrom', 'video' ]
+    state: 'comment'
+
+  - name: 'clock-setup/utc'
+    comment: |
+      Clock and time zone setup
+      Controls whether or not the hardware clock is set to UTC.
+    value: True
+
+  - name: 'time/zone'
+    comment: |
+      You may set this to any valid setting for $TZ; see the contents of
+      /usr/share/zoneinfo/ for valid values.
+    value: 'US/Eastern'
+
+  - name: 'clock-setup/ntp'
+    comment: 'Controls whether to use NTP to set the clock during the install'
+    value: True
+
+  - name: 'clock-setup/ntp-server'
+    comment: 'NTP server to use. The default is almost always fine here.'
+    value: 'ntp.example.com'
+    state: 'comment'
+
+  - name: 'partman-auto/init_automatically_partition'
+    comment: |
+      Partitioning
+      If the system has free space you can choose to only partition that space.
+      This is only honoured if partman-auto/method (below) is not set.
+    type: 'select'
+    value: 'biggest_free'
+    state: 'comment'
+
+  - name: 'partman-auto/disk'
+    comment: |
+      Alternatively, you may specify a disk to partition. If the system has only
+      one disk the installer will default to using that, but otherwise the device
+      name must be given in traditional, non-devfs format (so e.g. /dev/sda
+      and not e.g. /dev/discs/disc0/disc).
+      For example, to use the first SCSI/SATA hard disk:
+    value: '/dev/sda'
+    state: 'comment'
+
+  - name: 'partman-auto/method'
+    comment: |
+      In addition, you'll need to specify the method to use.
+      The presently available methods are:
+      - regular: use the usual partition types for your architecture
+      - lvm:     use LVM to partition the disk
+      - crypto:  use LVM within an encrypted partition
+    value: 'lvm'
+
+  - name: 'partman-auto-lvm/guided_size'
+    comment: |
+      You can define the amount of space that will be used for the LVM volume
+      group. It can either be a size with its unit (eg. 20 GB), a percentage of
+      free space or the 'max' keyword.
+    value: 'max'
+
+  - name: 'partman-lvm/device_remove_lvm'
+    comment: |
+      If one of the disks that are going to be automatically partitioned
+      contains an old LVM configuration, the user will normally receive a
+      warning. This can be preseeded away...
+    value: True
+
+  - name: 'partman-md/device_remove_md'
+    comment: 'The same applies to pre-existiing software RAID array:'
+    value: True
+
+  - name: 'partman-lvm/confirm'
+    comment: 'And the same goes for the confirmation to write the lvm partitions.'
+    value: True
+
+  - name: 'partman-lvm/confirm_nooverwrite'
+    value: True
+
+  - name: 'partman-auto/choose_recipe'
+    comment: |
+      You can choose one of the three predefined partitioning recipes:
+      - atomic: all files in one partition
+      - home:   separate /home partition
+      - multi:  separate /home, /var, and /tmp partitions
+    type: 'select'
+    value: 'atomic'
+
+  - name: 'partman-auto/expert_recipe_file'
+    comment: |
+      Or provide a recipe of your own...
+      If you have a way to get a recipe file into the d-i environment, you can
+      just point at it.
+    value: '/hd-media/recipe'
+    state: 'comment'
+
+  - name: 'partman-auto/expert_recipe'
+    comment: |
+      If not, you can put an entire recipe into the preconfiguration file in one
+      (logical) line. This example creates a small /boot partition, suitable
+      swap, and uses the rest of the space for the root partition:
+    value: |
+      boot-root ::                                            \
+              40 50 100 ext3                                  \
+                      $primary{ } $bootable{ }                \
+                      method{ format } format{ }              \
+                      use_filesystem{ } filesystem{ ext3 }    \
+                      mountpoint{ /boot }                     \
+              .                                               \
+              500 10000 1000000000 ext3                       \
+                      method{ format } format{ }              \
+                      use_filesystem{ } filesystem{ ext3 }    \
+                      mountpoint{ / }                         \
+              .                                               \
+              64 512 300% linux-swap                          \
+                      method{ swap } format{ }                \
+              .
+    state: 'comment'
+
+  - name: 'comment_partman_docs'
+    comment: |
+      The full recipe format is documented in the file partman-auto-recipe.txt
+      included in the 'debian-installer' package or available from D-I source
+      repository. This also documents how to specify settings such as file
+      system labels, volume group names and which physical devices to include
+      in a volume group.
+    state: 'hidden'
+
+  - name: 'comment_partman_efi'
+    comment: |
+      Partitioning for EFI
+      If your system needs an EFI partition you could add something like
+      this to the recipe above, as the first element in the recipe:
+                    538 538 1075 free                              \
+                           $iflabel{ gpt }                         \
+                           $reusemethod{ }                         \
+                           method{ efi }                           \
+                           format{ }                               \
+                    .                                              \
+
+      The fragment above is for the amd64 architecture; the details may be
+      different on other architectures. The 'partman-auto' package in the
+      D-I source repository may have an example you can follow.
+    state: 'hidden'
+
+  - name: 'partman-partitioning/confirm_write_new_label'
+    comment: |
+      This makes partman automatically partition without confirmation, provided
+      that you told it what to do using one of the methods above.
+    value: True
+
+  - name: 'partman/choose_partition'
+    type: 'select'
+    value: 'finish'
+
+  - name: 'partman/confirm'
+    value: True
+
+  - name: 'partman/confirm_nooverwrite'
+    value: True
+
+  - name: 'partman-efi/non_efi_system'
+    comment: |
+      Force UEFI booting ('BIOS compatibility' will be lost). Default: false.
+    value: True
+    state: 'comment'
+
+  - name: 'partman-partitioning/choose_label'
+    comment: |
+      Ensure the partition table is GPT - this is required for EFI
+    value: 'gpt'
+    state: 'comment'
+
+  - name: 'partman-partitioning/default_label'
+    value: 'gpt'
+    state: 'comment'
+
+  - name: 'partman-auto-crypto/erase_disks'
+    comment: |
+      When disk encryption is enabled, skip wiping the partitions beforehand.
+    value: False
+    state: 'comment'
+
+  - name: 'raid_partman-auto/method'
+    option: 'partman-auto/method'
+    comment: |
+      Partitioning using RAID
+      The method should be set to "raid".
+    value: 'raid'
+    state: 'comment'
+
+  - name: 'raid_partman-auto/disk'
+    option: 'partman-auto/disk'
+    comment: |
+      Specify the disks to be partitioned. They will all get the same layout,
+      so this will only work if the disks are the same size.
+    value:
+      - '/dev/sda'
+      - '/dev/sdb'
+    state: 'comment'
+
+  - name: 'raid_partman-auto/expert_recipe'
+    option: 'partman-auto/expert_recipe'
+    comment: |
+      Next you need to specify the physical partitions that will be used.
+    value: |
+      multiraid ::                                         \
+              1000 5000 4000 raid                          \
+                      $primary{ } method{ raid }           \
+              .                                            \
+              64 512 300% raid                             \
+                      method{ raid }                       \
+              .                                            \
+              500 10000 1000000000 raid                    \
+                      method{ raid }                       \
+              .
+    state: 'comment'
+
+  - name: 'partman-auto-raid/recipe'
+    comment: |
+      Last you need to specify how the previously defined partitions will be
+      used in the RAID setup. Remember to use the correct partition numbers
+      for logical partitions. RAID levels 0, 1, 5, 6 and 10 are supported;
+      devices are separated using "#".
+      Parameters are:
+      <raidtype> <devcount> <sparecount> <fstype> <mountpoint> \
+               <devices> <sparedevices>
+    value: |
+      1 2 0 ext3 /                    \
+            /dev/sda1#/dev/sdb1       \
+      .                               \
+      1 2 0 swap -                    \
+            /dev/sda5#/dev/sdb5       \
+      .                               \
+      0 2 0 ext3 /home                \
+            /dev/sda6#/dev/sdb6       \
+      .
+    state: 'comment'
+
+  - name: 'comment_partman-raid'
+    comment: |
+      For additional information see the file partman-auto-raid-recipe.txt
+      included in the 'debian-installer' package or available from D-I source
+      repository.
+    state: 'hidden'
+
+  - name: 'partman-md/confirm'
+    comment: 'This makes partman automatically partition without confirmation.'
+    value: True
+    state: 'comment'
+
+  - name: 'partman/mount_style'
+    comment: |
+      Controlling how partitions are mounted
+      The default is to mount by UUID, but you can also choose "traditional" to
+      use traditional device names, or "label" to try filesystem labels before
+      falling back to UUIDs.
+    type: 'select'
+    value: 'uuid'
+    state: 'comment'
+
+  - name: 'base-installer/install-recommends'
+    comment: |
+      Base system installation
+      Configure APT to not install recommended packages by default. Use of this
+      option can result in an incomplete system and should only be used by very
+      experienced users.
+    value: False
+    state: 'comment'
+
+  - name: 'base-installer/kernel/image'
+    comment: |
+      The kernel image (meta) package to be installed; "none" can be used if no
+      kernel is to be installed.
+    value: 'linux-image-amd64'
+    state: 'comment'
+
+  - name: 'apt-setup/non-free'
+    comment: |
+      Apt setup
+      You can choose to install non-free and contrib software.
+    value: True
+    state: 'comment'
+
+  - name: 'apt-setup/contrib'
+    value: True
+    state: 'comment'
+
+  - name: 'apt-setup/use_mirror'
+    comment: |
+      Uncomment this if you don't want to use a network mirror.
+    value: False
+    state: 'comment'
+
+  - name: 'apt-setup/services-select'
+    comment: |
+      Select which update services to use; define the mirrors to be used.
+      Values shown below are the normal defaults.
+    type: 'multiselect'
+    value: 'security, updates'
+    state: 'comment'
+
+  - name: 'apt-setup/security_host'
+    value: 'security.debian.org'
+    state: 'comment'
+
+  - name: 'apt-setup/local0/repository'
+    comment: |
+      Additional repositories, local[0-9] available
+    value: 'http://server.example.org/debian stable main'
+    state: 'comment'
+
+  - name: 'apt-setup/local0/comment'
+    value: 'local server'
+    state: 'comment'
+
+  - name: 'apt-setup/local0/source'
+    comment: 'Enable deb-src lines'
+    value: True
+    state: 'comment'
+
+  - name: 'apt-setup/local0/key'
+    comment: |
+      URL to the public key of the local repository; you must provide a key or
+      apt will complain about the unauthenticated repository and so the
+      sources.list line will be left commented out.
+
+      If the provided key file ends in ".asc" the key file needs to be an
+      ASCII-armoured PGP key, if it ends in ".gpg" it needs to use the
+      "GPG key public keyring" format, the "keybox database" format is
+      currently not supported.
+    value: 'http://server.example.org/key.asc'
+    state: 'comment'
+
+  - name: 'debian-installer/allow_unauthenticated'
+    comment: |
+      By default the installer requires that repositories be authenticated
+      using a known gpg key. This setting can be used to disable that
+      authentication. Warning: Insecure, not recommended.
+    value: True
+    state: 'comment'
+
+  - name: 'apt-setup/multiarch'
+    comment: |
+      Uncomment this to add multiarch configuration for i386
+    value: 'i386'
+    state: 'comment'
+
+  - name: 'tasksel/first'
+    owner: 'tasksel'
+    comment: 'Package selection'
+    type: 'multiselect'
+    value: 'standard, web-server, kde-desktop'
+    state: 'comment'
+
+  - name: 'pkgsel/include'
+    comment: 'Individual additional packages to install'
+    value: 'openssh-server build-essential'
+    state: 'comment'
+
+  - name: 'pkgsel/upgrade'
+    comment: |
+      Whether to upgrade packages after debootstrap.
+      Allowed values: none, safe-upgrade, full-upgrade
+    type: 'select'
+    value: 'none'
+    state: 'comment'
+
+  - name: 'popularity-contest/participate'
+    owner: 'popularity-contest'
+    comment: |
+      Some versions of the installer can report back on what software you have
+      installed, and what software you use. The default is not to report back,
+      but sending reports helps the project determine what software is most
+      popular and should be included on the first CD/DVD.
+    value: False
+    state: 'comment'
+
+  - name: 'grub-installer/only_debian'
+    comment: |
+      Boot loader installation
+      Grub is the boot loader (for x86).
+
+      This is fairly safe to set, it makes grub install automatically to the UEFI
+      partition/boot record if no other operating system is detected on the machine.
+    value: True
+
+  - name: 'grub-installer/with_other_os'
+    comment: |
+      This one makes grub-installer install to the UEFI partition/boot record, if
+      it also finds some other OS, which is less safe as it might not be able to
+      boot that other OS.
+    value: True
+
+  - name: 'grub-installer/bootdev'
+    comment: |
+      Due notably to potential USB sticks, the location of the primary drive can
+      not be determined safely in general, so this needs to be specified:
+    value: '/dev/sda'
+    state: 'comment'
+
+  - name: 'grub-installer/bootdev_default'
+    option: 'grub-installer/bootdev'
+    comment: |
+      To install to the primary device (assuming it is not a USB stick):
+    value: 'default'
+    state: 'comment'
+
+  - name: 'other_grub-installer/only_debian'
+    option: 'grub-installer/only_debian'
+    comment: |
+      Alternatively, if you want to install to a location other than the UEFI
+      parition/boot record, uncomment and edit these lines:
+    value: False
+    state: 'comment'
+
+  - name: 'other_grub-installer/with_other_os'
+    option: 'grub-installer/with_other_os'
+    value: False
+    state: 'comment'
+
+  - name: 'other_grub-installer/bootdev'
+    option: 'grub-installer/bootdev'
+    value: '(hd0,1)'
+    state: 'comment'
+
+  - name: 'multi_grub-installer/bootdev'
+    option: 'grub-installer/bootdev'
+    comment: 'To install grub to multiple disks:'
+    value:
+      - '(hd0,1)'
+      - '(hd1,1)'
+      - '(hd2,1)'
+    state: 'comment'
+
+  - name: 'grub-installer/password'
+    comment: |
+      Optional password for grub, either in clear text
+    type: 'password'
+    value: 'r00tme'
+    state: 'comment'
+
+  - name: 'grub-installer/password-again'
+    type: 'password'
+    value: 'r00tme'
+    state: 'comment'
+
+  - name: 'grub-installer/password-crypted'
+    comment: |
+      or encrypted using an MD5 hash, see grub-md5-crypt(8).
+    type: 'password'
+    value: '[MD5 hash]'
+    state: 'comment'
+
+  - name: 'debian-installer/add-kernel-opts'
+    comment: |
+      Use the following option to add additional boot parameters for the
+      installed system (if supported by the bootloader installer).
+      Note: options passed to the installer will be added automatically.
+    value: 'nousb'
+    state: 'comment'
+
+  - name: 'finish-install/keep-consoles'
+    comment: |
+      Finishing up the installation
+      During installations from serial console, the regular virtual consoles
+      (VT1-VT6) are normally disabled in /etc/inittab. Uncomment the next
+      line to prevent this.
+    value: True
+    state: 'comment'
+
+  - name: 'finish-install/reboot_in_progress'
+    comment: 'Avoid that last message about the install being complete.'
+    type: 'note'
+    value: ''
+
+  - name: 'cdrom-detect/eject'
+    comment: |
+      This will prevent the installer from ejecting the CD during the reboot,
+      which is useful in some situations.
+    value: False
+    state: 'comment'
+
+  - name: 'debian-installer/exit/halt'
+    comment: |
+      This is how to make the installer shutdown when finished, but not
+      reboot into the installed system.
+    value: True
+    state: 'comment'
+
+  - name: 'debian-installer/exit/poweroff'
+    comment: |
+      This will power off the machine instead of just halting it.
+    value: True
+    state: 'comment'
+
+  - name: 'comment_other_preseeds'
+    comment: |
+      Preseeding other packages
+      Depending on what software you choose to install, or if things go wrong
+      during the installation process, it's possible that other questions may
+      be asked. You can preseed those too, of course. To get a list of every
+      possible question that could be asked during an install, do an
+      installation, and then run these commands:
+        debconf-get-selections --installer > file
+        debconf-get-selections >> file
+    state: 'hidden'
+
+  - name: 'comment_advanced_options'
+    comment: |
+      Advanced options
+      Running custom commands during the installation
+      d-i preseeding is inherently not secure. Nothing in the installer checks
+      for attempts at buffer overflows or other exploits of the values of a
+      preconfiguration file like this one. Only use preconfiguration files from
+      trusted locations! To drive that home, and because it's generally useful,
+      here's a way to run any shell command you'd like inside the installer,
+      automatically.
+    state: 'hidden'
+
+  - name: 'preseed/early_command'
+    comment: |
+      This first command is run as early as possible, just after
+      preseeding is read.
+    value: 'anna-install some-udeb'
+    state: 'comment'
+
+  - name: 'partman/early_command'
+    comment: |
+      This command is run immediately before the partitioner starts. It may be
+      useful to apply dynamic partitioner preseeding that depends on the state
+      of the disks (which may not be visible when preseed/early_command runs).
+    value: 'debconf-set partman-auto/disk "$(list-devices disk | head -n1)"'
+    state: 'comment'
+
+  - name: 'preseed/late_command'
+    comment: |
+      This command is run just before the install finishes, but when there is
+      still a usable /target directory. You can chroot to /target and use it
+      directly, or use the apt-install and in-target commands to easily install
+      packages and run commands in the target system.
+    value: 'apt-install zsh; in-target chsh -s /bin/zsh'
+    state: 'comment'
+
+                                                                   # ]]]
+# .. envvar:: preseed__default_configuration [[[
+#
+# This is a list of Preseed template options defined by the
+# :ref:`debops.preseed` role, which might override the original Preseed
+# configuration.
+preseed__default_configuration:
+
+  - name: 'debian-installer/locale'
+    value: '{{ ansible_local.locales.system_locale | d("en_US.UTF-8") }}'
+
+  - name: 'keyboard-configuration/xkb-keymap'
+    value: '{{ ansible_local.locales.system_language | d("en") }}'
+
+  - name: 'mirror/http/hostname'
+    value: 'deb.debian.org'
+
+  - name: 'passwd/make-user'
+    value: False
+    state: 'present'
+
+  - name: 'passwd/root-password-crypted'
+    value: '{{ preseed__debian_root_password }}'
+    state: 'present'
+
+  - name: 'time/zone'
+    value: '{{ ansible_local.tzdata.timezone | d("Etc/UTC") }}'
+
+  - name: 'clock-setup/ntp-server'
+    value:
+      - '0.debian.pool.ntp.org'
+      - '1.debian.pool.ntp.org'
+      - '2.debian.pool.ntp.org'
+      - '3.debian.pool.ntp.org'
+    state: 'present'
+
+  - name: 'partman-efi/non_efi_system'
+    state: 'present'
+
+  - name: 'partman-partitioning/choose_label'
+    state: 'present'
+
+  - name: 'partman-partitioning/default_label'
+    state: 'present'
+
+  - name: 'apt-setup/services-select'
+    value: 'security, updates, backports'
+    state: 'present'
+
+  - name: 'apt-setup/cdrom/set-first'
+    copy_id_from: 'apt-setup/multiarch'
+    comment: |
+      Do not scan the CD-ROM image for available packages
+      Ref: https://unix.stackexchange.com/a/409237
+    value: False
+
+  - name: 'apt-setup/cdrom/set-next'
+    copy_id_from: 'apt-setup/multiarch'
+    value: False
+
+  - name: 'apt-setup/cdrom/set-failed'
+    copy_id_from: 'apt-setup/multiarch'
+    value: False
+
+  - name: 'tasksel/first'
+    value: 'ssh-server'
+    state: 'present'
+
+  - name: 'pkgsel/include'
+    value: '{{ preseed__debian_packages }}'
+    state: 'present'
+
+  - name: 'pkgsel/upgrade'
+    value: 'full-upgrade'
+    state: 'present'
+
+  - name: 'grub-installer/with_other_os'
+    value: False
+
+  - name: 'grub-installer/bootdev_default'
+    state: 'present'
+
+  - name: 'debian-installer/add-kernel-opts'
+    value: '{{ preseed__debian_kernel_arguments }}'
+    state: 'present'
+
+  - name: 'cdrom-detect/eject'
+    value: True
+    state: 'present'
+
+  - name: 'preseed/late_command'
+    value: |
+      in-target curl --output /tmp/postinst.sh http://{{ preseed__base_domain }}/${flavor}/d-i/${release}/postinst.sh;\
+      in-target chmod +x /tmp/postinst.sh;\
+      in-target /tmp/postinst.sh
+    state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: preseed__configuration [[[
+#
+# This is a list of Preseed template options defined on all hosts in the
+# Ansible inventory.
+preseed__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: preseed__group_configuration [[[
+#
+# This is a list of Preseed template options defined on hosts in a specific
+# Ansible inventory group.
+preseed__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: preseed__host_configuration [[[
+#
+# This is a list of Preseed template options defined on specific hosts in the
+# Ansible inventory.
+preseed__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: preseed__combined_configuration [[[
+#
+# This variable combines all Preseed template configuration variables and is
+# used in role tasks and templates.
+preseed__combined_configuration: '{{ preseed__original_configuration
+                                     + preseed__default_configuration
+                                     + preseed__configuration
+                                     + preseed__group_configuration
+                                     + preseed__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Preseed template augments [[[
+# -----------------------------
+
+# The lists below define modifications to the default Preseed configuration
+# template. They use the same format as :ref:`preseed__ref_configuration` and
+# are used as a list of options in various :ref:`preseed__ref_definitions` to
+# create different Preseed "flavors".
+
+# .. envvar:: preseed__options_interactive_partman [[[
+#
+# Disable autoconfiguration of disk partitions and ensure that the user is
+# asked to configure them by hand. This might be useful on hardware hosts which
+# might need a custom partition layout. These options are used in the
+# ``debian`` and ``debian-user`` flavors.
+preseed__options_interactive_partman:
+
+  - name: 'partman-auto/method'
+    state: 'comment'
+
+  - name: 'partman-auto-lvm/guided_size'
+    state: 'comment'
+
+  - name: 'partman-lvm/device_remove_lvm'
+    state: 'comment'
+
+  - name: 'partman-md/device_remove_md'
+    state: 'comment'
+
+  - name: 'partman-lvm/confirm'
+    state: 'comment'
+
+  - name: 'partman-lvm/confirm_nooverwrite'
+    state: 'comment'
+
+  - name: 'partman-auto/choose_recipe'
+    state: 'comment'
+
+  - name: 'partman-partitioning/confirm_write_new_label'
+    state: 'comment'
+
+  - name: 'partman/choose_partition'
+    state: 'comment'
+
+  - name: 'partman/confirm'
+    state: 'comment'
+
+  - name: 'partman/confirm_nooverwrite'
+    state: 'comment'
+
+                                                                   # ]]]
+# .. envvar:: preseed__options_ansible_user [[[
+#
+# Configure Debian Installer to disable access to the ``root`` UNIX account via
+# password and create an administrative UNIX account with :command:`sudo`
+# access instead. These options are used in the ``debian-user`` and
+# ``debian-vm-user`` flavors.
+preseed__options_ansible_user:
+
+  - name: 'passwd/root-login'
+    value: False
+    state: 'present'
+
+  - name: 'passwd/make-user'
+    value: True
+    state: 'present'
+
+  - name: 'passwd/user-fullname'
+    value: '{{ preseed__admin_fullname }}'
+    state: 'present'
+
+  - name: 'passwd/username'
+    value: '{{ preseed__admin_name }}'
+    state: 'present'
+
+  - name: 'passwd/user-password-crypted'
+    value: '{{ preseed__debian_admin_password }}'
+    state: 'present'
+
+  - name: 'passwd/user-default-groups'
+    value: [ 'adm', 'staff' ]
+    state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: preseed__options_enable_nonfree [[[
+#
+# During installation, configure APT to use the ``contrib`` and ``non-free``
+# archive components, providing access to non-free firmware which might be
+# required by hardware hosts to function properly. These options are used by
+# ``debian`` and ``debian-user`` flavors.
+preseed__options_enable_nonfree:
+
+  - name: 'apt-setup/non-free'
+    value: True
+    state: 'present'
+
+  - name: 'apt-setup/contrib'
+    value: True
+    state: 'present'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: preseed__nginx__servers [[[
 #
 # List of :program:`nginx` server configurations managed by the
 # :ref:`debops.nginx` role.
-preseed__nginx__servers:
-  - '{{ preseed__nginx__server_http }}'
-  - '{{ preseed__nginx__server_https }}'
+preseed__nginx__dependent_servers:
 
+  - by_role: 'debops.preseed'
+    enabled: True
+    ssl: False  # disable port 443
+    filename: 'debops.preseed_http'
+    name: '{{ preseed__domains }}'
+    root: '{{ preseed__www + "/$preseed" }}'
+    webroot_create: False
+    location:
+      '/': |
+        try_files $uri $uri/ $uri.html /index.html =404;
+        autoindex on;
+        types {
+                text/plain cfg sh;
+        }
 
-# Configuration for other Ansible roles [[[
-# ----------------------------------------
+      '~ /d-i/': |
+        index index.html index.htm preseed.cfg ;
+        try_files $uri $uri/ $uri.html /index.html =404;
+        autoindex on;
+        types {
+                text/plain cfg sh;
+        }
+    state: 'present'
 
-# .. envvar:: preseed__python__dependent_packages3 [[[
-#
-# Configuration for the :ref:`debops.python` Ansible role.
-preseed__python__dependent_packages3:
+  - by_role: 'debops.preseed'
+    enabled: True
+    listen: False  # disable port 80
+    filename: 'debops.preseed_https'
+    name: '{{ preseed__domains }}'
+    root: '{{ preseed__www + "/$preseed" }}'
+    webroot_create: False
+    location:
+      '/': |
+        try_files $uri $uri/ $uri.html /index.html =404;
+        autoindex on;
+        types {
+                text/plain cfg sh;
+        }
 
-  - 'python3'
-  - 'python3-apt'
-  - 'python3-pycurl'
-  - 'python3-httplib2'
-
-                                                                   # ]]]
-# .. envvar:: preseed__python__dependent_packages2 [[[
-#
-# Configuration for the :ref:`debops.python` Ansible role.
-preseed__python__dependent_packages2:
-
-  - 'python'
-  - 'python-apt'
-  - 'python-pycurl'
-  - 'python-httplib2'
-
+      '~ /d-i/': |
+        index index.html index.htm preseed.cfg ;
+        try_files $uri $uri/ $uri.html /index.html =404;
+        autoindex on;
+        types {
+                text/plain cfg sh;
+        }
+    state: '{{ "present" if (ansible_local.pki.enabled|d())|bool else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]

@@ -131,6 +131,7 @@
 - name: Check if ciphertext block device exists
   stat:
     path: '{{ item.ciphertext_block_device }}'
+    get_checksum: False
   register: cryptsetup__register_ciphertext_device
   when: (item.state|d(cryptsetup__state) in
          [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ])

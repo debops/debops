@@ -1,0 +1,207 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2021 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-or-later
+
+# .. _lldpd__ref_defaults:
+
+# debops.lldpd default variables
+# ==============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Installation and packages [[[
+# -----------------------------
+
+# .. envvar:: lldpd__enabled [[[
+#
+# Enable or disable installation and management of LLDP service.
+lldpd__enabled: True
+
+                                                                   # ]]]
+# .. envvar:: lldpd__base_packages [[[
+#
+# List of the APT packages required for LLDP service.
+lldpd__base_packages: [ 'lldpd' ]
+
+                                                                   # ]]]
+# .. envvar:: lldpd__packages [[[
+#
+# List of additional APT packages installed with LLDP service.
+lldpd__packages: []
+
+                                                                   # ]]]
+# .. envvar:: lldpd__version [[[
+#
+# Variable which holds the :command:`lldpd` version information gathered via
+# local facts. It can be used in conditional configuration.
+lldpd__version: '{{ ansible_local.lldpd.version | d("0.0.0") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# LLDP daemon configuration [[[
+# -----------------------------
+
+# .. envvar:: lldpd__default_daemon_arguments [[[
+#
+# List of default daemon arguments to pass to the process during startup, they
+# will be separated by spaces. See the :man:`lldpd(8)` manual page for details.
+# Common arguments include ``-c`` (CDP), ``-s`` (SONMP) and ``-e`` (EDP)
+# protocol support. If the list is empty, the defaults will not be modified.
+lldpd__default_daemon_arguments:
+
+  # Enable support for SNMP subagent when the 'debops.snmpd' role is detected
+  # on the host
+  - '{{ "-x" if (ansible_local.snmpd.installed|d())|bool else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: lldpd__daemon_arguments [[[
+#
+# List of daemon arguments to pass to the process during startup, they will be
+# separated by spaces. See the :man:`lldpd(8)` manual page for details.  Common
+# arguments include ``-c`` (CDP), ``-s`` (SONMP) and ``-e`` (EDP) protocol
+# support. If the list is empty, the defaults will not be modified.
+lldpd__daemon_arguments: []
+                                                                   # ]]]
+                                                                   # ]]]
+# LLDP service configuration [[[
+# ------------------------------
+
+# The lists below define the contents of the :file:`/etc/lldpd.d/` directoory
+# and configuration files inside. See :ref:`lldpd__ref_configuration` for more
+# details.
+
+# .. envvar:: lldpd__default_configuration [[[
+#
+# List of the default configuration files defined by the role.
+lldpd__default_configuration:
+
+  # Overload the 'ChassisID' attribute to show that a given host is a virtual
+  # and not a physical one. It should have been the 'Platform' attribute, but
+  # the "lldpd" daemon does not support advertising it using LLDP, only CDP.
+  - name: 'chassisid'
+    comment: |
+      Override the default ChassisID value in virtual machines and containers
+      to disthinguish them from physical hosts. The value needs to be unique
+      across all neighbors, otherwise LLDP information is mangled.
+    options:
+
+      - name: 'chassis-container'
+        option: 'configure system chassisid'
+        value: 'Container ({{ ansible_hostname }})'
+        state: '{{ "present"
+                   if (ansible_virtualization_type == "container")
+                   else "absent" }}'
+
+      - name: 'chassis-docker'
+        option: 'configure system chassisid'
+        value: 'Docker container ({{ ansible_hostname }})'
+        state: '{{ "present"
+                   if (ansible_virtualization_type == "docker")
+                   else "absent" }}'
+
+      - name: 'chassis-kvm'
+        option: 'configure system chassisid'
+        value: 'KVM virtual machine ({{ ansible_hostname }})'
+        state: '{{ "present"
+                   if (ansible_virtualization_type == "kvm")
+                   else "absent" }}'
+
+      - name: 'chassis-lxc'
+        option: 'configure system chassisid'
+        value: 'LXC container ({{ ansible_hostname }})'
+        state: '{{ "present"
+                   if (ansible_virtualization_type == "lxc")
+                   else "absent" }}'
+
+      - name: 'chassis-openstack'
+        option: 'configure system chassisid'
+        value: 'Openstack virtual machine ({{ ansible_hostname }})'
+        state: '{{ "present"
+                   if (ansible_virtualization_type == "openstack")
+                   else "absent" }}'
+
+      - name: 'chassis-openvz'
+        option: 'configure system chassisid'
+        value: 'OpenVZ container ({{ ansible_hostname }})'
+        state: '{{ "present"
+                   if (ansible_virtualization_type == "openvz")
+                   else "absent" }}'
+
+      - name: 'chassis-podman'
+        option: 'configure system chassisid'
+        value: 'Podman container ({{ ansible_hostname }})'
+        state: '{{ "present"
+                   if (ansible_virtualization_type == "podman")
+                   else "absent" }}'
+
+      - name: 'chassis-virtualbox'
+        option: 'configure system chassisid'
+        value: 'VirtualBox virtual machine ({{ ansible_hostname }})'
+        state: '{{ "present"
+                   if (ansible_virtualization_type == "virtualbox")
+                   else "absent" }}'
+
+      - name: 'chassis-virtualpc'
+        option: 'configure system chassisid'
+        value: 'VirtualPC virtual machine ({{ ansible_hostname }})'
+        state: '{{ "present"
+                   if (ansible_virtualization_type == "VirtualPC")
+                   else "absent" }}'
+
+      - name: 'chassis-vmware'
+        option: 'configure system chassisid'
+        value: 'VMware virtual machine ({{ ansible_hostname }})'
+        state: '{{ "present"
+                   if (ansible_virtualization_type == "VMware")
+                   else "absent" }}'
+
+      - name: 'chassis-xen'
+        option: 'configure system chassisid'
+        value: 'Xen virtual machine ({{ ansible_hostname }})'
+        state: '{{ "present"
+                   if (ansible_virtualization_type == "xen")
+                   else "absent" }}'
+
+    state: '{{ "present"
+               if (ansible_virtualization_role == "guest" and
+                   lldpd__version is version("1.0.0", ">="))
+               else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: lldpd__configuration [[[
+#
+# List of the :command:`lldpd` configuration files which should be present on
+# all hosts in the Ansible inventory.
+lldpd__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: lldpd__group_configuration [[[
+#
+# List of the :command:`lldpd` configuration files which should be present on
+# hosts in a specific Ansible inventory group.
+lldpd__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: lldpd__host_configuration [[[
+#
+# List of the :command:`lldpd` configuration files which should be present on
+# specific hosts in the Ansible inventory.
+lldpd__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: lldpd__combined_configuration [[[
+#
+# Variable which combines all of the :command:`lldpd` configuration lists and
+# is used in role tasks and templates.
+lldpd__combined_configuration: '{{ lldpd__default_configuration
+                                   + lldpd__configuration
+                                   + lldpd__group_configuration
+                                   + lldpd__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]

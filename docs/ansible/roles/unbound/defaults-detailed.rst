@@ -144,3 +144,30 @@ Define a local DNS entry ``example.test.`` with a few resource records:
          - 'PTR localhost.'
          - 'A 192.0.2.1'
          - 'AAAA 2001:db8::1'
+
+Configure Unbound to support a stub DNS zone using an external DNS server, for
+example a home router with :command:`dnsmasq` nameserver. Ensure that both
+normal and reverse lookups work as expected. The local zone is not signed with
+DNSSEC so we need to mark it as insecure.
+
+.. code-block:: yaml
+
+   unbound__zones:
+
+     - name: 'example.net'
+       zone: 'example.net.'
+       type: 'stub'
+       options:
+         - 'stub-addr': '192.0.2.1'
+       server_options:
+         - 'domain-insecure': '"example.net"'
+         - 'local-zone':      '"example.net." nodefault'
+
+     - name: '2.0.192.in-addr.arpa'
+       zone: '2.0.192.in-addr.arpa.'
+       type: 'stub'
+       options:
+         - 'stub-addr': '192.0.2.1'
+       server_options:
+         - 'domain-insecure': '"2.0.192.in-addr.arpa."'
+         - 'local-zone':      '"2.0.192.in-addr.arpa." nodefault'

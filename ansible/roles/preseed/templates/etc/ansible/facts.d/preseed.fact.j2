@@ -1,0 +1,29 @@
+#!{{ ansible_python['executable'] }}
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps, loads
+from sys import exit
+import os
+
+base_path = loads('''{{ preseed__www | to_nice_json }}''')
+subdomain = loads('''{{ preseed__subdomain | to_nice_json }}''')
+flavors = []
+
+if (os.path.exists(base_path) and os.path.isdir(base_path)):
+    for element in os.listdir(base_path):
+        if os.path.isdir(element):
+            flavors.append(element)
+
+output = {'base_path': base_path,
+          'configured': True,
+          'flavors': flavors,
+          'subdomain': subdomain}
+
+print(dumps(output, sort_keys=True, indent=4))

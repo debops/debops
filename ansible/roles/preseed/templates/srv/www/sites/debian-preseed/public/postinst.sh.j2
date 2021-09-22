@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+
+# Copyright (C) 2015-2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2016 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2015-2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+set -o nounset -o pipefail -o errexit
+
+# We are working as root inside of the chrooted system
+export HOME="/root"
+
+# Set of SSH keys used for root access
+PRESEED_ROOT_SSHKEYS="{{ (item.root_sshkeys|d([]) + preseed__root_sshkeys) | join('\n') }}"
+
+# Name of the administrative UNIX account
+PRESEED_ADMIN_NAME="{{ item.admin_username|d() }}"
+
+# Set of SSH keys used for administrative access
+PRESEED_ADMIN_SSHKEYS="{{ (item.admin_sshkeys|d([]) + preseed__admin_sshkeys) | join('\n') }}"
+
+
+# Prevent service startup while we are working in chroot
+cat > /usr/sbin/policy-rc.d <<EOF
+#!/bin/sh
+echo "All runlevel operations denied by policy" >&2
+exit 101
+EOF
+chmod +x /usr/sbin/policy-rc.d
+
+# Install SSH public keys used by root account
+if [ -n "${PRESEED_ROOT_SSHKEYS}" ] ; then
+
+    # shellcheck disable=SC2174
+    mkdir -p -m 700 "/root/.ssh"
+    touch "/root/.ssh/authorized_keys"
+    printf "%s\n" "${PRESEED_ROOT_SSHKEYS}" >> "/root/.ssh/authorized_keys"
+
+fi
+
+# Install SSH keys used by the administrative account, if enabled
+if [ -n "${PRESEED_ADMIN_NAME}" ] && [ -n "${PRESEED_ADMIN_SSHKEYS}" ] ; then
+
+    admin_home="$(getent passwd "${PRESEED_ADMIN_NAME}" | cut -d: -f6)"
+
+    if [ -n "${admin_home}" ] ; then
+
+        # shellcheck disable=SC2174
+        mkdir -p -m 700 "${admin_home}/.ssh"
+        touch "${admin_home}/.ssh/authorized_keys"
+        printf "%s\n" "${PRESEED_ADMIN_SSHKEYS}" >> "${admin_home}/.ssh/authorized_keys"
+        chown -R "${PRESEED_ADMIN_NAME}:${PRESEED_ADMIN_NAME}" "${admin_home}/.ssh"
+
+        # Configure passwordless admin access in sudo. We assume that sudo is
+        # installed by the Debian Installer when root access is disabled.
+        printf "# File created by DebOps Preseed\n\n%s ALL = (ALL:ALL) NOPASSWD: SETENV: ALL\n" "${PRESEED_ADMIN_NAME}" \
+            >> "/etc/sudoers.d/preseed_admin_access"
+        chmod 0440 "/etc/sudoers.d/preseed_admin_access"
+
+    fi
+fi
+
+# Disable deb-src lines in APT sources
+sed -i '/^deb-src/s/^/#/' /etc/apt/sources.list
+apt-get update
+
+# Set of custom commands added via Ansible variables
+readarray -t POSTINST_COMMANDS << EOF
+{% if preseed__debian_postinst_commands %}
+{{ preseed__debian_postinst_commands }}
+{% endif %}
+{% if item.postinst_commands|d() %}
+{{ item.postinst_commands }}
+{% endif %}
+EOF
+
+# Execute custom commands
+if [[ "${POSTINST_COMMANDS[*]}" ]] ; then
+    for index in "${!POSTINST_COMMANDS[@]}" ; do
+        # shellcheck disable=SC2086
+        eval ${POSTINST_COMMANDS[${index}]}
+    done
+fi
+
+# Unlock service startup
+rm -rf /usr/sbin/policy-rc.d

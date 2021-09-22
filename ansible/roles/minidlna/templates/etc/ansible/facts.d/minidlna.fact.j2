@@ -1,0 +1,25 @@
+#!{{ ansible_python['executable'] }}
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2021 Julien Lecomte <julien@lecomte.at>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+
+output = {}
+
+try:
+    with open("/etc/minidlna.conf", 'r') as fp:
+        output["configured"] = True
+        for line in fp:
+            if line.startswith("port="):
+                output["http_port"] = line[5:].strip()
+    pass
+except Exception:
+    pass
+
+print(dumps(output, sort_keys=True, indent=4))

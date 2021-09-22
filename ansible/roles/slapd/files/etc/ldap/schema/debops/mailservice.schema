@@ -55,7 +55,8 @@ objectIdentifier mailServiceObject mailService:4
 
 attributeType ( mailServiceAttribute:1
                 NAME 'mailAddress'
-                DESC 'Primary RFC 822 email address of this recipient'
+                DESC 'Primary RFC 822 email address of this recipient, can be
+                      used as a login identifier.'
                 EQUALITY caseIgnoreIA5Match
                 SUBSTR caseIgnoreIA5SubstringsMatch
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}'
@@ -69,6 +70,23 @@ attributeType ( mailServiceAttribute:2
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}' )
 
 attributeType ( mailServiceAttribute:3
+                NAME 'mailPrivateAddress'
+                DESC 'A confidential RFC 822 email address of this recipient
+                      which can be used as a login identifier.'
+                EQUALITY caseIgnoreIA5Match
+                SUBSTR caseIgnoreIA5SubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}'
+                SINGLE-VALUE )
+
+attributeType ( mailServiceAttribute:4
+                NAME 'mailContactAddress'
+                DESC 'RFC 822 email address of this recipient which is meant to
+                      be public and serve as the primary contact address.'
+                EQUALITY caseIgnoreIA5Match
+                SUBSTR caseIgnoreIA5SubstringsMatch
+                SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}' )
+
+attributeType ( mailServiceAttribute:5
                 NAME 'mailInternalAddress'
                 DESC 'An internal RFC 822 email address of this recipient
                       which will be rewritten to an external email address'
@@ -77,7 +95,7 @@ attributeType ( mailServiceAttribute:3
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}'
                 SINGLE-VALUE )
 
-attributeType ( mailServiceAttribute:4
+attributeType ( mailServiceAttribute:6
                 NAME 'mailExternalAddress'
                 DESC 'An external RFC 822 email address of this recipient
                       which will be rewritten to an internal email address'
@@ -86,35 +104,35 @@ attributeType ( mailServiceAttribute:4
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}'
                 SINGLE-VALUE )
 
-attributeType ( mailServiceAttribute:5
+attributeType ( mailServiceAttribute:7
                 NAME 'mailSenderBccTo'
                 DESC 'RFC 822 BCC email address(es) to add for a given mail sender'
                 EQUALITY caseIgnoreIA5Match
                 SUBSTR caseIgnoreIA5SubstringsMatch
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}' )
 
-attributeType ( mailServiceAttribute:6
+attributeType ( mailServiceAttribute:8
                 NAME 'mailRecipientBccTo'
                 DESC 'RFC 822 BCC email address(es) to add for a given mail recipient'
                 EQUALITY caseIgnoreIA5Match
                 SUBSTR caseIgnoreIA5SubstringsMatch
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}' )
 
-attributeType ( mailServiceAttribute:7
+attributeType ( mailServiceAttribute:9
                 NAME 'mailForwardTo'
                 DESC 'RFC 822 email address(es) to forward all incoming messages to'
                 EQUALITY caseIgnoreIA5Match
                 SUBSTR caseIgnoreIA5SubstringsMatch
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}' )
 
-attributeType ( mailServiceAttribute:8
+attributeType ( mailServiceAttribute:10
                 NAME 'mailForwardToURL'
                 DESC 'LDAP search URL that defines the recipients of the mail messages
                       sent to this mailing list'
                 EQUALITY caseExactIA5Match
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
 
-attributeType ( mailServiceAttribute:9
+attributeType ( mailServiceAttribute:11
                 NAME 'mailErrorsTo'
                 DESC 'RFC 822 email address(es) to use when routing error and notification
                       messages to the owner(s) of an email distribution list'
@@ -122,7 +140,7 @@ attributeType ( mailServiceAttribute:9
                 SUBSTR caseIgnoreIA5SubstringsMatch
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}' )
 
-attributeType ( mailServiceAttribute:10
+attributeType ( mailServiceAttribute:12
                 NAME 'mailRequestsTo'
                 DESC 'RFC 822 email address(es) to use when routing request
                       messages sent to the email distribution list'
@@ -130,7 +148,7 @@ attributeType ( mailServiceAttribute:10
                 SUBSTR caseIgnoreIA5SubstringsMatch
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}' )
 
-attributeType ( mailServiceAttribute:11
+attributeType ( mailServiceAttribute:13
                 NAME 'mailEnvelopeAddress'
                 DESC 'RFC 822 envelope sender email address of a given mail user
                       or email distribution list'
@@ -139,7 +157,7 @@ attributeType ( mailServiceAttribute:11
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}'
                 SINGLE-VALUE )
 
-attributeType ( mailServiceAttribute:12
+attributeType ( mailServiceAttribute:14
                 NAME 'mailRoutingAddress'
                 DESC 'RFC 822 email address to use when routing messages to
                       the SMTP MTA of this recipient'
@@ -148,7 +166,7 @@ attributeType ( mailServiceAttribute:12
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26{256}'
                 SINGLE-VALUE )
 
-attributeType ( mailServiceAttribute:13
+attributeType ( mailServiceAttribute:15
                 NAME 'mailHost'
                 DESC 'Fully Qualified Domain Name of the SMTP MTA that
                       handles messages for this recipient'
@@ -157,28 +175,28 @@ attributeType ( mailServiceAttribute:13
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.15{256}'
                 SINGLE-VALUE )
 
-attributeType ( mailServiceAttribute:14
+attributeType ( mailServiceAttribute:16
                 NAME 'mailTransport'
                 DESC 'MTA mail transport method which will take care of the email delivery'
                 EQUALITY caseIgnoreIA5Match
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26'
                 SINGLE-VALUE )
 
-attributeType ( mailServiceAttribute:15
+attributeType ( mailServiceAttribute:17
                 NAME 'mailUidNumber'
                 DESC 'UID required to access the mailbox'
                 EQUALITY integerMatch
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
                 SINGLE-VALUE )
 
-attributeType ( mailServiceAttribute:16
+attributeType ( mailServiceAttribute:18
                 NAME 'mailGidNumber'
                 DESC 'GID required to access the mailbox'
                 EQUALITY integerMatch
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.27'
                 SINGLE-VALUE )
 
-attributeType ( mailServiceAttribute:17
+attributeType ( mailServiceAttribute:19
                 NAME 'mailHomeDirectory'
                 DESC 'The absolute path to the mail user home directory'
                 EQUALITY caseExactIA5Match
@@ -186,21 +204,21 @@ attributeType ( mailServiceAttribute:17
                 SINGLE-VALUE )
 
 
-attributeType ( mailServiceAttribute:18
+attributeType ( mailServiceAttribute:20
                 NAME 'mailMessageStore'
                 DESC 'The path to the mail user mailbox storage directory'
                 EQUALITY caseExactIA5Match
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26'
                 SINGLE-VALUE )
 
-attributeType ( mailServiceAttribute:19
+attributeType ( mailServiceAttribute:21
                 NAME 'mailQuota'
                 DESC 'Mail quota limit in kilobytes'
                 EQUALITY caseIgnoreIA5Match
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26'
                 SINGLE-VALUE )
 
-attributeType ( mailServiceAttribute:20
+attributeType ( mailServiceAttribute:22
                 NAME 'mailGroupACL'
                 DESC 'Comma-separated list of mail groups a given mail user
                       belongs to, used for mailbox access control'
@@ -209,89 +227,89 @@ attributeType ( mailServiceAttribute:20
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26'
                 SINGLE-VALUE )
 
-attributetype ( mailServiceAttribute:21
+attributetype ( mailServiceAttribute:23
                 NAME 'mailExpungeTrash'
                 DESC 'Time to automatically expunge Trash mailbox'
                 EQUALITY caseIgnoreIA5Match
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26'
                 SINGLE-VALUE )
 
-attributeType ( mailServiceAttribute:22
+attributeType ( mailServiceAttribute:24
                 NAME 'mailSieveRuleSource'
                 DESC 'Definition of a Sieve filter script for a given mail user'
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
 
-attributeType ( mailServiceAttribute:23
+attributeType ( mailServiceAttribute:25
                 NAME 'mailSuppressErrors'
                 DESC 'Suppress error messages from being sent back to message originator'
                 EQUALITY caseIgnoreIA5Match
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
 
-attributeType ( mailServiceAttribute:24
+attributeType ( mailServiceAttribute:26
                 NAME 'mailDeliveryFile'
                 DESC 'Path to a file used for archiving messages sent to the distribution list'
                 EQUALITY caseExactIA5Match
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
 
-attributeType ( mailServiceAttribute:25
+attributeType ( mailServiceAttribute:27
                 NAME 'mailDeliveryOption'
                 DESC 'Message handling option for messages sent to a designated recipient'
                 EQUALITY caseIgnoreIA5Match
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
 
-attributeType ( mailServiceAttribute:26
+attributeType ( mailServiceAttribute:28
                 NAME 'mailProgramDeliveryInfo'
                 DESC 'Named programs for message post-processing'
                 EQUALITY caseExactIA5Match
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
 
-attributeType ( mailServiceAttribute:27
+attributeType ( mailServiceAttribute:29
                 NAME 'mailAuthorizedDomain'
                 DESC 'Domains authorized to submit messages to the distribution list'
                 EQUALITY caseIgnoreIA5Match
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
 
-attributeType ( mailServiceAttribute:28
+attributeType ( mailServiceAttribute:30
                 NAME 'mailAuthorizedSender'
                 DESC 'Addresses authorized to submit messages to the distribution list'
                 EQUALITY caseExactIA5Match
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
 
-attributeType ( mailServiceAttribute:29
+attributeType ( mailServiceAttribute:31
                 NAME 'mailUnauthorizedDomain'
                 DESC 'Domains not authorized to submit messages to the distribution list'
                 EQUALITY caseIgnoreIA5Match
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
 
-attributeType ( mailServiceAttribute:30
+attributeType ( mailServiceAttribute:32
                 NAME 'mailUnauthorizedSender'
                 DESC 'Addresses not authorized to submit messages to the distribution list'
                 EQUALITY caseExactIA5Match
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
 
-attributeType ( mailServiceAttribute:31
+attributeType ( mailServiceAttribute:33
                 NAME 'mailRemoveHeader'
                 DESC 'Headers to remove from the messages sent to the mailing list'
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
 
-attributeType ( mailServiceAttribute:32
+attributeType ( mailServiceAttribute:34
                 NAME 'mailAddHeader'
                 DESC 'Headers to add to the messages sent to the mailing list'
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26' )
 
-attributeType ( mailServiceAttribute:33
+attributeType ( mailServiceAttribute:35
                 NAME 'mailAntispamPolicy'
                 DESC 'Name of the anti-spam policy to apply to a given LDAP entry'
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26'
                 SINGLE-VALUE )
 
-attributeType ( mailServiceAttribute:34
+attributeType ( mailServiceAttribute:36
                 NAME 'mailAntivirusPolicy'
                 DESC 'Name of the anti-virus policy to apply to a given LDAP entry'
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26'
                 SINGLE-VALUE )
 
-attributeType ( mailServiceAttribute:35
+attributeType ( mailServiceAttribute:37
                 NAME 'mailContentPolicy'
                 DESC 'Name of the content policy to apply to a given LDAP entry'
                 SYNTAX '1.3.6.1.4.1.1466.115.121.1.26'
@@ -307,7 +325,8 @@ objectClass ( mailServiceObject:1
                     can receive SMTP mail, such as a mail user account'
               SUP top AUXILIARY
               MUST ( mailAddress $ mail )
-              MAY ( mailAlternateAddress $ mailEnvelopeAddress $ mailRoutingAddress $
+              MAY ( mailAlternateAddress $ mailPrivateAddress $ mailContactAddress $
+                    mailEnvelopeAddress $ mailRoutingAddress $
                     mailExternalAddress $ mailInternalAddress $ mailSenderBccTo $
                     mailRecipientBccTo $ mailHost $ mailTransport $ mailUidNumber $ mailGidNumber $
                     mailHomeDirectory $ mailMessageStore $ mailQuota $ mailGroupACL $

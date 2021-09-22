@@ -86,8 +86,13 @@ the next section). The contents of these files are:
 
 :file:`default.crt`
   This is the server certificate with optionally bundled Intermediate
-  Certificate Authorities. It is sent to the clients during connection
-  establishment by the application. This file is publicly readable.
+  Certificate Authorities and Diffie-Hellman parameters. It is sent to the
+  clients during connection establishment by the application. This file is
+  publicly readable. Note that not all software appreciates embedded DH
+  parameters in this file. Some Java-based applications, or at least `Graylog`_
+  4.1 and other software using recent versions of the Bouncy Castle library,
+  throw exceptions when trying to parse this file. Consider using
+  ``public/cert_intermediate.pem`` when that happens.
 
 :file:`default.key`
   This is the server private key. It's readable only by the ``root`` account
@@ -259,8 +264,9 @@ Controller in the :file:`secret/` directory:
 These directories are created at the beginning, so that Ansible can copy
 private files before the actual PKI realm creation on remote hosts. This can be
 used to provide a set of identical private RSA keys to multiple hosts at once
-(using the directories in :file:`private/` subdirectories) or custom scripts that
-access external Certificate Authorities (using :file:`external/` subdirectories).
+(using the directories in :file:`private/` subdirectories), custom scripts that
+access external Certificate Authorities (using :file:`external/` subdirectories),
+or DNS challenge API keys.
 
 Next, PKI realm directories are created on the remote host:
 

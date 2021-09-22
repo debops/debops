@@ -148,7 +148,7 @@ slapd__combined_schemas: '{{ slapd__default_schemas
 # .. envvar:: slapd__base_packages [[[
 #
 # List of required APT packages for OpenLDAP service.
-slapd__base_packages: [ 'slapd', 'ldap-utils', 'ssl-cert' ]
+slapd__base_packages: [ 'slapd', 'ldap-utils', 'ssl-cert', 'libldap-common' ]
 
                                                                    # ]]]
 # .. envvar:: slapd__rfc2307bis_packages [[[
@@ -557,6 +557,7 @@ slapd__default_tasks:
         - 'ldap:///{{ slapd__basedn }}?gidNumber?sub'
         - 'ldap:///{{ slapd__basedn }}?mail?sub'
         - 'ldap:///{{ slapd__basedn }}?mailAddress,mailAlternateAddress?sub'
+        - 'ldap:///{{ slapd__basedn }}?mailPrivateAddress?sub'
         - 'ldap:///ou=People,{{ slapd__basedn }}?employeeNumber?sub'
         - 'ldap:///ou=People,{{ slapd__basedn }}?uid?sub'
         - 'ldap:///ou=People,{{ slapd__basedn }}?gid?sub'
@@ -634,6 +635,7 @@ slapd__default_tasks:
         - 'gidNumber regex ^[[:digit:]]+$'
         - 'macAddress regex ^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$'
         - 'mailAddress set "this/mailAddress & this/mail"'
+        - 'mailPrivateAddress set "this/mailPrivateAddress & this/mail"'
         - 'mailAlternateAddress set "this/mailAlternateAddress & this/mail"'
     state: 'exact'
 
@@ -767,6 +769,7 @@ slapd__default_tasks:
         - 'gid eq'
         - 'mail eq,sub'
         - 'mailAddress eq,sub'
+        - 'mailPrivateAddress eq,sub'
         - 'mailAlternateAddress eq,sub'
 
   - name: 'Enable the monitor database'

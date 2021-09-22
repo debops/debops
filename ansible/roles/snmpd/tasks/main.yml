@@ -30,9 +30,6 @@
                               + ([ "snmp-mibs-downloader" ]
                                  if snmpd_download_mibs
                                  else [])
-                              + ([ "lldpd" ]
-                                 if snmpd_lldpd
-                                 else [])
                               + ([ "lm-sensors" ]
                                  if (ansible_virtualization_role is undefined or
                                      ansible_virtualization_role not in [ "guest" ])
@@ -41,14 +38,6 @@
     state: 'present'
   register: snmpd__register_packages
   until: snmpd__register_packages is succeeded
-
-- name: Uninstall packages if requested
-  apt:
-    name: '{{ q("flattened", ([ "lldpd" ]
-                              if (not snmpd_lldpd)
-                              else [])) }}'
-    state: 'absent'
-    purge: True
 
 - name: Install custom snmpd.service unit file
   copy:
@@ -100,16 +89,6 @@
                                                   + (((snmpd_account_username_length | int) / 2) | int) | string) }}'
     snmpd_account_local_password: '{{ ansible_local.snmpd.password|d(lookup("pipe", "openssl rand -base64 " + snmpd_account_password_length)) }}'
   no_log: True
-
-- name: Configure lldpd daemon variables
-  template:
-    src: 'etc/default/lldpd.j2'
-    dest: '/etc/default/lldpd'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  notify: [ 'Restart lldpd' ]
-  when: snmpd_lldpd is defined and snmpd_lldpd
 
 - name: Configure snmpd daemon variables
   template:
@@ -185,3 +164,7 @@
     src: 'etc/ansible/facts.d/snmpd.fact.j2'
     dest: '/etc/ansible/facts.d/snmpd.fact'
     mode: '0755'
+  notify: [ 'Refresh host facts' ]
+
+- name: Update Ansible facts if they were modified
+  meta: 'flush_handlers'

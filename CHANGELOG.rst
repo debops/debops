@@ -26,6 +26,33 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+New DebOps roles
+''''''''''''''''
+
+- The :ref:`debops.minidlna` role configures the MiniDLNA service that can be
+  used to provide media (video, music, images) to other devices on the local
+  network that support the DLNA protocol.
+
+- The :ref:`debops.telegraf` role can be used to install and manage the
+  `Telegraf`__ metrics server, which can send data to various other services.
+
+  .. __: https://www.influxdata.com/time-series-platform/telegraf/
+
+- The :ref:`debops.lldpd` role provides support for managing and configuring
+  the :command:`lldpd` service, which can be used to locate other network
+  devices connected to a given host using the Link-Layer Discovery Protocol.
+  The role is included in the :file:`common.yml` playbook by default.
+
+- The :ref:`debops.zabbix_agent` role can install and configure Zabbix Agent,
+  used for monitoring and metrics.
+
+General
+'''''''
+
+- New Jinja filters ``from_toml`` and ``to_toml`` are available to DebOps
+  roles, provided using a custom Ansible plugin. The filters require the
+  ``toml`` Python package to be installed on the Ansible Controller.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
@@ -34,6 +61,30 @@ Added
 
   .. __: https://wiki.debian.org/Multiarch/HOWTO
 
+- You can now purge specific APT packages along with their configuration and
+  unused dependencies. This might be useful during bootstrap or provisioning
+  process to remove unused or conflicting services installed by the provider.
+
+:ref:`debops.elasticsearch` role
+''''''''''''''''''''''''''''''''
+
+- In a cluster deployment on hosts with PKI environment configured, the role
+  will automatically enable the X-Pack plugin and configure TLS encryption for
+  HTTP client and inter-cluster communication.
+
+- Elasticsearch user accounts and role definitions can be managed via Ansible
+  using the API access, when the encrypted communication and X-Pack plugin is
+  enabled. The role will initialize a set of built-in user accounts in the
+  Elasticsearch cluster automatically.
+
+:ref:`debops.kibana` role
+'''''''''''''''''''''''''
+
+- If the username and password for connection to the Elasticsearch service are
+  provided, the role will configure Kibana to use TLS encryption for
+  communication with the Elasticsearch cluster, based on the PKI environment
+  managed by the :ref:`debops.pki` Ansible role.
+
 :ref:`debops.lvm` role
 ''''''''''''''''''''''
 
@@ -41,12 +92,33 @@ Added
 
   .. __: https://man7.org/linux/man-pages/man7/lvmthin.7.html
 
+- It is now possible to apply custom options to :ref:`lvm__thin_pools` and
+  :ref:`lvm__logical_volumes`.
+
 :ref:`debops.lxc` role
 ''''''''''''''''''''''
 
 - The role can define a list of SSH identities added to the ``root`` UNIX
   account in new LXC containers by default. This can be used to grant multiple
   system administrators access to the containers.
+
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The role can be used in "config-only" mode where the :command:`nginx`
+  packages are not installed but are expected to be present and in
+  configuration compatible with DebOps.
+
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- The role gained experimental support for `Certbot`__ tool as an alternative
+  to :command:`acme-tiny` script. Certbot provides `Lets' Encrypt DNS-01
+  challenge`__ functionality with wildcard and internal certificates. See role
+  documentation for more details.
+
+  .. __: https://certbot.eff.org/
+  .. __: https://letsencrypt.org/docs/challenge-types/#dns-01-challenge
 
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
@@ -61,6 +133,17 @@ Added
 - The ``sshd__ferm_interface`` variable can now be used to limit access to SSH
   via the host firewall based on interface.
 
+:ref:`debops.sysctl` role
+'''''''''''''''''''''''''
+
+- The ``systemd`` Debian package in Debian Bullseye provides
+  a :command:`sysctl` configuration file which increases the maximum number of
+  PIDs allowed by the kernel. The role will create a "masked" configuration
+  file to ensure that :command:`sysctl` configuration works in LXC containers,
+  where the ``kernel.pid_max`` parameter will be commented out since it cannot
+  be modified from inside of a container. On hardware and VM hosts the
+  configuration will be applied as expected.
+
 Changed
 ~~~~~~~
 
@@ -69,6 +152,42 @@ Updates of upstream application versions
 
 - In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
   has been updated to the next point release, 10.10.
+
+  Debian 11 (Bullseye) has been released. The :ref:`debops.ipxe` role will now
+  prepare a netboot installer with this release and set Bullseye as the default
+  Stable installation option.
+
+- The :file:`lxc_ssh.py` Ansible connection plugin has been updated to include
+  latest changes and bugfixes.
+
+General
+'''''''
+
+- DebOps tasks that import local SSH keys will now recognize FIDO U2F security
+  keys used via the SSH agent.
+
+- The APT configuration by the :ref:`debops.apt` and :ref:`debops.apt_proxy`
+  roles in the :file:`common.yml` playbook has been moved to a separate play to
+  ensure feature parity with the bootstrap playbooks.
+
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- The role defaults have been updated, Bullseye is the new Stable.
+
+:ref:`debops.elasticsearch` role
+''''''''''''''''''''''''''''''''
+
+- The main configuration is reorganized, original contents of the configuration
+  file are set in the :envvar:`elasticsearch__original_configuration` variable
+  and the options changed by the role are set in the
+  :envvar:`elasticsearch__default_configuration` variable.
+
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- You can now define what kernel parameters are used by default in the Debian
+  Installer, using an iPXE variable.
 
 :ref:`debops.keyring` role
 ''''''''''''''''''''''''''
@@ -85,11 +204,34 @@ Updates of upstream application versions
   better split between alias lookups (ldap_virtual_alias_maps.cf) and
   distribution list lookups (ldap_virtual_forward_maps.cf).
 
+:ref:`debops.preseed` role
+''''''''''''''''''''''''''
+
+- The role has been redesigned from the ground up and uses
+  :ref:`universal_configuration` to manage Preseed configuration files.
+  Multiple "flavors" are provided to permit installation of Debian in a variety
+  of environments. See the :ref:`upgrade_notes` for details about upgrading an
+  existing installation.
+
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
 
 - The default NetStream driver mode and authentication mode are now set based
   on whether the ``gtls`` driver is enabled.
+
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- The :file:`mailservice.schema` LDAP schema has been modified to add new LDAP
+  attributes, ``mailPrivateAddress`` and ``mailContactAddress``. This change
+  includes additional constraints on uniqueness and requires a rebuild of the
+  OpenLDAP service. See :ref:`upgrade_notes` for details.
+
+:ref:`debops.sysctl` role
+'''''''''''''''''''''''''
+
+- The role will configure protection for FIFOs and regular files along with
+  protection for symlinks and hardlinks, introduced in Debian Bullseye.
 
 :ref:`debops.system_users` role
 '''''''''''''''''''''''''''''''
@@ -106,19 +248,56 @@ Fixed
 
 - The role no longer creates an unnecessary NGINX webroot directory.
 
+:ref:`debops.dhcpd` role
+''''''''''''''''''''''''
+
+- host-identifier parameters are now always quoted in dhcpd6.conf. This is
+  needed when the host-identifier contains periods (e.g. fully qualified
+  domain names).
+
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- Make sure that the correct Preseed flavor is used when the user changes it
+  using the menu item.
+
 :ref:`debops.kmod` role
 '''''''''''''''''''''''
 
-- Fixed an issue with role facts where the script ended with axception when the
+- Fixed an issue with role facts where the script ended with exception when the
   ``kmod`` package wasn't installed and the :command:`lsmod` command was not
   available.
+
+:ref:`debops.ldap` role
+'''''''''''''''''''''''
+
+- The role will refresh the local facts when the :file:`/etc/ldap/ldap.conf`
+  configuration changes to ensure that other roles have correct information
+  available, for example when a new set of LDAP servers is used.
+
+:ref:`debops.libvirt` role
+''''''''''''''''''''''''''
+
+- The ``virt-top`` APT package is not part of the Debian Bullseye release,
+  therefore the role will not try to install it by default.
+
+:ref:`debops.libvirtd` role
+'''''''''''''''''''''''''''
+
+- The ``virt-top`` APT package is not part of the Debian Bullseye release,
+  therefore the role will not try to install it by default.
 
 :ref:`debops.lxc` role
 ''''''''''''''''''''''
 
 - Use the Ubuntu GPG keyserver by default to download LXC container signing
   keys when the container is created by the :command:`lxc-new-unprivileged`
-  script (the SKS keyserver pool has been deprecated).
+  script as well as through the ``lxc_container`` Ansible module (the SKS
+  keyserver pool has been deprecated).
+
+- Enable AppArmor nesting configuration in LXC v4.0.x version, used in Debian
+  Bullseye. Without this, various :command:`systemd` services inside of the
+  LXC containers cannot start and SSH/console login is delayed ~25 seconds.
 
 :ref:`debops.netbase` role
 ''''''''''''''''''''''''''
@@ -126,6 +305,13 @@ Fixed
 - Fixed an issue where the fact script broke when it tried to find the host's
   IP address using DNS and the host does not have an entry in the DNS or in
   :file:`/etc/hosts` database.
+
+- Fixed an issue where the initial bootstrap and common playbook execution
+  didn't provide the correct configuration for the :ref:`debops.netbase` role,
+  resulting in a non-idempotent execution and wrong :file:`/etc/hosts` database
+  contents. The order of the :ref:`debops.python` role in bootstrap and common
+  playbooks has been adjusted to ensure that the Python packages required by
+  the :ref:`debops.netbase` role are installed before its execution.
 
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
@@ -135,6 +321,15 @@ Fixed
   has been applied. This ensures that it is always possible to request and renew
   certificates through the ACME protocol.
 
+- Do not remove the whole PKI hook directory when the :command:`nginx` hook
+  script is removed by the role.
+
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Fixed an issue with the :ref:`debops.nginx` configuration where some
+  Nextcloud pages (LDAP configuration, for example) did not work correctly.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
@@ -142,17 +337,85 @@ Fixed
   :command:`pki-realm` script to renew Let's Encrypt/ACME certificates include
   SubjectAltNames defined in the PKI realm.
 
+:ref:`debops.postfix` role
+''''''''''''''''''''''''''
+
+- Do not remove the whole PKI hook directory when the :command:`postfix` hook
+  script is removed by the role.
+
+:ref:`debops.proc_hidepid` role
+'''''''''''''''''''''''''''''''
+
+- Add the ``procadmins`` UNIX group as a supplementary group in the
+  :file:`user@.service` :command:`systemd` unit to fix an issue where the user
+  service does not start when unified cgroupv2 hierarchy is used.
+
+:ref:`debops.prosody` role
+''''''''''''''''''''''''''
+
+- Do not remove the whole PKI hook directory when the :command:`prosody` hook
+  script is removed by the role.
+
+:ref:`debops.redis_server` role
+'''''''''''''''''''''''''''''''
+
+- Fixed an issue with facts not showing Redis instances correctly when password
+  is empty.
+
+:ref:`debops.resolvconf` role
+'''''''''''''''''''''''''''''
+
+- Ensure that the fact script correctly includes information about upstream
+  nameservers when :command:`systemd-resolved` service is used.
+
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
 
 - The rsyslog role always configured the streamDriverPermittedPeers option,
   even when the ``anon`` network driver authentication mode was selected.
 
+:ref:`debops.sudo` role
+'''''''''''''''''''''''
+
+- Fixed an issue in the fact script which resulted in a wrong string being
+  picked up as the version number when :command:`sudo` was configured to use
+  LDAP, but the LDAP service was not available.
+
 :ref:`debops.system_users` role
 '''''''''''''''''''''''''''''''
 
 - The ``create_home`` parameter was not functional because of typos in the
   Ansible task.
+
+Removed
+~~~~~~~
+
+:ref:`debops.preseed` role
+''''''''''''''''''''''''''
+
+- Support for installing and configuring Salt Minions during host provisioning
+  has been removed.
+
+:ref:`debops.snmpd` role
+''''''''''''''''''''''''
+
+- The tasks and other code which managed the :command:`lldpd` daemon has been
+  removed from the role. The :ref:`debops.lldpd` role now provides the LLDP
+  support and automatically integrates with SNMP daemon when it is detected.
+
+Security
+~~~~~~~~
+
+General
+'''''''
+
+- Specific DebOps roles (:ref:`debops.dovecot`, :ref:`debops.owncloud`,
+  :ref:`debops.postldap`) used password generation lookups with invalid
+  parameters which might have resulted in a weaker passwords generated during
+  their deployment. The parameters in the password lookups have been fixed; you
+  might consider regenerating the passwords created by them by removing
+  existing ones from the :ref:`debops.secret` storage on the Ansible Controller
+  and re-running the roles.
 
 
 `debops v2.3.0`_ - 2021-06-04

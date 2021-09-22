@@ -35,19 +35,20 @@ act as integration tests for other roles that manage webservers, databases,
 etc.
 
 - :ref:`debops.dokuwiki`
+- :ref:`debops.etesync`
 - :ref:`debops.etherpad`
 - :ref:`debops.gitlab`
 - :ref:`debops.icinga`
 - :ref:`debops.kibana`
 - :ref:`debops.librenms`
 - :ref:`debops.mailman`
+- :ref:`debops.minidlna`
 - :ref:`debops.netbox`
 - :ref:`debops.owncloud`
-- :ref:`debops.etesync`
+- :ref:`debops.phpipam`
 - :ref:`debops.prosody`
 - :ref:`debops.roundcube`
 - :ref:`debops.rstudio_server`
-- :ref:`debops.phpipam`
 - ``debops.phpmyadmin``
 - ``debops-contrib.foodsoft``
 - ``debops-contrib.homeassistant``
@@ -103,6 +104,7 @@ are not accessed directly by end users.
 - :ref:`debops.rabbitmq_management`
 - :ref:`debops.rabbitmq_server`
 - :ref:`debops.salt`
+- :ref:`debops.telegraf`
 - :ref:`debops.tinyproxy`
 - ``debops.reprepro``
 - ``debops.sks``
@@ -248,6 +250,8 @@ Monitoring
 - :ref:`debops.monit`
 - :ref:`debops.proc_hidepid`
 - :ref:`debops.snmpd`
+- :ref:`debops.telegraf`
+- :ref:`debops.zabbix_agent`
 
 
 Networking
@@ -260,6 +264,7 @@ Networking
 - :ref:`debops.dnsmasq`
 - :ref:`debops.freeradius`
 - :ref:`debops.ifupdown`
+- :ref:`debops.lldpd`
 - :ref:`debops.netbase`
 - :ref:`debops.radvd`
 - :ref:`debops.resolvconf`

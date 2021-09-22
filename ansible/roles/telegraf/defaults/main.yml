@@ -1,0 +1,218 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2021 Dr. Serge Victor <https://dr.sergevictor.eu/>
+# .. Copyright (C) 2021 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-or-later
+
+# .. _telegraf__ref_defaults:
+
+# debops.telegraf default variables
+# =================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: telegraf__base_packages [[[
+#
+# List of the default APT packages to install Telegraf.
+telegraf__base_packages: [ 'telegraf' ]
+
+                                                                   # ]]]
+# .. envvar:: telegraf__packages [[[
+#
+# List of additional APT packages ta install with Telegraf.
+telegraf__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# UNIX environment [[[
+# --------------------
+
+# .. envvar:: telegraf__additional_groups [[[
+#
+# List of UNIX groups to which the Telegraf UNIX account should belong to
+# provide access.
+telegraf__additional_groups:
+
+  # Integration with the 'debops.proc_hidepid' role to provide system-wide
+  # access to the /proc filesystem.
+  - '{{ (ansible_local.proc_hidepid.group|d("procadmins"))
+        if (ansible_local.proc_hidepid.enabled|d())|bool
+        else [] }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Telegraf configuration file [[[
+# -------------------------------
+
+# The variables below define the contents of the
+# :file:`/etc/telegraf/telegraf.conf` configuration file
+# See :ref:`telegraf__ref_configuration` for more details.
+
+# .. envvar:: telegraf__default_configuration [[[
+#
+# Default configuration options defined by the role.
+telegraf__default_configuration:
+
+  # Configuration based on the original 'telegraf.conf' configuration file
+  # included in the APT package.
+  - name: 'agent'
+    config:
+      agent:
+        interval: '10s'
+        round_interval: True
+        metric_batch_size: 1000
+        metric_buffer_limit: 10000
+        collection_jitter: '0s'
+        flush_interval: '10s'
+        flush_jitter: '0s'
+        precision: ''
+        hostname: ''
+        omit_hostname: False
+
+                                                                   # ]]]
+# .. envvar:: telegraf__configuration [[[
+#
+# The configuration options which should be present on all hosts in the Ansible
+# inventory.
+telegraf__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: telegraf__group_configuration [[[
+#
+# The configuration options which should be present on hosts in a specific
+# Ansible inventory group.
+telegraf__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: telegraf_host_configuration [[[
+#
+# The configuration options which should be present on specific hosts in the
+# Ansible inventory.
+telegraf__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: telegraf__combined_configuration [[[
+#
+# Full list of Telegraf configuration options passed to the
+# configuration template tasks.
+telegraf__combined_configuration: '{{ telegraf__default_configuration
+                                      + telegraf__configuration
+                                      + telegraf__group_configuration
+                                      + telegraf__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Telegraf configuration plugins [[[
+# ----------------------------------
+
+# The variables below define the contents of the
+# :file:`/etc/telegraf/telegraf.d/` configuration directory.
+# See :ref:`telegraf__ref_plugins` for more details.
+
+# .. envvar:: telegraf__default_plugins [[[
+#
+# Telegraf plugin configuration defined by default in the role.
+telegraf__default_plugins:
+
+  - name: 'input_system'
+    config:
+      inputs:
+        kernel: {}
+        mem: {}
+        processes: {}
+        swap: {}
+        system: {}
+
+  - name: 'input_cpu'
+    config:
+      inputs:
+        cpu:
+          - percpu: True
+            totalcpu: True
+            collect_cpu_time: False
+            report_active: False
+
+  - name: 'input_disk'
+    config:
+      inputs:
+        disk:
+          - ignore_fs:
+              - 'tmpfs'
+              - 'devtmpfs'
+              - 'devfs'
+              - 'iso8660'
+              - 'ovelay'
+              - 'aufs'
+              - 'squashfs'
+
+  - name: 'input_diskio'
+    config:
+      inputs:
+        diskio: {}
+
+  - name: 'input_internal'
+    config:
+      inputs:
+        internal: {}
+
+  - name: 'input_influxdb_local'
+    config:
+      inputs:
+        influxdb_v2_listener:
+          service_address: '127.0.0.1:38086'
+    state: 'present'
+
+  - name: 'output_discard'
+    config:
+      outputs:
+        discard: {}
+    state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: telegraf__plugins [[[
+#
+# Telegraf plugin configuration which should be present on all hosts in the
+# Ansible inventory.
+telegraf__plugins: []
+
+                                                                   # ]]]
+# .. envvar:: telegraf__group_plugins [[[
+#
+# Telegraf plugin configuration which should be present on hosts in a specific
+# Ansible inventory group.
+telegraf__group_plugins: []
+
+                                                                   # ]]]
+# .. envvar:: telegraf__host_plugins [[[
+#
+# Telegraf plugin configuration which should be present on specific hosts in
+# the Ansible inventory.
+telegraf__host_plugins: []
+
+                                                                   # ]]]
+# .. envvar:: telegraf__combined_plugins [[[
+#
+# Full list of Telegraf configuration options passed to the
+# configuration template tasks.
+telegraf__combined_plugins: '{{ telegraf__default_plugins
+                                + telegraf__plugins
+                                + telegraf__group_plugins
+                                + telegraf__host_plugins }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: telegraf__influxdata__dependent_packages [[[
+#
+# Configuration for the :ref:`debops.influxdata` Ansible role.
+telegraf__influxdata__dependent_packages:
+  - '{{ telegraf__base_packages }}'
+  - '{{ telegraf__packages }}'
+                                                                   # ]]]
+                                                                   # ]]]

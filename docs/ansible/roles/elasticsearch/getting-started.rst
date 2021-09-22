@@ -1,7 +1,7 @@
 .. Copyright (C) 2014-2016 Nick Janetakis <nick.janetakis@gmail.com>
-.. Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2014-2021 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2016      Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
-.. Copyright (C) 2014-2017 DebOps <https://debops.org/>
+.. Copyright (C) 2014-2021 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 Getting started
@@ -28,14 +28,35 @@ inventory and configure the APT repositories yourself via the :ref:`debops.apt`
 role.
 
 
-Elasticsearch is insecure by default
-------------------------------------
+Elasticsearch is insecure in standalone mode
+--------------------------------------------
 
 The Elasticsearch service in the default configuration supports only plaintext
-connections between the cluster nodes themselves, and between the cluster and
-clients. There's no client authentication or authorization policies as well.
-Due to that you should take care to not expose your Elasticsearch cluster to
-the outside world without proper encryption and authentication.
+connections between the standalone host and clients. There's no client
+authentication or authorization policies as well. Due to that you should take
+care to not expose your standalone Elasticsearch service to the outside world
+without proper encryption and authentication.
+
+In cluster mode, and with :ref:`debops.pki` role configured on the host, the
+:ref:`debops.elasticsearch` role will automatically enable the `X-Pack`__
+plugin and configure TLS encryption for HTTP clients and Transport
+communication between cluster nodes. This is possible due to changes in the
+Elastic licensing (the default installation comes with the Basic subscription
+which provides support for TLS and user/group management via the X-Pack
+plugin).
+
+With secure cluster communication over TLS, the :ref:`debops.elasticsearch`
+role can use the Elasticsearch API to manage user accounts and role definitions
+in the cluster. A default set of `built-in users`__ will be created
+automatically; passwords of these users will be stored in the
+:file:`secret/elasticsearch/credentials/built-in/` directory on the Ansible
+Controller (managed by the :ref:`debops.secret` role). After that, with the
+base URL of the Elasticsearch API set in the
+:envvar:`elasticsearch__api_base_url` variable, the role can manage
+Elasticsearch roles and user accounts using the ``elastic`` superuser account.
+
+.. __: https://www.elastic.co/products/x-pack/
+.. __: https://www.elastic.co/guide/en/elasticsearch/reference/current/built-in-users.html
 
 You can install additional plugins that provide encrypted connections,
 authentication, authorization and access control:

@@ -103,7 +103,7 @@ ipxe__debian_netboot_firmware_mirror: 'https://cdimage.debian.org/cdimage/unoffi
 #
 # Specify which Debian releases will be prepared for iPXE boot on a given host.
 # The releases need to be defined in the OS release map below.
-ipxe__debian_netboot_releases: [ 'jessie', 'stretch', 'buster' ]
+ipxe__debian_netboot_releases: [ 'jessie', 'stretch', 'buster', 'bullseye' ]
 
                                                                    # ]]]
 # .. envvar:: ipxe__debian_netboot_architectures [[[
@@ -176,6 +176,23 @@ ipxe__debian_netboot_default_release_map:
     firmware_version: '20210619'
     firmware_checksum: 'sha256:42fb9b5bce06d1c27e61817dfa9f29081c6c6a8dd29c611a9434a79bf077d124'  # firmware.cpio.gz
 
+  - name: 'bullseye-amd64'
+    release: 'bullseye'
+    architecture: 'amd64'
+    netboot_version: '20210731'
+    netboot_checksum: 'sha256:11125a4e864ba868d750714e03a055f16503c5a6440c1720102531fc68bc89bc'  # netboot.tar.gz
+    firmware_version: '20210814'
+    firmware_checksum: 'sha256:6575e363cb74e10f65ebcc61e0c7f439c725f2df0cbd07ab8929a36f3e02410c'  # firmware.cpio.gz
+
+  - name: 'bullseye-amd64-gtk'
+    release: 'bullseye'
+    architecture: 'amd64'
+    netboot_subdir: '/gtk'
+    netboot_version: '20210731'
+    netboot_checksum: 'sha256:49a4d55446be9d09a7eb7d7182526cf214bcea46d3db539b627fb747dd7f6234'  # netboot.tar.gz
+    firmware_version: '20210814'
+    firmware_checksum: 'sha256:6575e363cb74e10f65ebcc61e0c7f439c725f2df0cbd07ab8929a36f3e02410c'  # firmware.cpio.gz
+
                                                                    # ]]]
 # .. envvar:: ipxe__debian_netboot_release_map [[[
 #
@@ -222,6 +239,10 @@ ipxe__default_scripts:
       - name: 'debian_installer_keymap'
         comment: 'Default keymap to set for the preseeding'
         value: 'us'
+
+      - name: 'debian_installer_kernel_params'
+        comment: 'Kernel parameters passed to the Debian Installer at boot'
+        value: [ 'quiet' ]
 
       - name: 'ipxe_boot_path'
         comment: 'Subdirectory with boot configuration files'
@@ -411,11 +432,12 @@ ipxe__default_scripts:
 
       menu Install Debian GNU/Linux / ${arch_a}
       item --gap Select suite:
-      item --key e buster ${space} Debian Stable (Buster) [e]
-      # Enable this when Debian Bullseye gets an installer
-      #item bullseye ${space} Debian Testing (Bullseye)
+      item --key e bullseye ${space} Debian Stable (Bullseye) [e]
+      # Enable this when Debian Bookworm gets an installer
+      #item bookworm ${space} Debian Testing (Bookworm)
       item
       item --gap Select release:
+      item bullseye ${space} Debian GNU/Linux 11 (bullseye)
       item buster ${space} Debian GNU/Linux 10 (buster)
       item stretch ${space} Debian GNU/Linux 9 (stretch)
       item jessie ${space} Debian GNU/Linux 8 (jessie)
@@ -424,7 +446,7 @@ ipxe__default_scripts:
 
       set mirrorcfg mirror/suite=${version} mirror/country=manual mirror/http/hostname=${debian_installer_mirror} mirror/http/directory=/${os}
 
-      set boot_params -- quiet
+      set boot_params -- ${debian_installer_kernel_params}
 
       :deb_boot_type_init
       set type text
@@ -445,7 +467,7 @@ ipxe__default_scripts:
       item --gap Preseed parameters:
       item config_hostname ${space} Hostname: ${hostname}
       item config_domain ${space} Domain: ${domain}
-      item config_preseed ${space} Preseed: ${debian_installer_preseed}
+      item config_preseed ${space} Flavor: ${debian_installer_preseed}
       item config_keymap ${space} Keymap: ${debian_installer_keymap}
       item
       item --gap Installer parameters:
@@ -503,7 +525,9 @@ ipxe__default_scripts:
       echo -n Set preseed URL for ${os} ${version} [${debian_installer_preseed}]: && read preseedurl || goto deb_boot_type
       isset ${hostname} || goto deb_preseed_get_hostname
       :deb_preseed_has_hostname
-      isset ${preseedurl} && set install_params auto=true priority=critical preseed/url=${preseedurl} keymap=${debian_installer_keymap} netcfg/hostname=${hostname} domain=${domain} ||
+      isset ${preseedurl} && set install_params auto=true priority=critical preseed/url=${preseedurl} keymap=${debian_installer_keymap} netcfg/hostname=${hostname} domain=${domain} || goto deb_default_preseed
+      goto deb_text
+      :deb_default_preseed
       set install_params auto=true priority=critical preseed/url=${debian_installer_preseed} keymap=${debian_installer_keymap} netcfg/hostname=${hostname} domain=${domain} ||
       goto deb_text
 

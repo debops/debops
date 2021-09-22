@@ -1,5 +1,5 @@
-.. Copyright (C) 2017-2020 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2017-2020 DebOps <https://debops.org/>
+.. Copyright (C) 2017-2021 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2017-2021 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 .. _upgrade_notes:
@@ -14,6 +14,70 @@ perform the upgrades between different stable releases.
 
 Unreleased
 ----------
+
+Changes in the OpenLDAP support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- In the :ref:`debops.slapd` role, the :file:`mailservice.schema` LDAP schema
+  includes two new LDAP attributes, ``mailPrivateAddress`` and
+  ``mailContactAddress``. The server will enforce the ``mailPrivateAddress``
+  attribute to be unique and that all its values are also included in the
+  ``mail`` attribute.
+
+  The above constraints result in the role not working correctly when the new
+  :file:`mailservice.schema` is not applied in the OpenLDAP service. The role
+  cannot "re-apply" an already installed LDAP schema, therefore the service
+  needs to be rebuilt for the new changes to take effect. Refer to the
+  :ref:`slapd__ref_backup_restore` documentation for help with rebuilding the
+  directory.
+
+Redesign of the Debian Pressed support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The :ref:`debops.preseed` role has been redesigned from the ground up. Most
+  of the variables related to :file:`preseed.cfg` and :file:`postinst.sh` file
+  contents have been removed and role now uses :ref:`universal_configuration`
+  system to manage the contents of these files. You should check the new role
+  defaults and documentation to see how Preseed configuration is implemented.
+
+- Support for installation and configuration of Salt Minions during
+  provisioning has been removed from the :file:`postinst.sh` scripts. Basic
+  installation can be implemented uding postinst commands; if there's a demand
+  for fully-fledged support it can be brought back.
+
+- Access controls using :ref:`debops.nginx` role access policy functionality
+  has been removed. If needed, access control can be implemented using firewall
+  rules to restrict access to the Preseed server to selected subnets.
+
+- The role no longer creates separate UNIX group and account for Preseed
+  configuration files published by the webserver. The files are owned by the
+  ``root`` UNIX account, with ``www-data`` group having read-only access.
+
+- Location of the generated Preseed files has been changed to conform better to
+  best practices used in DebOps; files will be stored in the
+  :file:`/srv/www/sites/debian-preseed/public/` directory by default.
+
+- The names of the :command:`nginx` configuration files have been changed; they
+  are no longer based on the DNS domain used by Preseed but use static
+  filenames. In the existing installations, the old configuration files might
+  need to be removed manually to avoid conflicts with new configuration.
+
+- The :file:`postinst.sh` scripts have been greatly simplified and no longer
+  contain code that creates custom UNIX accounts and configures :command:`grub`
+  directly. These functionalities have been delegated to the Debian Installer
+  and are used through the Preseed configuration files.
+
+
+Changes in inventory variables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- In the :ref:`debops.nginx` role some variables were renamed:
+
+  +-----------------------+-----------------------------+---------------+
+  | Old variable name     | New variable name           | Changed value |
+  +=======================+=============================+===============+
+  | ``nginx_enable_sdpy`` | :envvar:`nginx_enable_spdy` | No            |
+  +-----------------------+-----------------------------+---------------+
 
 
 v2.3.0 (2021-06-04)

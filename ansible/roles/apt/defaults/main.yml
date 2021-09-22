@@ -138,6 +138,36 @@ apt__base_packages:
 apt__packages: []
                                                                    # ]]]
                                                                    # ]]]
+# APT packages to purge [[[
+# -------------------------
+
+# These lists define what APT packages should be purged (removed along with
+# their configuration, data files and unused dependencies) from the hosts after
+# APT repositories have been configured. Since this role is applied in the
+# bootstrap playbooks, the packages will be purged early on; this might be
+# useful in certain provisioning setups.
+#
+# Use only simple APT package names here. For conditional removal, refer to the
+# :ref:`debops.apt_install` role.
+
+# .. envvar:: apt__purge_packages [[[
+#
+# List of APT packages to purge on all hosts in the Ansible inventory.
+apt__purge_packages: []
+
+                                                                   # ]]]
+# .. envvar:: apt__purge_group_packages [[[
+#
+# List of APT packages to purge on hosts in a specific Ansible inventory group.
+apt__purge_group_packages: []
+
+                                                                   # ]]]
+# .. envvar:: apt__purge_host_packages [[[
+#
+# List of APT packages to purge on specific hosts in the Ansible inventory.
+apt__purge_host_packages: []
+                                                                   # ]]]
+                                                                   # ]]]
 # APT repository keys [[[
 # -----------------------
 
@@ -269,10 +299,11 @@ apt__distribution_release_map:
 # is used on a Debian Testing system.
 apt__distribution_suite_map:
   'Debian_wheezy':      'archive'
-  'Debian_jessie':      'lts'
-  'Debian_stretch':     'oldstable'
-  'Debian_buster':      'stable'
-  'Debian_bullseye':    'testing'
+  'Debian_jessie':      'archive'
+  'Debian_stretch':     'lts'
+  'Debian_buster':      'oldstable'
+  'Debian_bullseye':    'stable'
+  'Debian_bookworm':    'testing'
   'Debian_sid':         'unstable'
   'Raspbian_wheezy':    'archive'
   'Raspbian_jessie':    'lts'

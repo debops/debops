@@ -1,0 +1,94 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Copyright (C) 2021 Julien Lecomte <julien@lecomte.at>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import custom Ansible plugins
+  import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  import_role:
+    name: 'secret'
+
+# Package installation [[[1
+- name: Install Zabbix agent packages
+  apt:
+    name: '{{ (zabbix_agent__base_packages
+             + zabbix_agent__packages) | flatten }}'
+    state: 'present'
+  register: zabbix_agent__register_packages
+  until: zabbix_agent__register_packages is succeeded
+
+- name: Add Zabbix UNIX account to required groups
+  user:
+    name: '{{ zabbix_agent__user }}'
+    groups: '{{ zabbix_agent__additional_groups | flatten | join(",") }}'
+    state: 'present'
+    append: True
+  notify: [ 'Check zabbix-agent and restart' ]
+
+# Zabbix agent configuration [[[1
+- name: Generate Zabbix agent configuration file
+  template:
+    src: 'etc/zabbix/zabbix_agentd.conf.j2'
+    dest: '/etc/zabbix/zabbix_agentd.conf'
+    owner: 'root'
+    group: '{{ zabbix_agent__group }}'
+    mode: '0640'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+  notify: [ 'Check zabbix-agent and restart' ]
+
+- name: Install secret key
+  copy:
+    content: '{{ zabbix_agent__tls_psk_secret }}'
+    dest: '/etc/zabbix/secret.key'
+    owner: 'root'
+    group: '{{ zabbix_agent__group }}'
+    mode: '0640'
+  no_log: '{{ debops__no_log | d(True) }}'
+  notify: [ 'Check zabbix-agent and restart' ]
+
+- name: Ensure configuration folder exists
+  file:
+    path: '/etc/zabbix/zabbix_agentd.conf.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Ensure log folder exists
+  file:
+    path: '/var/log/zabbix-agent'
+    state: 'directory'
+    owner: '{{ zabbix_agent__user }}'
+    group: '{{ zabbix_agent__group }}'
+    mode: '0755'
+
+# Ansible facts [[[1
+- name: Make sure that Ansible local fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Create local facts of Zabbix agent
+  template:
+    src: 'etc/ansible/facts.d/zabbix_agent.fact.j2'
+    dest: '/etc/ansible/facts.d/zabbix_agent.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+  notify: [ 'Refresh host facts' ]
+
+- name: Reload facts if they were modified
+  meta: 'flush_handlers'

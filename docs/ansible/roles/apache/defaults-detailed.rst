@@ -286,6 +286,11 @@ Common webserver options
   Optional, string.
   Alias to ``item.root`` configured using the `Alias directive`_.
 
+``alias_path``
+  Optional, string.
+  Alternative path which should be aliased. If not specified, DocumentRoot will
+  be used as the alias target.
+
 ``root_directives``
   Optional, string.
   Additional raw Apache directives to apply to ``item.root``.
@@ -322,6 +327,16 @@ Common webserver options
   Optional, string.
   Allows to specify raw Apache directives which are inlined in the appropriate
   virtual host context.
+
+``custom_log``
+  Optional, string.
+  Specify absolute path to the access log file which should be used by this
+  vhost. You also need to specify the access log format to use.
+
+``error_log``
+  Optional, string.
+  Specify absolute path to the error log file which should be used by this
+  vhost.
 
 ``custom_log_condition``
   Optional, string.

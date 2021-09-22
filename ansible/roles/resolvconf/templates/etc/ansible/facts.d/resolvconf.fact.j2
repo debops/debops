@@ -60,11 +60,10 @@ if os.path.isfile(systemdresolved_path):
 
 for element in resolvconf_files:
     try:
-        nameservers = read_resolv_file(element)
-
-        for server in nameservers:
+        for server in read_resolv_file(element):
             if not server.startswith('127.'):
-                upstream_nameservers.append(server)
+                if server not in upstream_nameservers:
+                    upstream_nameservers.append(server)
 
     except Exception:
         pass
