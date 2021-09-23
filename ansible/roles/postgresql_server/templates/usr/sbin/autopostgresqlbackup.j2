@@ -290,11 +290,19 @@ encryption() {
     echo "Encrypting $1"
     echo "      to $ENCRYPTED_FILE"
     echo "      using cypher $ENCRYPTION_CIPHER and public key $ENCRYPTION_PUBLIC_KEY"
-    if openssl smime -encrypt -"$ENCRYPTION_CIPHER" -binary -outform DEM \
-      -out "$ENCRYPTED_FILE" \
-      -in "$1" "$ENCRYPTION_PUBLIC_KEY" ; then
+
+    $tempcrt=/tmp/autopostgresql.crt
+    echo "$ENCRYPTION_PUBLIC_KEY" > $tmpcrt
+    openssl smime -encrypt -"$ENCRYPTION_CIPHER" -binary -outform DEM \
+      -out "$ENCRYPTED_FILE" -in "$1" "$tmpcrt"
+    rm $tmpcrt
+
+    status=$?
+    if [[ $status -eq 0 && -f "$ENCRYPTED_FILE" ]] ; then
       echo "    and remove $1"
       rm -f "$1"
+    else
+      echo "openssl exited with $status"
     fi
   fi
   return 0

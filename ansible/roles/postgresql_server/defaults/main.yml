@@ -549,7 +549,13 @@ postgresql_server__auto_backup_encryption: False
                                                                    # ]]]
 # .. envvar:: postgresql_server__auto_backup_encryption_key [[[
 #
-# Specify :command:`openssl` encryption key to use.
+# Specify :command:`openssl` encryption key to use, this should be
+# the contents of the key.
+# Encryption uses private/public keys. You can generate the key pairs like the following:
+# ``openssl req -x509 -nodes -days 100000 -newkey rsa:2048 -keyout backup.key -out backup.crt -subj '/'``
+#
+# Decryption of backups is possible with:
+# ``openssl smime -decrypt -in backup.sql.gz.enc -binary -inform DEM -inkey backup.key -out backup.sql.gz``
 postgresql_server__auto_backup_encryption_key: ''
 
                                                                    # ]]]
