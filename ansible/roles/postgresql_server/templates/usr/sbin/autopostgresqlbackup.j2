@@ -291,11 +291,11 @@ encryption() {
     echo "      to $ENCRYPTED_FILE"
     echo "      using cypher $ENCRYPTION_CIPHER and public key $ENCRYPTION_PUBLIC_KEY"
 
-    $tempcrt=/tmp/autopostgresql.crt
-    echo "$ENCRYPTION_PUBLIC_KEY" > $tmpcrt
+    tempcrt=/tmp/autopostgresql.crt
+    echo "$ENCRYPTION_PUBLIC_KEY" > "$tempcrt"
     openssl smime -encrypt -"$ENCRYPTION_CIPHER" -binary -outform DEM \
-      -out "$ENCRYPTED_FILE" -in "$1" "$tmpcrt"
-    rm $tmpcrt
+      -out "$ENCRYPTED_FILE" -in "$1" "$tempcrt"
+    rm "$tempcrt"
 
     status=$?
     if [[ $status -eq 0 && -f "$ENCRYPTED_FILE" ]] ; then
