@@ -3,9 +3,9 @@
 .. Copyright (C) 2014-2021 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
-.. _pki__ref_acme_tiny_integration:
-
 .. include:: ../../../includes/global.rst
+
+.. _pki__ref_acme_tiny_integration:
 
 ACME Tiny Integration
 =====================
@@ -145,4 +145,3 @@ If the request is not successful, you will find a :file:`acme/error.log` file wi
 log of the :program:`acme-tiny` session. Check and fix the issue, and remove the log
 file to re-enable the process again. Otherwise, :program:`pki-realm` will not request
 the certificates to avoid rate limit issues explained above.
-

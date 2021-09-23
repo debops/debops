@@ -112,8 +112,8 @@ General
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
-- The role gained experimental support for `Certbot`__ tool as an alternative
-  to :command:`acme-tiny` script. Certbot provides `Lets' Encrypt DNS-01
+- The role gained support for `Certbot`__ tool as an alternative to
+  :command:`acme-tiny` script. Certbot provides `Lets' Encrypt DNS-01
   challenge`__ functionality with wildcard and internal certificates. See role
   documentation for more details.
 
