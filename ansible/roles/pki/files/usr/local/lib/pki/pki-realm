@@ -1191,7 +1191,7 @@ request_acme_tiny_certificate () {
 request_acme_dns_certificate() {
     # We expect the API secrets to be in ./private/dns-*-credentials.key
     local credentials=/etc/pki/realms/${config['name']}/private/${config['acme_type']}-credentials.key
-    local pkirealm=/etc/pki/realms/${config['acme_default_domain']}
+    local pkirealm=/etc/pki/realms/${config['name']}
     local email=""
 
     if [ -n "${config['acme_contacts']}" ]; then
@@ -1261,8 +1261,8 @@ request_acme_dns_certificate() {
     letsencrypt="/etc/letsencrypt/live/${folder}"
     if [ -f "${letsencrypt}/privkey.pem" ]; then
         ln -vsfT "${letsencrypt}/privkey.pem"   "${pkirealm}/private/key.pem"
-        ln -vsfT "${letsencrypt}/fullchain.pem" "${pkirealm}/private/key_chain.pem"
         ln -vsfT "${letsencrypt}/cert.pem"      "${pkirealm}/acme/cert.pem"
+        ln -vsfT "${letsencrypt}/chain.pem"     "${pkirealm}/acme/intermediate.pem"
     else
       echo "error: could not symlink let's encrypt certificates into pki realm" >&2
     fi
