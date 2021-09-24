@@ -291,13 +291,13 @@ encryption() {
     echo "      to $ENCRYPTED_FILE"
     echo "      using cypher $ENCRYPTION_CIPHER and public key $ENCRYPTION_PUBLIC_KEY"
 
-    tempcrt=/tmp/autopostgresql.crt
+    tempcrt=$(mktemp)
     echo "$ENCRYPTION_PUBLIC_KEY" > "$tempcrt"
     openssl smime -encrypt -"$ENCRYPTION_CIPHER" -binary -outform DEM \
       -out "$ENCRYPTED_FILE" -in "$1" "$tempcrt"
+    status=$?
     rm "$tempcrt"
 
-    status=$?
     if [[ $status -eq 0 && -f "$ENCRYPTED_FILE" ]] ; then
       echo "    and remove $1"
       rm -f "$1"
