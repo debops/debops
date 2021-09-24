@@ -80,6 +80,12 @@ General
 Fixed
 ~~~~~
 
+:ref:`debops.icinga_web` role
+'''''''''''''''''''''''''''''
+
+- The version of the ``businessprocess`` Icinga Web plugin has been upgraded to
+  fix an issue that broke the web interface.
+
 :ref:`debops.ldap` role
 '''''''''''''''''''''''
 
