@@ -384,7 +384,7 @@ List of supported parameters:
   ``True``.
 
 ``type``
-  Optional, the CA type. Either ``root``, ``service``, ``server`` or an empty
+  Optional, the CA type. Either ``root``, ``service``, ``client-server``, ``server`` or an empty
   string. Sets various CA type specific options when running the pki-authority
   script. These options are not documented, you will have to read the
   pki-authority script to find out what exactly they do.
