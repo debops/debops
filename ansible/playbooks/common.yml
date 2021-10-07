@@ -28,6 +28,25 @@
       run_once: True
       delegate_to: 'localhost'
 
+- name: Prepare APT configuration on a host
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_all_hosts', '!debops_no_common' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: apt_proxy
+      tags: [ 'role::apt_proxy', 'skip::apt_proxy' ]
+
+    - role: apt
+      tags: [ 'role::apt', 'skip::apt' ]
+
+
 - import_playbook: service/core.yml
 
 - name: Common configuration for all hosts
@@ -72,6 +91,15 @@
     - role: resolvconf
       tags: [ 'role::resolvconf', 'skip::resolvconf' ]
 
+    - role: python
+      tags: [ 'role::python', 'skip::python', 'role::netbase', 'role::ldap' ]
+      python__dependent_packages3:
+        - '{{ netbase__python__dependent_packages3 }}'
+        - '{{ ldap__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ netbase__python__dependent_packages2 }}'
+        - '{{ ldap__python__dependent_packages2 }}'
+
     - role: netbase
       tags: [ 'role::netbase', 'skip::netbase' ]
 
@@ -83,15 +111,6 @@
     - role: fhs
       tags: [ 'role::fhs', 'skip::fhs' ]
 
-    - role: python
-      tags: [ 'role::python', 'skip::python', 'role::netbase', 'role::ldap' ]
-      python__dependent_packages3:
-        - '{{ netbase__python__dependent_packages3 }}'
-        - '{{ ldap__python__dependent_packages3 }}'
-      python__dependent_packages2:
-        - '{{ netbase__python__dependent_packages2 }}'
-        - '{{ ldap__python__dependent_packages2 }}'
-
     - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
@@ -100,12 +119,6 @@
         - '{{ apt_install__apt_preferences__dependent_list }}'
         - '{{ yadm__apt_preferences__dependent_list }}'
         - '{{ rsyslog__apt_preferences__dependent_list }}'
-
-    - role: apt_proxy
-      tags: [ 'role::apt_proxy', 'skip::apt_proxy' ]
-
-    - role: apt
-      tags: [ 'role::apt', 'skip::apt' ]
 
     - role: tzdata
       tags: [ 'role::tzdata', 'skip::tzdata' ]
@@ -127,6 +140,9 @@
 
     - role: machine
       tags: [ 'role::machine', 'skip::machine' ]
+
+    - role: lldpd
+      tags: [ 'role::lldpd', 'skip::lldpd' ]
 
     # LDAP client initialization should be done separately to prepare local
     # facts for other roles to use in configuration.

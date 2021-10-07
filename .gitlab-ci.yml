@@ -1247,6 +1247,14 @@ stages:
     JANE_LOG_PATTERN: '\[libvirtd_qemu\]'
   tags: [ 'shell', 'vagrant-vm' ]
 
+'lldpd role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_FACT: 'lldpd.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/lldpd.yml'
+    JANE_DIFF_PATTERN: '.*/roles/lldpd/.*'
+    JANE_LOG_PATTERN: '\[lldpd\]'
+
 'locales role':
   <<: *test_role_no_deps
   variables:
@@ -2337,6 +2345,7 @@ stages:
     - 'apt_preferences role'
     - 'ferm role'
     - 'tcpwrappers role'
+    - 'lldpd role'
   variables:
     JANE_TEST_FACT: 'snmpd.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/snmpd.yml'
@@ -2459,6 +2468,18 @@ stages:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/tcpwrappers.yml'
     JANE_DIFF_PATTERN: '.*/roles/tcpwrappers/.*'
     JANE_LOG_PATTERN: '\[tcpwrappers\]'
+
+'telegraf role':
+  <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'influxdata role'
+  variables:
+    JANE_TEST_FACT: 'telegraf.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/telegraf.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_telegraf'
+    JANE_DIFF_PATTERN: '.*/roles/telegraf/.*'
+    JANE_LOG_PATTERN: '\[telegraf\]'
 
 'tftpd role':
   <<: *test_role_1st_deps
@@ -2592,3 +2613,18 @@ stages:
     JANE_INVENTORY_HOSTVARS: 'yadm__dotfiles_enabled=true'
     JANE_DIFF_PATTERN: '.*/roles/yadm/.*'
     JANE_LOG_PATTERN: '\[yadm\]'
+
+
+# --- z --- [[[2
+
+'zabbix_agent role':
+  <<: *test_role_1st_deps
+  needs:
+    - 'etc_services role'
+    - 'ferm role'
+  variables:
+    JANE_TEST_FACT: 'zabbix_agent.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/zabbix_agent.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_zabbix_agent'
+    JANE_DIFF_PATTERN: '.*/roles/zabbix_agent/.*'
+    JANE_LOG_PATTERN: '\[zabbix_agent\]'

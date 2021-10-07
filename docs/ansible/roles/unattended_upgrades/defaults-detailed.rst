@@ -143,6 +143,8 @@ Include specified origin patterns for all hosts:
 
    unattended_upgrades__origins:
 
+     - 'o=packages.gitlab.com/gitlab/gitlab-ce,n=${distro_codename},l=gitlab-ce'
+
      - origin: 'site=download.owncloud.org'
 
      - origin: [ 'site=download.example.org', 'o=Example Testing Packages' ]

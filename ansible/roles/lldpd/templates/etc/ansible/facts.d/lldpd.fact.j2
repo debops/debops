@@ -1,0 +1,33 @@
+#!{{ ansible_python['executable'] }}
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+import json
+import subprocess
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+output = {'installed': cmd_exists('lldpd')}
+
+try:
+    version_stdout = subprocess.check_output(
+            ["lldpd", "-v"]).decode('utf-8').strip()
+    output['version'] = version_stdout
+
+except Exception:
+    pass
+
+print(json.dumps(output, sort_keys=True, indent=4))

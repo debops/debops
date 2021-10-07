@@ -1,0 +1,92 @@
+---
+# Copyright (C) 2021 Dr. Serge Victor <https://dr.sergevictor.eu/>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Import custom Ansible plugins
+  import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  import_role:
+    name: 'secret'
+
+- name: Add Telegraf UNIX account to required groups
+  user:
+    name: 'telegraf'
+    groups: '{{ telegraf__additional_groups | flatten | join(",") }}'
+    state: 'present'
+    append: True
+  notify: [ 'Check telegraf and restart' ]
+
+- name: Configure Telegraf instance leading file
+  template:
+    src: 'etc/telegraf/telegraf.conf.j2'
+    dest: '/etc/telegraf/telegraf.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Check telegraf and restart' ]
+
+- name: Remove plugins configuration if requested
+  file:
+    path: '/etc/telegraf/telegraf.d/{{ item.name }}.conf'
+    state: 'absent'
+  loop: '{{ telegraf__combined_plugins | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
+  when: item.state|d('present') == 'absent' and item.config|d()
+  notify: [ 'Check telegraf and restart' ]
+
+- name: Find plugins which are in filesystem
+  find:
+    paths: '/etc/telegraf/telegraf.d'
+    patterns: '*.conf'
+  register: telegraf__register_existing_plugins_filenames
+
+- name: Backup and disactivate plugins unexisting in desired configuration
+  command:
+    cmd: mv -f '{{ item.path | quote }}' '{{ item.path | quote }}.inactive'
+    removes: '{{ item.path }}'
+  loop: '{{ telegraf__register_existing_plugins_filenames.files }}'
+  loop_control:
+    label: '{{ {"path": item.path} }}'
+  when: item.path | basename | splitext | first not in telegraf__combined_plugins | parse_kv_items | map(attribute="name")
+  notify: [ 'Check telegraf and restart' ]
+
+- name: Configure plugins
+  template:
+    src: 'etc/telegraf/telegraf.d/plugin.conf.j2'
+    dest: '/etc/telegraf/telegraf.d/{{ item.name }}.conf'
+    owner: 'root'
+    group: 'telegraf'
+    mode: '0640'
+  loop: '{{ telegraf__combined_plugins | parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
+  when: (item.state|d('present') not in [ 'absent', 'ignore' ] and
+         (item.config|d() or item.raw|d()))
+  no_log: '{{ debops__no_log | d(True) }}'
+  notify: [ 'Check telegraf and restart' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save Telegraf instance local facts
+  template:
+    src: 'etc/ansible/facts.d/telegraf.fact.j2'
+    dest: '/etc/ansible/facts.d/telegraf.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+
+- name: Re-read local facts if they have been modified
+  meta: 'flush_handlers'

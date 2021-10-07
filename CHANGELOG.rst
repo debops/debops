@@ -33,6 +33,26 @@ New DebOps roles
   used to provide media (video, music, images) to other devices on the local
   network that support the DLNA protocol.
 
+- The :ref:`debops.telegraf` role can be used to install and manage the
+  `Telegraf`__ metrics server, which can send data to various other services.
+
+  .. __: https://www.influxdata.com/time-series-platform/telegraf/
+
+- The :ref:`debops.lldpd` role provides support for managing and configuring
+  the :command:`lldpd` service, which can be used to locate other network
+  devices connected to a given host using the Link-Layer Discovery Protocol.
+  The role is included in the :file:`common.yml` playbook by default.
+
+- The :ref:`debops.zabbix_agent` role can install and configure Zabbix Agent,
+  used for monitoring and metrics.
+
+General
+'''''''
+
+- New Jinja filters ``from_toml`` and ``to_toml`` are available to DebOps
+  roles, provided using a custom Ansible plugin. The filters require the
+  ``toml`` Python package to be installed on the Ansible Controller.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
@@ -40,6 +60,17 @@ New DebOps roles
   which allows for `Multiarch`__ installations.
 
   .. __: https://wiki.debian.org/Multiarch/HOWTO
+
+- You can now purge specific APT packages along with their configuration and
+  unused dependencies. This might be useful during bootstrap or provisioning
+  process to remove unused or conflicting services installed by the provider.
+
+:ref:`debops.dokuwiki` role
+'''''''''''''''''''''''''''
+
+- The role now provides a set of variables and tasks which can be used to add
+  or remove custom files in the DokuWiki installation, useful in certain
+  setups.
 
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
@@ -85,6 +116,17 @@ New DebOps roles
   packages are not installed but are expected to be present and in
   configuration compatible with DebOps.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- The role gained support for `Certbot`__ tool as an alternative to
+  :command:`acme-tiny` script. Certbot provides `Lets' Encrypt DNS-01
+  challenge`__ functionality with wildcard and internal certificates. See role
+  documentation for more details.
+
+  .. __: https://certbot.eff.org/
+  .. __: https://letsencrypt.org/docs/challenge-types/#dns-01-challenge
+
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
 
@@ -125,11 +167,21 @@ Updates of upstream application versions
 - The :file:`lxc_ssh.py` Ansible connection plugin has been updated to include
   latest changes and bugfixes.
 
+- The Elastic APT repository configured on new installations by
+  :ref:`debops.elastic_co` has been updated to version 7.x. Updating the
+  repository configuration on existing hosts requires that you manually update
+  the local facts or to set the ``elastic_co__version`` variable to '7.x' before
+  running the playbook.
+
 General
 '''''''
 
 - DebOps tasks that import local SSH keys will now recognize FIDO U2F security
   keys used via the SSH agent.
+
+- The APT configuration by the :ref:`debops.apt` and :ref:`debops.apt_proxy`
+  roles in the :file:`common.yml` playbook has been moved to a separate play to
+  ensure feature parity with the bootstrap playbooks.
 
 :ref:`debops.apt` role
 ''''''''''''''''''''''
@@ -158,12 +210,27 @@ General
 
   .. __: https://keyserver.ubuntu.com/
 
+:ref:`debops.php` role
+''''''''''''''''''''''
+
+- php7.4 has been added to the ``php__version_preference`` list. This ensures
+  that PHP-related packages are installed on Debian 11 (Bullseye) systems.
+
 :ref:`debops.postldap` role
 '''''''''''''''''''''''''''
 
 - A few changes to the Postfix LDAP lookup tables were made, most notably a
   better split between alias lookups (ldap_virtual_alias_maps.cf) and
   distribution list lookups (ldap_virtual_forward_maps.cf).
+
+:ref:`debops.preseed` role
+''''''''''''''''''''''''''
+
+- The role has been redesigned from the ground up and uses
+  :ref:`universal_configuration` to manage Preseed configuration files.
+  Multiple "flavors" are provided to permit installation of Debian in a variety
+  of environments. See the :ref:`upgrade_notes` for details about upgrading an
+  existing installation.
 
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
@@ -207,12 +274,25 @@ Fixed
   needed when the host-identifier contains periods (e.g. fully qualified
   domain names).
 
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- Make sure that the correct Preseed flavor is used when the user changes it
+  using the menu item.
+
 :ref:`debops.kmod` role
 '''''''''''''''''''''''
 
 - Fixed an issue with role facts where the script ended with exception when the
   ``kmod`` package wasn't installed and the :command:`lsmod` command was not
   available.
+
+:ref:`debops.ldap` role
+'''''''''''''''''''''''
+
+- The role will refresh the local facts when the :file:`/etc/ldap/ldap.conf`
+  configuration changes to ensure that other roles have correct information
+  available, for example when a new set of LDAP servers is used.
 
 :ref:`debops.libvirt` role
 ''''''''''''''''''''''''''
@@ -245,6 +325,13 @@ Fixed
   IP address using DNS and the host does not have an entry in the DNS or in
   :file:`/etc/hosts` database.
 
+- Fixed an issue where the initial bootstrap and common playbook execution
+  didn't provide the correct configuration for the :ref:`debops.netbase` role,
+  resulting in a non-idempotent execution and wrong :file:`/etc/hosts` database
+  contents. The order of the :ref:`debops.python` role in bootstrap and common
+  playbooks has been adjusted to ensure that the Python packages required by
+  the :ref:`debops.netbase` role are installed before its execution.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
@@ -255,6 +342,12 @@ Fixed
 
 - Do not remove the whole PKI hook directory when the :command:`nginx` hook
   script is removed by the role.
+
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Fixed an issue with the :ref:`debops.nginx` configuration where some
+  Nextcloud pages (LDAP configuration, for example) did not work correctly.
 
 :ref:`debops.pki` role
 ''''''''''''''''''''''
@@ -282,6 +375,18 @@ Fixed
 - Do not remove the whole PKI hook directory when the :command:`prosody` hook
   script is removed by the role.
 
+:ref:`debops.redis_server` role
+'''''''''''''''''''''''''''''''
+
+- Fixed an issue with facts not showing Redis instances correctly when password
+  is empty.
+
+debops.reprepro role
+''''''''''''''''''''
+
+- Added missing architectures (all expected architectures for Bookworm, and
+  some missing architectures for older releases).
+
 :ref:`debops.resolvconf` role
 '''''''''''''''''''''''''''''
 
@@ -306,6 +411,36 @@ Fixed
 
 - The ``create_home`` parameter was not functional because of typos in the
   Ansible task.
+
+Removed
+~~~~~~~
+
+:ref:`debops.preseed` role
+''''''''''''''''''''''''''
+
+- Support for installing and configuring Salt Minions during host provisioning
+  has been removed.
+
+:ref:`debops.snmpd` role
+''''''''''''''''''''''''
+
+- The tasks and other code which managed the :command:`lldpd` daemon has been
+  removed from the role. The :ref:`debops.lldpd` role now provides the LLDP
+  support and automatically integrates with SNMP daemon when it is detected.
+
+Security
+~~~~~~~~
+
+General
+'''''''
+
+- Specific DebOps roles (:ref:`debops.dovecot`, :ref:`debops.owncloud`,
+  :ref:`debops.postldap`) used password generation lookups with invalid
+  parameters which might have resulted in a weaker passwords generated during
+  their deployment. The parameters in the password lookups have been fixed; you
+  might consider regenerating the passwords created by them by removing
+  existing ones from the :ref:`debops.secret` storage on the Ansible Controller
+  and re-running the roles.
 
 
 `debops v2.3.0`_ - 2021-06-04

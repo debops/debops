@@ -1,0 +1,25 @@
+#!{{ ansible_python['executable'] }}
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2021 Dr. Serge Victor <https://dr.sergevictor.eu/>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps, loads
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+output = {}
+output['installed'] = cmd_exists('telegraf')
+
+print(dumps(output, sort_keys=True, indent=4))

@@ -127,6 +127,7 @@
           (item.architecture|d(apt__architecture) == apt__architecture and
            item.distribution|d(apt__distribution) == apt__distribution and
            item.distribution_release|d(apt__distribution_release) == apt__distribution_release)))
+  tags: [ 'role::apt:keys' ]
 
 - name: Configure custom APT repositories
   apt_repository:
@@ -188,6 +189,18 @@
                          else apt__cache_valid_time }}'
   register: apt__register_apt_update
   until: apt__register_apt_update is succeeded
+  when: apt__enabled|bool
+
+- name: Purge APT packages if requested
+  apt:
+    name: '{{ (apt__purge_packages
+               + apt__purge_group_packages
+               + apt__purge_host_packages) | flatten }}'
+    state: 'absent'
+    purge: True
+    autoremove: True
+  register: apt__register_purge_packages
+  until: apt__register_purge_packages is succeeded
   when: apt__enabled|bool
 
 - name: Update the role status in local facts

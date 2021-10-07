@@ -1,0 +1,19 @@
+{# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2021 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+{% for element in pki_certbot_combined_configuration | parse_kv_config %}
+{%   if element.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%     if element.comment|d() %}
+{%       if not loop.first %}
+{{         '' }}
+{%       endif %}
+{{       element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%     endif %}
+{%     set element_comment = ('#' if element.state|d('present') == 'comment' else '') %}
+{%     set element_name = (element.option | d(element.name)) %}
+{{     '{}{} = {}'.format(element_comment, element_name, element.value) }}
+{%   endif %}
+{% endfor %}

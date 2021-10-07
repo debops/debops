@@ -1,0 +1,13 @@
+---
+# Copyright (C) 2021 Dr. Serge Victor <https://dr.sergevictor.eu/>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Check telegraf and restart
+  command: '/usr/bin/telegraf --test --config /etc/telegraf/telegraf.conf --config-directory /etc/telegraf/telegraf.d'
+  notify: [ 'Restart telegraf' ]
+
+- name: Restart telegraf
+  service:
+    name: "telegraf"
+    state: "restarted"

@@ -1262,7 +1262,7 @@ owncloud__ldap_binddn: '{{ ([ owncloud__ldap_self_rdn ] + owncloud__ldap_device_
 # to bind to the LDAP directory.
 owncloud__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
                                   + owncloud__ldap_binddn | to_uuid + ".password length=32 "
-                                  + "chars=alpha,digits,!@_#$%^&*") }}'
+                                  + "chars=ascii_letters,digits,!@_#$%^&*") }}'
 
                                                                    # ]]]
 # .. envvar:: owncloud__ldap_uri [[[
@@ -2279,6 +2279,10 @@ owncloud__nginx__dependent_servers:
           # then Nginx will encounter an infinite rewriting loop when it prepends `/index.php`
           # to the URI, resulting in a HTTP 500 error response.
 
+          # Required for legacy support
+          # https://github.com/nextcloud/documentation/pull/2197#issuecomment-721432337
+          rewrite ^/(?!index|remote|public|cron|core\/ajax\/update|status|ocs\/v[12]|updater\/.+|oc[ms]-provider\/.+|.+\/richdocumentscode\/proxy) /index.php$request_uri;
+
           fastcgi_split_path_info ^(.+?\.php)(\/.*|)$;
           set $path_info $fastcgi_path_info;
 
@@ -2365,9 +2369,10 @@ owncloud__php__dependent_configuration:
 
   - filename: '10-owncloud'
     by_role: 'debops.owncloud'
-    state: '{{ "present"
-               if ((owncloud__apcu_enabled|bool) and (owncloud__release is match("8\.1")))
-               else "absent" }}'
+    state: '{{ "present" if (((owncloud__apcu_enabled|bool) and (owncloud__release is match("8\.1"))) or
+            ((owncloud__variant in ["nextcloud"]) and
+            (owncloud__release is version_compare("21.0", ">="))))
+            else "absent" }}'
     options: |
       ; Workaround for: https://github.com/owncloud/core/issues/17329
       apc.enable_cli = 1

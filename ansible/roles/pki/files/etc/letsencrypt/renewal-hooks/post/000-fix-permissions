@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Post-hook script for certbot(1) to fix permission issues in the
+# '/etc/letsencrypt/' directory.
+# Based on: https://sigmaris.info/blog/2019/01/make-certbot-lets-encrypt-certificates-readable-by-debian-ssl-cert-group/
+
+set -o nounset -o pipefail -o errexit
+
+if [ -d "/etc/letsencrypt/live" ] ; then
+    # Secure the private keys and make them readable by the 'ssl-cert' UNIX group
+    chmod 0640          /etc/letsencrypt/archive/*/privkey*.pem
+    chown root:ssl-cert /etc/letsencrypt/archive/*/privkey*.pem
+
+    # Allow read-only access to the certificates by anybody (they're public)
+    find /etc/letsencrypt/live    -type d -print0 | xargs -0 chmod 0755
+    find /etc/letsencrypt/archive -type d -print0 | xargs -0 chmod 0755
+fi

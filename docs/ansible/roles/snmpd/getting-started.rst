@@ -12,10 +12,7 @@ Getting started
 
 ``debops.snmpd`` role will install ``snmpd`` package on Debian/Ubuntu hosts and
 secure access to SNMP using random SNMPv3 username / password combination, as
-well as firewall and TCP wrappers rules. Additionally, ``lldpd`` daemon will be
-installed to provide `LLDP`_ support (this can be disabled by a variable).
-
-.. _LLDP: https://en.wikipedia.org/wiki/Link_Layer_Discovery_Protocol
+well as firewall and TCP wrappers rules.
 
 Example inventory
 -----------------
