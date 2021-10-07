@@ -49,6 +49,13 @@ General
   unused dependencies. This might be useful during bootstrap or provisioning
   process to remove unused or conflicting services installed by the provider.
 
+:ref:`debops.dokuwiki` role
+'''''''''''''''''''''''''''
+
+- The role now provides a set of variables and tasks which can be used to add
+  or remove custom files in the DokuWiki installation, useful in certain
+  setups.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
