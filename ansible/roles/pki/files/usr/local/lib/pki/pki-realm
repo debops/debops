@@ -1268,6 +1268,85 @@ request_acme_dns_certificate() {
     fi
 }
 
+request_acme_manual_certificate() {
+    # We expect the API secrets to be in ./private/dns-*-credentials.key
+    local pkirealm=/etc/pki/realms/${config['name']}
+    local email=""
+
+    if [ -n "${config['acme_contacts']}" ]; then
+        email="-m${config['acme_contacts']}"
+    fi
+
+    local all_dns
+    local req_subjects=${config['subject']:-${config['pki_default_subject']:-}}
+    # shellcheck disable=SC2001
+    req_subjects=$(echo "${req_subjects}" | sed 's/^[Cc][Nn]=//')
+
+    local req_domains="${config['domains']:-${config['pki_default_domain']}}"
+    local req_subdomains="${config['subdomains']:-${config['pki_default_subdomains']:-}}"
+
+    read -r -a all_dns <<< "$(echo "${req_subjects}" | tr "/" " ")"
+
+    local domains
+    read -r -a domains <<< "$(echo "${req_domains}" | tr "/" " ")"
+
+    # shellcheck disable=SC2206
+    all_dns+=( ${domains[*]:-} )
+
+    local subdomains
+    read -r -a subdomains <<< "$(echo "${req_subdomains}" | tr "/" " ")"
+
+    if [ ${#subdomains[@]} -gt 0 ] ; then
+        for i in "${!domains[@]}" ; do
+            for j in "${!subdomains[@]}" ; do
+                if [ "${subdomains[${j}]}" == "_wildcard_" ] ; then
+                    all_dns+=( "*.${domains[${i}]}" )
+                else
+                    all_dns+=( "${subdomains[${j}]}.${domains[${i}]}" )
+                fi
+            done
+        done
+    fi
+
+    # remove redundant domains
+    for i in "${all_dns[@]}"; do
+        for j in "${all_dns[@]}"; do
+            if test "${i}" == "${j}"; then
+                true
+            elif test "*.${i#*\.}" == "${j}"; then
+                # i is part of j. j is wildcard
+                all_dns=( "${all_dns[@]/$i}" )
+            fi
+        done
+    done
+
+    local all_dns_str
+    # remove duplicate lines without sorting
+    all_dns_str=$(printf '%s\n' "${all_dns[@]}" | awk '!x[$0]++' | xargs)
+    # shellcheck disable=SC2086
+    all_dns_str=$(echo " "${all_dns_str} | sed 's/ / -d/g')
+
+    if test "${config['acme_ca']}" == 'le-live-v2'; then
+      # shellcheck disable=SC2086
+      certbot certonly -n --${config['acme_type']} --preferred-challenges=dns --expand --agree-tos "${email}" ${all_dns_str}
+    elif test "${config['acme_ca']}" == 'le-staging-v2'; then
+      # shellcheck disable=SC2086
+      certbot certonly --test-cert -n --${config['acme_type']} --preferred-challenges=dns --expand --agree-tos "${email}" ${all_dns_str}
+    fi
+
+    local folder
+    local letsencrypt
+    folder=$(printf '%s\n' "${all_dns[@]}" | xargs | cut -d' ' -f1)
+    letsencrypt="/etc/letsencrypt/live/${folder}"
+    if [ -f "${letsencrypt}/privkey.pem" ]; then
+        ln -vsfT "${letsencrypt}/privkey.pem"   "${pkirealm}/private/key.pem"
+        ln -vsfT "${letsencrypt}/cert.pem"      "${pkirealm}/acme/cert.pem"
+        ln -vsfT "${letsencrypt}/chain.pem"     "${pkirealm}/acme/intermediate.pem"
+    else
+      echo "error: could not symlink let's encrypt certificates into pki realm" >&2
+    fi
+}
+
 request_acme_certificate () {
     if [ "${config['pki_acme']}" = "true" ]; then
         if [ "${config['acme_type']}" == "acme-tiny" ]; then
@@ -1276,6 +1355,10 @@ request_acme_certificate () {
         if [[ "${config['acme_type']}" =~ "dns-" ]]; then
           request_acme_dns_certificate
         fi
+        if [[ "${config['acme_type']}" == "manual" ]]; then
+          request_acme_manual_certificate
+        fi
+
     fi
 }
 
