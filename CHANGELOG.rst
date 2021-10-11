@@ -376,6 +376,12 @@ Fixed
 - Do not remove the whole PKI hook directory when the :command:`prosody` hook
   script is removed by the role.
 
+:ref:`debops.rabbitmq_server` role
+''''''''''''''''''''''''''''''''''
+
+- Correctly interpret the list of RabbitMQ user accounts to not create unwanted
+  vhosts.
+
 :ref:`debops.redis_server` role
 '''''''''''''''''''''''''''''''
 
