@@ -482,6 +482,10 @@ Define manual hook scripts used for certificate renewal and cleanup:
 
 .. code-block:: yaml
 
+   # Use "certbot" in manual mode, with custom authentication and cleanup
+   # scripts
+   pki_acme_type: 'manual'
+
    pki_certbot_configuration:
 
      - 'authenticator': 'manual'
