@@ -190,10 +190,10 @@
       set -o nounset -o pipefail -o errexit
       ./manage.py migrate
       ./manage.py trace_paths --no-input || :
+      mkdocs build
       ./manage.py collectstatic --no-input
       ./manage.py remove_stale_contenttypes --no-input
       ./manage.py clearsessions
-      ./manage.py invalidate all
     chdir: '{{ netbox__git_checkout + "/netbox" }}'
     executable: 'bash'
   environment:
