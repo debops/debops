@@ -31,7 +31,8 @@ General
 
 - New Jinja filters ``from_toml`` and ``to_toml`` are available to DebOps
   roles, provided using a custom Ansible plugin. The filters require the
-  ``toml`` Python package to be installed on the Ansible Controller.
+  ``toml`` Python package to be installed on the Ansible Controller. The
+  package has been included as the ``debops`` Python package dependency.
 
 :ref:`debops.apache` role
 '''''''''''''''''''''''''
