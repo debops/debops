@@ -79,6 +79,10 @@ Updates of upstream application versions
   the local facts or to set the ``elastic_co__version`` variable to '7.x' before
   running the playbook.
 
+- In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
+  has been updated to the next point release, 10.11. Debian Bullseye has been
+  updated to the next point relase as well, 11.1.
+
 General
 '''''''
 
