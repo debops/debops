@@ -113,13 +113,20 @@ Ansible:
 
 .. __: https://passlib.readthedocs.io/en/stable/
 
+`toml`__
+  This is a Python library which is used by the DebOps custom Jinja filters
+  ``from_toml`` and ``to_toml`` which are used by some roles that configure
+  software using TOML as configuration data format.
+
+.. __: https://github.com/uiri/toml
+
 You can install them using your distribution packages on Debian or
 Ubuntu by running the command:
 
 .. code-block:: console
 
    sudo apt install python3-future python3-ldap python3-netaddr \
-                    python3-dnspython python3-passlib
+                    python3-dnspython python3-passlib python3-toml
 
 The missing Python dependencies will be automatically installed with the
 ``ansible`` and ``debops`` Python packages, however some of them, like the
