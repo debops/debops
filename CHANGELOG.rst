@@ -151,7 +151,8 @@ Updates of upstream application versions
 ''''''''''''''''''''''''''''''''''''''''
 
 - In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
-  has been updated to the next point release, 10.10.
+  has been updated to the next point release, 10.11. Debian Bullseye has been
+  updated to the next point relase as well, 11.1.
 
   Debian 11 (Bullseye) has been released. The :ref:`debops.ipxe` role will now
   prepare a netboot installer with this release and set Bullseye as the default
