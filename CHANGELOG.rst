@@ -148,6 +148,12 @@ Fixed
 - Enable the APC module in PHP cli to fix issue with the :command:`occ` script
   not working in Nextcloud >= 21.0.
 
+:ref:`debops.rabbitmq_server` role
+''''''''''''''''''''''''''''''''''
+
+- Correctly interpret the list of RabbitMQ user accounts to not create unwanted
+  vhosts.
+
 :ref:`debops.redis_server` role
 '''''''''''''''''''''''''''''''
 
