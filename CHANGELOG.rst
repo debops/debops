@@ -56,6 +56,13 @@ General
   or remove custom files in the DokuWiki installation, useful in certain
   setups.
 
+:ref:`debops.netbase` role
+''''''''''''''''''''''''''
+
+- The :man:`hosts(5)` database FQDN entries defined as strings will
+  automatically create hostname aliases when the role uses a template to
+  generate the :file:`/etc/hosts` database.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
