@@ -174,6 +174,11 @@ Updates of upstream application versions
   the local facts or to set the ``elastic_co__version`` variable to '7.x' before
   running the playbook.
 
+- The Icinga Web 2 modules installed by :ref:`debops.icinga_web` have been
+  updated to their latest versions. A quick database migration is needed after
+  updating to get Director to work again. Just click the database migration
+  button on the 'Icinga Director' -> 'Activities log' page.
+
 General
 '''''''
 
