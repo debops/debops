@@ -181,6 +181,9 @@ Updates of upstream application versions
   the local facts or to set the ``elastic_co__version`` variable to '7.x' before
   running the playbook.
 
+- In the :ref:`debops.netbox` role, the NetBox version has been updated to
+  ``v3.0.7``. Note that you need ``v2.11.0`` or later to upgrade to ``v3.0``.
+
 General
 '''''''
 
