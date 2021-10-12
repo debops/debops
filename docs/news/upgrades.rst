@@ -80,6 +80,15 @@ Changes in inventory variables
   +-----------------------+-----------------------------+---------------+
 
 
+Icinga Director database migrations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- After :ref:`debops.icinga_web` updates the Icinga Director module, you will
+  have to perform a quick database migration to get Director to work again. Just
+  click the database migration button on the 'Icinga Director' -> 'Activities
+  log' page.
+
+
 v2.3.0 (2021-06-04)
 -------------------
 
