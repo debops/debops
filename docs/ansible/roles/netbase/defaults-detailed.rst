@@ -84,6 +84,12 @@ with specific parameters:
   together. To reset a list, specify an entry with an empty string as the
   value.
 
+  When the ``template`` mode is used (more than 15 entries by default), the
+  value is interpreted a bit differently: if it's a string, the first part of
+  the address until a dot will be extracted and automatically used as
+  a "hostname" alias. To avoid this behavior, use a YAML list to define the
+  value.
+
   If the value is empty, the host record will be removed from the database.
 
 ``separator``
