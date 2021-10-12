@@ -109,6 +109,13 @@ General
   account in new LXC containers by default. This can be used to grant multiple
   system administrators access to the containers.
 
+:ref:`debops.netbase` role
+''''''''''''''''''''''''''
+
+- The :man:`hosts(5)` database FQDN entries defined as strings will
+  automatically create hostname aliases when the role uses a template to
+  generate the :file:`/etc/hosts` database.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
