@@ -410,6 +410,7 @@ EOF
         python3-setuptools \
         python3-sphinx \
         python3-sphinx-rtd-theme \
+        python3-toml \
         python3-unittest2 \
         python3-wheel \
         python3-yaml \
