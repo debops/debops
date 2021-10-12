@@ -5,7 +5,7 @@
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 debops.telegraf
-======================
+===============
 
 .. toctree::
    :maxdepth: 2
