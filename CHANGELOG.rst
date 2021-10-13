@@ -107,7 +107,7 @@ General
 :ref:`debops.mariadb` role
 ''''''''''''''''''''''''''
 
-- The ``percona`` entry in the :envvar:`mariadb__package_map` dictionary has
+- The ``percona`` entry in the :envvar:`mariadb__packages_map` dictionary has
   been corrected to ``percona-8.0`` to bring them in line with the flavor
   comments. If you use Percona on your hosts, you might need to update the
   Ansible inventory to point the role to the correct package configuration map.
