@@ -428,6 +428,16 @@ debops.reprepro role
   picked up as the version number when :command:`sudo` was configured to use
   LDAP, but the LDAP service was not available.
 
+:ref:`debops.sysctl` role
+'''''''''''''''''''''''''
+
+- The role's default of explicitly disabling packet forwarding conflicted with
+  the sysctl configuration done by Docker Server. The role would disable
+  essential (for Docker) packet forwarding, which would only be enabled again
+  when the Docker daemon was manually restarted or the sysctl parameter was
+  manually corrected. This has been fixed by letting the role default to
+  enabling packet forwarding on Docker Server hosts.
+
 :ref:`debops.system_users` role
 '''''''''''''''''''''''''''''''
 

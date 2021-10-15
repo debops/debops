@@ -90,7 +90,9 @@ sysctl__hardening_enabled: True
 #
 # Should the system forward IP traffic for all interfaces?
 # Refer to ``debops.ifupdown`` which can selectively enable traffic forwarding.
-sysctl__system_ip_forwarding_enabled: False
+sysctl__system_ip_forwarding_enabled: '{{ True
+                                          if ansible_local.docker_server.installed|d(False)
+                                          else False }}'
 
                                                                    # ]]]
 # .. envvar:: sysctl__hardening_ipv6_disabled [[[
