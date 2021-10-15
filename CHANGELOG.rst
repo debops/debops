@@ -278,6 +278,12 @@ General
 Fixed
 ~~~~~
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- The role no longer disables the backports repository of a Debian LTS or
+  archive release.
+
 :ref:`debops.apt_cacher_ng` role
 ''''''''''''''''''''''''''''''''
 
