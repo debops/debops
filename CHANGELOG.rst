@@ -137,6 +137,9 @@ Fixed
 - The role will ignore the "/debian-security" APT mirror added in some LXC
   container templates during generation of the APT sources, to avoid issues.
 
+- The role no longer disables the backports repository of a Debian LTS or
+  archive release.
+
 :ref:`debops.libvirtd` role
 '''''''''''''''''''''''''''
 
