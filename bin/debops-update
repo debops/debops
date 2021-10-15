@@ -95,6 +95,9 @@ GALAXY_ACCOUNT = "debops"
 # hard-coded paths.
 GIT = 'git'
 
+# Default git branch used
+GIT_DEFAULT_BRANCH = 'master'
+
 
 # ---- Functions ----
 
@@ -138,15 +141,12 @@ def fetch_or_clone_roles(roles_path, requirements_file, dry_run=False):
             print()
 
 
-def clone_git_repository(repo_uri, branch, destination, dry_run=False):
-    if dry_run:
-        print("Cloning '%s' to %s..." % (repo_uri, destination))
-    else:
-        subprocess.call([GIT, 'clone', '--quiet', '--branch', branch,
-                         repo_uri, destination])
+def clone_git_repository(repo_uri, branch, destination):
+    subprocess.call([GIT, 'clone', '--quiet', '--branch', branch,
+                     repo_uri, destination])
 
 
-def update_git_repository(path, dry_run=False, remote_uri=False):
+def update_git_repository(path, branch, dry_run=False, remote_uri=False):
     """
     Update an exiting git repository.
 
@@ -156,32 +156,53 @@ def update_git_repository(path, dry_run=False, remote_uri=False):
     old_pwd = os.getcwd()
     os.chdir(path)
 
-    if dry_run:
-        subprocess.call([GIT, 'fetch'])
-        subprocess.call([GIT, 'diff', 'HEAD', 'origin', '--stat'])
+    current_branch = subprocess.check_output(
+                [GIT, 'rev-parse', '--abbrev-ref', 'HEAD']).decode('utf-8').strip()
+    print("Current branch:", current_branch)
+
+    if current_branch != branch:
+        if dry_run:
+            subprocess.call([GIT, 'fetch'])
+            subprocess.call([GIT, 'diff', 'HEAD', 'origin/' + branch, '--stat'])
+        else:
+            # checkout of new branch
+            #subprocess.call([GIT, 'checkout', branch])
+            subprocess.call([GIT, 'checkout', '--progress', branch])
     else:
-        # Get the current sha of the head branch
-        current_sha = subprocess.check_output(
-                [GIT, 'rev-parse', 'HEAD']).strip()
+        if dry_run:
+            subprocess.call([GIT, 'fetch'])
+            subprocess.call([GIT, 'diff', 'HEAD', 'origin/' + current_branch, '--stat'])
 
-        # Fetch it silently and store the new sha
-        subprocess.call([GIT, 'fetch', '--quiet'])
-        fetch_sha = subprocess.check_output(
-                [GIT, 'rev-parse', 'FETCH_HEAD']).strip()
 
-        if current_sha != fetch_sha:
+    # Fetch silently
+    # subprocess.call([GIT, 'fetch', '--quiet'])
+    subprocess.call([GIT, 'fetch'])
+
+    # Get the current sha of the head branch
+    current_sha = subprocess.check_output(
+        [GIT, 'rev-parse', 'HEAD']).strip()
+
+    print("Current SHA:", current_sha)
+
+    fetch_sha = subprocess.check_output(
+        [GIT, 'rev-parse', 'FETCH_HEAD']).strip()
+
+    print("Fetch SHA:", fetch_sha)
+
+    if current_sha != fetch_sha:
+        print()
+        print('--')
+        # subprocess.call([GIT, 'merge', fetch_sha])
+        subprocess.call([GIT, 'merge', '-v', fetch_sha])
+
+        if remote_uri:
+            compare_uri = (remote_uri + '/compare/' + current_sha[:7]
+                                   + '...' + fetch_sha[:7])
             print()
-            print('--')
-            subprocess.call([GIT, 'merge', fetch_sha])
+            print("Compare:", compare_uri)
 
-            if remote_uri:
-                compare_uri = (remote_uri + '/compare/' + current_sha[:7]
-                               + '...' + fetch_sha[:7])
-                print()
-                print("Compare:", compare_uri)
-
-            print('--')
-            print()
+        print('--')
+        print()
 
     # Move back to the initial directory
     os.chdir(old_pwd)
@@ -189,7 +210,7 @@ def update_git_repository(path, dry_run=False, remote_uri=False):
 
 # ---- Main script ----
 
-def main(project_dir=None, dry_run=False):
+def main(branch=GIT_DEFAULT_BRANCH, project_dir=None, dry_run=False):
 
     # Check if user specified a directory as a parameter, if yes, use it as
     # a project directory and clone DebOps playbooks inside
@@ -256,11 +277,11 @@ def main(project_dir=None, dry_run=False):
 
         print("DebOps monorepo has not been found, installing into",
               monorepo_path)
-        clone_git_repository(MONOREPO_GIT_URI, 'master',
-                             monorepo_path, dry_run)
+        clone_git_repository(MONOREPO_GIT_URI, branch,
+                             monorepo_path)
     else:
         print("DebOps monorepo has been found in", monorepo_path)
-        update_git_repository(monorepo_path, dry_run)
+        update_git_repository(monorepo_path, branch, dry_run)
 
     # Skip the rest of the script with least amount of changes
     return
@@ -269,38 +290,39 @@ def main(project_dir=None, dry_run=False):
 
     # Playbooks have not been found, at this point assume playbooks are not
     # installed. Install them in user home directory
-    if not playbooks_path:
-        if dry_run:
-            raise SystemExit("--dry-run requires DebOps playbooks.\n"
-                             "Run debops-update without --dry-run first.")
+    # if not playbooks_path:
+    #     if dry_run:
+    #         raise SystemExit("--dry-run requires DebOps playbooks.\n"
+    #                          "Run debops-update without --dry-run first.")
 
-        # Download/clone main debops-playbooks repository
-        print("DebOps playbooks have not been found, installing into",
-              install_path)
-        print()
+    #     # Download/clone main debops-playbooks repository
+    #     print("DebOps playbooks have not been found, installing into",
+    #           install_path)
+    #     print()
 
-        clone_git_repository(PLAYBOOKS_GIT_URI, 'master',
-                             install_path, dry_run)
-        os.chdir(install_path)
-        os.makedirs(roles_path)
-    else:
-        # Update found debops-playbooks repository
-        print("DebOps playbooks have been found in", install_path)
-        update_git_repository(install_path, dry_run)
-        print()
-        os.chdir(install_path)
+    #     clone_git_repository(PLAYBOOKS_GIT_URI, branch,
+    #                          install_path, dry_run)
+    #     os.chdir(install_path)
+    #     os.makedirs(roles_path)
+    # else:
+    #     # Update found debops-playbooks repository
+    #     print("DebOps playbooks have been found in", install_path)
+    #     update_git_repository(install_path, dry_run)
+    #     print()
+    #     os.chdir(install_path)
 
-    # Now install or update the roles into roles_path
-    fetch_or_clone_roles(roles_path, GALAXY_REQUIREMENTS, dry_run)
+    # # Now install or update the roles into roles_path
+    # fetch_or_clone_roles(roles_path, GALAXY_REQUIREMENTS, dry_run)
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dry-run', action='store_true',
                     help='perform a trial run with no changes made')
+parser.add_argument('--branch')
 parser.add_argument('project_dir', nargs='?')
 args = parser.parse_args()
 
 try:
-    main(args.project_dir, args.dry_run)
+    main(args.branch, args.project_dir, args.dry_run)
 except KeyboardInterrupt:
     raise SystemExit('... aborted')
