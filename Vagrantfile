@@ -765,6 +765,32 @@ fi
 jane notify info "Ansible Controller provisioning complete"
 SCRIPT
 
+$setup_examples = <<SCRIPT
+set -o nounset -o pipefail -o errexit
+
+projects_dir=$HOME/src
+controller_dir=${projects_dir}/controller
+upstream_dir=/vagrant/lib/examples
+examples=$(find /vagrant/lib/examples/* -maxdepth 0 -type d -printf "%f\n")
+
+# controller_dir will be our source of truth
+rsync -a ${upstream_dir}/bootstrap/ansible/ ${controller_dir}/ansible/
+jane notify info "${upstream_dir}/bootstrap merged into ${controller_dir}"
+
+# bootstrap_dir is resynchronized with controller one time just to get
+# auto-generated inventory
+for example in ${examples}; do
+    rsync -a ${upstream_dir}/${example} ${projects_dir}
+    jane notify info "${upstream_dir}/${example} installed in ${projects_dir}"
+    rsync -a ${controller_dir}/ ${projects_dir}/${example}/
+    jane notify info "${projects_dir}/${example}/ synchronized with ${controller_dir}/"
+done
+jane notify success "All examples installed and synchronized in ${projects_dir}"
+
+cp $HOME/.ssh/authorized_keys $HOME/.ssh/id_rsa.pub
+jane notify info "Insecure vagrant **public** key copied to $HOME/.ssh/id_rsa.pub for bootstrap example"
+SCRIPT
+
 require 'securerandom'
 
 VAGRANT_DOMAIN = ENV['VAGRANT_DOMAIN'] || 'vagrant.test'
@@ -814,6 +840,9 @@ end
 
 Vagrant.configure("2") do |config|
 
+    # add insecure public key in authorized_keys on master and nodes
+    config.ssh.insert_key = false
+
     # Create and provision additional nodes first, so that the master node has
     # time to do provisioning and cluster detection using Avahi later.
     if VAGRANT_NODES != 0
@@ -830,10 +859,6 @@ Vagrant.configure("2") do |config|
 
                 # Don't populate '/vagrant' directory on other nodes
                 node.vm.synced_folder ".", "/vagrant", disabled: true
-
-                if ENV['VAGRANT_BOX'] || 'debian/buster64' == 'debian/buster64'
-                    node.ssh.insert_key = false
-                end
 
                 node.vm.provider "libvirt" do |libvirt|
                     libvirt.random_hostname = true
@@ -877,10 +902,6 @@ Vagrant.configure("2") do |config|
             SHELL
         end
 
-        if ENV['VAGRANT_BOX'] || 'debian/buster64' == 'debian/buster64'
-            subconfig.ssh.insert_key = false
-        end
-
         subconfig.vm.provider "libvirt" do |libvirt, override|
             # On a libvirt provider, default sync method is NFS. If we switch
             # it to 'rsync', this will drop the dependency on NFS on the host.
@@ -914,6 +935,8 @@ Vagrant.configure("2") do |config|
 
         if ENV['GITLAB_CI'] != "true"
             subconfig.vm.provision "shell", inline: $provision_controller, keep_color: true, privileged: false
+            subconfig.vm.provision "examples", type: "shell", run: "never",
+                                   inline: $setup_examples, privileged: false, keep_color: true
         end
 
         if ENV['CI'] != "true"

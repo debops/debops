@@ -1,0 +1,15 @@
+---
+# don't create my current account on hosts
+system_users__self: False
+
+# dedicated admin account to manage servers
+system_users__accounts:
+
+  - name: 'ansible-admin'
+    group: 'ansible-admin'
+    comment: 'Ansible admin'
+    # home path is generated automatically
+    shell: '/bin/bash'
+    admin: True
+    sshkeys: '{{ lookup("pipe","ssh-add -L | grep ^ssh || cat ~/.ssh/*.pub || true") }}'
+    state: 'present'
