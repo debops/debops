@@ -535,18 +535,18 @@ apache__pki_trusted_filename: '{{ ansible_local.pki.trusted|d("trusted.crt") }}'
 # Default set of cipher suites to use.
 # Refer to ``apache_ssl_ciphers`` for details.
 apache__tls_cipher_suite_set_name: '{{ "mozilla_modern"
-                                      if apache_tls_protocols|length == 5 and
-                                        apache_tls_protocols[4] == "-TLSv1.2"
+                                      if apache__tls_protocols|length == 5 and
+                                        apache__tls_protocols[4] == "-TLSv1.2"
                                       else "mozilla_intermediate" }}'
 
                                                                    # ]]]
-# .. envvar:: apache_tls_protocols [[[
+# .. envvar:: apache__tls_protocols [[[
 #
 # Default set of TLS protocols to use. TLSv1.3 is only supported on apache
 # version 2.4.38 and up. To enforce TLSv1.3 only, use [ "all", "-SSLv3", "-TLSv1", "-TLSv1.1", "-TLSv1.2" ]
 #
 # See also: https://httpd.apache.org/docs/2.4/mod/mod_ssl.html#sslprotocol
-apache_tls_protocols: [ "all", "-SSLv3", "-TLSv1", "-TLSv1.1" ]
+apache__tls_protocols: [ "all", "-SSLv3", "-TLSv1", "-TLSv1.1" ]
 
                                                                    # ]]]
 # .. envvar:: apache__tls_cipher_suite_sets [[[

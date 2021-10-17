@@ -57,6 +57,17 @@ Continuous Integration
 - The default box used by Vagrant for DebOps VMs has been updated from
   ``debian/buster64`` to ``debian/bullseye64``.
 
+:ref:`debops.apache` role
+'''''''''''''''''''''''''
+
+- The default encryption cypher suites used by Apache have been updated in the
+  role to bring them in line with the :ref:`debops.nginx` role defaults.
+
+  .. warning:: This change might potentially cause connection issues to the
+     webserver on existing installations; if you use Apsche for your services
+     check if the selected encryption cipher suites are sufficient for your
+     service before applying them in production.
+
 :ref:`debops.docker_server` role
 ''''''''''''''''''''''''''''''''
 
