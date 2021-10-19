@@ -179,6 +179,12 @@ Fixed
   seconds. This mitigates a lock-out issue when :envvar:`sshd__use_dns` is
   enabled (the default) and your DNS resolvers are unreachable.
 
+:ref:`debops.unattended_upgrades` role
+''''''''''''''''''''''''''''''''''''''
+
+- Use correct Origin pattern for Debian Security repository on Debian Bullseye
+  and later.
+
 
 `debops v2.2.5`_ - 2021-10-14
 -----------------------------
