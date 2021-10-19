@@ -185,6 +185,12 @@ Fixed
 - The role will now skip installing the ``sudo-ldap`` package and creating the
   LDAP account object if :envvar:`sudo__ldap_enabled` is ``False``.
 
+:ref:`debops.unattended_upgrades` role
+''''''''''''''''''''''''''''''''''''''
+
+- Use correct Origin pattern for Debian Security repository on Debian Bullseye
+  and later.
+
 
 `debops v2.3.3`_ - 2021-10-14
 -----------------------------
