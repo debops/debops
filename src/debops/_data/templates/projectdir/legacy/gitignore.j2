@@ -15,21 +15,21 @@
 /roles
 /playbooks
 
-
-## Debops secrets, EncFS implementation
+{% if encrypted_secrets == 'encfs' %}
+## DebOps secrets, EncFS implementation
 # If you'll be using git-crypt instead
 # Remove this whole section
 # and uncomment the lines in .gitattributes
 
 # EncFS mount targets
 /ansible/{{ secret_name }}
-/{{ secret_name }}
 
 # EncFS encrypted folders
-# Remove this when you're ready to commit it to git
-{{ encfs_prefix }}{{ secret_name }}
+# Uncomment this line if you don't want to include EncFS filesystem in the git
+# repository
+#/ansible/{{ encfs_prefix }}{{ secret_name }}
 
-
+{% endif %}
 # Local environment configuration
 .env
 

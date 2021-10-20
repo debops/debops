@@ -38,10 +38,10 @@ class Interpreter(object):
     def do_project_init(self, args):
         try:
             project = ProjectDir(path=args.project_dir, config=self.config,
-                                 create=True)
+                                 create=True, **vars(args))
             project.create()
         except (IsADirectoryError, NotADirectoryError,
-                PermissionError) as errmsg:
+                PermissionError, ValueError) as errmsg:
             print('Error:', errmsg)
             exit(1)
 

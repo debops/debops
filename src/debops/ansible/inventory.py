@@ -13,6 +13,10 @@ import subprocess
 import sys
 import os
 import stat
+import string
+import itertools
+import random
+import time
 
 try:
     # shlex.quote is new in Python 3.3
@@ -63,6 +67,60 @@ class AnsibleInventory(object):
             if os.path.ismount(self.secret_path):
                 self.encfs_mounted = True
 
+    def _get_random_string(self):
+        all_chars = string.digits + string.ascii_letters + string.punctuation
+        random_string = (''.join(random.choice(all_chars)
+                         for i in range(64)))
+        return random_string
+
+    def _encrypt_secrets_encfs(self):
+        encfs_keyfile = os.path.join(self.encfs_path, '.encfs6.keyfile')
+        encfs_configfile = os.path.join(self.encfs_path, '.encfs6.xml')
+        encfs_password = self._get_random_string()
+
+        try:
+            gpg_keys = list(self.kwargs.get('keys', None).split(','))
+            gpg_recipients = list(
+                    itertools.chain.from_iterable(['-r', r]
+                                                  for r in gpg_keys))
+        except AttributeError:
+            raise ValueError('List of GPG recipients not specified')
+
+        if not os.path.exists(self.encfs_path):
+            print('Encrypting Ansible secrets using EncFS...')
+            os.makedirs(self.encfs_path)
+            gpg_cmd = subprocess.Popen([self._commands['gpg'], '--encrypt', '--armor',
+                                        '--output', encfs_keyfile] + gpg_recipients,
+                                       stdin=subprocess.PIPE)
+            gpg_cmd.communicate(encfs_password.encode('utf-8'))
+            while not os.path.exists(encfs_keyfile):
+                time.sleep(1)
+
+            encfs_cmd = subprocess.Popen([
+                self._commands['encfs'], self.encfs_path, self.secret_path,
+                '--extpass',
+                self._commands['gpg'] + ' --decrypt --no-mdc-warning --output - '
+                + shquote(encfs_keyfile)],
+                stdin=subprocess.PIPE)
+            encfs_cmd.communicate(('p\n' + encfs_password).encode('utf-8'))
+
+            while not os.path.exists(encfs_configfile):
+                time.sleep(1)
+
+            # Set the inventory state to correctly lock the secrets
+            self.encrypted = True
+            self.crypt_method = 'encfs'
+            if os.path.ismount(self.secret_path):
+                self.encfs_mounted = True
+            self.lock()
+
+            gpg_cmd = subprocess.Popen([self._commands['gpg'], '--encrypt', '--armor',
+                                        '--output', encfs_configfile + '.asc']
+                                       + gpg_recipients + [encfs_configfile])
+            while not os.path.exists(encfs_configfile + '.asc'):
+                time.sleep(1)
+            os.remove(encfs_configfile)
+
     def create(self):
 
         try:
@@ -112,6 +170,11 @@ class AnsibleInventory(object):
                         host_as_controller=host_as_controller,
                         hostname=socket.gethostname(),
                         fqdn=socket.getfqdn()))
+
+        encrypted_secrets = self.kwargs.get('encrypt', None)
+        if encrypted_secrets is not None:
+            if encrypted_secrets == 'encfs':
+                self._encrypt_secrets_encfs()
 
     def unlock(self):
         if self.encrypted:

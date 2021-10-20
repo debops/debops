@@ -86,6 +86,12 @@ Commands:
         self.add_bool_argument(parser, 'git',
                                help='enable git support (default)',
                                no_help='disable git support')
+        parser.add_argument('--encrypt', type=str, nargs='?',
+                            choices=['encfs', 'git-crypt'],
+                            help='enable encrypted secrets')
+        parser.add_argument('--keys', type=str,
+                            help='list of GPG recipients with secret access, '
+                                 'delimited by commas')
         parser.add_argument('project_dir', type=str, nargs='?',
                             default=os.getcwd(),
                             help='path to the project directory')

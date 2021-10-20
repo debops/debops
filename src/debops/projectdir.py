@@ -17,7 +17,9 @@ import platform
 class ProjectDir(object):
 
     def __init__(self, path=os.getcwd(), project_type='legacy', create=False,
-                 config=None):
+                 config=None, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
         self.config = config
         self.path = os.path.abspath(path)
         self.name = os.path.basename(self.path)
@@ -88,7 +90,7 @@ class ProjectDir(object):
     def _create_legacy_project(self, path):
         self.project_type = 'legacy'
 
-        inventory = AnsibleInventory(self, self.name)
+        inventory = AnsibleInventory(self, self.name, **self.kwargs)
         inventory.create()
 
         default_debops_cfg = jinja2.Template(
@@ -143,15 +145,20 @@ class ProjectDir(object):
                 self.config.load(os.path.join(self.path, '.debops.cfg')))
         self.config.merge(project_data)
 
-        # Create .gitattributes
-        self._write_file(os.path.join(path, '.gitattributes'),
-                         default_gitattributes.render(secret_name='secret')
-                         + '\n')
+        encrypted_secrets = self.kwargs.get('encrypt', None)
+
+        if encrypted_secrets == 'git-crypt':
+            # Create .gitattributes
+            self._write_file(os.path.join(path, '.gitattributes'),
+                             default_gitattributes.render(secret_name='secret')
+                             + '\n')
 
         # Create .gitignore
         self._write_file(os.path.join(path, '.gitignore'),
-                         default_gitignore.render(secret_name='secret',
-                                                  encfs_prefix='.encfs.')
+                         default_gitignore.render(
+                             encrypted_secrets=encrypted_secrets,
+                             secret_name='secret',
+                             encfs_prefix='.encfs.')
                          + '\n')
 
         debops_cfg = (self.config.raw['views']['system']['ansible'])
