@@ -189,6 +189,9 @@ Updates of upstream application versions
   updating to get Director to work again. Just click the database migration
   button on the 'Icinga Director' -> 'Activities log' page.
 
+- In the :ref:`debops.wpcli` role, the WpCli version has been updated to
+  ``2.5.0``. ``2.3.0`` and ``2.4.0`` can be installed by changing ``wpcli__version``
+
 General
 '''''''
 
