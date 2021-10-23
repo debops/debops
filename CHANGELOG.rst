@@ -140,6 +140,12 @@ Fixed
 - The role no longer disables the backports repository of a Debian LTS or
   archive release.
 
+:ref:`debops.dnsmasq` role
+''''''''''''''''''''''''''
+
+- The DHCPv6 service does not use the TCP protocol, therefore it will not be
+  opened in the firewall anymore.
+
 :ref:`debops.libvirtd` role
 '''''''''''''''''''''''''''
 
