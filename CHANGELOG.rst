@@ -159,6 +159,12 @@ Fixed
 - Role execution with the ``role::owncloud:occ`` Ansible tag should now work
   again as expected.
 
+:ref:`debops.postwhite` role
+''''''''''''''''''''''''''''
+
+- Fixed name of the :file:`./scrape_yahoo` script executed by the
+  :command:`cron` service.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
