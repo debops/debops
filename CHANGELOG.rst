@@ -232,6 +232,14 @@ General
 - php7.4 has been added to the ``php__version_preference`` list. This ensures
   that PHP-related packages are installed on Debian 11 (Bullseye) systems.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- The RootCA certificate for the Let's Encrypt ACME certificates has been
+  changed to :file:`mozilla/ISRG_Root_X1.crt`, the previous CA certificate is
+  now expired. Existing PKI realms will not be modified, you might need to
+  recreate them or replace the :file:`acme/root.pem` symlink manually.
+
 :ref:`debops.postldap` role
 '''''''''''''''''''''''''''
 
