@@ -82,12 +82,15 @@ with open('src/debops/__version__.py', 'w') as version_file:
     version_file.write('__version__ = "{}"\n'
                        .format(RELEASE))
 
+MANPAGES_1 = []
 MANPAGES_5 = []
 if os.path.exists('docs/_build/man'):
     for manpage in os.listdir('docs/_build/man'):
-        if (os.path.isfile(os.path.join('docs/_build/man', manpage)) and
-                manpage.endswith('.5')):
-            MANPAGES_5.append(os.path.join('docs/_build/man', manpage))
+        if os.path.isfile(os.path.join('docs/_build/man', manpage)):
+            if manpage.endswith('.1'):
+                MANPAGES_1.append(os.path.join('docs/_build/man', manpage))
+            elif manpage.endswith('.5'):
+                MANPAGES_5.append(os.path.join('docs/_build/man', manpage))
 else:
     print('Warning: manual pages not built')
 
@@ -101,6 +104,7 @@ setup(
     package_dir={'': 'src'},
     packages=find_packages('src', exclude=('tests', 'docs')),
     data_files=[
+        ('share/man/man1', MANPAGES_1),
         ('share/man/man5', MANPAGES_5),
     ],
     package_data={
