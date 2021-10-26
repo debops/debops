@@ -25,6 +25,12 @@ You can read information about required changes between releases in the
 Changed
 ~~~~~~~
 
+Continuous Integration
+''''''''''''''''''''''
+
+- The default box used by Vagrant for DebOps VMs has been updated from
+  ``debian/buster64`` to ``debian/bullseye64``.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
