@@ -216,6 +216,11 @@ General
 
   .. __: https://docs.ansible.com/ansible/latest/reference_appendices/config.html#collections-paths
 
+- The base Docker image used by DebOps Dockerfile has been changed from
+  ``debian:buster-slim`` to ``debian:bullseye-slim``. The Dockerfile has been
+  updated to build and install DebOps from the monorepo instead of installing
+  a release from PyPI.
+
 Continuous Integration
 ''''''''''''''''''''''
 
