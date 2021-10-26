@@ -205,10 +205,6 @@ General
   functionality in the future and improvements for various tasks done on the
   Ansible Controller.
 
-  .. note:: New set of :command:`debops` scripts is currently in development on
-            the ``master`` branch of the DebOps monorepo. Install the PyPI
-            package for a working version.
-
 - The DebOps monorepo can now be used as an "Ansible Collection" when path to
   the :file:`ansible/collections/` subdirectory inside of the :command:`git`
   repository is specified in the `collections_paths`__ variable in the Ansible
@@ -457,6 +453,31 @@ debops.reprepro role
 
 Removed
 ~~~~~~~
+
+General
+'''''''
+
+- The old DebOps scripts have been removed from the monorepo, they are replaced
+  with new, cleaner scripts that support subcommands.
+
+- The :command:`debops-update` script has been dropped from the project.
+  Existing users should use :command:`git clone` command to install the DebOps
+  monorepo if they wish to use the rolling release. There's also no need to
+  install the ``debops`` PyPI package; DebOps scripts can be installed directly
+  from the monorepo in development mode if desired.
+
+- The :command:`debops-task` script has been dropped. You can use the
+  :command:`ansible` command directly to perform ad-hoc commands against the
+  Ansible inventory.
+
+- The :command:`debops-defaults` script has been removed from the project.
+  Easy access to the role defaults will be implemented at a later date.
+
+- The :command:`debops-init` script has been replaced with the :command:`debops
+  project init` subcommand.
+
+- The :command:`debops-padlock` script has been removed from the project. It's
+  functionality is now available via the :command:`debops project` subcommands.
 
 :ref:`debops.preseed` role
 ''''''''''''''''''''''''''
