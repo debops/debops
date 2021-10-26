@@ -216,6 +216,12 @@ General
 
   .. __: https://docs.ansible.com/ansible/latest/reference_appendices/config.html#collections-paths
 
+Continuous Integration
+''''''''''''''''''''''
+
+- The default box used by Vagrant for DebOps VMs has been updated from
+  ``debian/buster64`` to ``debian/bullseye64``.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
