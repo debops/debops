@@ -358,32 +358,3 @@ published on Ansible Galaxy, you can run the command:
 .. code-block:: console
 
    ansible-galaxy collection install --force-with-deps debops.debops
-
-
-Installation of the DebOps rolling release
-------------------------------------------
-
-The ``debops`` Python package includes a :command:`debops-update` script which
-can be used to install the DebOps monorepo directly from GitHub, with the
-``master`` branch checked out by default. If you run this script without any
-arguments, the repository will be installed in:
-
-.. code-block:: none
-
-   ~/.local/share/debops/debops/
-
-Running :command:`debops-update` command again will refresh the repository.
-
-If you specify a directory as an argument to the :command:`debops-update`
-command, the monorepo will be cloned into the :file:`debops/` subdirectory of
-that directory. This can be used to install the development version in
-a specific DebOps project directory, for testing new releases:
-
-.. code-block:: console
-
-   debops-init ~/src/projects/test-env
-   debops-update ~/src/projects/test-env
-
-The monorepo installed in the :file:`debops/` subdirectory of a given DebOps
-project directory will take precedence over the one installed globally in
-:file:`~/.local/share/debops/debops/` or included in the Python package.

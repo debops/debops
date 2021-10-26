@@ -144,7 +144,8 @@ version = release
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build', 'includes', 'ansible/roles/*/man_*']
+exclude_patterns = ['_build', 'includes', 'ansible/roles/*/man_*',
+                    'user-guide/scripts/man_*']
 if tags.has('manpages'):
     exclude_patterns = ['_build', 'includes']
 
@@ -371,6 +372,19 @@ for element in os.listdir(rst_ansible_roles):
         man_pages.append((rst_ansible_roles + element + '/index',
                           'debops.' + element, role_description,
                           role_authors, 5))
+
+# Add the manual pages for debops scripts
+man_pages.append(('user-guide/scripts/man_index', 'debops',
+                  'Your Debian-based data center in a box', [author], 1))
+man_pages.append(('user-guide/scripts/debops-project/man_index', 'debops-project',
+                  'Create or manage a DebOps project directory', [author], 1))
+man_pages.append(('user-guide/scripts/debops-run/man_index', 'debops-run',
+                  'Execute Ansible playbooks in DebOps environments', [author], 1))
+man_pages.append(('user-guide/scripts/debops-run/man_index', 'debops-check',
+                  'Execute Ansible playbooks in DebOps environments in check mode',
+                  [author], 1))
+man_pages.append(('user-guide/scripts/debops-config/man_index', 'debops-config',
+                  'Inspect or manipulate DebOps project configuration', [author], 1))
 
 # If true, show URL addresses after external links.
 man_show_urls = True

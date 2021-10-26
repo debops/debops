@@ -22,9 +22,20 @@
 import os
 
 try:
-    from debops import *
-    from debops.cmds import *
-except ImportError:
+    import debops
+    debops_version = debops.__version__.__version__
+    conf_section = 'override_paths'
+    conf_key = 'templates_path'
+except AttributeError:
+    try:
+        from debops import *
+        from debops.cmds import *
+        debops_version = '2.3.0'
+        conf_section = 'paths'
+        conf_key = 'template-paths'
+    except ImportError:
+        pass
+except ModuleNotFoundError:
     pass
 
 try:
@@ -48,8 +59,6 @@ NOTE: This means this filter relies on DebOps.
 __author__ = "Robert Chady <rchady@sitepen.com>"
 __copyright__ = "Copyright 2015 by Robert Chady <rchady@sitepen.com>"
 __license__ = "GNU General Public LIcense version 3 (GPL v3) or later"
-
-conf_tpl_paths = 'template-paths'
 
 
 if LooseVersion(__ansible_version__) < LooseVersion("2.0"):
@@ -75,14 +84,21 @@ if LooseVersion(__ansible_version__) < LooseVersion("2.0"):
                 terms = [terms]
 
             try:
-                project_root = find_debops_project(required=False)
-                config = read_config(project_root)
+                project_config = debops.config.Configuration()
+                project_dir = debops.projectdir.ProjectDir(
+                        config=project_config)
+                project_root = project_dir.path
+                config = project_dir.config.get(['views', 'system'])
             except NameError:
-                pass
+                try:
+                    project_root = find_debops_project(required=False)
+                    config = read_config(project_root)
+                except NameError:
+                    pass
 
-            if 'paths' in config and conf_tpl_paths in config['paths']:
+            if conf_section in config and conf_key in config[conf_section]:
                 custom_places = (
-                        config['paths'][conf_tpl_paths].split(':'))
+                        config[conf_section][conf_key].split(':'))
                 for custom_path in custom_places:
                     if os.path.isabs(custom_path):
                         places.append(custom_path)
@@ -127,14 +143,21 @@ else:
                 terms = [terms]
 
             try:
-                project_root = find_debops_project(required=False)
-                config = read_config(project_root)
+                project_config = debops.config.Configuration()
+                project_dir = debops.projectdir.ProjectDir(
+                        config=project_config)
+                project_root = project_dir.path
+                config = project_dir.config.get(['views', 'system'])
             except NameError:
-                pass
+                try:
+                    project_root = find_debops_project(required=False)
+                    config = read_config(project_root)
+                except NameError:
+                    pass
 
-            if 'paths' in config and conf_tpl_paths in config['paths']:
+            if conf_section in config and conf_key in config[conf_section]:
                 custom_places = (
-                        config['paths'][conf_tpl_paths].split(':'))
+                        config[conf_section][conf_key].split(':'))
                 for custom_path in custom_places:
                     if os.path.isabs(custom_path):
                         places.append(custom_path)

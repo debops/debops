@@ -1,0 +1,30 @@
+{# Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2020 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# Template for the initial 'ansible.cfg' contents. The comments will be
+# stripped by the ConfigParser. Users can add or modify configuration
+# parameters using the '.debops.cfg' configuration file.
+
+[defaults]
+
+# List of directories that contain Ansible Collections.
+collections_paths = {{ collections[::-1] | join(':') }}
+
+# List of directories that contain Ansible roles.
+roles_path = {{ roles[::-1] | join(':') }}
+
+# Additional lists that point Ansible to various directories with custom
+# Ansible plugins. When the legacy configuration is disabled, the custom plugin
+# paths will not be included in the generated configuration file with
+# assumption that they are available via Ansible Collections.
+{% if plugin_types | d() %}
+{%   for plugin in plugin_types %}
+{%     if plugin == 'modules' %}
+{%       set option = 'library' %}
+{%     else %}
+{%       set option = plugin + '_plugins' %}
+{%     endif %}
+{{     '{} = {}'.format(option, plugins[plugin][::-1] | join(':')) }}
+{%   endfor %}
+{% endif %}

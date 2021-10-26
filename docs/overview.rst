@@ -26,7 +26,7 @@ User Manual
 
   It includes a guide to :ref:`project directories <project_directory>`,
   the ways DebOps :ref:`builds on top of Ansible <debops_for_ansible>`,
-  the usage of the various :command:`debops` :ref:`scripts <cli>`,
+  the usage of the various :command:`debops` :ref:`scripts <debops-cli>`,
   as well as the documentation of DebOps' extensive collection of
   :ref:`playbooks <playbooks>` and :ref:`roles <role_index>`.
 
