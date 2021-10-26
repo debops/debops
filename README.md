@@ -48,17 +48,17 @@ Start a Docker container which acts as an Ansible Controller host with DebOps
 support, based on Debian Buster:
 
     docker run -it --rm debops/debops
-    cd src/controller ; debops common --diff
+    cd src/controller ; debops run common --diff
 
 Or, create a Vagrant VM which acts as an Ansible Controller host:
 
     git clone https://github.com/debops/debops
     cd debops && vagrant up && vagrant ssh
-    cd src/controller ; debops common --diff
+    cd src/controller ; debops run common --diff
 
 You can use configuration in the `src/controller` subdirectory to try out
 DebOps against the container/VM, or create your own DebOps project directory
-using `debops-init` command.
+using `debops project init` command.
 
 More quick start tips can be found [in the DebOps quick start guide][quick-start].
 
@@ -109,17 +109,17 @@ the Ansible inventory and run the default DebOps playbook against them to
 configure them:
 
     # Create a new environment
-    debops-init ~/src/projects/my-environment
+    debops project init ~/src/projects/my-environment
     cd ~/src/projects/my-environment
 
     # Modify the 'ansible/inventory/hosts' file to suit your needs, for example
     # uncomment the local host to configure it with DebOps
 
     # Run the full playbook against all hosts in the inventory
-    debops
+    debops run site
 
     # Run the common playbook against specific host in the inventory
-    debops common -l <hostname>
+    debops run common -l <hostname>
 
 You should read the [Getting Started with DebOps][getting-started] guide for
 a more in-depth explanation of how the project can be used to manage multiple
@@ -140,7 +140,7 @@ repository and see their results in the development environment.
     cd ~/src/github.com/<username>/debops
     git remote add upstream https://github.com/debops/debops.git
 
-    debops-init ~/src/projects/debops-devel
+    debops project init ~/src/projects/debops-devel
     cd ~/src/projects/debops-devel
     ln -s ~/src/github.com/<username>/debops debops
 

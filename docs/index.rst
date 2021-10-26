@@ -86,7 +86,7 @@ infrastructure environments.
 
    user-guide/debops-for-ansible
    user-guide/project-directories
-   user-guide/scripts
+   user-guide/scripts/index
    user-guide/global-variables
    user-guide/custom-environment
    user-guide/playbooks

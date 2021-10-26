@@ -110,9 +110,19 @@ How to use different releases?
 The "rolling" release
 ~~~~~~~~~~~~~~~~~~~~~
 
-You can use the :ref:`debops-update <cmd_debops-update>` script after
-:ref:`installing the "debops" Python package <install>` to clone the DebOps
-monorepo to a central location. See its documentation for more details.
+Good way to use the rolling release is to clone the DebOps monorepo and install
+the :command:`debops` scripts in development mode, either globally on the UNIX
+user account, or in a Python virtualenv. An example installation on the UNIX account:
+
+.. code-block:: shell
+
+   git clone https://github.com/debops/debops ~/src/github.com/debops/debops
+   pip3 install --editable ~/src/github.com/debops/debops
+
+The :command:`debops` command will be installed as :file:`~/.local/bin/debops`,
+the :file:`~/.local/bin/` directory should be included in ``$PATH`` environment
+variable. Afterwards, you can use the :command:`git pull` command inside of
+the monorepo to get the latest changes in the DebOps project.
 
 If you plan to use the rolling release, keep an eye for changes in the project
 described in the :ref:`changelog` and the :ref:`upgrade_notes`.

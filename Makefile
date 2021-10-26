@@ -118,7 +118,7 @@ wheel-sign: wheel
 
 .PHONY: clean-wheel
 clean-wheel:
-	@rm -vrf build debops.egg-info dist/debops-*.whl*
+	@rm -vrf build dist/debops-*.whl*
 
 .PHONY: twine-upload
 twine-upload:    ## Upload Python packages to PyPI

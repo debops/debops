@@ -91,7 +91,7 @@ commands:
 .. code-block:: console
 
    cd ~/src/controller
-   debops
+   debops run site
 
 Docker notes
 ~~~~~~~~~~~~

@@ -1,0 +1,29 @@
+{# Copyright (C) 2020-2021 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2020-2021 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# This file contains the default DebOps configuration options. It will be
+# parsed by Jinja template engine before being passed over to the Python's
+# TOML parser. The 'env' dictionary contains the environment variables.
+
+[binaries]
+
+# Path to binary which will be used to execute 'ansible-playbook' command.
+# By default it will rely on the system's $PATH.
+ansible-playbook = "{{ env['DEBOPS_CMD_ANSIBLE_PLAYBOOK'] | d('ansible-playbook') }}"
+
+# Path to binary which will be used to call the 'gpg(1)' commands to encrypt or
+# decrypt files. By default it will rely on the system's $PATH.
+gpg = "{{ env['DEBOPS_CMD_GPG'] | d('gpg') }}"
+
+# Path to binary which will be used to manage the secret directories encrypted
+# using 'encfs(1)' tool. By default it will rely on the system's $PATH.
+encfs = "{{ env['DEBOPS_CMD_ENCFS'] | d('encfs') }}"
+
+# Path to binary which will be used to unmount the mounted 'encfs(1)' volume on
+# Darwin hosts (macOS). By default it will rely on the system's $PATH.
+umount = "{{ env['DEBOPS_CMD_UMOUNT'] | d('umount') }}"
+
+# Path to binary which will be used to unmount the mounted 'encfs(1)' volume on
+# hosts with FUSE support. By default it will rely on the system's $PATH.
+fusermount = "{{ env['DEBOPS_CMD_FUSERMOUNT'] | d('fusermount') }}"

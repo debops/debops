@@ -8,6 +8,9 @@
 Configuration
 =============
 
+.. note:: This is documentation for the legacy DebOps configuration system and
+   it might be inaccurate.
+
 DebOps reads configuration files at several places. All configurations
 files found are merged and the values read later take precedence.
 

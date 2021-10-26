@@ -10,11 +10,14 @@
 #     docker build -t debops .
 #     docker run --name <container> -h controller.example.org -i -t debops
 #
+#     # Refresh APT cache
+#     sudo apt update
+#
 #     cd src/controller
-#     debops common --diff
+#     debops run common --diff
 
 
-FROM debian:buster-slim
+FROM debian:bullseye-slim
 
 LABEL maintainer="Maciej Delmanowski <drybjed@gmail.com>" \
       project="DebOps" homepage="https://debops.org/"
@@ -39,10 +42,22 @@ RUN apt-get -q update \
        procps \
        sudo \
        tree \
-    && pip3 install \
-       debops[ansible] \
+       sshpass \
+       make \
+       git \
+    && pip3 install ansible \
     && echo "Cleaning up cache directories..." \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*.deb /root/.cache/*
+
+COPY . /root/src/debops
+
+WORKDIR /root/src/debops
+
+RUN make sdist-quiet \
+    && pip3 install dist/* \
+    && cp lib/docker/docker-entrypoint /usr/local/bin/ \
+    && chmod +x /usr/local/bin/docker-entrypoint \
+    && rm -rf /root/src /root/.cache/*
 
 RUN groupadd --system admins \
     && echo "%admins ALL = (ALL:ALL) NOPASSWD: SETENV: ALL" > /etc/sudoers.d/admins \
@@ -58,9 +73,5 @@ WORKDIR /home/ansible
 # Ref: https://stackoverflow.com/questions/54411218/
 ENV USER ansible
 
-# Add contents of the DebOps monorepo to the container
-# with the right permissions
-COPY --chown=ansible:ansible . .local/share/debops/debops
-
-ENTRYPOINT ["/home/ansible/.local/share/debops/debops/lib/docker/docker-entrypoint"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint"]
 CMD ["/bin/bash"]
