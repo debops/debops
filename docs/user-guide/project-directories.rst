@@ -21,7 +21,7 @@ created using the :command:`debops-init` command:
 
 .. code-block:: console
 
-   debops-init ~/src/projects/project1
+   debops project init ~/src/projects/project1
 
 The above command will create a base set of subdirectories in specified
 directory and generate an initial Ansible inventory :file:`hosts` file:

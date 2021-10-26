@@ -11,7 +11,7 @@
 # Basic usage:
 #
 #     vagrant up && vagrant ssh
-#     cd src/controller ; debops
+#     cd src/controller ; debops run common
 
 
 # Configuration variables:
@@ -656,14 +656,11 @@ if ! [ -e .local/share/debops/debops ] ; then
     if [ -n "${debops_from_devel}" ] ; then
         jane notify info "Symlinking '/vagrant' to '~vagrant/.local/share/debops/debops'"
         ln -s /vagrant .local/share/debops/debops
-    else
-        jane notify info "Installing DebOps monorepo to '~vagrant/.local/share/debops/debops'"
-        debops-update
     fi
 fi
 
 if ! [ -d src/controller ] ; then
-    debops-init src/controller
+    debops project init src/controller
     sed -i '/ansible_connection=local$/ s/^#//' src/controller/ansible/inventory/hosts
 
     vagrant_controller="$(printf "${SSH_CLIENT}\\n" | awk '{print $1}')"
@@ -918,7 +915,7 @@ Vagrant.configure("2") do |config|
 
         if ENV['CI'] != "true"
             subconfig.vm.post_up_message = "Thanks for trying DebOps! After logging in, run:
-            cd src/controller ; debops common --diff"
+            cd src/controller ; debops run common --diff"
         end
     end
 
