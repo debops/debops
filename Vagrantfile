@@ -16,10 +16,10 @@
 
 # Configuration variables:
 #
-#     VAGRANT_BOX="debian/buster64"
+#     VAGRANT_BOX="debian/bullseye64"
 #         Specify the box to use for controller.
 #
-#     VAGRANT_NODE_BOX="debian/buster64"
+#     VAGRANT_NODE_BOX="debian/bullseye64"
 #         Specify the box to use for nodes.
 #
 #     VAGRANT_NODES=0
@@ -371,27 +371,6 @@ EOF
         jo \
         jq \
         make \
-        python-apt \
-        python-cryptography \
-        python-distro \
-        python-dnspython \
-        python-future \
-        python-jinja2 \
-        python-ldap \
-        python-netaddr \
-        python-nose2 \
-        python-nose2-cov \
-        python-passlib \
-        python-pip \
-        python-pycodestyle \
-        python-pytest \
-        python-pytest-cov \
-        python-setuptools \
-        python-sphinx \
-        python-sphinx-rtd-theme \
-        python-unittest2 \
-        python-wheel \
-        python-yaml \
         python3 \
         python3-apt \
         python3-cryptography \
@@ -800,7 +779,7 @@ else
 end
 master_fqdn = master_hostname + '.' + VAGRANT_DOMAIN
 
-VAGRANT_NODE_BOX = ENV['VAGRANT_NODE_BOX'] || 'debian/buster64'
+VAGRANT_NODE_BOX = ENV['VAGRANT_NODE_BOX'] || 'debian/bullseye64'
 
 # Vagrant removed the atlas.hashicorp.com to vagrantcloud.com
 # redirect. The value of DEFAULT_SERVER_URL in Vagrant versions
@@ -831,7 +810,7 @@ Vagrant.configure("2") do |config|
                 # Don't populate '/vagrant' directory on other nodes
                 node.vm.synced_folder ".", "/vagrant", disabled: true
 
-                if ENV['VAGRANT_BOX'] || 'debian/buster64' == 'debian/buster64'
+                if ENV['VAGRANT_BOX'] || 'debian/bullseye64' == 'debian/bullseye64'
                     node.ssh.insert_key = false
                 end
 
@@ -853,7 +832,7 @@ Vagrant.configure("2") do |config|
     end
 
     config.vm.define "master", primary: true do |subconfig|
-        subconfig.vm.box = ENV['VAGRANT_BOX'] || 'debian/buster64'
+        subconfig.vm.box = ENV['VAGRANT_BOX'] || 'debian/bullseye64'
         subconfig.vm.hostname = master_fqdn
 
         subconfig.vm.network "forwarded_port", guest: 22, host: "#{master_ssh_port}", id: 'ssh', auto_correct: true
@@ -877,7 +856,7 @@ Vagrant.configure("2") do |config|
             SHELL
         end
 
-        if ENV['VAGRANT_BOX'] || 'debian/buster64' == 'debian/buster64'
+        if ENV['VAGRANT_BOX'] || 'debian/bullseye64' == 'debian/bullseye64'
             subconfig.ssh.insert_key = false
         end
 
