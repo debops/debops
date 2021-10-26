@@ -60,7 +60,11 @@ ferm__iptables_backend_enabled: '{{ False
 #
 # Newer OS releases might need to use the legacy variant to be compatible with
 # :command:`ferm` manager.
-ferm__iptables_backend_path: '/usr/sbin/iptables-nft'
+# :command:`ferm` doesn't work well with nft
+# and starting with bullseye, it uses legacy tools directly,
+# regardless of the alternatives setting:
+# https://github.com/MaxKellermann/ferm/issues/47
+ferm__iptables_backend_path: '/usr/sbin/iptables-legacy'
 
                                                                    # ]]]
 # .. envvar:: ferm__base_packages [[[
