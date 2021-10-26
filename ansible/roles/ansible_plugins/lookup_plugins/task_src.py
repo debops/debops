@@ -35,6 +35,8 @@ except AttributeError:
         conf_key = 'task-paths'
     except ImportError:
         pass
+except ModuleNotFoundError:
+    pass
 
 try:
     from ansible.plugins.lookup import LookupBase
