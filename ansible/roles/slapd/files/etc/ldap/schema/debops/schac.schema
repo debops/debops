@@ -1,0 +1,666 @@
+# schac.schema - SCHema for ACademia
+
+# Copyright (C) 2005-2015 Heather Flanagan, SCHAC Shepherd <refeds@terena.org>
+# SPDX-License-Identifier: CC-BY-3.0
+# License information: https://refeds.org/about/participants
+
+#----------------------------------------------------------------------
+#
+# schac v: 20150413-1.5.0
+#
+# SCHema for ACademia
+# Attribute definitions for individual data
+#
+# The latest version of this document is avaliable at
+# https://wiki.refeds.org/display/STAN/SCHAC+Releases
+#
+#----------------------------------------------------------------------
+#
+# Changelog
+#
+# 20150413 - 1.5.0
+# 20110705 - 1.4.1
+# 20110602 - Changed the example of attribute schacPersonalUniqueID from
+#            "NIF" to "DNI"
+# 20100916 - Changed "# of values" from single-valued to multivalued in
+#            schacHomeOrganizationType.
+# 20090326 - 1.4.0
+# 20090313 - Added schacYearOfBirth experimental attribute.
+# 20090304 - Changed schacProjectMembership and schacProjectSpecificRole
+#            from experimental OID branch to official branch below
+#            schacGroupMembership object class.
+#          - OIDs schacExpAttr:1 and schacExpAttr:2 are obsoleted and
+#            will not be reused ever.
+# 20061215 - Added schacExerimental ObjectClass and schacProjectMembership
+#            and schacProjectSpecificRole experimental attributes
+# 20061212 - 1.3.0
+#          - Changed references from terena.org to terena.org.
+# 20061125 - Changed schacPersonalPosition and schacUserStaus format
+#            and samples
+# 20061017 - Delete shacUUID attribute (TF-EMC2 M�laga)
+# 20060928 - Changed schacHomeOrganization syntax OID
+#          - New definition of shacUUID attribute
+# 20060504 - 1.2.0
+#          - Changed schacUserPresenceID syntax from URN to URI.
+#          - Added references to the TERENA URN registry.
+#          - Clarify schaExpiryDate scope.
+# 20060327 - SCHAC URN assigned:  urn:mace:terena.org:schac
+# 20060310 - 1.1.1
+#          - TERENA OID assigned: 1.3.6.1.4.1.25178
+# 20060210 - Second release
+# 20051122 - Initial release
+#
+
+objectIdentifier TERENA 1.3.6.1.4.1.25178
+
+objectIdentifier schac TERENA:1
+objectIdentifier schacExperimental schac:0
+objectIdentifier schacObjectClass schac:1
+objectIdentifier schacAttributeType schac:2
+objectIdentifier schacExpObjClass schacExperimental:1
+objectIdentifier schacExpAttr schacExperimental:2
+
+
+#----------------------------------------------------------------------
+# Attributes
+#----------------------------------------------------------------------
+
+#
+# schacMotherTongue
+#
+# Descrip: Is the language a person learns first. Correspondingly,
+#          the person is called a native speaker of the language.
+#          Usually a child learns the basics of their first language
+#          from their family.
+#
+#  Format: See RFC 3066 Tags for the Identification of Languages
+#
+# Example: schacMotherTongue: fr
+# Example: schacMotherTongue: es-ES
+#
+attributetype ( schacAttributeType:1
+    NAME 'schacMotherTongue'
+    DESC 'RFC 3066 code for prefered language of communication'
+    EQUALITY caseExactMatch
+    SINGLE-VALUE
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+#
+# schacGender
+#
+# Descrip: The state of being male or female. The gender attribute
+#          specifies the legal gender of the subject it is associated with.
+#          "Either of the two groups that people, animals and plants are
+#          divided into according to their function of producing young"
+#          (Oxford Advanced Learner's Dictionary)
+#
+#  Format: 0  Not known
+#          1  Male
+#          2  Female
+#          9  Not specified
+#
+# Example: schacGender: 2
+#
+attributetype ( schacAttributeType:2
+    NAME 'schacGender'
+    DESC 'Representation of human sex (see ISO 5218)'
+    EQUALITY integerMatch
+    SINGLE-VALUE
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 )
+
+#
+# schacDateOfBirth
+#
+# Descrip: The date of birth for the subject it is associated with
+#
+#  Format: Numeric value YYYYMMDD, using 4 digits for year, 2 digits
+#          for month and 2 digits for day as described in RFC 3339
+#          'Date and Time on the Internet: Timestamps' as reference
+#          using the  'full-date' format from paragraph 5.6 but without
+#          the dashes.
+#
+# Example: schacDateOfBirth: 19660412
+#
+attributetype ( schacAttributeType:3
+    NAME 'schacDateOfBirth'
+    DESC 'Date of birth (format YYYYMMDD, only numeric chars)'
+    EQUALITY numericStringMatch
+    ORDERING numericStringOrderingMatch
+    SUBSTR numericStringSubstringsMatch
+    SINGLE-VALUE
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.36 )
+
+#
+# schacPlaceOfBirth
+#
+# Descrip: Specifies the place of birth for the subject it is associated with.
+#
+#  Format: Free string
+#
+# Example: schacPlaceOfBirth: Algeciras, Spain
+#
+attributetype ( schacAttributeType:4
+    NAME 'schacPlaceOfBirth'
+    DESC 'Birth place of a person'
+    EQUALITY caseIgnoreMatch
+    ORDERING caseIgnoreOrderingMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SINGLE-VALUE 
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+#
+# schacCountryOfCitizenship
+#
+# Descrip: Specifies the (claimed) countries of citizenship for the
+#          subject it is associated with.
+#
+#  Format: Two-letter country acronym in accordance with ISO 3166.
+#
+# Example: schacCountryOfCitizenship: es
+#
+attributetype ( schacAttributeType:5
+    NAME 'schacCountryOfCitizenship'
+    DESC 'Country of citizenship of a person. Format two-letter acronym according to ISO 3166'
+    EQUALITY caseIgnoreMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+#
+# schacSn1
+#
+# Descrip: First surname of a person ("the surname" in international terms)
+#
+#          schacSn1 would contain whatever values the described person
+#          thinks they should contain. Splitting shall be done by humans.
+#          That means that, when filling a SCHAC-based description that
+#          allows the use of schacSn1 and schacSn2, the  administrators
+#          must ask for 1st surname and 2nd surname (if applicable) as
+#          well as they do for givenName, surname, etc.
+#
+#  Format: Free string
+#
+# Example: In Spain, if sn = Lopez de la Moraleda y de Las Altas Alcurnias
+#          and that person uses Lopez de la Moraleda as the first component
+#          of the surname we can write:
+#
+#          schacSn1: Lopez de la Moraleda
+#
+#          In Poland, if sn = Gorecka-Wolniewicz and we decide to use the
+#          national convention for the sn attribute, we can write:
+#
+#          schacSn1: Wolniewicz
+#
+attributetype ( schacAttributeType:6
+    NAME 'schacSn1'
+    DESC 'First surname of a person'
+    EQUALITY caseIgnoreMatch
+    ORDERING caseIgnoreOrderingMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+#
+# schacSn2
+#
+# Descrip: Second surname of a person (how this is assigned is a local matter).
+#
+#          schacSn2 would contain whatever values the described person
+#          thinks they should contain. Splitting shall be done by humans.
+#          That means that, when filling a SCHAC-based description that
+#          allows the use of schacSn1 and schacSn2, the administrators
+#          must ask for 1st surname and 2nd surname (if applicable) as well
+#          as they do for givenName, surname, etc.
+#
+#  Format: Free string
+#
+# Example: In Spain, if sn = Lopez de la Moraleda y de Las Altas Alcurnias
+#          and that person uses Lopez de la Moraleda as the second component
+#          of the surname we can write:
+#
+#          schacSn2: de Las Altas Alcurnias
+#
+#          In Poland, if sn = Gorecka-Wolniewicz and we decide to use the
+#          national convention for the sn attribute, we can write:
+#
+#          schacSn2: Gorecka
+#
+attributetype ( schacAttributeType:7
+    NAME 'schacSn2'
+    DESC 'Second surname of a person'
+    EQUALITY caseIgnoreMatch
+    ORDERING caseIgnoreOrderingMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+#
+# schacPersonalTitle
+#
+# Descrip: The Personal Title attribute type specifies a personal title
+#          or salutation for a person. Examples of personal titles are
+#          "Ms", "Dr", "Prof", "Rev", "Sr".
+#
+#  Format: Free string
+#
+# Example: schacPersonalTitle: Prof
+#
+attributetype ( schacAttributeType:8
+    NAME 'schacPersonalTitle'
+    DESC 'RFC1274: personal title'
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SINGLE-VALUE
+    SYNTAX  1.3.6.1.4.1.1466.115.121.1.15 )
+
+#
+# schacHomeOrganization
+#
+# Descrip: Specifies a person�s home organization using the domain name
+#          of the organization
+#
+#  Format: Domain name acording to RFC 1035.
+#
+# Example: schacHomeOrganization: tut.fi
+#
+attributetype ( schacAttributeType:9
+    NAME 'schacHomeOrganization'
+    DESC 'Domain name of the home organization'
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SINGLE-VALUE
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+#
+# schacHomeOrganizationType
+#
+# Descrip: Type of a Home Organization
+#
+#  Format: urn:mace:terena.org:schac:homeOrganizationType:<country-code>:<string>
+#
+#          - The <country-code> must be a valid two-letter ISO 3166
+#            country code identifier or the string "int", and assigned by
+#            TERENA URN Registry for this attribute at
+#            http://www.terena.org/registry/terena.org/schac/homeOrganizationType/
+#
+#          - <string> from a nationally controlled vocabulary, published
+#            through the URI identified at the above mentioned TERENA URN
+#            registry
+#
+# Example: Common values:
+#
+#          urn:mace:terena.org:schac:homeOrganizationType:int:university
+#          urn:mace:terena.org:schac:homeOrganizationType:int:uas
+#          urn:mace:terena.org:schac:homeOrganizationType:int:research-institution
+#          urn:mace:terena.org:schac:homeOrganizationType:int:university-hospital
+#          urn:mace:terena.org:schac:homeOrganizationType:int:nren
+#          urn:mace:terena.org:schac:homeOrganizationType:int:other
+#
+#          National extensions:
+#
+#          urn:mace:terena.org:schac:homeOrganizationType:ch:vho
+#          urn:mace:terena.org:schac:homeOrganizationType:es:opi
+#
+attributetype ( schacAttributeType:10
+    NAME 'schacHomeOrganizationType'
+    DESC 'Type of the home organization'
+    EQUALITY caseIgnoreMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+#
+# schacCountryOfResidence
+#
+# Descrip: Specifies the (claimed) country of residence for the subject
+#          is associated with.
+#
+#  Format: Two-letter country acronym in accordance with ISO 3166 country
+#          code identifier.
+#
+# Example: schacCountryOfResidence: es
+#
+attributetype ( schacAttributeType:11
+    NAME 'schacCountryOfResidence'
+    DESC 'Country of residence of a person. Format two-letter acronym according to ISO 3166'
+    EQUALITY caseIgnoreMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+#
+# schacUserPresenceID
+#
+# Descrip: To store a set of user identifiers in presence and instant
+#          messaging systems and protocols
+#
+#  Format: URI
+#
+# Example: schacUserPresenceID: xmpp:pepe@im.univx.es
+#          schacUserPresenceID: sip:jose.perez@myweb.es
+#          schacUserPresenceID: sip:+34-95-505-6600@univx.es;transport=TCP;user=phone
+#          schacUserPresenceID: sips:alice@atlanta.com?subject=project%20x&priority=urgent
+#          schacUserPresenceID: h323:pepe@myweb.fi:808;pars
+#          schacUserPresenceID: skype:pepe.perez
+#
+attributetype ( schacAttributeType:12
+    NAME 'schacUserPresenceID'
+    DESC 'Used to store a set of values related to the network presence'
+    EQUALITY caseExactMatch
+    SUBSTR caseExactSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+#
+# schacPersonalPosition
+#
+# Descrip: Specifies a personal position inside an institution
+#
+#  Format: urn:mace:terena.org:schac:personalPosition:<country-code>:<domain>:<iNSS>
+#
+#          - The <country-code> must be a valid two-letter ISO 3166 country
+#            code identifier or the string "int", and assigned by the
+#            TERENA URN Registry for this attribute at
+#            http://www.terena.org/registry/terena.org/schac/personalPosition/
+#
+#          - <domain> is the institution domain name acording to RFC 1035
+#
+#          - <iNSS> is a Namespace Specific String as defined in RFC 2141
+#            but case insenstitive. Valid components for it are those
+#            specified (or explicitly delegated) by the TERENA URN Registry
+#            for this attribute at
+#            http://www.terena.org/registry/terena.org/schac/personalPosition/
+#
+# Example: schacPersonalPosition: urn:mace:terena.org:schac:personalPosition:pl:umk.pl:programmer
+#
+attributetype ( schacAttributeType:13
+    NAME 'schacPersonalPosition'
+    DESC 'Position inside an institution'
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+#
+# schacPersonalUniqueCode
+#
+# Descrip: Specifies a "unique code" for the subject it is associated with.
+#          Its value does not necessarily correspond to any identifier
+#          outside the scope of the directories using this schema.
+#
+#          This might be Student number, Employee number,...
+#
+#  Format: urn:mace:terena.org:schac:personalUniqueCode:<country-code>:<iNSS>
+#
+#          - The <country-code> must be a valid two-letter ISO 3166 country
+#            code identifier or the string "int", and assigned by the TERENA
+#            URN Registry for this attribute at
+#            http://www.terena.org/registry/terena.org/schac/personalUniqueCode/
+#
+#          - <iNSS> is a Namespace Specific String as defined in RFC 2141
+#            but case insensitive.
+#
+# Example: Common Values:
+#
+#          urn:mace:terena.org:schac:personalUniqueCode:int:studentID:<country-code>:<code>
+#
+#          National extensions:
+#
+#          urn:mace:terena.org:schac:personalUniqueCode:fi:tut.fi:hetu:010161-995A
+#          urn:mace:terena.org:schac:personalUniqueCode:es:uma:estudiante:a3b123c12
+#          urn:mace:terena.org:schac:personalUniqueCode:se:LIN:87654321
+#
+attributetype ( schacAttributeType:14
+    NAME 'schacPersonalUniqueCode'
+    DESC 'unique code for the subject'
+    EQUALITY caseIgnoreMatch
+    ORDERING caseIgnoreOrderingMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+#
+# schacPersonalUniqueID
+#
+# Descrip: Specifies a "legal unique identifier" for the subject it
+#          is associated with.
+#          This might be DNI in Spain, FIC in Finland, NIN in Sweden.
+#
+#  Format: urn:mace:terena.org:schac:personalUniqueID:<country-code>:<idType>:<idValue>
+#
+#          - The <country-code> must be a valid two-letter ISO 3166 country
+#            code identifier or the string "int", and assigned by the TERENA
+#            URN Registry for this attribute at
+#            http://www.terena.org/registry/terena.org/schac/personalUniqueID/
+#
+#          - <idType>. Acceptable values must be declared per each country
+#            code through the URI identified at the above mentioned TERENA URN
+#            registry.
+#
+#          - <idValue>
+#
+# Example: National extensions
+#
+#          urn:mace:terena.org:schac:personalUniqueID:fi:FIC:260667-123F
+#          urn:mace:terena.org:schac:personalUniqueID:es:DNI:31241312L
+#          urn:mace:terena.org:schac:personalUniquelD:se:NIN:12345678
+#
+attributetype ( schacAttributeType:15
+    NAME 'schacPersonalUniqueID'
+    DESC 'Unique identifier for the subject'
+    EQUALITY caseExactMatch
+    ORDERING caseExactOrderingMatch
+    SUBSTR caseExactSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+#
+# schacExpiryDate
+#
+# Descrip: The date from which the set of data is to be considered
+#          invalid (specifically, in what refers to rights and
+#          entitlements). This date applies to the entry as a whole.
+#
+#  Format: schacExpiryDate values MUST be expressed Greenwich Mean
+#          Time (Zulu) and MUST include seconds (i.e., times are
+#          YYYYMMDDhhmmssZ), even where the number of seconds is zero.
+#          GeneralizedTime values MUST NOT include fractional seconds.
+#
+# Example: schacExpiryDate: 20051231125959Z
+#
+attributetype ( schacAttributeType:17
+    NAME 'schacExpiryDate'
+    DESC 'Date from which the set of data is to be considered invalid (format YYYYMMDDhhmmssZ)'
+    EQUALITY generalizedTimeMatch
+    ORDERING generalizedTimeOrderingMatch
+    SINGLE-VALUE
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.24 )
+
+#
+# schacUserPrivateAttribute
+#
+# Descrip: Used to model privacy requirements, as expressed by the user
+#          and/or the organizational policies. The values are intended
+#          to be attribute type names and applies to the attribute and i
+#          any subtypes of it for a given entity.
+#
+#          In what respects to data exchange, it applies to the
+#          expression of privacy requirements.
+#
+#          This attribute can also have specific operational semantics
+#          that will be defined in a separate document.
+#
+#  Format: An attribute type identifier.
+#          Operational semantics may imply specific values as wildcards.
+#
+# Example: Attributes mail and telephoneNumber are considered private
+#
+#          schacUserPrivateAttribute: mail
+#          schacUserPrivateAttribute: telephoneNumber
+#
+attributetype ( schacAttributeType:18
+    NAME 'schacUserPrivateAttribute'
+    DESC 'Set of denied access attributes'
+    EQUALITY caseIgnoreIA5Match
+    SUBSTR caseIgnoreIA5SubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
+
+#
+# schacUserStatus
+#
+# Descrip: Used to store a set of status of a person as user of services
+#
+#  Format: urn:mace:terena.org:schac:userStatus:<country-code>:<domain>:<iNSS>
+#
+#          - The <country-code> must be a valid two-letter ISO 3166 country
+#            code identifier or the string "int", and assigned by the TERENA
+#            URN Registry for this attribute at
+#            http://www.terena.org/registry/terena.org/schac/userStatus/
+#
+#          - <domain> is the institution domain name acording to RFC 1035
+#
+#          - <iNSS> is a Namespace Specific String as defined in RFC 2141
+#            but case insensitive.
+#
+# Example: To store different user activity states at University of
+#          M�laga (uma.es):
+#
+#          urn:mace:terena.org:schac:userStatus:uma.es:affiliation:expired
+#          urn:mace:terena.org:schac:userStatus:uma.es:sendMail:expired
+#          urn:mace:terena.org:schac:userStatus:uma.es:getMail:active
+#
+#          A parameter in the URN can be used to represent the temporal
+#          validity of the satus:
+#
+#          urn:mace:terena.org:schac:userStatus:ujl.si:webmail:active+ttl=20060531
+#
+attributetype ( schacAttributeType:19 
+    NAME 'schacUserStatus'
+    DESC 'Used to store a set of status of a person as user of services'
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+# schacProjectMembership
+#
+# Descrip: The name of the project
+#
+#  Format: <project-name>
+#
+#          The <project-name> must be a name assigned by the TERENA
+#          URN Registry for this attribute at
+#          http://www.terena.org/registry/terena.org/schac/projectSpecificRole/
+#
+# Example: perfsonar
+#
+attributetype ( schacAttributeType:20
+    NAME 'schacProjectMembership'
+    DESC 'Name of the project'
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+# schacProjectSpecificRole
+#
+# Descrip: Used to store a set of roles inside specific projects
+#
+#  Format: urn:mace:terena.org:schac:projectSpecificRole:<project-name>:<iNSS>
+#
+#          The <project-name> must be a name assigned by the TERENA
+#          URN Registry for this attribute at
+#          http://www.terena.org/registry/terena.org/schac/projectSpecificRole/
+#          <iNSS> is a Namespace Specific String as defined in RFC 2131 but
+#          case insensitive
+#
+# Example: urn:mace:terena.org:schac:projectSpecificRole:perfsonar:developer
+#
+attributetype ( schacAttributeType:21
+    NAME 'schacProjectSpecificRole'
+    DESC 'Used to store a set of roles of a person inside a project'
+    EQUALITY caseIgnoreMatch
+    SUBSTR caseIgnoreSubstringsMatch
+    SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+
+#----------------------------------------------------------------------
+# ObjectClasses
+#----------------------------------------------------------------------
+objectClass ( schacObjectClass:1
+    NAME 'schacPersonalCharacteristics'
+    DESC 'Personal characteristics describe the individual person represented by the entry'
+    AUXILIARY
+    MAY ( schacMotherTongue $ schacGender $ schacDateOfBirth $
+          schacPlaceOfBirth $ schacCountryOfCitizenship $
+          schacSn1 $ schacSn2 $ schacPersonalTitle ) )
+
+objectClass ( schacObjectClass:2
+    NAME 'schacContactLocation'
+    DESC 'Primary means of locating and contacting potential collaborators and other persons-of-interest at peer institutions'
+    AUXILIARY
+    MAY ( schacHomeOrganization $ schacHomeOrganizationType $
+          schacCountryOfResidence $ schacUserPresenceID ) )
+
+objectClass ( schacObjectClass:3
+    NAME 'schacEmployeeInfo'
+    DESC 'Employee information includes attributes that have relevance to the employee role, such as position, office hours, and job title'
+    AUXILIARY
+    MAY ( schacPersonalPosition ) )
+
+objectClass ( schacObjectClass:4
+    NAME 'schacLinkageIdentifiers'
+    DESC 'Used to link a directory entry with records in external data stores or other directory entries'
+    AUXILIARY
+    MAY ( schacPersonalUniqueCode $ schacPersonalUniqueID ) )
+
+objectClass ( schacObjectClass:5
+    NAME 'schacEntryMetadata'
+    DESC 'Used to contain information about the entry itself, often its status, birth, and death'
+    AUXILIARY
+    MAY ( schacExpiryDate ) )
+
+objectClass ( schacObjectClass:6
+    NAME 'schacEntryConfidentiality'
+    DESC 'Used to indicate whether an entry is visible publicly, visible only to affiliates of the institution, or not visible at all'
+    AUXILIARY
+    MAY ( schacUserPrivateAttribute ) )
+
+objectClass ( schacObjectClass:7
+    NAME 'schacUserEntitlements'
+    DESC 'Authorization for services'
+    AUXILIARY
+    MAY ( schacUserStatus ) )
+
+objectClass ( schacObjectClass:8
+    NAME 'schacGroupMembership'
+    DESC 'Groups used to provide/restrict authorization to entries and attributes'
+    AUXILIARY
+    MAY ( schacProjectMembership $ schacProjectSpecificRole ) )
+
+#----------------------------------------------------------------------
+#
+# Experimental attributes
+#
+
+#
+# schacYearOfBirth
+#
+# Descrip: The year of birth for the subject it is associated with
+#
+#  Format: Numeric value YYYY, using 4 digits for the year, as
+#          described in RFC 3339 'Date and Time on the Internet:
+#          Timestamps' as reference using the 'full-date' format from
+#          paragraph 5.6 but without the dashes
+#
+# Exammple: schacYearOfBirth: 1966
+#
+attributetype ( schacExpAttr:3
+   NAME 'schacYearOfBirth'
+   DESC 'Year of birth (format YYYY, only numeric chars)'
+   EQUALITY numericStringMatch
+   ORDERING numericStringOrderingMatch
+   SUBSTR numericStringSubstringsMatch
+   SINGLE-VALUE 
+   SYNTAX 1.3.6.1.4.1.1466.115.121.1.36 )
+
+
+#----------------------------------------------------------------------
+#
+# Experimental objectclasses
+#
+
+objectClass ( schacExpObjClass:1
+    NAME 'schacExperimentalOC'
+    DESC 'Experimental Object Class'
+    AUXILIARY
+    MAY ( schacYearOfBirth) )
+
+#----------------------------------------------------------------------
+# End of SCHAC schema
+#----------------------------------------------------------------------
