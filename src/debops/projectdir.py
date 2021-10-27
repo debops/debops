@@ -31,7 +31,7 @@ class ProjectDir(object):
         # defined at the command line.
         try:
             os.chdir(os.path.dirname(os.environ['ANSIBLE_CONFIG']))
-            self.path = os.path.dirname(os.environ['ANSIBLE_CONFIG'])
+            self.path = os.getcwd()
         except KeyError:
             try:
                 os.chdir(self.path)
