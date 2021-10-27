@@ -17,6 +17,29 @@
 #     debops run common --diff
 
 
+FROM debian:bullseye-slim AS builder
+
+LABEL maintainer="Maciej Delmanowski <drybjed@gmail.com>" \
+      project="DebOps" homepage="https://debops.org/"
+
+RUN apt-get -q update \
+    && DEBIAN_FRONTEND=noninteractive apt-get \
+       --no-install-recommends -yq install \
+       python3-pip \
+       python3-setuptools \
+       python3-toml \
+       python3-wheel \
+       python3-pypandoc \
+       python3-sphinx \
+       pandoc \
+       make \
+       git
+
+COPY . /root/src/debops
+WORKDIR /root/src/debops
+RUN make man wheel-quiet \
+    && cp lib/docker/docker-entrypoint /usr/local/bin/
+
 FROM debian:bullseye-slim
 
 LABEL maintainer="Maciej Delmanowski <drybjed@gmail.com>" \
@@ -27,7 +50,7 @@ RUN apt-get -q update \
        --no-install-recommends -yq install \
        iproute2 \
        iputils-ping \
-       levee \
+       vim \
        openssh-client \
        python3-apt \
        python3-cryptography \
@@ -35,6 +58,7 @@ RUN apt-get -q update \
        python3-dnspython \
        python3-future \
        python3-ldap \
+       python3-netaddr \
        python3-pip \
        python3-setuptools \
        python3-toml \
@@ -45,17 +69,15 @@ RUN apt-get -q update \
        sshpass \
        make \
        git \
+       man-db \
     && pip3 install ansible \
     && echo "Cleaning up cache directories..." \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*.deb /root/.cache/*
 
-COPY . /root/src/debops
+COPY --from=builder /root/src/debops/dist /root/src/debops/dist
+COPY --from=builder /usr/local/bin/docker-entrypoint /usr/local/bin/docker-entrypoint
 
-WORKDIR /root/src/debops
-
-RUN make sdist-quiet \
-    && pip3 install dist/* \
-    && cp lib/docker/docker-entrypoint /usr/local/bin/ \
+RUN pip3 install /root/src/debops/dist/debops-*.whl \
     && chmod +x /usr/local/bin/docker-entrypoint \
     && rm -rf /root/src /root/.cache/*
 
