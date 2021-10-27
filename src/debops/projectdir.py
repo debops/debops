@@ -25,6 +25,20 @@ class ProjectDir(object):
         self.name = os.path.basename(self.path)
         self.project_type = project_type
 
+        # We should work in the project directory as cwd, however Ansible can
+        # be executed from anywhere. If $ANSIBLE_CONFIG is defined, use it as the
+        # base directory just to be safe. Otherwise, switch to the directory
+        # defined at the command line.
+        try:
+            os.chdir(os.path.dirname(os.environ['ANSIBLE_CONFIG']))
+            self.path = os.path.dirname(os.environ['ANSIBLE_CONFIG'])
+        except KeyError:
+            try:
+                os.chdir(self.path)
+            except FileNotFoundError:
+                # This will be a new project, so let's run with it
+                pass
+
         # Make sure that we are not operating on the home directory
         if self.path == os.path.expanduser('~'):
             raise IsADirectoryError("You cannot create a project here, "
