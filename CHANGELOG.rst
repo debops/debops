@@ -22,6 +22,18 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.1: https://github.com/debops/debops/compare/v2.1.0...stable-2.1
 
+Added
+~~~~~
+
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- The `SCHema for ACademia`__ (schac) LDAP schema has been added to the role to
+  provide more LDAP attributes and object classes useful in university
+  environments.
+
+  .. __: https://wiki.refeds.org/display/STAN/SCHAC
+
 Changed
 ~~~~~~~
 

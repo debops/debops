@@ -308,6 +308,18 @@ Because of that, DebOps contains its own copy of the schema, cleaned up and
 updated, which will be imported by default to OpenLDAP directory server.
 
 
+.. _slapd__ref_schac:
+
+The ``schac`` schema
+--------------------
+
+The ``schac`` (`SCHema for ACademia`__) LDAP schema extends the ``eduPerson``
+schema with an additional set of LDAP object classes and attributes useful in
+university and higher education environments.
+
+.. __: https://wiki.refeds.org/display/STAN/SCHAC
+
+
 .. _slapd__ref_nextcloud:
 
 The ``nextcloud`` schema
