@@ -347,6 +347,8 @@ stages:
     - 'apt_preferences role'
     - 'java role'
   variables:
+    # The cran packages are not available in Bullseye
+    BASE_VAGRANT_BOX: 'debian/buster64'
     JANE_TEST_FACT: 'cran.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/cran.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_cran'
@@ -574,6 +576,8 @@ stages:
     - 'keyring role'
     - 'apt_preferences role'
   variables:
+    # The elastic repository is not available in Bullseye
+    BASE_VAGRANT_BOX: 'debian/buster64'
     JANE_TEST_FACT: 'elastic_co.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/elastic_co.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_elastic_co'
@@ -592,6 +596,8 @@ stages:
     - 'java role'
     - 'elastic_co role'
   variables:
+    # The elastic repository is not available in Bullseye
+    BASE_VAGRANT_BOX: 'debian/buster64'
     JANE_TEST_FACT: 'elasticsearch.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/elasticsearch.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_elasticsearch'
@@ -768,6 +774,8 @@ stages:
     - 'apt_preferences role'
     - 'elastic_co role'
   variables:
+    # The elastic repository is not available in Bullseye
+    BASE_VAGRANT_BOX: 'debian/buster64'
     JANE_TEST_FACT: 'filebeat.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/filebeat.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_filebeat'
@@ -821,6 +829,8 @@ stages:
   needs:
     - 'keyring role'
   variables:
+    # The gitlab-runner package is not available in Bullseye
+    BASE_VAGRANT_BOX: 'debian/buster64'
     JANE_TEST_FACT: 'gitlab_runner.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/gitlab_runner.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_gitlab_runner'
@@ -838,6 +848,8 @@ stages:
     - 'docker_server role'
     - 'gitlab_runner role'
   variables:
+    # The gitlab-runner package is not available in Bullseye
+    BASE_VAGRANT_BOX: 'debian/buster64'
     JANE_TEST_FACT: 'gitlab_runner.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/docker_server.yml ${DEBOPS_PLAYBOOKS}/service/gitlab_runner.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_docker_server,debops_service_gitlab_runner'
@@ -852,6 +864,8 @@ stages:
     - 'python role'
     - 'libvirt role'
   variables:
+    # The gitlab-runner package is not available in Bullseye
+    BASE_VAGRANT_BOX: 'debian/buster64'
     JANE_TEST_FACT: 'gitlab_runner.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/libvirtd.yml ${DEBOPS_PLAYBOOKS}/service/gitlab_runner.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_libvirtd,debops_service_gitlab_runner'
@@ -871,6 +885,8 @@ stages:
     - 'lxc role'
     - 'keyring role'
   variables:
+    # The gitlab-runner package is not available in Bullseye
+    BASE_VAGRANT_BOX: 'debian/buster64'
     JANE_TEST_FACT: 'gitlab_runner.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/lxc.yml ${DEBOPS_PLAYBOOKS}/service/gitlab_runner.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_lxc,debops_service_gitlab_runner'
@@ -1141,6 +1157,8 @@ stages:
     - 'nginx role'
     - 'elastic_co role'
   variables:
+    # The elastic repository is not available in Bullseye
+    BASE_VAGRANT_BOX: 'debian/buster64'
     JANE_TEST_FACT: 'kibana.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/kibana.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_kibana'
@@ -1992,9 +2010,6 @@ stages:
   <<: *test_role_no_deps
   variables:
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/python_raw.yml'
-    # Ansible from upstream requires Python 2 environment, so don't wipe it,
-    # otherwise this particular test fails.
-    JANE_INVENTORY_HOSTVARS: 'python__v2=true'
     JANE_INVENTORY_GROUPS: 'debops_service_python'
     JANE_DIFF_PATTERN: '.*/roles/python/.*'
     JANE_LOG_PATTERN: '\[python\]'
@@ -2172,6 +2187,8 @@ stages:
 'rsnapshot role':
   <<: *test_role_no_deps
   variables:
+    # The rsnapshot package is not available in Bullseye
+    BASE_VAGRANT_BOX: 'debian/buster64'
     JANE_TEST_FACT: 'rsnapshot.fact'
     JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/rsnapshot.yml'
     JANE_INVENTORY_GROUPS: 'debops_service_rsnapshot'
