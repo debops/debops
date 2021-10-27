@@ -331,6 +331,18 @@ the official specification. These attributes have been found useful in an
 academic environment; more attributes might be added in the future if needed.
 
 
+.. _slapd__ref_schac:
+
+The ``schac`` schema
+--------------------
+
+The ``schac`` (`SCHema for ACademia`__) LDAP schema extends the ``eduPerson``
+schema with an additional set of LDAP object classes and attributes useful in
+university and higher education environments.
+
+.. __: https://wiki.refeds.org/display/STAN/SCHAC
+
+
 .. _slapd__ref_nextcloud:
 
 The ``nextcloud`` schema
