@@ -95,6 +95,9 @@ if LooseVersion(__ansible_version__) < LooseVersion("2.0"):
                     config = read_config(project_root)
                 except NameError:
                     pass
+            except NotADirectoryError:
+                # This is not a DebOps project directory, so continue as normal
+                pass
 
             if conf_section in config and conf_key in config[conf_section]:
                 custom_places = (
@@ -153,6 +156,9 @@ else:
                     config = read_config(project_root)
                 except NameError:
                     pass
+            except NotADirectoryError:
+                # This is not a DebOps project directory, so continue as normal
+                pass
 
             if conf_section in config and conf_key in config[conf_section]:
                 custom_places = (
