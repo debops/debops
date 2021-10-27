@@ -148,7 +148,7 @@
 
 - name: Unstage and remove ignored files from Git index
   shell: set -o nounset -o pipefail -o errexit &&
-         etckeeper vcs ls-files -i --exclude-standard -z | xargs -0 --no-run-if-empty etckeeper vcs rm --cached --
+         etckeeper vcs ls-files -i -c --exclude-standard -z | xargs -0 --no-run-if-empty etckeeper vcs rm --cached --
   args:
     executable: 'bash'
   register: etckeeper__register_git_rm_cached_ignored_files
