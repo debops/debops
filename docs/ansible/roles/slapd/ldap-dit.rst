@@ -74,6 +74,8 @@ Directory structure
 
         - :ref:`eduperson.schema <slapd__ref_eduperson>`
 
+        - :ref:`schac.schema <slapd__ref_schac>`
+
         - :ref:`nextcloud.schema <slapd__ref_nextcloud>`
 
         - :ref:`mailservice.schema <slapd__ref_mailservice>`
