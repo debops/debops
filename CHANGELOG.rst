@@ -147,6 +147,15 @@ General
 - The ``sshd__ferm_interface`` variable can now be used to limit access to SSH
   via the host firewall based on interface.
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- The `SCHema for ACademia`__ (schac) LDAP schema has been added to the role to
+  provide more LDAP attributes and object classes useful in university
+  environments.
+
+  .. __: https://wiki.refeds.org/display/STAN/SCHAC
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 
