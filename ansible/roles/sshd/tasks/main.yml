@@ -17,7 +17,7 @@
     name: 'secret'
 
 - name: Pre hooks
-  include: '{{ lookup("task_src", "sshd/pre_main.yml") }}'
+  include: '{{ lookup("debops.debops.task_src", "sshd/pre_main.yml") }}'
 
 - name: Make sure that Ansible local fact directory exists
   file:
@@ -155,7 +155,7 @@
 
 - name: Setup trusted user CA key file
   template:
-    src:      '{{ lookup("template_src", "etc/ssh/trusted_user_ca_file.pem.j2") }}'
+    src:      '{{ lookup("debops.debops.template_src", "etc/ssh/trusted_user_ca_file.pem.j2") }}'
     dest:     '{{ sshd__trusted_user_ca_keys_file }}'
     owner:    'root'
     group:    'root'
@@ -166,7 +166,7 @@
 
 - name: Setup /etc/ssh/sshd_config
   template:
-    src:    '{{ lookup("template_src", "etc/ssh/sshd_config.j2") }}'
+    src:    '{{ lookup("debops.debops.template_src", "etc/ssh/sshd_config.j2") }}'
     dest:   '/etc/ssh/sshd_config'
     owner:  'root'
     group:  'root'
@@ -246,4 +246,4 @@
   when: sshd__pam_deploy_state != 'present'
 
 - name: Post hooks
-  include: '{{ lookup("task_src", "sshd/post_main.yml") }}'
+  include: '{{ lookup("debops.debops.task_src", "sshd/post_main.yml") }}'

@@ -97,7 +97,7 @@
 {%     endif %}
 {%   endif %}
 {% endmacro %}
-{% for element in nscd__combined_configuration | parse_kv_items %}
+{% for element in nscd__combined_configuration | debops.debops.parse_kv_items %}
 {%   if element.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
 {%     if element.name == 'global' and element.options|d() %}
 {%       for entry in element.options %}

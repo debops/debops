@@ -65,16 +65,17 @@ The ``[paths]`` section
   Default value: ``%(install-path)s/playbooks``
 
 ``template-paths``
-  List of comma-separated paths where ``template_src`` lookup plugin will look
-  for custom templates (alternative :file:`templates/` directories). You can use
-  this to override templates provided with official roles (when supported).
+  List of comma-separated paths where ``debops.debops.template_src`` lookup
+  plugin will look for custom templates (alternative :file:`templates/`
+  directories). You can use this to override templates provided with official
+  roles (when supported).
 
   Default value: none
 
 ``file-paths``
-  List of comma-separated paths where ``file_src`` lookup plugin will look for
-  custom files (alternative :file:`files/` directories). You can use this to
-  override files provided with official roles (when supported).
+  List of comma-separated paths where ``debops.debops.file_src`` lookup plugin
+  will look for custom files (alternative :file:`files/` directories). You can
+  use this to override files provided with official roles (when supported).
 
   Default value: none
 

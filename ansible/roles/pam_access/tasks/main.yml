@@ -29,7 +29,7 @@
   command: dpkg-divert --quiet --local
            --divert {{ access_conf }}.dpkg-divert
            --rename {{ access_conf }}
-  loop: '{{ pam_access__combined_rules | parse_kv_items }}'
+  loop: '{{ pam_access__combined_rules | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"access_conf": access_conf, "state": item.state|d("present")} }}'
   when: (pam_access__enabled|bool and item.name|d() and item.options|d() and
@@ -45,7 +45,7 @@
     src: 'etc/security/access.conf.j2'
     dest: '/etc/security/{{ item.filename | d("access-" + (item.name | regex_replace("\.conf$","")) + ".conf") }}'
     mode: '0644'
-  loop: '{{ pam_access__combined_rules | parse_kv_items }}'
+  loop: '{{ pam_access__combined_rules | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"access_conf": access_conf, "state": item.state|d("present")} }}'
   when: pam_access__enabled|bool and item.name|d() and item.options|d() and
@@ -58,7 +58,7 @@
   file:
     path: '/etc/security/{{ item.filename | d("access-" + (item.name | regex_replace("\.conf$","")) + ".conf") }}'
     state: 'absent'
-  loop: '{{ pam_access__combined_rules | parse_kv_items }}'
+  loop: '{{ pam_access__combined_rules | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"access_conf": access_conf, "state": item.state|d("present")} }}'
   when: pam_access__enabled|bool and item.name|d() and item.state|d('present') == 'absent' and
@@ -73,7 +73,7 @@
          dpkg-divert --quiet --local --rename --remove {{ access_conf }}
   args:
     executable: 'bash'
-  loop: '{{ pam_access__combined_rules | parse_kv_items }}'
+  loop: '{{ pam_access__combined_rules | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"access_conf": access_conf, "state": item.state|d("present")} }}'
   when: (pam_access__enabled|bool and item.name|d() and

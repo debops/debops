@@ -10,7 +10,7 @@
 # Do not modify the default module list if you care about unattended calls
 # to programs (i.e., scripts) working!
 
-{% for element in libuser__combined_configuration | parse_kv_items %}
+{% for element in libuser__combined_configuration | debops.debops.parse_kv_items %}
 {%   if element.name|d() and element.state|d('present') not in [ 'absent', 'ignore' ] %}
 {%     if not loop.first %}
 

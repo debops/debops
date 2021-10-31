@@ -6,7 +6,7 @@
 
 {% set kibana__tpl_config = {} %}
 {% set kibana__tpl_comment = {} %}
-{% for item in kibana__combined_configuration | parse_kv_config %}
+{% for item in kibana__combined_configuration | debops.debops.parse_kv_config %}
 {%   if item is mapping %}
 {%     if item.name|d() %}
 {%       if item.state|d('present') != 'absent' %}

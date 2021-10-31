@@ -9,7 +9,7 @@
               + "/" + item.netboot_version + (item.netboot_subdir | d("")) }}'
     state: 'directory'
     mode: '0755'
-  loop: '{{ ipxe__debian_netboot_combined_release_map | parse_kv_items }}'
+  loop: '{{ ipxe__debian_netboot_combined_release_map | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
         item.release in ipxe__debian_netboot_releases and item.architecture in ipxe__debian_netboot_architectures
 
@@ -19,7 +19,7 @@
               + "/" + item.netboot_version + (item.netboot_subdir | d("")) }}'
     state: 'directory'
     mode: '0775'  # tarball enforces this mode
-  loop: '{{ ipxe__debian_netboot_combined_release_map | parse_kv_items }}'
+  loop: '{{ ipxe__debian_netboot_combined_release_map | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
         item.release in ipxe__debian_netboot_releases and item.architecture in ipxe__debian_netboot_architectures
 
@@ -32,7 +32,7 @@
     dest: '{{ ipxe__debian_netboot_src + "/" + item.release + "/" + item.architecture + "/"
               + item.netboot_version + (item.netboot_subdir | d("")) + "/netboot.tar.gz" }}'
     checksum: '{{ item.netboot_checksum | d(omit) }}'
-  loop: '{{ ipxe__debian_netboot_combined_release_map | parse_kv_items }}'
+  loop: '{{ ipxe__debian_netboot_combined_release_map | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
         item.release in ipxe__debian_netboot_releases and item.architecture in ipxe__debian_netboot_architectures
   register: ipxe__register_get_netboot
@@ -48,7 +48,7 @@
     remote_src: True
     creates: '{{ ipxe__debian_netboot_pxe_root + "/" + item.release + "/" + item.architecture + "/"
                  + item.netboot_version + (item.netboot_subdir | d("")) + "/pxelinux.0" }}'
-  loop: '{{ ipxe__debian_netboot_combined_release_map | parse_kv_items }}'
+  loop: '{{ ipxe__debian_netboot_combined_release_map | debops.debops.parse_kv_items }}'
   register: ipxe__register_debian_installer
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
         item.release in ipxe__debian_netboot_releases and item.architecture in ipxe__debian_netboot_architectures
@@ -59,7 +59,7 @@
     src: '{{ item.netboot_version }}'
     state: 'link'
     mode: '0775'
-  loop: '{{ ipxe__debian_netboot_combined_release_map | parse_kv_items }}'
+  loop: '{{ ipxe__debian_netboot_combined_release_map | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
         item.release in ipxe__debian_netboot_releases and item.architecture in ipxe__debian_netboot_architectures and
         (item.netboot_current|d(True))|bool
@@ -69,7 +69,7 @@
     path: '{{ ipxe__debian_netboot_src + "/" + item.release + "/non-free/" + item.firmware_version }}'
     state: 'directory'
     mode: '0755'
-  loop: '{{ ipxe__debian_netboot_combined_release_map | parse_kv_items }}'
+  loop: '{{ ipxe__debian_netboot_combined_release_map | debops.debops.parse_kv_items }}'
   when: ipxe__debian_netboot_firmware|bool and item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
         item.release in ipxe__debian_netboot_releases and item.firmware_version|d()
 
@@ -80,7 +80,7 @@
     dest: '{{ ipxe__debian_netboot_src + "/" + item.release + "/non-free/"
               + item.firmware_version + "/firmware.cpio.gz" }}'
     checksum: '{{ item.firmware_checksum | d(omit) }}'
-  loop: '{{ ipxe__debian_netboot_combined_release_map | parse_kv_items }}'
+  loop: '{{ ipxe__debian_netboot_combined_release_map | debops.debops.parse_kv_items }}'
   when: ipxe__debian_netboot_firmware|bool and item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
         item.release in ipxe__debian_netboot_releases and item.firmware_version|d()
   register: ipxe__register_get_firmware

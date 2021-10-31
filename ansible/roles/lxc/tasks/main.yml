@@ -13,7 +13,7 @@
     name: 'global_handlers'
 
 - name: DebOps pre_tasks hook
-  include: "{{ lookup('task_src', 'lxc/pre_main.yml') }}"
+  include: "{{ lookup('debops.debops.task_src', 'lxc/pre_main.yml') }}"
 
 - name: Install required packages
   package:
@@ -208,7 +208,7 @@
   file:
     path: '/etc/lxc/{{ item.filename | d(item.name + ".conf") }}'
     state: 'absent'
-  with_items: '{{ lxc__combined_configuration | parse_kv_items }}'
+  with_items: '{{ lxc__combined_configuration | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') == 'absent'
 
 - name: Generate LXC configuration
@@ -218,14 +218,14 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: '{{ lxc__combined_configuration | parse_kv_items }}'
+  with_items: '{{ lxc__combined_configuration | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Remove common LXC container configuration if requested
   file:
     path: '/usr/share/lxc/config/common.conf.d/{{ item.filename | d(item.name + ".conf") }}'
     state: 'absent'
-  with_items: '{{ lxc__common_combined_conf | parse_kv_items }}'
+  with_items: '{{ lxc__common_combined_conf | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') == 'absent'
 
 - name: Generate common LXC container configuration
@@ -235,7 +235,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: '{{ lxc__common_combined_conf | parse_kv_items }}'
+  with_items: '{{ lxc__common_combined_conf | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Stop LXC containers if requested
@@ -436,4 +436,4 @@
   tags: [ 'role::lxc:containers' ]
 
 - name: DebOps post_tasks hook
-  include: "{{ lookup('task_src', 'lxc/post_main.yml') }}"
+  include: "{{ lookup('debops.debops.task_src', 'lxc/post_main.yml') }}"

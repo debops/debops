@@ -19,7 +19,7 @@
     name: 'global_handlers'
 
 - name: Pre hooks
-  include: '{{ lookup("task_src", "sysctl/pre_main.yml") }}'
+  include: '{{ lookup("debops.debops.task_src", "sysctl/pre_main.yml") }}'
   when: sysctl__enabled|bool
 
 - name: Make sure that Ansible local facts directory exists
@@ -58,7 +58,7 @@
   command: dpkg-divert --quiet --local
            --divert /etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}.dpkg-divert
            --rename /etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}
-  with_items: '{{ sysctl__combined_parameters | parse_kv_items }}'
+  with_items: '{{ sysctl__combined_parameters | debops.debops.parse_kv_items }}'
   when: (sysctl__enabled|bool and item.name|d() and item.options|d() and
          item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
          (item.divert|d())|bool and
@@ -69,7 +69,7 @@
   file:
     path: '/etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}'
     state: 'absent'
-  with_items: '{{ sysctl__combined_parameters | parse_kv_items }}'
+  with_items: '{{ sysctl__combined_parameters | debops.debops.parse_kv_items }}'
   register: sysctl__register_config_removed
   when: sysctl__enabled|bool and item.name|d() and item.state|d('present') == 'absent'
 
@@ -80,7 +80,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: '{{ sysctl__combined_parameters | parse_kv_items }}'
+  with_items: '{{ sysctl__combined_parameters | debops.debops.parse_kv_items }}'
   register: sysctl__register_config_created
   when: sysctl__enabled|bool and item.name|d() and item.options|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
@@ -89,7 +89,7 @@
          ; dpkg-divert --quiet --local --rename --remove /etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}
   args:
     warn: False
-  with_items: '{{ sysctl__combined_parameters | parse_kv_items }}'
+  with_items: '{{ sysctl__combined_parameters | debops.debops.parse_kv_items }}'
   when: (sysctl__enabled|bool and item.name|d() and item.state|d('present') == 'absent' and (item.divert|d())|bool and
           ('/etc/sysctl.d/' + item.filename | d(item.weight|string + "-" + item.name + ".conf")
            + '.dpkg-divert') in sysctl__register_diversions.stdout_lines)
@@ -121,5 +121,5 @@
           sysctl__register_config_removed is changed))
 
 - name: Post hooks
-  include: '{{ lookup("task_src", "sysctl/post_main.yml") }}'
+  include: '{{ lookup("debops.debops.task_src", "sysctl/post_main.yml") }}'
   when: sysctl__enabled|bool

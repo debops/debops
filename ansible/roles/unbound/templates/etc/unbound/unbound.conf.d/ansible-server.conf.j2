@@ -5,7 +5,7 @@
 {% import 'macros.j2' as get with context %}
 # {{ ansible_managed }}
 
-{% set unbound__tpl_server = (unbound__combined_server | parse_kv_config) %}
+{% set unbound__tpl_server = (unbound__combined_server | debops.debops.parse_kv_config) %}
 server:
 {% for element in unbound__tpl_server %}
 {%   set element_name = (element.option | d(element.name)) %}

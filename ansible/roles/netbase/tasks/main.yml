@@ -65,7 +65,7 @@
                  else ((item.value|d()) | selectattr('name', 'defined') | map(attribute='name') | list | join(' ')) }}"
     state:   '{{ "present" if item.value|d() else "absent" }}'
     mode:    '0644'
-  loop: '{{ netbase__combined_hosts | parse_kv_config }}'
+  loop: '{{ netbase__combined_hosts | debops.debops.parse_kv_config }}'
   loop_control:
     label: '{{ {item.name: (item.value|d([])) | selectattr("name", "defined") | map(attribute="name") | list} }}'
   notify: [ 'Refresh host facts' ]

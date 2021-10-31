@@ -13,7 +13,7 @@
     name: 'global_handlers'
 
 - name: Pre hooks
-  include: "{{ lookup('task_src', 'dovecot/pre_main.yml') }}"
+  include: "{{ lookup('debops.debops.task_src', 'dovecot/pre_main.yml') }}"
 
 - name: Install Dovecot packages
   package:
@@ -132,7 +132,7 @@
 
 - name: Generate Dovecot configuration
   template:
-    src: '{{ lookup("template_src", "etc/dovecot/conf.d/" + item + ".j2") }}'
+    src: '{{ lookup("debops.debops.template_src", "etc/dovecot/conf.d/" + item + ".j2") }}'
     dest: '/etc/dovecot/conf.d/{{ item }}'
     owner: 'root'
     group: 'root'
@@ -155,7 +155,7 @@
 
 - name: Generate Dovecot local configuration
   template:
-    src: "{{ lookup('template_src', 'etc/dovecot/local.conf.j2') }}"
+    src: "{{ lookup('debops.debops.template_src', 'etc/dovecot/local.conf.j2') }}"
     dest: '/etc/dovecot/local.conf'
     owner: 'root'
     group: 'root'
@@ -165,7 +165,7 @@
 
 - name: Generate Dovecot sql configuration
   template:
-    src: "{{ lookup('template_src', 'etc/dovecot/dovecot-sql.conf.ext.j2') }}"
+    src: "{{ lookup('debops.debops.template_src', 'etc/dovecot/dovecot-sql.conf.ext.j2') }}"
     dest: '/etc/dovecot/dovecot-sql.conf.ext'
     owner: 'root'
     group: 'root'
@@ -176,7 +176,7 @@
 
 - name: Generate Dovecot ldap configuration
   template:
-    src: "{{ lookup('template_src', 'etc/dovecot/' + item + '.j2') }}"
+    src: "{{ lookup('debops.debops.template_src', 'etc/dovecot/' + item + '.j2') }}"
     dest: '/etc/dovecot/{{ item }}'
     owner: 'root'
     group: 'root'
@@ -190,7 +190,7 @@
 
 - name: Generate Dovecot deny user list
   template:
-    src: "{{ lookup('template_src', 'etc/dovecot/dovecot.deny.j2') }}"
+    src: "{{ lookup('debops.debops.template_src', 'etc/dovecot/dovecot.deny.j2') }}"
     dest: '/etc/dovecot/dovecot.deny'
     owner: 'root'
     group: 'root'
@@ -245,4 +245,4 @@
   when: not (dovecot_pki|bool)
 
 - name: Post hooks
-  include: "{{ lookup('task_src', 'dovecot/post_main.yml') }}"
+  include: "{{ lookup('debops.debops.task_src', 'dovecot/post_main.yml') }}"

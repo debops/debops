@@ -403,8 +403,9 @@ merging.
 .. note::
 
    When merging items with the same ``name`` whose ``value`` fields contain
-   lists, the underlying ``parse_kv_items`` filter **will not merge** them,
-   but override them instead. Only the last appearing ``value`` will be used.
+   lists, the underlying ``debops.debops.parse_kv_items`` filter **will not
+   merge** them, but override them instead. Only the last appearing ``value``
+   will be used.
 
    Those cases are clearly stated in the implementing role's documentation.
 

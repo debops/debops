@@ -55,7 +55,7 @@
     repo: '{{ item.git_repo }}'
     dest: '{{ icinga_web__src + "/" + item.git_repo.split("://")[1] }}'
     version: '{{ item.git_version }}'
-  with_items: '{{ (icinga_web__default_modules + icinga_web__modules) | parse_kv_items }}'
+  with_items: '{{ (icinga_web__default_modules + icinga_web__modules) | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.git_repo|d() and
         item.git_version|d() and item.state|d('present') != 'absent'
 
@@ -66,7 +66,7 @@
     state: 'link'
     force: '{{ True if ansible_check_mode|bool else omit }}'
     mode: '0755'
-  with_items: '{{ (icinga_web__default_modules + icinga_web__modules) | parse_kv_items }}'
+  with_items: '{{ (icinga_web__default_modules + icinga_web__modules) | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.git_repo|d() and
         item.git_version|d() and item.state|d('present') != 'absent'
 
@@ -78,7 +78,7 @@
     state: '{{ "link" if (item.state|d("present") != "absent" and (item.enabled|d(True))|bool) else "absent" }}'
     force: '{{ True if ansible_check_mode|bool else omit }}'
     mode: '0755'
-  with_items: '{{ (icinga_web__default_modules + icinga_web__modules) | parse_kv_items }}'
+  with_items: '{{ (icinga_web__default_modules + icinga_web__modules) | debops.debops.parse_kv_items }}'
   when: item.name|d()
 
 - name: Generate Icinga Web configuration

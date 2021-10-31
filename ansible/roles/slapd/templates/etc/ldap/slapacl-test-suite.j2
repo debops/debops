@@ -120,7 +120,7 @@ if [ ! -t 2 ] && [ -t 1 ] ; then
     printf "Testing OpenLDAP ACL policies "
 fi
 
-{% for element in slapd__slapacl_combined_tests | parse_kv_items(merge_keys=['queries']) %}
+{% for element in slapd__slapacl_combined_tests | debops.debops.parse_kv_items(merge_keys=['queries']) %}
 {%   if element.name|d() and element.dn|d() and element.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
 {%     if not loop.first %}
 

@@ -122,7 +122,7 @@
     state: '{{ "present"
                if (item.state|d("present") not in [ "absent", "ignore", "init" ])
                else "absent" }}'
-  loop: '{{ rsyslog__combined_rules | flatten | parse_kv_items
+  loop: '{{ rsyslog__combined_rules | flatten | debops.debops.parse_kv_items
             | selectattr("divert", "defined") | list
             | selectattr("divert", "equalto", True) | list }}'
   loop_control:
@@ -137,7 +137,7 @@
     owner: '{{ item.owner | d("root") }}'
     group: '{{ item.group | d("root") }}'
     mode:  '{{ item.mode  | d("0644") }}'
-  loop: '{{ rsyslog__combined_rules | flatten | parse_kv_items }}'
+  loop: '{{ rsyslog__combined_rules | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": (item.state|d("present")) } }}'
   when: (rsyslog__enabled|bool and rsyslog__deploy_state != 'absent' and
@@ -149,7 +149,7 @@
   file:
     path: '{{ "/etc/rsyslog.d/" + item.name }}'
     state: 'absent'
-  loop: '{{ rsyslog__combined_rules | flatten | parse_kv_items }}'
+  loop: '{{ rsyslog__combined_rules | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": (item.state|d("present")) } }}'
   when: (rsyslog__enabled|bool and rsyslog__deploy_state != 'absent' and

@@ -7,7 +7,7 @@
 # See sudoers.ldap(5) for details.
 # This file shouldn't be world readable.
 
-{% for option in sudo__ldap_combined_configuration | parse_kv_config %}
+{% for option in sudo__ldap_combined_configuration | debops.debops.parse_kv_config %}
 {%   if option.state|d('present') not in [ 'absent', 'ignore' ] %}
 {%     if ((option.separator|d())|bool or option.comment|d()) and not loop.first %}
 

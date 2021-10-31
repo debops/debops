@@ -44,7 +44,7 @@
   changed_when: False
   become: True
   become_user: '{{ owncloud__app_user }}'
-  loop: '{{ q("flattened", owncloud__ldap_combined_config) | parse_kv_items }}'
+  loop: '{{ q("flattened", owncloud__ldap_combined_config) | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"option": item.name, "value": item.value} }}'
   no_log: '{{ debops__no_log | d(True)

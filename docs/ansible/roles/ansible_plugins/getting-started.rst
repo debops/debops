@@ -53,26 +53,26 @@ These filters are used to implement DebOps :ref:`universal_configuration`.
 See the user-facing documentation for the behaviors they are meant to
 facilitate.
 
-``parse_kv_config``
+``debops.debops.parse_kv_config``
   Parse a YAML list of dictionaries and output a sorted and expanded list of
   YAML dictionaries that contain a common set of dictionary keys. The filter
   supports dynamic order of the entries using weight model, and can be used to
   generate a configuration file which uses a key/value syntax with unique keys.
 
-  The ``parse_kv_config`` filter accepts this argument:
+  The ``debops.debops.parse_kv_config`` filter accepts this argument:
 
   ``name``
     Optional, String. Defaults to ``name``.
     Sets the name of the field to be used as the unique key.
 
 
-``parse_kv_items``
-  This is a wrapper for the ``parse_kv_config`` filter which can be used in the
-  looped Ansible tasks to manage multiple files with key/value syntax, or
-  generate a configuration file with multiple key/value configuration
-  structures.
+``debops.debops.parse_kv_items``
+  This is a wrapper for the ``debops.debops.parse_kv_config`` filter which can
+  be used in the looped Ansible tasks to manage multiple files with key/value
+  syntax, or generate a configuration file with multiple key/value
+  configuration structures.
 
-  The ``parse_kv_items`` filter accepts the following arguments:
+  The ``debops.debops.parse_kv_items`` filter accepts the following arguments:
 
   ``name``
     Optional, String. Defaults to ``name``.
@@ -84,7 +84,7 @@ facilitate.
 
     .. code-block:: jinja
 
-      {{ variable | parse_kv_items(defaults={'some_param': 'default_value'}) }}
+      {{ variable | debops.debops.parse_kv_items(defaults={'some_param': 'default_value'}) }}
 
   ``empty``
     Optional, Dict. Keys are fields which might be empty, values
@@ -100,7 +100,7 @@ facilitate.
 
     .. code-block:: jinja
 
-      {{ variable | parse_kv_items(
+      {{ variable | debops.debops.parse_kv_items(
         empty={
           'some_param':  'other_param',
           'empty_param': ['param1', 'param2']
@@ -162,7 +162,7 @@ Custom Ansible lookup plugins
 The role contains a set of custom Ansible lookup plugins which can be used in
 Ansible roles:
 
-``file_src``
+``debops.debops.file_src``
   This lookup plugin allows "sideloading" files to copy into roles without the
   need to modify the roles themselves. It requires the ``debops`` Python module
   to be installed and uses configuration in :file:`.debops.cfg` to get a list
@@ -173,13 +173,13 @@ Ansible roles:
   files are found, the lookup plugin returns the original path which
   corresponds to the file included in the role itself.
 
-``lists``
+``debops.debops.lists``
   This lookup plugin implements the ``with_lists`` lookup. Similar to
   ``with_flattened`` lookup, the difference is the lists are not flattened all
   the way into a single list, therefore you can perform a "list of lists"
   tasks.
 
-``task_src``
+``debops.debops.task_src``
   This lookup plugin allows injection of custom Ansible tasks into roles without
   the need to modify the roles themselves. It requires the ``debops`` Python
   module to be installed and uses configuration in :file:`.debops.cfg` to get
@@ -192,7 +192,7 @@ Ansible roles:
   Ansible, avoiding the issue of missing task list. The roles that use this
   plugin need to be prepared for this usage beforehand.
 
-``template_src``
+``debops.debops.template_src``
   This lookup plugin allows "sideloading" Jinja templates into roles without
   the need to modify the roles themselves. It requires the ``debops`` Python
   module to be installed and uses configuration in :file:`.debops.cfg` to get

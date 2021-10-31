@@ -72,7 +72,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  with_items: '{{ redis_server__combined_configuration | parse_kv_items }}'
+  with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
   no_log: '{{ redis_server__no_log }}'
 
@@ -81,7 +81,7 @@
             /etc/redis/redis.conf /etc/redis/{{ item.name }}/redis.conf'
   args:
     creates: '/etc/redis/{{ item.name }}/redis.conf'
-  with_items: '{{ redis_server__combined_configuration | parse_kv_items }}'
+  with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
   no_log: '{{ redis_server__no_log }}'
 
@@ -92,7 +92,7 @@
     owner: 'root'
     group: '{{ redis_server__group }}'
     mode: '0750'
-  with_items: '{{ redis_server__combined_configuration | parse_kv_items }}'
+  with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
   register: redis_server__register_config_dynamic
   notify: [ 'Refresh host facts' ]
@@ -105,7 +105,7 @@
     owner: 'root'
     group: '{{ redis_server__group }}'
     mode: '0640'
-  with_items: '{{ redis_server__combined_configuration | parse_kv_items }}'
+  with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
   register: redis_server__register_config_static
   notify: [ 'Refresh host facts' ]
@@ -151,7 +151,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  with_items: '{{ redis_server__combined_configuration | parse_kv_items }}'
+  with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ] and
         item.systemd_override|d()
   no_log: '{{ redis_server__no_log }}'
@@ -163,7 +163,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: '{{ redis_server__combined_configuration | parse_kv_items }}'
+  with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ] and
         item.systemd_override|d()
   notify: [ 'Reload service manager' ]
@@ -174,7 +174,7 @@
     name: 'redis-server@{{ item.name }}.service'
     state: 'stopped'
     enabled: False
-  with_items: '{{ redis_server__combined_configuration | parse_kv_items }}'
+  with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
   when: ansible_service_mgr == 'systemd' and item.name|d() and
         item.state|d('present') == 'absent'
   no_log: '{{ redis_server__no_log }}'
@@ -183,7 +183,7 @@
   file:
     path: '/etc/systemd/system/redis-server@{{ item.name }}.service.d'
     state: 'absent'
-  with_items: '{{ redis_server__combined_configuration | parse_kv_items }}'
+  with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Reload service manager' ]
   when: ansible_service_mgr == 'systemd' and item.name|d() and
         item.state|d('present') == 'absent'
@@ -193,7 +193,7 @@
   file:
     path: '/etc/redis/{{ item.name }}'
     state: 'absent'
-  with_items: '{{ redis_server__combined_configuration | parse_kv_items }}'
+  with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
   when: ansible_service_mgr == 'systemd' and item.name|d() and
         item.state|d('present') == 'absent'
   no_log: '{{ redis_server__no_log }}'
@@ -206,7 +206,7 @@
     name: 'redis-server@{{ item.name }}.service'
     state: 'started'
     enabled: True
-  with_items: '{{ redis_server__combined_configuration | parse_kv_items }}'
+  with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
   when: ansible_service_mgr == 'systemd' and item.name|d() and
         item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
   no_log: '{{ redis_server__no_log }}'
@@ -232,7 +232,7 @@
     master_port: '{{ item.master_port }}'
     login_port: '{{ item.port }}'
     login_password: '{{ item.requirepass | d(omit) }}'
-  with_items: '{{ redis_server__combined_configuration | parse_kv_items }}'
+  with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
   when: ((ansible_local is undefined or
           (ansible_local.redis_server is undefined or
            (ansible_local.redis_server.instances is undefined or

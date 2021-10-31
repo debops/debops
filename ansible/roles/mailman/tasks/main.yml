@@ -80,14 +80,14 @@
     owner: '{{ mailman__user }}'
     group: '{{ mailman__group }}'
     mode: '0755'
-  loop: '{{ mailman__combined_templates | parse_kv_items }}'
+  loop: '{{ mailman__combined_templates | debops.debops.parse_kv_items }}'
   when: item.state|d('present') != 'absent'
 
 - name: Remove custom Mailman templates if requested
   file:
     path: '{{ "/var/lib/mailman3/templates/" + item.name }}'
     state: 'absent'
-  loop: '{{ mailman__combined_templates | parse_kv_items }}'
+  loop: '{{ mailman__combined_templates | debops.debops.parse_kv_items }}'
   when: item.state|d('present') == 'absent'
 
 - name: Generate custom Mailman templates
@@ -97,7 +97,7 @@
     owner: '{{ mailman__user }}'
     group: '{{ mailman__group }}'
     mode: '0644'
-  loop: '{{ mailman__combined_templates | parse_kv_items }}'
+  loop: '{{ mailman__combined_templates | debops.debops.parse_kv_items }}'
   when: item.state|d('present') != 'absent'
 
 - name: Ensure Postfix lookup tables exist

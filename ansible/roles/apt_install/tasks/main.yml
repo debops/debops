@@ -9,7 +9,7 @@
     name: 'ansible_plugins'
 
 - name: Pre hooks
-  include: '{{ lookup("task_src", "apt_install/pre_main.yml") }}'
+  include: '{{ lookup("debops.debops.task_src", "apt_install/pre_main.yml") }}'
 
 - name: Debconf module dependencies
   apt:
@@ -99,4 +99,4 @@
   when: apt_install__enabled|bool
 
 - name: Post hooks
-  include: '{{ lookup("task_src", "apt_install/post_main.yml") }}'
+  include: '{{ lookup("debops.debops.task_src", "apt_install/post_main.yml") }}'

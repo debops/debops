@@ -55,7 +55,7 @@
     ssh_key_type:    '{{ item.type    | d(rsnapshot__ssh_key_type) }}'
     ssh_key_bits:    '{{ item.bits    | d(rsnapshot__ssh_key_bits) }}'
     ssh_key_comment: '{{ item.comment | d(rsnapshot__ssh_key_comment) }}'
-  loop: '{{ q("flattened", (rsnapshot__ssh_default_identities + rsnapshot__ssh_identities)) | parse_kv_items }}'
+  loop: '{{ q("flattened", (rsnapshot__ssh_default_identities + rsnapshot__ssh_identities)) | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
   notify: [ 'Refresh host facts' ]
@@ -93,7 +93,7 @@
     fact_path: '/dev/null'
   delegate_to: '{{ item.name }}'
   delegate_facts: True
-  loop: '{{ rsnapshot__combined_hosts | parse_kv_items }}'
+  loop: '{{ rsnapshot__combined_hosts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
   when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
@@ -108,7 +108,7 @@
   register: rsnapshot__register_host_packages
   until: rsnapshot__register_host_packages is succeeded
   delegate_to: '{{ item.name }}'
-  loop: '{{ rsnapshot__combined_hosts | parse_kv_items }}'
+  loop: '{{ rsnapshot__combined_hosts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state|d("present"),
                 "packages": q("flattened", rsnapshot__host_packages)} }}'
@@ -134,7 +134,7 @@
     executable: 'bash'
     creates: '{{ item.rrsync_binary | d(rsnapshot__rrsync_binary) }}'
   delegate_to: '{{ item.name }}'
-  loop: '{{ rsnapshot__combined_hosts | parse_kv_items }}'
+  loop: '{{ rsnapshot__combined_hosts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state|d("present"),
                 "packages": q("flattened", rsnapshot__host_packages)} }}'
@@ -152,7 +152,7 @@
     key_options: '{{ item.ssh_options | d(rsnapshot__ssh_options) }},command="{{ item.ssh_command | d(rsnapshot__ssh_command) }}"'
     state: '{{ item.state | d("present") }}'
   delegate_to: '{{ item.fqdn | d(item.name) }}'
-  loop: '{{ rsnapshot__combined_hosts | parse_kv_items }}'
+  loop: '{{ rsnapshot__combined_hosts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
   register: rsnapshot__register_ssh_keys
@@ -193,7 +193,7 @@
          | grep -q '^# Host {{ item.fqdn | d(hostvars[item.name].ansible_fqdn if hostvars[item.name]|d() else item.name) }} found'
   args:
     executable: 'bash'
-  loop: '{{ rsnapshot__combined_hosts | parse_kv_items }}'
+  loop: '{{ rsnapshot__combined_hosts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
   when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
@@ -218,7 +218,7 @@
   file:
     path: '{{ rsnapshot__config_dir + "/" + item.name }}'
     state: 'absent'
-  loop: '{{ rsnapshot__combined_hosts | parse_kv_items }}'
+  loop: '{{ rsnapshot__combined_hosts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
   when: (item.name|d() and item.state|d('present') == 'absent' and
@@ -229,7 +229,7 @@
     path: '{{ rsnapshot__config_dir + "/" + item.name }}'
     state: 'directory'
     mode: '0755'
-  loop: '{{ rsnapshot__combined_hosts | parse_kv_items }}'
+  loop: '{{ rsnapshot__combined_hosts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
   when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
@@ -241,10 +241,10 @@
     dest: '{{ rsnapshot__config_dir + "/" + item.0.name + "/" + item.1 }}'
     mode: '0644'
   loop: '{{ (rsnapshot__combined_hosts
-             | parse_kv_items(defaults={
-                                        "options":  (rsnapshot__combined_configuration | parse_kv_config),
-                                        "excludes": (rsnapshot__combined_excludes      | parse_kv_items),
-                                        "includes": (rsnapshot__combined_includes      | parse_kv_items)
+             | debops.debops.parse_kv_items(defaults={
+                                        "options":  (rsnapshot__combined_configuration | debops.debops.parse_kv_config),
+                                        "excludes": (rsnapshot__combined_excludes      | debops.debops.parse_kv_items),
+                                        "includes": (rsnapshot__combined_includes      | debops.debops.parse_kv_items)
                                        },
                               merge_keys=["excludes", "includes"])
             ) | product([ "include.txt", "exclude.txt", "rsnapshot.conf" ]) | list }}'

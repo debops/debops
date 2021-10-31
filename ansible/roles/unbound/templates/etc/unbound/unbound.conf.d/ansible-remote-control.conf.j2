@@ -5,7 +5,7 @@
 {% import 'macros.j2' as get with context %}
 # {{ ansible_managed }}
 
-{% set unbound__tpl_remote_control = (unbound__combined_remote_control | parse_kv_config) %}
+{% set unbound__tpl_remote_control = (unbound__combined_remote_control | debops.debops.parse_kv_config) %}
 remote-control:
 {% for element in unbound__tpl_remote_control %}
 {%   set element_name = (element.option | d(element.name)) %}

@@ -232,7 +232,7 @@ repositories:
        group: '{{ golang__group }}'
        home: '{{ golang__home }}'
 
-     - '{{ golang__combined_packages | parse_kv_items
+     - '{{ golang__combined_packages | debops.debops.parse_kv_items
            | selectattr("gpg", "defined") | selectattr("state", "equalto", "present")
            | map(attribute="gpg") | list }}'
 

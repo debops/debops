@@ -5,7 +5,7 @@
 # {{ ansible_managed }}
 
 # interface-order(5)
-{% for element in resolvconf__combined_interface_order | parse_kv_config %}
+{% for element in resolvconf__combined_interface_order | debops.debops.parse_kv_config %}
 {%   if element.name|d() and element.value|d() and element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
 {%     if element.comment|d() %}
 

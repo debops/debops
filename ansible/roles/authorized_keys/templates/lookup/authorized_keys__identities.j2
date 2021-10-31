@@ -3,7 +3,7 @@
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 {% set output = [] %}
-{% for identity in (q("flattened", authorized_keys__combined_identities) | parse_kv_items(merge_keys=["accounts"])) %}
+{% for identity in (q("flattened", authorized_keys__combined_identities) | debops.debops.parse_kv_items(merge_keys=["accounts"])) %}
 {%   if (identity.state|d('present') not in [ 'init', 'ignore' ] and (identity.sshkeys|d() or identity.url|d())) %}
 {%     for account in identity.accounts | d([]) %}
 {%       set parsed_account = {'identity': identity.name,

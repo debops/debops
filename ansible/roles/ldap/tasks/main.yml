@@ -80,7 +80,7 @@
 
 - name: Perform LDAP tasks
   include_tasks: 'ldap_tasks.yml'
-  loop: '{{ q("flattened", ldap__combined_tasks) | parse_kv_items }}'
+  loop: '{{ q("flattened", ldap__combined_tasks) | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"state": item.state,
                 "dn": item.dn,

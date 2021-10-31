@@ -104,7 +104,7 @@
     path: '/etc/postfix/{{ item.name }}'
     state: 'absent'
   with_flattened:
-    - '{{ postfix__combined_lookup_tables | parse_kv_items }}'
+    - '{{ postfix__combined_lookup_tables | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') == 'absent'
   notify: [ 'Process Postfix Makefile', 'Check postfix and reload' ]
   no_log: '{{ item.no_log | d(True if (item.mode|d("0644") == "0600") else False) }}'
@@ -117,7 +117,7 @@
     group: '{{ item.group | d("postfix") }}'
     mode:  '{{ item.mode  | d("0640") }}'
   with_flattened:
-    - '{{ postfix__combined_lookup_tables | parse_kv_items }}'
+    - '{{ postfix__combined_lookup_tables | debops.debops.parse_kv_items }}'
   notify: [ 'Process Postfix Makefile', 'Check postfix and reload' ]
   when: item.name|d() and item.state|d('present') != 'absent'
   no_log: '{{ item.no_log | d(True

@@ -11,7 +11,7 @@
 # See ldap.conf(5) for details
 # This file should be world readable but not world writable.
 
-{% for option in ldap__combined_configuration | parse_kv_config %}
+{% for option in ldap__combined_configuration | debops.debops.parse_kv_config %}
 {%   if option.state|d('present') not in [ 'absent', 'ignore' ] %}
 {%     if option.separator|bool and not option.comment|d() and not loop.first %}
 

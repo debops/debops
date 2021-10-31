@@ -225,7 +225,7 @@ yadm__keyring__dependent_gpg_keys:
 
   # Extract a list of GPG keys from the dotfile configuration; they will be
   # added to the 'root' GPG keyring.
-  - '{{ (yadm__combined_dotfiles | parse_kv_items
+  - '{{ (yadm__combined_dotfiles | debops.debops.parse_kv_items
          | selectattr("gpg", "defined") | selectattr("state", "equalto", "present")
          | map(attribute="gpg") | list)
         if yadm__dotfiles_enabled|bool else [] }}'

@@ -74,7 +74,7 @@
   blockinfile:
     path: '/etc/.gitignore'
     block: |
-      {% for item in etckeeper__combined_gitignore | parse_kv_items %}
+      {% for item in etckeeper__combined_gitignore | debops.debops.parse_kv_items %}
       {%   if (item.name|d() and item.state|d('present') != 'absent') %}
       {%     if item.comment|d() %}
 

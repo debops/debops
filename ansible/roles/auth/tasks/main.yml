@@ -12,7 +12,7 @@
     name: 'secret'
 
 - name: DebOps pre_tasks hook
-  include: "{{ lookup('task_src', 'auth/pre_main.yml') }}"
+  include: "{{ lookup('debops.debops.task_src', 'auth/pre_main.yml') }}"
 
 - name: Install auth-related packages
   apt:
@@ -37,4 +37,4 @@
   when: auth_pwhistory_remember is defined and auth_pwhistory_remember
 
 - name: DebOps post_tasks hook
-  include: "{{ lookup('task_src', 'auth/post_main.yml') }}"
+  include: "{{ lookup('debops.debops.task_src', 'auth/post_main.yml') }}"

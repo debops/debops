@@ -85,16 +85,16 @@ override certain aspects of public Ansible roles without modifying them
 directly. This allows for easier updates or customization of the files and
 templates according to your specific needs.
 
-Certain roles use ``file_src`` or ``template_src`` to calculate path to files
-or templates used by a role. You can override these paths using ``.debops.cfg``
-configuration file and provide your own versions of files and templates stored
-in DebOps project directory.
+Certain roles use ``debops.debops.file_src`` or ``debops.debops.template_src``
+to calculate path to files or templates used by a role. You can override these
+paths using ``.debops.cfg`` configuration file and provide your own versions of
+files and templates stored in DebOps project directory.
 
 Some roles provide "task hooks" at the beginning and end of task lists, which
-are empty files in a specific subdirectories. Using ``task_src`` lookup plugin
-and settings defined in ``.debops.cfg`` configuration file you can "inject"
-your own tasks at the beginning or end of these roles, which gives you more
-control over the configuration.
+are empty files in a specific subdirectories. Using ``debops.debops.task_src``
+lookup plugin and settings defined in ``.debops.cfg`` configuration file you
+can "inject" your own tasks at the beginning or end of these roles, which gives
+you more control over the configuration.
 
 By combining above techniques, you can very easily extend DebOps roles without
 losing the ability to update them, using :command:`git` without having merge

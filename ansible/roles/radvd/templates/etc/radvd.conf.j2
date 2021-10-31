@@ -20,7 +20,7 @@
 {%   endif %}
 {% endmacro %}
 {% set radvd__tpl_interfaces = [] %}
-{% for interface in radvd__combined_interfaces | parse_kv_items %}
+{% for interface in radvd__combined_interfaces | debops.debops.parse_kv_items %}
 {%   if interface.name|d() and interface.state|d('present') not in [ 'init', 'absent' ] %}
 {%     set _ = radvd__tpl_interfaces.append(interface) %}
 {%   endif %}

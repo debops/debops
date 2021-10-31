@@ -60,7 +60,7 @@
     path: '{{ "/etc/filebeat/" + (item.name | dirname) }}'
     state: 'directory'
     mode: '0755'
-  loop: '{{ filebeat__combined_snippets | parse_kv_config }}'
+  loop: '{{ filebeat__combined_snippets | debops.debops.parse_kv_config }}'
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
   when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and item.config|d()
@@ -70,7 +70,7 @@
   file:
     path: '{{ "/etc/filebeat/" + (item.name | regex_replace(".yml","") + ".yml") }}'
     state: 'absent'
-  loop: '{{ filebeat__combined_snippets | parse_kv_config }}'
+  loop: '{{ filebeat__combined_snippets | debops.debops.parse_kv_config }}'
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state, "config": item.config} }}'
   notify: [ 'Test filebeat configuration and restart' ]
@@ -82,7 +82,7 @@
     src: 'etc/filebeat/snippets.d/snippet.yml.j2'
     dest: '{{ "/etc/filebeat/" + (item.name | regex_replace(".yml","") + ".yml") }}'
     mode: '{{ item.mode | d("0600") }}'
-  loop: '{{ filebeat__combined_snippets | parse_kv_config }}'
+  loop: '{{ filebeat__combined_snippets | debops.debops.parse_kv_config }}'
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state, "config": item.config} }}'
   notify: [ 'Test filebeat configuration and restart' ]
@@ -106,7 +106,7 @@
 
 - name: Remove key from Filebeat keystore when requested
   command: 'filebeat keystore remove {{ item.name }}'
-  loop: '{{ filebeat__combined_keys | parse_kv_config }}'
+  loop: '{{ filebeat__combined_keys | debops.debops.parse_kv_config }}'
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
   notify: [ 'Test filebeat configuration and restart' ]
@@ -126,7 +126,7 @@
     {% endif %}
   args:
     executable: 'bash'
-  loop: '{{ filebeat__combined_keys | parse_kv_config }}'
+  loop: '{{ filebeat__combined_keys | debops.debops.parse_kv_config }}'
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
   notify: [ 'Test filebeat configuration and restart' ]

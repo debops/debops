@@ -15,7 +15,7 @@
 
 # DebOps pre-hook [[[1
 - name: Pre hooks
-  include: '{{ lookup("task_src", "resources/pre_main.yml") }}'
+  include: '{{ lookup("debops.debops.task_src", "resources/pre_main.yml") }}'
 
 # Manage custom templates [[[1
 - name: Ensure that template directories exist
@@ -314,7 +314,7 @@
 # This is not an alternative to a fully-fledged Ansible role.
 - name: Execute shell commands
   include_tasks: 'shell_commands.yml'
-  loop: '{{ q("flattened", resources__combined_commands) | parse_kv_items }}'
+  loop: '{{ q("flattened", resources__combined_commands) | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name} }}'
   when: resources__enabled|bool and
@@ -324,4 +324,4 @@
 
 # DebOps post-hook [[[1
 - name: Post hooks
-  include: '{{ lookup("task_src", "resources/post_main.yml") }}'
+  include: '{{ lookup("debops.debops.task_src", "resources/post_main.yml") }}'
