@@ -121,7 +121,7 @@
     creates: '{{ "/etc/update-motd.d/" + (item.filename
                                           | d(("%02d" | format(item.weight|int))|string + "-" + item.name))
                                        + ".disabled" }}'
-  with_flattened: '{{ machine__motd_combined_scripts | parse_kv_items }}'
+  with_flattened: '{{ machine__motd_combined_scripts | debops.debops.parse_kv_items }}'
   when: (machine__enabled|bool and
          (item.filename is defined or item.name is defined) and
          (item.state|d('present') not in [ 'init', 'absent', 'ignore', 'revert' ]) and
@@ -135,7 +135,7 @@
     path: '{{ machine__motd_update_dir + "/"
               + (item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name)) }}'
     state: 'absent'
-  with_flattened: '{{ machine__motd_combined_scripts | parse_kv_items }}'
+  with_flattened: '{{ machine__motd_combined_scripts | debops.debops.parse_kv_items }}'
   register: machine__register_motd_scripts_removed
   when: (machine__enabled|bool and
          (item.filename is defined or item.name is defined) and
@@ -150,7 +150,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  with_flattened: '{{ machine__motd_combined_scripts | parse_kv_items }}'
+  with_flattened: '{{ machine__motd_combined_scripts | debops.debops.parse_kv_items }}'
   register: machine__register_motd_scripts_created
   when: (machine__enabled|bool and
          (item.filename is defined or item.name is defined) and
@@ -180,7 +180,7 @@
     removes: '{{ "/etc/update-motd.d/" + (item.filename
                                           | d(("%02d" | format(item.weight|int))|string + "-" + item.name))
                                        + ".disabled" }}'
-  with_flattened: '{{ machine__motd_combined_scripts | parse_kv_items }}'
+  with_flattened: '{{ machine__motd_combined_scripts | debops.debops.parse_kv_items }}'
   when: ((not machine__enabled|bool and (item.divert|d())|bool) or
           ((item.filename is defined or item.name is defined) and
            item.state|d('present') in [ 'absent', 'revert' ] and

@@ -16,7 +16,7 @@
   file:
     path: '{{ preseed__www + "/" + item.flavor + "/d-i/" + item.release }}'
     state: 'absent'
-  loop: '{{ preseed__combined_definitions | parse_kv_items }}'
+  loop: '{{ preseed__combined_definitions | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state, "flavor": item.flavor, "release": item.release} }}'
   when: item.state|d('present') in [ 'absent' ]
@@ -26,7 +26,7 @@
     path: '{{ preseed__www + "/" + item.flavor + "/d-i/" + item.release }}'
     state: 'directory'
     mode: '0755'
-  loop: '{{ preseed__combined_definitions | parse_kv_items }}'
+  loop: '{{ preseed__combined_definitions | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state, "flavor": item.flavor, "release": item.release} }}'
   when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
@@ -40,8 +40,8 @@
     group: 'www-data'
     mode: '0640'
   loop: '{{ preseed__combined_definitions
-            | parse_kv_items(defaults={
-                "options": preseed__combined_configuration | parse_kv_config
+            | debops.debops.parse_kv_items(defaults={
+                "options": preseed__combined_configuration | debops.debops.parse_kv_config
               }) }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state, "flavor": item.flavor, "release": item.release} }}'
@@ -56,8 +56,8 @@
     group: 'www-data'
     mode: '0640'
   loop: '{{ preseed__combined_definitions
-            | parse_kv_items(defaults={
-                "options": preseed__combined_configuration | parse_kv_config
+            | debops.debops.parse_kv_items(defaults={
+                "options": preseed__combined_configuration | debops.debops.parse_kv_config
               }) }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state, "flavor": item.flavor, "release": item.release} }}'

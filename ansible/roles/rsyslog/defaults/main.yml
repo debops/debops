@@ -1234,14 +1234,14 @@ rsyslog__dpkg_cleanup__dependent_packages:
     revert_files:
       - '/etc/rsyslog.conf'
       - '/etc/logrotate.d/rsyslog'
-      - '{{ rsyslog__combined_rules | flatten | parse_kv_items
+      - '{{ rsyslog__combined_rules | flatten | debops.debops.parse_kv_items
             | selectattr("divert", "defined") | list
             | selectattr("divert", "equalto", True) | list
             | map(attribute="name") | list
             | map("regex_replace", "^(.*)$", "/etc/rsyslog.d/\1") | list }}'
     remove_files:
       - '/etc/logrotate.d/rsyslog-remote'
-      - '{{ rsyslog__combined_rules | flatten | parse_kv_items
+      - '{{ rsyslog__combined_rules | flatten | debops.debops.parse_kv_items
             | selectattr("divert", "undefined") | list
             | map(attribute="name") | list
             | map("regex_replace", "^(.*)$", "/etc/rsyslog.d/\1") | list }}'

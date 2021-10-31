@@ -3,7 +3,7 @@
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 {% set minio__tpl_nginx_dependent_servers = [] %}
-{% for element in minio__combined_instances | parse_kv_items %}
+{% for element in minio__combined_instances | debops.debops.parse_kv_items %}
 {%   if (element.name|d() and element.port|d() and element.state|d('present') not in [ 'ignore', 'init' ]) %}
 {%     set server = {'name': [ (element.fqdn | d(element.name + '.' + minio__domain)) ]
                              + ((( ( [ element.domain ] if (element.domain is string) else element.domain)

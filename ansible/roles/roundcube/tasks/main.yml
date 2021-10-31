@@ -16,7 +16,7 @@
     name: 'secret'
 
 - name: Pre hooks
-  include_tasks: '{{ lookup("task_src", "roundcube/pre_main.yml") }}'
+  include_tasks: '{{ lookup("debops.debops.task_src", "roundcube/pre_main.yml") }}'
 
 
 # ---- Environment ----
@@ -102,7 +102,7 @@
     owner: 'root'
     group: '{{ roundcube__group }}'
     mode: '0640'
-  loop: '{{ roundcube__combined_plugins | parse_kv_items
+  loop: '{{ roundcube__combined_plugins | debops.debops.parse_kv_items
             | selectattr("state", "match", "^(enabled|present)$")
             | selectattr("options", "defined") | list }}'
   loop_control:
@@ -122,4 +122,4 @@
   tags: [ 'role::roundcube:database' ]
 
 - name: Post hooks
-  include_tasks: '{{ lookup("task_src", "roundcube/post_main.yml") }}'
+  include_tasks: '{{ lookup("debops.debops.task_src", "roundcube/post_main.yml") }}'

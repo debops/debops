@@ -3,7 +3,7 @@
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 {% set minio__tpl_ferm_dependent_rules = [] %}
-{% for element in minio__combined_instances | parse_kv_items %}
+{% for element in minio__combined_instances | debops.debops.parse_kv_items %}
 {%   if (element.name|d() and element.port|d() and element.state|d('present') not in [ 'ignore', 'init' ]) %}
 {%     set rule = {'type': 'accept',
                    'rule_state': element.state,

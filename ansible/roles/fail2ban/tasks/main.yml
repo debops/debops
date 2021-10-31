@@ -61,7 +61,7 @@
 
 - name: Configure custom fail2ban actions
   template:
-    src: '{{ lookup("template_src", "etc/fail2ban/action.d/action.local.j2") }}'
+    src: '{{ lookup("debops.debops.template_src", "etc/fail2ban/action.d/action.local.j2") }}'
     dest: '/etc/fail2ban/action.d/{{ item.filename | d(item.name) }}.local'
     owner: 'root'
     group: 'root'
@@ -83,7 +83,7 @@
 
 - name: Configure custom fail2ban filters
   template:
-    src: '{{ lookup("template_src", "etc/fail2ban/filter.d/filter.local.j2") }}'
+    src: '{{ lookup("debops.debops.template_src", "etc/fail2ban/filter.d/filter.local.j2") }}'
     dest: '/etc/fail2ban/filter.d/{{ item.filename | d(item.name) }}.local'
     owner: 'root'
     group: 'root'
@@ -105,7 +105,7 @@
 
 - name: Configure fail2ban
   template:
-    src: '{{ lookup("template_src", "etc/fail2ban/fail2ban.local.j2") }}'
+    src: '{{ lookup("debops.debops.template_src", "etc/fail2ban/fail2ban.local.j2") }}'
     dest: '/etc/fail2ban/fail2ban.local'
     owner: 'root'
     group: 'root'
@@ -122,7 +122,7 @@
 
 - name: Configure jail default variables
   template:
-    src: '{{ lookup("template_src", "etc/fail2ban/jail.local.d/default.local.j2") }}'
+    src: '{{ lookup("debops.debops.template_src", "etc/fail2ban/jail.local.d/default.local.j2") }}'
     dest: '/etc/fail2ban/jail.local.d/00_default.local'
     owner: 'root'
     group: 'root'
@@ -142,7 +142,7 @@
 
 - name: Configure fail2ban jails
   template:
-    src: '{{ lookup("template_src", "etc/fail2ban/jail.local.d/jail.local.j2") }}'
+    src: '{{ lookup("debops.debops.template_src", "etc/fail2ban/jail.local.d/jail.local.j2") }}'
     dest: '/etc/fail2ban/jail.local.d/{{ item.filename | default(item.name) }}.local'
     owner: 'root'
     group: 'root'

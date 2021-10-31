@@ -49,14 +49,14 @@
   include_tasks: 'modprobe.yml'
   loop_control:
     loop_var: 'module'
-  with_items: '{{ kmod__combined_modules | parse_kv_items }}'
+  with_items: '{{ kmod__combined_modules | debops.debops.parse_kv_items }}'
   when: kmod__enabled|bool
 
 - name: Remove module load configuration
   file:
     dest: '/etc/modules-load.d/{{ item.filename | d(item.name | replace("_","-") + ".conf") }}'
     state: 'absent'
-  with_items: '{{ kmod__combined_load | parse_kv_items }}'
+  with_items: '{{ kmod__combined_load | debops.debops.parse_kv_items }}'
   when: kmod__enabled|bool and ansible_service_mgr == 'systemd' and
         item.name|d() and item.state|d('present') == 'absent'
 
@@ -67,7 +67,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: '{{ kmod__combined_load | parse_kv_items }}'
+  with_items: '{{ kmod__combined_load | debops.debops.parse_kv_items }}'
   when: kmod__enabled|bool and ansible_service_mgr == 'systemd' and
         item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ]
 
@@ -78,7 +78,7 @@
     line: '{{ item.name }}'
     state: '{{ item.state }}'
     mode: '0644'
-  loop: '{{ kmod__combined_load | parse_kv_items }}'
+  loop: '{{ kmod__combined_load | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   when: kmod__enabled|bool and ansible_service_mgr != 'systemd' and
@@ -88,7 +88,7 @@
   modprobe:
     name: '{{ item.name }}'
     state: 'present'
-  with_items: '{{ kmod__combined_load | parse_kv_items }}'
+  with_items: '{{ kmod__combined_load | debops.debops.parse_kv_items }}'
   notify: [ 'Refresh host facts' ]
   when: kmod__enabled|bool and item.name|d() and item.state|d('present') not in [ 'config', 'absent', 'ignore' ] and
         item.modules is undefined and ansible_local.kmod.modules|d() and item.name not in ansible_local.kmod.modules

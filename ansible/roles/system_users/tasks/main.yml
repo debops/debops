@@ -48,7 +48,7 @@
     gid:    '{{ item.gid    | d(omit) }}'
     state:  'present'
     local: '{{ True if (item.user|d(True))|bool else False }}'
-  loop: '{{ system_users__combined_accounts | parse_kv_items }}'
+  loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + (item.group | d(item.name)),
                 "state": item.state|d("present")} }}'
@@ -94,7 +94,7 @@
     ssh_key_passphrase: '{{ item.ssh_key_passphrase | d(omit) }}'
     ssh_key_type:       '{{ item.ssh_key_type       | d(omit) }}'
     local:              '{{ item.local              | d(True) }}'
-  loop: '{{ system_users__combined_accounts | parse_kv_items }}'
+  loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state|d("present"), "gecos": item.comment|d()} }}'
@@ -124,7 +124,7 @@
                 else omit }}'
     append: '{{ item.append | d(True) }}'
     state:  '{{ item.state  | d("present") }}'
-  loop: '{{ system_users__combined_accounts | parse_kv_items }}'
+  loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state|d("present"), "gecos": item.comment|d(),
@@ -147,7 +147,7 @@
     owner: '{{ item.home_owner | d(omit) }}'
     group: '{{ item.home_group | d(omit) }}'
     mode:  '{{ item.home_mode  | d(system_users__default_home_mode if (item.local|d(True))|bool else omit) }}'
-  loop: '{{ system_users__combined_accounts | parse_kv_items }}'
+  loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state|d("present"),
@@ -178,7 +178,7 @@
     follow:      '{{ item.1.follow      | d(omit) }}'
     recursive:   '{{ item.1.recursive   | d(omit) }}'
     state:       '{{ item.1.state       | d("present") }}'
-  loop: '{{ system_users__combined_accounts | parse_kv_items
+  loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items
             | selectattr("home_acl", "defined") | list
             | subelements("home_acl") }}'
   loop_control:
@@ -195,7 +195,7 @@
   command: loginctl enable-linger {{ (item.prefix | d(system_users__prefix)) + item.name }}
   args:
     creates: '/var/lib/systemd/linger/{{ (item.prefix | d(system_users__prefix)) + item.name }}'
-  loop: '{{ system_users__combined_accounts | parse_kv_items }}'
+  loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present"), "linger": item.linger|d(False)} }}'
@@ -209,7 +209,7 @@
   command: loginctl disable-linger {{ (item.prefix | d(system_users__prefix)) + item.name }}
   args:
     removes: '/var/lib/systemd/linger/{{ (item.prefix | d(system_users__prefix)) + item.name }}'
-  loop: '{{ system_users__combined_accounts | parse_kv_items }}'
+  loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present"), "linger": item.linger|d(False)} }}'
@@ -225,7 +225,7 @@
     state: 'present'
     user: '{{ (item.prefix | d(system_users__prefix)) + item.name }}'
     exclusive: '{{ item.sshkeys_exclusive | d(omit) }}'
-  loop: '{{ system_users__combined_accounts | parse_kv_items }}'
+  loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present"), "sshkeys": item.sshkeys|d()} }}'
@@ -239,7 +239,7 @@
   file:
     path: '~{{ (item.prefix | d(system_users__prefix)) + item.name }}/.ssh/authorized_keys'
     state: 'absent'
-  loop: '{{ system_users__combined_accounts | parse_kv_items }}'
+  loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present"),
@@ -259,7 +259,7 @@
     mode: '0644'
   become: True
   become_user: '{{ (item.prefix | d(system_users__prefix)) + item.name }}'
-  loop: '{{ system_users__combined_accounts | parse_kv_items }}'
+  loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present"),
@@ -279,7 +279,7 @@
     else
         yadm pull
     fi
-  loop: '{{ system_users__combined_accounts | parse_kv_items }}'
+  loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state|d("present"),
@@ -310,7 +310,7 @@
     mode:    '{{ item.1.mode    | d(omit) }}'
     force:   '{{ item.1.force   | d(omit) }}'
     recurse: '{{ item.1.recurse | d(omit) }}'
-  loop: '{{ system_users__combined_accounts | parse_kv_items
+  loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items
             | selectattr("resources", "defined") | list
             | subelements("resources") }}'
   loop_control:
@@ -333,7 +333,7 @@
     mode:    '{{ item.1.parent_mode    | d(omit) }}'
     force:   '{{ item.1.force          | d(omit) }}'
     recurse: '{{ item.1.parent_recurse | d(omit) }}'
-  loop: '{{ system_users__combined_accounts | parse_kv_items
+  loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items
             | selectattr("resources", "defined") | list
             | subelements("resources") }}'
   loop_control:
@@ -355,7 +355,7 @@
     group:   '{{ item.1.group   | d((item.0.prefix | d(system_users__prefix)) + (item.0.group | d(item.0.name))) }}'
     mode:    '{{ item.1.mode    | d(omit) }}'
     force:   '{{ item.1.force   | d(omit) }}'
-  loop: '{{ system_users__combined_accounts | parse_kv_items
+  loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items
             | selectattr("resources", "defined") | list
             | subelements("resources") }}'
   loop_control:
@@ -373,7 +373,7 @@
   file:
     path:  '{{ "~" + (item.0.prefix | d(system_users__prefix)) + item.0.name + "/" + (item.1.path | d(item.1.dest | d(item.1))) }}'
     state: 'absent'
-  loop: '{{ system_users__combined_accounts | parse_kv_items
+  loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items
             | selectattr("resources", "defined") | list
             | subelements("resources") }}'
   loop_control:
@@ -391,7 +391,7 @@
     name:  '{{ (item.prefix | d(system_users__prefix)) + (item.group | d(item.name)) }}'
     state: 'absent'
     local: '{{ item.local | d(True if (item.user|d(True))|bool else False) }}'
-  loop: '{{ system_users__combined_accounts | parse_kv_items }}'
+  loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present")} }}'

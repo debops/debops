@@ -572,12 +572,12 @@ dnsmasq__ferm__dependent_rules:
     accept_any: True
     interface: '{{ []
                    if (dnsmasq__public_dns|bool)
-                   else (dnsmasq__combined_interfaces | flatten | parse_kv_items
+                   else (dnsmasq__combined_interfaces | flatten | debops.debops.parse_kv_items
                          | selectattr("state", "equalto", "present")
                          | map(attribute="name") | list) }}'
     rule_state: '{{ "present"
                     if ((dnsmasq__public_dns|bool) or
-                        (dnsmasq__combined_interfaces | flatten | parse_kv_items
+                        (dnsmasq__combined_interfaces | flatten | debops.debops.parse_kv_items
                             | selectattr("state", "equalto", "present")
                             | map(attribute="name") | list))
                     else "absent" }}'
@@ -588,12 +588,12 @@ dnsmasq__ferm__dependent_rules:
     weight: '40'
     protocol: [ 'udp' ]
     dport: [ 'bootps' ]
-    interface: '{{ dnsmasq__combined_interfaces | flatten | parse_kv_items
+    interface: '{{ dnsmasq__combined_interfaces | flatten | debops.debops.parse_kv_items
                    | selectattr("state", "equalto", "present")
                    | map(attribute="name") | list }}'
     rule_state: '{{ "present"
                     if (dnsmasq__dhcpv4|bool and
-                        (dnsmasq__combined_interfaces | flatten | parse_kv_items
+                        (dnsmasq__combined_interfaces | flatten | debops.debops.parse_kv_items
                          | selectattr("state", "equalto", "present")
                          | map(attribute="name") | list))
                     else "absent" }}'
@@ -608,12 +608,12 @@ dnsmasq__ferm__dependent_rules:
     protocol: [ 'udp', 'tcp' ]
     sport: [ 'dhcpv6-client' ]
     dport: [ 'dhcpv6-server' ]
-    interface: '{{ dnsmasq__combined_interfaces | flatten | parse_kv_items
+    interface: '{{ dnsmasq__combined_interfaces | flatten | debops.debops.parse_kv_items
                    | selectattr("state", "equalto", "present")
                    | map(attribute="name") | list }}'
     rule_state: '{{ "present"
                     if (dnsmasq__dhcpv6|bool and
-                        (dnsmasq__combined_interfaces | flatten | parse_kv_items
+                        (dnsmasq__combined_interfaces | flatten | debops.debops.parse_kv_items
                          | selectattr("state", "equalto", "present")
                          | map(attribute="name") | list))
                     else "absent" }}'
@@ -624,12 +624,12 @@ dnsmasq__ferm__dependent_rules:
     weight: '40'
     dport: [ 'tftp' ]
     protocol: [ 'udp' ]
-    interface: '{{ dnsmasq__combined_interfaces | flatten | parse_kv_items
+    interface: '{{ dnsmasq__combined_interfaces | flatten | debops.debops.parse_kv_items
                    | selectattr("state", "equalto", "present")
                    | map(attribute="name") | list }}'
     rule_state: '{{ "present"
                     if (dnsmasq__boot_enabled|bool and
-                        (dnsmasq__combined_interfaces | flatten | parse_kv_items
+                        (dnsmasq__combined_interfaces | flatten | debops.debops.parse_kv_items
                          | selectattr("state", "equalto", "present")
                          | map(attribute="name") | list))
                     else "absent" }}'

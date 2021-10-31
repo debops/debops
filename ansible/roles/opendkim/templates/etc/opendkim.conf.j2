@@ -4,7 +4,7 @@
  #}
 # {{ ansible_managed }}
 
-{% set opendkim__tpl_config = (opendkim__combined_config | parse_kv_config) %}
+{% set opendkim__tpl_config = (opendkim__combined_config | debops.debops.parse_kv_config) %}
 {% set opendkim__tpl_sections = ((opendkim__tpl_config | map(attribute='section')) | list | unique) %}
 {% for section in opendkim__config_sections|d([ {'name': 'unknown'} ]) %}
 {%   if section.state|d('present') != 'absent' %}

@@ -80,7 +80,7 @@
   command: dpkg-divert --quiet --local
                        --divert {{ freeradius__conf_base_path + '/' + divert_filename }}
                        --rename {{ freeradius__conf_base_path + '/' + (item.filename | d(item.name)) }}
-  with_items: '{{ freeradius__combined_configuration | parse_kv_items }}'
+  with_items: '{{ freeradius__combined_configuration | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"file":   (freeradius__conf_base_path + "/" + (item.filename | d(item.name))),
                 "divert": (freeradius__conf_base_path + "/" + divert_filename),
@@ -97,7 +97,7 @@
     owner: '{{ freeradius__user }}'
     group: '{{ freeradius__group }}'
     mode: '0755'
-  with_items: '{{ freeradius__combined_configuration | parse_kv_items }}'
+  with_items: '{{ freeradius__combined_configuration | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"path": ((freeradius__conf_base_path + "/" + (item.filename | d(item.name))) | dirname)} }}'
   when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
@@ -111,7 +111,7 @@
     owner: '{{ item.owner | d(freeradius__user) }}'
     group: '{{ item.group | d(freeradius__group) }}'
     mode:  '{{ item.mode  | d("0640") }}'
-  with_items: '{{ freeradius__combined_configuration | parse_kv_items }}'
+  with_items: '{{ freeradius__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Check freeradius configuration and restart' ]
   when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
          not item.link_src|d() and (item.options|d() or item.raw|d()))
@@ -125,7 +125,7 @@
     owner: '{{ item.owner | d(freeradius__user) }}'
     group: '{{ item.group | d(freeradius__group) }}'
     mode:  '{{ item.mode  | d("0640") }}'
-  with_items: '{{ freeradius__combined_configuration | parse_kv_items }}'
+  with_items: '{{ freeradius__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Check freeradius configuration and restart' ]
   when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
          item.link_src|d())
@@ -139,7 +139,7 @@
   file:
     dest: '{{ freeradius__conf_base_path + "/" + (item.filename | d(item.name)) }}'
     state: 'absent'
-  with_items: '{{ freeradius__combined_configuration | parse_kv_items }}'
+  with_items: '{{ freeradius__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Check freeradius configuration and restart' ]
   when: item.name|d() and item.state|d('present') == 'absent' and not divert_state|bool
   no_log: '{{ (item.no_log | d(False)) | bool }}'
@@ -158,7 +158,7 @@
                        --remove {{ freeradius__conf_base_path + '/' + (item.filename | d(item.name)) }}
   args:
     warn: False
-  with_items: '{{ freeradius__combined_configuration | parse_kv_items }}'
+  with_items: '{{ freeradius__combined_configuration | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"file":   (freeradius__conf_base_path + "/" + (item.filename | d(item.name))),
                 "divert": (freeradius__conf_base_path + "/" + divert_filename),

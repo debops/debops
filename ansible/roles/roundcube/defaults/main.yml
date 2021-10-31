@@ -3017,7 +3017,7 @@ roundcube__default_configuration:
     value: True
 
   - name: 'plugins'
-    value: '{{ roundcube__combined_plugins | parse_kv_items
+    value: '{{ roundcube__combined_plugins | debops.debops.parse_kv_items
                | selectattr("state", "equalto", "enabled")
                | map(attribute="name") | list | unique }}'
 

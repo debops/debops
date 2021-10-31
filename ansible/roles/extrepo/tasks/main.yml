@@ -52,7 +52,7 @@
 
 - name: Update external APT sources if required
   command: 'extrepo update {{ item.name }}'  # noqa no-handler
-  loop: '{{ q("flattened", extrepo__combined_sources) | parse_kv_config }}'
+  loop: '{{ q("flattened", extrepo__combined_sources) | debops.debops.parse_kv_config }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state} }}'
   register: extrepo__register_updated_sources
@@ -64,7 +64,7 @@
   file:
     path: '{{ "/etc/apt/sources.list.d/extrepo_" + item.name + ".sources" }}'
     state: 'absent'
-  loop: '{{ q("flattened", extrepo__combined_sources) | parse_kv_config }}'
+  loop: '{{ q("flattened", extrepo__combined_sources) | debops.debops.parse_kv_config }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state} }}'
   register: extrepo__register_removed_sources
@@ -72,7 +72,7 @@
 
 - name: Enable external APT sources
   command: 'extrepo enable {{ item.name }}'
-  loop: '{{ q("flattened", extrepo__combined_sources) | parse_kv_config }}'
+  loop: '{{ q("flattened", extrepo__combined_sources) | debops.debops.parse_kv_config }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state} }}'
   register: extrepo__register_enabled_sources

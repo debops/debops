@@ -145,7 +145,7 @@
 
 - name: Perform OpenLDAP tasks
   include_tasks: 'slapd_tasks.yml'
-  loop: '{{ q("flattened", slapd__combined_tasks) | parse_kv_items }}'
+  loop: '{{ q("flattened", slapd__combined_tasks) | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"state": item.state,
                 "dn": item.dn,
@@ -167,7 +167,7 @@
 
 - name: Perform OpenLDAP slapacl tasks
   include_tasks: 'slapd_tasks.yml'
-  loop: '{{ q("flattened", slapd__slapacl_combined_tasks) | parse_kv_items }}'
+  loop: '{{ q("flattened", slapd__slapacl_combined_tasks) | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"state": item.state,
                 "dn": item.dn,

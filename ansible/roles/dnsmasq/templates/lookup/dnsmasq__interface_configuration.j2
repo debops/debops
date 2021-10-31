@@ -4,7 +4,7 @@
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 {% set dnsmasq__tpl_interface_configuration = [] %}
-{% for interface in (dnsmasq__combined_interfaces | flatten | parse_kv_items) %}
+{% for interface in (dnsmasq__combined_interfaces | flatten | debops.debops.parse_kv_items) %}
 {%   set dnsmasq__tpl_ipv4 = [] %}
 {%   set dnsmasq__tpl_ipv6 = [] %}
 {%   if hostvars[inventory_hostname]["ansible_" + interface.name]|d() %}

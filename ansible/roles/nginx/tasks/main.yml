@@ -17,7 +17,7 @@
     name: 'secret'
 
 - name: DebOps pre_tasks hook
-  include: '{{ lookup("task_src", "nginx/pre_main.yml") }}'
+  include: '{{ lookup("debops.debops.task_src", "nginx/pre_main.yml") }}'
   when: (nginx__deploy_state in [ 'present' ])
 
 - name: Assert that no legacy options are used
@@ -270,5 +270,5 @@
   meta: 'flush_handlers'
 
 - name: DebOps post_tasks hook
-  include: '{{ lookup("task_src", "nginx/post_main.yml") }}'
+  include: '{{ lookup("debops.debops.task_src", "nginx/post_main.yml") }}'
   when: (nginx__deploy_state in [ 'present' ])

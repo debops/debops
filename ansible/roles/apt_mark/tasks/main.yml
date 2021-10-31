@@ -33,7 +33,7 @@
 
 - name: Set package state as installed automatically
   command: apt-mark auto {{ ((item.packages | d([ item.name ])) | intersect(apt_mark__fact_installed)) | join(' ') }}
-  with_items: '{{ apt_mark__combined_packages | parse_kv_items }}'
+  with_items: '{{ apt_mark__combined_packages | debops.debops.parse_kv_items }}'
   when: (apt_mark__enabled|bool and
          (item.packages|d([ item.name ]) | intersect(apt_mark__fact_installed))
          | symmetric_difference(apt_mark__fact_manual) and
@@ -44,7 +44,7 @@
 - name: Set package state as installed manually
   command: apt-mark manual {{ ((item.packages | d([ item.name ]))
                                | intersect(apt_mark__fact_installed)) | join(' ') }}
-  with_items: '{{ apt_mark__combined_packages | parse_kv_items }}'
+  with_items: '{{ apt_mark__combined_packages | debops.debops.parse_kv_items }}'
   when: (apt_mark__enabled|bool and
          (item.packages|d([ item.name ]) | intersect(apt_mark__fact_installed))
          | symmetric_difference(apt_mark__fact_auto) and
@@ -55,7 +55,7 @@
 - name: Hold current package state
   command: apt-mark hold {{ ((item.packages | d([ item.name ]))
                              | intersect(apt_mark__fact_installed)) | join(' ') }}
-  with_items: '{{ apt_mark__combined_packages | parse_kv_items }}'
+  with_items: '{{ apt_mark__combined_packages | debops.debops.parse_kv_items }}'
   when: (apt_mark__enabled|bool and
         (item.packages|d([ item.name ]) | intersect(apt_mark__fact_installed))
         | difference(apt_mark__fact_hold) and
@@ -64,7 +64,7 @@
 - name: Unhold current package state
   command: apt-mark unhold {{ ((item.packages | d([ item.name ]))
                                | intersect(apt_mark__fact_installed)) | join(' ') }}
-  with_items: '{{ apt_mark__combined_packages | parse_kv_items }}'
+  with_items: '{{ apt_mark__combined_packages | debops.debops.parse_kv_items }}'
   when: (apt_mark__enabled|bool and
         (item.packages|d([ item.name ]) | intersect(apt_mark__fact_installed))
         | intersect(apt_mark__fact_hold) and

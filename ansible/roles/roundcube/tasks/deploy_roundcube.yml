@@ -97,7 +97,7 @@
     arguments: '{{ item }}'
     working_dir: '{{ roundcube__git_dest }}'
     no_dev: True
-  loop: '{{ roundcube__combined_plugins | parse_kv_items
+  loop: '{{ roundcube__combined_plugins | debops.debops.parse_kv_items
             | selectattr("state", "match", "^(enabled|present)$")
             | selectattr("package", "defined")
             | map(attribute="package") | list }}'

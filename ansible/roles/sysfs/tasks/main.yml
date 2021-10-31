@@ -47,7 +47,7 @@
   file:
     path: '/etc/sysfs.d/{{ item.filename | d(item.name | replace("/","_")) }}.conf'
     state: 'absent'
-  with_items: '{{ sysfs__combined_attributes | parse_kv_items }}'
+  with_items: '{{ sysfs__combined_attributes | debops.debops.parse_kv_items }}'
   notify: [ 'Restart sysfsutils' ]
   when: (sysfs__enabled|bool and item.name|d() and
          item.state|d('present') == 'absent')
@@ -59,7 +59,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: '{{ sysfs__combined_attributes | parse_kv_items }}'
+  with_items: '{{ sysfs__combined_attributes | debops.debops.parse_kv_items }}'
   notify: [ 'Restart sysfsutils' ]
   when: (sysfs__enabled|bool and item.name|d() and
          item.state|d('present') not in [ 'defined', 'absent' ])

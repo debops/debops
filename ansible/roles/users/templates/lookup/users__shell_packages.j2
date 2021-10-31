@@ -3,7 +3,7 @@
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 {% set users__tpl_shells = [] %}
-{% for shell in ((users__combined_accounts | parse_kv_items
+{% for shell in ((users__combined_accounts | debops.debops.parse_kv_items
                   | selectattr("state", "equalto", "present")
                   | selectattr("shell", "defined")
                   | map(attribute="shell")|list) + [ users__default_shell ] | unique | list) %}

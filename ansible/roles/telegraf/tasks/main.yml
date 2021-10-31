@@ -36,7 +36,7 @@
   file:
     path: '/etc/telegraf/telegraf.d/{{ item.name }}.conf'
     state: 'absent'
-  loop: '{{ telegraf__combined_plugins | parse_kv_items }}'
+  loop: '{{ telegraf__combined_plugins | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
   when: item.state|d('present') == 'absent' and item.config|d()
@@ -55,7 +55,7 @@
   loop: '{{ telegraf__register_existing_plugins_filenames.files }}'
   loop_control:
     label: '{{ {"path": item.path} }}'
-  when: item.path | basename | splitext | first not in telegraf__combined_plugins | parse_kv_items | map(attribute="name")
+  when: item.path | basename | splitext | first not in telegraf__combined_plugins | debops.debops.parse_kv_items | map(attribute="name")
   notify: [ 'Check telegraf and restart' ]
 
 - name: Configure plugins
@@ -65,7 +65,7 @@
     owner: 'root'
     group: 'telegraf'
     mode: '0640'
-  loop: '{{ telegraf__combined_plugins | parse_kv_items }}'
+  loop: '{{ telegraf__combined_plugins | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
   when: (item.state|d('present') not in [ 'absent', 'ignore' ] and

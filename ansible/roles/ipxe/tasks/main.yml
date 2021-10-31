@@ -19,7 +19,7 @@
     path: '{{ ipxe__tftp_root + "/" + (((item.name | regex_replace("\.ipxe$", "")) + ".ipxe") | dirname) }}'
     state: 'directory'
     mode: '0755'
-  loop: '{{ ipxe__combined_scripts | parse_kv_items }}'
+  loop: '{{ ipxe__combined_scripts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name,
                 "path": (ipxe__tftp_root + "/" + ((item.name | regex_replace("\.ipxe$", "") + ".ipxe") | dirname)),
@@ -31,7 +31,7 @@
     src: 'srv/tftp/template.ipxe.j2'
     dest: '{{ ipxe__tftp_root + "/" + (item.name | regex_replace("\.ipxe$", "")) + ".ipxe" }}'
     mode: '0644'
-  loop: '{{ ipxe__combined_scripts | parse_kv_items }}'
+  loop: '{{ ipxe__combined_scripts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name,
                 "state": item.state|d("present")} }}'
@@ -41,7 +41,7 @@
   file:
     path: '{{ ipxe__tftp_root + "/" + (item.name | regex_replace("\.ipxe$", "")) + ".ipxe" }}'
     state: 'absent'
-  loop: '{{ ipxe__combined_scripts | parse_kv_items }}'
+  loop: '{{ ipxe__combined_scripts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name,
                 "state": item.state|d("present")} }}'

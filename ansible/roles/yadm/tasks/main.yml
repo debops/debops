@@ -35,7 +35,7 @@
 
 - name: Download custom dotfile repositories
   include_tasks: 'manage_dotfiles.yml'
-  loop: '{{ q("flattened", yadm__combined_dotfiles) | parse_kv_items }}'
+  loop: '{{ q("flattened", yadm__combined_dotfiles) | debops.debops.parse_kv_items }}'
   loop_control:
     loop_var: 'dotfile'
     label: '{{ dotfile.name }}'

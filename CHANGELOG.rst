@@ -230,6 +230,14 @@ General
   updated to build and install DebOps from the monorepo instead of installing
   a release from PyPI.
 
+- The references for custom Ansible lookup and filter plugins have been
+  modified to use the Fully Qualified Collection Name format to allow the
+  DebOps monorepo to work as an Ansible Collection.
+
+- Custom Ansible plugins included in the :ref:`debops.ansible_plugins` role
+  have been copied to the :file:`ansible/plugins/` subdirectories to make them
+  available through the Ansible Collection mechanisms.
+
 Continuous Integration
 ''''''''''''''''''''''
 

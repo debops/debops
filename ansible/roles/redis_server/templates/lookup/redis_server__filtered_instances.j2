@@ -3,7 +3,7 @@
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 {% set output = [] %}
-{% for element in redis_server__combined_instances | parse_kv_items %}
+{% for element in redis_server__combined_instances | debops.debops.parse_kv_items %}
 {%   set element_options = [
   {"name": "port",         "value": element.port},
   {"name": "bind",         "value": (element.bind         | d(redis_server__bind)), "multiple": False},
@@ -18,7 +18,7 @@
   "state": element.state | d('present'),
   "requirepass": (element.requirepass | d(redis_server__auth_password)),
   "port": element.port,
-  "options": (redis_server__default_base_options + redis_server__base_options + element_options) | parse_kv_config
+  "options": (redis_server__default_base_options + redis_server__base_options + element_options) | debops.debops.parse_kv_config
 } %}
 {%   if element.port is undefined %}
 {%     set _ = entry.update({'state': "init"}) %}

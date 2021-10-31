@@ -122,7 +122,7 @@ redis_server__maxmemory_total: '{{ (((ansible_memtotal_mb|int * 1024 * 1024)
 # "manually" via the configuration pipeline are not counted.
 # See :ref:`redis_server__ref_config_pipeline` for more details.
 redis_server__maxmemory_instances: '{{ redis_server__combined_instances
-                                       | parse_kv_items
+                                       | debops.debops.parse_kv_items
                                        | selectattr("state", "equalto", "present")
                                        | list | count | int }}'
 

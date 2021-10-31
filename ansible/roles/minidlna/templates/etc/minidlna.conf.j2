@@ -13,7 +13,7 @@
 # On Debian, you can also refer to the minidlna.conf(5) man page for
 # documentation about this file.
 
-{% for element in minidlna__combined_configuration | parse_kv_config %}
+{% for element in minidlna__combined_configuration | debops.debops.parse_kv_config %}
 {%   if element.name|d() and element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
 {%     if element.comment|d() %}
 {%       if not loop.first %}

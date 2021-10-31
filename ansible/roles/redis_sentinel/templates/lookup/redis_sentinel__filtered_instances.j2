@@ -3,7 +3,7 @@
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 {% set output = [] %}
-{% for element in redis_sentinel__combined_instances | parse_kv_items %}
+{% for element in redis_sentinel__combined_instances | debops.debops.parse_kv_items %}
 {%   set element_options = [
   {"name": "port",         "value": element.port},
   {"name": "bind",         "value": (element.bind         | d(redis_sentinel__bind)), "multiple": False},
@@ -14,7 +14,7 @@
   {"name": "syslog-ident", "value": (element.syslog_ident | d("sentinel-" + element.name))}
 ] %}
 {%   set instance_monitors = [] %}
-{%   for monitor in redis_sentinel__combined_monitors | parse_kv_items %}
+{%   for monitor in redis_sentinel__combined_monitors | debops.debops.parse_kv_items %}
 {%     if monitor.name|d() and monitor.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
 {%       if ((monitor.instance is defined and monitor.instance == element.name) or monitor.instance is undefined) %}
 {%         set _ = instance_monitors.extend([
@@ -40,7 +40,7 @@
 {%   set entry = {
   "name": element.name,
   "state": element.state | d('present'),
-  "options": (redis_sentinel__default_base_options + redis_sentinel__base_options + element_options + instance_monitors) | parse_kv_config
+  "options": (redis_sentinel__default_base_options + redis_sentinel__base_options + element_options + instance_monitors) | debops.debops.parse_kv_config
 } %}
 {%   if element.port is undefined %}
 {%     set _ = entry.update({'state': "init"}) %}

@@ -64,7 +64,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  loop: '{{ redis_sentinel__combined_configuration | parse_kv_items
+  loop: '{{ redis_sentinel__combined_configuration | debops.debops.parse_kv_items
             | product([ "", "/reconfig.d", "/notify.d" ]) | list }}'
   when: item.0.name|d() and item.0.state|d('present') not in [ 'absent', 'init', 'ignore' ]
   no_log: '{{ redis_sentinel__no_log }}'
@@ -77,7 +77,7 @@
     group: '{{ redis_sentinel__auth_group }}'
     mode: '0640'
     force: False
-  with_items: '{{ redis_sentinel__combined_configuration | parse_kv_items }}'
+  with_items: '{{ redis_sentinel__combined_configuration | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
   notify: [ 'Refresh host facts' ]
   no_log: '{{ redis_sentinel__no_log }}'
@@ -89,7 +89,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  loop: '{{ redis_sentinel__combined_configuration | parse_kv_items
+  loop: '{{ redis_sentinel__combined_configuration | debops.debops.parse_kv_items
             | product([ "notify.sh", "reconfig.sh" ]) | list }}'
   when: item.0.name|d() and item.0.state|d('present') not in [ 'absent', 'init', 'ignore' ]
   no_log: '{{ redis_sentinel__no_log }}'
@@ -113,7 +113,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  with_items: '{{ redis_sentinel__combined_configuration | parse_kv_items }}'
+  with_items: '{{ redis_sentinel__combined_configuration | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ] and
         item.systemd_override|d()
   no_log: '{{ redis_sentinel__no_log }}'
@@ -125,7 +125,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: '{{ redis_sentinel__combined_configuration | parse_kv_items }}'
+  with_items: '{{ redis_sentinel__combined_configuration | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ] and
         item.systemd_override|d()
   notify: [ 'Reload service manager' ]
@@ -136,7 +136,7 @@
     name: 'redis-sentinel@{{ item.name }}.service'
     state: 'stopped'
     enabled: False
-  with_items: '{{ redis_sentinel__combined_configuration | parse_kv_items }}'
+  with_items: '{{ redis_sentinel__combined_configuration | debops.debops.parse_kv_items }}'
   when: ansible_service_mgr == 'systemd' and item.name|d() and
         item.state|d('present') == 'absent'
   no_log: '{{ redis_sentinel__no_log }}'
@@ -145,7 +145,7 @@
   file:
     path: '/etc/systemd/system/redis-sentinel@{{ item.name }}.service.d'
     state: 'absent'
-  with_items: '{{ redis_sentinel__combined_configuration | parse_kv_items }}'
+  with_items: '{{ redis_sentinel__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Reload service manager' ]
   when: ansible_service_mgr == 'systemd' and item.name|d() and
         item.state|d('present') == 'absent'
@@ -155,7 +155,7 @@
   file:
     path: '/etc/redis/sentinel-{{ item.name }}'
     state: 'absent'
-  with_items: '{{ redis_sentinel__combined_configuration | parse_kv_items }}'
+  with_items: '{{ redis_sentinel__combined_configuration | debops.debops.parse_kv_items }}'
   when: ansible_service_mgr == 'systemd' and item.name|d() and
         item.state|d('present') == 'absent'
   no_log: '{{ redis_sentinel__no_log }}'
@@ -168,7 +168,7 @@
     name: 'redis-sentinel@{{ item.name }}.service'
     state: 'started'
     enabled: True
-  with_items: '{{ redis_sentinel__combined_configuration | parse_kv_items }}'
+  with_items: '{{ redis_sentinel__combined_configuration | debops.debops.parse_kv_items }}'
   when: ansible_service_mgr == 'systemd' and item.name|d() and
         item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
   no_log: '{{ redis_sentinel__no_log }}'
