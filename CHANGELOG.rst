@@ -157,6 +157,10 @@ Fixed
 
 - The role will no longer create an LDAP account when it is not needed.
 
+- The default :envvar:`sshd__login_grace_time` has been increased from 30 to 60
+  seconds. This mitigates a lock-out issue when :envvar:`sshd__use_dns` is
+  enabled (the default) and your DNS resolvers are unreachable.
+
 
 `debops v2.2.5`_ - 2021-10-14
 -----------------------------
