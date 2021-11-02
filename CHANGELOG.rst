@@ -474,6 +474,13 @@ debops.reprepro role
 - The rsyslog role always configured the streamDriverPermittedPeers option,
   even when the ``anon`` network driver authentication mode was selected.
 
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- The default :envvar:`sshd__login_grace_time` has been increased from 30 to 60
+  seconds. This mitigates a lock-out issue when :envvar:`sshd__use_dns` is
+  enabled (the default) and your DNS resolvers are unreachable.
+
 :ref:`debops.sudo` role
 '''''''''''''''''''''''
 
