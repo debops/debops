@@ -25,6 +25,12 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- The role will refresh APT cache if needed, to ensure that package
+  installaction can be done correctly on freshly installed hosts or containers.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
