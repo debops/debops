@@ -10,6 +10,15 @@
   import_role:
     name: 'global_handlers'
 
+- name: Update APT cache on first run
+  apt:
+    update_cache: True
+    cache_valid_time: '{{ apt__cache_valid_time }}'
+  register: apt__register_apt_first_update
+  until: apt__register_apt_first_update is succeeded
+  when: (apt__enabled|bool and
+         not (ansible_local.apt.configured|d())|bool)
+
 - name: Install required packages
   apt:
     name: '{{ (apt__base_packages + apt__packages) | flatten }}'
