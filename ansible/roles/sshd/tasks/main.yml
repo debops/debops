@@ -84,8 +84,7 @@
     path: '/run/sshd'
     state: 'directory'
     mode: '0755'
-  when: (ansible_local|d() and ansible_local.sshd|d() and
-         not (ansible_local.sshd.installed|d())|bool)
+  when: ansible_service_mgr != 'systemd'
 
 - name: Ensure OpenSSH support is installed
   apt:

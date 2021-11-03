@@ -57,6 +57,17 @@ Continuous Integration
   now expired. Existing PKI realms will not be modified, you might need to
   recreate them or replace the :file:`acme/root.pem` symlink manually.
 
+Fixed
+~~~~~
+
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- The :file:`/run/sshd/` directory will be created by default in environments
+  which don't use the :command:`systemd` as the service manager. This should
+  fix an issue with :command:`sshd` checking its configuration and failing due
+  to missing runtime directory.
+
 
 `debops v2.1.8`_ - 2021-10-14
 -----------------------------
