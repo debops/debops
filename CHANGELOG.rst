@@ -398,6 +398,16 @@ Fixed
   needed when the host-identifier contains periods (e.g. fully qualified
   domain names).
 
+:ref:`debops.icinga` role
+'''''''''''''''''''''''''
+
+- The role no longer generates the Icinga Director API password right before
+  trying to log in with it. That is now left to the :ref:`debops.icinga_web`
+  role, which is actually in charge of the API authentication setup. If the
+  password does not yet exist (presumably because the Icinga Director has not
+  been installed yet), the task will report a sensible error message and
+  playbook execution will continue.
+
 :ref:`debops.ipxe` role
 '''''''''''''''''''''''
 
