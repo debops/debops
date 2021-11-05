@@ -16,8 +16,8 @@
 {%   endif %}
 {% elif item.config|d() %}
 {%   if item.state|d('present') == 'comment' %}
-{{     item.config | to_toml | regex_replace('^', '#', multiline=True) }}
+{{     item.config | debops.debops.to_toml | regex_replace('^', '#', multiline=True) }}
 {%   else %}
-{{     item.config | to_toml }}
+{{     item.config | debops.debops.to_toml }}
 {%   endif %}
 {% endif %}
