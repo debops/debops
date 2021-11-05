@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# The following command invokes 'backup2l' with the default configuration
+# file (/etc/backup2l.conf).
+#
+# (Re)move it or this entire script if you do not want automatic backups.
+#
+# Redirect its output if you do not want automatic e-mails after each backup.
+
+! which backup2l > /dev/null || nice -n 19 backup2l -b{% if backup2l__no_cron_emails %} >/dev/null{% endif %}

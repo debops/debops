@@ -18,9 +18,18 @@
     state: 'present'
 
 - name: Divert the original backup2l config file
-  command: dpkg-divert --quiet --local --divert /etc/backup2l.conf.dpkg-divert --rename /etc/backup2l.conf
+  command: dpkg-divert --quiet --local
+           --divert /etc/backup2l.conf.dpkg-divert
+           --rename /etc/backup2l.conf
   args:
     creates: '/etc/backup2l.conf.dpkg-divert'
+
+- name: Divert the original backup2l cron
+  command: dpkg-divert --quiet --local
+           --divert /usr/share/doc/backup2l/cron.dpkg-divert
+           --rename /etc/cron.daily/zz-backup2l
+  args:
+    creates: '/usr/share/doc/backup2l/cron.dpkg-divert'
 
 - name: Create required directories
   file:
@@ -58,6 +67,14 @@
     src: 'etc/backup2l.conf.j2'
     dest: '/etc/backup2l.conf'
     mode: '0644'
+
+- name: Enable backup2l to run daily
+  template:
+    src: 'etc/cron.daily/zz-backup2l.j2'
+    dest: '/etc/cron.daily/zz-backup2l'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
 
 - name: Make sure that Ansible local facts directory exists
   file:
