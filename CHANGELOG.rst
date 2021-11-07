@@ -107,6 +107,12 @@ Continuous Integration
   now expired. Existing PKI realms will not be modified, you might need to
   recreate them or replace the :file:`acme/root.pem` symlink manually.
 
+:ref:`debops.postfix` role
+''''''''''''''''''''''''''
+
+- The ``milter_*`` configuration options will be added in the ``filter``
+  configuration section in the :file:`/etc/postfix/main.cf` configuration file.
+
 :ref:`debops.system_groups` role
 ''''''''''''''''''''''''''''''''
 
