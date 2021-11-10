@@ -77,12 +77,11 @@ Your first project
 
 Begin by creating a "DebOps project". It's a directory which contains all of
 the data related to a given environment - Ansible inventory, passwords and
-other secrets, custom playbooks and roles. To do this, use the :command:`debops
-project init` command:
+other secrets, custom playbooks and roles. To do this, use the :command:`debops-init` command:
 
 .. code-block:: console
 
-   alice@laptop:~$ debops project init ~/myproject
+   alice@laptop:~$ debops-init ~/myproject
 
 This will create a new directory called ``myproject`` and populate it with some
 example directories and files. You will perform most of the commands from the
