@@ -1,6 +1,6 @@
 ---
-# Copyright (C) 2014-2019 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2015-2019 DebOps <https://debops.org/>
+# Copyright (C) 2014-2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
@@ -11,13 +11,80 @@
   import_role:
     name: 'secret'
 
-- include: configure_reprepro.yml
+- name: Install packages for Debian repository management
+  package:
+    name: '{{ q("flattened", (reprepro__base_packages + reprepro__packages)) }}'
+    state: 'present'
+  register: reprepro__register_packages
+  until: reprepro__register_packages is succeeded
 
-- include: configure_gnupg.yml
+- name: Create UNIX system group for reprepro
+  group:
+    name: '{{ reprepro__group }}'
+    system: True
+    state: 'present'
 
-- include: reprepro_init.yml
+- name: Create UNIX system account for reprepro
+  user:
+    name: '{{ reprepro__user }}'
+    group: '{{ reprepro__group }}'
+    groups: '{{ reprepro__additional_groups }}'
+    append: True
+    system: True
+    shell: '/bin/bash'
+    home: '{{ reprepro__home }}'
+    comment: '{{ reprepro__comment }}'
+    state: 'present'
 
-- include: configure_inoticoming.yml
-  when: reprepro_enable_inoticoming
+- name: Add admin SSH keys to reprepro UNIX account
+  authorized_key:
+    key: "{{ (reprepro__admin_sshkeys
+              if reprepro__admin_sshkeys is string
+              else '\n'.join(q('flattened', reprepro__admin_sshkeys))) | string }}"
+    state: 'present'
+    user: '{{ reprepro__user }}'
+    exclusive: False
+  when: reprepro__admin_sshkeys|d()
 
-- include: snapshot_gnupg.yml
+- name: Generate queue processing services
+  template:
+    src: '{{ "etc/systemd/system/" + item + ".j2" }}'
+    dest: '{{ "/etc/systemd/system/" + item }}'
+    mode: '0644'
+  loop:
+    - 'reprepro-incoming@.service'
+    - 'reprepro-incoming@.path'
+  notify: [ 'Reload systemd daemon' ]
+  when: ansible_service_mgr == 'systemd'
+
+- name: Flush handlers when needed
+  meta: 'flush_handlers'
+
+- name: Manage the GnuPG environment for reprepro
+  import_tasks: 'configure_gnupg.yml'
+
+- name: Manage reprepro instances
+  include_tasks: 'configure_reprepro.yml'
+  loop_control:
+    loop_var: 'repo'
+    label: '{{ {"name": repo.name, "state": repo.state|d("present"),
+                "outdir": (repo.outdir | d(reprepro__public_root + "/sites/" + repo.name + "/public"))} }}'
+  loop: '{{ q("flattened", reprepro__combined_instances)
+            | debops.debops.parse_kv_items(
+                merge_keys=["distributions", "incoming", "pulls", "updates"]) }}'
+
+- name: Make sure Ansible fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Generate reprepro Ansible local facts
+  template:
+    src: 'etc/ansible/facts.d/reprepro.fact.j2'
+    dest: '/etc/ansible/facts.d/reprepro.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+
+- name: Refresh host facts when needed
+  meta: 'flush_handlers'

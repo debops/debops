@@ -1,64 +1,92 @@
 ---
-# Copyright (C) 2014-2019 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2015-2019 DebOps <https://debops.org/>
+# Copyright (C) 2014-2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Check if GnuPG directory exists
   stat:
-    path: '{{ reprepro_home + "/.gnupg" }}'
-  register: reprepro_register_gpg
+    path: '{{ reprepro__home + "/.gnupg/gpg.conf" }}'
+  register: reprepro__register_gpg
 
 - name: Check if GnuPG snapshot exists on Ansible Controller
   stat:
-    path: '{{ reprepro_gpg_snapshot_path + "/" + reprepro_gpg_snapshot_name }}'
-  register: reprepro_register_gpg_snapshot
+    path: '{{ reprepro__gpg_snapshot_path + "/" + reprepro__gpg_snapshot_name }}'
+  register: reprepro__register_gpg_snapshot
   delegate_to: 'localhost'
   become: False
 
 - name: Restore GnuPG snapshots
   unarchive:
-    src: '{{ reprepro_gpg_snapshot_path + "/" + reprepro_gpg_snapshot_name }}'
-    dest: '{{ reprepro_home }}'
-    mode: '0600'
-  when: reprepro_register_gpg is defined and not reprepro_register_gpg.stat.exists and
-        reprepro_register_gpg_snapshot.stat.exists
+    src: '{{ reprepro__gpg_snapshot_path + "/" + reprepro__gpg_snapshot_name }}'
+    dest: '{{ reprepro__home }}'
+    mode: 'u=rwX,g=,o='
+  when: reprepro__register_gpg_snapshot.stat.exists and
+        not reprepro__register_gpg.stat.exists
 
 - name: Ensure that ~/.gnupg directory exists
   file:
-    path: '{{ reprepro_home + "/.gnupg" }}'
+    path: '{{ reprepro__home + "/.gnupg" }}'
     state: 'directory'
-    owner: '{{ reprepro_user }}'
-    group: '{{ reprepro_group }}'
+    owner: '{{ reprepro__user }}'
+    group: '{{ reprepro__group }}'
     mode: '0700'
 
 - name: Configure reprepro GnuPG instance
   template:
-    src: 'var/lib/reprepro/gnupg/gpg.conf.j2'
-    dest: '{{ reprepro_home + "/.gnupg/gpg.conf" }}'
-    owner: '{{ reprepro_user }}'
-    group: '{{ reprepro_group }}'
+    src: 'home/reprepro/gnupg/gpg.conf.j2'
+    dest: '{{ reprepro__home + "/.gnupg/gpg.conf" }}'
+    owner: '{{ reprepro__user }}'
+    group: '{{ reprepro__group }}'
     mode: '0644'
+
+- name: Check if private keys are present
+  find:
+    paths: '{{ reprepro__home + "/.gnupg/private-keys-v1.d/" }}'
+  register: reprepro__register_private_keys
 
 - name: Create repository key template
   template:
-    src: 'var/lib/reprepro/gnupg-key-template.j2'
-    dest: '{{ reprepro_home + "/.gnupg-key-template" }}'
-    owner: '{{ reprepro_user }}'
-    group: '{{ reprepro_group }}'
+    src: 'home/reprepro/gnupg-key-template.j2'
+    dest: '{{ reprepro__home + "/.gnupg-key-template" }}'
+    owner: '{{ reprepro__user }}'
+    group: '{{ reprepro__group }}'
     mode: '0644'
+  when: reprepro__register_private_keys.matched == 0
 
 - name: Generate automatic signing key
-  command: gpg --batch --gen-key .gnupg-key-template chdir=~
-           creates=~/.gnupg/private-keys-v1.d
+  command: 'gpg --batch --gen-key .gnupg-key-template'
+  args:
+    chdir: '{{ reprepro__home }}'
+  register: reprepro__register_keygen
   become: True
-  become_user: '{{ reprepro_user }}'
+  become_user: '{{ reprepro__user }}'
+  when: reprepro__register_private_keys.matched == 0
+
+- name: Archive ~/.gnupg directory
+  archive:
+    path: '{{ reprepro__home + "/.gnupg" }}'
+    dest: '{{ reprepro__home + "/" + reprepro__gpg_snapshot_name }}'
+    owner: '{{ reprepro__user }}'
+    group: '{{ reprepro__group }}'
+    mode: '0600'
+  register: reprepro__register_gpg_archive
+
+- name: Upload ~/.gnupg archive to Ansible Controller
+  fetch:  # noqa no-handler
+    src: '{{ reprepro__home + "/" + reprepro__gpg_snapshot_name }}'
+    dest: '{{ reprepro__gpg_snapshot_path + "/" + reprepro__gpg_snapshot_name }}'
+    flat: True
+  when: reprepro__register_gpg_archive is changed
+
+- name: Remove old automatic signing key
+  file:  # noqa no-handler
+    path: '{{ reprepro__home + "/" + reprepro__gpg_public_filename }}'
+    state: 'absent'
+  when: reprepro__register_keygen is changed
 
 - name: Export automatic signing key
-  shell: 'gpg --armor --export "{{ reprepro_gpg_email }}" > {{ reprepro_repository_path + "/"
-                                                               + reprepro_distribution | lower + "/"
-                                                               + reprepro_domains[0] + ".asc" }}'
+  shell: 'gpg --armor --export "{{ reprepro__gpg_email }}" > "{{ reprepro__home + "/" + reprepro__gpg_public_filename }}"'
   args:
-    creates: '{{ reprepro_repository_path + "/" + reprepro_distribution | lower + "/"
-                 + reprepro_domains[0] + ".asc" }}'
+    creates: '{{ reprepro__home + "/" + reprepro__gpg_public_filename }}'
   become: True
-  become_user: '{{ reprepro_user }}'
+  become_user: '{{ reprepro__user }}'

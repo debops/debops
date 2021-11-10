@@ -1,0 +1,21 @@
+{# Copyright (C) 2014-2019 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2015-2019 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# This file is managed by Ansible, all changes will be lost
+
+{% set default_options = [
+  {'basedir': (reprepro__data_root + '/' + repo.name)},
+  {'outdir': (repo.outdir | d(reprepro__public_root + '/sites/' + repo.name + '/public/' + (repo.os | d('debian'))))},
+  {'waitforlock': 3},
+  {'verbose': ''}
+] %}
+{% for option in ((default_options + repo.options|d([])) | debops.debops.parse_kv_config) %}
+{%   if option.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%     if option.value|d() %}
+{{       '{} {}'.format(option.name, option.value) }}
+{%     else %}
+{{       '{}'.format(option.name) }}
+{%     endif %}
+{%   endif %}
+{% endfor %}

@@ -1,0 +1,94 @@
+{# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2021 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+{% set output = [] %}
+{% for repo in q("flattened", reprepro__combined_instances) | debops.debops.parse_kv_items(merge_keys=["distributions", "incoming", "pulls", "updates"]) %}
+{%   if repo.fqdn|d() %}
+{%     set repo_data_http = {
+         'by_role': 'debops.reprepro',
+         'state': (repo.state if repo.public|d(True) else 'absent'),
+         'enabled': True,
+         'ssl': False,
+         'name': repo.fqdn,
+         'filename': ('debops.reprepro_' + repo.name + '_http'),
+         'root': (repo.outdir | d(reprepro__public_root + '/sites/' + repo.name + '/public')),
+         'webroot_create': False,
+         'location_list': [
+           {'pattern': '/',
+            'allow': repo.allow|d([]),
+            'options': 'try_files $uri $uri/ =404;\nautoindex on;\nautoindex_exact_size off;\nautoindex_localtime on;'
+           },
+           {'pattern': '~ /(.+)/(.*)',
+            'allow': repo.allow|d([]),
+            'options': 'try_files $uri $uri/ =404;\nautoindex on;\nautoindex_exact_size off;\nautoindex_localtime on;'
+           }
+         ]
+       } %}
+{%     set _ = output.append(repo_data_http) %}
+{%     set location_list_https = [
+         {'pattern': '/',
+          'allow': repo.allow|d([]),
+          'options': 'try_files $uri $uri/ =404;\nautoindex on;\nautoindex_exact_size off;\nautoindex_localtime on;'
+         }
+       ] %}
+{%     if repo.public|d(True) %}
+{%       set _ = location_list_https.append(
+           {'pattern': '~ /(.+)/(.*)',
+            'allow': repo.allow|d([]),
+            'options': 'try_files $uri $uri/ =404;\nautoindex on;\nautoindex_exact_size off;\nautoindex_localtime on;'
+           }
+         ) %}
+{%     else %}
+{%       set _ = location_list_https.append(
+           {'pattern': '~ /(.+)/(.*)',
+            'allow': repo.allow|d([]),
+            'options': 'try_files $uri $uri/ =404;\nautoindex on;\nautoindex_exact_size off;\nautoindex_localtime on;',
+            'access_policy': repo.access_policy|d(''),
+            'auth_basic_realm': repo.auth_realm|d(reprepro__auth_realm)
+           }
+         ) %}
+{%     endif %}
+{%     if repo.upload_map|d() %}
+{%       for path, alias in repo.upload_map | dictsort %}
+{%         if alias|d() %}
+{%           set alias_path = alias %}
+{%         else %}
+{%           set alias_path = (reprepro__spool_root + '/' + repo.name + '/incoming') %}
+{%         endif %}
+{%         set _ = location_list_https.append(
+             {'pattern': '^~ /' + (path | regex_replace('^/','')),
+              'allow': repo.allow_upload|d([]),
+              'options': ('alias ' + alias_path + ';\ndav_access all:rw;\ndav_methods PUT;\nlimit_except PUT {\n    deny all;\n}')
+             }
+           ) %}
+{%       endfor %}
+{%     else %}
+{%       set _ = location_list_https.append(
+           {'pattern': '^~ /upload',
+            'allow': repo.allow_upload|d([]),
+            'options': ('alias ' + reprepro__spool_root + '/' + repo.name + '/incoming;\ndav_access all:rw;\ndav_methods PUT;\nlimit_except PUT {\n    deny all;\n}')
+           }
+         ) %}
+{%     endif %}
+{%     set repo_data_https = {
+         'by_role': 'debops.reprepro',
+         'state': (repo.state if (ansible_local.pki.enabled|d())|bool else 'absent'),
+         'enabled': True,
+         'name': repo.fqdn,
+         'filename': ('debops.reprepro_' + repo.name + '_https'),
+         'root': (repo.outdir | d(reprepro__public_root + '/sites/' + repo.name + '/public')),
+         'webroot_create': False,
+         'options': ('client_max_body_size ' + repo.max_body_size | d(reprepro__max_body_size) + ';'),
+         'location_list': location_list_https
+       } %}
+{%     if repo.public|d(True) %}
+{%       set _ = repo_data_https.update({'listen': False}) %}
+{%     endif %}
+{%     if repo.pki_realm|d() %}
+{%       set _ = repo_data_https.update({'pki_realm': repo.pki_realm}) %}
+{%     endif %}
+{%     set _ = output.append(repo_data_https) %}
+{%   endif %}
+{% endfor %}
+{{ output | to_yaml }}

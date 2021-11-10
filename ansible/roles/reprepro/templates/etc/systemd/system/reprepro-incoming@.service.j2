@@ -1,0 +1,17 @@
+{# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2021 DebOps <http://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+[Unit]
+Description=Icoming queue processor for reprepro %i instance
+After=syslog.target network-online.target
+Wants=network.target
+
+[Service]
+Type=oneshot
+User={{ reprepro__user }}
+Group={{ reprepro__group }}
+WorkingDirectory={{ reprepro__data_root + '/%i' }}
+ExecStart=/usr/bin/reprepro processincoming incoming

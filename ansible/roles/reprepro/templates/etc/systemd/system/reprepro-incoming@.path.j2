@@ -1,0 +1,17 @@
+{# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2021 DebOps <http://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+[Unit]
+Description=Icoming queue monitor for reprepro %i instance
+After=syslog.target network-online.target
+Wants=network.target
+
+[Path]
+PathExistsGlob={{ reprepro__spool_root + '/%i/incoming/*.changes' }}
+Unit=reprepro-incoming@%i.service
+
+[Install]
+WantedBy=multi-user.target

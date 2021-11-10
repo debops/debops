@@ -357,6 +357,16 @@ Continuous Integration
   of environments. See the :ref:`upgrade_notes` for details about upgrading an
   existing installation.
 
+:ref:`debops.reprepro` role
+'''''''''''''''''''''''''''
+
+- The role has been redesigned from scratch. It can now manage multiple APT
+  repository instances on separate DNS domains, repositories can have access
+  restrictions, the :command:`inoticoming` service has been replaced by
+  a :command:`systemd` ``.path`` units. Repositories are now configured via the
+  :ref:`universal_configuration` system. See the new role documentation for
+  details.
+
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
 
