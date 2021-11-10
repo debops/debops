@@ -15,6 +15,15 @@ Welcome to DebOps!
 You have :ref:`installed DebOps <install>` and are wondering where to go next?
 Here you can read about creating your first DebOps project and managing remote hosts.
 
+.. note:: DebOps has multiple versions or branches available, which might
+   contain different features. You can select the documentation of the version
+   or branch you are using at the bottom left of the page, in the "ReadTheDocs"
+   menu.
+
+   The DebOps v3.0 version, planned for release at the beginning of 2022 has
+   significantly changed the script user interface. You should switch the
+   documentation to an older version to get the correct instructions.
+
 .. contents::
    :local:
 
