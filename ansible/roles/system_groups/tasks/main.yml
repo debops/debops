@@ -32,6 +32,7 @@
     groups: '{{ item.groups }}'
   with_items: '{{ lookup("template", "lookup/system_groups_members.j2") | from_yaml }}'
   when: system_groups__enabled|bool
+  throttle: '{{ system_groups__throttle }}'
 
 - name: Remove sudo configuration if not specified
   file:
