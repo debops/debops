@@ -401,6 +401,14 @@ Fixed
   playbooks has been adjusted to ensure that the Python packages required by
   the :ref:`debops.netbase` role are installed before its execution.
 
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- Set ``client_max_body_size`` to ``25m`` in Nginx as in the NetBox Nginx
+  config example.
+  Before, it was at the Nginx default of ``1m`` which caused Nginx to reject
+  larger picture uploads to NetBox.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
