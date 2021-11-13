@@ -125,6 +125,14 @@ Fixed
 - The role will now install UEFI firmware for amd64 VMs, alongside traditional
   BIOS.
 
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- Set ``client_max_body_size`` to ``25m`` in Nginx as in the NetBox Nginx
+  config example.
+  Before, it was at the Nginx default of ``1m`` which caused Nginx to reject
+  larger picture uploads to NetBox.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
