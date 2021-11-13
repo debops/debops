@@ -775,6 +775,8 @@ netbox__nginx__dependent_servers:
   - name: '{{ netbox__fqdn }}'
     by_role: 'debops.netbox'
     filename: 'debops.netbox'
+    options: |
+      client_max_body_size 25m;
     location:
       '/static/': |
         alias {{ netbox__git_checkout }}/netbox/static/;
