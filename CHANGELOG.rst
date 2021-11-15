@@ -198,6 +198,9 @@ Updates of upstream application versions
   updating to get Director to work again. Just click the database migration
   button on the 'Icinga Director' -> 'Activities log' page.
 
+- In the :ref:`debops.roundcube` role, the Roundcube version installed by
+  default has been updated to ``1.4.12``.
+
 General
 '''''''
 
