@@ -82,6 +82,11 @@ Continuous Integration
 
   .. __: https://github.com/MaxKellermann/ferm/issues/47
 
+:ref:`debops.grub` role
+'''''''''''''''''''''''
+
+- The role now enables the serial console by default.
+
 :ref:`debops.machine` role
 ''''''''''''''''''''''''''
 
