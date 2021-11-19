@@ -48,7 +48,8 @@ machine__organization: '{{ ansible_domain.split(".")[0] | capitalize }}'
 #
 # Human-readable contact information for this machine - e-mail, phone number or
 # an URL to a web page about a person or team responsible for this host.
-machine__contact: ''
+machine__contact: '{{ ansible_local.core.admin_public_email[0]
+                      | d("root@" + ansible_domain) }}'
 
                                                                    # ]]]
 # .. envvar:: machine__pretty_hostname [[[
