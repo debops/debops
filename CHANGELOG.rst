@@ -57,6 +57,13 @@ Continuous Integration
 - The default box used by Vagrant for DebOps VMs has been updated from
   ``debian/buster64`` to ``debian/bullseye64``.
 
+:ref:`debops.docker_server` role
+''''''''''''''''''''''''''''''''
+
+- The role now enables `live restore`__ by default.
+
+  .. __: https://docs.docker.com/config/containers/live-restore/
+
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
