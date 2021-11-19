@@ -249,6 +249,13 @@ Continuous Integration
 
 - The role defaults have been updated, Bullseye is the new Stable.
 
+:ref:`debops.docker_server` role
+''''''''''''''''''''''''''''''''
+
+- The role now enables `live restore`__ by default.
+
+  .. __: https://docs.docker.com/config/containers/live-restore/
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
