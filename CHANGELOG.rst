@@ -96,6 +96,12 @@ Continuous Integration
   now expired. Existing PKI realms will not be modified, you might need to
   recreate them or replace the :file:`acme/root.pem` symlink manually.
 
+:ref:`debops.unattended_upgrades` role
+''''''''''''''''''''''''''''''''''''''
+
+- The role now defaults to the admin_private_email Ansible fact (as provided by
+  :ref:`debops.core`) for the :envvar:`unattended_upgrades__mail_to` variable.
+
 Fixed
 ~~~~~
 
