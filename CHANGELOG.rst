@@ -257,6 +257,11 @@ Continuous Integration
   and the options changed by the role are set in the
   :envvar:`elasticsearch__default_configuration` variable.
 
+:ref:`debops.grub` role
+'''''''''''''''''''''''
+
+- The role now enables the serial console by default.
+
 :ref:`debops.ipxe` role
 '''''''''''''''''''''''
 
