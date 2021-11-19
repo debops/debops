@@ -109,6 +109,9 @@ Fixed
 
 - The root account will no longer be added to the 'libvirt' group by default.
 
+- The role will now install UEFI firmware for amd64 VMs, alongside traditional
+  BIOS.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
