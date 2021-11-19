@@ -82,6 +82,12 @@ Continuous Integration
 
   .. __: https://github.com/MaxKellermann/ferm/issues/47
 
+:ref:`debops.machine` role
+''''''''''''''''''''''''''
+
+- The default contact information is now based on the public administrator
+  e-mail address set in the :ref:`debops.core` role.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
