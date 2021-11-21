@@ -190,7 +190,7 @@
       set -o nounset -o pipefail -o errexit
       ./manage.py migrate
       ./manage.py trace_paths --no-input || :
-      mkdocs build
+      (cd .. && mkdocs build)
       ./manage.py collectstatic --no-input
       ./manage.py remove_stale_contenttypes --no-input
       ./manage.py clearsessions
