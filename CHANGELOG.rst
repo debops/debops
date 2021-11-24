@@ -106,6 +106,8 @@ Fixed
   fix an issue with :command:`sshd` checking its configuration and failing due
   to missing runtime directory.
 
+- The role will no longer create an LDAP account when it is not needed.
+
 :ref:`debops.sudo` role
 '''''''''''''''''''''''
 
