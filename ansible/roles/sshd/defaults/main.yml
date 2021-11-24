@@ -895,8 +895,8 @@ sshd__ldap__dependent_tasks:
     attributes: '{{ sshd__ldap_self_attributes }}'
     no_log: True
     state: '{{ "present"
-               if ((ansible_local.ldap.posix_enabled|d())|bool and
-                   sshd__ldap_device_dn|d())
+               if (sshd__authorized_keys_lookup|bool and
+                   ("ldap" in sshd__authorized_keys_lookup_type))
                else "ignore" }}'
 
                                                                    # ]]]
