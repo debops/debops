@@ -106,6 +106,12 @@ Fixed
   fix an issue with :command:`sshd` checking its configuration and failing due
   to missing runtime directory.
 
+:ref:`debops.sudo` role
+'''''''''''''''''''''''
+
+- The role will now skip installing the ``sudo-ldap`` package and creating the
+  LDAP account object if :envvar:`sudo__ldap_enabled` is ``False``.
+
 
 `debops v2.3.3`_ - 2021-10-14
 -----------------------------
