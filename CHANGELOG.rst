@@ -481,6 +481,9 @@ debops.reprepro role
   picked up as the version number when :command:`sudo` was configured to use
   LDAP, but the LDAP service was not available.
 
+- The role will now skip installing the ``sudo-ldap`` package and creating the
+  LDAP account object if :envvar:`sudo__ldap_enabled` is ``False``.
+
 :ref:`debops.system_users` role
 '''''''''''''''''''''''''''''''
 
