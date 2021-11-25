@@ -375,6 +375,8 @@ Fixed
 - The ``virt-top`` APT package is not part of the Debian Bullseye release,
   therefore the role will not try to install it by default.
 
+- The root account will no longer be added to the 'libvirt' group by default.
+
 :ref:`debops.lxc` role
 ''''''''''''''''''''''
 
