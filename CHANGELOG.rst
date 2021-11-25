@@ -92,6 +92,11 @@ Continuous Integration
 Fixed
 ~~~~~
 
+:ref:`debops.libvirtd` role
+'''''''''''''''''''''''''''
+
+- The root account will no longer be added to the 'libvirt' group by default.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
