@@ -180,7 +180,7 @@ should be loaded at boot time. If a single module is specified, the role will
 try to load it if it's currently not present in the kernel.
 
 The configuration is stored in the :file:`/etc/modules-load.d/` directory on
-hosts that use th :command:`systemd` service manager. On other hosts, the role
+hosts that use the :command:`systemd` service manager. On other hosts, the role
 will modify the :file:`/etc/modules` file directly.
 
 Each list entry is a YAML dictionary with specific parameters:
