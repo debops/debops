@@ -249,6 +249,11 @@ Continuous Integration
 
 - The role defaults have been updated, Bullseye is the new Stable.
 
+:ref:`debops.apt_install` role
+''''''''''''''''''''''''''''''
+
+- Install ``intel-microcode`` from buster-backports for improved security.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
