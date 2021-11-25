@@ -11,45 +11,6 @@ Getting started
    :local:
 
 
-Which version to use
---------------------
-
-The current version of `dropbear <https://packages.debian.org/search?keywords=dropbear>`__ provided in Debian jessie is a bit
-old and does not provide SOTA_ cryptography.
-The role already supports the updated dropbear version from Debian stretch which is now available as
-`dropbear-initramfs <https://packages.debian.org/search?keywords=dropbear-initramfs>`_.
-The proper way to install it on Debian jessie is to use debops.reprepro_.
-
-It has also been tested to install the version from stretch on jessie. Note
-that this is discouraged by Debian and DebOps but you might decide to make an
-exception in this case when you know what you are doing.
-
-If you do, all you have to do is to enable the stretch repositories and use APT
-pinning to ensure that no unwanted packages are pulled from stretch. And tell
-``debops-contrib.dropbear_initramfs`` that you want the newer version.
-If you are using DebOps, you can set the following in your inventory:
-
-.. code-block:: yaml
-
-   ## Load APT pinning presets.
-   apt_preferences__group_list:
-     - '{{ apt_preferences__preset_list | list }}'
-
-   apt__group_sources:
-     - comment: 'Enable Debian stretch repository'
-       uri: '{{ ansible_local.apt.default_sources_map.Debian[0]
-                if (ansible_local.apt.default_sources_map|d() and
-                    ansible_local.apt.default_sources_map.Debian|d() and
-                    ansible_local.apt.default_sources_map.Debian[0]|d())
-                else "http://deb.debian.org/debian" }}'
-       suites:
-         - 'stretch'
-       component:
-         - 'main'
-
-   dropbear_initramfs__base_packages:
-     - 'dropbear-initramfs'
-
 Example inventory
 -----------------
 
