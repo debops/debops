@@ -108,6 +108,14 @@ Continuous Integration
   now expired. Existing PKI realms will not be modified, you might need to
   recreate them or replace the :file:`acme/root.pem` symlink manually.
 
+:ref:`debops.system_groups` role
+''''''''''''''''''''''''''''''''
+
+- A specific task will be throttled to avoid high load on the Ansible
+  Controller during role execution on a large number of hosts (>100). The
+  throttle amount and thus the number of hosts executed at one time can be
+  controlled by a variable.
+
 :ref:`debops.unattended_upgrades` role
 ''''''''''''''''''''''''''''''''''''''
 
