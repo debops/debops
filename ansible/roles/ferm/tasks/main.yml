@@ -32,6 +32,12 @@
     path: '{{ ferm__iptables_backend_path }}'
   when: ferm__enabled | bool and ferm__iptables_backend_enabled|bool
 
+- name: Manage ip6tables backend using alternatives
+  alternatives:
+    name: 'ip6tables'
+    path: '{{ ferm__ip6tables_backend_path }}'
+  when: ferm__enabled | bool and ferm__iptables_backend_enabled|bool
+
 - name: Make sure required directories exist
   file:
     path: '{{ item }}'
