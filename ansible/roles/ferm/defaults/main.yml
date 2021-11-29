@@ -52,17 +52,17 @@ ferm__iptables_backend_enabled: '{{ False
                                     else True }}'
 
                                                                    # ]]]
-# .. envvar:: ferm__iptables_backend_path [[[
+# .. envvar:: ferm__iptables_backend_type [[[
 #
 # Select which iptables backend should be used on the host. Known backends:
 #
-# - ``/usr/sbin/iptables-legacy``
+# - ``legacy`` - old arptables, ebtables, iptables, ip6tables
 #
-# - ``/usr/sbin/iptables-nft``
+# - ``nft`` - new, nftables-based firewall
 #
-# Newer OS releases might need to use the legacy variant to be compatible with
-# :command:`ferm` manager.
-ferm__iptables_backend_path: '/usr/sbin/iptables-nft'
+# Ferm does not support nftables backend, therefore the legacy variant is
+# enabled by default.
+ferm__iptables_backend_type: 'nft'
 
                                                                    # ]]]
 # .. envvar:: ferm__base_packages [[[
