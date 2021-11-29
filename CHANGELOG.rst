@@ -504,6 +504,11 @@ debops.reprepro role
 - The rsyslog role always configured the streamDriverPermittedPeers option,
   even when the ``anon`` network driver authentication mode was selected.
 
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- The role will no longer create an LDAP account when it is not needed.
+
 :ref:`debops.sudo` role
 '''''''''''''''''''''''
 
