@@ -356,6 +356,12 @@ Continuous Integration
   check for Python 2.7 anymore while gathering local UNIX account details, to
   avoid issues with non-existent host facts.
 
+:ref:`debops.unattended_upgrades` role
+''''''''''''''''''''''''''''''''''''''
+
+- The role now defaults to the admin_private_email Ansible fact (as provided by
+  :ref:`debops.core`) for the :envvar:`unattended_upgrades__mail_to` variable.
+
 Fixed
 ~~~~~
 
