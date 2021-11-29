@@ -79,9 +79,6 @@ Changes in inventory variables
   | ``nginx_enable_sdpy`` | :envvar:`nginx_enable_spdy` | No            |
   +-----------------------+-----------------------------+---------------+
 
-- The :ref:`debops.unattended_upgrades` role has an updated
-  :envvar:`unattended_upgrades__mail_to` default.
-
 
 Icinga Director database migrations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
