@@ -91,24 +91,6 @@ General
   This is needed so that various alternatives for :command:`iptables` backends
   can be correctly synchronized.
 
-- The backend configuration will now manage all relevant alternatives for
-  :command:`arptables`, :command:`ebtables`, :command:`iptables` and
-  :command:`ip6tables` commands to keep various parts of the firewall
-  synchronized.
-
-  .. warning:: The variable which controls what backend is used has been
-               renamed to :envvar:`ferm__iptables_backend_type` due to value
-               change. You might need to update your Ansible inventory to select
-               the correct backend.
-
-- The default backend for :command:`iptables` is changed to ``legacy`` on newer
-  OS releases, because `there's no plans`__ to support :command:`nftables`
-  backend by the :command:`ferm` project. You might want to check if the
-  firewall configuration is correctly applied after running the role against
-  already configured hosts.
-
-  .. __: https://github.com/MaxKellermann/ferm/issues/47
-
 :ref:`debops.kibana` role
 '''''''''''''''''''''''''
 
@@ -281,6 +263,27 @@ Continuous Integration
   file are set in the :envvar:`elasticsearch__original_configuration` variable
   and the options changed by the role are set in the
   :envvar:`elasticsearch__default_configuration` variable.
+
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- The backend configuration will now manage all relevant alternatives for
+  :command:`arptables`, :command:`ebtables`, :command:`iptables` and
+  :command:`ip6tables` commands to keep various parts of the firewall
+  synchronized.
+
+  .. warning:: The variable which controls what backend is used has been
+               renamed to :envvar:`ferm__iptables_backend_type` due to value
+               change. You might need to update your Ansible inventory to select
+               the correct backend.
+
+- The default backend for :command:`iptables` is changed to ``legacy`` on newer
+  OS releases, because `there's no plans`__ to support :command:`nftables`
+  backend by the :command:`ferm` project. You might want to check if the
+  firewall configuration is correctly applied after running the role against
+  already configured hosts.
+
+  .. __: https://github.com/MaxKellermann/ferm/issues/47
 
 :ref:`debops.ipxe` role
 '''''''''''''''''''''''
