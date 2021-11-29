@@ -85,7 +85,7 @@
         item.name|d() and item.state|d('present') in [ 'present', 'absent' ]
 
 - name: Load missing kernel modules enabled at boot
-  modprobe:
+  community.general.modprobe:
     name: '{{ item.name }}'
     state: 'present'
   with_items: '{{ kmod__combined_load | debops.debops.parse_kv_items }}'

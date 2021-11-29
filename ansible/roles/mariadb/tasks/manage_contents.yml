@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Drop databases if requested
-  mysql_db:
+  community.mysql.mysql_db:
     name: '{{ item.database | d(item.name) }}'
     state: 'absent'
   with_flattened: '{{ mariadb__databases + mariadb__dependent_databases + mariadb_databases|d([]) }}'

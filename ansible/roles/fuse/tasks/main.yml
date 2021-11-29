@@ -32,10 +32,7 @@
     name: '{{ item }}'
     groups: '{{ fuse_group }}'
     append: True
-  with_flattened:
-    - '{{ fuse_users }}'
-    - '{{ fuse_users_host_group }}'
-    - '{{ fuse_users_host }}'
+  loop: '{{ [fuse_users, fuse_users_host_group, fuse_users_host] | flatten }}'
 
 - name: Setup udev rule for fuse to change file permissions
   template:
