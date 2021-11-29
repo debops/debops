@@ -28,8 +28,13 @@
 
 - name: Manage iptables backend using alternatives
   alternatives:
-    name: 'iptables'
-    path: '{{ ferm__iptables_backend_path }}'
+    name: '{{ item.name }}'
+    path: '{{ item.path }}'
+  loop:
+    - { 'name': 'arptables', 'path': '/usr/sbin/arptables-{{ ferm__iptables_backend_type }}' }
+    - { 'name': 'ebtables', 'path': '/usr/sbin/ebtables-{{ ferm__iptables_backend_type }}' }
+    - { 'name': 'iptables', 'path': '/usr/sbin/iptables-{{ ferm__iptables_backend_type }}' }
+    - { 'name': 'ip6tables', 'path': '/usr/sbin/ip6tables-{{ ferm__iptables_backend_type }}' }
   when: ferm__enabled | bool and ferm__iptables_backend_enabled|bool
 
 - name: Make sure required directories exist

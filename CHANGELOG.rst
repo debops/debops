@@ -91,6 +91,16 @@ General
   This is needed so that various alternatives for :command:`iptables` backends
   can be correctly synchronized.
 
+- The backend configuration will now manage all relevant alternatives for
+  :command:`arptables`, :command:`ebtables`, :command:`iptables` and
+  :command:`ip6tables` commands to keep various parts of the firewall
+  synchronized.
+
+  .. warning:: The variable which controls what backend is used has been
+               renamed to :envvar:`ferm__iptables_backend_type` due to value
+               change. You might need to update your Ansible inventory to select
+               the correct backend.
+
 :ref:`debops.kibana` role
 '''''''''''''''''''''''''
 
