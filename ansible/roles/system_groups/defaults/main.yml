@@ -75,6 +75,14 @@ system_groups__prefix: '{{ ansible_local.system_groups.local_prefix
                                  if (ansible_local|d() and ansible_local.ldap|d() and
                                      (ansible_local.ldap.posix_enabled|d())|bool)
                                  else "") }}'
+
+                                                                   # ]]]
+# .. envvar:: system_groups__throttle [[[
+#
+# Number of the CPU cores available on the ansible controller. This variable is
+# used to throttle the number of parallel tasks on one specific CPU intensive
+# task and helps to reduces memory consumption on big enviornments (> 100).
+system_groups__throttle: '8'
                                                                    # ]]]
                                                                    # ]]]
 # UNIX system groups [[[
