@@ -40,7 +40,7 @@
     owner: 'root'
     group: 'root'
     mode:  '0644'
-  with_flattened: '{{ etc_services__combined_list }}'
+  loop: '{{ etc_services__combined_list | flatten }}'
   when: (etc_services__enabled|bool and
          ((item.name|d() and item.port|d()) or item.custom|d()) and
          (item.state is undefined or item.state != 'absent'))
