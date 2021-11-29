@@ -74,6 +74,14 @@ Continuous Integration
                change. You might need to update your Ansible inventory to select
                the correct backend.
 
+- The default backend for :command:`iptables` is changed to ``legacy`` on newer
+  OS releases, because `there's no plans`__ to support :command:`nftables`
+  backend by the :command:`ferm` project. You might want to check if the
+  firewall configuration is correctly applied after running the role against
+  already configured hosts.
+
+  .. __: https://github.com/MaxKellermann/ferm/issues/47
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
