@@ -63,6 +63,16 @@ Continuous Integration
   Bionic and Focal releases by default, in addition to already defined OS
   releases.
 
+- The backend configuration will now manage all relevant alternatives for
+  :command:`arptables`, :command:`ebtables`, :command:`iptables` and
+  :command:`ip6tables` commands to keep various parts of the firewall
+  synchronized.
+
+  .. warning:: The variable which controls what backend is used has been
+               renamed to :envvar:`ferm__iptables_backend_type` due to value
+               change. You might need to update your Ansible inventory to select
+               the correct backend.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
