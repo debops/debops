@@ -46,27 +46,29 @@ ferm__flush: '{{ ferm__enabled | bool }}'
 # Enable or disable configuration of the :command:`iptables` backend symlink
 # using the "alternatives" system, supported on Debian 10 and later.
 ferm__iptables_backend_enabled: '{{ False
-                                    if ansible_distribution_release in [ "wheezy", "jessie", "stretch", "trusty", "xenial" ]
+                                    if ansible_distribution_release in [ "wheezy", "jessie", "stretch",
+                                                                         "trusty", "xenial", "bionic",
+                                                                         "focal" ]
                                     else True }}'
 
                                                                    # ]]]
-# .. envvar:: ferm__iptables_backend_path [[[
+# .. envvar:: ferm__iptables_backend_type [[[
 #
 # Select which iptables backend should be used on the host. Known backends:
 #
-# - ``/usr/sbin/iptables-legacy``
+# - ``legacy`` - old arptables, ebtables, iptables, ip6tables
 #
-# - ``/usr/sbin/iptables-nft``
+# - ``nft`` - new, nftables-based firewall
 #
-# Newer OS releases might need to use the legacy variant to be compatible with
-# :command:`ferm` manager.
-ferm__iptables_backend_path: '/usr/sbin/iptables-nft'
+# Ferm does not support nftables backend, therefore the legacy variant is
+# enabled by default.
+ferm__iptables_backend_type: 'legacy'
 
                                                                    # ]]]
 # .. envvar:: ferm__base_packages [[[
 #
 # List of base APT packages to install.
-ferm__base_packages: [ 'ferm', 'patch' ]
+ferm__base_packages: [ 'ferm', 'patch', 'iptables', 'arptables', 'ebtables' ]
 
                                                                    # ]]]
 # .. envvar:: ferm__packages [[[
