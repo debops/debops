@@ -32,6 +32,13 @@ Added
 - The role will refresh APT cache if needed, to ensure that package
   installaction can be done correctly on freshly installed hosts or containers.
 
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- The ``arptables`` and ``ebtables`` APT packages will be installed by default.
+  This is needed so that various alternatives for :command:`iptables` backends
+  can be correctly synchronized.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
