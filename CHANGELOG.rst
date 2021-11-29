@@ -153,6 +153,12 @@ Fixed
   Before, it was at the Nginx default of ``1m`` which caused Nginx to reject
   larger picture uploads to NetBox.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Role execution with the ``role::owncloud:occ`` Ansible tag should now work
+  again as expected.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
