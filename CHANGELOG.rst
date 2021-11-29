@@ -99,6 +99,12 @@ General
   communication with the Elasticsearch cluster, based on the PKI environment
   managed by the :ref:`debops.pki` Ansible role.
 
+:ref:`debops.libvirtd` role
+'''''''''''''''''''''''''''
+
+- The role will now install UEFI firmware for amd64 VMs, alongside traditional
+  BIOS.
+
 :ref:`debops.lvm` role
 ''''''''''''''''''''''
 
