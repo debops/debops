@@ -57,6 +57,13 @@ Continuous Integration
 - The default box used by Vagrant for DebOps VMs has been updated from
   ``debian/buster64`` to ``debian/bullseye64``.
 
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- The :command:`iptables` backend management will not be performed on Ubuntu
+  Bionic and Focal releases by default, in addition to already defined OS
+  releases.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
