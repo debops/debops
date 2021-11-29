@@ -41,7 +41,7 @@
            if item.opts|d() else 'defaults') is match(".*x-systemd.automount.*")))
 
 - name: Manage device mounts
-  mount:
+  ansible.posix.mount:
     src:    '{{ item.src }}'
     path:   '{{ item.path   | d(item.dest | d(item.name)) }}'
     fstype: '{{ item.fstype | d("auto") }}'

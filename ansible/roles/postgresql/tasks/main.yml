@@ -80,7 +80,7 @@
   meta: 'flush_handlers'
 
 - name: Drop PostgreSQL roles if requested
-  postgresql_user:
+  community.postgresql.postgresql_user:
     name: '{{ item.name | d(item.role) }}'
     port: '{{ item.port | d(postgresql__port if postgresql__port else omit) }}'
     state: 'absent'
