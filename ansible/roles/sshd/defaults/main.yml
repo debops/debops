@@ -296,8 +296,10 @@ sshd__max_startups: '3:80:7'
                                                                    # ]]]
 # .. envvar:: sshd__login_grace_time [[[
 #
-# Time after which unauthenticated sessions are disconnected.
-sshd__login_grace_time: '30s'
+# Time after which unauthenticated sessions are disconnected. Note: setting this
+# much lower is not recommended when ``sshd__use_dns`` is enabled.
+# Ref: https://github.com/debops/debops/issues/1904
+sshd__login_grace_time: '60s'
 
                                                                    # ]]]
 # .. envvar:: sshd__client_alive_count_max [[[
