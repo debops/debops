@@ -131,6 +131,12 @@ Continuous Integration
 Fixed
 ~~~~~
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- The role will ignore the "/debian-security" APT mirror added in some LXC
+  container templates during generation of the APT sources, to avoid issues.
+
 :ref:`debops.libvirtd` role
 '''''''''''''''''''''''''''
 
