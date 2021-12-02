@@ -7,6 +7,7 @@
   community.mysql.mysql_db:
     name: '{{ item.database | d(item.name) }}'
     state: 'absent'
+    login_unix_socket: '/run/mysqld/mysqld.sock'
   with_flattened: '{{ mariadb__databases + mariadb__dependent_databases + mariadb_databases|d([]) }}'
   delegate_to: '{{ mariadb__delegate_to }}'
   when: ((item.database|d(False) or item.name|d(False)) and
@@ -18,6 +19,7 @@
     state: 'present'
     encoding: '{{ item.encoding | d(omit) }}'
     collation: '{{ item.collation | d(omit) }}'
+    login_unix_socket: '/run/mysqld/mysqld.sock'
   with_flattened: '{{ mariadb__databases + mariadb__dependent_databases + mariadb_databases|d([]) }}'
   delegate_to: '{{ mariadb__delegate_to }}'
   when: ((item.database|d(False) or item.name|d(False)) and
@@ -47,6 +49,7 @@
     name: '{{ item.0.database | d(item.0.name) }}'
     target: '{{ item.0.target }}'
     state: 'import'
+    login_unix_socket: '/run/mysqld/mysqld.sock'
   with_together:
     - '{{ mariadb__databases
           + lookup("flattened", mariadb__dependent_databases, wantlist=True)
@@ -73,6 +76,7 @@
     name: '{{ item.user | d(item.name) }}'
     host: '{{ item.host | default(mariadb__client) }}'
     state: 'absent'
+    login_unix_socket: '/run/mysqld/mysqld.sock'
   with_flattened: '{{ mariadb__users + mariadb__dependent_users + mariadb_users|d([]) }}'
   delegate_to: '{{ mariadb__delegate_to }}'
   when: ((item.user|d(False) or item.name|d(False)) and
@@ -88,6 +92,7 @@
                   secret + "/mariadb/" + mariadb__delegate_to +
                   "/credentials/" + item.user | d(item.name) + "/password " +
                   "length=" + mariadb__password_length)) }}'
+    login_unix_socket: '/run/mysqld/mysqld.sock'
   with_flattened: '{{ mariadb__users + mariadb__dependent_users + mariadb_users|d([]) }}'
   delegate_to: '{{ mariadb__delegate_to }}'
   register: mariadb__register_create_users
@@ -101,6 +106,7 @@
     host: '{{ item.0.host | default(mariadb__client) }}'
     priv: '{{ (item.0.database | d(item.0.name)) + ".*:" + mariadb__default_privileges_grant }}'
     append_privs: True
+    login_unix_socket: '/run/mysqld/mysqld.sock'
   with_together:
     - '{{ mariadb__users + lookup("flattened", mariadb__dependent_users, wantlist=True) + mariadb_users|d([]) }}'
     - '{{ mariadb__register_create_users.results }}'
@@ -117,6 +123,7 @@
     host: '{{ item.0.host | default(mariadb__client) }}'
     priv: '{{ (item.0.database | d(item.0.name)) + "\_%.*:" + mariadb__default_privileges_grant }}'
     append_privs: True
+    login_unix_socket: '/run/mysqld/mysqld.sock'
   with_together:
     - '{{ mariadb__users + lookup("flattened", mariadb__dependent_users, wantlist=True) + mariadb_users|d([]) }}'
     - '{{ mariadb__register_create_users.results }}'
@@ -133,6 +140,7 @@
     host: '{{ item.0.host | default(mariadb__client) }}'
     priv: '{{ item.0.priv if (item.0.priv is string) else (item.0.priv | join("/")) }}'
     append_privs: '{{ item.0.append_privs | default(True) }}'
+    login_unix_socket: '/run/mysqld/mysqld.sock'
   with_together:
     - '{{ mariadb__users + lookup("flattened", mariadb__dependent_users, wantlist=True) + mariadb_users|d([]) }}'
     - '{{ mariadb__register_create_users.results }}'
