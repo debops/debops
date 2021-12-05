@@ -106,6 +106,7 @@ are not accessed directly by end users.
 - :ref:`debops.salt`
 - :ref:`debops.telegraf`
 - :ref:`debops.tinyproxy`
+- :ref:`debops.logstash`
 - ``debops.reprepro``
 - ``debops.sks``
 - ``debops-contrib.bitcoind``
@@ -217,6 +218,7 @@ Logging
 - :ref:`debops.filebeat`
 - :ref:`debops.journald`
 - :ref:`debops.kibana`
+- :ref:`debops.logstash`
 - :ref:`debops.logrotate`
 - :ref:`debops.rsyslog`
 

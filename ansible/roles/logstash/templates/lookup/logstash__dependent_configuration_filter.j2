@@ -1,0 +1,20 @@
+{# Copyright (C) 2020 Pedro Luis Lopez <pedroluis.lopezsanchez@gmail.com>
+ # Copyright (C) 2020 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+{% set logstash__tpl_dependent_configuration = {} %}
+{% if (logstash__register_dependent_config|d() and logstash__register_dependent_config.content|d()) %}
+{%   set _ = logstash__tpl_dependent_configuration.update(logstash__register_dependent_config.content | b64decode | trim | from_json) %}
+{% endif %}
+{% if logstash__dependent_role|d() %}
+{%   if logstash__dependent_state == 'present' %}
+{%     set _ = logstash__tpl_dependent_configuration.update({logstash__dependent_role: logstash__dependent_configuration}) %}
+{%   elif logstash__dependent_state == 'absent' %}
+{%     set _ = logstash__tpl_dependent_configuration.pop(logstash__dependent_role, None) %}
+{%   endif %}
+{% endif %}
+{% set logstash__tpl_output = [] %}
+{% for key, value in logstash__tpl_dependent_configuration.items() %}
+{%   set _ = logstash__tpl_output.append(value) %}
+{% endfor %}
+{{ logstash__tpl_output | to_yaml }}
