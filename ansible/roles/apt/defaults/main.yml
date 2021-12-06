@@ -579,6 +579,17 @@ apt__security_sources:
     distribution: 'Debian'
     state:        'absent'
 
+    # This version shows up in LXC templates built by distrobuilder. It causes
+    # the role to generate incorrect entries for APT sources and is present
+    # here only to prevent that.
+  - uri:          'http://deb.debian.org/debian-security'
+    comment:      'Debian Security repository'
+    type:         '{{ apt__source_types }}'
+    suite:        '{{ apt__distribution_release + "-security" }}'
+    components:   '{{ apt__distribution_components }}'
+    distribution: 'Debian'
+    state:        'absent'
+
     # This version shows up in Debian Stretch APT configuration.
     # It's disabled by default to not create duplicate entries.
   - uri:          'http://security.debian.org/debian-security'
