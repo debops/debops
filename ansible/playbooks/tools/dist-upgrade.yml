@@ -123,6 +123,8 @@
 
     - name: Remove all APT preferences for backported packages
       shell: "set -o nounset -o pipefail -o errexit && grep -lrIZ 'Pin: release .*={{ dist_upgrade_current_release }}-backports' /etc/apt/preferences.d | xargs -0 rm -f --"  # noqa no-handler
+      args:
+        executable: 'bash'
       when: dist_upgrade_register_replace is defined and dist_upgrade_register_replace is changed
 
     - name: Create a lockfile
