@@ -129,14 +129,15 @@
     dest: '/usr/share/elasticsearch/jdk/conf/security/java.policy'
     mode: '0644'
   notify: [ 'Restart elasticsearch' ]
+  when: elasticsearch__version is version_compare("6.0.0", ">=")
 
 - name: Manage data paths
   file:
-    path:    '{{ item }}'
-    state:   'directory'
-    owner:   '{{ elasticsearch__user }}'
-    group:   '{{ elasticsearch__group }}'
-    mode:    '0750'
+    path: '{{ item }}'
+    state: 'directory'
+    owner: '{{ elasticsearch__user }}'
+    group: '{{ elasticsearch__group }}'
+    mode: '0750'
   with_flattened:
     - '{{ elasticsearch__path_data }}'
 
