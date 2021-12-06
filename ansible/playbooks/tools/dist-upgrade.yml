@@ -67,8 +67,8 @@
       ============================
 
       {% for line in dist_upgrade_register_upgrade.stdout_lines %}
-      {% if not line | match('^\(Reading\s+database.*%') and
-            not line | match('^\(Reading\s+database\s+\.\.\.\s+$') %}
+      {% if not line | regex_search('^\(Reading\s+database.*%') and
+            not line | regex_search('^\(Reading\s+database\s+\.\.\.\s+$') %}
       {{ line }}
       {% endif %}
       {% endfor %}
@@ -78,8 +78,8 @@
       ==========================
 
       {% for line in dist_upgrade_register_autoremove.stdout_lines %}
-      {% if not line | match('^\(Reading\s+database.*%') and
-            not line | match('^\(Reading\s+database\s+\.\.\.\s+$') %}
+      {% if not line | regex_search('^\(Reading\s+database.*%') and
+            not line | regex_search('^\(Reading\s+database\s+\.\.\.\s+$') %}
       {{ line }}
       {% endif %}
       {% endfor %}
@@ -89,8 +89,8 @@
       =========================
 
       {% for line in dist_upgrade_register_autoclean.stdout_lines %}
-      {% if not line | match('^\(Reading\s+database.*%') and
-            not line | match('^\(Reading\s+database\s+\.\.\.\s+$') %}
+      {% if not line | regex_search('^\(Reading\s+database.*%') and
+            not line | regex_search('^\(Reading\s+database\s+\.\.\.\s+$') %}
       {{ line }}
       {% endif %}
       {% endfor %}
