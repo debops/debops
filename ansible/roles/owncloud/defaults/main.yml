@@ -414,11 +414,11 @@ owncloud__variant_name_map:
 #
 # Supported releases:
 #
-# * Nextcloud ``20.0``
+# * Nextcloud ``21.0``
 #
 # Upcoming:
 #
-# * Nextcloud ``21.0`` (Implemented based on documentation changes but untested).
+# * Nextcloud ``22.0`` (Implemented based on documentation changes but untested).
 #
 # Unsupported:
 #
@@ -431,7 +431,7 @@ owncloud__variant_name_map:
 # and the `package index <https://download.owncloud.org/download/repositories/>`_ for more details.
 owncloud__release: '{{ "10.4"
                        if (owncloud__variant == "owncloud")
-                       else "20.0" }}'
+                       else "21.0" }}'
 
 
 # .. envvar:: owncloud__distribution
@@ -2253,14 +2253,10 @@ owncloud__nginx__dependent_servers:
           # `location ~ /(\.|autotest|...)` which would otherwise handle requests
           # for `/.well-known`.
 
-          # The following 6 rules are borrowed from `.htaccess`
-          rewrite ^/\.well-known/host-meta\.json  /public.php?service=host-meta-json  last;
-          rewrite ^/\.well-known/host-meta        /public.php?service=host-meta       last;
-          rewrite ^/\.well-known/webfinger        /public.php?service=webfinger       last;
-          rewrite ^/\.well-known/nodeinfo         /public.php?service=nodeinfo        last;
-
           location = /.well-known/carddav     { return 301 /remote.php/dav/; }
           location = /.well-known/caldav      { return 301 /remote.php/dav/; }
+          # Anything else is dynamically handled by Nextcloud
+          location ^~ /.well-known            { return 301 /index.php$uri; }
 
           try_files $uri $uri/ =404;
 
