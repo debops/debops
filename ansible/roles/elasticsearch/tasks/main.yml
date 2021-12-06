@@ -120,7 +120,7 @@
     group: '{{ elasticsearch__group }}'
     mode: '0660'
   notify: [ 'Restart elasticsearch' ]
-  when: elasticsearch__version is version_compare("5.0.0", ">=")
+  when: elasticsearch__version is version("5.0.0", ">=")
   tags: [ 'role::elasticsearch:config' ]
 
 - name: Generate Java Policy configuration file
@@ -129,7 +129,7 @@
     dest: '/usr/share/elasticsearch/jdk/conf/security/java.policy'
     mode: '0644'
   notify: [ 'Restart elasticsearch' ]
-  when: elasticsearch__version is version_compare("6.0.0", ">=")
+  when: elasticsearch__version is version("6.0.0", ">=")
 
 - name: Manage data paths
   file:
