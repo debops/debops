@@ -23,15 +23,22 @@
 #
 # List of base packages to install.
 homeassistant__base_packages:
+  - 'python3'
   - 'python3-dev'
+  - 'python3-venv'
   - 'python3-pip'
-
-  - '{{ ("python3-virtualenv"
-         if (ansible_distribution_release in [ "wheezy", "precise" ])
-         else "virtualenv")
-        if (homeassistant__virtualenv|bool and ansible_distribution_release not in ["trusty"])
-        else [] }}'
-
+  - 'libffi-dev'
+  - 'libssl-dev'
+  - 'libjpeg-dev'
+  - 'zlib1g-dev'
+  - 'autoconf'
+  - 'build-essential'
+  - 'libopenjp2-7'
+  - 'libtiff5'
+  - '{{ "libturbojpeg"
+        if (ansible_distribution == "Ubuntu")
+        else "libturbojpeg0" }}'
+  - 'tzdata'
                                                                    # ]]]
 # .. envvar:: homeassistant__packages [[[
 #
@@ -41,7 +48,7 @@ homeassistant__packages: []
                                                                    # ]]]
 # .. envvar:: homeassistant__dependency_python_packages [[[
 #
-# List of Home Assistant core dependency packages.
+# List of Home Assistant Core dependency packages.
 # This refers to Debian system packages and not Python packages.
 homeassistant__dependency_python_packages:
   - 'python3-requests'
@@ -50,10 +57,6 @@ homeassistant__dependency_python_packages:
   - 'python3-jinja2'
   - 'python3-voluptuous'
 
-  ## Not available in Debian jessie. Debian stretch ships with Python 3.5 which
-  # should eliminate the need for it.
-  # - 'python3-typing'
-
   - '{{ ["python3-aiohttp"]
         if (ansible_distribution_release not in ["trusty"])
         else [] }}'
@@ -61,7 +64,6 @@ homeassistant__dependency_python_packages:
         if (ansible_distribution == "Debian" and ansible_distribution_major_version|int >= 9)
         else [] }}'
   - 'python3-chardet'
-
                                                                    # ]]]
 # .. envvar:: homeassistant__optional_python_packages [[[
 #
@@ -229,7 +231,9 @@ homeassistant__shell: '/usr/sbin/nologin'
 # .. envvar:: homeassistant__virtualenv [[[
 #
 # Should a Python virtualenv be created and used for Home Assistant deployment?
-# Disabled by default so that the Python dependencies packaged by Debian can be used.
+# Virualenv is currently the only supported way. Listing all dependencies here
+# has is too high maintenance and does not help much because Home Assistant
+# might install dependencies ad-hoc.
 homeassistant__virtualenv: True
 
                                                                    # ]]]

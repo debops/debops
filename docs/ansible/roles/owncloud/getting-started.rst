@@ -152,9 +152,20 @@ If the application complains under ``/settings/admin/overview`` then you might n
 
 .. code-block:: console
 
-   occ upgrade; occ db:add-missing-indice; occ db:add-missing-columns; occ db:convert-filecache-bigint; occ db:add-missing-primary-keys
+   occ upgrade; occ db:add-missing-indice; occ db:add-missing-columns; occ db:convert-filecache-bigint; occ db:add-missing-primary-keys && occ maintenance:mode --off
 
 It also does not hurt to run that by default.
+
+Expected warnings
+-----------------
+
+Nextcloud and ownCloud have a self check under "Administration" -> "Overview". Some warnings are expected to be shown.
+
+* Nextcloud 21 and newer: Module php-imagick in this instance has no SVG
+  support. For better compatibility it is recommended to install it.
+
+  Background: SVG support is disabled for security reasons by default. Lets
+  keep it at that for now until we can better assess the situation.
 
 Example inventory
 -----------------
@@ -169,6 +180,16 @@ To setup ownCloud on a given host it should be included in the
 
 Note that the ``debops_service_owncloud`` group uses the default webserver,
 refer to :ref:`owncloud__ref_choosing_a_webserver`.
+
+Recommended settings
+--------------------
+
+.. code-block:: yaml
+
+   owncloud__config:
+
+     # https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/config_sample_php_parameters.html#user-experience
+     default_phone_region: 'DE'
 
 .. _owncloud__ref_ansible_facts:
 
