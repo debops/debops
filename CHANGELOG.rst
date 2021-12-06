@@ -571,6 +571,16 @@ debops.reprepro role
 - The role will now skip installing the ``sudo-ldap`` package and creating the
   LDAP account object if :envvar:`sudo__ldap_enabled` is ``False``.
 
+:ref:`debops.sysctl` role
+'''''''''''''''''''''''''
+
+- The role's default of explicitly disabling packet forwarding conflicted with
+  the sysctl configuration done by Docker Server. The role would disable
+  essential (for Docker) packet forwarding, which would only be enabled again
+  when the Docker daemon was manually restarted or the sysctl parameter was
+  manually corrected. This has been fixed by letting the role default to
+  enabling packet forwarding on Docker Server hosts.
+
 :ref:`debops.system_users` role
 '''''''''''''''''''''''''''''''
 
