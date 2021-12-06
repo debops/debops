@@ -27,4 +27,3 @@ not yet used by default and not very well tested.
 * In memory caching using Redis for file locking and APCu.
 * Theming support (only tested with ownCloud 10).
 * Extensive configuration options via Ansible’s inventory.
-* Fully automated ownCloud security updates. `Not yet enabled by default nor tested with ownCloud 10 <https://github.com/debops/ansible-owncloud/issues/28>`_.
