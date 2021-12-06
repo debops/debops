@@ -218,6 +218,9 @@ Updates of upstream application versions
   manually if you are running version 20 or below. The role now defaults to
   Nextcloud 21 for new installations.
 
+- In the :ref:`debops.wpcli` role, the WpCli version has been updated to
+  ``2.5.0``. ``2.3.0`` and ``2.4.0`` can be installed by changing ``wpcli__version``
+
 General
 '''''''
 
