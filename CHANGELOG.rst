@@ -115,6 +115,12 @@ Continuous Integration
      check if the selected encryption cipher suites are sufficient for your
      service before applying them in production.
 
+:ref:`debops.apt_cacher_ng` role
+''''''''''''''''''''''''''''''''
+
+- The role has been updated to include new configuration options added in the
+  Debian Bullseye release.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 
