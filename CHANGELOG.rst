@@ -92,6 +92,12 @@ Continuous Integration
 - The default box used by Vagrant for DebOps VMs has been updated from
   ``debian/buster64`` to ``debian/bullseye64``.
 
+:ref:`debops.apt_cacher_ng` role
+''''''''''''''''''''''''''''''''
+
+- The role has been updated to include new configuration options added in the
+  Debian Bullseye release.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 
