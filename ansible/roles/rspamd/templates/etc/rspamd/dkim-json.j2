@@ -1,0 +1,9 @@
+{# Copyright (C) 2021 David Härdeman <david@hardeman.nu>
+ # Copyright (C) 2021 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+{% set output = { "_comments": [ item.dest, ansible_managed ] } %}
+{% for opt in item.config | debops.debops.parse_kv_items %}
+{%   set _ = output.update({ opt.name : opt.value }) %}
+{% endfor %}
+{{ output | to_nice_json }}
