@@ -1371,6 +1371,17 @@ dovecot__postfix__dependent_maincf:
 # The :file:`master.cf` configuration for ``debops.postfix`` Ansible role.
 dovecot__postfix__dependent_mastercf: []
                                                                    # ]]]
+# .. envvar:: dovecot__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` role.
+dovecot__etc_services__dependent_list:
+
+  - name: 'doveadm'
+    port: '{{ dovecot__dsync_port }}'
+    protocols: [ 'tcp' ]
+    comment: 'Added by debops.dovecot Ansible role.'
+
+                                                                   # ]]]
 # .. envvar:: dovecot__ferm__dependent_rules [[[
 #
 # Configuration for :ref:`debops.ferm` Ansible role.
@@ -1421,7 +1432,7 @@ dovecot__ferm__dependent_rules:
   - name: 'dovecot_doveadm'
     type: 'accept'
     by_role: 'debops.dovecot'
-    dport: [ '{{ dovecot__dsync_port }}' ]
+    dport: [ 'doveadm' ]
     saddr: '{{ dovecot__allow_doveadm }}'
     accept_any: '{{ dovecot__accept_any }}'
     rule_state: '{{ "present"
