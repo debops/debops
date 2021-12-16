@@ -1017,39 +1017,43 @@ dovecot__combined_configuration: '{{ dovecot__default_configuration
 # .. envvar:: dovecot__mail_plugins [[[
 #
 # Default mail plugins for all protocols.
-dovecot__mail_plugins: '{{ [ "$mail_plugins" ]
-                              + [ "notify" if "dsync" in dovecot__features ]
-                              + [ "replication" if "dsync" in dovecot__features ]
-                              + [ "quota" if "quota" in dovecot__features ] }}'
-
+dovecot__mail_plugins:
+  - '$mail_plugins'
+  - '{{ "notify" if "dsync" in dovecot__features else [] }}'
+  - '{{ "replication" if "dsync" in dovecot__features else [] }}'
+  - '{{ "quota" if "quota" in dovecot__features else [] }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__mail_plugins_imap [[[
 #
 # Enabled mail plugins for the IMAP protocol.
-dovecot__mail_plugins_imap: '{{ dovecot__mail_plugins
-                                 + [ "imap_sieve" if "sieve" in dovecot__features ]
-                                 + [ "imap_quota" if "quota" in dovecot__features ] }}'
+dovecot__mail_plugins_imap:
+  - '{{ dovecot__mail_plugins }}'
+  - '{{ "imap_sieve" if "sieve" in dovecot__features else [] }}'
+  - '{{ "imap_quota" if "quota" in dovecot__features else [] }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__mail_plugins_pop3 [[[
 #
 # Enabled mail plugins for the POP3 protocol.
-dovecot__mail_plugins_pop3: '{{ dovecot__mail_plugins }}'
+dovecot__mail_plugins_pop3:
+  - '{{ dovecot__mail_plugins }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__mail_plugins_lda [[[
 #
 # Enabled mail plugins for the LDA protocol.
-dovecot__mail_plugins_lda: '{{ dovecot__mail_plugins
-                                + [ "sieve" if "sieve" in dovecot__features ] }}'
+dovecot__mail_plugins_lda:
+  - '{{ dovecot__mail_plugins }}'
+  - '{{ "sieve" if "sieve" in dovecot__features else [] }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__mail_plugins_ltmp [[[
 #
 # Enabled mail plugins for the LMTP protocol.
-dovecot__mail_plugins_lmtp: '{{ dovecot__mail_plugins
-                                 + [ "sieve" if "sieve" in dovecot__features ] }}'
+dovecot__mail_plugins_lmtp:
+  - '{{ dovecot__mail_plugins }}'
+  - '{{ "sieve" if "sieve" in dovecot__features else [] }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__sieve_dir [[[
