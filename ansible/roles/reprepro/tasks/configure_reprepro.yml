@@ -1,119 +1,115 @@
 ---
-# Copyright (C) 2014-2019 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2015-2019 DebOps <https://debops.org/>
+# Copyright (C) 2014-2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
-
-- name: Install packages for Debian repository management
-  package:
-    name: [ 'reprepro', 'dpkg-dev' ]
-    state: 'present'
-  register: reprepro__register_packages
-  until: reprepro__register_packages is succeeded
-
-- name: Create system group for reprepro
-  group:
-    name: '{{ reprepro_group }}'
-    system: True
-    state: 'present'
-
-- name: Create system user for reprepro
-  user:
-    name: '{{ reprepro_user }}'
-    group: '{{ reprepro_group }}'
-    system: True
-    shell: '/bin/bash'
-    home: '{{ reprepro_home }}'
-    state: 'present'
 
 - name: Create reprepro spool directory
   file:
-    path: '{{ reprepro_spool }}'
+    path: '{{ reprepro__spool_root + "/" + repo.name }}'
     state: 'directory'
-    owner: '{{ reprepro_user }}'
-    group: '{{ reprepro_group }}'
+    owner: '{{ reprepro__user }}'
+    group: '{{ reprepro__group }}'
     mode: '0755'
+  when: repo.state|d('present') not in [ 'absent', 'ignore' ]
 
 - name: Create directory for reprepro uploads
   file:
-    path: '{{ reprepro_upload }}'
+    path: '{{ reprepro__spool_root + "/" + repo.name + "/incoming" }}'
     state: 'directory'
-    owner: '{{ reprepro_user }}'
+    owner: '{{ reprepro__user }}'
     group: 'www-data'
     mode: '0730'
+  when: repo.state|d('present') not in [ 'absent', 'ignore' ]
 
 - name: Create reprepro internal directories
   file:
-    path: '{{ reprepro_home + "/" + item }}'
+    path: '{{ reprepro__data_root + "/" + repo.name + "/" + item }}'
     state: 'directory'
-    owner: '{{ reprepro_user }}'
-    group: '{{ reprepro_group }}'
+    owner: '{{ reprepro__user }}'
+    group: '{{ reprepro__group }}'
     mode: '0755'
-  with_items: [ 'conf/distributions', 'conf/updates',
-                'conf/pulls', 'conf/uploaders', 'tmp' ]
+  loop: [ 'conf/uploaders', 'tmp' ]
+  when: repo.state|d('present') not in [ 'absent', 'ignore' ]
 
-- name: Create reprepro repository
+- name: Create public reprepro repository
   file:
-    path: '{{ reprepro_repository_path + "/" + reprepro_distribution | lower }}'
+    path: '{{ reprepro__public_root + "/sites/" + repo.name + "/public" }}'
     state: 'directory'
-    owner: '{{ reprepro_user }}'
-    group: '{{ reprepro_group }}'
+    owner: '{{ reprepro__user }}'
+    group: '{{ reprepro__group }}'
     mode: '0755'
+  when: repo.state|d('present') not in [ 'absent', 'ignore' ] and
+        not repo.outdir|d()
+
+- name: Copy GPG public key to public space
+  copy:
+    src: '{{ reprepro__home + "/" + reprepro__gpg_public_filename }}'
+    dest: '{{ reprepro__public_root + "/sites/" + repo.name + "/public/" + reprepro__gpg_public_filename }}'
+    remote_src: True
+    owner: '{{ reprepro__user }}'
+    group: '{{ reprepro__group }}'
+    mode: '0644'
+  when: repo.state|d('present') not in [ 'absent', 'ignore' ] and
+        not repo.outdir|d()
 
 - name: Manage reprepro configuration files
   template:
-    src: 'var/lib/reprepro/conf/{{ item }}.j2'
-    dest: '{{ reprepro_home + "/conf/" + item }}'
-    owner: '{{ reprepro_user }}'
-    group: '{{ reprepro_group }}'
+    src: 'home/reprepro/repositories/instance/conf/{{ item }}.j2'
+    dest: '{{ reprepro__data_root + "/" + repo.name + "/conf/" + item }}'
+    owner: '{{ reprepro__user }}'
+    group: '{{ reprepro__group }}'
     mode: '0644'
-  with_items: [ 'incoming', 'options' ]
-
-- name: Configure distributions configuration files
-  template:
-    src: 'var/lib/reprepro/conf/distributions.j2'
-    dest: '{{ reprepro_home + "/conf/distributions/" + item.Distribution | lower + "_" + item.Codename + ".conf" }}'
-    owner: '{{ reprepro_user }}'
-    group: '{{ reprepro_group }}'
-    mode: '0644'
-  with_items: '{{ reprepro_distributions }}'
-  register: reprepro_register_conf_distributions
-  when: ((item.Distribution == reprepro_distribution | lower) and
-         (item.Codename in reprepro_codenames))
-
-- name: Configure updates configuration files
-  template:
-    src: 'var/lib/reprepro/conf/updates.j2'
-    dest: '{{ reprepro_home + "/conf/updates/" + item.Name + ".conf" }}'
-    owner: '{{ reprepro_user }}'
-    group: '{{ reprepro_group }}'
-    mode: '0644'
-  with_items: '{{ reprepro_updates }}'
-  when: (item.Distribution == reprepro_distribution | lower)
-
-- name: Configure pulls configuration files
-  template:
-    src: 'var/lib/reprepro/conf/pulls.j2'
-    dest: '{{ reprepro_home + "/conf/pulls/" + item.Name + ".conf" }}'
-    owner: '{{ reprepro_user }}'
-    group: '{{ reprepro_group }}'
-    mode: '0644'
-  with_items: '{{ reprepro_pulls }}'
-  when: (item.Distribution == reprepro_distribution | lower)
+  loop: [ 'distributions', 'incoming', 'options', 'pulls', 'updates' ]
+  register: reprepro__register_config
+  when: (repo.state|d('present') not in [ 'absent', 'ignore' ] and
+         (item in repo.keys() or item in [ 'options' ]))
 
 - name: Configure uploaders configuration files
   template:
-    src: 'var/lib/reprepro/conf/uploaders.j2'
-    dest: '{{ reprepro_home + "/conf/uploaders/" + item.Filename }}'
-    owner: '{{ reprepro_user }}'
-    group: '{{ reprepro_group }}'
+    src: 'home/reprepro/repositories/instance/conf/uploaders/template.j2'
+    dest: '{{ reprepro__data_root + "/" + repo.name + "/conf/uploaders/" + item.name }}'
+    owner: '{{ reprepro__user }}'
+    group: '{{ reprepro__group }}'
     mode: '0644'
-  with_items: '{{ reprepro_uploaders }}'
+  loop: '{{ repo.uploaders }}'
+  register: reprepro__register_uploaders
+  when: repo.state|d('present') not in [ 'absent', 'ignore' ] and 'uploaders' in repo.keys()
+
+- name: Initialize reprepro repositories
+  command: 'reprepro export'
+  args:
+    chdir: '{{ reprepro__data_root + "/" + repo.name }}'
+  become: True
+  become_user: '{{ reprepro__user }}'
+  when: (repo.state|d('present') not in [ 'absent', 'ignore' ] and repo.distributions|d() and
+         (reprepro__register_config is changed or reprepro__register_uploaders is changed))
+
+- name: Generate symlinks
+  command: 'reprepro --delete createsymlinks'
+  args:
+    chdir: '{{ reprepro__data_root + "/" + repo.name }}'
+  become: True
+  become_user: '{{ reprepro__user }}'
+  changed_when: False
+  when: (repo.state|d('present') not in [ 'absent', 'ignore' ] and repo.distributions|d())
+
+- name: Enable incoming queue monitoring
+  systemd:
+    name: '{{ "reprepro-incoming@" + repo.name + ".path" }}'
+    state: '{{ "started"
+               if (repo.state|d("present") not in [ "absent", "ignore" ])
+               else "stopped" }}'
+    enabled: '{{ True
+               if (repo.state|d("present") not in [ "absent", "ignore" ])
+               else False }}'
+  when: repo.incoming|d()
 
 - name: Manage reprepro scripts
   template:
-    src: 'var/lib/reprepro/conf/{{ item }}.j2'
-    dest: '{{ reprepro_home + "/conf/" + item }}'
-    owner: '{{ reprepro_user }}'
-    group: '{{ reprepro_group }}'
+    src: 'home/reprepro/repositories/instance/conf/{{ item }}.j2'
+    dest: '{{ reprepro__data_root + "/" + repo.name + "/conf/" + item }}'
+    owner: '{{ reprepro__user }}'
+    group: '{{ reprepro__group }}'
     mode: '0755'
   with_items: [ 'email-changes.sh' ]
+  when: repo.state|d('present') not in [ 'absent', 'ignore' ]

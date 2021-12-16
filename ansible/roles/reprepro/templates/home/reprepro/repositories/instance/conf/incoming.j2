@@ -1,0 +1,48 @@
+{# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2021 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ # Format: deb822
+ #}
+# {{ ansible_managed }}
+
+{% if repo.incoming|d() %}
+{%   for section in repo.incoming %}
+{%     if section.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%       if not loop.first %}
+{{         '' }}
+{%       endif %}
+{%       if section.comment|d() %}
+{{         section.comment | regex_replace('\n$', '') | comment(prefix='', postfix='') }}
+{%       endif %}
+{%       if section.raw|d() %}
+{{         section.raw | regex_replace('\n$', '') }}
+{%       else %}
+{{         'Name: {}'.format(section.Name | d(section.name)) }}
+{%         if 'IncomingDir' not in section.keys() %}
+{%           set _ = section.update({'IncomingDir': (reprepro__spool_root + '/' + repo.name + '/' + (section.Name | d(section.name)))}) %}
+{%         endif %}
+{%         if 'TempDir' not in section.keys() %}
+{%           set _ = section.update({'TempDir': 'tmp'}) %}
+{%         endif %}
+{%         for key, value in section | dictsort %}
+{%           if key not in [ 'name', 'Name', 'value', 'id', 'comment', 'state', 'weight', 'real_weight', 'separator', 'section' ] %}
+{%             set section_value = value %}
+{%             if value is not string and value is not mapping and value is iterable %}
+{%               set section_value = (value | join(' ')) %}
+{%             endif %}
+{%             if section_value is iterable and section_value.split('\n') | count > 1 %}
+{%               set value_first = section_value.split('\n')[0] %}
+{%               set value_rest = section_value.split('\n')[1:] | join('\n') %}
+{{               '{}: {}'.format(key, value_first) }}
+{{               '{}'.format(value_rest | regex_replace('\n$','') | indent(1, true)) }}
+{%             else %}
+{{               '{}: {}'.format(key, section_value) }}
+{%             endif %}
+{%           endif %}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{% else %}
+{{   '# No incoming sources defined for {}'.format(repo.name) }}
+{% endif %}

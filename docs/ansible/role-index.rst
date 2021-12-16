@@ -106,7 +106,7 @@ are not accessed directly by end users.
 - :ref:`debops.salt`
 - :ref:`debops.telegraf`
 - :ref:`debops.tinyproxy`
-- ``debops.reprepro``
+- :ref:`debops.reprepro`
 - ``debops.sks``
 - ``debops-contrib.bitcoind``
 - ``debops-contrib.x2go_server``
@@ -291,7 +291,7 @@ packages.
 - :ref:`debops.extrepo`
 - :ref:`debops.keyring`
 - :ref:`debops.unattended_upgrades`
-- ``debops.reprepro``
+- :ref:`debops.reprepro`
 
 
 Security

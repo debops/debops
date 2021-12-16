@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
 
-# Copyright (C) 2014-2019 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2015-2019 DebOps <https://debops.org/>
+# Copyright (C) 2013      Vincent Bernat <vincent@bernat.ch>
+# Copyright (C) 2014-2021 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-# This file is managed remotely, all changes will be lost
+# {{ ansible_managed }}
 
 # Send information about repository changes to administrator
 # Sourced from: https://gist.github.com/vincentbernat/7404733
 
 
-MAIL_FROM="{{ reprepro_user + '@' + reprepro_fqdn }}"
-read -r -a MAIL_TO <<< "{{ reprepro_admin_email | join(' ') }}"
+INSTANCE="{{ repo.name }}"
+MAIL_FROM="{{ (repo.mail_name | d('Reprepro ' + repo.name + ' repository')) + ' <' + (repo.mail_from | d(reprepro__mail_from)) + '>' }}"
+read -r -a MAIL_TO <<< "{{ repo.mail_to | d(reprepro__mail_to) }}"
 
 [ -n "${REPREPRO_OUT_DIR}" ] || {
 	echo "needs to be run by reprepro!" >&2
@@ -43,8 +45,8 @@ EOF
 	cat "$dsc" >> "$tmp/mail"
 
 	mail -r "${MAIL_FROM}" \
-	     -s "[PACKAGES] $CODENAME/$COMPONENT: $ACTION $NAME" \
-	     "${MAIL_TO[@]}" < "$tmp/mail"
+		-s "[PACKAGES] ($INSTANCE) $CODENAME/$COMPONENT: $ACTION $NAME" \
+		-- "${MAIL_TO[@]}" < "$tmp/mail"
 }
 
 ACTION="$1"

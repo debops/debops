@@ -1,0 +1,14 @@
+{# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2021 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+{% if item.comment|d() %}
+{{   item.comment | regex_replace('\n$','') | comment(prefix='', postfix='') }}
+{% endif %}
+{% if item.raw|d() %}
+{{   '{}'.format(item.raw | regex_replace('\n$','')) }}
+{% else %}
+{{   '# No "{}" uploaders defined for {}'.format(item.name, repo.name) }}
+{% endif %}
