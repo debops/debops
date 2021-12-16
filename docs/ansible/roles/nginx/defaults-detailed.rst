@@ -462,9 +462,37 @@ Locations
 
        referers: [ '{{ ansible_fqdn }}' ]
 
-  ``allow`` and ``deny``
-    Lists of hosts or CIDR ranges to allow or deny, lack of deny implies
-    ``deny all;`` at the end of the allow list.
+  ``access_policy``
+    Optional, string. Specify a named "access policy" to use for this location.
+    Refer to ``nginx_access_policy_allow_map`` and similar variables for more
+    information.
+
+  ``satisfy``
+    Optional, string. Defaults to ``nginx_default_satisfy``.
+    Set the location behaviour to either accept any of ``allow, auth``
+    configuration restrictions, or require all of them to match.  By default, any
+    restriction by itself will match.  Choices: ``any``, ``all``
+
+  ``allow``
+    Optional, string or list of strings.
+    IP addresses or CIDR networks which can access the given location.
+    Automatically adds ``deny: all`` at the end of the list.
+
+  ``auth_basic``
+    Optional, boolean. Enable HTTP Basic Authentication for this location.
+
+  ``auth_basic_realm``
+    Optional. String which will be displayed to the user in the HTTP Basic Auth
+    dialog box.
+    Defaults to ``nginx_default_auth_basic_realm``.
+
+  ``auth_basic_name``
+    Optional, string. Required with ``auth_basic``. Specifies the name of the
+    htpasswd file used for this location authentication. htpasswd files are
+    stored in :file:`/etc/nginx/private/` directory.
+
+    You can use ``auth_basic_filename`` and specify the full path to the
+    htpasswd file to use; file needs to be readable by nginx system user.
 
   ``options``
     String or YAML text block with options for this location block, semicolons

@@ -38,6 +38,13 @@ Added
   This is needed so that various alternatives for :command:`iptables` backends
   can be correctly synchronized.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The ``item.location_list`` entries in the server configuration can now define
+  access policy for a specific location and use subnet ranges or password
+  authentication to control access.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
