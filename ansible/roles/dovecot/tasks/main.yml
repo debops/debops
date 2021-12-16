@@ -66,28 +66,6 @@
     mode: '0755'
   notify: [ 'Refresh host facts' ]
 
-- name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
-
-- name: Divert original Dovecot main configuration file
-  command: dpkg-divert --quiet --local
-           --divert /etc/dovecot/dovecot.conf.dpkg-divert
-           --rename /etc/dovecot/dovecot.conf
-  args:
-    creates: /etc/dovecot/dovecot.conf.dpkg-divert
-  notify: [ 'Restart dovecot' ]
-  tags: [ "role::dovecot:conf" ]
-
-- name: Generate Dovecot main configuration file
-  template:
-    src: '{{ lookup("template_src", "etc/dovecot/dovecot.conf.j2") }}'
-    dest: '/etc/dovecot/dovecot.conf'
-    owner: 'root'
-    group: 'dovecot'
-    mode: '0640'
-  notify: [ 'Restart dovecot' ]
-  tags: [ "role::dovecot:conf" ]
-
 - name: Remove old diversions
   shell: set -o nounset -o pipefail -o errexit &&
          rm -f /etc/dovecot/conf.d/{{ item }} ;
@@ -244,6 +222,28 @@
     path: '{{ dovecot__pki_hook_path + "/" + dovecot__pki_hook_name }}'
     state: 'absent'
   when: not (dovecot__pki|bool)
+
+- name: Divert original Dovecot main configuration file
+  command: dpkg-divert --quiet --local
+           --divert /etc/dovecot/dovecot.conf.dpkg-divert
+           --rename /etc/dovecot/dovecot.conf
+  args:
+    creates: /etc/dovecot/dovecot.conf.dpkg-divert
+  notify: [ 'Restart dovecot' ]
+  tags: [ "role::dovecot:conf" ]
+
+- name: Generate Dovecot main configuration file
+  template:
+    src: '{{ lookup("template_src", "etc/dovecot/dovecot.conf.j2") }}'
+    dest: '/etc/dovecot/dovecot.conf'
+    owner: 'root'
+    group: 'dovecot'
+    mode: '0640'
+  notify: [ 'Restart dovecot' ]
+  tags: [ "role::dovecot:conf" ]
+
+- name: Update Ansible facts and restart dovecot, if necessary
+  meta: 'flush_handlers'
 
 - name: Post hooks
   include: "{{ lookup('debops.debops.task_src', 'dovecot/post_main.yml') }}"
