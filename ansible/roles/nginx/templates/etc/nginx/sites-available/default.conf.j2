@@ -175,18 +175,44 @@
 {%                 if entry.options|d()                                        %}
                 {{ entry.options | indent(16) | regex_replace("(?m)^\s*$", "") }}
 {%                 endif                                                       %}
-{%                 if entry.allow|d()                                          %}
-{%                     for address in entry.allow | unique                     %}
+{%                 if entry.access_policy|d() and (entry.access_policy in nginx_access_policy_satisfy_map) %}
+                satisfy {{ nginx_access_policy_satisfy_map[entry.access_policy] }};
+
+{%                 elif entry.allow|d() or
+                        (entry.auth_basic|d() | bool) or
+                        (entry.satisfy|d()) or
+                        (entry.access_policy|d() and
+                         entry.access_policy not in nginx_access_policy_satisfy_map) %}
+                satisfy {{ entry.satisfy | default(nginx_default_satisfy) }};
+
+{%                 endif                                                            %}
+{%                 if entry.allow|d() or entry.access_policy|d()    %}
+{%                     if entry.allow is defined                   %}
+{%                         if entry.allow is string                %}
+                allow {{ entry.allow }};
+{%                         else                                   %}
+{%                             for address in entry.allow | unique %}
                 allow {{ address }};
-{%                     endfor                                                  %}
-{%                     if entry.deny|d()                                       %}
-{%                         for address in entry.deny | unique                  %}
-                deny {{ address }};
-{%                         endfor                                              %}
-{%                     else                                                    %}
+{%                             endfor                             %}
+{%                         endif                                  %}
+{%                     endif                                      %}
+{%                     if entry.access_policy|d() and (entry.access_policy in nginx_access_policy_allow_map) %}
+{%                         for address in nginx_access_policy_allow_map[entry.access_policy] | unique       %}
+                allow {{ address }};
+{%                         endfor                                                                          %}
+{%                     endif                                                                               %}
                 deny all;
-{%                     endif                                                   %}
-{%                 endif                                                       %}
+
+{%                 endif                                                                                   %}
+{%                 if entry.access_policy|d() and (entry.access_policy in nginx_access_policy_auth_basic_map) %}
+                auth_basic "{{ entry.auth_basic_realm|d(nginx_default_auth_basic_realm) }}";
+                auth_basic_user_file {{ nginx_private_path + "/" + nginx_access_policy_auth_basic_map[entry.access_policy] }};
+
+{%                 elif entry.auth_basic|d() | bool %}
+                auth_basic "{{ entry.auth_basic_realm|d(nginx_default_auth_basic_realm) }}";
+                auth_basic_user_file {{ entry.auth_basic_filename | default(nginx_private_path + "/" + entry.auth_basic_name|d()) }};
+
+{%                 endif %}
 {%                 if entry.locations|d()                                      %}
 {{ print_location_list(entry.locations) | indent(8, true) | regex_replace("(?m)^\s*$", "") }}
 {%                 endif                                                       %}
