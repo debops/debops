@@ -327,6 +327,13 @@ Continuous Integration
 
   .. __: https://keyserver.ubuntu.com/
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The ``item.location_list`` entries in the server configuration can now define
+  access policy for a specific location and use subnet ranges or password
+  authentication to control access.
+
 :ref:`debops.php` role
 ''''''''''''''''''''''
 
