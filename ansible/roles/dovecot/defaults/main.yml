@@ -36,15 +36,15 @@
 #  - ``dsync``
 #
 # Note that ``imaps`` and ``pop3s`` (implicit TLS) are recommended
-# over ``imap`` and ``pop3`` (explicit TLS) by RFC8314. Furthermore,
+# over ``imap`` and ``pop3`` (explicit TLS) by :rfc:`8314`. Furthermore,
 # LMTP is recommended over LDA by the Dovecot project.
 dovecot__features: [ 'imap', 'imaps', 'lmtp', 'sieve', 'quota' ]
 
                                                                    # ]]]
 # .. envvar:: dovecot__auth_mechanisms [[[
 #
-# List of authentication mechanisms enabled. So far supported are:
-# ``plain``, ``login``
+# List of authentication mechanisms enabled. Currently ``plain`` and
+# ``login`` are supported.
 dovecot__auth_mechanisms: [ 'plain', 'login' ]
 
                                                                    # ]]]
@@ -84,15 +84,17 @@ dovecot__deny_users: [ 'root' ]
                                                                    # ]]]
 # .. envvar:: dovecot__mail_location [[[
 #
-# Mailbox location. For mbox set something like ``mbox:~/mail:INBOX=/var/mail/%u``.
-# For more information about the supported format, check `Dovecot Mail
-# Location <https://doc.dovecot.org/configuration_manual/mail_location/>`_
+# Mailbox location. For mbox set something like
+# ``mbox:~/mail:INBOX=/var/mail/%u``.  For more information about the supported
+# format, see the `Dovecot Mail Location`__ documentation.
+#
+# .. __: https://doc.dovecot.org/configuration_manual/mail_location/
 dovecot__mail_location: 'maildir:~/Maildir'
 
                                                                    # ]]]
 # .. envvar:: dovecot__auth_default_realm [[[
 #
-# The default domain (realm) to add to the usernames that don't specify one.
+# The default domain (realm) to add to the usernames that don't include one.
 # Required to correctly point the clients to their mailbox directories.
 dovecot__auth_default_realm: '{{ ansible_domain }}'
 
@@ -101,36 +103,42 @@ dovecot__auth_default_realm: '{{ ansible_domain }}'
 # Virtual Mail [[[
 # ----------------
 #
-# These settings enable `postfix` to host multiple (virtual) domains and to
-# manage mail for users which do not necessarily need to have local system
-# account.
+# These settings makes it possible to host multiple (virtual) domains and to
+# manage mail for users which do not need to have a local system account.
 #
 
 # .. envvar:: dovecot__vmail_enabled [[[
 #
 # Whether the virtual mail support should be enabled.
-dovecot__vmail_enabled: '{{ True if (dovecot__user_accounts | intersect(["mysql", "pgsql", "sqlite", "ldap", "passwdfile" ])) else False }}'
+dovecot__vmail_enabled: '{{ True if (dovecot__user_accounts |
+                                     intersect(["mysql", "pgsql", "sqlite",
+                                                "ldap", "passwdfile" ]))
+                            else False }}'
 
+                                                                   # ]]]
 # .. envvar:: dovecot__vmail_posix_user [[[
 #
-# Virtual Mail POSIX username
-# For the accesses to the mailbox directories a separate user `vmail` (`Virtual Mail`) is created,
-# under which the accesses of Postfix, Dovecot and other components of the mail server should take place.
-# On the one hand this prevents mail server components from accessing sensitive system directories,
-# on the other hand it protects the mailboxes from external access.
-# Only vmail (and root) are allowed to access the mailboxes.
-dovecot__vmail_posix_user: '{{ ansible_local.postldap.vmail_posix_user|d("vmail") }}'
+# A separate user `vmail` (`Virtual Mail`), which owns the mailbox directories
+# and is used by the various mail daemons to store and access the stored email,
+# can be used.  On the one hand this prevents mail daemons components from
+# accessing sensitive system directories, on the other hand it protects the
+# mailboxes from external access. Only the vmail user and root are allowed to
+# access the mailboxes.
+dovecot__vmail_posix_user: '{{ ansible_local.postldap.vmail_posix_user
+                               | d("vmail") }}'
+
                                                                    # ]]]
 # .. envvar:: dovecot__vmail_posix_group [[[
 #
-# Virtual Mail POSIX group
-#
-dovecot__vmail_posix_group: '{{ ansible_local.postldap.vmail_posix_group|d("vmail") }}'
+# Virtual Mail POSIX group.
+dovecot__vmail_posix_group: '{{ ansible_local.postldap.vmail_posix_group
+                                | d("vmail") }}'
+
                                                                    # ]]]
 # .. envvar:: dovecot__vmail_base [[[
 #
 # The base directory where user mail directories are located, which also
-# serves as the `home` directory for the ``dovecot__vmail_posix_user``.
+# serves as the `home` directory for the :envvar:`dovecot__vmail_posix_user`.
 # This directory is used as the base for the virtual mail home directory paths
 # and is used e.g. as a prefix for the ``mailHomeDirectory`` LDAP attribute if
 # it's found in the LDAP lookups.
@@ -139,10 +147,12 @@ dovecot__vmail_base: '/var/vmail'
                                                                    # ]]]
 # .. envvar:: dovecot__vmail_home [[[
 #
-# The vmail home directory is a per-user directory where Dovecot can save user-specific files.
-# Dovecot's home directories have nothing to do with system users' home directories.
-# It's irrelevant if it's under /home/ or /var/mail/ or wherever.
-# For more information see: `Home Directories for Virtual Users <https://wiki.dovecot.org/VirtualUsers/Home>`_.
+# The vmail home directory is a per-user directory where Dovecot can save
+# user-specific files. Dovecot's home directories have nothing to do with
+# system users' home directories. For more information, see `Home Directories
+# for Virtual Users`__.
+#
+# .. __: https://wiki.dovecot.org/VirtualUsers/Home
 dovecot__vmail_home: '{{ dovecot__vmail_base ~ "/%d/%n" }}'
 
                                                                    # ]]]
@@ -150,11 +160,11 @@ dovecot__vmail_home: '{{ dovecot__vmail_base ~ "/%d/%n" }}'
 # DSync Settings [[[
 # --------------
 #
-# Dovecot supports master/master replication using dsync.
-# The replication is done asynchronously, so high latency between the replicas
-# isn't a problem. The replication is done by looking at Dovecot index files
-# (not what exists in filesystem), so no mails get lost due to filesystem
-# corruption or an accidental rm -rf, they will simply be replicated back.
+# Dovecot supports master/master replication using dsync.  The replication is
+# done asynchronously, so high latency between the replicas isn't a problem.
+# The replication is done by looking at Dovecot index files (not what exists in
+# the filesystem), so no mails get lost due to filesystem corruption or an
+# accidental deletion, they will simply be replicated back.
 #
 # Replication works only between server pairs. Currently dsync is only
 # supported together with a virtual email user since dsync would need root
@@ -187,7 +197,7 @@ dovecot__dsync_replica: '{{ ("tcps" if dovecot__pki|d(True) else "tcp") ~ ":" ~
 #
 # Directory on the Ansible Host where the dsync password will be stored.
 # By default it's stored relative to the :file:`secret/` directory in the
-# DebOps project directory. See :ref:`debops.secret` role for more details.
+# DebOps project directory. See the :ref:`debops.secret` role for more details.
 dovecot__dsync_password_path: '{{ "dovecot/credentials/dsync.password" }}'
 
                                                                    # ]]]
@@ -209,32 +219,46 @@ dovecot__dsync_password: '{{ lookup("password", secret + "/"
 #
 # Driver-specific database connection string.
 #
-# pgsql:
+# pgsql
 #   For available options, see the PostgreSQL documention for the
-#   PQconnectdb function of libpq.
-#   Use maxconns=n (default 5) to change how many connections Dovecot can
-#   create to pgsql.
+#   PQconnectdb function of libpq. Use `maxconns=n` (default 5) to
+#   change how many connections Dovecot can create to pgsql.
 #
-# mysql:
-#   Basic options emulate PostgreSQL option names:
-#     host, port, user, password, dbname
+# mysql
+#   Basic options (host, port, user, password, dbname) are the same as
+#   for PostgreSQL. Additional settings include:
 #
-#   But also adds some new settings:
-#     client_flags           - See MySQL manual
-#     ssl_ca, ssl_ca_path    - Set either one or both to enable SSL
-#     ssl_cert, ssl_key      - For sending client-side certificates to server
-#     ssl_cipher             - Set minimum allowed cipher security (default: HIGH)
-#     ssl_verify_server_cert - Verify that the name in the server SSL certificate matches the host (default: no)
-#     option_file            - Read options from the given file instead of the default my.cnf location
-#     option_group           - Read options from the given group (default: client)
+#     client_flags
+#       See MySQL manual
 #
-#   You can connect to UNIX sockets by using host: host=/var/run/mysql.sock
+#     ssl_ca, ssl_ca_path
+#       Set either one or both to enable SSL
+#
+#     ssl_cert, ssl_key
+#       For sending client-side certificates to server
+#
+#     ssl_cipher
+#       Set minimum allowed cipher security (default: HIGH)
+#
+#     ssl_verify_server_cert
+#       Verify that the name in the server SSL certificate matches the host (default: no)
+#
+#     option_file
+#       Read options from the given file instead of the default my.cnf location
+#
+#     option_group
+#       Read options from the given group (default: client)
+#
+#   You can connect to UNIX sockets by using `host=/var/run/mysql.sock`
 #   Note that currently you can't use spaces in parameters.
 #
-# sqlite:
+# sqlite
 #   The path to the database file.
 #
 # Examples:
+#
+# ::
+#
 #   connect = host=192.168.1.1 dbname=users
 #   connect = host=sql.example.com dbname=virtual user=virtual password=blarg
 #   connect = /etc/dovecot/authdb.sqlite
@@ -258,9 +282,10 @@ dovecot__sql__connect: ''
                                                                    # ]]]
 # .. envvar:: dovecot__sql__default_pass_scheme [[[
 #
-# Default passwort scheme for passwords, stored in a SQL database.
-# For more information about the supported schemes, check `Authentication /
-# PasswordSchemes <https://doc.dovecot.org/configuration_manual/authentication/password_schemes/>`_
+# Default password scheme for passwords, stored in a SQL database.  For more
+# information about the supported schemes, check `Authentication /
+# PasswordSchemes
+# <https://doc.dovecot.org/configuration_manual/authentication/password_schemes/>`_.
 dovecot__sql__default_pass_scheme: 'SSHA512'
 
                                                                    # ]]]
@@ -276,49 +301,52 @@ dovecot__sql__password_query: "SELECT userid AS username, domain, password FROM 
 # SQL query string to get the userdb. This function should return the values
 # ``home``, ``uid`` and ``gid``.
 #
-# Optional the mail_location can be defined with the option ``mail``.
-# For more information about the mail_location, check `MailLocation
-# <https://doc.dovecot.org/configuration_manual/mail_location/>`_
+# Optionally the ``mail_location`` can be defined with the option ``mail``,
+# see `MailLocation`__.
+#
+# .. __: https://doc.dovecot.org/configuration_manual/mail_location/
 dovecot__sql__user_query: "SELECT home, uid, gid FROM users WHERE userid = '%n' AND domain = '%d'"
 
                                                                    # ]]]
 # .. envvar:: dovecot__sql__iterate_query [[[
 #
-# SQL query string to get a list of users. This function should return all values
-# ``user`` or both ``username`` and ``domain``.
+# SQL query string to get a list of users. This function should return all
+# valid users (``user`` or ``username`` and ``domain``).
 #
-# For more information about the iterate query , check `AuthDatabase/SQL
-# <https://wiki2.dovecot.org/AuthDatabase/SQL#User_iteration>` _
+# For more information about the iterate query , see
+# the `Dovecot SQL documentation`__.
+#
+# .. __: https://doc.dovecot.org/configuration_manual/authentication/sql/
 dovecot__sql__iterate_query: "SELECT userid AS username, domain FROM users"
 
                                                                    # ]]]
 # .. envvar:: dovecot__passwdfile_scheme [[[
 #
-# Scheme method use by dovecot with password authentication
+# Encryption scheme to use with password authentication.
 dovecot__passwdfile_scheme: 'sha512-crypt'
 
                                                                    # ]]]
 # .. envvar:: dovecot__passwdfile_path [[[
 #
-# Path to the dovecot password file
+# Path to the :command:`dovecot` password file.
 dovecot__passwdfile_path: '/etc/dovecot/private/'
 
                                                                    # ]]]
 # .. envvar:: dovecot__passwdfile_name [[[
 #
-# Name of the dovecot password file
+# Name of the :command:`dovecot` password file.
 dovecot__passwdfile_name: 'passwd'
 
                                                                    # ]]]
 # .. envvar:: dovecot__checkpassword_passdb_command [[[
 #
-# Command to fetch password database in checkpassword auth mode
+# Command to fetch the password database in checkpassword auth mode.
 dovecot__checkpassword_passdb_command: '/usr/bin/checkpassword'
                                                                    # ]]]
                                                                    # ]]]
 # .. envvar:: dovecot__checkpassword_userdb_command [[[
 #
-# Command to fetch user database in checkpassword auth mode
+# Command to fetch the user database in checkpassword auth mode.
 dovecot__checkpassword_userdb_command: '/usr/bin/checkpassword'
                                                                    # ]]]
                                                                    # ]]]
@@ -327,60 +355,58 @@ dovecot__checkpassword_userdb_command: '/usr/bin/checkpassword'
 
 # .. envvar:: dovecot__pki [[[
 #
-# Enable or disable support for TLS in Dovecot (using debops.pki)
+# Enable or disable support for TLS/SSL using :ref:`debops.pki`.
 dovecot__pki: '{{ ansible_local.pki.enabled|d() | bool }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__pki_path [[[
 #
-# Base PKI directory
+# Base PKI directory.
 dovecot__pki_path: '{{ ansible_local.pki.path|d("/etc/pki/realms") }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__pki_realm [[[
 #
-# Default PKI realm used by Dovecot
+# Default PKI realm.
 dovecot__pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__pki_ca [[[
 #
-# Name of the Root Certificate Authority certificate file used by Postfix,
-# relative to the PKI realm directory.
+# Name of the Root Certificate Authority certificate file, relative to the PKI
+# realm directory.
 dovecot__pki_ca: '{{ ansible_local.pki.ca|d("CA.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__pki_crt [[[
 #
-# Default certificate, relative to ``dovecot__pki_realm`` variable
+# Default certificate, relative to the :envvar:`dovecot__pki_realm` variable.
 dovecot__pki_crt: '{{ ansible_local.pki.crt|d("default.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__pki_key [[[
 #
-# Default private key, relative to ``dovecot__pki_realm`` variable
+# Default private key, relative to the :envvar:`dovecot__pki_realm` variable.
 dovecot__pki_key: '{{ ansible_local.pki.key|d("default.key") }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__tls_ca_cert_dir [[[
 #
-# Directory containing X509 Certification  Authority  certificates
-# in  PEM  format  which  are  to  be  recognized by the client in
-# SSL/TLS connections. The files each contain one CA  certificate.
+# Directory containing X509 Certification Authority certificates.
 dovecot__tls_ca_cert_dir: '/etc/ssl/certs/'
                                                                    # ]]]
 # .. envvar:: dovecot__ssl_required [[[
 #
 # Requires SSL/TLS also for non-plaintext authentication. For more
-# information check ``ssl_required`` in `Dovecot SSL Configuration
-# <https://wiki.dovecot.org/SSL/DovecotConfiguration>`_
+# information check ``ssl_required`` in the `Dovecot SSL Configuration`__.
+#
+# .. __: https://doc.dovecot.org/configuration_manual/dovecot_ssl_configuration/
 dovecot__ssl_required: True
 
                                                                    # ]]]
 # .. envvar:: dovecot__ssl_min_protocol [[[
 #
-# SSL ciphers to use. On new distros you only specify the minimum ssl
-# protocol version Dovecot accepts, defaulting to TLSv1.2.
+# SSL ciphers to use.
 dovecot__ssl_min_protocol: '{{ "!SSLv2 !SSLv3"
                               if (ansible_distribution_release in
                                 [ "jessie", "precise", "trusty" ])
@@ -389,50 +415,53 @@ dovecot__ssl_min_protocol: '{{ "!SSLv2 !SSLv3"
                                                                    # ]]]
 # .. envvar:: dovecot__ssl_dh_parameters_length [[[
 #
-# Diffie-Hellman parameters length
-# Only needed for Dovecot v2.2.x in old-distros.
+# Diffie-Hellman parameters length.
 dovecot__ssl_dh_parameters_length: 4096
 
                                                                    # ]]]
 # .. envvar:: dovecot__ssl_cipher_list [[[
 #
-# SSL ciphers to use
+# SSL ciphers to use.
 dovecot__ssl_cipher_list: '{{ dovecot__ssl_cipher_list_default }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__ssl_cipher_list_default [[[
 #
-# Default SSL ciphers
+# Default SSL ciphers.
 dovecot__ssl_cipher_list_default: 'ALL:!kRSA:!SRP:!kDHd:!DSS:!aNULL:!eNULL:!EXPORT:!DES:!3DES:!MD5:!PSK:!RC4:!ADH:!LOW@STRENGTH'
 
                                                                    # ]]]
 # .. envvar:: dovecot__ssl_cipher_list_better_crypto [[[
 #
-# https://bettercrypto.org/
+# See the `bettercrypto.org`__ guide.
+#
+# .. __: https://bettercrypto.org/
 dovecot__ssl_cipher_list_better_crypto: 'EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA256:EECDH:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH:CAMELLIA128-SHA:AES128-SHA'
 
                                                                    # ]]]
 # .. envvar:: dovecot__ssl_cipher_list_ncsc_nl [[[
 #
-# 'good' cipher suite from NCSC-NL TLS Guidelines v2.1
-# https://english.ncsc.nl/publications/publications/2021/january/19/it-security-guidelines-for-transport-layer-security-2.1
+# The 'good' cipher suite from the `NCSC-NL TLS Guidelines v2.1`__.
+#
+# .. __: https://english.ncsc.nl/publications/publications/2021/january/19/it-security-guidelines-for-transport-layer-security-2.1
 dovecot__ssl_cipher_list_ncsc_nl: 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-RSA-AES128-GCM-SHA256'
                                                                    # ]]]
 # .. envvar:: dovecot__pki_hook_name [[[
 #
-# Name of the hook script which will be stored in hook directory.
+# Name of the :ref:`debops.pki` hook script.
 dovecot__pki_hook_name: 'dovecot'
 
                                                                    # ]]]
 # .. envvar:: dovecot__pki_hook_path [[[
 #
-# Directory with PKI hooks.
+# Directory for the :ref:`debops.pki` hooks.
 dovecot__pki_hook_path: '{{ ansible_local.pki.hooks|d("/etc/pki/hooks") }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__pki_hook_action [[[
 #
-# Specify how changes in PKI should affect dovecot, either 'reload' or 'restart'.
+# Specify how changes in PKI should affect dovecot, either 'reload' or
+# 'restart'.
 dovecot__pki_hook_action: 'reload'
                                                                    # ]]]
                                                                    # ]]]
@@ -448,24 +477,24 @@ dovecot__dhparam: '{{ ansible_local.dhparam.enabled
                           ansible_local.dhparam.enabled is defined)
                       else False }}'
 
-# ]]]
+                                                                   # ]]]
 # .. envvar:: dovecot__dhparam_set [[[
 #
-# Name of the Diffie-Hellman parameter set to use in Dovecot configuration. See
+# Name of the Diffie-Hellman parameter set to use. See the
 # :ref:`debops.dhparam` Ansible role for more details.
 dovecot__dhparam_set: 'default'
 
-# ]]]
+                                                                   # ]]]
 # .. envvar:: dovecot__ssl_dh_file [[[
 #
-# Absolute path to Diffie-Hellman parameters file which should be used by Dovecot.
+# Absolute path to the Diffie-Hellman parameters file which should be used.
 dovecot__ssl_dh_file: '{{ ansible_local.dhparam[dovecot__dhparam_set]
                           if (ansible_local|d() and ansible_local.dhparam|d() and
                             ansible_local.dhparam[dovecot__dhparam_set]|d())
                           else "" }}'
 
-# ]]]
-# ]]]
+                                                                   # ]]]
+                                                                   # ]]]
 # Dovecot custom configuration [[[
 # --------------------------------
 
@@ -474,7 +503,8 @@ dovecot__ssl_dh_file: '{{ ansible_local.dhparam[dovecot__dhparam_set]
 
 # .. envvar:: dovecot__default_configuration [[[
 #
-# The default :command:`dovecot` configuration options defined by the role.
+# The default :command:`dovecot` configuration options defined by the role. See
+# :ref:`dovecot__ref_configuration_syntax` for details.
 dovecot__default_configuration:
 
   - section: 'main'
@@ -484,7 +514,8 @@ dovecot__default_configuration:
       - name: 'protocols'
         comment: 'Currently active protocols'
         value: "{{ dovecot__features |
-                   intersect(['imap', 'imaps', 'pop3', 'pop3s', 'sieve', 'lmtp']) |
+                   intersect(['imap', 'imaps', 'pop3',
+                              'pop3s', 'sieve', 'lmtp']) |
                    map('regex_replace', '^(imap|pop3)s$', '\\1') |
                    list | unique | join(' ') }}"
 
@@ -517,10 +548,13 @@ dovecot__default_configuration:
         option: 'passdb'
         state: '{{ "present" if "deny" in dovecot__user_accounts else "absent" }}'
         options:
+
           - name: 'driver'
             value: 'passwd-file'
+
           - name: 'deny'
             value: 'yes'
+
           - name: 'args'
             value: '/etc/dovecot/dovecot.deny'
 
@@ -528,8 +562,10 @@ dovecot__default_configuration:
         option: 'passdb'
         state: '{{ "present" if "system" in dovecot__user_accounts else "absent" }}'
         options:
+
           - name: 'driver'
             value: 'pam'
+
           - name: 'args'
             value: 'session=yes dovecot'
 
@@ -537,8 +573,10 @@ dovecot__default_configuration:
         option: 'userdb'
         state: '{{ "present" if "system" in dovecot__user_accounts else "absent" }}'
         options:
+
           - name: 'driver'
             value: 'passwd'
+
           - name: 'args'
             value: 'blocking=no'
 
@@ -547,8 +585,10 @@ dovecot__default_configuration:
         state: '{{ "present" if (dovecot__user_accounts | d([]) |
                      intersect(["mysql", "pgsql", "sqlite"])) else "absent" }}'
         options:
+
           - name: 'driver'
             value: 'sql'
+
           - name: 'args'
             value: '/etc/dovecot/dovecot-sql.conf.ext'
 
@@ -557,8 +597,10 @@ dovecot__default_configuration:
         state: '{{ "present" if (dovecot__user_accounts | d([]) |
                      intersect(["mysql", "pgsql", "sqlite"])) else "absent" }}'
         options:
+
           - name: 'driver'
             value: 'sql'
+
           - name: 'args'
             value: '/etc/dovecot/dovecot-sql.conf.ext'
 
@@ -566,8 +608,10 @@ dovecot__default_configuration:
         option: 'passdb'
         state: '{{ "present" if "ldap" in dovecot__user_accounts else "absent" }}'
         options:
+
           - name: 'driver'
             value: 'ldap'
+
           - name: 'args'
             value: '/etc/dovecot/dovecot-ldap-passdb.conf'
 
@@ -575,8 +619,10 @@ dovecot__default_configuration:
         option: 'userdb'
         state: '{{ "present" if "ldap" in dovecot__user_accounts else "absent" }}'
         options:
+
           - name: 'driver'
             value: 'ldap'
+
           - name: 'args'
             value: '/etc/dovecot/dovecot-ldap-userdb.conf'
 
@@ -584,8 +630,10 @@ dovecot__default_configuration:
         option: 'passdb'
         state: '{{ "present" if "passwdfile" in dovecot__user_accounts else "absent" }}'
         options:
+
           - name: 'driver'
             value: 'passwd-file'
+
           - name: 'args'
             value: 'scheme={{ dovecot__passwdfile_scheme }} {{ dovecot__passwdfile_path }}/{{ dovecot__passwdfile_name }}'
 
@@ -593,14 +641,18 @@ dovecot__default_configuration:
         option: 'userdb'
         state: '{{ "present" if "passwdfile" in dovecot__user_accounts else "absent" }}'
         options:
+
           - name: 'driver'
             value: 'static'
+
           - name: 'args'
             value: 'uid={{ dovecot__vmail_posix_user }} gid={{ dovecot__vmail_posix_group }} home={{ dovecot__vmail_home }}'
+
           - name: 'default_fields'
             value: 'quota_rule=*:storage=1G'
             comment: 'Default fields that can be overridden by passwd-file'
             state: 'comment'
+
           - name: 'override_fields'
             value: 'home=/home/virtual/%u'
             comment: 'Override fields from passwd-file'
@@ -611,8 +663,10 @@ dovecot__default_configuration:
         state: '{{ "present" if ("checkpassword" in dovecot__user_accounts and
                      dovecot__checkpassword_passdb_command|d()) else "absent" }}'
         options:
+
           - name: 'driver'
             value: 'checkpassword'
+
           - name: 'args'
             value: '{{ dovecot__checkpassword_passdb_command }}'
 
@@ -621,6 +675,7 @@ dovecot__default_configuration:
         state: '{{ "present" if ("checkpassword" in dovecot__user_accounts and
                      dovecot__checkpassword_userdb_command|d()) else "absent" }}'
         options:
+
           - name: 'driver'
             value: 'prefetch'
 
@@ -629,8 +684,10 @@ dovecot__default_configuration:
         state: '{{ "present" if ("checkpassword" in dovecot__user_accounts and
                      dovecot__checkpassword_userdb_command|d()) else "absent" }}'
         options:
+
           - name: 'driver'
             value: 'checkpassword'
+
           - name: 'args'
             value: '{{ dovecot__checkpassword_userdb_command }}'
 
@@ -742,10 +799,13 @@ dovecot__default_configuration:
 
           - name: 'unix_listener /var/spool/postfix/private/dovecot-lmtp'
             options:
+
               - name: 'mode'
                 value: '0660'
+
               - name: 'group'
                 value: 'postfix'
+
               - name: 'user'
                 value: 'postfix'
 
@@ -822,10 +882,13 @@ dovecot__default_configuration:
 
           - name: 'unix_listener /var/spool/postfix/private/auth'
             options:
+
               - name: 'mode'
                 value: '0660'
+
               - name: 'group'
                 value: 'postfix'
+
               - name: 'user'
                 value: 'postfix'
 
@@ -833,10 +896,13 @@ dovecot__default_configuration:
             state: '{{ "present" if (dovecot__vmail_enabled|d(False) and
                          "lmtp" in dovecot__features) else "absent" }}'
             options:
+
               - name: 'mode'
                 value: '0660'
+
               - name: 'group'
                 value: '{{ dovecot__vmail_posix_group }}'
+
               - name: 'user'
                 value: '{{ dovecot__vmail_posix_user }}'
 
@@ -908,6 +974,7 @@ dovecot__default_configuration:
 
       - name: 'namespace inbox'
         options:
+
           - name: 'inbox'
             value: 'yes'
             comment: 'There can be only one INBOX, and this setting defines which namespace has it.'
@@ -916,50 +983,66 @@ dovecot__default_configuration:
             options:
               - name: 'special_use'
                 value: '\Drafts'
+
           - name: 'mailbox Junk'
             options:
               - name: 'special_use'
                 value: '\Junk'
+
           - name: 'mailbox Trash'
             comment: |
               If you change the name of this mailbox and use LDAP,
               dovecot__ldap_trash_field also needs to be updated.
             options:
+
               - name: 'special_use'
                 value: '\Trash'
+
           - name: 'mailbox Sent'
             comment: |
               For \Sent mailboxes there are two widely used names. We'll mark both of
               them as \Sent. User typically deletes one of them if duplicates are created.
             options:
+
               - name: 'special_use'
                 value: '\Sent'
+
           - name: 'mailbox "Sent Messages"'
             options:
+
               - name: 'special_use'
                 value: '\Sent'
+
           - name: 'mailbox virtual/All'
             comment: 'If you have a virtual "All Messages" mailbox:'
             state: 'comment'
             options:
+
               - name: 'special_use'
                 value: '\All'
+
               - name: 'comment'
                 value: 'All my messages'
+
           - name: 'mailbox virtual/Flagged'
             comment: 'If you have a virtual "Flagged" mailbox:'
             state: 'comment'
             options:
+
               - name: 'special_use'
                 value: '\Flagged'
+
               - name: 'comment'
                 value: 'All my flagged messages'
+
           - name: 'mailbox virtual/Important'
             comment: 'If you have a virtual "Important" mailbox:'
             state: 'comment'
             options:
+
               - name: 'special_use'
                 value: '\Important'
+
               - name: 'comment'
                 value: 'All my important messages'
 
@@ -1006,8 +1089,8 @@ dovecot__host_configuration: []
                                                                    # ]]]
 # .. envvar:: dovecot__combined_configuration [[[
 #
-# The variable that combines other :command:`dovecot` configuration options and
-# is used in the dovecot.conf template.
+# The variable that combines other :command:`dovecot` configuration options for
+# use in the :file:`/etc/dovecot/dovecot.conf` template.
 dovecot__combined_configuration: '{{ dovecot__default_configuration
                                       + dovecot__configuration
                                       + dovecot__group_configuration
@@ -1058,7 +1141,7 @@ dovecot__mail_plugins_lmtp:
                                                                    # ]]]
 # .. envvar:: dovecot__sieve_dir [[[
 #
-# Storage directory for sieve scripts uploaded by ManageSieve
+# Storage directory for sieve scripts.
 dovecot__sieve_dir: 'file:~/sieve;active=~/.dovecot.sieve'
 
                                                                    # ]]]
@@ -1068,7 +1151,7 @@ dovecot__sieve_dir: 'file:~/sieve;active=~/.dovecot.sieve'
 
 # .. envvar:: dovecot__accept_any [[[
 #
-# Specofy the default firewall policy for dovecot IMAP services.
+# The default firewall policy for dovecot services.
 #
 # If ``True``, any host can connect to the dovecot daemon unless allow
 # restrictions are defined using the variables below.
@@ -1103,26 +1186,25 @@ dovecot__allow_pop3s: []
                                                                    # ]]]
 # .. envvar:: dovecot__allow_doveadm [[[
 #
-# List of hosts/networks that can access the ``doveadm`` port (12345, used for dsync).
+# List of hosts/networks that can access the ``doveadm`` port (12345, used for
+# dsync).
 dovecot__allow_doveadm:
   - '{{ dovecot__dsync_host }}'
                                                                    # ]]]
 # .. envvar:: dovecot__allow_sieve [[[
 #
-# List of hosts/networks that can access the ``ManageSieve Protocol`` port (4190).
+# List of hosts/networks that can access the ``ManageSieve Protocol`` port
+# (4190).
 dovecot__allow_sieve: []
                                                                    # ]]]
                                                                    # ]]]
 # LDAP [[[
 # --------
 
-# LDAP authentication [[[
-# ^^^^^^^^^^^^^^^^^^^^^^
-
 # .. envvar:: dovecot__ldap_enabled [[[
 #
-# In order to enable Virtual Mail support LDAP authentication needs to be enabled.
-# When enabled, `dovecot` will authenticate users against LDAP and authorize access to the user's mailbox.
+# When enabled, :command:`dovecot` will authenticate users against LDAP and
+# authorize access to the user's mailbox.
 dovecot__ldap_enabled: '{{ True
                            if (ansible_local|d() and ansible_local.ldap|d() and
                               (ansible_local.ldap.enabled|d())|bool)
@@ -1131,16 +1213,15 @@ dovecot__ldap_enabled: '{{ True
 # .. envvar:: dovecot__ldap_base_dn [[[
 #
 # The base Distinguished Name which should be used to create Distinguished
-# Names of the LDAP directory objects, defined as a YAML list.
+# Names of the LDAP directory objects.
 dovecot__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_device_dn [[[
 #
-# The Distinguished Name of the current host LDAP object, defined as a YAML
-# list. It will be used as a base for the Postfix/Dovecot Virtual Mail service account LDAP
-# object. If the list is empty, the role will not create the account LDAP
-# object automatically.
+# The Distinguished Name of the current host LDAP object.  It will be used as a
+# base for the Virtual Mail service account LDAP object. If empty, the role
+# will not create the account LDAP object automatically.
 dovecot__ldap_device_dn: '{{ ansible_local.ldap.device_dn|d([]) }}'
 
                                                                    # ]]]
@@ -1154,33 +1235,31 @@ dovecot__ldap_self_rdn: 'uid=dovecot'
 # .. envvar:: dovecot__ldap_self_object_classes [[[
 #
 # List of the LDAP object classes which will be used to create the LDAP object
-# used by the `dovecot` service to access the LDAP directory.
+# used by the :command:`dovecot` service to access the LDAP directory.
 dovecot__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
 
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_self_attributes [[[
 #
 # YAML dictionary that defines the attributes of the LDAP object used by the
-# `dovecot` service to access the LDAP directory.
+# :command:`dovecot` service to access the LDAP directory.
 dovecot__ldap_self_attributes:
   uid: '{{ dovecot__ldap_self_rdn.split("=")[1] }}'
   userPassword: '{{ dovecot__ldap_bindpw }}'
   host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
   description: 'Account used by the "Dovecot" service to access the LDAP directory'
 
-  # ]]]
+                                                                   # ]]]
 # .. envvar:: dovecot__ldap_binddn [[[
 #
-# The Distinguished Name of the account LDAP object used by the
-# Dovecot service to bind to the LDAP directory.
+# The Distinguished Name used to bind to the LDAP directory.
 dovecot__ldap_binddn: '{{ ([ dovecot__ldap_self_rdn ]
                              + dovecot__ldap_device_dn) | join(",") }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_bindpw [[[
 #
-# The password stored in the account LDAP object used by the `dovecot` service
-# to bind to the LDAP directory.
+# The password used to bind to the LDAP directory.
 dovecot__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
                           + dovecot__ldap_binddn | to_uuid + ".password length=32 "
                           + "chars=ascii_letters,digits,!@_$%^&*") }}'
@@ -1189,25 +1268,19 @@ dovecot__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
 # .. envvar:: dovecot__ldap_people_rdn [[[
 #
 # The Relative Distinguished Name of the LDAP object which contains the user
-# accounts stored in LDAP.
+# accounts in LDAP.
 dovecot__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn|d("ou=People") }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_people_dn [[[
 #
-# The Distinguished Name of the LDAP object which contains the user accounts
-# used by Postfix and Dovecot.
+# The Distinguished Name of the LDAP object which contains the user accounts.
 dovecot__ldap_people_dn: '{{ [ dovecot__ldap_people_rdn ]
                                + dovecot__ldap_base_dn }}'
                                                                    # ]]]
-                                                                   # ]]]
-# LDAP connection options [[[
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 # .. envvar:: dovecot__ldap_uri [[[
 #
-# List of LDAP URIs that point to the directory servers which should be used by
-# `dovecot` service.
+# List of LDAP URIs that point to the directory servers which should be used.
 dovecot__ldap_uri: '{{ ansible_local.ldap.uri|d([""]) }}'
 
                                                                    # ]]]
@@ -1219,17 +1292,12 @@ dovecot__ldap_server_port: '{{ ansible_local.ldap.port|d(("389" if dovecot__ldap
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_start_tls [[[
 #
-# If ``True``, Postfix will use STARTTLS extension to make encrypted
-# connections to the LDAP server.
+# If ``True``, STARTTLS will be used to connect to the LDAP server.
 dovecot__ldap_start_tls: '{{ ansible_local.ldap.start_tls
                              if (ansible_local|d() and ansible_local.ldap|d() and
                                 (ansible_local.ldap.start_tls|d())|bool)
                              else True }}'
                                                                    # ]]]
-                                                                   # ]]]
-# LDAP settings [[[
-# ^^^^^^^^^^^^^^^^^
-
 # .. envvar:: dovecot__ldap_user_filter [[[
 #
 # The LDAP filter used to look up user accounts in the directory.
@@ -1249,19 +1317,19 @@ dovecot__ldap_user_filter: '(&
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_quota_attribute [[[
 #
-# Set the LDAP attribute value to be read by Postfix in order to get the user quota.
+# The LDAP attribute storing the user quota.
 dovecot__ldap_quota_attribute: 'mailQuota'
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_quota_default [[[
 #
-# User default LDAP quota. Use human-readable values, e.g. "2 GB".
+# Default LDAP quota.
 dovecot__ldap_quota_default: '10 GB'
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_trash_field [[[
 #
-# The Dovecot internal field name which corresponds to the trash mailbox, used
-# to control the automatic expunction of mails via the ``mailExpungeTrash``
-# LDAP attribute.
+# The :command:`dovecot` internal field name which corresponds to the trash
+# mailbox, used to control the automatic expunction of mails via the
+# ``mailExpungeTrash`` LDAP attribute.
 dovecot__ldap_trash_field: 'namespace/inbox/mailbox/Trash/autoexpunge'
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_default_config [[[
@@ -1301,20 +1369,18 @@ dovecot__ldap_combined_config: '{{ dovecot__ldap_default_config
                                    + dovecot__host_ldap_config }}'
                                                                    # ]]]
                                                                    # ]]]
-                                                                   # ]]]
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
 # .. envvar:: dovecot__postfix_lmtp_transport [[[
 #
-# Postfix mail transport target if LMTP is enabled. For more details see
-# :ref:`dovecot__postfix_lmtp_transport`.
+# Postfix mail transport target if LMTP is enabled.
 dovecot__postfix_lmtp_transport: 'lmtp:unix:private/dovecot-lmtp'
 
                                                                    # ]]]
 # .. envvar:: dovecot__ldap__dependent_tasks [[[
 #
-# Configuration for the :ref:`debops.ldap` Ansible role.
+# Configuration for the :ref:`debops.ldap` role.
 dovecot__ldap__dependent_tasks:
   - name: 'Create Postfix account for {{ dovecot__ldap_device_dn | join(",") }}'
     dn: '{{ dovecot__ldap_binddn }}'
@@ -1329,7 +1395,7 @@ dovecot__ldap__dependent_tasks:
                                                                    # ]]]
 # .. envvar:: dovecot__postfix__dependent_maincf [[[
 #
-# The :file:`main.cf` configuration for ``debops.postfix`` Ansible role.
+# The :file:`main.cf` configuration for the ``debops.postfix`` role.
 dovecot__postfix__dependent_maincf:
 
   # The default TLS security level set by the 'postfix' role is "may", however
@@ -1372,7 +1438,7 @@ dovecot__postfix__dependent_maincf:
                                                                    # ]]]
 # .. envvar:: dovecot__postfix__dependent_mastercf [[[
 #
-# The :file:`master.cf` configuration for ``debops.postfix`` Ansible role.
+# The :file:`master.cf` configuration for the ``debops.postfix`` role.
 dovecot__postfix__dependent_mastercf: []
                                                                    # ]]]
 # .. envvar:: dovecot__etc_services__dependent_list [[[
@@ -1388,7 +1454,7 @@ dovecot__etc_services__dependent_list:
                                                                    # ]]]
 # .. envvar:: dovecot__ferm__dependent_rules [[[
 #
-# Configuration for :ref:`debops.ferm` Ansible role.
+# Configuration for the :ref:`debops.ferm` role.
 dovecot__ferm__dependent_rules:
 
   - name: 'dovecot_imap'
