@@ -306,7 +306,8 @@ pdns__default_configuration:
     comment: |-
       Turn on primary operation. Note: the name of this setting was changed
       with the release of pdns 4.5.0.
-    value: '{{ pdns__primary }}'
+    value: True
+    state: '{{ "present" if pdns__primary else "absent" }}'
 
   - name: '{{ "secondary"
               if ansible_local.pdns.version is version("4.5.0", ">=")
@@ -314,19 +315,25 @@ pdns__default_configuration:
     comment: |-
       Turn on secondary operation. Note: the name of this setting was changed
       with the release of pdns 4.5.0.
-    value: '{{ pdns__secondary }}'
+    value: True
+    state: '{{ "present" if pdns__secondary else "absent" }}'
 
   - name: '{{ "autosecondary"
               if ansible_local.pdns.version is version("4.5.0", ">=")
-              else "superslave" }}'
+              else "superslave"
+                   if ansible_local.pdns.version is version("4.2.0", ">=")
+                   else "supermaster" }}'
     comment: |-
       Turn on autosecondary operation. Note: the name of this setting was
-      changed with the release of pdns 4.5.0.
-    value: '{{ pdns__autosecondary }}'
+      changed with the release of pdns 4.2.0, and once more with the release of
+      pdns 4.5.0.
+    value: True
+    state: '{{ "present" if pdns__autosecondary else "absent" }}'
 
   - name: 'api'
     comment: 'Enable/Disable the built-in webserver and HTTP API.'
-    value: '{{ pdns__api }}'
+    value: True
+    state: '{{ "present" if pdns__api else "absent" }}'
 
   - name: 'api-key'
     comment: 'Static pre-shared authentication key for access to the REST API.'
@@ -335,7 +342,8 @@ pdns__default_configuration:
 
   - name: 'dnsupdate'
     comment: 'Enable/Disable DNS update (RFC2136) support.'
-    value: '{{ pdns__dnsupdate }}'
+    value: True
+    state: '{{ "present" if pdns__dnsupdate else "absent" }}'
 
   - name: 'allow-dnsupdate-from'
     comment: 'Allow DNS updates from these IP ranges.'
@@ -378,7 +386,8 @@ pdns__default_configuration:
 
   - name: 'webserver'
     comment: 'Enable/Disable the built-in webserver and metrics endpoint.'
-    value: '{{ pdns__metrics }}'
+    value: True
+    state: '{{ "present" if pdns__metrics else "absent" }}'
 
   - name: 'webserver-port'
     comment: 'The TCP port the built-in webserver will listen on.'
