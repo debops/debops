@@ -238,6 +238,14 @@ Fixed
 - Role execution with the ``role::owncloud:occ`` Ansible tag should now work
   again as expected.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- Fixed regression in the :command:`pki-realm` script introduced by adding the
+  :command:`certbot` support. Now the script should work as expected on
+  existing installations which use :command:`acme-tiny` for Let's Encrypt
+  certificates.
+
 :ref:`debops.postwhite` role
 ''''''''''''''''''''''''''''
 
