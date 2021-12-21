@@ -961,5 +961,27 @@ sshd__pam_access__dependent_rules:
         origins: 'ALL'
         weight: 99999
                                                                    # ]]]
-                                                                   # ]]]
-                                                                   # ]]]
+# .. envvar:: sshd__sudo__dependent_sudoers [[[
+#
+# Configuration for the :ref:`debops.sudo` Ansible role.
+sshd__sudo__dependent_sudoers:
+
+  - name: 'sshd'
+    options:
+
+      - name: 'env_keep_ssh'
+        comment: |-
+          Allow molly-guard to detect that we connected via ssh even if
+          combined with sudo and tmux.
+          https://superuser.com/questions/666931/getting-molly-guard-to-work-with-sudo
+          It is not perfect, but works in most cases.
+          A case where it does not work is when `sudo tmux` is started via
+          local tty and then attached to it via ssh.
+          Or `sudo tmux` is executed via ssh and then attached locally.
+          But when a new shell is created in tmux, the environment variables in
+          that new shell are correct.
+        value: |
+          Defaults env_keep += SSH_CONNECTION
+# ]]]
+# ]]]
+# ]]]

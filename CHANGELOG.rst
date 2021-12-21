@@ -165,6 +165,12 @@ Continuous Integration
      ``sudoHost,sudoUser eq,sub`` in the ``cn=config`` database before applying
      the role on the host to avoid issues.
 
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- Keep the ``SSH_CONNECTION`` environment variable when running commands with
+  sudo.
+
 :ref:`debops.system_groups` role
 ''''''''''''''''''''''''''''''''
 
