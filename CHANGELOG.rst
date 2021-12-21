@@ -391,6 +391,12 @@ Continuous Integration
   includes additional constraints on uniqueness and requires a rebuild of the
   OpenLDAP service. See :ref:`upgrade_notes` for details.
 
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- Keep the ``SSH_CONNECTION`` environment variable when running commands with
+  sudo.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 
