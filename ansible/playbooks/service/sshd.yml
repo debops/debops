@@ -55,5 +55,10 @@
       pam_access__dependent_rules:
         - '{{ sshd__pam_access__dependent_rules }}'
 
+    - role: sudo
+      tags: [ 'role::sudo', 'skip::sudo' ]
+      sudo__dependent_sudoers:
+        - '{{ sshd__sudo__dependent_sudoers }}'
+
     - role: sshd
       tags: [ 'role::sshd', 'skip::sshd' ]
