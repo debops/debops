@@ -215,7 +215,7 @@ dovecot__dsync_password: '{{ lookup("password", secret + "/"
 # ---------------------------
 #
 
-# .. envvar:: dovecot__sql__connect [[[
+# .. envvar:: dovecot__sql_connect [[[
 #
 # Driver-specific database connection string.
 #
@@ -277,26 +277,26 @@ dovecot__dsync_password: '{{ lookup("password", secret + "/"
 #     `active` char(1) NOT NULL DEFAULT 'Y',
 #     `maildir` varchar(255) NOT NULL
 #   );
-dovecot__sql__connect: ''
+dovecot__sql_connect: ''
 
                                                                    # ]]]
-# .. envvar:: dovecot__sql__default_pass_scheme [[[
+# .. envvar:: dovecot__sql_default_pass_scheme [[[
 #
 # Default password scheme for passwords, stored in a SQL database.  For more
 # information about the supported schemes, check `Authentication /
 # PasswordSchemes
 # <https://doc.dovecot.org/configuration_manual/authentication/password_schemes/>`_.
-dovecot__sql__default_pass_scheme: 'SSHA512'
+dovecot__sql_default_pass_scheme: 'SSHA512'
 
                                                                    # ]]]
-# .. envvar:: dovecot__sql__password_query [[[
+# .. envvar:: dovecot__sql_password_query [[[
 #
 # SQL query string to get the password. This function should return the values
 # ``username``, ``domain`` and ``password``.
-dovecot__sql__password_query: "SELECT userid AS username, domain, password FROM users WHERE userid = '%n' AND domain = '%d'"
+dovecot__sql_password_query: "SELECT userid AS username, domain, password FROM users WHERE userid = '%n' AND domain = '%d'"
 
                                                                    # ]]]
-# .. envvar:: dovecot__sql__user_query [[[
+# .. envvar:: dovecot__sql_user_query [[[
 #
 # SQL query string to get the userdb. This function should return the values
 # ``home``, ``uid`` and ``gid``.
@@ -305,10 +305,10 @@ dovecot__sql__password_query: "SELECT userid AS username, domain, password FROM 
 # see `MailLocation`__.
 #
 # .. __: https://doc.dovecot.org/configuration_manual/mail_location/
-dovecot__sql__user_query: "SELECT home, uid, gid FROM users WHERE userid = '%n' AND domain = '%d'"
+dovecot__sql_user_query: "SELECT home, uid, gid FROM users WHERE userid = '%n' AND domain = '%d'"
 
                                                                    # ]]]
-# .. envvar:: dovecot__sql__iterate_query [[[
+# .. envvar:: dovecot__sql_iterate_query [[[
 #
 # SQL query string to get a list of users. This function should return all
 # valid users (``user`` or ``username`` and ``domain``).
@@ -317,7 +317,7 @@ dovecot__sql__user_query: "SELECT home, uid, gid FROM users WHERE userid = '%n' 
 # the `Dovecot SQL documentation`__.
 #
 # .. __: https://doc.dovecot.org/configuration_manual/authentication/sql/
-dovecot__sql__iterate_query: "SELECT userid AS username, domain FROM users"
+dovecot__sql_iterate_query: "SELECT userid AS username, domain FROM users"
 
                                                                    # ]]]
 # .. envvar:: dovecot__passwdfile_scheme [[[
