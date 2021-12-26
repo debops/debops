@@ -23,7 +23,39 @@ To enable the :command:`dovecot` service on a host, you need to add it to the
     [debops_service_dovecot]
     hostname
 
+
+Default setup
+-------------
+
+If you don't specify any configuration values, the role will setup
+:command:`dovecot` with `IMAP`, `IMAPS`, `LMTP`__, `Sieve`__ and `Quota`__
+support.
+
+In addition, `LDAP` will automatically be enabled if the host is already
+configured to use :ref:`debops.ldap`, otherwise :command:`dovecot` will be
+configured to allow every user which is able to login via PAM to also login
+via IMAP and access their emails.
+
+.. __: https://doc.dovecot.org/configuration_manual/protocols/lmtp_server/
+.. __: https://doc.dovecot.org/configuration_manual/sieve/pigeonhole_sieve_interpreter/
+.. __: https://doc.dovecot.org/configuration_manual/quota/
+
+
+Other resources
+---------------
+
+List of other useful resources related to the ``debops.dovecot`` Ansible role:
+
+- Manual pages: for example, :man:`dovecot(1)`, :man:`doveconf(1)` and
+  :man:`doveadm(1)`
+
+- The website of the `Dovecot Project`__, in particular the `configuration
+  documentation`__
+
+.. __: https://www.dovecot.org/
+.. __: https://doc.dovecot.org/
  
+
 Example playbook
 ----------------
 
@@ -59,35 +91,3 @@ Available role tags:
   Limited to :command:`dovecot` user configuration tasks.
 ``role::dovecot:group``
   Limited to :command:`dovecot` group configuration tasks.
-
-
-Default setup
--------------
-
-If you don't specify any configuration values, the role will setup
-:command:`dovecot` with `IMAP`, `IMAPS`, `LMTP`__, `Sieve`__ and `Quota`__
-support.
-
-In addition, `LDAP` will automatically be enabled if the host is already
-configured to use :ref:`debops.ldap`, otherwise :command:`dovecot` will be
-configured to allow every user which is able to login via PAM to also login
-via IMAP and access their emails.
-
-.. __: https://doc.dovecot.org/configuration_manual/protocols/lmtp_server/
-.. __: https://doc.dovecot.org/configuration_manual/sieve/pigeonhole_sieve_interpreter/
-.. __: https://doc.dovecot.org/configuration_manual/quota/
-
-
-Other resources
----------------
-
-List of other useful resources related to the ``debops.dovecot`` Ansible role:
-
-- Manual pages: for example, :man:`dovecot(1)`, :man:`doveconf(1)` and
-  :man:`doveadm(1)`
-
-- The website of the `Dovecot Project`__, in particular the `configuration
-  documentation`__
-
-.. __: https://www.dovecot.org/
-.. __: https://doc.dovecot.org/
