@@ -11,6 +11,218 @@ than simple strings or lists, here you can find documentation and examples for
 them.
 
 
+.. _dovecot__ref_features:
+
+dovecot__features
+-----------------
+
+Currently supported features for :envvar:`dovecot__features` are:
+
+``imap``
+    ``IMAP4rev2`` (:rfc:`9051`) with explicit ``TLS`` support via ``STARTTLS``,
+    typically using port 143.
+``imaps``
+    ``IMAP4rev2`` with implicit ``TLS`` support, typically using port 993.
+``pop3``
+    ``POP3`` (:rfc:`1939`, extensions from :rfc:`2449` and authentication
+    from :rfc:`1734`) with explicit ``TLS`` support via ``STARTTLS``, typically
+    using port 110.
+``pop3s``
+    ``POP3`` with implicit ``TLS`` support, typically using port 995.
+``sieve``
+    Support for mail filtering/sorting using ``Sieve`` (:rfc:`5228`) scripts
+    and the ``ManageSieve`` protocol (:rfc:`5804`, both with various extensions
+    from other RFCs), the latter typically using port 4190. See `Dovecot's
+    ManageSieve Documentation`__ for further details.
+``quota``
+    Support for per-user mail ``quotas``. See
+    `Dovecot's Quota Plugin Documentation`__ for further details.
+``dsync``
+    Support for two-directional/pairwise ``dsync`` synchronization between two
+    :command:`dovecot` servers using :command:`dovecot`'s own ``dsync``
+    protocol, typically using port 12345. See
+    `Dovecot's Replication Documentation`__ for further details.
+
+Note that ``imaps`` and ``pop3s`` (implicit TLS) are recommended
+over ``imap`` and ``pop3`` (explicit TLS) by :rfc:`8314`. Furthermore,
+LMTP is recommended over LDA by the Dovecot project.
+
+.. __: https://doc.dovecot.org/admin_manual/pigeonhole_managesieve_server/
+.. __: https://doc.dovecot.org/configuration_manual/quota_plugin/
+.. __: https://doc.dovecot.org/configuration_manual/replication/
+
+
+.. _dovecot__ref_dsync:
+
+DSync Replication
+-----------------
+
+Dovecot supports master/master replication using ``dsync``.  The replication is
+done asynchronously, so high latency between the replicas isn't a problem.  The
+replication is done by looking at Dovecot index files (not what exists in the
+filesystem), so no mails get lost due to filesystem corruption or an accidental
+deletion, they will simply be replicated back.
+
+Replication works only between server pairs. Currently dsync is only supported
+together with a virtual email user since dsync would need root access
+otherwise.
+
+The most important configuration variable is :envvar:`dovecot__dsync_host`,
+which needs to be set to point to the other server for each server in a sync
+pair. Assuming that you have two servers, named ``mail1.example.com`` and
+``mail2.example.com``, setting something like this in your Ansible inventory
+should be sufficient:
+
+.. code-block:: yaml
+
+   dovecot__dsync_host: '{{ "mail1.example.com"
+                            if ansible_fqdn == "mail2.example.com"
+                            else "mail2.example.com" }}'
+
+Other variables are :envvar:`dovecot__dsync_port`,
+:envvar:`dovecot__dsync_replica`, :envvar:`dovecot__dsync_password_path` and
+:envvar:`dovecot__dsync_password`, but these should all have sensible defaults
+for most installations.
+
+For more information, see the Dovecot `Replication
+<https://wiki.dovecot.org/Replication>`_ wiki page.
+
+
+.. _dovecot__ref_user_accounts:
+
+dovecot__user_accounts
+----------------------
+
+Currently supported mechanisms for :envvar:`dovecot__user_accounts` are:
+
+``deny``
+    Deny access for a statically defined list of users (see
+    :envvar:`dovecot__deny_users`).
+
+``system``
+    Mail users are Linux system users.
+
+``mysql``
+    Mail users are stored in a MySQL/MariaDB database (see
+    :ref:`dovecot__ref_sql` below).
+
+``pgsql``
+    Mail users are stored in a PostgreSQL database (see
+    :ref:`dovecot__ref_sql` below).
+
+``sqlite``
+    Mail users are stored in a SQLite database (see
+    :ref:`dovecot__ref_sql` below).
+
+``ldap``
+    Mail users are stored in the LDAP directory.
+
+``passwdfile``
+    Users and passwords are stored in a file.
+
+``checkpassword``
+    Users and passwords are stored in an external program.
+
+
+.. _dovecot__ref_sql:
+
+SQL User Databases
+------------------
+
+Users can be stored in an external ``SQL`` database (see
+:ref:`dovecot__ref_user_accounts` above). In order to do so, a database-driver
+specific connection string needs to be defined in
+:envvar:`dovecot__sql_connect`. The parmeters are generally provided as a
+space-delimited string of ``parameter=value`` pairs (which means that it is not
+possible to use spaces in parameters), with the possible parameters defined by
+the used database type:
+
+``pgsql``
+
+    ``host``
+        The host on which the database server is running.
+
+    ``port``
+        The port on which the database server is listening.
+
+    ``user``
+        The username to use when connecting to the database.
+
+    ``password``
+        The password to use when connecting to the database.
+
+    ``dbname``
+        The name of the database to use.
+
+    ``maxconns``
+        The number of connections to create to the database (default 5).
+
+``mysql``
+
+    The basic options (``host``, ``port``, ``user``, ``password``, ``dbname``)
+    are the same as for ``pgsql``, additional settings include:
+
+    ``client_flags``
+        See the MySQL manual.
+
+    ``ssl_ca, ssl_ca_path``
+        Set either one or both to enable SSL.
+
+    ``ssl_cert, ssl_key``
+        For sending client-side certificates to the server.
+
+    ``ssl_cipher``
+        Sets the minimum allowed cipher security (default: HIGH).
+
+    ``ssl_verify_server_cert``
+        Verifies that the name in the server SSL certificate matches the host
+        (default: no).
+
+    ``option_file``
+        Read options from the given file instead of the default :file:`my.cnf`
+        location.
+
+    ``option_group``
+        Read options from the given group (default: client).
+
+   You can connect to UNIX sockets by using ``host=/var/run/mysql.sock``.
+
+``sqlite``
+    Only one parameter is supported - the path to the database file (which
+    is defined without the ``parameter=value`` format).
+
+Examples:
+
+.. code-block:: yaml
+
+   # pgsql
+   dovecot__sql_connect: 'host=192.168.1.1 dbname=users'
+   # mysql
+   dovecot__sql_connect: 'host=sql.example.com dbname=virtual user=virtual password=blarg'
+   # sqlite
+   dovecot__sql_connect: '/etc/dovecot/authdb.sqlite'
+
+The database should have a structure like this:
+
+::
+
+   CREATE TABLE `users` (
+     `userid` varchar(128) NOT NULL,
+     `domain` varchar(128) NOT NULL,
+     `password` varchar(128) NOT NULL,
+     `home` varchar(255) NOT NULL,
+     `uid` int(11) NOT NULL,
+     `gid` int(11) NOT NULL,
+     `active` char(1) NOT NULL DEFAULT 'Y',
+     `maildir` varchar(255) NOT NULL
+   );
+
+Other configuration parameters of interest are
+:envvar:`dovecot__sql_default_pass_scheme`,
+:envvar:`dovecot__sql_password_query`, :envvar:`dovecot__sql_user_query`, and
+:envvar:`dovecot__sql_iterate_query`.
+
+
 .. _dovecot__ref_configuration:
 
 dovecot__configuration

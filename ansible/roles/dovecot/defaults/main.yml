@@ -23,28 +23,15 @@
 
 # .. envvar:: dovecot__features [[[
 #
-# List of features which should be installed and enabled. Currently
-# supported features are:
-#
-#  - ``imap``
-#  - ``imaps``
-#  - ``pop3``
-#  - ``pop3s``
-#  - ``sieve``
-#  - ``lmtp``
-#  - ``quota``
-#  - ``dsync``
-#
-# Note that ``imaps`` and ``pop3s`` (implicit TLS) are recommended
-# over ``imap`` and ``pop3`` (explicit TLS) by :rfc:`8314`. Furthermore,
-# LMTP is recommended over LDA by the Dovecot project.
+# List of features which should be installed and enabled. See
+# :ref:`dovecot__ref_features` for details.
 dovecot__features: [ 'imap', 'imaps', 'lmtp', 'sieve', 'quota' ]
 
                                                                    # ]]]
 # .. envvar:: dovecot__auth_mechanisms [[[
 #
-# List of authentication mechanisms enabled. Currently ``plain`` and
-# ``login`` are supported.
+# List of enabled authentication mechanisms. Currently ``plain`` and ``login``
+# are supported.
 dovecot__auth_mechanisms: [ 'plain', 'login' ]
 
                                                                    # ]]]
@@ -61,16 +48,8 @@ dovecot__version: '{{ ansible_local.dovecot.version|d("0.0.0") }}'
 
 # .. envvar:: dovecot__user_accounts [[[
 #
-# User account lookup. Supported mechanisms are:
-#
-# - ``deny``: Deny access for users
-# - ``system``: Mail users are Linux system users
-# - ``mysql``: Mail users are stored in a MySQL/MariaDB database
-# - ``pgsql``: Mail users are stored in a PostgreSQL database
-# - ``sqlite``: Mail users are stored in a SQLite database
-# - ``ldap``: Mail users are stored in an LDAP directory
-# - ``passwdfile``: User passwords are stored in a file
-# - ``checkpassword``: User passwords are stored in an external program
+# User account lookup mechanisms, see :ref:`dovecot__ref_user_accounts`
+# for details.
 dovecot__user_accounts: '{{ [ "deny", "ldap" ]
                             if dovecot__ldap_enabled|bool
                             else [ "deny", "system" ] }}'
@@ -118,12 +97,12 @@ dovecot__vmail_enabled: '{{ True if (dovecot__user_accounts |
                                                                    # ]]]
 # .. envvar:: dovecot__vmail_posix_user [[[
 #
-# A separate user `vmail` (`Virtual Mail`), which owns the mailbox directories
-# and is used by the various mail daemons to store and access the stored email,
-# can be used.  On the one hand this prevents mail daemons components from
-# accessing sensitive system directories, on the other hand it protects the
-# mailboxes from external access. Only the vmail user and root are allowed to
-# access the mailboxes.
+# A separate user ``vmail`` (`Virtual Mail`), which owns the mailbox
+# directories and is used by the various mail daemons to store and access the
+# stored email, can be used.  On the one hand this prevents mail daemons
+# components from accessing sensitive system directories, on the other hand it
+# protects the mailboxes from external access. Only the ``vmail`` user (and
+# ``root``) are allowed to access the mailboxes.
 dovecot__vmail_posix_user: '{{ ansible_local.postldap.vmail_posix_user
                                | d("vmail") }}'
 
@@ -138,7 +117,7 @@ dovecot__vmail_posix_group: '{{ ansible_local.postldap.vmail_posix_group
 # .. envvar:: dovecot__vmail_base [[[
 #
 # The base directory where user mail directories are located, which also
-# serves as the `home` directory for the :envvar:`dovecot__vmail_posix_user`.
+# serves as the ``home`` directory for the :envvar:`dovecot__vmail_posix_user`.
 # This directory is used as the base for the virtual mail home directory paths
 # and is used e.g. as a prefix for the ``mailHomeDirectory`` LDAP attribute if
 # it's found in the LDAP lookups.
@@ -160,22 +139,12 @@ dovecot__vmail_home: '{{ dovecot__vmail_base ~ "/%d/%n" }}'
 # DSync Settings [[[
 # --------------
 #
-# Dovecot supports master/master replication using dsync.  The replication is
-# done asynchronously, so high latency between the replicas isn't a problem.
-# The replication is done by looking at Dovecot index files (not what exists in
-# the filesystem), so no mails get lost due to filesystem corruption or an
-# accidental deletion, they will simply be replicated back.
-#
-# Replication works only between server pairs. Currently dsync is only
-# supported together with a virtual email user since dsync would need root
-# access otherwise.
-#
-# For more information, see the Dovecot `Replication
-# <https://wiki.dovecot.org/Replication>`_ wiki page.
+# Dovecot supports master/master replication using ``dsync``.  For more
+# information, see :ref:`dovecot__ref_dsync`.
 
 # .. envvar:: dovecot__dsync_port [[[
 #
-# Port to use for dsync, defaults to 12345.
+# Port to use for ``dsync``, defaults to 12345.
 dovecot__dsync_port: '12345'
 
                                                                    # ]]]
@@ -187,7 +156,7 @@ dovecot__dsync_host: ''
                                                                    # ]]]
 # .. envvar:: dovecot__dsync_replica [[[
 #
-# Remote host to sync with, specified in the form `tcp[s]:host[:port]`.
+# Remote host to sync with, specified in the form ``tcp[s]:host[:port]``.
 dovecot__dsync_replica: '{{ ("tcps" if dovecot__pki|d(True) else "tcp") ~ ":" ~
                             dovecot__dsync_host ~ ":" ~
                             dovecot__dsync_port }}'
@@ -203,7 +172,7 @@ dovecot__dsync_password_path: '{{ "dovecot/credentials/dsync.password" }}'
                                                                    # ]]]
 # .. envvar:: dovecot__dsync_password [[[
 #
-# Password to use for the dsync protocol. Must be the same on both
+# Password to use for the ``dsync`` protocol. Must be the same on both
 # hosts of a replica pair.
 dovecot__dsync_password: '{{ lookup("password", secret + "/"
                                     + dovecot__dsync_password_path
@@ -217,66 +186,8 @@ dovecot__dsync_password: '{{ lookup("password", secret + "/"
 
 # .. envvar:: dovecot__sql_connect [[[
 #
-# Driver-specific database connection string.
-#
-# pgsql
-#   For available options, see the PostgreSQL documention for the
-#   PQconnectdb function of libpq. Use `maxconns=n` (default 5) to
-#   change how many connections Dovecot can create to pgsql.
-#
-# mysql
-#   Basic options (host, port, user, password, dbname) are the same as
-#   for PostgreSQL. Additional settings include:
-#
-#     client_flags
-#       See MySQL manual
-#
-#     ssl_ca, ssl_ca_path
-#       Set either one or both to enable SSL
-#
-#     ssl_cert, ssl_key
-#       For sending client-side certificates to server
-#
-#     ssl_cipher
-#       Set minimum allowed cipher security (default: HIGH)
-#
-#     ssl_verify_server_cert
-#       Verify that the name in the server SSL certificate matches the host (default: no)
-#
-#     option_file
-#       Read options from the given file instead of the default my.cnf location
-#
-#     option_group
-#       Read options from the given group (default: client)
-#
-#   You can connect to UNIX sockets by using `host=/var/run/mysql.sock`
-#   Note that currently you can't use spaces in parameters.
-#
-# sqlite
-#   The path to the database file.
-#
-# Examples:
-#
-# ::
-#
-#   connect = host=192.168.1.1 dbname=users
-#   connect = host=sql.example.com dbname=virtual user=virtual password=blarg
-#   connect = /etc/dovecot/authdb.sqlite
-#
-# The database should have a structure like this:
-#
-# ::
-#
-#   CREATE TABLE `users` (
-#     `userid` varchar(128) NOT NULL,
-#     `domain` varchar(128) NOT NULL,
-#     `password` varchar(128) NOT NULL,
-#     `home` varchar(255) NOT NULL,
-#     `uid` int(11) NOT NULL,
-#     `gid` int(11) NOT NULL,
-#     `active` char(1) NOT NULL DEFAULT 'Y',
-#     `maildir` varchar(255) NOT NULL
-#   );
+# Database-driver specific database connection string. See
+# :ref:`dovecot__ref_sql` for more details.
 dovecot__sql_connect: ''
 
                                                                    # ]]]
