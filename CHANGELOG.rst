@@ -43,6 +43,13 @@ Added
   This is needed so that various alternatives for :command:`iptables` backends
   can be correctly synchronized.
 
+:ref:`debops.keyring` role
+''''''''''''''''''''''''''
+
+- The role can now configure :file:`/etc/apt/auth.conf.d/` configuration files
+  to enable access to restricted APT repositories that require HTTP Basic
+  Authentication.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
