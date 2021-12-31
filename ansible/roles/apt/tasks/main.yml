@@ -10,6 +10,10 @@
   import_role:
     name: 'global_handlers'
 
+- name: Import DebOps secret role
+  import_role:
+    name: 'secret'
+
 - name: Update APT cache on first run
   apt:
     update_cache: True
@@ -156,6 +160,24 @@
     - '{{ apt__host_repositories }}'
   register: apt__register_repositories
   when: (apt__enabled|bool and item.repo|d())
+
+- name: Remove APT auth configuration if requested
+  file:
+    path: '{{ "/etc/apt/auth.conf.d/" + (item.name | regex_replace(".conf$","")) + ".conf" }}'
+    state: 'absent'
+  loop: '{{ q("flattened", (apt__auth_files + apt__group_auth_files + apt__host_auth_files)) }}'
+  when: apt__enabled|bool and item.state|d('present') == 'absent'
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Generate APT auth configuration
+  template:
+    src: 'etc/apt/auth.conf.d/template.conf.j2'
+    dest: '{{ "/etc/apt/auth.conf.d/" + (item.name | regex_replace(".conf$","")) + ".conf" }}'
+    mode: '0640'
+  loop: '{{ q("flattened", (apt__auth_files + apt__group_auth_files + apt__host_auth_files)) }}'
+  when: apt__enabled|bool and item.machine|d() and item.login|d() and item.password|d() and
+        item.state|d('present') not in [ 'absent', 'ignore' ]
+  no_log: '{{ debops__no_log | d(True) }}'
 
 # Manage configuration files [[[
 - name: Generate additional APT configuration files
