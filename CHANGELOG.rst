@@ -32,6 +32,10 @@ Added
 - The role will refresh APT cache if needed, to ensure that package
   installaction can be done correctly on freshly installed hosts or containers.
 
+- The role can now configure :file:`/etc/apt/auth.conf.d/` configuration files
+  to enable access to restricted APT repositories that require HTTP Basic
+  Authentication.
+
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
