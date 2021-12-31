@@ -178,6 +178,11 @@ Fixed
 - The DHCPv6 service does not use the TCP protocol, therefore it will not be
   opened in the firewall anymore.
 
+:ref:`debops.extrepo` role
+''''''''''''''''''''''''''
+
+- Ensure that the role works correctly with Ansible ``--check`` mode.
+
 :ref:`debops.libvirtd` role
 '''''''''''''''''''''''''''
 
