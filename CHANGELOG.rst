@@ -129,6 +129,19 @@ Continuous Integration
 - The ``milter_*`` configuration options will be added in the ``filter``
   configuration section in the :file:`/etc/postfix/main.cf` configuration file.
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- The LDAP indexes for ``sudoUser``, ``sudoHost`` attributes have been modified
+  and the ``modifyTimestamp`` index has been added to the default
+  configuration.
+
+  .. note:: This change will require a manual modification on the
+     :command:`slapd` server before the role can be executed indepotently. You
+     need to change the ``sudoUser eq,sub`` index in the configuration to
+     ``sudoHost,sudoUser eq,sub`` in the ``cn=config`` database before applying
+     the role on the host to avoid issues.
+
 :ref:`debops.system_groups` role
 ''''''''''''''''''''''''''''''''
 
