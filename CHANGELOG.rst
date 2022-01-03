@@ -65,6 +65,10 @@ General
   unused dependencies. This might be useful during bootstrap or provisioning
   process to remove unused or conflicting services installed by the provider.
 
+- The role can now configure :file:`/etc/apt/auth.conf.d/` configuration files
+  to enable access to restricted APT repositories that require HTTP Basic
+  Authentication.
+
 :ref:`debops.dokuwiki` role
 '''''''''''''''''''''''''''
 
@@ -90,6 +94,13 @@ General
 - The ``arptables`` and ``ebtables`` APT packages will be installed by default.
   This is needed so that various alternatives for :command:`iptables` backends
   can be correctly synchronized.
+
+:ref:`debops.keyring` role
+''''''''''''''''''''''''''
+
+- The role can now configure :file:`/etc/apt/auth.conf.d/` configuration files
+  to enable access to restricted APT repositories that require HTTP Basic
+  Authentication.
 
 :ref:`debops.kibana` role
 '''''''''''''''''''''''''
