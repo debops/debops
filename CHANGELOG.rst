@@ -60,6 +60,12 @@ Added
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.ipxe` role, the Debian Bullseye netboot installer version
+  has been updated to the next point release, 11.2.
+
 Continuous Integration
 ''''''''''''''''''''''
 
