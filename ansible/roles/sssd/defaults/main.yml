@@ -353,13 +353,14 @@ sssd__default_configuration:
         value: '{{ sssd__ldap_base_dn | join(",") }}'
 
       - name: 'ldap_user_search_base'
-        value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?(&(objectClass=posixAccount)" + sssd__ldap_host_filter + ")" }}'
+        value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?" + sssd__ldap_host_filter }}'
 
       - name: 'ldap_group_search_base'
-        value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?(&(objectClass=posixGroup)" + sssd__ldap_host_filter + ")" }}'
+        value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?" + sssd__ldap_host_filter }}'
 
       - name: 'ldap_sudo_search_base'
-        value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?(&(objectClass=sudoRole))" }}'
+        value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?" + "" }}'
+        state: 'comment'
 
                                                                    # ]]]
 # .. envvar:: sssd__configuration [[[
