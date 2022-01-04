@@ -215,7 +215,7 @@ Updates of upstream application versions
   running the playbook.
 
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
-  ``v3.0.7``. Note that you need ``v2.11.0`` or later to upgrade to ``v3.0``.
+  ``v3.1.3``. Note that you need ``v2.11.0`` or later to upgrade to ``v3.0``.
 
 - The Icinga Web 2 modules installed by :ref:`debops.icinga_web` have been
   updated to their latest versions. A quick database migration is needed after
