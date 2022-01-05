@@ -223,7 +223,7 @@ Updates of upstream application versions
   button on the 'Icinga Director' -> 'Activities log' page.
 
 - In the :ref:`debops.roundcube` role, the Roundcube version installed by
-  default has been updated to ``1.4.12``.
+  default has been updated to ``1.4.13``.
 
 - Drop Nextcloud 20 support because it is EOL. You need to upgrade Nextcloud
   manually if you are running version 20 or below. The role now defaults to
