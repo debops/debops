@@ -46,9 +46,12 @@ Secondary operation
 ~~~~~~~~~~~~~~~~~~~
 
 Secondary operation can be enabled by setting :envvar:`pdns__secondary` to
-``True``. Doing so will instruct pdns to periodically check for zone changes at the primary nameservers, and update the local zones accordingly. These checks happen every 'refresh' seconds (as specified by the SOA record) and are only performed for domains with type SLAVE in your backend. Additionally, if the primary
-nameserver sends notifications for such domains, pdns will initiate a zone
-transfer immediately.
+``True``. Doing so will instruct pdns to periodically check for zone changes at
+the primary nameservers, and update the local zones accordingly. These checks
+happen every 'refresh' seconds (as specified by the SOA record) and are only
+performed for domains with type SLAVE in your backend. Additionally, if the
+primary nameserver sends notifications for such domains, pdns will initiate a
+zone transfer immediately.
 
 Autosecondary operation
 ~~~~~~~~~~~~~~~~~~~~~~~
