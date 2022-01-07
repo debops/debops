@@ -156,6 +156,7 @@ sssd__default_configuration:
       - name: 'services'
         comment: 'Services to offer (nss, pam, sudo, autofs, ssh, pac, ifp)'
         value: [ 'nss', 'pam', 'sudo', 'ssh' ]
+        state: '{{ "present" if ansible_distribution_release in [ "stretch", "buster", "bionic" ] else "ignore" }}'
 
       - name: 'debug_level'
         comment: |

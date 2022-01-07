@@ -165,6 +165,14 @@ Continuous Integration
      ``sudoHost,sudoUser eq,sub`` in the ``cn=config`` database before applying
      the role on the host to avoid issues.
 
+:ref:`debops.sssd` role
+'''''''''''''''''''''''
+
+- Various changes in the default configuration of the :command:`sssd` service
+  have been backported to ensure better integration with the operating system.
+
+- Support for socket activation on Debian Bullseye should now work as expected.
+
 :ref:`debops.system_groups` role
 ''''''''''''''''''''''''''''''''
 
