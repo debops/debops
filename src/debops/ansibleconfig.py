@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .constants import DEBOPS_PACKAGE_DATA
+from .utils import unexpanduser
 import os
 import pkgutil
 import jinja2
@@ -27,8 +28,8 @@ class AnsibleConfig(object):
         template_vars = {}
         template_vars['collections'] = [
                 '/usr/share/ansible/collections',
-                os.path.join(DEBOPS_PACKAGE_DATA, 'ansible', 'collections')
-                .replace(os.path.expanduser('~'), '~', 1),
+                unexpanduser(os.path.join(DEBOPS_PACKAGE_DATA, 'ansible',
+                                          'collections')),
                 '~/.ansible/collections',
                 'ansible/collections'
         ]
@@ -51,10 +52,10 @@ class AnsibleConfig(object):
                 template_vars['plugins'][plugin] = [
                     '/usr/share/ansible/plugins/' + plugin,
                     '~/.ansible/plugins/' + plugin,
-                    os.path.join(DEBOPS_PACKAGE_DATA, 'ansible', 'collections',
-                                 'ansible_collections', 'debops', 'debops',
-                                 'plugins', plugin)
-                    .replace(os.path.expanduser('~'), '~', 1),
+                    unexpanduser(os.path.join(DEBOPS_PACKAGE_DATA, 'ansible',
+                                              'collections',
+                                              'ansible_collections', 'debops',
+                                              'debops', 'plugins', plugin)),
                     'ansible/plugins/' + plugin
                 ]
 

@@ -4,6 +4,7 @@
 # Copyright (C) 2020-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from .constants import DEBOPS_USER_HOME_DIR
 from .ansibleconfig import AnsibleConfig
 from .ansible.inventory import AnsibleInventory
 import os
@@ -40,7 +41,7 @@ class ProjectDir(object):
                 pass
 
         # Make sure that we are not operating on the home directory
-        if self.path == os.path.expanduser('~'):
+        if self.path == DEBOPS_USER_HOME_DIR:
             raise IsADirectoryError("You cannot create a project here, "
                                     "it's a home directory")
 

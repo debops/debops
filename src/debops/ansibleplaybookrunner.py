@@ -4,6 +4,7 @@
 # Copyright (C) 2020-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from .utils import unexpanduser
 from .ansibleconfig import AnsibleConfig
 from .ansible.inventory import AnsibleInventory
 import subprocess
@@ -198,7 +199,7 @@ class AnsiblePlaybookRunner(object):
 
             print('Executing Ansible playbooks:')
             for playbook in self._found_playbooks:
-                print(playbook.replace(os.path.expanduser('~'), '~'))
+                print(unexpanduser(playbook))
             return subprocess.call(self._ansible_command)
         except KeyboardInterrupt:
             if unlocked:
