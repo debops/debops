@@ -8,6 +8,7 @@ from .ansibleconfig import AnsibleConfig
 from .ansible.inventory import AnsibleInventory
 import subprocess
 import os
+import sys
 
 
 class AnsiblePlaybookRunner(object):
@@ -188,7 +189,7 @@ class AnsiblePlaybookRunner(object):
         unlocked = False
         if not self._found_playbooks:
             print('No playbooks specified, aborting')
-            exit(1)
+            sys.exit(1)
 
         for key, value in self._ansible_env.items():
             os.environ[key] = value
