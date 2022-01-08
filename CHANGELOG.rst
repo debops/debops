@@ -156,6 +156,13 @@ Continuous Integration
 - Keep the ``SSH_CONNECTION`` environment variable when running commands with
   sudo.
 
+:ref:`debops.system_users` role
+'''''''''''''''''''''''''''''''
+
+- The role will check if the host is included in the ``debops_service_ldap``
+  Ansible inventory group. This will enable LDAP integration by default to
+  avoid idempotency issues during playbook execution.
+
 :ref:`debops.system_groups` role
 ''''''''''''''''''''''''''''''''
 
@@ -163,6 +170,10 @@ Continuous Integration
   Controller during role execution on a large number of hosts (>100). The
   throttle amount and thus the number of hosts executed at one time can be
   controlled by a variable.
+
+- The role will check if the host is included in the ``debops_service_ldap``
+  Ansible inventory group. This will enable LDAP integration by default to
+  avoid idempotency issues during playbook execution.
 
 :ref:`debops.unattended_upgrades` role
 ''''''''''''''''''''''''''''''''''''''
