@@ -26,7 +26,7 @@
 
     # Information from the 'passwd' database for the current user on the
     # Ansible Controller
-    admin_gecos: '{{ getent_passwd[admin_user][3] }}'
+    admin_gecos: '{{ getent_passwd[admin_user][3]|d() }}'
 
     # SSH public keys in the 'ssh-agent'
     admin_sshkeys: '{{ lookup("pipe", "ssh-add -L | grep ^\\\(sk-\\\)\\\?ssh || cat ~/.ssh/*.pub || true").split("\n") }}'
@@ -72,7 +72,7 @@
 
     ldap__dependent_tasks:
 
-      - name: 'Create personal account for {{ admin_gecos.split(",")[0]|d(admin_user) }}'
+      - name: 'Create personal account for {{ admin_user }}'
         dn: '{{ [ admin_rdn, ldap__people_rdn ] + ldap__base_dn }}'
         objectClass: [ 'inetOrgPerson', 'posixAccount', 'shadowAccount',
                        'posixGroup', 'posixGroupId', 'ldapPublicKey',
@@ -82,7 +82,7 @@
           # inetOrgPerson attributes
           commonName:   '{{ admin_gecos.split(",")[0] if admin_gecos|d() else (admin_user | capitalize) }}'
           givenName:    '{{ (admin_gecos.split(",")[0].split()[0]) if (admin_gecos|d() and " " in admin_gecos) else (admin_user | capitalize) }}'
-          surname:      '{{ (admin_gecos.split(",")[0].split()[1]) if (admin_gecos|d() and " " in admin_gecos) else (admin_user | capitalize) }}'
+          surname:      '{{ (admin_gecos.split(",")[0].split()[1]) if (admin_gecos|d() and " " in admin_gecos) else "AdminUser" }}'
           userPassword: '{{ admin_plaintext_password }}'
 
           # POSIX attributes
@@ -117,6 +117,7 @@
         key: '{{ admin_user }}'
       delegate_to: 'localhost'
       become: False
+      failed_when: False
 
     - name: Save admin credential in the password store
       set_fact:
