@@ -135,6 +135,10 @@ Continuous Integration
 
   .. __: https://github.com/MaxKellermann/ferm/issues/47
 
+- The file generation tasks are cleaned up and converted to the ``loop``
+  format, so that a cleaner output can be defined using the
+  ``loop_control.label`` Ansible keyword.
+
 :ref:`debops.grub` role
 '''''''''''''''''''''''
 
