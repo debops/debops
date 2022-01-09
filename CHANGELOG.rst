@@ -195,6 +195,13 @@ Continuous Integration
 
 - Support for socket activation on Debian Bullseye should now work as expected.
 
+:ref:`debops.sysctl` role
+'''''''''''''''''''''''''
+
+- The file generation tasks are cleaned up and converted to the ``loop``
+  format, so that a cleaner output can be defined using the
+  ``loop_control.label`` Ansible keyword.
+
 :ref:`debops.system_groups` role
 ''''''''''''''''''''''''''''''''
 
