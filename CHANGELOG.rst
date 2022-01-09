@@ -150,6 +150,10 @@ Continuous Integration
 - The default contact information is now based on the public administrator
   e-mail address set in the :ref:`debops.core` role.
 
+- The file generation tasks are cleaned up and converted to the ``loop``
+  format, so that a cleaner output can be defined using the
+  ``loop_control.label`` Ansible keyword.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
