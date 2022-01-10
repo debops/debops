@@ -8,6 +8,7 @@ from .config import Configuration
 from .subcommands import Subcommands
 from .projectdir import ProjectDir
 from .ansibleplaybookrunner import AnsiblePlaybookRunner
+import sys
 
 
 class Interpreter(object):
@@ -43,7 +44,7 @@ class Interpreter(object):
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError, ValueError) as errmsg:
             print('Error:', errmsg)
-            exit(1)
+            sys.exit(1)
 
     def do_project_refresh(self, args):
         try:
@@ -52,7 +53,7 @@ class Interpreter(object):
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError) as errmsg:
             print('Error:', errmsg)
-            exit(1)
+            sys.exit(1)
 
     def do_project_lock(self, args):
         try:
@@ -61,7 +62,7 @@ class Interpreter(object):
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError) as errmsg:
             print('Error:', errmsg)
-            exit(1)
+            sys.exit(1)
 
     def do_project_unlock(self, args):
         try:
@@ -70,14 +71,14 @@ class Interpreter(object):
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError) as errmsg:
             print('Error:', errmsg)
-            exit(1)
+            sys.exit(1)
 
     def do_project_status(self, args):
         try:
             project = ProjectDir(path=args.project_dir, config=self.config)
         except (IsADirectoryError, NotADirectoryError) as errmsg:
             print('Error:', errmsg)
-            exit(1)
+            sys.exit(1)
 
         project.status()
 
@@ -86,14 +87,14 @@ class Interpreter(object):
             project = ProjectDir(path=args.project_dir, config=self.config)
         except (IsADirectoryError, NotADirectoryError) as errmsg:
             print('Error:', errmsg)
-            exit(1)
+            sys.exit(1)
 
         runner = AnsiblePlaybookRunner(project, **vars(args))
         if args.eval:
             runner.eval()
-            exit()
+            sys.exit(0)
         else:
-            runner.execute()
+            sys.exit(runner.execute())
 
     def do_config(self, args):
         try:

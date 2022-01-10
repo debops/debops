@@ -4,6 +4,7 @@
 # Copyright (C) 2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from .utils import unexpanduser
 import os
 import sys
 import dotenv
@@ -209,15 +210,13 @@ class Configuration(object):
             if self._env_files:
                 print('# Environment files:')
                 for filename in self._env_files:
-                    relative_file = os.path.relpath(
-                            filename.replace(os.path.expanduser('~'), '~', 1))
+                    relative_file = os.path.relpath(unexpanduser(filename))
                     print('#    ', relative_file.replace(relative_root, '', 1))
                 print()
             if self._config_files:
                 print('# Configuration files:')
                 for filename in self._config_files:
-                    relative_file = os.path.relpath(
-                            filename.replace(os.path.expanduser('~'), '~', 1))
+                    relative_file = os.path.relpath(unexpanduser(filename))
                     print('#   ', relative_file.replace(relative_root, '', 1))
                 print()
             print(toml.dumps(self._config).strip())
