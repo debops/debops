@@ -407,6 +407,12 @@ Continuous Integration
   :command:`sssd` service. This will have to be changed manually on existing
   OpenLDAP installations before the role is idempotent.
 
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- Keep the ``SSH_CONNECTION`` environment variable when running commands with
+  sudo.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 
