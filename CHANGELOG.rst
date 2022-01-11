@@ -26,6 +26,14 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+General
+'''''''
+
+- New Ansible custom lookup plugin ``dig_srv`` can be used in Ansible variables
+  and tasks to simplify DNS SRV record parsing. The plugin can retrieve an
+  existing SRV record or if none is found, fall back to a predefined default
+  values for the hostname and port.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
