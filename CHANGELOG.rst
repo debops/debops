@@ -402,6 +402,11 @@ Continuous Integration
   includes additional constraints on uniqueness and requires a rebuild of the
   OpenLDAP service. See :ref:`upgrade_notes` for details.
 
+- The ``sudoUser`` attribute index in the OpenLDAP service has been changed to
+  ``sudoHost,sudoUser eq,sub`` to provide better search performance for the
+  :command:`sssd` service. This will have to be changed manually on existing
+  OpenLDAP installations before the role is idempotent.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 
