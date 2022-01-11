@@ -1349,7 +1349,7 @@ request_acme_manual_certificate() {
 
 request_acme_certificate () {
     if [ "${config['pki_acme']}" = "true" ]; then
-        if [ "${config['acme_type']}" == "acme-tiny" ]; then
+        if [ "${config['acme_type']}" == "acme-tiny" ] || [ "${config['acme_type']}" == "" ]; then
           request_acme_tiny_certificate
         fi
         if [[ "${config['acme_type']}" =~ "dns-" ]]; then
