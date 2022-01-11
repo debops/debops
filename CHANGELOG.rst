@@ -53,6 +53,11 @@ General
   roles, provided using a custom Ansible plugin. The filters require the
   ``toml`` Python package to be installed on the Ansible Controller.
 
+- New Ansible custom lookup plugin ``dig_srv`` can be used in Ansible variables
+  and tasks to simplify DNS SRV record parsing. The plugin can retrieve an
+  existing SRV record or if none is found, fall back to a predefined default
+  values for the hostname and port.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
