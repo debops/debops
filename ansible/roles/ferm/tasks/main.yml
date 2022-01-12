@@ -44,7 +44,7 @@
     owner: 'root'
     group: 'adm'
     mode: '02750'
-  with_items:
+  loop:
     - '/etc/ferm/rules.d'
     - '/etc/ferm/filter-input.d'
     - '/etc/ferm/hooks/pre.d'
@@ -62,10 +62,10 @@
     directory_mode: '{{ item.directory_mode | d(omit) }}'
     follow: '{{ item.follow | d(omit) }}'
     force:  '{{ item.force  | d(omit) }}'
-  with_flattened:
-    - '{{ ferm__custom_files }}'
-    - '{{ ferm__group_custom_files }}'
-    - '{{ ferm__host_custom_files }}'
+  loop: '{{ (ferm__custom_files + ferm__group_custom_files
+             + ferm__host_custom_files) | flatten }}'
+  loop_control:
+    label: '{{ item.dest }}'
   when: ((item.src is defined or item.content is defined) and
          item.dest is defined)
   register: ferm__register_files
@@ -109,7 +109,9 @@
                                                  | d(item.value.type | d("default"))] | d("80"))|int
                                 + (item.value.weight | d("0"))|int) }}_rule_{{ item.value.name | d(item.key) }}.conf'
     state: 'absent'
-  with_dict: '{{ ferm__parsed_rules }}'
+  loop: '{{ ferm__parsed_rules | dict2items }}'
+  loop_control:
+    label: '{{ item.key }}'
   register: ferm__register_rules_removed
   when: (item.value.rule_state|d(item.value.state|d('present')) == 'absent')
   tags: [ 'role::ferm:rules' ]
@@ -123,7 +125,9 @@
     owner: 'root'
     group: 'adm'
     mode: '0644'
-  with_dict: '{{ ferm__parsed_rules }}'
+  loop: '{{ ferm__parsed_rules | dict2items }}'
+  loop_control:
+    label: '{{ item.key }}'
   register: ferm__register_rules_created
   when: (item.value.rule_state|d(item.value.state|d('present')) not in [ 'absent', 'ignore' ])
   tags: [ 'role::ferm:rules' ]
@@ -136,9 +140,10 @@
                      + (item.item.value.weight | d("0"))|int) }}_rule_{{ item.item.value.name
                                                                          | d(item.item.key) }}.conf'
          -exec rm -vf {} +
-  with_items:  # noqa no-handler
-    - '{{ ferm__register_rules_removed.results }}'
-    - '{{ ferm__register_rules_created.results }}'
+  loop: '{{ ferm__register_rules_removed.results
+            + ferm__register_rules_created.results }}'
+  loop_control:
+    label: '{{ item.item.key }}'
   when: (item.item.key|d() and item is changed)
   tags: [ 'role::ferm:rules' ]
 
