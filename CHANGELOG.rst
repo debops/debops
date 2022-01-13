@@ -80,6 +80,12 @@ Continuous Integration
 - The default box used by Vagrant for DebOps VMs has been updated from
   ``debian/buster64`` to ``debian/bullseye64``.
 
+:ref:`debops.apt_preferences` role
+''''''''''''''''''''''''''''''''''
+
+- The provided presets for Backports repositories have a slightly higher
+  priority to ensure that they are preferred over third-party APT repositories.
+
 :ref:`debops.docker_server` role
 ''''''''''''''''''''''''''''''''
 
