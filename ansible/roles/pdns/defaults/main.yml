@@ -112,7 +112,9 @@ pdns__backends: [ 'gpgsql' ]
 #
 # Enable/Disable the built-in webserver and HTTP API. For details, see:
 # https://doc.powerdns.com/authoritative/http-api/index.html#enabling-the-api
-pdns__api: False
+pdns__api: '{{ True
+               if "debops_service_pdns_nginx" in group_names
+               else False }}'
 
                                                                    # ]]]
 # .. envvar:: pdns__api_key [[[
@@ -128,7 +130,7 @@ pdns__api_key: '{{ lookup("password", secret + "/pdns/" + ansible_fqdn
 #
 # Enable/Disable the built-in webserver and metrics endpoint. For details, see:
 # https://doc.powerdns.com/authoritative/http-api/index.html#metrics-endpoint
-pdns__metrics: False
+pdns__metrics: '{{ pdns__api }}'
 
                                                                    # ]]]
 # .. envvar:: pdns__http_port [[[

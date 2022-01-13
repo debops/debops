@@ -117,12 +117,41 @@ really want to.
 Anyone using pdns to serve DNSSEC-signed zone data is encouraged to read the
 DNSSEC guide: https://doc.powerdns.com/authoritative/dnssec/index.html
 
+Example inventory
+-----------------
+
+To run the pdns playbook against a host, it needs to be added to the
+``[debops_service_pdns]`` inventory group:
+
+.. code-block:: none
+
+   [debops_service_pdns]
+   hostname
+
+If you want to use the :command:`nginx` reverse proxy, useful for remotely
+accessing the pdns API or metrics endpoint over TLS, you can add the host to
+the ``[debops_service_pdns_nginx]`` inventory group instead:
+
+.. code-block:: none
+
+   [debops_service_pdns_nginx]
+   hostname
+
+Doing so will install the :command:`nginx` webserver, configure it for use with
+pdns, and automatically enable the pdns API and metrics endpoint.
+
 Example playbook
 ----------------
 
 If you are using this role without DebOps, here's an example Ansible playbook
 that uses the ``debops.pdns`` role:
 
-.. literalinclude:: ../../../../ansible/playbooks/service/pdns.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/pdns-plain.yml
+   :language: yaml
+   :lines: 1,5-
+
+There is a separate playbook for pdns with :command:`nginx` as a reverse proxy:
+
+.. literalinclude:: ../../../../ansible/playbooks/service/pdns-nginx.yml
    :language: yaml
    :lines: 1,5-
