@@ -155,10 +155,12 @@ set up and deployed a monitoring appliance based on Debian, Icinga and CheckMK
 as well as file syncing appliance based on Debian and ownCloud. The file syncing
 appliance was build from the ground up with DebOps and deployment was also done
 with Ansible and DebOps. The monitoring appliance was set up by me before I knew
-fancy tools like Ansible/DebOps. Currently, I am working as a full-time
-sysadmin, mainly doing scripting, monitoring, security and automation with SaltStack.
-Neither Debian, nor Ansible/DebOps play a big role currently. Feel free to get in touch if
-you think otherwise and are fully committed to Free Software.
+fancy tools like Ansible/DebOps.
+
+I continued in the area of log collection, monitoring, security and scripting
+as sysadmin after that.
+Between 2017 and 2021, I have been using SaltStack exclusively at work.
+Since 2022, at a different company but again in IT Operations, I am using Ansible again.
 
 I came to DebOps shortly after I settled on Ansible as the configuration
 management system of choice for my private infrastructure, because DebOps is the
