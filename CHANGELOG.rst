@@ -93,6 +93,12 @@ Continuous Integration
 
   .. __: https://docs.docker.com/config/containers/live-restore/
 
+:ref:`debops.etckeeper` role
+''''''''''''''''''''''''''''
+
+- Add ``etckeeper__gitattributes`` option to be able to appended to the
+  :file:`/etc/.gitattributes` file.
+
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
