@@ -303,6 +303,12 @@ Continuous Integration
   and the options changed by the role are set in the
   :envvar:`elasticsearch__default_configuration` variable.
 
+:ref:`debops.etckeeper` role
+''''''''''''''''''''''''''''
+
+- Add ``etckeeper__gitattributes`` option to be able to appended to the
+  :file:`/etc/.gitattributes` file.
+
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
