@@ -160,6 +160,12 @@ Continuous Integration
   format, so that a cleaner output can be defined using the
   ``loop_control.label`` Ansible keyword.
 
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- Add ``netbox__config_custom`` option to be able to configure not explicitly
+  supported options in a raw format.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
