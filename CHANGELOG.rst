@@ -343,6 +343,12 @@ Continuous Integration
 
   .. __: https://keyserver.ubuntu.com/
 
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- Add ``netbox__config_custom`` option to be able to configure not explicitly
+  supported options in a raw format.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
