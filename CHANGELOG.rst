@@ -129,6 +129,12 @@ Continuous Integration
 - The default contact information is now based on the public administrator
   e-mail address set in the :ref:`debops.core` role.
 
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- Add ``netbox__config_custom`` option to be able to configure not explicitly
+  supported options in a raw format.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
