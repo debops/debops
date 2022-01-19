@@ -46,6 +46,10 @@ New DebOps roles
 - The :ref:`debops.zabbix_agent` role can install and configure Zabbix Agent,
   used for monitoring and metrics.
 
+- The :ref:`debops.keepalived` role can be used to install and manage
+  :command:`keepalived` daemon, a lightweight load balancing and high
+  availability service.
+
 General
 '''''''
 

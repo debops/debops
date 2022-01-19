@@ -95,6 +95,7 @@ are not accessed directly by end users.
 - :ref:`debops.fcgiwrap`
 - :ref:`debops.freeradius`
 - :ref:`debops.gunicorn`
+- :ref:`debops.keepalived`
 - :ref:`debops.ldap`
 - :ref:`debops.mcli`
 - :ref:`debops.memcached`
@@ -264,6 +265,7 @@ Networking
 - :ref:`debops.dnsmasq`
 - :ref:`debops.freeradius`
 - :ref:`debops.ifupdown`
+- :ref:`debops.keepalived`
 - :ref:`debops.lldpd`
 - :ref:`debops.netbase`
 - :ref:`debops.radvd`
