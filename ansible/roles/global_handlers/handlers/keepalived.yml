@@ -1,0 +1,22 @@
+---
+# Copyright (C) 2022 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Check keepalived configuration and restart
+  command: keepalived --config-test
+  notify: [ 'Restart keepalived' ]
+
+- name: Check keepalived configuration and reload
+  command: keepalived --config-test
+  notify: [ 'Reload keepalived' ]
+
+- name: Restart keepalived
+  service:
+    name: 'keepalived'
+    state: 'restarted'
+
+- name: Reload keepalived
+  service:
+    name: 'keepalived'
+    state: 'reloaded'
