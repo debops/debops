@@ -1,0 +1,18 @@
+{
+ # Copyright (C) 2014-2017 DebOps <https://debops.org/>
+ # Copyright (C) 2020-2020 Sebastian Vaisov <sebastian@vaisov.lt>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+# Automatic Certificate Management Environment (ACME) support.
+# https://tools.ietf.org/html/draft-ietf-acme-acme-01
+# https://en.wikipedia.org/wiki/Automated_Certificate_Management_Environment
+# Based on https://gist.github.com/daronco/45eeb9223c57d240e60d094f8bee457e
+
+Alias /.well-known/acme-challenge/ "{{ apache__acme_root }}/"
+<Directory "{{ apache__acme_root }}">
+    AllowOverride None
+    Options MultiViews Indexes SymLinksIfOwnerMatch IncludesNoExec
+    Require method GET POST OPTIONS
+</Directory>
