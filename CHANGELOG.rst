@@ -234,9 +234,9 @@ Updates of upstream application versions
 - In the :ref:`debops.roundcube` role, the Roundcube version installed by
   default has been updated to ``1.4.13``.
 
-- Drop Nextcloud 20 support because it is EOL. You need to upgrade Nextcloud
-  manually if you are running version 20 or below. The role now defaults to
-  Nextcloud 21 for new installations.
+- Drop Nextcloud 20 and 21 support because they are EOL. You need to upgrade
+  Nextcloud manually if you are running version 21 or below. The role now
+  defaults to Nextcloud 22 for new installations.
 
 - In the :ref:`debops.wpcli` role, the WpCli version has been updated to
   ``2.5.0``. ``2.3.0`` and ``2.4.0`` can be installed by changing ``wpcli__version``
