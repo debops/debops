@@ -47,7 +47,7 @@ rsyslog__unprivileged: '{{ "True"
 # .. envvar:: rsyslog__remote_enabled [[[
 #
 # Enable or disable support for receiving logs from remote hosts. It will be
-# enabled automatically if list of hosts or subnets allowed to connect to
+# enabled automatically if a list of hosts or subnets allowed to connect to the
 # :command:`rsyslog` service is defined in the Ansible inventory.
 rsyslog__remote_enabled: '{{ True
                              if (rsyslog__allow
@@ -298,23 +298,20 @@ rsyslog__host_allow: []
 
 # .. envvar:: rsyslog__syslog_srv_rr [[[
 #
-# List which contains the result of the :command:`dig` query for syslog
-# server ``SRV`` resource records in the host's domain.
+# List which contains the result of the DNS query for syslog server ``SRV``
+# resource records in the host's domain.
 # See https://tools.ietf.org/html/draft-schoenw-opsawg-nm-srv-03 for details.
-rsyslog__syslog_srv_rr: '{{ q("dig", "_syslog._tcp." + rsyslog__domain + "./SRV", "flat=0")
-                            if rsyslog__domain|d() else [] }}'
+rsyslog__syslog_srv_rr: '{{ q("dig_srv", "_syslog._tcp." + rsyslog__domain,
+                              "syslog." + rsyslog__domain, 6514) }}'
 
                                                                    # ]]]
 # .. envvar:: rsyslog__default_forward [[[
 #
-# List of the hosts detected via the DNS SRV resource records to which log
+# List of the hosts detected via the DNS ``SRV`` resource records to which log
 # messages will be forwarded. If multiple servers are configured in the SRV
-# record, logs will be snet to all of them at the same time.
-rsyslog__default_forward: '{{ (rsyslog__syslog_srv_rr | selectattr("target", "defined")
-                               | list | sort)
-                              if (rsyslog__syslog_srv_rr and
-                                  "NXDOMAIN" not in rsyslog__syslog_srv_rr and
-                                  rsyslog__syslog_srv_rr[0] and
+# record, logs will be sent to all of them.
+rsyslog__default_forward: '{{ rsyslog__syslog_srv_rr
+                              if (rsyslog__syslog_srv_rr[0]["dig_srv_src"]|d("") != "fallback" and
                                   not rsyslog__remote_enabled|bool and
                                   rsyslog__pki|bool)
                               else [] }}'
