@@ -267,7 +267,7 @@ The ``apt__*_auth_files`` lists can be used to create and manage
 :file:`/etc/apt/auth.conf.d/` configuration files which caontain authentication
 credentials required by specific APT repositories. The format and more details
 about these files can be found in :man:`apt_auth.conf(5)` manual page. The
-:ref:`debops.reprepro` role can be used to create APT repositories that require
+``debops.reprepro`` role can be used to create APT repositories that require
 authentication.
 
 .. note:: Private APT repositories accessible over HTTPS might result in issues
@@ -291,7 +291,7 @@ Examples
 
 Provide credentials for a private APT repository, with password stored in the
 :file:`secret/` directory managed by the :ref:`debops.secret` role. The APT
-repository is managed by the :ref:`debops.reprepro` role which uses the
+repository is managed by the ``debops.reprepro`` role which uses the
 :ref:`debops.nginx` role to manage the authentication credentials.
 
 .. code-block:: yaml
