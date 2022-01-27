@@ -97,9 +97,10 @@ ldap__domain: '{{ ansible_domain }}'
                                                                    # ]]]
 # .. envvar:: ldap__servers_srv_rr [[[
 #
-# List which contains the result of the :command:`dig` query for LDAP server
-# ``SRV`` resource records in the host's domain.
-ldap__servers_srv_rr: '{{ q("dig", "_ldap._tcp." + ldap__domain + "./SRV", "flat=0") }}'
+# List which contains the result of the DNS query for LDAP server ``SRV``
+# resource records in the host's domain.
+ldap__servers_srv_rr: '{{ q("dig_srv", "_ldap._tcp." + ldap__domain,
+                            "ldap." + ldap__domain, 389) }}'
 
                                                                    # ]]]
 # .. envvar:: ldap__servers [[[
@@ -111,11 +112,7 @@ ldap__servers_srv_rr: '{{ q("dig", "_ldap._tcp." + ldap__domain + "./SRV", "flat
 # The role tries to detect LDAP servers to use via published ``_ldap._tcp`` SRV
 # resource records, and if there aren't any, will fallback to the ``ldap.*``
 # Fully Qualified Domain Name.
-ldap__servers: '{{ (ldap__servers_srv_rr | selectattr("target", "defined")
-                    | map(attribute="target") | map("regex_replace", "\.$","") | list)
-                   if ("NXDOMAIN" not in ldap__servers_srv_rr and
-                       ldap__servers_srv_rr[0])
-                   else [ "ldap." + ldap__domain ] }}'
+ldap__servers: '{{ ldap__servers_srv_rr | map(attribute="target") }}'
 
                                                                    # ]]]
 # .. envvar:: ldap__servers_protocol [[[
