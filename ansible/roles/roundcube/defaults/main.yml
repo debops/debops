@@ -577,40 +577,32 @@ roundcube__domain: '{{ ansible_domain }}'
                                                                    # ]]]
 # .. envvar:: roundcube__imap_srv_rr [[[
 #
-# List which contains the result of the :command:`dig` query for IMAP server
-# ``SRV`` resource records in the host's domain. See :rfc:`6186` for details.
-roundcube__imap_srv_rr: '{{ q("dig", "_imaps._tcp." + roundcube__domain + "./SRV", "flat=0") }}'
+# List which contains the result of the DNS query for IMAP server ``SRV``
+# resource records in the host's domain. See :rfc:`6186` for details.
+#
+# If there are no resource records, the role checks if a local Dovecot
+# installation is present and uses the host FQDN as the IMAP server address.
+# Finally, ``imap.<domain>`` is used as a fallback.
+roundcube__imap_srv_rr: '{{ q("dig_srv", "_imaps._tcp." + roundcube__domain,
+                              ansible_fqdn
+                              if (ansible_local|d() and ansible_local.dovecot|d() and
+                                  (ansible_local.dovecot.installed|d())|bool)
+                              else "imap." + roundcube__domain, 993) }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__imap_fqdn [[[
 #
-# The FQDN address of the IMAP server which stores user mailboxes. By default
-# the host is located using DNS SRV resource records; if there are none, role
-# checks if a local Dovecot installation is present and uses the host FQDN as
-# the IMAP server address. Finally, the static ``imap.<domain>`` is used.
+# The FQDN address of the IMAP server which stores user mailboxes.
 #
-# Use of FQDN instead of ``localhost`` is required for X.509 certificate
-# verification and for correct information in system logs.
-roundcube__imap_fqdn: '{{ (roundcube__imap_srv_rr | selectattr("target", "defined")
-                           | map(attribute="target")
-                           | map("regex_replace", "\.$","")
-                           | list | first)
-                          if ("NXDOMAIN" not in roundcube__imap_srv_rr and
-                              roundcube__imap_srv_rr[0])
-                          else (ansible_fqdn
-                                if (ansible_local|d() and ansible_local.dovecot|d() and
-                                    (ansible_local.dovecot.installed|d())|bool)
-                                else ("imap." + roundcube__domain)) }}'
+# The use of the FQDN instead of ``localhost`` is required for X.509
+# certificate verification and for correct information in system logs.
+roundcube__imap_fqdn: '{{ roundcube__imap_srv_rr[0]["target"] }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__imap_port [[[
 #
-# TCP port used for IMAP connections
-roundcube__imap_port: '{{ (roundcube__imap_srv_rr | selectattr("target", "defined")
-                           | map(attribute="port") | list | sort | first)
-                          if ("NXDOMAIN" not in roundcube__imap_srv_rr and
-                              roundcube__imap_srv_rr[0])
-                          else "993" }}'
+# The TCP port to use for IMAP connections.
+roundcube__imap_port: '{{ roundcube__imap_srv_rr[0]["port"] }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__imap_server [[[
@@ -637,45 +629,37 @@ roundcube__imap_server: '{{ ("ssl://"
                                                                    # ]]]
 # .. envvar:: roundcube__smtp_srv_rr [[[
 #
-# List which contains the result of the :command:`dig` query for SMTP
+# List which contains the result of the DNS query for the SMTP
 # (submission) server ``SRV`` resource records in the host's domain. See
 # :rfc:`6186` for details.
-roundcube__smtp_srv_rr: '{{ q("dig", "_submissions._tcp." + roundcube__domain + "./SRV", "flat=0") }}'
+#
+# If there are no resource records, the role checks if a local Postfix
+# installation is present and uses the host FQDN as the SMTP server address.
+# Finally, ``smtp.<domain>`` is used as a fallback.
+roundcube__smtp_srv_rr: '{{ q("dig_srv", "_submissions._tcp." + roundcube__domain,
+                              ansible_fqdn
+                              if (ansible_local|d() and ansible_local.postfix|d() and
+                                  (ansible_local.postfix.installed|d())|bool)
+                              else ("smtp." + roundcube__domain), 465) }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__smtp_fqdn [[[
 #
 # The FQDN address of the SMTP (submission) server which will be used to send
-# e-mail messages. By default the host is located using DNS SRV resource
-# records; if there are none, role checks if a local Postfix installation is
-# present and uses the host FQDN as the SMTP (submission) server address.
-# Finally, the static ``smtp.<domain>`` is used.
+# e-mail messages.
 #
-# Use of FQDN instead of ``localhost`` is required for X.509 certificate
-# verification and for correct information in system logs.
-roundcube__smtp_fqdn: '{{ (roundcube__smtp_srv_rr | selectattr("target", "defined")
-                           | map(attribute="target")
-                           | map("regex_replace", "\.$","")
-                           | list | first)
-                          if ("NXDOMAIN" not in roundcube__smtp_srv_rr and
-                              roundcube__smtp_srv_rr[0])
-                          else (ansible_fqdn
-                                if (ansible_local|d() and ansible_local.postfix|d() and
-                                    (ansible_local.postfix.installed|d())|bool)
-                                else ("smtp." + roundcube__domain)) }}'
+# The use of the FQDN instead of ``localhost`` is required for X.509
+# certificate verification and for correct information in system logs.
+roundcube__smtp_fqdn: '{{ roundcube__smtp_srv_rr[0]["target"] }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__smtp_port [[[
 #
-# SMTP port.
+# The TCP port to use for SMTP connections.
 #
-# SMTP port (default is 25; use 587 for STARTTLS or 465 for the
-# deprecated SSL over SMTP (aka SMTPS))
-roundcube__smtp_port: '{{ (roundcube__smtp_srv_rr | selectattr("target", "defined")
-                           | map(attribute="port") | list | sort | first)
-                          if ("NXDOMAIN" not in roundcube__smtp_srv_rr and
-                              roundcube__smtp_srv_rr[0])
-                          else "465" }}'
+# Common values include 25 for unencrypted communication, 587 for STARTTLS,
+# or 465 for SMTP over SSL (aka SMTPS).
+roundcube__smtp_port: '{{ roundcube__smtp_srv_rr[0]["port"] }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__smtp_server [[[
@@ -715,41 +699,33 @@ roundcube__smtp_pass: '%p'
                                                                    # ]]]
 # .. envvar:: roundcube__sieve_srv_rr [[[
 #
-# List which contains the result of the :command:`dig` query for Sieve server
+# List which contains the result of the DNS query for Sieve server
 # ``SRV`` resource records in the host's domain. See :rfc:`5804` for details.
-roundcube__sieve_srv_rr: '{{ q("dig", "_sieve._tcp." + roundcube__domain + "./SRV", "flat=0") }}'
+#
+# If there are no resource records, the role checks if a local Dovecot
+# installation is present and uses the host FQDN as the Sieve server address.
+# Finally, ``sieve.<domain>`` is used as a fallback.
+roundcube__sieve_srv_rr: '{{ q("dig_srv", "_sieve._tcp." + roundcube__domain,
+                               ansible_fqdn
+                               if (ansible_local|d() and ansible_local.dovecot|d() and
+                                   (ansible_local.dovecot.installed|d())|bool)
+                               else ("sieve." + roundcube__domain), 4190) }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__sieve_fqdn [[[
 #
-# The FQDN address of the Sieve server which allows manageement of the Sieve
-# filter scripts. By default the host is located using DNS SRV resource
-# records; if there are none, role checks if a local Dovecot installation is
-# present and uses the host FQDN as the Sieve server address. Finally, the
-# static ``sieve.<domain>`` is used.
+# The FQDN address of the Sieve server which allows management of the Sieve
+# filter scripts.
 #
-# Use of FQDN instead of ``localhost`` is required for X.509 certificate
-# verification and for correct information in system logs.
-roundcube__sieve_fqdn: '{{ (roundcube__sieve_srv_rr | selectattr("target", "defined")
-                            | map(attribute="target")
-                            | map("regex_replace", "\.$","")
-                            | list | first)
-                           if ("NXDOMAIN" not in roundcube__sieve_srv_rr and
-                               roundcube__sieve_srv_rr[0])
-                           else (ansible_fqdn
-                                 if (ansible_local|d() and ansible_local.dovecot|d() and
-                                     (ansible_local.dovecot.installed|d())|bool)
-                                 else ("sieve." + roundcube__domain)) }}'
+# The use of the FQDN instead of ``localhost`` is required for X.509
+# certificate verification and for correct information in system logs.
+roundcube__sieve_fqdn: '{{ roundcube__sieve_srv_rr[0]["target"] }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__sieve_port [[[
 #
-# TCP port used for Sieve connections
-roundcube__sieve_port: '{{ (roundcube__sieve_srv_rr | selectattr("target", "defined")
-                            | map(attribute="port") | list | sort | first)
-                           if ("NXDOMAIN" not in roundcube__sieve_srv_rr and
-                               roundcube__sieve_srv_rr[0])
-                           else "4190" }}'
+# The TCP port used for Sieve connections.
+roundcube__sieve_port: '{{ roundcube__sieve_srv_rr[0]["port"] }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__sieve_server [[[
