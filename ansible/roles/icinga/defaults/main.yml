@@ -123,33 +123,36 @@ icinga__domain: '{{ ansible_domain }}'
                                                                    # ]]]
 # .. envvar:: icinga__master_nodes [[[
 #
-# List of ``dig`` Ansible module results that define which Icinga 2 nodes are
-# "master" nodes that manage the monitoring.
+# List which contains the result of the DNS query for Icinga 2 master node
+# ``SRV`` resource records in the host's domain. This is a DebOps-specific
+# feature, which does not have a corresponding RFC.
 #
 # See :ref:`icinga__ref_dns_config` for details if you want to specify this
 # list manually.
-icinga__master_nodes: '{{ lookup("dig", "_icinga-master._tcp." + icinga__domain + "./SRV",
-                                 "flat=0", wantlist=True) }}'
+icinga__master_nodes: '{{ q("dig_srv", "_icinga-master._tcp." + icinga__domain,
+                            "icinga-master." + icinga__domain, icinga__api_port) }}'
 
                                                                    # ]]]
 # .. envvar:: icinga__master_delegate_to [[[
 #
-# The host where tasks that must execute on the master node will be delegated.
+# The host to which tasks that must execute on the master node will be delegated.
 # It's used when ``icinga__master_*_configuration`` is set and configuration
 # files are written on the master node.
-icinga__master_delegate_to: '{{ icinga__master_nodes.0.target }}'
+icinga__master_delegate_to: '{{ icinga__master_nodes[0]["target"] }}'
 
                                                                    # ]]]
 # .. envvar:: icinga__director_nodes [[[
 #
-# List of ``dig`` Ansible module results that define which Icinga 2 nodes are
-# "director" nodes, used for registering the Icinga 2 client nodes. Only the
-# first list entry will be used to register a node.
+# List which contains the result of the DNS query for Icinga 2 director node
+# ``SRV`` resource records in the host's domain. This is a DebOps-specific
+# feature, which does not have a corresponding RFC.
+#
+# Only the first entry in the list will be used to register a node.
 #
 # See :ref:`icinga__ref_dns_config` for details if you want to specify this
 # list manually.
-icinga__director_nodes: '{{ lookup("dig", "_icinga-director._tcp." + icinga__domain + "./SRV",
-                                   "flat=0", wantlist=True) }}'
+icinga__director_nodes: '{{ q("dig_srv", "_icinga-director._tcp." + icinga__domain,
+                              "icinga-director." + icinga__domain, 443) }}'
 
                                                                    # ]]]
 # .. envvar:: icinga__node_type [[[
@@ -161,10 +164,8 @@ icinga__director_nodes: '{{ lookup("dig", "_icinga-director._tcp." + icinga__dom
 #
 # Client nodes are registered in the Icinga 2 Director if one is available.
 icinga__node_type: '{{ "master"
-                       if (icinga__fqdn in (icinga__master_nodes
-                           | selectattr("target", "defined")
-                           | map(attribute="target")
-                           | map("regex_replace", "\.$","")) or
+                       if (icinga__fqdn in
+                           (icinga__master_nodes | map(attribute="target")) or
                            not icinga__director_enabled|bool)
                        else "client" }}'
 
@@ -244,19 +245,20 @@ icinga__api_permissions: [ '*' ]
 # .. envvar:: icinga__director_enabled [[[
 #
 # Enable or disable support for the Icinga 2 Director configuration. Support
-# will be automatically enabled of Icinga 2 master and director nodes are
-# configured as the DNS SRV records. See :ref:`icinga__ref_dns_config` for more
-# details.
+# will be automatically enabled if DNS ``SRV`` records exist for the Icinga 2
+# master and director nodes.
+#
+# See :ref:`icinga__ref_dns_config` for more details.
 icinga__director_enabled: '{{ True
-                              if ((icinga__master_nodes   | selectattr("target", "defined") | list | count > 0) and
-                                  (icinga__director_nodes | selectattr("target", "defined") | list | count > 0))
+                              if (icinga__master_nodes[0]["dig_srv_src"]|d("") != "fallback" and
+                                  icinga__director_nodes[0]["dig_srv_src"]|d("") != "fallback")
                               else False }}'
 
                                                                    # ]]]
 # .. envvar:: icinga__director_register [[[
 #
-# Enable or disable automatic registering of configured hosts in Icinga
-# 2 Director.
+# Enable or disable automatic registration of configured hosts in Icinga 2
+# Director.
 icinga__director_register: '{{ True
                                if (icinga__director_enabled|bool)
                                else False }}'
@@ -265,13 +267,9 @@ icinga__director_register: '{{ True
 # .. envvar:: icinga__director_register_api_fqdn [[[
 #
 # The Fully Qualified Domain Name of the Icinga 2 Director host where a given
-# host will be registered. The address will be found using DNS SRV records by
-# default. See :ref:`icinga__ref_dns_config` for more details.
-icinga__director_register_api_fqdn: '{{ icinga__director_nodes
-                                        | selectattr("target", "defined")
-                                        | map(attribute="target")
-                                        | map("regex_replace","\.$","")
-                                        | first }}'
+# host will be registered. The address will be found using DNS ``SRV`` records
+# by default. See :ref:`icinga__ref_dns_config` for more details.
+icinga__director_register_api_fqdn: '{{ icinga__director_nodes[0]["target"] }}'
 
                                                                    # ]]]
 # .. envvar:: icinga__director_register_api_url [[[
@@ -401,11 +399,7 @@ icinga__director_deploy: '{{ True
 # The Fully Qualified Domain Name of the Icinga 2 Director host where the
 # deployment will be performed. The address will be found using DNS SRV records
 # by default. See :ref:`icinga__ref_dns_config` for more details.
-icinga__director_deploy_api_fqdn: '{{ icinga__director_nodes
-                                      | selectattr("target", "defined")
-                                      | map(attribute="target")
-                                      | map("regex_replace","\.$","")
-                                      | first }}'
+icinga__director_deploy_api_fqdn: '{{ icinga__director_nodes[0]["target"] }}'
 
                                                                    # ]]]
 # .. envvar:: icinga__director_deploy_api_url [[[
@@ -623,11 +617,11 @@ icinga__default_configuration:
           {% endif %}
           {% endfor %}
           object Zone "master" {
-            endpoints = [ "{{ icinga__master_nodes | selectattr('target', 'defined') | map(attribute='target') | map('regex_replace', '\.$','') | join('", "') }}" ]
+            endpoints = [ "{{ icinga__master_nodes | map(attribute='target') | join('", "') }}" ]
           }
         state: '{{ "present"
                    if (icinga__node_type != "master" and
-                       icinga__master_nodes | selectattr("target", "defined") | list | count > 0)
+                       icinga__master_nodes[0]["dig_srv_src"]|d("") != "fallback")
                    else "absent" }}'
 
       - name: 'object_node'

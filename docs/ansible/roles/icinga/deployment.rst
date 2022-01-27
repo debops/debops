@@ -55,21 +55,21 @@ be implemented later if there's demand for it.
 DNS SRV records
 ---------------
 
-The ``debops.icinga`` role uses DNS SRV records to find the addresses of the
-master Icinga 2 nodes, as well as the Icinga 2 Director API. The nodes check
-the DNS records to determine if they should be configured as the "master"
+The ``debops.icinga`` role uses DNS ``SRV`` records to find the addresses of
+the master Icinga 2 nodes, as well as the Icinga 2 Director API. The nodes
+check the DNS records to determine if they should be configured as the "master"
 hosts, or client hosts that register themselves.
 
 The DNS SRV record service names are:
 
-- ``_icinga-master._tcp`` (the master node)
-- ``_icinga-director._tcp`` (the director node)
+- ``_icinga-master._tcp`` (for the master node(s))
+- ``_icinga-director._tcp`` (for the director node(s))
 
 There can be multiple master and director DNS SRV records. The role will
 configure multiple master nodes in the :file:`zones.conf` configuration file,
 however only one director node will be used.
 
-You should create the DNS SRV records for the master and Director hosts,
+You should create the DNS ``SRV`` records for the master and Director hosts,
 otherwise all of the Icinga 2 nodes will see themselves as "master" nodes and
 won't try to connect to each other. To do that in :command:`dnsmasq`, you can
 add the configuration options:
