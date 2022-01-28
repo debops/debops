@@ -224,7 +224,7 @@ Updates of upstream application versions
   running the playbook.
 
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
-  ``v3.1.3``. Note that you need ``v2.11.0`` or later to upgrade to ``v3.0``.
+  ``v3.1.6``. Note that you need ``v2.11.0`` or later to upgrade to ``v3.0``.
 
 - The Icinga Web 2 modules installed by :ref:`debops.icinga_web` have been
   updated to their latest versions. A quick database migration is needed after
@@ -307,6 +307,12 @@ Continuous Integration
   and the options changed by the role are set in the
   :envvar:`elasticsearch__default_configuration` variable.
 
+:ref:`debops.etckeeper` role
+''''''''''''''''''''''''''''
+
+- Add ``etckeeper__gitattributes`` option to be able to appended to the
+  :file:`/etc/.gitattributes` file.
+
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
@@ -346,6 +352,12 @@ Continuous Integration
   keyserver`__ due to deprecation of the SKS Keyserver pool.
 
   .. __: https://keyserver.ubuntu.com/
+
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- Add ``netbox__config_custom`` option to be able to configure not explicitly
+  supported options in a raw format.
 
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
