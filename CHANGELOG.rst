@@ -58,6 +58,14 @@ General
   to enable access to restricted APT repositories that require HTTP Basic
   Authentication.
 
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- The role can now automatically generate SSH keys on the ``netbox`` UNIX
+  account for use with `NAPALM`__ services.
+
+  .. __: https://github.com/napalm-automation/napalm
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
