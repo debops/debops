@@ -46,6 +46,14 @@ General
   This is needed so that various alternatives for :command:`iptables` backends
   can be correctly synchronized.
 
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- The role can now automatically generate SSH keys on the ``netbox`` UNIX
+  account for use with `NAPALM`__ services.
+
+  .. __: https://github.com/napalm-automation/napalm
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
