@@ -638,6 +638,9 @@ debops.reprepro role
   seconds. This mitigates a lock-out issue when :envvar:`sshd__use_dns` is
   enabled (the default) and your DNS resolvers are unreachable.
 
+- The role will avoid leaking the LDAP bind password through the process list
+  during password file creation on the remote host.
+
 :ref:`debops.sudo` role
 '''''''''''''''''''''''
 
