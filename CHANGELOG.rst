@@ -98,6 +98,14 @@ Continuous Integration
 - The provided presets for Backports repositories have a slightly higher
   priority to ensure that they are preferred over third-party APT repositories.
 
+:ref:`debops.dhparam` role
+''''''''''''''''''''''''''
+
+- The role will no longer install the :command:`cron` service directly; instead
+  it depends on the :ref:`debops.cron` role to ensure that the service is
+  present. This allows replacing the ``cron`` Debian package with a different
+  backend, for example ``systemd-cron`` package.
+
 :ref:`debops.docker_server` role
 ''''''''''''''''''''''''''''''''
 
