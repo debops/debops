@@ -58,6 +58,12 @@ New DebOps roles
   :command:`keepalived` daemon, a lightweight load balancing and high
   availability service.
 
+- The :ref:`debops.rspamd` role can be used to install `rspamd`__ service, an
+  anti-spam mail filter. The role automatically integrates with the
+  :ref:`debops.postfix` role to provide anti-spam support.
+
+  .. __: https://rspamd.org/
+
 General
 '''''''
 
