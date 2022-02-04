@@ -237,6 +237,7 @@ Mail and SMS services
 - :ref:`debops.postscreen`
 - :ref:`debops.postwhite`
 - :ref:`debops.roundcube`
+- :ref:`debops.rspamd`
 - :ref:`debops.saslauthd`
 - ``debops.smstools``
 

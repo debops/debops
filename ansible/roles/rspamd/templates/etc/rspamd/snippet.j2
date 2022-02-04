@@ -1,0 +1,63 @@
+{# Copyright (C) 2021 David Härdeman <david@hardeman.nu>
+ # Copyright (C) 2021 DebOps <https://debops.org>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+#
+# /etc/rspamd/local.d/{{ item.file }}
+{% if item.comment|d() %}
+{{   item.comment | regex_replace('\n$', '') | comment(prefix='#', postfix='#', decoration='# ') }}
+{% endif %}
+
+{% macro print_element(element, commented, loop_first, indent) %}
+{%   set prefix = ("{:^" + indent|string + "}").format('') %}
+{%   set comment_prefix = (prefix + "# ") %}
+{%   if commented or element.state|d('present') == 'comment' %}
+{%     set commented = True %}
+{%     set prefix = comment_prefix %}
+{%   else %}
+{%     set commented = False %}
+{%   endif %}
+{%   if element.options|d() and not loop_first %}
+{{     '' }}
+{%   endif %}
+{%   if element.comment|d() %}
+{{     element.comment | regex_replace('\n$', '') | comment(prefix='', decoration=comment_prefix, postfix='') -}}
+{%   endif %}
+{%   if element.raw|d() %}
+{%     if commented %}
+{{       '{}'.format(element.raw | regex_replace('\n$', '') | comment(prefix='', decoration=comment_prefix, postfix='')) -}}
+{%     else %}
+{{       '{}'.format(element.raw | regex_replace('\n$', '')) }}
+{%     endif %}
+{%   elif element.options|d() %}
+{{     '{}{} {{'.format(prefix, element.option | d(element.name) | regex_replace('\n$', '')) }}
+{%     for element in element.options %}
+{%       if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{{         print_element(element, commented, loop.first, indent + 8) -}}
+{%       endif %}
+{%     endfor %}
+{{     '{}}}'.format(prefix) }}
+{%   else %}
+{%     if element.value is not string and element.value is not mapping and element.value is iterable %}
+{%       set element_value = [] %}
+{%       for option in element.value %}
+{%         if option.state|d('present') != 'absent' and option.name|d("")|length > 0 %}
+{%           set _ = element_value.append(option.name) %}
+{%         endif %}
+{%       endfor %}
+{%     else %}
+{%       set element_value = element.value | d("") | to_json %}
+{%     endif %}
+{{     '{}{} = {};'.format(prefix, element.option | d(element.name), element_value) }}
+{%   endif %}
+{% endmacro %}
+{##}
+{% if item.options %}
+{%   for option in item.options %}
+{%     if option.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{{       print_element(option, option.state|d('present') == 'comment', loop.first, 0) -}}
+{%     endif %}
+{%   endfor %}
+{% endif %}
+
