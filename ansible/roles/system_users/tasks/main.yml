@@ -118,6 +118,7 @@
                 else omit }}'
     append: '{{ item.append | d(True) }}'
     state:  '{{ item.state  | d("present") }}'
+    create_home: '{{ item.create_home | d(omit) }}'
   loop: '{{ system_users__combined_accounts | parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
