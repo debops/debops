@@ -21,6 +21,9 @@
 
     # Map of current and next distribution releases
     # Redundant in the following places, please update all copies:
+    # Only upgrades up to Debian Stable are enabled here.
+    # To prevent unintentional upgrades to testing, those mappings are
+    # commented out here.
     #
     # * ansible/roles/debops.apt/defaults/main.yml
     # * ansible/roles/debops.apt_preferences/defaults/main.yml
@@ -31,7 +34,7 @@
       'jessie': 'stretch'
       'stretch': 'buster'
       'buster': 'bullseye'
-      'bullseye': 'bookworm'
+      # 'bullseye': 'bookworm'
       'trusty': 'utopic'
 
     # Current release
@@ -67,8 +70,8 @@
       ============================
 
       {% for line in dist_upgrade_register_upgrade.stdout_lines %}
-      {% if not line | match('^\(Reading\s+database.*%') and
-            not line | match('^\(Reading\s+database\s+\.\.\.\s+$') %}
+      {% if not line | regex_search('^\(Reading\s+database.*%') and
+            not line | regex_search('^\(Reading\s+database\s+\.\.\.\s+$') %}
       {{ line }}
       {% endif %}
       {% endfor %}
@@ -78,8 +81,8 @@
       ==========================
 
       {% for line in dist_upgrade_register_autoremove.stdout_lines %}
-      {% if not line | match('^\(Reading\s+database.*%') and
-            not line | match('^\(Reading\s+database\s+\.\.\.\s+$') %}
+      {% if not line | regex_search('^\(Reading\s+database.*%') and
+            not line | regex_search('^\(Reading\s+database\s+\.\.\.\s+$') %}
       {{ line }}
       {% endif %}
       {% endfor %}
@@ -89,8 +92,8 @@
       =========================
 
       {% for line in dist_upgrade_register_autoclean.stdout_lines %}
-      {% if not line | match('^\(Reading\s+database.*%') and
-            not line | match('^\(Reading\s+database\s+\.\.\.\s+$') %}
+      {% if not line | regex_search('^\(Reading\s+database.*%') and
+            not line | regex_search('^\(Reading\s+database\s+\.\.\.\s+$') %}
       {{ line }}
       {% endif %}
       {% endfor %}
@@ -121,8 +124,19 @@
       when: dist_upgrade_current_release in dist_upgrade_version_map.keys() and
             dist_upgrade_new_release is defined and dist_upgrade_new_release
 
+    - name: Fix APT sources (buster/updates becomes bullseye-security)
+      replace:
+        dest: "{{ item.path }}"
+        regexp: '\s{{ dist_upgrade_new_release }}/updates\s'
+        replace: ' {{ dist_upgrade_new_release }}-security '
+      with_items:
+        - "{{ dist_upgrade_register_apt_sources.files }}"
+      when: dist_upgrade_new_release == 'bullseye'
+
     - name: Remove all APT preferences for backported packages
       shell: "set -o nounset -o pipefail -o errexit && grep -lrIZ 'Pin: release .*={{ dist_upgrade_current_release }}-backports' /etc/apt/preferences.d | xargs -0 rm -f --"  # noqa no-handler
+      args:
+        executable: 'bash'
       when: dist_upgrade_register_replace is defined and dist_upgrade_register_replace is changed
 
     - name: Create a lockfile

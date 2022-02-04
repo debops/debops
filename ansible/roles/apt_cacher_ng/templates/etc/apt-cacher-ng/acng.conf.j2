@@ -1,5 +1,5 @@
-{# Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
- # Copyright (C) 2016-2017 DebOps <https://debops.org/>
+{# Copyright (C) 2016-2017,2021 Robin Schneider <ypid@riseup.net>
+ # Copyright (C) 2016-2017,2021 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 # {{ ansible_managed }}
@@ -16,13 +16,19 @@
 # software package downloads. It's supposed to be in a directory specified by
 # the -c option of apt-cacher-ng, see apt-cacher-ng(8) for details.
 # RULES:
-# Letter case in variable names does not matter, names and values should be
-# separated with colons. For boolean variables, zero number is considered false,
-# non-zero considered true. If a default value is not explicitly mentioned in
-# the description, the commented value assignments mostly represent the default
-# values of the particular variables.
+# - letter case in variable names does not matter
+# - names and values are separated by colon or equals sign
+# - for boolean variables, zero means false, non-zero means true
+# - "default value" means built-in (!) defaults, i.e. something which the
+#   program uses if the option is not set here or in other config files.
+#   That value might be explicitly mentioned in the description. Where it is
+#   not, there is no reason to assume any of the examples to be the default
+#   value! In doubt, use acngtool to query the value of the particular variable.
 
 # Storage directory for downloaded data and related maintenance activity.
+#
+# Note: When the value for CacheDir is changed, change the file
+# /lib/systemd/system/apt-cacher-ng.service too
 #
 CacheDir: {{ apt_cacher_ng__cache_dir }}
 
@@ -36,7 +42,8 @@ LogDir: {{ apt_cacher_ng__log_dir }}
 SupportDir: {{ apt_cacher_ng__support_dir }}
 
 # TCP server port for incoming http (or HTTP proxy) connections.
-# Can be set to 9999 to emulate apt-proxy.
+# Can be set to 9999 to emulate apt-proxy. Value of 0 turns off TCP server
+# (SocketPath must be set in this case).
 #
 Port:{{ apt_cacher_ng__port }}
 
@@ -45,7 +52,9 @@ Port:{{ apt_cacher_ng__port }}
 # local interface. DNS resolution is performed using getaddrinfo(3) for all
 # available protocols (IPv4, IPv6, ...). Using a protocol specific format will
 # create binding(s) only on protocol specific socket(s), e.g. 0.0.0.0 will
-# listen only to IPv4.
+# listen only to IPv4. The endpoint can also be specified as host:port (or
+# [ipv6-address]:port) which allows binding on non-standard ports (Port
+# directive is ignored in this case).
 #
 # Default: listens on all interfaces and protocols
 #
@@ -67,6 +76,7 @@ Port:{{ apt_cacher_ng__port }}
 # Examples:
 Remap-debrep: file:deb_mirror*.gz /debian ; file:backends_debian # Debian Archives
 Remap-uburep: file:ubuntu_mirrors /ubuntu ; file:backends_ubuntu # Ubuntu Archives
+Remap-klxrep: file:kali_mirrors /kali ; file:backends_kali # Kali Linux Archives
 Remap-cygwin: file:cygwin_mirrors /cygwin # ; file:backends_cygwin # incomplete, please create this file or specify preferred mirrors here
 Remap-sfnet:  file:sfnet_mirrors # ; file:backends_sfnet # incomplete, please create this file or specify preferred mirrors here
 Remap-alxrep: file:archlx_mirrors /archlinux # ; file:backend_archlx # Arch Linux
@@ -74,12 +84,7 @@ Remap-fedora: file:fedora_mirrors # Fedora Linux
 Remap-epel:   file:epel_mirrors # Fedora EPEL
 Remap-slrep:  file:sl_mirrors # Scientific Linux
 Remap-gentoo: file:gentoo_mirrors.gz /gentoo ; file:backends_gentoo # Gentoo Archives
-# Remap-debvol: file:debvol_mirror*.gz /debian-volatile ; file:backends_debvol # Debian Volatile Archives
-
-# This is usually not needed for security.debian.org because it's always the
-# same DNS hostname. However, it might be enabled in order to use hooks
-# or ForceManaged mode or special flags in this context. Not set by default.
-# Remap-secdeb: security.debian.org
+Remap-secdeb: security.debian.org security.debian.org/debian-security deb.debian.org/debian-security /debian-security ; deb.debian.org/debian-security security.debian.org
 
 # Virtual page accessible in a web browser to see statistics and status
 # information, i.e. under http://localhost:3142/acng-report.html
@@ -89,16 +94,15 @@ Remap-gentoo: file:gentoo_mirrors.gz /gentoo ; file:backends_gentoo # Gentoo Arc
 #
 # Default: not set, should be set by the system administrator
 #
-{# DebOps note: The file name might be referenced by reverse proxy
-# configuration. Needs to be checked before changing.
-# https://github.com/debops/ansible-apt/issues/53#issuecomment-195782050 #}
 ReportPage: acng-report.html
 
 # Socket file for accessing through local UNIX socket instead of TCP/IP. Can be
-# used with inetd bridge or cron client.
-# Default: not set, UNIX socket bridge is disabled.
+# used with inetd (via bridge tool in.acng from apt-cacher-ng package), is also
+# used internally for administrative purposes.
 #
-# SocketPath:/var/run/apt-cacher-ng/socket
+# Default: /run/apt-cacher-ng/socket
+#
+# SocketPath: /var/run/apt-cacher-ng/socket
 
 # If set to 1, makes log files be written to disk on every new line. Default
 # is 0, buffers are flushed after the client disconnects. Technically,
@@ -139,8 +143,24 @@ ForceManaged: {{ "1" if apt_cacher_ng__force_managed|bool else "0" }}
 # available for some days (mirror downtime) then there is a risk of removal of
 # still useful package files.
 #
-# ExTreshold: 4
+# ExThreshold: 4
 {{ ("ExTreshold: " + apt_cacher_ng__expiration_threshold|string) if (apt_cacher_ng__expiration_threshold != "default") else "" }}
+
+# If the expiration is run daily, it sometimes does not make much sense to do
+# it because the expected changes (i.e. removal of expired files) don't justify
+# the extra processing time or additional downloads for expiration operation
+# itself. This discrepancy might be especially worse if the local client
+# installations are small or are rarely updated but the daily changes of
+# the remote archive metadata are heavy.
+#
+# The following option enables a possible trade-off: the expiration run is
+# suppressed until a certain amount of data has been downloaded through
+# apt-cacher-ng since the last expiration execution (which might indicate that
+# packages were replaced with newer versions).
+#
+# The number can have a suffix (k,K,m,M for Kb,KiB,Mb,MiB)
+#
+# ExStartTradeOff: 500m
 
 # Stop expiration when a critical problem appears, issue like a failed update
 # of an index file in the preparation step.
@@ -156,7 +176,7 @@ ForceManaged: {{ "1" if apt_cacher_ng__force_managed|bool else "0" }}
 # before the (day) count is reached. Might be useful with whacky internet
 # connections.
 #
-# Default: a guessed value, 1 if ExTreshold is 5 or more, 0 otherwise.
+# Default: a guessed value, 1 if ExThreshold is 5 or more, 0 otherwise.
 #
 # ExSuppressAdminNotification: 1
 
@@ -192,6 +212,17 @@ ForceManaged: {{ "1" if apt_cacher_ng__force_managed|bool else "0" }}
 # is refused when this value is reached (below zero = unlimited).
 # MaxConThreads: -1
 #
+# Timeout for a forced disconnect in cases where a client connection is about
+# to be closed but remote refuses to confirm the disconnect request. Setting
+# this to a lower value mitigates the effects of resource starvation in case of
+# a DOS attack but increases the risk of failing to flush the remaining portion
+# of data.
+# DisconnectTimeout: 15
+
+# By default, if a remote suddenly reconnects, ACNG tries at least two times to
+# redownload from the same or different location (if known).
+# DlMaxRetries: 2
+
 # Pigeonholing files (like static vs. volatile contents) is done by (extended)
 # regular expressions.
 #
@@ -231,7 +262,7 @@ ForceManaged: {{ "1" if apt_cacher_ng__force_managed|bool else "0" }}
 # log writing. Non-zero value triggers at least faster log file flushing.
 #
 # Some higher bits only working with a special debug build of apt-cacher-ng,
-# see the manual for details. The setting has an alias named UnbufferLogs.
+# see the manual for details.
 #
 # WARNING: this can write significant amount of data into apt-cacher.err logfile.
 #
@@ -280,8 +311,14 @@ RecompBz2: {{ "1" if apt_cacher_ng__recompress_bz2 else "0" }}
 
 # Network timeout for outgoing connections, in seconds.
 #
-# NetworkTimeout: 60
+# NetworkTimeout: 40
 {{ ("NetworkTimeout: " + apt_cacher_ng__network_timeout|string) if (apt_cacher_ng__network_timeout != "") else "" }}
+
+# Fast fallback timeout, in seconds. This is the time to wait before
+# alternative target addresses for a client connection are tried, which can be
+# usefull for quick fallback to IPv4 in case of whacky IPv6 configuration.
+#
+# FastTimeout = 4
 
 # Sometimes it makes sense to not store the data in cache and just return the
 # package data to client while it comes in. The following DontCache* parameters
@@ -429,20 +466,19 @@ ConnectProto: {{ apt_cacher_ng__connect_protocol | join(" ") }}
 # PassThroughPattern: private-ppa\.launchpad\.net:443$
 # PassThroughPattern: .* # this would allow CONNECT to everything
 #
-# Default:
-# PassThroughPattern: ^bugs.debian.org:443$
+# Default: ^(bugs\.debian\.org|changelogs\.ubuntu\.com):443$
+# PassThroughPattern: ^(bugs\.debian\.org|changelogs\.ubuntu\.com):443$
 
 # It's possible that an evil client requests a volatile file but does not
 # retrieve the response and keeps the connection effectively stuck over
 # many hours, blocking the particular file for other download attempts (which
-# leads to not reporting file changes on server side to other users). The work
-# around is the use of alternative file descriptors inside of apt-cacher-ng,
-# however this might cost some extra download traffic due to worse cache usage.
-# The ResponseFreezeDetectTime value specifies when a file descriptor in the
-# mentioned state is to be considered defect and will require special handling.
-# Default time is 500 seconds.
+# leads to not reporting file changes on server side to other users). In such
+# case the file descriptor can be moved aside although this might reduce cache
+# efficiency.
 #
-# ResponseFreezeDetectTime: 500
+# Default time is based on the value of FreshIndexMaxAge with a safety factor.
+#
+# ResponseFreezeDetectTime: 60
 
 # Keep outgoing connections alive and reuse them for later downloads from
 # the same server as long as possible.
@@ -523,8 +559,8 @@ ConnectProto: {{ apt_cacher_ng__connect_protocol | join(" ") }}
 #
 # BadRedirDetectMime: text/html
 
-# When a BUS signal is received (typically IO issues), a shell command can be
-# execute before the daemon is terminated.
+# When a BUS signal is received (typically on IO errors), a shell command can be
+# executed before the daemon is terminated.
 # Example:
 # BusAction: ls -l /proc/$PPID/ | mail -s SIGBUS! root
 
@@ -533,5 +569,22 @@ ConnectProto: {{ apt_cacher_ng__connect_protocol | join(" ") }}
 # differrent meaning in the future.
 #
 # NoSSLChecks: 0
+
+# Setting this value means: on file downloads from/via cache, tag relevant
+# files. And when acngtool runs the shrink command, it will look at the day
+# when the file was retrieved from cache last time (and not when it was
+# originally downloaded).
+#
+# TrackFileUse: 0
+
+# Controls preallocation of file system space where this feature is supported.
+# This might reduce disk fragmentation and therefore improve later read
+# performance. However, write performance can be reduced which could be
+# exploited by malicious users.
+# The value defines a size limit of how much to report to the OS as expected
+# file size (starting from the beginning of the file).
+# Set to zero to disable this feature completely. Default: one megabyte
+#
+# ReserveSpace: 1048576
 
 {{ apt_cacher_ng__custom }}
