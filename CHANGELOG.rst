@@ -156,6 +156,10 @@ General
   packages are not installed but are expected to be present and in
   configuration compatible with DebOps.
 
+- The :command:`nginx` server can now be configured to send logs to the
+  :command:`syslog` service via a :file:`/dev/log` UNIX socket, instead of
+  storing them in separate configuration files.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 

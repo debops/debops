@@ -169,7 +169,24 @@ nginx_run_path: '/run'
 # .. envvar:: nginx_log_path [[[
 #
 # Directory where :program:`nginx` log files are stored.
-nginx_log_path: '/var/log/nginx'
+# Socket where :program:`nginx` sends logs to, if nginx_log_to_syslog is true.
+# A socket can be unix:/path/to/socket or ipaddress:port
+nginx_log_path: '{{ "unix:/dev/log" if nginx_log_to_syslog else "/var/log/nginx" }}'
+
+                                                                   # ]]]
+# .. envvar:: nginx_log_to_syslog [[[
+#
+# If this variable is true, :program:`nginx` logs to the socket stored
+# in `nginx_log_path`.
+nginx_log_to_syslog: False
+
+                                                                   # ]]]
+# .. envvar:: nginx_syslog_config [[[
+#
+# Examples from nginx documentation are:
+# `nohostname`
+# `facility=local7,tag=nginx,severity=info`
+nginx_syslog_config: 'nohostname'
                                                                    # ]]]
                                                                    # ]]]
 # Phusion Passenger support [[[
