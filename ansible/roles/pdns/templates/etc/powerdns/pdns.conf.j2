@@ -7,9 +7,9 @@
 {%  for element in pdns__combined_configuration | parse_kv_config %}
 {%      if element.state == "present" %}
 {%          if element.comment|d() %}
-# {{ element.comment | replace('\n', '\n# ') }}
+{{ element.comment | regex_replace('$\n', '') | comment(prefix='', postfix='') }}
 {%          endif %}
 {{ element.name }} = {{ element.value }}
 
-{%      endif%}
+{%      endif %}
 {%  endfor %}
