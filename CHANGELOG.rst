@@ -33,6 +33,14 @@ New DebOps roles
   used to provide media (video, music, images) to other devices on the local
   network that support the DLNA protocol.
 
+- The :ref:`debops.pdns` role manages the `PowerDNS Authoritative Server`__,
+  which is an authoritative DNS server with support for DNSSEC, DNS UPDATE,
+  geographical load balancing, and storing zone data and metadata in one or
+  more backends like relational databases, LDAP databases, and plain text
+  files.
+
+  .. __: https://www.powerdns.com/auth.html
+
 - The :ref:`debops.telegraf` role can be used to install and manage the
   `Telegraf`__ metrics server, which can send data to various other services.
 

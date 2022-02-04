@@ -157,6 +157,7 @@ It's always DNS.
 - :ref:`debops.avahi`
 - :ref:`debops.dnsmasq`
 - :ref:`debops.netbase`
+- :ref:`debops.pdns`
 - :ref:`debops.resolvconf`
 - :ref:`debops.unbound`
 
