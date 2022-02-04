@@ -463,6 +463,13 @@ General
   home directories were created even if they were specifically disabled. Roles
   should now be more careful and respect the administrator wishes.
 
+LDAP
+''''
+
+- The :file:`ldap/init-directory.yml` playbook should now work better with
+  non-local UNIX accounts and provide better defaults for standardized account
+  names like ``ansible``.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
