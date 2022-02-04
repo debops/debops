@@ -304,6 +304,14 @@ Continuous Integration
 
 - The role defaults have been updated, Bullseye is the new Stable.
 
+:ref:`debops.dhparam` role
+''''''''''''''''''''''''''
+
+- The role will no longer install the :command:`cron` service directly; instead
+  it depends on the :ref:`debops.cron` role to ensure that the service is
+  present. This allows replacing the ``cron`` Debian package with a different
+  backend, for example ``systemd-cron`` package.
+
 :ref:`debops.docker_server` role
 ''''''''''''''''''''''''''''''''
 
