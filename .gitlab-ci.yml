@@ -2216,6 +2216,25 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/rsnapshot/.*'
     JANE_LOG_PATTERN: '\[rsnapshot\]'
 
+'rspamd role':
+  <<: *test_role_3rd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'etc_services role'
+    - 'ferm role'
+    - 'logrotate role'
+    - 'python role'
+    - 'redis_server role'
+    - 'postfix role'
+    - 'nginx role'
+  variables:
+    JANE_TEST_FACT: 'rspamd.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postfix.yml ${DEBOPS_PLAYBOOKS}/service/redis_server.yml ${DEBOPS_PLAYBOOKS}/service/rspamd.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_postfix,debops_service_redis_server,debops_service_rspamd'
+    JANE_DIFF_PATTERN: '.*/roles/rspamd/.*'
+    JANE_LOG_PATTERN: '\[rspamd\]'
+
 'rstudio_server role':
   <<: *test_role_3rd_deps
   needs:

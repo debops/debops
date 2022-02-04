@@ -1,0 +1,96 @@
+---
+# Copyright (C) 2021 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Make sure the DKIM directories exist
+  file:
+    path: '{{ item }}'
+    state: 'directory'
+    mode: '0750'
+    owner: '_rspamd'
+    group: '_rspamd'
+  loop:
+    - '/var/lib/rspamd'
+    - '/var/lib/rspamd/dkim'
+    - '/var/lib/rspamd/dkim-archive'
+    - '{{ rspamd__dkim_log_dir }}'
+  when: rspamd__dkim_enabled|d(False)
+
+- name: Create DKIM key generation/update configuration
+  template:
+    src: 'etc/rspamd/dkim-json.j2'
+    dest: '{{ item.dest }}'
+    mode: '0644'
+  loop:
+    - { config: '{{ rspamd__dkim_keygen_combined_configuration }}',
+        dest: "/etc/rspamd/dkim-keygen.json" }
+    - { config: '{{ rspamd__dkim_update_combined_configuration }}',
+        dest: "/etc/rspamd/dkim-update.json" }
+  loop_control:
+    label: '{{ item.dest }}'
+  when: rspamd__dkim_enabled|d(False)
+
+- name: Install DKIM scripts
+  copy:
+    src: "{{ lookup('debops.debops.file_src', item.src) }}"
+    dest: "{{ item.dest }}"
+    owner: '{{ item.owner | d("root") }}'
+    group: '{{ item.group | d("root") }}'
+    mode: '{{ item.mode | d("0755") }}'
+  with_items:
+    - { src: 'usr/local/sbin/rspamd-dkim-keygen',
+        dest: '/usr/local/sbin/rspamd-dkim-keygen' }
+    - { src: 'usr/local/sbin/rspamd-dkim-update',
+        dest: '/usr/local/sbin/rspamd-dkim-update' }
+  when: rspamd__dkim_enabled|d(False)
+
+- name: See if a nsupdate keyfile/keytab exists on the Ansible controller
+  set_fact:
+    rspamd__dkim_local_keyfile: '{{ lookup("debops.debops.file_src", "etc/rspamd/dkim_dns_key", errors="ignore") }}'
+  when: >
+    rspamd__dkim_enabled|d(False) and
+    rspamd__dkim_update_method in [ "nsupdate_tsig", "nsupdate_gsstsig" ]
+
+- name: Copy nsupdate keyfile/keytab from controller to host
+  copy:
+    src: '{{ rspamd__dkim_local_keyfile }}'
+    dest: '/etc/rspamd/dkim_dns_key'
+    owner: 'root'
+    group: '_rspamd'
+    mode: '0640'
+  when: >
+    rspamd__dkim_enabled|d(False) and
+    rspamd__dkim_update_method in [ "nsupdate_tsig", "nsupdate_gsstsig" ] and
+    rspamd__dkim_local_keyfile is defined and
+    rspamd__dkim_local_keyfile|length > 0
+
+- name: Create DKIM keys
+  command: /usr/local/sbin/rspamd-dkim-keygen
+  become: True
+  become_user: '_rspamd'
+  register: rspamd__dkim_tmp_output
+  changed_when: rspamd__dkim_tmp_output.rc == 2
+  failed_when: rspamd__dkim_tmp_output.rc not in [ 0, 2 ]
+  when: rspamd__dkim_enabled|d(False)
+  notify: [ 'Restart rspamd' ]
+
+- name: Configure DKIM key generation/rollover cron job
+  cron:
+    name: 'Generate/rollover DKIM keys for rspamd'
+    special_time: 'monthly'
+    cron_file: 'rspamd-dkim-keygen'
+    user: '_rspamd'
+    state: '{{ "present" if rspamd__dkim_enabled|d(False) else "absent" }}'
+    job: '/usr/local/sbin/rspamd-dkim-keygen'
+
+- name: Purge DKIM configuration/scripts
+  file:
+    path: '{{ item }}'
+    state: 'absent'
+  loop:
+    - '/etc/rspamd/dkim-keygen.json'
+    - '/etc/rspamd/dkim-update.json'
+    - '/usr/local/sbin/rspamd-dkim-keygen'
+    - '/usr/local/sbin/rspamd-dkim-update'
+  when: not rspamd__dkim_enabled|d(False)
