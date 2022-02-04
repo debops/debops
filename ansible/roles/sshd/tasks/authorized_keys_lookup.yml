@@ -1,20 +1,25 @@
 ---
 # Copyright (C) 2013-2016 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-# Copyright (C) 2014-2017 DebOps <https://debops.org/>
+# Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2014-2022 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Create OpenSSH LDAP bind password file
-  environment:
-    ANSIBLE_SSHD_LDAP_BINDPW: '{{ sshd__ldap_bindpw }}'
-  shell: echo -n ${ANSIBLE_SSHD_LDAP_BINDPW} > {{ sshd__ldap_bind_pw_file }} ;
-         chmod 0600 {{ sshd__ldap_bind_pw_file }} ;
-         chown {{ sshd__authorized_keys_lookup_user }}:root {{ sshd__ldap_bind_pw_file }}
-  args:
-    creates: '{{ sshd__ldap_bind_pw_file }}'
-  when: sshd__authorized_keys_lookup_type|d() and
-        "ldap" in sshd__authorized_keys_lookup_type
+  template:
+    src: 'etc/ssh/ldap_authorized_keys_bindpw.j2'
+    dest: '/etc/ssh/ldap_authorized_keys_bindpw'
+    owner: '{{ sshd__authorized_keys_lookup_user }}'
+    group: 'root'
+    mode: '0600'
+  when: '"ldap" in sshd__authorized_keys_lookup_type|d([])'
   no_log: True
+
+- name: Remove OpenSSH LDAP bind password file
+  file:
+    path: '/etc/ssh/ldap_authorized_keys_bindpw'
+    state: 'absent'
+  when: '"ldap" not in sshd__authorized_keys_lookup_type|d([])'
 
 - name: Create /etc/ssh/authorized_keys_lookup.d directory
   file:

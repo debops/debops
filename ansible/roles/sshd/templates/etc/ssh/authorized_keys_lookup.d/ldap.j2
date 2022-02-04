@@ -25,11 +25,10 @@ domain="$(dnsdomainname)"
 fqdn="$(hostname --fqdn)"
 
 ldap_binddn="{{ sshd__ldap_binddn }}"
-ldap_bindpw="{{ sshd__ldap_bind_pw_file }}"
 
 ldap_filter="{{ sshd__ldap_filter }}"
 
-ATTRIBUTE=$(ldapsearch -Z -LLL -x -y "${ldap_bindpw}" -D "${ldap_binddn}" -o ldif-wrap=no -S sshPublicKey "${ldap_filter}" sshPublicKey | grep -v 'dn:')
+ATTRIBUTE=$(ldapsearch -Z -LLL -x -y /etc/ssh/ldap_authorized_keys_bindpw -D "${ldap_binddn}" -o ldif-wrap=no -S sshPublicKey "${ldap_filter}" sshPublicKey | grep -v 'dn:')
 
 if [[ $ATTRIBUTE == sshPublicKey::* ]];
 then
