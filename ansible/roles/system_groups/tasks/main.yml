@@ -30,6 +30,7 @@
     name: '{{ item.name }}'
     append: '{{ item.append }}'
     groups: '{{ item.groups }}'
+    create_home: False
   with_items: '{{ lookup("template", "lookup/system_groups_members.j2") | from_yaml }}'
   when: system_groups__enabled|bool
   throttle: '{{ system_groups__throttle }}'
