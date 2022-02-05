@@ -29,11 +29,11 @@
 {%     if entry.tag|d() %}
 {%       set _ = dhcp_host.append('set:' + entry.tag) %}
 {%     endif %}
-{%     if entry.ip|d() and entry.host is undefined %}
+{%     if entry.ip|d() and (entry.host is undefined and entry.a is undefined and entry.aaaa is undefined) %}
 {%       set _ = dhcp_host.extend( ([ entry.ip ] if (entry.ip is string) else entry.ip) | ipwrap ) %}
-{%     elif entry.ipaddr|d() and entry.host is undefined %}
+{%     elif entry.ipaddr|d() and (entry.host is undefined and entry.a is undefined and entry.aaaa is undefined) %}
 {%       set _ = dhcp_host.extend( ([ entry.ipaddr ] if (entry.ipaddr is string) else entry.ipaddr) | ipwrap ) %}
-{%     elif entry.address|d() and entry.host is undefined %}
+{%     elif entry.address|d() and (entry.host is undefined and entry.a is undefined and entry.aaaa is undefined) %}
 {%       set _ = dhcp_host.extend( ([ entry.address ] if (entry.address is string) else entry.address) | ipwrap ) %}
 {%     endif %}
 {%     if entry.name|d() %}
