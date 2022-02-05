@@ -154,6 +154,16 @@ debops.boxbackup role
   service without it actually being present on the host. This should now be
   avoided by carefully checking the service status.
 
+Removed
+~~~~~~~
+
+:ref:`debops.root_account` role
+'''''''''''''''''''''''''''''''
+
+- The role will no longer modify the :file:`~/.profile` configuration file, the
+  issue there was solved a few Debian releases ago and the custom fix no longer
+  needed.
+
 
 `debops v3.0.1`_ - 2022-02-17
 -----------------------------
