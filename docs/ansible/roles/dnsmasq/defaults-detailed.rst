@@ -364,9 +364,9 @@ Each entry in the list is a YAML dictionary with specific parameters:
   In DHCP host configuration this parameter specifies the IP addresses which
   will be reserved for a particular host.
 
-  In DNS record configuration this parameter along with the ``host`` parameter
-  defines a DNS A record; in case of multiple IP addresses, the first IP
-  address will be used to create the host's DNS PTR record.
+  In DNS record configuration this parameter along with the ``host`` / ``a`` /
+  ``aaaa`` parameter defines a DNS A record; in case of multiple IP addresses,
+  the first IP address will be used to create the host's DNS PTR record.
 
 ``cname``
   Optional. If defined in a DHCP client configuration, it's a list of DNS
