@@ -200,7 +200,7 @@ class AnsiblePlaybookRunner(object):
             print('Executing Ansible playbooks:')
             for playbook in self._found_playbooks:
                 print(unexpanduser(playbook))
-            return subprocess.call(self._ansible_command)
+            return subprocess.call(' '.join(self._ansible_command), shell=True)
         except KeyboardInterrupt:
             if unlocked:
                 self.inventory.lock()
