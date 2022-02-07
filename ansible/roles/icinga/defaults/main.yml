@@ -111,8 +111,18 @@ icinga__additional_groups:
 # .. envvar:: icinga__fqdn [[[
 #
 # The Fully Qualified Domain Name of this Icinga 2 node. This variable is used
-# during node registration in Icinga 2 Director and in the zone configuration.
+# during the node registration in the Icinga 2 Director and in the zone
+# configuration.
 icinga__fqdn: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__display_name [[[
+#
+# The short display name of this Icinga 2 node. This variable is used during
+# the node registration in the Icinga 2 Director and in the zone configuration.
+icinga__display_name: '{{ (inventory_hostname_short | d(inventory_hostname.split(".")[0]))
+                          if (inventory_hostname_short | d(inventory_hostname.split(".")[0]) != "localhost")
+                          else ansible_hostname }}'
 
                                                                    # ]]]
 # .. envvar:: icinga__domain [[[
@@ -297,12 +307,34 @@ icinga__director_register_api_password: '{{ lookup("password", secret + "/icinga
                                             + icinga__director_register_api_user + "/password") }}'
 
                                                                    # ]]]
+# .. envvar:: icinga__director_default_host_templates [[[
+#
+# List of default host templates to create before attempting to register any
+# given host.
+icinga__director_default_host_templates:
+
+  - object_type: 'template'
+    object_name: 'generic-host'
+    check_command: 'hostalive'
+    check_interval: '5m'
+    retry_interval: '30s'
+    max_check_attempts: '5'
+
+  - object_type: 'template'
+    object_name: 'icinga-agent-host'
+    has_agent: true
+    master_should_connect: true
+    accept_config: true
+    imports:
+      - 'generic-host'
+
+                                                                   # ]]]
 # .. envvar:: icinga__director_register_default_templates [[[
 #
 # List of default host templates to use for a given host during registration.
 # The templates need to be prepared beforehand in the Icinga 2 Director.
 icinga__director_register_default_templates:
-  - 'generic-host'
+  - 'icinga-agent-host'
 
                                                                    # ]]]
 # .. envvar:: icinga__director_register_templates [[[
@@ -371,13 +403,14 @@ icinga__director_register_host_vars: {}
 icinga__director_register_host_object:
   object_type: 'object'
   object_name: '{{ icinga__fqdn }}'
-  address: '{{ icinga__fqdn }}'
-  imports: '{{ lookup("flattened",
-               (icinga__director_register_default_templates
-                + icinga__director_register_templates
-                + icinga__director_register_group_templates
-                + icinga__director_register_host_templates),
-               wantlist=True) }}'
+  display_name: '{{ icinga__display_name }}'
+  address: '{{ ansible_default_ipv4.address | d(ansible_all_ipv4_addresses | d([]) | first) | d(icinga_fqdn) }}'
+  address6: '{{ ansible_default_ipv6.address | d(ansible_all_ipv6_addresses | d([]) | first) | d(omit, true) }}'
+  imports: '{{ q("flattened",
+                 (icinga__director_register_default_templates
+                  + icinga__director_register_templates
+                  + icinga__director_register_group_templates
+                  + icinga__director_register_host_templates)) }}'
   vars: '{{ icinga__director_register_default_vars
             | combine(icinga__director_register_vars,
                       icinga__director_register_group_vars,
