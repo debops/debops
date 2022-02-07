@@ -41,6 +41,9 @@ General
   should ensure that configuration of certain resources like mount points or
   LVM pools is present before the system is prepared for general operation.
 
+- DNS SRV resource records in various roles have been documented in central
+  :ref:`dns_configuration` documentation page for easier management.
+
 :ref:`debops.fhs` role
 ''''''''''''''''''''''
 

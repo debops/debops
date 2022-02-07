@@ -105,40 +105,37 @@ There should be no new line character at the end.
 IMAP, SMTP and Sieve server detection
 -------------------------------------
 
-The role detects the preferred IMAP, SMTP and Sieve servers by checking the DNS
-SRV resource records (as defined by the :rfc:`6186` and :rfc:`5804`), looking
-for the IMAPS and SMTPS (submission) service recommended by the :rfc:`8314`
-using Implicit TLS. The example DNS resource records checked by the role:
+The role detects the preferred IMAP, SMTP and Sieve servers by using
+:ref:`dns_configuration_srv` for the following services:
 
 .. code-block:: none
 
-   _imaps._tcp          SRV 0 1 993  imap.example.org.
-   _submissions._tcp    SRV 0 1 465  smtp.example.org.
-   _sieve._tcp          SRV 0 1 4190 sieve.example.org.
+   _imaps._tcp.{{ roundcube__domain }} (default port 993)
+   _submissions._tcp.{{ roundcube__domain }} (default port 465)
+   _sieve._tcp.{{ roundcube__domain }} (default port 4190)
 
-At the moment only a single SRV resource record is supported by the role.
+At the moment, only a single SRV resource record is supported for each service.
 
-If the above SRV resource records are not available, the
-:ref:`debops.roundcube` role will check for the presence of the
-:ref:`debops.dovecot` and the :ref:`debops.postfix` role Ansible local facts on
-the host. If they are found, the respective service (IMAP, SMTP (submission)
-and/or Sieve) will be configured to be accessed via the host's own FQDN address
-to support X.509 certificate verification. In this case the services will also
-use Implicit TLS (ports 993 and 465 respectively).
+If the above SRV resource records are not available, the role will check for
+the presence of the :ref:`debops.dovecot` and :ref:`debops.postfix` roles using
+Ansible local facts on the host. If they are found, the respective service
+(IMAP, SMTP (submission) and/or Sieve) will be configured to be accessed via
+the host's own FQDN address to support X.509 certificate verification. In this
+case the services will also use Implicit TLS.
 
-If both SRV resource records and local Ansible facts are not available, the
-:ref:`debops.roundcube` role will fall back to using static subdomains for the
-respective services, based on the host domain:
+Finally, the role will fall back to using static domain names for the
+respective services, based on the host domain (:envvar:`roundcube__domain`):
 
 .. code-block:: none
 
-   IMAP:  imap.example.org
-   SMTP:  smtp.example.org
-   Sieve: sieve.example.org
+   IMAP:  imap.example.org:993
+   SMTP:  smtp.example.org:465
+   Sieve: sieve.example.org:4190
 
 This allows for deployment of the RoundCube Webmail independent from the
 respective services, for example on a separate host or VM. The communication
-with the mail services will be encrypted by default using Implicit TLS.
+with the mail services will be encrypted by default using Implicit TLS, as
+recommended by :rfc:`8314`.
 
 
 .. _roundcube__ref_example_inventory:
