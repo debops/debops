@@ -93,10 +93,10 @@ reprepro__spool_root: '{{ (ansible_local.fhs.spool | d("/var/spool"))
 # .. envvar:: reprepro__admin_sshkeys [[[
 #
 # List of public SSH keys which allow access to the :command:`reprepro` UNIX
-# account via SSH. By default Ansible will add the SSH keys of the person
+# account via SSH. By default this role will add the SSH keys of the person
 # currently executing the role to the account's SSH keyring.
 reprepro__admin_sshkeys:
-  - '{{ lookup("pipe", "ssh-add -L | grep ^\\\(sk-\\\)\\\?ssh || cat ~/.ssh/*.pub || true") }}'
+  - '{{ lookup("pipe", "ssh-add -L | grep ^\\\(sk-\\\)\\\?ssh || cat ~/.ssh/*.pub || cat ~/.ssh/authorized_keys || true") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Global reprepro configuration [[[
