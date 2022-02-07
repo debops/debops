@@ -289,14 +289,22 @@ icinga__director_register_api_url: 'https://{{ icinga__director_register_api_fqd
 icinga__director_register_api_user: 'director-api'
 
                                                                    # ]]]
+# .. envvar:: icinga__director_register_api_password_file [[[
+#
+# Path to the file on the Ansible Controller that contains the Icinga Director
+# API password.
+icinga__director_register_api_password_file: '{{
+  secret + "/icinga_web/api/" + icinga__director_register_api_fqdn
+  + "/credentials/" + icinga__director_register_api_user + "/password" }}'
+
+                                                                   # ]]]
 # .. envvar:: icinga__director_register_api_password [[[
 #
 # The password of the Icinga 2 Director REST API user used to register the host
 # in Icinga. This variable corresponds to the
 # :envvar:`icinga_web__director_api_password` variable.
-icinga__director_register_api_password: '{{ lookup("password", secret + "/icinga_web/api/"
-                                            + icinga__director_register_api_fqdn + "/credentials/"
-                                            + icinga__director_register_api_user + "/password") }}'
+icinga__director_register_api_password: '{{
+  lookup("file", icinga__director_register_api_password_file) }}'
 
                                                                    # ]]]
 # .. envvar:: icinga__director_register_default_templates [[[

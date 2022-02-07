@@ -197,6 +197,14 @@
   become: False
   delegate_to: 'localhost'
 
+- name: Check if Icinga Director API password file exists on Ansible Controller
+  stat:
+    path: '{{ icinga__director_register_api_password_file }}'
+  delegate_to: 'localhost'
+  become: False
+  register: icinga__register_director_password_file
+  tags: [ 'role::icinga:register' ]
+
 - name: Register Icinga node in Icinga Director
   uri:
     body_format: 'json'
@@ -216,3 +224,6 @@
   changed_when: icinga__register_director_host.status == 201
   tags: [ 'role::icinga:register' ]
   no_log: True
+  ignore_errors: '{{ True
+                     if not icinga__register_director_password_file.stat.exists
+                     else False }}'
