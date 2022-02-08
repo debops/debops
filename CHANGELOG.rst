@@ -104,6 +104,14 @@ Continuous Integration
 - The default box used by Vagrant for DebOps VMs has been updated from
   ``debian/buster64`` to ``debian/bullseye64``.
 
+General
+'''''''
+
+- Multiple roles that use the DNS ``SRV`` Resource Records to find related
+  services have been updated to utilize the new ``dig_srv`` Ansible lookup
+  plugin to find the records. This change should make the role code easier to
+  maintain.
+
 :ref:`debops.apache` role
 '''''''''''''''''''''''''
 
