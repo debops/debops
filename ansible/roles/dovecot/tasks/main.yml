@@ -1,7 +1,8 @@
 ---
 # Copyright (C) 2015      Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
 # Copyright (C) 2017-2020 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2015-2020 DebOps <https://debops.org/>
+# Copyright (C) 2021      David Härdeman <david@hardeman.nu>
+# Copyright (C) 2015-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
@@ -12,6 +13,10 @@
   import_role:
     name: 'global_handlers'
 
+- name: Import DebOps secret role
+  import_role:
+    name: 'secret'
+
 - name: Pre hooks
   include: "{{ lookup('debops.debops.task_src', 'dovecot/pre_main.yml') }}"
 
@@ -19,27 +24,30 @@
   package:
     name: '{{ q("flattened", ([ "dovecot-core" ]
                               + ([ "dovecot-imapd" ]
-                                 if "imap" in dovecot_protocols
+                                 if ("imap" in dovecot__features or
+                                     "imaps" in dovecot__features)
                                  else [])
                               + ([ "dovecot-pop3d" ]
-                                 if "pop3" in dovecot_protocols
+                                 if ("pop3" in dovecot__features or
+                                     "pop3s" in dovecot__features)
                                  else [])
                               + ([ "dovecot-lmtpd" ]
-                                 if "lmtp" in dovecot_protocols
+                                 if "lmtp" in dovecot__features
                                  else [])
                               + ([ "dovecot-mysql" ]
-                                 if (("sql" in dovecot_user_accounts) and
-                                     ("mysql" in dovecot_sql_driver))
+                                 if "mysql" in dovecot__user_accounts
                                  else [])
                               + ([ "dovecot-pgsql" ]
-                                 if (("sql" in dovecot_user_accounts) and
-                                     ("pgsql" in dovecot_sql_driver))
+                                 if "pgsql" in dovecot__user_accounts
+                                 else [])
+                              + ([ "dovecot-sqlite" ]
+                                 if "sqlite" in dovecot__user_accounts
                                  else [])
                               + ([ "dovecot-ldap" ]
-                                 if ("ldap" in dovecot_user_accounts)
+                                 if "ldap" in dovecot__user_accounts
                                  else [])
                               + ([ "dovecot-managesieved" ]
-                                 if "managesieve" in dovecot_protocols
+                                 if "sieve" in dovecot__features
                                  else []))) }}'
     state: 'present'
   register: dovecot__register_packages
@@ -58,108 +66,65 @@
     mode: '0755'
   notify: [ 'Refresh host facts' ]
 
-- name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
-
-- name: Divert original Dovecot configuration
-  command: dpkg-divert --quiet --local
-           --divert /etc/dovecot/conf.d/{{ item }}.dpkg-divert
-           --rename /etc/dovecot/conf.d/{{ item }}
-           creates=/etc/dovecot/conf.d/{{ item }}.dpkg-divert
-  with_flattened:
-    - [ '10-auth.conf', '10-mail.conf', '10-master.conf', '10-ssl.conf', '15-lda.conf' ]
-    - [ '{{ "20-imap.conf" if "imap" in dovecot_protocols else [] }}' ]
-    - [ '{{ "20-pop3.conf" if "pop3" in dovecot_protocols else [] }}' ]
-    - [ '{{ "20-lmtp.conf" if "lmtp" in dovecot_protocols else [] }}' ]
-    - [ '{{ "auth-deny.conf.ext" if "deny" in dovecot_user_accounts else [] }}' ]
-    - [ '{{ "auth-system.conf.ext" if "system" in dovecot_user_accounts else [] }}' ]
-    - [ '{{ "auth-sql.conf.ext" if "sql" in dovecot_user_accounts else [] }}' ]
-    - [ '{{ "auth-ldap.conf.ext" if "ldap" in dovecot_user_accounts else [] }}' ]
-    - [ '{{ "auth-checkpassword.conf.ext" if "checkpassword" in dovecot_user_accounts else [] }}' ]
-    - [ '{{ [ "20-managesieve.conf", "90-sieve.conf", "90-sieve-extprograms.conf" ]
-            if "managesieve" in dovecot_protocols else [] }}' ]
-  notify: [ 'Restart dovecot' ]
-
-- name: Remove redundant Dovecot configurations
-  file:
-    dest: '/etc/dovecot/conf.d/{{ item }}'
-    state: absent
-  with_flattened:
-    - [ '{{ "20-imap.conf" if "imap" not in dovecot_protocols else [] }}' ]
-    - [ '{{ "20-pop3.conf" if "pop3" not in dovecot_protocols else [] }}' ]
-    - [ '{{ "20-lmtp.conf" if "lmtp" not in dovecot_protocols else [] }}' ]
-    - [ '{{ [ "20-managesieve.conf", "90-sieve.conf", "90-sieve-extprograms.conf" ]
-            if "managesieve" not in dovecot_protocols else [] }}' ]
-  notify: [ 'Restart dovecot' ]
-
-- name: Remove diversion of original Dovecot configuration
-  command: dpkg-divert --quiet --local --rename --remove /etc/dovecot/conf.d/{{ item }}
-           removes=/etc/dovecot/conf.d/{{ item }}.dpkg-divert
-  with_flattened:
-    - [ '{{ "20-imap.conf" if "imap" not in dovecot_protocols else [] }}' ]
-    - [ '{{ "20-pop3.conf" if "pop3" not in dovecot_protocols else [] }}' ]
-    - [ '{{ "20-lmtp.conf" if "lmtp" not in dovecot_protocols else [] }}' ]
-    - [ '{{ [ "20-managesieve.conf", "90-sieve.conf", "90-sieve-extprograms.conf" ]
-            if "managesieve" not in dovecot_protocols else [] }}' ]
+- name: Remove old diversions
+  dpkg_divert:
+    path: '/etc/dovecot/conf.d/{{ item }}'
+    state: 'absent'
+    delete: True
+  loop:
+    - '10-auth.conf'
+    - '10-master.conf'
+    - '10-mail.conf'
+    - '10-ssl.conf'
+    - '15-lda.conf'
+    - '20-pop3.conf'
+    - '20-imap.conf'
+    - '20-lmtp.conf'
+    - '20-managesieve.conf'
+    - '90-sieve.conf'
+    - '90-sieve-extprograms.conf'
+    - 'auth-deny.conf.ext'
+    - 'auth-system.conf.ext'
+    - 'auth-sql.conf.ext'
+    - 'auth-ldap.conf.ext'
+    - 'auth-passwdfile.conf.ext'
+    - 'auth-checkpassword.conf.ext'
 
 - name: Uninstall disabled Dovecot protocols
   package:
     pkg: '{{ q("flattened", (([ "dovecot-imapd" ]
-                              if "imap" not in dovecot_protocols
+                              if ("imap" not in dovecot__features and
+                                  "imaps" not in dovecot__features)
                               else [])
                              + ([ "dovecot-pop3d" ]
-                                if "pop3" not in dovecot_protocols
+                                if ("pop3" not in dovecot__features and
+                                    "pop3s" not in dovecot__features)
                                 else [])
                              + ([ "dovecot-lmtpd" ]
-                                if "lmtp" not in dovecot_protocols
+                                if "lmtp" not in dovecot__features
                                 else [])
                              + ([ "dovecot-mysql" ]
-                                 if (("sql" not in dovecot_user_accounts) or
-                                     ("mysql" not in dovecot_sql_driver))
+                                 if "mysql" not in dovecot__user_accounts
                                  else [])
                              + ([ "dovecot-pgsql" ]
-                                if (("sql" not in dovecot_user_accounts) or
-                                    ("pgsql" not in dovecot_sql_driver))
+                                if "pgsql" not in dovecot__user_accounts
+                                else [])
+                             + ([ "dovecot-sqlite" ]
+                                if "sqlite" not in dovecot__user_accounts
                                 else [])
                              + ([ "dovecot-ldap" ]
-                                if ("ldap" not in dovecot_user_accounts)
+                                if ("ldap" not in dovecot__user_accounts)
                                 else [])
                              + ([ "dovecot-managesieved" ]
-                                if "managesieve" not in dovecot_protocols
+                                if "sieve" not in dovecot__features
                                 else []))) }}'
     state: 'absent'
   notify: [ 'Restart dovecot' ]
 
-- name: Generate Dovecot configuration
-  template:
-    src: '{{ lookup("debops.debops.template_src", "etc/dovecot/conf.d/" + item + ".j2") }}'
-    dest: '/etc/dovecot/conf.d/{{ item }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  with_flattened:
-    - [ '10-auth.conf', '10-mail.conf', '10-master.conf', '10-ssl.conf', '15-lda.conf' ]
-    - [ '{{ "20-imap.conf" if "imap" in dovecot_protocols else [] }}' ]
-    - [ '{{ "20-pop3.conf" if "pop3" in dovecot_protocols else [] }}' ]
-    - [ '{{ "20-lmtp.conf" if "lmtp" in dovecot_protocols else [] }}' ]
-    - [ '{{ "auth-deny.conf.ext" if "deny" in dovecot_user_accounts else [] }}' ]
-    - [ '{{ "auth-system.conf.ext" if "system" in dovecot_user_accounts else [] }}' ]
-    - [ '{{ "auth-sql.conf.ext" if "sql" in dovecot_user_accounts else [] }}' ]
-    - [ '{{ "auth-ldap.conf.ext" if "ldap" in dovecot_user_accounts else [] }}' ]
-    - [ '{{ "auth-passwdfile.conf.ext" if "passwdfile" in dovecot_user_accounts else [] }}' ]
-    - [ '{{ "auth-checkpassword.conf.ext" if "checkpassword" in dovecot_user_accounts else [] }}' ]
-    - [ '{{ [ "20-managesieve.conf", "90-sieve.conf", "90-sieve-extprograms.conf" ]
-            if "managesieve" in dovecot_protocols else [] }}' ]
-  notify: [ 'Restart dovecot' ]
-  tags: [ "role::dovecot:conf" ]
-
-- name: Generate Dovecot local configuration
-  template:
-    src: "{{ lookup('debops.debops.template_src', 'etc/dovecot/local.conf.j2') }}"
-    dest: '/etc/dovecot/local.conf'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
+- name: Remove old local configuration
+  file:
+    path: '/etc/dovecot/local.conf'
+    state: 'absent'
   notify: [ 'Restart dovecot' ]
   tags: [ "role::dovecot:conf" ]
 
@@ -171,7 +136,7 @@
     group: 'root'
     mode: '0600'
   notify: [ 'Restart dovecot' ]
-  when: "'sql' in dovecot_user_accounts"
+  when: "dovecot__user_accounts | d([]) | intersect(['mysql', 'pgsql', 'sqlite'])"
   tags: [ "role::dovecot:conf", "role::dovecot:conf:sql" ]
 
 - name: Generate Dovecot ldap configuration
@@ -185,7 +150,7 @@
   loop:
     - 'dovecot-ldap-userdb.conf'
     - 'dovecot-ldap-passdb.conf'
-  when: "'ldap' in dovecot_user_accounts"
+  when: "'ldap' in dovecot__user_accounts"
   tags: [ "role::dovecot:conf", "role::dovecot:conf:ldap" ]
 
 - name: Generate Dovecot deny user list
@@ -198,51 +163,89 @@
 
 - name: Create private directory to store passwdfile
   file:
-    path: "{{ dovecot_passwdfile_path }}"
+    path: "{{ dovecot__passwdfile_path }}"
     state: directory
     owner: 'root'
     group: 'dovecot'
     mode: '0650'
-  when: "'passwdfile' in dovecot_user_accounts"
+  when: "'passwdfile' in dovecot__user_accounts"
 
-- name: Create group used in passwdfile
-  user:
-    name: "{{ dovecot_passwdfile_gid }}"
-    system: yes
-  when: "'passwdfile' in dovecot_user_accounts"
+- name: Make sure virtual mail user POSIX group exists
+  group:
+    name: '{{ dovecot__vmail_posix_group |
+              d(dovecot__vmail_posix_user) }}'
+    state: 'present'
+    system: True
+  when: 'dovecot__vmail_enabled | d(False)'
+  tags: [ 'role::dovecot:user', 'role::dovecot:group' ]
 
-- name: Create user used in passwdfile
+- name: Make sure virtual mail user POSIX system account exists
   user:
-    name: "{{ dovecot_passwdfile_uid }}"
-    group: "{{ dovecot_passwdfile_gid }}"
-    home: "{{ dovecot_passwdfile_home }}"
-    shell: "/usr/sbin/nologin"
-    system: yes
-  when: "'passwdfile' in dovecot_user_accounts"
+    name: '{{ dovecot__vmail_posix_user }}'
+    state: 'present'
+    comment: 'Postfix Virtual Mail user'
+    group: '{{ dovecot__vmail_posix_group |
+               d(dovecot__vmail_posix_user) }}'
+    home: '{{ dovecot__vmail_base }}'
+    create_home: True
+    system: True
+    shell: '/usr/sbin/nologin'
+    skeleton: null
+  when: 'dovecot__vmail_enabled | d(False)'
+  tags: [ 'role::dovecot:user' ]
+
+- name: "Make sure virtual mail user home directory ({{ dovecot__vmail_base }}) exists"
+  file:
+    dest: '{{ dovecot__vmail_base }}'
+    state: 'directory'
+    owner: '{{ dovecot__vmail_posix_user }}'
+    group: '{{ dovecot__vmail_posix_group }}'
+    mode: '0750'
+  when: 'dovecot__vmail_enabled | d(False)'
+  tags: [ 'role::dovecot:user' ]
 
 - name: Make sure that PKI hook directory exists
   file:
-    path: '{{ dovecot_pki_hook_path }}'
+    path: '{{ dovecot__pki_hook_path }}'
     state: 'directory'
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: dovecot_pki|bool
+  when: dovecot__pki|bool
 
-- name: Manage PKI postfix hook
+- name: Manage PKI dovecot hook
   template:
     src: 'etc/pki/hooks/dovecot.j2'
-    dest: '{{ dovecot_pki_hook_path + "/" + dovecot_pki_hook_name }}'
+    dest: '{{ dovecot__pki_hook_path + "/" + dovecot__pki_hook_name }}'
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: dovecot_pki|bool
+  when: dovecot__pki|bool
 
-- name: Ensure the PKI postfix hook is absent
+- name: Ensure the PKI dovecot hook is absent
   file:
-    path: '{{ dovecot_pki_hook_path }}'
+    path: '{{ dovecot__pki_hook_path + "/" + dovecot__pki_hook_name }}'
     state: 'absent'
-  when: not (dovecot_pki|bool)
+  when: not (dovecot__pki|bool)
+
+- name: Divert original Dovecot main configuration file
+  dpkg_divert:
+    path: '/etc/dovecot/dovecot.conf'
+  notify: [ 'Restart dovecot' ]
+  tags: [ "role::dovecot:conf" ]
+
+- name: Generate Dovecot main configuration file
+  template:
+    src: '{{ lookup("template_src", "etc/dovecot/dovecot.conf.j2") }}'
+    dest: '/etc/dovecot/dovecot.conf'
+    owner: 'root'
+    group: 'dovecot'
+    mode: '0640'
+  notify: [ 'Restart dovecot' ]
+  tags: [ "role::dovecot:conf" ]
+
+- name: Update Ansible facts and restart dovecot, if necessary
+  meta: 'flush_handlers'
 
 - name: Post hooks
   include: "{{ lookup('debops.debops.task_src', 'dovecot/post_main.yml') }}"

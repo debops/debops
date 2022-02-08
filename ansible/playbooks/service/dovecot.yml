@@ -42,6 +42,11 @@
       secret__directories:
         - '{{ postfix__secret__directories }}'
 
+    - role: etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ dovecot__etc_services__dependent_list }}'
+
     - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
       ferm__dependent_rules:

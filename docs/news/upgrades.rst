@@ -342,21 +342,21 @@ Inventory variable changes
   renamed. Additionally some variables related to the Sieve plugin configuration also
   changed:
 
-  +------------------------------------+------------------------------------------+---------------+
-  | Old variable name                  | New variable name                        | Changed value |
-  +====================================+==========================================+===============+
-  | ``dovecot_ssl_protocols``          | :envvar:`dovecot_ssl_min_protocol`       | No            |
-  +------------------------------------+------------------------------------------+---------------+
-  | ``dovecot_firewall``               | Removed, see "Firewall configuration"    | No            |
-  +------------------------------------+------------------------------------------+---------------+
-  | ``dovecot_mail_location``          | :envvar:`dovecot_mail_location`          | Yes           |
-  +------------------------------------+------------------------------------------+---------------+
-  | ``dovecot_sieve``                  | :envvar:`dovecot_sieve_active_script`    | No            |
-  +------------------------------------+------------------------------------------+---------------+
-  | ``dovecot_managesieve_config_map`` | :envvar:`dovecot_managesieve_config_map` | Yes           |
-  +------------------------------------+------------------------------------------+---------------+
-  | ``dovecot_lda_config_map``         | :envvar:`dovecot_lda_config_map`         | Yes           |
-  +------------------------------------+------------------------------------------+---------------+
+  +------------------------------------+---------------------------------------+---------------+
+  | Old variable name                  | New variable name                     | Changed value |
+  +====================================+=======================================+===============+
+  | ``dovecot_ssl_protocols``          | ``dovecot_ssl_min_protocol``          | No            |
+  +------------------------------------+---------------------------------------+---------------+
+  | ``dovecot_firewall``               | Removed, see "Firewall configuration" | No            |
+  +------------------------------------+---------------------------------------+---------------+
+  | ``dovecot_mail_location``          | ``dovecot_mail_location``             | Yes           |
+  +------------------------------------+---------------------------------------+---------------+
+  | ``dovecot_sieve``                  | ``dovecot_sieve_active_script``       | No            |
+  +------------------------------------+---------------------------------------+---------------+
+  | ``dovecot_managesieve_config_map`` | ``dovecot_managesieve_config_map``    | Yes           |
+  +------------------------------------+---------------------------------------+---------------+
+  | ``dovecot_lda_config_map``         | ``dovecot_lda_config_map``            | Yes           |
+  +------------------------------------+---------------------------------------+---------------+
 
 - Some of the variables in the :ref:`debops.roundcube` role have been renamed:
 
