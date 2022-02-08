@@ -299,6 +299,11 @@ General
   have been copied to the :file:`ansible/plugins/` subdirectories to make them
   available through the Ansible Collection mechanisms.
 
+- Multiple roles that use the DNS ``SRV`` Resource Records to find related
+  services have been updated to utilize the new ``dig_srv`` Ansible lookup
+  plugin to find the records. This change should make the role code easier to
+  maintain.
+
 Continuous Integration
 ''''''''''''''''''''''
 
