@@ -330,6 +330,17 @@ Continuous Integration
 
   .. __: https://docs.docker.com/config/containers/live-restore/
 
+:ref:`debops.dovecot` role
+''''''''''''''''''''''''''
+
+- The role has been throughly refreshed and now uses the
+  :ref:`universal_configuration` format for the service configuration. All role
+  variables have been renamed to put them in a spearate namespace.
+
+  .. warning:: If you use a Dovecot installation in your environment, you
+     should check the new role documentation and update the relevant configuration
+     in the Ansible inventory before applying the new role on your infrastructure.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
@@ -2401,9 +2412,9 @@ Mail Transport Agents
 - Add option to enable ManageSieve by default without the need to update the config_maps,
   to allow configuration of Sieve filter scripts.
 
-- Restored :envvar:`dovecot_mail_location` to original value of `maildir:~/Maildir`. It was
+- Restored :envvar:`dovecot__mail_location` to original value of `maildir:~/Maildir`. It was
   wrongfully changed to `/var/vmail/%d/%n/mailbox` if LDAP was enabled. See also
-  :envvar:`dovecot_vmail_home`.
+  :envvar:`dovecot__vmail_home`.
 
 - If the LDAP support is enabled, the role will no longer configure Postfix via
   the :ref:`debops.postfix` role to deliver local mail via Dovecot LMTP
