@@ -63,6 +63,8 @@ class LookupModule(LookupBase):
         myres.use_edns(0, ednsflags=dns.flags.DO, payload=edns_size)
 
         domain = terms[0]
+        if not domain.endswith('.'):
+            domain += '.'
         default_domain = terms[1]
         default_port = terms[2]
         qtype = 'SRV'
