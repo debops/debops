@@ -186,7 +186,8 @@
     state: 'restarted'
   when: (ferm__enabled | bool and (ferm__register_files is changed or
          ferm__register_rules_created is changed or ferm__register_rules_removed is changed or
-         ferm__register_input_rules_del is changed or ferm__register_input_rules_add is changed))
+         ferm__register_input_rules_del is changed or ferm__register_input_rules_add is changed) and
+         not ansible_check_mode)
 
 - name: Clear iptables rules if ferm is disabled
   service:
@@ -206,7 +207,7 @@
     regexp: '^ENABLED="'
     line: 'ENABLED="no"'
     mode: '0644'
-  when: not ferm__enabled | bool
+  when: not ferm__enabled | bool and not ansible_check_mode
 
 - name: Ensure that Ansible local facts directory exists
   file:

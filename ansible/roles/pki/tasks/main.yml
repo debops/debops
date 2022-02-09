@@ -524,6 +524,7 @@
     job: 'test -x "{{ pki_fact_lib_path }}/pki-realm" && "{{ pki_fact_lib_path }}/pki-realm" schedule'
     special_time: '{{ pki_scheduler_interval }}'
     state: '{{ "present" if (pki_enabled|bool and pki_scheduler | bool) else "absent" }}'
+  when: not ansible_check_mode
 # ]]]
 
 - name: Manage system CA certificates

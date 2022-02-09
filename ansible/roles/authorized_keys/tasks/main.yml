@@ -96,7 +96,7 @@
                                 else "root")),
                 "path": item.path} }}'
   when: authorized_keys__enabled|bool and item.path|d() and not item.manage_dir|bool and
-        item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
+        item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and not ansible_check_mode
 
 - name: Make sure that Ansible local facts directory exists
   file:

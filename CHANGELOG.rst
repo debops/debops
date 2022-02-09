@@ -112,6 +112,10 @@ General
   plugin to find the records. This change should make the role code easier to
   maintain.
 
+- Multiple roles were updated to ensure that they work on a clean host in the
+  Ansible ``--check`` mode. This should allow checking changes on clean hosts
+  done by the :file:`bootstrap-*.yml` and :file:`common.yml` playbooks.
+
 :ref:`debops.apache` role
 '''''''''''''''''''''''''
 
