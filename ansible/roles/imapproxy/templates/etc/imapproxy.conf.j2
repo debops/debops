@@ -1,0 +1,36 @@
+{# Copyright (C) 2021 David Härdeman <david@hardeman.nu>
+ # Copyright (C) 2021 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+## imapproxy.conf
+##
+## {{ ansible_managed }}
+##
+## This is the global configuration file for imapproxy.
+## Lines beginning with a '#' sign are treated as comments and will be
+## ignored.  Each line to be processed must be a space delimited
+## keyword/value pair.  
+##
+{% for item in imapproxy__combined_configuration | debops.debops.parse_kv_items() %}
+{%   if item.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%     if item.comment|d() %}
+
+#
+{{       item.comment | regex_replace('\n$', '') | comment(prefix='', decoration='## ', postfix='') -}}
+#
+{%     endif %}
+{%     if item.raw|d() %}
+{%       if item.state|d('present') == 'comment' %}
+{{         '{}'.format(item.raw | regex_replace('\n$', '')) | comment(prefix='', decoration='#', postfix='') -}}
+{%       else %}
+{{         '{}'.format(item.raw | regex_replace('\n$', '')) }}
+{%       endif %}
+{%     else %}
+{%       if item.state|d('present') == 'comment' %}
+{{         '{} {}'.format(item.option | d(item.name), item.value) | comment(prefix='', decoration='#', postfix='') -}}
+{%       else %}
+{{         '{} {}'.format(item.option | d(item.name), item.value) }}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
