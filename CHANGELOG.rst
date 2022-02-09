@@ -80,6 +80,12 @@ General
   existing SRV record or if none is found, fall back to a predefined default
   values for the hostname and port.
 
+- A new Ansible tag, ``meta::facts`` has been added in all DebOps roles to the
+  tasks that install Ansible local facts. This can be useful during initial
+  provisioning to avoid issues with Ansible ``--check`` mode when certain
+  configurations depend on the presence of the local facts to gather details
+  from the remote hosts.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 

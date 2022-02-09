@@ -44,6 +44,7 @@
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
+  tags: [ 'meta::facts' ]
 
 - name: Save local facts
   template:
@@ -52,6 +53,7 @@
     mode: '0755'
   with_items: [ 'core', 'tags' ]
   notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
 
 - name: Gather local facts if they changed
   meta: 'flush_handlers'
