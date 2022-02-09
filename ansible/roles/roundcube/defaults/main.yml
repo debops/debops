@@ -583,7 +583,7 @@ roundcube__domain: '{{ ansible_domain }}'
 # If there are no resource records, the role checks if a local Dovecot
 # installation is present and uses the host FQDN as the IMAP server address.
 # Finally, ``imap.<domain>`` is used as a fallback.
-roundcube__imap_srv_rr: '{{ q("dig_srv", "_imaps._tcp." + roundcube__domain,
+roundcube__imap_srv_rr: '{{ q("debops.debops.dig_srv", "_imaps._tcp." + roundcube__domain,
                               ansible_fqdn
                               if (ansible_local|d() and ansible_local.dovecot|d() and
                                   (ansible_local.dovecot.installed|d())|bool)
@@ -636,7 +636,7 @@ roundcube__imap_server: '{{ ("ssl://"
 # If there are no resource records, the role checks if a local Postfix
 # installation is present and uses the host FQDN as the SMTP server address.
 # Finally, ``smtp.<domain>`` is used as a fallback.
-roundcube__smtp_srv_rr: '{{ q("dig_srv", "_submissions._tcp." + roundcube__domain,
+roundcube__smtp_srv_rr: '{{ q("debops.debops.dig_srv", "_submissions._tcp." + roundcube__domain,
                               ansible_fqdn
                               if (ansible_local|d() and ansible_local.postfix|d() and
                                   (ansible_local.postfix.installed|d())|bool)
@@ -705,7 +705,7 @@ roundcube__smtp_pass: '%p'
 # If there are no resource records, the role checks if a local Dovecot
 # installation is present and uses the host FQDN as the Sieve server address.
 # Finally, ``sieve.<domain>`` is used as a fallback.
-roundcube__sieve_srv_rr: '{{ q("dig_srv", "_sieve._tcp." + roundcube__domain,
+roundcube__sieve_srv_rr: '{{ q("debops.debops.dig_srv", "_sieve._tcp." + roundcube__domain,
                                ansible_fqdn
                                if (ansible_local|d() and ansible_local.dovecot|d() and
                                    (ansible_local.dovecot.installed|d())|bool)

@@ -129,7 +129,7 @@ icinga__domain: '{{ ansible_domain }}'
 #
 # See :ref:`icinga__ref_dns_config` for details if you want to specify this
 # list manually.
-icinga__master_nodes: '{{ q("dig_srv", "_icinga-master._tcp." + icinga__domain,
+icinga__master_nodes: '{{ q("debops.debops.dig_srv", "_icinga-master._tcp." + icinga__domain,
                             "icinga-master." + icinga__domain, icinga__api_port) }}'
 
                                                                    # ]]]
@@ -151,7 +151,7 @@ icinga__master_delegate_to: '{{ icinga__master_nodes[0]["target"] }}'
 #
 # See :ref:`icinga__ref_dns_config` for details if you want to specify this
 # list manually.
-icinga__director_nodes: '{{ q("dig_srv", "_icinga-director._tcp." + icinga__domain,
+icinga__director_nodes: '{{ q("debops.debops.dig_srv", "_icinga-director._tcp." + icinga__domain,
                               "icinga-director." + icinga__domain, 443) }}'
 
                                                                    # ]]]
