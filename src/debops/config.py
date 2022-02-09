@@ -10,7 +10,7 @@ import sys
 import dotenv
 import pkgutil
 import jinja2
-import collections
+import collections.abc
 import toml
 import json
 import yaml
@@ -66,8 +66,8 @@ class Configuration(object):
         if d2:
             for k, v2 in d2.items():
                 v1 = d1.get(k)  # returns None if v1 has no value for this key
-                if (isinstance(v1, collections.Mapping) and
-                        isinstance(v2, collections.Mapping)):
+                if (isinstance(v1, collections.abc.Mapping) and
+                        isinstance(v2, collections.abc.Mapping)):
                     self._merge_dict(v1, v2)
                 elif (isinstance(v1, list) and
                         isinstance(v2, list)):
