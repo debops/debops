@@ -232,7 +232,8 @@
                 "state": item.state | d("present"), "sshkeys": item.sshkeys|d()} }}'
   when: (system_users__enabled|bool and item.name|d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and (item.create_home|d(True))|bool and
-         item.sshkeys|d() and item.sshkeys_state|d('present') != 'absent' and (item.user|d(True))|bool)
+         item.sshkeys|d() and item.sshkeys_state|d('present') != 'absent' and (item.user|d(True))|bool and
+         not ansible_check_mode)
   no_log: '{{ item.no_log | d(True if item.password|d() else False) }}'
   tags: [ 'role::system_users:authorized_keys', 'skip::system_users:authorized_keys', 'skip::check' ]
 
