@@ -26,6 +26,7 @@
   register: root_account__register_key_types
   changed_when: False
   check_mode: False
+  tags: [ 'meta::facts' ]
 
 - name: Check if preferred shell exists
   stat: path="{{ root_account__shell }}"
@@ -145,6 +146,7 @@
     group: 'root'
     mode: '0755'
   notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
 
 - name: Reload facts if they were modified
   meta: 'flush_handlers'
