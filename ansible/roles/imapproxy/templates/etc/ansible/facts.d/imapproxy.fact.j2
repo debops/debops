@@ -1,0 +1,67 @@
+#!{{ ansible_python['executable'] }}
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2021 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+import subprocess
+import signal
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+def get_value(input_line, key, output):
+    if input_line.startswith(key):
+        output[key] = input_line.split()[1].strip()
+
+
+output = {}
+
+output['installed'] = cmd_exists('imapproxyd')
+
+if output['installed']:
+    try:
+        imapproxy_version_stdout = subprocess.check_output(
+                ["dpkg-query", "-W", "-f=${Version}",
+                 "imapproxy"]).decode('utf-8').split('-')[0]
+        output['version'] = imapproxy_version_stdout
+
+    except Exception:
+        pass
+
+    try:
+        if os.path.isfile('/etc/imapproxy.conf'):
+            try:
+                with open('/etc/imapproxy.conf') as fh:
+                    for line in fh:
+                        get_value(line, 'server_hostname', output)
+                        get_value(line, 'server_port', output)
+                        get_value(line, 'listen_address', output)
+                        get_value(line, 'listen_port', output)
+                        get_value(line, 'force_tls', output)
+                        get_value(line, 'chroot_directory', output)
+                        get_value(line, 'enable_admin_commands', output)
+                        get_value(line, 'cache_expiration_time', output)
+                        get_value(line, 'cache_size', output)
+                        get_value(line, 'ipversion_only', output)
+
+            except Exception:
+                pass
+
+    except Exception:
+        pass
+
+
+print(dumps(output, sort_keys=True, indent=4))

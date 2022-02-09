@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+# Copyright (C)      2021 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2018-2021 DebOps <https://debops.org/>
+# Based on the postfix hook which is:
+# Copyright (C)      2020 Rainer Schuth <devel@reixd.net>
+# Copyright (C)      2018 Norbert Summer <git@o-g.at>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+# Reload or restart imapproxy on a certificate state change
+
+set -o nounset -o pipefail -o errexit
+
+imapproxy_config="/etc/imapproxy.conf"
+imapproxy_action="{{ imapproxy__pki_hook_action }}"
+imapproxy_service="imapproxy.service"
+
+# Check if current PKI realm is used by the 'imapproxy' server
+certificate=$(grep -r "${PKI_SCRIPT_DEFAULT_CRT:-}" ${imapproxy_config} || true)
+
+# Get list of current realm states
+read -r -a states <<< "$(echo "${PKI_SCRIPT_STATE:-}" | tr "," " ")"
+
+if [ -n "${certificate}" ] && [[ ${states[*]} ]] ; then
+
+    for state in "${states[@]}" ; do
+
+        if [ "${state}" = "changed-certificate" ] || [ "${state}" = "changed-dhparam" ] ; then
+
+            # Check if current init is systemd
+            if pidof systemd > /dev/null 2>&1 ; then
+
+                imapproxy_state="$(systemctl is-active ${imapproxy_service})"
+                if [ "${imapproxy_state}" = "active" ] ; then
+		    systemctl "${imapproxy_action}" "${imapproxy_service}"
+                fi
+            fi
+
+            break
+        fi
+
+    done
+
+fi
