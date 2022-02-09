@@ -64,6 +64,10 @@ New DebOps roles
 
   .. __: https://rspamd.org/
 
+- The :ref:`debops.imapproxy` role can install and configure the IMAP Proxy
+  service, useful for web mail applications that use IMAP to access the mail
+  services.
+
 General
 '''''''
 
