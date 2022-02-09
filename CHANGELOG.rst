@@ -339,7 +339,7 @@ Continuous Integration
 
 - The role has been throughly refreshed and now uses the
   :ref:`universal_configuration` format for the service configuration. All role
-  variables have been renamed to put them in a spearate namespace.
+  variables have been renamed to put them in a separate namespace.
 
   .. warning:: If you use a Dovecot installation in your environment, you
      should check the new role documentation and update the relevant configuration
