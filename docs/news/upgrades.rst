@@ -71,12 +71,12 @@ Redesign of the Debian Pressed support
 Changes in inventory variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- In the :ref:`debops.nginx` role some variables were renamed:
+- In the :ref:`debops.nginx` role one variable was removed:
 
   +-----------------------+-----------------------------+---------------+
   | Old variable name     | New variable name           | Changed value |
   +=======================+=============================+===============+
-  | ``nginx_enable_sdpy`` | :envvar:`nginx_enable_spdy` | No            |
+  | ``nginx_enable_sdpy`` | Removed                     | No            |
   +-----------------------+-----------------------------+---------------+
 
 
