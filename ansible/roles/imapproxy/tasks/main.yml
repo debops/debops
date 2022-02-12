@@ -38,11 +38,8 @@
   meta: 'flush_handlers'
 
 - name: Divert original imapproxy configuration file
-  command: dpkg-divert --quiet --local
-           --divert /etc/imapproxy.conf.dpkg-divert
-           --rename /etc/imapproxy.conf
-  args:
-    creates: /etc/imapproxy.conf.dpkg-divert
+  dpkg_divert:
+    path: '/etc/imapproxy.conf'
   notify: [ 'Restart imapproxy' ]
   tags: [ 'role::imapproxy:config' ]
 
