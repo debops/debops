@@ -5,11 +5,9 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Divert OpenNTPd configuration files
-  command: dpkg-divert --quiet --local --divert {{ item }}.dpkg-divert
-           --rename {{ item }}
-  args:
-    creates: '{{ item }}.dpkg-divert'
-  with_items:
+  dpkg_divert:
+    path: '{{ item }}'
+  loop:
     - '/etc/default/openntpd'
     - '/etc/openntpd/ntpd.conf'
     - '/etc/network/if-up.d/openntpd'
