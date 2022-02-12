@@ -11,29 +11,37 @@
   until: logrotate__register_packages is succeeded
   when: logrotate__enabled|bool
 
-- name: Manage the log rotation period in cron
+- name: Determine current cron log rotation
   shell: |
     set -o nounset -o pipefail -o errexit &&
-    {% if logrotate__cron_period in [ 'hourly', 'weekly', 'monthly' ] %}
-    test -z "$(dpkg-divert --list /etc/cron.daily/logrotate)" \
-      || dpkg-divert --quiet --local --rename --remove /etc/cron.daily/logrotate ;
-    dpkg-divert --quiet --local \
-                --divert /etc/cron.{{ logrotate__cron_period }}/logrotate \
-                --rename /etc/cron.daily/logrotate
-    {% else %}
-    dpkg-divert --quiet --local --rename --remove /etc/cron.daily/logrotate
-    {% endif %}
+    dpkg-divert --list /etc/cron.daily/logrotate | awk '{ print $NF }'
   args:
     executable: 'bash'
-    creates: '{{ "/etc/cron." + logrotate__cron_period + "/logrotate"
-                 if (logrotate__cron_period in [ "hourly", "weekly", "monthly" ])
-                 else "/etc/cron.daily/logrotate" }}'
+  register: logrotate__register_cron_diversion
+  changed_when: False
   when: logrotate__enabled|bool
 
+- name: Remove previous cron log rotation
+  dpkg_divert:
+    path: '/etc/cron.daily/logrotate'
+    divert: '{{ logrotate__register_cron_diversion.stdout }}'
+    state: 'absent'
+    delete: True
+  when: (logrotate__enabled|bool and 
+         logrotate__register_cron_diversion.stdout|d() and 
+         logrotate__register_cron_diversion.stdout|d() != 
+         ('/etc/cron.' + logrotate__cron_period + '/logrotate')) 
+ 
+- name: Configure {{ logrotate__cron_period }} cron log rotation
+  dpkg_divert: 
+    path: '/etc/cron.daily/logrotate' 
+    divert: '/etc/cron.{{ logrotate__cron_period }}/logrotate' 
+  when: (logrotate__enabled|bool and 
+         logrotate__cron_period in [ 'hourly', 'weekly', 'monthly' ]) 
+
 - name: Divert the original logrotate config file
-  command: dpkg-divert --quiet --local --divert /etc/logrotate.conf.dpkg-divert --rename /etc/logrotate.conf
-  args:
-    creates: '/etc/logrotate.conf.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/logrotate.conf'
   when: logrotate__enabled|bool
 
 - name: Generate logrotate main configuration file
@@ -45,37 +53,24 @@
     mode: '0644'
   when: logrotate__enabled|bool
 
-- name: Revert the default configuration file
-  shell: rm -f /etc/logrotate.conf ; dpkg-divert --quiet --local --rename --remove /etc/logrotate.conf
-  args:
-    removes: '/etc/logrotate.conf.dpkg-divert'
-    warn: False
+- name: Revert the default configuration file diversion
+  dpkg_divert:
+    path: '/etc/logrotate.conf'
+    state: 'absent'
+    delete: True
   when: not logrotate__enabled|bool
 
-- name: Check current logrotate diversions
-  environment:
-    LC_ALL: 'C'
-  shell: set -o nounset -o pipefail -o errexit &&
-         dpkg-divert --list '/etc/logrotate.d/*.dpkg-divert' | awk '{print $NF}' || true
-  args:
-    executable: 'bash'
-  register: logrotate__register_diversions
-  check_mode: False
-  changed_when: False
-
 - name: Divert the custom log rotation config
-  command: dpkg-divert --quiet --local
-           --divert /etc/logrotate.d/{{ item.filename }}.dpkg-divert
-           --rename /etc/logrotate.d/{{ item.filename }}
+  dpkg_divert:
+    path: '/etc/logrotate.d/{{ item.filename }}'
   with_flattened:
     - '{{ logrotate__config }}'
     - '{{ logrotate__group_config }}'
     - '{{ logrotate__host_config }}'
     - '{{ logrotate__dependent_config }}'
   when: (logrotate__enabled|bool and item.filename|d() and
-         (item.state is undefined or item.state != 'absent') and
-         (item.divert|d() and item.divert|bool and
-          '/etc/logrotate.d/' + item.filename + '.dpkg-divert' not in logrotate__register_diversions.stdout_lines))
+         item.state|d('present') != 'absent' and
+         item.divert|d(False)|bool)
 
 - name: Generate custom log rotation configuration
   template:
@@ -90,7 +85,7 @@
     - '{{ logrotate__host_config }}'
     - '{{ logrotate__dependent_config }}'
   when: (logrotate__enabled|bool and item.filename|d() and
-         (item.state is undefined or item.state != 'absent'))
+         item.state|d('present') != 'absent')
 
 - name: Remove custom log rotation configuration
   file:
@@ -102,20 +97,19 @@
     - '{{ logrotate__host_config }}'
     - '{{ logrotate__dependent_config }}'
   when: ((not logrotate__enabled|bool or
-          (item.filename|d() and (item.state|d() and item.state == 'absent'))) and
+          (item.filename|d() and item.state|d('present') == 'absent')) and
          item.divert is undefined)
 
 - name: Revert original log rotation configuration
-  shell: rm -f /etc/logrotate.d/{{ item.filename }}
-         ; dpkg-divert --quiet --local --rename --remove /etc/logrotate.d/{{ item.filename }}
-  args:
-    warn: False
+  dpkg_divert:
+    path: '/etc/logrotate.d/{{ item.filename }}'
+    state: 'absent'
+    delete: True
   with_flattened:
     - '{{ logrotate__config }}'
     - '{{ logrotate__group_config }}'
     - '{{ logrotate__host_config }}'
     - '{{ logrotate__dependent_config }}'
   when: ((not logrotate__enabled|bool or
-          (item.filename|d() and (item.state|d() and item.state == 'absent'))) and
-         (item.divert|d() and item.divert|bool and
-          '/etc/logrotate.d/' + item.filename + '.dpkg-divert' in logrotate__register_diversions.stdout_lines))
+          (item.filename|d() and item.state|d('present') == 'absent')) and
+         item.divert|d(False)|bool)
