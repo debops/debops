@@ -58,10 +58,9 @@
   meta: 'flush_handlers'
 
 - name: Divert managed configuration files
-  command: 'dpkg-divert --quiet --local --divert {{ item }}.dpkg-divert --rename {{ item }}'
-  args:
-    creates: '{{ item }}.dpkg-divert'
-  with_items:
+  dpkg_divert:
+    path: '{{ item }}'
+  loop:
     - '/etc/libvirt/libvirt.conf'
     - '/etc/libvirt/libvirtd.conf'
 
