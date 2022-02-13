@@ -68,12 +68,8 @@
   tags: [ 'role::kibana:config' ]
 
 - name: Divert original configuration files
-  command: dpkg-divert --quiet --local --divert {{ item }}.dpkg-divert
-           --rename {{ item }}
-  args:
-    creates: '{{ item }}.dpkg-divert'
-  with_items:
-    - '/etc/kibana/kibana.yml'
+  dpkg_divert:
+    path: '/etc/kibana/kibana.yml'
   notify: [ 'Start kibana' ]
   tags: [ 'role::kibana:config' ]
 
