@@ -11,9 +11,8 @@
   until: fuse__register_packages is succeeded
 
 - name: Divert original /etc/fuse.conf
-  command: dpkg-divert --quiet --local --divert /etc/fuse.conf.dpkg-divert --rename /etc/fuse.conf
-  args:
-    creates: '/etc/fuse.conf.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/fuse.conf'
 
 - name: Setup udev rule for fuse to change file permissions
   template:
