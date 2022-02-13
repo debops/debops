@@ -5,13 +5,15 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Divert original /etc/network/interfaces
-  command: dpkg-divert --quiet --local --divert /etc/network/interfaces.dpkg-divert --rename /etc/network/interfaces
-  args:
-    creates: '/etc/network/interfaces.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/network/interfaces'
   register: ifupdown__register_divert
 
 - name: Provide original interface configuration temporarily
-  command: 'cp /etc/network/interfaces.dpkg-divert {{ ifupdown__reconfigure_init_file }}'  # noqa no-handler
+  copy:
+    src: '/etc/network/interfaces.dpkg-divert'
+    dest: '{{ ifupdown__reconfigure_init_file }}'
+    remote_src: True
   when: ifupdown__register_divert is changed
 
 - name: Remove redundant configuration
