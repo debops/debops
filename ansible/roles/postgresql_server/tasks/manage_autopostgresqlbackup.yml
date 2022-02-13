@@ -4,18 +4,14 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Divert the original autopostgresqlbackup script
-  command: dpkg-divert --quiet --local
-           --divert /usr/share/doc/autopostgresqlbackup/script.dpkg-divert
-           --rename /usr/sbin/autopostgresqlbackup
-  args:
-    creates: '/usr/share/doc/autopostgresqlbackup/script.dpkg-divert'
+  dpkg_divert:
+    path: '/usr/sbin/autopostgresqlbackup'
+    divert: '/usr/share/doc/autopostgresqlbackup/script.dpkg-divert'
 
-- name: Divert the original autopostgresqlbackup cron
-  command: dpkg-divert --quiet --local
-           --divert /usr/share/doc/autopostgresqlbackup/cron.dpkg-divert
-           --rename /etc/cron.daily/autopostgresqlbackup
-  args:
-    creates: '/usr/share/doc/autopostgresqlbackup/cron.dpkg-divert'
+- name: Divert the original autopostgresqlbackup cron job
+  dpkg_divert:
+    path: '/etc/cron.daily/autopostgresqlbackup'
+    divert: '/usr/share/doc/autopostgresqlbackup/cron.dpkg-divert'
 
 - name: Configure autopostgresqlbackup defaults
   template:
