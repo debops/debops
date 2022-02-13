@@ -33,9 +33,9 @@
     mode: '0644'
 
 - name: Divert original /etc/hosts.allow
-  command: dpkg-divert --quiet --local --divert {{ tcpwrappers__divert_hosts_allow }} --rename /etc/hosts.allow
-  args:
-    creates: '{{ tcpwrappers__divert_hosts_allow }}'
+  dpkg_divert:
+    path: '/etc/hosts.allow'
+    divert: '{{ tcpwrappers__divert_hosts_allow }}'
   when: tcpwrappers__enabled | bool
 
 - name: Allow access from Ansible Controller to sshd
@@ -96,10 +96,11 @@
   when: tcpwrappers__enabled | bool
 
 - name: Remove diversion of /etc/hosts.allow
-  shell: rm -f /etc/hosts.allow ; dpkg-divert --quiet --local --rename --remove /etc/hosts.allow
-  args:
-    removes: '{{ tcpwrappers__divert_hosts_allow }}'
-    warn: False
+  dpkg_divert:
+    path: '/etc/hosts.allow'
+    divert: '{{ tcpwrappers__divert_hosts_allow }}'
+    state: 'absent'
+    delete: True
   when: not tcpwrappers__enabled | bool
 
 - name: Make sure that Ansible local fact directory exists
