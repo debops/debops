@@ -253,7 +253,7 @@ sudo__ldap__dependent_tasks:
     dn: '{{ sudo__ldap_binddn }}'
     objectClass: '{{ sudo__ldap_self_object_classes }}'
     attributes: '{{ sudo__ldap_self_attributes }}'
-    no_log: True
+    no_log: '{{ debops__no_log | d(True) }}'
     state: '{{ "present"
                if sudo__ldap_enabled|bool
                else "ignore" }}'

@@ -62,7 +62,7 @@ section can be modified separately in other configuration entries:
    freeradius__configuration:
 
      - name: 'clients.conf'
-       no_log: True
+       no_log: '{{ debops__no_log | d(True) }}'
        options:
 
          - name: 'client_localhost'

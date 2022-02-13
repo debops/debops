@@ -4586,7 +4586,7 @@ roundcube__ldap__dependent_tasks:
     dn: '{{ roundcube__ldap_binddn }}'
     objectClass: '{{ roundcube__ldap_self_object_classes }}'
     attributes: '{{ roundcube__ldap_self_attributes }}'
-    no_log: True
+    no_log: '{{ debops__no_log | d(True) }}'
     state: '{{ "present" if roundcube__ldap_password_enabled and
                             roundcube__ldap_device_dn|d() else "ignore" }}'
 

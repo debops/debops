@@ -102,7 +102,7 @@
 
     - filename: 'resources.ini'
       config: '{{ icinga_web__combined_resources }}'
-      no_log: True
+      no_log: '{{ debops__no_log | d(True) }}'
 
     - filename: 'roles.ini'
       config: '{{ icinga_web__combined_roles }}'
@@ -133,7 +133,7 @@
     mode: '0600'
   when: icinga_web__database_host == 'localhost' and
       icinga_web__database_init|bool
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Import Icinga Web database on installation into PostgreSQL
   postgresql_db:

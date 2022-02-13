@@ -77,7 +77,7 @@
   delegate_to: '{{ mariadb__delegate_to }}'
   when: ((item.user|d(False) or item.name|d(False)) and
          (item.state is defined and item.state == "absent"))
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Create user accounts
   mysql_user:
@@ -93,7 +93,7 @@
   register: mariadb__register_create_users
   when: ((item.user|d(False) or item.name|d(False)) and
          (item.state is undefined or item.state != "absent"))
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Grant default privileges to users
   mysql_user:
@@ -109,7 +109,7 @@
          (item.0.state is undefined or item.0.state != "absent") and
          mariadb__default_privileges|d(False) and
          (item.0.priv_default is undefined or item.0.priv_default))
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Grant auxiliary privileges to users
   mysql_user:
@@ -125,7 +125,7 @@
          (item.0.state is undefined or item.0.state != "absent") and
          mariadb__default_privileges_aux|d(False) and
          (item.0.priv_aux is undefined or item.0.priv_aux))
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Grant custom privileges to users
   mysql_user:
@@ -140,7 +140,7 @@
   when: ((item.0.user|d(False) or item.0.name|d(False)) and
          (item.0.state is undefined or item.0.state != "absent") and
          item.0.priv|d(False))
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Make sure required system groups exist
   group:
@@ -151,7 +151,7 @@
   when: ((item.user|d(False) or item.name|d(False)) and
          (item.state is undefined or item.state != "absent") and
          item.owner|d(False) and item.home|d(False))
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Make sure required system accounts exist
   user:
@@ -164,7 +164,7 @@
   when: ((item.user|d(False) or item.name|d(False)) and
          (item.state is undefined or item.state != "absent") and
          item.owner|d(False) and item.home|d(False))
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove ~/.my.cnf from owner home if requested
   file:
@@ -174,7 +174,7 @@
   when: ((item.user|d(False) or item.name|d(False)) and
          (item.state is defined and item.state == "absent") and
          item.owner|d(False))
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Ensure that directory for custom file path .my.cnf exists
   file:
@@ -188,7 +188,7 @@
          (item.0.state|d("present") != "absent") and
          item.0.creds_path|d(False) and
          item.0.owner|d(False))
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Write ~/.my.cnf in owner home directory
   template:
@@ -203,4 +203,4 @@
   when: ((item.0.user|d(False) or item.0.name|d(False)) and
          (item.0.state is undefined or item.0.state != "absent") and
          item.0.owner|d(False))
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'

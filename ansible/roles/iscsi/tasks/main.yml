@@ -43,7 +43,7 @@
     mode:    '0600'
   with_dict: '{{ iscsi__default_options }}'
   when: item|d(False) and item.value
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Restart iSCSI service if initial configuration changed
   service:  # noqa no-handler
@@ -79,7 +79,7 @@
   with_items: '{{ iscsi__targets }}'
   register: iscsi__register_targets
   when: iscsi__targets|d()
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Make sure that local facts directory exists
   file:

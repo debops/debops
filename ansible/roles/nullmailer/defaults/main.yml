@@ -457,7 +457,7 @@ nullmailer__ldap__dependent_tasks:
     dn: '{{ nullmailer__ldap_binddn }}'
     objectClass: '{{ nullmailer__ldap_self_object_classes }}'
     attributes: '{{ nullmailer__ldap_self_attributes }}'
-    no_log: True
+    no_log: '{{ debops__no_log | d(True) }}'
     state: '{{ "present" if nullmailer__ldap_device_dn|d() else "ignore" }}'
 
                                                                    # ]]]

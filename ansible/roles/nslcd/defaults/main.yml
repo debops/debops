@@ -297,7 +297,7 @@ nslcd__ldap__dependent_tasks:
     dn: '{{ nslcd__ldap_binddn }}'
     objectClass: '{{ nslcd__ldap_self_object_classes }}'
     attributes: '{{ nslcd__ldap_self_attributes }}'
-    no_log: True
+    no_log: '{{ debops__no_log | d(True) }}'
     state: '{{ "present"
                if ((ansible_local.ldap.posix_enabled|d())|bool and
                    nslcd__ldap_device_dn|d())

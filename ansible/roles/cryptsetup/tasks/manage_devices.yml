@@ -100,7 +100,7 @@
   when: (item.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ]
          and not ansible_check_mode and 'remote_keyfile' not in item)
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 ## ]]]
 
@@ -241,7 +241,7 @@
                   + "/" + item.0.name + "_keyfile.raw") }}'
     path: '{{ item.0.crypttab_path | d(omit) }}'
     state: 'present'
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
   when: (item.0.state|d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ])
   with_together:
     - '{{ cryptsetup__process_devices|d([]) }}'

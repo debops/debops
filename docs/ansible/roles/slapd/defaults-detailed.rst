@@ -38,7 +38,7 @@ only the specific instance of the object attributes exists.
          olcRootDN: 'cn=admin,cn=config'
          olcRootPW: 'secret'
        state: 'exact'
-       no_log: True
+       no_log: '{{ debops__no_log | d(True) }}'
 
 Ensure that specific object attributes in the main database are indexed by the
 LDAP directory. This entry will add the specified indexes if they are not

@@ -377,7 +377,7 @@ saslauthd__ldap__dependent_tasks:
     dn: '{{ saslauthd__ldap_binddn }}'
     objectClass: '{{ saslauthd__ldap_self_object_classes }}'
     attributes: '{{ saslauthd__ldap_self_attributes }}'
-    no_log: False
+    no_log: '{{ debops__no_log | d(True) }}'
     state: '{{ "present" if saslauthd__ldap_device_dn|d() else "ignore" }}'
                                                                    # ]]]
                                                                    # ]]]

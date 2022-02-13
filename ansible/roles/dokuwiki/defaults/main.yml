@@ -599,7 +599,7 @@ dokuwiki__ldap__dependent_tasks:
     dn: '{{ dokuwiki__ldap_binddn }}'
     objectClass: '{{ dokuwiki__ldap_self_object_classes }}'
     attributes: '{{ dokuwiki__ldap_self_attributes }}'
-    no_log: True
+    no_log: '{{ debops__no_log | d(True) }}'
     state: '{{ "present" if dokuwiki__ldap_device_dn|d() else "ignore" }}'
 
   - name: 'Create DokuWiki group container for {{ dokuwiki__ldap_device_dn | join(",") }}'

@@ -37,7 +37,7 @@
   delegate_to: 'localhost'
   become: False
   run_once: True
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Configure Erlang cookie
   copy:
@@ -47,7 +47,7 @@
     group: '{{ rabbitmq_server__group }}'
     mode: '0400'
   notify: [ 'Restart rabbitmq-server' ]
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Ensure that configuration directory exists
   file:
@@ -202,7 +202,7 @@
   with_flattened:
     - '{{ rabbitmq_server__combined_accounts }}'
   tags: [ 'role::rabbitmq_server:user' ]
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Save RabbitMQ dependent configuration on Ansible Controller
   template:

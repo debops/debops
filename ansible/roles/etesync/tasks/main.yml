@@ -178,7 +178,7 @@
   become: True
   become_user: '{{ etesync__user }}'
   when: ("etesync" not in ansible_local)
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 # Send PSK subpath URL to admin if needed [[[1
 - name: Send mail with the full URL of the EteSync server

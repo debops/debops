@@ -13,7 +13,7 @@
     group: 'root'
     mode: '0600'
   when: '"ldap" in sshd__authorized_keys_lookup_type|d([])'
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove OpenSSH LDAP bind password file
   file:

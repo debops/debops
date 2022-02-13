@@ -64,18 +64,6 @@ postldap__domain_rev_pattern: |-
 postldap__tls_ca_cert_dir: '/etc/ssl/certs/'
                                                                    # ]]]
                                                                    # ]]]
-# Secrets [[[
-# -----------
-
-# .. envvar:: postldap__no_log [[[
-#
-# This variable can be used in the Ansible tasks to set the ``no_log``
-# parameter. Changing it to ``False`` can help with debugging issues with the
-# roles, but otherwise it should be set to ``True`` to ensure that Ansible
-# doesn't leak sensitive data in its logs.
-postldap__no_log: True
-                                                                   # ]]]
-                                                                   # ]]]
 # Virtual Mail [[[
 # ----------------
 #
@@ -337,7 +325,7 @@ postldap__postfix__dependent_lookup_tables:
     comment: |
       The virtual_alias_maps setting is used to find the final delivery address,
       given an alias.
-    no_log: '{{ postldap__no_log|d(True) }}'
+    no_log: '{{ debops__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
     search_base: '{{ postldap__ldap_base_dn|join(",") }}'
     query_filter: '(&
@@ -355,7 +343,7 @@ postldap__postfix__dependent_lookup_tables:
     comment: |
       The virtual_forward_maps setting is used to find the final delivery address,
       given a distribution list.
-    no_log: '{{ postldap__no_log|d(True) }}'
+    no_log: '{{ debops__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
     search_base: '{{ postldap__ldap_base_dn|join(",") }}'
     query_filter: '(&
@@ -378,7 +366,7 @@ postldap__postfix__dependent_lookup_tables:
     comment: |
       As we only want to accept mail, where we know the recipients
       (and are responsible for them), the virtual_mailbox_maps configuration is used.
-    no_log: '{{ postldap__no_log|d(True) }}'
+    no_log: '{{ debops__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
     search_base: '{{ postldap__ldap_base_dn|join(",") }}'
     query_filter: '(&
@@ -399,7 +387,7 @@ postldap__postfix__dependent_lookup_tables:
     comment: |
       The virtual_mailbox_domains configurations performs a lookup,
       if the postfix is responsible for the given domain.
-    no_log: '{{ postldap__no_log|d(True) }}'
+    no_log: '{{ debops__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
     search_base: '{{ postldap__ldap_domains_dn|join(",") }}'
     query_filter: '(&
@@ -416,7 +404,7 @@ postldap__postfix__dependent_lookup_tables:
       on user@domain, then user and then @domain.
       The later one is also used for catchalls where the mailAlternateAddress
       is set to e.g. @foobar.com
-    no_log: '{{ postldap__no_log|d(True) }}'
+    no_log: '{{ debops__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
     search_base: '{{ postldap__ldap_base_dn|join(",") }}'
     query_filter: '(&
@@ -455,7 +443,7 @@ postldap__postfix__dependent_lookup_tables:
       e-mail messages from trusted SMTP services, for example nullmailer, which
       can send e-mail messages on behalf of other users but cannot authenticate
       as them.
-    no_log: '{{ postldap__no_log|d(True) }}'
+    no_log: '{{ debops__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
     search_base: '{{ postldap__ldap_base_dn|join(",") }}'
     query_filter: '(&
@@ -480,7 +468,7 @@ postldap__postfix__dependent_lookup_tables:
       as one of our own users which is not allowed without authentication. In
       such cases, the mail will be rejected with a sensible response indicating
       that the sender needs to enable SMTP authentication.
-    no_log: '{{ postldap__no_log|d(True) }}'
+    no_log: '{{ debops__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
     search_base: '{{ postldap__ldap_base_dn|join(",") }}'
     query_filter: '(|
@@ -509,7 +497,7 @@ postldap__postfix__dependent_lookup_tables:
       somebody tries to send an e-mail with our own DNS domain which is not
       allowed. The e-mail will be rejected with a message suggesting that the
       SMTP authentication needs to be enabled.
-    no_log: '{{ postldap__no_log|d(True) }}'
+    no_log: '{{ debops__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
     search_base: '{{ postldap__ldap_base_dn|join(",") }}'
     query_filter: '(|
@@ -769,7 +757,7 @@ postldap__ldap__dependent_tasks:
     dn: '{{ postldap__ldap_binddn }}'
     objectClass: '{{ postldap__ldap_self_object_classes }}'
     attributes: '{{ postldap__ldap_self_attributes }}'
-    no_log: '{{ postldap__no_log|d(True) }}'
+    no_log: '{{ debops__no_log|d(True) }}'
     state: '{{ "present"
                 if (postldap__ldap_enabled|bool and
                     postldap__ldap_device_dn|d())

@@ -901,7 +901,7 @@ sshd__ldap__dependent_tasks:
     dn: '{{ sshd__ldap_binddn }}'
     objectClass: '{{ sshd__ldap_self_object_classes }}'
     attributes: '{{ sshd__ldap_self_attributes }}'
-    no_log: True
+    no_log: '{{ debops__no_log | d(True) }}'
     state: '{{ "present"
                if (sshd__authorized_keys_lookup|bool and
                    ("ldap" in sshd__authorized_keys_lookup_type))

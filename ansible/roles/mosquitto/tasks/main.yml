@@ -90,7 +90,7 @@
          mosquitto__version is version_compare('1.4.0', '>='))
   notify: [ 'Reload mosquitto' ]
   tags: [ 'role::mosquitto:passwd' ]
-  no_log: '{{ secret__no_log | bool }}'
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Create user/password entries
   environment:
@@ -106,7 +106,7 @@
          mosquitto__version is version_compare('1.4.0', '>='))
   notify: [ 'Reload mosquitto' ]
   tags: [ 'role::mosquitto:passwd' ]
-  no_log: '{{ secret__no_log | bool }}'
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Manage Mosquitto ACL file
   template:

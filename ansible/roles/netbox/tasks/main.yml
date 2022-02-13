@@ -217,7 +217,7 @@
   become_user: '{{ netbox__user }}'
   when: (not netbox__register_installed.stat.exists|bool and
          not netbox__register_migration.stdout is search('No migrations to apply.'))
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate systemd service unit
   template:

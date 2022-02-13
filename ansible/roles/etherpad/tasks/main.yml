@@ -227,7 +227,7 @@
   ## error while evaluating conditional???
   # failed_when: etherpad_api_calls_exec.rc != 0 or etherpad_api_calls_exec.json.code|d()
   with_items: '{{ etherpad_api_calls }}'
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
   tags: [ 'role::etherpad:api', 'role::etherpad:api:call' ]
 
 - name: Display API call responses for debugging
