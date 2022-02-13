@@ -45,10 +45,8 @@
           ansible_local.unattended_upgrades.enabled|bool))
 
 - name: Divert unattended-upgrades configuration
-  command: dpkg-divert --quiet --local --divert /etc/apt/apt.conf.d/50unattended-upgrades.dpkg-divert
-           --rename /etc/apt/apt.conf.d/50unattended-upgrades
-  args:
-    creates: '/etc/apt/apt.conf.d/50unattended-upgrades.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/apt/apt.conf.d/50unattended-upgrades'
   when: unattended_upgrades__enabled | bool
 
 - name: Configure unattended-upgrades
@@ -60,18 +58,11 @@
     mode: '0644'
   when: unattended_upgrades__enabled | bool
 
-- name: Remove configs out of the way before reversion
-  command: rm -f /etc/apt/apt.conf.d/50unattended-upgrades
-  args:
-    removes: '/etc/apt/apt.conf.d/50unattended-upgrades.dpkg-divert'
-    warn: False
-  when: not unattended_upgrades__enabled | bool
-
 - name: Revert unattended-upgrades configuration
-  command: dpkg-divert --quiet --local --rename
-           --remove /etc/apt/apt.conf.d/50unattended-upgrades
-  args:
-    removes: '/etc/apt/apt.conf.d/50unattended-upgrades.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/apt/apt.conf.d/50unattended-upgrades'
+    state: 'absent'
+    delete: True
   when: not unattended_upgrades__enabled | bool
 
 - name: Make sure that Ansible local fact directory exists
