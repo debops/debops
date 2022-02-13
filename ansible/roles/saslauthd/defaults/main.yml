@@ -111,6 +111,17 @@ saslauthd__combined_instances: '{{ q("flattened", (saslauthd__default_instances
 # LDAP environment [[[
 # --------------------
 
+# .. envvar:: saslauthd__ldap_enabled [[[
+#
+# Enable or disable integration with the LDAP directory. The integration is
+# enabled automatically when the :ref:`debops.ldap` environment is configured
+# on the host.
+saslauthd__ldap_enabled: '{{ ansible_local.ldap.enabled
+                             if (ansible_local|d() and ansible_local.ldap|d() and
+                                 ansible_local.ldap.enabled is defined)
+                             else False }}'
+
+                                                                   # ]]]
 # .. envvar:: saslauthd__ldap_base_dn [[[
 #
 # The base Distinguished Name which should be used to create Distinguished
@@ -165,8 +176,10 @@ saslauthd__ldap_binddn: '{{ ([ saslauthd__ldap_self_rdn ] + saslauthd__ldap_devi
 #
 # The password stored in the account LDAP object used by the :command:`saslauthd`
 # service to bind to the LDAP directory.
-saslauthd__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
-                                   + saslauthd__ldap_binddn | to_uuid + ".password length=32") }}'
+saslauthd__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
+                                    + saslauthd__ldap_binddn | to_uuid + ".password length=32"))
+                            if saslauthd__ldap_enabled|bool
+                            else "" }}'
                                                                    # ]]]
                                                                    # ]]]
 # LDAP profiles [[[
