@@ -16,19 +16,15 @@
 # Package installation [[[1
 - name: Install MiniDLNA packages
   apt:
-    name: '{{ (minidlna__base_packages
-             + minidlna__packages)
-             | flatten }}'
+    name: '{{ (minidlna__base_packages + minidlna__packages) | flatten }}'
     state: 'present'
   register: minidlna__register_packages
   until: minidlna__register_packages is succeeded
 
 # MiniDLNA configuration [[[1
 - name: Divert the MiniDLNA configuration file
-  command: dpkg-divert --quiet --local --divert /etc/minidlna.conf.dpkg-divert
-                       --rename /etc/minidlna.conf
-  args:
-    creates: '/etc/minidlna.conf.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/minidlna.conf'
 
 - name: Generate MiniDLNA configuration file
   template:
@@ -40,7 +36,7 @@
     unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
   register: minidlna__register_configuration
 
-- name: Conditionnally restart MiniDLNA service
+- name: Conditionally restart MiniDLNA service
   systemd:
     name: 'minidlna.service'
     enabled: true
