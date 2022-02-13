@@ -11,9 +11,8 @@
   until: lvm__register_packages is succeeded
 
 - name: Divert original lvm.conf
-  command: dpkg-divert --quiet --local --divert /etc/lvm/lvm.conf.dpkg-divert --rename /etc/lvm/lvm.conf
-  args:
-    creates: '/etc/lvm/lvm.conf.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/lvm/lvm.conf'
 
 - name: Check LVM version
   environment:
