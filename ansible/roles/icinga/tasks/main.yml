@@ -60,28 +60,14 @@
 - name: Update Ansible facts if they were modified
   meta: 'flush_handlers'
 
-- name: Check current Icinga diversions
-  environment:
-    LC_ALL: 'C'
-  shell: set -o nounset -o pipefail -o errexit &&
-         dpkg-divert --list '/etc/icinga2/*.dpkg-divert' | grep -E '^local diversion' | awk '{print $NF}' || true
-  args:
-    executable: 'bash'
-  register: icinga__register_diversions
-  check_mode: False
-  changed_when: False
-
 - name: Divert Icinga configuration
-  command: dpkg-divert --quiet --local
-                       --divert /etc/icinga2/{{ item.filename
-                                                | d(item.name | regex_replace('.conf$','') + '.conf') }}.dpkg-divert
-                       --rename /etc/icinga2/{{ item.filename | d(item.name | regex_replace('.conf$','') + '.conf') }}
+  dpkg_divert:
+    path: '{{ "/etc/icinga2/" + item.filename | d(item.name | regex_replace(".conf$","") + ".conf") }}'
   with_items: '{{ icinga__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Check icinga2 configuration and restart' ]
-  when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init', 'feature' ] and
-         (item.divert|d())|bool and
-         ('/etc/icinga2/' + (item.filename | d(item.name | regex_replace('.conf$','') + '.conf'))
-                          + '.dpkg-divert' not in icinga__register_diversions.stdout_lines))
+  when: (item.name|d() and
+         item.state|d('present') not in [ 'absent', 'ignore', 'init', 'feature' ] and
+         item.divert|d(False)|bool)
 
 - name: Ensure that configuration directories exist
   file:
@@ -150,16 +136,14 @@
   no_log: '{{ item.no_log | d(omit) }}'
 
 - name: Revert original Icinga configuration
-  shell: rm -f /etc/icinga2/{{ item.filename | d(item.name | regex_replace('.conf$','') + '.conf') }}
-         ; dpkg-divert --quiet --local --rename
-                       --remove /etc/icinga2/{{ item.filename | d(item.name | regex_replace('.conf$','') + '.conf') }}
-  args:
-    warn: False
+  dpkg_divert:
+    path: '{{ "/etc/icinga2/" + item.filename | d(item.name | regex_replace(".conf$","") + ".conf") }}'
+    state: 'absent'
+    delete: True
   with_items: '{{ icinga__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Check icinga2 configuration and restart' ]
-  when: (item.name|d() and item.state|d('present') == 'absent' and (item.divert|d())|bool and
-         ('/etc/icinga2/' + (item.filename | d(item.name | regex_replace('.conf$','') + '.conf'))
-                          + '.dpkg-divert' in icinga__register_diversions.stdout_lines))
+  when: (item.name|d() and item.state|d('present') == 'absent' and
+         item.divert|d(False)|bool)
 
 - name: Configure state of Icinga features
   file:
