@@ -119,16 +119,17 @@
 ## It has been decided to not divert this script because there is a chance that
 ## security fixes could affect this file.
 - name: Divert original /etc/grub.d/10_linux
-  command: dpkg-divert --quiet --local --divert /etc/grub.d/10_linux.dpkg-divert
-           --rename /etc/grub.d/10_linux
-  args:
-    creates: '/etc/grub.d/10_linux.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/grub.d/10_linux'
   when: (grub__combined_users|length > 0)
-  register: grub__register_linux_divert
 
 - name: Copy /etc/grub.d/10_linux.dpkg-divert to its original location
-  command: cp /etc/grub.d/10_linux.dpkg-divert /etc/grub.d/10_linux  # noqa no-handler
-  when: grub__register_linux_divert is changed
+  copy:
+    src: '/etc/grub.d/10_linux.dpkg-divert'
+    dest: '/etc/grub.d/10_linux'
+    remote_src: True
+    force: False
+  when: (grub__combined_users|length > 0)
 
 - name: Apply patch to allow to configure the default menu entry parameters
   replace:
@@ -139,11 +140,11 @@
   notify: [ 'Update GRUB' ]
   when: (grub__combined_users|length > 0)
 
-- name: Remove patch to allow to configure the default menu entry parameters
-  shell: rm -f /etc/grub.d/10_linux ; dpkg-divert --quiet --local --rename --remove /etc/grub.d/10_linux
-  args:
-    warn: False
-    removes: '/etc/grub.d/10_linux.dpkg-divert'
+- name: Remove patch to allow configuring the default menu entry parameters
+  dpkg_divert:
+    path: '/etc/grub.d/10_linux'
+    state: 'absent'
+    delete: True
   notify: [ 'Update GRUB' ]
   when: (grub__combined_users|length == 0)
 
