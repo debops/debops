@@ -214,8 +214,10 @@ nullmailer__ldap_binddn: '{{ ([ nullmailer__ldap_self_rdn ] + nullmailer__ldap_d
 #
 # The password stored in the account LDAP object used by the
 # :command:`nullmailer` service to bind to the LDAP directory.
-nullmailer__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
-                                    + nullmailer__ldap_binddn | to_uuid + ".password length=32") }}'
+nullmailer__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
+                                     + nullmailer__ldap_binddn | to_uuid + ".password length=32"))
+                             if nullmailer__ldap_enabled|bool
+                             else "" }}'
                                                                    # ]]]
                                                                    # ]]]
 # SMTP relay configuration [[[
