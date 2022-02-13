@@ -22,16 +22,24 @@
     value: 'No automated setup'
   when: (apt_cacher_ng__deploy_state == 'present')
 
-- name: Remove diversion of Apt-Cacher NG configuration
-  shell: rm --force "/{{ item.path }}";
-         dpkg-divert --quiet --local --rename --remove "/{{ item.path }}"
-  args:
-    removes: '/{{ item.path }}.dpkg-divert'
-    warn: False
-  when: (apt_cacher_ng__deploy_state in [ 'absent', 'purge' ])
+- name: Remove Apt-Cacher NG configuration
+  file:
+    path: '/{{ item.path }}'
+    state: 'absent'
+  when: (apt_cacher_ng__deploy_state in [ 'absent', 'purge' ] and
+         not item.divert|d(True))
   with_items: '{{ apt_cacher_ng__configuration_files }}'
 
-- name: Ensure specified packages are in there desired state
+- name: Remove diversion of Apt-Cacher NG configuration
+  dpkg_divert:
+    path: '/{{ item.path }}'
+    state: 'absent'
+    delete: True
+  when: (apt_cacher_ng__deploy_state in [ 'absent', 'purge' ] and
+         item.divert|d(True))
+  with_items: '{{ apt_cacher_ng__configuration_files }}'
+
+- name: Ensure specified packages are in their desired state
   package:
     name: '{{ q("flattened", apt_cacher_ng__base_packages) }}'
     state: '{{ "present" if (apt_cacher_ng__deploy_state == "present") else "absent" }}'
