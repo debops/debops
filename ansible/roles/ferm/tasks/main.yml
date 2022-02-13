@@ -81,9 +81,8 @@
   notify: [ 'Restart ferm' ]
 
 - name: Divert the original ferm configuration file
-  command: dpkg-divert --quiet --local --divert /etc/ferm/ferm.conf.dpkg-divert --rename /etc/ferm/ferm.conf
-  args:
-    creates: '/etc/ferm/ferm.conf.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/ferm/ferm.conf'
   when: ferm__enabled|bool
 
 - name: Configure main ferm config file
@@ -97,10 +96,10 @@
   when: ferm__enabled|bool
 
 - name: Revert the original configuration file
-  shell: rm -f /etc/ferm/ferm.conf ; dpkg-divert --quiet --local --rename --remove /etc/ferm/ferm.conf
-  args:
-    removes: '/etc/ferm/ferm.conf.dpkg-divert'
-    warn: False
+  dpkg_divert:
+    path: '/etc/ferm/ferm.conf'
+    state: 'absent'
+    delete: True
   when: not ferm__enabled|bool
 
 - name: Remove firewall rules
