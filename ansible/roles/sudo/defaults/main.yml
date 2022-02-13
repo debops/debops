@@ -102,8 +102,10 @@ sudo__ldap_binddn: '{{ ([ sudo__ldap_self_rdn ] + sudo__ldap_device_dn) | join("
 #
 # The password stored in the account LDAP object used by the :command:`sudo`
 # service to bind to the LDAP directory.
-sudo__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
-                              + sudo__ldap_binddn | to_uuid + ".password length=32") }}'
+sudo__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
+                               + sudo__ldap_binddn | to_uuid + ".password length=32"))
+                       if sudo__ldap_enabled|bool
+                       else "" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Local sudoers configuration [[[

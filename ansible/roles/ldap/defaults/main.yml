@@ -649,11 +649,13 @@ ldap__admin_binddn: '{{ lookup("env", "DEBOPS_LDAP_ADMIN_BINDDN")
 # administrative tasks. It can be overridden on the Ansible Controller through
 # use of the environment variables. See :ref:`ldap__ref_admin_pass` for more
 # details about :command:`pass` password database integration.
-ldap__admin_bindpw: '{{ lookup("env", "DEBOPS_LDAP_ADMIN_BINDPW")
-                        if lookup("env", "DEBOPS_LDAP_ADMIN_BINDPW")|d()
-                        else (lookup("passwordstore", ldap__admin_passwordstore_path
-                                     + "/" + (ldap__admin_binddn | to_uuid)
-                                     + " create=false", errors="ignore")) }}'
+ldap__admin_bindpw: '{{ (lookup("env", "DEBOPS_LDAP_ADMIN_BINDPW")
+                         if lookup("env", "DEBOPS_LDAP_ADMIN_BINDPW")|d()
+                         else (lookup("passwordstore", ldap__admin_passwordstore_path
+                                      + "/" + (ldap__admin_binddn | to_uuid)
+                                      + " create=false", errors="ignore")))
+                        if ldap__enabled|bool
+                        else "" }}'
 
                                                                    # ]]]
 # .. envvar:: ldap__admin_server_uri [[[

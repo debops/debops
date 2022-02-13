@@ -849,8 +849,10 @@ gitlab__ldap_binddn: '{{ ([ gitlab__ldap_self_rdn ] + gitlab__ldap_device_dn) | 
 #
 # The password stored in the account LDAP object used by the GitLab service to
 # bind to the LDAP directory.
-gitlab__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
-                                + gitlab__ldap_binddn | to_uuid + ".password length=32") }}'
+gitlab__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
+                                 + gitlab__ldap_binddn | to_uuid + ".password length=32"))
+                         if gitlab__ldap_enabled|bool
+                         else "" }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab__ldap_sync_time [[[
