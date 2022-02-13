@@ -22,14 +22,15 @@
   until: fail2ban__register_packages is succeeded
 
 - name: Divert original fail2ban configuration
-  command: dpkg-divert --quiet --local --divert /etc/fail2ban/jail.conf.dpkg-divert --rename /etc/fail2ban/jail.conf
-  args:
-    creates: /etc/fail2ban/jail.conf.dpkg-divert
+  dpkg_divert:
+    path: '/etc/fail2ban/jail.conf'
 
 - name: Copy upstream jail configuration
-  command: cp /etc/fail2ban/jail.conf.dpkg-divert /etc/fail2ban/jail.conf
-  args:
-    creates: '/etc/fail2ban/jail.conf'
+  copy:
+    src: '/etc/fail2ban/jail.conf.dpkg-divert'
+    dest: '/etc/fail2ban/jail.conf'
+    remote_src: True
+    force: False
   notify: [ 'Restart fail2ban' ]
 
 - name: Disable default upstream jail
