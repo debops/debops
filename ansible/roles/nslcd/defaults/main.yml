@@ -63,6 +63,17 @@ nslcd__mkhomedir_umask: '{{ ansible_local.core.homedir_umask|d("0027") }}'
 # LDAP environment [[[
 # --------------------
 
+# .. envvar:: nslcd__ldap_enabled [[[
+#
+# Enable or disable integration with the LDAP directory. The integration is
+# enabled automatically when the :ref:`debops.ldap` environment is configured
+# on the host.
+nslcd__ldap_enabled: '{{ ansible_local.ldap.enabled
+                         if (ansible_local|d() and ansible_local.ldap|d() and
+                             ansible_local.ldap.enabled is defined)
+                         else False }}'
+
+                                                                   # ]]]
 # .. envvar:: nslcd__ldap_base_dn [[[
 #
 # The base Distinguished Name which should be used to create Distinguished
@@ -116,8 +127,10 @@ nslcd__ldap_binddn: '{{ ([ nslcd__ldap_self_rdn ] + nslcd__ldap_device_dn) | joi
 #
 # The password stored in the account LDAP object used by the :command:`nslcd`
 # service to bind to the LDAP directory.
-nslcd__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
-                               + nslcd__ldap_binddn | to_uuid + ".password length=32") }}'
+nslcd__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
+                                + nslcd__ldap_binddn | to_uuid + ".password length=32"))
+                        if nslcd__ldap_enabled|bool
+                        else "" }}'
 
                                                                    # ]]]
 # .. envvar:: nslcd__ldap_posix_urns [[[

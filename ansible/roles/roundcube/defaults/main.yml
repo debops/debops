@@ -473,8 +473,10 @@ roundcube__ldap_binddn: '{{ ([ roundcube__ldap_self_rdn ] + roundcube__ldap_devi
 #
 # The password stored in the account LDAP object used by the Roundcube
 # application to bind to the LDAP directory.
-roundcube__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
-                                   + roundcube__ldap_binddn | to_uuid + ".password length=32") }}'
+roundcube__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
+                                    + roundcube__ldap_binddn | to_uuid + ".password length=32"))
+                            if roundcube__ldap_enabled|bool
+                            else "" }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__ldap_people_rdn [[[

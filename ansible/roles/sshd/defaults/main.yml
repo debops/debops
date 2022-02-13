@@ -560,6 +560,17 @@ sshd__authorized_keys_lookup_type: [ 'ldap', 'sss' ]
 # LDAP lookup configuration [[[
 # -----------------------------
 
+# .. envvar:: sshd__ldap_enabled [[[
+#
+# Enable or disable integration with the LDAP directory. The integration is
+# enabled automatically when the :ref:`debops.ldap` environment is configured
+# on the host.
+sshd__ldap_enabled: '{{ ansible_local.ldap.enabled
+                        if (ansible_local|d() and ansible_local.ldap|d() and
+                            ansible_local.ldap.enabled is defined)
+                        else False }}'
+
+                                                                   # ]]]
 # .. envvar:: sshd__ldap_base_dn [[[
 #
 # The base LDAP Distinguished Name used for SSH public key lookups.
@@ -621,8 +632,10 @@ sshd__ldap_binddn: '{{ ([ sshd__ldap_self_rdn ] + sshd__ldap_device_dn) | join("
 #
 # The password defined in the ``sshd`` LDAP account object used to authenticate
 # to the LDAP directory.
-sshd__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
-                              + sshd__ldap_binddn | to_uuid + ".password length=32") }}'
+sshd__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
+                               + sshd__ldap_binddn | to_uuid + ".password length=32"))
+                       if sshd__ldap_enabled|bool
+                       else "" }}'
 
                                                                    # ]]]
 # .. envvar:: sshd__ldap_filter [[[
