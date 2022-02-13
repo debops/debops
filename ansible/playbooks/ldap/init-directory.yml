@@ -122,7 +122,7 @@
     - name: Save admin credential in the password store
       set_fact:
         admin_stored_password: '{{ admin_saved_password }}'
-      no_log: True
+      no_log: '{{ debops__no_log | d(True) }}'
       delegate_to: 'localhost'
       become: False
       run_once: True

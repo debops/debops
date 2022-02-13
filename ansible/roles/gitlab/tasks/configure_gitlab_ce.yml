@@ -67,7 +67,7 @@
     group: '{{ gitlab_group }}'
     mode: '0640'
   notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Setup GitLab CE unicorn configuration
   template:

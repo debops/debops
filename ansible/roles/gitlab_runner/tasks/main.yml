@@ -86,7 +86,7 @@
   register: gitlab_runner__register_api
   when: gitlab_runner__api_url|d() and gitlab_runner__api_url
   failed_when: False
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Register new GitLab Runners
   uri:
@@ -136,7 +136,7 @@
          gitlab_runner__api_token and item.0.name|d() and item.1.name|d() and item.0.name == item.1.name and
          (item.0.state|d() and item.0.state == 'absent'))
   failed_when: False
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Get the SSH key from the remote host
   slurp:

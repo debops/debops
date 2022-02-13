@@ -314,6 +314,10 @@ General
   plugin to find the records. This change should make the role code easier to
   maintain.
 
+- Most of the DebOps roles now use :envvar:`debops__no_log` variable in tasks
+  with the ``no_log`` Ansible keyword. This should provide an easier way to
+  debug issues with various roles.
+
 Continuous Integration
 ''''''''''''''''''''''
 

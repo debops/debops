@@ -275,7 +275,7 @@ freeradius__host_configuration:
               nostrip
       }
     state: 'absent'
-    no_log: True
+    no_log: '{{ debops__no_log | d(True) }}'
 
   - name: 'clients.conf'
     raw: |
@@ -304,7 +304,7 @@ freeradius__host_configuration:
         secret = {{ radius_access_point_password }}
       }
     state: 'present'
-    no_log: True
+    no_log: '{{ debops__no_log | d(True) }}'
 
   - name: 'sites-available/inner-tunnel'
     raw: |
@@ -403,4 +403,4 @@ freeradius__host_configuration:
     raw: |
       DEFAULT Cleartext-Password := '{{ radius_test_user_password }}'
     state: 'present'
-    no_log: True
+    no_log: '{{ debops__no_log | d(True) }}'

@@ -1228,7 +1228,7 @@ gitlab__ldap__dependent_tasks:
     dn: '{{ gitlab__ldap_binddn }}'
     objectClass: '{{ gitlab__ldap_self_object_classes }}'
     attributes: '{{ gitlab__ldap_self_attributes }}'
-    no_log: True
+    no_log: '{{ debops__no_log | d(True) }}'
     state: '{{ "present" if gitlab__ldap_device_dn|d() else "ignore" }}'
 
                                                                    # ]]]

@@ -58,7 +58,7 @@
   when: (nullmailer__deploy_state|d('present') != 'absent' and
          (item.dest|d() and (item.src|d() or item.content|d()) and
           item.state|d('present') != 'absent'))
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove configuration files if requested
   file:
@@ -81,7 +81,7 @@
   when: (nullmailer__deploy_state|d('present') != 'absent' and
          (item.dest|d() and (item.src|d() or item.content is defined) and
           item.state|d('present') == 'absent'))
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Configure nullmailer services in xinetd
   template:

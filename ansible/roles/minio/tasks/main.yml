@@ -102,7 +102,7 @@
   loop: '{{ minio__combined_instances | debops.debops.parse_kv_items }}'
   when: ansible_service_mgr == 'systemd' and
         item.name|d() and item.state|d('present') in [ 'absent' ]
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove MinIO instance configuration files if requested
   file:
@@ -110,7 +110,7 @@
     state: 'absent'
   loop: '{{ minio__combined_instances | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') in [ 'absent' ]
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate MinIO instance configuration files
   template:
@@ -123,7 +123,7 @@
   register: minio__register_instance_config
   when: item.name|d() and item.port|d() and
         item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Start and enable MinIO instances
   systemd:
@@ -134,7 +134,7 @@
   when: ansible_service_mgr == 'systemd' and
         item.name|d() and item.port|d() and
         item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Start and enable MinIO service
   systemd:

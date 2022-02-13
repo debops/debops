@@ -45,7 +45,7 @@
     mode: '0750'
   become: False
   delegate_to: 'localhost'
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
   when: item.name|d()
   with_items: '{{ grub__combined_users }}'
 
@@ -59,7 +59,7 @@
   become: False
   delegate_to: 'localhost'
   when: item.name|d()
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 ## There seems to be no way to specify the salt (except using a custom script).
 ## Only generating the hashed password when the plaintext password has changed
@@ -82,7 +82,7 @@
   delegate_to: 'localhost'
   changed_when: False
   when: (item.0.name|d() and item.1 is changed)
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Save hashed password in secrets
   copy:
@@ -95,7 +95,7 @@
   become: False
   delegate_to: 'localhost'
   when: (item.1 is not skipped)
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Configure users and passwords
   template:

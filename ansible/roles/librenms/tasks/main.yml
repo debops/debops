@@ -58,7 +58,7 @@
   become: True
   become_user: '{{ librenms__user }}'
   register: librenms__register_source
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
   tags: [ 'role::librenms:source' ]
 
 - name: Update LibreNMS home directory permissions
@@ -104,7 +104,7 @@
     librenms__fact_snmp_v3_authpass:   '{{ librenms__snmp_credentials[0]["authpass"] }}'
     librenms__fact_snmp_v3_cryptopass: '{{ librenms__snmp_credentials[0]["cryptopass"] }}'
   run_once: True
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
   tags: [ 'role::librenms:config', 'role::librenms:database', 'role::librenms:snmp_conf' ]
 
 - name: Create LibreNMS database
@@ -162,7 +162,7 @@
   become_user: '{{ librenms__user }}'
   with_items: '{{ librenms__admin_accounts }}'
   when: (librenms__admin_accounts|d([]) and (item not in librenms__register_users.stdout_lines))
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
   tags: [ 'role::librenms:config', 'role::librenms:admins' ]
 
 - name: Configure cron tasks

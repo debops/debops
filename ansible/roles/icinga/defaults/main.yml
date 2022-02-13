@@ -656,7 +656,7 @@ icinga__default_configuration:
     comment: 'The APIUser objects are used for authentication against the API.'
     group: '{{ icinga__group }}'
     mode: '0640'
-    no_log: True
+    no_log: '{{ debops__no_log | d(True) }}'
     state: '{{ "present"
                if (icinga__node_type == "master")
                else "absent" }}'

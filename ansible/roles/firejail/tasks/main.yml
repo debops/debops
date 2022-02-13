@@ -49,7 +49,7 @@
     hidden: False
     recurse: False
   register: firejail__register_find_system_wide_profiles
-  # no_log: True
+  # no_log: '{{ debops__no_log | d(True) }}'
   ## Disabled because the output is not interesting but very verbose.
 
 - name: Set list of system wide profiles
@@ -176,7 +176,7 @@
     hidden: False
     recurse: False
   register: firejail__register_profile_program_symlinks_find
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
   ## Disabled because log is not interesting but very verbose.
 
 # Needed because of a bug: https://github.com/ansible/ansible-modules-core/issues/3027
@@ -186,7 +186,7 @@
   stat:
     path: '{{ item.path }}'
   register: firejail__register_profile_program_symlinks_stat
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
   ## Disabled because log is not interesting but very verbose.
   with_items: '{{ firejail__register_profile_program_symlinks_find.files }}'
 
@@ -194,7 +194,7 @@
   file:
     path: '{{ item.stat.path }}'
     state: 'absent'
-  no_log: True
+  no_log: '{{ debops__no_log | d(True) }}'
   ## Disabled because log is not interesting but very verbose.
   when: (item.stat.islnk and (
          (
@@ -222,7 +222,7 @@
     mode: '0755'
   become: True
   become_user: '{{ item.name }}'
-  no_log: '{{ not (firejail__ansible_log | bool) }}'
+  no_log: '{{ debops__no_log | d(True) }}'
   when: firejail__deploy_state in ["present"] and item != "root" and item.state|d("present") == "present"
   with_flattened: '{{ firejail__combined_fix_for_users }}'
 
@@ -232,7 +232,7 @@
   changed_when: ("created" in firejail__register_cmd_firecfg_fix.stdout)
   become: True
   become_user: '{{ item.name }}'
-  no_log: '{{ not (firejail__ansible_log | bool) }}'
+  no_log: '{{ debops__no_log | d(True) }}'
   when: firejail__deploy_state in ["present"] and item != "root" and item.state|d("present") == "present"
   with_flattened: '{{ firejail__combined_fix_for_users }}'
 
