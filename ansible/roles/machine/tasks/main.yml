@@ -29,9 +29,8 @@
   when: machine__enabled|bool
 
 - name: Divert original /etc/issue file
-  command: dpkg-divert --quiet --local --divert /etc/issue.dpkg-divert --rename /etc/issue
-  args:
-    creates: '/etc/issue.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/issue'
   when: machine__enabled|bool and machine__etc_issue_state|d('present') != 'absent'
 
 - name: Configure /etc/issue file
@@ -44,12 +43,10 @@
   when: machine__enabled|bool and machine__etc_issue_state|d('present') != 'absent'
 
 - name: Revert original /etc/issue file
-  shell: set -o nounset -o pipefail -o errexit &&
-         rm -f /etc/issue ; dpkg-divert --quiet --local --rename --remove /etc/issue
-  args:
-    warn: False
-    executable: 'bash'
-    removes: '/etc/issue.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/issue'
+    state: 'absent'
+    delete: True
   when: machine__enabled|bool and machine__etc_issue_state|d('present') == 'absent'
 
 - name: Remove static /etc/motd file if requested
@@ -100,37 +97,20 @@
 - name: Create /run/motd.dynamic symlink
   meta: 'flush_handlers'
 
-- name: Check current MOTD diversions
-  environment:
-    LC_ALL: 'C'
-  shell: set -o nounset -o pipefail -o errexit &&
-         dpkg-divert --list '/etc/update-motd.d/*.disabled' | awk '{print $NF}' || true
-  args:
-    executable: 'bash'
-  register: machine__register_motd_diversions
-  check_mode: False
-  changed_when: False
-
 - name: Divert packaged MOTD scripts
-  command: dpkg-divert --quiet --local
-           --divert /etc/update-motd.d/{{ item.filename
-                                          | d(("%02d" | format(item.weight|int))|string + "-" + item.name) }}.disabled
-           --rename /etc/update-motd.d/{{ item.filename
-                                          | d(("%02d" | format(item.weight|int))|string + "-" + item.name) }}
-  args:
-    creates: '{{ "/etc/update-motd.d/" + (item.filename
-                                          | d(("%02d" | format(item.weight|int))|string + "-" + item.name))
-                                       + ".disabled" }}'
+  vars:
+    divert_path: '{{ "/etc/update-motd.d/"
+                      + item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name) }}'
+  dpkg_divert:
+    path: '{{ divert_path }}'
+    divert: '{{ divert_path + ".disabled" }}'
   loop: '{{ machine__motd_combined_scripts | debops.debops.parse_kv_items }}'
   loop_control:
-    label: '{{ item.filename|d() or item.name }}'
+    label: '{{ item.filename|d(item.name) }}'
   when: (machine__enabled|bool and
-         (item.filename is defined or item.name is defined) and
-         (item.state|d('present') not in [ 'init', 'absent', 'ignore', 'revert' ]) and
-         ((item.divert|d())|bool and
-         '/etc/update-motd.d/' + (item.filename
-                                  | d(item.weight|string + "-" + item.name))
-                               + '.disabled' not in machine__register_motd_diversions.stdout_lines))
+         item.filename|d(item.name) and
+         item.state|d('present') not in [ 'init', 'absent', 'ignore', 'revert' ] and
+         item.divert|d()|bool)
 
 - name: Remove dynamic MOTD scripts
   file:
@@ -140,8 +120,8 @@
   with_flattened: '{{ machine__motd_combined_scripts | debops.debops.parse_kv_items }}'
   register: machine__register_motd_scripts_removed
   when: (machine__enabled|bool and
-         (item.filename is defined or item.name is defined) and
-         item.state|d('present') == 'absent' and not (item.divert|d()|bool))
+         item.filename|d(item.name) and
+         item.state|d('present') == 'absent' and not item.divert|d()|bool)
 
 - name: Install dynamic MOTD scripts
   copy:
@@ -157,8 +137,8 @@
     label: '{{ item.filename|d() or item.name }}'
   register: machine__register_motd_scripts_created
   when: (machine__enabled|bool and
-         (item.filename is defined or item.name is defined) and
-         (item.src is defined or item.content is defined) and
+         item.filename|d(item.name) and
+         item.src|d(item.content) and
          item.state|d('present') not in [ 'init', 'absent', 'ignore', 'divert', 'revert' ])
 
 - name: Remove unknown MOTD scripts
@@ -174,26 +154,21 @@
          item.item.filename is undefined and item is changed)
 
 - name: Revert packaged MOTD scripts
-  shell: rm -f /etc/update-motd.d/{{ item.filename
-                                     | d(("%02d" | format(item.weight|int))|string + "-" + item.name) }}
-         ; dpkg-divert --quiet --local --rename
-                       --remove /etc/update-motd.d/{{ item.filename
-                                                      | d(("%02d" | format(item.weight|int))|string
-                                                          + "-" + item.name) }}
-  args:
-    warn: False
-    removes: '{{ "/etc/update-motd.d/" + (item.filename
-                                          | d(("%02d" | format(item.weight|int))|string + "-" + item.name))
-                                       + ".disabled" }}'
+  vars:
+    divert_path: '{{ "/etc/update-motd.d/"
+                      + item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name) }}'
+  dpkg_divert:
+    path: '{{ divert_path }}'
+    divert: '{{ divert_path + ".disabled" }}'
+    state: 'absent'
+    delete: True
   loop: '{{ machine__motd_combined_scripts | debops.debops.parse_kv_items }}'
   loop_control:
-    label: '{{ item.filename|d() or item.name }}'
-  when: ((not machine__enabled|bool and (item.divert|d())|bool) or
-          ((item.filename is defined or item.name is defined) and
-           item.state|d('present') in [ 'absent', 'revert' ] and
-           (item.divert|d())|bool and
-           '/etc/update-motd.d/' + (item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name))
-                                 + '.disabled' in machine__register_motd_diversions.stdout_lines))
+    label: '{{ item.filename|d(item.name) }}'
+  when: ((not machine__enabled|bool and item.divert|d()|bool) or
+         (item.filename|d(item.name) and
+          item.state|d('present') in [ 'absent', 'revert' ] and
+          item.divert|d()|bool))
 
 - name: Make sure that Ansible local facts directory exists
   file:
