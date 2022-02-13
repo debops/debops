@@ -74,11 +74,9 @@
   tags: [ 'role::elasticsearch:config' ]
 
 - name: Divert original configuration files
-  command: dpkg-divert --quiet --local --divert {{ item }}.dpkg-divert
-           --rename {{ item }}
-  args:
-    creates: '{{ item }}.dpkg-divert'
-  with_items:
+  dpkg_divert:
+    path: '{{ item }}'
+  loop:
     - '/etc/elasticsearch/elasticsearch.yml'
     - '/etc/elasticsearch/jvm.options'
     - '/usr/lib/sysctl.d/elasticsearch.conf'
