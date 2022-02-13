@@ -251,6 +251,16 @@ General
   home directories were created even if they were specifically disabled. Roles
   should now be more careful and respect the administrator wishes.
 
+LDAP
+''''
+
+- The ``*__ldap_bindpw`` variables in various roles have been modified to
+  create the passwords only when LDAP support is enabled. This should fix an
+  issue in non-LDAP environments where Ansible would stop playbook execution
+  when a single password file for an LDAP object was created by multiple hosts,
+  generating a race condition due to empty domain part of the Distinguished
+  Name.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
