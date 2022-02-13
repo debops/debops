@@ -36,11 +36,8 @@
 ## Diverting the main configuration of etckeeper away leaves the VCS
 ## uninitiated until it has been fully configured.
 - name: Divert original configuration under /etc
-  command: dpkg-divert --quiet --local
-           --divert "/etc/etckeeper/etckeeper.conf.dpkg-divert"
-           --rename "/etc/etckeeper/etckeeper.conf"
-  args:
-    creates: '/etc/etckeeper/etckeeper.conf.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/etckeeper/etckeeper.conf'
   when: etckeeper__enabled|bool and ansible_pkg_mgr == 'apt'
 
 - name: Install required packages
