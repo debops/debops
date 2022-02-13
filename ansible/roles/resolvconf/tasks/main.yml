@@ -44,11 +44,8 @@
   when: resolvconf__enabled|bool and resolvconf__static_enabled|bool
 
 - name: Divert original interface-order file
-  command: dpkg-divert --quiet --local
-                       --divert '/etc/resolvconf/interface-order.dpkg-divert'
-                       --rename '/etc/resolvconf/interface-order'
-  args:
-    creates: '/etc/resolvconf/interface-order.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/resolvconf/interface-order'
   notify: [ 'Refresh /etc/resolv.conf' ]
   when: resolvconf__enabled|bool and resolvconf__deploy_state == 'present'
 
@@ -61,12 +58,10 @@
   when: resolvconf__enabled|bool and resolvconf__deploy_state == 'present'
 
 - name: Revert the original interface-order configuration
-  shell: rm -f /etc/resolvconf/interface-order
-         ; dpkg-divert --quiet --local --rename \
-                       --remove /etc/resolvconf/interface-order
-  args:
-    removes: '/etc/resolvconf/interface-order.dpkg-divert'
-    warn: False
+  dpkg_divert:
+    path: '/etc/resolvconf/interface-order'
+    state: 'absent'
+    delete: True
   notify: [ 'Refresh /etc/resolv.conf' ]
   when: resolvconf__enabled|bool and resolvconf__deploy_state == 'absent'
 
