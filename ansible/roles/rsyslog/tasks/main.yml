@@ -36,6 +36,7 @@
     mode: '0755'
   notify: [ 'Refresh host facts' ]
   when: rsyslog__enabled|bool and rsyslog__deploy_state != 'absent'
+  tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
   meta: 'flush_handlers'

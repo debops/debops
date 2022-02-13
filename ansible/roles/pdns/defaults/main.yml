@@ -1,0 +1,489 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+# .. Copyright (C) 2021 Imre Jonk <imre@imrejonk.nl>
+# .. Copyright (C) 2020-2021 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-or-later
+
+# .. _pdns__ref_defaults:
+
+# debops.pdns default variables
+# =============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: pdns__base_packages [[[
+#
+# List of default packages to install for PowerDNS Authoritative Server
+# support.
+pdns__base_packages: '{{ [ "pdns-server" ]
+                         + ([ "pdns-backend-pgsql" ]
+                            if "gpgsql" in pdns__backends
+                            else []) }}'
+
+                                                                   # ]]]
+# .. envvar:: pdns__packages [[[
+#
+# List of additional packages to install with PowerDNS Authoritative Server.
+pdns__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Basic settings [[[
+# ------------------
+
+# .. envvar:: pdns__allow [[[
+#
+# List of addresses/subnets that can access the pdns service.
+pdns__allow: [ '0.0.0.0/0', '::/0' ]
+
+                                                                   # ]]]
+# .. envvar:: pdns__local_address [[[
+#
+# Local IPv4 and IPv6 addresses to bind to.
+pdns__local_address: [ '0.0.0.0', '::' ]
+
+                                                                   # ]]]
+# .. envvar:: pdns__local_port [[[
+#
+# Local port (TCP and UDP) to bind to.
+pdns__local_port: '53'
+
+                                                                   # ]]]
+# .. envvar:: pdns__primary [[[
+#
+# Whether to enable primary operation. Enabling this will instruct pdns to send
+# (optionally TSIG-signed) notifications of changes to secondaries, which can
+# then initiate zone transfers. Notifications are only sent for domains with
+# type MASTER in your backend.
+# See also https://doc.powerdns.com/authoritative/modes-of-operation.html#primary-operation
+pdns__primary: False
+
+                                                                   # ]]]
+# .. envvar:: pdns__secondary [[[
+#
+# Whether to enable secondary operation. Enabling this will instruct pdns to
+# periodically check for zone changes at the primary nameservers, and update
+# the local zones accordingly. These checks happen every 'refresh' seconds (as
+# specified by the SOA record) and are only performed for domains with type
+# SLAVE in your backend.
+# See also https://doc.powerdns.com/authoritative/modes-of-operation.html#secondary-operation
+pdns__secondary: False
+
+                                                                   # ]]]
+# .. envvar:: pdns__autosecondary [[[
+#
+# Whether to enable autosecondary support. Enabling this will instruct pdns to
+# automatically provision domains that it receives notifications for, if the
+# notifications come from an IP address listed in the 'supermasters' table in
+# your backend database. pdns will then act as a secondary for those domains.
+# See also https://doc.powerdns.com/authoritative/modes-of-operation.html#autoprimary-operation
+pdns__autosecondary: False
+
+                                                                   # ]]]
+# .. envvar:: pdns__resolver [[[
+#
+# Recursive DNS server to use for ALIAS lookups and the internal stub resolver.
+# Only one address can be given. A port may be specified after a colon; with
+# IPv6, the address must in that case be enclosed in square brackets.
+pdns__resolver: '{{ ansible_local.resolvconf.nameservers[0]
+                    |d(ansible_dns.nameservers[0]) }}'
+
+                                                                   # ]]]
+# .. envvar:: pdns__backends [[[
+#
+# The backends to enable. These can be used for storing DNS records and
+# metadata and will be added to the 'launch' setting. Each backend can be
+# configured separately.
+# See https://doc.powerdns.com/authoritative/backends/index.html
+pdns__backends: [ 'gpgsql' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# Built-in webserver and HTTP API [[[
+# -----------------------------------
+
+# .. envvar:: pdns__api [[[
+#
+# Enable/Disable the built-in webserver and HTTP API. For details, see:
+# https://doc.powerdns.com/authoritative/http-api/index.html#enabling-the-api
+pdns__api: '{{ True
+               if "debops_service_pdns_nginx" in group_names
+               else False }}'
+
+                                                                   # ]]]
+# .. envvar:: pdns__api_key [[[
+#
+# Static pre-shared authentication key for access to the HTTP API.
+pdns__api_key: '{{ lookup("password", secret + "/pdns/" + ansible_fqdn
+                          + "/api_key chars=ascii_letters,digits length=22")
+                   if pdns__api
+                   else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: pdns__metrics [[[
+#
+# Enable/Disable the built-in webserver and metrics endpoint. For details, see:
+# https://doc.powerdns.com/authoritative/http-api/index.html#metrics-endpoint
+pdns__metrics: '{{ pdns__api }}'
+
+                                                                   # ]]]
+# .. envvar:: pdns__http_port [[[
+#
+# TCP port which the built-in webserver will bind to. This is different from
+# the default port 8081 because that port is already assigned in the Debian
+# /etc/services file for the tproxy "Transparent Proxy" service.
+pdns__http_port: '16836'
+
+                                                                   # ]]]
+# .. envvar:: pdns__nginx_fqdn [[[
+#
+# The fully qualified domain name used to set up the NGINX webserver for
+# proxying requests to the pdns built-in webserver and HTTP API.
+pdns__nginx_fqdn: 'powerdns.{{ ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: pdns__nginx_allow [[[
+#
+# List of IP addresses and/or subnets that NGINX allows access to the pdns
+# webserver and HTTP API. An empty list denies all. Note: this does not
+# influence the pdns built-in webserver ACL. For that, see the
+# '`webserver-allow-from`__' setting.
+#
+# .. __: https://doc.powerdns.com/authoritative/settings.html#webserver-allow-from
+pdns__nginx_allow: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Dynamic DNS Update (RFC 2136) [[[
+# ---------------------------------
+
+# pdns has support for updating zone contents using the DNS UPDATE mechanism
+# specified in :rfc:`2136`.
+
+# .. envvar:: pdns__dnsupdate [[[
+#
+# Whether to enable DNS UPDATE processing. Not all backends support this.
+# See https://doc.powerdns.com/authoritative/dnsupdate.html
+pdns__dnsupdate: True
+
+                                                                   # ]]]
+# .. envvar:: pdns__allow_dnsupdate_from [[[
+#
+# List of IP ranges that are allowed to perform DNS updates on all domains
+# **without any authentication**. An empty list denies all. Note that this
+# setting can be applied on a per-domain basis using the ALLOW-DNSUPDATE-FROM
+# domain metadata. You are encouraged to specify fine-grained DNS UPDATE access
+# controls using the ALLOW-DNSUPDATE-FROM and optionally TSIG-ALLOW-DNSUPDATE
+# domain metadata.
+# See https://doc.powerdns.com/authoritative/dnsupdate.html#per-zone-settings
+pdns__allow_dnsupdate_from: []
+                                                                   # ]]]
+                                                                   # ]]]
+# PostgreSQL database configuration [[[
+# -------------------------------------
+
+# The PostgreSQL database will only be configured if :envvar:`pdns__backends`
+# contains 'gpgsql'. Upstream documentation on this backend is available here:
+# https://doc.powerdns.com/authoritative/backends/generic-postgresql.html
+
+# .. envvar:: pdns__postgresql_delegate_to [[[
+#
+# The host that Ansible should configure the PostgreSQL database on.
+pdns__postgresql_delegate_to: '{{ ansible_local.postgresql.delegate_to
+                                  |d(ansible_fqdn) }}'
+
+                                                                   # ]]]
+# .. envvar:: pdns__postgresql_server [[[
+#
+# The host that should be configured in pdns as the PostgreSQL server.
+pdns__postgresql_server: '{{ ansible_local.postgresql.server|d("localhost") }}'
+
+                                                                   # ]]]
+# .. envvar:: pdns__postgresql_port [[[
+#
+# The TCP port of the PostgreSQL server.
+pdns__postgresql_port: '{{ ansible_local.postgresql.port|d("5432") }}'
+
+                                                                   # ]]]
+# .. envvar:: pdns__postgresql_database [[[
+#
+# The PostgreSQL database name.
+pdns__postgresql_database: 'pdns'
+
+                                                                   # ]]]
+# .. envvar:: pdns__postgresql_role [[[
+#
+# The role used to authenticate to the PostgreSQL database.
+pdns__postgresql_role: 'pdns'
+
+                                                                   # ]]]
+# .. envvar:: pdns__postgresql_password [[[
+#
+# The password used to authenticate to the PostgreSQL database.
+pdns__postgresql_password: '{{ lookup("password", secret + "/postgresql/"
+                                      + pdns__postgresql_delegate_to + "/"
+                                      + pdns__postgresql_port + "/credentials/"
+                                      + pdns__postgresql_role
+                                      + "/password chars=ascii_letters,digits "
+                                      + "length=22")
+                               if "gpgsql" in pdns__backends
+                               else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: pdns__postgresql_schema [[[
+#
+# Filesystem path to the initial PostgreSQL database schema.
+pdns__postgresql_schema: '/usr/share/pdns-backend-pgsql/schema/schema.pgsql.sql'
+
+                                                                   # ]]]
+# .. envvar:: pdns__postgresql_dnssec [[[
+#
+# Whether to enable DNSSEC processing for the PostgreSQL backend.
+# Note that you still need to enable DNSSEC on a per-domain basis.
+# See https://doc.powerdns.com/authoritative/dnssec/index.html
+pdns__postgresql_dnssec: True
+                                                                   # ]]]
+                                                                   # ]]]
+# pdns.conf templating [[[
+# ------------------------
+
+# .. envvar:: pdns__original_configuration [[[
+#
+# The original ``/etc/powerdns/pdns.conf`` configuration as supplied by the
+# 'pdns-server' Debian package.
+pdns__original_configuration:
+
+  - name: 'include-dir'
+    comment: 'Directory to scan for additional config files.'
+    value: '/etc/powerdns/pdns.d'
+
+  - name: 'launch'
+    comment: 'Which backends to launch and order to query them in.'
+    value: ''
+
+  - name: 'security-poll-suffix'
+    comment: 'Zone name from which to query security update notifications.'
+    value: ''
+
+  - name: 'setgid'
+    comment: 'Run as an unprivileged group instead of root.'
+    value: 'pdns'
+
+  - name: 'setuid'
+    comment: 'Run as an unprivileged user instead of root.'
+    value: 'pdns'
+
+                                                                   # ]]]
+# .. envvar:: pdns__default_configuration [[[
+#
+# The default ``/etc/powerdns/pdns.conf`` configuration provided by this role.
+pdns__default_configuration:
+
+  - name: 'local-address'
+    comment: |-
+      Local IP addresses to which we bind. Accepts IPv6 addresses since pdns
+      4.3.0.
+    value: '{{ (pdns__local_address
+                if ansible_local.pdns.version is version("4.5.0", ">=")
+                else (pdns__local_address | ipv4)) | join ("") }}'
+
+  - name: 'local-ipv6'
+    comment: |-
+      Local IPv6 addresses to which we bind. Will be deprecated in pdns 4.3.0.
+    value: '{{ pdns__local_address | ipv6 | join(",") }}'
+    state: '{{ "present"
+               if ansible_local.pdns.version is version("4.5.0", "<")
+               else "absent" }}'
+
+  - name: 'local-port'
+    comment: 'Local TCP and UDP port to bind to.'
+    value: '{{ pdns__local_port }}'
+
+  - name: 'resolver'
+    comment: |-
+      Recursive DNS server to use for ALIAS lookups and the internal stub
+      resolver. Only one address can be given.
+    value: '{{ pdns__resolver }}'
+
+  - name: '{{ "primary"
+              if ansible_local.pdns.version is version("4.5.0", ">=")
+              else "master" }}'
+    comment: |-
+      Turn on primary operation. Note: the name of this setting was changed
+      with the release of pdns 4.5.0.
+    value: True
+    state: '{{ "present" if pdns__primary else "absent" }}'
+
+  - name: '{{ "secondary"
+              if ansible_local.pdns.version is version("4.5.0", ">=")
+              else "slave" }}'
+    comment: |-
+      Turn on secondary operation. Note: the name of this setting was changed
+      with the release of pdns 4.5.0.
+    value: True
+    state: '{{ "present" if pdns__secondary else "absent" }}'
+
+  - name: '{{ "autosecondary"
+              if ansible_local.pdns.version is version("4.5.0", ">=")
+              else "superslave"
+                   if ansible_local.pdns.version is version("4.2.0", ">=")
+                   else "supermaster" }}'
+    comment: |-
+      Turn on autosecondary operation. Note: the name of this setting was
+      changed with the release of pdns 4.2.0, and once more with the release of
+      pdns 4.5.0.
+    value: True
+    state: '{{ "present" if pdns__autosecondary else "absent" }}'
+
+  - name: 'api'
+    comment: 'Enable/Disable the built-in webserver and HTTP API.'
+    value: True
+    state: '{{ "present" if pdns__api else "absent" }}'
+
+  - name: 'api-key'
+    comment: 'Static pre-shared authentication key for access to the REST API.'
+    value: '{{ pdns__api_key }}'
+    state: '{{ "present" if pdns__api else "absent" }}'
+
+  - name: 'dnsupdate'
+    comment: 'Enable/Disable DNS update (RFC2136) support.'
+    value: True
+    state: '{{ "present" if pdns__dnsupdate else "absent" }}'
+
+  - name: 'allow-dnsupdate-from'
+    comment: 'Allow DNS updates from these IP ranges.'
+    value: '{{ pdns__allow_dnsupdate_from | join(",") }}'
+    state: '{{ "present" if pdns__dnsupdate else "absent" }}'
+
+  - name: 'launch'
+    comment: 'Which backends to launch and order to query them in.'
+    value: '{{ pdns__backends | join(",") }}'
+
+  - name: 'gpgsql-host'
+    comment: 'The PostgreSQL backend host.'
+    value: '{{ pdns__postgresql_server }}'
+    state: '{{ "present" if "gpgsql" in pdns__backends else "absent" }}'
+
+  - name: 'gpgsql-port'
+    comment: 'The PostgreSQL backend port.'
+    value: '{{ pdns__postgresql_port }}'
+    state: '{{ "present" if "gpgsql" in pdns__backends else "absent" }}'
+
+  - name: 'gpgsql-dbname'
+    comment: 'The PostgreSQL backend database name.'
+    value: '{{ pdns__postgresql_database }}'
+    state: '{{ "present" if "gpgsql" in pdns__backends else "absent" }}'
+
+  - name: 'gpgsql-user'
+    comment: 'The username to authenticate to the PostgreSQL backend with.'
+    value: '{{ pdns__postgresql_role }}'
+    state: '{{ "present" if "gpgsql" in pdns__backends else "absent" }}'
+
+  - name: 'gpgsql-password'
+    comment: 'The password to authenticate to the PostgreSQL backend with.'
+    value: '{{ pdns__postgresql_password }}'
+    state: '{{ "present" if "gpgsql" in pdns__backends else "absent" }}'
+
+  - name: 'gpgsql-dnssec'
+    comment: 'Whether to enable DNSSEC processing for the PostgreSQL backend.'
+    value: '{{ pdns__postgresql_dnssec }}'
+    state: '{{ "present" if "gpgsql" in pdns__backends else "absent" }}'
+
+  - name: 'webserver'
+    comment: 'Enable/Disable the built-in webserver and metrics endpoint.'
+    value: True
+    state: '{{ "present" if pdns__metrics else "absent" }}'
+
+  - name: 'webserver-port'
+    comment: 'The TCP port the built-in webserver will listen on.'
+    value: '{{ pdns__http_port }}'
+    state: '{{ "present" if pdns__api or pdns__metrics else "absent" }}'
+
+                                                                   # ]]]
+# .. envvar:: pdns__configuration [[[
+#
+# Additional ``/etc/powerdns/pdns.conf`` configuration that should be present
+# on all hosts in the Ansible inventory.
+pdns__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: pdns__group_configuration [[[
+#
+# Additional ``/etc/powerdns/pdns.conf`` configuration that should be present
+# on all hosts in the Ansible inventory group.
+pdns__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: pdns__host_configuration [[[
+#
+# Additional ``/etc/powerdns/pdns.conf`` configuration that should be present
+# on specific hosts in the Ansible inventory.
+pdns__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: pdns__combined_configuration [[[
+#
+# The combined pdns configuration variables that will be used to template the
+# ``/etc/powerdns/pdns.conf`` file.
+pdns__combined_configuration: '{{ pdns__original_configuration
+                                  + pdns__default_configuration
+                                  + pdns__configuration
+                                  + pdns__group_configuration
+                                  + pdns__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: pdns__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` role.
+pdns__etc_services__dependent_list:
+
+  - name: 'powerdns-http'
+    port: '{{ pdns__http_port }}'
+    protocols: [ 'tcp' ]
+    comment: 'Added by debops.pdns Ansible role.'
+
+                                                                   # ]]]
+# .. envvar:: pdns__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` role.
+pdns__ferm__dependent_rules:
+
+  - name: 'pdns'
+    by_role: 'debops.pdns'
+    type: 'accept'
+    protocol: [ 'tcp', 'udp' ]
+    dport: [ '{{ pdns__local_port }}' ]
+    saddr: '{{ pdns__allow }}'
+
+                                                                   # ]]]
+# .. envvar:: pdns__nginx__dependent_servers [[[
+#
+# Configuration for the :ref:`debops.nginx` role.
+pdns__nginx__dependent_servers:
+
+  - name: '{{ pdns__nginx_fqdn }}'
+    filename: 'debops.pdns'
+    allow: '{{ pdns__nginx_allow }}'
+    type: 'proxy'
+    proxy_pass: 'http://127.0.0.1:{{ pdns__http_port }}'
+    webroot_create: False
+
+                                                                   # ]]]
+# .. envvar:: pdns__postgresql__dependent_roles [[[
+#
+# Configuration for the :ref:`debops.postgresql` role.
+pdns__postgresql__dependent_roles:
+
+  - role: '{{ pdns__postgresql_role }}'
+    port: '{{ pdns__postgresql_port }}'
+    password: '{{ pdns__postgresql_password }}'
+                                                                   # ]]]
+                                                                   # ]]]

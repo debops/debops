@@ -36,6 +36,7 @@
     mode: '0755'
     unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
   notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
 
 - name: Reload facts if they were modified
   meta: 'flush_handlers'

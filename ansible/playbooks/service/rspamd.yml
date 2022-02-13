@@ -1,0 +1,80 @@
+---
+# Copyright (C) 2021 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Manage rspamd service
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_rspamd' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  pre_tasks:
+
+    - name: Prepare postfix environment
+      import_role:
+        name: 'postfix'
+        tasks_from: 'main_env'
+      vars:
+        postfix__dependent_maincf:
+          - role: 'rspamd'
+            config: '{{ rspamd__postfix__dependent_maincf }}'
+      tags: [ 'role::postfix' ]
+
+  roles:
+
+    - role: keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::nginx' ]
+      keyring__dependent_apt_keys:
+        - '{{ nginx__keyring__dependent_apt_keys }}'
+
+    - role: apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ nginx__apt_preferences__dependent_list }}'
+
+    - role: etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ rspamd__etc_services__dependent_list }}'
+
+    - role: ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ nginx__ferm__dependent_rules }}'
+        - '{{ rspamd__ferm__dependent_rules }}'
+
+    - role: python
+      tags: [ 'role::python', 'skip::python' ]
+      python__dependent_packages3:
+        - '{{ nginx__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ nginx__python__dependent_packages2 }}'
+
+    - role: cron
+      tags: [ 'role::cron', 'skip::cron' ]
+
+    - role: logrotate
+      tags: [ 'role::logrotate', 'skip::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ rspamd__logrotate__dependent_config }}'
+
+    - role: nginx
+      tags: [ 'role::nginx', 'skip::nginx' ]
+      nginx__dependent_servers:
+        - '{{ rspamd__nginx__dependent_servers }}'
+      when: rspamd__nginx_enabled | d(False) | bool
+
+    - role: rspamd
+      tags: [ 'role::rspamd', 'skip::rspamd' ]
+
+    - role: postfix
+      tags: [ 'role::postfix', 'skip::postfix' ]
+      postfix__dependent_maincf:
+        - role: 'rspamd'
+          config: '{{ rspamd__postfix__dependent_maincf }}'

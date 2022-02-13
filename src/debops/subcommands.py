@@ -6,6 +6,7 @@
 
 import argparse
 import os
+import sys
 
 # Detect the DebOps version from the Python module. If the version is not
 # available, we are in a development environment in which case we use a stub
@@ -46,7 +47,7 @@ Sections:
         if not hasattr(self, 'do_' + self._section.section):
             print('Error: unrecognized section:', self._section.section)
             parser.print_help()
-            exit(1)
+            sys.exit(1)
         getattr(self, 'do_' + self._section.section)()
 
     def add_bool_argument(self, parser, name, default=False,
@@ -76,7 +77,7 @@ Commands:
         if not hasattr(self, 'do_project_' + self._command.command):
             print('Error: unrecognized command:', self._command.command)
             parser.print_help()
-            exit(1)
+            sys.exit(1)
         getattr(self, 'do_project_' + self._command.command)()
 
     def do_project_init(self):

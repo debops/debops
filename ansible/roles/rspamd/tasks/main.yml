@@ -1,0 +1,59 @@
+---
+# Copyright (C) 2021 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import custom Ansible plugins
+  import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  import_role:
+    name: 'secret'
+
+- name: Install rspamd packages
+  package:
+    name: '{{ q("flattened", (rspamd__base_packages
+                              + rspamd__packages)) }}'
+    state: 'present'
+  register: rspamd__register_packages
+  until: rspamd__register_packages is succeeded
+  tags: [ 'role::rspamd:pkg' ]
+
+- name: Make sure that the Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save rspamd local facts
+  template:
+    src: 'etc/ansible/facts.d/rspamd.fact.j2'
+    dest: '/etc/ansible/facts.d/rspamd.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: Create configuration directories and files
+  include_tasks: main_cfgdir.yml
+  loop:
+    - { 'path': '/etc/rspamd/local.d',
+        'config': '{{ rspamd__combined_local_configuration
+                       | debops.debops.parse_kv_items(name="file") }}' }
+    - { 'path': '/etc/rspamd/override.d',
+        'config': '{{ rspamd__combined_override_configuration
+                       | debops.debops.parse_kv_items(name="file") }}' }
+  loop_control:
+    loop_var: cfgdir
+    label: '{{ cfgdir.path }}'
+
+- name: Handle DKIM configuration
+  include_tasks: main_dkim.yml
+
+- name: Update Ansible facts and restart Rspamd if necessary
+  meta: 'flush_handlers'

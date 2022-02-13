@@ -45,6 +45,9 @@
         - '{{ nginx__apt_preferences__dependent_list }}'
         - '{{ postgresql__apt_preferences__dependent_list | d([]) }}'
 
+    - role: cron
+      tags: [ 'role::cron', 'skip::cron' ]
+
     - role: logrotate
       tags: [ 'role::logrotate', 'skip::logrotate' ]
       logrotate__dependent_config:

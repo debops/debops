@@ -14,7 +14,7 @@ Getting started
 General deployment notes
 ------------------------
 
-The application will be by default deployed both on ``ipam.{{ ansible_domain
+The application will by default be deployed both on ``ipam.{{ ansible_domain
 }}`` as well as ``dcim.{{ ansible_domain }}`` DNS domains, for convenience.
 You should either point these domains to the deployment host via DNS, or change
 the :envvar:`netbox__fqdn` to set a desired subdomain.
@@ -29,6 +29,28 @@ role.
 
 By default anonymous access to NetBox is disabled.
 
+NetBox configuration
+--------------------
+
+Since NetBox v3.1, some settings that traditionally could only be changed from
+the :file:`configuration.py` file can now be changed without requiring a
+restart of NetBox from within the web UI. Settings in the config file take
+priority.
+
+This is not supported by this role. Support for it would require changes to the
+role. No valid use case has been presented to justify those changes.
+
+The role is designed to manage multiple NetBox instances and allow to keep the
+configuration in git. Both is not easily doable with dynamic configuration
+settings.
+
+For more details, refer to `dynamic configuration settings <https://netbox.readthedocs.io/en/stable/configuration/dynamic-settings/>`__.
+
+The trend to move away from git by NetBox is observed
+closely and additionally support for `Nautobot
+<https://github.com/nautobot/nautobot>`__ might get added to DebOps at some
+point because Nautobot takes git-like-version-control to the next level with
+Dolt.
 
 Python virtualenv support
 -------------------------

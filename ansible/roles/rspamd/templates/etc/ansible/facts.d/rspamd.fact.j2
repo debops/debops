@@ -1,0 +1,100 @@
+#!{{ ansible_python['executable'] }}
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2021 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+import subprocess
+import signal
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+def get_value(input_line, key, output, output_key=None):
+    if input_line.startswith(key):
+        output[output_key if output_key is not None else key] = \
+            input_line.split("=", 1)[1].strip(' "\'\t\r\n;')
+
+
+output = {}
+
+output['installed'] = cmd_exists('rspamd')
+
+if output['installed']:
+    try:
+        rspamd_version_stdout = subprocess.check_output(
+                ["dpkg-query", "-W", "-f=${Version}",
+                 "rspamd"]).decode('utf-8').split('-')[0]
+        output['version'] = rspamd_version_stdout
+
+    except Exception:
+        pass
+
+    try:
+        if os.path.isfile('/etc/rspamd/local.d/worker-proxy.inc'):
+            try:
+                with open('/etc/rspamd/local.d/worker-proxy.inc') as fh:
+                    for line in fh:
+                        get_value(line, 'milter', output, 'milter_enabled')
+                        get_value(line, 'bind_socket', output, 'milter_socket')
+
+            except Exception:
+                pass
+
+        if output.get('milter_enabled', 'false').lower() in ['true', 'yes', 'on']:
+            output['milter_enabled'] = True
+            milter_host_port = output.get('milter_socket', 'localhost:11332').split(":")
+            output['milter_host'] = milter_host_port[0].strip()
+            if len(milter_host_port) > 1:
+                output['milter_port'] = milter_host_port[1].strip()
+            else:
+                output['milter_port'] = 11332
+        else:
+            output['milter_enabled'] = False
+
+        output['redis_enabled'] = False
+        if os.path.isfile('/etc/rspamd/local.d/redis.conf'):
+            try:
+                with open('/etc/rspamd/local.d/redis.conf') as fh:
+                    for line in fh:
+                        get_value(line, 'servers', output, 'redis_servers')
+                        get_value(line, 'db', output, 'redis_db')
+                        get_value(line, 'password', output, 'redis_password')
+                if 'redis_servers' in output:
+                    output['redis_servers'] = output['redis_servers'].split(',')
+                output['redis_enabled'] = True
+
+            except Exception:
+                pass
+
+        output['dkim_enabled'] = False
+        if os.path.isfile('/etc/rspamd/local.d/dkim_signing.conf'):
+            try:
+                with open('/etc/rspamd/local.d/dkim_signing.conf') as fh:
+                    for line in fh:
+                        get_value(line, 'path', output, 'dkim_path')
+                        get_value(line, 'selector', output, 'dkim_selector')
+                if ('dkim_path' in output and 'dkim_selector' in output and
+                        os.path.isfile(output['dkim_path'])):
+                    output['dkim_enabled'] = True
+
+            except Exception:
+                pass
+
+    except Exception:
+        pass
+
+
+print(dumps(output, sort_keys=True, indent=4))

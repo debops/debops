@@ -140,7 +140,7 @@ netbox__git_repo: 'https://github.com/netbox-community/netbox.git'
 # .. envvar:: netbox__git_version [[[
 #
 # The :command:`git` branch or tag which will be installed.
-netbox__git_version: 'v3.0.7'
+netbox__git_version: 'v3.1.6'
 
                                                                    # ]]]
 # .. envvar:: netbox__git_dest [[[
@@ -164,6 +164,7 @@ netbox__git_checkout: '{{ netbox__virtualenv + "/app" }}'
 # When this is set to `3` a **new** Python 3 `virtualenv` environment will be
 # created next to the old one.
 # Valid values are `3` or an empty string.
+# This option is scheduled for removal in 2022-12.
 netbox__virtualenv_version: '{{ ""
                                 if ( netbox__git_version | regex_search("^v?[0-9\.]+")
                                   and netbox__git_version|replace("v", "") is version("2.5", "<") )
@@ -194,7 +195,7 @@ netbox__virtualenv_pip_packages:
   - 'setproctitle'
   - name: 'napalm'
     state: '{{ "present"
-               if (netbox__config_napalm_password|d())
+               if (netbox__config_napalm_username|d() or netbox__napalm_ssh_generate|bool)
                else "ignore" }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -324,6 +325,7 @@ netbox__config_admins: '{{ lookup("template", "lookup/netbox__config_admins.j2")
 #
 # Maximum number of days to retain logged changes. Set to 0 to retain changes
 # indefinitely.
+# This overwrites potentially existing `dynamic configuration settings <https://netbox.readthedocs.io/en/stable/configuration/dynamic-settings/>`__.
 netbox__config_changelog_retention: 90
 
                                                                    # ]]]
@@ -424,6 +426,7 @@ netbox__config_base_path: ''
 # .. envvar:: netbox__config_maintenance_mode [[[
 #
 # Enable or disable maintenance mode banner.
+# This overwrites potentially existing `dynamic configuration settings <https://netbox.readthedocs.io/en/stable/configuration/dynamic-settings/>`__.
 netbox__config_maintenance_mode: False
 
                                                                    # ]]]
@@ -431,6 +434,7 @@ netbox__config_maintenance_mode: False
 #
 # Specify the username which should be used by NetBox to access live devices
 # using the NAPALM library.
+# This overwrites potentially existing `dynamic configuration settings <https://netbox.readthedocs.io/en/stable/configuration/dynamic-settings/>`__.
 netbox__config_napalm_username: ''
 
                                                                    # ]]]
@@ -438,37 +442,58 @@ netbox__config_napalm_username: ''
 #
 # Specify the password which should be used by NetBox to access live devices
 # using the NAPALM library.
+# This overwrites potentially existing `dynamic configuration settings <https://netbox.readthedocs.io/en/stable/configuration/dynamic-settings/>`__.
 netbox__config_napalm_password: ''
+
+                                                                   # ]]]
+# .. envvar:: netbox__napalm_ssh_generate [[[
+#
+# Generate :file:`~/.ssh/id_rsa` SSH private and public key if it doesn't
+# exist.
+netbox__napalm_ssh_generate: False
+
+                                                                   # ]]]
+# .. envvar:: netbox__napalm_ssh_generate_bits [[[
+#
+# Size of the generated SSH key.
+netbox__napalm_ssh_generate_bits: '2048'
 
                                                                    # ]]]
 # .. envvar:: netbox__config_napalm_timeout [[[
 #
 # NAPALM request timeout, in seconds.
+# This overwrites potentially existing `dynamic configuration settings <https://netbox.readthedocs.io/en/stable/configuration/dynamic-settings/>`__.
 netbox__config_napalm_timeout: '30'
 
                                                                    # ]]]
 # .. envvar:: netbox__config_napalm_args [[[
 #
 # Optional NAPALM arguments, specified as a YAML dictionary.
+# This overwrites potentially existing `dynamic configuration settings <https://netbox.readthedocs.io/en/stable/configuration/dynamic-settings/>`__.
 netbox__config_napalm_args: {}
 
                                                                    # ]]]
 # .. envvar:: netbox__config_paginate_count [[[
 #
 # Specify maximum number of list items per page.
-netbox__config_paginate_count: '64'
+# This overwrites potentially existing `dynamic configuration settings <https://netbox.readthedocs.io/en/stable/configuration/dynamic-settings/>`__.
+netbox__config_paginate_count: '50'
 
                                                                    # ]]]
 # .. envvar:: netbox__config_max_page_size [[[
 #
 # Maximum number of objects returned in an API call.
+# This overwrites potentially existing `dynamic configuration settings <https://netbox.readthedocs.io/en/stable/configuration/dynamic-settings/>`__.
 netbox__config_max_page_size: '1000'
 
                                                                    # ]]]
 # .. envvar:: netbox__config_maps_url [[[
 #
 # The URL to use when mapping physical addresses or GPS coordinates.
-# Note that NetBox defaults to Google Maps.
+# Note that NetBox defaults to Google Maps and has no interest in changing or
+# even documenting OpenStreetMap.
+# See `PR 6272 <https://github.com/netbox-community/netbox/pull/6272>`__.
+# This overwrites potentially existing `dynamic configuration settings <https://netbox.readthedocs.io/en/stable/configuration/dynamic-settings/>`__.
 netbox__config_maps_url: 'https://www.openstreetmap.org/search?query='
 
                                                                    # ]]]
@@ -519,18 +544,21 @@ netbox__config_short_datetime_format: 'Y-m-d H:i'
 # .. envvar:: netbox__config_banner_top [[[
 #
 # Specify a custom message displayed on the top of every page.
+# This overwrites potentially existing `dynamic configuration settings <https://netbox.readthedocs.io/en/stable/configuration/dynamic-settings/>`__.
 netbox__config_banner_top: ''
 
                                                                    # ]]]
 # .. envvar:: netbox__config_banner_bottom [[[
 #
 # Specify a custom message displayed on the bottom of every page.
+# This overwrites potentially existing `dynamic configuration settings <https://netbox.readthedocs.io/en/stable/configuration/dynamic-settings/>`__.
 netbox__config_banner_bottom: ''
 
                                                                    # ]]]
 # .. envvar:: netbox__config_banner_login [[[
 #
 # Specify a custom message displayed on the login page above the login from.
+# This overwrites potentially existing `dynamic configuration settings <https://netbox.readthedocs.io/en/stable/configuration/dynamic-settings/>`__.
 netbox__config_banner_login: ''
 
                                                                    # ]]]
@@ -538,6 +566,7 @@ netbox__config_banner_login: ''
 #
 # By default NetBox prefers to use IPv6 addresses as primary device addresses.
 # Set this variable to ``True`` to change that to IPv4 instead.
+# This overwrites potentially existing `dynamic configuration settings <https://netbox.readthedocs.io/en/stable/configuration/dynamic-settings/>`__.
 netbox__config_prefer_ipv4: False
 
                                                                    # ]]]
@@ -545,6 +574,7 @@ netbox__config_prefer_ipv4: False
 #
 # If enabled, NetBox will enforce unique IP space in the "global" table (all
 # prefixes and IP addresses not included in a VRF).
+# This overwrites potentially existing `dynamic configuration settings <https://netbox.readthedocs.io/en/stable/configuration/dynamic-settings/>`__.
 netbox__config_enforce_global_unique: False
 
                                                                    # ]]]
@@ -602,6 +632,12 @@ netbox__config_plugins: []
 # NetBox plugins configuration settings.
 # See :ref:`netbox__config_plugins_config` for more details.
 netbox__config_plugins_config: {}
+                                                                   # ]]]
+# .. envvar:: netbox__config_custom [[[
+#
+# Additional configuration not directly supported by this role can be specified
+# with this string variable.
+netbox__config_custom: ''
                                                                    # ]]]
                                                                    # ]]]
 # Initial superuser account [[[

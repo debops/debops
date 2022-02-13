@@ -33,6 +33,14 @@ New DebOps roles
   used to provide media (video, music, images) to other devices on the local
   network that support the DLNA protocol.
 
+- The :ref:`debops.pdns` role manages the `PowerDNS Authoritative Server`__,
+  which is an authoritative DNS server with support for DNSSEC, DNS UPDATE,
+  geographical load balancing, and storing zone data and metadata in one or
+  more backends like relational databases, LDAP databases, and plain text
+  files.
+
+  .. __: https://www.powerdns.com/auth.html
+
 - The :ref:`debops.telegraf` role can be used to install and manage the
   `Telegraf`__ metrics server, which can send data to various other services.
 
@@ -46,12 +54,37 @@ New DebOps roles
 - The :ref:`debops.zabbix_agent` role can install and configure Zabbix Agent,
   used for monitoring and metrics.
 
+- The :ref:`debops.keepalived` role can be used to install and manage
+  :command:`keepalived` daemon, a lightweight load balancing and high
+  availability service.
+
+- The :ref:`debops.rspamd` role can be used to install `rspamd`__ service, an
+  anti-spam mail filter. The role automatically integrates with the
+  :ref:`debops.postfix` role to provide anti-spam support.
+
+  .. __: https://rspamd.org/
+
+- The :ref:`debops.imapproxy` role can install and configure the IMAP Proxy
+  service, useful for web mail applications that use IMAP to access the mail
+  services.
+
 General
 '''''''
 
 - New Jinja filters ``from_toml`` and ``to_toml`` are available to DebOps
   roles, provided using a custom Ansible plugin. The filters require the
   ``toml`` Python package to be installed on the Ansible Controller.
+
+- New Ansible custom lookup plugin ``dig_srv`` can be used in Ansible variables
+  and tasks to simplify DNS SRV record parsing. The plugin can retrieve an
+  existing SRV record or if none is found, fall back to a predefined default
+  values for the hostname and port.
+
+- A new Ansible tag, ``meta::facts`` has been added in all DebOps roles to the
+  tasks that install Ansible local facts. This can be useful during initial
+  provisioning to avoid issues with Ansible ``--check`` mode when certain
+  configurations depend on the presence of the local facts to gather details
+  from the remote hosts.
 
 :ref:`debops.apt` role
 ''''''''''''''''''''''
@@ -64,6 +97,10 @@ General
 - You can now purge specific APT packages along with their configuration and
   unused dependencies. This might be useful during bootstrap or provisioning
   process to remove unused or conflicting services installed by the provider.
+
+- The role can now configure :file:`/etc/apt/auth.conf.d/` configuration files
+  to enable access to restricted APT repositories that require HTTP Basic
+  Authentication.
 
 :ref:`debops.dokuwiki` role
 '''''''''''''''''''''''''''
@@ -90,6 +127,13 @@ General
 - The ``arptables`` and ``ebtables`` APT packages will be installed by default.
   This is needed so that various alternatives for :command:`iptables` backends
   can be correctly synchronized.
+
+:ref:`debops.keyring` role
+''''''''''''''''''''''''''
+
+- The role can now configure :file:`/etc/apt/auth.conf.d/` configuration files
+  to enable access to restricted APT repositories that require HTTP Basic
+  Authentication.
 
 :ref:`debops.kibana` role
 '''''''''''''''''''''''''
@@ -135,6 +179,10 @@ General
 - The role can be used in "config-only" mode where the :command:`nginx`
   packages are not installed but are expected to be present and in
   configuration compatible with DebOps.
+
+- The :command:`nginx` server can now be configured to send logs to the
+  :command:`syslog` service via a :file:`/dev/log` UNIX socket, instead of
+  storing them in separate configuration files.
 
 :ref:`debops.pki` role
 ''''''''''''''''''''''
@@ -188,7 +236,7 @@ Updates of upstream application versions
 
 - In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
   has been updated to the next point release, 10.11. Debian Bullseye has been
-  updated to the next point relase as well, 11.1.
+  updated to the next point relase as well, 11.2.
 
   Debian 11 (Bullseye) has been released. The :ref:`debops.ipxe` role will now
   prepare a netboot installer with this release and set Bullseye as the default
@@ -204,7 +252,7 @@ Updates of upstream application versions
   running the playbook.
 
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
-  ``v3.0.7``. Note that you need ``v2.11.0`` or later to upgrade to ``v3.0``.
+  ``v3.1.6``. Note that you need ``v2.11.0`` or later to upgrade to ``v3.0``.
 
 - The Icinga Web 2 modules installed by :ref:`debops.icinga_web` have been
   updated to their latest versions. A quick database migration is needed after
@@ -212,11 +260,11 @@ Updates of upstream application versions
   button on the 'Icinga Director' -> 'Activities log' page.
 
 - In the :ref:`debops.roundcube` role, the Roundcube version installed by
-  default has been updated to ``1.4.12``.
+  default has been updated to ``1.4.13``.
 
-- Drop Nextcloud 20 support because it is EOL. You need to upgrade Nextcloud
-  manually if you are running version 20 or below. The role now defaults to
-  Nextcloud 21 for new installations.
+- Drop Nextcloud 20 and 21 support because they are EOL. You need to upgrade
+  Nextcloud manually if you are running version 21 or below. The role now
+  defaults to Nextcloud 22 for new installations.
 
 - In the :ref:`debops.wpcli` role, the WpCli version has been updated to
   ``2.5.0``. ``2.3.0`` and ``2.4.0`` can be installed by changing ``wpcli__version``
@@ -261,6 +309,11 @@ General
   have been copied to the :file:`ansible/plugins/` subdirectories to make them
   available through the Ansible Collection mechanisms.
 
+- Multiple roles that use the DNS ``SRV`` Resource Records to find related
+  services have been updated to utilize the new ``dig_srv`` Ansible lookup
+  plugin to find the records. This change should make the role code easier to
+  maintain.
+
 Continuous Integration
 ''''''''''''''''''''''
 
@@ -272,12 +325,31 @@ Continuous Integration
 
 - The role defaults have been updated, Bullseye is the new Stable.
 
+:ref:`debops.dhparam` role
+''''''''''''''''''''''''''
+
+- The role will no longer install the :command:`cron` service directly; instead
+  it depends on the :ref:`debops.cron` role to ensure that the service is
+  present. This allows replacing the ``cron`` Debian package with a different
+  backend, for example ``systemd-cron`` package.
+
 :ref:`debops.docker_server` role
 ''''''''''''''''''''''''''''''''
 
 - The role now enables `live restore`__ by default.
 
   .. __: https://docs.docker.com/config/containers/live-restore/
+
+:ref:`debops.dovecot` role
+''''''''''''''''''''''''''
+
+- The role has been throughly refreshed and now uses the
+  :ref:`universal_configuration` format for the service configuration. All role
+  variables have been renamed to put them in a separate namespace.
+
+  .. warning:: If you use a Dovecot installation in your environment, you
+     should check the new role documentation and update the relevant configuration
+     in the Ansible inventory before applying the new role on your infrastructure.
 
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
@@ -286,6 +358,12 @@ Continuous Integration
   file are set in the :envvar:`elasticsearch__original_configuration` variable
   and the options changed by the role are set in the
   :envvar:`elasticsearch__default_configuration` variable.
+
+:ref:`debops.etckeeper` role
+''''''''''''''''''''''''''''
+
+- Add ``etckeeper__gitattributes`` option to be able to appended to the
+  :file:`/etc/.gitattributes` file.
 
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
@@ -327,6 +405,20 @@ Continuous Integration
 
   .. __: https://keyserver.ubuntu.com/
 
+:ref:`debops.logrotate` role
+''''''''''''''''''''''''''''
+
+- The role will no longer install the :command:`cron` service directly; instead
+  it depends on the :ref:`debops.cron` role to ensure that the service is
+  present. This allows replacing the ``cron`` Debian package with a different
+  backend, for example ``systemd-cron`` package.
+
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- Add ``netbox__config_custom`` option to be able to configure not explicitly
+  supported options in a raw format.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
@@ -334,7 +426,7 @@ Continuous Integration
   access policy for a specific location and use subnet ranges or password
   authentication to control access.
 
-- Lemgth and characters included in the passwords generated by the role for
+- Length and characters included in the passwords generated by the role for
   HTTP Basic Authentication can now be controlled using default variables.
 
 :ref:`debops.php` role
@@ -391,6 +483,17 @@ Continuous Integration
   includes additional constraints on uniqueness and requires a rebuild of the
   OpenLDAP service. See :ref:`upgrade_notes` for details.
 
+- The ``sudoUser`` attribute index in the OpenLDAP service has been changed to
+  ``sudoHost,sudoUser eq,sub`` to provide better search performance for the
+  :command:`sssd` service. This will have to be changed manually on existing
+  OpenLDAP installations before the role is idempotent.
+
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- Keep the ``SSH_CONNECTION`` environment variable when running commands with
+  sudo.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 
@@ -412,6 +515,20 @@ Continuous Integration
 
 Fixed
 ~~~~~
+
+General
+'''''''
+
+- Fixed an issue with user and group management roles where the UNIX account
+  home directories were created even if they were specifically disabled. Roles
+  should now be more careful and respect the administrator wishes.
+
+LDAP
+''''
+
+- The :file:`ldap/init-directory.yml` playbook should now work better with
+  non-local UNIX accounts and provide better defaults for standardized account
+  names like ``ansible``.
 
 :ref:`debops.apt` role
 ''''''''''''''''''''''
@@ -580,6 +697,9 @@ debops.reprepro role
 - The default :envvar:`sshd__login_grace_time` has been increased from 30 to 60
   seconds. This mitigates a lock-out issue when :envvar:`sshd__use_dns` is
   enabled (the default) and your DNS resolvers are unreachable.
+
+- The role will avoid leaking the LDAP bind password through the process list
+  during password file creation on the remote host.
 
 :ref:`debops.sudo` role
 '''''''''''''''''''''''
@@ -2302,9 +2422,9 @@ Mail Transport Agents
 - Add option to enable ManageSieve by default without the need to update the config_maps,
   to allow configuration of Sieve filter scripts.
 
-- Restored :envvar:`dovecot_mail_location` to original value of `maildir:~/Maildir`. It was
+- Restored :envvar:`dovecot__mail_location` to original value of `maildir:~/Maildir`. It was
   wrongfully changed to `/var/vmail/%d/%n/mailbox` if LDAP was enabled. See also
-  :envvar:`dovecot_vmail_home`.
+  :envvar:`dovecot__vmail_home`.
 
 - If the LDAP support is enabled, the role will no longer configure Postfix via
   the :ref:`debops.postfix` role to deliver local mail via Dovecot LMTP

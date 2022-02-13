@@ -1,0 +1,214 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2022 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2022 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-or-later
+
+# .. _keepalived__ref_defaults:
+
+# debops.keepalived default variables
+# ===================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# APT packages [[[
+# ----------------
+
+# .. envvar:: keepalived__base_packages [[[
+#
+# List of base APT packages required for the :command:`keepalived` service.
+keepalived__base_packages: [ 'keepalived' ]
+
+                                                                   # ]]]
+# .. envvar:: keepalived__packages [[[
+#
+# List of additional APT packages which should be installed with the
+# :command:`keepalived` service.
+keepalived__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Ansible hostgroup configuration [[[
+# -----------------------------------
+
+# .. envvar:: keepalived__host_group [[[
+#
+# Name of the Ansible inventory host group which should be used by the role to
+# determine number of :command:`keepalived` nodes included in a given cluster.
+keepalived__host_group: 'debops_service_keepalived'
+
+                                                                   # ]]]
+# .. envvar:: keepalived__host_count [[[
+#
+# Number of :command:`keepalived` nodes in the current cluster -1 to keep it
+# synced with the group index which starts at 0. This number can be used in
+# :command:`keepalived` configuration options in calculations that use maximum
+# number of cluster nodes.
+keepalived__host_count: '{{ (groups[keepalived__host_group] | count - 1) }}'
+
+                                                                   # ]]]
+# .. envvar:: keepalived__host_index [[[
+#
+# Number of the current host in the :command:`keepalived` cluster starting from 0.
+# This number is based on the order of hosts specified in the
+# :envvar:`keepalived__host_group` Ansible inventory group and will change if
+# that group is modified. The index number can be used in the service
+# configuration for priority configuration options.
+keepalived__host_index: '{{ groups[keepalived__host_group].index(inventory_hostname) }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Firewall configuration [[[
+# --------------------------
+
+# .. envvar:: keepalived__allow [[[
+#
+# List of IP addresses or subnets that are allowed to sent VRRP packets to the
+# :command:`keepalived` service through the firewall, configured on all hosts
+# in the Ansible inventory. If the list is empty, service will not receive any
+# VRRP communication.
+keepalived__allow: []
+
+                                                                   # ]]]
+# .. envvar:: keepalived__group_allow [[[
+#
+# List of IP addresses or subnets that are allowed to sent VRRP packets to the
+# :command:`keepalived` service through the firewall, configured on hosts in
+# a specific Ansible inventory group. If the list is empty, service will not
+# receive any VRRP communication.
+keepalived__group_allow: []
+
+                                                                   # ]]]
+# .. envvar:: keepalived__host_allow [[[
+#
+# List of IP addresses or subnets that are allowed to sent VRRP packets to the
+# :command:`keepalived` service through the firewall, configured on specific
+# hosts in the Ansible inventory. If the list is empty, service will not
+# receive any VRRP communication.
+keepalived__host_allow: []
+                                                                   # ]]]
+                                                                   # ]]]
+# The :command:`keepalived` service configuration [[[
+# ---------------------------------------------------
+
+# These variables define the contents of the
+# :file:`/etc/keepalived/keepalived.conf` configuration file.
+# See :ref:`keepalived__ref_configuration` for more details.
+
+# .. envvar:: keepalived__default_configuration [[[
+#
+# List of :command:`keepalived` configuration entries defined by the role by
+# default.
+keepalived__default_configuration:
+
+  - name: 'global_defs'
+    raw: |
+      global_defs {
+          process_names
+          router_id {{ ansible_hostname }}
+      }
+    state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: keepalived__configuration [[[
+#
+# List of :command:`keepalived` configuration entries which should be present
+# on all hosts in the Ansible inventory.
+keepalived__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: keepalived__group_configuration [[[
+#
+# List of :command:`keepalived` configuration entries which should be present
+# on hosts in a specific Ansible inventory group.
+keepalived__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: keepalived__host_configuration [[[
+#
+# List of :command:`keepalived` configuration entries which should be present
+# on specific hosts in the Ansible inventory.
+keepalived__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: keepalived__combined_configuration [[[
+#
+# Variable which combines all :command:`keepalived` configuration entries and
+# is used in role tasks and templates.
+keepalived__combined_configuration: '{{ keepalived__default_configuration
+                                        + keepalived__configuration
+                                        + keepalived__group_configuration
+                                        + keepalived__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Custom scripts and auxiliary files [[[
+# --------------------------------------
+
+# These variables can be used to add custom files (scripts, private keys,
+# certificates) in the :file:`/etc/keepalived/` directory on the remote hosts.
+# See :ref:`keepalived__ref_scripts` for more details.
+
+# .. envvar:: keepalived__scripts [[[
+#
+# Custom scripts or files which should be configured on all hosts in the
+# Ansible inventory.
+keepalived__scripts: []
+
+                                                                   # ]]]
+# .. envvar:: keepalived__group_scripts [[[
+#
+# Custom scripts or files which should be configured on hosts in a specific
+# Ansible inventory group.
+keepalived__group_scripts: []
+
+                                                                   # ]]]
+# .. envvar:: keepalived__host_scripts [[[
+#
+# Custom scripts or files which should be configured on specific hosts in the
+# Ansible inventory.
+keepalived__host_scripts: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: keepalived__sysctl__dependent_parameters [[[
+#
+# Configuration for the :ref:`debops.sysctl` Ansible role.
+keepalived__sysctl__dependent_parameters:
+
+  - name: 'keepalived'
+    weight: '80'
+    options:
+
+      - name: 'net.ipv4.ip_nonlocal_bind'
+        comment: |
+          This parameter allows processes to bind to IPv4 addresses that are
+          not local to permit failover.
+        value: 1
+
+      - name: 'net.ipv6.ip_nonlocal_bind'
+        comment: |
+          This parameter allows processes to bind to IPv6 addresses that are
+          not local to permit failover.
+        value: 1
+
+                                                                   # ]]]
+# .. envvar:: keepalived__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+keepalived__ferm__dependent_rules:
+
+  - name: 'accept_vrrp_keepalived'
+    type: 'accept'
+    protocol: 'vrrp'
+    saddr: '{{ keepalived__allow + keepalived__group_allow + keepalived__host_allow }}'
+    daddr: [ '224.0.0.18', 'ff02::12' ]
+    accept_any: False
+    weight: '50'
+    by_role: 'debops.keepalived'
+                                                                   # ]]]
+                                                                   # ]]]

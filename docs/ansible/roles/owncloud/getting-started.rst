@@ -161,7 +161,7 @@ Expected warnings
 
 Nextcloud and ownCloud have a self check under "Administration" -> "Overview". Some warnings are expected to be shown.
 
-* Nextcloud 21 and newer: Module php-imagick in this instance has no SVG
+* Nextcloud 21 and newer: Module ``php-imagick`` in this instance has no SVG
   support. For better compatibility it is recommended to install it.
 
   Background: SVG support is disabled for security reasons by default. Lets

@@ -8,6 +8,7 @@
   register: python__register_raw_release
   changed_when: False
   check_mode: False
+  tags: [ 'meta::facts' ]
 
 - name: Update APT repositories, install core Python packages
   raw: |
@@ -23,6 +24,8 @@
   changed_when: (not python__register_raw.stdout
                      | regex_search('0 upgraded, 0 newly installed, 0 to remove and \d+ not upgraded\.') or
                  python__register_raw.stdout | regex_search('.+ set to manually installed\.'))
+  tags: [ 'meta::facts' ]
 
 - name: Reset connection to the host
   meta: 'reset_connection'
+  tags: [ 'meta::facts' ]

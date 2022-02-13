@@ -172,6 +172,8 @@
 
     - role: sudo
       tags: [ 'role::sudo', 'skip::sudo', 'role::system_groups' ]
+      sudo__dependent_sudoers:
+        - '{{ sshd__sudo__dependent_sudoers }}'
 
     # The 'sudo' APT package modifies '/etc/nsswitch.conf' by itself, running
     # this role after 'debops.sudo' role skips additional changes done in the

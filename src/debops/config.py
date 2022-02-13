@@ -4,12 +4,13 @@
 # Copyright (C) 2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from .utils import unexpanduser
 import os
 import sys
 import dotenv
 import pkgutil
 import jinja2
-import collections
+import collections.abc
 import toml
 import json
 import yaml
@@ -65,8 +66,8 @@ class Configuration(object):
         if d2:
             for k, v2 in d2.items():
                 v1 = d1.get(k)  # returns None if v1 has no value for this key
-                if (isinstance(v1, collections.Mapping) and
-                        isinstance(v2, collections.Mapping)):
+                if (isinstance(v1, collections.abc.Mapping) and
+                        isinstance(v2, collections.abc.Mapping)):
                     self._merge_dict(v1, v2)
                 elif (isinstance(v1, list) and
                         isinstance(v2, list)):
@@ -209,15 +210,13 @@ class Configuration(object):
             if self._env_files:
                 print('# Environment files:')
                 for filename in self._env_files:
-                    relative_file = os.path.relpath(
-                            filename.replace(os.path.expanduser('~'), '~', 1))
+                    relative_file = os.path.relpath(unexpanduser(filename))
                     print('#    ', relative_file.replace(relative_root, '', 1))
                 print()
             if self._config_files:
                 print('# Configuration files:')
                 for filename in self._config_files:
-                    relative_file = os.path.relpath(
-                            filename.replace(os.path.expanduser('~'), '~', 1))
+                    relative_file = os.path.relpath(unexpanduser(filename))
                     print('#   ', relative_file.replace(relative_root, '', 1))
                 print()
             print(toml.dumps(self._config).strip())

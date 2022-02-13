@@ -1,0 +1,57 @@
+---
+# Copyright (C) 2020 CipherMail B.V. <https://www.ciphermail.com/>
+# Copyright (C) 2021 Imre Jonk <imre@imrejonk.nl>
+# Copyright (C) 2020 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Import custom Ansible plugins
+  import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  import_role:
+    name: 'secret'
+
+- name: Ensure PowerDNS support is installed
+  package:
+    name: '{{ (pdns__base_packages + pdns__packages) | flatten }}'
+    state: 'present'
+  register: pdns__register_packages
+  until: pdns__register_packages is succeeded
+
+- include_tasks: init_postgresql.yml
+  when: ('gpgsql' in pdns__backends)
+
+- name: Divert original configuration
+  dpkg_divert:
+    path: '/etc/powerdns/pdns.conf'
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save local facts
+  template:
+    src: 'etc/ansible/facts.d/pdns.fact.j2'
+    dest: '/etc/ansible/facts.d/pdns.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: Update Ansible facts if they were modified
+  meta: 'flush_handlers'
+
+- name: Configure local PowerDNS changes
+  template:
+    src: 'etc/powerdns/pdns.conf.j2'
+    dest: '/etc/powerdns/pdns.conf'
+    owner: 'root'
+    group: 'pdns'
+    mode: '0640'
+  notify: [ 'Restart pdns' ]

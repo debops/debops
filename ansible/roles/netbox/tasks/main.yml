@@ -31,6 +31,8 @@
     shell: '{{ netbox__shell }}'
     state: 'present'
     system: True
+    generate_ssh_key: '{{ netbox__napalm_ssh_generate | bool }}'
+    ssh_key_bits: '{{ netbox__napalm_ssh_generate_bits }}'
 
 - name: Create additional directories used by NetBox
   file:
@@ -265,3 +267,4 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
+  tags: [ 'meta::facts' ]

@@ -1,0 +1,81 @@
+---
+# Copyright (C) 2021 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2021 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import custom Ansible plugins
+  import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
+- name: Install imapproxy packages
+  package:
+    name: '{{ q("flattened", (imapproxy__base_packages
+                              + imapproxy__packages)) }}'
+    state: 'present'
+  register: imapproxy__register_packages
+  until: imapproxy__register_packages is succeeded
+  tags: [ 'role::imapproxy:pkg' ]
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save imapproxy local facts
+  template:
+    src: 'etc/ansible/facts.d/imapproxy.fact.j2'
+    dest: '/etc/ansible/facts.d/imapproxy.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: Update Ansible facts if they were modified
+  meta: 'flush_handlers'
+
+- name: Divert original imapproxy configuration file
+  command: dpkg-divert --quiet --local
+           --divert /etc/imapproxy.conf.dpkg-divert
+           --rename /etc/imapproxy.conf
+  args:
+    creates: /etc/imapproxy.conf.dpkg-divert
+  notify: [ 'Restart imapproxy' ]
+  tags: [ 'role::imapproxy:config' ]
+
+- name: Generate imapproxy configuration
+  template:
+    src: 'etc/imapproxy.conf.j2'
+    dest: '/etc/imapproxy.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Restart imapproxy' ]
+  tags: [ 'role::imapproxy:config' ]
+
+- name: Make sure that PKI hook directory exists
+  file:
+    path: '{{ imapproxy__pki_hook_path }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: imapproxy__pki|bool
+
+- name: Manage PKI imapproxy hook
+  template:
+    src: 'etc/pki/hooks/imapproxy.j2'
+    dest: '{{ imapproxy__pki_hook_path + "/" + imapproxy__pki_hook_name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: imapproxy__pki|bool
+
+- name: Ensure the PKI imapproxy hook is absent
+  file:
+    path: '{{ imapproxy__pki_hook_path + "/" imapproxy__pki_hook_name }}'
+    state: 'absent'
+  when: not (imapproxy__pki|bool)

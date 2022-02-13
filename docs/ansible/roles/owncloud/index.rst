@@ -21,6 +21,7 @@ debops.owncloud
    defaults/main
    defaults-detailed
    ldap-dit
+   role-development
 
 Copyright
 ---------

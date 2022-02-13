@@ -1052,6 +1052,18 @@ stages:
     JANE_LOG_PATTERN: '\[ifupdown\]'
   tags: [ 'shell', 'vagrant-vm' ]
 
+'imapproxy role':
+  <<: *test_role_1st_deps
+  needs:
+    - 'etc_services role'
+    - 'ferm role'
+  variables:
+    JANE_TEST_FACT: 'imapproxy.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/imapproxy.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_imapproxy'
+    JANE_DIFF_PATTERN: '.*/roles/imapproxy/.*'
+    JANE_LOG_PATTERN: '\[imapproxy\]'
+
 'influxdata role':
   <<: *test_role_1st_deps
   needs:
@@ -1135,6 +1147,18 @@ stages:
 
 
 # --- k --- [[[2
+
+'keepalived role':
+  <<: *test_role_1st_deps
+  needs:
+    - 'ferm role'
+    - 'sysctl role'
+  variables:
+    JANE_TEST_FACT: 'keepalived.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/keepalived.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_keepalived'
+    JANE_DIFF_PATTERN: '.*/roles/keepalived/.*'
+    JANE_LOG_PATTERN: '\[keepalived\]'
 
 'keyring role':
   <<: *test_role_no_deps
@@ -1781,6 +1805,15 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/pam_access/.*'
     JANE_LOG_PATTERN: '\[pam_access\]'
 
+'pdns role':
+  <<: *test_role_2nd_deps
+  variables:
+    JANE_TEST_FACT: 'pdns.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/pdns.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_pdns'
+    JANE_DIFF_PATTERN: '.*/roles/pdns/.*'
+    JANE_LOG_PATTERN: '\[pdns\]'
+
 'persistent_paths role':
   <<: *test_role_no_deps
   variables:
@@ -2194,6 +2227,25 @@ stages:
     JANE_INVENTORY_GROUPS: 'debops_service_rsnapshot'
     JANE_DIFF_PATTERN: '.*/roles/rsnapshot/.*'
     JANE_LOG_PATTERN: '\[rsnapshot\]'
+
+'rspamd role':
+  <<: *test_role_3rd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'etc_services role'
+    - 'ferm role'
+    - 'logrotate role'
+    - 'python role'
+    - 'redis_server role'
+    - 'postfix role'
+    - 'nginx role'
+  variables:
+    JANE_TEST_FACT: 'rspamd.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postfix.yml ${DEBOPS_PLAYBOOKS}/service/redis_server.yml ${DEBOPS_PLAYBOOKS}/service/rspamd.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_postfix,debops_service_redis_server,debops_service_rspamd'
+    JANE_DIFF_PATTERN: '.*/roles/rspamd/.*'
+    JANE_LOG_PATTERN: '\[rspamd\]'
 
 'rstudio_server role':
   <<: *test_role_3rd_deps

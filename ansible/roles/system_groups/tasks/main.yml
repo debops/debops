@@ -14,6 +14,7 @@
 - name: Create a fact that knows the Ansible connection type
   set_fact:
     system_groups__fact_ansible_connection: '{{ ansible_connection }}'
+  tags: [ 'meta::facts' ]
 
 - name: Ensure that requested UNIX system groups exist
   group:
@@ -35,6 +36,7 @@
     name: '{{ item.name }}'
     append: '{{ item.append }}'
     groups: '{{ item.groups }}'
+    create_home: False
   with_items: '{{ lookup("template", "lookup/system_groups_members.j2") | from_yaml }}'
   when: system_groups__enabled|bool
   throttle: '{{ system_groups__throttle }}'
@@ -99,6 +101,7 @@
     group: 'root'
     mode: '0755'
   notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
   meta: 'flush_handlers'

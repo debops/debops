@@ -4,10 +4,12 @@
 # Copyright (C) 2020-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from .utils import unexpanduser
 from .ansibleconfig import AnsibleConfig
 from .ansible.inventory import AnsibleInventory
 import subprocess
 import os
+import sys
 
 
 class AnsiblePlaybookRunner(object):
@@ -188,7 +190,7 @@ class AnsiblePlaybookRunner(object):
         unlocked = False
         if not self._found_playbooks:
             print('No playbooks specified, aborting')
-            exit(1)
+            sys.exit(1)
 
         for key, value in self._ansible_env.items():
             os.environ[key] = value
@@ -197,8 +199,8 @@ class AnsiblePlaybookRunner(object):
 
             print('Executing Ansible playbooks:')
             for playbook in self._found_playbooks:
-                print(playbook.replace(os.path.expanduser('~'), '~'))
-            return subprocess.call(self._ansible_command)
+                print(unexpanduser(playbook))
+            return subprocess.call(' '.join(self._ansible_command), shell=True)
         except KeyboardInterrupt:
             if unlocked:
                 self.inventory.lock()

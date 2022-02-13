@@ -249,7 +249,7 @@ sshd__permit_root_login: '{{ "without-password"
 # .. envvar:: sshd__password_authentication [[[
 #
 # Enable or disable password authentication. This option will be enabled if the
-# ``root`` acount does not have SSH authorized keys present, to allow the
+# ``root`` account does not have SSH authorized keys present, to allow the
 # ``root`` account to login to the host. Alternatively, sysadmin access
 # configured by the :ref:`debops.system_users` role disables password
 # authentication.
@@ -625,13 +625,6 @@ sshd__ldap_bindpw: '{{ lookup("password", secret + "/ldap/credentials/"
                               + sshd__ldap_binddn | to_uuid + ".password length=32") }}'
 
                                                                    # ]]]
-# .. envvar:: sshd__ldap_bind_pw_file [[[
-#
-# Absolute path to the file on the remote host that stores the password to the
-# ``sshd`` LDAP account object..
-sshd__ldap_bind_pw_file: '/etc/ssh/ldap_authorized_keys_bindpw'
-
-                                                                   # ]]]
 # .. envvar:: sshd__ldap_filter [[[
 #
 # Active ``ldapsearch`` filter used to select correct account while looking up
@@ -961,5 +954,27 @@ sshd__pam_access__dependent_rules:
         origins: 'ALL'
         weight: 99999
                                                                    # ]]]
-                                                                   # ]]]
-                                                                   # ]]]
+# .. envvar:: sshd__sudo__dependent_sudoers [[[
+#
+# Configuration for the :ref:`debops.sudo` Ansible role.
+sshd__sudo__dependent_sudoers:
+
+  - name: 'sshd'
+    options:
+
+      - name: 'env_keep_ssh'
+        comment: |-
+          Allow molly-guard to detect that we connected via ssh even if
+          combined with sudo and tmux.
+          https://superuser.com/questions/666931/getting-molly-guard-to-work-with-sudo
+          It is not perfect, but works in most cases.
+          A case where it does not work is when `sudo tmux` is started via
+          local tty and then attached to it via ssh.
+          Or `sudo tmux` is executed via ssh and then attached locally.
+          But when a new shell is created in tmux, the environment variables in
+          that new shell are correct.
+        value: |
+          Defaults env_keep += SSH_CONNECTION
+# ]]]
+# ]]]
+# ]]]

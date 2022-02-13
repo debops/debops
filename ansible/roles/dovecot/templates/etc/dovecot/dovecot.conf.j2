@@ -1,0 +1,70 @@
+{# Copyright (C) 2019-2021 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2021      David Härdeman <david@hardeman.nu>
+ # Copyright (C) 2019-2021 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+#
+# /etc/dovecot/dovecot.conf - Main configuration file for dovecot.
+#
+# {{ ansible_managed }}
+#
+
+{% macro print_element(element, commented, loop_first, indent) %}
+{%   set prefix = ("{:^" + indent|string + "}").format('') %}
+{%   set comment_prefix = (prefix + "# ") %}
+{%   if commented or element.state|d('present') == 'comment' %}
+{%     set commented = True %}
+{%     set prefix = comment_prefix %}
+{%   else %}
+{%     set commented = False %}
+{%   endif %}
+{%   if element.options|d() and not loop_first %}
+{{     '' }}
+{%   endif %}
+{%   if element.comment|d() %}
+{{     element.comment | regex_replace('\n$', '') | comment(prefix='', decoration=comment_prefix, postfix='') -}}
+{%   endif %}
+{%   if element.raw|d() %}
+{%     if commented %}
+{{       '{}'.format(element.raw | regex_replace('\n$', '') | comment(prefix='', decoration=comment_prefix, postfix='')) -}}
+{%     else %}
+{{       '{}'.format(element.raw | regex_replace('\n$', '')) }}
+{%     endif %}
+{%   elif element.options|d() %}
+{{     '{}{} {{'.format(prefix, element.option | d(element.name) | regex_replace('\n$', '')) }}
+{%     for element in element.options %}
+{%       if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{{         print_element(element, commented, loop.first, indent + 8) -}}
+{%       endif %}
+{%     endfor %}
+{{     '{}}}'.format(prefix) }}
+{%   else %}
+{{     '{}{} = {}'.format(prefix, element.option | d(element.name), element.value) }}
+{%   endif %}
+{% endmacro %}
+{##}
+{% for section in dovecot__combined_configuration | debops.debops.parse_kv_items(name='section') %}
+{%   if section.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%     if section.options|d() %}
+{%       if section.state != 'hidden' %}
+{%         if (['present', 'comment'] | intersect(section.options | map(attribute='state') | list)) %}
+{%           set section_title = (' ' + ((section.title | d(section.section)) | upper) + ' ') %}
+{%           set section_width = section_title | length + 8 %}
+{{           '' }}
+{{           '' }}
+{{           ("{:#^" + section_width|string + "}").format('#') }}
+{{           ("{:#^" + section_width|string + "}").format(section_title) }}
+{{           ("{:#^" + section_width|string + "}").format('#') }}
+{{           '' }}
+{%         endif %}
+{%       else %}
+{{         '' }}
+{%       endif %}
+{%       for element in section.options %}
+{%         if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{{           print_element(element, section.state|d('present') == 'comment', loop.first, 0) -}}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{% endfor %}

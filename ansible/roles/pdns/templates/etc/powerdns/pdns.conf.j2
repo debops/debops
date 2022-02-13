@@ -1,0 +1,15 @@
+{# Copyright (C) 2021 Imre Jonk <imre@imrejonk.nl>
+ # Copyright (C) 2021 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# {{ ansible_managed }}
+
+{%  for element in pdns__combined_configuration | debops.debops.parse_kv_config %}
+{%      if element.state == "present" %}
+{%          if element.comment|d() %}
+{{ element.comment | regex_replace('$\n', '') | comment(prefix='', postfix='') }}
+{%          endif %}
+{{ element.name }} = {{ element.value }}
+
+{%      endif %}
+{%  endfor %}

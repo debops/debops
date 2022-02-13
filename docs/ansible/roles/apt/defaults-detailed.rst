@@ -258,6 +258,90 @@ Configure an Ubuntu PPA on Ubuntu hosts:
        distribution: 'Ubuntu'
 
 
+.. _apt__ref_auth_files:
+
+apt__auth_files
+---------------
+
+The ``apt__*_auth_files`` lists can be used to create and manage
+:file:`/etc/apt/auth.conf.d/` configuration files which caontain authentication
+credentials required by specific APT repositories. The format and more details
+about these files can be found in :man:`apt_auth.conf(5)` manual page. The
+:ref:`debops.reprepro` role can be used to create APT repositories that require
+authentication.
+
+.. note:: Private APT repositories accessible over HTTPS might result in issues
+   during host bootstrapping due to lack of trusted Root CA certificates on the
+   host. You can avoid that by applying the :ref:`debops.pki` role before the
+   actual bootstrap playbook, for example:
+
+   .. code-block:: console
+
+      $ debops run service/python_raw service/pki -l <host> -u root
+
+   This command will prepare the host for use via Ansible and set up PKI
+   environment, including custom Root CA certificates.
+
+This functionality is also available in the :ref:`debops.keyring` role for use
+by other Ansible roles via dependent role variables.
+See :ref:`keyring__ref_dependent_apt_auth_files` for more details.
+
+Examples
+~~~~~~~~
+
+Provide credentials for a private APT repository, with password stored in the
+:file:`secret/` directory managed by the :ref:`debops.secret` role. The APT
+repository is managed by the :ref:`debops.reprepro` role which uses the
+:ref:`debops.nginx` role to manage the authentication credentials.
+
+.. code-block:: yaml
+
+   apt__auth_files:
+
+     - name: 'private_repo'
+       machine: 'https://repo.example.org/debian'
+       login: 'username'
+       password: '{{ lookup("password", secret + "/credentials/repo"
+                                               + "/nginx/htpasswd"
+                                               + "/apt_access/username") }}'
+
+Syntax
+~~~~~~
+
+THe variables are defined as a list of YAML dictionaries .Each configuration
+entry defines a separate file in the :file:`/etc/apt/auth.conf.d/` directory.
+The state and contents of the file are specified using specific parameters:
+
+``name``
+  Required. Name of the configuration file with authentication credentials, can
+  contain :file:`.conf` suffix which will be stripped. Entries with the same
+  ``name`` parameter are merged together using :ref:`universal_configuration`
+  and can affect each other in order of appearance.
+
+``machine``
+  Required. The URL of the APT repository that requires the following
+  credentials.
+
+``login``
+  Required. The username expected by the APT repository during HTTP Basic
+  Authentication.
+
+``password``
+  Required. The password expected by the APT repository during HTTP Basic
+  Authentication. It can be stored in the :file:`secret/` directory and
+  retrieved from there if needed.
+
+``state``
+  Optional. If not defined or ``present``, a given configuration file will
+  created on the host. If ``absent``, a given configuration file will be
+  removed from the host. If ``ignore``, a given entry will not be evaluated
+  during role execution.
+
+``comment``
+  Optional. String or YAML text block with additional comments included in the
+  generated configuration file.
+
+
 .. _apt__ref_sources:
 
 apt__sources

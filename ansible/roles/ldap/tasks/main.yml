@@ -65,6 +65,7 @@
     mode: '0755'
   notify: [ 'Refresh host facts' ]
   when: ldap__enabled|bool and not ldap__dependent_play|bool
+  tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
   meta: 'flush_handlers'

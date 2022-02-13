@@ -10,246 +10,360 @@ Some of ``debops.dovecot`` default variables have more extensive configuration
 than simple strings or lists, here you can find documentation and examples for
 them.
 
-.. only:: html
 
-   .. contents::
-      :local:
-      :depth: 1
+.. _dovecot__ref_features:
 
-.. _dovecot_imap_config_map:
+dovecot__features
+-----------------
 
-dovecot_imap_config_map
------------------------
+Currently supported features for :envvar:`dovecot__features` are:
 
-Configuration dictionary related to the IMAP protocol configuration. Every
-configuration key is optional and overwrites the default values implicitly
-used by Dovecot. Each section ``service imap-login``, ``service imap`` and
-``protocol imap`` is defined as a YAML dict with the corresponding key:
+``imap``
+    ``IMAP4rev2`` (:rfc:`9051`) with explicit ``TLS`` support via ``STARTTLS``,
+    typically using port 143.
+``imaps``
+    ``IMAP4rev2`` with implicit ``TLS`` support, typically using port 993.
+``pop3``
+    ``POP3`` (:rfc:`1939`, extensions from :rfc:`2449` and authentication
+    from :rfc:`1734`) with explicit ``TLS`` support via ``STARTTLS``, typically
+    using port 110.
+``pop3s``
+    ``POP3`` with implicit ``TLS`` support, typically using port 995.
+``sieve``
+    Support for mail filtering/sorting using ``Sieve`` (:rfc:`5228`) scripts
+    and the ``ManageSieve`` protocol (:rfc:`5804`, both with various extensions
+    from other RFCs), the latter typically using port 4190. See `Dovecot's
+    ManageSieve Documentation`__ for further details.
+``quota``
+    Support for per-user mail ``quotas``. See
+    `Dovecot's Quota Plugin Documentation`__ for further details.
+``dsync``
+    Support for two-directional/pairwise ``dsync`` synchronization between two
+    :command:`dovecot` servers using :command:`dovecot`'s own ``dsync``
+    protocol, typically using port 12345. See
+    `Dovecot's Replication Documentation`__ for further details.
 
-``login-service``
-  Configuration settings under this key will go into the ``service imap-login {}``
-  section which defines the pre-login process handling. Possible keys are
-  ``inet_listener`` and upstream Dovecot options such as ``service_count`` or
-  ``process_min_avail``. More information about the login setup can be found at
-  the `Dovecot Login Process`_ page.
+Note that ``imaps`` and ``pop3s`` (implicit TLS) are recommended
+over ``imap`` and ``pop3`` (explicit TLS) by :rfc:`8314`. Furthermore,
+LMTP is recommended over LDA by the Dovecot project.
 
-  ``inet_listener``
-    Will create a network listener definition. Accepts further YAML dicts with
-    the listener name as key.
-
-    The listener name itself must reference a dict defining listener properties
-    such as ``port`` (network port), ``allow`` (address/subnet restrictions) or
-    ``address`` (listen address). More information about the ``inet_listener``
-    setup can be found at the `Dovecot inet_listeners`_ page.
-
-  ``unix_listener``
-    Will create a Unix socket definition. The key name of the listeners corresponds
-    to the socket path.
-
-    The listener name itself must reference a dict defining socket properties such
-    as ``owner`` (socket owner), ``group`` (socket group) or ``mode`` (access mode).
-    More information about the ``unix_listener`` setup can be found at the
-    `Dovecot unix_listeners`_ page.
-
-``service``
-  Configuration settings under this key will go into the ``service imap {}``
-  section which defines the post-login process handling. Possible keys are the
-  upstream Dovecot options such as ``process_limit`` or ``vsz_limit``. More
-  information about the IMAP service options can be found at the `Dovecot IMAP Service`_
-  page.
-
-``protocol``
-  Configuration settings under this key will go into the ``protocol imap {}``
-  section which defines general protocol behaviour. Possible keys are the
-  upstream Dovecot options such as ``mail_max_userip_connections`` or
-  ``mail_plugins``.
+.. __: https://doc.dovecot.org/admin_manual/pigeonhole_managesieve_server/
+.. __: https://doc.dovecot.org/configuration_manual/quota_plugin/
+.. __: https://doc.dovecot.org/configuration_manual/replication/
 
 
-Example
-~~~~~~~
+.. _dovecot__ref_dsync:
 
-Restrict access to the IMAP service to 192.168.1.0/24. Always keep a process
-waiting for more connections, restrict maximal number of IMAP processes to
-512 and allow 15 IMAP connections for each user::
+DSync Replication
+-----------------
 
-    dovecot_imap_config_map:
+Dovecot supports master/master replication using ``dsync``.  The replication is
+done asynchronously, so high latency between the replicas isn't a problem.  The
+replication is done by looking at Dovecot index files (not what exists in the
+filesystem), so no mails get lost due to filesystem corruption or an accidental
+deletion, they will simply be replicated back.
 
-      login-service:
-        inet_listener:
-          imap:
-            access: [ '192.168.1.0/24' ]
+Replication works only between server pairs. Currently dsync is only supported
+together with a virtual email user since dsync would need root access
+otherwise.
 
-        process_min_avail: 1
+The most important configuration variable is :envvar:`dovecot__dsync_host`,
+which needs to be set to point to the other server for each server in a sync
+pair. Assuming that you have two servers, named ``mail1.example.com`` and
+``mail2.example.com``, setting something like this in your Ansible inventory
+should be sufficient:
 
-      service:
-        process_limit: 512
+.. code-block:: yaml
 
-      protocol:
-        mail_max_userip_connections: 15
+   dovecot__dsync_host: '{{ "mail1.example.com"
+                            if ansible_fqdn == "mail2.example.com"
+                            else "mail2.example.com" }}'
+
+Other variables are :envvar:`dovecot__dsync_port`,
+:envvar:`dovecot__dsync_replica`, :envvar:`dovecot__dsync_password_path` and
+:envvar:`dovecot__dsync_password`, but these should all have sensible defaults
+for most installations.
+
+For more information, see the Dovecot `Replication
+<https://wiki.dovecot.org/Replication>`_ wiki page.
 
 
-.. _Dovecot Login Process: https://wiki2.dovecot.org/LoginProcess
-.. _Dovecot inet_listeners: https://wiki2.dovecot.org/Services#inet_listeners
-.. _Dovecot unix_listeners: https://wiki2.dovecot.org/Services#unix_listeners_and_fifo_listeners
-.. _Dovecot IMAP Service: https://wiki2.dovecot.org/Services#imap.2C_pop3.2C_submission.2C_managesieve
+.. _dovecot__ref_user_accounts:
 
-.. _dovecot_imap_listeners:
-
-dovecot_imap_listeners
+dovecot__user_accounts
 ----------------------
 
-List of IMAP network listener names which will be used to decide which
-default listeners to create. Their configuration can be customized via
-:ref:`dovecot_imap_config_map`.
+Currently supported mechanisms for :envvar:`dovecot__user_accounts` are:
+
+``deny``
+    Deny access for a statically defined list of users (see
+    :envvar:`dovecot__deny_users`).
+
+``system``
+    Mail users are Linux system users.
+
+``mysql``
+    Mail users are stored in a MySQL/MariaDB database (see
+    :ref:`dovecot__ref_sql` below).
+
+``pgsql``
+    Mail users are stored in a PostgreSQL database (see
+    :ref:`dovecot__ref_sql` below).
+
+``sqlite``
+    Mail users are stored in a SQLite database (see
+    :ref:`dovecot__ref_sql` below).
+
+``ldap``
+    Mail users are stored in the LDAP directory.
+
+``passwdfile``
+    Users and passwords are stored in a file.
+
+``checkpassword``
+    Users and passwords are stored in an external program.
+
+
+.. _dovecot__ref_sql:
+
+SQL User Databases
+------------------
+
+Users can be stored in an external ``SQL`` database (see
+:ref:`dovecot__ref_user_accounts` above). In order to do so, a database-driver
+specific connection string needs to be defined in
+:envvar:`dovecot__sql_connect`. The parmeters are generally provided as a
+space-delimited string of ``parameter=value`` pairs (which means that it is not
+possible to use spaces in parameters), with the possible parameters defined by
+the used database type:
+
+``pgsql``
+
+    ``host``
+        The host on which the database server is running.
+
+    ``port``
+        The port on which the database server is listening.
+
+    ``user``
+        The username to use when connecting to the database.
+
+    ``password``
+        The password to use when connecting to the database.
+
+    ``dbname``
+        The name of the database to use.
+
+    ``maxconns``
+        The number of connections to create to the database (default 5).
+
+``mysql``
+
+    The basic options (``host``, ``port``, ``user``, ``password``, ``dbname``)
+    are the same as for ``pgsql``, additional settings include:
+
+    ``client_flags``
+        See the MySQL manual.
+
+    ``ssl_ca, ssl_ca_path``
+        Set either one or both to enable SSL.
+
+    ``ssl_cert, ssl_key``
+        For sending client-side certificates to the server.
+
+    ``ssl_cipher``
+        Sets the minimum allowed cipher security (default: HIGH).
+
+    ``ssl_verify_server_cert``
+        Verifies that the name in the server SSL certificate matches the host
+        (default: no).
+
+    ``option_file``
+        Read options from the given file instead of the default :file:`my.cnf`
+        location.
+
+    ``option_group``
+        Read options from the given group (default: client).
+
+   You can connect to UNIX sockets by using ``host=/var/run/mysql.sock``.
+
+``sqlite``
+    Only one parameter is supported - the path to the database file (which
+    is defined without the ``parameter=value`` format).
+
+Examples:
+
+.. code-block:: yaml
+
+   # pgsql
+   dovecot__sql_connect: 'host=192.168.1.1 dbname=users'
+   # mysql
+   dovecot__sql_connect: 'host=sql.example.com dbname=virtual user=virtual password=blarg'
+   # sqlite
+   dovecot__sql_connect: '/etc/dovecot/authdb.sqlite'
+
+The database should have a structure like this:
+
+::
+
+   CREATE TABLE `users` (
+     `userid` varchar(128) NOT NULL,
+     `domain` varchar(128) NOT NULL,
+     `password` varchar(128) NOT NULL,
+     `home` varchar(255) NOT NULL,
+     `uid` int(11) NOT NULL,
+     `gid` int(11) NOT NULL,
+     `active` char(1) NOT NULL DEFAULT 'Y',
+     `maildir` varchar(255) NOT NULL
+   );
+
+Other configuration parameters of interest are
+:envvar:`dovecot__sql_default_pass_scheme`,
+:envvar:`dovecot__sql_password_query`, :envvar:`dovecot__sql_user_query`, and
+:envvar:`dovecot__sql_iterate_query`.
+
+
+.. _dovecot__ref_configuration:
+
+dovecot__configuration
+----------------------
+
+The ``dovecot__*_configuration`` variables define the contents of the
+:file:`/etc/dovecot/dovecot.conf` configuration file. The variables are merged
+in the order defined by the :envvar:`dovecot__combined_configuration` variable,
+which allows modification of the default configuration through the Ansible
+inventory.
+
+See the :command:`dovecot` `configuration documentation`__ for details on the
+possible configuration parameters.
+
+.. __: https://doc.dovecot.org/settings/
+
 
 Examples
 ~~~~~~~~
 
-Possible configuration options for enabling IMAP:
+See :envvar:`dovecot__default_configuration` variable for an example of
+existing configuration.
 
-+---------------------------------+-----------------------+----------------------------+------------------+
-| Service                         | ``dovecot_protocols`` | ``dovecot_imap_listeners`` | ``dovecot_pki``  |
-+=================================+=======================+============================+==================+
-| Port 143 (plain)                | ``[ 'imap' ]``        | ``[ 'imap' ]``             | ``False``        |
-+---------------------------------+-----------------------+----------------------------+------------------+
-| Port 143 (StartTLS)             | ``[ 'imap' ]``        | ``[ 'imap' ]``             | ``True``         |
-+---------------------------------+-----------------------+----------------------------+------------------+
-| Port 143 (StartTLS) + 995 (SSL) | ``[ 'imap' ]``        | ``[ 'imap', 'imaps' ]``    | ``True``         |
-+---------------------------------+-----------------------+----------------------------+------------------+
-| Port 995 (SSL)                  | ``[ 'imap' ]``        | ``[ 'imaps' ]``            | ``True``         |
-+---------------------------------+-----------------------+----------------------------+------------------+
+Autosubscribe users to the ``Junk`` mailbox:
 
-.. _dovecot_pop3_config_map:
+.. code-block:: yaml
 
-dovecot_pop3_config_map
------------------------
+  dovecot__group_configuration:
+  
+    - section: 'mailbox_namespaces'
+      options:
+  
+        - name: 'namespace inbox'
+          options:
 
-Configuration dictionary related to the POP3 protocol configuration. Please
-to the :ref:`dovecot_imap_config_map` for a description of the dict layout.
+            - name: 'mailbox Junk'
+              options:
 
-.. _dovecot_pop3_listeners:
+                - name: 'auto'
+                  value: 'subscribe'
 
-dovecot_pop3_listeners
-----------------------
+Rename the ``Junk`` mailbox to ``INBOX.Spam``:
 
-List of POP3 network listener names which will be used to decide which
-default listeners to create. Their configuration can be customized via
-:ref:`dovecot_pop3_config_map`.
+.. code-block:: yaml
 
-.. _dovecot_lmtp_config_map:
+  dovecot__group_configuration:
+  
+    - section: 'mailbox_namespaces'
+      options:
+  
+        - name: 'namespace inbox'
+          options:
 
-dovecot_lmtp_config_map
------------------------
+            - name: 'mailbox Junk'
+              state: 'absent'
 
-Configuration dictionary related to the LMTP protocol configuration. Please
-refer to the :ref:`dovecot_imap_config_map` for a description of the dict
-layout.
+            - name: 'mailbox INBOX.Spam'
+              options:
 
-In contrast to the other protocol maps, LMTP ``inet_listeners`` must always
-be listed in ``dovecot_lmtp_config_map`` and define the ``port`` property,
-as Dovecot doesn't define a default port for LMTP network listeners.
+                - name: 'auto'
+                  value: 'subscribe'
 
-.. _dovecot_lmtp_listeners:
+                - name: 'special_use'
+                  value: '\Junk'
 
-dovecot_lmtp_listeners
-----------------------
 
-List of LMTP network and unix listener names which will be created. The LMTP
-listeners configuration works a bit different from other network protocols.
-Each listeners mentioned in ``dovecot_lmtp_listeners`` must also be defined
-in :ref:`dovecot_lmtp_config_map`.
+.. _dovecot__ref_configuration_syntax:
 
-.. _dovecot_lda_config_map:
+Syntax
+~~~~~~
 
-dovecot_lda_config_map
------------------------
+The variables contain a list of YAML dictionaries, each dictionary can have
+the following parameters:
 
-Configuration dictionary related to the Dovecot LDA protocol configuration.
-The only valid key is ``protocol`` which references a YAML dict defining the
-``protocol lda {}`` section. The ``protocol`` dict then accepts the upstream
-Dovecot configuration options such as ``mail_plugins``.
+``section``
+  Required. Name of the section to create in the
+  :file:`/etc/dovecot/dovecot.conf` file. This parameter is used as an
+  "anchor", configuration entries with the same ``section`` are combined
+  together and affect each other in order of appearance.
 
-.. _dovecot_auth_config_map:
+``title``
+  Optional. A short description of a given configuration ``section``.
+  If not defined, the ``section`` name itself will be used.
 
-dovecot_auth_config_map
------------------------
+``state``
+  Optional. If not specified or ``present``, the configuration section will be
+  generated. If ``hidden``, the section will be generated, but without a
+  section header. If ``absent``, ``ignore`` or ``init``, the configuration
+  section will not be generated. If ``comment``, the section will be generated
+  but commented out.
 
-Configuration dictionary related to user authentication when sending emails over
-the SMTP protocol configuration. Postfix uses the `/var/spool/postfix/private/auth`
-UNIX socket to communicate with Dovecot in order to authenticate an user, while
-sending emails. See also `smtpd_sasl_type` and `smtpd_sasl_path` values in
-:envvar:`postconf__postfix__dependent_maincf`.
+``weight``
+  Optional. A positive or negative number which can be used to affect the order
+  of sections in the generated configuration file. Positive numbers add more
+  "weight" to the section making it appear "lower" in the file; negative
+  numbers substract the "weight" and therefore move the section upper in the
+  file.
 
-Please refer to the :ref:`dovecot_imap_config_map` for a description of the dict
-layout.
+``comment``
+  Optional. This parameter can be used to provide a short description
+  which will be included in the generated configuration file.
 
-.. _dovecot_auth_listeners:
+``options``
+  Required. A list of :command:`dovecot` configuration options for a given
+  ``section``.
 
-dovecot_auth_listeners
-----------------------
+  Note that the ``options`` parameters can be used recursively to generate
+  configuration blocks of arbitrary depth (as illustrated in the example
+  above).
 
-List of AUTH unix listener names which will be created. The AUTH
-listeners configuration works like the :ref:`dovecot_lmtp_listeners`.
-Each listeners mentioned in :envvar:`dovecot_auth_listeners` must also be defined
-in :ref:`dovecot_auth_config_map`.
+  The options can be specified with the following parameters:
 
-Example
-~~~~~~~
+  ``name``
+    Required. The name of a given :command:`dovecot` configuration option
+    for a given ``section``. Options with the same ``section`` and ``name``
+    hierarchy will be merged in order of appearance.
 
-Enable ``sieve`` mail plugin with local mail delivery::
+  ``option``
+    Optional. An alternative to ``name`` to be used as the key in the
+    ``key = value`` pairs written to the configuration.
 
-    dovecot_lda_config_map:
+  ``value``
+    Either ``value`` or ``options`` is required. This defines the value of a
+    given configuration option. It can be either a string, a boolean, a number,
+    or a YAML list (elements will be joined with commas).
 
-      protocol:
-        mail_plugins: '$mail_plugins sieve'
+  ``options``
+    Either ``value`` or ``options`` is required. This parameters takes a list
+    of configuration sub-options, thus allowing ``options`` to be used
+    recursively to generate configuration blocks of arbitrary depth (as
+    illustrated in the example above).
 
-.. _dovecot_managesieve_config_map:
+  ``raw``
+    Optional. String or YAML text block which will be included in the
+    configuration file "as is". If this parameter is specified, the ``name``
+    and ``value`` parameters are ignored - you need to specify the
+    entire line(s) with configuration option names as well.
 
-dovecot_managesieve_config_map
-------------------------------
+  ``state``
+    Optional. Same values as documented above.
 
-Configuration dictionary related to the ManageSieve protocol configuration.
-Please refer to the :ref:`dovecot_imap_config_map` for a description of the
-dict layout.
-
-.. _dovecot_managesieve_listeners:
-
-dovecot_managesieve_listeners
------------------------------
-
-List of ManageSieve network listener names which will be used to decide
-which default listeners to create when ``managesieve`` is enabled in
-``dovecot_protocols``. Their configuration can be customized via
-:ref:`dovecot_managesieve_config_map`.
-
-Example
-~~~~~~~
-
-If you want to enable a second ManageSieve listener, you need to add
-its name to the ``dovecot_managesieve_listeners`` list and define its
-properties in the ``dovecot_managesieve_config_map``. For example to
-bind a second listener to a specific address on port 2000::
-
-    dovecot_managesieve_listeners: [ 'sieve', 'sieve_deprecated' ]
-
-    dovecot_managesieve_config_map:
-
-      login-service:
-        inet_listeners:
-          sieve_deprecated:
-            address: 192.168.1.42
-            port: 2000
-
-.. _dovecot_postfix_transport:
-
-dovecot_postfix_transport
--------------------------
-
-LMTP socket name which will be configured in Postfix to send mails for
-delivery. The value is a file system path relative to */var/spool/postfix*
-Make sure there is a corresponding LMTP ``unix_listener`` defined in
-:ref:`dovecot_lmtp_config_map` and enabled via :ref:`dovecot_lmtp_listeners`.
-The LMTP transport target will only be configured in Postfix when 'lmtp'
-is enabled in ``dovecot_protocols``.
-
-For most people the default configuration will be sufficient.
+  ``comment``
+    Optional. String or YAML text block that contains comments about a given
+    configuration option.

@@ -1,0 +1,66 @@
+---
+# Copyright (C) 2022 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  import_role:
+    name: 'secret'
+
+- name: Install required packages
+  package:
+    name: '{{ q("flattened", (keepalived__base_packages
+                              + keepalived__packages)) }}'
+    state: 'present'
+  register: keepalived__register_packages
+  until: keepalived__register_packages is succeeded
+
+- name: Make sure that Ansible local facts directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save keepalived local facts
+  template:
+    src: 'etc/ansible/facts.d/keepalived.fact.j2'
+    dest: '/etc/ansible/facts.d/keepalived.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: Update Ansible facts if they were modified
+  meta: 'flush_handlers'
+
+- name: Remove custom scripts from remote hosts if requested
+  file:
+    path: '{{ "/etc/keepalived/" + (item.dest | d(item.name)) }}'
+    state: 'absent'
+  loop: '{{ q("flattened", keepalived__scripts
+                           + keepalived__group_scripts
+                           + keepalived__host_scripts) }}'
+  when: item.state|d('present') == 'absent'
+
+- name: Copy custom scripts to remote hosts
+  copy:
+    src: '{{ item.src | d(omit) }}'
+    dest: '{{ "/etc/keepalived/" + (item.dest | d(item.name)) }}'
+    content: '{{ item.content | d(omit) }}'
+    owner: '{{ item.owner | d("root") }}'
+    group: '{{ item.group | d("root") }}'
+    mode: '{{ item.mode | d("0755") }}'
+  loop: '{{ q("flattened", keepalived__scripts
+                           + keepalived__group_scripts
+                           + keepalived__host_scripts) }}'
+  when: item.state|d('present') not in [ 'absent', 'ignore' ]
+
+- name: Generate keepalive configuration file
+  template:
+    src: 'etc/keepalived/keepalived.conf.j2'
+    dest: '/etc/keepalived/keepalived.conf'
+    mode: '0640'
+  notify: [ 'Check keepalived configuration and reload' ]

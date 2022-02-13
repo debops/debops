@@ -1,9 +1,13 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
-# Copyright (C) 2016-2017 DebOps <https://debops.org/>
+# Copyright (C) 2016-2017,2021 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2016-2017,2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
 
 - name: Divert Apt-Cacher NG configuration
   command: dpkg-divert --quiet --local --divert "/{{ item.path }}.dpkg-divert"

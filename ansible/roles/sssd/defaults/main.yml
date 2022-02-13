@@ -24,7 +24,7 @@
 #
 # List of APT packages required for LDAP lookups via NSS and PAM.
 sssd__base_packages:
-  - [ 'sssd', 'libnss-sss', 'libsss-sudo' ]
+  - [ 'sssd', 'libnss-sss', 'libsss-sudo', 'libpam-sss' ]
 
                                                                    # ]]]
 # .. envvar:: sssd__packages [[[
@@ -156,6 +156,7 @@ sssd__default_configuration:
       - name: 'services'
         comment: 'Services to offer (nss, pam, sudo, autofs, ssh, pac, ifp)'
         value: [ 'nss', 'pam', 'sudo', 'ssh' ]
+        state: '{{ "present" if ansible_distribution_release in [ "stretch", "buster", "bionic" ] else "ignore" }}'
 
       - name: 'debug_level'
         comment: |
@@ -250,6 +251,22 @@ sssd__default_configuration:
           pages).
         value: 'ldap'
 
+      - name: 'access_provider'
+        comment: |
+          The access control provider to use for the domain. Possible providers
+          include e.g. permit, deny, ldap, ipa, ad and simple (see the
+          corresponding sssd-* man pages).
+        value: 'ldap'
+
+      - name: 'ldap_access_order'
+        comment: |
+          SSSD has builtin support for checking authorizedServices and host
+          attributes, but it looks for "*" rather than "all" or "posix:all"
+          as in DebOps, and it also only checks the attributes for posixAccount
+          and not posixGroup entries, therefore the authorized_service and host
+          checks cannot be enabled by default.
+        value: 'pwd_expire_policy_renew'
+
       - name: 'ldap_uri'
         comment: 'The location at which the LDAP server(s) should be reachable.'
         value: '{{ ansible_local.ldap.uri|d("") }}'
@@ -266,7 +283,10 @@ sssd__default_configuration:
         value: 'rfc2307bis'
 
       - name: 'ldap_pwd_policy'
-        comment: 'Which policy should be used to evaluate password expiration (shadow, mit_kerberos)'
+        comment: |
+          Which policy should be used to evaluate password expiration
+          (none, shadow, mit_kerberos). Note that if you enable this, users
+          without shadowAccount attributes *will* be denied access.
         value: 'shadow'
         state: 'comment'
 
@@ -325,11 +345,6 @@ sssd__default_configuration:
           Use the 'gid' attribute instead of 'cn' as the POSIX group name.
         value: 'gid'
 
-      - name: 'ldap_group_object_class'
-        comment: |
-          Groups use the 'posixGroup' object class.
-        value: 'posixGroup'
-
       - name: 'ldap_search_base'
         comment: |
           The search base that will be used for queries. "ldap_search_base"
@@ -339,13 +354,14 @@ sssd__default_configuration:
         value: '{{ sssd__ldap_base_dn | join(",") }}'
 
       - name: 'ldap_user_search_base'
-        value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?(&(objectClass=posixAccount)" + sssd__ldap_host_filter + ")" }}'
+        value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?" + sssd__ldap_host_filter }}'
 
       - name: 'ldap_group_search_base'
-        value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?(&(objectClass=posixGroup)" + sssd__ldap_host_filter + ")" }}'
+        value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?" + sssd__ldap_host_filter }}'
 
       - name: 'ldap_sudo_search_base'
-        value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?(&(objectClass=sudoRole))" }}'
+        value: '{{ sssd__ldap_base_dn | join(",") + "?subtree?" + "" }}'
+        state: 'comment'
 
                                                                    # ]]]
 # .. envvar:: sssd__configuration [[[

@@ -95,6 +95,8 @@ are not accessed directly by end users.
 - :ref:`debops.fcgiwrap`
 - :ref:`debops.freeradius`
 - :ref:`debops.gunicorn`
+- :ref:`debops.keepalived`
+- :ref:`debops.imapproxy`
 - :ref:`debops.ldap`
 - :ref:`debops.mcli`
 - :ref:`debops.memcached`
@@ -156,6 +158,7 @@ It's always DNS.
 - :ref:`debops.avahi`
 - :ref:`debops.dnsmasq`
 - :ref:`debops.netbase`
+- :ref:`debops.pdns`
 - :ref:`debops.resolvconf`
 - :ref:`debops.unbound`
 
@@ -226,6 +229,7 @@ Mail and SMS services
 
 - :ref:`debops.dovecot`
 - :ref:`debops.etc_aliases`
+- :ref:`debops.imapproxy`
 - :ref:`debops.mailman`
 - :ref:`debops.nullmailer`
 - :ref:`debops.opendkim`
@@ -235,6 +239,7 @@ Mail and SMS services
 - :ref:`debops.postscreen`
 - :ref:`debops.postwhite`
 - :ref:`debops.roundcube`
+- :ref:`debops.rspamd`
 - :ref:`debops.saslauthd`
 - ``debops.smstools``
 
@@ -264,6 +269,7 @@ Networking
 - :ref:`debops.dnsmasq`
 - :ref:`debops.freeradius`
 - :ref:`debops.ifupdown`
+- :ref:`debops.keepalived`
 - :ref:`debops.lldpd`
 - :ref:`debops.netbase`
 - :ref:`debops.radvd`

@@ -199,9 +199,7 @@ class AnsibleInventory(object):
                     elif not stat.S_ISFIFO(os.stat(configfile).st_mode):
                         raise IOError(17, configfile + ' exists but is not a fifo')
 
-                    subprocess_env = {
-                        'LC_ALL': 'C'
-                    }
+                    subprocess_env = os.environ.copy()
                     encfs = subprocess.Popen([
                         self._commands['encfs'], self.encfs_path, self.secret_path,
                         '--extpass',
