@@ -36,17 +36,18 @@
 
 # Configure updatedb to exclude snapshots [[[
 - name: 'Divert original configuration under /etc'
-  command: dpkg-divert --quiet --local --divert "{{ item }}.dpkg-divert" --rename "{{ item }}"
-  args:
-    creates: '{{ item }}.dpkg-divert'
+  dpkg_divert:
+    path: '{{ item }}'
   register: snapshot_snapper__updatedb_diverted_register
   when: ansible_os_family in [ "Debian" ]
   loop: '{{ snapshot_snapper__divert_files | flatten }}'
 
 - name: Copy diverted configuration file to original location
-  command: cp {{ item }}.dpkg-divert {{ item }}
-  args:  # noqa no-handler
-    creates: '{{ item }}'
+  copy:
+    src: '{{ item }}.dpkg-divert'
+    dest: '{{ item }}'
+    remote_src: True
+    force: False
   when: snapshot_snapper__updatedb_diverted_register is changed
   with_flattened: '{{ snapshot_snapper__divert_files }}'
 
