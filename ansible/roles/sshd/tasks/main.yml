@@ -222,11 +222,8 @@
   notify: [ 'Test sshd configuration and restart' ]
 
 - name: Divert PAM configuration for sshd
-  command: dpkg-divert --quiet --local
-           --divert "/etc/pam.d/sshd.dpkg-divert"
-           --rename "/etc/pam.d/sshd"
-  args:
-    creates: '/etc/pam.d/sshd.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/pam.d/sshd'
   when: sshd__pam_deploy_state == 'present'
 
 - name: Generate PAM configuration for sshd
@@ -237,12 +234,10 @@
   when: sshd__pam_deploy_state == 'present'
 
 - name: Revert default sshd PAM configuration if requested
-  shell: set -o nounset -o pipefail -o errexit &&
-         rm -f /etc/pam.d/sshd &&
-         dpkg-divert --quiet --local --rename --remove /etc/pam.d/sshd
-  args:
-    executable: 'bash'
-    removes: '/etc/pam.d/sshd.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/pam.d/sshd'
+    state: 'absent'
+    delete: True
   when: sshd__pam_deploy_state != 'present'
 
 - name: Post hooks
