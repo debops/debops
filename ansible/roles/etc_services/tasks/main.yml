@@ -28,9 +28,9 @@
     mode:  '0644'
 
 - name: Divert original /etc/services
-  command: dpkg-divert --quiet --local --divert "{{ etc_services__diversion }}" --rename "/etc/services"
-  args:
-    creates: '{{ etc_services__diversion }}'
+  dpkg_divert:
+    path: '/etc/services'
+    divert: '{{ etc_services__diversion }}'
   when: etc_services__enabled|bool
 
 - name: Generate list of local services if requested
@@ -64,8 +64,9 @@
   when: etc_services__enabled|bool
 
 - name: Remove diversion of /etc/services
-  shell: rm -f /etc/services ; dpkg-divert --quiet --local --rename --remove /etc/services
-  args:
-    removes: '{{ etc_services__diversion }}'
-    warn: False
+  dpkg_divert:
+    path: '/etc/services'
+    divert: '{{ etc_services__diversion }}'
+    state: 'absent'
+    delete: True
   when: not etc_services__enabled|bool
