@@ -80,22 +80,10 @@
   when: item not in ansible_facts.ansible_local.apt.foreign_architectures|d()
   notify: [ 'Refresh host facts' ]
 
-- name: Check current APT diversions
-  environment:
-    LC_ALL: 'C'
-  shell: set -o nounset -o pipefail -o errexit &&
-         dpkg-divert --list '/etc/apt/*.dpkg-divert' | awk '{print $NF}' || true
-  args:
-    executable: 'bash'
-  register: apt__register_diversions
-  when: apt__enabled|bool
-  check_mode: False
-  changed_when: False
-
 - name: Divert original /etc/apt/sources.list
-  command: dpkg-divert --quiet --local --divert /etc/apt/sources.list.dpkg-divert --rename /etc/apt/sources.list
-  when: (apt__enabled|bool and apt__sources_deploy_state == 'present' and
-         '/etc/apt/sources.list.dpkg-divert' not in apt__register_diversions.stdout_lines)
+  dpkg_divert:
+    path: '/etc/apt/sources.list'
+  when: (apt__enabled|bool and apt__sources_deploy_state == 'present')
 
 - name: Configure APT distribution sources
   template:
@@ -108,12 +96,12 @@
   when: (apt__enabled|bool and apt__sources_deploy_state == 'present')
 
 - name: Remove diversion of original /etc/apt/sources.list
-  shell: rm -f /etc/apt/sources.list ; dpkg-divert --quiet --local --rename --remove /etc/apt/sources.list
-  args:
-    warn: False
+  dpkg_divert:
+    path: '/etc/apt/sources.list'
+    state: 'absent'
+    delete: True
   register: apt__register_sources_diversion
-  when: (apt__enabled|bool and apt__sources_deploy_state == 'absent' and
-         '/etc/apt/sources.list.dpkg-divert' in apt__register_diversions.stdout_lines)
+  when: (apt__enabled|bool and apt__sources_deploy_state == 'absent')
 
 - name: Configure custom APT keys
   apt_key:
