@@ -340,6 +340,11 @@ LDAP
 
 - Ensure that the role works correctly with Ansible ``--check`` mode.
 
+:ref:`debops.grub` role
+'''''''''''''''''''''''
+
+- Fixed password generation issue.
+
 :ref:`debops.libvirtd` role
 '''''''''''''''''''''''''''
 
