@@ -323,6 +323,11 @@ LDAP
 
 - Fixed role execution failure with :command:`git ls-files` command.
 
+:ref:`debops.grub` role
+'''''''''''''''''''''''
+
+- Fixed password generation issue.
+
 :ref:`debops.libvirtd` role
 '''''''''''''''''''''''''''
 
