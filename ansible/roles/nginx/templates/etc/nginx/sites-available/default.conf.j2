@@ -665,10 +665,20 @@ server {
 
 server {
 
-{%     endif                                                %}
-{%     for port in nginx_tpl_listen_ssl                     %}
-        listen {{ port }} ssl{% if nginx_version is version_compare('1.9.5','>=') and nginx_enable_http2|bool %} http2{% elif nginx_version is version_compare('1.4','>=') and nginx_enable_spdy|bool %} spdy{% endif %}{% if nginx_tpl_default_server_ssl %} {{ nginx_tpl_default_server_ssl | join(" ") }}{% endif %}{% if (loop.first and nginx_tpl_ipv6only_ssl) %} {{ nginx_tpl_ipv6only_ssl | join(" ") }}{% endif %};
-{%     endfor                                               %}
+{%     endif %}
+{%     for port in nginx_tpl_listen_ssl %}
+{%      set opts = [ 'ssl' ] %}
+{%      if nginx_version is version_compare('1.9.5', '>=') %}
+{%        if nginx_enable_http2 | bool %}
+{%          set _ = opts.append('http2') %}
+{%        endif %}
+{%      endif %}
+{%      set _ = opts.extend(nginx_tpl_default_server_ssl) %}
+{%      if loop.first %}
+{%        set _ = opts.extend(nginx_tpl_ipv6only_ssl) %}
+{%      endif %}
+        listen {{ port }} {{ opts | join(" ") }};
+{%     endfor %}
 
         ssl_certificate           {{ nginx_tpl_ssl_certificate }};
         ssl_certificate_key       {{ nginx_tpl_ssl_certificate_key }};
