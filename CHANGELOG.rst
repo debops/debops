@@ -766,6 +766,15 @@ General
 - The :command:`debops-padlock` script has been removed from the project. It's
   functionality is now available via the :command:`debops project` subcommands.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The support for `SPDY`__ protocol has been removed from the role; it has been
+  replaced in the technology stack by `HTTP/2`__ specification.
+
+  .. __: https://en.wikipedia.org/wiki/SPDY
+  .. __: https://en.wikipedia.org/wiki/HTTP/2
+
 :ref:`debops.preseed` role
 ''''''''''''''''''''''''''
 
