@@ -84,10 +84,13 @@
   when: item not in ansible_facts.ansible_local.apt.foreign_architectures|d()
   notify: [ 'Refresh host facts' ]
 
-- name: Divert original /etc/apt/sources.list
+- name: Add/remove diversion of /etc/apt/sources.list
   dpkg_divert:
     path: '/etc/apt/sources.list'
-  when: (apt__enabled|bool and apt__sources_deploy_state == 'present')
+    state: '{{ apt__sources_deploy_state }}'
+    delete: True
+  register: apt__register_sources_diversion
+  when: (apt__enabled|bool and apt__sources_deploy_state in [ 'absent', 'present' ])
 
 - name: Configure APT distribution sources
   template:
@@ -98,14 +101,6 @@
     mode: '0644'
   register: apt__register_sources_template
   when: (apt__enabled|bool and apt__sources_deploy_state == 'present')
-
-- name: Remove diversion of original /etc/apt/sources.list
-  dpkg_divert:
-    path: '/etc/apt/sources.list'
-    state: 'absent'
-    delete: True
-  register: apt__register_sources_diversion
-  when: (apt__enabled|bool and apt__sources_deploy_state == 'absent')
 
 - name: Configure custom APT keys
   apt_key:
