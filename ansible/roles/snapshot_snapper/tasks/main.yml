@@ -47,11 +47,14 @@
   loop: '{{ snapshot_snapper__divert_files | flatten }}'
 
 - name: Copy diverted configuration file to original location
-  copy:
+  copy:  # noqa no-handler
     src: '{{ item }}.dpkg-divert'
     dest: '{{ item }}'
     remote_src: True
     force: False
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   when: snapshot_snapper__updatedb_diverted_register is changed
   with_flattened: '{{ snapshot_snapper__divert_files }}'
 

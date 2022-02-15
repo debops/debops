@@ -10,10 +10,13 @@
   register: ifupdown__register_divert
 
 - name: Provide original interface configuration temporarily
-  copy:
+  copy:  # noqa no-handler
     src: '/etc/network/interfaces.dpkg-divert'
     dest: '{{ ifupdown__reconfigure_init_file }}'
     remote_src: True
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   when: ifupdown__register_divert is changed
 
 - name: Remove redundant configuration
