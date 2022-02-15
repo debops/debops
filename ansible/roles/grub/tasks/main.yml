@@ -118,10 +118,12 @@
 ## Currently unlikely because the patch was not accepted upstream.
 ## It has been decided to not divert this script because there is a chance that
 ## security fixes could affect this file.
-- name: Divert original /etc/grub.d/10_linux
+- name: Add/remove diversion of /etc/grub.d/10_linux
   dpkg_divert:
     path: '/etc/grub.d/10_linux'
-  when: (grub__combined_users|length > 0)
+    state: '{{ "present" if grub__combined_users|length > 0 else "absent" }}'
+    delete: True
+  notify: [ 'Update GRUB' ]
 
 - name: Copy /etc/grub.d/10_linux.dpkg-divert to its original location
   copy:
@@ -134,7 +136,7 @@
     mode: '0755'
   when: (grub__combined_users|length > 0)
 
-- name: Apply patch to allow to configure the default menu entry parameters
+- name: Allow configuration of the default menu entry parameters
   replace:
     dest: '/etc/grub.d/10_linux'
     regexp: "^CLASS=(?:\\$\\{[A-Z_]+:-)?([\"'][\\w _-]+)([\"'])\\}?"
@@ -142,14 +144,6 @@
     mode: '0755'
   notify: [ 'Update GRUB' ]
   when: (grub__combined_users|length > 0)
-
-- name: Remove patch to allow configuring the default menu entry parameters
-  dpkg_divert:
-    path: '/etc/grub.d/10_linux'
-    state: 'absent'
-    delete: True
-  notify: [ 'Update GRUB' ]
-  when: (grub__combined_users|length == 0)
 
 # ]]]
 
