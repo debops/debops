@@ -103,7 +103,7 @@
   with_items: '{{ icinga__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Check icinga2 configuration and restart' ]
   when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init', 'divert', 'feature' ])
-  no_log: '{{ item.no_log | d(omit) }}'
+  no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
 
 - name: Ensure that configuration directories exist on the master node
   file:
@@ -138,7 +138,7 @@
   delegate_to: '{{ icinga__master_delegate_to }}'
   notify: [ 'Check icinga2 configuration and restart it on the master node' ]
   when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init', 'divert', 'feature' ])
-  no_log: '{{ item.no_log | d(omit) }}'
+  no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
 
 - name: Configure state of Icinga features
   file:
