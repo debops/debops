@@ -58,7 +58,7 @@ or Ansible is run in non-interactive mode, a random password will be generated.
 
 Next, the user will be asked whether the password should be stored on the
 Ansible Controller using the Password Store utility. If not, and the password
-is randomly generated, it will be stored under the :file:`/secret` hierarchy.
+is randomly generated, it will be stored under the :file:`secret/` hierarchy.
 If the password was not randomly generated *and* the Password Store is not
 being used, the password will not be stored (under the assumption that it is
 memorized) and will have to be provided manually, e.g. using the
