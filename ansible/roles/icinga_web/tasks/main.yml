@@ -88,7 +88,7 @@
     owner: '{{ icinga_web__user }}'
     group: '{{ icinga_web__group }}'
     mode: '0660'
-  no_log: '{{ item.no_log | d(omit) }}'
+  no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
   with_items:
 
     - filename: 'authentication.ini'
