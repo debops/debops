@@ -11,18 +11,20 @@
   import_role:
     name: 'global_handlers'
 
-- name: Divert PAM access control files
+- name: Add/remove diversion of PAM access control files
   vars:
     access_conf: '{{ "/etc/security/"
                      + item.filename | d("access-" + (item.name | regex_replace("\.conf$","")) + ".conf") }}'
   dpkg_divert:
     path: '{{ access_conf }}'
+    state: '{{ item.state|d("present") }}'
+    delete: True
   loop: '{{ pam_access__combined_rules | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"access_conf": access_conf, "state": item.state|d("present")} }}'
-  when: (pam_access__enabled|bool and item.name|d() and item.options|d() and
-         item.state|d('present') not in [ 'absent', 'init', 'ignore' ] and
-         item.divert|d(False)|bool)
+  when: (pam_access__enabled|bool and item.name|d() and
+         item.divert|d(False)|bool and
+         item.state|d('present') in [ 'present', 'absent' ])
 
 - name: Generate PAM access control files
   vars:
@@ -48,23 +50,9 @@
   loop: '{{ pam_access__combined_rules | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"access_conf": access_conf, "state": item.state|d("present")} }}'
-  when: pam_access__enabled|bool and item.name|d() and item.state|d('present') == 'absent' and
-        item.divert is undefined
-
-- name: Revert PAM access control files
-  vars:
-    access_conf: '{{ "/etc/security/"
-                     + item.filename | d("access-" + (item.name | regex_replace("\.conf$","")) + ".conf") }}'
-  dpkg_divert:
-    path: '{{ access_conf }}'
-    state: 'absent'
-    delete: True
-  loop: '{{ pam_access__combined_rules | debops.debops.parse_kv_items }}'
-  loop_control:
-    label: '{{ {"access_conf": access_conf, "state": item.state|d("present")} }}'
-  when: (pam_access__enabled|bool and item.name|d() and
-         item.state|d('present') == 'absent' and
-         item.divert|d(False)|bool)
+  when: pam_access__enabled|bool and item.name|d() and
+        not item.divert|d(False)|bool and
+        item.state|d('present') == 'absent'
 
 - name: Make sure that Ansible local facts directory exists
   file:
