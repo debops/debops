@@ -84,10 +84,11 @@
     mode: '0644'
   notify: [ 'Restart ferm' ]
 
-- name: Divert the original ferm configuration file
+- name: Add/remove diversion of /etc/ferm/ferm.conf
   dpkg_divert:
     path: '/etc/ferm/ferm.conf'
-  when: ferm__enabled|bool
+    state: '{{ "present" if ferm__enabled|bool else "absent" }}'
+    delete: True
 
 - name: Configure main ferm config file
   template:
@@ -98,13 +99,6 @@
     mode: '0644'
   notify: [ 'Restart ferm' ]
   when: ferm__enabled|bool
-
-- name: Revert the original configuration file
-  dpkg_divert:
-    path: '/etc/ferm/ferm.conf'
-    state: 'absent'
-    delete: True
-  when: not ferm__enabled|bool
 
 - name: Remove firewall rules
   file:
