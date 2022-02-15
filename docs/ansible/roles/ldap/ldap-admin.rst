@@ -31,16 +31,16 @@ By default LDAP connection will be bound as a Distinguished Name:
    uid=<user>,ou=People,dc=example,dc=org
 
 The DN can be overridden in the :envvar:`ldap__admin_binddn` variable, either
-via Ansible inventory (this should be avoided if the inventory is shared
-between multiple administrators), or using an environment variable on the
-Ansible Controller:
+via the Ansible inventory (this should be avoided if the inventory is shared
+between multiple administrators), on the command line (using the
+``--extra-vars`` argument), or using an environment variable on the Ansible
+Controller:
 
 .. code-block:: console
 
    export DEBOPS_LDAP_ADMIN_BINDDN="cn=ansible,ou=Services,dc=example,dc=org"
 
-The bind password is retrieved from the :command:`pass` password manager on the
-Ansible Controller, or from an environment variable (see below). If the bind
+How the bind password is obtained is described in the next section. If the bind
 password is not provided (the :envvar:`ldap__admin_bindpw` variable is empty),
 the LDAP tasks will be skipped. This allows the :ref:`debops.ldap` role to be
 used in a playbook with other roles without the fear that lack of LDAP
@@ -53,15 +53,31 @@ Secure handling of LDAP admin credentials
 -----------------------------------------
 
 The LDAP password of the current Ansible user is defined in the
-:envvar:`ldap__admin_bindpw` default variable. The role checks if the
-``$DEBOPS_LDAP_ADMIN_BINDPW`` environment variable (on the Ansible Controller)
-is defined and uses its value as the password during connections to the LDAP
-directory.
+:envvar:`ldap__admin_bindpw` inventory variable.
 
-If the environment variable is not defined, the role will try and lookup the
-password using the `passwordstore`__ Ansible lookup plugin. The plugin uses the
-:command:`pass` `password manager`__ as a backend to store credentials
-encrypted using the GPG key of the user.
+Environment variable
+~~~~~~~~~~~~~~~~~~~~
+By default, the role first checks if the ``DEBOPS_LDAP_ADMIN_BINDPW``
+environment variable is defined on the Ansible Controller and uses its value as
+the password during connections to the LDAP directory.
+
+Plaintext file
+~~~~~~~~~~~~~~
+Next, the role will look for credentials in the :file:`secret/ldap/credentials/`
+directory. The files in this directory are named based on the UUID of the
+current user's Distinguished Name (see the previous section).
+
+The UUID conversion is done because LDAP Distinguished Names can contain
+spaces, and the Ansible lookups don't work too well with filenames that contain
+spaces.  You can use the :file:`ldap/get-uuid.yml` playbook to convert user
+account DNs or arbitrary LDAP Distinguished Names to an UUID value you can use
+to look up the passwords manually, if needed.
+
+Password Store
+~~~~~~~~~~~~~~
+Finally, the role will try and lookup the password using the `passwordstore`__
+Ansible lookup plugin. The plugin uses the :command:`pass` `password manager`__
+as a backend to store credentials encrypted using the GPG key of the user.
 
 .. __: https://docs.ansible.com/ansible/latest/collections/community/general/passwordstore_lookup.html
 .. __: https://www.passwordstore.org/
@@ -70,13 +86,7 @@ The path in the :command:`pass` storage directory where the :ref:`debops.ldap`
 will look for credentials is defined by the
 :envvar:`ldap__admin_passwordstore_path`, by default it's
 :file:`debops/ldap/credentials/`. The actual encrypted files with the password
-are named based on the UUID value of the current user Distinguished Name used
-as the BindDN (in the :envvar:`ldap__admin_binddn` variable). The UUID
-conversion is used because LDAP Distinguished Names can contain spaces, and the
-Ansible lookups don't work too well with filenames that contain spaces.
-You can use the :file:`ldap/get-uuid.yml` playbook to convert user account DNs
-or arbitrary LDAP Distinguished Names to an UUID value you can use to look up
-the passwords manually, if needed.
+are named based on the UUID, like for the plaintext password.
 
 You can store new credentials in the :command:`pass` password manager using the
 :file:`ansible/playbooks/ldap/save-credential.yml` Ansible playbook included
@@ -86,8 +96,8 @@ the LDAP servers by following this steps:
 1. Make sure you have `GPGv2` and `pass` installed, ie. ``apt-get install gpgv2 pass``
 2. Make sure you have a `GPG keypair <https://alexcabal.com/creating-the-perfect-gpg-keypair/>`_
 3. Initialize the password store: ``pass init <your-gpg-id>``. Example: ``pass init admin@example.com``
-4. Run the playbook ``debops ldap/save-credential -l <host>``
-5. Re-Run the playbook for each user you need a password.
+4. Run the playbook ``debops run ldap/save-credential -l <host>``
+5. Re-run the playbook for each user you want to store a password for
 
 The playbook will ask interactively for the ``uid=`` username, and if not
 provided, for the full LDAP Distinguished Name, and after that, for a password

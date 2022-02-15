@@ -612,7 +612,7 @@ ldap__admin_enabled: '{{ True if ldap__fact_admin_bindpw|d() else False }}'
 # The relative path in the :command:`pass` password database, where personal
 # LDAP credentials can be found by the role. See :ref:`ldap__ref_admin_pass`
 # for more details. This variable can be used in Ansible playbooks that use the
-# :ref:`debops.ldap` to create and update admin credentials.
+# :ref:`debops.ldap` role to create and update admin credentials.
 ldap__admin_passwordstore_path: 'debops/ldap/credentials'
 
                                                                    # ]]]
@@ -639,8 +639,7 @@ ldap__admin_dn: '{{ [ ldap__admin_rdn, ldap__people_rdn ] + ldap__base_dn }}'
 # administrative tasks. It can be overridden on the Ansible Controller through
 # use of the environment variables.
 ldap__admin_binddn: '{{ lookup("env", "DEBOPS_LDAP_ADMIN_BINDDN")
-                        if lookup("env", "DEBOPS_LDAP_ADMIN_BINDDN")|d()
-                        else (ldap__admin_dn | join(",")) }}'
+                        | d(ldap__admin_dn | join(","), True) }}'
 
                                                                    # ]]]
 # .. envvar:: ldap__admin_bindpw [[[
@@ -648,14 +647,22 @@ ldap__admin_binddn: '{{ lookup("env", "DEBOPS_LDAP_ADMIN_BINDDN")
 # The LDAP BindPW value which will be used to bind to the LDAP directory for
 # administrative tasks. It can be overridden on the Ansible Controller through
 # use of the environment variables. See :ref:`ldap__ref_admin_pass` for more
-# details about :command:`pass` password database integration.
+# details.
 ldap__admin_bindpw: '{{ (lookup("env", "DEBOPS_LDAP_ADMIN_BINDPW")
                          if lookup("env", "DEBOPS_LDAP_ADMIN_BINDPW")|d()
-                         else (lookup("passwordstore", ldap__admin_passwordstore_path
-                                      + "/" + (ldap__admin_binddn | to_uuid)
-                                      + " create=false", errors="ignore")))
-                        if ldap__enabled|bool
-                        else "" }}'
+                         else (lookup("file", secret + "/ldap/credentials/"
+                                              + ldap__admin_binddn | to_uuid
+                                              + ".password")
+                               if lookup("first_found",
+                                         [ secret + "/ldap/credentials/"
+                                           + ldap__admin_binddn | to_uuid
+                                           + ".password" ],
+                                         skip=True, errors="ignore")
+                               else lookup("passwordstore",
+                                           ldap__admin_passwordstore_path + "/"
+                                           + ldap__admin_binddn | to_uuid
+                                           + " create=false", errors="ignore"))
+                        ) if ldap__enabled|bool else "" }}'
 
                                                                    # ]]]
 # .. envvar:: ldap__admin_server_uri [[[

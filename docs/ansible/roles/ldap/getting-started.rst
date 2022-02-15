@@ -35,29 +35,47 @@ LDAP directory initialization
 
 The base directory structure used by DebOps roles is defined and managed by the
 :ref:`debops.slapd` Ansible role. The :envvar:`slapd__structure_tasks` variable
-contains a list of LDAP objects which will be created on server installation,
-which conform to the :ref:`slapd__ref_acl` configuration.
+contains a list of LDAP objects which will be created during the server
+installation, which conform to the :ref:`slapd__ref_acl` configuration.
 
-The :file:`ansible/playbooks/ldap/init-directory.yml` Ansible playbooks
-contains additional configuration which can be used to create an admin account
-inside of the LDAP directory and grant it "LDAP Administrator" and "UNIX
-Administrator" roles. To use it with the new OpenLDAP servers, run the command:
+The :file:`ansible/playbooks/ldap/init-directory.yml` Ansible playbook can be
+used to create an admin account in the LDAP directory and to assign it to the
+"LDAP Administrator" and "UNIX Administrator" roles. To use it with a newly
+configured OpenLDAP server, run the command:
 
 .. code-block:: console
 
-   debops ldap/init-directory -l <slapd-server>
+   debops run ldap/init-directory -l <slapd-server>
 
 The playbook will use the current UNIX account information on the Ansible
-Controller (``passwd`` database, SSH public keys from :command:`ssh-agent`) to
-create a new user account in the LDAP directory with administrator privileges.
+Controller (username, etc, from the ``passwd`` database and SSH public keys
+from :command:`ssh-agent`) to create a new user account with administrative
+privileges in the LDAP directory.
 
-The user will be asked for a new password used to bind to the directory; this
-password will be stored on the Ansible Controller using Password Store, and
-used for :ref:`ldap__ref_admin`.
+The user will first be asked for a new password for the admin account which
+will be used in the future to bind to the directory. If no password is provided
+or Ansible is run in non-interactive mode, a random password will be generated.
 
-The playbook will not make any changes to existing LDAP objects.
+Next, the user will be asked whether the password should be stored on the
+Ansible Controller using the Password Store utility. If not, and the password
+is randomly generated, it will be stored under the :file:`secret/` hierarchy.
+If the password was not randomly generated *and* the Password Store is not
+being used, the password will not be stored (under the assumption that it is
+memorized) and will have to be provided manually, e.g. using the
+``DEBOPS_LDAP_ADMIN_BINDPW`` environment variable, in future playbook runs. See
+:ref:`ldap__ref_admin` for further details.
 
-.. note:: For the LDAP access to work, Ansible Controller needs to trust the
+The various defaults used in the playbook can also be overridden on the command
+line using the ``--extra-vars`` argument:
+
+.. code-block:: console
+
+   debops run ldap/init-directory -l <slapd-server> --extra-vars="admin_user=ansible admin_use_password_store=False"
+
+The playbook will not make any changes to any existing LDAP entries other than
+the administrative user.
+
+.. note:: For the LDAP access to work, the Ansible Controller needs to trust the
    Certificate Authority which is used by the OpenLDAP service. If you rely on
    the :ref:`debops.pki` internal CA, you will have to add the Root CA
    certificate managed by the role to the operating system certificate store.
@@ -70,18 +88,19 @@ The :ref:`debops.ldap` role is included in the DebOps common playbook,
 therefore you don't need to do anything special to enable it on a host. However
 it is deactivated by default.
 
-To enable the role, define in the Ansible inventory, for example in
+To enable the role, define in the Ansible inventory, for example in the
 :file:`ansible/inventory/group_vars/all/ldap.yml` file:
 
 .. code-block:: yaml
 
    ldap__enabled: True
 
-The :ref:`debops.ldap` role is used by many other DebOps roles [#f1]_, and enabling it
+The :ref:`debops.ldap` role is used by many other DebOps roles, and enabling it
 will affect the environment and configuration of multiple services, including
 basic things like UNIX system groups used to manage the host. It's best to
 either not enable LDAP support in a given environment, or enable it at the
-beginning of a new deployment.
+beginning of a new deployment (but after administrative access has been
+configured, as described above).
 
 The POSIX integration with the LDAP directory can be controlled using the
 :envvar:`ldap__posix_enabled` variable. If it's set to ``False``, services that
@@ -144,8 +163,3 @@ List of other useful resources related to the ``debops.ldap`` Ansible role:
 - The role does not rely on the Ansible ``ldap_attr`` module, instead it uses
   the ``ldap_attrs`` module included in the ``debops.ansible_plugins`` role to
   manage LDAP attributes of an entry.
-
-.. rubric:: Footnotes
-
-.. [#f1] Well, not yet, but that's the planned direction that DebOps
-         maintainers are looking into right now.

@@ -324,6 +324,14 @@ Continuous Integration
 - The default box used by Vagrant for DebOps VMs has been updated from
   ``debian/buster64`` to ``debian/bullseye64``.
 
+LDAP
+''''
+
+- The :file:`ldap/init-directory.yml` playbook can now store the administrator
+  credentials in the :file:`secret/` directory managed by the
+  :ref:`debops.secret` role. THe credentials can also be randomly generated if
+  the playbook is used non-interactively.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 

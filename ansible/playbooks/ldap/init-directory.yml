@@ -15,9 +15,14 @@
 
   vars_prompt:
 
-    - name: 'admin_plaintext_password'
-      prompt: 'New password for your LDAP user account'
+    - name: 'admin_input_plaintext_password'
+      prompt: 'New password for your LDAP user account (enter=random)'
+      default: ''
       private: True
+
+    - name: 'admin_use_password_store'
+      default: True
+      prompt: 'Use Password Store? (default=yes)'
 
   vars:
 
@@ -31,10 +36,26 @@
     # SSH public keys in the 'ssh-agent'
     admin_sshkeys: '{{ lookup("pipe", "ssh-add -L | grep ^\\\(sk-\\\)\\\?ssh || cat ~/.ssh/*.pub || true").split("\n") }}'
 
-    # Password of the administrator account, stored in the Password Store on
-    # the Ansible Controller
-    admin_saved_password: '{{ lookup("passwordstore", ldap__admin_passwordstore_path
-                                     + "/" + (admin_dn | to_uuid)
+    # Plaintext administrator password. If no password has been provided,
+    # a random password will be generated and stored either in a file or
+    # in the Password Store on the Ansible Controller. If a password has
+    # been provided and the Password Store is not used, the password will
+    # not be stored.
+    admin_plaintext_password: '{{ admin_input_plaintext_password
+                                  if admin_input_plaintext_password|d()
+                                  else (lookup("password", "/dev/null length=32")
+                                        if admin_use_password_store|d(True)|bool
+                                        else
+                                        lookup("password",
+                                               secret + "/ldap/credentials/"
+                                               + admin_dn | to_uuid
+                                               + ".password length=32")) }}'
+
+    # This variable is used to store the administrator password in the Password
+    # Store on the Ansible Controller, if requested
+    admin_saved_password: '{{ lookup("passwordstore",
+                                     ldap__admin_passwordstore_path
+                                     + "/" + admin_dn | to_uuid
                                      + " create=true overwrite=true userpass="
                                      + admin_plaintext_password) }}'
 
@@ -122,6 +143,7 @@
     - name: Save admin credential in the password store
       set_fact:
         admin_stored_password: '{{ admin_saved_password }}'
+      when: admin_use_password_store|d(True)|bool
       no_log: '{{ debops__no_log | d(True) }}'
       delegate_to: 'localhost'
       become: False
