@@ -28,10 +28,14 @@
     mode: '0644'
   when: machine__enabled|bool
 
-- name: Divert original /etc/issue file
+- name: Add/remove diversion of /etc/issue
   dpkg_divert:
     path: '/etc/issue'
-  when: machine__enabled|bool and machine__etc_issue_state|d('present') != 'absent'
+    state: '{{ "present"
+               if machine__etc_issue_state|d("present") != "absent"
+               else "absent" }}'
+    delete: True
+  when: machine__enabled|bool
 
 - name: Configure /etc/issue file
   template:
@@ -41,13 +45,6 @@
     group: 'root'
     mode: '0644'
   when: machine__enabled|bool and machine__etc_issue_state|d('present') != 'absent'
-
-- name: Revert original /etc/issue file
-  dpkg_divert:
-    path: '/etc/issue'
-    state: 'absent'
-    delete: True
-  when: machine__enabled|bool and machine__etc_issue_state|d('present') == 'absent'
 
 - name: Remove static /etc/motd file if requested
   file:
@@ -97,20 +94,22 @@
 - name: Create /run/motd.dynamic symlink
   meta: 'flush_handlers'
 
-- name: Divert packaged MOTD scripts
+- name: Add/remove diversion of packaged MOTD scripts
   vars:
     divert_path: '{{ "/etc/update-motd.d/"
                       + item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name) }}'
   dpkg_divert:
     path: '{{ divert_path }}'
     divert: '{{ divert_path + ".disabled" }}'
+    state: '{{ "present" if
+               (machine__enabled|bool and
+                item.state|d("present") not in [ "absent", "revert" ])
+               else "absent" }}'
+    delete: True
   loop: '{{ machine__motd_combined_scripts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ item.filename|d(item.name) }}'
-  when: (machine__enabled|bool and
-         item.filename|d(item.name) and
-         item.state|d('present') not in [ 'init', 'absent', 'ignore', 'revert' ] and
-         item.divert|d()|bool)
+  when: item.filename|d(item.name) and item.divert|d(False)|bool
 
 - name: Remove dynamic MOTD scripts
   file:
@@ -121,7 +120,7 @@
   register: machine__register_motd_scripts_removed
   when: (machine__enabled|bool and
          item.filename|d(item.name) and
-         item.state|d('present') == 'absent' and not item.divert|d()|bool)
+         item.state|d('present') == 'absent' and not item.divert|d(False)|bool)
 
 - name: Install dynamic MOTD scripts
   copy:
@@ -150,25 +149,8 @@
             + machine__register_motd_scripts_created.results }}'
   loop_control:
     label: '{{ item.item.name }}'
-  when: (item.item.name|d() and not (item.item.divert|d())|bool and
+  when: (item.item.name|d() and not item.item.divert|d(False)|bool and
          item.item.filename is undefined and item is changed)
-
-- name: Revert packaged MOTD scripts
-  vars:
-    divert_path: '{{ "/etc/update-motd.d/"
-                      + item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name) }}'
-  dpkg_divert:
-    path: '{{ divert_path }}'
-    divert: '{{ divert_path + ".disabled" }}'
-    state: 'absent'
-    delete: True
-  loop: '{{ machine__motd_combined_scripts | debops.debops.parse_kv_items }}'
-  loop_control:
-    label: '{{ item.filename|d(item.name) }}'
-  when: ((not machine__enabled|bool and item.divert|d()|bool) or
-         (item.filename|d(item.name) and
-          item.state|d('present') in [ 'absent', 'revert' ] and
-          item.divert|d()|bool))
 
 - name: Make sure that Ansible local facts directory exists
   file:
