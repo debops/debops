@@ -62,11 +62,7 @@
                (logrotate__enabled|bool and item.state|d("present") != "absent")
                else "absent" }}'
     delete: True
-  with_flattened:
-    - '{{ logrotate__config }}'
-    - '{{ logrotate__group_config }}'
-    - '{{ logrotate__host_config }}'
-    - '{{ logrotate__dependent_config }}'
+  loop: '{{ logrotate__combined_config | flatten }}'
   when: item.filename|d() and item.divert|d(False)|bool
 
 - name: Generate custom log rotation configuration
@@ -76,11 +72,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_flattened:
-    - '{{ logrotate__config }}'
-    - '{{ logrotate__group_config }}'
-    - '{{ logrotate__host_config }}'
-    - '{{ logrotate__dependent_config }}'
+  loop: '{{ logrotate__combined_config | flatten }}'
   when: (logrotate__enabled|bool and item.filename|d() and
          item.state|d('present') != 'absent')
 
@@ -88,10 +80,6 @@
   file:
     path: '/etc/logrotate.d/{{ item.filename }}'
     state: 'absent'
-  with_flattened:
-    - '{{ logrotate__config }}'
-    - '{{ logrotate__group_config }}'
-    - '{{ logrotate__host_config }}'
-    - '{{ logrotate__dependent_config }}'
+  loop: '{{ logrotate__combined_config | flatten }}'
   when: (item.filename|d() and not item.divert|d(False)|bool and
          (not logrotate__enabled|bool or item.state|d('present') == 'absent'))
