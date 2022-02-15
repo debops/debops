@@ -239,7 +239,6 @@ apt_install__conditional_whitelist_packages:
   - 'haveged'
   - 'gnupg-curl'
   - 'needrestart'
-  - 'ranger'
   - 'open-vm-tools'
 
                                                                    # ]]]
@@ -292,19 +291,6 @@ apt_install__conditional_packages:
     state: '{{ "present"
                if ansible_distribution_release not in [ "precise" ]
                else "absent" }}'
-
-  - name: 'ranger'
-    # Ranger is a console file manager written in Python. In Debian, ranger package
-    # depends on Python 2, therefore to allow Python 3-only environment it will
-    # be installed only if Ansible uses Python 2 interpreter. It can also be
-    # installed by adding the package name to the normal list of APT packages
-    # via Ansible inventory.
-    whitelist: '{{ apt_install__conditional_whitelist_packages }}'
-    state: '{{ "present"
-               if ((ansible_python_version|d() is version_compare("3.5","<")) or
-                   (ansible_python_version|d() is version_compare("3.5",">=") and
-                    ansible_distribution_release not in [ "stretch" ]))
-               else "ignore" }}'
 
   - name: 'open-vm-tools'
     whitelist: '{{ apt_install__conditional_whitelist_packages }}'
