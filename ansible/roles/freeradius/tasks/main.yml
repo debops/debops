@@ -128,5 +128,6 @@
     state: 'absent'
   with_items: '{{ freeradius__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Check freeradius configuration and restart' ]
-  when: item.name|d() and item.state|d('present') == 'absent'
+  when: (item.name|d() and not item.divert|d(False)|bool and
+         item.state|d('present') == 'absent')
   no_log: '{{ item.no_log | d(False) | bool }}'
