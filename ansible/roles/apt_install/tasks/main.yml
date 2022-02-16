@@ -8,8 +8,35 @@
   import_role:
     name: 'ansible_plugins'
 
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
 - name: Pre hooks
   include: '{{ lookup("debops.debops.task_src", "apt_install/pre_main.yml") }}'
+
+- name: Make sure that Ansible fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: apt_install__enabled|bool
+
+- name: Save local Ansible facts
+  template:
+    src: 'etc/ansible/facts.d/apt_install.fact.j2'
+    dest: '/etc/ansible/facts.d/apt_install.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when: apt_install__enabled|bool
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: Update Ansible facts if they were modified
+  meta: 'flush_handlers'
 
 - name: Debconf module dependencies
   apt:
@@ -79,25 +106,6 @@
     dest: '/etc/needrestart/conf.d/no-kernel-hints.conf'
     mode: '0644'
   when: apt_install__enabled|bool and apt_install__no_kernel_hints|bool
-
-- name: Make sure that Ansible fact directory exists
-  file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  when: apt_install__enabled|bool
-
-- name: Save local Ansible facts
-  template:
-    src: 'etc/ansible/facts.d/apt_install.fact.j2'
-    dest: '/etc/ansible/facts.d/apt_install.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  when: apt_install__enabled|bool
-  tags: [ 'meta::facts' ]
 
 - name: Post hooks
   include: '{{ lookup("debops.debops.task_src", "apt_install/post_main.yml") }}'

@@ -1,8 +1,30 @@
-{# Copyright (C) 2016-2017 Maciej Delmanowski <drybjed@gmail.com>
- # Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
- # Copyright (C) 2016-2017 DebOps <https://debops.org/>
- # SPDX-License-Identifier: GPL-3.0-only
- #}
-{
-"configured": "true"
+#!{{ ansible_python['executable'] }}
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2016-2017 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2016-2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps
+import os
+
+
+def dir_exists(path):
+    return os.path.isdir(path)
+
+
+def module_loaded(mod):
+    return dir_exists(os.path.join('/sys/module', mod))
+
+
+output = {
+    'configured': True,
+    'have_virtual_rng': module_loaded('virtio_rng')
 }
+
+print(dumps(output, sort_keys=True, indent=4))
