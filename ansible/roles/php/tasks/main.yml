@@ -121,26 +121,14 @@
                                                                    # ]]]
 # PHP-FPM management [[[
 
-- name: Check current PHP-FPM diversions
-  environment:
-    LC_ALL: 'C'
-  shell: set -o nounset -o pipefail -o errexit &&
-         dpkg-divert --list '{{ php__etc_base + "/fpm/*" }}' | awk '{print $NF}' || true
-  args:
-    executable: 'bash'
-  register: php__register_diversions
-  check_mode: False
-  changed_when: False
-  tags: [ 'role::php:pools', 'role::php:config' ]
-
 - name: Divert default PHP-FPM configuration and pool
-  command: dpkg-divert --quiet --local --divert {{ item + ".dpkg-divert" }}
-           --rename {{ item }}
-  notify: [ 'Restart php-fpm' ]
+  dpkg_divert:
+    path: '{{ item }}'
   with_items:
     - '{{ php__etc_base + "/fpm/php-fpm.conf" }}'
     - '{{ php__etc_base + "/fpm/pool.d/www.conf" }}'
-  when: '"fpm" in php__server_api_packages and item + ".dpkg-divert" not in php__register_diversions.stdout_lines'
+  when: '"fpm" in php__server_api_packages'
+  notify: [ 'Restart php-fpm' ]
   tags: [ 'role::php:pools', 'role::php:config' ]
 
 - name: Generate php-fpm global configuration

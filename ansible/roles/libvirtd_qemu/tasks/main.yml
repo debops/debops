@@ -44,11 +44,8 @@
     mode: '0755'
 
 - name: Divert managed configuration files
-  command: 'dpkg-divert --quiet --local --divert {{ item }}.dpkg-divert --rename {{ item }}'
-  args:
-    creates: '{{ item }}.dpkg-divert'
-  with_items:
-    - '/etc/libvirt/qemu.conf'
+  dpkg_divert:
+    path: '/etc/libvirt/qemu.conf'
 
 - name: Generate QEMU private configuration files
   template:

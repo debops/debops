@@ -32,11 +32,12 @@
     group: 'root'
     mode: '0644'
 
-- name: Divert original /etc/hosts.allow
-  command: dpkg-divert --quiet --local --divert {{ tcpwrappers__divert_hosts_allow }} --rename /etc/hosts.allow
-  args:
-    creates: '{{ tcpwrappers__divert_hosts_allow }}'
-  when: tcpwrappers__enabled | bool
+- name: Add/remove diversion of /etc/hosts.allow
+  dpkg_divert:
+    path: '/etc/hosts.allow'
+    divert: '{{ tcpwrappers__divert_hosts_allow }}'
+    state: '{{ "present" if tcpwrappers__enabled|bool else "absent" }}'
+    delete: True
 
 - name: Allow access from Ansible Controller to sshd
   template:
@@ -94,13 +95,6 @@
     group: 'root'
     mode: '0644'
   when: tcpwrappers__enabled | bool
-
-- name: Remove diversion of /etc/hosts.allow
-  shell: rm -f /etc/hosts.allow ; dpkg-divert --quiet --local --rename --remove /etc/hosts.allow
-  args:
-    removes: '{{ tcpwrappers__divert_hosts_allow }}'
-    warn: False
-  when: not tcpwrappers__enabled | bool
 
 - name: Make sure that Ansible local fact directory exists
   file:

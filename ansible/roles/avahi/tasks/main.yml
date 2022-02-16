@@ -21,10 +21,11 @@
     mode: '0755'
 
 - name: Divert the avahi-daemon configuration
-  command: dpkg-divert --quiet --local --divert /etc/avahi/{{ item }}.dpkg-divert --rename /etc/avahi/{{ item }}
-  args:
-    creates: '/etc/avahi/{{ item }}.dpkg-divert'
-  with_items: [ 'avahi-daemon.conf', 'hosts' ]
+  dpkg_divert:
+    path: '/etc/avahi/{{ item }}'
+  loop:
+    - 'avahi-daemon.conf'
+    - 'hosts'
   register: avahi__register_divert
   notify: [ 'Restart avahi-daemon' ]
 

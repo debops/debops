@@ -18,9 +18,8 @@
     state: 'present'
 
 - name: Divert the original backup2l config file
-  command: dpkg-divert --quiet --local --divert /etc/backup2l.conf.dpkg-divert --rename /etc/backup2l.conf
-  args:
-    creates: '/etc/backup2l.conf.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/backup2l.conf'
 
 - name: Create required directories
   file:

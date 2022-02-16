@@ -10,10 +10,8 @@
     name: 'global_handlers'
 
 - name: Divert Apt-Cacher NG configuration
-  command: dpkg-divert --quiet --local --divert "/{{ item.path }}.dpkg-divert"
-           --rename "/{{ item.path }}"
-  args:
-    creates: '/{{ item.path }}.dpkg-divert'
+  dpkg_divert:
+    path: '/{{ item.path }}'
   when: (item.divert|d(True))
   with_items: '{{ apt_cacher_ng__configuration_files }}'
 
@@ -104,13 +102,13 @@
 
 # ]]]
 
-- name: Remove obsolet debconf file from apt-cacher-ng package
+- name: Remove obsolete debconf file from apt-cacher-ng package
   file:
     path: '/etc/apt-cacher-ng/zz_debconf.conf'
     state: 'absent'
   notify: [ 'Restart apt-cacher-ng' ]
 
-- name: Remove obsolet file from debops.apt
+- name: Remove obsolete file from debops.apt
   file:
     path: '/etc/services.d/acng.j2'
     state: 'absent'

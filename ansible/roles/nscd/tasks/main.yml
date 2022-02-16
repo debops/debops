@@ -19,10 +19,8 @@
   until: nscd__register_packages is succeeded
 
 - name: Divert the nscd configuration file
-  command: dpkg-divert --quiet --local --divert /etc/nscd.conf.dpkg-divert
-                       --rename /etc/nscd.conf
-  args:
-    creates: '/etc/nscd.conf.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/nscd.conf'
 
 - name: Generate nscd configuration
   template:

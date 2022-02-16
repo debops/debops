@@ -5,10 +5,8 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Divert original /etc/ntp.conf
-  command: dpkg-divert --quiet --local --divert /etc/ntp.conf.dpkg-divert
-           --rename /etc/ntp.conf
-  args:
-    creates: '/etc/ntp.conf.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/ntp.conf'
   when: ntp__daemon == 'ntpd'
 
 - name: Configure NTPd

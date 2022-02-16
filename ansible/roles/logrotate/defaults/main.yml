@@ -92,8 +92,8 @@ logrotate__default_options: |
   tabooext + .dpkg-divert
   include /etc/logrotate.d
 
-# ]]]
-# ]]]
+                                                                   # ]]]
+                                                                   # ]]]
 # Log rotation configuration [[[
 # ------------------------------
 
@@ -130,7 +130,7 @@ logrotate__default_config:
                       "precise", "trusty", "xenial", "bionic" ]))
                else "absent" }}'
 
-# ]]]
+                                                                   # ]]]
 # .. envvar:: logrotate__config [[[
 #
 # Log rotation configuration for all hosts in Ansible inventory. See
@@ -157,6 +157,15 @@ logrotate__host_config: []
 # Log rotation configuration defined by other Ansible roles through dependent
 # variables. See :ref:`logrotate__config` for more details.
 logrotate__dependent_config: []
+                                                                   # ]]]
+# .. envvar:: logrotate__combined_config [[[
+#
+# Variable which combines all the log rotation configuration varibles for use
+# in the tasks. See :ref:`logrotate__config` for more details.
+logrotate__combined_config: '{{ logrotate__config
+                                + logrotate__group_config
+                                + logrotate__host_config
+                                + logrotate__dependent_config }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

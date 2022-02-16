@@ -4,6 +4,10 @@
 # Copyright (C) 2014-2016 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Import custom Ansible plugins
+  import_role:
+    name: 'ansible_plugins'
+
 - name: Install required packages
   package:
     name: '{{ (etc_services__base_packages + etc_services__packages) | flatten }}'
@@ -27,11 +31,12 @@
     group: 'root'
     mode:  '0644'
 
-- name: Divert original /etc/services
-  command: dpkg-divert --quiet --local --divert "{{ etc_services__diversion }}" --rename "/etc/services"
-  args:
-    creates: '{{ etc_services__diversion }}'
-  when: etc_services__enabled|bool
+- name: Add/remove diversion of /etc/services
+  dpkg_divert:
+    path: '/etc/services'
+    divert: '{{ etc_services__diversion }}'
+    state: '{{ "present" if etc_services__enabled|bool else "absent" }}'
+    delete: True
 
 - name: Generate list of local services if requested
   template:
@@ -41,9 +46,8 @@
     group: 'root'
     mode:  '0644'
   loop: '{{ etc_services__combined_list | flatten }}'
-  when: (etc_services__enabled|bool and
-         ((item.name|d() and item.port|d()) or item.custom|d()) and
-         (item.state is undefined or item.state != 'absent'))
+  when: (etc_services__enabled|bool and item.state|d('present') != 'absent' and
+         ((item.name|d() and item.port|d()) or item.custom|d()))
 
 - name: Remove list of local services if requested
   file:
@@ -51,7 +55,8 @@
     state: 'absent'
   with_flattened: '{{ etc_services__combined_list }}'
   when: ((not etc_services__enabled|bool or item.delete|d() or
-          (item.state|d() and item.state == 'absent')) and ((item.name|d() and item.port|d()) or item.custom|d()))
+          item.state|d('present') == 'absent') and
+         ((item.name|d() and item.port|d()) or item.custom|d()))
 
 - name: Assemble services.d
   assemble:
@@ -62,10 +67,3 @@
     group: 'root'
     mode:  '0644'
   when: etc_services__enabled|bool
-
-- name: Remove diversion of /etc/services
-  shell: rm -f /etc/services ; dpkg-divert --quiet --local --rename --remove /etc/services
-  args:
-    removes: '{{ etc_services__diversion }}'
-    warn: False
-  when: not etc_services__enabled|bool

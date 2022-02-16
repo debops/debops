@@ -3,6 +3,10 @@
 # Copyright (C) 2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Import custom Ansible plugins
+  import_role:
+    name: 'ansible_plugins'
+
 - name: Import DebOps global handlers
   import_role:
     name: 'global_handlers'
@@ -68,12 +72,8 @@
   tags: [ 'role::kibana:config' ]
 
 - name: Divert original configuration files
-  command: dpkg-divert --quiet --local --divert {{ item }}.dpkg-divert
-           --rename {{ item }}
-  args:
-    creates: '{{ item }}.dpkg-divert'
-  with_items:
-    - '/etc/kibana/kibana.yml'
+  dpkg_divert:
+    path: '/etc/kibana/kibana.yml'
   notify: [ 'Start kibana' ]
   tags: [ 'role::kibana:config' ]
 

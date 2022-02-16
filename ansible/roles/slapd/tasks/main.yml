@@ -46,10 +46,8 @@
   register: slapd__register_unix_groups
 
 - name: Divert the OpenLDAP environment file
-  command: dpkg-divert --quiet --local --divert /etc/default/slapd.dpkg-divert
-                       --rename /etc/default/slapd
-  args:
-    creates: '/etc/default/slapd.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/default/slapd'
 
 - name: Generate the OpenLDAP environment file
   template:

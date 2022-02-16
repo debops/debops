@@ -89,11 +89,8 @@
   when: dnsmasq__dhcp_hosts|d() or dnsmasq__dns_records|d()
 
 - name: Divert original dnsmasq environment file
-  command: dpkg-divert --quiet --local
-           --divert "/etc/default/dnsmasq.dpkg-divert"
-           --rename "/etc/default/dnsmasq"
-  args:
-    creates: '/etc/default/dnsmasq.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/default/dnsmasq'
   notify: [ 'Test and restart dnsmasq' ]
 
 - name: Configure dnsmasq environment file
