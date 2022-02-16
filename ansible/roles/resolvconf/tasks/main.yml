@@ -43,11 +43,14 @@
   notify: [ 'Reload service manager' ]
   when: resolvconf__enabled|bool and resolvconf__static_enabled|bool
 
-- name: Divert original interface-order file
+- name: Add/remove diversion of /etc/resolvconf/interface-order
   dpkg_divert:
     path: '/etc/resolvconf/interface-order'
+    state: '{{ resolvconf__deploy_state }}'
+    delete: True
   notify: [ 'Refresh /etc/resolv.conf' ]
-  when: resolvconf__enabled|bool and resolvconf__deploy_state == 'present'
+  when: (resolvconf__enabled|bool and
+         resolvconf__deploy_state in [ 'present', 'absent' ])
 
 - name: Generate /etc/resolvconf/interface-order configuration
   template:
@@ -56,14 +59,6 @@
     mode: '0644'
   notify: [ 'Refresh /etc/resolv.conf' ]
   when: resolvconf__enabled|bool and resolvconf__deploy_state == 'present'
-
-- name: Revert the original interface-order configuration
-  dpkg_divert:
-    path: '/etc/resolvconf/interface-order'
-    state: 'absent'
-    delete: True
-  notify: [ 'Refresh /etc/resolv.conf' ]
-  when: resolvconf__enabled|bool and resolvconf__deploy_state == 'absent'
 
 - name: Make sure Ansible fact directory exists
   file:
