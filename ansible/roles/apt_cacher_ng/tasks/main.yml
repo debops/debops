@@ -111,20 +111,12 @@
   notify: [ 'Assemble services.d' ]
   when: apt_cacher_ng__deploy_state == 'present'
 
-- name: Enable service
+- name: Enable/disable service
   ansible.builtin.service:
     name: 'apt-cacher-ng'
-    state: 'started'
-    enabled: True
-  when: apt_cacher_ng__enabled|d() and apt_cacher_ng__deploy_state == 'present'
-
-- name: Disable service
-  ansible.builtin.service:
-    name: 'apt-cacher-ng'
-    state: 'stopped'
-    enabled: False
-  when: (not apt_cacher_ng__enabled|d() and
-         apt_cacher_ng__deploy_state == 'present')
+    state: '{{ "started" if apt_cacher_ng__enabled|d(True) else "stopped" }}'
+    enabled: '{{ True if apt_cacher_ng__enabled|d(True) else False }}'
+  when: apt_cacher_ng__deploy_state == 'present'
 
 - name: Remove the cache directory
   ansible.builtin.file:
