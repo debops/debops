@@ -27,14 +27,14 @@
   when: (apt_cacher_ng__deploy_state in [ 'absent', 'purge' ] and
          not item.divert|d(True))
 
-- name: Remove diversions
+- name: Add/remove configuration file diversions
   dpkg_divert:
     path: '/{{ item.path }}'
-    state: 'absent'
+    state: '{{ "present" if apt_cacher_ng__deploy_state == "present"
+               else "absent" }}'
     delete: True
   loop: '{{ apt_cacher_ng__configuration_files }}'
-  when: (apt_cacher_ng__deploy_state in [ 'absent', 'purge' ] and
-         item.divert|d(True))
+  when: item.divert|d(True)
 
 - name: Install/remove packages
   ansible.builtin.package:
@@ -43,12 +43,6 @@
                else "absent" }}'
   register: apt_cacher_ng__register_packages
   until: apt_cacher_ng__register_packages is succeeded
-
-- name: Divert configuration
-  dpkg_divert:
-    path: '/{{ item.path }}'
-  loop: '{{ apt_cacher_ng__configuration_files }}'
-  when: item.divert|d(True) and apt_cacher_ng__deploy_state == 'present'
 
 - name: Generate configuration files
   ansible.builtin.template:
