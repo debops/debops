@@ -221,24 +221,20 @@
     state: 'absent'
   notify: [ 'Test sshd configuration and restart' ]
 
-- name: Divert PAM configuration for sshd
+- name: Add/remove diversion of /etc/pam.d/sshd
   dpkg_divert:
     path: '/etc/pam.d/sshd'
-  when: sshd__pam_deploy_state == 'present'
+    state: '{{ "present"
+               if sshd__pam_deploy_state|d("present") != "absent"
+               else "absent" }}'
+    delete: True
 
-- name: Generate PAM configuration for sshd
+- name: Generate /etc/pam.d/sshd configuration
   template:
     src: 'etc/pam.d/sshd.j2'
     dest: '/etc/pam.d/sshd'
     mode: '0644'
   when: sshd__pam_deploy_state == 'present'
-
-- name: Revert default sshd PAM configuration if requested
-  dpkg_divert:
-    path: '/etc/pam.d/sshd'
-    state: 'absent'
-    delete: True
-  when: sshd__pam_deploy_state != 'present'
 
 - name: Post hooks
   include: '{{ lookup("debops.debops.task_src", "sshd/post_main.yml") }}'
