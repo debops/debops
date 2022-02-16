@@ -393,7 +393,7 @@ elasticsearch__discovery_minimum_master_nodes: '{{ "1" if (elasticsearch__invent
 # .. envvar:: elasticsearch__gateway_recover_after_nodes [[[
 #
 # Number of Elasticsearch nodes required to enable cluster initial recovery
-# after full restart.
+# after full restart. Deprecated in Elasticsearch 7.7.0.
 elasticsearch__gateway_recover_after_nodes: '{{ elasticsearch__discovery_minimum_master_nodes }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -612,6 +612,22 @@ elasticsearch__default_configuration:
     value: '{{ elasticsearch__cluster_name }}'
     state: 'present'
 
+  - name: 'node.roles'
+    comment: 'Roles assigned to the node'
+    state: '{{ "present" if (elasticsearch__version is version("7.9.0", ">=") and elasticsearch__node_master) else "absent" }}'
+    value:
+      - 'master'
+
+  - name: 'node.roles'
+    state: '{{ "present" if (elasticsearch__version is version("7.9.0", ">=") and elasticsearch__node_data) else "absent" }}'
+    value:
+      - 'data'
+
+  - name: 'node.roles'
+    state: '{{ "present" if (elasticsearch__version is version("7.9.0", ">=") and elasticsearch__node_ingest) else "absent" }}'
+    value:
+      - 'ingest'
+
   - name: 'node.master'
     comment: 'Type of the node'
     value: '{{ elasticsearch__node_master }}'
@@ -634,7 +650,9 @@ elasticsearch__default_configuration:
     value: '{{ elasticsearch__http_port }}'
     state: 'present'
 
-  - name: 'transport.tcp.port'
+  - name: '{{ "transport.tcp.port"
+              if (elasticsearch__version is version("7.1.0", "<"))
+              else "transport.port" }}'
     comment: 'Set a custom port for TCP transport'
     value: '{{ elasticsearch__transport_tcp_port }}'
     state: 'present'
@@ -657,6 +675,7 @@ elasticsearch__default_configuration:
       Prevent the "split brain" by configuring the majority of nodes
       (total number of master-eligible nodes / 2 + 1)
     value: '{{ elasticsearch__discovery_minimum_master_nodes }}'
+    state: '{{ "present" if (elasticsearch__version is version("7.0.0", "<")) else "absent" }}'
 
     # Reset the default host list
   - name: 'cluster.initial_master_nodes'
@@ -672,6 +691,7 @@ elasticsearch__default_configuration:
   - name: 'gateway.recover_after_nodes'
     comment: 'Block initial recovery after a full cluster restart until N nodes are started'
     value: '{{ elasticsearch__gateway_recover_after_nodes }}'
+    state: '{{ "present" if (elasticsearch__version is version("7.7.0", "<")) else "absent" }}'
 
   - name: 'action.destructive_requires_name'
     value: True
