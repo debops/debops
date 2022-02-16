@@ -43,15 +43,19 @@
 - name: Update Ansible facts if they were modified
   meta: 'flush_handlers'
 
-- name: Divert the custom sysctl configuration
+- name: Add/remove diversion of custom sysctl configuration files
   dpkg_divert:
     path: '/etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}'
-  with_items: '{{ sysctl__combined_parameters | debops.debops.parse_kv_items }}'
-  when: (sysctl__enabled|bool and item.name|d() and item.options|d() and
-         item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
+    state: '{{ item.state|d("present") }}'
+    delete: True
+  loop: '{{ sysctl__combined_parameters | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ { "name": item.name, "state": item.state|d("present") } }}'
+  when: (sysctl__enabled|bool and item.name|d() and
+         item.state|d('present') in [ 'present', 'absent' ] and
          item.divert|d(False)|bool)
 
-- name: Remove sysctl configuration files if requested
+- name: Remove custom sysctl configuration files
   file:
     path: '/etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}'
     state: 'absent'
@@ -59,7 +63,7 @@
   register: sysctl__register_config_removed
   when: sysctl__enabled|bool and item.name|d() and item.state|d('present') == 'absent'
 
-- name: Generate sysctl configuration files
+- name: Generate custom sysctl configuration files
   template:
     src: 'etc/sysctl.d/parameters.conf.j2'
     dest: '/etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}'
@@ -71,18 +75,6 @@
     label: '{{ item.name }}'
   register: sysctl__register_config_created
   when: sysctl__enabled|bool and item.name|d() and item.options|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
-
-- name: Revert original sysctl configuration
-  dpkg_divert:
-    path: '/etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}'
-    state: 'absent'
-    delete: True
-  loop: '{{ sysctl__combined_parameters | debops.debops.parse_kv_items }}'
-  loop_control:
-    label: '{{ item.name }}'
-  when: (sysctl__enabled|bool and item.name|d() and
-         item.state|d('present') == 'absent' and
-         item.divert|d(False)|bool)
 
 - name: Check sysctl command capabilities
   shell: set -o nounset -o pipefail -o errexit &&
