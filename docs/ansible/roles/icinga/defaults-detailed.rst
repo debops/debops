@@ -51,10 +51,9 @@ using specific parameters:
   override the filename specified in the ``name`` parameter. Usually not used.
 
 ``divert``
-  Optional, boolean. When defined and ``True``, this parameter marks the file
-  as belonging to a ``.deb`` package. The original file will be diverted or
-  reverted depending on the ``state`` parameter to allow for unobtrusive
-  package upgrades. Diverted files have ``.dpkg-divert`` suffix and are ignored
+  Optional, boolean. When defined and ``True``, the original file will be
+  diverted or reverted depending on the ``state`` parameter to simplify package
+  upgrades. Diverted files will have a ``.dpkg-divert`` suffix and are ignored
   by Icinga 2.
 
 ``state``

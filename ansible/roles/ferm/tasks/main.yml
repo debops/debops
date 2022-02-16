@@ -5,6 +5,10 @@
 # Copyright (C) 2014-2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Import custom Ansible plugins
+  import_role:
+    name: 'ansible_plugins'
+
 - name: Import DebOps global handlers
   import_role:
     name: 'global_handlers'
@@ -80,11 +84,11 @@
     mode: '0644'
   notify: [ 'Restart ferm' ]
 
-- name: Divert the original ferm configuration file
-  command: dpkg-divert --quiet --local --divert /etc/ferm/ferm.conf.dpkg-divert --rename /etc/ferm/ferm.conf
-  args:
-    creates: '/etc/ferm/ferm.conf.dpkg-divert'
-  when: ferm__enabled|bool
+- name: Add/remove diversion of /etc/ferm/ferm.conf
+  dpkg_divert:
+    path: '/etc/ferm/ferm.conf'
+    state: '{{ "present" if ferm__enabled|bool else "absent" }}'
+    delete: True
 
 - name: Configure main ferm config file
   template:
@@ -95,13 +99,6 @@
     mode: '0644'
   notify: [ 'Restart ferm' ]
   when: ferm__enabled|bool
-
-- name: Revert the original configuration file
-  shell: rm -f /etc/ferm/ferm.conf ; dpkg-divert --quiet --local --rename --remove /etc/ferm/ferm.conf
-  args:
-    removes: '/etc/ferm/ferm.conf.dpkg-divert'
-    warn: False
-  when: not ferm__enabled|bool
 
 - name: Remove firewall rules
   file:

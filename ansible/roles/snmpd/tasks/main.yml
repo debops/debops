@@ -75,9 +75,8 @@
   when: snmpd_download_mibs|d() and snmpd_download_mibs
 
 - name: Divert default configuration file
-  command: dpkg-divert --quiet --local --divert /etc/snmp/snmpd.conf.dpkg-divert --rename /etc/snmp/snmpd.conf
-  args:
-    creates: '/etc/snmp/snmpd.conf.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/snmp/snmpd.conf'
   notify: [ 'Restart snmpd' ]
 
 - name: Initialize local account

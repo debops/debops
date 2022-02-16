@@ -131,10 +131,6 @@ Each YAML dictionary entry can use specific set of parameters:
   and to not create issues during package upgrades. The file will be reverted
   back when the ``state`` parameter is set to ``absent``.
 
-  The role checks what files in the FreeRADIUS configuration directory are
-  marked as Debian Conffiles and automatically diverts/reverts them as
-  necessary. This parameter can be used to override this behaviour.
-
   The diverted files have a dot (``.``) prepended to them, this will ensure
   that `the files will be ignored`__ by the FreeRADIUS ``$INCLUDE dir/``
   directive.

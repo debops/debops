@@ -22,9 +22,8 @@
   when: libuser__enabled | bool
 
 - name: Divert the original libuser configuration file
-  command: dpkg-divert --quiet --local --divert /etc/libuser.conf.dpkg-divert --rename /etc/libuser.conf
-  args:
-    creates: '/etc/libuser.conf.dpkg-divert'
+  dpkg_divert:
+    path: '/etc/libuser.conf'
   when: libuser__enabled|bool
 
 - name: Configure main libuser config file

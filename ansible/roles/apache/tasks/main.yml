@@ -5,6 +5,10 @@
 # Copyright (C) 2016-2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Import custom Ansible plugins
+  import_role:
+    name: 'ansible_plugins'
+
 - name: Check for supported Ansible version
   assert:
     that:
@@ -49,15 +53,12 @@
 
 # Manage Apache configuration snippets [[[1
 - name: Divert conf-available configuration
-  command: dpkg-divert --quiet --local
-             --divert {{ ((item.value.divert | d(apache__config_path + "/conf-available/"
-                                                 + (item.value.divert_filename|d(item.key)) + ".conf"))
-                         + item.value.divert_suffix|d(".dpkg-divert")) | quote }}
-             --rename {{ (apache__config_path + "/conf-available/" + item.key + ".conf") | quote }}
-  args:
-    creates: '{{ ( item.value.divert | d(apache__config_path + "/conf-available/"
-                                         + (item.value.divert_filename|d(item.key)) + ".conf"))
-                 + item.value.divert_suffix|d(".dpkg-divert") }}'
+  dpkg_divert:
+    path: '{{ apache__config_path + "/conf-available/" + item.key + ".conf" }}'
+    divert: '{{ (item.value.divert
+                 | d(apache__config_path + "/conf-available/"
+                     + (item.value.divert_filename|d(item.key)) + ".conf"))
+                + item.value.divert_suffix|d(".dpkg-divert") }}'
   when: (item.value.type|d("default") in ["divert"])
   with_dict: '{{ apache__combined_snippets }}'
 
@@ -107,25 +108,15 @@
 
 # Manage Apache virtual hosts [[[1
 - name: Divert sites-available configuration
-  command: dpkg-divert --quiet --local
-             --divert {{ ((item.divert | d(apache__config_path + "/sites-available/"
-                                           + (item.divert_filename|d(item.filename | d(item.name
-                                                                                       if (item.name is string)
-                                                                                       else item.name[0]
-                                                                                            | d("default"))))
-                                           + ".conf"))
-                          + item.divert_suffix|d(".dpkg-divert")) | quote }}
-             --rename {{ (apache__config_path + "/sites-available/"
-                          + (item.filename | d(item.name
-                                               if (item.name is string)
-                                               else item.name[0] | d("default"))) + ".conf") | quote }}
-  args:
-    creates: '{{ (item.divert | d(apache__config_path + "/sites-available/"
-                                  + (item.divert_filename|d(item.filename | d(item.name
-                                                                              if (item.name is string)
-                                                                              else item.name[0] | d("default"))))
-                                  + ".conf"))
-                 + item.divert_suffix|d(".dpkg-divert") }}'
+  dpkg_divert:
+    path: '{{ apache__config_path + "/sites-available/"
+              + item.filename|d([item.name] | flatten | first | d("default"))
+              + ".conf" }}'
+    divert: '{{ (item.divert
+                 | d(apache__config_path + "/sites-available/"
+                     + item.divert_filename|d(item.filename|d([item.name] | flatten | first | d("default")))
+                     + ".conf")
+                 + item.divert_suffix|d(".dpkg-divert")) }}'
   when: (item.type|d(apache__vhost_type) in ["divert"])
   with_flattened: '{{ apache__combined_vhosts }}'
 
