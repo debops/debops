@@ -318,6 +318,12 @@ General
   with the ``no_log`` Ansible keyword. This should provide an easier way to
   debug issues with various roles.
 
+- Roles which use the :command:`dpkg-divert` Debian utility to preserve
+  original configuration files have been updated to use the ``dpkg_divert``
+  custom Ansible module included in the DebOps Collection instead of using the
+  ``command`` or ``shell`` Ansible modules to manage the diversion and
+  reversion.
+
 Continuous Integration
 ''''''''''''''''''''''
 
