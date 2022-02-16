@@ -47,7 +47,7 @@
   notify: [ 'Restart apt-cacher-ng' ]
   when: apt_cacher_ng__deploy_state == 'present'
 
-- name: Ensure the cache dir exists
+- name: Create the cache directory
   ansible.builtin.file:
     state: 'directory'
     path:  '{{ apt_cacher_ng__cache_dir }}'
@@ -56,7 +56,7 @@
     mode:  '{{ apt_cacher_ng__dir_perms }}'
   when: apt_cacher_ng__deploy_state == 'present'
 
-- name: Check if the cache dir permissions need to be changed
+- name: Lazy check cache directory permissions
   ansible.builtin.file:
     state: 'file'
     path:  '{{ apt_cacher_ng__cache_dir }}/_expending_damaged'
@@ -65,17 +65,8 @@
     mode:  '{{ apt_cacher_ng__file_perms }}'
   failed_when: False
   register: apt_cacher_ng__register_cache_perms
-  when: (apt_cacher_ng__cache_dir_enforce_permissions == 'lazy' and
-         apt_cacher_ng__deploy_state == 'present')
-
-- name: Check if the cache dir permissions should be changed
-  ansible.builtin.set_fact:
-    apt_cacher_ng__cache_dir_permissions_change: '{{
-      apt_cacher_ng__cache_dir_enforce_permissions != "disabled" and (
-        (apt_cacher_ng__register_cache_perms|d() and apt_cacher_ng__register_cache_perms is changed) or
-        apt_cacher_ng__cache_dir_enforce_permissions == "strict"
-      ) }}'
-  when: apt_cacher_ng__deploy_state == 'present'
+  when: (apt_cacher_ng__deploy_state == 'present' and
+         apt_cacher_ng__cache_dir_enforce_permissions == 'lazy')
 
 # Note: doing this using native Ansible tasks is too slow
 - name: Change cache directory permissions
@@ -87,7 +78,9 @@
     chdir: '{{ apt_cacher_ng__cache_dir }}'
     warn: False
   when: (apt_cacher_ng__deploy_state == 'present' and
-         apt_cacher_ng__cache_dir_permissions_change)
+         (apt_cacher_ng__cache_dir_enforce_permissions == "strict" or
+          (apt_cacher_ng__cache_dir_enforce_permissions == "lazy" and
+           apt_cacher_ng__register_cache_perms is changed)))
 
 - name: Remove obsolete debconf file
   ansible.builtin.file:
