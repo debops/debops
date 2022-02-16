@@ -54,13 +54,12 @@ apt_cacher_ng__deploy_state: 'present'
 # This variable allows you to change which configuration files this role is
 # going to create and which permissions to use for them.
 #
-# ``src``
-#   String, optional, defaults to ``{{ item.path }}``. Corresponds with the
-#   name of the template file.
-#
 # ``path``
-#   String, required. Corresponds with the target name and
-#   provides the default name of the template file.
+#   String, required, defines the path to the configuration file on the host.
+#
+# ``src``
+#   String, optional, defines the path to the template file. Defaults to
+#   ``path`` with any leading ``/`` removed.
 #
 # ``owner``
 #   String, optional, defaults to ``root``. Unix user which owns the
@@ -79,19 +78,19 @@ apt_cacher_ng__deploy_state: 'present'
 #
 apt_cacher_ng__configuration_files:
 
-  - path: 'etc/apt-cacher-ng/backends_debian'
+  - path: '/etc/apt-cacher-ng/backends_debian'
     mode: '0644'
-  - path: 'etc/apt-cacher-ng/backends_ubuntu'
+  - path: '/etc/apt-cacher-ng/backends_ubuntu'
     mode: '0644'
-  - path: 'etc/apt-cacher-ng/backends_gentoo'
+  - path: '/etc/apt-cacher-ng/backends_gentoo'
     mode: '0644'
     divert: False
-  - path: 'etc/apt-cacher-ng/acng.conf'
+  - path: '/etc/apt-cacher-ng/acng.conf'
     mode: '0644'
-  - path: 'etc/apt-cacher-ng/security.conf'
+  - path: '/etc/apt-cacher-ng/security.conf'
     group: 'apt-cacher-ng'
     mode: '0640'
-  - path: 'etc/apt-cacher-ng/userinfo.html'
+  - path: '/etc/apt-cacher-ng/userinfo.html'
     mode: '0644'
     divert: False
                                                                    # ]]]

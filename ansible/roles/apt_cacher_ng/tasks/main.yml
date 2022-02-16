@@ -22,7 +22,7 @@
 
 - name: Add/remove configuration file diversions
   dpkg_divert:
-    path: '/{{ item.path }}'
+    path: '{{ item.path }}'
     state: '{{ "present" if apt_cacher_ng__deploy_state == "present"
                else "absent" }}'
     delete: True
@@ -39,8 +39,8 @@
 
 - name: Generate configuration files
   ansible.builtin.template:
-    src: '{{ item.src|d(item.path) }}.j2'
-    dest: '/{{ item.path }}'
+    src: '{{ item.src|d(item.path | regex_replace("^/", "")) }}.j2'
+    dest: '{{ item.path }}'
     owner: '{{ item.owner|d("root") }}'
     group: '{{ item.group|d("root") }}'
     mode: '{{ item.mode|d("0640") }}'
@@ -106,7 +106,7 @@
 
 - name: Remove configuration files
   ansible.builtin.file:
-    path: '/{{ item.path }}'
+    path: '{{ item.path }}'
     state: 'absent'
   loop: '{{ apt_cacher_ng__configuration_files }}'
   when: (apt_cacher_ng__deploy_state in [ 'absent', 'purge' ] and
