@@ -19,14 +19,6 @@
     value: 'No automated setup'
   when: apt_cacher_ng__deploy_state == 'present'
 
-- name: Remove configuration
-  ansible.builtin.file:
-    path: '/{{ item.path }}'
-    state: 'absent'
-  loop: '{{ apt_cacher_ng__configuration_files }}'
-  when: (apt_cacher_ng__deploy_state in [ 'absent', 'purge' ] and
-         not item.divert|d(True))
-
 - name: Add/remove configuration file diversions
   dpkg_divert:
     path: '/{{ item.path }}'
@@ -117,6 +109,14 @@
     state: '{{ "started" if apt_cacher_ng__enabled|d(True) else "stopped" }}'
     enabled: '{{ True if apt_cacher_ng__enabled|d(True) else False }}'
   when: apt_cacher_ng__deploy_state == 'present'
+
+- name: Remove configuration files
+  ansible.builtin.file:
+    path: '/{{ item.path }}'
+    state: 'absent'
+  loop: '{{ apt_cacher_ng__configuration_files }}'
+  when: (apt_cacher_ng__deploy_state in [ 'absent', 'purge' ] and
+         not item.divert|d(True))
 
 - name: Remove the cache directory
   ansible.builtin.file:
