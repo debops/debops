@@ -343,6 +343,13 @@ LDAP
 
 - The role defaults have been updated, Bullseye is the new Stable.
 
+:ref:`debops.apt_install` role
+''''''''''''''''''''''''''''''
+
+- The ``haveged`` Debian package will not be installed in a virtual machine if
+  the underlying hypervisor technology already provides access to the host's
+  RNG device through virtualization.
+
 :ref:`debops.dhparam` role
 ''''''''''''''''''''''''''
 
