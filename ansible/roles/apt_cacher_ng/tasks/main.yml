@@ -83,13 +83,6 @@
           (apt_cacher_ng__cache_dir_enforce_permissions == "lazy" and
            apt_cacher_ng__register_cache_perms is changed)))
 
-- name: Remove obsolete file from debops.apt
-  ansible.builtin.file:
-    path: '/etc/services.d/acng.j2'
-    state: 'absent'
-  notify: [ 'Assemble services.d' ]
-  when: apt_cacher_ng__deploy_state == 'present'
-
 - name: Enable/disable service
   ansible.builtin.service:
     name: 'apt-cacher-ng'
