@@ -58,7 +58,7 @@
   changed_when: False
   check_mode: False
 
-- name: Divert the FreeRADIUS configuration files
+- name: Add/remove diversion of FreeRADIUS configuration files
   vars:
     divert_path: '{{ freeradius__conf_base_path + "/" + (item.filename | d(item.name)) }}'
     divert_divert: '{{ freeradius__conf_base_path + "/"
@@ -69,14 +69,16 @@
   dpkg_divert:
     path: '{{ divert_path }}'
     divert: '{{ divert_divert }}'
-  with_items: '{{ freeradius__combined_configuration | debops.debops.parse_kv_items }}'
+    state: '{{ item.state|d("present") }}'
+    delete: True
+  loop: '{{ freeradius__combined_configuration | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"path":   divert_path,
                 "divert": divert_divert,
                 "state":  item.state|d("present")} }}'
   notify: [ 'Check freeradius configuration and restart' ]
-  when: (item.name|d() and item.divert|d(False) and
-         item.state|d('present') not in [ 'absent', 'ignore', 'init' ])
+  when: (item.name|d() and item.divert|d(False)|bool and
+         item.state|d('present') in [ 'present', 'absent' ])
   no_log: '{{ item.no_log | d(False) | bool }}'
 
 - name: Create missing configuration directories
@@ -127,25 +129,4 @@
   with_items: '{{ freeradius__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Check freeradius configuration and restart' ]
   when: item.name|d() and item.state|d('present') == 'absent'
-  no_log: '{{ item.no_log | d(False) | bool }}'
-
-- name: Revert FreeRADIUS configuration files
-  vars:
-    divert_path: '{{ freeradius__conf_base_path + "/" + (item.filename | d(item.name)) }}'
-    divert_divert: '{{ freeradius__conf_base_path + "/"
-                       + (item.divert_filename
-                          | d((((item.filename | d(item.name))|dirname + "/.")
-                               if ((item.filename | d(item.name))|dirname) else ".")
-                              + (item.filename | d(item.name))|basename + ".dpkg-divert")) }}'
-  dpkg_divert:
-    path: '{{ divert_path }}'
-    state: 'absent'
-    delete: True
-  with_items: '{{ freeradius__combined_configuration | debops.debops.parse_kv_items }}'
-  loop_control:
-    label: '{{ {"path":   divert_path,
-                "divert": divert_divert,
-                "state":  item.state|d("present")} }}'
-  notify: [ 'Check freeradius configuration and restart' ]
-  when: item.name|d() and item.divert|d(False) and item.state|d('present') == 'absent'
   no_log: '{{ item.no_log | d(False) | bool }}'
