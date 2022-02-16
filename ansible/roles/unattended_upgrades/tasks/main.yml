@@ -44,10 +44,11 @@
          (ansible_local|d() and ansible_local.unattended_upgrades|d() and
           ansible_local.unattended_upgrades.enabled|bool))
 
-- name: Divert unattended-upgrades configuration
+- name: Add/remove diversion of unattended-upgrades configuration
   dpkg_divert:
     path: '/etc/apt/apt.conf.d/50unattended-upgrades'
-  when: unattended_upgrades__enabled | bool
+    state: '{{ "present" if unattended_upgrades__enabled|bool else "absent" }}'
+    delete: True
 
 - name: Configure unattended-upgrades
   template:
@@ -57,13 +58,6 @@
     group: 'root'
     mode: '0644'
   when: unattended_upgrades__enabled | bool
-
-- name: Revert unattended-upgrades configuration
-  dpkg_divert:
-    path: '/etc/apt/apt.conf.d/50unattended-upgrades'
-    state: 'absent'
-    delete: True
-  when: not unattended_upgrades__enabled | bool
 
 - name: Make sure that Ansible local fact directory exists
   file:
