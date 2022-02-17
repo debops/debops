@@ -314,6 +314,13 @@ popd > /dev/null
 # Copy DebOps playbooks into the collection
 cp -r ansible/playbooks/* "${workdir_map[${collections[0]}]}/playbooks"
 
+# Copy various Ansible plugins to the directories where collection expects them
+cp ansible/plugins/callback/*.py "${workdir_map[${collections[0]}]}/plugins/callback"
+cp ansible/plugins/connection/*.py "${workdir_map[${collections[0]}]}/plugins/connection"
+cp ansible/plugins/filter/*.py "${workdir_map[${collections[0]}]}/plugins/filter"
+cp ansible/plugins/lookup/*.py "${workdir_map[${collections[0]}]}/plugins/lookup"
+cp ansible/plugins/modules/*.py "${workdir_map[${collections[0]}]}/plugins/modules"
+
 for collection in "${collections[@]}" ; do
 
     for filename in "${file_list[@]}" ; do

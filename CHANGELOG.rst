@@ -23,6 +23,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.0: https://github.com/debops/debops/compare/v3.0.0...stable-3.0
 
+Fixed
+~~~~~
+
+General
+'''''''
+
+- Ensure that the custom Ansible plugins included in DebOps are present in the
+  Ansible Collection build from the DebOps repository.
+
 
 `debops v3.0.0`_ - 2022-02-17
 -----------------------------
