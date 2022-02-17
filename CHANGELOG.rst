@@ -580,6 +580,12 @@ LDAP
   needed when the host-identifier contains periods (e.g. fully qualified
   domain names).
 
+:ref:`debops.dnsmasq` role
+''''''''''''''''''''''''''
+
+- Ensure that the configuration entries with ``a`` or ``aaaa`` parameter are
+  correctly recognized as host entries.
+
 :ref:`debops.ipxe` role
 '''''''''''''''''''''''
 
