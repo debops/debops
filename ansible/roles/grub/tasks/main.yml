@@ -61,13 +61,27 @@
   when: item.name|d()
   no_log: '{{ debops__no_log | d(True) }}'
 
+- name: Save temporary grub-mkpasswd formatted password in secrets
+  template:
+    src: 'secret/credentials/inventory_hostname/grub/user_name/password_mkpasswd.j2'
+    dest: '{{ secret + "/credentials/" + inventory_hostname + "/grub/" + item.0.name + "/password_mkpasswd" }}'
+    mode: '0640'
+  with_together:
+    - '{{ grub__combined_users }}'
+    - '{{ grub__register_pw_plain.results|d({}) }}'
+  become: False
+  delegate_to: 'localhost'
+  when: (item.0.name|d() and item.1 is changed)
+  no_log: '{{ debops__no_log | d(True) }}'
+
 ## There seems to be no way to specify the salt (except using a custom script).
 ## Only generating the hashed password when the plaintext password has changed
 ## is the workaround to make it idempotent.
 ## This is not too bad because depending on the iteration count chosen this operation could take a while ;)
 - name: Generate salted hash from user password
   ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
-         echo -en '{{ item.0.password }}\n{{ item.0.password }}\n' | LANG=C LC_ALL=C grub-mkpasswd-pbkdf2
+         cat '{{ (secret + "/credentials/" + inventory_hostname + "/grub/" + item.0.name + "/password_mkpasswd") | quote }}'
+         | LANG=C LC_ALL=C grub-mkpasswd-pbkdf2
          {{ "" if grub__iter_time|d()   == "default" else ("--iteration-count=" + grub__iter_time) }}
          {{ "" if grub__salt_length|d() == "default" else ("--salt=" + grub__salt_length) }}
          {{ "" if grub__hash_length|d() == "default" else ("--buflen=" + grub__hash_length) }}
@@ -81,6 +95,18 @@
   become: False
   delegate_to: 'localhost'
   changed_when: False
+  when: (item.0.name|d() and item.1 is changed)
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Remove temporary grub-mkpassword formatted password
+  file:
+    path: '{{ secret + "/credentials/" + inventory_hostname + "/grub/" + item.0.name + "/password_mkpasswd" }}'
+    state: 'absent'
+  with_together:
+    - '{{ grub__combined_users }}'
+    - '{{ grub__register_pw_plain.results|d({}) }}'
+  become: False
+  delegate_to: 'localhost'
   when: (item.0.name|d() and item.1 is changed)
   no_log: '{{ debops__no_log | d(True) }}'
 
