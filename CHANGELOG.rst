@@ -32,6 +32,9 @@ General
 - Ensure that the custom Ansible plugins included in DebOps are present in the
   Ansible Collection build from the DebOps repository.
 
+- Provide a help message in case the :file:`ansible.cfg` configuration file in
+  the DebOps project directory does not include the ``inventory`` option.
+
 
 `debops v3.0.0`_ - 2022-02-17
 -----------------------------
