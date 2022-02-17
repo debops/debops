@@ -11,5 +11,5 @@
     removes:    '{{ item.removes    | d(omit) }}'
     executable: '{{ item.executable | d("bash") }}'
   when: item.name|d() and item.state not in [ 'absent', 'ignore' ]
-  no_log: '{{ item.no_log | d(False) }}'
+  no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
   tags: [ 'role::resources:commands' ]
