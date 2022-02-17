@@ -1,5 +1,5 @@
-.. Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2019 DebOps <https://debops.org/>
+.. Copyright (C) 2019-2022 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2019-2022 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 DebOps releases
@@ -135,12 +135,12 @@ you can install DebOps in various ways.
 Current release schedule
 ------------------------
 
-- Latest "stable" release: ``stable-2.3`` (`GitHub branch`__, `differences from
+- Latest "stable" release: ``stable-3.0`` (`GitHub branch`__, `differences from
   master`__, `Changelog`__)
 
-.. __: https://github.com/debops/debops/tree/stable-2.3
-.. __: https://github.com/debops/debops/compare/stable-2.3
-.. __: https://docs.debops.org/en/stable-2.3/news/changelog.html
+.. __: https://github.com/debops/debops/tree/stable-3.0
+.. __: https://github.com/debops/debops/compare/stable-3.0
+.. __: https://docs.debops.org/en/stable-3.0/news/changelog.html
 
 =============== ============ =============== ================
  Branch/Tag      Status       First release   End of support
@@ -153,13 +153,13 @@ Current release schedule
 --------------- ------------ --------------- ----------------
 ``stable-3.1``  Planned      2022-06-xx      2023-06-xx
 --------------- ------------ --------------- ----------------
-``stable-3.0``  Planned      2022-01-xx      2023-01-xx
+``stable-3.0``  Supported    2022-02-17      2023-02-17
 --------------- ------------ --------------- ----------------
 ``stable-2.3``  Supported    2021-06-04      2022-06-04
 --------------- ------------ --------------- ----------------
-``stable-2.2``  Supported    2021-01-31      2022-01-31
+``stable-2.2``  Supported    2021-01-31      2022-06-31
 --------------- ------------ --------------- ----------------
-``stable-2.1``  Supported    2020-06-21      2021-12-21
+``stable-2.1``  Retired      2020-06-21      2022-02-17
 --------------- ------------ --------------- ----------------
 ``stable-2.0``  Retired      2020-01-30      2021-06-30
 --------------- ------------ --------------- ----------------
