@@ -330,16 +330,13 @@ LDAP
 - The DHCPv6 service does not use the TCP protocol, therefore it will not be
   opened in the firewall anymore.
 
+- Ensure that the configuration entries with ``a`` or ``aaaa`` parameter are
+  correctly recognized as host entries.
+
 :ref:`debops.etckeeper` role
 ''''''''''''''''''''''''''''
 
 - Fixed role execution failure with :command:`git ls-files` command.
-
-:ref:`debops.dnsmasq` role
-''''''''''''''''''''''''''
-
-- Ensure that the configuration entries with ``a`` or ``aaaa`` parameter are
-  correctly recognized as host entries.
 
 :ref:`debops.extrepo` role
 ''''''''''''''''''''''''''
