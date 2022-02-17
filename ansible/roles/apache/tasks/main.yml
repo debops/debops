@@ -2,24 +2,12 @@
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
 # Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
-# Copyright (C) 2016-2017 DebOps <https://debops.org/>
+# Copyright (C) 2016-2022 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
   ansible.builtin.import_role:
     name: 'ansible_plugins'
-
-- name: Check for supported Ansible version
-  ansible.builtin.assert:
-    that:
-      - 'ansible_version.full is version_compare("2.1.5.0", ">=")'
-      - '((ansible_version.minor == 2) and
-          (ansible_version.full is version_compare("2.2.2.0", ">="))) or (ansible_version.minor != 2)'
-    msg: |
-      VULNERABLE or unsupported Ansible version DETECTED, please update to
-      Ansible >= v2.1.5 or a newer Ansible release >= v2.2.2! Exiting.
-  run_once: True
-  delegate_to: 'localhost'
 
 # Manage optional system packages [[[1
 - name: Ensure optional packages are in there desired state
