@@ -15,6 +15,10 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+
+v3.0.0 (2022-02-17)
+-------------------
+
 Changes in the OpenLDAP support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
