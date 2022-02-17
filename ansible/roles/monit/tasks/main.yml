@@ -31,7 +31,7 @@
   with_items: '{{ monit__combined_config | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') == 'absent'
   notify: [ 'Test monit and reload' ]
-  no_log: '{{ True if (item.mode|d("0644") == "0600") else False }}'
+  no_log: '{{ debops__no_log | d(True if (item.mode|d("0644") == "0600") else False) }}'
 
 - name: Generate Monit configuration
   template:
@@ -43,7 +43,7 @@
   with_items: '{{ monit__combined_config | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') not in [ 'init', 'absent' ]
   notify: [ 'Test monit and reload' ]
-  no_log: '{{ True if (item.mode|d("0644") == "0600") else False }}'
+  no_log: '{{ debops__no_log | d(True if (item.mode|d("0644") == "0600") else False) }}'
 
 - name: Make sure Ansible local facts directory exists
   file:

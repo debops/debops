@@ -152,10 +152,11 @@
   when: item.name|d() and item.dn|d() and
         item.state|d('present') not in [ 'init', 'ignore' ]
   tags: [ 'role::slapd:tasks' ]
-  no_log: '{{ item.no_log | d(True
-                              if ("userPassword" in (item.attributes|d({})).keys() or
-                                  "olcRootPW"    in (item.attributes|d({})).keys())
-                              else False) }}'
+  no_log: '{{ debops__no_log | d(item.no_log)
+              | d(True
+                  if ("userPassword" in (item.attributes|d({})).keys() or
+                      "olcRootPW"    in (item.attributes|d({})).keys())
+                  else False) }}'
 
 - name: Remove slapacl test suite if requested
   file:
@@ -175,10 +176,11 @@
         item.name|d() and item.dn|d() and
         item.state|d('present') not in [ 'init', 'ignore' ]
   tags: [ 'role::slapd:slapacl', 'role::slapd:tasks' ]
-  no_log: '{{ item.no_log | d(True
-                              if ("userPassword" in (item.attributes|d({})).keys() or
-                                  "olcRootPW"    in (item.attributes|d({})).keys())
-                              else False) }}'
+  no_log: '{{ debops__no_log | d(item.no_log)
+              | d(True
+                  if ("userPassword" in (item.attributes|d({})).keys() or
+                      "olcRootPW"    in (item.attributes|d({})).keys())
+                  else False) }}'
 
 - name: Generate slapacl test suite script
   template:

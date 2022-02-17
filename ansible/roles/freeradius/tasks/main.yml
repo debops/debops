@@ -79,7 +79,7 @@
   notify: [ 'Check freeradius configuration and restart' ]
   when: (item.name|d() and item.divert|d(False)|bool and
          item.state|d('present') in [ 'present', 'absent' ])
-  no_log: '{{ item.no_log | d(False) | bool }}'
+  no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
 
 - name: Create missing configuration directories
   file:
@@ -93,7 +93,7 @@
     label: '{{ {"path": ((freeradius__conf_base_path + "/" + (item.filename | d(item.name))) | dirname)} }}'
   when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
          (item.link_src|d() or item.options|d() or item.raw|d()))
-  no_log: '{{ (item.no_log | d(False)) | bool }}'
+  no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
 
 - name: Generate FreeRADIUS configuration files
   template:
@@ -106,7 +106,7 @@
   notify: [ 'Check freeradius configuration and restart' ]
   when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
          not item.link_src|d() and (item.options|d() or item.raw|d()))
-  no_log: '{{ (item.no_log | d(False)) | bool }}'
+  no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
 
 - name: Create configuration file symlinks
   file:
@@ -120,7 +120,7 @@
   notify: [ 'Check freeradius configuration and restart' ]
   when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
          item.link_src|d())
-  no_log: '{{ (item.no_log | d(False)) | bool }}'
+  no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
 
 - name: Remove FreeRADIUS configuration files
   file:
@@ -130,4 +130,4 @@
   notify: [ 'Check freeradius configuration and restart' ]
   when: (item.name|d() and not item.divert|d(False)|bool and
          item.state|d('present') == 'absent')
-  no_log: '{{ item.no_log | d(False) | bool }}'
+  no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
