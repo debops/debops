@@ -8,6 +8,8 @@ from .utils import unexpanduser
 from .ansibleconfig import AnsibleConfig
 from .ansible.inventory import AnsibleInventory
 import subprocess
+import configparser
+import textwrap
 import os
 import sys
 
@@ -20,8 +22,19 @@ class AnsiblePlaybookRunner(object):
 
         self.inventory = AnsibleInventory(project)
 
-        self._inventory_paths = (
-                project.ansible_cfg.get_option('inventory').split(','))
+        try:
+            self._inventory_paths = (
+                    project.ansible_cfg.get_option('inventory').split(','))
+        except configparser.NoOptionError:
+            errmsg = ('Error: No inventory specified in the "ansible.cfg" '
+                      'configuration file. You might want to run '
+                      '"debops project refresh" command to ensure that it\'s '
+                      'included in the generated file. If this is a legacy '
+                      'project, check if the "inventory" option is present '
+                      'in the ".debops.cfg" file. The default is:')
+            print(textwrap.fill(errmsg, 78))
+            print('\n    [ansible defaults]\n    inventory = ansible/inventory')
+            sys.exit(1)
 
         self._playbook_dirs = self._expand_playbook_paths(project)
         self._known_collections = self._find_collections(project)
