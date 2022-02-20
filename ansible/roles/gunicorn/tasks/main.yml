@@ -14,12 +14,12 @@
 - name: Configure Green Unicorn on older OS releases
   include_tasks: 'older_releases.yml'
   when: ansible_distribution_release in
-        [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ]
+        [ 'trusty', 'xenial' ]
 
 - name: Configure Green Unicorn on newer OS releases
   include_tasks: 'newer_releases.yml'
   when: ansible_distribution_release not in
-        [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ]
+        [ 'trusty', 'xenial' ]
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:
