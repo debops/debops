@@ -38,6 +38,15 @@ Changed
 - The configuration included in the role has been updated to work correctly
   with Kibana v8.0.x release.
 
+Fixed
+~~~~~
+
+:ref:`debops.logrotate` role
+''''''''''''''''''''''''''''
+
+- Fixed formatting in the :file:`/etc/logrotate.conf` configuration file to
+  avoid adding :command:`vim` fold markers from the DebOps role defaults.
+
 
 `debops v3.0.1`_ - 2022-02-17
 -----------------------------
