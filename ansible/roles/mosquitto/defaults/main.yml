@@ -25,8 +25,8 @@
 # repository. On older OS releases, using the upstream package might enable
 # websocket support. The upstream repository is enabled automatically on OS
 # releases with unsuitable Mosquitto version.
-mosquitto__upstream: '{{ True if ansible_distribution_release in
-                         [ "wheezy", "precise", "trusty" ] else False }}'
+mosquitto__upstream: '{{ True if ansible_distribution_release in [ "trusty" ]
+                         else False }}'
 
                                                                    # ]]]
 # .. envvar:: mosquitto__upstream_key_id [[[
@@ -86,8 +86,7 @@ mosquitto__version: '{{ mosquitto__register_version.stdout | d("0.0.0") }}'
 # manager.
 mosquitto__pip_packages: '{{ ["paho-mqtt" ]
                              if (mosquitto__distribution_release in
-                                 [ "jessie", "stretch",
-                                   "precise", "trusty", "xenial" ])
+                                 [ "trusty", "xenial" ])
                              else [] }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -616,9 +615,7 @@ mosquitto__auth_patterns: []
 mosquitto__python__dependent_packages3:
 
   - '{{ []
-        if (mosquitto__distribution_release in
-            [ "jessie", "stretch",
-              "precise", "trusty", "xenial" ])
+        if (mosquitto__distribution_release in [ "trusty", "xenial" ])
         else ["python3-paho-mqtt"] }}'
 
                                                                    # ]]]
@@ -628,9 +625,7 @@ mosquitto__python__dependent_packages3:
 mosquitto__python__dependent_packages2:
 
   - '{{ []
-        if (mosquitto__distribution_release in
-            [ "jessie", "stretch",
-              "precise", "trusty", "xenial" ])
+        if (mosquitto__distribution_release in [ "trusty", "xenial" ])
         else ["python-paho-mqtt"] }}'
 
                                                                    # ]]]
