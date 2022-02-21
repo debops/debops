@@ -39,13 +39,8 @@ python__raw_apt_cache_valid_time: '-{{ 60 * 60 * 12 }}'
 
 # .. envvar:: python__v3 [[[
 #
-# Enable or disable support for Python 3 management. Python 3 will be
-# automatically disabled on some OS releases due to missing or outdated Python
-# 3 packages.
-python__v3: '{{ False
-                if (ansible_distribution_release|d() in
-                    [ "wheezy", "precise" ])
-                else True }}'
+# Enable or disable support for Python 3 management.
+python__v3: True
 
                                                                    # ]]]
 # .. envvar:: python__core_packages3 [[[
@@ -127,8 +122,7 @@ python__v2: '{{ ansible_local.python.enabled2
                           (discovered_interpreter_python|d("")).endswith("python") or
                            (python__register_raw_release|d() and
                             (python__register_raw_release.stdout|d("")).strip() in
-                            [ "wheezy", "jessie", "stretch",
-                              "precise", "trusty", "xenial" ]))
+                            [ "stretch", "trusty", "xenial" ]))
                       else False) }}'
 
                                                                    # ]]]
@@ -151,16 +145,14 @@ python__base_packages2:
   - 'python-httplib2'
   - '{{ "python-pip"
         if (ansible_distribution_release in
-            [ "wheezy", "jessie", "stretch", "buster",
-              "precise", "trusty", "xenial", "bionic" ])
+            [ "stretch", "buster",
+              "trusty", "xenial", "bionic" ])
            else [] }}'
   - 'python-setuptools'
   - 'python-pycurl'
   - 'python-future'
   - 'python-virtualenv'
-  - '{{ [] if (ansible_distribution_release in
-               [ "wheezy", "precise" ])
-           else "python-wheel" }}'
+  - 'python-wheel'
 
                                                                    # ]]]
 # .. envvar:: python__packages2 [[[
