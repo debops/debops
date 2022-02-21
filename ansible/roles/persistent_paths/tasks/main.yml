@@ -6,7 +6,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - when: persistent_paths__qubes_os_enabled|bool
@@ -14,7 +14,7 @@
   block:
 
   - name: Ensure the qubes-bind-dirs.d directory does exist
-    file:
+    ansible.builtin.file:
       path: '{{ persistent_paths__qubes_os_config_dir }}'
       state: 'directory'
       owner: 'root'
@@ -22,7 +22,7 @@
       mode: '0750'
 
   - name: Configuration persistent paths on Qubes OS
-    template:
+    ansible.builtin.template:
       src: 'rw/config/qubes-bind-dirs.d/default.conf.j2'
       dest: '{{ persistent_paths__qubes_os_config_dir + "/" + item.key + ".conf" }}'
       owner: 'root'
@@ -33,7 +33,7 @@
     notify: [ 'Run bind-dirs' ]
 
   - name: Remove configuration of persistent paths on Qubes OS
-    file:
+    ansible.builtin.file:
       path: '{{ persistent_paths__qubes_os_config_dir + "/" + item.key + ".conf" }}'
       state: 'absent'
     when: (item.value.state|d("present") == "absent")
@@ -42,7 +42,7 @@
 
 # Ansible facts [[[
 - name: Make sure Ansible fact directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -50,7 +50,7 @@
     mode: '0755'
 
 - name: Create local facts of persistent_paths
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/persistent_paths.fact.j2'
     dest: '/etc/ansible/facts.d/persistent_paths.fact'
     owner: 'root'
@@ -60,5 +60,5 @@
   tags: [ 'meta::facts' ]
 
 - name: Reload facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 # ]]]

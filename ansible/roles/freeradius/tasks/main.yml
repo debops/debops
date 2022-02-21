@@ -4,19 +4,19 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Install FreeRADIUS packages
-  package:
+  ansible.builtin.package:
     name: '{{ item }}'
     state: 'present'
   with_flattened:
@@ -26,13 +26,13 @@
   until: freeradius__register_packages is succeeded
 
 - name: Enable FreeRADIUS service in systemd to start at boot time
-  systemd:
+  ansible.builtin.systemd:
     name: 'freeradius.service'
     enabled: True
   when: ansible_service_mgr == 'systemd'
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -40,7 +40,7 @@
     mode: '0755'
 
 - name: Save FreeRADIUS local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/freeradius.fact.j2'
     dest: '/etc/ansible/facts.d/freeradius.fact'
     owner: 'root'
@@ -50,10 +50,10 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Get list of FreeRADIUS Conffiles
-  command: cat /var/lib/dpkg/info/freeradius-config.conffiles
+  ansible.builtin.command: cat /var/lib/dpkg/info/freeradius-config.conffiles
   register: freeradius__register_conffiles
   changed_when: False
   check_mode: False
@@ -82,7 +82,7 @@
   no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
 
 - name: Create missing configuration directories
-  file:
+  ansible.builtin.file:
     path: '{{ (freeradius__conf_base_path + "/" + (item.filename | d(item.name))) | dirname }}'
     state: 'directory'
     owner: '{{ freeradius__user }}'
@@ -96,7 +96,7 @@
   no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
 
 - name: Generate FreeRADIUS configuration files
-  template:
+  ansible.builtin.template:
     src:   'etc/freeradius/template.conf.j2'
     dest:  '{{ freeradius__conf_base_path + "/" + (item.filename | d(item.name)) }}'
     owner: '{{ item.owner | d(freeradius__user) }}'
@@ -109,7 +109,7 @@
   no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
 
 - name: Create configuration file symlinks
-  file:
+  ansible.builtin.file:
     dest: '{{ freeradius__conf_base_path + "/" + (item.filename | d(item.name)) }}'
     src: '{{ item.link_src }}'
     state: 'link'
@@ -123,7 +123,7 @@
   no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
 
 - name: Remove FreeRADIUS configuration files
-  file:
+  ansible.builtin.file:
     dest: '{{ freeradius__conf_base_path + "/" + (item.filename | d(item.name)) }}'
     state: 'absent'
   with_items: '{{ freeradius__combined_configuration | debops.debops.parse_kv_items }}'

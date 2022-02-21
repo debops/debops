@@ -4,12 +4,12 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Reload systemd units
-  systemd:
+  ansible.builtin.systemd:
     daemon_reload: True
   when: ansible_service_mgr == 'systemd'
 
 - name: Restart atd
-  service:
+  ansible.builtin.service:
     name: 'atd'
     state: 'restarted'
   when: not ansible_check_mode

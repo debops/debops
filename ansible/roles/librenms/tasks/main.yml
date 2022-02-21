@@ -4,11 +4,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (([ "php5-memcached" ]
                                if librenms__memcached|d()
                                else [])
@@ -20,7 +20,7 @@
   until: librenms__register_packages is succeeded
 
 - name: Enable non-free MIBs support
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '/etc/snmp/snmp.conf'
     state: 'present'
     regexp: 'mibs\s:'
@@ -31,13 +31,13 @@
 # ---- Environment ----
 
 - name: Create LibreNMS group
-  group:
+  ansible.builtin.group:
     name: '{{ librenms__group }}'
     system: True
     state: 'present'
 
 - name: Create LibreNMS user
-  user:
+  ansible.builtin.user:
     name: '{{ librenms__user }}'
     group: '{{ librenms__group }}'
     home: '{{ librenms__home }}'
@@ -50,7 +50,7 @@
 # ---- Deployment ----
 
 - name: Clone LibreNMS source from deploy server
-  git:
+  ansible.builtin.git:
     repo: '{{ librenms__install_repo }}'
     dest: '{{ librenms__install_path }}'
     version: '{{ librenms__install_version }}'
@@ -62,7 +62,7 @@
   tags: [ 'role::librenms:source' ]
 
 - name: Update LibreNMS home directory permissions
-  file:
+  ansible.builtin.file:
     path: '{{ librenms__home }}'
     state: 'directory'
     owner: '{{ librenms__user }}'
@@ -70,7 +70,7 @@
     mode: '0750'
 
 - name: Make sure log directory exists
-  file:
+  ansible.builtin.file:
     dest: '{{ librenms__log_dir }}'
     state: 'directory'
     owner: '{{ librenms__user }}'
@@ -79,7 +79,7 @@
   tags: [ 'role::librenms:config' ]
 
 - name: Make sure data directories exist
-  file:
+  ansible.builtin.file:
     dest: '{{ item }}'
     state: 'directory'
     owner: '{{ librenms__user }}'
@@ -96,7 +96,7 @@
   # This should be ran once until bug is fixed
   # https://github.com/ansible/ansible/issues/10784
 - name: Initialize SNMP credentials
-  set_fact:
+  ansible.builtin.set_fact:
     librenms__fact_snmp_v3_authlevel:  '{{ librenms__snmp_credentials[0]["authlevel"] }}'
     librenms__fact_snmp_v3_authalgo:   '{{ librenms__snmp_credentials[0]["authalgo"] }}'
     librenms__fact_snmp_v3_cryptoalgo: '{{ librenms__snmp_credentials[0]["cryptoalgo"] }}'
@@ -116,7 +116,7 @@
   tags: [ 'role::librenms:database' ]
 
 - name: Configure LibreNMS
-  template:
+  ansible.builtin.template:
     src: 'srv/www/sites/public/config.php.j2'
     dest: '{{ librenms__install_path + "/config.php" }}'
     owner: '{{ librenms__user }}'
@@ -135,7 +135,7 @@
   become_user: '{{ librenms__user }}'
 
 - name: Initialize database
-  command: './daily.sh'  # noqa no-handler
+  ansible.builtin.command: './daily.sh'  # noqa no-handler
   args:
     chdir: '{{ librenms__install_path }}'
   become: True
@@ -144,7 +144,7 @@
   tags: [ 'role::librenms:database' ]
 
 - name: Get list of existing users from LibreNMS database
-  command: mysql -ssNe "select username from users"
+  ansible.builtin.command: mysql -ssNe "select username from users"
   become: True
   become_user: '{{ librenms__user }}'
   register: librenms__register_users
@@ -153,7 +153,7 @@
   tags: [ 'role::librenms:config', 'role::librenms:admins' ]
 
 - name: Create admin accounts
-  command: 'php adduser.php {{ item }} {{ lookup("password", secret + "/credentials/" + inventory_hostname
+  ansible.builtin.command: 'php adduser.php {{ item }} {{ lookup("password", secret + "/credentials/" + inventory_hostname
                                                              + "/librenms/admin/" + item + "/password") }} 10'
   args:
     chdir: '{{ librenms__install_path }}'
@@ -166,7 +166,7 @@
   tags: [ 'role::librenms:config', 'role::librenms:admins' ]
 
 - name: Configure cron tasks
-  template:
+  ansible.builtin.template:
     src: 'etc/cron.d/librenms.j2'
     dest: '/etc/cron.d/librenms'
     owner: 'root'
@@ -175,7 +175,7 @@
   tags: [ 'role::librenms:config' ]
 
 - name: Check list of current user accounts
-  shell: 'set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: 'set -o nounset -o pipefail -o errexit &&
           getent passwd | cut -d: -f1'
   args:
     executable: 'bash'
@@ -186,7 +186,7 @@
   tags: [ 'role::librenms:config', 'role::librenms:snmp_conf' ]
 
 - name: Create ~/.snmp directories
-  file:
+  ansible.builtin.file:
     path: '{{ "~" + item + "/.snmp" }}'
     state: 'directory'
     owner: '{{ item }}'
@@ -199,7 +199,7 @@
   tags: [ 'role::librenms:config', 'role::librenms:snmp_conf' ]
 
 - name: Generate ~/.snmp/snmp.conf configuration
-  template:
+  ansible.builtin.template:
     src: 'home/snmp/snmp.conf.j2'
     dest: '{{ "~" + item + "/.snmp/snmp.conf" }}'
     owner: '{{ item }}'
@@ -211,7 +211,7 @@
   tags: [ 'role::librenms:config', 'role::librenms:snmp_conf' ]
 
 - name: Get list of known devices from LibreNMS database
-  command: mysql -ssNe "select hostname from devices"
+  ansible.builtin.command: mysql -ssNe "select hostname from devices"
   become: True
   become_user: '{{ librenms__user }}'
   register: librenms__register_devices
@@ -219,7 +219,7 @@
   tags: [ 'role::librenms:config', 'role::librenms:devices' ]
 
 - name: Add specified hosts to LibreNMS
-  command: php addhost.php {{ item }} any v3
+  ansible.builtin.command: php addhost.php {{ item }} any v3
   args:
     chdir: '{{ librenms__install_path }}'
   become: True

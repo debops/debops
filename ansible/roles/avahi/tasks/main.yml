@@ -9,11 +9,11 @@
 # https://lists.linuxcontainers.org/pipermail/lxc-devel/2012-April/002395.html
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Make sure that Avahi config directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/avahi'
     state: 'directory'
     owner: 'root'
@@ -30,7 +30,7 @@
   notify: [ 'Restart avahi-daemon' ]
 
 - name: Configure avahi-daemon
-  template:
+  ansible.builtin.template:
     src: 'etc/avahi/avahi-daemon.conf.j2'
     dest: '/etc/avahi/avahi-daemon.conf'
     owner: 'root'
@@ -39,7 +39,7 @@
   notify: [ 'Restart avahi-daemon' ]
 
 - name: Create a stub mDNS hosts configuration file
-  file:  # noqa no-handler
+  ansible.builtin.file:  # noqa no-handler
     state: 'touch'
     dest: '/etc/avahi/hosts'
     owner: 'root'
@@ -48,7 +48,7 @@
   when: avahi__register_divert is changed
 
 - name: Create avahi-daemon systemd override directory
-  file:
+  ansible.builtin.file:
     path: '/etc/systemd/system/avahi-daemon.service.d'
     state: 'directory'
     owner: 'root'
@@ -59,7 +59,7 @@
         ansible_virtualization_role == 'guest'
 
 - name: Install avahi-daemon exec override on LXC guests
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/avahi-daemon.service.d/exec-override.conf.j2'
     dest: '/etc/systemd/system/avahi-daemon.service.d/exec-override.conf'
     owner: 'root'
@@ -72,7 +72,7 @@
 # The rest of the role continues as normal.
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (avahi__base_packages
                               + avahi__packages)) }}'
     state: 'present'
@@ -80,7 +80,7 @@
   until: avahi__register_packages is succeeded
 
 - name: Manage advertisement of additional hosts over Avahi
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '/etc/avahi/hosts'
     regexp: '{{ "^" + item.key + "\s+" }}'
     line: '{{ item.key }} {{ (item.value
@@ -92,12 +92,12 @@
   when: item.key|d() and item.value|d()
 
 - name: Configure Avahi CNAME aliases
-  include: avahi_alias.yml
+  ansible.builtin.include_tasks: avahi_alias.yml
   when: avahi__alias_enabled|bool
   tags: [ 'role::avahi:alias' ]
 
 - name: Remove Avahi services if requested
-  file:
+  ansible.builtin.file:
     path: '/etc/avahi/services/{{ item.value.filename | d(item.key) }}.service'
     state: 'absent'
   with_dict: '{{ avahi__combined_services }}'
@@ -105,7 +105,7 @@
   tags: [ 'role::avahi:alias', 'role::avahi:services' ]
 
 - name: Configure Avahi services
-  template:
+  ansible.builtin.template:
     src: 'etc/avahi/services/avahi.service.j2'
     dest: '/etc/avahi/services/{{ item.value.filename | d(item.key) }}.service'
     owner: 'root'
@@ -117,19 +117,19 @@
   tags: [ 'role::avahi:alias', 'role::avahi:services' ]
 
 - name: Ensure that the avahi-daemon service in in the desired state
-  service:
+  ansible.builtin.service:
     name: 'avahi-daemon'
     enabled: '{{ avahi__enabled|bool }}'
     state: '{{ "started" if (avahi__enabled|bool) else "stopped" }}'
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
 
 - name: Save Avahi local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/avahi.fact.j2'
     dest: '/etc/ansible/facts.d/avahi.fact'
     mode: '0755'
@@ -137,4 +137,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

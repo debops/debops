@@ -4,12 +4,12 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Check and restart rsyslogd
-  command: rsyslogd -N 1
+  ansible.builtin.command: rsyslogd -N 1
   notify: [ 'Restart rsyslogd' ]
   when: (ansible_local.rsyslog.installed|d())|bool
 
 - name: Restart rsyslogd
-  service:
+  ansible.builtin.service:
     name: 'rsyslog'
     state: 'restarted'
   when: (ansible_local.rsyslog.installed|d())|bool

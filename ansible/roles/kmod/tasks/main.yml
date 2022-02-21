@@ -5,20 +5,20 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Check if modprobe is available
-  stat:
+  ansible.builtin.stat:
     path: '/sbin/modprobe'
   register: kmod__register_modprobe
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (kmod__base_packages
                               + kmod__packages)) }}'
     state: 'present'
@@ -26,7 +26,7 @@
   until: kmod__register_packages is succeeded
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -34,7 +34,7 @@
     mode: '0755'
 
 - name: Save kmod local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/kmod.fact.j2'
     dest: '/etc/ansible/facts.d/kmod.fact'
     owner: 'root'
@@ -44,7 +44,7 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Configure kernel modules
   include_tasks: 'modprobe.yml'
@@ -54,7 +54,7 @@
   when: kmod__enabled|bool
 
 - name: Remove module load configuration
-  file:
+  ansible.builtin.file:
     dest: '/etc/modules-load.d/{{ item.filename | d(item.name | replace("_","-") + ".conf") }}'
     state: 'absent'
   with_items: '{{ kmod__combined_load | debops.debops.parse_kv_items }}'
@@ -62,7 +62,7 @@
         item.name|d() and item.state|d('present') == 'absent'
 
 - name: Configure module loading at boot
-  template:
+  ansible.builtin.template:
     src: 'etc/modules-load.d/module.conf.j2'
     dest: '/etc/modules-load.d/{{ item.filename | d(item.name | replace("_","-") + ".conf") }}'
     owner: 'root'
@@ -73,7 +73,7 @@
         item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ]
 
 - name: Manage module loading in /etc/modules
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '/etc/modules'
     regexp: '^{{ item.name }}'
     line: '{{ item.name }}'
@@ -95,4 +95,4 @@
         item.modules is undefined and ansible_local.kmod.modules|d() and item.name not in ansible_local.kmod.modules
 
 - name: Update Ansible facts if modules were loaded
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

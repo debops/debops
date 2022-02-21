@@ -4,10 +4,10 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Check unbound configuration and reload
-  command: unbound-checkconf /etc/unbound/unbound.conf
+  ansible.builtin.command: unbound-checkconf /etc/unbound/unbound.conf
   notify: [ 'Reload unbound' ]
 
 - name: Reload unbound
-  service:
+  ansible.builtin.service:
     name: 'unbound'
     state: 'reloaded'

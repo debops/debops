@@ -4,14 +4,14 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Pre hooks
-  include: '{{ lookup("debops.debops.task_src", "dokuwiki/pre_main.yml") }}'
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "dokuwiki/pre_main.yml") }}'
 
 - name: Install requested packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (dokuwiki__base_packages
                               + dokuwiki__packages)) }}'
     state: 'present'
@@ -19,13 +19,13 @@
   until: dokuwiki__register_packages is succeeded
 
 - name: Create DokuWiki group
-  group:
+  ansible.builtin.group:
     name: '{{ dokuwiki__group }}'
     system: True
     state: 'present'
 
 - name: Create DokuWiki user
-  user:
+  ansible.builtin.user:
     name: '{{ dokuwiki__user }}'
     group: '{{ dokuwiki__group }}'
     home: '{{ dokuwiki__home }}'
@@ -39,7 +39,7 @@
 # ---- Deployment ----
 
 - name: Create DokuWiki source directory
-  file:
+  ansible.builtin.file:
     path: '{{ dokuwiki__src }}'
     state: 'directory'
     owner: '{{ dokuwiki__user }}'
@@ -47,7 +47,7 @@
     mode: '0750'
 
 - name: Clone DokuWiki source from deploy server
-  git:
+  ansible.builtin.git:
     repo: '{{ dokuwiki__git_repo }}'
     dest: '{{ dokuwiki__git_dest }}'
     version: 'master'
@@ -59,7 +59,7 @@
   until: dokuwiki__register_source is succeeded
 
 - name: Create DokuWiki checkout directory
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     state: 'directory'
     owner: '{{ dokuwiki__user }}'
@@ -68,7 +68,7 @@
   with_items: [ '{{ dokuwiki__www }}', '{{ dokuwiki__git_checkout }}' ]
 
 - name: Prepare DokuWiki worktree
-  copy:
+  ansible.builtin.copy:
     content: 'gitdir: {{ dokuwiki__git_dest }}'
     dest: '{{ dokuwiki__git_checkout + "/.git" }}'
     owner: '{{ dokuwiki__user }}'
@@ -78,7 +78,7 @@
 - name: Get commit hash of target checkout
   environment:
     GIT_WORK_TREE: '{{ dokuwiki__git_checkout }}'
-  command: git rev-parse {{ dokuwiki__git_version }}
+  ansible.builtin.command: git rev-parse {{ dokuwiki__git_version }}
   args:
     chdir: '{{ dokuwiki__git_dest }}'
     warn: False
@@ -90,7 +90,7 @@
 - name: Checkout DokuWiki
   environment:
     GIT_WORK_TREE: '{{ dokuwiki__git_checkout }}'
-  command: git checkout -f {{ dokuwiki__git_version }}
+  ansible.builtin.command: git checkout -f {{ dokuwiki__git_version }}
   args:
     chdir: '{{ dokuwiki__git_dest }}'
     warn: False
@@ -106,7 +106,7 @@
 # ---- Configuration ----
 
 - name: Remove specified plugins if requested
-  file:
+  ansible.builtin.file:
     path: '{{ dokuwiki__git_checkout + "/lib/plugins/" + item.dest }}'
     state: 'absent'
   with_flattened:
@@ -116,7 +116,7 @@
          (item.dest|d() and item.dest) and (item.state|d() and item.state == 'absent'))
 
 - name: Install specified plugins from git repositories
-  git:
+  ansible.builtin.git:
     repo: '{{ item.repo }}'
     dest: '{{ dokuwiki__git_checkout + "/lib/plugins/" + item.dest }}'
     version: '{{ item.version | d(omit) }}'
@@ -133,7 +133,7 @@
          (item.state is undefined or (item.state|d() and item.state != 'absent')))
 
 - name: Remove specified templates if requested
-  file:
+  ansible.builtin.file:
     path: '{{ dokuwiki__git_checkout + "/lib/tpl/" + item.dest }}'
     state: 'absent'
   with_flattened:
@@ -143,7 +143,7 @@
          (item.dest|d() and item.dest) and (item.state|d() and item.state == 'absent'))
 
 - name: Install specified templates from git repositories
-  git:
+  ansible.builtin.git:
     repo: '{{ item.repo }}'
     dest: '{{ dokuwiki__git_checkout + "/lib/tpl/" + item.dest }}'
     version: '{{ item.version | d(omit) }}'
@@ -160,7 +160,7 @@
          (item.state is undefined or (item.state|d() and item.state != 'absent')))
 
 - name: Generate protected local configuration file
-  template:
+  ansible.builtin.template:
     src: 'srv/www/dokuwiki/sites/public/conf/local.protected.php.j2'
     dest: '{{ dokuwiki__git_checkout + "/conf/local.protected.php" }}'
     owner: '{{ dokuwiki__user }}'
@@ -170,7 +170,7 @@
   tags: [ 'role::dokuwiki:conf' ]
 
 - name: Generate protected plugin configuration file
-  template:
+  ansible.builtin.template:
     src: 'srv/www/dokuwiki/sites/public/conf/plugins.protected.php.j2'
     dest: '{{ dokuwiki__git_checkout + "/conf/plugins.protected.php" }}'
     owner: '{{ dokuwiki__user }}'
@@ -180,7 +180,7 @@
   tags: [ 'role::dokuwiki:conf' ]
 
 - name: Generate local MIME configuration file
-  template:
+  ansible.builtin.template:
     src: 'srv/www/dokuwiki/sites/public/conf/mime.local.conf.j2'
     dest: '{{ dokuwiki__git_checkout + "/conf/mime.local.conf" }}'
     owner: '{{ dokuwiki__user }}'
@@ -189,7 +189,7 @@
   tags: [ 'role::dokuwiki:conf', 'role::dokuwiki:mime' ]
 
 - name: Install maintenance scripts
-  template:
+  ansible.builtin.template:
     src: '{{ item }}.j2'
     dest: '/{{ item }}'
     owner: 'root'
@@ -200,7 +200,7 @@
     - 'etc/cron.weekly/dokuwiki-wikipedia-blacklist'
 
 - name: Create farm base directory
-  file:
+  ansible.builtin.file:
     path: '{{ dokuwiki__farm_path }}'
     state: 'directory'
     owner: '{{ dokuwiki__user }}'
@@ -209,7 +209,7 @@
   when: dokuwiki__farm|bool
 
 - name: Create farm animal directories
-  copy:
+  ansible.builtin.copy:
     src: 'srv/www/dokuwiki/farm/animal/'
     dest: '{{ dokuwiki__farm_path + "/" + item + "/" }}'
     owner: '{{ dokuwiki__user }}'
@@ -220,13 +220,13 @@
   when: (dokuwiki__farm|bool and dokuwiki__farm_animals)
 
 - name: Disable DokuWiki farm if not enabled
-  file:
+  ansible.builtin.file:
     path: '{{ dokuwiki__git_checkout + "/inc/preload.php" }}'
     state: 'absent'
   when: (not dokuwiki__farm|bool or not dokuwiki__farm_animals)
 
 - name: Configure DokuWiki farm preload script
-  template:
+  ansible.builtin.template:
     src: 'srv/www/dokuwiki/sites/public/inc/preload.php.j2'
     dest: '{{ dokuwiki__git_checkout + "/inc/preload.php" }}'
     owner: '{{ dokuwiki__user }}'
@@ -235,12 +235,12 @@
   when: (dokuwiki__farm|bool and dokuwiki__farm_animals)
 
 - name: Download initial anti-spam blacklist
-  command: /etc/cron.weekly/dokuwiki-wikipedia-blacklist
+  ansible.builtin.command: /etc/cron.weekly/dokuwiki-wikipedia-blacklist
   args:
     creates: '{{ dokuwiki__git_checkout + "/conf/wordblock.local.conf" }}'
 
 - name: Delete extra files on remote host
-  file:
+  ansible.builtin.file:
     path:  '{{ item.dest | d(item.path | d(item.name)) }}'
     state: 'absent'
   with_flattened:
@@ -252,7 +252,7 @@
   tags: [ 'role::dokuwiki' ]
 
 - name: Copy extra files to remote host
-  copy:
+  ansible.builtin.copy:
     dest:     '{{ item.dest     | d(item.path | d(item.name)) }}'
     src:      '{{ item.src      | d(omit) }}'
     content:  '{{ item.content  | d(omit) }}'
@@ -279,4 +279,4 @@
   tags: [ 'role::dokuwiki' ]
 
 - name: Post hooks
-  include: '{{ lookup("debops.debops.task_src", "dokuwiki/post_main.yml") }}'
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "dokuwiki/post_main.yml") }}'

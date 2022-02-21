@@ -6,12 +6,12 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 # Combine snapper inventory variables [[[
 - name: Combine snapper inventory variables
-  set_fact:
+  ansible.builtin.set_fact:
     snapshot_snapper__templates_combined: '{{
                 snapshot_snapper__templates
       | combine(snapshot_snapper__host_group_templates, recursive=True )
@@ -30,7 +30,7 @@
 # Installation [[[
 
 - name: Ensure specified packages are in there desired state
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", snapshot_snapper__combined_packages) }}'
     state: 'present'
   register: snapshot_snapper__register_packages
@@ -47,7 +47,7 @@
   loop: '{{ snapshot_snapper__divert_files | flatten }}'
 
 - name: Copy diverted configuration file to original location
-  copy:  # noqa no-handler
+  ansible.builtin.copy:  # noqa no-handler
     src: '{{ item }}.dpkg-divert'
     dest: '{{ item }}'
     remote_src: True
@@ -59,7 +59,7 @@
   with_flattened: '{{ snapshot_snapper__divert_files }}'
 
 - name: Check if snapshots are already excluded from updatedb
-  command: grep PRUNENAMES=.*{{ snapshot_snapper__directory }}.* /etc/updatedb.conf
+  ansible.builtin.command: grep PRUNENAMES=.*{{ snapshot_snapper__directory }}.* /etc/updatedb.conf
   failed_when: False
   changed_when: False
   check_mode: False
@@ -67,7 +67,7 @@
   register: snapshot_snapper__register_updatedb_configured
 
 - name: Configure updatedb to exclude snapshots
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '/etc/updatedb.conf'
     backrefs: yes
     regexp: '^(# )?PRUNENAMES=(".*)"$'
@@ -78,7 +78,7 @@
 
 # Automatic snapper volume reinitialization [[[
 - name: Check which snapper /etc/snapper/configs/ exist
-  stat:
+  ansible.builtin.stat:
     path: '/etc/snapper/configs/{{ item.name }}'
   when: (snapshot_snapper__auto_reinit|bool and item.path|d() and item.name|d() and
          (item.state|d("present") == "present"))
@@ -87,7 +87,7 @@
   with_items: '{{ snapshot_snapper__volumes_combined }}'
 
 - name: Check which snapper snapshot directories exist
-  stat:
+  ansible.builtin.stat:
     path: '{{ item.path + "/" + snapshot_snapper__directory }}'
   when: (snapshot_snapper__auto_reinit|bool and item.path|d() and item.name|d() and
          (item.state|d("present") == "present"))
@@ -96,7 +96,7 @@
   with_items: '{{ snapshot_snapper__volumes_combined }}'
 
 - name: Delete snapper configuration to automatically reinit
-  file:
+  ansible.builtin.file:
     path: '/etc/snapper/configs/{{ item.0.item.name }}'
     state: 'absent'
   tags: [ 'role::snapshot_snapper:reinit' ]
@@ -108,7 +108,7 @@
     - '{{ snapshot_snapper__register_snapshot_directory.results }}'
 
 - name: Get list of active snapper volumes
-  find:
+  ansible.builtin.find:
     file_type: 'file'
     paths: [ '/etc/snapper/configs/' ]
     hidden: False
@@ -118,7 +118,7 @@
   tags: [ 'role::snapshot_snapper:reinit' ]
 
 - name: Update active snapper volumes in /etc/default/snapper
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '/etc/default/snapper'
     state: 'present'
     regexp: '^SNAPPER_CONFIGS="[^"]*"$'
@@ -134,7 +134,7 @@
 
 # Configure snapper templates [[[
 - name: Configure snapper templates
-  template:
+  ansible.builtin.template:
     src: 'etc/snapper/config-templates/item.j2'
     dest: '/etc/snapper/config-templates/{{ item.key }}'
     owner: 'root'
@@ -145,7 +145,7 @@
 
 # Create initial configuration per volume [[[
 - name: Create initial configuration per volume
-  command: snapper --config '{{ item.name|default("root") }}'
+  ansible.builtin.command: snapper --config '{{ item.name|default("root") }}'
            create-config
            {{ ("'--template' '" + item.template + "'") if (item.template|d()) else '' }}
            '{{ item.path }}'
@@ -156,7 +156,7 @@
 # .. ]]]
 
 - name: Adjust configuration per volume
-  include: configure_snapper_volume.yml
+  ansible.builtin.include_tasks: configure_snapper_volume.yml
   loop_control:
     loop_var: 'snapshot_snapper__volume'
   with_items: '{{ snapshot_snapper__volumes_combined }}'

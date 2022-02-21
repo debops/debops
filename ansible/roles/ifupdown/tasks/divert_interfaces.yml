@@ -10,7 +10,7 @@
   register: ifupdown__register_divert
 
 - name: Provide original interface configuration temporarily
-  copy:  # noqa no-handler
+  ansible.builtin.copy:  # noqa no-handler
     src: '/etc/network/interfaces.dpkg-divert'
     dest: '{{ ifupdown__reconfigure_init_file }}'
     remote_src: True
@@ -20,7 +20,7 @@
   when: ifupdown__register_divert is changed
 
 - name: Remove redundant configuration
-  lineinfile:  # noqa no-handler
+  ansible.builtin.lineinfile:  # noqa no-handler
     dest: '{{ ifupdown__reconfigure_init_file }}'
     regexp: '{{ item }}'
     state: 'absent'
@@ -31,7 +31,7 @@
   when: ifupdown__register_divert is changed
 
 - name: Create /etc/network/interfaces
-  template:
+  ansible.builtin.template:
     src: 'etc/network/interfaces.j2'
     dest: '/etc/network/interfaces'
     owner: 'root'
@@ -40,7 +40,7 @@
   register: ifupdown__register_main_config
 
 - name: Ensure that runtime directory exists
-  file:  # noqa no-handler
+  ansible.builtin.file:  # noqa no-handler
     path: '/run/network'
     state: 'directory'
     mode: '0755'
@@ -48,7 +48,7 @@
          ifupdown__register_main_config is changed)
 
 - name: Request entire network reconfiguration
-  copy:  # noqa no-handler
+  ansible.builtin.copy:  # noqa no-handler
     content: 'init'
     dest: '/run/network/debops-ifupdown-reconfigure.networking'
     owner: 'root'

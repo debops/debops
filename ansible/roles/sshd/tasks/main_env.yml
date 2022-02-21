@@ -7,7 +7,7 @@
 # The SSH host keys gathered by Ansible facts don't contain the full
 # information, therefore we should grab them by ourselves
 - name: Gather SSH host public keys
-  shell: 'set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: 'set -o nounset -o pipefail -o errexit &&
           cat /etc/ssh/ssh_host_*_key.pub || true'
   args:
     executable: '/bin/bash'

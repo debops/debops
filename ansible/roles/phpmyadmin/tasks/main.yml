@@ -4,21 +4,21 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Install dbconfig-common
-  apt: pkg=dbconfig-common state=present install_recommends=no
+  ansible.builtin.apt: pkg=dbconfig-common state=present install_recommends=no
   register: phpmyadmin__register_dbconfig_packages
   until: phpmyadmin__register_dbconfig_packages is succeeded
 
 - name: Pre-configure PHPMyAdmin database
-  template: src=etc/dbconfig-common/phpmyadmin.conf.j2
+  ansible.builtin.template: src=etc/dbconfig-common/phpmyadmin.conf.j2
             dest=/etc/dbconfig-common/phpmyadmin.conf
             owner=root group=root mode=0600
 
 - name: Install PHPMyAdmin packages
-  apt: pkg=phpmyadmin state=present install_recommends=no
+  ansible.builtin.apt: pkg=phpmyadmin state=present install_recommends=no
   register: phpmyadmin__register_packages
   until: phpmyadmin__register_packages is succeeded
 

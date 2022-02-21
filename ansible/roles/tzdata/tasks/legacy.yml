@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Configure tzdata area in debconf
-  debconf:
+  ansible.builtin.debconf:
     name: 'tzdata'
     question: 'tzdata/Areas'
     vtype: 'select'
@@ -15,7 +15,7 @@
   when: tzdata__enabled|bool
 
 - name: Configure tzdata zone in debconf
-  debconf:
+  ansible.builtin.debconf:
     name: 'tzdata'
     question: 'tzdata/Zones/{{ tzdata__timezone.split("/")[0] }}'
     vtype: 'select'
@@ -27,7 +27,7 @@
   # tzdata ignores debconf answers when configured non-interactively
   # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=704089
 - name: Configure timezone in /etc/timezone
-  copy:
+  ansible.builtin.copy:
     content: '{{ tzdata__timezone }}'
     dest: '/etc/timezone'
     mode: '0644'
@@ -36,13 +36,13 @@
   when: tzdata__enabled|bool
 
 - name: Check if /etc/localtime is a symlink
-  stat:
+  ansible.builtin.stat:
     path: '/etc/localtime'
   register: tzdata__register_etc_localtime
   when: tzdata__enabled|bool
 
 - name: Symlink correct timezone as /etc/localtime
-  file:  # noqa no-handler
+  ansible.builtin.file:  # noqa no-handler
     path: '/etc/localtime'
     src: '/usr/share/zoneinfo/{{ tzdata__timezone }}'
     state: 'link'
@@ -53,7 +53,7 @@
          tzdata__register_etc_localtime.stat.islnk|bool)
 
 - name: Reconfigure tzdata
-  command: 'dpkg-reconfigure --frontend noninteractive tzdata'  # noqa no-handler
+  ansible.builtin.command: 'dpkg-reconfigure --frontend noninteractive tzdata'  # noqa no-handler
   when: (tzdata__enabled|bool and
          (tzdata__register_debconf_set_area is changed or
           tzdata__register_debconf_set_zone is changed or

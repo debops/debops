@@ -4,11 +4,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Check if rstudio-server package is available
-  shell: set -o nounset -o pipefail -o errexit && apt-cache pkgnames | grep rstudio-server || true
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit && apt-cache pkgnames | grep rstudio-server || true
   args:
     executable: 'bash'
   register: rstudio_server__register_package_rstudio
@@ -16,7 +16,7 @@
   check_mode: False
 
 - name: Create required system groups
-  group:
+  ansible.builtin.group:
     name: '{{ item }}'
     state: 'present'
     system: True
@@ -25,7 +25,7 @@
     - '{{ rstudio_server__auth_group }}'
 
 - name: Create system account for RStudio Server
-  user:
+  ansible.builtin.user:
     name: '{{ rstudio_server__user }}'
     group: '{{ rstudio_server__group }}'
     home: '{{ rstudio_server__home }}'
@@ -35,11 +35,11 @@
     state: 'present'
 
 - name: Get the current user accounts
-  getent:
+  ansible.builtin.getent:
     database: 'passwd'
 
 - name: Allow specified user accounts to access RStudio Server
-  user:
+  ansible.builtin.user:
     name: '{{ item.name|d(item) }}'
     groups: '{{ rstudio_server__auth_group }}'
     append: True
@@ -51,7 +51,7 @@
         item.state|d('present') != 'absent'
 
 - name: Install RStudio Server packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (rstudio_server__base_packages
                               + rstudio_server__packages)) }}'
     state: 'present'
@@ -59,7 +59,7 @@
   until: rstudio_server__register_packages is succeeded
 
 - name: Create source directory
-  file:
+  ansible.builtin.file:
     path: '{{ rstudio_server__src }}'
     state: 'directory'
     owner: '{{ rstudio_server__user }}'
@@ -68,7 +68,7 @@
   when: not rstudio_server__rstudio_in_apt|bool
 
 - name: Download RStudio Server .deb package
-  get_url:
+  ansible.builtin.get_url:
     url: '{{ rstudio_server__rstudio_deb_url }}'
     dest: '{{ rstudio_server__src + "/" + rstudio_server__rstudio_deb_url | basename }}'
     checksum: '{{ rstudio_server__rstudio_deb_checksum }}'
@@ -79,14 +79,14 @@
   when: not rstudio_server__rstudio_in_apt|bool
 
 - name: Verify RStudio Server package signature
-  command: dpkg-sig --verify {{ rstudio_server__src + '/' + (rstudio_server__rstudio_deb_url | basename) }}
+  ansible.builtin.command: dpkg-sig --verify {{ rstudio_server__src + '/' + (rstudio_server__rstudio_deb_url | basename) }}
   become: True
   become_user: '{{ rstudio_server__user }}'
   changed_when: False
   check_mode: False
 
 - name: Install RStudio Server .deb package
-  apt:
+  ansible.builtin.apt:
     deb: '{{ rstudio_server__src + "/" + rstudio_server__rstudio_deb_url | basename }}'
     state: 'present'
   register: rstudio_server__register_rstudio_deb
@@ -94,7 +94,7 @@
   when: not rstudio_server__rstudio_in_apt|bool
 
 - name: Configure RStudio Server
-  template:
+  ansible.builtin.template:
     src: 'etc/rstudio/{{ item }}.j2'
     dest: '/etc/rstudio/{{ item }}'
     owner: 'root'
@@ -104,7 +104,7 @@
   notify: [ 'Verify rstudio-server' ]
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -112,7 +112,7 @@
     mode: '0755'
 
 - name: Save RStudio Server local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/rstudio_server.fact.j2'
     dest: '/etc/ansible/facts.d/rstudio_server.fact'
     owner: 'root'
@@ -122,4 +122,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

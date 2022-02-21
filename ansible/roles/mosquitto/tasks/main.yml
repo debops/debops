@@ -4,22 +4,22 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Check if supported version of libwebsockets is available
-  command: apt-cache -q madison {{ mosquitto__websockets_packages | join(' ') }}
+  ansible.builtin.command: apt-cache -q madison {{ mosquitto__websockets_packages | join(' ') }}
   register: mosquitto__register_websockets
   when: ansible_pkg_mgr == 'apt'
   changed_when: False
   check_mode: False
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (mosquitto__base_packages
                               + mosquitto__packages)) }}'
     state: 'present'
@@ -27,7 +27,7 @@
   until: mosquitto__register_packages is succeeded
 
 - name: Install required Python modules
-  pip:
+  ansible.builtin.pip:
     name: '{{ item }}'
     state: 'present'
   with_items: '{{ mosquitto__pip_packages }}'
@@ -36,7 +36,7 @@
   when: mosquitto__pip_packages|d()
 
 - name: Check the installed Mosquitto version
-  shell: set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          mosquitto -h | head -n 1 | awk '{print $3}' || true
   args:
     executable: 'bash'
@@ -46,13 +46,13 @@
   tags: [ 'role::mosquitto:passwd' ]
 
 - name: Ensure that the required UNIX group exists
-  group:
+  ansible.builtin.group:
     name: '{{ mosquitto__group }}'
     state: 'present'
     system: True
 
 - name: Add Mosquitto user to specified system groups
-  user:
+  ansible.builtin.user:
     name: '{{ mosquitto__user }}'
     group: '{{ mosquitto__group }}'
     groups: '{{ ([ mosquitto__append_groups ]
@@ -62,7 +62,7 @@
   notify: [ 'Restart mosquitto' ]
 
 - name: Make sure the password file exists
-  file:
+  ansible.builtin.file:
     path: '{{ mosquitto__password_file }}'
     state: '{{ "file" if (ansible_local.mosquitto.password|d()|bool) else "touch" }}'
     owner: 'root'
@@ -72,7 +72,7 @@
   tags: [ 'role::mosquitto:passwd' ]
 
 - name: Check current list of user entries
-  command: awk -F ':' '{print $1}' {{ mosquitto__password_file }}
+  ansible.builtin.command: awk -F ':' '{print $1}' {{ mosquitto__password_file }}
   register: mosquitto__register_passwd
   when: mosquitto__password|bool
   changed_when: False
@@ -80,7 +80,7 @@
   tags: [ 'role::mosquitto:passwd' ]
 
 - name: Remove user/password entries
-  command: 'mosquitto_passwd -D {{ mosquitto__password_file }} {{ item.name | d(item) }}'
+  ansible.builtin.command: 'mosquitto_passwd -D {{ mosquitto__password_file }} {{ item.name | d(item) }}'
   with_flattened:
     - '{{ mosquitto__auth_users }}'
     - '{{ mosquitto__auth_group_users }}'
@@ -96,7 +96,7 @@
   environment:
     MOSQUITTO_PASSWORD: '{{ item.password
                             | d(lookup("password", mosquitto__password_secret_path + "/" + item.name | d(item))) }}'
-  command: 'mosquitto_passwd -b {{ mosquitto__password_file }} {{ item.name | d(item) }} ${MOSQUITTO_PASSWORD}'
+  ansible.builtin.command: 'mosquitto_passwd -b {{ mosquitto__password_file }} {{ item.name | d(item) }} ${MOSQUITTO_PASSWORD}'
   with_flattened:
     - '{{ mosquitto__auth_users }}'
     - '{{ mosquitto__auth_group_users }}'
@@ -109,7 +109,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Manage Mosquitto ACL file
-  template:
+  ansible.builtin.template:
     src: 'etc/mosquitto/acl.j2'
     dest: '{{ mosquitto__acl_file }}'
     owner: 'root'
@@ -120,7 +120,7 @@
   tags: [ 'role::mosquitto:acl' ]
 
 - name: Remove Mosquitto default configuration if empty
-  file:
+  ansible.builtin.file:
     path: '/etc/mosquitto/conf.d/00_default.conf'
     state: 'absent'
   when: not mosquitto__combined_options|d()
@@ -128,7 +128,7 @@
   tags: [ 'role::mosquitto:config', 'role::mosquitto:passwd', 'role::mosquitto:acl' ]
 
 - name: Generate Mosquitto default configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/mosquitto/conf.d/default.conf.j2'
     dest: '/etc/mosquitto/conf.d/00_default.conf'
     owner: 'root'
@@ -138,7 +138,7 @@
   tags: [ 'role::mosquitto:config', 'role::mosquitto:passwd', 'role::mosquitto:acl' ]
 
 - name: Remove Mosquitto listener configuration
-  file:
+  ansible.builtin.file:
     dest: '/etc/mosquitto/conf.d/listener_{{ item.key }}.conf'
     state: 'absent'
   with_dict: '{{ mosquitto__combined_listeners }}'
@@ -147,7 +147,7 @@
   tags: [ 'role::mosquitto:listeners' ]
 
 - name: Generate Mosquitto listener configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/mosquitto/conf.d/listener.conf.j2'
     dest: '/etc/mosquitto/conf.d/listener_{{ item.key }}.conf'
     owner: 'root'
@@ -159,7 +159,7 @@
   tags: [ 'role::mosquitto:listeners' ]
 
 - name: Remove Mosquitto bridge configuration
-  file:
+  ansible.builtin.file:
     dest: '/etc/mosquitto/conf.d/bridge_{{ item.value.connection | d(item.key) }}.conf'
     state: 'absent'
   with_dict: '{{ mosquitto__combined_bridges }}'
@@ -168,7 +168,7 @@
   tags: [ 'role::mosquitto:bridges' ]
 
 - name: Generate Mosquitto bridge configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/mosquitto/conf.d/bridge.conf.j2'
     dest: '/etc/mosquitto/conf.d/bridge_{{ item.value.connection | d(item.key) }}.conf'
     owner: 'root'
@@ -180,7 +180,7 @@
   tags: [ 'role::mosquitto:bridges' ]
 
 - name: Make sure that Avahi service directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/avahi/services'
     state: 'directory'
     owner: 'root'
@@ -190,7 +190,7 @@
   tags: [ 'role::mosquitto:avahi', 'role::mosquitto:listeners' ]
 
 - name: Generate Avahi Mosquitto service file
-  template:
+  ansible.builtin.template:
     src: 'etc/avahi/services/mosquitto.service.j2'
     dest: '/etc/avahi/services/mosquitto.service'
     owner: 'root'
@@ -200,7 +200,7 @@
   tags: [ 'role::mosquitto:avahi', 'role::mosquitto:listeners' ]
 
 - name: Make sure that WebSockets public HTTP directory exists
-  file:
+  ansible.builtin.file:
     path: '{{ mosquitto__http_dir_path }}'
     state: 'directory'
     owner: '{{ mosquitto__http_dir_owner }}'
@@ -209,7 +209,7 @@
   when: mosquitto__websockets|bool
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -218,7 +218,7 @@
   tags: [ 'role::mosquitto:passwd' ]
 
 - name: Save Mosquitto local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/mosquitto.fact.j2'
     dest: '/etc/ansible/facts.d/mosquitto.fact'
     owner: 'root'
@@ -228,5 +228,5 @@
   tags: [ 'meta::facts', 'role::mosquitto:passwd' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
   tags: [ 'role::mosquitto:passwd' ]

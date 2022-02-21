@@ -4,19 +4,19 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (users__base_packages
                               + users__shell_packages
                               + users__packages)) }}'
@@ -26,10 +26,10 @@
   when: users__enabled | bool
 
 - name: DebOps pre_tasks hook
-  include: "{{ lookup('debops.debops.task_src', 'users/pre_main.yml') }}"
+  ansible.builtin.include_tasks: "{{ lookup('debops.debops.task_src', 'users/pre_main.yml') }}"
 
 - name: Create user groups
-  group:
+  ansible.builtin.group:
     name:   '{{ item.group | d(item.name) }}'
     system: '{{ item.system | d(False if (item.user|d(True))|bool else True) }}'
     gid:    '{{ item.gid    | d(omit) }}'
@@ -44,11 +44,11 @@
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
 
 - name: Gather information about existing remote users
-  getent:
+  ansible.builtin.getent:
     database: 'passwd'
 
 - name: Manage user accounts
-  user:
+  ansible.builtin.user:
     name:               '{{ item.name }}'
     group:              '{{ item.group              | d(item.name) }}'
     home:               '{{ item.home
@@ -89,13 +89,13 @@
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
 
 - name: Gather information about existing remote groups
-  getent:
+  ansible.builtin.getent:
     database: 'group'
 
   # libuser does not support supplemental groups
   # Ref: https://github.com/ansible/ansible/issues/48722
 - name: Manage additional UNIX groups for UNIX accounts
-  user:
+  ansible.builtin.user:
     name:         '{{ item.name }}'
     groups:       '{{ (( (([ item.groups ]
                           if (item.groups is string)
@@ -123,7 +123,7 @@
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
 
 - name: Manage user home directories
-  file:
+  ansible.builtin.file:
     path: '{{ item.home
               | d(((getent_passwd[item.name][4])
                    if (getent_passwd[item.name]|d())
@@ -150,7 +150,7 @@
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
 
 - name: Manage home directory ACLs
-  acl:
+  ansible.posix.acl:
     path:        '{{ item.0.home
                      | d(((getent_passwd[item.0.name][4])
                           if (getent_passwd[item.0.name]|d())
@@ -179,7 +179,7 @@
   tags: [ 'role::users:home_acl', 'skip::users:home_acl', 'skip::check' ]
 
 - name: Allow specified UNIX accounts to linger when not logged in
-  command: loginctl enable-linger {{ item.name }}
+  ansible.builtin.command: loginctl enable-linger {{ item.name }}
   args:
     creates: '/var/lib/systemd/linger/{{ item.name }}'
   loop: '{{ users__combined_accounts | debops.debops.parse_kv_items }}'
@@ -193,7 +193,7 @@
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
 
 - name: Disallow specified UNIX accounts to linger when not logged in
-  command: loginctl disable-linger {{ item.name }}
+  ansible.builtin.command: loginctl disable-linger {{ item.name }}
   args:
     removes: '/var/lib/systemd/linger/{{ item.name }}'
   loop: '{{ users__combined_accounts | debops.debops.parse_kv_items }}'
@@ -207,7 +207,7 @@
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
 
 - name: Configure ~/.ssh/authorized_keys for users
-  authorized_key:
+  ansible.posix.authorized_key:
     key: "{{ (item.sshkeys if item.sshkeys is string else '\n'.join(item.sshkeys)) | string }}"
     state: 'present'
     user: '{{ item.name }}'
@@ -223,7 +223,7 @@
   tags: [ 'role::users:authorized_keys', 'skip::users:authorized_keys', 'skip::check' ]
 
 - name: Remove ~/.ssh/authorized_keys from user account if disabled
-  file:
+  ansible.builtin.file:
     path: '~{{ item.name }}/.ssh/authorized_keys'
     state: 'absent'
   loop: '{{ users__combined_accounts | debops.debops.parse_kv_items }}'
@@ -237,7 +237,7 @@
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
 
 - name: Configure user mail forwarding
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '{{ "~" + item.name + "/.forward" }}'
     regexp: "{{ '^' + (item.forward if item.forward is string else item.forward[0]) }}"
     line: '{{ item.forward if item.forward is string else item.forward | join(", ") }}'
@@ -262,7 +262,7 @@
 - name: Manage users dotfiles
   environment:
     LC_MESSAGES: 'C'
-  shell: |
+  ansible.builtin.shell: |
     if ! yadm status > /dev/null ; then
         yadm clone --bootstrap "{{ item.dotfiles_repo | d(users__dotfiles_repo) }}"
     else
@@ -290,7 +290,7 @@
   tags: [ 'role::users:dotfiles', 'skip::users:dotfiles', 'skip::check' ]
 
 - name: Manage user resource directories
-  file:
+  ansible.builtin.file:
     path:    '{{ "~" + item.0.name + "/" + (item.1.path | d(item.1.dest | d(item.1))) }}'
     src:     '{{ item.1.src     | d(omit) }}'
     state:   '{{ item.1.state   | d("directory") }}'
@@ -314,7 +314,7 @@
   no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password|d() else False) }}'
 
 - name: Manage user resource parent directories
-  file:
+  ansible.builtin.file:
     path:    '{{ ("~" + item.0.name + "/" + (item.1.path | d(item.1.dest))) | dirname }}'
     state:   'directory'
     owner:   '{{ item.1.parent_owner   | d(item.0.name) }}'
@@ -336,7 +336,7 @@
   no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password|d() else False) }}'
 
 - name: Manage user resource files
-  copy:
+  ansible.builtin.copy:
     dest:    '{{ "~" + item.0.name + "/" + (item.1.path | d(item.1.dest)) }}'
     src:     '{{ item.1.src     | d(omit) }}'
     content: '{{ item.1.content | d(omit) }}'
@@ -359,7 +359,7 @@
   no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password|d() else False) }}'
 
 - name: Remove user resources if requested
-  file:
+  ansible.builtin.file:
     path:  '{{ "~" + item.0.name + "/" + (item.1.path | d(item.1.dest | d(item.1))) }}'
     state: 'absent'
   loop: '{{ users__combined_accounts | debops.debops.parse_kv_items
@@ -376,7 +376,7 @@
   no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password|d() else False) }}'
 
 - name: Remove user groups if requested
-  group:
+  ansible.builtin.group:
     name: '{{ item.group | d(item.name) }}'
     state: 'absent'
     local: '{{ item.local | d(True if (item.user|d(True))|bool else False) }}'
@@ -390,13 +390,13 @@
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
 
 - name: Save users local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/users.fact.j2'
     dest: '/etc/ansible/facts.d/users.fact'
     mode: '0755'
@@ -404,7 +404,7 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: DebOps post_tasks hook
-  include: "{{ lookup('debops.debops.task_src', 'users/post_main.yml') }}"
+  ansible.builtin.include_tasks: "{{ lookup('debops.debops.task_src', 'users/post_main.yml') }}"

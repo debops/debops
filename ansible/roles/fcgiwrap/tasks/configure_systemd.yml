@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Generate systemd units
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/fcgiwrap-instance.{{ item.1 }}.j2'
     dest: '/etc/systemd/system/fcgiwrap-{{ item.0.name }}.{{ item.1 }}'
     owner: 'root'
@@ -18,10 +18,10 @@
   when: fcgiwrap__instances
 
 - name: Reload systemd units
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Enable and start systemd units
-  service:  # noqa no-handler
+  ansible.builtin.service:  # noqa no-handler
     name: 'fcgiwrap-{{ item.0.name }}.{{ item.1 }}'
     state: 'started'
     enabled: True

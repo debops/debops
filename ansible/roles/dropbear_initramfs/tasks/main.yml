@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Ensure specified packages are in there desired state
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (dropbear_initramfs__base_packages
                               + dropbear_initramfs__packages)) }}'
     state: '{{ "present" if (dropbear_initramfs__deploy_state == "present") else "absent" }}'
@@ -13,7 +13,7 @@
   tags: [ 'role::dropbear_initramfs:pkgs' ]
 
 - name: Configure network in initramfs using kernel command line
-  template:
+  ansible.builtin.template:
     src: 'etc/initramfs-tools/conf.d/role.conf.j2'
     dest: '/etc/initramfs-tools/conf.d/50_debops.dropbear_initramfs.conf'
     mode: '0644'
@@ -21,7 +21,7 @@
   notify: [ 'Update initramfs' ]
 
 - name: Configure dropbear options
-  template:
+  ansible.builtin.template:
     src: 'etc/dropbear-initramfs/config.j2'
     dest: '/etc/dropbear-initramfs/config'
     mode: '0644'
@@ -29,7 +29,7 @@
   notify: [ 'Update initramfs' ]
 
 - name: Configure to bring up additional interfaces/addresses in initramfs
-  template:
+  ansible.builtin.template:
     src: 'etc/initramfs-tools/scripts/local-top/debops_dropbear_initramfs.j2'
     dest: '/etc/initramfs-tools/scripts/local-top/debops_dropbear_initramfs'
     mode: '0755'
@@ -37,7 +37,7 @@
   notify: [ 'Update initramfs' ]
 
 - name: Configure to bring down additional interfaces/addresses in initramfs
-  template:
+  ansible.builtin.template:
     src: 'etc/initramfs-tools/scripts/local-bottom/debops_dropbear_initramfs.j2'
     dest: '/etc/initramfs-tools/scripts/local-bottom/debops_dropbear_initramfs'
     mode: '0755'
@@ -45,7 +45,7 @@
   notify: [ 'Update initramfs' ]
 
 - name: Configure authorized ssh keys
-  authorized_key:
+  ansible.posix.authorized_key:
     key: "{{ (item.sshkeys
               if item.sshkeys is string
               else (item.sshkeys | unique | join('\n') | string))
@@ -77,7 +77,7 @@
   with_flattened: '{{ dropbear_initramfs__combined_authorized_keys }}'
 
 - name: Remove files in deploy state absent
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     state: 'absent'
   when: (dropbear_initramfs__deploy_state == 'absent')

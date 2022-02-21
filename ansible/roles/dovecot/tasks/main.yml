@@ -6,22 +6,22 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Pre hooks
-  include: "{{ lookup('debops.debops.task_src', 'dovecot/pre_main.yml') }}"
+  ansible.builtin.include_tasks: "{{ lookup('debops.debops.task_src', 'dovecot/pre_main.yml') }}"
 
 - name: Install Dovecot packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", ([ "dovecot-core" ]
                               + ([ "dovecot-imapd" ]
                                  if ("imap" in dovecot__features or
@@ -54,13 +54,13 @@
   until: dovecot__register_packages is succeeded
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
 
 - name: Save Dovecot local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/dovecot.fact.j2'
     dest: '/etc/ansible/facts.d/dovecot.fact'
     mode: '0755'
@@ -92,7 +92,7 @@
     - 'auth-checkpassword.conf.ext'
 
 - name: Uninstall disabled Dovecot protocols
-  package:
+  ansible.builtin.package:
     pkg: '{{ q("flattened", (([ "dovecot-imapd" ]
                               if ("imap" not in dovecot__features and
                                   "imaps" not in dovecot__features)
@@ -123,14 +123,14 @@
   notify: [ 'Restart dovecot' ]
 
 - name: Remove old local configuration
-  file:
+  ansible.builtin.file:
     path: '/etc/dovecot/local.conf'
     state: 'absent'
   notify: [ 'Restart dovecot' ]
   tags: [ "role::dovecot:conf" ]
 
 - name: Generate Dovecot sql configuration
-  template:
+  ansible.builtin.template:
     src: "{{ lookup('debops.debops.template_src', 'etc/dovecot/dovecot-sql.conf.ext.j2') }}"
     dest: '/etc/dovecot/dovecot-sql.conf.ext'
     owner: 'root'
@@ -141,7 +141,7 @@
   tags: [ "role::dovecot:conf", "role::dovecot:conf:sql" ]
 
 - name: Generate Dovecot ldap configuration
-  template:
+  ansible.builtin.template:
     src: "{{ lookup('debops.debops.template_src', 'etc/dovecot/' + item + '.j2') }}"
     dest: '/etc/dovecot/{{ item }}'
     owner: 'root'
@@ -155,7 +155,7 @@
   tags: [ "role::dovecot:conf", "role::dovecot:conf:ldap" ]
 
 - name: Generate Dovecot deny user list
-  template:
+  ansible.builtin.template:
     src: "{{ lookup('debops.debops.template_src', 'etc/dovecot/dovecot.deny.j2') }}"
     dest: '/etc/dovecot/dovecot.deny'
     owner: 'root'
@@ -163,7 +163,7 @@
     mode: '0644'
 
 - name: Create private directory to store passwdfile
-  file:
+  ansible.builtin.file:
     path: "{{ dovecot__passwdfile_path }}"
     state: directory
     owner: 'root'
@@ -172,7 +172,7 @@
   when: "'passwdfile' in dovecot__user_accounts"
 
 - name: Make sure virtual mail user POSIX group exists
-  group:
+  ansible.builtin.group:
     name: '{{ dovecot__vmail_posix_group |
               d(dovecot__vmail_posix_user) }}'
     state: 'present'
@@ -181,7 +181,7 @@
   tags: [ 'role::dovecot:user', 'role::dovecot:group' ]
 
 - name: Make sure virtual mail user POSIX system account exists
-  user:
+  ansible.builtin.user:
     name: '{{ dovecot__vmail_posix_user }}'
     state: 'present'
     comment: 'Postfix Virtual Mail user'
@@ -196,7 +196,7 @@
   tags: [ 'role::dovecot:user' ]
 
 - name: "Make sure virtual mail user home directory ({{ dovecot__vmail_base }}) exists"
-  file:
+  ansible.builtin.file:
     dest: '{{ dovecot__vmail_base }}'
     state: 'directory'
     owner: '{{ dovecot__vmail_posix_user }}'
@@ -206,7 +206,7 @@
   tags: [ 'role::dovecot:user' ]
 
 - name: Make sure that PKI hook directory exists
-  file:
+  ansible.builtin.file:
     path: '{{ dovecot__pki_hook_path }}'
     state: 'directory'
     owner: 'root'
@@ -215,7 +215,7 @@
   when: dovecot__pki|bool
 
 - name: Manage PKI dovecot hook
-  template:
+  ansible.builtin.template:
     src: 'etc/pki/hooks/dovecot.j2'
     dest: '{{ dovecot__pki_hook_path + "/" + dovecot__pki_hook_name }}'
     owner: 'root'
@@ -224,7 +224,7 @@
   when: dovecot__pki|bool
 
 - name: Ensure the PKI dovecot hook is absent
-  file:
+  ansible.builtin.file:
     path: '{{ dovecot__pki_hook_path + "/" + dovecot__pki_hook_name }}'
     state: 'absent'
   when: not (dovecot__pki|bool)
@@ -236,7 +236,7 @@
   tags: [ "role::dovecot:conf" ]
 
 - name: Generate Dovecot main configuration file
-  template:
+  ansible.builtin.template:
     src: '{{ lookup("template_src", "etc/dovecot/dovecot.conf.j2") }}'
     dest: '/etc/dovecot/dovecot.conf'
     owner: 'root'
@@ -246,7 +246,7 @@
   tags: [ "role::dovecot:conf" ]
 
 - name: Update Ansible facts and restart dovecot, if necessary
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Post hooks
-  include: "{{ lookup('debops.debops.task_src', 'dovecot/post_main.yml') }}"
+  ansible.builtin.include_tasks: "{{ lookup('debops.debops.task_src', 'dovecot/post_main.yml') }}"

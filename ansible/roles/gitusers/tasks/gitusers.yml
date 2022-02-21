@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Manage user accounts without UIDs
-  user:
+  ansible.builtin.user:
     name: '{{ item.name + gitusers_name_suffix }}'
     state: '{{ item.state | default("present") }}'
     group: '{{ item.group | default(item.name + gitusers_name_suffix) }}'
@@ -20,7 +20,7 @@
   when: ((item.name is defined and item.name) and (item.uid is undefined or (item.uid is defined and not item.uid)))
 
 - name: Manage user accounts with UIDs
-  user:
+  ansible.builtin.user:
     name: '{{ item.name + gitusers_name_suffix }}'
     uid: '{{ item.uid }}'
     state: '{{ item.state | default("present") }}'
@@ -37,7 +37,7 @@
   when: ((item.name is defined and item.name) and (item.uid is defined and item.uid))
 
 - name: Manage user default groups
-  user:
+  ansible.builtin.user:
     name: '{{ item.name + gitusers_name_suffix }}'
     state: '{{ item.state | default("present") }}'
     groups: '{{ gitusers_default_groups_list | join(",") }}'
@@ -50,7 +50,7 @@
          (gitusers_default_groups_list is defined and gitusers_default_groups_list))
 
 - name: Manage user custom groups
-  user:
+  ansible.builtin.user:
     name: '{{ item.name + gitusers_name_suffix }}'
     state: '{{ item.state | default("present") }}'
     groups: '{{ item.groups | join(",") }}'
@@ -62,7 +62,7 @@
   when: ((item.name is defined and item.name) and (item.groups is defined and item.groups))
 
 - name: Enforce home directories permissions
-  file:
+  ansible.builtin.file:
     state: 'directory'
     path: '{{ item.home | default(gitusers_default_home_prefix + "/" + item.name + gitusers_name_suffix) }}'
     owner: '{{ item.name + gitusers_name_suffix }}'

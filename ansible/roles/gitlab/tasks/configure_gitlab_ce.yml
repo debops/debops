@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Manage other GitLab CE directories
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     state: 'directory'
     owner: '{{ gitlab_user }}'
@@ -17,7 +17,7 @@
                 '{{ gitlab_ce_git_checkout + "/public/uploads" }}' ]
 
 - name: Manage secure GitLab directories
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     state: 'directory'
     owner: '{{ gitlab_user }}'
@@ -35,7 +35,7 @@
 # ---- Database configuration ----
 
 - name: Configure GitLab CE database
-  template:
+  ansible.builtin.template:
     src: 'var/local/git/gitlab/config/database.{{ gitlab__database }}.yml.j2'
     dest: '{{ gitlab_ce_git_checkout + "/config/database.yml" }}'
     owner: '{{ gitlab_user }}'
@@ -47,7 +47,7 @@
 # ---- Application configuration ----
 
 - name: Setup GitLab CE main configuration
-  template:
+  ansible.builtin.template:
     src: 'var/local/git/gitlab/config/gitlab.yml.j2'
     dest: '{{ gitlab_ce_git_checkout + "/config/gitlab.yml" }}'
     owner: '{{ gitlab_user }}'
@@ -56,7 +56,7 @@
   notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
 
 - name: Configure custom redis server
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '{{ gitlab_ce_git_checkout + "/config/resque.yml" }}'
     regexp: '^production:'
     line: 'production: {{ gitlab_redis_resque }}'
@@ -70,7 +70,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Setup GitLab CE unicorn configuration
-  template:
+  ansible.builtin.template:
     src: 'var/local/git/gitlab/config/unicorn.rb.j2'
     dest: '{{ gitlab_ce_git_checkout + "/config/unicorn.rb" }}'
     owner: '{{ gitlab_user }}'
@@ -79,7 +79,7 @@
   notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
 
 - name: Setup GitLab CE rack_attack configuration
-  template:
+  ansible.builtin.template:
     src: 'var/local/git/gitlab/config/initializers/rack_attack.rb.j2'
     dest: '{{ gitlab_ce_git_checkout + "/config/initializers/rack_attack.rb" }}'
     owner: '{{ gitlab_user }}'
@@ -88,7 +88,7 @@
   notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
 
 - name: Setup GitLab CE default variables
-  template:
+  ansible.builtin.template:
     src: 'etc/default/gitlab.j2'
     dest: '/etc/default/gitlab'
     owner: 'root'
@@ -97,12 +97,12 @@
   notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
 
 - name: Install GitLab SysVinit script
-  command: cp -f {{ gitlab_ce_git_checkout + "/lib/support/init.d/gitlab" }} /etc/init.d/gitlab
+  ansible.builtin.command: cp -f {{ gitlab_ce_git_checkout + "/lib/support/init.d/gitlab" }} /etc/init.d/gitlab
   notify: [ 'Reload service manager' ]
   when: (gitlab_use_systemd is defined and not gitlab_use_systemd)
 
 - name: Install GitLab systemd service files
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/{{ item }}.j2'
     dest: '/etc/systemd/system/{{ item }}'
     mode: '0644'
@@ -119,7 +119,7 @@
   when: (gitlab_use_systemd is defined and gitlab_use_systemd)
 
 - name: Install GitLab Pages systemd service file
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/gitlab-pages.service.j2'
     dest: '/etc/systemd/system/gitlab-pages.service'
     mode: '0644'
@@ -128,22 +128,22 @@
          (gitlab_use_systemd is defined and gitlab_use_systemd))
 
 - name: Reload systemd daemons
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Enable GitLab SysVinit service
-  service:
+  ansible.builtin.service:
     name: 'gitlab'
     enabled: True
   when: (ansible_service_mgr != 'systemd' and not gitlab_use_systemd|bool)
 
 - name: Enable GitLab SysVinit service (systemd)
-  systemd:
+  ansible.builtin.systemd:
     name: 'gitlab'
     enabled: True
   when: (ansible_service_mgr == 'systemd' and not gitlab_use_systemd|bool)
 
 - name: Enable GitLab systemd services
-  service:
+  ansible.builtin.service:
     name: '{{ item }}'
     enabled: True
   with_items:
@@ -158,7 +158,7 @@
   when: (gitlab_use_systemd|bool)
 
 - name: Enable GitLab Pages systemd service
-  service:
+  ansible.builtin.service:
     name: 'gitlab-pages.service'
     enabled: True
   when: (gitlab_enable_pages and gitlab_use_systemd|bool)
@@ -167,7 +167,7 @@
 # ---- GitLab installation / upgrade ----
 
 - name: NPM install
-  command: npm install --production
+  ansible.builtin.command: npm install --production
   args:  # noqa no-handler
     chdir: '{{ gitlab_ce_git_checkout }}'
   become: True
@@ -176,7 +176,7 @@
         and gitlab_register_ce_checkout is changed
 
 - name: Yarn install
-  command: yarn install --production
+  ansible.builtin.command: yarn install --production
   args:  # noqa no-handler
     chdir: '{{ gitlab_ce_git_checkout }}'
   become: True
@@ -187,7 +187,7 @@
   # The RubyGems.org website has frequent timeouts, so we will try and install
   # everything again as long as there are errors.
 - name: Update Ruby gems
-  shell: set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          bundle install --deployment
                         --without {{ gitlab_ce_bundle_install_without[gitlab__database] }}
                         --retry 9999 >> /tmp/gitlab-bundle-install.log 2>&1 &&
@@ -203,7 +203,7 @@
   environment:  # noqa no-handler
     RAILS_ENV: 'production'
     GITLAB_ROOT_EMAIL: '{{ gitlab_admin_email }}'
-  command: '{{ "bundle exec rake "
+  ansible.builtin.command: '{{ "bundle exec rake "
                 + ("db:schema:load setup_postgresql"
                    if (gitlab_version is version("12.10", "<"))
                    else "db:structure:load")
@@ -221,7 +221,7 @@
          gitlab__database == 'postgresql')
 
 - name: Migrate GitLab database
-  command: bundle exec rake db:migrate RAILS_ENV=production
+  ansible.builtin.command: bundle exec rake db:migrate RAILS_ENV=production
   args:  # noqa no-handler
     chdir: '{{ gitlab_ce_git_checkout }}'
   become: True
@@ -233,7 +233,7 @@
          gitlab_register_ce_checkout is changed)
 
 - name: Clean GitLab assets
-  command: bundle exec rake {{ gitlab_assets_clean }} RAILS_ENV=production
+  ansible.builtin.command: bundle exec rake {{ gitlab_assets_clean }} RAILS_ENV=production
   args:  # noqa no-handler
     chdir: '{{ gitlab_ce_git_checkout }}'
   become: True
@@ -243,7 +243,7 @@
          gitlab_register_bundle_migrate is changed)
 
 - name: Precompile GitLab assets
-  command: bundle exec rake {{ gitlab_assets_compile }} RAILS_ENV=production NODE_ENV=production
+  ansible.builtin.command: bundle exec rake {{ gitlab_assets_compile }} RAILS_ENV=production NODE_ENV=production
            NODE_OPTIONS='--max_old_space_size=4096'
   args:  # noqa no-handler
     chdir: '{{ gitlab_ce_git_checkout }}'
@@ -254,7 +254,7 @@
         gitlab_register_bundle_migrate is changed
 
 - name: Clear GitLab cache
-  command: bundle exec rake cache:clear RAILS_ENV=production
+  ansible.builtin.command: bundle exec rake cache:clear RAILS_ENV=production
   args:  # noqa no-handler
     chdir: '{{ gitlab_ce_git_checkout }}'
   become: True
@@ -264,7 +264,7 @@
          gitlab_register_bundle_migrate is changed)
 
 - name: Configure periodical GitLab backups
-  cron:
+  ansible.builtin.cron:
     name: 'Create GitLab backup'
     special_time: '{{ gitlab_backup_frequency }}'
     disabled: '{{ False

@@ -5,11 +5,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (netbox__base_packages
                               + netbox__packages)) }}'
     state: 'present'
@@ -17,13 +17,13 @@
   until: netbox__register_packages is succeeded
 
 - name: Create NetBox system group
-  group:
+  ansible.builtin.group:
     name: '{{ netbox__group }}'
     state: 'present'
     system: True
 
 - name: Create NetBox system user
-  user:
+  ansible.builtin.user:
     name: '{{ netbox__user }}'
     group: '{{ netbox__group }}'
     home: '{{ netbox__home }}'
@@ -35,7 +35,7 @@
     ssh_key_bits: '{{ netbox__napalm_ssh_generate_bits }}'
 
 - name: Create additional directories used by NetBox
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     state: 'directory'
     owner: '{{ netbox__user }}'
@@ -50,7 +50,7 @@
     - '{{ netbox__config_scripts_root }}'
 
 - name: Clone NetBox source code
-  git:
+  ansible.builtin.git:
     repo: '{{ netbox__git_repo }}'
     dest: '{{ netbox__git_dest }}'
     version: '{{ netbox__git_version }}'
@@ -63,17 +63,17 @@
   until: netbox__register_source is succeeded
 
 - name: Check if NetBox is installed
-  stat:
+  ansible.builtin.stat:
     path: '{{ netbox__git_checkout }}'
   register: netbox__register_installed
 
 - name: Check current virtualenv version
-  stat:
+  ansible.builtin.stat:
     path: '{{ netbox__virtualenv + "/bin/python" }}'
   register: netbox__register_virtualenv_version
 
 - name: Remove old python2 based virtualenv
-  file:
+  ansible.builtin.file:
     path: '{{ netbox__virtualenv }}'
     state: 'absent'
   register: netbox__register_virtalenv_deleted
@@ -81,7 +81,7 @@
           netbox__register_virtualenv_version.stat.lnk_target|d() == 'python2' )
 
 - name: Create NetBox checkout directory
-  file:
+  ansible.builtin.file:
     path: '{{ netbox__git_checkout }}'
     state: 'directory'
     owner: '{{ netbox__user }}'
@@ -89,7 +89,7 @@
     mode: '0755'
 
 - name: Prepare NetBox git worktree
-  copy:
+  ansible.builtin.copy:
     content: 'gitdir: {{ netbox__git_dest }}'
     dest: '{{ netbox__git_checkout + "/.git" }}'
     owner: '{{ netbox__user }}'
@@ -99,7 +99,7 @@
 - name: Get commit hash of target checkout
   environment:
     GIT_WORK_TREE: '{{ netbox__git_checkout }}'
-  command: git rev-parse {{ netbox__git_version }}
+  ansible.builtin.command: git rev-parse {{ netbox__git_version }}
   args:
     chdir: '{{ netbox__git_dest }}'
     warn: False
@@ -111,7 +111,7 @@
 - name: Checkout NetBox
   environment:  # noqa no-handler
     GIT_WORK_TREE: '{{ netbox__git_checkout }}'
-  command: git checkout -f {{ netbox__git_version }}
+  ansible.builtin.command: git checkout -f {{ netbox__git_version }}
   args:
     chdir: '{{ netbox__git_dest }}'
     warn: False
@@ -127,7 +127,7 @@
           netbox__register_virtalenv_deleted.changed|bool)
 
 - name: Create Python virtualenv for NetBox
-  pip:
+  ansible.builtin.pip:
     name: [ 'pip', 'setuptools' ]
     virtualenv: '{{ netbox__virtualenv }}'
     virtualenv_python: '{{ "python" + netbox__virtualenv_version }}'
@@ -142,7 +142,7 @@
                  netbox__register_virtualenv.stdout is search('New python executable in'))
 
 - name: Clean up stale Python bytecode
-  command: "find . -name '*.pyc' -delete"  # noqa no-handler
+  ansible.builtin.command: "find . -name '*.pyc' -delete"  # noqa no-handler
   args:
     chdir: '{{ netbox__git_checkout + "/netbox" }}'
   become: True
@@ -150,7 +150,7 @@
   when: netbox__register_checkout is changed
 
 - name: Install NetBox requirements in virtualenv
-  pip:  # noqa no-handler
+  ansible.builtin.pip:  # noqa no-handler
     virtualenv: '{{ netbox__virtualenv }}'
     requirements: '{{ netbox__git_checkout + "/requirements.txt" }}'
     extra_args: '--upgrade'
@@ -162,7 +162,7 @@
   when: netbox__register_checkout is changed
 
 - name: Install additional Python modules in virtualenv
-  pip:  # noqa no-handler
+  ansible.builtin.pip:  # noqa no-handler
     name:       '{{ item.name | d(item) }}'
     version:    '{{ item.version | d(omit) }}'
     virtualenv: '{{ netbox__virtualenv }}'
@@ -173,7 +173,7 @@
         item.state|d('present') not in [ 'absent', 'ignore' ]
 
 - name: Generate NetBox configuration
-  template:
+  ansible.builtin.template:
     src: 'usr/local/lib/netbox/configuration.py.j2'
     dest: '{{ netbox__git_checkout + "/netbox/netbox/configuration.py" }}'
     owner: '{{ netbox__user }}'
@@ -187,7 +187,7 @@
   ## Commands from upgrade.sh. We cannot directly run this script as of 2.10
   ## because it also deals with virtualenv with different directory paths than
   ## this role.
-  shell:  # noqa no-handler
+  ansible.builtin.shell:  # noqa no-handler
     cmd: |
       set -o nounset -o pipefail -o errexit
       ./manage.py migrate
@@ -220,7 +220,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate systemd service unit
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/netbox.service.j2'
     dest: '/etc/systemd/system/netbox.service'
     owner: 'root'
@@ -233,7 +233,7 @@
   when: netbox__app_internal_appserver|bool
 
 - name: Generate NetBox RQ systemd service unit
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/netbox-rq.service.j2'
     dest: '/etc/systemd/system/netbox-rq.service'
     owner: 'root'
@@ -245,7 +245,7 @@
   when: netbox__app_internal_appserver|bool
 
 - name: Generate NetBox netbox-manage script
-  template:
+  ansible.builtin.template:
     src: 'usr/local/bin/netbox-manage.j2'
     dest: '{{ netbox__bin + "/netbox-manage" }}'
     owner: 'root'
@@ -253,7 +253,7 @@
     mode: '0755'
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -261,7 +261,7 @@
     mode: '0755'
 
 - name: Save NetBox local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/netbox.fact.j2'
     dest: '/etc/ansible/facts.d/netbox.fact'
     owner: 'root'

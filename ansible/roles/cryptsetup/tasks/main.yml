@@ -8,11 +8,11 @@
 ## Preparation and error checking (((
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Check for Ansible version without known vulnerabilities
-  assert:
+  ansible.builtin.assert:
     that:
       - 'ansible_version.full is version_compare("2.2.3.0", ">=")'
     msg: |
@@ -27,7 +27,7 @@
     - 'role::cryptsetup:backup'
 
 - name: Assert that combined device configuration is valid
-  assert:
+  ansible.builtin.assert:
     that:
       - '(cryptsetup__combined_devices | map(attribute="ciphertext_block_device")
           | unique | length) == (cryptsetup__combined_devices | length)'
@@ -39,18 +39,18 @@
 - name: Assert that /dev/shm/ is stored in RAM (assumed to be non-persistent)
   ## Also assuming that the keyfile is not swapped out in the short time it is
   ## going to exist in tmpfs.
-  command: df /dev/shm --type tmpfs
+  ansible.builtin.command: df /dev/shm --type tmpfs
   changed_when: False
 
 - name: Ensure specified packages are in there desired state
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", cryptsetup__base_packages) }}'
     state: 'present'
   register: cryptsetup__register_packages
   until: cryptsetup__register_packages is succeeded
 
 - name: Create keyfile and backup directories on the remote system
-  file:
+  ansible.builtin.file:
     path: '{{ item.path }}'
     state: 'directory'
     owner: 'root'
@@ -76,12 +76,14 @@
 #     msg: '{{ ([{"execution_strategy": "serial"}, {"some":23}])
 #              | selectattr("execution_strategy", "equalto", "serial") | list }}'
 #
-- include: 'manage_devices.yml'
+- name: Manage Cryptsetup devices in parallel
+  ansible.builtin.include_tasks: 'manage_devices.yml'
   when: cryptsetup__devices_execution_strategy == 'parallel'
   vars:
     cryptsetup__process_devices: '{{ cryptsetup__combined_devices }}'
 
-- include: 'manage_devices.yml'
+- name: Manage Cryptsetup devices sequentially
+  ansible.builtin.include_tasks: 'manage_devices.yml'
   when: cryptsetup__devices_execution_strategy == 'serial'
   with_items: '{{ cryptsetup__combined_devices }}'
   loop_control:

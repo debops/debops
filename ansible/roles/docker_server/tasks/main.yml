@@ -5,11 +5,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Make sure that docker.service.d override directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/systemd/system/docker.service.d'
     state: 'directory'
     owner: 'root'
@@ -19,7 +19,7 @@
   tags: [ 'role::docker_server:config' ]
 
 - name: Remove other version if upstream is modified
-  apt:
+  ansible.builtin.apt:
     name: '{{ ((["docker.io"] if docker_server__upstream|d()
                 else [docker_server__upstream_packagename])
                + (["docker-engine"] if docker_server__upstream|d()
@@ -31,7 +31,7 @@
   until: docker_server__register_other_version_removed is succeeded
 
 - name: Remove startup file(s) if present
-  file:  # noqa no-handler
+  ansible.builtin.file:  # noqa no-handler
     path: '{{ item }}'
     state: 'absent'
   tags: [ 'role::docker_server:config' ]
@@ -46,7 +46,7 @@
   when: (docker_server__register_other_version_removed is changed)
 
 - name: Install required packages
-  apt:
+  ansible.builtin.apt:
     name: '{{ (docker_server__mandatory_packages
                + [ docker_server__packagename ]
                + docker_server__base_packages
@@ -58,7 +58,7 @@
   until: docker_server__register_packages is succeeded
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -66,7 +66,7 @@
     mode: '0755'
 
 - name: Save APT local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/docker_server.fact.j2'
     dest: '/etc/ansible/facts.d/docker_server.fact'
     owner: 'root'
@@ -76,10 +76,10 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Install Python packages in virtualenv
-  pip:
+  ansible.builtin.pip:
     name: '{{ item.name | d(item) }}'
     version: '{{ item.version | d(omit) }}'
     virtualenv: '{{ docker_server__virtualenv }}'
@@ -90,7 +90,7 @@
   when: docker_server__install_virtualenv
 
 - name: Expose Docker virtualenv for Ansible modules
-  file:
+  ansible.builtin.file:
     path: '{{ docker_server__virtualenv_python_symlink }}'
     src:  '{{ docker_server__virtualenv_python_interpreter }}'
     state: 'link'
@@ -98,7 +98,7 @@
   when: docker_server__install_virtualenv
 
 - name: Symlink selected Python scripts to /usr/local/bin
-  file:
+  ansible.builtin.file:
     path: '{{ item.path }}'
     src: '{{ item.src }}'
     state: 'link'
@@ -111,7 +111,7 @@
         docker_server__install_virtualenv
 
 - name: Install ferm post hook
-  template:
+  ansible.builtin.template:
     src: 'etc/ferm/hooks/post.d/restart-docker.j2'
     dest: '/etc/ferm/hooks/post.d/restart-docker'
     owner: 'root'
@@ -120,7 +120,7 @@
   when: docker_server__ferm_post_hook|bool
 
 - name: Configure Docker options
-  template:
+  ansible.builtin.template:
     src: 'etc/default/docker.j2'
     dest: '/etc/default/docker'
     owner: 'root'
@@ -131,7 +131,7 @@
   when: (ansible_service_mgr != 'systemd' or docker_server__version is version_compare('1.10', '<'))
 
 - name: Configure Docker systemd options
-  template:
+  ansible.builtin.template:
     src: 'etc/docker/daemon.json.j2'
     dest: '/etc/docker/daemon.json'
     owner: 'root'
@@ -142,7 +142,7 @@
   when: (ansible_service_mgr == 'systemd' and docker_server__version is version_compare('1.10', '>='))
 
 - name: Configure Docker systemd overrides
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/docker.service.d/{{ item }}.j2'
     dest: '/etc/systemd/system/docker.service.d/{{ item }}'
     owner: 'root'
@@ -155,7 +155,7 @@
   tags: [ 'role::docker_server:config' ]
 
 - name: Add specified users to 'docker' group
-  user:
+  ansible.builtin.user:
     name: '{{ item }}'
     groups: 'docker'
     append: True
@@ -164,4 +164,4 @@
   tags: [ 'role::docker_server:config', 'role::docker_server:admins' ]
 
 - name: Execute pending handlers
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

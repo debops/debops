@@ -5,19 +5,19 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Install Monit packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (monit__base_packages
                               + monit__packages)) }}'
     state: 'present'
@@ -25,7 +25,7 @@
   until: monit__register_packages is succeeded
 
 - name: Remove Monit configuration if requested
-  file:
+  ansible.builtin.file:
     path: '/etc/monit/conf.d/{{ ((item.weight|string + "_") if (item.weight != 0) else "") + item.name }}'
     state: 'absent'
   with_items: '{{ monit__combined_config | debops.debops.parse_kv_items }}'
@@ -34,7 +34,7 @@
   no_log: '{{ debops__no_log | d(True if (item.mode|d("0644") == "0600") else False) }}'
 
 - name: Generate Monit configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/monit/conf.d/template.j2'
     dest: '/etc/monit/conf.d/{{ ((item.weight|string + "_") if (item.weight != 0) else "") + item.name }}'
     owner: 'root'
@@ -46,7 +46,7 @@
   no_log: '{{ debops__no_log | d(True if (item.mode|d("0644") == "0600") else False) }}'
 
 - name: Make sure Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     dest: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -54,7 +54,7 @@
     mode: '0755'
 
 - name: Configure Monit local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/monit.fact.j2'
     dest: '/etc/ansible/facts.d/monit.fact'
     owner: 'root'
@@ -64,4 +64,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Re-read local facts if they have been modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

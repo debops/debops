@@ -4,19 +4,19 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Take note of the current LDAP configuration
-  set_fact:
+  ansible.builtin.set_fact:
 
     # Track the changes in the configuration state
     # between role executions in the same play.
@@ -28,7 +28,7 @@
   tags: [ 'role::ldap:tasks', 'skip::ldap:tasks' ]
 
 - name: Install packages required for LDAP support
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", ldap__base_packages + ldap__packages) }}'
     state: 'present'
   register: ldap__register_packages
@@ -41,7 +41,7 @@
   when: ldap__enabled|bool and not ldap__dependent_play|bool
 
 - name: Generate system-wide LDAP configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/ldap/ldap.conf.j2'
     dest: '/etc/ldap/ldap.conf'
     mode: '0644'
@@ -49,14 +49,14 @@
   when: ldap__enabled|bool and not ldap__dependent_play|bool
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
   when: ldap__enabled|bool and not ldap__dependent_play|bool
 
 - name: Save LDAP client local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/ldap.fact.j2'
     dest: '/etc/ansible/facts.d/ldap.fact'
     mode: '0755'
@@ -65,10 +65,10 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Check if LDAP admin password is available
-  set_fact:
+  ansible.builtin.set_fact:
     ldap__fact_admin_bindpw: '{{ ldap__admin_bindpw }}'
   become: '{{ ldap__admin_become }}'
   become_user: '{{ ldap__admin_become_user }}'

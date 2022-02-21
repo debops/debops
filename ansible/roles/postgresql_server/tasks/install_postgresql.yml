@@ -6,7 +6,7 @@
 - name: Check if database server is installed
   environment:
     LC_MESSAGES: 'C'
-  shell: set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          dpkg-query -W -f='${Version}\n' 'postgresql' 'postgresql-{{ postgresql_server__version }}' | grep -v '^$'
   args:
     executable: 'bash'
@@ -16,7 +16,7 @@
   failed_when: False
 
 - name: Install PostgreSQL packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (postgresql_server__base_packages
                               + postgresql_server__python_packages
                               + postgresql_server__packages
@@ -31,13 +31,13 @@
   until: postgresql_server__register_packages is succeeded
 
 - name: Check if default PostgreSQL cluster exists
-  stat:
+  ansible.builtin.stat:
     path: '/var/lib/postgresql/{{ postgresql_server__version }}/main/postmaster.opts'
   register: postgresql_server__register_installed_main
 
   # Main cluster will be recreated later, with correct encoding
 - name: Remove default PostgreSQL cluster on first install
-  command: pg_dropcluster --stop {{ postgresql_server__version }} main
+  ansible.builtin.command: pg_dropcluster --stop {{ postgresql_server__version }} main
   when: ((postgresql_server__register_installed|d() and not postgresql_server__register_installed.stdout) and
          (postgresql_server__register_installed_main|d() and postgresql_server__register_installed_main.stat.exists) and
           (ansible_local is undefined or

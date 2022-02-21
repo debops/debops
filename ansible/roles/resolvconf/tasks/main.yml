@@ -4,15 +4,15 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (resolvconf__base_packages
                               + resolvconf__packages)) }}'
     state: 'present'
@@ -21,7 +21,7 @@
   when: resolvconf__enabled|bool
 
 - name: Generate static configuration script
-  template:
+  ansible.builtin.template:
     src: 'usr/local/lib/resolvconf-static.j2'
     dest: '/usr/local/lib/resolvconf-static'
     mode: '0755'
@@ -29,14 +29,14 @@
   when: resolvconf__enabled|bool and resolvconf__static_enabled|bool
 
 - name: Create systemd override directory
-  file:
+  ansible.builtin.file:
     path: '/etc/systemd/system/resolvconf.service.d'
     state: 'directory'
     mode: '0755'
   when: resolvconf__enabled|bool and resolvconf__static_enabled|bool
 
 - name: Generate systemd service override
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/resolvconf.service.d/static.conf.j2'
     dest: '/etc/systemd/system/resolvconf.service.d/static.conf'
     mode: '0644'
@@ -53,7 +53,7 @@
          resolvconf__deploy_state in [ 'present', 'absent' ])
 
 - name: Generate /etc/resolvconf/interface-order configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/resolvconf/interface-order.j2'
     dest: '/etc/resolvconf/interface-order'
     mode: '0644'
@@ -61,13 +61,13 @@
   when: resolvconf__enabled|bool and resolvconf__deploy_state == 'present'
 
 - name: Make sure Ansible fact directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
 
 - name: Generate resolvconf Ansible local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/resolvconf.fact.j2'
     dest: '/etc/ansible/facts.d/resolvconf.fact'
     mode: '0755'
@@ -75,4 +75,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Reload facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

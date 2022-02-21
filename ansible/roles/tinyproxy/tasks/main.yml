@@ -5,15 +5,15 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Install required APT packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", tinyproxy__base_packages
                              + tinyproxy__packages) }}'
     state: 'present'
@@ -22,13 +22,13 @@
   notify: [ 'Restart tinyproxy' ]
 
 - name: Create required UNIX system group
-  group:
+  ansible.builtin.group:
     name: '{{ tinyproxy__group }}'
     state: 'present'
     system: True
 
 - name: Make sure that required UNIX account exists
-  user:
+  ansible.builtin.user:
     name: '{{ tinyproxy__user }}'
     group: '{{ tinyproxy__group }}'
     home: '{{ tinyproxy__home }}'
@@ -44,20 +44,20 @@
     delete: True
 
 - name: Generate tinyproxy configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/tinyproxy/tinyproxy.conf.j2'
     dest: '{{ tinyproxy__configuration_file }}'
     mode: '0644'
   notify: [ 'Restart tinyproxy' ]
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
 
 - name: Save Tinyproxy local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/tinyproxy.fact.j2'
     dest: '/etc/ansible/facts.d/tinyproxy.fact'
     mode: '0755'
@@ -65,4 +65,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

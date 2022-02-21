@@ -4,19 +4,19 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Install required Icinga Web packages
-  package:
+  ansible.builtin.package:
     name: '{{ lookup("flattened",
                      (icinga_web__base_packages + icinga_web__packages),
                      wantlist=True) }}'
@@ -25,13 +25,13 @@
   until: icinga_web__register_packages is succeeded
 
 - name: Get current Icinga Web configuration
-  script: 'script/icingaweb-config{{ "2" if (ansible_python_version is version_compare("3.5", "<")) else "3" }}'
+  ansible.builtin.script: 'script/icingaweb-config{{ "2" if (ansible_python_version is version_compare("3.5", "<")) else "3" }}'
   register: icinga_web__register_config
   changed_when: False
   check_mode: False
 
 - name: Ensure that configuration directories exist
-  file:
+  ansible.builtin.file:
     path: '/etc/icingaweb2/{{ item.name }}'
     state: 'directory'
     owner: '{{ icinga_web__user }}'
@@ -51,7 +51,7 @@
   when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Download and install Icinga upstream modules
-  git:
+  ansible.builtin.git:
     repo: '{{ item.git_repo }}'
     dest: '{{ icinga_web__src + "/" + item.git_repo.split("://")[1] }}'
     version: '{{ item.git_version }}'
@@ -60,7 +60,7 @@
         item.git_version|d() and item.state|d('present') != 'absent'
 
 - name: Symlink Icinga upstream modules to Icinga Web application
-  file:
+  ansible.builtin.file:
     path: '{{ "/usr/share/icingaweb2/modules/" + item.name }}'
     src: '{{ icinga_web__src + "/" + item.git_repo.split("://")[1] }}'
     state: 'link'
@@ -71,7 +71,7 @@
         item.git_version|d() and item.state|d('present') != 'absent'
 
 - name: Manage Icinga Web modules
-  file:
+  ansible.builtin.file:
     path: '/etc/icingaweb2/enabledModules/{{ item.name }}'
     src: '{{ (item.path | d("/usr/share/icingaweb2/modules/" + item.name))
              if (item.state|d("present") != "absent" and (item.enabled|d(True))|bool) else omit }}'
@@ -82,7 +82,7 @@
   when: item.name|d()
 
 - name: Generate Icinga Web configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/icingaweb2/template.ini.j2'
     dest: '/etc/icingaweb2/{{ item.filename }}'
     owner: '{{ icinga_web__user }}'
@@ -125,7 +125,7 @@
   when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Generate initial data file
-  template:
+  ansible.builtin.template:
     src: 'tmp/icingaweb-initial-data.sql.j2'
     dest: '/tmp/icingaweb-initial-data.sql'
     owner: 'root'
@@ -188,29 +188,29 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Ensure that initial data schema is removed
-  file:
+  ansible.builtin.file:
     path: '/tmp/icingaweb-initial-data.sql'
     state: 'absent'
 
 - name: Create or migrate Icinga Director database
-  command: 'icingacli director migration run'
+  ansible.builtin.command: 'icingacli director migration run'
   when: icinga_web__director_enabled|bool and
         icinga_web__director_database_init|bool
 
 - name: Kickstart Icinga Director configuration
-  command: 'icingacli director kickstart run'
+  ansible.builtin.command: 'icingacli director kickstart run'
   when: icinga_web__director_enabled|bool and
         icinga_web__director_database_init|bool and
         icinga_web__director_kickstart_enabled|bool
 
 - name: Deploy Icinga Director configuration
-  command: 'icingacli director config deploy'
+  ansible.builtin.command: 'icingacli director config deploy'
   when: icinga_web__director_enabled|bool and
         icinga_web__director_database_init|bool and
         icinga_web__director_kickstart_enabled|bool
 
 - name: Create Director Unix account
-  user:
+  ansible.builtin.user:
     name: '{{ icinga_web__director_user }}'
     group: '{{ icinga_web__director_group }}'
     system: True
@@ -218,35 +218,35 @@
     shell: '{{ icinga_web__director_shell }}'
 
 - name: Set permissions on Director home directory
-  file:
+  ansible.builtin.file:
     path: '{{ icinga_web__director_home }}'
     mode: '{{ icinga_web__director_home_mode }}'
 
 - name: Check if old Director jobs service exists
-  stat:
+  ansible.builtin.stat:
     path: '/etc/systemd/system/icinga2-director-jobs.service'
   register: icinga_web__register_director_jobs_service
 
 - name: Stop and disable old Director jobs service
-  systemd:
+  ansible.builtin.systemd:
     name: 'icinga2-director-jobs.service'
     state: 'stopped'
     enabled: False
   when: icinga_web__register_director_jobs_service.stat.exists
 
 - name: Remove old Director jobs service
-  file:
+  ansible.builtin.file:
     path: '/etc/systemd/system/icinga2-director-jobs.service'
     state: 'absent'
 
 - name: Configure Director service
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/icinga-director.service.j2'
     dest: '/etc/systemd/system/icinga-director.service'
     mode: '0644'
 
 - name: Start and enable Director service
-  systemd:
+  ansible.builtin.systemd:
     daemon_reload: True
     name: 'icinga-director.service'
     enabled: True
@@ -254,19 +254,19 @@
   when: icinga_web__director_enabled|bool
 
 - name: Stop and disable Director service
-  systemd:
+  ansible.builtin.systemd:
     name: 'icinga-director.service'
     enabled: False
     state: 'stopped'
   when: not icinga_web__director_enabled|bool
 
 - name: Import CA certificates to Icinga Web x509 truststore
-  command: 'icingacli x509 import --file /etc/ssl/certs/ca-certificates.crt'
+  ansible.builtin.command: 'icingacli x509 import --file /etc/ssl/certs/ca-certificates.crt'
   when: icinga_web__x509_enabled|bool and
         icinga_web__x509_database_init|bool
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -274,7 +274,7 @@
     mode: '0755'
 
 - name: Save Icinga Web local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/icinga_web.fact.j2'
     dest: '/etc/ansible/facts.d/icinga_web.fact'
     owner: 'root'
@@ -284,4 +284,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

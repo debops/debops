@@ -4,24 +4,24 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Prepare OpenLDAP installation to use the rfc2307bis schema
-  include_tasks: 'prepare_rfc2307bis.yml'
+  ansible.builtin.include_tasks: 'prepare_rfc2307bis.yml'
   when: (slapd__rfc2307bis_enabled|bool and
          (ansible_local is undefined or ansible_local.slapd is undefined))
 
 - name: Initialize BaseDN value in debconf using a DNS domain
-  debconf:
+  ansible.builtin.debconf:
     name: 'slapd'
     question: '{{ item }}'
     vtype: 'string'
@@ -29,7 +29,7 @@
   loop: [ 'slapd/domain', 'shared/organization' ]
 
 - name: Install OpenLDAP packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (slapd__base_packages
                               + slapd__schema_packages
                               + slapd__packages)) }}'
@@ -38,7 +38,7 @@
   until: slapd__register_packages is succeeded
 
 - name: Allow access to additional UNIX groups by the OpenLDAP service
-  user:
+  ansible.builtin.user:
     name: '{{ slapd__user }}'
     groups: '{{ slapd__additional_groups }}'
     append: True
@@ -50,21 +50,21 @@
     path: '/etc/default/slapd'
 
 - name: Generate the OpenLDAP environment file
-  template:
+  ansible.builtin.template:
     src: 'etc/default/slapd.j2'
     dest: '/etc/default/slapd'
     mode: '0644'
   register: slapd__register_environment
 
 - name: Restart slapd if its configuration was modified
-  service:  # noqa no-handler
+  ansible.builtin.service:  # noqa no-handler
     name: 'slapd'
     state: 'restarted'
   when: slapd__register_unix_groups is changed or
         slapd__register_environment is changed
 
 - name: Ensure that the log directory exists
-  file:
+  ansible.builtin.file:
     path: '{{ slapd__log_dir }}'
     state: 'directory'
     owner: '{{ slapd__user }}'
@@ -72,26 +72,26 @@
     mode: '0750'
 
 - name: Install helper scripts
-  copy:
+  ansible.builtin.copy:
     src: 'usr/local/sbin/'
     dest: '/usr/local/sbin/'
     mode: '0755'
   tags: [ 'role::slapd:scripts' ]
 
 - name: Ensure that DebOps schema directory exists
-  file:
+  ansible.builtin.file:
     path: '{{ slapd__debops_schema_path }}'
     state: 'directory'
     mode: '0755'
 
 - name: Copy custom DebOps schemas to the OpenLDAP host
-  copy:
+  ansible.builtin.copy:
     src: 'etc/ldap/schema/debops/'
     dest: '{{ slapd__debops_schema_path + "/" }}'
     mode: '0644'
 
 - name: Load custom LDAP schemas
-  script: 'script/ldap-load-schema {{ item }}'
+  ansible.builtin.script: 'script/ldap-load-schema {{ item }}'
   loop: '{{ q("flattened", slapd__combined_schemas) }}'
   register: slapd__register_load_schemas
   changed_when: (slapd__register_load_schemas.stdout|d() and
@@ -100,7 +100,7 @@
   tags: [ 'role::slapd:schema' ]
 
 - name: Ensure that additional database directories exist
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     state: 'directory'
     owner: '{{ slapd__user }}'
@@ -109,7 +109,7 @@
   loop: '{{ slapd__additional_database_dirs }}'
 
 - name: Configure backup snapshots as cron jobs
-  cron:
+  ansible.builtin.cron:
     name: 'Create {{ item }} backup snapshots of OpenLDAP databases'
     special_time: '{{ item }}'
     cron_file: 'slapd-snapshot'
@@ -126,13 +126,13 @@
                 "cron_job": item} }}'
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
 
 - name: Save OpenLDAP server local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/slapd.fact.j2'
     dest: '/etc/ansible/facts.d/slapd.fact'
     mode: '0755'
@@ -140,10 +140,10 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Perform OpenLDAP tasks
-  include_tasks: 'slapd_tasks.yml'
+  ansible.builtin.include_tasks: 'slapd_tasks.yml'
   loop: '{{ q("flattened", slapd__combined_tasks) | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"state": item.state,
@@ -159,14 +159,14 @@
                   else False) }}'
 
 - name: Remove slapacl test suite if requested
-  file:
+  ansible.builtin.file:
     path: '{{ slapd__slapacl_script }}'
     state: 'absent'
   when: slapd__slapacl_deploy_state == 'absent'
   tags: [ 'role::slapd:slapacl', 'role::slapd:tasks' ]
 
 - name: Perform OpenLDAP slapacl tasks
-  include_tasks: 'slapd_tasks.yml'
+  ansible.builtin.include_tasks: 'slapd_tasks.yml'
   loop: '{{ q("flattened", slapd__slapacl_combined_tasks) | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"state": item.state,
@@ -183,7 +183,7 @@
                   else False) }}'
 
 - name: Generate slapacl test suite script
-  template:
+  ansible.builtin.template:
     src: 'etc/ldap/slapacl-test-suite.j2'
     dest: '{{ slapd__slapacl_script }}'
     group: '{{ slapd__group }}'
@@ -195,7 +195,7 @@
 - name: Test ACL rules using slapacl
   environment:
     SLAPACL_STDOUT: 'false'
-  command: '{{ slapd__slapacl_script }}'
+  ansible.builtin.command: '{{ slapd__slapacl_script }}'
   become: True
   become_user: '{{ slapd__user }}'
   register: slapd__register_slapacl_test

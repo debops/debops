@@ -4,10 +4,10 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Check icinga2 configuration and restart
-  command: icinga2 daemon -C
+  ansible.builtin.command: icinga2 daemon -C
   notify: [ 'Restart icinga2' ]
 
 - name: Restart icinga2
-  service:
+  ansible.builtin.service:
     name: 'icinga2'
     state: 'restarted'

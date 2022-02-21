@@ -8,7 +8,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Check default ldap config exists
-  command: php --file "{{ owncloud__app_home }}/occ" ldap:show-config "{{ owncloud__ldap_config_id }}"
+  ansible.builtin.command: php --file "{{ owncloud__app_home }}/occ" ldap:show-config "{{ owncloud__ldap_config_id }}"
   changed_when: False
   when: (not ansible_check_mode)
   register: owncloud__register_ldap_default_config_exits
@@ -20,7 +20,7 @@
 - name: Create empty LDAP configuration
   environment:
     LC_ALL: 'C'
-  shell: set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          php --file "{{ owncloud__app_home }}/occ" ldap:create-empty-config | awk '{print $NF}'
   args:
     executable: 'bash'
@@ -30,17 +30,17 @@
   when: ((not ansible_check_mode) and 'Invalid configID' in owncloud__register_ldap_default_config_exits.stdout|d(""))
 
 - name: Update ownCloud local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/owncloud.fact.j2'
     dest: '/etc/ansible/facts.d/owncloud.fact'
     mode: '0755'
   notify: [ 'Refresh host facts' ]
 
 - name: Gather facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Configure LDAP parameters
-  command: php --file '{{ owncloud__app_home }}/occ' ldap:set-config '{{ owncloud__ldap_config_id }}' '{{ item.name }}' '{{ item.value }}'
+  ansible.builtin.command: php --file '{{ owncloud__app_home }}/occ' ldap:set-config '{{ owncloud__ldap_config_id }}' '{{ item.name }}' '{{ item.value }}'
   changed_when: False
   become: True
   become_user: '{{ owncloud__app_user }}'

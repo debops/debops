@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: '{{ item.name }}'
-  ldap_entry:
+  community.general.ldap_entry:
     dn:          '{{ item.dn if (item.dn is string) else item.dn | join(",") }}'
     objectClass: '{{ item.objectClass | d(omit) }}'
     attributes:  '{{ item.attributes | d(omit) }}'
@@ -19,7 +19,7 @@
                   else False) }}'
 
 - name: '{{ item.name }}'
-  ldap_attrs:
+  community.general.ldap_attrs:
     dn:         '{{ item.dn if (item.dn is string) else item.dn | join(",") }}'
     attributes: '{{ item.attributes | d({}) }}'
     ordered:    '{{ item.ordered | d(False) }}'

@@ -4,19 +4,19 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Install Redis Sentinel packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (redis_sentinel__base_packages
                               + redis_sentinel__packages)) }}'
     state: 'present'
@@ -24,7 +24,7 @@
   until: redis_sentinel__register_packages is succeeded
 
 - name: Ensure that standalone Redis Sentinel is stopped on install
-  systemd:
+  ansible.builtin.systemd:
     name: 'redis-sentinel.service'
     state: 'stopped'
   when: ((ansible_local is undefined or
@@ -32,7 +32,7 @@
          ansible_service_mgr == 'systemd')
 
 - name: Make sure Ansible fact directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -40,7 +40,7 @@
     mode: '0755'
 
 - name: Setup Redis Sentinel local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/redis_sentinel.fact.j2'
     dest: '/etc/ansible/facts.d/redis_sentinel.fact'
     owner: 'root'
@@ -50,16 +50,16 @@
   tags: [ 'meta::facts' ]
 
 - name: Reload facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Create Redis Sentinel auth UNIX group
-  group:
+  ansible.builtin.group:
     name: '{{ redis_sentinel__auth_group }}'
     state: 'present'
     system: True
 
 - name: Create Redis Sentinel instance directories
-  file:
+  ansible.builtin.file:
     path: '/etc/redis/sentinel-{{ item.0.name + item.1 }}'
     state: 'directory'
     owner: 'root'
@@ -71,7 +71,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate initial Redis Sentinel configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/redis/sentinel-instance/sentinel.conf.j2'
     dest: '/etc/redis/sentinel-{{ item.name }}/sentinel.conf'
     owner: '{{ redis_sentinel__user }}'
@@ -84,7 +84,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate Redis Sentinel notify and reconfig scripts
-  template:
+  ansible.builtin.template:
     src: 'etc/redis/sentinel-instance/{{ item.1 }}.j2'
     dest: '/etc/redis/sentinel-{{ item.0.name }}/{{ item.1 }}'
     owner: 'root'
@@ -96,7 +96,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Install custom systemd unit files
-  template:
+  ansible.builtin.template:
     src: '{{ item }}.j2'
     dest: '/{{ item }}'
     owner: 'root'
@@ -108,7 +108,7 @@
   notify: [ 'Reload service manager' ]
 
 - name: Create systemd override directories for instances
-  file:
+  ansible.builtin.file:
     path: '/etc/systemd/system/redis-sentinel@{{ item.name }}.service.d'
     state: 'directory'
     owner: 'root'
@@ -120,7 +120,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate systemd instance override files
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/redis-sentinel@.service.d/ansible-override.conf.j2'
     dest: '/etc/systemd/system/redis-sentinel@{{ item.name }}.service.d/ansible-override.conf'
     owner: 'root'
@@ -133,7 +133,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Stop Redis Sentinel instances if requested
-  systemd:
+  ansible.builtin.systemd:
     name: 'redis-sentinel@{{ item.name }}.service'
     state: 'stopped'
     enabled: False
@@ -143,7 +143,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove Redis Sentinel instance systemd override if requested
-  file:
+  ansible.builtin.file:
     path: '/etc/systemd/system/redis-sentinel@{{ item.name }}.service.d'
     state: 'absent'
   with_items: '{{ redis_sentinel__combined_configuration | debops.debops.parse_kv_items }}'
@@ -153,7 +153,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove Redis Sentinel instance configuration if requested
-  file:
+  ansible.builtin.file:
     path: '/etc/redis/sentinel-{{ item.name }}'
     state: 'absent'
   with_items: '{{ redis_sentinel__combined_configuration | debops.debops.parse_kv_items }}'
@@ -162,10 +162,10 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Reload systemd configuration when needed
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Ensure that Redis Sentinel instances are started
-  systemd:
+  ansible.builtin.systemd:
     name: 'redis-sentinel@{{ item.name }}.service'
     state: 'started'
     enabled: True

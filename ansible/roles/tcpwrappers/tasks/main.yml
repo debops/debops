@@ -4,11 +4,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (tcpwrappers__base_packages
                               + tcpwrappers__packages)) }}'
     state: 'present'
@@ -17,7 +17,7 @@
   when: tcpwrappers__enabled | bool
 
 - name: Make sure /etc/hosts.allow.d directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/hosts.allow.d'
     state: 'directory'
     owner: 'root'
@@ -25,7 +25,7 @@
     mode: '0755'
 
 - name: Create /etc/hosts.allow.d/00_ansible
-  template:
+  ansible.builtin.template:
     src: 'etc/hosts.allow.d/00_ansible.j2'
     dest: '/etc/hosts.allow.d/00_ansible'
     owner: 'root'
@@ -40,7 +40,7 @@
     delete: True
 
 - name: Allow access from Ansible Controller to sshd
-  template:
+  ansible.builtin.template:
     src: 'etc/hosts.allow.d/ansible_controller.j2'
     dest: '/etc/hosts.allow.d/10_ansible_controller'
     owner: 'root'
@@ -48,7 +48,7 @@
     mode: '0644'
 
 - name: Remove hosts.allow entries if requested
-  file:
+  ansible.builtin.file:
     path: '/etc/hosts.allow.d/{{ item.weight | default("50") }}_{{ item.filename
             | d((item.daemon if item.daemon is string else item.daemon[0]) + "_allow") }}'
     state: 'absent'
@@ -66,7 +66,7 @@
          item.state|d() and item.state == 'absent')
 
 - name: Generate hosts.allow entries
-  template:
+  ansible.builtin.template:
     src: 'etc/hosts.allow.d/allow.j2'
     dest: '/etc/hosts.allow.d/{{ item.weight | default("50") }}_{{ item.filename
             | d((item.daemon if item.daemon is string else item.daemon[0]) + "_allow") }}'
@@ -87,7 +87,7 @@
          (item.state is undefined or item.state != 'absent'))
 
 - name: Assemble hosts.allow.d
-  assemble:
+  ansible.builtin.assemble:
     src: '/etc/hosts.allow.d'
     dest: '/etc/hosts.allow'
     backup: False
@@ -97,7 +97,7 @@
   when: tcpwrappers__enabled | bool
 
 - name: Make sure that Ansible local fact directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -105,7 +105,7 @@
     mode: '0755'
 
 - name: Save tcpwrappers local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/tcpwrappers.fact.j2'
     dest: '/etc/ansible/facts.d/tcpwrappers.fact'
     owner: 'root'
@@ -114,7 +114,7 @@
   tags: [ 'meta::facts' ]
 
 - name: Configure access in /etc/hosts.deny
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '/etc/hosts.deny'
     regexp: '^ALL: ALL'
     line: 'ALL: ALL'

@@ -5,15 +5,15 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Install Libuser requested packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", libuser__base_packages
                              + libuser__packages) }}'
     state: 'present'
@@ -27,20 +27,20 @@
   when: libuser__enabled|bool
 
 - name: Configure main libuser config file
-  template:
+  ansible.builtin.template:
     src: 'etc/libuser.conf.j2'
     dest: '/etc/libuser.conf'
     mode: '0644'
   when: libuser__enabled|bool
 
 - name: Make sure that local fact directory exists
-  file:
+  ansible.builtin.file:
     dest: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
 
 - name: Save Libuser local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/libuser.fact.j2'
     dest: '/etc/ansible/facts.d/libuser.fact'
     mode: '0755'
@@ -48,4 +48,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Re-read local facts if they have been modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Remove legacy APT preferences
-  file:
+  ansible.builtin.file:
     dest: '/etc/apt/preferences.d/{{ item.filename | d((item.role | d(item.by_role | d("pin")))
                                                        + "_" + ((item.package.split(" ")[0]
                                                                  if item.package is string
@@ -32,7 +32,7 @@
   when: ("." in item.role|d(item.by_role|d("")))
 
 - name: Remove APT preferences
-  file:
+  ansible.builtin.file:
     dest: '/etc/apt/preferences.d/{{ item.filename | d((item.role | d(item.by_role | d("pin"))) | replace(".", "_")
                                      + "_" + ((item.package.split(" ")[0]
                                                if item.package is string
@@ -74,7 +74,7 @@
         )
 
 - name: Create APT preferences
-  template:
+  ansible.builtin.template:
     src: 'etc/apt/preferences.d/pin.pref.j2'
     dest: '/etc/apt/preferences.d/{{ item.filename | d((item.role | d(item.by_role | d("pin"))) | replace(".", "_")
                                      + "_" + ((item.package.split(" ")[0]

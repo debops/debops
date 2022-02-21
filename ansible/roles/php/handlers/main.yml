@@ -5,13 +5,13 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: "Restart php-fpm"
-  service:
+  ansible.builtin.service:
     name: "php{{ php__version }}-fpm"
     state: 'restarted'
   when: '"fpm" in php__server_api_packages'
 
 - name: "Reload php-fpm"
-  service:
+  ansible.builtin.service:
     name: "php{{ php__version }}-fpm"
     state: 'reloaded'
   when: '"fpm" in php__server_api_packages'

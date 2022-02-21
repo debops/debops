@@ -6,12 +6,12 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 # Ensure specified packages are present [[[
 - name: Ensure specified packages are present
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (firejail__base_packages
                               + firejail__packages
                               + firejail__group_packages
@@ -25,7 +25,7 @@
 
 # Installation details [[[
 - name: Get program file path of firejail
-  command: which -a firejail
+  ansible.builtin.command: which -a firejail
   register: firejail__register_program_file_path
   check_mode: False
   changed_when: False
@@ -33,7 +33,7 @@
   when: (firejail__program_file_path == "auto")
 
 - name: Set program file path of firejail for later use in the role
-  set_fact:
+  ansible.builtin.set_fact:
     firejail__program_file_path: '{{ (firejail__register_program_file_path.stdout_lines
                                       + ["/usr/bin/firejail"]) | first }}'
   when: (firejail__program_file_path == "auto")
@@ -41,7 +41,7 @@
 
 # Gather list of system wide profiles [[[
 - name: Get list of system wide profiles
-  find:
+  ansible.builtin.find:
     file_type: 'file'
     paths: [ '{{ firejail__config_path }}' ]
     patterns: '*.profile'
@@ -53,7 +53,7 @@
   ## Disabled because the output is not interesting but very verbose.
 
 - name: Set list of system wide profiles
-  set_fact:
+  ansible.builtin.set_fact:
     firejail__fact_system_wide_profiles: '{{
       firejail__register_find_system_wide_profiles.files
         | map(attribute="path")
@@ -63,7 +63,7 @@
 
 # Gather list of installed programs [[[
 - name: Check if programs which should be sandboxed are installed
-  command: which -a {{ item | quote }}
+  ansible.builtin.command: which -a {{ item | quote }}
   check_mode: False
   changed_when: False
   failed_when: firejail__register_cmd_which_programs.rc not in [ 0, 1 ]
@@ -80,7 +80,7 @@
 # For optimized performance, firejail__fact_installed_programs only contains
 # programs for which the install state actually matters.
 - name: Set list of installed programs
-  set_fact:
+  ansible.builtin.set_fact:
     firejail__fact_installed_programs: '{{
       firejail__register_cmd_which_programs.results
       | selectattr("rc", "defined")
@@ -92,13 +92,13 @@
 
 # Create/remove symlinks for sandboxed programs [[[
 - name: Ensure that the local bin path exists
-  file:
+  ansible.builtin.file:
     path: '{{ firejail__system_local_bin_path }}'
     state: 'directory'
     mode: '0755'
 
 - name: Create/remove symlinks for sandboxed programs
-  file:
+  ansible.builtin.file:
     path: '{{ firejail__system_local_bin_path + "/" + item }}'
     src: '{{ firejail__program_file_path }}'
     state: '{{ "link"
@@ -132,7 +132,7 @@
 
 # Manage profile [[[
 - name: Provide (additional) profiles
-  copy:
+  ansible.builtin.copy:
     dest:           '{{ item.value.profile.dest           | d(firejail__config_path + "/" + item.key + ".profile") }}'
     backup:         '{{ item.value.profile.backup         | d(omit) }}'
     content:        '{{ item.value.profile.content        | d(omit) }}'
@@ -154,7 +154,7 @@
   tags: [ 'role::firejail:profile' ]
 
 - name: Delete profiles
-  file:
+  ansible.builtin.file:
     path: '{{ item.value.profile.dest | d(firejail__config_path + "/" + item.key + ".profile") }}'
     state: 'absent'
   when: ("profile" in item.value and
@@ -170,7 +170,7 @@
 # when the cleanup tasks are run in `absent` `firejail__deploy_state`.
 # > /usr/local/bin/$program was skipped as it does not seem to be a valid file or it cannot be accessed
 - name: Get list of files in local bin path
-  find:
+  ansible.builtin.find:
     file_type: 'file'
     paths: [ '{{ firejail__system_local_bin_path }}' ]
     hidden: False
@@ -183,7 +183,7 @@
 # `realpath` filter (https://docs.ansible.com/ansible/latest/user_guide/playbooks_filters.html#managing-file-names-and-path-names)
 # can not be used because filters are executed on the Ansible controller.
 - name: Workaround to get the realpath
-  stat:
+  ansible.builtin.stat:
     path: '{{ item.path }}'
   register: firejail__register_profile_program_symlinks_stat
   no_log: '{{ debops__no_log | d(True) }}'
@@ -191,7 +191,7 @@
   with_items: '{{ firejail__register_profile_program_symlinks_find.files }}'
 
 - name: Remove program symlink when profiles is is not defined in any variable
-  file:
+  ansible.builtin.file:
     path: '{{ item.stat.path }}'
     state: 'absent'
   no_log: '{{ debops__no_log | d(True) }}'
@@ -216,7 +216,7 @@
 
   ## Firejail 0.9.44.4 does not ensure that the directory exists?
 - name: Ensure ~/.local/share/applications exists
-  file:
+  ansible.builtin.file:
     path: '~/.local/share/applications'
     state: 'directory'
     mode: '0755'
@@ -227,7 +227,7 @@
   with_flattened: '{{ firejail__combined_fix_for_users }}'
 
 - name: Apply workaround for desktop files
-  command: firecfg --fix
+  ansible.builtin.command: firecfg --fix
   register: firejail__register_cmd_firecfg_fix
   changed_when: ("created" in firejail__register_cmd_firecfg_fix.stdout)
   become: True
@@ -240,7 +240,7 @@
 
 # Ensure specified packages are absent [[[
 - name: Ensure specified packages are absent
-  package:
+  ansible.builtin.package:
     name: '{{ item }}'
     state: 'absent'
   when: firejail__deploy_state in ["absent"]

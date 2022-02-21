@@ -25,7 +25,7 @@
   register: mariadb__register_database_status
 
 - name: Copy database source file to remote host
-  copy:  # noqa no-handler
+  ansible.builtin.copy:  # noqa no-handler
     src: '{{ item.0.source }}'
     dest: '{{ item.0.target }}'
     owner: 'root'
@@ -58,7 +58,7 @@
          item.0.target|d(False) and (item.0.name == item.1.db and item.1 is changed))
 
 - name: Remove source files
-  file:
+  ansible.builtin.file:
     dest: '{{ item.target }}'
     state: 'absent'
   with_flattened: '{{ mariadb__databases + mariadb__dependent_databases + mariadb_databases|d([]) }}'
@@ -143,7 +143,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Make sure required system groups exist
-  group:
+  ansible.builtin.group:
     name: '{{ item.group | d(item.owner) }}'
     state: 'present'
     system: '{{ item.system | d(True) }}'
@@ -154,7 +154,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Make sure required system accounts exist
-  user:
+  ansible.builtin.user:
     name: '{{ item.owner }}'
     group: '{{ item.group | d(item.owner) }}'
     home: '{{ item.home }}'
@@ -167,7 +167,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove ~/.my.cnf from owner home if requested
-  file:
+  ansible.builtin.file:
     dest: '{{ "~" + item.owner + "/.my.cnf" }}'
     state: 'absent'
   with_flattened: '{{ mariadb__users + mariadb__dependent_users + mariadb_users|d([]) }}'
@@ -177,7 +177,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Ensure that directory for custom file path .my.cnf exists
-  file:
+  ansible.builtin.file:
     path: '{{ item.0.creds_path | regex_replace("^(.*/).*$", "\\1") }}'
     state: 'directory'
     mode: '{{ item.0.mode | d("0755") }}'
@@ -191,7 +191,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Write ~/.my.cnf in owner home directory
-  template:
+  ansible.builtin.template:
     src: 'home/my.cnf.j2'
     dest: '{{ item.0.creds_path|d("~" + item.0.owner + "/.my.cnf") }}'
     owner: '{{ item.0.owner }}'
