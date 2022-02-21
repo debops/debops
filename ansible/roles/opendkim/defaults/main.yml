@@ -308,12 +308,6 @@ opendkim__original_config:
     value: False
     state: 'comment'
 
-  - name: 'ADSPAction'
-    value: 'continue'
-    state: '{{ "comment"
-               if (ansible_distribution_release in [ "wheezy", "jessie" ])
-               else "absent" }}'
-
   - name: 'OversignHeaders'
     comment: |
       Always oversign From (sign using actual From and a null From to prevent
@@ -336,9 +330,7 @@ opendkim__original_config:
       In Debian, /etc/unbound/unbound.conf is shipped as part of the Suggested
       unbound package
     value: '/etc/unbound/unbound.conf'
-    state: '{{ "absent"
-               if (ansible_distribution_release in [ "wheezy", "jessie" ])
-               else "comment" }}'
+    state: 'comment'
 
   - name: 'TrustAnchorFile'
     comment: |
@@ -349,18 +341,6 @@ opendkim__original_config:
       DNS queries and applying the DNSSEC protocol.  See the Unbound documentation
       at https://unbound.net/ for the expected format of this file.
     value: '/usr/share/dns/root.key'
-    state: '{{ "absent"
-               if (ansible_distribution_release in [ "wheezy", "jessie" ])
-               else "present" }}'
-
-  - name: 'ATPSDomains'
-    comment: |
-      List domains to use for RFC 6541 DKIM Authorized Third-Party Signatures
-      (ATPS) (experimental)
-    value: [ 'example.com' ]
-    state: '{{ "comment"
-               if (ansible_distribution_release in [ "wheezy", "jessie" ])
-               else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: opendkim__default_config [[[
@@ -388,16 +368,10 @@ opendkim__default_config:
   - name: 'UserID'
     comment: 'Required by the systemd opendkim.service unit'
     value: '{{ opendkim__user + ":" + opendkim__group }}'
-    state: '{{ "comment"
-               if (ansible_distribution_release in [ "wheezy", "jessie" ])
-               else "present" }}'
 
   - name: 'PidFile'
     comment: 'Required by the systemd opendkim.service unit'
     value: '/run/opendkim/opendkim.pid'
-    state: '{{ "comment"
-               if (ansible_distribution_release in [ "wheezy", "jessie" ])
-               else "present" }}'
 
   - name: 'KeyTable'
     value: '{{ opendkim__dkimkeys_path + "/KeyTable" }}'
