@@ -171,14 +171,32 @@ kibana__elasticsearch_password: '{{ ""
                                                                    # ]]]
 # .. envvar:: kibana__index [[[
 #
-# The Elasticsearch index used by Kibana to store configuration.
+# The Elasticsearch index used by Kibana to store configuration. Deprecated in
+# Kibana 7.11.
 kibana__index: '.kibana'
 
                                                                    # ]]]
 # .. envvar:: kibana__default_app_id [[[
 #
-# The default Kibana 'application' to load on start.
+# The default Kibana 'application' to load on start. Deprecated in Kibana 7.9.
 kibana__default_app_id: 'discover'
+
+                                                                   # ]]]
+# .. envvar:: kibana__security_encryption_key [[[
+#
+# Key used to encrypt session information. Sould be the same on all instances
+# when used id high-availability deployments. Key is stored in the
+# :file:`secret/` directory, managed by the :ref:`debops.secret` Ansible role.
+kibana__security_encryption_key: '{{ lookup("password", secret
+                                            + "/kibana/security_encryption_key length=32") }}'
+
+                                                                   # ]]]
+# .. envvar:: kibana__reporting_encryption_key [[[
+#
+# The static encryption key for reporting. Key is stored in the
+# :file:`secret/` directory, managed by the :ref:`debops.secret` Ansible role.
+kibana__reporting_encryption_key: '{{ lookup("password", secret
+                                             + "/kibana/reporting_encryption_key length=32") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Connection encryption, TLS [[[
@@ -316,10 +334,16 @@ kibana__default_configuration:
     comment: |
       Kibana uses an index in Elasticsearch to store saved searches, visualizations and
       dashboards. Kibana creates a new index if the index doesn't already exist.
+    state: '{{ "present"
+               if (kibana__version is version("7.11.0", "<"))
+               else "absent" }}'
 
   - name: 'kibana.defaultAppId'
     value: '{{ kibana__default_app_id }}'
     comment: 'The default application to load'
+    state: '{{ "present"
+               if (kibana__version is version("7.9.0", "<"))
+               else "absent" }}'
 
   - name: 'elasticsearch.url'
     value: '{{ kibana__elasticsearch_url }}'
@@ -503,6 +527,16 @@ kibana__default_configuration:
       The default locale. This locale can be used in certain circumstances to substitute any missing
       translations.
     value: 'en'
+
+  - name: 'xpack.security.encryptionKey'
+    comment: |
+      An arbitrary string of 32 characters or more that is used to encrypt session information.
+    value: '{{ kibana__security_encryption_key }}'
+
+  - name: 'xpack.reporting.encryptionKey'
+    comment: |
+      The static encryption key for reporting. Use an alphanumeric text string that is at least 32 characters.
+    value: '{{ kibana__reporting_encryption_key }}'
 
                                                                    # ]]]
 # .. envvar:: kibana__configuration [[[

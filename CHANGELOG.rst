@@ -32,6 +32,12 @@ Changed
 - The configuration included in the role has been updated to work correctly
   with Elasticsearch v8.0.x release.
 
+:ref:`debops.kibana` role
+'''''''''''''''''''''''''
+
+- The configuration included in the role has been updated to work correctly
+  with Kibana v8.0.x release.
+
 
 `debops v3.0.1`_ - 2022-02-17
 -----------------------------
