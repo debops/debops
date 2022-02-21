@@ -351,12 +351,15 @@ elasticsearch__default_configuration:
   - name: 'node.master'
     comment: 'Type of the node'
     value: '{{ elasticsearch__node_master }}'
+    state: '{{ "present" if (elasticsearch__version is version("7.9.0", "<")) else "absent" }}'
 
   - name: 'node.data'
     value: '{{ elasticsearch__node_data }}'
+    state: '{{ "present" if (elasticsearch__version is version("7.9.0", "<")) else "absent" }}'
 
   - name: 'node.ingest'
     value: '{{ elasticsearch__node_ingest }}'
+    state: '{{ "present" if (elasticsearch__version is version("7.9.0", "<")) else "absent" }}'
 
   - name: 'node.name'
     value: '{{ elasticsearch__node_name }}'
