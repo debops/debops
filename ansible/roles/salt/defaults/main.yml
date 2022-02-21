@@ -23,8 +23,7 @@
 #
 # Enable or disable upstream APT repository.
 salt__upstream: '{{ True
-                    if (ansible_distribution_release in
-                        [ "precise", "trusty", "wheezy" ])
+                    if (ansible_distribution_release in [ "trusty" ])
                     else False }}'
 
                                                                    # ]]]
@@ -173,18 +172,6 @@ salt__python__dependent_packages3:
 salt__python__dependent_packages2:
 
   - 'python-tornado'
-
-                                                                   # ]]]
-# .. envvar:: salt__apt_preferences__dependent_list [[[
-#
-# Configuration for the :ref:`debops.apt_preferences` Ansible role.
-salt__apt_preferences__dependent_list:
-
-  - packages:  [ 'salt-*', ]
-    backports: [ 'jessie' ]
-    reason: 'Newer Salt features available in backported packages'
-    by_role: 'debops.salt'
-    state: '{{ "absent" if salt__upstream|bool else "present" }}'
 
                                                                    # ]]]
 # .. envvar:: salt__etc_services__dependent_list [[[
