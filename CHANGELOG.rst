@@ -23,6 +23,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.2: https://github.com/debops/debops/compare/v2.2.0...stable-2.2
 
+Fixed
+~~~~~
+
+:ref:`debops.logrotate` role
+''''''''''''''''''''''''''''
+
+- Fixed formatting in the :file:`/etc/logrotate.conf` configuration file to
+  avoid adding :command:`vim` fold markers from the DebOps role defaults.
+
 
 `debops v2.2.6`_ - 2022-02-17
 -----------------------------
