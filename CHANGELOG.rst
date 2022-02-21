@@ -35,6 +35,12 @@ General
 - Provide a help message in case the :file:`ansible.cfg` configuration file in
   the DebOps project directory does not include the ``inventory`` option.
 
+:ref:`debops.logrotate` role
+''''''''''''''''''''''''''''
+
+- Fixed formatting in the :file:`/etc/logrotate.conf` configuration file to
+  avoid adding :command:`vim` fold markers from the DebOps role defaults.
+
 
 `debops v3.0.0`_ - 2022-02-17
 -----------------------------
