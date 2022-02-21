@@ -1,10 +1,10 @@
 {# Copyright (C) 2015 Maciej Delmanowski <drybjed@gmail.com>
- # Copyright (C) 2015 DebOps <https://debops.org/>
+ # Copyright (C) 2015-2022 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 # {{ ansible_managed }}
 
-{% if ansible_distribution_release in [ 'wheezy', 'precise', 'trusty' ] %}
+{% if ansible_distribution_release in [ 'trusty' ] %}
 # This file controls the activity of snmpd and snmptrapd
 {% else %}
 # This file controls the activity of snmpd
@@ -24,7 +24,7 @@ SNMPDRUN=yes
 # snmpd options (use syslog, close stdin/out/err).
 SNMPDOPTS='{{ snmpd_logging_options }} -Lf /dev/null -u {{ snmpd_user }} -g {{ snmpd_group }} -I -smux,mteTrigger,mteTriggerConf -p /run/snmpd.pid'
 
-{% if ansible_distribution_release in [ 'wheezy', 'precise', 'trusty' ] %}
+{% if ansible_distribution_release in [ 'trusty' ] %}
 # snmptrapd control (yes means start daemon).  As of net-snmp version
 # 5.0, master agentx support must be enabled in snmpd before snmptrapd
 # can be run.  See snmpd.conf(5) for how to do this.
