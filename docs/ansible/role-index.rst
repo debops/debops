@@ -252,6 +252,7 @@ Monitoring
 - :ref:`debops.icinga_db`
 - :ref:`debops.icinga_web`
 - :ref:`debops.librenms`
+- :ref:`debops.metricbeat`
 - :ref:`debops.monit`
 - :ref:`debops.proc_hidepid`
 - :ref:`debops.snmpd`

@@ -23,6 +23,18 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v3.0.0...master
 
+Added
+~~~~~
+
+New DebOps roles
+''''''''''''''''
+
+- The :ref:`debops.metricbeat` role, part of the Elastic stack, can be used to
+  install `Metricbeat`__, a service that can gather metrics and other non-log
+  data from other services and send them to Elasticsearch for processing.
+
+  .. __: https://www.elastic.co/beats/metricbeat
+
 Changed
 ~~~~~~~
 

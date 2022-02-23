@@ -1459,6 +1459,18 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/memcached/.*'
     JANE_LOG_PATTERN: '\[memcached\]'
 
+'metricbeat role':
+  <<: *test_role_1st_deps
+  needs:
+    - 'extrepo role'
+  variables:
+    BASE_VAGRANT_BOX: 'debian/bullseye64'
+    JANE_TEST_FACT: 'metricbeat.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/metricbeat.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_metricbeat'
+    JANE_DIFF_PATTERN: '.*/roles/metricbeat/.*'
+    JANE_LOG_PATTERN: '\[metricbeat\]'
+
 'minidlna role':
   <<: *test_role_1st_deps
   needs:

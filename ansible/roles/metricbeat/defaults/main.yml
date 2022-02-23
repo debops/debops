@@ -1,0 +1,263 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2022 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2022 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _metricbeat__ref_defaults:
+
+# debops.metricbeat default variables
+# ===================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# APT packages, version [[[
+# -------------------------
+
+# The ``debops.metricbeat`` role uses the :ref:`debops.extrepo` Ansible role
+# to configure the Elastic APT repositories and GPG keys.
+
+# .. envvar:: metricbeat__base_packages [[[
+#
+# List of base APT packages to install.
+metricbeat__base_packages: [ 'metricbeat' ]
+
+                                                                   # ]]]
+# .. envvar:: metricbeat__packages [[[
+#
+# List of additional APT packages to install with Metricbeat.
+metricbeat__packages: []
+
+                                                                   # ]]]
+# .. envvar:: metricbeat__version [[[
+#
+# Store the detected Metricbeat version in a convenient variable for conditional
+# configuration.
+metricbeat__version: '{{ ansible_local.metricbeat.version | d("0.0.0") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Main Metricbeat configuration file [[[
+# -----------0--------------------------
+
+# The variables below define the contents of the
+# :file:`/etc/metricbeat/metricbeat.yml` configuration file.
+# See :ref:`metricbeat__ref_configuration` for more details.
+
+# .. envvar:: metricbeat__original_configuration [[[
+#
+# Metricbeat configuration based on the original config file which comes with
+# the package. Some of the configuration options are overridden in the
+# subsequent configuration variable.
+metricbeat__original_configuration:
+
+  - name: 'metricbeat_config_modules'
+    config:
+      metricbeat.config.modules:
+        path: '${path.config}/modules.d/*.yml'
+        reload.enabled: False
+
+  - name: 'setup_template_settings'
+    config:
+      setup.template.settings:
+        index.number_of_shards: 1
+        index.codec: 'best_compression'
+
+  - name: 'setup_kibana'
+    config:
+      setup.kibana:
+
+  - name: 'output_elasticsearch'
+    config:
+      output.elasticsearch:
+        hosts: [ 'localhost:9200' ]
+
+  - name: 'processors'
+    config:
+      processors:
+        - add_host_metadata: ~
+        - add_cloud_metadata: ~
+        - add_docker_metadata: ~
+        - add_kubernetes_metadata: ~
+
+                                                                   # ]]]
+# .. envvar:: metricbeat__default_configuration [[[
+#
+# The Metricbeat configuration defined by the role.
+metricbeat__default_configuration:
+
+  - name: 'metricbeat_config_modules'
+    config:
+      metricbeat.config.modules:
+        path: '${path.config}/modules.d/*.yml'
+        reload.enabled: True
+        reload.period: '30s'
+
+                                                                   # ]]]
+# .. envvar:: metricbeat__configuration [[[
+#
+# The Metricbeat configuration which should be present on all hosts in the
+# Ansible inventory.
+metricbeat__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: metricbeat__group_configuration [[[
+#
+# The Metricbeat configuration which should be present on hosts in a specific
+# Ansible inventory group.
+metricbeat__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: metricbeat__host_configuration [[[
+#
+# The Metricbeat configuration which should be present on specific hosts in the
+# Ansible inventory.
+metricbeat__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: metricbeat__combined_configuration [[[
+#
+# Variable which combines all Metricbeat configuration variables and is used in
+# the role tasks and templates.
+metricbeat__combined_configuration: '{{ metricbeat__original_configuration
+                                        + metricbeat__default_configuration
+                                        + metricbeat__configuration
+                                        + metricbeat__group_configuration
+                                        + metricbeat__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Metricbeat configuration snippets [[[
+# -------------------------------------
+
+# The variables below define Metricbeat configuration snippets stored in the
+# :file:`/etc/metricbeat/` directory. Snippets can be created in subdirectories,
+# which will be created automatically. See :ref:`metricbeat__ref_snippets` for
+# more details.
+
+# .. envvar:: metricbeat__default_snippets [[[
+#
+# A list of default Metricbeat configuration snippets defined by the role.
+metricbeat__default_snippets:
+
+  - name: 'modules.d/system.yml'
+    divert: True
+    config:
+
+      - module: 'system'
+        period: '10s'
+        metricsets:
+          - 'cpu'
+          - 'load'
+          - 'memory'
+          - 'network'
+          - 'process'
+          - 'process_summary'
+          - 'socket_summary'
+          #- entropy
+          #- core
+          #- diskio
+          #- socket
+          #- service
+          #- users
+        process.include_top_n:
+          by_cpu: 5      # include top 5 processes by CPU
+          by_memory: 5   # include top 5 processes by memory
+
+      - module: 'system'
+        period: '1m'
+        metricsets:
+          - 'filesystem'
+          - 'fsstat'
+        processors:
+          - drop_event.when.regexp:
+              system.filesystem.mount_point: '^/(sys|cgroup|proc|dev|etc|host|lib|snap)($|/)'
+
+      - module: 'system'
+        period: '15m'
+        metricsets:
+          - 'uptime'
+
+                                                                   # ]]]
+# .. envvar:: metricbeat__snippets [[[
+#
+# A list of Metricbeat configuration snippets which should be present on all
+# hosts in the Ansible inventory.
+metricbeat__snippets: []
+
+                                                                   # ]]]
+# .. envvar:: metricbeat__group_snippets [[[
+#
+# A list of Metricbeat configuration snippets which should be present on hosts
+# in a specific Ansible inventory group.
+metricbeat__group_snippets: []
+
+                                                                   # ]]]
+# .. envvar:: metricbeat__host_snippets [[[
+#
+# A list of Metricbeat configuration snippets which should be present on
+# specific hosts in the Ansible inventory.
+metricbeat__host_snippets: []
+
+                                                                   # ]]]
+# .. envvar:: metricbeat__combined_snippets [[[
+#
+# Variable which combines all Metricbeat snippet variables and is used in role
+# tasks and templates.
+metricbeat__combined_snippets: '{{ metricbeat__default_snippets
+                                   + metricbeat__snippets
+                                   + metricbeat__group_snippets
+                                   + metricbeat__host_snippets }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Metricbeat keystore contents [[[
+# --------------------------------
+
+# The variables below define the contents of the Metricbeat keystore which can
+# be used to store passwords and other confidental data, which then can be
+# referenced in Metricbeat configuration files. See :ref:`metricbeat__ref_keys`
+# for more details.
+
+# .. envvar:: metricbeat__keys [[[
+#
+# Metricbeat keystore content which should be present on all hosts in the
+# Ansible inventory.
+metricbeat__keys: []
+
+                                                                   # ]]]
+# .. envvar:: metricbeat__group_keys [[[
+#
+# Metricbeat keystore content which should be present on all hosts in the Ansible
+# inventory.
+metricbeat__group_keys: []
+
+                                                                   # ]]]
+# .. envvar:: metricbeat__host_keys [[[
+#
+# Metricbeat keystore content which should be present on hosts in a specific
+# Ansible inventory group.
+metricbeat__host_keys: []
+
+                                                                   # ]]]
+# .. envvar:: metricbeat__combined_keys [[[
+#
+# Metricbeat keystore content which should be present on specific hosts in the
+# Ansible inventory.
+metricbeat__combined_keys: '{{ metricbeat__keys
+                               + metricbeat__group_keys
+                               + metricbeat__host_keys }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: metricbeat__extrepo__dependent_sources [[[
+#
+# Configuration for the :ref:`debops.extrepo` Ansible role.
+metricbeat__extrepo__dependent_sources:
+  - 'elastic'
+                                                                   # ]]]
+                                                                   # ]]]
