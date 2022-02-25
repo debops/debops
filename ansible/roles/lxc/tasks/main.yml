@@ -5,18 +5,18 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: DebOps pre_tasks hook
-  include: "{{ lookup('debops.debops.task_src', 'lxc/pre_main.yml') }}"
+  ansible.builtin.include_tasks: "{{ lookup('debops.debops.task_src', 'lxc/pre_main.yml') }}"
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (lxc__base_packages
                               + lxc__packages)) }}'
     state: 'present'
@@ -24,7 +24,7 @@
   until: lxc__register_packages is succeeded
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -32,7 +32,7 @@
     mode: '0755'
 
 - name: Save LXC local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/lxc.fact.j2'
     dest: '/etc/ansible/facts.d/lxc.fact'
     owner: 'root'
@@ -42,10 +42,10 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Create required directories
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     state: 'directory'
     owner: 'root'
@@ -57,7 +57,7 @@
     - '/usr/local/lib/lxc'
 
 - name: Install custom LXC hooks
-  copy:
+  ansible.builtin.copy:
     src: 'usr/local/lib/lxc/'
     dest: '/usr/local/lib/lxc/'
     owner: 'root'
@@ -65,7 +65,7 @@
     mode: '0755'
 
 - name: Install custom LXC helper scripts
-  copy:
+  ansible.builtin.copy:
     src: 'usr/local/bin/'
     dest: '/usr/local/bin/'
     owner: 'root'
@@ -73,7 +73,7 @@
     mode: '0755'
 
 - name: Remove systemd service overrides
-  file:
+  ansible.builtin.file:
     path: '{{ item.name | d(item) }}'
     state: 'absent'
   loop:
@@ -85,7 +85,7 @@
   when: item.state|d('present') == 'absent'
 
 - name: Install systemd service overrides
-  template:
+  ansible.builtin.template:
     src: '{{ item.name | d(item) }}.j2'
     dest: '/{{ item.name | d(item) }}'
     owner: 'root'
@@ -102,7 +102,7 @@
   when: item.state|d('present') != 'absent'
 
 - name: Disable internal network when requested
-  systemd:
+  ansible.builtin.systemd:
     name: 'lxc-net.service'
     state: 'stopped'
   when: (lxc__net_deploy_state == 'absent' and
@@ -110,7 +110,7 @@
   tags: [ 'role::lxc:net' ]
 
 - name: Remove lxc-net support files
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     state: 'absent'
   loop:
@@ -122,7 +122,7 @@
   tags: [ 'role::lxc:net' ]
 
 - name: Generate lxc-net configuration file
-  template:
+  ansible.builtin.template:
     src: 'etc/default/lxc-net.j2'
     dest: '/etc/default/lxc-net'
     owner: 'root'
@@ -132,7 +132,7 @@
   tags: [ 'role::lxc:net' ]
 
 - name: Generate lxc-net dnsmasq config file
-  template:
+  ansible.builtin.template:
     src: 'etc/lxc/lxc-net-dnsmasq.conf.j2'
     dest: '{{ lxc__net_dnsmasq_conf }}'
     owner: 'root'
@@ -143,7 +143,7 @@
   tags: [ 'role::lxc:net', 'role::lxc:dnsmasq' ]
 
 - name: Install lxc-net ferm hook
-  template:
+  ansible.builtin.template:
     src: 'etc/ferm/hooks/post.d/restart-lxc-net.j2'
     dest: '/etc/ferm/hooks/post.d/restart-lxc-net'
     owner: 'root'
@@ -155,7 +155,7 @@
   tags: [ 'role::lxc:net' ]
 
 - name: Create lxc-net service override directory
-  file:
+  ansible.builtin.file:
     path: '/etc/systemd/system/lxc-net.service.d'
     state: 'directory'
     owner: 'root'
@@ -165,7 +165,7 @@
   tags: [ 'role::lxc:net' ]
 
 - name: Hook lxc-net-resolvconf script to the lxc-net service
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/lxc-net.service.d/resolvconf.conf.j2'
     dest: '/etc/systemd/system/lxc-net.service.d/resolvconf.conf'
     owner: 'root'
@@ -176,7 +176,7 @@
   tags: [ 'role::lxc:net' ]
 
 - name: Reconfigure systemd services when modified
-  systemd:  # noqa no-handler
+  ansible.builtin.systemd:  # noqa no-handler
     name: '{{ "lxc-net.service" if (lxc__net_deploy_state == "present") else omit }}'
     state: '{{ "restarted" if (lxc__net_deploy_state == "present") else omit }}'
     daemon_reload: True
@@ -190,13 +190,13 @@
   tags: [ 'role::lxc:net', 'role::lxc:dnsmasq' ]
 
 - name: Remove default SSH keys for root in containers if none are defined
-  file:
+  ansible.builtin.file:
     path: '/etc/lxc/root_authorized_keys'
     state: 'absent'
   when: not lxc__default_container_ssh_root_sshkeys|d()
 
 - name: Define default SSH keys for root account in containers
-  authorized_key:
+  ansible.posix.authorized_key:
     key: "{{ lxc__default_container_ssh_root_sshkeys | join('\n') }}"
     path: '/etc/lxc/root_authorized_keys'
     manage_dir: False
@@ -206,14 +206,14 @@
   when: lxc__default_container_ssh_root_sshkeys|d()
 
 - name: Remove LXC configuration if requested
-  file:
+  ansible.builtin.file:
     path: '/etc/lxc/{{ item.filename | d(item.name + ".conf") }}'
     state: 'absent'
   with_items: '{{ lxc__combined_configuration | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') == 'absent'
 
 - name: Generate LXC configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/lxc/template.conf.j2'
     dest: '/etc/lxc/{{ item.filename | d(item.name + ".conf") }}'
     owner: 'root'
@@ -223,14 +223,14 @@
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Remove common LXC container configuration if requested
-  file:
+  ansible.builtin.file:
     path: '/usr/share/lxc/config/common.conf.d/{{ item.filename | d(item.name + ".conf") }}'
     state: 'absent'
   with_items: '{{ lxc__common_combined_conf | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') == 'absent'
 
 - name: Generate common LXC container configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/lxc/template.conf.j2'
     dest: '/usr/share/lxc/config/common.conf.d/{{ item.filename | d(item.name + ".conf") }}'
     owner: 'root'
@@ -240,7 +240,7 @@
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Stop LXC containers if requested
-  systemd:
+  ansible.builtin.systemd:
     name: 'lxc@{{ item.name | d(item) }}.service'
     state: 'stopped'
     enabled: '{{ True if item.state | d("started") == "stopped" else False }}'
@@ -261,7 +261,7 @@
         item.state|d("started") == "absent"
 
 - name: Remove systemd LXC instance configuration if requested
-  file:
+  ansible.builtin.file:
     path: '/etc/systemd/system/lxc@{{ item.name }}.service.d'
     state: 'absent'
   loop: '{{ lxc__containers }}'
@@ -272,7 +272,7 @@
   tags: [ 'role::lxc:containers' ]
 
 - name: Create systemd override directories for LXC instances
-  file:
+  ansible.builtin.file:
     path: '/etc/systemd/system/lxc@{{ item.name }}.service.d'
     state: 'directory'
     owner: 'root'
@@ -283,7 +283,7 @@
   tags: [ 'role::lxc:containers' ]
 
 - name: Generate systemd LXC instance override files
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/lxc@.service.d/ansible-override.conf.j2'
     dest: '/etc/systemd/system/lxc@{{ item.name }}.service.d/ansible-override.conf'
     owner: 'root'
@@ -295,7 +295,7 @@
   tags: [ 'role::lxc:containers' ]
 
 - name: Reload systemd configuration when needed
-  systemd:  # noqa no-handler
+  ansible.builtin.systemd:  # noqa no-handler
     daemon_reload: True
   when: ansible_service_mgr == 'systemd' and
         lxc__register_systemd_create_override is changed or
@@ -348,7 +348,7 @@
         item.state|d("started") != "absent"
 
 - name: Configure static MAC addresses for new LXC containers
-  command: lxc-hwaddr-static {{ item.name | d(item) }}
+  ansible.builtin.command: lxc-hwaddr-static {{ item.name | d(item) }}
   loop: '{{ lxc__containers }}'
   when: ansible_local|d() and ansible_local.lxc|d() and
         (item.name | d(item)) not in ansible_local.lxc.containers|d() and
@@ -356,7 +356,7 @@
   tags: [ 'role::lxc:containers' ]
 
 - name: Include fstab parameter in LXC container configuration for lxc<4.0
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: '/var/lib/lxc/{{ item.name | d(item) }}/config'
     regexp: '^lxc\.mount\s+=\s+'
     line: 'lxc.mount = /var/lib/lxc/{{ item.name | d(item) }}/fstab'
@@ -371,7 +371,7 @@
   tags: [ 'role::lxc:containers' ]
 
 - name: Include fstab parameter in LXC container configuration for lxc>=4.0
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: '/var/lib/lxc/{{ item.name | d(item) }}/config'
     regexp: '^lxc\.mount\.fstab\s+=\s+'
     line: 'lxc.mount.fstab = /var/lib/lxc/{{ item.name | d(item) }}/fstab'
@@ -386,7 +386,7 @@
   tags: [ 'role::lxc:containers' ]
 
 - name: Create custom fstab files for LXC containers
-  copy:
+  ansible.builtin.copy:
     content: |
       # Filesystem table for the '{{ item.name | d(item) }}' LXC container
       {{ item.fstab | regex_replace('\n$','') }}
@@ -401,7 +401,7 @@
   tags: [ 'role::lxc:containers' ]
 
 - name: Start LXC containers after creation
-  systemd:
+  ansible.builtin.systemd:
     name: 'lxc@{{ item.name | d(item) }}.service'
     state: '{{ "restarted" if (item.state is defined) else "started" }}'
     enabled: '{{ True if item.state|d("started") == "started" else False }}'
@@ -412,7 +412,7 @@
   tags: [ 'role::lxc:containers' ]
 
 - name: Restart LXC containers when modified
-  systemd:  # noqa no-handler
+  ansible.builtin.systemd:  # noqa no-handler
     name: 'lxc@{{ item.0.name | d(item.0) }}.service'
     state: 'restarted'
   loop: '{{ lxc__containers | zip(lxc__register_systemd_create_override.results|d([])) | list }}'
@@ -422,7 +422,7 @@
   tags: [ 'role::lxc:containers' ]
 
 - name: Prepare SSH access in LXC containers
-  shell: |
+  ansible.builtin.shell: |
     if lxc-attach -n "{{ item.name | d(item) }}" -- grep -q '127.0.1.1' /etc/hosts ; then
         lxc-attach -n "{{ item.name | d(item) }}" -- sed -i "/127\.0\.1\.1/d" /etc/hosts > /dev/null
     fi
@@ -437,4 +437,4 @@
   tags: [ 'role::lxc:containers' ]
 
 - name: DebOps post_tasks hook
-  include: "{{ lookup('debops.debops.task_src', 'lxc/post_main.yml') }}"
+  ansible.builtin.include_tasks: "{{ lookup('debops.debops.task_src', 'lxc/post_main.yml') }}"

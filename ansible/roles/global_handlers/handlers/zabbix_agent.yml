@@ -4,10 +4,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 - name: Check zabbix-agent and restart
-  command: '/usr/sbin/zabbix_agentd --print'
+  ansible.builtin.command: '/usr/sbin/zabbix_agentd --print'
   notify: [ 'Restart zabbix-agent' ]
 
 - name: Restart zabbix-agent
-  service:
+  ansible.builtin.service:
     name: 'zabbix-agent'
     state: 'restarted'

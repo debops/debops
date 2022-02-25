@@ -9,20 +9,20 @@
 # APT packages, directories [[[
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Get available PHP packages for selected version
   environment:
     LC_ALL: 'C'
     PHP_VERSION: '{{ php__version }}'
-  script: 'script/php-filter-packages.sh {{ php__combined_packages }}'
+  ansible.builtin.script: 'script/php-filter-packages.sh {{ php__combined_packages }}'
   register: php__register_filtered_packages
   changed_when: False
   check_mode: False
 
 - name: Install PHP packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", php__register_filtered_packages.stdout.strip().splitlines()) }}'
     state: 'present'
   register: php__register_packages
@@ -30,7 +30,7 @@
   notify: [ 'Restart php-fpm' ]
 
 - name: Install PHP Composer from upstream
-  get_url:
+  ansible.builtin.get_url:
     url: '{{ php__composer_upstream_url }}'
     dest: '{{ php__composer_upstream_dest }}'
     checksum: '{{ php__composer_upstream_checksum }}'
@@ -38,14 +38,14 @@
   when: php__composer_upstream_enabled|bool
 
 - name: Ensure older PHP packages are absent on reset
-  include: 'packages_absent_for_version.yml'
+  ansible.builtin.include_tasks: 'packages_absent_for_version.yml'
   loop_control:
     loop_var: 'php__version_absent'
   when: (php__reset|bool)
   with_items: '{{ php__version_preference | difference([ "php" + php__version|d("") ]) | list }}'
 
 - name: 'Create directory for php*-fpm logs'
-  file:
+  ansible.builtin.file:
     path: '/var/log/php{{ php__version }}-fpm'
     state: 'directory'
     owner: 'root'
@@ -54,7 +54,7 @@
   when: '"fpm" in php__server_api_packages'
 
 - name: Ensure that required directories exist
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     state: 'directory'
     owner: 'root'
@@ -65,7 +65,7 @@
     - '{{ php__etc_base }}/fpm/pool.d'
 
 - name: Allow webadmins to control PHP-FPM system service using sudo
-  template:
+  ansible.builtin.template:
     src: 'etc/sudoers.d/php-fpm_webadmins.j2'
     dest: '/etc/sudoers.d/php-fpm_webadmins'
     owner: 'root'
@@ -78,7 +78,7 @@
 # php.ini management [[[
 
 - name: Generate php.ini configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/php/ansible/php.ini.j2'
     dest: '{{ php__etc_base + "/" + item.path | d("ansible/") + (item.filename | d("00-ansible")) + ".ini" }}'
     owner: 'root'
@@ -95,7 +95,7 @@
   tags: [ 'role::php:config' ]
 
 - name: Remove php.ini configuration if requested
-  file:
+  ansible.builtin.file:
     path: '{{ php__etc_base + "/" + item.path | d("ansible/") + (item.filename | d("00-ansible")) + ".ini" }}'
     state: 'absent'
   with_flattened:
@@ -111,7 +111,7 @@
 - name: Synchronize Ansible and PHP SAPI configuration
   environment:
     LC_ALL: 'C'
-  script: script/php-synchronize-config.sh {{ php__version }}
+  ansible.builtin.script: script/php-synchronize-config.sh {{ php__version }}
   register: php__register_synchronize_config
   changed_when: php__register_synchronize_config.stdout is defined and
                 php__register_synchronize_config.stdout|d()
@@ -132,7 +132,7 @@
   tags: [ 'role::php:pools', 'role::php:config' ]
 
 - name: Generate php-fpm global configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/php/fpm/php-fpm.conf.j2'
     dest: '{{ php__etc_base }}/fpm/php-fpm.conf'
     owner: 'root'
@@ -143,7 +143,7 @@
   tags: [ 'role::php:pools', 'role::php:config' ]
 
 - name: Generate php-fpm pool configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/php/fpm/pool.d/pool.conf.j2'
     dest: '{{ php__etc_base }}/fpm/pool.d/{{ item.name }}.conf'
     owner: 'root'
@@ -160,7 +160,7 @@
   tags: [ 'role::php:pools', 'role::php:config' ]
 
 - name: Remove php-fpm pool configuration if requested
-  file:
+  ansible.builtin.file:
     dest: '{{ php__etc_base }}/fpm/pool.d/{{ item.name }}.conf'
     state: 'absent'
   with_flattened:
@@ -177,7 +177,7 @@
 # Manage groups and user accounts [[[
 
 - name: Make sure required system groups exist
-  group:
+  ansible.builtin.group:
     name: '{{ item.group | d(item.owner) }}'
     system: '{{ (item.system | d(True)) | bool }}'
     state: 'present'
@@ -190,7 +190,7 @@
   when: '"fpm" in php__server_api_packages and item.state|d("present") != "absent" and item.owner|d() and item.home|d()'
 
 - name: Make sure required system accounts exist
-  user:
+  ansible.builtin.user:
     name: '{{ item.owner }}'
     group: '{{ item.group | d(item.owner) }}'
     home: '{{ item.home }}'
@@ -209,7 +209,7 @@
 # Ansible local facts [[[
 
 - name: Make sure that Ansible local facts directory is present
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -217,7 +217,7 @@
     mode: '0755'
 
 - name: Save PHP-FPM local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/php.fact.j2'
     dest: '/etc/ansible/facts.d/php.fact'
     owner: 'root'
@@ -227,5 +227,5 @@
   tags: [ 'meta::facts' ]
 
 - name: Gather facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
                                                                    # ]]]

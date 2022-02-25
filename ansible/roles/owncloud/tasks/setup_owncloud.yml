@@ -15,7 +15,7 @@
   with_flattened: '{{ owncloud__apache_modules }}'
 
 - name: Ensure restrictive permissions are set for the data directory
-  file:
+  ansible.builtin.file:
     path: '{{ owncloud__data_path }}'
     state: 'directory'
     owner: '{{ owncloud__app_user }}'
@@ -25,7 +25,7 @@
 # ownCloud ./config/ [[[
 
 - name: Install ownCloud config file
-  template:
+  ansible.builtin.template:
     src: 'srv/www/sites/config/debops.config.php.j2'
     dest: '{{ owncloud__deploy_path }}/config/debops.config.php'
     owner: '{{ owncloud__app_user }}'
@@ -34,7 +34,7 @@
     validate: 'php -f %s'
 
 - name: Install ownCloud mail config file
-  template:
+  ansible.builtin.template:
     src: 'srv/www/sites/config/mail.config.php.j2'
     dest: '{{ owncloud__deploy_path }}/config/mail.config.php'
     owner: '{{ owncloud__app_user }}'
@@ -45,13 +45,13 @@
   tags: [ 'role::owncloud:mail' ]
 
 - name: Ensure the ownCloud mail config file is absent
-  file:
+  ansible.builtin.file:
     path: '{{ owncloud__deploy_path }}/config/mail.config.php'
     state: 'absent'
   when: ((owncloud__mail_conf_map.keys() | length) == 0)
 
 - name: Ensure deprecated configuration files are absent
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     state: 'absent'
   with_flattened:
@@ -62,13 +62,13 @@
 # Setup the occ command [[[
 
 - name: Remove legacy files
-  file:
+  ansible.builtin.file:
     state: 'absent'
     path: '{{ ansible_local.php.etc_base|d("/etc/php") + "/cli/conf.d/enable_apc.ini" }}'
   tags: [ 'role::owncloud:occ' ]
 
 - name: Setup shortcut for the occ command
-  template:
+  ansible.builtin.template:
     src: 'usr/local/bin/occ.j2'
     dest: '{{ owncloud__occ_bin_file_path }}'
     owner: 'root'
@@ -81,19 +81,19 @@
 # Auto setup [[[
 
 - name: Get ownCloud setup status
-  command: '{{ owncloud__occ_bin_file_path | quote }} check'
+  ansible.builtin.command: '{{ owncloud__occ_bin_file_path | quote }} check'
   register: owncloud__register_occ_check
   changed_when: False
 
 - name: Determine if ownCloud autosetup should be done
-  set_fact:
+  ansible.builtin.set_fact:
     owncloud__do_autosetup: '{{ (owncloud__autosetup and
                                  owncloud__admin_username|d() and
                                  (owncloud__register_occ_check is not skipped) and
                                  "is not installed" in owncloud__register_occ_check.stdout) }}'
 
 - name: Automatically finish setup via the occ tool
-  command: |
+  ansible.builtin.command: |
            {{ owncloud__occ_bin_file_path | quote }} maintenance:install
            '--data-dir={{ owncloud__data_path }}'
            '--database={{ owncloud__database_map[owncloud__database].dbtype }}'
@@ -113,7 +113,7 @@
 # ownCloud applications configuration [[[1
 
 - name: Get current ownCloud configuration via occ config:list
-  include: 'run_occ.yml'
+  ansible.builtin.include_tasks: 'run_occ.yml'
   loop_control:
     loop_var: 'owncloud__occ_item'
   tags: [ 'role::owncloud:occ_config' ]
@@ -123,14 +123,14 @@
       get_output: True
 
 - name: Capture occ output in variable
-  set_fact:
+  ansible.builtin.set_fact:
     owncloud__occ_config_current: '{{ owncloud__occ_run_output }}'
   when: (owncloud__do_autosetup|bool and owncloud__apps_config_combined is mapping and owncloud__apps_config_combined.keys() | length and
          (not ansible_check_mode))
   tags: [ 'role::owncloud:occ_config' ]
 
 - name: Set ownCloud apps configuration for each app
-  include: 'run_occ_app_set.yml'
+  ansible.builtin.include_tasks: 'run_occ_app_set.yml'
   loop_control:
     loop_var: 'owncloud__apps_item'
   with_dict: '{{ owncloud__apps_config_combined|d({}) }}'
@@ -141,7 +141,7 @@
 
 # Run occ commands as specified in the inventory [[[
 - name: Run occ commands as specified in the inventory
-  include: 'run_occ.yml'
+  ansible.builtin.include_tasks: 'run_occ.yml'
   loop_control:
     loop_var: 'owncloud__occ_item'
   tags: [ 'role::owncloud:occ' ]
@@ -156,7 +156,7 @@
 # Configure cron job for background tasks [[[
 
 - name: Setup cron service (nextcloud)
-  cron:
+  ansible.builtin.cron:
     name: 'ownCloud Background Jobs'
     minute: '{{ owncloud__cron_minute }}'
     user: '{{ owncloud__app_user }}'
@@ -166,7 +166,7 @@
   when: owncloud__variant == "nextcloud"
 
 - name: Setup cron service (owncloud)
-  cron:
+  ansible.builtin.cron:
     name: 'ownCloud Background Jobs'
     minute: '{{ owncloud__cron_minute }}'
     user: '{{ owncloud__app_user }}'
@@ -180,7 +180,7 @@
 # ownCloud upgrades [[[
 
 - name: Enable the package manager hook script for ownCloud
-  template:
+  ansible.builtin.template:
     src: 'etc/apt/apt.conf.d/dpkg-hook.j2'
     dest: '/etc/apt/apt.conf.d/80owncloud-dpkg-hook'
     owner: 'root'
@@ -190,7 +190,7 @@
   when: (owncloud__auto_database_upgrade_enabled | bool)
 
 - name: Disable the package manager hook script for ownCloud
-  file:
+  ansible.builtin.file:
     path: '/etc/apt/apt.conf.d/80owncloud-dpkg-hook'
     state: 'absent'
   when: not (owncloud__auto_database_upgrade_enabled | bool)
@@ -200,7 +200,7 @@
 # ownCloud integrity check [[[
 
 - name: Check ownCloud core integrity
-  command: '{{ owncloud__occ_bin_file_path | quote }} integrity:check-core'
+  ansible.builtin.command: '{{ owncloud__occ_bin_file_path | quote }} integrity:check-core'
   register: owncloud__register_occ_integrity_check_core
   failed_when: (owncloud__register_occ_integrity_check_core.rc != 0 or
                 owncloud__register_occ_integrity_check_core.stdout_lines|length != 0)

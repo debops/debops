@@ -4,14 +4,14 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
   # When nested KVM is enabled on a host, Ansible does not recognize the
   # hardware virtualization support in the guest correctly. This is an
   # additional runtime check to account for that.
 - name: Check if host supports hardware virtualization
-  shell: set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          egrep --color=auto 'vmx|svm|0xc0f' /proc/cpuinfo || true
   args:
     executable: 'bash'
@@ -20,7 +20,7 @@
   changed_when: False
 
 - name: Install libvirt if not already installed
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", ((libvirtd_qemu__base_packages_map[ansible_distribution_release]
                                if (ansible_distribution_release in libvirtd_qemu__base_packages_map.keys())
                                else libvirtd_qemu__base_packages)
@@ -36,7 +36,7 @@
             not ansible_local.libvirtd.installed|bool))))
 
 - name: Make sure required directories exist
-  file:
+  ansible.builtin.file:
     path: '/etc/libvirt'
     state: 'directory'
     owner: 'root'
@@ -48,7 +48,7 @@
     path: '/etc/libvirt/qemu.conf'
 
 - name: Generate QEMU private configuration files
-  template:
+  ansible.builtin.template:
     src: '{{ item }}.j2'
     dest: '/{{ item }}'
     owner: 'root'

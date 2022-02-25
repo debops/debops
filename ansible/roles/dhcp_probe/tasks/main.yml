@@ -4,22 +4,22 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (dhcp_probe__base_packages + dhcp_probe__packages)) }}'
     state: 'present'
   register: dhcp_probe__register_packages
   until: dhcp_probe__register_packages is succeeded
 
 - name: Ensure that sysvinit dhcp-probe service is stopped on install
-  systemd:
+  ansible.builtin.systemd:
     name: 'dhcp-probe.service'
     state: 'stopped'
   when: ((ansible_local is undefined or
@@ -27,7 +27,7 @@
          ansible_service_mgr == 'systemd')
 
 - name: Install custom systemd unit files
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/{{ item }}.j2'
     dest: '/etc/systemd/system/{{ item }}'
     owner: 'root'
@@ -38,10 +38,10 @@
   when: ansible_service_mgr == 'systemd'
 
 - name: Reload systemd configuration when needed
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Disable DHCP Probe instances if requested
-  systemd:
+  ansible.builtin.systemd:
     name: 'dhcp-probe@{{ item.name }}.service'
     state: 'stopped'
     enabled: False
@@ -52,7 +52,7 @@
         item.state|d('present') == 'absent'
 
 - name: Enable DHCP Probe instances if requested
-  systemd:
+  ansible.builtin.systemd:
     name: 'dhcp-probe@{{ item.name }}.service'
     enabled: True
   loop: '{{ dhcp_probe__combined_interfaces | debops.debops.parse_kv_items }}'
@@ -63,7 +63,7 @@
   notify: [ 'Restart dhcp-probe' ]
 
 - name: Ensure that required directories exist
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     state: 'directory'
     owner: 'root'
@@ -72,7 +72,7 @@
   loop: [ '{{ dhcp_probe__cache }}', '{{ dhcp_probe__lib }}' ]
 
 - name: Install custom notification scripts
-  template:
+  ansible.builtin.template:
     src: 'usr/local/lib/dhcp-probe/{{ item }}.j2'
     dest: '{{ dhcp_probe__lib + "/" + item }}'
     owner: 'root'
@@ -81,7 +81,7 @@
   loop: [ 'dhcp_probe_notify2', 'mail-throttled' ]
 
 - name: Generate dhcp_probe.cf configuration file
-  template:
+  ansible.builtin.template:
     src: 'etc/dhcp_probe.cf.j2'
     dest: '/etc/dhcp_probe.cf'
     owner: 'root'
@@ -90,7 +90,7 @@
   notify: [ 'Restart dhcp-probe' ]
 
 - name: Make sure Ansible fact directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -98,7 +98,7 @@
     mode: '0755'
 
 - name: Setup DHCP Probe local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/dhcp_probe.fact.j2'
     dest: '/etc/ansible/facts.d/dhcp_probe.fact'
     owner: 'root'
@@ -108,4 +108,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Reload facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

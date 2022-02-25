@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Make sure /etc/gunicorn.d/ directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/gunicorn.d'
     state: 'directory'
     owner: 'root'
@@ -12,7 +12,7 @@
     mode: '0755'
 
 - name: Remove gunicorn configuration
-  file:
+  ansible.builtin.file:
     path: '/etc/gunicorn.d/{{ item.name }}'
     state: 'absent'
   with_flattened:
@@ -22,7 +22,7 @@
   when: item.name|d() and item.state|d('present') == 'absent'
 
 - name: Generate gunicorn configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/gunicorn.d/application.j2'
     dest: '/etc/gunicorn.d/{{ item.name }}'
     owner: 'root'

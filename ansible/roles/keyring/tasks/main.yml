@@ -4,34 +4,34 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Get list of local GPG key fingerprints on Ansible Controller
-  set_fact:
+  ansible.builtin.set_fact:
     keyring__fact_local_keys: '{{ (q("fileglob", (keyring__local_path + "/*.asc"))
                                      | map("basename") | map("replace"," ","")
                                      | map("regex_replace","^0x(.*)\.asc","\1")
                                      | list) if keyring__local_path|d() else [] }}'
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (keyring__base_packages + keyring__packages)) }}'
     state: 'present'
   when: keyring__enabled|bool and ansible_pkg_mgr == 'apt'
 
 - name: Make sure that Ansible local fact directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
 
 - name: Save keyring local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/keyring.fact.j2'
     dest: '/etc/ansible/facts.d/keyring.fact'
     mode: '0755'
@@ -39,10 +39,10 @@
   tags: [ 'meta::facts' ]
 
 - name: Re-read local facts if they have been modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Import specified GPG keys to APT keyring
-  apt_key:
+  ansible.builtin.apt_key:
     id: '{{ (item.id | d(item)) | replace(" ","") }}'
     data: '{{ item.data | d((lookup("file", keyring__local_path + "/0x" + ((item.id | d(item)) | replace(" ","")) + ".asc"))
                             if (item.state | d("present") != "absent" and item.url is undefined and item.keybase is undefined and
@@ -66,7 +66,7 @@
   tags: [ 'role::keyring:apt_key' ]
 
 - name: Configure specified upstream APT repositories
-  apt_repository:
+  ansible.builtin.apt_repository:
     repo: '{{ item.repo }}'
     filename: '{{ item.filename | d(omit) }}'
     state: '{{ item.state | d("present") }}'
@@ -79,7 +79,7 @@
   tags: [ 'role::keyring:apt_repository' ]
 
 - name: Remove APT auth configuration if requested
-  file:
+  ansible.builtin.file:
     path: '{{ "/etc/apt/auth.conf.d/" + (item.name | regex_replace(".conf$","")) + ".conf" }}'
     state: 'absent'
   loop: '{{ q("flattened", (keyring__dependent_apt_auth_files)) }}'
@@ -88,7 +88,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate APT auth configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/apt/auth.conf.d/template.conf.j2'
     dest: '{{ "/etc/apt/auth.conf.d/" + (item.name | regex_replace(".conf$","")) + ".conf" }}'
     mode: '0640'
@@ -99,14 +99,14 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Update APT cache when needed
-  apt:  # noqa no-handler
+  ansible.builtin.apt:  # noqa no-handler
     update_cache: True
   when: keyring__enabled|bool and ansible_pkg_mgr == 'apt' and
         keyring__register_apt_repository is changed
   tags: [ 'role::keyring:apt_repository' ]
 
 - name: Ensure that required UNIX groups exist
-  group:
+  ansible.builtin.group:
     name: '{{ item.group | d(item.user) }}'
     state: 'present'
     system: '{{ item.system | d(True) }}'
@@ -115,7 +115,7 @@
         item.user|d() and item.state|d('present') not in [ 'absent', 'ignore' ]
 
 - name: Ensure that required UNIX accounts exist
-  user:
+  ansible.builtin.user:
     name: '{{ item.user }}'
     group: '{{ item.group | d(item.user) }}'
     home: '{{ item.home | d(omit) }}'
@@ -126,7 +126,7 @@
         item.user|d() and item.state|d('present') not in [ 'absent', 'ignore' ]
 
 - name: Gather information about existing UNIX accounts
-  getent:
+  ansible.builtin.getent:
     database: 'passwd'
   check_mode: False
 
@@ -137,7 +137,7 @@
     gpg_command: '{{ "gpg --batch"
                      if (keyring__gpg_version is version("2.0.0", "<"))
                      else "gpg --no-autostart --batch" }}'
-  shell: set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          {{ gpg_command }} --list-keys '{{ (item.id | d(item)) | replace(" ","") }}'
          {% if item.state | d('present') == 'absent' %}
          && ( printf "Removing key...\n" && {{ gpg_command }} --delete-key {{ (item.id | d(item)) | replace(" ","") }} )

@@ -6,15 +6,15 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Configure ferm status in debconf
-  debconf:
+  ansible.builtin.debconf:
     name: 'ferm'
     question: 'ferm/enable'
     vtype: 'boolean'
@@ -22,7 +22,7 @@
   when: ansible_pkg_mgr == 'apt'
 
 - name: Ensure ferm is installed
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (ferm__base_packages
                               + ferm__packages)) }}'
     state: 'present'
@@ -42,7 +42,7 @@
   when: ferm__enabled | bool and ferm__iptables_backend_enabled|bool
 
 - name: Make sure required directories exist
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     state: 'directory'
     owner: 'root'
@@ -56,7 +56,7 @@
     - '/etc/ferm/hooks/flush.d'
 
 - name: Copy custom files to remote hosts
-  copy:
+  ansible.builtin.copy:
     src: '{{ item.src | d(omit) }}'
     content: '{{ item.content | d(omit) }}'
     dest:  '{{ item.dest }}'
@@ -76,7 +76,7 @@
   tags: [ 'role::ferm:custom_files' ]
 
 - name: Configure ferm default variables
-  template:
+  ansible.builtin.template:
     src: 'etc/default/ferm.j2'
     dest: '/etc/default/ferm'
     owner: 'root'
@@ -91,7 +91,7 @@
     delete: True
 
 - name: Configure main ferm config file
-  template:
+  ansible.builtin.template:
     src: 'etc/ferm/ferm.conf.j2'
     dest: '/etc/ferm/ferm.conf'
     owner: 'root'
@@ -101,7 +101,7 @@
   when: ferm__enabled|bool
 
 - name: Remove firewall rules
-  file:
+  ansible.builtin.file:
     dest: '/etc/ferm/rules.d/{{ "%03d" | format((ferm__combined_weight_map[item.value.weight_class
                                                  | d(item.value.type | d("default"))] | d("80"))|int
                                 + (item.value.weight | d("0"))|int) }}_rule_{{ item.value.name | d(item.key) }}.conf'
@@ -114,7 +114,7 @@
   tags: [ 'role::ferm:rules' ]
 
 - name: Generate firewall rules
-  template:
+  ansible.builtin.template:
     src: 'etc/ferm/rules.d/{{ item.value.template | d("rule") }}.conf.j2'
     dest: '/etc/ferm/rules.d/{{ "%03d" | format((ferm__combined_weight_map[item.value.weight_class
                                                  | d(item.value.type | d("default"))] | d("80"))|int
@@ -130,7 +130,7 @@
   tags: [ 'role::ferm:rules' ]
 
 - name: Remove unknown firewall rules
-  shell: find /etc/ferm/rules.d -maxdepth 1 -type f
+  ansible.builtin.shell: find /etc/ferm/rules.d -maxdepth 1 -type f
          -name '*_rule_{{ item.item.value.name | d(item.item.key) }}.conf'
          ! -name '{{ "%03d" | format((ferm__combined_weight_map[item.item.value.weight_class
                                       | d(item.item.value.type | d("default"))] | d("80"))|int
@@ -145,7 +145,7 @@
   tags: [ 'role::ferm:rules' ]
 
 - name: Remove iptables INPUT rules if requested
-  file:
+  ansible.builtin.file:
     path: '/etc/ferm/filter-input.d/{{ ferm__weight_map[item.weight_class|d()]
            | d(item.weight | d("50")) }}_{{ item.filename
            | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
@@ -160,7 +160,7 @@
   tags: [ 'role::ferm:rules' ]
 
 - name: Configure iptables INPUT rules
-  template:
+  ansible.builtin.template:
     src: 'etc/ferm/filter-input.d/{{ item.type }}.conf.j2'
     dest: '/etc/ferm/filter-input.d/{{ ferm__weight_map[item.weight_class|d()]
            | d(item.weight | d("50")) }}_{{ item.filename
@@ -178,7 +178,7 @@
   tags: [ 'role::ferm:rules' ]
 
 - name: Restart ferm
-  service:  # noqa no-handler
+  ansible.builtin.service:  # noqa no-handler
     name: 'ferm'
     state: 'restarted'
   when: (ferm__enabled | bool and (ferm__register_files is changed or
@@ -187,19 +187,19 @@
          not ansible_check_mode)
 
 - name: Clear iptables rules if ferm is disabled
-  service:
+  ansible.builtin.service:
     name: 'ferm'
     state: 'stopped'
   when: (not ferm__enabled | bool and ferm__flush | bool)
   tags: [ 'role::ferm:rules' ]
 
 - name: Remove deprecated ifupdown hook
-  file:
+  ansible.builtin.file:
     path: '/etc/network/if-pre-up.d/ferm-forward'
     state: 'absent'
 
 - name: Disable ferm after changes when requested
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '/etc/default/ferm'
     regexp: '^ENABLED="'
     line: 'ENABLED="no"'
@@ -207,7 +207,7 @@
   when: not ferm__enabled | bool and not ansible_check_mode
 
 - name: Ensure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -215,7 +215,7 @@
     mode: '0755'
 
 - name: Save ferm local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/ferm.fact.j2'
     dest: '/etc/ansible/facts.d/ferm.fact'
     owner: 'root'
@@ -225,4 +225,4 @@
   notify: [ 'Refresh host facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

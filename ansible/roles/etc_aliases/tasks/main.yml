@@ -4,19 +4,19 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Check if the dependent recipients file exists
-  stat:
+  ansible.builtin.stat:
     path: '{{ secret + "/etc_aliases/dependent_config/" + inventory_hostname + "/recipients.json" }}'
   register: etc_aliases__register_dependent_recipients_file
   become: False
@@ -26,7 +26,7 @@
          ansible_local.etc_aliases.configured|bool)
 
 - name: Load the dependent recipients from Ansible Controller
-  slurp:
+  ansible.builtin.slurp:
     src: '{{ secret + "/etc_aliases/dependent_config/" + inventory_hostname + "/recipients.json" }}'
   register: etc_aliases__register_dependent_recipients
   become: False
@@ -37,7 +37,7 @@
          etc_aliases__register_dependent_recipients_file.stat.exists|bool)
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -45,7 +45,7 @@
     mode: '0755'
 
 - name: Save etc_aliases local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/etc_aliases.fact.j2'
     dest: '/etc/ansible/facts.d/etc_aliases.fact'
     owner: 'root'
@@ -55,10 +55,10 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Generate the /etc/aliases file
-  template:
+  ansible.builtin.template:
     src: 'etc/aliases.j2'
     dest: '/etc/aliases'
     owner: 'root'
@@ -67,7 +67,7 @@
   notify: [ 'Update /etc/aliases.db database' ]
 
 - name: Save etc_aliases dependent recipients on Ansible Controller
-  template:
+  ansible.builtin.template:
     src: 'secret/etc_aliases/dependent_config/inventory_hostname/recipients.json.j2'
     dest: '{{ secret + "/etc_aliases/dependent_config/" + inventory_hostname + "/recipients.json" }}'
     mode: '0644'

@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: 'Clone the {{ dotfile.name }} dotfiles'
-  git:
+  ansible.builtin.git:
     repo: '{{ item_git.repo | d(item_git) }}'
     dest: '{{ yadm__dotfiles_root + "/"
               + (item_git.repo | d(item_git)).split("://")[1] | regex_replace("\.git$","")
@@ -19,7 +19,7 @@
         not ansible_check_mode
 
 - name: 'Remove the {{ dotfile.name }} dotfiles mirror if requested'
-  file:
+  ansible.builtin.file:
     dest: '{{ (yadm__dotfiles_root + "/"
                + (item_git.repo | d(item_git)).split("://")[1] | regex_replace("\.git$","")
                + ".git") | dirname }}'

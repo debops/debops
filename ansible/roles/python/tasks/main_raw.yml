@@ -4,14 +4,14 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Detect the OS release manually, no Ansible facts available
-  raw: grep -E '^VERSION=' /etc/os-release | tr -d '(")' | cut -d" " -f2
+  ansible.builtin.raw: grep -E '^VERSION=' /etc/os-release | tr -d '(")' | cut -d" " -f2
   register: python__register_raw_release
   changed_when: False
   check_mode: False
   tags: [ 'meta::facts' ]
 
 - name: Update APT repositories, install core Python packages
-  raw: |
+  ansible.builtin.raw: |
     if [ -z "$(find /var/cache/apt/pkgcache.bin -mmin {{ python__raw_apt_cache_valid_time }})" ]; then
         apt-get -q update
     fi
@@ -27,5 +27,5 @@
   tags: [ 'meta::facts' ]
 
 - name: Reset connection to the host
-  meta: 'reset_connection'
+  ansible.builtin.meta: 'reset_connection'
   tags: [ 'meta::facts' ]

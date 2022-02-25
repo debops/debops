@@ -4,28 +4,28 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Check if snmpd is installed
   environment:
     LC_MESSAGES: 'C'
-  command: dpkg-query -W -f='${Version}\n' snmpd
+  ansible.builtin.command: dpkg-query -W -f='${Version}\n' snmpd
   register: snmpd_register_version
   changed_when: False
   failed_when: False
   check_mode: False
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", ([ "snmp", "snmpd" ]
                               + ([ "snmp-mibs-downloader" ]
                                  if snmpd_download_mibs
@@ -40,7 +40,7 @@
   until: snmpd__register_packages is succeeded
 
 - name: Install custom snmpd.service unit file
-  copy:
+  ansible.builtin.copy:
     src: 'etc/systemd/system/snmpd.service'
     dest: '/etc/systemd/system/snmpd.service'
     owner: 'root'
@@ -49,14 +49,14 @@
   notify: [ 'Restart snmpd' ]
 
 - name: Reload systemd daemon and enable snmpd.service
-  systemd:
+  ansible.builtin.systemd:
     daemon_reload: True
     name: 'snmpd.service'
     enabled: True
   when: ((ansible_service_mgr == "systemd") and not ansible_local.snmpd|d())
 
 - name: Allow 'snmp' user access to /proc if needed
-  user:
+  ansible.builtin.user:
     name: '{{ snmpd_user }}'
     groups: '{{ snmpd_proc_hidepid_group }}'
     append: True
@@ -65,7 +65,7 @@
   notify: [ 'Restart snmpd' ]
 
 - name: Enable MIBs support
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '/etc/snmp/snmp.conf'
     state: 'present'
     regexp: 'mibs\s:'
@@ -80,7 +80,7 @@
   notify: [ 'Restart snmpd' ]
 
 - name: Initialize local account
-  set_fact:
+  ansible.builtin.set_fact:
     snmpd_account_local_username: '{{ ansible_local.snmpd.username
                                       if (ansible_local|d() and ansible_local.snmpd|d() and
                                           ansible_local.snmpd.username)
@@ -90,7 +90,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Configure snmpd daemon variables
-  template:
+  ansible.builtin.template:
     src: 'etc/default/snmpd.j2'
     dest: '/etc/default/snmpd'
     owner: 'root'
@@ -99,7 +99,7 @@
   notify: [ 'Restart snmpd' ]
 
 - name: Configure local SNMP credentials
-  template:
+  ansible.builtin.template:
     src: 'etc/snmp/snmp.local.conf.j2'
     dest: '/etc/snmp/snmp.local.conf'
     owner: 'root'
@@ -107,7 +107,7 @@
     mode: '0600'
 
 - name: Create snmpd extension script directory
-  file:
+  ansible.builtin.file:
     path: '{{ snmpd_extension_scripts }}'
     state: 'directory'
     owner: 'root'
@@ -115,7 +115,7 @@
     mode: '0755'
 
 - name: Install snmpd extension scripts
-  copy:
+  ansible.builtin.copy:
     src: 'usr/local/lib/snmpd/'
     dest: '{{ snmpd_extension_scripts + "/" }}'
     owner: 'root'
@@ -123,7 +123,7 @@
     mode: '0755'
 
 - name: Initialize admin and agent accounts
-  set_fact:
+  ansible.builtin.set_fact:
     snmpd_fact_account_admin_username: '{{ snmpd_account_admin_username }}'
     snmpd_fact_account_admin_password: '{{ snmpd_account_admin_password }}'
     snmpd_fact_account_agent_username: '{{ snmpd_account_agent_username }}'
@@ -132,7 +132,7 @@
   when: snmpd_account|d() and snmpd_account
 
 - name: Configure snmpd service
-  template:
+  ansible.builtin.template:
     src: '{{ lookup("debops.debops.template_src", "etc/snmp/snmpd.conf.j2") }}'
     dest: '/etc/snmp/snmpd.conf'
     owner: 'root'
@@ -141,25 +141,25 @@
   notify: [ 'Restart snmpd' ]
 
 - name: Configure SNMPv3 credentials
-  include: configure_snmpv3_credentials.yml
+  ansible.builtin.include_tasks: configure_snmpv3_credentials.yml
   when: ((snmpd_register_version|d() and not snmpd_register_version.stdout) and
          (snmpd_account|d() and snmpd_account))
 
 - name: Save local SNMPv3 password for retrieval via Ansible facts
-  template:
+  ansible.builtin.template:
     src: 'etc/snmp/ansible-local-password.json.j2'
     dest: '/etc/snmp/ansible-local-password.json'
     mode: '0600'
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Make sure that Ansible local fact directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
 
 - name: Save snmpd local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/snmpd.fact.j2'
     dest: '/etc/ansible/facts.d/snmpd.fact'
     mode: '0755'
@@ -167,4 +167,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

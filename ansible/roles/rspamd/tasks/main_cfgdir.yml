@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Make sure that {{ cfgdir.path }} exists
-  file:
+  ansible.builtin.file:
     path: '{{ cfgdir.path }}'
     state: 'directory'
     owner: 'root'
@@ -13,7 +13,7 @@
     mode: '0755'
 
 - name: Create configuration snippets in {{ cfgdir.path }}
-  template:
+  ansible.builtin.template:
     src: 'etc/rspamd/snippet.j2'
     dest: '{{ cfgdir.path + "/" + item.file }}'
     owner: '{{ item.owner | d("root") }}'
@@ -26,7 +26,7 @@
   notify: [ 'Restart rspamd' ]
 
 - name: Generate a list of created configuration snippets in {{ cfgdir.path }}
-  set_fact:
+  ansible.builtin.set_fact:
     rspamd__created_snippets: '{{
       cfgdir.config
        | rejectattr("state", "in", [ "absent", "init" ])
@@ -34,14 +34,14 @@
        | map("regex_replace", "^", cfgdir.path + "/") }}'
 
 - name: Find all configuration snippets in {{ cfgdir.path }}
-  find:
+  ansible.builtin.find:
     paths: '{{ cfgdir.path }}'
     recurse: no
     file_type: 'file'
   register: rspamd__found_snippets
 
 - name: Remove superfluous configuration snippets from {{ cfgdir.path }}
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     state: 'absent'
   loop: '{{ rspamd__found_snippets.files

@@ -9,7 +9,7 @@
 
 # Combine theme copy dictionaries [[[
 - name: Combine theme copy dictionaries
-  set_fact:
+  ansible.builtin.set_fact:
     owncloud__theme_copy_files_combined: '{{
                 owncloud__theme_copy_files
       | combine(owncloud__theme_copy_files_host_group)
@@ -20,7 +20,7 @@
 # Create [[[
 
 - name: Ensure the theme directory is present
-  file:
+  ansible.builtin.file:
     path: '{{ owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name }}'
     state: 'directory'
     mode: '0755'
@@ -29,7 +29,7 @@
     - 'role::owncloud:theme:common_settings'
 
 - name: Apply common theming options using the defaults.php file
-  template:
+  ansible.builtin.template:
     src: 'srv/www/sites/themes/debops-template/defaults.php.j2'
     dest: '{{ owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name + "/defaults.php" }}'
     owner: 'root'
@@ -41,7 +41,7 @@
   tags: [ 'role::owncloud:theme:common_settings' ]
 
 - name: Ensure that parent directories exist
-  file:
+  ansible.builtin.file:
     path: '{{ (owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name + "/" + item.key) | dirname }}'
     state: 'directory'
     owner: '{{ item.value.base_directory_owner | d(omit) }}'
@@ -52,7 +52,7 @@
   tags: [ 'role::owncloud:theme:copy' ]
 
 - name: Copy additional theme files
-  copy:
+  ansible.builtin.copy:
     dest:           '{{ (owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name + "/" + item.key)
                         if (not item.key.startswith("/")) else item.key }}'
     backup:         '{{ item.value.backup         | d(omit) }}'
@@ -74,7 +74,7 @@
   tags: [ 'role::owncloud:theme:copy' ]
 
 - name: Activate custom theme
-  template:
+  ansible.builtin.template:
     src: 'srv/www/sites/config/theme.config.php.j2'
     dest: '{{ owncloud__deploy_path }}/config/theme.config.php'
     owner: 'root'
@@ -88,14 +88,14 @@
 # Teardown [[[
 
 - name: Deactivate custom theme
-  file:
+  ansible.builtin.file:
     path: '{{ owncloud__deploy_path }}/config/theme.config.php'
     state: 'absent'
   when: (not owncloud__theme_active|d())
   tags: [ 'role::owncloud:theme:activate' ]
 
 - name: Delete additional theme files
-  file:
+  ansible.builtin.file:
     path: '{{ owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name + "/" + item.key }}'
     state: 'absent'
   when: (owncloud__theme_directory_name|d() and item.value.state|d("present") == "absent")

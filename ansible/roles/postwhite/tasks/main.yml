@@ -4,11 +4,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (postwhite__base_packages
                               + postwhite__packages)) }}'
     state: 'present'
@@ -16,13 +16,13 @@
   until: postwhite__register_packages is succeeded
 
 - name: Create the UNIX system group
-  group:
+  ansible.builtin.group:
     name: '{{ postwhite__group }}'
     state: 'present'
     system: True
 
 - name: Create the UNIX system account
-  user:
+  ansible.builtin.user:
     name: '{{ postwhite__user }}'
     group: '{{ postwhite__group }}'
     home: '{{ postwhite__home }}'
@@ -32,7 +32,7 @@
     system: True
 
 - name: Create the source directory
-  file:
+  ansible.builtin.file:
     path: '{{ postwhite__src }}'
     state: 'directory'
     owner: '{{ postwhite__user }}'
@@ -40,7 +40,7 @@
     mode: '0755'
 
 - name: Clone and install the software stack
-  git:
+  ansible.builtin.git:
     repo: '{{ item.git_repo }}'
     dest: '{{ item.git_dest }}'
     version: '{{ item.git_version }}'
@@ -50,7 +50,7 @@
   become_user: '{{ postwhite__user }}'
 
 - name: Generate Postwhite configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/postwhite.conf.j2'
     dest: '/etc/postwhite.conf'
     owner: 'root'
@@ -58,7 +58,7 @@
     mode: '0644'
 
 - name: Install the Postwhite wrapper script
-  template:
+  ansible.builtin.template:
     src: 'usr/local/lib/postwhite.j2'
     dest: '/usr/local/lib/postwhite'
     owner: 'root'
@@ -66,7 +66,7 @@
     mode: '0755'
 
 - name: Update Yahoo! static host list
-  command: bash {{ postwhite__git_dest }}/scrape_yahoo
+  ansible.builtin.command: bash {{ postwhite__git_dest }}/scrape_yahoo
   become: True
   become_user: '{{ postwhite__user }}'
   notify:
@@ -78,7 +78,7 @@
            not (ansible_local.postwhite.installed|d())|bool)))
 
 - name: Initialize whitelist/blacklist files
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     state: 'touch'
     owner: '{{ postwhite__user }}'
@@ -93,7 +93,7 @@
            not (ansible_local.postwhite.installed|d())|bool)))
 
 - name: Update Postwhite access lists daily
-  cron:
+  ansible.builtin.cron:
     job: '/usr/local/lib/postwhite'
     cron_file: 'postwhite'
     name: 'Update Postwhite access lists'
@@ -102,7 +102,7 @@
     state: 'present'
 
 - name: Update Yahoo IP address list weekly
-  cron:
+  ansible.builtin.cron:
     job: 'bash {{ postwhite__git_dest + "/scrape_yahoo" }} > /dev/null'
     cron_file: 'postwhite'
     name: 'Update Yahoo IP address list'
@@ -111,7 +111,7 @@
     state: 'present'
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -119,7 +119,7 @@
     mode: '0755'
 
 - name: Save Postwhite local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/postwhite.fact.j2'
     dest: '/etc/ansible/facts.d/postwhite.fact'
     owner: 'root'
@@ -129,4 +129,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

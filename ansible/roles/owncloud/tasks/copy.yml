@@ -9,7 +9,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Ensure that parent directories exist
-  file:
+  ansible.builtin.file:
     path:    '{{ (owncloud__data_path + "/" + item.dest) | dirname }}'
     state:   'directory'
     recurse: '{{ item.parent_dirs_recurse | d(True) }}'
@@ -23,7 +23,7 @@
     - '{{ owncloud__user_files_host }}'
 
 - name: Copy files to ownCloud user profiles
-  copy:
+  ansible.builtin.copy:
     dest:     '{{ owncloud__data_path + "/" + item.dest }}'
     src:      '{{ item.src      | d(omit) }}'
     content:  '{{ item.content  | d(omit) }}'
@@ -49,7 +49,7 @@
          (item.state|d('present') != 'absent'))
 
 - name: Delete files on remote hosts
-  file:
+  ansible.builtin.file:
     path:  '{{ owncloud__data_path + "/" + item.dest }}'
     state: 'absent'
   register: owncloud__register_delete_user_files
@@ -60,7 +60,7 @@
   when: (item.dest|d() and (item.state|d('present') == 'absent'))
 
 - name: Run occ commands as specified in the inventory
-  include: 'run_occ.yml'
+  ansible.builtin.include_tasks: 'run_occ.yml'  # noqa no-handler
   loop_control:
     loop_var: 'owncloud__files_scan_item'
   when: owncloud__files_scan_item is changed

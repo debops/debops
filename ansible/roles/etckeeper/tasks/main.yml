@@ -5,15 +5,15 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -21,7 +21,7 @@
     mode: '0755'
 
 - name: Save etckeeper local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/etckeeper.fact.j2'
     dest: '/etc/ansible/facts.d/etckeeper.fact'
     owner: 'root'
@@ -31,7 +31,7 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 ## Diverting the main configuration of etckeeper away leaves the VCS
 ## uninitiated until it has been fully configured.
@@ -41,7 +41,7 @@
   when: etckeeper__enabled|bool and ansible_pkg_mgr == 'apt'
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (etckeeper__base_packages
                               + etckeeper__packages)) }}'
     state: 'present'
@@ -50,7 +50,7 @@
   when: etckeeper__enabled|bool
 
 - name: Create etckeeper configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/etckeeper/etckeeper.conf.j2'
     dest: '/etc/etckeeper/etckeeper.conf'
     owner: 'root'
@@ -61,7 +61,7 @@
   when: etckeeper__enabled|bool
 
 - name: Initialize VCS in /etc
-  command: etckeeper init
+  ansible.builtin.command: etckeeper init
   args:
     creates: '/etc/.etckeeper'
   register: etckeeper__register_init
@@ -69,7 +69,7 @@
   when: etckeeper__enabled|bool
 
 - name: Manage entries in /etc/.gitignore
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: '/etc/.gitignore'
     block: |
       {% for item in etckeeper__combined_gitignore | debops.debops.parse_kv_items %}
@@ -94,7 +94,7 @@
   when: etckeeper__enabled|bool and etckeeper__vcs == 'git'
 
 - name: Install /etc/.gitattributes configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/gitattributes.j2'
     dest: '/etc/.gitattributes'
     owner: 'root'
@@ -104,7 +104,7 @@
   when: etckeeper__enabled|bool and etckeeper__vcs == 'git'
 
 - name: Set repository permissions
-  file:
+  ansible.builtin.file:
     path: '/etc/.git'
     state: 'directory'
     owner: 'root'
@@ -126,14 +126,14 @@
         etckeeper__vcs_user|d() and etckeeper__vcs_email|d()
 
 - name: Remove e-mail notification hook script
-  file:
+  ansible.builtin.file:
     path: '/etc/etckeeper/commit.d/99email'
     state: 'absent'
   when: etckeeper__enabled|bool and
         etckeeper__email_on_commit_state == 'absent'
 
 - name: Install e-mail notification hook script
-  template:
+  ansible.builtin.template:
     src: 'etc/etckeeper/commit.d/99email.j2'
     dest: '/etc/etckeeper/commit.d/99email'
     owner: 'root'
@@ -149,7 +149,7 @@
         etckeeper__vcs_user|d() and etckeeper__vcs_email|d()
 
 - name: Unstage and remove ignored files from Git index
-  shell: set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          etckeeper vcs ls-files -i -c --exclude-standard -z | xargs -0 --no-run-if-empty etckeeper vcs rm --cached --
   args:
     executable: 'bash'
@@ -161,7 +161,7 @@
   changed_when: etckeeper__register_git_rm_cached_ignored_files.stdout
 
 - name: Commit changes in configuration
-  command: etckeeper commit '{{ etckeeper__commit_message_update
+  ansible.builtin.command: etckeeper commit '{{ etckeeper__commit_message_update
                                 if etckeeper__installed|bool
                                 else etckeeper__commit_message_init }}'  # noqa no-handler
   when: (etckeeper__enabled|bool and

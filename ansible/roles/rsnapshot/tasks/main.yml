@@ -4,15 +4,15 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Install required APT packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (rsnapshot__base_packages
                               + rsnapshot__packages)) }}'
     state: 'present'
@@ -20,13 +20,13 @@
   until: rsnapshot__register_packages is succeeded
 
 - name: Install custom backup scripts
-  copy:
+  ansible.builtin.copy:
     src: 'usr/local/sbin/'
     dest: '{{ (ansible_local.fhs.sbin | d("/usr/local/sbin")) + "/" }}'
     mode: '0755'
 
 - name: Create required directories
-  file:
+  ansible.builtin.file:
     path: '{{ item.path }}'
     mode: '{{ item.mode }}'
     state: 'directory'
@@ -35,20 +35,20 @@
     - { path: '{{ rsnapshot__snapshot_root }}', mode: '0700' }
 
 - name: Configure rsnapshot-scheduler
-  template:
+  ansible.builtin.template:
     src: 'etc/rsnapshot-scheduler.conf.j2'
     dest: '/etc/rsnapshot-scheduler.conf'
     mode: '0644'
 
 - name: Configure rsnapshot backup scripts in cron
-  template:
+  ansible.builtin.template:
     src: 'etc/cron/rsnapshot-wrapper.j2'
     dest: '/etc/cron.{{ item }}/rsnapshot-wrapper'
     mode: '0755'
   loop: [ 'hourly', 'daily', 'weekly', 'monthly' ]
 
 - name: Ensure that rsnapshot SSH identities are present
-  user:
+  ansible.builtin.user:
     name: 'root'
     generate_ssh_key: True
     ssh_key_file:    '.ssh/{{ item.name }}'
@@ -62,19 +62,19 @@
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ]
 
 - name: Make sure /root/.ssh/known_hosts file exists
-  command: touch /root/.ssh/known_hosts
+  ansible.builtin.command: touch /root/.ssh/known_hosts
   args:
     creates: '/root/.ssh/known_hosts'
     warn: False
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
 
 - name: Save rsnapshot local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/rsnapshot.fact.j2'
     dest: '/etc/ansible/facts.d/rsnapshot.fact'
     mode: '0755'
@@ -82,14 +82,14 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
   # The host facts are needed so that we have the real "ansible_fqdn" value
   # that the backup host will use which could be different from the
   # "inventory_hostname" or "ansible_host" values, which might be unusable by
   # the 'rsnapshot' command.
 - name: Gather facts from configured hosts
-  setup:
+  ansible.builtin.setup:
     gather_subset: '!all'
     fact_path: '/dev/null'
   delegate_to: '{{ item.name }}'
@@ -103,7 +103,7 @@
          (not rsnapshot__limit|d() or (item.name in rsnapshot__limit)))
 
 - name: Install required packages on hosts
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", rsnapshot__host_packages) }}'
     state: 'present'
   register: rsnapshot__register_host_packages
@@ -123,7 +123,7 @@
   environment:
     rrsync_source: '{{ item.rrsync_source | d(rsnapshot__rrsync_source) }}'
     rrsync_binary: '{{ item.rrsync_binary | d(rsnapshot__rrsync_binary) }}'
-  shell: |
+  ansible.builtin.shell: |
     set -o nounset -o pipefail -o errorexit
     if [ -r "${rrsync_source}.gz" ] ; then
         gzip -d -c "${rrsync_source}.gz" > "${rrsync_binary}"
@@ -144,7 +144,7 @@
          (not rsnapshot__limit|d() or (item.name in rsnapshot__limit)))
 
 - name: Deploy root ssh public key on configured hosts
-  authorized_key:
+  ansible.posix.authorized_key:
     user: '{{ item.ssh_user | d("root") }}'
     key: '{{ ansible_local.rsnapshot.ssh_identities[item.ssh_identity | d(rsnapshot__ssh_main_identity)]
              if (ansible_local.rsnapshot.ssh_identities|d() and
@@ -164,7 +164,7 @@
 - name: Remove old SSH host fingerprints if keys were modified
   environment:  # noqa no-handler
     item_fqdn: '{{ item.item.fqdn | d(hostvars[item.item.name].ansible_fqdn if hostvars[item.item.name]|d() else item.item.name) }}'
-  shell: |
+  ansible.builtin.shell: |
     set -o nounset -o pipefail -o errorexit
     if type dig > /dev/null ; then
         host_names=(
@@ -189,7 +189,7 @@
          (not rsnapshot__limit|d() or (item.item.name in rsnapshot__limit)))
 
 - name: Get list of already scanned host fingerprints
-  shell: set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          ssh-keygen -f /root/.ssh/known_hosts -F {{ item.fqdn | d(hostvars[item.name].ansible_fqdn if hostvars[item.name]|d() else item.name) }}
          | grep -q '^# Host {{ item.fqdn | d(hostvars[item.name].ansible_fqdn if hostvars[item.name]|d() else item.name) }} found'
   args:
@@ -206,7 +206,7 @@
   check_mode: False
 
 - name: Scan SSH fingerprints of the configured hosts
-  shell: 'ssh-keyscan -H -T 10 -p {{ item.item.ssh_port | d("22") }}
+  ansible.builtin.shell: 'ssh-keyscan -H -T 10 -p {{ item.item.ssh_port | d("22") }}
           {{ item.item.fqdn | d(hostvars[item.item.name].ansible_fqdn if hostvars[item.item.name]|d() else item.item.name) }} >> /root/.ssh/known_hosts'
   loop: '{{ rsnapshot__register_known_hosts.results }}'
   loop_control:
@@ -216,7 +216,7 @@
          (not rsnapshot__limit|d() or (item.item.name in rsnapshot__limit)))
 
 - name: Remove host configuration directories if requested
-  file:
+  ansible.builtin.file:
     path: '{{ rsnapshot__config_dir + "/" + item.name }}'
     state: 'absent'
   loop: '{{ rsnapshot__combined_hosts | debops.debops.parse_kv_items }}'
@@ -226,7 +226,7 @@
          (not rsnapshot__limit|d() or (item.name in rsnapshot__limit)))
 
 - name: Create host configuration directories
-  file:
+  ansible.builtin.file:
     path: '{{ rsnapshot__config_dir + "/" + item.name }}'
     state: 'directory'
     mode: '0755'
@@ -237,7 +237,7 @@
          (not rsnapshot__limit|d() or (item.name in rsnapshot__limit)))
 
 - name: Generate host configuration files
-  template:
+  ansible.builtin.template:
     src: 'etc/rsnapshot/hosts/{{ item.1 }}.j2'
     dest: '{{ rsnapshot__config_dir + "/" + item.0.name + "/" + item.1 }}'
     mode: '0644'

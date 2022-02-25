@@ -7,19 +7,19 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Update APT cache on first run
-  apt:
+  ansible.builtin.apt:
     update_cache: True
     cache_valid_time: '{{ apt__cache_valid_time }}'
   register: apt__register_apt_first_update
@@ -28,7 +28,7 @@
          not (ansible_local.apt.configured|d())|bool)
 
 - name: Install required packages
-  apt:
+  ansible.builtin.apt:
     name: '{{ (apt__base_packages + apt__packages) | flatten }}'
     state: 'present'
     install_recommends: False
@@ -37,7 +37,7 @@
   when: apt__enabled|bool
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -46,7 +46,7 @@
   tags: [ 'meta::facts' ]
 
 - name: Save APT local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/apt.fact.j2'
     dest: '/etc/ansible/facts.d/apt.fact'
     owner: 'root'
@@ -56,16 +56,16 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Ensure that APT default configuration is absent
-  file:
+  ansible.builtin.file:
     path: '/etc/apt/apt.conf'
     state: 'absent'
   when: (apt__enabled|bool and apt__remove_default_configuration|bool)
 
 - name: Generate APT configuration files
-  template:
+  ansible.builtin.template:
     src: '{{ item }}.j2'
     dest: '/{{ item }}'
     owner: 'root'
@@ -76,7 +76,7 @@
   when: apt__enabled|bool
 
 - name: Enable extra architectures
-  command: dpkg --add-architecture {{ item }}
+  ansible.builtin.command: dpkg --add-architecture {{ item }}
   with_flattened:
     - '{{ apt__extra_architectures }}'
     - '{{ apt__group_extra_architectures }}'
@@ -93,7 +93,7 @@
   when: (apt__enabled|bool and apt__sources_deploy_state in [ 'absent', 'present' ])
 
 - name: Configure APT distribution sources
-  template:
+  ansible.builtin.template:
     src: 'etc/apt/sources.list.j2'
     dest: '/etc/apt/sources.list'
     owner: 'root'
@@ -103,7 +103,7 @@
   when: (apt__enabled|bool and apt__sources_deploy_state == 'present')
 
 - name: Configure custom APT keys
-  apt_key:
+  ansible.builtin.apt_key:
     data:      '{{ item.data      | d(omit) }}'
     file:      '{{ item.file      | d(omit) }}'
     id:        '{{ item.id        | d(omit) }}'
@@ -132,7 +132,7 @@
   tags: [ 'role::apt:keys' ]
 
 - name: Configure custom APT repositories
-  apt_repository:
+  ansible.builtin.apt_repository:
     update_cache: False
     repo:     '{{ item.repo }}'
     mode:     '{{ item.mode     | d(omit) }}'
@@ -151,7 +151,7 @@
   when: (apt__enabled|bool and item.repo|d())
 
 - name: Remove APT auth configuration if requested
-  file:
+  ansible.builtin.file:
     path: '{{ "/etc/apt/auth.conf.d/" + (item.name | regex_replace(".conf$","")) + ".conf" }}'
     state: 'absent'
   loop: '{{ q("flattened", (apt__auth_files + apt__group_auth_files + apt__host_auth_files)) }}'
@@ -159,7 +159,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate APT auth configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/apt/auth.conf.d/template.conf.j2'
     dest: '{{ "/etc/apt/auth.conf.d/" + (item.name | regex_replace(".conf$","")) + ".conf" }}'
     mode: '0640'
@@ -170,7 +170,7 @@
 
 # Manage configuration files [[[
 - name: Generate additional APT configuration files
-  copy:
+  ansible.builtin.copy:
     dest:     "/etc/apt/apt.conf.d/{{ (item.priority | d('60')) + (item.dest | d(item.path | d(item.name))) }}"
     src:      '{{ item.src       | d(omit) }}'
     content:  '{{ item.content   | d(omit) }}'
@@ -187,7 +187,7 @@
          (item.state|d('present') != 'absent'))
 
 - name: Delete APT configuration files on remote hosts
-  file:
+  ansible.builtin.file:
     path:  "/etc/apt/apt.conf.d/{{ (item.priority | d('60')) + (item.dest | d(item.path | d(item.name))) }}"
     state: 'absent'
   with_flattened:
@@ -200,7 +200,7 @@
                                                                    # ]]]
 
 - name: Update APT cache
-  apt:
+  ansible.builtin.apt:
     update_cache: True
     cache_valid_time: '{{ omit
                          if (apt__register_sources_template is changed or
@@ -212,7 +212,7 @@
   when: apt__enabled|bool
 
 - name: Purge APT packages if requested
-  apt:
+  ansible.builtin.apt:
     name: '{{ (apt__purge_packages
                + apt__purge_group_packages
                + apt__purge_host_packages) | flatten }}'
@@ -224,7 +224,7 @@
   when: apt__enabled|bool
 
 - name: Update the role status in local facts
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '/etc/ansible/facts.d/apt.fact'
     regexp: '^\s+"configured":\s+'
     line: '    "configured": true,'
@@ -235,4 +235,4 @@
          not ansible_local.apt.configured|bool)
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

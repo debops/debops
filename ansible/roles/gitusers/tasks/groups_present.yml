@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Create user groups without GIDs
-  group:
+  ansible.builtin.group:
     name: '{{ item.group | default(item.name + gitusers_name_suffix) }}'
     system: '{{ item.systemgroup | default("no") }}'
     state: 'present'
@@ -17,7 +17,7 @@
         (item.state is undefined or (item.state is defined and item.state != 'absent')))
 
 - name: Create user groups with GIDs
-  group:
+  ansible.builtin.group:
     name: '{{ item.group | default(item.name + gitusers_name_suffix) }}'
     system: '{{ item.systemgroup | default("no") }}'
     gid: '{{ item.gid }}'

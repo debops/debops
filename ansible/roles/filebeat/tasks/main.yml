@@ -4,19 +4,19 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Install Filebeat packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (filebeat__base_packages
                               + filebeat__packages)) }}'
     state: 'present'
@@ -25,13 +25,13 @@
   until: filebeat__register_packages is succeeded
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
 
 - name: Save Filebeat local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/filebeat.fact.j2'
     dest: '/etc/ansible/facts.d/filebeat.fact'
     mode: '0755'
@@ -39,7 +39,7 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Divert the original Filebeat configuration
   dpkg_divert:
@@ -49,7 +49,7 @@
   when: ansible_pkg_mgr == 'apt'
 
 - name: Generate main Filebeat configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/filebeat/filebeat.yml.j2'
     dest: '/etc/filebeat/filebeat.yml'
     mode: '0600'
@@ -57,7 +57,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Create required configuration directories
-  file:
+  ansible.builtin.file:
     path: '{{ "/etc/filebeat/" + (item.name | dirname) }}'
     state: 'directory'
     mode: '0755'
@@ -68,7 +68,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove snippet configuration if requested
-  file:
+  ansible.builtin.file:
     path: '{{ "/etc/filebeat/" + (item.name | regex_replace(".yml","") + ".yml") }}'
     state: 'absent'
   loop: '{{ filebeat__combined_snippets | debops.debops.parse_kv_config }}'
@@ -79,7 +79,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate snippet configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/filebeat/snippets.d/snippet.yml.j2'
     dest: '{{ "/etc/filebeat/" + (item.name | regex_replace(".yml","") + ".yml") }}'
     mode: '{{ item.mode | d("0600") }}'
@@ -91,22 +91,22 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Check if the Filebeat keystore exists
-  stat:
+  ansible.builtin.stat:
     path: '/var/lib/filebeat/filebeat.keystore'
   register: filebeat__register_keystore
 
 - name: Create Filebeat keystore if not present
-  command: 'filebeat keystore create'
+  ansible.builtin.command: 'filebeat keystore create'
   when: not filebeat__register_keystore.stat.exists
 
 - name: Get the list of keystore contents
-  command: 'filebeat keystore list'
+  ansible.builtin.command: 'filebeat keystore list'
   register: filebeat__register_keys
   changed_when: False
   check_mode: False
 
 - name: Remove key from Filebeat keystore when requested
-  command: 'filebeat keystore remove {{ item.name }}'
+  ansible.builtin.command: 'filebeat keystore remove {{ item.name }}'
   loop: '{{ filebeat__combined_keys | debops.debops.parse_kv_config }}'
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
@@ -118,7 +118,7 @@
 - name: Set or update key in Filebeat keystore
   environment:
     DEBOPS_FILEBEAT_KEY: '{{ item.value }}'
-  shell: |
+  ansible.builtin.shell: |
     set -o nounset -o pipefail -o errexit &&
     {% if item.force | d(False) %}
     printf "%s" "${DEBOPS_FILEBEAT_KEY}" | filebeat keystore add "{{ item.name }}" --stdin --force
@@ -137,7 +137,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Enable filebeat service on installation
-  service:  # noqa no-handler
+  ansible.builtin.service:  # noqa no-handler
     name: 'filebeat'
     enabled: True
   when: filebeat__register_config_divert is changed

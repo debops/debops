@@ -4,22 +4,22 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Check opendkim and restart
-  command: opendkim -n
+  ansible.builtin.command: opendkim -n
   notify: [ 'Restart opendkim' ]
 
 - name: Check opendkim and reload
-  command: opendkim -n
+  ansible.builtin.command: opendkim -n
   notify: [ 'Reload opendkim' ]
   when: ansible_local|d() and ansible_local.opendkim|d() and
         ansible_local.opendkim.installed is defined and
         ansible_local.opendkim.installed | bool
 
 - name: Restart opendkim
-  service:
+  ansible.builtin.service:
     name: 'opendkim'
     state: 'restarted'
 
 - name: Reload opendkim
-  service:
+  ansible.builtin.service:
     name: 'opendkim'
     state: 'reloaded'

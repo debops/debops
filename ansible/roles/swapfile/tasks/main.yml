@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Disable swap files when requested
-  shell: test -f {{ item.path | d(item) }} && swapoff {{ item.path | d(item) }} || true
+  ansible.builtin.shell: test -f {{ item.path | d(item) }} && swapoff {{ item.path | d(item) }} || true
   changed_when: False
   with_items: '{{ swapfile__files }}'
   when: (item.state|d("present") == 'absent' and
@@ -14,7 +14,7 @@
          not (ansible_system_capabilities_enforced|d(True))|bool)
 
 - name: Create swap files
-  command: |
+  ansible.builtin.command: |
     {% if swapfile__use_dd|bool %}
     dd if=/dev/zero of={{ item.path | d(item) }} bs=1M count={{ item.size | d(swapfile__size) }}
     {% else %}
@@ -27,7 +27,7 @@
   when: (item.state|d("present") != 'absent')
 
 - name: Enforce permissions
-  file:
+  ansible.builtin.file:
     path: '{{ item.path | d(item) }}'
     state: 'file'
     owner: 'root'
@@ -37,13 +37,13 @@
   when: (item.state|d("present") != 'absent' and not ansible_check_mode)
 
 - name: Initialize swap files
-  command: 'mkswap {{ item.item.path | d(item.item) }}'  # noqa no-handler
+  ansible.builtin.command: 'mkswap {{ item.item.path | d(item.item) }}'  # noqa no-handler
   register: swapfile__register_init
   with_items: '{{ swapfile__register_allocation.results|d([]) }}'
   when: (item is changed and item.state|d("present") != 'absent')
 
 - name: Enable swap files
-  command: 'swapon -p {{ item.item.priority | d(swapfile__priority) }} {{ item.item.path | d(item.item) }}'  # noqa no-handler
+  ansible.builtin.command: 'swapon -p {{ item.item.priority | d(swapfile__priority) }} {{ item.item.path | d(item.item) }}'  # noqa no-handler
   with_items: '{{ swapfile__register_allocation.results|d([]) }}'
   when: (item is changed and item.state|d("present") != 'absent' and
          ((ansible_system_capabilities_enforced|d())|bool and
@@ -51,7 +51,7 @@
          not (ansible_system_capabilities_enforced|d(True))|bool)
 
 - name: Manage swap files in /etc/fstab
-  mount:
+  ansible.posix.mount:
     src: '{{ item.path | d(item) }}'
     name:   'none'
     fstype: 'swap'
@@ -62,13 +62,13 @@
   with_items: '{{ swapfile__files }}'
 
 - name: Remove swap files
-  file:
+  ansible.builtin.file:
     path: '{{ item.path | d(item) }}'
     state: 'absent'
   with_items: '{{ swapfile__files }}'
   when: (item.state|d("present") == 'absent')
 
 - name: Remove legacy kernel parameters file
-  file:
+  ansible.builtin.file:
     path: '{{ swapfile__sysctl_file|d("/etc/sysctl.d/30-debops.swapfile.conf") }}'
     state: 'absent'

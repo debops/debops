@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Install requested system packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", apt_proxy__base_packages) }}'
     state: 'present'
   when: apt_proxy__deploy_state == 'present' and apt_proxy__temporally_avoid_unreachable|bool
@@ -13,7 +13,7 @@
   until: apt_proxy__register_packages is succeeded
 
 - name: Copy get-reachable-apt-proxy to remote host
-  copy:
+  ansible.builtin.copy:
     dest:     '{{ apt_proxy__proxy_auto_detect }}'
     src:      'usr/local/lib/get-reachable-apt-proxy'
     owner:    'root'
@@ -22,13 +22,13 @@
   when: apt_proxy__deploy_state == 'present' and apt_proxy__temporally_avoid_unreachable|bool
 
 - name: Remove APT proxy configuration
-  file:
+  ansible.builtin.file:
     path: '/etc/apt/apt.conf.d/{{ apt_proxy__filename }}'
     state: 'absent'
   when: apt_proxy__deploy_state == 'absent'
 
 - name: Generate APT proxy configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/apt/apt.conf.d/apt_proxy.conf.j2'
     dest: '/etc/apt/apt.conf.d/{{ apt_proxy__filename }}'
     owner: 'root'

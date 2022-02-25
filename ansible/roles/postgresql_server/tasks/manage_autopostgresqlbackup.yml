@@ -14,7 +14,7 @@
     divert: '/usr/share/doc/autopostgresqlbackup/cron.dpkg-divert'
 
 - name: Configure autopostgresqlbackup defaults
-  template:
+  ansible.builtin.template:
     src: 'etc/default/autopostgresqlbackup.j2'
     dest: '/etc/default/autopostgresqlbackup-{{ item.version | d(postgresql_server__version) }}-{{ item.name }}'
     owner: 'root'
@@ -24,7 +24,7 @@
     - '{{ postgresql_server__clusters }}'
 
 - name: Configure autopostgresqlbackup
-  template:
+  ansible.builtin.template:
     src: 'usr/sbin/autopostgresqlbackup.j2'
     dest: '/usr/sbin/autopostgresqlbackup-{{ item.version | d(postgresql_server__version) }}-{{ item.name }}'
     owner: 'root'
@@ -34,7 +34,7 @@
     - '{{ postgresql_server__clusters }}'
 
 - name: Disable autopostgresqlbackup from running daily
-  file:
+  ansible.builtin.file:
     path: '/etc/cron.daily/autopostgresqlbackup-{{ (item.version | d(postgresql_server__version))
                                                    | replace(".","_") }}-{{ item.name }}'
     state: 'absent'
@@ -43,7 +43,7 @@
     - '{{ postgresql_server__clusters }}'
 
 - name: Enable autopostgresqlbackup to run daily
-  template:
+  ansible.builtin.template:
     src: 'etc/cron.daily/autopostgresqlbackup.j2'
     dest: '/etc/cron.daily/autopostgresqlbackup-{{ (item.version | d(postgresql_server__version))
                                                    | replace(".","_") }}-{{ item.name }}'

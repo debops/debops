@@ -4,18 +4,18 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: DebOps pre_tasks hook
-  include: "{{ lookup('debops.debops.task_src', 'auth/pre_main.yml') }}"
+  ansible.builtin.include_tasks: "{{ lookup('debops.debops.task_src', 'auth/pre_main.yml') }}"
 
 - name: Install auth-related packages
-  apt:
+  ansible.builtin.apt:
     name: '{{ auth_packages | flatten }}'
     state: 'present'
     install_recommends: 'no'
@@ -23,7 +23,7 @@
   until: auth__register_packages is succeeded
 
 - name: Configure pam_cracklib
-  template:
+  ansible.builtin.template:
     src: 'usr/share/pam-configs/cracklib.j2'
     dest: '/usr/share/pam-configs/cracklib'
     owner: 'root'
@@ -33,8 +33,8 @@
   when: auth_cracklib|bool
 
 - name: Configure PAM password history module
-  include: pam_pwhistory.yml
+  ansible.builtin.include_tasks: pam_pwhistory.yml
   when: auth_pwhistory_remember is defined and auth_pwhistory_remember
 
 - name: DebOps post_tasks hook
-  include: "{{ lookup('debops.debops.task_src', 'auth/post_main.yml') }}"
+  ansible.builtin.include_tasks: "{{ lookup('debops.debops.task_src', 'auth/post_main.yml') }}"

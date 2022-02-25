@@ -4,15 +4,15 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (netbase__base_packages
                               + netbase__packages)) }}'
     state: 'present'
@@ -21,7 +21,7 @@
   when: netbase__enabled|bool
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -29,7 +29,7 @@
     mode: '0755'
 
 - name: Save netbase local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/netbase.fact.j2'
     dest: '/etc/ansible/facts.d/netbase.fact'
     owner: 'root'
@@ -39,16 +39,16 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Manage the hostname
-  hostname:
+  ansible.builtin.hostname:
     name: '{{ netbase__hostname }}'
   notify: [ 'Refresh host facts' ]
   when: netbase__enabled|bool and netbase__hostname_config_enabled|bool
 
 - name: Generate /etc/hosts database
-  template:
+  ansible.builtin.template:
     src: 'etc/hosts.j2'
     dest: '/etc/hosts'
     owner: 'root'
@@ -58,7 +58,7 @@
   when: netbase__enabled|bool and netbase__hosts_config_type == 'template'
 
 - name: Manage entries in /etc/hosts
-  lineinfile:  # noqa no-tabs
+  ansible.builtin.lineinfile:  # noqa no-tabs
     dest:    '/etc/hosts'
     regexp:  '^{{ item.name | replace(".","\.") }}\s+'
     line:    "{{ item.name }}\t{{ ('\t' if (item.name | string | length < 8) else '') }}{{ item.value
@@ -73,7 +73,7 @@
   when: netbase__enabled|bool and netbase__hosts_config_type == 'lineinfile' and item.name|d()
 
 - name: Manage entries in /etc/networks
-  lineinfile:  # noqa no-tabs
+  ansible.builtin.lineinfile:  # noqa no-tabs
     dest:    '/etc/networks'
     regexp:  '^{{ item.key | replace(".","\.") }}\s+'
     line:    "{{ item.key }}\t{{ item.value if (item.value is string) else (item.value|d() | join(' ')) }}"
@@ -86,4 +86,4 @@
   # This task is here in case that the hostname or domain of the host was
   # changed, to ensure that the Ansible facts are updated
 - name: Update Ansible facts if databases were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

@@ -5,17 +5,17 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Detect passenger root
-  command: passenger-config about root
+  ansible.builtin.command: passenger-config about root
   register: nginx_register_passenger_root
   changed_when: False
 
 - name: Set passenger_root value
-  set_fact:
+  ansible.builtin.set_fact:
     nginx_passenger_root: '{{ nginx_register_passenger_root.stdout }}'
   when: nginx_passenger_root is undefined or not nginx_passenger_root
 
 - name: Detect passenger ruby
-  shell: "set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: "set -o nounset -o pipefail -o errexit &&
           passenger-config about ruby-command | grep Command | tail -1 | awk -F: '{print $2}'"
   args:
     executable: 'bash'
@@ -23,6 +23,6 @@
   changed_when: False
 
 - name: Set passenger_ruby value
-  set_fact:
+  ansible.builtin.set_fact:
     nginx_passenger_ruby: '{{ nginx_register_passenger_ruby.stdout | trim }}'
   when: nginx_passenger_ruby is undefined or not nginx_passenger_ruby

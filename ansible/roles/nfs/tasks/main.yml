@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (nfs__base_packages
                               + nfs__packages)) }}'
     state: 'present'
@@ -12,7 +12,7 @@
   until: nfs__register_packages is succeeded
 
 - name: Configure NFS client
-  template:
+  ansible.builtin.template:
     src: '{{ item }}.j2'
     dest: '/{{ item }}'
     owner: 'root'
@@ -23,7 +23,7 @@
   register: nfs__register_config
 
 - name: Restart nfs-common service
-  service:  # noqa no-handler
+  ansible.builtin.service:  # noqa no-handler
     name: 'nfs-common'
     state: 'restarted'
   when: nfs__register_config is changed and
@@ -31,7 +31,7 @@
         ansible_distribution_release in [ 'wheezy', 'jessie' ]
 
 - name: Ensure that the NFS mount points exist
-  file:
+  ansible.builtin.file:
     path:  '{{ item.path }}'
     owner: '{{ item.owner | d("root") }}'
     group: '{{ item.group | d("root") }}'
@@ -44,7 +44,7 @@
   when: item.path|d() and item.src|d() and item.state|d('mounted') == 'present'
 
 - name: Manage NFS mount points
-  mount:
+  ansible.posix.mount:
     name:   '{{ item.path }}'
     src:    '{{ item.src }}'
     fstype: '{{ item.fstype | d(nfs__default_mount_type) }}'
@@ -61,7 +61,7 @@
   when: item.path|d() and item.src|d()
 
 - name: Restart 'remote-fs.target' systemd unit
-  systemd:  # noqa no-handler
+  ansible.builtin.systemd:  # noqa no-handler
     name: 'remote-fs.target'
     state: 'restarted'
     daemon_reload: True

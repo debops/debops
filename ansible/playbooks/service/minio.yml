@@ -16,14 +16,14 @@
   pre_tasks:
 
     - name: Prepare minio environment
-      import_role:
+      ansible.builtin.import_role:
         name: 'minio'
         tasks_from: 'main_env'
       tags: [ 'role::minio', 'role::etc_services', 'role::ferm',
               'role::keyring', 'role::golang', 'role::nginx' ]
 
     - name: Prepare sysfs environment
-      import_role:
+      ansible.builtin.import_role:
         name: 'sysfs'
         tasks_from: 'main_env'
       tags: [ 'role::sysfs', 'role::secret' ]

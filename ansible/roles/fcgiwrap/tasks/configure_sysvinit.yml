@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Create init script configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/default/fcgiwrap-instance.j2'
     dest: '/etc/default/fcgiwrap-{{ item.name }}'
     owner: 'root'
@@ -14,14 +14,14 @@
   register: fcgiwrap__register_init_config
 
 - name: Copy fcgiwrap init script to new instance
-  command: 'cp /etc/init.d/fcgiwrap /etc/init.d/fcgiwrap-{{ item.name }}'
+  ansible.builtin.command: 'cp /etc/init.d/fcgiwrap /etc/init.d/fcgiwrap-{{ item.name }}'
   args:
     creates: '/etc/init.d/fcgiwrap-{{ item.name }}'
   register: fcgiwrap__register_init_script
   with_items: '{{ fcgiwrap__instances }}'
 
 - name: Modify fcgiwrap instance init script (insserv)
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '/etc/init.d/fcgiwrap-{{ item.name }}'
     regexp: '^# Provides:\s+fcgiwrap.*$'
     line: '# Provides:          fcgiwrap-{{ item.name }}'
@@ -30,7 +30,7 @@
   with_items: '{{ fcgiwrap__instances }}'
 
 - name: Modify fcgiwrap instance init script (name)
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '/etc/init.d/fcgiwrap-{{ item.name }}'
     regexp: '^NAME="fcgiwrap.*"$'
     line: 'NAME="fcgiwrap-{{ item.name }}"'
@@ -39,7 +39,7 @@
   with_items: '{{ fcgiwrap__instances }}'
 
 - name: Enable fcgiwrap instance init script
-  service:
+  ansible.builtin.service:
     name: 'fcgiwrap-{{ item.name }}'
     state: 'started'
     enabled: True

@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Make sure configuration directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/nginx/conf.d'
     state: 'directory'
     owner: 'root'
@@ -13,7 +13,7 @@
     mode: '0755'
 
 - name: Remove nginx maps if requested
-  file:
+  ansible.builtin.file:
     dest: '/etc/nginx/conf.d/map_{{ item.name }}.conf'
     state: 'absent'
   with_flattened:
@@ -29,7 +29,7 @@
           (item.delete|d() and item.delete|bool)))
 
 - name: Configure nginx maps
-  template:
+  ansible.builtin.template:
     src: 'etc/nginx/conf.d/map.conf.j2'
     dest: '/etc/nginx/conf.d/map_{{ item.name }}.conf'
     owner: 'root'
@@ -47,7 +47,7 @@
          (item.delete is undefined or not item.delete|bool))
 
 - name: Remove nginx upstreams if requested
-  file:
+  ansible.builtin.file:
     dest: '/etc/nginx/conf.d/upstream_{{ item.name }}.conf'
     state: 'absent'
   with_flattened:
@@ -63,7 +63,7 @@
           (item.delete|d() and item.delete|bool)))
 
 - name: Configure nginx upstreams
-  template:
+  ansible.builtin.template:
     src: 'etc/nginx/conf.d/upstream_{{ item.type | d("default") }}.conf.j2'
     dest: '/etc/nginx/conf.d/upstream_{{ item.name }}.conf'
     owner: 'root'
@@ -81,7 +81,7 @@
          (item.delete is undefined or not item.delete|bool))
 
 - name: Remove nginx log_format if requested
-  file:
+  ansible.builtin.file:
     dest: '/etc/nginx/conf.d/log_{{ item.name }}.conf'
     state: 'absent'
   with_flattened:
@@ -93,7 +93,7 @@
           (item.delete|d() and item.delete|bool)))
 
 - name: Configure nginx log_format
-  template:
+  ansible.builtin.template:
     src: 'etc/nginx/conf.d/log_format.conf.j2'
     dest: '/etc/nginx/conf.d/log_{{ item.name }}.conf'
     owner: 'root'
@@ -107,7 +107,7 @@
          (item.delete is undefined or not item.delete|bool))
 
 - name: Remove custom nginx configuration if requested
-  file:
+  ansible.builtin.file:
     dest: '/etc/nginx/conf.d/{{ item.filename | d("custom_" + item.name + ".conf") }}'
     state: 'absent'
   with_flattened:
@@ -119,7 +119,7 @@
           (item.delete|d() and item.delete|bool)))
 
 - name: Add custom nginx configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/nginx/conf.d/custom.conf.j2'
     dest: '/etc/nginx/conf.d/{{ item.filename | d("custom_" + item.name + ".conf") }}'
     owner: 'root'

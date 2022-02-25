@@ -4,11 +4,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Install memcached
-  package:
+  ansible.builtin.package:
     name: '{{ (memcached__base_packages
                + memcached__packages) | flatten }}'
     state: 'present'
@@ -16,13 +16,13 @@
   until: memcached__register_packages is succeeded
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
 
 - name: Save memcached local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/memcached.fact.j2'
     dest: '/etc/ansible/facts.d/memcached.fact'
     mode: '0755'
@@ -30,10 +30,10 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Configure memcached
-  template:
+  ansible.builtin.template:
     src: 'etc/memcached.conf.j2'
     dest: '/etc/memcached.conf'
     mode: '0644'

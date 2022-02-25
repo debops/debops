@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Remove user groups if requested
-  group:
+  ansible.builtin.group:
     name: '{{ item.group | default(item.name + gitusers_name_suffix) }}'
     state: 'absent'
   with_flattened:

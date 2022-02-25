@@ -18,7 +18,7 @@
 # using owncloud__occ_item. Did not work.
 
 - name: Construct occ command for ownCloud apps configuration
-  set_fact:
+  ansible.builtin.set_fact:
     owncloud__occ_item:
       command: 'config:app:set {{ owncloud__apps_item.key | quote }} {{ owncloud__apps_setting_item.key | quote }}
                 --value={{ owncloud__apps_setting_item.value|string | quote }}'
@@ -26,7 +26,7 @@
   tags: [ 'role::owncloud:occ' ]
 
 - name: 'Construct occ command for ownCloud files:scan configuration'
-  set_fact:
+  ansible.builtin.set_fact:
     owncloud__occ_item:
       ## Does not support JSON output although it is listed in the help as of ownCloud 9.0.4.
       ## Refer to
@@ -40,7 +40,7 @@
   # https://doc.owncloud.org/server/9.1/admin_manual/configuration_user/user_provisioning_api.html
   # but `occ` is preferred in the case of Ansible.
 - name: Run given occ commands
-  command: php --file "{{ owncloud__app_home }}/occ" {{ owncloud__occ_item.command }}
+  ansible.builtin.command: php --file "{{ owncloud__app_home }}/occ" {{ owncloud__occ_item.command }}
                {{ "--output=json_pretty" if (owncloud__occ_item.get_output|d() | bool) else "" }}
   environment: '{{ owncloud__occ_item.env|d({}) }}'
   tags: [ 'role::owncloud:occ' ]
@@ -84,7 +84,7 @@
 # {"installed":true,"version":"9.0.3.2","versionstring":"9.0.3","edition":""}
 
 - name: Convert occ output into Ansible data structure
-  set_fact:
+  ansible.builtin.set_fact:
     ## regex_replace: Relies on the fact that `json_pretty` indents the JSON encoded object.
     owncloud__occ_run_output: '{{ owncloud__occ_run.stdout_lines
                                   | map("regex_replace", "^[^{} ].*$", "") | join("") | from_json }}'

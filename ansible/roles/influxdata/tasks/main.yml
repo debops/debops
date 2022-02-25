@@ -5,17 +5,17 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Configure InfluxData APT repository
-  apt_repository:
+  ansible.builtin.apt_repository:
     repo: '{{ influxdata__repository }}'
     state: 'present'
     update_cache: True
 
 - name: Install InfluxData packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (influxdata__packages
                               + influxdata__group_packages
                               + influxdata__host_packages
@@ -26,7 +26,7 @@
   until: influxdata__register_install is succeeded
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -34,7 +34,7 @@
     mode: '0755'
 
 - name: Save InfluxData local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/influxdata.fact.j2'
     dest: '/etc/ansible/facts.d/influxdata.fact'
     owner: 'root'
@@ -44,4 +44,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

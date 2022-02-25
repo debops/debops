@@ -6,7 +6,7 @@
 - name: Process Postfix Makefile
   environment:
     LC_MESSAGES: 'C'
-  command: make
+  ansible.builtin.command: make
   args:
     chdir: '/etc/postfix'
   register: handlers__register_postfix_make
@@ -14,19 +14,19 @@
   changed_when: 'not handlers__register_postfix_make.stdout.startswith("make: Nothing to be done")'
 
 - name: Check postfix and restart
-  command: /usr/sbin/postfix -c /etc/postfix check
+  ansible.builtin.command: /usr/sbin/postfix -c /etc/postfix check
   notify: [ 'Restart postfix' ]
 
 - name: Check postfix and reload
-  command: /usr/sbin/postfix -c /etc/postfix check
+  ansible.builtin.command: /usr/sbin/postfix -c /etc/postfix check
   notify: [ 'Reload postfix' ]
 
 - name: Restart postfix
-  service:
+  ansible.builtin.service:
     name: 'postfix'
     state: 'restarted'
 
 - name: Reload postfix
-  service:
+  ansible.builtin.service:
     name: 'postfix'
     state: 'reloaded'

@@ -4,14 +4,14 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Ensure that the cleanup script directory exists
-  file:
+  ansible.builtin.file:
     path: '{{ dpkg_cleanup__scripts_path }}'
     state: 'directory'
     mode: '0755'
   when: dpkg_cleanup__enabled|bool
 
 - name: Remove cleanup scripts if requested
-  file:
+  ansible.builtin.file:
     path: '{{ dpkg_cleanup__scripts_path + "/" + item.name }}'
     state: 'absent'
   loop: '{{ q("flattened", dpkg_cleanup__dependent_packages) }}'
@@ -21,7 +21,7 @@
         item.state|d('present') == 'absent'
 
 - name: Remove cleanup hooks if requested
-  file:
+  ansible.builtin.file:
     path: '{{ dpkg_cleanup__hooks_path + "/dpkg-cleanup-" + item.name }}'
     state: 'absent'
   loop: '{{ q("flattened", dpkg_cleanup__dependent_packages) }}'
@@ -31,7 +31,7 @@
         item.state|d('present') == 'absent'
 
 - name: Generate cleanup scripts
-  template:
+  ansible.builtin.template:
     src: 'usr/local/lib/dpkg-cleanup/package.j2'
     dest: '{{ dpkg_cleanup__scripts_path + "/" + item.name }}'
     mode: '0755'
@@ -42,7 +42,7 @@
         item.state|d('present') != 'absent'
 
 - name: Generate cleanup hooks
-  template:
+  ansible.builtin.template:
     src: 'etc/dpkg/dpkg.cfg.d/dpkg-cleanup-package.j2'
     dest: '{{ dpkg_cleanup__hooks_path + "/dpkg-cleanup-" + item.name }}'
     mode: '0644'

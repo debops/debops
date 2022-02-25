@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Unmount filesystems if requested
-  mount:
+  ansible.posix.mount:
     name:   '{{ item.mount }}'
     src:    '{{ "/dev/mapper/" + item.vg + "-" + item.lv }}'
     fstype: '{{ item.fs_type | d(iscsi__default_fs_type) }}'
@@ -65,7 +65,7 @@
          item.fs|d()))
 
 - name: Manage mount points
-  mount:
+  ansible.posix.mount:
     name:   '{{ item.mount }}'
     src:    '{{ "/dev/mapper/" + item.vg + "-" + item.lv }}'
     fstype: '{{ item.fs_type      | d(iscsi__default_fs_type) }}'

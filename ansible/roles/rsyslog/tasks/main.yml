@@ -4,15 +4,15 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Manage rsyslog APT packages
-  apt:
+  ansible.builtin.apt:
     name: '{{ (rsyslog__base_packages
                + (rsyslog__tls_packages if (rsyslog__pki|bool) else [])
                + rsyslog__packages) | flatten }}'
@@ -23,14 +23,14 @@
   when: rsyslog__enabled|bool and ansible_pkg_mgr == 'apt'
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
   when: rsyslog__enabled|bool and rsyslog__deploy_state != 'absent'
 
 - name: Save rsyslog local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/rsyslog.fact.j2'
     dest: '/etc/ansible/facts.d/rsyslog.fact'
     mode: '0755'
@@ -39,10 +39,10 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Create required system group
-  group:
+  ansible.builtin.group:
     name: '{{ rsyslog__group }}'
     state: 'present'
     system: True
@@ -50,7 +50,7 @@
         rsyslog__unprivileged|bool and rsyslog__group != 'root'
 
 - name: Create required system user
-  user:
+  ansible.builtin.user:
     name: '{{ rsyslog__user }}'
     group: '{{ rsyslog__group }}'
     groups: '{{ rsyslog__append_groups | join(",") | default(omit) }}'
@@ -64,7 +64,7 @@
         rsyslog__unprivileged|bool and rsyslog__user != 'root'
 
 - name: Fix directory permissions if needed
-  file:
+  ansible.builtin.file:
     path: '/var/spool/rsyslog'
     owner: '{{ rsyslog__user }}'
     group: '{{ rsyslog__file_group }}'
@@ -74,7 +74,7 @@
         rsyslog__unprivileged|bool and rsyslog__user != 'root'
 
 - name: Update directory and file permissions
-  shell: |
+  ansible.builtin.shell: |
     [ ! -d {{ rsyslog__home }} ] \
       || ( [ "$(stat -c '%G' {{ rsyslog__home }})" = "{{ rsyslog__group }}" ] \
              || chown -v root:{{ rsyslog__group }} {{ rsyslog__home }} ; \
@@ -92,7 +92,7 @@
   notify: [ 'Check and restart rsyslogd' ]
 
 - name: Create systemd-tmpfiles override
-  copy:
+  ansible.builtin.copy:
     dest: '/etc/tmpfiles.d/rsyslog-var-log.conf'
     mode: '0755'
     content: 'z {{ rsyslog__home }} 0775 root {{ rsyslog__group }} -'
@@ -110,7 +110,7 @@
         ansible_pkg_mgr == 'apt'
 
 - name: Generate main rsyslog configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/rsyslog.conf.j2'
     dest: '/etc/rsyslog.conf'
     mode: '0644'
@@ -132,7 +132,7 @@
   when: rsyslog__enabled|bool and rsyslog__deploy_state != 'absent'
 
 - name: Generate rsyslog configuration rules
-  template:
+  ansible.builtin.template:
     src: 'etc/rsyslog.d/template.conf.j2'
     dest: '{{ "/etc/rsyslog.d/" + item.name }}'
     owner: '{{ item.owner | d("root") }}'
@@ -147,7 +147,7 @@
   notify: [ 'Check and restart rsyslogd' ]
 
 - name: Remove custom config files when requested
-  file:
+  ansible.builtin.file:
     path: '{{ "/etc/rsyslog.d/" + item.name }}'
     state: 'absent'
   loop: '{{ rsyslog__combined_rules | flatten | debops.debops.parse_kv_items }}'
@@ -159,7 +159,7 @@
   notify: [ 'Check and restart rsyslogd' ]
 
 - name: Prepare cleanup during package removal
-  import_role:
+  ansible.builtin.import_role:
     name: 'dpkg_cleanup'
   vars:
     dpkg_cleanup__dependent_packages:

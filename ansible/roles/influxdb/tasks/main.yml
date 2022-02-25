@@ -6,17 +6,17 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Check if database server is installed
   environment:
     LC_MESSAGES: 'C'
-  shell: set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          dpkg-query -W -f='${Version}\n' 'influxdb'
          | grep -v '^$'
   args:
@@ -27,12 +27,12 @@
   check_mode: False
 
 - name: Override configuration if local server is detected
-  set_fact:
+  ansible.builtin.set_fact:
     influxdb__server: '{{ ansible_fqdn if influxdb__pki else "localhost" }}'
   when: (influxdb__register_version.stdout|d(False))
 
 - name: Make sure that local fact directory exists
-  file:
+  ansible.builtin.file:
     dest: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -40,7 +40,7 @@
     mode: '0755'
 
 - name: Save InfluxDB local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/influxdb.fact.j2'
     dest: '/etc/ansible/facts.d/influxdb.fact'
     owner: 'root'
@@ -50,9 +50,9 @@
   tags: [ 'meta::facts' ]
 
 - name: Re-read local facts if they have been modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Manage database contents
-  include: 'manage_contents.yml'
+  ansible.builtin.include_tasks: 'manage_contents.yml'
   when: (influxdb__server|d(False) and influxdb__delegate_to)
   tags: [ 'role::influxdb:contents' ]

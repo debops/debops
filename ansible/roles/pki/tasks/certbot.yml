@@ -6,13 +6,13 @@
 # The 'certbot' package and its dependencies should be installed at this point.
 
 - name: Make sure that the post-hook directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/letsencrypt/renewal-hooks/post'
     state: 'directory'
     mode: '0755'
 
 - name: Install post-hook scripts
-  copy:
+  ansible.builtin.copy:
     src: 'etc/letsencrypt/renewal-hooks/post/'
     dest: '/etc/letsencrypt/renewal-hooks/post/'
     mode: '0755'
@@ -23,7 +23,7 @@
     state: 'present'
 
 - name: Generate certbot configuration file
-  template:
+  ansible.builtin.template:
     src: 'etc/letsencrypt/cli.ini.j2'
     dest: '/etc/letsencrypt/cli.ini'
     mode: '0644'

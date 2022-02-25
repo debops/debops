@@ -6,11 +6,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Check for supported Ansible version
-  assert:
+  ansible.builtin.assert:
     that:
       - 'ansible_version.full is version_compare("2.1.5.0", ">=")'
       - '((ansible_version.minor == 2) and
@@ -23,7 +23,7 @@
 
 # Manage optional system packages [[[1
 - name: Ensure optional packages are in there desired state
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (apache__packages
                               + apache__group_packages
                               + apache__host_packages
@@ -34,7 +34,7 @@
 
 # Manage Apache modules [[[1
 - name: Get list of available modules
-  find:
+  ansible.builtin.find:
     file_type: 'file'
     paths: [ '{{ apache__config_path + "/mods-available/" }}' ]
     patterns: [ '*.load' ]
@@ -42,14 +42,15 @@
   tags: [ 'role::apache:modules' ]
 
 - name: Set list of available modules
-  set_fact:
+  ansible.builtin.set_fact:
     apache__tpl_available_modules: '{{ apache__register_mods_available.files|d({})
                                        | map(attribute="path")
                                        | map("replace", apache__config_path + "/mods-available/", "")
                                        | map("regex_replace", "\.load$", "") | list }}'
   tags: [ 'role::apache:modules' ]
 
-- include: apache_module_state.yml
+- name: Configure Apache module state
+  ansible.builtin.include_tasks: apache_module_state.yml
 
 # Manage Apache configuration snippets [[[1
 - name: Divert conf-available configuration
@@ -63,7 +64,7 @@
   with_dict: '{{ apache__combined_snippets }}'
 
 - name: Remove conf-available snippets
-  file:
+  ansible.builtin.file:
     path: '{{ apache__config_path + "/conf-available/" + item.key + ".conf" }}'
     state: 'absent'
   when: (item.value.state|d("present") == "absent")
@@ -71,7 +72,7 @@
   tags: [ 'role::apache:vhosts' ]
 
 - name: Create conf-available snippets
-  template:
+  ansible.builtin.template:
     src: 'etc/apache2/conf-available/{{ "raw"
                                         if (item.value.type|d("default") in ["divert", "raw"] and
                                             item.value.raw|d())
@@ -86,7 +87,7 @@
   notify: [ 'Test apache and reload' ]
 
 - name: Enable/disable configuration snippets
-  file:
+  ansible.builtin.file:
     path: '{{ apache__config_path + "/conf-enabled/" + item.key + ".conf" }}'
     src: '{{ (((item.value.enabled|d(True)
                   if (item.value is mapping)
@@ -121,7 +122,7 @@
   with_flattened: '{{ apache__combined_vhosts }}'
 
 - name: Remove sites-available configuration
-  file:
+  ansible.builtin.file:
     path: '{{ apache__config_path }}/sites-available/{{ item.filename | d(item.name
                                                                           if (item.name is string)
                                                                           else item.name[0] | d("default")) }}.conf'
@@ -131,7 +132,7 @@
   tags: [ 'role::apache:vhosts' ]
 
 - name: Create sites-available configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/apache2/sites-available/{{ item.type | d(apache__vhost_type) }}.conf.j2'
     dest: '{{ apache__config_path }}/sites-available/{{ item.filename | d(item.name
                                                                           if (item.name is string)
@@ -145,7 +146,7 @@
   tags: [ 'role::apache:vhosts' ]
 
 - name: Enable/disable Apache virtual hosts
-  file:
+  ansible.builtin.file:
     path: '{{ apache__config_path }}/sites-enabled/{{ item.filename | d(item.name
                                                                         if (item.name is string)
                                                                         else item.name[0] | d("default")) }}.conf'
@@ -170,11 +171,12 @@
 
 # Manage Apache modules, part 2 [[[1
 - name: Detect if the rewrite module has been used in the active configuration
-  shell: grep --recursive --ignore-case '^\s*RewriteEngine On' {{ apache__config_path | quote }}
+  ansible.builtin.shell: grep --recursive --ignore-case '^\s*RewriteEngine On' {{ apache__config_path | quote }}
   register: apache__register_mod_rewrite_used
   check_mode: False
   failed_when: apache__register_mod_rewrite_used.rc not in [ 0, 1 ]
   changed_when: False
   when: apache__register_mod_rewrite_used is undefined
 
-- include: apache_module_state.yml
+- name: Finish configuration of Apache module state
+  ansible.builtin.include_tasks: apache_module_state.yml

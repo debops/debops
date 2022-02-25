@@ -4,11 +4,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Install locale packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (locales__base_packages
                               + locales__packages)) }}'
     state: 'present'
@@ -27,7 +27,7 @@
     - '{{ locales__dependent_list }}'
 
 - name: Set default system locale
-  debconf:
+  ansible.builtin.debconf:
     name: 'locales'
     question: 'locales/default_environment_locale'
     vtype: 'string'
@@ -36,11 +36,11 @@
   when: ansible_pkg_mgr == 'apt' and locales__system_lang|d()
 
 - name: Update /etc/default/locale
-  command: 'update-locale LANG={{ locales__system_lang }}'  # noqa no-handler
+  ansible.builtin.command: 'update-locale LANG={{ locales__system_lang }}'  # noqa no-handler
   when: ansible_pkg_mgr == 'apt' and locales__register_system_lang is changed
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -48,7 +48,7 @@
     mode: '0755'
 
 - name: Save locale local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/locales.fact.j2'
     dest: '/etc/ansible/facts.d/locales.fact'
     owner: 'root'
@@ -58,4 +58,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

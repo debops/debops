@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Remove module configuration
-  file:
+  ansible.builtin.file:
     dest: '/etc/modprobe.d/{{ module.filename | d(module.name | replace("_","-") + ".conf") }}'
     state: 'absent'
   notify: [ 'Refresh host facts' ]
@@ -13,7 +13,7 @@
   when: module.name|d() and module.state|d('present') == 'absent'
 
 - name: Generate module configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/modprobe.d/module.conf.j2'
     dest: '/etc/modprobe.d/{{ module.filename | d(module.name | replace("_","-") + ".conf") }}'
     owner: 'root'

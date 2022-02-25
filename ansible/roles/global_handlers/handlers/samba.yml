@@ -4,15 +4,15 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Check samba config
-  command: testparm -s
+  ansible.builtin.command: testparm -s
   notify: [ 'Reload nmbd', 'Reload smbd' ]
 
 - name: Reload nmbd
-  service:
+  ansible.builtin.service:
     name: 'nmbd'
     state: 'restarted'
 
 - name: Reload smbd
-  service:
+  ansible.builtin.service:
     name: 'smbd'
     state: 'reloaded'

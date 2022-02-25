@@ -4,14 +4,14 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Install avahi-alias script
-  copy:
+  ansible.builtin.copy:
     src: 'usr/local/sbin/avahi-alias'
     dest: '{{ avahi__alias_install_path }}/avahi-alias'
     mode: '0755'
   register: avahi__register_alias_script
 
 - name: Install avahi-alias.service
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/avahi-alias.service.j2'
     dest: '/etc/systemd/system/avahi-alias.service'
     owner: 'root'
@@ -20,7 +20,7 @@
   register: avahi__register_alias_service
 
 - name: Make sure that the CNAME alias file exists
-  file:  # noqa no-handler
+  ansible.builtin.file:  # noqa no-handler
     path: '{{ avahi__alias_config_file }}'
     state: 'touch'
     owner: 'root'
@@ -29,7 +29,7 @@
   when: avahi__register_alias_script is changed
 
 - name: Manage list of CNAME entries
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '{{ avahi__alias_config_file }}'
     regexp: '{{ "^" + (item.value.cname
                        if item.value.cname.endswith("." + avahi__domain)
@@ -46,7 +46,7 @@
   when: item.value.cname|d()
 
 - name: Manage avahi-alias.service
-  systemd:
+  ansible.builtin.systemd:
     name: 'avahi-alias.service'
     enabled: '{{ True if avahi__register_alias_script is changed else omit }}'
     daemon_reload: '{{ True if (avahi__register_alias_script is changed or

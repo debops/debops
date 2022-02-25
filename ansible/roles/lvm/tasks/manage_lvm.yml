@@ -4,12 +4,12 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Rescan LVM Volume Groups
-  command: 'vgscan'  # noqa no-handler
+  ansible.builtin.command: 'vgscan'  # noqa no-handler
   when: ((lvm__register_devices_filter|d() and lvm__register_devices_filter is changed) or
          (lvm__register_devices_global_filter|d() and lvm__register_devices_global_filter is changed))
 
 - name: Unmount filesystems if requested
-  mount:
+  ansible.posix.mount:
     name:   '{{ item.mount }}'
     src:    '{{ "/dev/mapper/" + item.vg | regex_replace("-", "--") + "-" + item.lv | regex_replace("-", "--") }}'
     fstype: '{{ item.fs_type | d(lvm__default_fs_type) }}'
@@ -86,7 +86,7 @@
          (ansible_check_mode and lvm__register_logical_volumes is not changed))
 
 - name: Manage mount points
-  mount:
+  ansible.posix.mount:
     name:   '{{ item.mount }}'
     src:    '{{ "/dev/mapper/" + item.vg | regex_replace("-", "--") + "-" + item.lv | regex_replace("-", "--") }}'
     fstype: '{{ item.fs_type      | d(lvm__default_fs_type) }}'

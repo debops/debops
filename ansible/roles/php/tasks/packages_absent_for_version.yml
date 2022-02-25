@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Ensure older PHP packages are absent on reset for given PHP version
-  apt:
+  ansible.builtin.apt:
     name: '{{ item is search("php.*-")|ternary(item, php__version_absent + "-" + item) }}'
     state: 'absent'
   with_flattened:

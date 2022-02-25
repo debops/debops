@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Check systemd version
-  shell: set -o nounset -o pipefail -o errexit && systemd --version | head -n 1 | awk '{print $2}'
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit && systemd --version | head -n 1 | awk '{print $2}'
   args:
     executable: 'bash'
   register: ifupdown__register_systemd_version
@@ -13,7 +13,7 @@
   changed_when: False
 
 - name: Install custom ifupdown services
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/{{ item }}.j2'
     dest: '/etc/systemd/system/{{ item }}'
     owner: 'root'
@@ -26,18 +26,18 @@
   register: ifupdown__register_systemd_services
 
 - name: Reload systemd services
-  systemd:  # noqa no-handler
+  ansible.builtin.systemd:  # noqa no-handler
     daemon_reload: True
   when: ifupdown__register_systemd_services is changed
 
   ## https://stackoverflow.com/a/28888474
 - name: Test if Ansible is running in check mode
-  command: /bin/true
+  ansible.builtin.command: /bin/true
   changed_when: False
   register: ifupdown__register_check_mode
 
 - name: Enable custom ifupdown services
-  service:
+  ansible.builtin.service:
     name: '{{ item }}'
     enabled: True
   with_items: [ 'ifup-wait-all-auto', 'ifup-allow-boot' ]

@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ (mount__base_packages + mount__packages) | flatten }}'
     state: 'present'
   register: mount__register_packages
@@ -14,7 +14,7 @@
   # This task allows configuration of the outer mount point attributes, but
   # will not change them while the device is mounted.
 - name: Ensure that the mount points exist
-  file:
+  ansible.builtin.file:
     path:    '{{ item.path    | d(item.dest | d(item.name)) }}'
     owner:   '{{ item.owner   | d(omit) }}'
     group:   '{{ item.group   | d(item.owner | d(omit)) }}'
@@ -28,7 +28,7 @@
          (item.device | d(item.src)) not in (ansible_mounts | map(attribute='device') | list))
 
 - name: Stop devices automounted by systemd if requested
-  systemd:
+  ansible.builtin.systemd:
     name: '{{ item.name | regex_replace("^/","") | regex_replace("/","-") + ".automount" }}'
     state: 'stopped'
   loop: '{{ (mount__devices
@@ -60,7 +60,7 @@
          (item.name|d() or item.dest|d() or item.path|d()) and item.src)
 
 - name: Restart 'local-fs.target' systemd unit
-  systemd:  # noqa no-handler
+  ansible.builtin.systemd:  # noqa no-handler
     name: 'local-fs.target'
     state: 'restarted'
     daemon_reload: True
@@ -70,7 +70,7 @@
            if item.opts|d() else 'defaults') is match(".*x-systemd.automount.*")))
 
 - name: Restart 'remote-fs.target' systemd unit
-  systemd:  # noqa no-handler
+  ansible.builtin.systemd:  # noqa no-handler
     name: 'remote-fs.target'
     state: 'restarted'
     daemon_reload: True
@@ -80,7 +80,7 @@
            if item.opts|d() else 'defaults') is match(".*x-systemd.automount.*")))
 
 - name: Manage directories
-  file:
+  ansible.builtin.file:
     path:    '{{ item.path    | d(item.dest | d(item.name)) }}'
     owner:   '{{ item.owner   | d(omit) }}'
     group:   '{{ item.group   | d(item.owner | d(omit)) }}'
@@ -95,7 +95,7 @@
         item.state|d('directory') in [ 'directory', 'absent' ]
 
 - name: Manage directory ACLs
-  acl:
+  ansible.posix.acl:
     path:        '{{ item.0.path        | d(item.0.dest | d(item.0.name)) }}'
     default:     '{{ item.1.default     | d(omit) }}'
     entity:      '{{ item.1.entity      | d(omit) }}'
@@ -115,7 +115,7 @@
         item.0.state|d('directory') == 'directory' and item.0.acl|d()
 
 - name: Manage bind mounts
-  mount:
+  ansible.posix.mount:
     src:    '{{ item.src }}'
     path:   '{{ item.path   | d(item.dest | d(item.name)) }}'
     fstype: '{{ item.fstype | d("none") }}'
@@ -133,7 +133,7 @@
          item.src|d())
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -141,7 +141,7 @@
     mode: '0755'
 
 - name: Save mount local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/mount.fact.j2'
     dest: '/etc/ansible/facts.d/mount.fact'
     owner: 'root'

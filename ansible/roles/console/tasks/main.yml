@@ -4,11 +4,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Install requested packages
-  apt:
+  ansible.builtin.apt:
     name: '{{ (console_base_packages + console_conditional_packages) | flatten }}'
     state: 'present'
     install_recommends: False
@@ -18,12 +18,12 @@
   tags: [ 'meta::provision' ]
 
 - name: Check if /etc/inittab exists
-  stat:
+  ansible.builtin.stat:
     path: '/etc/inittab'
   register: console_register_inittab
 
 - name: Disable serial console in /etc/inittab
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '/etc/inittab'
     regexp: '^{{ console_serial_inittab }}'
     state: 'absent'
@@ -33,7 +33,7 @@
   notify: [ 'Reload sysvinit' ]
 
 - name: Enable serial console in /etc/inittab
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '/etc/inittab'
     regexp: '^{{ console_serial_inittab }}'
     state: 'present'
@@ -45,7 +45,7 @@
   notify: [ 'Reload sysvinit' ]
 
 - name: Configure fsck behaviour on boot
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '/etc/default/rcS'
     regexp: 'FSCKFIX='
     state: 'present'

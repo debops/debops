@@ -4,16 +4,16 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 # Install packages [[[1
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (etesync__base_packages
                               + etesync__packages)) }}'
     state: 'present'
@@ -22,13 +22,13 @@
 
 # Create EteSync system user [[[1
 - name: Create EteSync system group
-  group:
+  ansible.builtin.group:
     name: '{{ etesync__group }}'
     state: 'present'
     system: True
 
 - name: Create EteSync system user
-  user:
+  ansible.builtin.user:
     name: '{{ etesync__user }}'
     group: '{{ etesync__group }}'
     home: '{{ etesync__home }}'
@@ -38,7 +38,7 @@
     system: True
 
 - name: Create additional directories used by EteSync
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     state: 'directory'
     owner: '{{ etesync__user }}'
@@ -53,7 +53,7 @@
 
 # Download EteSync server [[[1
 - name: Clone EteSync source code
-  git:
+  ansible.builtin.git:
     repo: '{{ etesync__git_repo }}'
     dest: '{{ etesync__git_checkout }}'
     separate_git_dir: '{{ etesync__git_dest }}'
@@ -67,7 +67,7 @@
   register: etesync__register_source
 
 - name: Verify git tag signature
-  shell: git verify-tag --raw "$(git describe)"
+  ansible.builtin.shell: git verify-tag --raw "$(git describe)"
   args:
     chdir: '{{ etesync__git_checkout }}'
     warn: False
@@ -79,7 +79,7 @@
   # when: etesync__register_source is changed
 
 - name: Install EteSync requirements in virtualenv
-  pip:  # noqa no-handler
+  ansible.builtin.pip:  # noqa no-handler
     virtualenv: '{{ etesync__virtualenv }}'
     virtualenv_python: 'python3'
     virtualenv_site_packages: True
@@ -93,7 +93,7 @@
   when: etesync__register_source is changed
 
 - name: Clean up stale Python bytecode
-  command: find . -name '*.pyc' -delete
+  ansible.builtin.command: find . -name '*.pyc' -delete
   args:  # noqa no-handler
     chdir: '{{ etesync__git_checkout }}'
   become: True
@@ -102,7 +102,7 @@
 
 # Configure EteSync server [[[1
 - name: Exclude secret files from etckeeper
-  copy:
+  ansible.builtin.copy:
     content: |
       secret.txt
     dest: '{{ etesync__etc + "/.gitignore" }}'
@@ -112,7 +112,7 @@
   tags: [ 'role::etesync:config' ]
 
 - name: Generate EteSync configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/etesync-server/etesync-server.ini.j2'
     dest: '{{ etesync__etc + "/etesync-server.ini" }}'
     owner: 'root'
@@ -123,7 +123,7 @@
   tags: [ 'role::etesync:config' ]
 
 - name: Generate extended EteSync configuration
-  template:
+  ansible.builtin.template:
     src: 'usr/local/lib/etesync/app/etesync_site_settings.py.j2'
     dest: '{{ etesync__git_checkout + "/etesync_site_settings.py" }}'
     owner: '{{ etesync__user }}'
@@ -134,7 +134,7 @@
   tags: [ 'role::etesync:config' ]
 
 - name: Generate EteSync secret.txt file
-  template:
+  ansible.builtin.template:
     src: 'etc/etesync-server/secret.txt.j2'
     dest: '{{ etesync__config_secret_key_filepath }}'
     owner: 'root'
@@ -144,7 +144,7 @@
   tags: [ 'role::etesync:config' ]
 
 - name: Perform database installation or migration
-  shell: |
+  ansible.builtin.shell: |
     ## -o nounset can be enabled with virtualenv >= 16.2.
     ## Ref: https://github.com/pypa/virtualenv/pull/922
     set -o pipefail -o errexit;
@@ -164,7 +164,7 @@
     SUPERUSER_NAME: '{{ etesync__superuser_name }}'
     SUPERUSER_EMAIL: '{{ etesync__superuser_email }}'
     SUPERUSER_PASSWORD: '{{ etesync__superuser_password }}'
-  shell:
+  ansible.builtin.shell:
     ## -o nounset can be enabled with virtualenv >= 16.2.
     ## Ref: https://github.com/pypa/virtualenv/pull/922
     set -o pipefail -o errexit;
@@ -192,7 +192,7 @@
 
 # Save EteSync local facts [[[1
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -200,7 +200,7 @@
     mode: '0755'
 
 - name: Save EteSync local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/etesync.fact.j2'
     dest: '/etc/ansible/facts.d/etesync.fact'
     owner: 'root'
@@ -210,4 +210,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

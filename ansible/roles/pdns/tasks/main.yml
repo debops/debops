@@ -5,19 +5,19 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Ensure PowerDNS support is installed
-  package:
+  ansible.builtin.package:
     name: '{{ (pdns__base_packages + pdns__packages) | flatten }}'
     state: 'present'
   register: pdns__register_packages
@@ -31,13 +31,13 @@
     path: '/etc/powerdns/pdns.conf'
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
 
 - name: Save local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/pdns.fact.j2'
     dest: '/etc/ansible/facts.d/pdns.fact'
     mode: '0755'
@@ -45,10 +45,10 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Configure local PowerDNS changes
-  template:
+  ansible.builtin.template:
     src: 'etc/powerdns/pdns.conf.j2'
     dest: '/etc/powerdns/pdns.conf'
     owner: 'root'

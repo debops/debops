@@ -4,17 +4,17 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Get default PostgreSQL version
   environment:
     LC_ALL: 'C'
-  shell: "set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: "set -o nounset -o pipefail -o errexit &&
           apt-cache policy postgresql-client | grep -E '^\\s+Candidate:\\s+' | awk '{print $2}' | cut -d+ -f1"
   args:
     executable: 'bash'
@@ -23,7 +23,7 @@
   changed_when: False
 
 - name: Set default PostgreSQL version variable
-  set_fact:
+  ansible.builtin.set_fact:
     postgresql__version: '{{ (ansible_local.postgresql.version
                               if (ansible_local.postgresql.version|d())
                                  else (postgresql__preferred_version
@@ -31,7 +31,7 @@
                                        else postgresql__register_version.stdout)) }}'
 
 - name: Install PostgreSQL packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (postgresql__base_packages
                               + postgresql__python_packages
                               + postgresql__packages)) }}'
@@ -42,7 +42,7 @@
 - name: Check if database server is installed
   environment:
     LC_MESSAGES: 'C'
-  shell: set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          dpkg-query -W -f='${Version}\n' 'postgresql' | grep -v '^$'
   args:
     executable: 'bash'
@@ -52,7 +52,7 @@
   failed_when: False
 
 - name: Configure system-wide user to cluster mapping
-  template:
+  ansible.builtin.template:
     src: 'etc/postgresql-common/user_clusters.j2'
     dest: '/etc/postgresql-common/user_clusters'
     owner: 'root'
@@ -60,7 +60,7 @@
     mode: '0644'
 
 - name: Make sure that Ansible local fact directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -68,7 +68,7 @@
     mode: '0755'
 
 - name: Save PostgreSQL local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/postgresql.fact.j2'
     dest: '/etc/ansible/facts.d/postgresql.fact'
     owner: 'root'
@@ -78,7 +78,7 @@
   tags: [ 'meta::facts' ]
 
 - name: Re-read local facts if they have been modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Drop PostgreSQL roles if requested
   community.postgresql.postgresql_user:
@@ -224,7 +224,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Make sure required system groups exist
-  group:
+  ansible.builtin.group:
     name: '{{ item.group | d(item.owner) }}'
     state: 'present'
     system: '{{ item.system | d(True) }}'
@@ -235,7 +235,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Make sure required system accounts exist
-  user:
+  ansible.builtin.user:
     name: '{{ item.owner }}'
     group: '{{ item.group | d(item.owner) }}'
     home: '{{ item.home | d(omit) }}'
@@ -248,7 +248,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Populate ~/.pgpass file
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '{{ "~" + item.owner }}/.pgpass'
     regexp: '{{ "^" + ([
                         ((item.server  | d(postgresql__server if postgresql__server else "localhost"))

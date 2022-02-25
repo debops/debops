@@ -4,14 +4,14 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Combine BTRFS subvolumes
-  set_fact:
+  ansible.builtin.set_fact:
     btrfs__subvolumes_combined: '{{
                 btrfs__subvolumes
       | combine(btrfs__subvolumes_host_group)
       | combine(btrfs__subvolumes_host) }}'
 
 - name: Ensure required packages are installed
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", btrfs__base_packages) }}'
     state: 'present'
   register: btrfs__register_packages
@@ -38,7 +38,7 @@
   tags: [ 'role::btrfs:subvolumes' ]
 
 - name: Set directory permissions
-  file:
+  ansible.builtin.file:
     path:   '{{ item.key }}'
     state:  'directory'
     owner:  '{{ item.value.dir_owner  | d(omit) }}'

@@ -4,11 +4,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Install Salt Master packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (salt__base_packages
                               + salt__packages)) }}'
     state: 'present'
@@ -16,7 +16,7 @@
   until: salt__register_packages is succeeded
 
 - name: Configure Salt Master using Ansible
-  template:
+  ansible.builtin.template:
     src: 'etc/salt/master.d/ansible.conf.j2'
     dest: '{{ salt__configuration_file }}'
     owner: 'root'
@@ -26,7 +26,7 @@
   when: salt__configuration|bool
 
 - name: Remove Salt Master configuration file if disabled
-  file:
+  ansible.builtin.file:
     path: '{{ salt__configuration_file }}'
     state: 'absent'
   notify: [ 'Restart salt-master' ]
