@@ -4,15 +4,15 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Pre hooks
@@ -22,7 +22,7 @@
 # ---- Environment ----
 
 - name: Get version of current Roundcube installation
-  command: sed -n "s/^define('RCMAIL_VERSION', '\(.*\)');/\1/p" \
+  ansible.builtin.command: sed -n "s/^define('RCMAIL_VERSION', '\(.*\)');/\1/p" \
            {{ roundcube__git_dest }}/program/include/iniset.php
   args:
     warn: False
@@ -35,7 +35,7 @@
 # ---- Deployment ----
 
 - name: Install pre-requisite packages for Roundcube
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (roundcube__base_packages
                               + roundcube__packages)) }}'
     state: 'present'
@@ -47,13 +47,13 @@
   tags: [ 'role::roundcube:deployment' ]
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
 
 - name: Save RoundCube local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/roundcube.fact.j2'
     dest: '/etc/ansible/facts.d/roundcube.fact'
     mode: '0755'
@@ -61,7 +61,7 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 # ---- Skins/Themes ----
 - include_tasks: configure_skins.yml
@@ -70,7 +70,7 @@
 # ---- Configuration ----
 
 - name: Make sure database directory exists
-  file:
+  ansible.builtin.file:
     path: '{{ roundcube__git_dest }}/{{ roundcube__database_map[roundcube__database].dbname | dirname }}'
     state: directory
     owner: '{{ roundcube__user }}'
@@ -88,7 +88,7 @@
   tags: [ 'role::roundcube:database' ]
 
 - name: Generate Roundcube configuration
-  template:
+  ansible.builtin.template:
     src: 'srv/www/sites/roundcube/public/config/config.inc.php.j2'
     dest: '{{ roundcube__git_dest + "/config/config.inc.php" }}'
     owner: 'root'
@@ -97,7 +97,7 @@
   tags: [ 'role::roundcube:config' ]
 
 - name: Generate Roundcube plugin configuration
-  template:
+  ansible.builtin.template:
     src: 'srv/www/sites/roundcube/public/plugins/config.inc.php.j2'
     dest: '{{ roundcube__git_dest + "/plugins/" + item.name + "/config.inc.php" }}'
     owner: 'root'
@@ -111,7 +111,7 @@
   tags: [ 'role::roundcube:config' ]
 
 - name: Update database schema
-  command: 'php bin/updatedb.sh --package=roundcube --dir={{ roundcube__git_dest }}/SQL'
+  ansible.builtin.command: 'php bin/updatedb.sh --package=roundcube --dir={{ roundcube__git_dest }}/SQL'
   args:
     chdir: '{{ roundcube__git_dest }}'
   become: True

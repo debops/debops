@@ -4,12 +4,12 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Check if password history database exists
-  stat:
+  ansible.builtin.stat:
     path: '/etc/security/opasswd'
   register: auth_register_opasswd
 
 - name: Configure password history database
-  file:
+  ansible.builtin.file:
     path: '/etc/security/opasswd'
     state: 'touch'
     owner: 'root'
@@ -18,7 +18,7 @@
   when: auth_register_opasswd is defined and not auth_register_opasswd.stat.exists
 
 - name: Configure pam_pwhistory
-  template:
+  ansible.builtin.template:
     src: 'usr/share/pam-configs/pwhistory.j2'
     dest: '/usr/share/pam-configs/pwhistory'
     owner: 'root'

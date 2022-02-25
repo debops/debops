@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Ensure that webpage directory exists
-  file:
+  ansible.builtin.file:
     path: '/srv/www/sites/{{ sks_domain[0] }}/public'
     state: 'directory'
     owner: 'root'
@@ -12,12 +12,12 @@
     mode: '0755'
 
 - name: Check if index.html page exists
-  stat:
+  ansible.builtin.stat:
     path: '/srv/www/sites/{{ sks_domain[0] }}/public/index.html'
   register: sks_register_index_html
 
 - name: Configure SKS Keyserver webpage if not present
-  copy:
+  ansible.builtin.copy:
     src: 'srv/www/sites/default/public/{{ item }}'
     dest: '/srv/www/sites/{{ sks_domain[0] }}/public/{{ item }}'
     owner: 'root'

@@ -4,11 +4,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Set dbconfig configuration for Icinga database
-  debconf:
+  ansible.builtin.debconf:
     name: 'icinga2-{{ icinga_db__feature }}'
     question: '{{ item }}'
     vtype: 'boolean'
@@ -20,7 +20,7 @@
         icinga_db__type != 'unknown'
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ lookup("flattened",
                      (icinga_db__base_packages + icinga_db__packages),
                      wantlist=True) }}'
@@ -32,7 +32,7 @@
         icinga_db__type != 'unknown'
 
 - name: Ensure that IDO feature is enabled
-  file:
+  ansible.builtin.file:
     path: '/etc/icinga2/features-enabled/{{ icinga_db__feature }}.conf'
     src: '../features-available/{{ icinga_db__feature }}.conf'
     state: 'link'
@@ -42,7 +42,7 @@
         icinga_db__feature != 'unknown'
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -50,7 +50,7 @@
     mode: '0755'
 
 - name: Save Icinga database local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/icinga_db.fact.j2'
     dest: '/etc/ansible/facts.d/icinga_db.fact'
     owner: 'root'
@@ -60,4 +60,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Create Debian netboot directories
-  file:
+  ansible.builtin.file:
     path: '{{ ipxe__debian_netboot_src + "/" + item.release + "/" + item.architecture
               + "/" + item.netboot_version + (item.netboot_subdir | d("")) }}'
     state: 'directory'
@@ -14,7 +14,7 @@
         item.release in ipxe__debian_netboot_releases and item.architecture in ipxe__debian_netboot_architectures
 
 - name: Create Debian installer directories
-  file:
+  ansible.builtin.file:
     path: '{{ ipxe__debian_netboot_pxe_root + "/" + item.release + "/" + item.architecture
               + "/" + item.netboot_version + (item.netboot_subdir | d("")) }}'
     state: 'directory'
@@ -24,7 +24,7 @@
         item.release in ipxe__debian_netboot_releases and item.architecture in ipxe__debian_netboot_architectures
 
 - name: Download Debian netboot tarballs
-  get_url:
+  ansible.builtin.get_url:
     url: '{{ item.netboot_url | d(ipxe__debian_netboot_mirror + "/dists/" + item.release
                                   + "/main/installer-" + item.architecture + "/"
                                   + item.netboot_version + "/images/netboot"
@@ -39,7 +39,7 @@
   until: ipxe__register_get_netboot is succeeded
 
 - name: Unpack Debian netboot tarballs
-  unarchive:
+  ansible.builtin.unarchive:
     src: '{{ ipxe__debian_netboot_src + "/" + item.release + "/" + item.architecture + "/"
              + item.netboot_version + (item.netboot_subdir | d("")) + "/netboot.tar.gz" }}'
     dest: '{{ ipxe__debian_netboot_pxe_root + "/" + item.release + "/" + item.architecture + "/"
@@ -54,7 +54,7 @@
         item.release in ipxe__debian_netboot_releases and item.architecture in ipxe__debian_netboot_architectures
 
 - name: Point current Debian netboot symlink to correct version
-  file:
+  ansible.builtin.file:
     path: '{{ ipxe__debian_netboot_pxe_root + "/" + item.release + "/" + item.architecture + "/current" }}'
     src: '{{ item.netboot_version }}'
     state: 'link'
@@ -65,7 +65,7 @@
         (item.netboot_current|d(True))|bool
 
 - name: Create Debian firmware directories
-  file:
+  ansible.builtin.file:
     path: '{{ ipxe__debian_netboot_src + "/" + item.release + "/non-free/" + item.firmware_version }}'
     state: 'directory'
     mode: '0755'
@@ -74,7 +74,7 @@
         item.release in ipxe__debian_netboot_releases and item.firmware_version|d()
 
 - name: Download Debian firmware tarballs
-  get_url:
+  ansible.builtin.get_url:
     url: '{{ item.firmware_url | d(ipxe__debian_netboot_firmware_mirror + "/" + item.release + "/"
                                    + item.firmware_version + "/firmware.cpio.gz") }}'
     dest: '{{ ipxe__debian_netboot_src + "/" + item.release + "/non-free/"
@@ -87,7 +87,7 @@
   until: ipxe__register_get_firmware is succeeded
 
 - name: Include firmware in the Debian netboot installers
-  shell: cat {{ ipxe__debian_netboot_src + "/" + item.item.release + "/non-free/"
+  ansible.builtin.shell: cat {{ ipxe__debian_netboot_src + "/" + item.item.release + "/non-free/"
                 + item.item.firmware_version + "/firmware.cpio.gz" }}
              >> {{ ipxe__debian_netboot_pxe_root + "/" + item.item.release + "/" + item.item.architecture + "/"
                    + item.item.netboot_version + (item.item.netboot_subdir | d("")) + "/debian-installer/"

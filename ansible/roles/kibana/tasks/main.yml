@@ -4,19 +4,19 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Install Kibana packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (kibana__base_packages
                               + kibana__packages)) }}'
     state: 'present'
@@ -25,14 +25,14 @@
   until: kibana__register_packages is succeeded
 
 - name: Add Kibana UNIX account to selected groups
-  user:
+  ansible.builtin.user:
     name: '{{ kibana__user }}'
     groups: '{{ kibana__additional_groups }}'
     append: True
   when: kibana__additional_groups|d()
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -40,7 +40,7 @@
     mode: '0755'
 
 - name: Save Kibana local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/kibana.fact.j2'
     dest: '/etc/ansible/facts.d/kibana.fact'
     owner: 'root'
@@ -50,10 +50,10 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Check if the dependent config file exists
-  stat:
+  ansible.builtin.stat:
     path: '{{ secret + "/kibana/dependent_config/" + inventory_hostname + "/config.json" }}'
   register: kibana__register_dependent_config_file
   become: False
@@ -62,7 +62,7 @@
   tags: [ 'role::kibana:config' ]
 
 - name: Load the dependent configuration from Ansible Controller
-  slurp:
+  ansible.builtin.slurp:
     src: '{{ secret + "/kibana/dependent_config/" + inventory_hostname + "/config.json" }}'
   register: kibana__register_dependent_config
   become: False
@@ -78,7 +78,7 @@
   tags: [ 'role::kibana:config' ]
 
 - name: Generate Kibana configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/kibana/kibana.yml.j2'
     dest: '/etc/kibana/kibana.yml'
     owner: 'root'
@@ -88,7 +88,7 @@
   tags: [ 'role::kibana:config' ]
 
 - name: Check state of installed Kibana plugins
-  shell: set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          bin/kibana-plugin list | cut -d@ -f1
   args:
     executable: 'bash'
@@ -100,7 +100,7 @@
   check_mode: False
 
 - name: Install Kibana plugins
-  command: bin/kibana-plugin install {{ item.url | d(item.name) }}
+  ansible.builtin.command: bin/kibana-plugin install {{ item.url | d(item.name) }}
   args:
     chdir: '/usr/share/kibana'
   notify: [ 'Restart kibana' ]
@@ -112,7 +112,7 @@
          (item.name if ':' not in item.name else item.name.split(':')[1]) not in kibana__register_plugins.stdout_lines)
 
 - name: Remove Kibana plugins
-  command: bin/kibana-plugin remove {{ item.name }}
+  ansible.builtin.command: bin/kibana-plugin remove {{ item.name }}
   args:
     chdir: '/usr/share/kibana'
   notify: [ 'Restart kibana' ]
@@ -124,7 +124,7 @@
          (item.name if ':' not in item.name else item.name.split(':')[1]) in kibana__register_plugins.stdout_lines)
 
 - name: Save Kibana dependent configuration on Ansible Controller
-  template:
+  ansible.builtin.template:
     src: 'secret/kibana/dependent_config/config.json.j2'
     dest: '{{ secret + "/kibana/dependent_config/" + inventory_hostname + "/config.json" }}'
     mode: '0644'

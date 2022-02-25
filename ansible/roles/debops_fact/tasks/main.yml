@@ -4,18 +4,18 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Ensure that the private fact group exists
-  group:
+  ansible.builtin.group:
     name: '{{ debops_fact__private_group }}'
     system: True
     state: 'present'
   when: debops_fact__enabled|bool
 
 - name: Make sure Ansible fact directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -24,7 +24,7 @@
   when: debops_fact__enabled|bool
 
 - name: Install local fact script
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/debops_fact.fact.j2'
     dest: '/etc/ansible/facts.d/debops_fact.fact'
     owner: 'root'
@@ -34,7 +34,7 @@
   when: debops_fact__enabled|bool
 
 - name: Initialize public DebOps fact file
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/debops_fact.ini.j2'
     dest: '{{ debops_fact__public_path }}'
     owner: 'root'
@@ -44,7 +44,7 @@
   when: debops_fact__enabled|bool
 
 - name: Initialize private DebOps fact file
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/debops_fact_priv.ini.j2'
     dest: '{{ debops_fact__private_path }}'
     owner: 'root'
@@ -54,4 +54,4 @@
   when: debops_fact__enabled|bool
 
 - name: Reload facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

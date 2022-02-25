@@ -6,7 +6,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Restart bitcoind
-  systemd:
+  ansible.builtin.systemd:
     name: 'bitcoind'
     state: 'restarted'
   when: (not bitcoind__register_systemd_unit_state is changed and ansible_distribution_release not in ["trusty"])

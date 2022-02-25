@@ -4,18 +4,18 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (ipxe__base_packages + ipxe__packages)) }}'
     state: 'present'
   register: ipxe__register_packages
   until: ipxe__register_packages is succeeded
 
 - name: Ensure that iPXE script directories exist
-  file:
+  ansible.builtin.file:
     path: '{{ ipxe__tftp_root + "/" + (((item.name | regex_replace("\.ipxe$", "")) + ".ipxe") | dirname) }}'
     state: 'directory'
     mode: '0755'
@@ -27,7 +27,7 @@
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Generate iPXE scripts
-  template:
+  ansible.builtin.template:
     src: 'srv/tftp/template.ipxe.j2'
     dest: '{{ ipxe__tftp_root + "/" + (item.name | regex_replace("\.ipxe$", "")) + ".ipxe" }}'
     mode: '0644'
@@ -38,7 +38,7 @@
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Remove iPXE scripts if requested
-  file:
+  ansible.builtin.file:
     path: '{{ ipxe__tftp_root + "/" + (item.name | regex_replace("\.ipxe$", "")) + ".ipxe" }}'
     state: 'absent'
   loop: '{{ ipxe__combined_scripts | debops.debops.parse_kv_items }}'
@@ -48,7 +48,7 @@
   when: item.name|d() and item.state|d('present') == 'absent'
 
 - name: Install bootloader files in the TFTP root directory
-  copy:
+  ansible.builtin.copy:
     src: '{{ item }}'
     dest: '{{ ipxe__tftp_root + "/" + (item | basename) }}'
     remote_src: True
@@ -56,17 +56,17 @@
   loop: '{{ ipxe__bootloaders }}'
 
 - name: Configure Debian netboot installers
-  include: debian_netboot.yml
+  ansible.builtin.include_tasks: debian_netboot.yml
   when: ipxe__debian_netboot_enabled|bool
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
 
 - name: Save iPXE local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/ipxe.fact.j2'
     dest: '/etc/ansible/facts.d/ipxe.fact'
     mode: '0755'

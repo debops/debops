@@ -4,11 +4,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Install system packages required for R support
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (cran__base_packages
                               + cran__packages
                               + cran__group_packages
@@ -19,7 +19,7 @@
   until: cran__register_packages is succeeded
 
 - name: Configure Java environment in R
-  command: R CMD javareconf
+  ansible.builtin.command: R CMD javareconf
   when: (cran__java_integration|bool and
          (ansible_local|d() and ansible_local.cran is undefined))
 
@@ -35,7 +35,7 @@
     - '{{ cran__dependent_r_packages }}'
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -43,7 +43,7 @@
     mode: '0755'
 
 - name: Save CRAN local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/cran.fact.j2'
     dest: '/etc/ansible/facts.d/cran.fact'
     owner: 'root'
@@ -53,4 +53,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

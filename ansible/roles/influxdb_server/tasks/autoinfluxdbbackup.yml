@@ -6,7 +6,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 - name: Copy autoinfluxdbbackup script
-  copy:
+  ansible.builtin.copy:
     src: 'usr/sbin/autoinfluxdbbackup'
     dest: '/usr/sbin/autoinfluxdbbackup'
     owner: 'root'
@@ -14,7 +14,7 @@
     mode: '0755'
 
 - name: Ensure that the autoinfluxdbbackup directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/autoinfluxdbbackup/'
     state: 'directory'
     owner: 'root'
@@ -22,7 +22,7 @@
     mode: '0755'
 
 - name: Configure autoinfluxdbbackup
-  template:
+  ansible.builtin.template:
     src: '{{ item.template }}.j2'
     dest: '/{{ item.template }}'
     owner: 'root'

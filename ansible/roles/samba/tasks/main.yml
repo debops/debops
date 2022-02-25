@@ -6,18 +6,18 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Install Samba packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", samba__base_packages) }}'
     state: 'present'
   register: samba__register_packages
   until: samba__register_packages is succeeded
 
 - name: Create root Samba directories
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     state: 'directory'
     owner: 'root'
@@ -30,7 +30,7 @@
   when: ('samba' in samba__base_packages)
 
 - name: Setup samba-homedir.sh script
-  template:
+  ansible.builtin.template:
     src: 'usr/local/sbin/samba-homedir.sh.j2'
     dest: '/usr/local/sbin/samba-homedir.sh'
     owner: 'root'
@@ -39,7 +39,7 @@
   when: ('samba' in samba__base_packages)
 
 - name: Configure Samba
-  template:
+  ansible.builtin.template:
     src: 'etc/samba/smb.conf.j2'
     dest: '/etc/samba/smb.conf'
     owner: 'root'
@@ -58,7 +58,7 @@
         (samba__kernel_modules_load|bool))
 
 - name: Ensure kernel modules are loaded on system boot
-  template:
+  ansible.builtin.template:
     src: 'etc/modules-load.d/ansible-samba.conf.j2'
     dest: '/etc/modules-load.d/ansible-samba.conf'
     owner: 'root'
@@ -68,7 +68,7 @@
         (samba__kernel_modules_load|bool))
 
 - name: Remove legacy entries from /etc/modules
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '/etc/modules'
     regexp: '^nf_conntrack_netbios_ns'
     state: 'absent'

@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: 'Check if {{ build.name }} APT packages are available'
-  shell: set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          apt-cache madison \
            {{ ([ build.apt_packages ] if build.apt_packages is string else build.apt_packages) | join(' ') }} \
            | awk '{print $1}' | sort | uniq
@@ -17,7 +17,7 @@
   check_mode: False
 
 - name: 'Install {{ build.name }} APT packages'
-  package:
+  ansible.builtin.package:
     name: '{{ build.apt_packages }}'
     state: 'present'
   register: golang__register_install_apt_packages
@@ -35,13 +35,13 @@
   block:
 
     - name: Ensure that the UNIX group for Go environment exists
-      group:
+      ansible.builtin.group:
         name: '{{ golang__group }}'
         state: 'present'
         system: True
 
     - name: Ensure that the UNIX account for Go environment exists
-      user:
+      ansible.builtin.user:
         name: '{{ golang__user }}'
         group: '{{ golang__group }}'
         home: '{{ golang__home }}'
@@ -51,7 +51,7 @@
         system: True
 
 - name: 'Install {{ build.name }} required APT packages'
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (build.apt_required_packages|d([]))) }}'
     state: 'present'
   register: golang__register_install_apt_required_packages
@@ -71,7 +71,7 @@
   block:
 
     - name: 'Create the required directories for {{ build.name }} files'
-      file:
+      ansible.builtin.file:
         dest: '{{ (golang__gosrc + "/" + url_item.dest) | dirname }}'
         state: 'directory'
         mode: '0755'
@@ -80,7 +80,7 @@
         loop_var: 'url_item'
 
     - name: 'Download {{ build.name }} files'
-      get_url:
+      ansible.builtin.get_url:
         url: '{{ url_item.src }}'
         dest: '{{ golang__gosrc + "/" + url_item.dest }}'
         checksum: '{{ url_item.checksum | d(omit) }}'
@@ -91,7 +91,7 @@
       until: golang__register_get_url is succeeded
 
     - name: 'Extract {{ build.name }} files from archive'
-      unarchive:
+      ansible.builtin.unarchive:
         src: '{{ golang__gosrc + "/" + url_item.dest }}'
         dest: '{{ golang__gosrc + "/" + (url_item.unarchive_dest | d(url_item.dest | dirname)) }}'
         remote_src: True
@@ -103,7 +103,7 @@
       when: (url_item.unarchive|d())|bool
 
     - name: 'Verify {{ build.name }} files with GnuPG'
-      command: gpg --verify {{ golang__gosrc + "/" + url_item.dest }}
+      ansible.builtin.command: gpg --verify {{ golang__gosrc + "/" + url_item.dest }}
       args:
         chdir: '{{ (golang__gosrc + "/" + url_item.dest) | dirname }}'
       loop: '{{ build.url }}'
@@ -115,7 +115,7 @@
       when: (url_item.gpg_verify|d())|bool
 
 - name: 'Install downloaded {{ build.name }} binaries'
-  copy:
+  ansible.builtin.copy:
     src: '{{ (""
               if ((binary_item.src | d(binary_item)).startswith("/"))
               else (golang__gosrc + "/"))
@@ -137,7 +137,7 @@
                 | intersect(golang__register_build_apt_packages.stdout_lines))))))
 
 - name: 'Install {{ build.name }} APT dev packages'
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (golang__apt_dev_packages + (build.apt_dev_packages|d([])))) }}'
     state: 'present'
   register: golang__register_install_apt_dev_packages
@@ -157,7 +157,7 @@
   block:
 
     - name: 'Clone {{ build.name }} source code'
-      git:
+      ansible.builtin.git:
         repo: '{{ git_item.repo }}'
         dest: '{{ golang__gosrc + "/" + (git_item.dest | d(git_item.repo.split("://")[1])) }}'
         version: '{{ git_item.version | d(git_item.branch | d(omit)) }}'
@@ -173,7 +173,7 @@
         GOPATH: '{{ golang__env_gopath }}'
         GOCACHE: '{{ golang__env_gocache }}'
         PATH: '{{ golang__env_path }}'
-      shell: set -o nounset -o pipefail -o errexit &&
+      ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
              {{ git_item.build_script }}
       args:
         executable: '/bin/bash'
@@ -186,7 +186,7 @@
       register: golang__register_build
 
 - name: 'Install built {{ build.name }} binaries'
-  copy:
+  ansible.builtin.copy:
     src: '{{ (""
               if ((binary_item.src | d(binary_item)).startswith("/"))
               else (golang__gosrc + "/"))
@@ -208,7 +208,7 @@
                 | intersect(golang__register_build_apt_packages.stdout_lines))))))
 
 - name: Create the initial Go binaries database file
-  copy:
+  ansible.builtin.copy:
     content: |
       # This is a database of the applications installed by the 'debops.golang'
       # Ansible role and used by the '/etc/ansible/facts.d/golang.fact' script
@@ -219,7 +219,7 @@
   when: build.url_binaries|d() or build.git_binaries|d()
 
 - name: 'Register {{ build.name }} in database of the local Go binaries'
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: '{{ golang__bin_database }}'
     regexp: "{{ '^' + (((binary_item.dest | d(binary_item.src | d(binary_item))) | basename)
                        | regex_replace('-', '\\-')
@@ -236,7 +236,7 @@
   # An exception to the rule. Role needs to refresh facts without executing any
   # other pending handlers.
 - name: Update Ansible local facts if they were modified
-  action: 'setup'  # noqa no-handler
+  ansible.builtin.setup:  # noqa no-handler
   when: (ansible_local|d() and ansible_local.golang|d() and
          (ansible_local.golang.configured|d())|bool and
          (golang__register_build_database is changed or

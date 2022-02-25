@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Ensure specified packages are in there desired state
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", bitcoind__base_packages) }}'
     state: '{{ "present" if (bitcoind__deploy_state == "present") else "absent" }}'
   register: bitcoind__register_packages
@@ -13,13 +13,13 @@
 
 # System user and group [[[
 - name: Create bitcoind system group
-  group:
+  ansible.builtin.group:
     name: '{{ bitcoind__group }}'
     state: '{{ "present" if (bitcoind__deploy_state == "present") else "absent" }}'
     system: True
 
 - name: Create bitcoind system user
-  user:
+  ansible.builtin.user:
     name: '{{ bitcoind__user }}'
     group: '{{ bitcoind__group }}'
     append: False
@@ -31,7 +31,7 @@
 # ]]]
 
 - name: Ensure bitcoind config dir exists
-  file:
+  ansible.builtin.file:
     path: '{{ bitcoind__config_dir_path }}'
     owner: '{{ bitcoind__user }}'
     group: '{{ bitcoind__group }}'
@@ -40,7 +40,7 @@
   when: (bitcoind__deploy_state == "present")
 
 - name: Configure bitcoind
-  template:
+  ansible.builtin.template:
     src: 'etc/bitcoin/bitcoin.conf.j2'
     dest: '{{ bitcoind__config_file_path }}'
     owner: '{{ bitcoind__user }}'
@@ -49,7 +49,7 @@
   when: (bitcoind__deploy_state == "present")
 
 - name: Configure systemd unit file for bitcoind
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/bitcoind.service.j2'
     dest: '/etc/systemd/system/bitcoind.service'
     owner: 'root'
@@ -59,7 +59,7 @@
   when: (bitcoind__deploy_state == "present")
 
 - name: Set bitcoind state using systemd
-  systemd:
+  ansible.builtin.systemd:
     name: 'bitcoind'
     state: '{{ "started" if (bitcoind__deploy_state == "present") else "stopped" }}'
     enabled: True

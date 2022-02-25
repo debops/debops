@@ -4,15 +4,15 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (nullmailer__base_packages
                               + nullmailer__smtpd_packages
                               + nullmailer__packages)) }}'
@@ -22,7 +22,7 @@
   when: nullmailer__deploy_state|d('present') != 'absent'
 
 - name: Purge other SMTP servers
-  apt:
+  ansible.builtin.apt:
     name: '{{ nullmailer__purge_mta_packages | flatten }}'
     state: 'absent'
     purge: True
@@ -30,7 +30,7 @@
          nullmailer__purge_mta_packages)
 
 - name: Generate configuration files
-  copy:
+  ansible.builtin.copy:
     dest:    '{{ item.dest }}'
     content: "{{ (item.content + '\n') if item.content|d() else ('' if item.content is defined else omit) }}"
     src:     '{{ item.src   | d(omit) }}'
@@ -45,7 +45,7 @@
           item.state|d('present') != 'absent'))
 
 - name: Generate private configuration files
-  copy:
+  ansible.builtin.copy:
     dest:    '{{ item.dest }}'
     content: "{{ (item.content + '\n') if item.content|d() else omit }}"
     src:     '{{ item.src   | d(omit) }}'
@@ -61,7 +61,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove configuration files if requested
-  file:
+  ansible.builtin.file:
     path: '{{ item.dest }}'
     state: 'absent'
   with_flattened:
@@ -72,7 +72,7 @@
           item.state|d('present') == 'absent'))
 
 - name: Remove private configuration files if requested
-  file:
+  ansible.builtin.file:
     path: '{{ item.dest }}'
     state: 'absent'
   with_flattened:
@@ -84,7 +84,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Configure nullmailer services in xinetd
-  template:
+  ansible.builtin.template:
     src: 'etc/xinetd.d/{{ item }}.j2'
     dest: '/etc/xinetd.d/{{ item }}'
     owner: 'root'
@@ -97,7 +97,7 @@
   when: (nullmailer__deploy_state|d('present') != 'absent' and nullmailer__smtpd|bool)
 
 - name: Disable nullmailer-smtpd service in xinetd
-  file:
+  ansible.builtin.file:
     path: '/etc/xinetd.d/{{ item }}'
     state: 'absent'
   loop:
@@ -108,7 +108,7 @@
          not nullmailer__smtpd|bool)
 
 - name: Remove old dpkg cleanup hook and script
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     state: 'absent'
   loop:
@@ -117,7 +117,7 @@
   when: nullmailer__deploy_state|d('present') != 'absent'
 
 - name: Prepare cleanup during package removal
-  import_role:
+  ansible.builtin.import_role:
     name: 'dpkg_cleanup'
   vars:
     dpkg_cleanup__dependent_packages:

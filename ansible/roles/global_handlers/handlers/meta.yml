@@ -4,17 +4,17 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Refresh host facts
-  action: 'setup'
+  ansible.builtin.setup:
 
 - name: Reload systemd daemon
-  systemd:
+  ansible.builtin.systemd:
     daemon_reload: True
   listen:
     - 'Reload service manager'
   when: ansible_service_mgr == 'systemd'
 
 - name: Create temporary files with systemd-tmpfiles
-  command: 'systemd-tmpfiles --create'
+  ansible.builtin.command: 'systemd-tmpfiles --create'
   listen:
     - 'Create temporary files'
   when: ansible_service_mgr == 'systemd'

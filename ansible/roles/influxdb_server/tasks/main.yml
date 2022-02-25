@@ -6,25 +6,25 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Restart database server on first install (influx bug)
-  service:
+  ansible.builtin.service:
     name: 'influxdb'
     state: 'restarted'
   when: not (ansible_local.influxdb_server.installed|d(false)|bool)
 
 - name: Wait for HTTP endpoint port to become open on the host on first install
-  wait_for:
+  ansible.builtin.wait_for:
     port: '{{ influxdb_server__port }}'
   when: not (ansible_local.influxdb_server.installed|d(false)|bool)
 
@@ -41,13 +41,13 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Stop database server on first install
-  service:
+  ansible.builtin.service:
     name: 'influxdb'
     state: 'stopped'
   when: not (ansible_local.influxdb_server.installed|d(false)|bool)
 
 - name: Add InfluxDB server user to specified groups
-  user:
+  ansible.builtin.user:
     name: 'influxdb'
     groups: '{{ influxdb_server__append_groups | join(",") | default(omit) }}'
     append: True
@@ -55,7 +55,7 @@
   when: influxdb_server__pki|bool
 
 - name: Ensure InfluxDB server directory exists
-  file:
+  ansible.builtin.file:
     path: '{{ influxdb_server__directory }}'
     state: 'directory'
     owner: 'influxdb'
@@ -63,7 +63,7 @@
     mode: '0750'
 
 - name: Move InfluxDB data files to data directory
-  shell:
+  ansible.builtin.shell:
     'mv {{ influxdb_server__default_directory }}/* {{ influxdb_server__directory }}'
   when: (not (ansible_local.influxdb_server.installed|d(false)|bool) and
          influxdb_server__directory != influxdb_server__default_directory)
@@ -76,7 +76,7 @@
   tags: [ 'role::influxdb_server:config' ]
 
 - name: Configure InfluxDB server
-  template:
+  ansible.builtin.template:
     src: 'etc/influxdb/influxdb.conf.j2'
     dest: '/etc/influxdb/influxdb.conf'
     owner: 'root'
@@ -86,24 +86,24 @@
   notify: [ 'Restart influxdb' ]
 
 - name: Start database server on first install
-  service:
+  ansible.builtin.service:
     name: 'influxdb'
     state: 'started'
   when: not (ansible_local.influxdb_server.installed|d(false)|bool)
 
 - name: Configure autoinfluxdbbackup
-  include: 'autoinfluxdbbackup.yml'
+  ansible.builtin.include_tasks: 'autoinfluxdbbackup.yml'
   when: influxdb_server__backup|bool
   tags: [ 'role::influxdb_server:autoinfluxdbbackup' ]
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
 
 - name: Save InfluxDB server local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/influxdb_server.fact.j2'
     dest: '/etc/ansible/facts.d/influxdb_server.fact'
     owner: 'root'
@@ -113,7 +113,7 @@
   tags: [ 'meta::facts' ]
 
 - name: Save InfluxDB local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/influxdb.fact.j2'
     dest: '/etc/ansible/facts.d/influxdb.fact'
     owner: 'root'
@@ -122,4 +122,4 @@
   notify: [ 'Refresh host facts' ]
 
 - name: Re-read local facts if they have been modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

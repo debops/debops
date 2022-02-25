@@ -4,17 +4,17 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Get default PostgreSQL version
   environment:
     LC_ALL: 'C'
-  shell: "set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: "set -o nounset -o pipefail -o errexit &&
           apt-cache policy postgresql | grep -E '^\\s+Candidate:\\s+' | awk '{print $2}' | cut -d+ -f1"
   args:
     executable: 'bash'
@@ -25,7 +25,7 @@
           'role::postgresql_server:auto_backup' ]
 
 - name: Set default PostgreSQL version variable
-  set_fact:
+  ansible.builtin.set_fact:
     postgresql_server__version: '{{ (ansible_local.postgresql.version
                                      if (ansible_local.postgresql.version|d())
                                      else (postgresql_server__preferred_version
@@ -34,11 +34,12 @@
   tags: [ 'role::postgresql_server:packages', 'role::postgresql_server:config',
           'role::postgresql_server:auto_backup' ]
 
-- include: install_postgresql.yml
+- name: Install PostgreSQL database service
+  ansible.builtin.include_tasks: install_postgresql.yml
   tags: [ 'role::postgresql_server:packages' ]
 
 - name: Configure custom PostgreSQL data directory
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: '/etc/postgresql-common/createcluster.conf'
     regexp: '^data_directory\s+='
     line: "data_directory = '{{ postgresql_server__data_directory }}/%v/%c'"
@@ -46,7 +47,7 @@
   when: postgresql_server__data_directory != '/var/lib/postgresql'
 
 - name: Make sure that custom PostgreSQL data directory exists
-  file:
+  ansible.builtin.file:
     path: '{{ postgresql_server__data_directory }}'
     state: 'directory'
     owner: '{{ postgresql_server__user }}'
@@ -55,7 +56,7 @@
   when: postgresql_server__data_directory != '/var/lib/postgresql'
 
 - name: Make sure that custom PostgreSQL Log directory exists
-  file:
+  ansible.builtin.file:
     path: '{{ postgresql_server__log_directory }}'
     state: 'directory'
     owner: '{{ postgresql_server__user }}'
@@ -64,27 +65,30 @@
   when: postgresql_server__log_directory|d()
 
 - name: Count number of currently configured clusters
-  set_fact:
+  ansible.builtin.set_fact:
     postgresql_server__fact_cluster_count: '{{ (postgresql_server__clusters|length|int) * 1 }}'
   tags: [ 'role::postgresql_server:config' ]
 
 - name: Get current maximum shared memory value
-  command: cat /proc/sys/kernel/shmmax
+  ansible.builtin.command: cat /proc/sys/kernel/shmmax
   register: postgresql_server__register_sysctl_shmmax
   changed_when: False
   check_mode: False
   tags: [ 'role::postgresql_server:config' ]
 
-- include: manage_clusters.yml
+- name: Manage PostgreSQL clusters
+  ansible.builtin.include_tasks: manage_clusters.yml
 
-- include: secure_installation.yml
+- name: Secure PostgreSQL installation
+  ansible.builtin.include_tasks: secure_installation.yml
 
-- include: manage_autopostgresqlbackup.yml
+- name: Manage AutoPostgreSQLBackup script
+  ansible.builtin.include_tasks: manage_autopostgresqlbackup.yml
   when: postgresql_server__autopostgresqlbackup|bool
   tags: [ 'role::postgresql_server:auto_backup' ]
 
 - name: Make sure that Ansible local fact directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -92,7 +96,7 @@
     mode: '0755'
 
 - name: Save PostgreSQL local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/postgresql.fact.j2'
     dest: '/etc/ansible/facts.d/postgresql.fact'
     owner: 'root'
@@ -102,5 +106,5 @@
   tags: [ 'meta::facts', 'role::postgresql_server:config' ]
 
 - name: Re-read local facts if they have been modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
   #tags: [ 'role::postgresql_server:config' ]

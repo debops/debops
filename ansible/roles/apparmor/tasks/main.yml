@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Combine variables
-  set_fact:
+  ansible.builtin.set_fact:
     apparmor__profile_status: '{{
       apparmor__global_profile_status               | d({})
       | combine(apparmor__host_group_profile_status | d({}))
@@ -21,7 +21,7 @@
       (apparmor__host_tunables      | d([]) | list) }}'
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (apparmor__base_packages
                               + apparmor__packages)) }}'
     state: 'present'
@@ -29,7 +29,7 @@
   until: apparmor__register_packages is succeeded
 
 - name: Setup apparmor=1 security=apparmor as kernel parameter
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '/etc/default/grub'
     regexp: '{{ item.regexp }}'
     line: '{{ item.line }}'
@@ -46,7 +46,7 @@
   notify: [ 'Update grub' ]
 
 - name: Remove apparmor=1 security=apparmor from kernel parameter list
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '/etc/default/grub'
     regexp: '^GRUB_CMDLINE_LINUX="(.*?)\$GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR(.*)"'
     line: 'GRUB_CMDLINE_LINUX="\1 \2"'
@@ -56,7 +56,7 @@
   notify: [ 'Update grub' ]
 
 - name: Check if the running kernel has been started with AppArmor enabled
-  set_fact:
+  ansible.builtin.set_fact:
     apparmor__fact_apparmor_enabled_and_loaded: '{{
       (apparmor__enabled|d() | bool) and
       (ansible_cmdline.apparmor|d(0)|string == "1") and
@@ -64,7 +64,7 @@
   check_mode: False
 
 - name: Flush the handlers in case the next tasks fails
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
 
 - name: Send mail to administrator if reboot is required to enable AppArmor
   mail:
@@ -78,7 +78,7 @@
 ## Seems that there is currently a bug in the version include in Debian Jessie
 ## which throws an exception when AppArmor has not been enabled yet.
 - name: Put all profiles into enforcement mode
-  shell: |
+  ansible.builtin.shell: |
     set -o nounset -o pipefail -o errexit &&
     find /etc/apparmor.d -maxdepth 1 -type f | while read file
     do
@@ -93,7 +93,7 @@
   when: (apparmor__enforce_all_profiles|d() | bool)
 
 - name: Set profile status
-  command: aa-{{ item.value }} "{{ item.key }}"
+  ansible.builtin.command: aa-{{ item.value }} "{{ item.key }}"
   register: apparmor__register_profile_status
   # changed_when: (apparmor__register_profile_status.stdout|d())
   ## FIXME: Currently changed_when seems to be tricky.
@@ -110,20 +110,20 @@
   with_dict: '{{ apparmor__profile_status }}'
 
 - name: Ensure AppArmor service is started
-  service:
+  ansible.builtin.service:
     name: 'apparmor'
     state: 'started'
     enabled: True
   when: apparmor__fact_apparmor_enabled_and_loaded|bool
 
 - name: Ensure tunables directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/apparmor.d/tunables/home.d'
     state: 'directory'
     mode: '0755'
 
 - name: Configure tunables
-  template:
+  ansible.builtin.template:
     src: 'etc/apparmor.d/tunables/home.d/debops.j2'
     dest: '/etc/apparmor.d/tunables/home.d/debops'
     mode: '0640'
@@ -132,7 +132,7 @@
   register: apparmor__register_tunables
 
 - name: Configure additions or overrides of system profiles
-  template:
+  ansible.builtin.template:
     src: 'etc/apparmor.d/local/local.j2'
     dest: '/etc/apparmor.d/local/{{ item.key }}'
     mode: '0640'
@@ -142,24 +142,24 @@
   with_dict: '{{ apparmor__local_config }}'
 
 - name: Reload changed profiles
-  command: 'apparmor_parser --replace "/etc/apparmor.d/{{ item.item.key }}"'  # noqa no-handler
+  ansible.builtin.command: 'apparmor_parser --replace "/etc/apparmor.d/{{ item.item.key }}"'  # noqa no-handler
   when: (item is changed and apparmor__register_tunables is not changed)
   with_items: '{{ apparmor__register_local_config.results }}'
 
 - name: Reload AppArmor all profiles
-  service:  # noqa no-handler
+  ansible.builtin.service:  # noqa no-handler
     name: 'apparmor'
     state: 'reloaded'
   when: apparmor__fact_apparmor_enabled_and_loaded|bool and apparmor__register_tunables is changed
 
 - name: Unload AppArmor profiles
-  command: service apparmor teardown
+  ansible.builtin.command: service apparmor teardown
   args:
     warn: False
   when: (not (apparmor__enabled|d() | bool))
 
 - name: Ensure AppArmor service is stopped
-  service:
+  ansible.builtin.service:
     name: 'apparmor'
     state: 'stopped'
     enabled: False

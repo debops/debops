@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Ensure that a SQL database is available
-  assert:
+  ansible.builtin.assert:
     that:
       - 'gitlab__database == "postgresql"'
     quiet: True
@@ -13,7 +13,7 @@
   # This task blocks the upgrade of an existing GitLab installation if Golang
   # version required by GitLab v12.10+ is not currently installed.
 - name: Ensure that required Golang version is available
-  assert:
+  ansible.builtin.assert:
     that:
       - 'ansible_local.golang.installed|bool'
       - 'ansible_local.golang.version is version("1.14", ">=")'

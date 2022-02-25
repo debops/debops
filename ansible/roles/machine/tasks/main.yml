@@ -4,15 +4,15 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Install requested packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", machine__packages) }}'
     state: 'present'
   register: machine__register_packages
@@ -20,7 +20,7 @@
   when: machine__enabled|bool
 
 - name: Generate machine-info config file
-  template:
+  ansible.builtin.template:
     src: 'etc/machine-info.j2'
     dest: '/etc/machine-info'
     owner: 'root'
@@ -38,7 +38,7 @@
   when: machine__enabled|bool
 
 - name: Configure /etc/issue file
-  template:
+  ansible.builtin.template:
     src: '{{ machine__etc_issue_template }}'
     dest: '/etc/issue'
     owner: 'root'
@@ -47,13 +47,13 @@
   when: machine__enabled|bool and machine__etc_issue_state|d('present') != 'absent'
 
 - name: Remove static /etc/motd file if requested
-  file:
+  ansible.builtin.file:
     path: '/etc/motd'
     state: 'absent'
   when: machine__enabled|bool and machine__etc_motd_state == 'absent'
 
 - name: Generate static /etc/motd file
-  copy:
+  ansible.builtin.copy:
     content: "{{ machine__motd }}"
     dest: '/etc/motd'
     owner: 'root'
@@ -63,7 +63,7 @@
         machine__motd|d()
 
 - name: Ensure that required directories exist
-  file:
+  ansible.builtin.file:
     path: '{{ machine__motd_update_dir }}'
     state: 'directory'
     owner: 'root'
@@ -72,7 +72,7 @@
   when: machine__enabled|bool
 
 - name: Ensure that required directories exist on older OS releases
-  file:
+  ansible.builtin.file:
     path: '/etc/tmpfiles.d/'
     state: 'directory'
     owner: 'root'
@@ -81,7 +81,7 @@
   when: machine__enabled|bool and ansible_distribution_release in [ 'jessie' ]
 
 - name: Fix issue with dynamic MOTD on older OS releases
-  template:
+  ansible.builtin.template:
     src: 'etc/tmpfiles.d/motd-dynamic.conf.j2'
     dest: '/etc/tmpfiles.d/motd-dynamic.conf'
     owner: 'root'
@@ -92,7 +92,7 @@
   when: machine__enabled|bool and ansible_distribution_release in [ 'jessie' ]
 
 - name: Create /run/motd.dynamic symlink
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Add/remove diversion of packaged MOTD scripts
   vars:
@@ -112,7 +112,7 @@
   when: item.filename|d(item.name) and item.divert|d(False)|bool
 
 - name: Remove dynamic MOTD scripts
-  file:
+  ansible.builtin.file:
     path: '{{ machine__motd_update_dir + "/"
               + (item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name)) }}'
     state: 'absent'
@@ -123,7 +123,7 @@
          item.state|d('present') == 'absent' and not item.divert|d(False)|bool)
 
 - name: Install dynamic MOTD scripts
-  copy:
+  ansible.builtin.copy:
     src: '{{ item.src | d(omit) }}'
     content: '{{ item.content | d(omit) }}'
     dest: '{{ machine__motd_update_dir + "/"
@@ -141,7 +141,7 @@
          item.state|d('present') not in [ 'init', 'absent', 'ignore', 'divert', 'revert' ])
 
 - name: Remove unknown MOTD scripts
-  shell: find /etc/update-motd.d -maxdepth 1 -type f
+  ansible.builtin.shell: find /etc/update-motd.d -maxdepth 1 -type f
          -name '*-{{ item.item.name }}'
          ! -name '{{ ("%02d" | format((item.item.weight | d("0"))|int))|string + "-" + item.item.name }}'
          -exec rm -vf {} +
@@ -153,7 +153,7 @@
          item.item.filename is undefined and item is changed)
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -161,7 +161,7 @@
     mode: '0755'
 
 - name: Save machine local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/machine.fact.j2'
     dest: '/etc/ansible/facts.d/machine.fact'
     owner: 'root'
@@ -171,4 +171,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

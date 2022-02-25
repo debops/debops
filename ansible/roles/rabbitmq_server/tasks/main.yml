@@ -4,21 +4,21 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Make sure that required UNIX group exists
-  group:
+  ansible.builtin.group:
     name: '{{ rabbitmq_server__group }}'
     state: 'present'
     system: True
 
 - name: Make sure that required UNIX account exists
-  user:
+  ansible.builtin.user:
     name: '{{ rabbitmq_server__user }}'
     group: '{{ rabbitmq_server__group }}'
     groups: '{{ rabbitmq_server__append_groups | join(",") }}'
@@ -32,7 +32,7 @@
   # Without this, first Erlang cookie lookup on each host
   # returns different values.
 - name: Initialize Erlang cookie on the Ansible Controller
-  set_fact:
+  ansible.builtin.set_fact:
     rabbitmq_server__fact_erlang_cookie: '{{ rabbitmq_server__erlang_cookie_password }}'
   delegate_to: 'localhost'
   become: False
@@ -40,7 +40,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Configure Erlang cookie
-  copy:
+  ansible.builtin.copy:
     content: '{{ rabbitmq_server__erlang_cookie_password }}'
     dest: '{{ rabbitmq_server__erlang_cookie_path }}'
     owner: '{{ rabbitmq_server__user }}'
@@ -50,7 +50,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Ensure that configuration directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/rabbitmq'
     state: 'directory'
     owner: '{{ rabbitmq_server__user }}'
@@ -58,7 +58,7 @@
     mode: '0755'
 
 - name: Generate RabbitMQ environment file
-  template:
+  ansible.builtin.template:
     src: 'etc/rabbitmq/rabbitmq-env.conf.j2'
     dest: '/etc/rabbitmq/rabbitmq-env.conf'
     owner: 'root'
@@ -68,7 +68,7 @@
   tags: [ 'role::rabbitmq_server:config' ]
 
 - name: Install RabbitMQ packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (rabbitmq_server__base_packages
                               + rabbitmq_server__packages)) }}'
     state: 'present'
@@ -76,7 +76,7 @@
   until: rabbitmq_server__register_packages is succeeded
 
 - name: Check if the dependent config file exists
-  stat:
+  ansible.builtin.stat:
     path: '{{ secret + "/rabbitmq_server/dependent_config/" + inventory_hostname + "/config.json" }}'
   register: rabbitmq_server__register_dependent_config_file
   become: False
@@ -87,7 +87,7 @@
   tags: [ 'role::rabbitmq_server:config' ]
 
 - name: Load the dependent configuration from Ansible Controller
-  slurp:
+  ansible.builtin.slurp:
     src: '{{ secret + "/rabbitmq_server/dependent_config/" + inventory_hostname + "/config.json" }}'
   register: rabbitmq_server__register_dependent_config
   become: False
@@ -99,7 +99,7 @@
   tags: [ 'role::rabbitmq_server:config' ]
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -107,7 +107,7 @@
     mode: '0755'
 
 - name: Save RabbitMQ local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/rabbitmq_server.fact.j2'
     dest: '/etc/ansible/facts.d/rabbitmq_server.fact'
     owner: 'root'
@@ -117,10 +117,10 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Generate RabbitMQ configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/rabbitmq/rabbitmq.config.j2'
     dest: '/etc/rabbitmq/rabbitmq.config'
     owner: '{{ rabbitmq_server__user }}'
@@ -205,7 +205,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Save RabbitMQ dependent configuration on Ansible Controller
-  template:
+  ansible.builtin.template:
     src: 'secret/rabbitmq_server/dependent_config/inventory_hostname/config.json.j2'
     dest: '{{ secret + "/rabbitmq_server/dependent_config/" + inventory_hostname + "/config.json" }}'
     mode: '0644'

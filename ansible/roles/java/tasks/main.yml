@@ -5,11 +5,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Install Java packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (java__base_packages
                               + java__jdk_packages
                               + java__packages
@@ -21,11 +21,11 @@
   until: java__register_packages is succeeded
 
 - name: Update Java alternatives
-  command: 'update-java-alternatives -s {{ java__alternatives }}'
+  ansible.builtin.command: 'update-java-alternatives -s {{ java__alternatives }}'
   when: java__alternatives|d()
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -33,7 +33,7 @@
     mode: '0755'
 
 - name: Save Java local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/java.fact.j2'
     dest: '/etc/ansible/facts.d/java.fact'
     owner: 'root'
@@ -43,4 +43,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

@@ -4,25 +4,25 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (tftpd__base_packages + tftpd__packages)) }}'
     state: 'present'
   register: tftpd__register_install
   until: tftpd__register_install is succeeded
 
 - name: Configure tftpd service
-  template:
+  ansible.builtin.template:
     src: 'etc/default/tftpd-hpa.j2'
     dest: '/etc/default/tftpd-hpa'
     mode: '0644'
   notify: [ 'Restart tftpd-hpa' ]
 
 - name: Create the upload directory if enabled
-  file:
+  ansible.builtin.file:
     path:  '{{ tftpd__directory + "/" + tftpd__upload_directory }}'
     owner: '{{ tftpd__username }}'
     group: '{{ tftpd__upload_group }}'
@@ -31,13 +31,13 @@
   when: tftpd__upload_enabled|bool
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
 
 - name: Save tftpd local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/tftpd.fact.j2'
     dest: '/etc/ansible/facts.d/tftpd.fact'
     mode: '0755'
@@ -45,4 +45,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

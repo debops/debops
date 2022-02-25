@@ -6,20 +6,20 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 # DebOps pre-hook [[[1
 - name: Pre hooks
-  include: '{{ lookup("debops.debops.task_src", "resources/pre_main.yml") }}'
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "resources/pre_main.yml") }}'
 
 # Manage custom templates [[[1
 - name: Ensure that template directories exist
-  file:
+  ansible.builtin.file:
     path: '/{{ item.path }}'
     mode: '{{ item.mode }}'
     state: 'directory'
@@ -29,7 +29,7 @@
   when: item.state == 'directory'
 
 - name: Generate custom templates
-  template:
+  ansible.builtin.template:
     src: '{{ item.src }}'
     dest: '/{{ item.path }}'
     mode: '{{ item.mode }}'
@@ -39,7 +39,7 @@
   when: item.state == 'file'
 
 - name: Recreate custom symlinks
-  file:
+  ansible.builtin.file:
     src: '{{ item.src }}'
     dest: '/{{ item.path }}'
     mode: '{{ item.mode }}'
@@ -52,7 +52,7 @@
 
 # Manage custom paths [[[1
 - name: Manage paths on remote hosts
-  file:
+  ansible.builtin.file:
     path:    '{{ (item.path   | d(item.dest | d(item.name))) | d(item) }}'
     state:   '{{ item.state   | d("directory") }}'
     owner:   '{{ item.owner   | d(omit) }}'
@@ -81,7 +81,7 @@
 
 # Create parent directories [[[1
 - name: Ensure that parent directories exist
-  file:
+  ansible.builtin.file:
     path:    '{{ (item.dest | d(item.name | d(item.path))) | dirname }}'
     state:   'directory'
     recurse: '{{ item.parent_dirs_recurse | d(resources__parent_dirs_recurse) }}'
@@ -105,7 +105,7 @@
 
 # Manage git repositories [[[1
 - name: Manage git repositories
-  git:
+  ansible.builtin.git:
     repo:             '{{ item.repo             | d(item.url | d(item.src)) }}'
     dest:             '{{ item.dest             | d(item.name | d(item.path)) }}'
     accept_hostkey:   '{{ item.accept_hostkey   | d(omit) }}'
@@ -137,7 +137,7 @@
 
 # Manage custom remote resources [[[1
 - name: Download online resources to remote hosts
-  get_url:
+  ansible.builtin.get_url:
     url:              '{{ item.url              | d(item.src) }}'
     dest:             '{{ item.dest             | d(item.name | d(item.path)) }}'
     owner:            '{{ item.owner            | d(omit) }}'
@@ -164,7 +164,7 @@
 
 # Manage custom archives [[[1
 - name: Unpack archives to remote hosts
-  unarchive:
+  ansible.builtin.unarchive:
     src:        '{{ item.src }}'
     dest:       '{{ item.dest       | d(item.name | d(item.path)) }}'
     owner:      '{{ item.owner      | d(omit) }}'
@@ -194,7 +194,7 @@
 # Manage custom files [[[1
 
 - name: Delete files on remote hosts
-  file:
+  ansible.builtin.file:
     path:  '{{ item.dest | d(item.path | d(item.name)) }}'
     state: 'absent'
   with_flattened:
@@ -207,7 +207,7 @@
   tags: [ 'role::resources:files' ]
 
 - name: Copy files to remote hosts
-  copy:
+  ansible.builtin.copy:
     dest:     '{{ item.dest     | d(item.path | d(item.name)) }}'
     src:      '{{ item.src      | d(omit) }}'
     content:  '{{ item.content  | d(omit) }}'
@@ -236,7 +236,7 @@
 
 # Manage ACLs [[[1
 - name: Set ACLs on remote hosts
-  acl:
+  ansible.posix.acl:
     path:        '{{ item.1.path        | d(item.0.name) | d(item.0.dest) | d(item.0.path) }}'
     default:     '{{ item.1.default     | d(omit) }}'
     entity:      '{{ item.1.entity      | d(omit) }}'
@@ -273,7 +273,7 @@
 
 # Manage custom delayed paths [[[1
 - name: Manage delayed paths on remote hosts
-  file:
+  ansible.builtin.file:
     path:    '{{ (item.path   | d(item.dest | d(item.name))) | d(item) }}'
     state:   '{{ item.state   | d("directory") }}'
     owner:   '{{ item.owner   | d(omit) }}'
@@ -324,4 +324,4 @@
 
 # DebOps post-hook [[[1
 - name: Post hooks
-  include: '{{ lookup("debops.debops.task_src", "resources/post_main.yml") }}'
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "resources/post_main.yml") }}'

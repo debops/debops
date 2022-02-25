@@ -4,11 +4,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (prosody__base_packages
                               + prosody__packages)) }}'
     state: 'present'
@@ -16,14 +16,14 @@
   until: prosody__register_packages is succeeded
 
 - name: Generate Prosody configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/prosody/prosody.cfg.lua.j2'
     dest: '/etc/prosody/prosody.cfg.lua'
     mode: '0640'
   notify: [ 'Restart prosody' ]
 
 - name: Enable Services
-  service:
+  ansible.builtin.service:
     name: '{{ item }}'
     enabled: 'yes'
     state: 'started'
@@ -31,7 +31,7 @@
     - prosody
 
 - name: Make sure that PKI hook directory exists
-  file:
+  ansible.builtin.file:
     path: '{{ prosody__pki_hook_path }}'
     state: 'directory'
     owner: 'root'
@@ -40,7 +40,7 @@
   when: (prosody__pki|bool and prosody__deploy_state in [ 'present' ])
 
 - name: Manage PKI prosody hook
-  template:
+  ansible.builtin.template:
     src: 'etc/pki/hooks/prosody.j2'
     dest: '{{ prosody__pki_hook_path + "/" + prosody__pki_hook_name }}'
     owner: 'root'
@@ -49,7 +49,7 @@
   when: (prosody__pki|bool and prosody__deploy_state in [ 'present' ])
 
 - name: Ensure the PKI prosody hook is absent
-  file:
+  ansible.builtin.file:
     path: '{{ prosody__pki_hook_path + "/" + prosody__pki_hook_name }}'
     state: 'absent'
   when: (prosody__deploy_state in [ 'absent' ])

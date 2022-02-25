@@ -5,10 +5,10 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Test sshd configuration and restart
-  command: sshd -t
+  ansible.builtin.command: sshd -t
   notify: [ 'Restart sshd' ]
 
 - name: Restart sshd
-  service:
+  ansible.builtin.service:
     name: 'ssh'
     state: 'restarted'

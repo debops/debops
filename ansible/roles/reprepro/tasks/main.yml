@@ -4,28 +4,28 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Install packages for Debian repository management
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (reprepro__base_packages + reprepro__packages)) }}'
     state: 'present'
   register: reprepro__register_packages
   until: reprepro__register_packages is succeeded
 
 - name: Create UNIX system group for reprepro
-  group:
+  ansible.builtin.group:
     name: '{{ reprepro__group }}'
     system: True
     state: 'present'
 
 - name: Create UNIX system account for reprepro
-  user:
+  ansible.builtin.user:
     name: '{{ reprepro__user }}'
     group: '{{ reprepro__group }}'
     groups: '{{ reprepro__additional_groups }}'
@@ -37,7 +37,7 @@
     state: 'present'
 
 - name: Add admin SSH keys to reprepro UNIX account
-  authorized_key:
+  ansible.posix.authorized_key:
     key: "{{ (reprepro__admin_sshkeys
               if reprepro__admin_sshkeys is string
               else '\n'.join(q('flattened', reprepro__admin_sshkeys))) | string }}"
@@ -47,7 +47,7 @@
   when: reprepro__admin_sshkeys|d()
 
 - name: Generate queue processing services
-  template:
+  ansible.builtin.template:
     src: '{{ "etc/systemd/system/" + item + ".j2" }}'
     dest: '{{ "/etc/systemd/system/" + item }}'
     mode: '0644'
@@ -58,7 +58,7 @@
   when: ansible_service_mgr == 'systemd'
 
 - name: Flush handlers when needed
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Manage the GnuPG environment for reprepro
   import_tasks: 'configure_gnupg.yml'
@@ -74,13 +74,13 @@
                 merge_keys=["distributions", "incoming", "pulls", "updates"]) }}'
 
 - name: Make sure Ansible fact directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
 
 - name: Generate reprepro Ansible local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/reprepro.fact.j2'
     dest: '/etc/ansible/facts.d/reprepro.fact'
     mode: '0755'
@@ -88,4 +88,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Refresh host facts when needed
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

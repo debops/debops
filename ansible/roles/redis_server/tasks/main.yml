@@ -4,19 +4,19 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Install Redis Server packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (redis_server__base_packages
                               + redis_server__packages)) }}'
     state: 'present'
@@ -24,7 +24,7 @@
   until: redis_server__register_packages is succeeded
 
 - name: Ensure that standalone Redis Server is stopped on install
-  systemd:
+  ansible.builtin.systemd:
     name: 'redis-server.service'
     state: 'stopped'
   when: ((ansible_local is undefined or
@@ -32,7 +32,7 @@
          ansible_service_mgr == 'systemd')
 
 - name: Make sure Ansible fact directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -40,7 +40,7 @@
     mode: '0755'
 
 - name: Setup Redis local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/redis_server.fact.j2'
     dest: '/etc/ansible/facts.d/redis_server.fact'
     owner: 'root'
@@ -50,10 +50,10 @@
   tags: [ 'meta::facts' ]
 
 - name: Reload facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Install custom Redis scripts
-  copy:
+  ansible.builtin.copy:
     src: 'usr/local/bin/'
     dest: '/usr/local/bin/'
     owner: 'root'
@@ -61,13 +61,13 @@
     mode: '0755'
 
 - name: Create Redis auth UNIX group
-  group:
+  ansible.builtin.group:
     name: '{{ redis_server__auth_group }}'
     state: 'present'
     system: True
 
 - name: Create Redis instance directories
-  file:
+  ansible.builtin.file:
     path: '/etc/redis/{{ item.name }}'
     state: 'directory'
     owner: 'root'
@@ -78,7 +78,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Install the original Redis config file to instance
-  command: 'install -o {{ redis_server__user }} -g {{ redis_server__auth_group }} -m 0640
+  ansible.builtin.command: 'install -o {{ redis_server__user }} -g {{ redis_server__auth_group }} -m 0640
             /etc/redis/redis.conf /etc/redis/{{ item.name }}/redis.conf'
   args:
     creates: '/etc/redis/{{ item.name }}/redis.conf'
@@ -87,7 +87,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate dynamic Redis configuration scripts
-  template:
+  ansible.builtin.template:
     src: 'etc/redis/instance/ansible-redis-dynamic.conf.j2'
     dest: '/etc/redis/{{ item.name }}/ansible-redis-dynamic.conf'
     owner: 'root'
@@ -100,7 +100,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate static Redis configuration files
-  template:
+  ansible.builtin.template:
     src: 'etc/redis/instance/ansible-redis-static.conf.j2'
     dest: '/etc/redis/{{ item.name }}/ansible-redis-static.conf'
     owner: 'root'
@@ -113,7 +113,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove include line from redis.conf
-  lineinfile:  # noqa no-handler
+  ansible.builtin.lineinfile:  # noqa no-handler
     dest: '/etc/redis/{{ item.item.name }}/redis.conf'
     regexp: '^include\s+/etc/redis/{{ item.item.name }}/ansible-redis-static.conf'
     state: 'absent'
@@ -122,7 +122,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Add include line into redis.conf
-  lineinfile:  # noqa no-handler
+  ansible.builtin.lineinfile:  # noqa no-handler
     dest: '/etc/redis/{{ item.item.name }}/redis.conf'
     regexp: '^include\s+/etc/redis/{{ item.item.name }}/ansible-redis-static.conf'
     line: 'include /etc/redis/{{ item.item.name }}/ansible-redis-static.conf'
@@ -134,7 +134,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Install custom systemd unit files
-  template:
+  ansible.builtin.template:
     src: '{{ item }}.j2'
     dest: '/{{ item }}'
     owner: 'root'
@@ -146,7 +146,7 @@
   notify: [ 'Reload service manager' ]
 
 - name: Create systemd override directories for instances
-  file:
+  ansible.builtin.file:
     path: '/etc/systemd/system/redis-server@{{ item.name }}.service.d'
     state: 'directory'
     owner: 'root'
@@ -158,7 +158,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate systemd instance override files
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/redis-server@.service.d/ansible-override.conf.j2'
     dest: '/etc/systemd/system/redis-server@{{ item.name }}.service.d/ansible-override.conf'
     owner: 'root'
@@ -171,7 +171,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Stop Redis instances if requested
-  systemd:
+  ansible.builtin.systemd:
     name: 'redis-server@{{ item.name }}.service'
     state: 'stopped'
     enabled: False
@@ -181,7 +181,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove Redis instance systemd override if requested
-  file:
+  ansible.builtin.file:
     path: '/etc/systemd/system/redis-server@{{ item.name }}.service.d'
     state: 'absent'
   with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
@@ -191,7 +191,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove Redis instance configuration if requested
-  file:
+  ansible.builtin.file:
     path: '/etc/redis/{{ item.name }}'
     state: 'absent'
   with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
@@ -200,10 +200,10 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Reload systemd configuration when needed
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Ensure that Redis instances are started
-  systemd:
+  ansible.builtin.systemd:
     name: 'redis-server@{{ item.name }}.service'
     state: 'started'
     enabled: True
@@ -213,7 +213,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Restart Redis instances if their configuration changed
-  systemd:  # noqa no-handler
+  ansible.builtin.systemd:  # noqa no-handler
     name: 'redis-server@{{ item.item.name }}.service'
     state: 'restarted'
   with_items: '{{ redis_server__register_config_static.results }}'
@@ -221,7 +221,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Apply dynamic configuration to Redis instances
-  command: '/etc/redis/{{ item.item.name }}/ansible-redis-dynamic.conf config'  # noqa no-handler
+  ansible.builtin.command: '/etc/redis/{{ item.item.name }}/ansible-redis-dynamic.conf config'  # noqa no-handler
   with_items: '{{ redis_server__register_config_dynamic.results }}'
   when: item is changed
   no_log: '{{ debops__no_log | d(True) }}'

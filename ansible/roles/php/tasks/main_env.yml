@@ -7,11 +7,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Reset PHP Ansible local facts
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d/php.fact'
     state: 'absent'
   notify: [ 'Refresh host facts' ]
@@ -19,12 +19,12 @@
   tags: [ 'meta::facts' ]
 
 - name: Gather facts on reset
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Detect PHP version from available packages
   environment:
     LC_ALL: 'C'
-  shell: set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          apt-cache madison {{ php__version_preference | join(' ') }} \
            | awk '{print $3}' \
            | sed -e 's/^.*://' -e 's/\+.*$//' -e 's/\d+\.\d+//' \
@@ -40,7 +40,7 @@
 - name: Detect PHP long version from available packages
   environment:
     LC_ALL: 'C'
-  shell: set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          apt-cache madison {{ 'php' + php__register_version.stdout }} \
            | awk '{print $3}' | sed -e 's/^.*://' -e 's/\+.*$//' -e 's/\-.*$//' \
            | head -n 1
@@ -52,7 +52,7 @@
   tags: [ 'role::php:pools', 'role::php:config' ]
 
 - name: Set PHP version
-  set_fact:
+  ansible.builtin.set_fact:
     php__version: '{{ ansible_local.php.version|d(php__register_version.stdout) }}'
     php__long_version: '{{ ansible_local.php.long_version
                            if (ansible_local|d() and ansible_local.php|d() and
@@ -61,7 +61,7 @@
   tags: [ 'role::php:pools', 'role::php:config' ]
 
 - name: Set PHP base paths
-  set_fact:
+  ansible.builtin.set_fact:
     php__etc_base: '{{ ("/etc/php/" + php__version)
                        if (php__version is version_compare("7.0", ">=") or php__sury|bool)
                        else "/etc/php5" }}'

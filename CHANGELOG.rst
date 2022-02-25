@@ -23,6 +23,20 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v3.0.0...master
 
+Changed
+~~~~~~~
+
+General
+~~~~~~~
+
+- Tasks which use modules and plugins from the ``ansible.builtin`` Ansible
+  Collection have been updated to refer to them via their Fully Qualified
+  Collection Names (for example ``ansible.builtin.file`` instead of ``file``).
+  This is due to changing requirements of the :command:`ansible-lint` tool.
+
+  New submissions to the DebOps project will be required to use the FQCNs as
+  well.
+
 Fixed
 ~~~~~
 

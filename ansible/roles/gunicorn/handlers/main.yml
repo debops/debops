@@ -5,14 +5,14 @@
 
 # A separate handler is needed to ensure the correct order of execution
 - name: Reload systemd daemon (gunicorn)
-  systemd:
+  ansible.builtin.systemd:
     daemon_reload: True
   when: ansible_service_mgr == 'systemd'
 
 - name: Restart gunicorn
-  service:
+  ansible.builtin.service:
     name: 'gunicorn'
     state: 'restarted'
 
 - name: Start Green Unicorn instances
-  script: 'script/start-gunicorn-instances'
+  ansible.builtin.script: 'script/start-gunicorn-instances'

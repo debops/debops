@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Ensure that configuration directory exists
-  file:
+  ansible.builtin.file:
     path:  '/etc/gunicorn'
     state: 'directory'
     owner: 'root'
@@ -12,7 +12,7 @@
     mode:  '0755'
 
 - name: Ensure that required groups exist
-  group:
+  ansible.builtin.group:
     name: '{{ item.group }}'
     system: '{{ (item.system|d(True)) | bool }}'
     state: 'present'
@@ -23,7 +23,7 @@
         item.group|d()
 
 - name: Ensure that required users exist
-  user:
+  ansible.builtin.user:
     name: '{{ item.user }}'
     group: '{{ item.group | d(omit) }}'
     home: '{{ item.home }}'
@@ -36,7 +36,7 @@
         item.user|d() and item.home|d()
 
 - name: Create log directories
-  file:
+  ansible.builtin.file:
     path: '/var/log/gunicorn/{{ item.name }}'
     state: 'directory'
     owner: '{{ item.user | d(gunicorn__user) }}'
@@ -48,7 +48,7 @@
   when: item.name|d() and item.state|d('present') != 'absent'
 
 - name: Create logrotate configs
-  template:
+  ansible.builtin.template:
     src: 'etc/logrotate.d/gunicorn.j2'
     dest: '/etc/logrotate.d/gunicorn-{{ item.name }}'
     owner: 'root'
@@ -60,12 +60,12 @@
   when: item.name|d() and item.state|d('present') != 'absent'
 
 - name: Check if systemd instances for Green Unicorn are configured
-  stat:
+  ansible.builtin.stat:
     path: '/etc/systemd/system/gunicorn@.service'
   register: gunicorn__register_systemd_templated
 
 - name: Stop and disable Green Unicorn instances if requested
-  systemd:
+  ansible.builtin.systemd:
     name: 'gunicorn@{{ item.name }}.service'
     state: 'stopped'
     enabled: False
@@ -79,7 +79,7 @@
         item.name|d() and item.state|d('present') == 'absent'
 
 - name: Generate systemd configuration files
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/{{ item }}.j2'
     dest: '/etc/systemd/system/{{ item }}'
     owner: 'root'
@@ -90,7 +90,7 @@
   when: ansible_service_mgr == 'systemd'
 
 - name: Remove per-instance systemd configuration
-  file:
+  ansible.builtin.file:
     path: '/etc/systemd/system/gunicorn@{{ item.name }}.service.d'
     state: 'absent'
   with_flattened:
@@ -101,7 +101,7 @@
         item.name|d() and item.state|d('present') == 'absent'
 
 - name: Create per-instance systemd directory
-  file:
+  ansible.builtin.file:
     path: '/etc/systemd/system/gunicorn@{{ item.name }}.service.d'
     state: 'directory'
     owner: 'root'
@@ -114,7 +114,7 @@
         item.name|d() and item.state|d('present') != 'absent'
 
 - name: Generate per-instance systemd configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/gunicorn@application.service.d/instance.conf.j2'
     dest: '/etc/systemd/system/gunicorn@{{ item.name }}.service.d/instance.conf'
     owner: 'root'
@@ -128,7 +128,7 @@
         item.name|d() and item.state|d('present') != 'absent'
 
 - name: Remove Unicorn instance configuration
-  file:
+  ansible.builtin.file:
     path: '/etc/gunicorn/{{ item.name }}.conf.py'
     state: 'absent'
   with_flattened:
@@ -137,7 +137,7 @@
   when: item.name|d() and item.state|d('present') == 'absent'
 
 - name: Generate Unicorn instance configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/gunicorn/application.conf.py.j2'
     dest: '/etc/gunicorn/{{ item.name }}.conf.py'
     owner: 'root'
@@ -150,10 +150,10 @@
   when: item.name|d() and item.state|d('present') != 'absent'
 
 - name: Reload systemd configuration
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Enable Unicorn instances in systemd
-  systemd:
+  ansible.builtin.systemd:
     name: 'gunicorn@{{ item.name }}.service'
     enabled: True
   notify: [ 'Start Green Unicorn instances' ]

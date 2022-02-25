@@ -6,13 +6,13 @@
 # ---- System Account ----
 
 - name: Create Roundcube group
-  group:
+  ansible.builtin.group:
     name: '{{ roundcube__group }}'
     system: True
     state: 'present'
 
 - name: Create Roundcube user
-  user:
+  ansible.builtin.user:
     name: '{{ roundcube__user }}'
     group: '{{ roundcube__group }}'
     home: '{{ roundcube__home }}'
@@ -25,7 +25,7 @@
 # ---- Deployment ----
 
 - name: Create required Roundcube directories
-  file:
+  ansible.builtin.file:
     path: '{{ item.path }}'
     state: 'directory'
     owner: '{{ roundcube__user }}'
@@ -37,7 +37,7 @@
     - { path: '{{ roundcube__git_dest | dirname }}' }
 
 - name: Clone Roundcube source from upstream repository
-  git:
+  ansible.builtin.git:
     repo: '{{ roundcube__git_repo }}'
     dest: '{{ roundcube__git_dest }}'
     version: '{{ roundcube__git_version }}'
@@ -53,13 +53,13 @@
   notify: [ 'Refresh host facts' ]
 
 - name: Read PHP composer data from upstream
-  slurp:  # noqa no-handler
+  ansible.builtin.slurp:  # noqa no-handler
     src: '{{ roundcube__git_dest + "/composer.json-dist" }}'
   register: roundcube__register_composer_dist
   when: roundcube__register_git is changed
 
 - name: Read currently deployed PHP composer data
-  slurp:  # noqa no-handler
+  ansible.builtin.slurp:  # noqa no-handler
     src: '{{ roundcube__git_dest + "/composer.json" }}'
   register: roundcube__register_composer_installed
   when: (ansible_local|d() and ansible_local.roundcube|d() and
@@ -67,7 +67,7 @@
         roundcube__register_git is changed)
 
 - name: Update PHP composer data
-  template:  # noqa no-handler
+  ansible.builtin.template:  # noqa no-handler
     src: 'srv/www/sites/roundcube/public/composer.json.j2'
     dest: '{{ roundcube__git_dest + "/composer.json" }}'
     owner: '{{ roundcube__user }}'
@@ -108,7 +108,7 @@
   tags: [ 'skip::roundcube:plugins' ]
 
 - name: Install Javascript packages
-  command: bin/install-jsdeps.sh
+  ansible.builtin.command: bin/install-jsdeps.sh
   args:
     chdir: '{{ roundcube__git_dest }}'
   become: True
@@ -118,7 +118,7 @@
   changed_when: False
 
 - name: Enable cleandb.sh Cron job
-  cron:
+  ansible.builtin.cron:
     name: Roundcube daily database housekeeping
     user: '{{ roundcube__user }}'
     job: '{{ roundcube__git_dest }}/bin/cleandb.sh > /dev/null'

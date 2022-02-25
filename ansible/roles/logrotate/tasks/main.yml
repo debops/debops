@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ (logrotate__base_packages + logrotate__packages) | flatten }}'
     state: 'present'
   register: logrotate__register_packages
@@ -12,7 +12,7 @@
   when: logrotate__enabled|bool
 
 - name: Determine current cron log rotation
-  shell: |
+  ansible.builtin.shell: |
     set -o nounset -o pipefail -o errexit &&
     dpkg-divert --list /etc/cron.daily/logrotate | awk '{ print $NF }'
   args:
@@ -46,7 +46,7 @@
     delete: True
 
 - name: Generate logrotate main configuration file
-  template:
+  ansible.builtin.template:
     src: 'etc/logrotate.conf.j2'
     dest: '/etc/logrotate.conf'
     owner: 'root'
@@ -66,7 +66,7 @@
   when: item.filename|d() and item.divert|d(False)|bool
 
 - name: Generate custom log rotation configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/logrotate.d/config.j2'
     dest: '/etc/logrotate.d/{{ item.filename }}'
     owner: 'root'
@@ -77,7 +77,7 @@
          item.state|d('present') != 'absent')
 
 - name: Remove custom log rotation configuration
-  file:
+  ansible.builtin.file:
     path: '/etc/logrotate.d/{{ item.filename }}'
     state: 'absent'
   loop: '{{ logrotate__combined_config | flatten }}'

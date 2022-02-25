@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Restart gitlab
-  service:
+  ansible.builtin.service:
     name: 'gitlab'
     state: 'restarted'
   notify: [ 'Tell Phusion Passenger to restart', 'Deactivate GitLab deploy.html page' ]
@@ -12,14 +12,14 @@
          ansible_local.gitlab.installed)
 
 - name: Restart gitaly
-  service:
+  ansible.builtin.service:
     name: 'gitaly'
     state: 'restarted'
   when: (not gitlab_use_systemd|bool and ansible_local is defined and ansible_local.gitlab is defined and
          ansible_local.gitlab.installed)
 
 - name: Restart gitlab.slice
-  service:
+  ansible.builtin.service:
     name: 'gitlab.slice'
     state: 'restarted'
   notify: [ 'Tell Phusion Passenger to restart', 'Deactivate GitLab deploy.html page' ]
@@ -27,7 +27,7 @@
          ansible_local.gitlab.installed)
 
 - name: Tell Phusion Passenger to restart
-  file:
+  ansible.builtin.file:
     path: '{{ gitlab_ce_git_checkout + "/tmp/restart.txt" }}'
     state: 'touch'
     mode: '0644'
@@ -35,6 +35,6 @@
          ansible_local.nginx.flavor == 'passenger')
 
 - name: Deactivate GitLab deploy.html page
-  file:
+  ansible.builtin.file:
     path: '{{ gitlab_ce_git_checkout + "/public/index.html" }}'
     state: 'absent'

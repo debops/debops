@@ -7,12 +7,12 @@
 
 ## Prepare [[[
 - name: Set device list to process to a single device
-  set_fact:
+  ansible.builtin.set_fact:
     cryptsetup__process_devices: '{{ [ cryptsetup__process_device ] }}'
   when: cryptsetup__process_device is defined
 
 - name: Assert that device configuration is valid
-  assert:
+  ansible.builtin.assert:
     that:
       - item.state|d(cryptsetup__state) in
         [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present', 'absent' ]
@@ -23,7 +23,7 @@
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 
 - name: Create secrets directory on Ansible controller
-  file:
+  ansible.builtin.file:
     path:  '{{ cryptsetup__secret_path + "/" + item.name }}'
     state: 'directory'
     owner: '{{ cryptsetup__secret_owner }}'
@@ -39,7 +39,7 @@
 ## Generate keyfile and copy it to the remote system [[[
 
 - name: Generate binary keyfile on the Ansible controller
-  shell: head -c {{ ((512/8) if (item.key_size|d(cryptsetup__key_size) == "default")
+  ansible.builtin.shell: head -c {{ ((512/8) if (item.key_size|d(cryptsetup__key_size) == "default")
                              else ((item.key_size|d(cryptsetup__key_size))/8)) | int }} \
                  {{ cryptsetup__keyfile_source_dev | quote }} > \
                  {{ (item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw")) | quote }}
@@ -53,7 +53,7 @@
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 
 - name: Generate text/passphrase keyfile on the Ansible controller
-  shell: 'set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: 'set -o nounset -o pipefail -o errexit &&
           {{ item.keyfile_gen_command|d(cryptsetup__keyfile_gen_command) }} \
           | tr -d "\n" > {{ (item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw")) | quote }}'
   args:
@@ -68,7 +68,7 @@
 
 - name: Enforce permissions of the keyfile on the Ansible controller
   tags: [ 'role::cryptsetup:backup' ]
-  file:
+  ansible.builtin.file:
     path:  '{{ item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw") }}'
     owner: '{{ cryptsetup__secret_owner }}'
     group: '{{ cryptsetup__secret_group }}'
@@ -80,7 +80,7 @@
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 
 - name: Copy keyfiles to remote system
-  copy:
+  ansible.builtin.copy:
     dest: '{{ ("/dev/shm"
               if (item.state|d(cryptsetup__state) == "ansible_controller_mounted")
               else cryptsetup__keyfile_remote_location)
@@ -114,7 +114,7 @@
 #   ``ciphertext_block_device``?
 #
 # - name: Partition additional disks
-#   shell: |
+#   ansible.builtin.shell: |
 #     if [ -b {{ item.ciphertext_block_device }} ]
 #     then
 #         [ -b {{ item.ciphertext_block_device }}{{ item.label_of_first_partition|d("1") }} ] \
@@ -129,7 +129,7 @@
 #   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 
 - name: Check if ciphertext block device exists
-  stat:
+  ansible.builtin.stat:
     path: '{{ item.ciphertext_block_device }}'
     get_checksum: False
   register: cryptsetup__register_ciphertext_device
@@ -139,7 +139,7 @@
   tags: [ 'role::cryptsetup:backup' ]
 
 - name: Fail when ciphertext block device does not exist but the state requires for it to exist
-  fail:
+  ansible.builtin.fail:
     msg: |
       Ciphertext block device {{ item.0.ciphertext_block_device }} does not
       exist and state was requested to be {{ item.0.state|d(cryptsetup__state) }}!
@@ -151,7 +151,7 @@
     - '{{ cryptsetup__register_ciphertext_device.results|d([]) }}'
 
 - name: Fail when ciphertext block device does not exist but the keyfile has changed
-  fail:  # noqa no-handler
+  ansible.builtin.fail:  # noqa no-handler
     msg: |
       Ciphertext block device {{ item.0.ciphertext_block_device }} does not
       exist but the keyfile has just been generated. You will need to make the
@@ -172,7 +172,7 @@
 ## does not work because Ansible/Python tries to decode the random bytes as UTF-8.
 ## Issue: https://github.com/ansible/ansible/issues/7957
 # - name: Read the content of the keyfile and encoding it using base64
-#   command: base64 '{{ item.0.keyfile | d(cryptsetup__secret_path + "/" + item.0.name + "/keyfile.raw") }}'
+#   ansible.builtin.command: base64 '{{ item.0.keyfile | d(cryptsetup__secret_path + "/" + item.0.name + "/keyfile.raw") }}'
 #   register: cryptsetup__register_keyfile_b64encode
 #   become: False
 #   delegate_to: 'localhost'
@@ -180,7 +180,7 @@
 ## The `luks_device` Ansible module is way too limited in terms of supported
 ## parameters as of Ansible 2.9 to replace this yet unfortunately.
 - name: Create encryption layer
-  shell: set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          cryptsetup isLuks "{{ item.0.ciphertext_block_device }}" || cryptsetup luksFormat
          --batch-mode --verbose
          {{ "" if (item.0.hash|d(cryptsetup__hash) == "default")
@@ -211,7 +211,7 @@
     - '{{ cryptsetup__register_ciphertext_device.results|d([]) }}'
 
 - name: Get UUID for ciphertext block device
-  command: blkid -s UUID -o value "{{ item.0.ciphertext_block_device }}"
+  ansible.builtin.command: blkid -s UUID -o value "{{ item.0.ciphertext_block_device }}"
   register: cryptsetup__register_ciphertext_blkid
   changed_when: False
   failed_when: (cryptsetup__register_ciphertext_blkid.rc not in [ 0, 2 ])
@@ -249,7 +249,7 @@
     - '{{ lookup("template", "lookup/cryptsetup__devices_crypttab_options.j2") | from_yaml }}'
 
 - name: Start plaintext device mapper target
-  command: cryptdisks_start "{{ item.0.name }}"
+  ansible.builtin.command: cryptdisks_start "{{ item.0.name }}"
   register: cryptsetup__register_cryptdisks_start
   changed_when: ("(started)" in cryptsetup__register_cryptdisks_start.stdout)
   when: (item.0.state|d(cryptsetup__state) in
@@ -260,7 +260,7 @@
     - '{{ cryptsetup__register_ciphertext_device.results|d([]) }}'
 
 - name: Check if plaintext device mapper target exists
-  stat:
+  ansible.builtin.stat:
     path: '/dev/mapper/{{ item.name }}'
   register: cryptsetup__register_plaintext_device
   when: (item.state|d(cryptsetup__state) in
@@ -282,7 +282,7 @@
     - '{{ cryptsetup__register_plaintext_device.results|d([]) }}'
 
 - name: Ensure mount directories exist when manually mounted
-  file:
+  ansible.builtin.file:
     path: '{{ item.mount | d(cryptsetup__mountpoint_parent_directory + "/" + item.name) }}'
     state: 'directory'
     mode: '0755'
@@ -297,7 +297,7 @@
 ## Thus we need to do the following steps each time the role is executed.
 - name: Create LUKS header backup
   tags: [ 'role::cryptsetup:backup' ]
-  shell: |
+  ansible.builtin.shell: |
     set -o nounset -o pipefail -o errexit &&
     rm -f {{ (cryptsetup__header_backup_remote_location + "/" + item.0.name + "_header_backup.raw") | quote }}
     cryptsetup luksHeaderBackup {{ item.0.ciphertext_block_device | quote }} \
@@ -316,7 +316,7 @@
 
 - name: Store the header backup in secret directory on to the Ansible controller
   tags: [ 'role::cryptsetup:backup' ]
-  fetch:
+  ansible.builtin.fetch:
     src:  '{{ cryptsetup__header_backup_remote_location + "/" + item.0.name + "_header_backup.raw" }}'
     dest: '{{ cryptsetup__secret_path + "/" + item.0.name + "/header_backup.raw" }}'
     fail_on_missing: True
@@ -330,7 +330,7 @@
 
 - name: Enforce permissions of the header backup on the Ansible controller
   tags: [ 'role::cryptsetup:backup' ]
-  file:
+  ansible.builtin.file:
     path:  '{{ cryptsetup__secret_path + "/" + item.0.name + "/header_backup.raw" }}'
     owner: '{{ cryptsetup__secret_owner }}'
     group: '{{ cryptsetup__secret_group }}'
@@ -349,7 +349,7 @@
 
 ## Handle plaintext device mapper target [[[
 - name: Manage fstab and mount state of the plaintext device mapper targets
-  mount:
+  ansible.posix.mount:
     src:    '/dev/mapper/{{ item.name }}'
     fstype: '{{ item.fstype         | d(cryptsetup__fstype) }}'
     name:   '{{ item.mount          | d(cryptsetup__mountpoint_parent_directory + "/" + item.name) }}'
@@ -364,7 +364,7 @@
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 
 - name: Disable swap devices when requested
-  shell: |
+  ansible.builtin.shell: |
     if [ -e {{ ("/dev/mapper/" + item.name) | quote }} ]
     then swapoff {{ ("/dev/mapper/" + item.name) | quote }}
     else true
@@ -374,7 +374,7 @@
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 
 - name: Manage swap devices in fstab
-  mount:
+  ansible.posix.mount:
     src:    '{{ "/dev/mapper/" + item.name }}'
     name:   'none'
     fstype: 'swap'
@@ -390,7 +390,7 @@
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 
 - name: Enable swap devices
-  command: swapon --priority {{ (item.item.priority | d(cryptsetup__swap_priority) | string) | quote }}
+  ansible.builtin.command: swapon --priority {{ (item.item.priority | d(cryptsetup__swap_priority) | string) | quote }}
            {{ ("/dev/mapper/" + item.item.name) | quote }}
   when: (item is changed and (item.item.swap|d(False) | bool) and
          (item.item.state|d(cryptsetup__state) in ['mounted', 'ansible_controller_mounted']))
@@ -400,14 +400,14 @@
 ## Close crypto layer and remove [[[
 
 - name: Ensure mount directory is absent
-  file:
+  ansible.builtin.file:
     path: '{{ item.mount | d(cryptsetup__mountpoint_parent_directory + "/" + item.name) }}'
     state: 'absent'
   when: (item.state|d(cryptsetup__state) in [ 'absent' ])
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 
 - name: Stop plaintext device mapper target
-  command: 'cryptdisks_stop "{{ item.0.name }}"'  # noqa no-handler
+  ansible.builtin.command: 'cryptdisks_stop "{{ item.0.name }}"'  # noqa no-handler
   register: cryptsetup__register_cryptdisks_stop
   changed_when: ("(stopping)" in cryptsetup__register_cryptdisks_stop.stdout)
   failed_when: (
@@ -433,7 +433,7 @@
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 
 - name: Check if remote keyfiles are regular files
-  stat:
+  ansible.builtin.stat:
     path: '{{ (item.remote_keyfile|d(("/dev/shm"
                if (item.state|d(cryptsetup__state) == "ansible_controller_mounted")
                else cryptsetup__keyfile_remote_location)
@@ -443,7 +443,7 @@
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
 
 - name: Ensure keyfile is unaccessible on the remote system
-  command: '{{ cryptsetup__keyfile_shred_command }}
+  ansible.builtin.command: '{{ cryptsetup__keyfile_shred_command }}
             {{ item.stat.path | quote }}'
   args:
     removes: '{{ item.stat.path }}'
@@ -454,7 +454,7 @@
 ## Note that there are still two copies of the header on the ciphertext block device
 ## and on the Ansible controller.
 - name: Ensure header backup is unaccessible on the remote system
-  command: '{{ cryptsetup__header_backup_shred_command }}
+  ansible.builtin.command: '{{ cryptsetup__header_backup_shred_command }}
             {{ cryptsetup__header_backup_remote_location + "/" + item.name + "_header_backup.raw" | quote }}'
   args:
     removes: '{{ cryptsetup__header_backup_remote_location + "/" + item.name + "_header_backup.raw" }}'

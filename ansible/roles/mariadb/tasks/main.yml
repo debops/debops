@@ -4,11 +4,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 # Ansible does not support management of multiple MariaDB / MySQL from one user
@@ -17,7 +17,7 @@
 - name: Check if database server is installed
   environment:
     LC_MESSAGES: 'C'
-  shell: set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          dpkg-query -W -f='${Version}\n' 'mariadb-server' 'mysql-server'
                                          'percona-server-server*'
          | grep -v '^$'
@@ -29,27 +29,27 @@
   check_mode: False
 
 - name: Check if local database port is open
-  command: nc -z localhost {{ mariadb__port }}
+  ansible.builtin.command: nc -z localhost {{ mariadb__port }}
   register: mariadb__register_tunnel
   when: not mariadb__register_version.stdout
   failed_when: False
   changed_when: False
 
 - name: Override delegation if tunnel is detected
-  set_fact:
+  ansible.builtin.set_fact:
     mariadb__delegate_to: '{{ mariadb__server|d("undefined") }}'
   when: (not mariadb__register_version.stdout|d(False) and
          (mariadb__register_tunnel|d() and mariadb__register_tunnel.rc == 0))
 
 - name: Override configuration if local server is detected
-  set_fact:
+  ansible.builtin.set_fact:
     mariadb__server: 'localhost'
     mariadb__client: 'localhost'
   when: (mariadb__register_version.stdout|d(False) or
          (mariadb__register_tunnel|d() and mariadb__register_tunnel.rc == 0))
 
 - name: Install database client packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (mariadb__base_packages
                               + mariadb__packages_map[mariadb__flavor]
                               + mariadb__packages)) }}'
@@ -58,12 +58,12 @@
   until: mariadb__register_packages is succeeded
 
 - name: Check if MariaDB config directory exists
-  stat:
+  ansible.builtin.stat:
     path: '/etc/mysql/mariadb.conf.d'
   register: mariadb__register_confd
 
 - name: Configure database client defaults
-  template:
+  ansible.builtin.template:
     src: 'etc/mysql/conf.d/client.cnf.j2'
     dest: '{{ mariadb__client_cnf_file }}'
     owner: 'root'
@@ -72,7 +72,7 @@
   when: mariadb__server|d(False)
 
 - name: Make sure that local fact directory exists
-  file:
+  ansible.builtin.file:
     dest: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -80,7 +80,7 @@
     mode: '0755'
 
 - name: Save MariaDB local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/mariadb.fact.j2'
     dest: '/etc/ansible/facts.d/mariadb.fact'
     owner: 'root'
@@ -90,9 +90,9 @@
   tags: [ 'meta::facts' ]
 
 - name: Re-read local facts if they have been modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Manage database contents
-  include: 'manage_contents.yml'
+  ansible.builtin.include_tasks: 'manage_contents.yml'
   when: (mariadb__server|d(False) and mariadb__delegate_to)
   tags: [ 'role::mariadb:contents' ]

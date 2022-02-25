@@ -7,16 +7,16 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 # Package installation [[[1
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (tinc__base_packages
                               + tinc__packages)) }}'
     state: 'present'
@@ -25,13 +25,13 @@
 
 # Create user [[[1
 - name: Create system group for VPN service
-  group:
+  ansible.builtin.group:
     name: '{{ tinc__group }}'
     state: 'present'
     system: True
 
 - name: Create system user for VPN service
-  user:
+  ansible.builtin.user:
     name: '{{ tinc__user }}'
     state: 'present'
     system: True
@@ -43,7 +43,7 @@
 
 # Kernel modules [[[1
 - name: Load the required kernel modules
-  modprobe:
+  community.general.modprobe:
     name: '{{ item }}'
     state: 'present'
   with_items: '{{ tinc__modprobe_modules }}'
@@ -53,7 +53,7 @@
          not (ansible_system_capabilities_enforced|d(True))|bool))
 
 - name: Make sure that required modules are loaded on boot
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '/etc/modules'
     regexp: '^{{ item }}$'
     line: '{{ item }}'
@@ -67,7 +67,7 @@
 
 # Tinc configuration [[[1
 - name: Set tincd default environment
-  template:
+  ansible.builtin.template:
     src: 'etc/default/tinc.j2'
     dest: '/etc/default/tinc'
     owner: 'root'
@@ -77,7 +77,7 @@
   notify: [ 'Reload tinc' ]
 
 - name: Disable tinc networks in systemd if requested
-  service:  # noqa no-handler
+  ansible.builtin.service:  # noqa no-handler
     name: 'tinc@{{ item.value.name | d(item.key) }}'
     enabled: False
     state: '{{ (item.state|d("present") in ["absent"]) | ternary("started", "stopped") }}'
@@ -86,14 +86,14 @@
         not tinc__register_install is changed
 
 - name: Remove tinc network configuration if requested
-  file:
+  ansible.builtin.file:
     path: '/etc/tinc/{{ item.value.name | d(item.key) }}'
     state: 'absent'
   with_dict: '{{ tinc__combined_networks }}'
   when: item.value.state|d('present') == 'absent'
 
 - name: Create required directories
-  file:
+  ansible.builtin.file:
     path: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.hostname | d(tinc__hostname))
                                                                   | replace("-","_") }}.d'
     state: 'directory'
@@ -104,7 +104,7 @@
   when: item.value.state|d('present') != 'absent'
 
 - name: Generate main configuration file
-  template:
+  ansible.builtin.template:
     src: 'etc/tinc/network/tinc.conf.j2'
     dest: '/etc/tinc/{{ item.value.name | d(item.key) }}/tinc.conf'
     owner: 'root'
@@ -116,12 +116,12 @@
   notify: [ 'Reload tinc' ]
 
 - name: Remove deprecated dhclient hook script
-  file:
+  ansible.builtin.file:
     dest: '/etc/dhcp/dhclient-enter-hooks.d/00debops-tinc'
     state: 'absent'
 
 - name: Generate tinc-up network scripts
-  template:
+  ansible.builtin.template:
     src: 'etc/tinc/network/tinc-up.j2'
     dest: '/etc/tinc/{{ item.value.name | d(item.key) }}/tinc-up'
     owner: 'root'
@@ -132,7 +132,7 @@
   when: (item.value.state|d('present') != 'absent' and item.value.generate_tinc_up|d(True)|bool)
 
 - name: Generate tinc-down network scripts
-  template:
+  ansible.builtin.template:
     src: 'etc/tinc/network/tinc-down.j2'
     dest: '/etc/tinc/{{ item.value.name |d(item.key) }}/tinc-down'
     owner: 'root'
@@ -143,7 +143,7 @@
   when: (item.value.state|d('present') != 'absent' and item.value.generate_tinc_up|d(True)|bool)
 
 - name: Configure which networks are started at boot
-  template:
+  ansible.builtin.template:
     src: 'etc/tinc/nets.boot.j2'
     dest: '/etc/tinc/nets.boot'
     owner: 'root'
@@ -154,7 +154,7 @@
 # RSA key management [[[1
 
 - name: Ensure that sensitive files are excluded from version control
-  template:
+  ansible.builtin.template:
     src: 'etc/tinc/gitignore.j2'
     dest: '/etc/tinc/.gitignore'
     owner: 'root'
@@ -163,7 +163,7 @@
     unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
 
 - name: Initialize RSA key pairs
-  shell: set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          sh -c 'yes || true' | tincd -n {{ item.value.name | d(item.key) }}
                                      -K {{ item.value.rsa_key_length | d(tinc__rsa_key_length) }}
   args:
@@ -173,7 +173,7 @@
   when: item.value.state|d('present') != 'absent'
 
 - name: Create persistent copy of host public key
-  command: cp /etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
+  ansible.builtin.command: cp /etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
                                                                      | replace("-","_") }}
               /etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
                                                                      | replace("-","_") + ".d/99_rsa-public-key" }}
@@ -185,7 +185,7 @@
 
 # Tinc host configuration [[[1
 - name: Generate host configuration file
-  template:
+  ansible.builtin.template:
     src: 'etc/tinc/network/hosts/host-config.j2'
     dest: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
                                                                   | replace("-","_") }}.d/00_host-config'
@@ -197,7 +197,7 @@
   when: item.value.state|d('present') != 'absent'
 
 - name: Assemble host configuration file from parts
-  assemble:
+  ansible.builtin.assemble:
     src: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
                                                                  | replace("-","_") }}.d'
     dest: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
@@ -211,7 +211,7 @@
 
 # Tinc host configuration distribution [[[1
 - name: Upload public keys from hosts to Ansible Controller
-  fetch:
+  ansible.builtin.fetch:
     src: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
                                                                  | replace("-","_") }}'
     dest: '{{ secret + "/tinc/networks/" + item.value.name | d(item.key)
@@ -222,7 +222,7 @@
   when: item.value.state|d('present') != 'absent'
 
 - name: Download public keys per network
-  copy:
+  ansible.builtin.copy:
     src: '{{ secret + "/tinc/networks/" + item.value.name | d(item.key)
              + "/by-network/" + item.value.name | d(item.key) + "/hosts/" }}'
     dest: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/'
@@ -234,7 +234,7 @@
   notify: [ 'Reload tinc' ]
 
 - name: Download public keys for all hosts
-  copy:
+  ansible.builtin.copy:
     src: '{{ secret + "/tinc/networks/" + item.value.name | d(item.key) + "/by-group/all/hosts/" }}'
     dest: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/'
     owner: 'root'
@@ -245,7 +245,7 @@
   notify: [ 'Reload tinc' ]
 
 - name: Download public keys per group
-  copy:
+  ansible.builtin.copy:
     src: '{{ secret + "/tinc/networks/" + item.0.name + "/by-group/" + item.1 + "/hosts/" }}'
     dest: '/etc/tinc/{{ item.0.name }}/hosts/'
     owner: 'root'
@@ -259,7 +259,7 @@
   notify: [ 'Reload tinc' ]
 
 - name: Download public keys per host
-  copy:
+  ansible.builtin.copy:
     src: '{{ secret + "/tinc/networks/" + item.value.name | d(item.key)
              + "/by-host/" + ((item.value.inventory_hostname | d(tinc__inventory_hostname))) + "/hosts/" }}'
     dest: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/'
@@ -272,7 +272,7 @@
 
 # systemd configuration [[[1
 - name: Configure systemd default variables
-  template:
+  ansible.builtin.template:
     src: 'etc/default/tinc-network.j2'
     dest: '/etc/default/tinc-{{ item.value.name | d(item.key) }}'
     owner: 'root'
@@ -284,7 +284,7 @@
   notify: [ 'Reload tinc' ]
 
 - name: Configure tinc-down wrapper script
-  template:
+  ansible.builtin.template:
     src: 'usr/local/lib/tinc-down-wrapper.j2'
     dest: '/usr/local/lib/tinc-down-wrapper'
     owner: 'root'
@@ -294,12 +294,12 @@
   when: tinc__systemd | bool
 
 - name: Clean up old systemd configuration
-  file:
+  ansible.builtin.file:
     path: '/etc/systemd/system/network.target.wants/tinc.service'
     state: 'absent'
 
 - name: Configure systemd unit files
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/{{ item }}.j2'
     dest: '/etc/systemd/system/{{ item }}'
     owner: 'root'
@@ -311,20 +311,20 @@
   when: tinc__systemd | bool
 
 - name: Reload systemd daemon configuration
-  systemd:  # noqa no-handler
+  ansible.builtin.systemd:  # noqa no-handler
     daemon_reload: True
     name: 'tinc.service'
     enabled: True
   when: tinc__register_systemd is changed
 
 - name: Start tinc VPN networks on first install
-  service:  # noqa no-handler
+  ansible.builtin.service:  # noqa no-handler
     name: 'tinc'
     state: 'restarted'
   when: not tinc__systemd|bool and tinc__register_install is changed
 
 - name: Configure tinc network services in systemd
-  service:
+  ansible.builtin.service:
     name: 'tinc@{{ item.value.name | d(item.key) }}'
     enabled: '{{ (item.value.boot|d(True))|bool }}'
     state: '{{ (item.value.state|d("present") in ["absent"]) | ternary("stopped", "started") }}'
@@ -335,7 +335,7 @@
 # Ansible facts [[[1
 
 - name: Make sure Ansible fact directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -343,7 +343,7 @@
     mode: '0755'
 
 - name: Create local facts of tinc
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/tinc.fact.j2'
     dest: '/etc/ansible/facts.d/tinc.fact'
     owner: 'root'
@@ -354,4 +354,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Reload facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

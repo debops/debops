@@ -6,7 +6,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Create OpenSSH LDAP bind password file
-  template:
+  ansible.builtin.template:
     src: 'etc/ssh/ldap_authorized_keys_bindpw.j2'
     dest: '/etc/ssh/ldap_authorized_keys_bindpw'
     owner: '{{ sshd__authorized_keys_lookup_user }}'
@@ -16,13 +16,13 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove OpenSSH LDAP bind password file
-  file:
+  ansible.builtin.file:
     path: '/etc/ssh/ldap_authorized_keys_bindpw'
     state: 'absent'
   when: '"ldap" not in sshd__authorized_keys_lookup_type|d([])'
 
 - name: Create /etc/ssh/authorized_keys_lookup.d directory
-  file:
+  ansible.builtin.file:
     path: '/etc/ssh/authorized_keys_lookup.d'
     state: 'directory'
     owner: 'root'
@@ -30,7 +30,7 @@
     mode: '0755'
 
 - name: Generate authorized keys lookup scripts
-  template:
+  ansible.builtin.template:
     src: '{{ lookup("debops.debops.template_src", "etc/ssh/authorized_keys_lookup.d/" + item + ".j2") }}'
     dest: '/etc/ssh/authorized_keys_lookup.d/{{ item }}'
     owner: 'root'
@@ -40,7 +40,7 @@
   when: sshd__authorized_keys_lookup_type|d()
 
 - name: Generate authorized keys lookup hook
-  template:
+  ansible.builtin.template:
     src: 'etc/ssh/authorized_keys_lookup.j2'
     dest: '/etc/ssh/authorized_keys_lookup'
     owner: 'root'

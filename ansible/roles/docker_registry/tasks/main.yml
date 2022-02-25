@@ -4,19 +4,19 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ (docker_registry__base_packages
                + docker_registry__packages) | flatten }}'
     state: 'present'
@@ -29,13 +29,13 @@
   notify: [ 'Restart docker-registry' ]
 
 - name: Create Docker Registry UNIX group
-  group:
+  ansible.builtin.group:
     name: '{{ docker_registry__group }}'
     state: 'present'
     system: True
 
 - name: Create Docker Registry UNIX account
-  user:
+  ansible.builtin.user:
     name: '{{ docker_registry__user }}'
     group: '{{ docker_registry__group }}'
     groups: '{{ docker_registry__additional_groups | flatten }}'
@@ -46,7 +46,7 @@
     system: True
 
 - name: Create required directories
-  file:
+  ansible.builtin.file:
     name: '{{ item.path }}'
     state: 'directory'
     owner: '{{ item.owner | d(omit) }}'
@@ -72,7 +72,7 @@
   block:
 
     - name: Create required build directories
-      file:
+      ansible.builtin.file:
         name: '{{ item.path }}'
         state: 'directory'
         mode: '{{ item.mode }}'
@@ -85,7 +85,7 @@
           mode: '0755'
 
     - name: Clone Docker Registry source code
-      git:
+      ansible.builtin.git:
         repo: '{{ docker_registry__git_repo }}'
         dest: '{{ docker_registry__git_dest }}'
         version: '{{ docker_registry__git_version }}'
@@ -97,14 +97,14 @@
       environment:
         GOPATH: '{{ docker_registry__gopath }}'
         GOCACHE: '{{ docker_registry__gopath + "/cache" }}'
-      command: 'make clean binaries'
+      ansible.builtin.command: 'make clean binaries'
       args:
         chdir: '{{ docker_registry__git_dest }}'
       when: docker_registry__register_source is changed
       register: docker_registry__register_build
 
 - name: Install Docker Registry binary
-  copy:  # noqa no-handler
+  ansible.builtin.copy:  # noqa no-handler
     src: '{{ docker_registry__git_dest + "/bin/registry" }}'
     dest: '/usr/local/bin/docker-registry'
     remote_src: True
@@ -114,13 +114,13 @@
         docker_registry__register_build is changed
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
 
 - name: Save Docker Registry local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/docker_registry.fact.j2'
     dest: '/etc/ansible/facts.d/docker_registry.fact'
     mode: '0755'
@@ -128,10 +128,10 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Generate Docker Registry configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/docker/registry/config.yml.j2'
     dest: '{{ docker_registry__config_file }}'
     owner: '{{ docker_registry__user }}'
@@ -141,20 +141,20 @@
   register: docker_registry__register_config
 
 - name: Generate Docker Registry systemd unit
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/docker-registry.service.j2'
     dest: '/etc/systemd/system/docker-registry.service'
     mode: '0644'
   register: docker_registry__register_systemd
 
 - name: Enable Docker Registry service
-  systemd:
+  ansible.builtin.systemd:
     name: 'docker-registry'
     daemon_reload: '{{ True if docker_registry__register_systemd is changed else omit }}'
     enabled: True
 
 - name: Install garbage collector script
-  template:
+  ansible.builtin.template:
     src: '{{ item.path }}.j2'
     dest: '/{{ item.path }}'
     mode: '{{ item.mode }}'
@@ -164,7 +164,7 @@
   when: docker_registry__garbage_collector_enabled|bool
 
 - name: Configure garbage collection in cron
-  cron:
+  ansible.builtin.cron:
     name: 'Perform garbage collection in Docker Registry'
     cron_file: 'docker-registry-gc'
     user: '{{ docker_registry__user }}'

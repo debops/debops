@@ -5,12 +5,21 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
-- include: system.yml tags=rails_deploy
-- include: database.yml tags=rails_deploy_setup
+- name: Configure system environment
+  ansible.builtin.include_tasks: system.yml tags=rails_deploy
+
+- name: Configure database
+  ansible.builtin.include_tasks: database.yml tags=rails_deploy_setup
   when: rails_deploy_database_create
-- include: deploy_keys.yml tags=rails_deploy_setup
-- include: deploy.yml tags=rails_deploy
-- include: local_facts.yml tags=rails_deploy
+
+- name: Deploy access keys
+  ansible.builtin.include_tasks: deploy_keys.yml tags=rails_deploy_setup
+
+- name: Deploy application
+  ansible.builtin.include_tasks: deploy.yml tags=rails_deploy
+
+- name: Configure local facts
+  ansible.builtin.include_tasks: local_facts.yml tags=rails_deploy

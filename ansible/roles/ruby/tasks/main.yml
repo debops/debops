@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Install Ruby packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (ruby__base_packages
                               + ruby__dev_packages
                               + ruby__packages
@@ -33,7 +33,7 @@
     - '{{ ruby__dependent_gems }}'
 
 - name: Make sure that required groups exist
-  group:
+  ansible.builtin.group:
     name: '{{ item.group | d(item.owner) }}'
     system: '{{ (item.system | d(True)) | bool }}'
     state: 'present'
@@ -45,7 +45,7 @@
   when: (item.group|d() or item.owner|d())
 
 - name: Make sure that required users exist
-  user:
+  ansible.builtin.user:
     name: '{{ item.owner }}'
     group: '{{ item.group | d(item.owner) }}'
     home: '{{ item.home | d((ansible_local.fhs.home | d("/var/local"))

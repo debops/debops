@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Manage APT packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (apt_listchanges__base_packages
                               + apt_listchanges__packages)) }}'
     state: '{{ apt_listchanges__deploy_state }}'
@@ -13,7 +13,7 @@
   until: apt_listchanges__register_packages is succeeded
 
 - name: Configure apt-listchanges
-  template:
+  ansible.builtin.template:
     src: 'etc/apt/listchanges.conf.j2'
     dest: '/etc/apt/listchanges.conf'
     owner: 'root'
@@ -22,7 +22,7 @@
   when: apt_listchanges__deploy_state == 'present'
 
 - name: Make sure that Ansible fact directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -30,7 +30,7 @@
     mode: '0755'
 
 - name: Save apt-listchanges facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/apt_listchanges.fact.j2'
     dest: '/etc/ansible/facts.d/apt_listchanges.fact'
     owner: 'root'

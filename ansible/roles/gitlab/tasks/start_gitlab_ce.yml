@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Start GitLab instance (SysVinit)
-  service:
+  ansible.builtin.service:
     name: 'gitlab'
     state: 'started'
   notify: [ 'Deactivate GitLab deploy.html page' ]
@@ -15,7 +15,7 @@
           (gitlab_use_systemd is defined and not gitlab_use_systemd))
 
 - name: Start GitLab instance (systemd)
-  service:
+  ansible.builtin.service:
     name: 'gitlab.slice'
     state: 'started'
   notify: [ 'Deactivate GitLab deploy.html page' ]

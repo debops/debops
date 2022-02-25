@@ -8,7 +8,7 @@
 # System packages [[[
 
 - name: Ensure specified packages are in there desired state
-  apt:
+  ansible.builtin.apt:
     name: '{{ q("flattened", (debops_api__python3_packages
                               if (debops_api__python_version|int == 3)
                               else debops_api__python2_packages)) }}'
@@ -24,13 +24,13 @@
 # System user [[[
 
 - name: Ensure DebOps API system group is present
-  group:
+  ansible.builtin.group:
     name: '{{ debops_api__group }}'
     system: True
     state: 'present'
 
 - name: Ensure DebOps API system user is present
-  user:
+  ansible.builtin.user:
     name: '{{ debops_api__user }}'
     group: '{{ debops_api__group }}'
     home: '{{ debops_api__home }}'
@@ -40,7 +40,7 @@
     state: 'present'
 
 - name: Ensure the webserver can access the public directory
-  file:
+  ansible.builtin.file:
     path: '{{ debops_api__home }}'
     state: 'directory'
     owner: '{{ debops_api__user }}'
@@ -52,7 +52,7 @@
 # DebOps API input data [[[
 
 - name: Ensure that input data directory is present
-  file:
+  ansible.builtin.file:
     path: '{{ debops_api__input_data_dir }}'
     state: 'directory'
     owner: '{{ debops_api__user }}'
@@ -60,7 +60,7 @@
     mode: '0755'
 
 - name: Clone DebOps API input data
-  git:
+  ansible.builtin.git:
     repo: '{{ debops_api__input_data_repo_url }}'
     dest: '{{ debops_api__input_data_repo_dest }}'
     update: '{{ debops_api__input_data_repo_update | bool }}'
@@ -75,7 +75,7 @@
 # DebOps API script installation [[[
 
 - name: Ensure DebOps API source code directory is owned by the DebOps API user
-  file:
+  ansible.builtin.file:
     path: '{{ debops_api__app_repo_dest }}'
     state: 'directory'
     owner: '{{ debops_api__user }}'
@@ -83,7 +83,7 @@
     mode: '0755'
 
 - name: Clone debops-api source code
-  git:
+  ansible.builtin.git:
     repo: '{{ debops_api__app_repo_url }}'
     dest: '{{ debops_api__app_repo_dest }}'
     version: 'master'
@@ -99,7 +99,7 @@
 # DebOps API script setup [[[
 
 - name: Ensure DebOps API user bin directory is present
-  file:
+  ansible.builtin.file:
     path: '{{ debops_api__home + "/bin" }}'
     state: 'directory'
     owner: '{{ debops_api__user }}'
@@ -107,7 +107,7 @@
     mode: '0755'
 
 - name: Ensure that the DebOps API data update script is present
-  template:
+  ansible.builtin.template:
     src: 'srv/www/debops-api/bin/debops-api-update.j2'
     dest: '{{ debops_api__cron_script }}'
     owner: 'root'
@@ -119,7 +119,7 @@
 # DebOps API cron jobs [[[
 
 - name: Configuring cron jobs
-  cron:
+  ansible.builtin.cron:
     cron_file:    '{{ item.cron_file    | d(omit) }}'
     day:          '{{ item.day          | d(omit) }}'
     hour:         '{{ item.hour         | d(omit) }}'
@@ -139,12 +139,12 @@
 # Run initial DebOps API data build [[[
 
 - name: Check if DebOps API data build has run before
-  stat:
+  ansible.builtin.stat:
     path: '{{ debops_api__public_api_dir }}'
   register: debops_api__register_public_api_dir
 
 - name: Run initial DebOps API data build
-  command: '{{ debops_api__cron_script }}'
+  ansible.builtin.command: '{{ debops_api__cron_script }}'
   when: not debops_api__register_public_api_dir.stat.exists
   become: True
   become_user: '{{ debops_api__user }}'

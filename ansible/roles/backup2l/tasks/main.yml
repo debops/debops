@@ -4,15 +4,15 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Install required APT packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (backup2l__base_packages
                               + backup2l__packages)) }}'
     state: 'present'
@@ -22,7 +22,7 @@
     path: '/etc/backup2l.conf'
 
 - name: Create required directories
-  file:
+  ansible.builtin.file:
     path: '{{ item.path }}'
     state: 'directory'
     mode: '{{ item.mode | d("0755") }}'
@@ -32,13 +32,13 @@
     - { path: '{{ backup2l__post_hook_dir }}' }
 
 - name: Install pre-hook scripts
-  copy:
+  ansible.builtin.copy:
     src: 'usr/local/etc/backup/pre-hook.d/'
     dest: '{{ backup2l__pre_hook_dir }}/'
     mode: '0755'
 
 - name: Add paths to backup in an include file
-  lineinfile:
+  ansible.builtin.lineinfile:
     dest: '{{ backup2l__include_file }}'
     regexp: "^{{ item.path | d(item) }}$"
     line: '{{ item.path | d(item) }}'
@@ -53,19 +53,19 @@
   when: backup2l__srclist_from_file|bool
 
 - name: Generate backup2l configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/backup2l.conf.j2'
     dest: '/etc/backup2l.conf'
     mode: '0644'
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
 
 - name: Save backup2l local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/backup2l.fact.j2'
     dest: '/etc/ansible/facts.d/backup2l.fact'
     mode: '0755'
@@ -73,4 +73,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

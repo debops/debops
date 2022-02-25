@@ -5,13 +5,13 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Create ACME system group
-  group:
+  ansible.builtin.group:
     name: '{{ pki_acme_group }}'
     state: 'present'
     system: True
 
 - name: Create ACME system account
-  user:
+  ansible.builtin.user:
     name: '{{ pki_acme_user }}'
     group: '{{ pki_acme_group }}'
     home: '{{ pki_acme_home }}'
@@ -27,7 +27,7 @@
   block:
 
     - name: Create source directory
-      file:
+      ansible.builtin.file:
         path: '{{ pki_acme_tiny_src }}'
         state: 'directory'
         owner: 'root'
@@ -35,13 +35,13 @@
         mode: '0755'
 
     - name: Clone acme-tiny source code
-      git:
+      ansible.builtin.git:
         repo: '{{ pki_acme_tiny_repo }}'
         dest: '{{ pki_acme_tiny_src + "/acme-tiny" }}'
         version: '{{ pki_acme_tiny_version }}'
 
     - name: Install acme-tiny script
-      file:
+      ansible.builtin.file:
         path: '{{ pki_acme_tiny_bin }}'
         src: '{{ pki_acme_tiny_src }}/acme-tiny/acme_tiny.py'
         state: 'link'
@@ -49,7 +49,7 @@
         mode: '0755'
 
 - name: Create ACME challenge path
-  file:
+  ansible.builtin.file:
     path: '{{ pki_acme_challenge_dir | dirname }}'
     state: 'directory'
     owner: 'root'
@@ -58,7 +58,7 @@
   when: pki_create_acme_challenge_dir
 
 - name: Create ACME challenge directory
-  file:
+  ansible.builtin.file:
     path: '{{ pki_acme_challenge_dir }}'
     state: 'directory'
     owner: '{{ pki_acme_user }}'

@@ -5,19 +5,19 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Install rspamd packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (rspamd__base_packages
                               + rspamd__packages)) }}'
     state: 'present'
@@ -26,13 +26,13 @@
   tags: [ 'role::rspamd:pkg' ]
 
 - name: Make sure that the Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
 
 - name: Save rspamd local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/rspamd.fact.j2'
     dest: '/etc/ansible/facts.d/rspamd.fact'
     mode: '0755'
@@ -56,4 +56,4 @@
   include_tasks: main_dkim.yml
 
 - name: Update Ansible facts and restart Rspamd if necessary
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

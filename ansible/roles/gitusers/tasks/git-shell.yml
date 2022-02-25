@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Create gitusers scripts path
-  file:
+  ansible.builtin.file:
     path: '{{ gitusers_git_scripts }}'
     state: 'directory'
     owner: 'root'
@@ -12,7 +12,7 @@
     mode: '0755'
 
 - name: Install gitusers scripts
-  copy:
+  ansible.builtin.copy:
     src: 'var/lib/gitusers/'
     dest: '{{ gitusers_git_scripts }}'
     owner: 'root'
@@ -20,7 +20,7 @@
     mode: '0755'
 
 - name: Prepare gituser environment
-  template:
+  ansible.builtin.template:
     src: 'srv/gitusers/{{ item.1 }}.j2'
     dest: '{{ item.0.home | default(gitusers_default_home_prefix + "/"
                                     + item.0.name + gitusers_name_suffix) }}/.{{ item.1 }}'
@@ -34,7 +34,7 @@
          (item.0.state is undefined or (item.0.state is defined and item.0.state != 'absent')))
 
 - name: Create base directory for user websites
-  file:
+  ansible.builtin.file:
     path: '{{ gitusers_default_www_prefix }}/{{ item.group | default(item.name + gitusers_name_suffix) }}'
     state: 'directory'
     owner: 'root'
@@ -48,7 +48,7 @@
          (item.state is undefined or (item.state is defined and item.state != 'absent')))
 
 - name: Create root directory for user websites
-  file:
+  ansible.builtin.file:
     path: '{{ gitusers_default_www_prefix }}/{{ item.0.group | default(item.0.name
                                                                        + gitusers_name_suffix) }}/{{ item.1 }}'
     state: 'directory'
@@ -62,7 +62,7 @@
          (item.0.state is undefined or (item.0.state is defined and item.0.state != 'absent')))
 
 - name: Symlink git-shell-commands to user directories
-  file:
+  ansible.builtin.file:
     path: '{{ item.home | default(gitusers_default_home_prefix + "/"
                                   + item.name + gitusers_name_suffix) + "/git-shell-commands" }}'
     src: '{{ gitusers_git_scripts + "/git-shell-commands/" }}'

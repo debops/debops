@@ -5,10 +5,10 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Test monit and reload
-  command: monit -t
+  ansible.builtin.command: monit -t
   notify: [ 'Reload monit' ]
 
 - name: Reload monit
-  service:
+  ansible.builtin.service:
     name: 'monit'
     state: 'reloaded'

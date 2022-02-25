@@ -4,25 +4,25 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Create required UNIX system group
-  group:
+  ansible.builtin.group:
     name: '{{ minio__group }}'
     state: 'present'
     system: True
 
 - name: Create required UNIX system account
-  user:
+  ansible.builtin.user:
     name: '{{ minio__user }}'
     group: '{{ minio__group }}'
     groups: '{{ minio__additional_groups }}'
@@ -35,7 +35,7 @@
     system: True
 
 - name: Create required application directories
-  file:
+  ansible.builtin.file:
     path: '{{ item.path }}'
     state: 'directory'
     owner: '{{ minio__user }}'
@@ -53,7 +53,7 @@
       mode: '0700'
 
 - name: Create volume directories
-  file:
+  ansible.builtin.file:
     path: '{{ (""
                if ((item.path | d(item)).startswith("/"))
                else (minio__volumes_dir + "/"))
@@ -66,7 +66,7 @@
   when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Symlink TLS files to MinIO home directory
-  file:
+  ansible.builtin.file:
     path: '{{ item.path }}'
     src: '{{ item.src }}'
     mode: '{{ item.mode }}'
@@ -82,7 +82,7 @@
   when: minio__pki_enabled|bool
 
 - name: Install systemd configuration files
-  template:
+  ansible.builtin.template:
     src: '{{ item }}.j2'
     dest: '/{{ item }}'
     mode: '0644'
@@ -92,10 +92,10 @@
   notify: [ 'Reload service manager' ]
 
 - name: Reload systemd daemon if required
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Stop and disable MinIO instances if requested
-  systemd:
+  ansible.builtin.systemd:
     name: 'minio@{{ item.name }}.service'
     state: 'stopped'
     enabled: False
@@ -105,7 +105,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove MinIO instance configuration files if requested
-  file:
+  ansible.builtin.file:
     path: '{{ minio__config_dir + "/" + item.name }}'
     state: 'absent'
   loop: '{{ minio__combined_instances | debops.debops.parse_kv_items }}'
@@ -113,7 +113,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate MinIO instance configuration files
-  template:
+  ansible.builtin.template:
     src: 'etc/minio/instance.j2'
     dest: '{{ minio__config_dir + "/" + item.name }}'
     owner: '{{ minio__user }}'
@@ -126,7 +126,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Start and enable MinIO instances
-  systemd:
+  ansible.builtin.systemd:
     name: 'minio@{{ item.name }}.service'
     state: 'started'
     enabled: True
@@ -137,34 +137,34 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Start and enable MinIO service
-  systemd:
+  ansible.builtin.systemd:
     name: 'minio.service'
     state: 'started'
     enabled: True
   when: ansible_service_mgr == 'systemd'
 
 - name: Restart MinIO instances if configuration was modified
-  systemd:  # noqa no-handler
+  ansible.builtin.systemd:  # noqa no-handler
     name: 'minio@{{ item.item.name }}.service'
     state: 'restarted'
   loop: '{{ minio__register_instance_config.results }}'
   when: item is changed
 
 - name: Install PKI hook script
-  template:
+  ansible.builtin.template:
     src: 'etc/pki/hooks/minio.j2'
     dest: '/etc/pki/hooks/minio'
     mode: '0755'
   when: ansible_service_mgr == 'systemd' and minio__pki_enabled|bool
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
 
 - name: Save MinIO local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/minio.fact.j2'
     dest: '/etc/ansible/facts.d/minio.fact'
     mode: '0755'
@@ -172,4 +172,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

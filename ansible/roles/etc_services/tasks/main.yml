@@ -5,18 +5,18 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ (etc_services__base_packages + etc_services__packages) | flatten }}'
     state: 'present'
   register: etc_services__register_packages
   until: etc_services__register_packages is succeeded
 
 - name: Make sure /etc/services.d directory exists
-  file:
+  ansible.builtin.file:
     path:  '/etc/services.d'
     state: 'directory'
     owner: 'root'
@@ -24,7 +24,7 @@
     mode:  '0755'
 
 - name: Create /etc/services.d/00_ansible
-  template:
+  ansible.builtin.template:
     src:  'etc/services.d/00_ansible.j2'
     dest: '/etc/services.d/00_ansible'
     owner: 'root'
@@ -39,7 +39,7 @@
     delete: True
 
 - name: Generate list of local services if requested
-  template:
+  ansible.builtin.template:
     src:  'etc/services.d/local_service.j2'
     dest: '/etc/services.d/{{ item.filename | default("20_local_service_" + item.name) }}'
     owner: 'root'
@@ -50,7 +50,7 @@
          ((item.name|d() and item.port|d()) or item.custom|d()))
 
 - name: Remove list of local services if requested
-  file:
+  ansible.builtin.file:
     path: '/etc/services.d/{{ item.filename | default("20_local_service_" + item.name) }}'
     state: 'absent'
   with_flattened: '{{ etc_services__combined_list }}'
@@ -59,7 +59,7 @@
          ((item.name|d() and item.port|d()) or item.custom|d()))
 
 - name: Assemble services.d
-  assemble:
+  ansible.builtin.assemble:
     src:  '/etc/services.d'
     dest: '/etc/services'
     backup: False

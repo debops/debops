@@ -4,11 +4,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Create required directories
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     state: 'directory'
     owner: 'root'
@@ -21,7 +21,7 @@
              else []) }}' ]
 
 - name: Download docker-gen sources
-  get_url:
+  ansible.builtin.get_url:
     url: '{{ docker_gen__release }}'
     dest: '{{ docker_gen__src + "/" + docker_gen__release | basename }}'
     owner: 'root'
@@ -29,7 +29,7 @@
     mode: '0644'
 
 - name: Unpack docker-gen
-  unarchive:
+  ansible.builtin.unarchive:
     src: '{{ docker_gen__src + "/" + docker_gen__release | basename }}'
     dest: '{{ docker_gen__lib }}'
     copy: False
@@ -39,7 +39,7 @@
   register: docker_gen__register_install
 
 - name: Copy docker-gen templates to remote host
-  copy:
+  ansible.builtin.copy:
     src: 'usr/local/lib/templates/'
     dest: '{{ docker_gen__templates + "/" }}'
     owner: 'root'
@@ -48,7 +48,7 @@
   notify: [ 'Restart docker-gen' ]
 
 - name: Configure docker-gen
-  template:
+  ansible.builtin.template:
     src: 'etc/docker-gen.conf.j2'
     dest: '/etc/docker-gen.conf'
     owner: 'root'
@@ -57,7 +57,7 @@
   notify: [ 'Restart docker-gen' ]
 
 - name: Configure docker-gen service options
-  template:
+  ansible.builtin.template:
     src: 'etc/default/docker-gen.j2'
     dest: '/etc/default/docker-gen'
     owner: 'root'
@@ -66,7 +66,7 @@
   notify: [ 'Restart docker-gen' ]
 
 - name: Configure docker-gen init script
-  template:
+  ansible.builtin.template:
     src: 'etc/init.d/docker-gen.j2'
     dest: '/etc/init.d/docker-gen'
     owner: 'root'
@@ -76,7 +76,7 @@
   when: ansible_service_mgr != 'systemd'
 
 - name: Configure docker-gen systemd service
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/docker-gen.service.j2'
     dest: '/etc/systemd/system/docker-gen.service'
     owner: 'root'
@@ -87,10 +87,10 @@
   when: ansible_service_mgr == 'systemd'
 
 - name: Reload systemd daemons
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Start docker-gen on install
-  service:  # noqa no-handler
+  ansible.builtin.service:  # noqa no-handler
     name: 'docker-gen'
     state: 'started'
     enabled: True

@@ -4,19 +4,19 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (sysfs__base_packages
                               + sysfs__packages)) }}'
     state: 'present'
@@ -25,7 +25,7 @@
   when: sysfs__enabled|bool
 
 - name: Check if the dependent configuration exists
-  stat:
+  ansible.builtin.stat:
     path: '{{ secret + "/sysfs/dependent_config/" + inventory_hostname + "/attributes.json" }}'
   register: sysfs__register_dependent_attributes_file
   become: False
@@ -34,7 +34,7 @@
          (ansible_local.sysfs.configured|d())|bool)
 
 - name: Load the dependent configuration from Ansible Controller
-  slurp:
+  ansible.builtin.slurp:
     src: '{{ secret + "/sysfs/dependent_config/" + inventory_hostname + "/attributes.json" }}'
   register: sysfs__register_dependent_attributes
   become: False
@@ -44,7 +44,7 @@
          sysfs__register_dependent_attributes_file.stat.exists|bool)
 
 - name: Remove sysfs configuration files if requested
-  file:
+  ansible.builtin.file:
     path: '/etc/sysfs.d/{{ item.filename | d(item.name | replace("/","_")) }}.conf'
     state: 'absent'
   with_items: '{{ sysfs__combined_attributes | debops.debops.parse_kv_items }}'
@@ -53,7 +53,7 @@
          item.state|d('present') == 'absent')
 
 - name: Generate sysfs configuration files
-  template:
+  ansible.builtin.template:
     src: 'etc/sysfs.d/attribute.conf.j2'
     dest: '/etc/sysfs.d/{{ item.filename | d(item.name | replace("/","_")) }}.conf'
     owner: 'root'
@@ -65,7 +65,7 @@
          item.state|d('present') not in [ 'defined', 'absent' ])
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -73,7 +73,7 @@
     mode: '0755'
 
 - name: Save sysfs local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/sysfs.fact.j2'
     dest: '/etc/ansible/facts.d/sysfs.fact'
     owner: 'root'
@@ -83,10 +83,10 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Save dependent configuration on Ansible Controller
-  template:
+  ansible.builtin.template:
     src: 'secret/sysfs/dependent_config/inventory_hostname/attributes.json.j2'
     dest: '{{ secret + "/sysfs/dependent_config/" + inventory_hostname + "/attributes.json" }}'
     mode: '0644'

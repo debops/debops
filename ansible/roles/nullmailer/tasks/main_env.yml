@@ -6,7 +6,7 @@
 - name: Check if MTA is installed
   environment:
     LC_MESSAGES: 'C'
-  shell: set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          dpkg --get-selections
               | grep -w -E '({{ nullmailer__skip_mta_packages | join("|") }})'
               | awk '{print $1}' || true
@@ -18,7 +18,7 @@
   check_mode: False
 
 - name: Set nullmailer deployment state
-  set_fact:
+  ansible.builtin.set_fact:
     nullmailer__deploy_state: '{{ "present"
                                   if (nullmailer__enabled|bool and
                                       (not nullmailer__skip_mta|bool or not nullmailer__register_mta.stdout|d()))

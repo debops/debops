@@ -8,19 +8,19 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Create /etc/default/grub.d directory
-  file:
+  ansible.builtin.file:
     path: '/etc/default/grub.d'
     state: 'directory'
     owner: 'root'
@@ -28,7 +28,7 @@
     mode: '0755'
 
 - name: Generate GRUB configuration file
-  template:
+  ansible.builtin.template:
     src: 'etc/default/grub.d/ansible.cfg.j2'
     dest: '/etc/default/grub.d/ansible.cfg'
     owner:  'root'
@@ -39,7 +39,7 @@
 # Security and users [[[
 
 - name: Ensure secrets directories exist
-  file:
+  ansible.builtin.file:
     path: '{{ secret + "/credentials/" + inventory_hostname + "/grub/" + item.name }}'
     state: 'directory'
     mode: '0750'
@@ -50,7 +50,7 @@
   with_items: '{{ grub__combined_users }}'
 
 - name: Save plaintext password in secrets
-  copy:
+  ansible.builtin.copy:
     content: "{{ item.password + '\n' }}"
     dest: '{{ secret + "/credentials/" + inventory_hostname + "/grub/" + item.name + "/password" }}'
     mode: '0640'
@@ -66,7 +66,7 @@
 ## is the workaround to make it idempotent.
 ## This is not too bad because depending on the iteration count chosen this operation could take a while ;)
 - name: Generate salted hash from user password
-  shell: set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          echo -en '{{ item.0.password }}\n{{ item.0.password }}\n' | LANG=C LC_ALL=C grub-mkpasswd-pbkdf2
          {{ "" if grub__iter_time|d()   == "default" else ("--iteration-count=" + grub__iter_time) }}
          {{ "" if grub__salt_length|d() == "default" else ("--salt=" + grub__salt_length) }}
@@ -85,7 +85,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Save hashed password in secrets
-  copy:
+  ansible.builtin.copy:
     content: "{{ item.1.stdout_lines.0 + '\n' }}"
     dest: '{{ secret + "/credentials/" + inventory_hostname + "/grub/" + item.0.name + "/password_hash" }}'
     mode: '0640'
@@ -98,7 +98,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Configure users and passwords
-  template:
+  ansible.builtin.template:
     src: 'etc/grub.d/01_users.j2'
     dest: '/etc/grub.d/01_users'
     owner: 'root'
@@ -108,7 +108,7 @@
   notify: [ 'Update GRUB' ]
 
 - name: Remove users and passwords
-  file:
+  ansible.builtin.file:
     path: '/etc/grub.d/01_users'
     state: 'absent'
   when: (grub__combined_users|length == 0)
@@ -126,7 +126,7 @@
   notify: [ 'Update GRUB' ]
 
 - name: Copy /etc/grub.d/10_linux.dpkg-divert to its original location
-  copy:
+  ansible.builtin.copy:
     src: '/etc/grub.d/10_linux.dpkg-divert'
     dest: '/etc/grub.d/10_linux'
     remote_src: True
@@ -137,7 +137,7 @@
   when: (grub__combined_users|length > 0)
 
 - name: Allow configuration of the default menu entry parameters
-  replace:
+  ansible.builtin.replace:
     dest: '/etc/grub.d/10_linux'
     regexp: "^CLASS=(?:\\$\\{[A-Z_]+:-)?([\"'][\\w _-]+)([\"'])\\}?"
     replace: 'CLASS=${GRUB_LINUX_MENUENTRY_CLASS:-\1 ${GRUB_LINUX_MENUENTRY_CLASS_ADDITIONAL:-}\2}'
@@ -148,7 +148,7 @@
 # ]]]
 
 - name: Make sure that local fact directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -156,7 +156,7 @@
     mode: '0755'
 
 - name: Save local GRUB facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/grub.fact.j2'
     dest: '/etc/ansible/facts.d/grub.fact'
     owner: 'root'
@@ -166,4 +166,4 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'

@@ -6,19 +6,19 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
-  import_role:
+  ansible.builtin.import_role:
     name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Install Elasticsearch packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (elasticsearch__base_packages
                               + elasticsearch__packages)) }}'
     state: 'present'
@@ -27,14 +27,14 @@
   until: elasticsearch__register_packages is succeeded
 
 - name: Add Elasticsearch UNIX account to selected groups
-  user:
+  ansible.builtin.user:
     name: '{{ elasticsearch__user }}'
     groups: '{{ elasticsearch__additional_groups }}'
     append: True
   when: elasticsearch__additional_groups|d()
 
 - name: Make sure that Ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     owner: 'root'
@@ -42,7 +42,7 @@
     mode: '0755'
 
 - name: Save Elasticsearch local facts
-  template:
+  ansible.builtin.template:
     src: 'etc/ansible/facts.d/elasticsearch.fact.j2'
     dest: '/etc/ansible/facts.d/elasticsearch.fact'
     owner: 'root'
@@ -52,10 +52,10 @@
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Check if the dependent config file exists
-  stat:
+  ansible.builtin.stat:
     path: '{{ secret + "/elasticsearch/dependent_config/" + inventory_hostname + "/config.json" }}'
   register: elasticsearch__register_dependent_config_file
   become: False
@@ -64,7 +64,7 @@
   tags: [ 'role::elasticsearch:config' ]
 
 - name: Load the dependent configuration from Ansible Controller
-  slurp:
+  ansible.builtin.slurp:
     src: '{{ secret + "/elasticsearch/dependent_config/" + inventory_hostname + "/config.json" }}'
   register: elasticsearch__register_dependent_config
   become: False
@@ -85,7 +85,7 @@
   tags: [ 'role::elasticsearch:config' ]
 
 - name: Create systemd configuration directory
-  file:
+  ansible.builtin.file:
     path: '/etc/systemd/system/elasticsearch.service.d'
     state: 'directory'
     owner: 'root'
@@ -93,7 +93,7 @@
     mode: '0755'
 
 - name: Generate systemd configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/elasticsearch.service.d/ansible.conf.j2'
     dest: '/etc/systemd/system/elasticsearch.service.d/ansible.conf'
     owner: 'root'
@@ -102,7 +102,7 @@
   notify: [ 'Reload service manager' ]
 
 - name: Generate Elasticsearch configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/elasticsearch/elasticsearch.yml.j2'
     dest: '/etc/elasticsearch/elasticsearch.yml'
     owner: 'root'
@@ -112,7 +112,7 @@
   tags: [ 'role::elasticsearch:config' ]
 
 - name: Generate Elasticsearch JVM configuration
-  template:
+  ansible.builtin.template:
     src: 'etc/elasticsearch/jvm.options.j2'
     dest: '/etc/elasticsearch/jvm.options'
     owner: 'root'
@@ -123,7 +123,7 @@
   tags: [ 'role::elasticsearch:config' ]
 
 - name: Generate Java Policy configuration file
-  template:
+  ansible.builtin.template:
     src: 'usr/share/elasticsearch/jdk/conf/security/java.policy.j2'
     dest: '/usr/share/elasticsearch/jdk/conf/security/java.policy'
     mode: '0644'
@@ -131,7 +131,7 @@
   when: elasticsearch__version is version("6.0.0", ">=")
 
 - name: Manage data paths
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     state: 'directory'
     owner: '{{ elasticsearch__user }}'
@@ -141,10 +141,10 @@
     - '{{ elasticsearch__path_data }}'
 
 - name: Reload systemd daemons
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Check state of installed Elasticsearch plugins
-  command: bin/elasticsearch-plugin list
+  ansible.builtin.command: bin/elasticsearch-plugin list
   args:
     chdir: '/usr/share/elasticsearch'
   register: elasticsearch__register_plugins
@@ -152,7 +152,7 @@
   check_mode: False
 
 - name: Install Elasticsearch plugins
-  command: bin/elasticsearch-plugin install {{ item.url | d(item.name) }} --batch
+  ansible.builtin.command: bin/elasticsearch-plugin install {{ item.url | d(item.name) }} --batch
   args:
     chdir: '/usr/share/elasticsearch'
   notify: [ 'Restart elasticsearch' ]
@@ -163,7 +163,7 @@
          not in elasticsearch__register_plugins.stdout_lines)
 
 - name: Remove Elasticsearch plugins
-  command: bin/elasticsearch-plugin remove {{ item.name }}
+  ansible.builtin.command: bin/elasticsearch-plugin remove {{ item.name }}
   args:
     chdir: '/usr/share/elasticsearch'
   notify: [ 'Restart elasticsearch' ]
@@ -174,7 +174,7 @@
          in elasticsearch__register_plugins.stdout_lines)
 
 - name: Save Elasticsearch dependent configuration on Ansible Controller
-  template:
+  ansible.builtin.template:
     src: 'secret/elasticsearch/dependent_config/config.json.j2'
     dest: '{{ secret + "/elasticsearch/dependent_config/" + inventory_hostname + "/config.json" }}'
     mode: '0644'
@@ -183,7 +183,7 @@
   tags: [ 'role::elasticsearch:config' ]
 
 - name: Ensure that Elasticsearch is restarted
-  meta: 'flush_handlers'
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Manage Elasticsearch authentication
   import_tasks: 'authentication.yml'

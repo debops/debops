@@ -4,11 +4,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
-  import_role:
+  ansible.builtin.import_role:
     name: 'global_handlers'
 
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (nfs_server__base_packages
                               + nfs_server__packages)) }}'
     state: 'present'
@@ -16,7 +16,7 @@
   until: nfs_server__register_packages is succeeded
 
 - name: Configure NFS server
-  template:
+  ansible.builtin.template:
     src: '{{ item }}.j2'
     dest: '/{{ item }}'
     owner: 'root'
@@ -31,7 +31,7 @@
     - 'Restart nfs-kernel-server service'
 
 - name: Create /etc/exports.d/ directory
-  file:
+  ansible.builtin.file:
     path: '/etc/exports.d'
     state: 'directory'
     owner: 'root'
@@ -39,7 +39,7 @@
     mode: '0755'
 
 - name: Ensure exported directories exist
-  file:
+  ansible.builtin.file:
     path: '{{ item.path }}'
     state: 'directory'
     owner: '{{ item.owner | d("root") }}'
@@ -50,7 +50,7 @@
   when: item.path|d() and item.state|d('present') != 'absent' and item.acl|d()
 
 - name: Bind mount requested directories
-  mount:
+  ansible.posix.mount:
     name: '{{ item.path }}'
     src: '{{ item.bind.src | d(item.bind) }}'
     opts: '{{ ( [ "bind" ] + item.bind.options | d([]) ) | join(",") }}'
@@ -61,7 +61,7 @@
   when: item.path|d() and item.state|d('present') != 'absent' and item.acl|d() and item.bind|d()
 
 - name: Configure NFS exports
-  template:
+  ansible.builtin.template:
     src: 'etc/exports.d/ansible.exports.j2'
     dest: '/etc/exports.d/ansible.exports'
     owner: 'root'

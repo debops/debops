@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Create reprepro spool directory
-  file:
+  ansible.builtin.file:
     path: '{{ reprepro__spool_root + "/" + repo.name }}'
     state: 'directory'
     owner: '{{ reprepro__user }}'
@@ -13,7 +13,7 @@
   when: repo.state|d('present') not in [ 'absent', 'ignore' ]
 
 - name: Create directory for reprepro uploads
-  file:
+  ansible.builtin.file:
     path: '{{ reprepro__spool_root + "/" + repo.name + "/incoming" }}'
     state: 'directory'
     owner: '{{ reprepro__user }}'
@@ -22,7 +22,7 @@
   when: repo.state|d('present') not in [ 'absent', 'ignore' ]
 
 - name: Create reprepro internal directories
-  file:
+  ansible.builtin.file:
     path: '{{ reprepro__data_root + "/" + repo.name + "/" + item }}'
     state: 'directory'
     owner: '{{ reprepro__user }}'
@@ -32,7 +32,7 @@
   when: repo.state|d('present') not in [ 'absent', 'ignore' ]
 
 - name: Create public reprepro repository
-  file:
+  ansible.builtin.file:
     path: '{{ reprepro__public_root + "/sites/" + repo.name + "/public" }}'
     state: 'directory'
     owner: '{{ reprepro__user }}'
@@ -42,7 +42,7 @@
         not repo.outdir|d()
 
 - name: Copy GPG public key to public space
-  copy:
+  ansible.builtin.copy:
     src: '{{ reprepro__home + "/" + reprepro__gpg_public_filename }}'
     dest: '{{ reprepro__public_root + "/sites/" + repo.name + "/public/" + reprepro__gpg_public_filename }}'
     remote_src: True
@@ -53,7 +53,7 @@
         not repo.outdir|d()
 
 - name: Manage reprepro configuration files
-  template:
+  ansible.builtin.template:
     src: 'home/reprepro/repositories/instance/conf/{{ item }}.j2'
     dest: '{{ reprepro__data_root + "/" + repo.name + "/conf/" + item }}'
     owner: '{{ reprepro__user }}'
@@ -65,7 +65,7 @@
          (item in repo.keys() or item in [ 'options' ]))
 
 - name: Configure uploaders configuration files
-  template:
+  ansible.builtin.template:
     src: 'home/reprepro/repositories/instance/conf/uploaders/template.j2'
     dest: '{{ reprepro__data_root + "/" + repo.name + "/conf/uploaders/" + item.name }}'
     owner: '{{ reprepro__user }}'
@@ -76,7 +76,7 @@
   when: repo.state|d('present') not in [ 'absent', 'ignore' ] and 'uploaders' in repo.keys()
 
 - name: Initialize reprepro repositories
-  command: 'reprepro export'
+  ansible.builtin.command: 'reprepro export'
   args:
     chdir: '{{ reprepro__data_root + "/" + repo.name }}'
   become: True
@@ -85,7 +85,7 @@
          (reprepro__register_config is changed or reprepro__register_uploaders is changed))
 
 - name: Generate symlinks
-  command: 'reprepro --delete createsymlinks'
+  ansible.builtin.command: 'reprepro --delete createsymlinks'
   args:
     chdir: '{{ reprepro__data_root + "/" + repo.name }}'
   become: True
@@ -94,7 +94,7 @@
   when: (repo.state|d('present') not in [ 'absent', 'ignore' ] and repo.distributions|d())
 
 - name: Enable incoming queue monitoring
-  systemd:
+  ansible.builtin.systemd:
     name: '{{ "reprepro-incoming@" + repo.name + ".path" }}'
     state: '{{ "started"
                if (repo.state|d("present") not in [ "absent", "ignore" ])
@@ -105,7 +105,7 @@
   when: repo.incoming|d()
 
 - name: Manage reprepro scripts
-  template:
+  ansible.builtin.template:
     src: 'home/reprepro/repositories/instance/conf/{{ item }}.j2'
     dest: '{{ reprepro__data_root + "/" + repo.name + "/conf/" + item }}'
     owner: '{{ reprepro__user }}'

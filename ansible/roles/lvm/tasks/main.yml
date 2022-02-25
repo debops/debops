@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Install LVM support
-  package:
+  ansible.builtin.package:
     name:  '{{ q("flattened", lvm__packages) }}'
     state: 'present'
   register: lvm__register_packages
@@ -17,7 +17,7 @@
 - name: Check LVM version
   environment:
     LC_MESSAGES: 'C'
-  shell: set -o nounset -o pipefail -o errexit &&
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          dpkg-query -W -f='${Version}\n' 'lvm2' | grep -v '^$' | cut -d- -f1
   args:
     executable: 'bash'
@@ -26,7 +26,7 @@
   check_mode: False
 
 - name: Lookup base LVM configuration
-  include_vars: '{{ item }}'
+  ansible.builtin.include_vars: '{{ item }}'
   with_first_found:
     - '{{ "lvm_config_" + lvm__config_lookup + ".yml" }}'
     - '{{ "lvm_config_" + lvm__register_version.stdout + ".yml" }}'
@@ -35,7 +35,7 @@
     - 'lvm_config_default.yml'
 
 - name: Configure LVM
-  template:
+  ansible.builtin.template:
     src: 'etc/lvm/lvm.conf.j2'
     dest: '/etc/lvm/lvm.conf'
     owner: 'root'
@@ -43,7 +43,7 @@
     mode: '0644'
 
 - name: Enable/disable lvm2-lvmetad socket
-  systemd:
+  ansible.builtin.systemd:
     name: 'lvm2-lvmetad.socket'
     state: '{{ "started" if lvm__global_use_lvmetad else "stopped" }}'
     enabled: '{{ lvm__global_use_lvmetad }}'
@@ -52,7 +52,7 @@
                                            'bionic' ])
 
 - name: Manage LVM
-  include: manage_lvm.yml
+  ansible.builtin.include_tasks: manage_lvm.yml
   when: (((ansible_system_capabilities_enforced|d())|bool and
           "cap_sys_admin" in ansible_system_capabilities) or
          not (ansible_system_capabilities_enforced|d(True))|bool)

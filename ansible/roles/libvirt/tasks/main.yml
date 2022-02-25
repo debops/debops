@@ -5,11 +5,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps secret role
-  import_role:
+  ansible.builtin.import_role:
     name: 'secret'
 
 - name: Install libvirt support
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (libvirt__base_packages
                               + (libvirt__packages_map[ansible_distribution_release]
                                  | d(libvirt__packages)))) }}'
@@ -18,21 +18,21 @@
   until: libvirt__register_packages is succeeded
 
 - name: Create configuration directory
-  file:
+  ansible.builtin.file:
     path: '~/.config/libvirt'
     state: 'directory'
     mode: '0755'
   become: False
 
 - name: Generate libvirt.conf configuration
-  template:
+  ansible.builtin.template:
     src: 'home/config/libvirt/libvirt.conf.j2'
     dest: '~/.config/libvirt/libvirt.conf'
     mode: '0644'
   become: False
 
 - name: Get list of groups admin account belongs to
-  command: groups
+  ansible.builtin.command: groups
   register: libvirt__register_groups
   changed_when: False
   check_mode: False
@@ -40,11 +40,11 @@
   tags: [ 'role::libvirt:networks', 'role::libvirt:pools' ]
 
 - name: Manage libvirt networks
-  include: manage_networks.yml
+  ansible.builtin.include_tasks: manage_networks.yml
   when: libvirt__group_map[ansible_distribution] in libvirt__register_groups.stdout.split(" ")
   tags: [ 'role::libvirt:networks' ]
 
 - name: Manage libvirt pools
-  include: manage_pools.yml
+  ansible.builtin.include_tasks: manage_pools.yml
   when: libvirt__group_map[ansible_distribution] in libvirt__register_groups.stdout.split(" ")
   tags: [ 'role::libvirt:pools' ]
