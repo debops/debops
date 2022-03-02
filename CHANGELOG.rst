@@ -26,6 +26,12 @@ You can read information about required changes between releases in the
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.roundcube` role, the Roundcube version installed by
+  default has been updated to ``1.5.2``.
+
 General
 ~~~~~~~
 
