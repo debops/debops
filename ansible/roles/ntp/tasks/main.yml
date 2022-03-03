@@ -19,6 +19,7 @@
     purge: True
   register: ntp__register_apt_purge
   until: ntp__register_apt_purge is succeeded
+  when: ntp__daemon_enabled | bool
 
   # Installs either ntpdate, NTPd, chrony or OpenNTPd on all hosts except inside containers
 - name: Install NTP service
