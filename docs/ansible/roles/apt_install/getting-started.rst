@@ -52,7 +52,7 @@ installed on hosts, depending on the inventory level:
 
 :envvar:`apt_install__packages`
   This variable should be used in
-  :file:`ansible/inventory/group_vars/all/apt_install.yml` file and is meant to
+  :file:`ansible/inventory/group_vars/debops_all_hosts/apt_install.yml` file and is meant to
   specify packages present on all hosts in the inventory.
 
 :envvar:`apt_install__group_packages`

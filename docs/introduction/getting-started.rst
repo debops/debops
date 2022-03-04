@@ -125,13 +125,13 @@ variables which, when set correctly in inventory, can save you a trip to the
 data center.
 
 To make sure that these variables apply to all hosts in your environment, you
-can include them in :file:`ansible/inventory/group_vars/all/` directory. A
+can include them in :file:`ansible/inventory/group_vars/debops_all_hosts/` directory. A
 common practice is to name the files inside inventory directories after
 variable prefixes, separately for each Ansible role. For example, variables
 related to :ref:`debops.sshd` role are stored in
-:file:`ansible/inventory/group_vars/all/sshd.yml`, variables used by the
+:file:`ansible/inventory/group_vars/debops_all_hosts/sshd.yml`, variables used by the
 :ref:`debops.postfix` role are written in
-:file:`ansible/inventory/group_vars/all/postfix.yml`, and so on. The same
+:file:`ansible/inventory/group_vars/debops_all_hosts/postfix.yml`, and so on. The same
 scheme can be used in other inventory groups or for separate hosts.
 
 ansible_user
@@ -204,7 +204,7 @@ expected, but if you still are getting blocked, or to be sure that remote
 access won't be interrupted, you can define a list of IP addresses or CIDR
 subnets that will be allowed to connect to SSH without restrictions.
 
-To do that, in :file:`ansible/inventory/group_vars/all/sshd.yml` add:
+To do that, in :file:`ansible/inventory/group_vars/debops_all_hosts/sshd.yml` add:
 
 .. code-block:: yaml
 

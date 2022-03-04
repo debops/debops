@@ -44,7 +44,7 @@ group::
 To manage jails, you use ``fail2ban_*_jails`` list variables by adding them in
 ``group_vars/`` or ``host_vars/`` directories. For example, to disable the
 ``ssh`` jail by default on all hosts, create
-``inventory/group_vars/all/fail2ban.yml`` file and add inside::
+``inventory/group_vars/debops_all_hosts/fail2ban.yml`` file and add inside::
 
     ---
 
