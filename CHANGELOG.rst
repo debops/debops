@@ -50,6 +50,13 @@ Changed
 Fixed
 ~~~~~
 
+General
+'''''''
+
+- Ensure that the :file:`tools/dist-upgrade.yml` playbook works witout the
+  ``${SUDO_USER}`` environment variable set, for example if executed directly
+  using the ``root`` UNIX account.
+
 debops.boxbackup role
 '''''''''''''''''''''
 
