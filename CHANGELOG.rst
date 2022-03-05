@@ -26,6 +26,13 @@ You can read information about required changes between releases in the
 Fixed
 ~~~~~
 
+General
+'''''''
+
+- Ensure that the :file:`tools/dist-upgrade.yml` playbook works witout the
+  ``${SUDO_USER}`` environment variable set, for example if executed directly
+  using the ``root`` UNIX account.
+
 debops.boxbackup role
 '''''''''''''''''''''
 
