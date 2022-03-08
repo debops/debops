@@ -369,7 +369,9 @@ gitlab_runner__vagrant_libvirt: '{{ True
 # keys that prevent interaction with Vagrant VMs.
 # See the patch file in :file:`files/patches/` directory for more details.
 gitlab_runner__vagrant_libvirt_patch: '{{ True
-                                          if (gitlab_runner__vagrant_libvirt|bool)
+                                          if (gitlab_runner__vagrant_libvirt|bool and
+                                              ansible_distribution_release in
+                                              [ "stretch", "buster" ])
                                           else False }}'
 
                                                                    # ]]]
