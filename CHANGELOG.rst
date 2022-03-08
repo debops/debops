@@ -49,6 +49,12 @@ General
 - Provide a help message in case the :file:`ansible.cfg` configuration file in
   the DebOps project directory does not include the ``inventory`` option.
 
+:ref:`debops.gitlab_runner` role
+''''''''''''''''''''''''''''''''
+
+- Fixed an error that could occur in the "Patch 'vagrant-libvirt' source code"
+  task on systems other than Debian 9 or 10.
+
 :ref:`debops.logrotate` role
 ''''''''''''''''''''''''''''
 
