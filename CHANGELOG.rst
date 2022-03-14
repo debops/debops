@@ -35,6 +35,12 @@ New DebOps roles
 
   .. __: https://www.elastic.co/beats/metricbeat
 
+:ref:`debops.kibana` role
+'''''''''''''''''''''''''
+
+- The role can now manage passwords and other confidental data stored in the
+  Kibana keystore.
+
 Changed
 ~~~~~~~
 
