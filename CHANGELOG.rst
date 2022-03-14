@@ -41,6 +41,12 @@ Changed
 Fixed
 ~~~~~
 
+:ref:`debops.ldap` role
+'''''''''''''''''''''''
+
+- Fixed an issue with the role passing IP and MAC addresses to the LDAP
+  directory as a nested YAML list which resulted in a wrong attribute values.
+
 :ref:`debops.logrotate` role
 ''''''''''''''''''''''''''''
 
