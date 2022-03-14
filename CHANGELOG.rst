@@ -26,6 +26,14 @@ You can read information about required changes between releases in the
 Fixed
 ~~~~~
 
+debops.boxbackup role
+'''''''''''''''''''''
+
+- The role is not included in the DebOps Collection on Ansible Galaxy,
+  therefore its playbook is no longer included in the main :file:`site.yml`
+  playbook. This fixes an issue with Ansible stopping the site playbook
+  execution when it cannot find the ``boxbackup`` role in the Collection.
+
 :ref:`debops.ldap` role
 '''''''''''''''''''''''
 
