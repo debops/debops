@@ -190,3 +190,74 @@ Install a LogTrail plugin:
    kibana__plugins:
      - name: 'logtrail'
        url: 'https://github.com/sivasamyk/logtrail/releases/download/0.1.13/logtrail-5.4.0-0.1.13.zip'
+
+
+.. _kibana__ref_keys:
+
+kibana__keys
+------------
+
+The ``kibana__*_keys`` variables define the contents of the `Kibana keystore`__
+used to keep confidental data like passwords or access tokens. The keys can be
+referenced in the Kibana configuration files using the ``${secret_key}``
+syntax.
+
+.. __: https://www.elastic.co/guide/en/kibana/current/secure-settings.html
+
+Examples
+~~~~~~~~
+
+Add an Elasticsearch password used for access over a secure connection. The
+password is retrieved from the :file:`secret/` directory on the Ansible
+Controller, managed by the :ref:`debops.secret` Ansible role:
+
+.. code-block:: yaml
+
+   kibana__keys:
+
+     - ELASTIC_PASSWORD: '{{ lookup("file", secret + "/elastic-stack/elastic/password") }}'
+
+Update an existing key with new content (presence of the ``force`` parameter
+will update the key on each Ansible run):
+
+.. code-block:: yaml
+
+   kibana__keys:
+
+     - name: 'ELASTIC_PASSWORD'
+       value: 'new-elasticsearch-password'
+       force: True
+
+Remove a key from the Kibana keystore:
+
+.. code-block:: yaml
+
+   kibana__keys:
+
+     - name: 'ELASTIC_PASSWORD'
+       state: 'absent'
+
+Syntax
+~~~~~~
+
+Each key entry is defined by a YAML dictionary. The keys can be defined using
+a simple format, with dictionary key being the secret key name, and its value
+being the secret value. In this case you should avoid the ``name`` or ``value``
+as the secret keys.
+
+Alternatively, secret keys can be defined using YAML dictionaries with specific
+parameters:
+
+``name``
+  Required. Name of the secret key to store in the Kibana keystore.
+
+``value``
+  Optional. A string with the value which should be stored under a given key.
+
+``state``
+  Optional. If not specified or ``present``, the key will be inserted into the
+  keystore. If ``absent``, the key will be removed from the keystore.
+
+``force``
+  Optional, boolean. If present and ``True``, the specified key will be updated
+  in the keystore.

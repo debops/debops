@@ -23,6 +23,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.0: https://github.com/debops/debops/compare/v3.0.0...stable-3.0
 
+Added
+~~~~~
+
+:ref:`debops.kibana` role
+'''''''''''''''''''''''''
+
+- The role can now manage passwords and other confidental data stored in the
+  Kibana keystore.
+
 Changed
 ~~~~~~~
 
