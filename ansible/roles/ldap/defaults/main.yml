@@ -289,9 +289,8 @@ ldap__device_aliases: [ '{{ ansible_hostname }}' ]
 # or other network interfaces not reachable directly from outside the
 # host will be skipped. The :rfc:`1918` addresses will also be added in the
 # attributes, if they are configured to be reachable from outside of the host.
-ldap__device_ip_addresses: '{{ q("template",
-                                 "lookup/ldap__device_ip_addresses.j2")
-                                 | from_yaml | flatten }}'
+ldap__device_ip_addresses: '{{ lookup("template", "lookup/ldap__device_ip_addresses.j2",
+                                      convert_data=False) | from_yaml }}'
 
                                                                    # ]]]
 # .. envvar:: ldap__device_ip_iface_regex [[[
@@ -314,9 +313,8 @@ ldap__device_ip_iface_regex: '^(bond|en|eth|vlan|mv-|host)'
 # the device object. This could otherwise cause problems when the host employs
 # network bonding (where the MAC addresses of the physical interfaces can become
 # the same).
-ldap__device_mac_addresses: '{{ q("template",
-                                  "lookup/ldap__device_mac_addresses.j2")
-                                  | from_yaml | flatten | unique }}'
+ldap__device_mac_addresses: '{{ lookup("template", "lookup/ldap__device_mac_addresses.j2",
+                                       convert_data=False) | from_yaml }}'
 
                                                                    # ]]]
 # .. envvar:: ldap__device_mac_iface_regex [[[
