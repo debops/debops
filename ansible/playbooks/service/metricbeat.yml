@@ -1,0 +1,24 @@
+---
+# Copyright (C) 2022 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Manage Metricbeat service
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_metricbeat' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: extrepo
+      tags: [ 'role::extrepo', 'skip::extrepo', 'role::metricbeat' ]
+      extrepo__dependent_sources:
+        - '{{ metricbeat__extrepo__dependent_sources }}'
+
+    - role: metricbeat
+      tags: [ 'role::metricbeat', 'skip::metricbeat' ]

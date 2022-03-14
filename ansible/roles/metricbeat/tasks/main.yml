@@ -1,0 +1,155 @@
+---
+# Copyright (C) 2022 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import custom Ansible plugins
+  ansible.builtin.import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  ansible.builtin.import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  ansible.builtin.import_role:
+    name: 'secret'
+
+- name: Install Metricbeat packages
+  ansible.builtin.package:
+    name: '{{ q("flattened", (metricbeat__base_packages
+                              + metricbeat__packages)) }}'
+    state: 'present'
+  notify: [ 'Refresh host facts' ]
+  register: metricbeat__register_packages
+  until: metricbeat__register_packages is succeeded
+
+- name: Make sure that Ansible local facts directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save Metricbeat local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/metricbeat.fact.j2'
+    dest: '/etc/ansible/facts.d/metricbeat.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: Update Ansible facts if they were modified
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Divert the original Metricbeat configuration
+  dpkg_divert:
+    path: '/etc/metricbeat/metricbeat.yml'
+    state: 'present'
+  register: metricbeat__register_config_divert
+  when: ansible_pkg_mgr == 'apt'
+
+- name: Generate main Metricbeat configuration
+  ansible.builtin.template:
+    src: 'etc/metricbeat/metricbeat.yml.j2'
+    dest: '/etc/metricbeat/metricbeat.yml'
+    mode: '0600'
+  notify: [ 'Test metricbeat configuration and restart' ]
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Create required configuration directories
+  ansible.builtin.file:
+    path: '{{ "/etc/metricbeat/" + (item.name | dirname) }}'
+    state: 'directory'
+    mode: '0755'
+  loop: '{{ metricbeat__combined_snippets | debops.debops.parse_kv_config }}'
+  loop_control:
+    label:  '{{ {"name": item.name, "state": item.state} }}'
+  when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and item.config|d()
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Manage snippet diversion and reversion
+  dpkg_divert:
+    path: '{{ "/etc/metricbeat/" + (item.name | regex_replace(".yml","") + ".yml") }}'
+    state: '{{ "absent" if item.state|d("present") == "absent" else "present" }}'
+    delete: True
+  loop: '{{ metricbeat__combined_snippets | debops.debops.parse_kv_config }}'
+  loop_control:
+    label:  '{{ {"name": item.name, "state": item.state} }}'
+  notify: [ 'Test metricbeat configuration and restart' ]
+  when: ansible_pkg_mgr == 'apt' and item.config|d() and (item.divert|d())
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Remove snippet configuration if requested
+  ansible.builtin.file:
+    path: '{{ "/etc/metricbeat/" + (item.name | regex_replace(".yml","") + ".yml") }}'
+    state: 'absent'
+  loop: '{{ metricbeat__combined_snippets | debops.debops.parse_kv_config }}'
+  loop_control:
+    label:  '{{ {"name": item.name, "state": item.state, "config": item.config} }}'
+  notify: [ 'Test metricbeat configuration and restart' ]
+  when: item.state|d('present') == 'absent' and item.config|d()
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Generate snippet configuration
+  ansible.builtin.template:
+    src: 'etc/metricbeat/snippets.d/snippet.yml.j2'
+    dest: '{{ "/etc/metricbeat/" + (item.name | regex_replace(".yml","") + ".yml") }}'
+    mode: '{{ item.mode | d("0600") }}'
+  loop: '{{ metricbeat__combined_snippets | debops.debops.parse_kv_config }}'
+  loop_control:
+    label:  '{{ {"name": item.name, "state": item.state, "config": item.config} }}'
+  notify: [ 'Test metricbeat configuration and restart' ]
+  when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and item.config|d()
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Check if the Metricbeat keystore exists
+  ansible.builtin.stat:
+    path: '/var/lib/metricbeat/metricbeat.keystore'
+  register: metricbeat__register_keystore
+
+- name: Create Metricbeat keystore if not present
+  ansible.builtin.command: 'metricbeat keystore create'
+  when: not metricbeat__register_keystore.stat.exists
+
+- name: Get the list of keystore contents
+  ansible.builtin.command: 'metricbeat keystore list'
+  register: metricbeat__register_keys
+  changed_when: False
+  check_mode: '{{ False if ansible_local.metricbeat.installed|d() else omit }}'
+
+- name: Remove key from Metricbeat keystore when requested
+  ansible.builtin.command: 'metricbeat keystore remove {{ item.name }}'
+  loop: '{{ metricbeat__combined_keys | debops.debops.parse_kv_config }}'
+  loop_control:
+    label:  '{{ {"name": item.name, "state": item.state} }}'
+  notify: [ 'Test metricbeat configuration and restart' ]
+  when: (item.state|d('present') == 'absent' and
+         item.name in metricbeat__register_keys.stdout_lines)
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Set or update key in Metricbeat keystore
+  environment:
+    DEBOPS_METRICBEAT_KEY: '{{ item.value }}'
+  ansible.builtin.shell: |
+    set -o nounset -o pipefail -o errexit &&
+    {% if item.force | d(False) %}
+    printf "%s" "${DEBOPS_METRICBEAT_KEY}" | metricbeat keystore add "{{ item.name }}" --stdin --force
+    {% else %}
+    printf "%s" "${DEBOPS_METRICBEAT_KEY}" | metricbeat keystore add "{{ item.name }}" --stdin
+    {% endif %}
+  args:
+    executable: 'bash'
+  loop: '{{ metricbeat__combined_keys | debops.debops.parse_kv_config }}'
+  loop_control:
+    label:  '{{ {"name": item.name, "state": item.state} }}'
+  notify: [ 'Test metricbeat configuration and restart' ]
+  when: (item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
+         (item.name not in metricbeat__register_keys.stdout_lines or
+          (item.force|d(False))|bool))
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Enable metricbeat service on installation
+  ansible.builtin.service:  # noqa no-handler
+    name: 'metricbeat'
+    enabled: True
+  when: ansible_local.metricbeat.installed|d() and metricbeat__register_config_divert is changed

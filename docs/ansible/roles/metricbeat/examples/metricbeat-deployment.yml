@@ -1,0 +1,82 @@
+---
+# Copyright (C) 2022 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Example configuration for Metricbeat deployment with an Elasticsearch cluster
+# as the data destination. Kibana is used as the UI layer.
+
+---
+# Configuration for all Metricbeat instances
+# File: ansible/inventory/group_vars/debops_all_hosts/metricbeat.yml
+metricbeat__configuration:
+
+  - name: 'output_elasticsearch'
+    config:
+      output.elasticsearch:
+        hosts:
+          - 'https://es1.example.org:9200'
+          - 'https://es2.example.org:9200'
+          - 'https://es3.example.org:9200'
+        username: 'remote_monitoring_user'
+        password: '${REMOTE_USER_PASSWORD}'
+
+  - name: 'setup_kibana'
+    config:
+      setup.kibana:
+        host: "https://kibana.example.org:443"
+        # Elasticsearch account which can create Kibana dashboards
+        username: 'elastic'
+        password: '{{ lookup("file", secret + "/elasticsearch/credentials/"
+                      + "built-in/elastic/password") }}'
+
+  - name: 'setup_ilm'
+    config:
+      setup.ilm.overwrite: true
+
+  - name: 'monitoring'
+    config:
+      monitoring:
+        enabled: true
+        elasticsearch:
+          username: 'remote_monitoring_user'
+          password: '${REMOTE_USER_PASSWORD}'
+
+# Store the Metricbeat user password in Metricbeat keystore. The Elasticsearch
+# cluster should be deployed first to ensure that the passwords are present.
+metricbeat__keys:
+
+  - RMOTE_USER_PASSWORD: '{{ lookup("file", secret + "/elasticsearch/credentials/"
+                             + "built-in/remote_monitoring_user/password") }}'
+
+
+---
+# Configuration for Elasticsearch nodes
+# File: ansible/inventory/group_vars/debops_service_elasticsearch/metricbeat.yml
+metricbeat__group_snippets:
+
+  - name: 'modules.d/elasticsearch-xpack.yml'
+    config:
+
+      - module: 'elasticsearch'
+        hosts: [ 'https://{{ ansible_fqdn }}:9200' ]
+        username: 'remote_monitoring_user'
+        password: '${REMOTE_USER_PASSWORD}'
+        xpack.enabled: True
+        period: '10s'
+
+
+---
+# Configuration for Kibana nodes
+# File: ansible/inventory/group_vars/debops_service_kibana/metricbeat.yml
+metricbeat__group_snippets:
+
+  - name: 'modules.d/kibana-xpack.yml'
+    config:
+
+      - module: 'kibana'
+        hosts: [ 'localhost:5601' ]
+        username: 'remote_monitoring_user'
+        password: '${REMOTE_USER_PASSWORD}'
+        xpack.enabled: True
+        period: '10s'
