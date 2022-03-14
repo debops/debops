@@ -35,6 +35,12 @@ New DebOps roles
 
   .. __: https://www.elastic.co/beats/metricbeat
 
+:ref:`debops.kibana` role
+'''''''''''''''''''''''''
+
+- The role can now manage passwords and other confidental data stored in the
+  Kibana keystore.
+
 Changed
 ~~~~~~~
 
@@ -60,6 +66,20 @@ General
 
 - Provide a help message in case the :file:`ansible.cfg` configuration file in
   the DebOps project directory does not include the ``inventory`` option.
+
+debops.boxbackup role
+'''''''''''''''''''''
+
+- The role is not included in the DebOps Collection on Ansible Galaxy,
+  therefore its playbook is no longer included in the main :file:`site.yml`
+  playbook. This fixes an issue with Ansible stopping the site playbook
+  execution when it cannot find the ``boxbackup`` role in the Collection.
+
+:ref:`debops.ldap` role
+'''''''''''''''''''''''
+
+- Fixed an issue with the role passing IP and MAC addresses to the LDAP
+  directory as a nested YAML list which resulted in a wrong attribute values.
 
 :ref:`debops.logrotate` role
 ''''''''''''''''''''''''''''

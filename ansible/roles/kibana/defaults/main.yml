@@ -677,6 +677,44 @@ kibana__combined_plugins: '{{ lookup("flattened", (kibana__plugins
                               + kibana__host_plugins)) }}'
                                                                    # ]]]
                                                                    # ]]]
+# Kibana keystore contents [[[
+# ----------------------------
+
+# The variables below define the contents of the Kibana keystore which can be
+# used to store passwords and other confidental data, which then can be
+# referenced in Kibana configuration files. See :ref:`kibana__ref_keys` for
+# more details.
+
+# .. envvar:: kibana__keys [[[
+#
+# Kibana keystore content which should be present on all hosts in the Ansible
+# inventory.
+kibana__keys: []
+
+                                                                   # ]]]
+# .. envvar:: kibana__group_keys [[[
+#
+# Kibana keystore content which should be present on all hosts in the Ansible
+# inventory.
+kibana__group_keys: []
+
+                                                                   # ]]]
+# .. envvar:: kibana__host_keys [[[
+#
+# Kibana keystore content which should be present on hosts in a specific
+# Ansible inventory group.
+kibana__host_keys: []
+
+                                                                   # ]]]
+# .. envvar:: kibana__combined_keys [[[
+#
+# Kibana keystore content which should be present on specific hosts in the
+# Ansible inventory.
+kibana__combined_keys: '{{ kibana__keys
+                           + kibana__group_keys
+                           + kibana__host_keys }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 

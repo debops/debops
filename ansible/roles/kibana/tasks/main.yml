@@ -123,6 +123,59 @@
   when: (item.name|d() and item.state|d('present') == 'absent' and
          (item.name if ':' not in item.name else item.name.split(':')[1]) in kibana__register_plugins.stdout_lines)
 
+- name: Check if the Kibana keystore exists
+  ansible.builtin.stat:
+    path: '/etc/kibana/kibana.keystore'
+  register: kibana__register_keystore
+
+- name: Create Kibana keystore if not present
+  ansible.builtin.command: 'bin/kibana-keystore create'
+  args:
+    chdir: '/usr/share/kibana'
+  when: not kibana__register_keystore.stat.exists
+
+- name: Get the list of keystore contents
+  ansible.builtin.command: 'bin/kibana-keystore list'
+  args:
+    chdir: '/usr/share/kibana'
+  register: kibana__register_keys
+  changed_when: False
+  check_mode: '{{ False if ansible_local.kibana.installed|d() else omit }}'
+
+- name: Remove key from Kibana keystore when requested
+  ansible.builtin.command: 'bin/kibana-keystore remove {{ item.name }}'
+  args:
+    chdir: '/usr/share/kibana'
+  loop: '{{ kibana__combined_keys | debops.debops.parse_kv_config }}'
+  loop_control:
+    label:  '{{ {"name": item.name, "state": item.state} }}'
+  notify: [ 'Restart kibana' ]
+  when: (item.state|d('present') == 'absent' and
+         item.name in kibana__register_keys.stdout_lines)
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Set or update key in Kibana keystore
+  environment:
+    DEBOPS_KIBANA_KEY: '{{ item.value }}'
+  ansible.builtin.shell: |
+    set -o nounset -o pipefail -o errexit &&
+    {% if item.force | d(False) %}
+    printf "%s" "${DEBOPS_KIBANA_KEY}" | bin/kibana-keystore add "{{ item.name }}" --stdin --force
+    {% else %}
+    printf "%s" "${DEBOPS_KIBANA_KEY}" | bin/kibana-keystore add "{{ item.name }}" --stdin
+    {% endif %}
+  args:
+    chdir: '/usr/share/kibana'
+    executable: 'bash'
+  loop: '{{ kibana__combined_keys | debops.debops.parse_kv_config }}'
+  loop_control:
+    label:  '{{ {"name": item.name, "state": item.state} }}'
+  notify: [ 'Restart kibana' ]
+  when: (item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
+         (item.name not in kibana__register_keys.stdout_lines or
+          (item.force|d(False))|bool))
+  no_log: '{{ debops__no_log | d(True) }}'
+
 - name: Save Kibana dependent configuration on Ansible Controller
   ansible.builtin.template:
     src: 'secret/kibana/dependent_config/config.json.j2'
