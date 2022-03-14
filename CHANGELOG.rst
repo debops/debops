@@ -61,6 +61,12 @@ General
 - Provide a help message in case the :file:`ansible.cfg` configuration file in
   the DebOps project directory does not include the ``inventory`` option.
 
+:ref:`debops.ldap` role
+'''''''''''''''''''''''
+
+- Fixed an issue with the role passing IP and MAC addresses to the LDAP
+  directory as a nested YAML list which resulted in a wrong attribute values.
+
 :ref:`debops.logrotate` role
 ''''''''''''''''''''''''''''
 
