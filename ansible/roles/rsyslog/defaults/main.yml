@@ -2,7 +2,7 @@
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
 # .. Copyright (C) 2015-2020 Maciej Delmanowski <drybjed@gmail.com>
-# .. Copyright (C) 2015-2020 DebOps <https://debops.org/>
+# .. Copyright (C) 2015-2022 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _rsyslog__ref_defaults:
@@ -1091,32 +1091,6 @@ rsyslog__rotation_count_remote: '52'
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
-# .. envvar:: rsyslog__etc_services__dependent_list [[[
-#
-# Configuration for :ref:`debops.etc_services` Ansible role.
-rsyslog__etc_services__dependent_list:
-
-  - name: 'syslog-tls'
-    port: '6514'
-    protocol: [ 'tcp' ]
-    comment: 'Syslog over TLS [RFC5425]'
-    state: '{{ "present"
-               if (ansible_distribution_release in ["wheezy"])
-               else "absent" }}'
-
-                                                                   # ]]]
-# .. envvar:: rsyslog__apt_preferences__dependent_list [[[
-#
-# Configuration for :ref:`debops.apt_preferences` Ansible role, to install newer
-# version of ``rsyslog`` package on older systems.
-rsyslog__apt_preferences__dependent_list:
-
-  - package: 'rsyslog rsyslog-* libestr0'
-    backports: [ 'wheezy' ]
-    reason: 'Version parity with Debian Jessie'
-    role: 'debops.rsyslog'
-
-                                                                   # ]]]
 # .. envvar:: rsyslog__ferm__dependent_rules [[[
 #
 # Configuration for :ref:`debops.ferm` Ansible role.
@@ -1175,8 +1149,7 @@ rsyslog__logrotate__dependent_config:
         postrotate: |
           {{ "invoke-rc.d rsyslog rotate > /dev/null"
             if (ansible_distribution_release in
-                 ([ "wheezy", "jessie", "stretch",
-                    "precise", "trusty" ]))
+                 ([ "stretch", "trusty" ]))
             else "/usr/lib/rsyslog/rsyslog-rotate" }}
 
       - logs: '{{ (rsyslog__default_logfiles
@@ -1193,8 +1166,7 @@ rsyslog__logrotate__dependent_config:
         postrotate: |
           {{ "invoke-rc.d rsyslog rotate > /dev/null"
             if (ansible_distribution_release in
-                 ([ "wheezy", "jessie", "stretch",
-                    "precise", "trusty" ]))
+                 ([ "stretch", "trusty" ]))
             else "/usr/lib/rsyslog/rsyslog-rotate" }}
     state: '{{ "present"
                 if (rsyslog__enabled|bool and rsyslog__deploy_state != "absent")
@@ -1213,8 +1185,7 @@ rsyslog__logrotate__dependent_config:
     postrotate: |
       {{ "invoke-rc.d rsyslog rotate > /dev/null"
         if (ansible_distribution_release in
-             ([ "wheezy", "jessie", "stretch",
-                "precise", "trusty" ]))
+             ([ "stretch", "trusty" ]))
         else "/usr/lib/rsyslog/rsyslog-rotate" }}
     state: '{{ "present"
                 if (rsyslog__enabled|bool and rsyslog__deploy_state != "absent" and

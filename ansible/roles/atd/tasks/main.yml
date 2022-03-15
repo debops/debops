@@ -32,16 +32,6 @@
   notify: [ 'Restart atd' ]
   when: atd_enabled|bool
 
-- name: Install custom atd init script
-  ansible.builtin.template:
-    src: 'etc/init.d/atd.j2'
-    dest: '/etc/init.d/atd'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  notify: [ 'Restart atd' ]
-  when: atd_enabled|bool and ansible_distribution_release in [ 'wheezy', 'precise' ]
-
 - name: Install custom atd.service unit
   ansible.builtin.template:
     src: 'etc/systemd/system/atd.service.j2'

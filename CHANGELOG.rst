@@ -118,6 +118,17 @@ debops.boxbackup role
   service without it actually being present on the host. This should now be
   avoided by carefully checking the service status.
 
+Removed
+~~~~~~~
+
+General
+'''''''
+
+- Support for end-of-life Debian and Ubuntu releases has been removed from
+  Ansible roles included in the DebOps project. The releases dropped are:
+  "Debian Wheezy", "Debian Jessie", "Ubuntu Precise Pangolin". The support is
+  still available in stable DebOps releases up to v3.0.x if needed.
+
 
 `debops v3.0.0`_ - 2022-02-17
 -----------------------------

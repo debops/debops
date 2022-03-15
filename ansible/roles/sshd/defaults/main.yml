@@ -30,8 +30,8 @@ sshd__base_packages: [ 'openssh-server', 'openssh-client' ]
 #
 # List of recommended packages that should be installed with OpenSSH.
 sshd__recommended_packages: '{{ [ "openssh-blacklist", "openssh-blacklist-extra" ]
-                                if (ansible_distribution_release in [ "wheezy", "jessie",
-                                    "precise", "trusty", "xenial" ]) else [] }}'
+                                if (ansible_distribution_release in
+                                    [ "trusty", "xenial" ]) else [] }}'
 
                                                                    # ]]]
 # .. envvar:: sshd__optional_packages [[[
@@ -758,18 +758,6 @@ sshd__match_group_sftponly:
 # Configuration of other services [[[
 # -----------------------------------
 
-# .. envvar:: sshd__apt_preferences__dependent_list [[[
-#
-# List of :manpage:`apt_preferences(5)` rules. This is used to change what package
-# versions are installed on a particular distribution.
-sshd__apt_preferences__dependent_list:
-
-  - package: 'ssh ssh-* openssh-*'
-    backports: [ 'wheezy' ]
-    reason:  'Version parity with Debian Jessie, support for AuthorizedKeysCommand, better ciphers'
-    by_role: 'debops.sshd'
-
-                                                                   # ]]]
 # .. envvar:: sshd__ferm__dependent_rules: [[[
 #
 # Configuration for :command:`iptables` firewall managed by :program:`ferm`.

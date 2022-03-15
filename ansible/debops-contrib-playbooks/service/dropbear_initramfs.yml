@@ -1,6 +1,6 @@
 ---
 # Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-# Copyright (C) 2017 DebOps <https://debops.org/>
+# Copyright (C) 2017-2022 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 - name: Setup the dropbear ssh server in initramfs
@@ -14,11 +14,6 @@
                    | combine(inventory__host_environment  | d({})) }}'
 
   roles:
-
-    - role: apt_preferences
-      tags: [ 'role::apt_preferences' ]
-      apt_preferences__dependent_list:
-        - '{{ dropbear_initramfs__apt_preferences__dependent_list }}'
 
     - role: dropbear_initramfs
       tags: [ 'role::dropbear_initramfs' ]

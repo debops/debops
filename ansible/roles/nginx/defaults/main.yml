@@ -120,7 +120,7 @@ nginx_flavor_package_map:
     - 'ruby'
     - '{{ "passenger"
           if (nginx__flavor_distribution_release in
-              [ "wheezy", "jessie", "precise", "trusty", "xenial" ])
+              [ "trusty", "xenial" ])
           else "libnginx-mod-http-passenger" }}'
 
   # Upstream version from https://nginx.org/ packaged for Debian
@@ -1089,12 +1089,6 @@ nginx_apt_preferences_dependent_list: '{{ nginx__apt_preferences__dependent_list
 #
 # Configuration for the :ref:`debops.apt_preferences` Ansible role.
 nginx__apt_preferences__dependent_list:
-
-  - package: 'nginx nginx-*'
-    backports: [ 'wheezy' ]
-    reason: 'Support for SPDY, OCSP stapling'
-    by_role: 'debops.nginx'
-    state: '{{ ((nginx__deploy_state in [ "present" ]) and (nginx_flavor not in [ "passenger" ])) | ternary("present", "absent") }}'
 
   - package: 'nginx nginx-*'
     pin: 'release o=Phusion'

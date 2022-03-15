@@ -285,15 +285,12 @@ apt_install__conditional_packages:
     whitelist: '{{ apt_install__conditional_whitelist_packages }}'
     state: '{{ "present"
                if ansible_distribution_release in
-                  [ "wheezy", "jessie", "precise", "trusty", "xenial" ]
+                  [ "trusty", "xenial" ]
                else "absent" }}'
 
   - name: 'needrestart'
-    # Install the package on newer OS releases.
     whitelist: '{{ apt_install__conditional_whitelist_packages }}'
-    state: '{{ "present"
-               if ansible_distribution_release not in [ "precise" ]
-               else "absent" }}'
+    state: 'present'
 
   - name: 'ranger'
     # Ranger is a console file manager written in Python. In Debian, ranger package
@@ -442,23 +439,8 @@ apt_install__host_alternatives: []
 # Configuration for the :ref:`debops.apt_preferences` role.
 apt_install__apt_preferences__dependent_list:
 
-  - package: 'git git-*'
-    backports: [ 'wheezy' ]
-    reason:  'Better support for git submodules - https://stackoverflow.com/a/7593496'
-    by_role: 'debops.apt_install'
-
-  - package: 'irqbalance'
-    backports: [ 'wheezy' ]
-    reason:  'Issues in wheezy package - http://debian.distrosfaqs.org/debian-user/wheezy-irqbalance/'
-    by_role: 'debops.apt_install'
-
-  - package: 'irqbalance'
-    backports: [ 'jessie' ]
-    reason:  'Bug fixes and memory leak fixes.'
-    by_role: 'debops.apt_install'
-
   - package: 'needrestart needrestart-*'
-    backports: [ 'wheezy', 'jessie', 'trusty' ]
+    backports: [ 'trusty' ]
     reason: 'Better support for container technologies'
     by_role: 'debops.apt_install'
                                                                    # ]]]

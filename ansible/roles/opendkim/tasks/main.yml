@@ -78,7 +78,7 @@
     mode: '0755'
   when: (ansible_service_mgr == 'systemd' and
          ansible_distribution_release not in
-         [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial', 'bionic' ])
+         [ 'trusty', 'xenial', 'bionic' ])
 
 - name: Fix OpenDKIM issues with systemd
   ansible.builtin.template:
@@ -90,7 +90,7 @@
   notify: [ 'Reload service manager', 'Check opendkim and restart' ]
   when: (ansible_service_mgr == 'systemd' and
          ansible_distribution_release not in
-         [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial', 'bionic' ])
+         [ 'trusty', 'xenial', 'bionic' ])
 
 - name: Ensure that DomainKey directory exists
   ansible.builtin.file:

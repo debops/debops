@@ -71,26 +71,6 @@
     mode: '0755'
   when: machine__enabled|bool
 
-- name: Ensure that required directories exist on older OS releases
-  ansible.builtin.file:
-    path: '/etc/tmpfiles.d/'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  when: machine__enabled|bool and ansible_distribution_release in [ 'jessie' ]
-
-- name: Fix issue with dynamic MOTD on older OS releases
-  ansible.builtin.template:
-    src: 'etc/tmpfiles.d/motd-dynamic.conf.j2'
-    dest: '/etc/tmpfiles.d/motd-dynamic.conf'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  notify: [ 'Create temporary files' ]
-  register: machine__register_tmpfiles
-  when: machine__enabled|bool and ansible_distribution_release in [ 'jessie' ]
-
 - name: Create /run/motd.dynamic symlink
   ansible.builtin.meta: 'flush_handlers'
 
