@@ -100,6 +100,13 @@ debops.boxbackup role
 - Fixed formatting in the :file:`/etc/logrotate.conf` configuration file to
   avoid adding :command:`vim` fold markers from the DebOps role defaults.
 
+:ref:`debops.ntp` role
+''''''''''''''''''''''
+
+- Fix an issue where the role tried to manage the :command:`systemd-timesyncd`
+  service without it actually being present on the host. This should now be
+  avoided by carefully checking the service status.
+
 
 `debops v3.0.0`_ - 2022-02-17
 -----------------------------
