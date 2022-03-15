@@ -1249,10 +1249,10 @@ request_acme_dns_certificate() {
 
     if test "${config['acme_ca']}" == 'le-live-v2'; then
       # shellcheck disable=SC2086
-      certbot certonly -n --${config['acme_type']} --expand --agree-tos "${email}" --${config['acme_type']}-credentials ${credentials} ${all_dns_str}
+      certbot certonly -n --authenticator ${config['acme_type']} --expand --agree-tos "${email}" --${config['acme_type']}-credentials ${credentials} ${all_dns_str}
     elif test "${config['acme_ca']}" == 'le-staging-v2'; then
       # shellcheck disable=SC2086
-      certbot certonly --test-cert -n --${config['acme_type']} --expand --agree-tos "${email}" --${config['acme_type']}-credentials ${credentials} ${all_dns_str}
+      certbot certonly --test-cert -n --authenticator ${config['acme_type']} --expand --agree-tos "${email}" --${config['acme_type']}-credentials ${credentials} ${all_dns_str}
     fi
 
     local folder
@@ -1328,10 +1328,10 @@ request_acme_manual_certificate() {
 
     if test "${config['acme_ca']}" == 'le-live-v2'; then
       # shellcheck disable=SC2086
-      certbot certonly -n --${config['acme_type']} --preferred-challenges=dns --expand --agree-tos "${email}" ${all_dns_str}
+      certbot certonly -n --authenticator ${config['acme_type']} --preferred-challenges=dns --expand --agree-tos "${email}" ${all_dns_str}
     elif test "${config['acme_ca']}" == 'le-staging-v2'; then
       # shellcheck disable=SC2086
-      certbot certonly --test-cert -n --${config['acme_type']} --preferred-challenges=dns --expand --agree-tos "${email}" ${all_dns_str}
+      certbot certonly --test-cert -n --authenticator ${config['acme_type']} --preferred-challenges=dns --expand --agree-tos "${email}" ${all_dns_str}
     fi
 
     local folder
