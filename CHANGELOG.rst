@@ -23,6 +23,14 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.2: https://github.com/debops/debops/compare/v2.2.0...stable-2.2
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- The :command:`pki-realm` script will call the :command:`certbot` command with
+  the :command:`certbot --authenticator <plugin>` option explicitly to allow
+  use with third-party authenticator plugins that might not support the
+  :command:`certbot --<plugin>` syntax.
+
 Fixed
 ~~~~~
 
