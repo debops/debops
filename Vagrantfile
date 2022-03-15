@@ -643,15 +643,15 @@ if ! [ -d src/controller ] ; then
     sed -i '/ansible_connection=local$/ s/^#//' src/controller/ansible/inventory/hosts
 
     vagrant_controller="$(printf "${SSH_CLIENT}\\n" | awk '{print $1}')"
-    mkdir -p "src/controller/ansible/inventory/group_vars/all"
+    mkdir -p "src/controller/ansible/inventory/group_vars/debops_all_hosts"
     mkdir -p "src/controller/ansible/inventory/host_vars/$(hostname)"
-    cat <<EOF >> "src/controller/ansible/inventory/group_vars/all/dhparam.yml"
+    cat <<EOF >> "src/controller/ansible/inventory/group_vars/debops_all_hosts/dhparam.yml"
 ---
 
 # Use smaller Diffie-Hellman parameters to speed up test runs
 dhparam__bits: [ '1024' ]
 EOF
-    cat <<EOF >> "src/controller/ansible/inventory/group_vars/all/core.yml"
+    cat <<EOF >> "src/controller/ansible/inventory/group_vars/debops_all_hosts/core.yml"
 ---
 
 # Vagrant client detected from \\$SSH_CLIENT variable
