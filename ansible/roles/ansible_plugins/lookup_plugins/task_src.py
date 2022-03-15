@@ -36,6 +36,8 @@ except AttributeError:
     except ImportError:
         pass
 except ModuleNotFoundError:
+    conf_section = ''
+    conf_key = ''
     pass
 
 try:
