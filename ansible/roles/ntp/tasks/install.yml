@@ -22,7 +22,8 @@
     enabled: '{{ True if (ntp__daemon in [ "systemd-timesyncd" ]) else False }}'
   when:
     - ansible_service_mgr == "systemd"
-    - ("systemd-timesyncd.service" in ansible_facts.services)
+    - ("systemd-timesyncd.service" in ansible_facts.services and
+       ansible_facts.services['systemd-timesyncd.service'].status != 'not-found')
 
 # NTPdate does not need to be configured separately as the script `/usr/sbin/ntpdate-debian`
 # will pick up the configuration from `/etc/ntp.conf` when it exists.
