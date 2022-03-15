@@ -145,7 +145,7 @@ gitlab_runner__fqdn: '{{ ansible_fqdn }}'
 # If there are no resource records, the role checks if a local Gitlab
 # installation is present and uses the host FQDN as the Gitlab API server
 # address. Finally, ``code.<domain>`` is used as a fallback.
-gitlab_runner__gitlab_srv_rr: '{{ q("dig_srv", "_gitlab._tcp." + gitlab_runner__domain,
+gitlab_runner__gitlab_srv_rr: '{{ q("debops.debops.dig_srv", "_gitlab._tcp." + gitlab_runner__domain,
                                     ansible_fqdn
                                     if (ansible_local|d() and ansible_local.gitlab|d() and
                                        (ansible_local.gitlab.installed|d())|bool)
