@@ -614,6 +614,11 @@ prepare_vagrant_box () {
         fix_libvirt_image_permissions
     fi
 
+    # Don't remove existing SSH host keys and customization (/etc/machine-id)
+    # during box packaging. This works since vagrant-libvirt v0.1.0.
+    local VAGRANT_LIBVIRT_VIRT_SYSPREP_OPERATIONS="defaults,-ssh-userdir,-ssh-hostkeys,-customize"
+    export VAGRANT_LIBVIRT_VIRT_SYSPREP_OPERATIONS
+
     status_msg info "Packaging modified Vagrant box as '${jane_vagrant_box}'..."
     vagrant package --output="${jane_vagrant_box}.box"
 
