@@ -47,6 +47,14 @@ Changed
 - The configuration included in the role has been updated to work correctly
   with Kibana v8.0.x release.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- The :command:`pki-realm` script will call the :command:`certbot` command with
+  the :command:`certbot --authenticator <plugin>` option explicitly to allow
+  use with third-party authenticator plugins that might not support the
+  :command:`certbot --<plugin>` syntax.
+
 Fixed
 ~~~~~
 
