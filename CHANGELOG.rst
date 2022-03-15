@@ -63,6 +63,9 @@ General
   ``${SUDO_USER}`` environment variable set, for example if executed directly
   using the ``root`` UNIX account.
 
+- Fixed an issue with custom Ansible plugins not working in "standalone" mode
+  without the DebOps scripts installed on Ansible Controller.
+
 debops.boxbackup role
 '''''''''''''''''''''
 
