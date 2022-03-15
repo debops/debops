@@ -73,6 +73,9 @@ General
 - Provide a help message in case the :file:`ansible.cfg` configuration file in
   the DebOps project directory does not include the ``inventory`` option.
 
+- Fixed an issue with custom Ansible plugins not working in "standalone" mode
+  without the DebOps scripts installed on Ansible Controller.
+
 debops.boxbackup role
 '''''''''''''''''''''
 
