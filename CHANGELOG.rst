@@ -75,6 +75,13 @@ debops.boxbackup role
   playbook. This fixes an issue with Ansible stopping the site playbook
   execution when it cannot find the ``boxbackup`` role in the Collection.
 
+:ref:`debops.gitlab_runner` role
+''''''''''''''''''''''''''''''''
+
+- Fixed an error that could occur in the "Patch 'vagrant-libvirt' source code"
+  task on systems other than Debian 9 or 10. The patch is not required since
+  the ``vagrant-libvirt`` v0.1.0 package.
+
 :ref:`debops.ldap` role
 '''''''''''''''''''''''
 
