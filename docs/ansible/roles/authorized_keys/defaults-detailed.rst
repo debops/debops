@@ -68,7 +68,7 @@ different hosts:
 
 .. code-block:: yaml
 
-   # ansible/inventory/group_vars/all/authorized_keys.yml
+   # ansible/inventory/group_vars/debops_all_hosts/authorized_keys.yml
    authorized_keys__identities:
 
      - name: 'manager'

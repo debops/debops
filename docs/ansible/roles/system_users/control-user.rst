@@ -81,7 +81,7 @@ define in the inventory variables:
 .. code-block:: yaml
 
    ---
-   # ansible/inventory/group_vars/all/system_users.yml
+   # ansible/inventory/group_vars/debops_all_hosts/system_users.yml
 
    system_users__accounts:
 
@@ -143,7 +143,7 @@ specify the ``_`` character manually in all locations, for example:
 .. code-block:: yaml
 
    ---
-   # ansible/inventory/group_vars/all/system_users.yml
+   # ansible/inventory/group_vars/debops_all_hosts/system_users.yml
 
    system_users__accounts:
 

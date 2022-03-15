@@ -63,7 +63,7 @@ configured in the Ansible local facts on a given host. Three levels of
 variables that can be used:
 
 :envvar:`core__facts`
-  Dictionary which should be defined in the :file:`inventory/group_vars/all/`
+  Dictionary which should be defined in the :file:`inventory/group_vars/debops_all_hosts/`
   group which applies to all hosts in the inventory.
 
 :envvar:`core__group_facts`
@@ -139,7 +139,7 @@ only a single list of items, merged from separate variables on all levels of
 the inventory. You can set host tags using the variables:
 
 :envvar:`core__tags`
-  Global list of tags, should be defined in :file:`inventory/group_vars/all/`
+  Global list of tags, should be defined in :file:`inventory/group_vars/debops_all_hosts/`
 
 :envvar:`core__group_tags`
   List of tags for a specific group, should be defined in

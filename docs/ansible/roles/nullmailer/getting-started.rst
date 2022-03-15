@@ -98,7 +98,7 @@ inventory:
 
 .. code-block:: yaml
 
-   # ansible/inventory/group_vars/all/nullmailer.yml
+   # ansible/inventory/group_vars/debops_all_hosts/nullmailer.yml
 
    nullmailer__relayhost: '<FQDN address of mail server>'
 

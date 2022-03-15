@@ -89,7 +89,7 @@ therefore you don't need to do anything special to enable it on a host. However
 it is deactivated by default.
 
 To enable the role, define in the Ansible inventory, for example in the
-:file:`ansible/inventory/group_vars/all/ldap.yml` file:
+:file:`ansible/inventory/group_vars/debops_all_hosts/ldap.yml` file:
 
 .. code-block:: yaml
 

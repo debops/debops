@@ -125,7 +125,7 @@ the inventory:
 
 .. code-block:: yaml
 
-   # ansible/inventory/group_vars/all/minio.yml
+   # ansible/inventory/group_vars/debops_all_hosts/minio.yml
 
    # Override configuration for 'main' instance
    minio__instances:

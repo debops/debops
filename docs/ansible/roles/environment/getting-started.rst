@@ -41,7 +41,7 @@ The role uses multiple lists of variables which can be defined in Ansible
 inventory:
 
 ``environment__variables``
-  This list can be defined in ``inventory/group_vars/all/environment.yml`` file
+  This list can be defined in ``inventory/group_vars/debops_all_hosts/environment.yml`` file
   to define variables that should be set on all hosts in the inventory.
 
 ``environment__group_variables``

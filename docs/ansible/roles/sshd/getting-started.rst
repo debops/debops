@@ -40,7 +40,7 @@ different domain than the remote host.
 
 To disable the restricted access and allow connections to the ``root`` account
 from anywhere on the network, you can set in your Ansible inventory, for
-example in :file:`ansible/inventory/group_vars/all/pam_access.yml` file:
+example in :file:`ansible/inventory/group_vars/debops_all_hosts/pam_access.yml` file:
 
 .. code-block:: yaml
 
