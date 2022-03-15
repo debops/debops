@@ -232,7 +232,7 @@
     opts: '{{ (item.2.crypttab_options|d(cryptsetup__crypttab_options|d([]))|list | sort | unique | join(","))
               if ((item.2.crypttab_options|d(cryptsetup__crypttab_options|d([]))|list | length) > 0)
               else "none" }}'
-    ## ``none`` is required on Debian jessie by :command:`cryptdisks_start` if no options are given.
+    ## ``none`` is required by :command:`cryptdisks_start` if no options are given.
     ## Also `crypttab(5)` says that "all four fields are mandatory and that
     ## a missing field will lead to unspecified behaviour."
     password: '{{ item.0.remote_keyfile|d(("/dev/shm"

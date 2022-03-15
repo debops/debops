@@ -30,10 +30,7 @@
 #
 dropbear_initramfs__base_packages:
   - '{{ "dropbear"
-        if (
-          (ansible_distribution == "Debian" and ansible_distribution_release in ["jessie"]) or
-          (ansible_distribution == "Ubuntu" and ansible_distribution_release in ["precise", "trusty"])
-        )
+        if (ansible_distribution == "Ubuntu" and ansible_distribution_release in ["trusty"])
         else "dropbear-initramfs" }}'
 
                                                                    # ]]]
@@ -64,8 +61,8 @@ dropbear_initramfs__deploy_state: 'present'
 # Refer to https://www.kernel.org/doc/Documentation/filesystems/nfs/nfsroot.txt
 # for support configuration options.
 #
-# Note that the ``IP`` kernel parameter as of Debian jessie only supports legacy
-# IPv4. But don’t worry, the role has you covered. Refer to
+# Note that the ``IP`` kernel parameter only supports legacy IPv4. But don’t
+# worry, the role has you covered. Refer to
 # :envvar:`dropbear_initramfs__interfaces`.
 
 # .. envvar:: dropbear_initramfs__network_autoconf [[[
@@ -269,25 +266,6 @@ dropbear_initramfs__combined_authorized_keys: '{{ dropbear_initramfs__authorized
 # overridden by the ``item.options`` parameter.
 # Refer to :manpage:`dropbear(8)` for details.
 dropbear_initramfs__authorized_keys_options: '{{ omit }}'
-                                                                   # ]]]
-                                                                   # ]]]
-# Configuration for other Ansible roles [[[
-# -----------------------------------------
-
-# .. envvar:: dropbear_initramfs__apt_preferences__dependent_list [[[
-#
-# Configuration for the debops.apt_preferences_ role.
-dropbear_initramfs__apt_preferences__dependent_list:
-
-  - package: 'dropbear-initramfs'
-    pin: 'release o=Debian,n=stretch'
-    priority: 800
-    reason: 'Stronger cryptography. dropbear 2014.65-1 only offers: hmac-sha1-96,hmac-sha1,hmac-md5'
-    by_role: 'debops-contrib.dropbear_initramfs'
-    state: '{{ "present"
-               if (("dropbear-initramfs" in dropbear_initramfs__base_packages) and
-                   (ansible_distribution == "Debian" and ansible_distribution_release in ["jessie"]))
-               else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

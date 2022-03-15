@@ -142,15 +142,11 @@ machine__motd_default_scripts:
   # This file comes with the 'base-files' APT package on Debian
   - name: 'uname'
     filename: '10-uname'
-    divert: '{{ False
-                if (ansible_distribution_release in [ "wheezy", "jessie" ])
-                else True }}'
+    divert: True
     content: |
       #!/bin/sh
       uname -snrvm
-    state: '{{ "present"
-               if (ansible_distribution_release in [ "wheezy", "jessie" ])
-               else "init" }}'
+    state: 'init'
 
   - name: 'ansible'
     weight: 50

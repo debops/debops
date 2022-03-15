@@ -33,7 +33,7 @@ php__version_preference: [ 'php7.4', 'php7.3', 'php', 'php5.6' ]
 # maintainer. You can enable these repositories to install PHP 7.0 on Debian
 # Jessie. See :ref:`php__ref_sury` for more details.
 php__sury: '{{ ansible_local.php.sury
-               |d(ansible_distribution_release in [ "jessie", "stretch", "trusty", "xenial" ]) | bool }}'
+               |d(ansible_distribution_release in [ "stretch", "trusty", "xenial" ]) | bool }}'
 
                                                                    # ]]]
 # .. envvar:: php__sury_apt_key_id [[[
@@ -176,8 +176,6 @@ php__included_packages: '{{ php__php_included_packages
 # Configuration dictionary mapping distribution releases to different PHP
 # packaging configurations. Also see :envvar:`php__included_packages`.
 php__release_included_map:
-  wheezy:   '{{ php__php5_included_packages }}'
-  jessie:   '{{ php__php5_included_packages }}'
   stretch:  '{{ php__php_included_packages }}'
   buster:   '{{ php__php_included_packages }}'
   bullseye: '{{ php__php_included_packages }}'
@@ -250,8 +248,8 @@ php__common_included_packages:
 # will be installed instead.
 php__composer_upstream_enabled: '{{ True
                                     if (ansible_distribution_release in
-                                        [ "wheezy", "jessie", "stretch",
-                                          "precise", "trusty", "xenial", "bionic", "focal" ])
+                                        [ "stretch", "trusty", "xenial",
+                                          "bionic", "focal" ])
                                     else False }}'
 
                                                                    # ]]]

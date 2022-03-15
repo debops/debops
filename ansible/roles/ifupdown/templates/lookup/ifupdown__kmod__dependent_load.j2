@@ -1,6 +1,6 @@
 {# Copyright (C) 2015-2017 Maciej Delmanowski <drybjed@gmail.com>
  # Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
- # Copyright (C) 2015-2017 DebOps <https://debops.org/>
+ # Copyright (C) 2015-2022 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 {% set ifupdown__tpl_packages = [] %}
@@ -8,11 +8,7 @@
 {%   for interface, params in ifupdown__combined_interfaces.items() %}
 {%     if (params.state|d('present') == 'present' and params.type|d()) %}
 {%       if params.type == 'bonding' %}
-{%         if ansible_distribution_release == 'wheezy' %}
-{%           set _ = ifupdown__tpl_packages.append('ifenslave-2.6') %}
-{%         else %}
-{%           set _ = ifupdown__tpl_packages.append('ifenslave') %}
-{%         endif %}
+{%         set _ = ifupdown__tpl_packages.append('ifenslave') %}
 {%       elif params.type == 'bridge' %}
 {%         set _ = ifupdown__tpl_packages.append('bridge-utils') %}
 {%       elif params.type == 'vlan' %}

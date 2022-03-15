@@ -68,8 +68,6 @@ mariadb__delegate_to: '{{ mariadb__server
 #
 # - ``mariadb_upstream``: use MariaDB engine from upstream repository
 #
-# - ``mysql``: use MySQL engine from Debian repository
-#
 # - ``mysql-5.6_galera-3``: use MySQL 5.6 engine with Galera from Codership
 #   repository
 #
@@ -82,16 +80,7 @@ mariadb__delegate_to: '{{ mariadb__server
 #
 # The choice depends on availability of MariaDB packages in a distribution.
 # Percona needs to be selected explicitly.
-mariadb__flavor: '{{ ansible_local.mariadb.flavor|d(mariadb__flavor_map[ansible_distribution_release] | d("mariadb")) }}'
-
-                                                                   # ]]]
-# .. envvar:: mariadb__flavor_map [[[
-#
-# List of Linux distributions where the default MariaDB packages are not
-# available and MySQL should be used instead.
-mariadb__flavor_map:
-  'wheezy': 'mysql'
-  'precise': 'mysql'
+mariadb__flavor: '{{ ansible_local.mariadb.flavor|d("mariadb") }}'
 
                                                                    # ]]]
 # .. envvar:: mariadb__apt_key [[[
@@ -169,7 +158,6 @@ mariadb__packages: []
 mariadb__packages_map:
   'mariadb': [ 'mariadb-client' ]
   'mariadb_upstream': [ 'mariadb-client' ]
-  'mysql': [ 'mysql-client' ]
   'mysql-5.6_galera-3': [ 'mysql-wsrep-client-5.6' ]
   'mysql-5.7_galera-3': [ 'mysql-wsrep-client-5.7' ]
   'percona-8.0': [ 'percona-server-client' ]

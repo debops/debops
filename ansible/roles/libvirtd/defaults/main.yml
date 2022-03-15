@@ -47,8 +47,6 @@ libvirtd__base_packages:
 #
 # Override list of base packages for specific distribution releases.
 libvirtd__base_packages_map:
-  'wheezy':  [ 'libvirt-bin' ]
-  'precise': [ 'libvirt-bin' ]
   'trusty':  [ 'libvirt-bin' ]
   'xenial':  [ 'libvirt-bin' ]
 
@@ -954,19 +952,6 @@ libvirtd__ferm_post_hook: '{{ True
 # Configuration for other Ansible roles [[[
 # ----------------------------------------
 
-# .. envvar:: libvirtd__apt_preferences__dependent_list [[[
-#
-# Configuration for the :ref:`debops.apt_preferences` role.
-libvirtd__apt_preferences__dependent_list:
-
-  - packages: [ 'libvirt0', 'libvirt0-dbg', 'libvirt-*',
-                'libspice-server1', 'libusb-1.0-0',
-                'qemu', 'qemu-*', 'seabios', 'ipxe-qemu' ]
-    backports: [ 'wheezy', 'jessie' ]
-    reason: 'Ensure that virtual machines can be migrated between different OS releases'
-    by_role: 'debops.libvirtd'
-
-                                                                   # ]]]
 # .. envvar:: libvirtd__ferm__dependent_rules [[[
 #
 # Configuration for ``debops.ferm`` firewall.

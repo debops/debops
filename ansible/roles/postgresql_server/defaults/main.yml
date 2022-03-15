@@ -42,7 +42,7 @@ postgresql_server__upstream_apt_repo: 'deb http://apt.postgresql.org/pub/repos/a
 #
 # List of base PostgreSQL packages to install.
 postgresql_server__base_packages: [ 'postgresql', 'postgresql-client',
-                                    'postgresql-contrib' ]
+                                    'postgresql-contrib', 'pgtop' ]
 
                                                                    # ]]]
 # .. envvar:: postgresql_server__python_packages [[[
@@ -593,18 +593,6 @@ postgresql_server__auto_backup_permissions: '0600'
 # Role-dependent configuration [[[
 # --------------------------------
 
-# .. envvar:: postgresql_server__apt_preferences__dependent_list [[[
-#
-# Configuration for :ref:`debops.apt_preferences` role. PostgreSQL from backports
-# will be preferred on specified Debian releases.
-postgresql_server__apt_preferences__dependent_list:
-
-  - package: 'postgresql postgresql-* libpq5'
-    backports: [ 'wheezy' ]
-    reason: 'Version parity with Debian Jessie'
-    role: 'debops.postgresql_server'
-
-                                                                   # ]]]
 # .. envvar:: postgresql_server__etc_services__dependent_list [[[
 #
 # Configuration for :ref:`debops.etc_services` role. It will set up custom

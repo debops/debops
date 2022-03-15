@@ -1,6 +1,6 @@
 {# Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@gmail.com>
  # Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
- # Copyright (C) 2014-2017 DebOps <https://debops.org/>
+ # Copyright (C) 2014-2022 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 # {{ ansible_managed }}
@@ -8,7 +8,7 @@
 # Configuration for systemd-timesyncd
 
 [Time]
-{% if ansible_distribution_release in [ 'jessie', 'trusty' ] %}
+{% if ansible_distribution_release in [ 'trusty' ] %}
 Servers={{ ntp__servers | join(' ') }}
 {% else %}
 NTP={{ ntp__servers | join(' ') }}

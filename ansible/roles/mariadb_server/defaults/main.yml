@@ -2,7 +2,7 @@
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
 # .. Copyright (C) 2015-2016 Maciej Delmanowski <drybjed@gmail.com>
-# .. Copyright (C) 2015-2017 DebOps <https://debops.org/>
+# .. Copyright (C) 2015-2022 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _mariadb_server__ref_defaults:
@@ -27,8 +27,6 @@
 #
 # - ``mariadb_upstream``: use MariaDB engine from upstream repository
 #
-# - ``mysql``: use MySQL engine from Debian repository
-#
 # - ``mysql-5.6_galera-3``: use MySQL 5.6 engine with Galera from Codership
 #   repository
 #
@@ -41,19 +39,8 @@
 # - ``percona-5.7``: use Percona 5.7 from its upstream repository, it includes
 #   XtraDB and optionally TokuDB and MyRocks engines
 #
-# The choice depends on availability of MariaDB packages in a distribution.
 # Percona needs to be selected explicitly.
-mariadb_server__flavor: '{{ ansible_local.mariadb.flavor
-                            |d(mariadb_server__flavor_map[ansible_distribution_release] | d("mariadb")) }}'
-
-                                                                   # ]]]
-# .. envvar:: mariadb_server__flavor_map [[[
-#
-# List of Linux distributions where the default MariaDB packages are not
-# available, and MySQL should be used instead.
-mariadb_server__flavor_map:
-  'wheezy':  'mysql'
-  'precise': 'mysql'
+mariadb_server__flavor: '{{ ansible_local.mariadb.flavor | d("mariadb")) }}'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__apt_key [[[

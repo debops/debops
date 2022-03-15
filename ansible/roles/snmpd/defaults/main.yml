@@ -29,9 +29,8 @@ snmpd_packages: []
 #
 # The user account used by the :command:`snmpd` daemon.
 snmpd_user: '{{ "snmp"
-                if ((ansible_distribution == "Ubuntu" and
-                    ansible_distribution_release not in ["bionic"]) or
-                    ansible_distribution_release in [ "wheezy", "jessie" ])
+                if (ansible_distribution == "Ubuntu" and
+                    ansible_distribution_release not in ["bionic"])
                 else "Debian-snmp" }}'
 
                                                                    # ]]]
@@ -39,9 +38,8 @@ snmpd_user: '{{ "snmp"
 #
 # The group used by the :command:`snmpd` daemon.
 snmpd_group: '{{ "snmp"
-                 if ((ansible_distribution == "Ubuntu" and
-                     ansible_distribution_release not in ["bionic"]) or
-                     ansible_distribution_release in [ "wheezy", "jessie" ])
+                 if (ansible_distribution == "Ubuntu" and
+                     ansible_distribution_release not in ["bionic"])
                  else "Debian-snmp" }}'
 
                                                                    # ]]]
@@ -361,17 +359,6 @@ snmpd_account_agent_password: '{{ lookup("password", secret +
 # Configuration of other Ansible roles [[[
 # ----------------------------------------
 
-# .. envvar:: snmpd_apt_preferences_dependent_list [[[
-#
-# Configuration for ``debops.apt_preferences`` role.
-snmpd_apt_preferences_dependent_list:
-
-  - package: 'lldpd libbsd0'
-    backports: [ 'wheezy' ]
-    reason:  'Version parity with Debian Jessie'
-    by_role: 'debops.snmpd'
-
-                                                                   # ]]]
 # .. envvar:: snmpd_ferm_dependent_rules [[[
 #
 # Configuration for ``debops.ferm`` role.

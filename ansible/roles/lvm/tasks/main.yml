@@ -1,6 +1,6 @@
 ---
 # Copyright (C) 2015-2016 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2015-2016 DebOps <https://debops.org/>
+# Copyright (C) 2015-2022 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Install LVM support
@@ -47,8 +47,7 @@
     name: 'lvm2-lvmetad.socket'
     state: '{{ "started" if lvm__global_use_lvmetad else "stopped" }}'
     enabled: '{{ lvm__global_use_lvmetad }}'
-  when: (ansible_distribution_release in [ 'wheezy', 'jessie', 'stretch',
-                                           'precise', 'trusty', 'xenial',
+  when: (ansible_distribution_release in [ 'stretch', 'trusty', 'xenial',
                                            'bionic' ])
 
 - name: Manage LVM

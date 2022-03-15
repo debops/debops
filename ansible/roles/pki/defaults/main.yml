@@ -305,8 +305,7 @@ pki_acme_packages:
   - '{{ "curl" if (pki_acme_type == "acme-tiny" and pki_acme_install|bool) else [] }}'
   - '{{ "git" if (pki_acme_type == "acme-tiny" and pki_acme_install|bool) else [] }}'
   - '{{ [] if (pki_acme_install|bool == false or ansible_distribution_release in
-               [ "wheezy", "jessie", "stretch",
-                 "precise", "trusty", "xenial", "bionic" ])
+               [ "stretch", "trusty", "xenial", "bionic" ])
            else "acme-tiny" if (pki_acme_type == "acme-tiny") else [] }}'
   - '{{ "python3-certbot-dns-cloudflare" if (pki_acme_type == "dns-cloudflare" and pki_acme_install|bool) else [] }}'
   - '{{ "python3-certbot-dns-digitalocean" if (pki_acme_type == "dns-digitalocean" and pki_acme_install|bool) else [] }}'

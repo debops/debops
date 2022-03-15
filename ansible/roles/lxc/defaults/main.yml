@@ -3,7 +3,7 @@
 
 # .. Copyright (C) 2014-2020 Maciej Delmanowski <drybjed@gmail.com>
 # .. Copyright (C) 2015-2016 Robin Schneider <ypid@riseup.net>
-# .. Copyright (C) 2014-2020 DebOps <https://debops.org/>
+# .. Copyright (C) 2014-2022 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _lxc__ref_defaults:
@@ -27,9 +27,7 @@ lxc__base_packages:
   - [ 'lxc', 'lxcfs', 'debootstrap', 'xz-utils' ]
   - '{{ [ "dnsmasq-base" ] if (lxc__net_deploy_state == "present") else [] }}'
   - '{{ []
-        if (ansible_distribution_release in
-            [ "wheezy", "jessie", "stretch",
-              "precise", "trusty", "xenial" ])
+        if (ansible_distribution_release in [ "stretch", "trusty", "xenial" ])
         else [ "apparmor", "lxc-templates" ] }}'
 
                                                                    # ]]]

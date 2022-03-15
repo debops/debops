@@ -439,7 +439,7 @@ monit__service_config:
         if failed host localhost port 25 with protocol smtp for 2 times within 3 cycles then restart
         if 5 restarts with 5 cycles then timeout
         depend master_bin
-      {% if ansible_distribution_release in [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ] %}
+      {% if ansible_distribution_release in [ 'trusty', 'xenial' ] %}
         depend postfix_rc
       {% else %}
         depend postfix_unit
@@ -449,7 +449,7 @@ monit__service_config:
         depend master_cf
         depend main_cf
 
-      {% if ansible_distribution_release in [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ] %}
+      {% if ansible_distribution_release in [ 'trusty', 'xenial' ] %}
       check file master_bin with path /usr/lib/postfix/master
       {% else %}
       check file master_bin with path /usr/lib/postfix/sbin/master
@@ -479,7 +479,7 @@ monit__service_config:
         group postfix
         include /etc/monit/templates/rootrc
 
-      {% if ansible_distribution_release in [ 'wheezy', 'jessie', 'precise', 'trusty', 'xenial' ] %}
+      {% if ansible_distribution_release in [ 'trusty', 'xenial' ] %}
       check file postfix_rc with path /etc/init.d/postfix
         group postfix
         include /etc/monit/templates/rootbin
@@ -662,17 +662,6 @@ monit__combined_config: '{{ monit__default_config
 # Configuration for other Ansible roles [[[
 # -----------------------------------------
 
-# .. envvar:: monit__apt_preferences__dependent_list [[[
-#
-# Configuration for the :ref:`debops.apt_preferences` Ansible role.
-monit__apt_preferences__dependent_list:
-
-  - package: 'monit'
-    backports: [ 'wheezy', 'jessie' ]
-    reason: 'Feature parity with newer Debian releases'
-    by_role: 'debops.monit'
-
-                                                                   # ]]]
 # .. envvar:: monit__etc_services__dependent_list [[[
 #
 # Configuration for the :ref:`debops.etc_services` Ansible role.
