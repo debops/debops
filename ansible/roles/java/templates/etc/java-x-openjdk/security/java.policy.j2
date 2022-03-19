@@ -1,0 +1,20 @@
+{# Copyright (C) 2022 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2022 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+// {{ ansible_managed }}
+//
+// This system policy file grants a set of default permissions to all domains
+// and can be configured to grant additional permissions to modules and other
+// code sources. The code source URL scheme for modules linked into a
+// run-time image is "jrt".
+//
+// For example, to grant permission to read the "foo" property to the module
+// "com.greetings", the grant entry is:
+//
+// grant codeBase "jrt:/com.greetings" {
+//     permission java.util.PropertyPermission "foo", "read";
+// };
+//
+
+{{ java__default_security_policy }}

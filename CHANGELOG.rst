@@ -35,6 +35,16 @@ New DebOps roles
 
   .. __: https://www.elastic.co/beats/metricbeat
 
+:ref:`debops.java` role
+'''''''''''''''''''''''
+
+- The role will now configure the default security policy for Java
+  applications. The additions will permit Java applications to access the
+  system-wide CA certificate store in :file:`/etc/ssl/certs/` directory as well
+  as the PKI infrastructure managed by the :ref:`debops.pki` role, so that Java
+  applications can use the existing X.509 certificates and private keys for TLS
+  encryption support.
+
 :ref:`debops.kibana` role
 '''''''''''''''''''''''''
 

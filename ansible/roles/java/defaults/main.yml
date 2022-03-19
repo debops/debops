@@ -2,14 +2,14 @@
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
 # .. Copyright (C) 2014 Nick Janetakis <nick.janetakis@gmail.com>
-# .. Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2014-2022 Maciej Delmanowski <drybjed@gmail.com>
 # .. Copyright (C) 2014-2022 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _java__ref_defaults:
 
-# debops.java default variables [[[
-# =================================
+# debops.java default variables
+# =============================
 
 # .. contents:: Sections
 #    :local:
@@ -70,12 +70,85 @@ java__host_packages: []
 #
 # List of APT packages requested by other Ansible roles.
 java__dependent_packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Java versions [[[
+# -----------------
+
+# .. envvar:: java__version [[[
+#
+# The version of Java detected by the Ansible local facts.
+java__version: '{{ ansible_local.java.version | d("0.0.0") }}'
+
+                                                                   # ]]]
+# .. envvar:: java__major_version [[[
+#
+# The Java major version number detected by the Ansible local facts.
+java__major_version: '{{ ansible_local.java.major_version | d("0") }}'
 
                                                                    # ]]]
 # .. envvar:: java__alternatives [[[
 #
-# Set java alternatives.
+# You can use this variable to select which version of Java is used system-wide
+# by default. To find out what versions are available, use the
+# :command:`update-java-alternatives -l` command on the remote host.
 java__alternatives: ''
                                                                    # ]]]
                                                                    # ]]]
+# Java Security Policy configuration [[[
+# --------------------------------------
+
+# Java Security Policy defines what paths and resources can be accessed by the
+# Java-based applications. In DebOps we want to grant access to the PKI
+# directories managed by the :ref:`debops.pki` role to support encrypted
+# communication.
+
+# .. envvar:: java__security_policy_path [[[
+#
+# Path to the system-wide security policy used by all Java applications.
+java__security_policy_path: '{{ "/etc/java-" + java__major_version + "-openjdk/security/java.policy" }}'
+
                                                                    # ]]]
+# .. envvar:: java__default_security_policy [[[
+#
+# This variable contains the contents of the
+# :file:`/etc/java-*-openjdk/security/java.policy` configuration file.
+java__default_security_policy: |
+  // default permissions granted to all domains
+  grant {
+      // allows anyone to listen on dynamic ports
+      permission java.net.SocketPermission "localhost:0", "listen";
+
+      // "standard" properies that can be read by anyone
+      permission java.util.PropertyPermission "java.version", "read";
+      permission java.util.PropertyPermission "java.vendor", "read";
+      permission java.util.PropertyPermission "java.vendor.url", "read";
+      permission java.util.PropertyPermission "java.class.version", "read";
+      permission java.util.PropertyPermission "os.name", "read";
+      permission java.util.PropertyPermission "os.version", "read";
+      permission java.util.PropertyPermission "os.arch", "read";
+      permission java.util.PropertyPermission "file.separator", "read";
+      permission java.util.PropertyPermission "path.separator", "read";
+      permission java.util.PropertyPermission "line.separator", "read";
+      permission java.util.PropertyPermission
+                     "java.specification.version", "read";
+      permission java.util.PropertyPermission "java.specification.vendor", "read";
+      permission java.util.PropertyPermission "java.specification.name", "read";
+      permission java.util.PropertyPermission
+                     "java.vm.specification.version", "read";
+      permission java.util.PropertyPermission
+                     "java.vm.specification.vendor", "read";
+      permission java.util.PropertyPermission
+                     "java.vm.specification.name", "read";
+      permission java.util.PropertyPermission "java.vm.version", "read";
+      permission java.util.PropertyPermission "java.vm.vendor", "read";
+      permission java.util.PropertyPermission "java.vm.name", "read";
+
+      // Permit access to DebOps PKI infrastructure and system-wide certificate store
+      permission java.io.FilePermission "{{ ansible_local.pki.base_path | d('/etc/pki/realms') }}/-", "read";
+      permission java.io.FilePermission "{{ ansible_local.pki.base_path | d('/etc/pki/realms') }}/", "read";
+      permission java.io.FilePermission "/etc/ssl/certs/-", "read";
+      permission java.io.FilePermission "/etc/ssl/certs/", "read";
+  };
+# ]]]
+# ]]]
