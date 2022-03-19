@@ -124,6 +124,14 @@ debops.boxbackup role
   task on systems other than Debian 9 or 10. The patch is not required since
   the ``vagrant-libvirt`` v0.1.0 package.
 
+:ref:`debops.kibana` role
+'''''''''''''''''''''''''
+
+- The role will use the correct path of the Kibana keystore depending on the
+  installed version (versions <7.0.0 keep the keystore in the
+  :file:`/var/lib/kibana/` directory; newer versions use the
+  :file:`/etc/kibana/` directory).
+
 :ref:`debops.ldap` role
 '''''''''''''''''''''''
 

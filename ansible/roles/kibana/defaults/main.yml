@@ -42,8 +42,8 @@ kibana__packages: []
 kibana__version: '{{ ansible_local.kibana.version | d("0.0.0") }}'
                                                                    # ]]]
                                                                    # ]]]
-# UNIX user and group [[[
-# -----------------------
+# UNIX user and group, file paths [[[
+# -----------------------------------
 
 # .. envvar:: kibana__user [[[
 #
@@ -63,6 +63,14 @@ kibana__group: 'kibana'
 kibana__additional_groups: '{{ [ "ssl-cert" ]
                                if kibana__pki_enabled|bool
                                else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: kibana__keystore_path [[[
+#
+# Path to the Kibana keystore file.
+kibana__keystore_path: '{{ "/var/lib/kibana/kibana.keystore"
+                           if (kibana__version is version("7.0.0", "<"))
+                           else "/etc/kibana/kibana.keystore" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Frontend webserver options [[[
