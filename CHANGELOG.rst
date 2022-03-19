@@ -35,6 +35,16 @@ New DebOps roles
 
   .. __: https://www.elastic.co/beats/metricbeat
 
+:ref:`debops.java` role
+'''''''''''''''''''''''
+
+- The role will now configure the default security policy for Java
+  applications. The additions will permit Java applications to access the
+  system-wide CA certificate store in :file:`/etc/ssl/certs/` directory as well
+  as the PKI infrastructure managed by the :ref:`debops.pki` role, so that Java
+  applications can use the existing X.509 certificates and private keys for TLS
+  encryption support.
+
 :ref:`debops.kibana` role
 '''''''''''''''''''''''''
 
@@ -60,6 +70,14 @@ General
 
   New submissions to the DebOps project will be required to use the FQCNs as
   well.
+
+:ref:`debops.elasticsearch` role
+''''''''''''''''''''''''''''''''
+
+- The role will check the status of the built-in user accounts via the HTTP API
+  instead of relying on the Ansible local facts and create them if they don't
+  exist. This should help with an upgrade of existing Elasticsearch clusters
+  without TLS encrypted traffic and authentication.
 
 :ref:`debops.pki` role
 ''''''''''''''''''''''
@@ -92,12 +110,36 @@ debops.boxbackup role
   playbook. This fixes an issue with Ansible stopping the site playbook
   execution when it cannot find the ``boxbackup`` role in the Collection.
 
+:ref:`debops.elasticsearch` role
+''''''''''''''''''''''''''''''''
+
+- The internal Java security policy used by Elasticsearch will be configured
+  only on Elasticsearch v7.x+ versions. Before them, Elasticsearch used the
+  global Java security policy.
+
 :ref:`debops.gitlab_runner` role
 ''''''''''''''''''''''''''''''''
 
 - Fixed an error that could occur in the "Patch 'vagrant-libvirt' source code"
   task on systems other than Debian 9 or 10. The patch is not required since
   the ``vagrant-libvirt`` v0.1.0 package.
+
+:ref:`debops.kibana` role
+'''''''''''''''''''''''''
+
+- The role will use the correct path of the Kibana keystore depending on the
+  installed version (versions <7.0.0 keep the keystore in the
+  :file:`/var/lib/kibana/` directory; newer versions use the
+  :file:`/etc/kibana/` directory).
+
+- The role will use different user account depending on Kibana version (either
+  ``kibana``, or ``kibana_system`` used in newer installations of
+  Elasticsearch). Depending on your installed version, you should check the
+  :envvar:`kibana__elasticsearch_username` to verify that the correct account
+  is used for access to Elasticsearch.
+
+- The role will include the ``server.publicBaseUrl`` parameter depending on
+  Kibana version, to avoid failures on older Kibana installations.
 
 :ref:`debops.ldap` role
 '''''''''''''''''''''''

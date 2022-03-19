@@ -42,8 +42,8 @@ kibana__packages: []
 kibana__version: '{{ ansible_local.kibana.version | d("0.0.0") }}'
                                                                    # ]]]
                                                                    # ]]]
-# UNIX user and group [[[
-# -----------------------
+# UNIX user and group, file paths [[[
+# -----------------------------------
 
 # .. envvar:: kibana__user [[[
 #
@@ -63,6 +63,14 @@ kibana__group: 'kibana'
 kibana__additional_groups: '{{ [ "ssl-cert" ]
                                if kibana__pki_enabled|bool
                                else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: kibana__keystore_path [[[
+#
+# Path to the Kibana keystore file.
+kibana__keystore_path: '{{ "/var/lib/kibana/kibana.keystore"
+                           if (kibana__version is version("7.0.0", "<"))
+                           else "/etc/kibana/kibana.keystore" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Frontend webserver options [[[
@@ -155,7 +163,9 @@ kibana__elasticsearch_hosts: [ 'http://localhost:9200' ]
 # Elasticsearch clusters.
 kibana__elasticsearch_username: '{{ ""
                                     if (kibana__elasticsearch_hosts[0].startswith("http://"))
-                                    else "kibana_system" }}'
+                                    else ("kibana"
+                                          if (kibana__version is version("7.0.0", "<"))
+                                          else "kibana_system") }}'
 
                                                                    # ]]]
 # .. envvar:: kibana__elasticsearch_password [[[
@@ -319,10 +329,12 @@ kibana__default_configuration:
 
   - name: 'server.publicBaseUrl'
     value: '{{ "https://" + ansible_fqdn }}'
-    state: 'present'
     comment: |
       Specifies the public URL at which Kibana is available for end users. If
       `server.basePath` is configured this URL should end with the same basePath.
+    state: '{{ "present"
+               if (kibana__version is version("7.0.0", ">="))
+               else "absent" }}'
 
   - name: 'server.maxPayloadBytes'
     value: 1048576
