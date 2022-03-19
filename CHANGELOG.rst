@@ -110,6 +110,13 @@ debops.boxbackup role
   playbook. This fixes an issue with Ansible stopping the site playbook
   execution when it cannot find the ``boxbackup`` role in the Collection.
 
+:ref:`debops.elasticsearch` role
+''''''''''''''''''''''''''''''''
+
+- The internal Java security policy used by Elasticsearch will be configured
+  only on Elasticsearch v7.x+ versions. Before them, Elasticsearch used the
+  global Java security policy.
+
 :ref:`debops.gitlab_runner` role
 ''''''''''''''''''''''''''''''''
 
