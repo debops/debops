@@ -329,10 +329,12 @@ kibana__default_configuration:
 
   - name: 'server.publicBaseUrl'
     value: '{{ "https://" + ansible_fqdn }}'
-    state: 'present'
     comment: |
       Specifies the public URL at which Kibana is available for end users. If
       `server.basePath` is configured this URL should end with the same basePath.
+    state: '{{ "present"
+               if (kibana__version is version("7.0.0", ">="))
+               else "absent" }}'
 
   - name: 'server.maxPayloadBytes'
     value: 1048576

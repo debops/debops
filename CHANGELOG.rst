@@ -124,6 +124,9 @@ debops.boxbackup role
   :envvar:`kibana__elasticsearch_username` to verify that the correct account
   is used for access to Elasticsearch.
 
+- The role will include the ``server.publicBaseUrl`` parameter depending on
+  Kibana version, to avoid failures on older Kibana installations.
+
 :ref:`debops.ldap` role
 '''''''''''''''''''''''
 
