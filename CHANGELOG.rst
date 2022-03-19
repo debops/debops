@@ -132,6 +132,12 @@ debops.boxbackup role
   :file:`/var/lib/kibana/` directory; newer versions use the
   :file:`/etc/kibana/` directory).
 
+- The role will use different user account depending on Kibana version (either
+  ``kibana``, or ``kibana_system`` used in newer installations of
+  Elasticsearch). Depending on your installed version, you should check the
+  :envvar:`kibana__elasticsearch_username` to verify that the correct account
+  is used for access to Elasticsearch.
+
 :ref:`debops.ldap` role
 '''''''''''''''''''''''
 

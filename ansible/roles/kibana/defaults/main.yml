@@ -163,7 +163,9 @@ kibana__elasticsearch_hosts: [ 'http://localhost:9200' ]
 # Elasticsearch clusters.
 kibana__elasticsearch_username: '{{ ""
                                     if (kibana__elasticsearch_hosts[0].startswith("http://"))
-                                    else "kibana_system" }}'
+                                    else ("kibana"
+                                          if (kibana__version is version("7.0.0", "<"))
+                                          else "kibana_system") }}'
 
                                                                    # ]]]
 # .. envvar:: kibana__elasticsearch_password [[[
