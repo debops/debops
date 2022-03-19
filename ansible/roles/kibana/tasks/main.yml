@@ -124,8 +124,8 @@
          (item.name if ':' not in item.name else item.name.split(':')[1]) in kibana__register_plugins.stdout_lines)
 
 - name: Check if the Kibana keystore exists
-  stat:
-    path: '/etc/kibana/kibana.keystore'
+  ansible.builtin.stat:
+    path: '{{ kibana__keystore_path }}'
   register: kibana__register_keystore
 
 - name: Create Kibana keystore if not present
