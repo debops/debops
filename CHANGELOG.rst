@@ -23,6 +23,22 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.2: https://github.com/debops/debops/compare/v2.2.0...stable-2.2
 
+Added
+~~~~~
+
+:ref:`debops.java` role
+'''''''''''''''''''''''
+
+- The role will now configure the default security policy for Java
+  applications. The additions will permit Java applications to access the
+  system-wide CA certificate store in :file:`/etc/ssl/certs/` directory as well
+  as the PKI infrastructure managed by the :ref:`debops.pki` role, so that Java
+  applications can use the existing X.509 certificates and private keys for TLS
+  encryption support.
+
+Changed
+~~~~~~~
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
