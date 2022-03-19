@@ -57,6 +57,11 @@ Updates of upstream application versions
 - The configuration included in the role has been updated to work correctly
   with Elasticsearch v8.0.x release.
 
+- The role will check the status of the built-in user accounts via the HTTP API
+  instead of relying on the Ansible local facts and create them if they don't
+  exist. This should help with an upgrade of existing Elasticsearch clusters
+  without TLS encrypted traffic and authentication.
+
 :ref:`debops.kibana` role
 '''''''''''''''''''''''''
 
