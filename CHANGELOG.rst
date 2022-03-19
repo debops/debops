@@ -71,6 +71,14 @@ General
   New submissions to the DebOps project will be required to use the FQCNs as
   well.
 
+:ref:`debops.elasticsearch` role
+''''''''''''''''''''''''''''''''
+
+- The role will check the status of the built-in user accounts via the HTTP API
+  instead of relying on the Ansible local facts and create them if they don't
+  exist. This should help with an upgrade of existing Elasticsearch clusters
+  without TLS encrypted traffic and authentication.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
