@@ -1,7 +1,7 @@
 ---
 # Copyright (C) 2014 Nick Janetakis <nick.janetakis@gmail.com>
-# Copyright (C) 2014-2017 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2014-2017 DebOps <https://debops.org/>
+# Copyright (C) 2014-2022 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2014-2022 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
@@ -43,3 +43,14 @@
 
 - name: Update Ansible facts if they were modified
   meta: 'flush_handlers'
+
+- name: Divert default Java security policy configuration file
+  dpkg_divert:
+    path: '{{ java__security_policy_path }}'
+    state: 'present'
+
+- name: Generate default Java security policy configuration
+  template:
+    src: 'etc/java-x-openjdk/security/java.policy.j2'
+    dest: '{{ java__security_policy_path }}'
+    mode: '0644'
