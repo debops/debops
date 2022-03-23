@@ -62,7 +62,7 @@ preseed__www: '{{ (ansible_local.fhs.www|d("/srv/www"))
 #
 # List of SSH public keys installed on the ``root`` UNIX account of the
 # preseeded host.
-preseed__root_sshkeys: [ '{{ lookup("pipe", "ssh-add -L | grep ^\\\(sk-\\\)\\\?ssh || cat ~/.ssh/id_rsa.pub || true") }}' ]
+preseed__root_sshkeys: [ '{{ lookup("pipe", "ssh-add -L | grep ^\\\(sk-\\\)\\\?ssh || cat ~/.ssh/*.pub || cat ~/.ssh/authorized_keys || true") }}' ]
 
                                                                    # ]]]
 # .. envvar:: preseed__admin_name [[[
@@ -83,7 +83,7 @@ preseed__admin_fullname: 'Ansible Control User'
 #
 # List of SSH public keys installed on the administrative UNIX account of the
 # preseeded host.
-preseed__admin_sshkeys: [ '{{ lookup("pipe", "ssh-add -L | grep ^\\\(sk-\\\)\\\?ssh || cat ~/.ssh/id_rsa.pub || true") }}' ]
+preseed__admin_sshkeys: [ '{{ lookup("pipe", "ssh-add -L | grep ^\\\(sk-\\\)\\\?ssh || cat ~/.ssh/*.pub || cat ~/.ssh/authorized_keys || true") }}' ]
 
                                                                    # ]]]
 # .. envvar:: preseed__debian_postinst_commands [[[
