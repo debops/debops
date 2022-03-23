@@ -71,6 +71,11 @@ General
   New submissions to the DebOps project will be required to use the FQCNs as
   well.
 
+- Various roles that lookup SSH public keys on the Ansible Controller
+  (:ref:`debops.preseed`, :ref:`debops.reprepro`, :ref:`debops.system_users`)
+  will try to use the :file:`~/.ssh/authorized_keys` file to find the keys if
+  all other methods fail.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
