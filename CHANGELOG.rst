@@ -176,6 +176,12 @@ General
   "Debian Wheezy", "Debian Jessie", "Ubuntu Precise Pangolin". The support is
   still available in stable DebOps releases up to v3.0.x if needed.
 
+:ref:`debops.apt_install` role
+''''''''''''''''''''''''''''''
+
+- The ``ranger`` APT package will not be installed by default. The ``mc``
+  package can be used as an alternative.
+
 
 `debops v3.0.0`_ - 2022-02-17
 -----------------------------
