@@ -66,8 +66,10 @@
 ## is the workaround to make it idempotent.
 ## This is not too bad because depending on the iteration count chosen this operation could take a while ;)
 - name: Generate salted hash from user password
+  environment:
+    GRUB_PLAINTEXT_PASSWORD: '{{ item.0.password }}'
   shell: set -o nounset -o pipefail -o errexit &&
-         echo -en '{{ item.0.password }}\n{{ item.0.password }}\n' | LANG=C LC_ALL=C grub-mkpasswd-pbkdf2
+         printf "%s\n%s\n" "${GRUB_PLAINTEXT_PASSWORD}" "${GRUB_PLAINTEXT_PASSWORD}" | LANG=C LC_ALL=C grub-mkpasswd-pbkdf2
          {{ "" if grub__iter_time|d()   == "default" else ("--iteration-count=" + grub__iter_time) }}
          {{ "" if grub__salt_length|d() == "default" else ("--salt=" + grub__salt_length) }}
          {{ "" if grub__hash_length|d() == "default" else ("--buflen=" + grub__hash_length) }}
