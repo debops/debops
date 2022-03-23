@@ -118,6 +118,13 @@ debops.boxbackup role
 - Fixed an error that could occur in the "Patch 'vagrant-libvirt' source code"
   task on systems other than Debian 9 or 10.
 
+:ref:`debops.grub` role
+'''''''''''''''''''''''
+
+- The :command:`grub` user passwords will be passed for encryption using
+  environment variables instead of directly on the command line, to avoid leaks
+  through the process list.
+
 :ref:`debops.kibana` role
 '''''''''''''''''''''''''
 
