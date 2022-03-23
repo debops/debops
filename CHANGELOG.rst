@@ -129,6 +129,13 @@ debops.boxbackup role
   task on systems other than Debian 9 or 10. The patch is not required since
   the ``vagrant-libvirt`` v0.1.0 package.
 
+:ref:`debops.grub` role
+'''''''''''''''''''''''
+
+- The :command:`grub` user passwords will be passed for encryption using
+  environment variables instead of directly on the command line, to avoid leaks
+  through the process list.
+
 :ref:`debops.kibana` role
 '''''''''''''''''''''''''
 
