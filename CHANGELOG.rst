@@ -111,6 +111,12 @@ debops.boxbackup role
 Removed
 ~~~~~~~
 
+:ref:`debops.apt_install` role
+''''''''''''''''''''''''''''''
+
+- The ``ranger`` APT package will not be installed by default. The ``mc``
+  package can be used as an alternative.
+
 :ref:`debops.root_account` role
 '''''''''''''''''''''''''''''''
 
