@@ -172,6 +172,12 @@ debops.boxbackup role
   service without it actually being present on the host. This should now be
   avoided by carefully checking the service status.
 
+:ref:`debops.tcpwrappers` role
+''''''''''''''''''''''''''''''
+
+- The role used to partially configure TCP Wrappers even when
+  ``tcpwrappers__enabled`` was set to ``False``.
+
 Removed
 ~~~~~~~
 
