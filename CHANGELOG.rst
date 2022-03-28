@@ -101,6 +101,12 @@ General
 - Fixed an issue with custom Ansible plugins not working in "standalone" mode
   without the DebOps scripts installed on Ansible Controller.
 
+:ref:`debops.atd` role
+''''''''''''''''''''''
+
+- Fixed an issue with the role facts not being correctly defined when the role
+  is executed with the ``meta::facts`` Ansible tag.
+
 debops.boxbackup role
 '''''''''''''''''''''
 
