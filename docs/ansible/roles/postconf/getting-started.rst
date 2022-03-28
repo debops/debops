@@ -65,10 +65,10 @@ Supported Postfix capabilities and their effects:
   assumption that the host will receive mail messages from public Internet
   servers.
 
-  This capability will enable HELO and sender checks which will verify that
-  a given HELO domain or sender domain MX host has a public IP address.
-  Otherwise, mail messages directed to this MX won't be deliverable, therefore
-  it's better to reject the messages early.
+  This capability will enable sender checks which will verify that a given
+  sender domain MX host has a public IP address. Otherwise, mail messages
+  directed to this MX won't be deliverable, therefore it's better to reject the
+  messages early.
 
 
 ``unauth-sender``
