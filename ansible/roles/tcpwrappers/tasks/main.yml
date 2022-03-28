@@ -38,6 +38,7 @@
     divert: '{{ tcpwrappers__divert_hosts_allow }}'
     state: '{{ "present" if tcpwrappers__enabled|bool else "absent" }}'
     delete: True
+  when: not ansible_check_mode|bool
 
 - name: Allow access from Ansible Controller to sshd
   template:

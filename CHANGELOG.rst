@@ -63,6 +63,10 @@ General
   will try to use the :file:`~/.ssh/authorized_keys` file to find the keys if
   all other methods fail.
 
+- Less important tasks in various roles that operate on files or directories
+  that might not exist initially on new hosts will be skipped in Ansible
+  ``--check`` mode to ensure that more important tasks might be evaluated.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
