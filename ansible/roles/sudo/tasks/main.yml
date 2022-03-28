@@ -65,7 +65,7 @@
     state: 'present'
     validate: 'visudo -cf "%s"'
     mode: '0440'
-  when: sudo__enabled|bool
+  when: sudo__enabled|bool and not ansible_check_mode|bool
 
 - name: Remove sudoers configuration if requested
   ansible.builtin.file:
