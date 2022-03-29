@@ -31,7 +31,7 @@ Software dependencies
    sudo apt install build-essential git graphviz shellcheck \
                     python3-sphinx python3-sphinx-rtd-theme
 
-   pip install -U pycodestyle nose2 yamllint ansible-lint fsfe-reuse
+   pip install -U pycodestyle nose2 yamllint ansible-lint reuse
 
 
 If you intend on running :command:`make docker`,
