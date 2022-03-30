@@ -349,6 +349,12 @@ HTTPS and TLS
   intermediate+root CA certificate is required for this.
   FIXME: Rename to ocsp_stapling_verify
 
+``nginx_ocsp_resolvers``
+  Optional, string.  List of DNS servers used to for resolving. Among other things
+  used to resolve OCSP stapling but in general all dns queries (e.g. for proxy_path).
+  If it's empty, nginx role will try to use the nameservers from /etc/resolv.conf.
+  Currently only the first nameserver is used
+
 ``hsts_enabled``
   Optional, boolean. Defaults to ``True``. If this is set to ``True`` and HTTPS
   is enabled for this item, the `HTTP Strict Transport Security`_ header is set
