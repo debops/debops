@@ -1,36 +1,99 @@
 ---
 # Copyright (C) 2014-2016 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2014-2016 DebOps <http://debops.org/>
+# Copyright (C) 2021-2022 Imre Jonk <imre@imrejonk.nl>
+# Copyright (C) 2014-2016, 2021-2022 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
   ansible.builtin.import_role:
     name: 'global_handlers'
 
-- name: Install required packages
-  ansible.builtin.package:
-    name: '{{ q("flattened", (tcpwrappers__base_packages
-                              + tcpwrappers__packages)) }}'
-    state: 'present'
-  register: tcpwrappers__register_packages
-  until: tcpwrappers__register_packages is succeeded
-  when: tcpwrappers__enabled | bool
+- when: tcpwrappers__enabled | bool
+  block:
 
-- name: Make sure /etc/hosts.allow.d directory exists
-  ansible.builtin.file:
-    path: '/etc/hosts.allow.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
+    - name: Install required packages
+      ansible.builtin.package:
+        name: '{{ q("flattened", (tcpwrappers__base_packages
+                                  + tcpwrappers__packages)) }}'
+        state: 'present'
+      register: tcpwrappers__register_packages
+      until: tcpwrappers__register_packages is succeeded
 
-- name: Create /etc/hosts.allow.d/00_ansible
-  ansible.builtin.template:
-    src: 'etc/hosts.allow.d/00_ansible.j2'
-    dest: '/etc/hosts.allow.d/00_ansible'
+    - name: Make sure /etc/hosts.allow.d directory exists
+      ansible.builtin.file:
+        path: '/etc/hosts.allow.d'
+        state: 'directory'
+        owner: 'root'
+        group: 'root'
+        mode: '0755'
+
+    - name: Create /etc/hosts.allow.d/00_ansible
+      ansible.builtin.template:
+        src: 'etc/hosts.allow.d/00_ansible.j2'
+        dest: '/etc/hosts.allow.d/00_ansible'
+        owner: 'root'
+        group: 'root'
+        mode: '0644'
+
+    - name: Allow access from Ansible Controller to sshd
+      ansible.builtin.template:
+        src: 'etc/hosts.allow.d/ansible_controller.j2'
+        dest: '/etc/hosts.allow.d/10_ansible_controller'
+        owner: 'root'
+        group: 'root'
+        mode: '0644'
+
+    - name: Remove hosts.allow entries if requested
+      ansible.builtin.file:
+        path: '/etc/hosts.allow.d/{{ item.weight | default("50") }}_{{ item.filename
+                | d((item.daemon if item.daemon is string else item.daemon[0]) + "_allow") }}'
+        state: 'absent'
+      with_flattened:
+        - '{{ tcpwrappers__allow }}'
+        - '{{ tcpwrappers__group_allow }}'
+        - '{{ tcpwrappers__host_allow }}'
+        - '{{ tcpwrappers__dependent_allow }}'
+        - '{{ tcpwrappers__localhost_allow }}'
+        - '{{ tcpwrappers_allow | d([]) }}'
+        - '{{ tcpwrappers_group_allow | d([]) }}'
+        - '{{ tcpwrappers_host_allow | d([]) }}'
+        - '{{ tcpwrappers_dependent_allow | d([]) }}'
+      when: ((item.daemon|d() or item.daemons|d()) and
+             item.state|d() and item.state == 'absent')
+
+    - name: Generate hosts.allow entries
+      ansible.builtin.template:
+        src: 'etc/hosts.allow.d/allow.j2'
+        dest: '/etc/hosts.allow.d/{{ item.weight | default("50") }}_{{ item.filename
+                | d((item.daemon if item.daemon is string else item.daemon[0]) + "_allow") }}'
+        owner: 'root'
+        group: 'root'
+        mode: '0644'
+      with_flattened:
+        - '{{ tcpwrappers__allow }}'
+        - '{{ tcpwrappers__group_allow }}'
+        - '{{ tcpwrappers__host_allow }}'
+        - '{{ tcpwrappers__dependent_allow }}'
+        - '{{ tcpwrappers__localhost_allow }}'
+        - '{{ tcpwrappers_allow | d([]) }}'
+        - '{{ tcpwrappers_group_allow | d([]) }}'
+        - '{{ tcpwrappers_host_allow | d([]) }}'
+        - '{{ tcpwrappers_dependent_allow | d([]) }}'
+      when: ((item.daemon|d() or item.daemons|d()) and
+             (item.state is undefined or item.state != 'absent'))
+
+- name: Configure access in /etc/hosts.deny
+  ansible.builtin.lineinfile:
+    dest: '/etc/hosts.deny'
+    regexp: '^ALL: ALL'
+    line: 'ALL: ALL'
+    create: True
     owner: 'root'
     group: 'root'
     mode: '0644'
+    state: '{{ "present"
+               if (tcpwrappers__enabled|bool and tcpwrappers__deny_all|bool)
+               else "absent" }}'
 
 - name: Add/remove diversion of /etc/hosts.allow
   dpkg_divert:
@@ -40,54 +103,7 @@
     delete: True
   when: not ansible_check_mode|bool
 
-- name: Allow access from Ansible Controller to sshd
-  ansible.builtin.template:
-    src: 'etc/hosts.allow.d/ansible_controller.j2'
-    dest: '/etc/hosts.allow.d/10_ansible_controller'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-
-- name: Remove hosts.allow entries if requested
-  ansible.builtin.file:
-    path: '/etc/hosts.allow.d/{{ item.weight | default("50") }}_{{ item.filename
-            | d((item.daemon if item.daemon is string else item.daemon[0]) + "_allow") }}'
-    state: 'absent'
-  with_flattened:
-    - '{{ tcpwrappers__allow }}'
-    - '{{ tcpwrappers__group_allow }}'
-    - '{{ tcpwrappers__host_allow }}'
-    - '{{ tcpwrappers__dependent_allow }}'
-    - '{{ tcpwrappers__localhost_allow }}'
-    - '{{ tcpwrappers_allow | d([]) }}'
-    - '{{ tcpwrappers_group_allow | d([]) }}'
-    - '{{ tcpwrappers_host_allow | d([]) }}'
-    - '{{ tcpwrappers_dependent_allow | d([]) }}'
-  when: ((item.daemon|d() or item.daemons|d()) and
-         item.state|d() and item.state == 'absent')
-
-- name: Generate hosts.allow entries
-  ansible.builtin.template:
-    src: 'etc/hosts.allow.d/allow.j2'
-    dest: '/etc/hosts.allow.d/{{ item.weight | default("50") }}_{{ item.filename
-            | d((item.daemon if item.daemon is string else item.daemon[0]) + "_allow") }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  with_flattened:
-    - '{{ tcpwrappers__allow }}'
-    - '{{ tcpwrappers__group_allow }}'
-    - '{{ tcpwrappers__host_allow }}'
-    - '{{ tcpwrappers__dependent_allow }}'
-    - '{{ tcpwrappers__localhost_allow }}'
-    - '{{ tcpwrappers_allow | d([]) }}'
-    - '{{ tcpwrappers_group_allow | d([]) }}'
-    - '{{ tcpwrappers_host_allow | d([]) }}'
-    - '{{ tcpwrappers_dependent_allow | d([]) }}'
-  when: ((item.daemon|d() or item.daemons|d()) and
-         (item.state is undefined or item.state != 'absent'))
-
-- name: Assemble hosts.allow.d
+- name: Assemble /etc/hosts.allow
   ansible.builtin.assemble:
     src: '/etc/hosts.allow.d'
     dest: '/etc/hosts.allow'
@@ -113,17 +129,3 @@
     group: 'root'
     mode: '0644'
   tags: [ 'meta::facts' ]
-
-- name: Configure access in /etc/hosts.deny
-  ansible.builtin.lineinfile:
-    dest: '/etc/hosts.deny'
-    regexp: '^ALL: ALL'
-    line: 'ALL: ALL'
-    create: True
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-    state: '{{ "present"
-               if (tcpwrappers__enabled  | bool and
-                   tcpwrappers__deny_all | bool)
-               else "absent" }}'
