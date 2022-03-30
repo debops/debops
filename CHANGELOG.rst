@@ -299,6 +299,12 @@ General
   not defined which might cause Ansible execution to fail even when the
   :command:`nullmailer` configuration is disabled.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- The role is now compatible with Nextcloud 23 :command:`occ check` command,
+  which writes messages to stderr during initial installation.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
