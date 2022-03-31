@@ -361,6 +361,12 @@ General
   :file:`/run/resolvconf/` path did not exist. It will be created automatically
   if not found.
 
+:ref:`debops.roundcube` role
+''''''''''''''''''''''''''''
+
+- Locked johndoh/contextmenu plugin to version 3.2.1 for Roundcube < 1.5 due to
+  compatibility issues.
+
 Removed
 ~~~~~~~
 
