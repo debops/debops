@@ -657,6 +657,12 @@ debops.reprepro role
 - Ensure that the fact script correctly includes information about upstream
   nameservers when :command:`systemd-resolved` service is used.
 
+:ref:`debops.roundcube` role
+''''''''''''''''''''''''''''
+
+- Locked johndoh/contextmenu plugin to version 3.2.1 for Roundcube < 1.5 due to
+  compatibility issues.
+
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
 
