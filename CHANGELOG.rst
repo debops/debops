@@ -218,6 +218,13 @@ General
 - In the fact script, parse the ``deb-src`` configuration entries before
   ``deb`` entries to ensure that there are no duplicates.
 
+- The role no longer defaults to the ``ansible_local.core.distribution`` and
+  ``ansible_local.core.distribution_release`` local facts for determining the
+  Linux distribution and the distribution release, respectively. These facts
+  were set later in the common playbook, meaning that the role would restore
+  the previous distribution release in ``/etc/apt/sources.list`` after a
+  distribution upgrade.
+
 :ref:`debops.core` role
 '''''''''''''''''''''''
 
