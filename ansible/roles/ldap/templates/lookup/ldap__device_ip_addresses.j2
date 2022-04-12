@@ -16,7 +16,7 @@
 {% for iface in ldap__tpl_device_interfaces %}
 {%   if hostvars[inventory_hostname][iface].ipv6|d() %}
 {%     for element in hostvars[inventory_hostname][iface].ipv6 %}
-{%       set address = ((element.address + '/' + element.prefix) | ipaddr('host/prefix')) %}
+{%       set address = element.address + '/' + element.prefix %}
 {%       if not address | ipv6('link-local') %}
 {%         set _ = ldap__tpl_device_ip_addresses.append(element.address) %}
 {%       endif %}
@@ -38,7 +38,7 @@
 {%     if hostvars[inventory_hostname][iface].interfaces | intersect(ldap__tpl_device_interfaces) %}
 {%       if hostvars[inventory_hostname][iface].ipv6|d() %}
 {%         for element in hostvars[inventory_hostname][iface].ipv6 %}
-{%           set address = ((element.address + '/' + element.prefix) | ipaddr('host/prefix')) %}
+{%           set address = element.address + '/' + element.prefix %}
 {%           if not address | ipv6('link-local') %}
 {%             set _ = ldap__tpl_device_ip_addresses.append(element.address) %}
 {%           endif %}
