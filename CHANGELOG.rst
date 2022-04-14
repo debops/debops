@@ -124,6 +124,12 @@ General
   GitLab Omnibus secrets to avoid storing sensitive data in :command:`git`
   repository.
 
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- All options in the :file:`/etc/default/ferm` configuration file are now
+  exposed as role default variables.
+
 :ref:`debops.influxdata` role
 '''''''''''''''''''''''''''''
 
