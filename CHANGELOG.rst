@@ -171,6 +171,12 @@ General
 - Unused ``postldap__ldap_server_port`` variable has been removed from role
   defaults.
 
+:ref:`debops.prosody` role
+''''''''''''''''''''''''''
+
+- The ``compression`` Prosody module will not be updated by default due to
+  security concerns.
+
 :ref:`debops.python` role
 '''''''''''''''''''''''''
 
