@@ -9,5 +9,7 @@
 # systemd unit. The socket configuration is specified in the 'daemon.json'
 # configuration file.
 [Service]
-ExecStart=
-ExecStart={{ ansible_local.docker_server.dockerd_binary|d("/usr/sbin/dockerd") }}
+ExecStart={{ ansible_local.docker_server.dockerd_binary
+             if (ansible_local|d() and ansible_local.docker_server|d() and
+                 ansible_local.docker_server.dockerd_binary|d())
+             else "/usr/sbin/dockerd" }}
