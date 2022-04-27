@@ -1,6 +1,7 @@
 .. Copyright (C) 2017-2019 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2019      Tasos Alvas <tasos.alvas@qwertyuiopia.com>
 .. Copyright (C) 2017-2019 DebOps <https://debops.org/>
+.. Copyright (C) 2022      GRNET <https://grnet.gr>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 .. _faq:
@@ -145,6 +146,29 @@ See `Issue #444`__ for more information and an example of such a pull
 request.
 
 .. __: https://github.com/debops/debops/issues/444
+
+
+I ran DebOps against a target host and now I can no longer ssh into the host.
+-----------------------------------------------------------------------------
+
+First, you obviously need to connect to the host in some other way; e.g. through
+the console.
+
+Second, undo what DebOps has done:
+
+* Edit :file:`/etc/ssh/sshd_config` and see if you can fix something. For
+  example, if you were logging in with a username and password, you need to set
+  ``PasswordAuthentication yes``.  Run ``service ssh reload`` if you make any
+  changes.
+
+* Edit :file:`/etc/pam.d/sshd` and comment out this line::
+
+      account  required     pam_access.so nodefgroup accessfile=/etc/security/access-sshd.conf
+
+* Check :file:`/var/log/auth.log` for more hints.
+
+Finally, read the :ref:`debops.sshd` role documentation. It explains how it
+works and how you can configure it so that it does what you want.
 
 
 .. rubric:: Footnotes
