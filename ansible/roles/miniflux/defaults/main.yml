@@ -113,10 +113,10 @@ miniflux__database_password: '{{ lookup("password", secret + "/postgresql/" +
 # Go application deployment [[[
 # -----------------------------
 
-# These variables control how the :command:`miniflux` binary is installed on
-# the host. The installation is performed by the :ref:`debops.golang`
-# role, refer to its documentation for details. The installation
-# definition can be found in the
+# These variables control how the :command:`miniflux` binary is
+# installed on the host. The installation is performed by the
+# :ref:`debops.golang` role, refer to its documentation for details. The
+# installation definition can be found in the
 # :envvar:`miniflux__golang__dependent_packages` variable.
 
 # .. envvar:: miniflux__upstream_gpg_key [[[
@@ -163,6 +163,23 @@ miniflux__upstream_url_mirror: 'https://github.com/miniflux/v2/releases/'
 # The list of supported architectures and OS types can be found on the
 # https://github.com/miniflux/v2/releases/ page.
 miniflux__upstream_platform: 'linux-amd64'
+
+                                                                   # ]]]
+# .. envvar:: miniflux__upstream_git_repository [[[
+#
+# The URL of the upstream :command:`git` repository which contains
+# Miniflux source code.
+miniflux__upstream_git_repository: 'https://github.com/miniflux/miniflux'
+
+                                                                   # ]]]
+# .. envvar:: miniflux__binary [[[
+#
+# Absolute path to the :command:`miniflux` Go binary installed on the
+# host. See the :ref:`debops.golang` role for more details.
+miniflux__binary: '{{ ansible_local.golang.binaries["miniflux"]
+                      if (ansible_local.golang.binaries|d() and
+                          ansible_local.golang.binaries.miniflux|d())
+                      else "" }}'
 
                                                                    # ]]]
                                                                    # ]]]
@@ -233,6 +250,15 @@ miniflux__golang__dependent_packages:
         dest: 'releases/{{ miniflux__upstream_platform }}/miniflux/miniflux/2.0.35/miniflux_2.0.35_linux_amd64'
     url_binaries:
       - src: 'releases/{{ miniflux__upstream_platform }}/miniflux/miniflux/2.0.35/miniflux_2.0.35_linux_amd64'
+        dest: 'miniflux'
+        notify: [ 'Restart miniflux' ]
+    git:
+      - repo: '{{ miniflux__upstream_git_repository }}'
+        version: '2.0.35'
+        build_script: |
+          make clean linux-amd64
+    git_binaries:
+      - src: 'github.com/miniflux/v2/bin/miniflux.app'
         dest: 'miniflux'
         notify: [ 'Restart miniflux' ]
 
