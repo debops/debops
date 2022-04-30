@@ -5,14 +5,14 @@
 {{ ansible_managed | comment }}
 
 [Unit]
-Description=Miniflux Service
-Documentation=https://miniflux.app/docs/configuration.html
+Description=Miniflux
+Documentation=man:miniflux(1) https://miniflux.app/docs/index.html
+After=network.target
 
 [Service]
-User={{ miniflux__user }}
-Group={{ miniflux__group }}
-EnvironmentFile=/etc/miniflux.conf
 ExecStart=/usr/local/bin/miniflux
+User={{ miniflux__user }}
+EnvironmentFile=/etc/miniflux.conf
 
 [Install]
 WantedBy=multi-user.target
