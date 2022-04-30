@@ -47,14 +47,6 @@ miniflux__user: 'miniflux'
 miniflux__group: 'miniflux'
 
                                                                    # ]]]
-# .. envvar:: miniflux__append_groups [[[
-#
-# List of additional UNIX groups that the Miniflux system account should
-# belong to. The ``ssl-cert`` UNIX group is required for access to the
-# PKI private keys to the TLS certificates.
-miniflux__additional_groups: '{{ [ "ssl-cert" ] if miniflux__pki_enabled|bool else [] }}'
-
-                                                                   # ]]]
 # .. envvar:: miniflux__shell [[[
 #
 # The default shell set on the Miniflux account.
@@ -135,7 +127,6 @@ miniflux__database_password: '{{ lookup("password", secret + "/postgresql/" +
 miniflux__upstream_gpg_key: '4405 F3F0 DDBA 1B9E 68A3  1D25 12C7 4390 F9AA C728'
 
                                                                    # ]]]
-
 # .. envvar:: miniflux__upstream_type [[[
 #
 # Specify the method which should be used to install Miniflux binary.
@@ -236,14 +227,14 @@ miniflux__postgresql__dependent_extensions:
 miniflux__golang__dependent_packages:
 
   - name: 'miniflux'
-    upstream_type: '{{ miniflux__upstream_type }}'  # TODO: Git integration will be done
+    upstream_type: '{{ miniflux__upstream_type }}'
     url:
       - src: '{{ miniflux__upstream_url_mirror + "download/2.0.35/miniflux-" + miniflux__upstream_platform }}'
         dest: 'releases/{{ miniflux__upstream_platform }}/miniflux/miniflux/2.0.35/miniflux_2.0.35_linux_amd64'
     url_binaries:
       - src: 'releases/{{ miniflux__upstream_platform }}/miniflux/miniflux/2.0.35/miniflux_2.0.35_linux_amd64'
         dest: 'miniflux'
-        notify: [ 'Restart miniflux' ]  # TODO: Don't forget to add in Handlers
+        notify: [ 'Restart miniflux' ]
 
                                                                    # ]]]
 # .. envvar:: miniflux__nginx__dependent_upstreams [[[
@@ -281,10 +272,10 @@ miniflux__etc_services__dependent_list:
 
                                                                    # ]]]
                                                                    # ]]]
+                                                                   # ]]]
 
 # TODO: Create documentation for these used variables
 #
-miniflux__pki_enabled: True
-miniflux__comment: 'Miniflux'  # TODO: Use __gecos instead
+miniflux__comment: 'Miniflux'
 miniflux__bind: '127.0.0.1'
 miniflux__port: '3366'

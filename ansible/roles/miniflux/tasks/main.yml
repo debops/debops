@@ -25,7 +25,6 @@
   ansible.builtin.user:
     name: '{{ miniflux__user }}'
     group: '{{ miniflux__group }}'
-    groups: '{{ miniflux__additional_groups }}'
     append: True
     home: '{{ miniflux__home }}'
     comment: '{{ miniflux__comment }}'
@@ -41,13 +40,10 @@
     mode: '0644'
   loop:
     - 'etc/systemd/system/miniflux.service'
-    - 'etc/miniflux.conf'  # TODO: Generate with `ini_file'
+    - 'etc/miniflux.conf'
   notify: [ 'Reload service manager' ]
 
 - name: Run migrations
-  # TODO: Make sure that miniflux daemon can read the miniflux
-  #   configuration file.
-  #
   # environment:
   #   DATABASE_URL: 'postgres://{{ miniflux__database_user }}:{{ miniflux__database_password }}@{{ miniflux__database_host }}:{{ miniflux__database_port }}/{{ miniflux__database_name }}'
   command: '/usr/local/bin/miniflux -migrate'
