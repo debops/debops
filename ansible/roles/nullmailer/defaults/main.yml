@@ -237,7 +237,9 @@ nullmailer__starttls: True
 # List which contains the result of the DNS query for SMTP server ``SRV``
 # resource records in the host's domain. See :rfc:`6186` for details.
 nullmailer__smtp_srv_rr: '{{ q("debops.debops.dig_srv", "_smtp._tcp." + nullmailer__domain,
-                               "smtp." + nullmailer__domain, 25) }}'
+                               "smtp." + nullmailer__domain, 25)
+                             if nullmailer__enabled|bool
+                             else [] }}'
 
                                                                    # ]]]
 # .. envvar:: nullmailer__smtp_port [[[

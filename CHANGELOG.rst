@@ -36,6 +36,14 @@ Added
 Fixed
 ~~~~~
 
+:ref:`debops.nullmailer` role
+'''''''''''''''''''''''''''''
+
+- The :envvar:`nullmailer__smtp_srv_rr` variable will be defined only when the
+  role is enabled. This avoids an issue where the needed DNS SRV records are
+  not defined which might cause Ansible execution to fail even when the
+  :command:`nullmailer` configuration is disabled.
+
 :ref:`debops.prosody` role
 ''''''''''''''''''''''''''
 
