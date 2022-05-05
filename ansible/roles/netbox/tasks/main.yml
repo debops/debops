@@ -183,6 +183,17 @@
   register: netbox__register_configuration
   tags: [ 'role::netbox:config' ]
 
+- name: Generate NetBox LDAP configuration
+  ansible.builtin.template:
+    src: 'usr/local/lib/netbox/ldap_config.py.j2'
+    dest: '{{ netbox__git_checkout + "/netbox/netbox/ldap_config.py" }}'
+    owner: '{{ netbox__user }}'
+    group: '{{ netbox__group }}'
+    mode: '0640'
+  notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver', 'Restart netbox Request Queue Worker' ]
+  tags: [ 'role::netbox:config' ]
+  no_log: '{{ debops__no_log | d(True) }}'
+
 - name: Perform database installation or migration
   ## Commands from upgrade.sh. We cannot directly run this script as of 2.10
   ## because it also deals with virtualenv with different directory paths than
