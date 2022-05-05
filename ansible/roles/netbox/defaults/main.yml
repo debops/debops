@@ -49,6 +49,9 @@ netbox__base_packages:
   - 'graphviz'
   - 'libpq-dev'
   - 'libssl-dev'
+  - '{{ [ "libldap2-dev", "libsasl2-dev" ]
+        if netbox__ldap_enabled|bool
+        else [] }}'
 
                                                                    # ]]]
 # .. envvar:: netbox__packages [[[
@@ -196,6 +199,8 @@ netbox__virtualenv_pip_packages:
     state: '{{ "present"
                if (netbox__config_napalm_username|d() or netbox__napalm_ssh_generate|bool)
                else "ignore" }}'
+  - name: 'django-auth-ldap'
+    state: '{{ "present" if netbox__ldap_enabled|bool else "ignore" }}'
                                                                    # ]]]
                                                                    # ]]]
 # PostgreSQL database configuration [[[
@@ -290,6 +295,234 @@ netbox__redis_cache_database: '{{ (netbox__redis_database|int + 1) }}'
 # Enable or disable support for encrypted connections to Redis. Currently this
 # option has no support in DebOps.
 netbox__redis_ssl: False
+                                                                   # ]]]
+                                                                   # ]]]
+# LDAP environment [[[
+# --------------------
+
+# .. envvar:: netbox__ldap_enabled [[[
+#
+# Enable or disable support for LDAP authentication in NetBox.
+netbox__ldap_enabled: '{{ True
+                          if (ansible_local|d() and ansible_local.ldap|d() and
+                              (ansible_local.ldap.enabled|d())|bool)
+                          else False }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_base_dn [[[
+#
+# The base Distinguished Name which should be used to create Distinguished
+# Names of the LDAP directory objects, defined as a YAML list. If this variable
+# is empty, LDAP configuration will not be performed.
+netbox__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_device_dn [[[
+#
+# The Distinguished Name of the current host LDAP object, defined as a YAML
+# list. It will be used as a base for the NetBox service account LDAP
+# object. If the list is empty, the role will not create the account LDAP
+# object automatically.
+netbox__ldap_device_dn: '{{ ansible_local.ldap.device_dn|d([]) }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_self_rdn [[[
+#
+# The Relative Distinguished Name of the account LDAP object used by the
+# NetBox service to access the LDAP directory.
+netbox__ldap_self_rdn: 'uid=netbox'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_self_object_classes [[[
+#
+# List of the LDAP object classes which will be used to create the LDAP object
+# used by the NetBox service to access the LDAP directory.
+netbox__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_self_attributes [[[
+#
+# YAML dictionary that defines the attributes of the LDAP object used by the
+# NetBox service to access the LDAP directory.
+netbox__ldap_self_attributes:
+  uid: '{{ netbox__ldap_self_rdn.split("=")[1] }}'
+  userPassword: '{{ netbox__ldap_bindpw }}'
+  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  description: 'Account used by the "NetBox" service to access the LDAP directory'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_binddn [[[
+#
+# The Distinguished Name of the account LDAP object used by the
+# NetBox service to bind to the LDAP directory.
+netbox__ldap_binddn: '{{ ([ netbox__ldap_self_rdn ] + netbox__ldap_device_dn) | join(",") }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_bindpw [[[
+#
+# The password stored in the account LDAP object used by the NetBox service
+# to bind to the LDAP directory.
+netbox__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
+                                 + netbox__ldap_binddn | to_uuid + ".password length=32"))
+                         if netbox__ldap_enabled|bool
+                         else "" }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_people_rdn [[[
+#
+# The Relative Distinguished Name of the LDAP object which contains the user
+# accounts stored in LDAP.
+netbox__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn|d("ou=People") }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_people_dn [[[
+#
+# The Distinguished Name of the LDAP object which contains the user accounts
+# used by NetBox.
+netbox__ldap_people_dn: '{{ [ netbox__ldap_people_rdn ] + netbox__ldap_base_dn }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_group_authentication_enabled [[[
+#
+# Enable or disable user authentication using LDAP groups.
+netbox__ldap_group_authentication_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_private_groups [[[
+#
+# When this variable is enabled, the :ref:`debops.ldap` role will create
+# a separate LDAP objects that manage the NetBox groups as subtree of the
+# NetBox service LDAP object. If you set this parameter to ``False``, the
+# role will use the global ``ou=Groups,dc=example,dc=org`` subtree instead.
+netbox__ldap_private_groups: True
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_groups_rdn [[[
+#
+# The Relative Distinguished Name of the LDAP object which contains the groups
+# stored in LDAP.
+netbox__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn|d("ou=Groups") }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_groups_dn [[[
+#
+# The Distinguished Name of the LDAP object which contains the groups used by
+# NetBox. If private groups are enabled, this object will be created
+# automatically.
+netbox__ldap_groups_dn: '{{ ([ netbox__ldap_groups_rdn, netbox__ldap_self_rdn ]
+                               + netbox__ldap_device_dn)
+                              if netbox__ldap_private_groups|bool
+                              else ([ netbox__ldap_groups_rdn ] + netbox__ldap_base_dn) }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_user_group_rdn [[[
+#
+# The Relative Distinguished Name of the LDAP object which defines the group of
+# NetBox users on a given NetBox instance.
+netbox__ldap_user_group_rdn: 'cn=NetBox Users'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_user_group_dn [[[
+#
+# The Distinguished Name of the LDAP object which defines who defines the group
+# of NetBox users on a given NetBox instance.
+netbox__ldap_user_group_dn: '{{ [ netbox__ldap_user_group_rdn ]
+                                + netbox__ldap_groups_dn }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_user_active_group_rdn [[[
+#
+# The Relative Distinguished Name of the LDAP object which defines who has
+# active access to a given NetBox instance.
+netbox__ldap_user_active_group_rdn: 'cn=NetBox Active Users'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_user_active_group_dn [[[
+#
+# The Distinguished Name of the LDAP object which defines who has
+# access to a given NetBox instance.
+netbox__ldap_user_active_group_dn: '{{ [ netbox__ldap_user_active_group_rdn ]
+                                       + netbox__ldap_groups_dn }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_user_staff_group_rdn [[[
+#
+# The Relative Distinguished Name of the LDAP object which defines who has
+# staff access level to a given NetBox instance and can have permissions in
+# NetBox ACL system.
+netbox__ldap_user_staff_group_rdn: 'cn=NetBox Staff'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_user_staff_group_dn [[[
+#
+# The Distinguished Name of the LDAP object which defines who has
+# staff access level to a given NetBox instance and can have premissions in
+# NetBox ACL system.
+netbox__ldap_user_staff_group_dn: '{{ [ netbox__ldap_user_staff_group_rdn ]
+                                      + netbox__ldap_groups_dn }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_user_admin_group_rdn [[[
+#
+# The Relative Distinguished Name of the LDAP object which defines who has
+# superuser access level to a given NetBox instance.
+netbox__ldap_user_admin_group_rdn: 'cn=NetBox Administrators'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_user_admin_group_dn [[[
+#
+# The Distinguished Name of the LDAP object which defines who has
+# superuser access level to a given NetBox instance.
+netbox__ldap_user_admin_group_dn: '{{ [ netbox__ldap_user_admin_group_rdn ]
+                                      + netbox__ldap_groups_dn }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_object_owner_rdn [[[
+#
+# The Relative Distinguished Name of the LDAP object of the person who
+# installed a given NetBox instance and is used as the owner of the "NetBox
+# Administrators" group.
+netbox__ldap_object_owner_rdn: 'uid={{ lookup("env", "USER") }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_object_ownerdn [[[
+#
+# The Distinguished Name of the LDAP object of the person who installed a given
+# NetBox instance and is used as the owner of the "NetBox Administrators"
+# group, defined as a string.
+netbox__ldap_object_ownerdn: '{{ ([ netbox__ldap_object_owner_rdn, netbox__ldap_people_rdn ]
+                                    + netbox__ldap_base_dn) | join(",") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# LDAP connection options [[[
+# ---------------------------
+
+# .. envvar:: netbox__ldap_server_uri [[[
+#
+# The URI address of the LDAP server used by NetBox.
+netbox__ldap_server_uri: '{{ ansible_local.ldap.uri|d([""]) | first }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_server_port [[[
+#
+# The TCP port which should be used for connections to the LDAP server.
+netbox__ldap_server_port: '{{ ansible_local.ldap.port|d("389" if netbox__ldap_start_tls|bool else "636") }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_start_tls [[[
+#
+# If ``True``, NetBox will use STARTTLS extension to make encrypted
+# connections to the LDAP server.
+netbox__ldap_start_tls: '{{ ansible_local.ldap.start_tls
+                            if (ansible_local|d() and ansible_local.ldap|d() and
+                                (ansible_local.ldap.start_tls|d())|bool)
+                            else True }}'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap_user_filter [[[
+#
+# The LDAP filter used to look up user accounts in the directory.
+netbox__ldap_user_filter: '(uid=%(user)s)'
                                                                    # ]]]
                                                                    # ]]]
 # NetBox configuration options [[[
@@ -740,6 +973,66 @@ netbox__python__dependent_packages3:
 netbox__python__dependent_packages2:
 
   - 'python-dev'
+
+                                                                   # ]]]
+# .. envvar:: netbox__ldap__dependent_tasks [[[
+#
+# Configuration for the :ref:`debops.ldap` Ansible role.
+netbox__ldap__dependent_tasks:
+
+  - name: 'Create NetBox account for {{ netbox__ldap_device_dn | join(",") }}'
+    dn: '{{ netbox__ldap_binddn }}'
+    objectClass: '{{ netbox__ldap_self_object_classes }}'
+    attributes: '{{ netbox__ldap_self_attributes }}'
+    no_log: '{{ debops__no_log | d(True) }}'
+    state: '{{ "present" if netbox__ldap_device_dn|d() else "ignore" }}'
+
+  - name: 'Create NetBox group container for {{ netbox__ldap_device_dn | join(",") }}'
+    dn: '{{ netbox__ldap_groups_dn }}'
+    objectClass: 'organizationalStructure'
+    attributes:
+      ou: '{{ netbox__ldap_groups_rdn.split("=")[1] }}'
+      description: 'User groups used in NetBox'
+    state: '{{ "present"
+               if (netbox__ldap_device_dn|d() and
+                   netbox__ldap_private_groups|bool)
+               else "ignore" }}'
+
+  - name: 'Create NetBox user group for {{ netbox__ldap_device_dn | join(",") }}'
+    dn: '{{ netbox__ldap_user_group_dn }}'
+    objectClass: 'groupOfNames'
+    attributes:
+      cn: '{{ netbox__ldap_user_group_rdn.split("=")[1] }}'
+      owner: '{{ netbox__ldap_object_ownerdn }}'
+      member: '{{ netbox__ldap_object_ownerdn }}'
+    state: '{{ "present" if netbox__ldap_device_dn|d() else "ignore" }}'
+
+  - name: 'Create NetBox active user group for {{ netbox__ldap_device_dn | join(",") }}'
+    dn: '{{ netbox__ldap_user_active_group_dn }}'
+    objectClass: 'groupOfNames'
+    attributes:
+      cn: '{{ netbox__ldap_user_active_group_rdn.split("=")[1] }}'
+      owner: '{{ netbox__ldap_object_ownerdn }}'
+      member: '{{ netbox__ldap_object_ownerdn }}'
+    state: '{{ "present" if netbox__ldap_device_dn|d() else "ignore" }}'
+
+  - name: 'Create NetBox staff group for {{ netbox__ldap_device_dn | join(",") }}'
+    dn: '{{ netbox__ldap_user_staff_group_dn }}'
+    objectClass: 'groupOfNames'
+    attributes:
+      cn: '{{ netbox__ldap_user_staff_group_rdn.split("=")[1] }}'
+      owner: '{{ netbox__ldap_object_ownerdn }}'
+      member: '{{ netbox__ldap_object_ownerdn }}'
+    state: '{{ "present" if netbox__ldap_device_dn|d() else "ignore" }}'
+
+  - name: 'Create NetBox admin group for {{ netbox__ldap_device_dn | join(",") }}'
+    dn: '{{ netbox__ldap_user_admin_group_dn }}'
+    objectClass: 'groupOfNames'
+    attributes:
+      cn: '{{ netbox__ldap_user_admin_group_rdn.split("=")[1] }}'
+      owner: '{{ netbox__ldap_object_ownerdn }}'
+      member: '{{ netbox__ldap_object_ownerdn }}'
+    state: '{{ "present" if netbox__ldap_device_dn|d() else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: netbox__gunicorn__dependent_applications [[[

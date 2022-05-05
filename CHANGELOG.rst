@@ -23,6 +23,16 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.3: https://github.com/debops/debops/compare/v2.3.0...stable-2.3
 
+Added
+~~~~~
+
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- The role will enable LDAP support in NetBox if LDAP environment managed by
+  the :ref:`debops.ldap` role is detected on the host. Currently only user
+  authentication and Django ACL system is supported via LDAP groups.
+
 
 `debops v2.3.5`_ - 2022-03-28
 -----------------------------
