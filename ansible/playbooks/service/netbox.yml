@@ -46,14 +46,21 @@
       tags: [ 'role::python', 'skip::python', 'role::postgresql', 'role::gunicorn', 'role::netbox' ]
       python__dependent_packages3:
         - '{{ gunicorn__python__dependent_packages3 }}'
+        - '{{ ldap__python__dependent_packages3 }}'
         - '{{ netbox__python__dependent_packages3 }}'
         - '{{ nginx__python__dependent_packages3 }}'
         - '{{ postgresql__python__dependent_packages3 }}'
       python__dependent_packages2:
         - '{{ gunicorn__python__dependent_packages2 }}'
+        - '{{ ldap__python__dependent_packages2 }}'
         - '{{ netbox__python__dependent_packages2 }}'
         - '{{ nginx__python__dependent_packages2 }}'
         - '{{ postgresql__python__dependent_packages2 }}'
+
+    - role: ldap
+      tags: [ 'role::ldap', 'skip::ldap' ]
+      ldap__dependent_tasks:
+        - '{{ netbox__ldap__dependent_tasks }}'
 
     - role: postgresql
       tags: [ 'role::postgresql', 'skip::postgresql' ]
