@@ -16,6 +16,7 @@ debops.netbox
    getting-started
    defaults/main
    defaults-detailed
+   ldap-dit
 
 Copyright
 ---------

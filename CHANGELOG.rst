@@ -51,6 +51,13 @@ New DebOps roles
 - The role can now manage passwords and other confidental data stored in the
   Kibana keystore.
 
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- The role will enable LDAP support in NetBox if LDAP environment managed by
+  the :ref:`debops.ldap` role is detected on the host. Currently only user
+  authentication and Django ACL system is supported via LDAP groups.
+
 Changed
 ~~~~~~~
 
