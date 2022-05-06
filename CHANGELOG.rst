@@ -33,6 +33,17 @@ Added
   the :ref:`debops.ldap` role is detected on the host. Currently only user
   authentication and Django ACL system is supported via LDAP groups.
 
+Fixed
+~~~~~
+
+:ref:`debops.prosody` role
+''''''''''''''''''''''''''
+
+- The ``prosdoy__pki_realm_path`` variable has been renamed to
+  :envvar:`prosody__pki_realm_path` to fix the typo in the variable name. You
+  might need to update your inventory in this case so that the role gets
+  correct value.
+
 
 `debops v2.3.5`_ - 2022-03-28
 -----------------------------
