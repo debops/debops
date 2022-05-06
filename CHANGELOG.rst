@@ -26,6 +26,16 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+General
+'''''''
+
+- DebOps now includes a custom version of the
+  ``community.general.apache2_module`` Ansible module, available as
+  ``debops.debops.apache2_module``. The custom module includes a fixed
+  idempotency check for enabled Apache 2 modules that works on Debian or Ubuntu
+  hosts. The :ref:`debops.apache` Ansible role will use this module instead of
+  the original one.
+
 :ref:`debops.netbox` role
 '''''''''''''''''''''''''
 
