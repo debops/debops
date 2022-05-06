@@ -183,6 +183,14 @@ debops.boxbackup role
   service without it actually being present on the host. This should now be
   avoided by carefully checking the service status.
 
+:ref:`debops.prosody` role
+''''''''''''''''''''''''''
+
+- The ``prosdoy__pki_realm_path`` variable has been renamed to
+  :envvar:`prosody__pki_realm_path` to fix the typo in the variable name. You
+  might need to update your inventory in this case so that the role gets
+  correct value.
+
 Removed
 ~~~~~~~
 
