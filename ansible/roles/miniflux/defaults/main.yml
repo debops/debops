@@ -136,6 +136,12 @@ miniflux__upstream_gpg_key: '4405 F3F0 DDBA 1B9E 68A3  1D25 12C7 4390 F9AA C728'
 miniflux__upstream_type: 'url'
 
                                                                    # ]]]
+# .. envvar:: miniflux__upstream_version [[[
+#
+# Version of the Miniflux upstream.
+miniflux__upstream_version: '2.0.35'
+
+                                                                   # ]]]
 # .. envvar:: miniflux__upstream_upgrade [[[
 #
 # Enable or disable automatic upgrades of Miniflux downloaded from
@@ -246,15 +252,15 @@ miniflux__golang__dependent_packages:
   - name: 'miniflux'
     upstream_type: '{{ miniflux__upstream_type }}'
     url:
-      - src: '{{ miniflux__upstream_url_mirror + "download/2.0.35/miniflux-" + miniflux__upstream_platform }}'
-        dest: 'releases/{{ miniflux__upstream_platform }}/miniflux/miniflux/2.0.35/miniflux_2.0.35_linux_amd64'
+      - src: '{{ miniflux__upstream_url_mirror + "download/" + miniflux__upstream_version + "/miniflux-" + miniflux__upstream_platform }}'
+        dest: 'releases/{{ miniflux__upstream_platform }}/miniflux/miniflux/" + miniflux__upstream_version + "/miniflux_" + miniflux__upstream_version + "_linux_amd64'
     url_binaries:
-      - src: 'releases/{{ miniflux__upstream_platform }}/miniflux/miniflux/2.0.35/miniflux_2.0.35_linux_amd64'
+      - src: 'releases/{{ miniflux__upstream_platform }}/miniflux/miniflux/" + miniflux__upstream_version + "/miniflux_" + miniflux__upstream_version + "_linux_amd64'
         dest: 'miniflux'
         notify: [ 'Restart miniflux' ]
     git:
       - repo: '{{ miniflux__upstream_git_repository }}'
-        version: '2.0.35'
+        version: '{{ miniflux__upstream_version }}'
         build_script: |
           make clean linux-amd64
     git_binaries:
