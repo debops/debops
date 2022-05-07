@@ -43,11 +43,6 @@
     - 'etc/miniflux.conf'
   notify: [ 'Reload service manager' ]
 
-- name: Run migrations
-  # environment:
-  #   DATABASE_URL: 'postgres://{{ miniflux__database_user }}:{{ miniflux__database_password }}@{{ miniflux__database_host }}:{{ miniflux__database_port }}/{{ miniflux__database_name }}'
-  command: '/usr/local/bin/miniflux -migrate'
-
 - name: Start and enable Miniflux service
   ansible.builtin.service:
     name: 'miniflux'
