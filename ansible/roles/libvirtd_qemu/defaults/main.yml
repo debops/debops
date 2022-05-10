@@ -54,10 +54,12 @@ libvirtd_qemu__base_packages_map:
 #
 # List of QEMU KVM packages to install. They will be installed on all hosts
 # apart from KVM guests, to not create redundant support.
-libvirtd_qemu__kvm_packages:
-  - 'qemu-system-x86'
-  - 'qemu-kvm'
-  - 'qemu-utils'
+libvirtd_qemu__kvm_packages: '{{ [ "qemu-system-x86", "qemu-utils" ]
+                                 + [ "qemu-kvm" ]
+                                   if ansible_distribution_release in [
+                                        "stretch", "buster", "bionic", "focal"
+                                      ]
+                                   else [] }}'
 
                                                                    # ]]]
 # .. envvar:: libvirtd_qemu__packages [[[
