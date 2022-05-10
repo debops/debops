@@ -129,6 +129,12 @@ General
 
 - The URL of the APT upstream repository has been updated.
 
+:ref:`debops.libvirtd` role
+'''''''''''''''''''''''''''
+
+- The ``qemu-kvm`` package is not needed on newer Debian/Ubuntu releases,
+  therefore it won't be installed by default.
+
 :ref:`debops.minio` role
 ''''''''''''''''''''''''
 
