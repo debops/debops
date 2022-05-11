@@ -120,30 +120,30 @@ requirements: [ dpkg-divert, env ]
 EXAMPLES = '''
 # Divert /etc/screenrc to /etc/screenrc.dpkg-divert and rename the file
 - name: Create local diversion
-  community.general.dpkg_divert: path=/etc/screenrc
+  dpkg_divert: path=/etc/screenrc
 
 # Divert /etc/screenrc to /etc/screenrc.distrib for package 'branding' and
 # rename the file
 - name: Create diversion for APT package
-  community.general.dpkg_divert:
+  dpkg_divert:
     name: /etc/screenrc
     package: branding
 
 - name: Delete the file in place of the original and remove the diversion
-  community.general.dpkg_divert:
+  dpkg_divert:
     name: /etc/screenrc
     state: absent
     delete: yes
 
 - name: remove the screenrc diversion only if belonging to 'branding'
-  community.general.dpkg_divert:
+  dpkg_divert:
     name: /etc/screenrc
     package: branding
     state: absent
 
 # Divert screenrc to screenrc.dpkg-divert, but don't rename the file
 - name: Divert with custom rename
-  community.general.dpkg_divert:
+  dpkg_divert:
     path: /etc/screenrc
     divert: /etc/screenrc.dpkg-divert
     rename: no
@@ -151,7 +151,7 @@ EXAMPLES = '''
 # Divert and rename screenrc to screenrc.dpkg-divert, even if diversion is
 # already set
 - name: Divert with custom rename
-  community.general.dpkg_divert:
+  dpkg_divert:
     path: /etc/screenrc
     divert: /etc/screenrc.dpkg-divert
     rename: yes
@@ -160,7 +160,7 @@ EXAMPLES = '''
   # Remove the screenrc diversion and maybe move the diverted file to its
   # original place
 - name: Remove diversion and rename file
-  community.general.dpkg_divert:
+  dpkg_divert:
     path: /etc/screenrc
     state: absent
     rename: yes

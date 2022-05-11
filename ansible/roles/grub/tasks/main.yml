@@ -121,7 +121,7 @@
 ## It has been decided to not divert this script because there is a chance that
 ## security fixes could affect this file.
 - name: Add/remove diversion of /etc/grub.d/10_linux
-  community.general.dpkg_divert:
+  dpkg_divert:
     path: '/etc/grub.d/10_linux'
     state: '{{ "present" if grub__combined_users|length > 0 else "absent" }}'
     delete: True

@@ -29,7 +29,7 @@
   when: machine__enabled|bool
 
 - name: Add/remove diversion of /etc/issue
-  community.general.dpkg_divert:
+  dpkg_divert:
     path: '/etc/issue'
     state: '{{ "present"
                if machine__etc_issue_state|d("present") != "absent"
@@ -78,7 +78,7 @@
   vars:
     divert_path: '{{ "/etc/update-motd.d/"
                       + item.filename | d(("%02d" | format(item.weight|int))|string + "-" + item.name) }}'
-  community.general.dpkg_divert:
+  dpkg_divert:
     path: '{{ divert_path }}'
     divert: '{{ divert_path + ".disabled" }}'
     state: '{{ "present" if

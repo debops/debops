@@ -11,7 +11,7 @@
   until: slapd__register_rfc2307bis_packages is succeeded
 
 - name: Divert the original NIS schema included in Debian
-  community.general.dpkg_divert:
+  dpkg_divert:
     path: '/etc/ldap/schema/{{ item }}'
   loop:
     - 'nis.schema'

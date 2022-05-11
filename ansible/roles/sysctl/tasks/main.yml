@@ -44,7 +44,7 @@
   ansible.builtin.meta: 'flush_handlers'
 
 - name: Add/remove diversion of custom sysctl configuration files
-  community.general.dpkg_divert:
+  dpkg_divert:
     path: '/etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}'
     state: '{{ item.state|d("present") }}'
     delete: True

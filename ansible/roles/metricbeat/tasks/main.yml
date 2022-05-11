@@ -42,7 +42,7 @@
   ansible.builtin.meta: 'flush_handlers'
 
 - name: Divert the original Metricbeat configuration
-  community.general.dpkg_divert:
+  dpkg_divert:
     path: '/etc/metricbeat/metricbeat.yml'
     state: 'present'
   register: metricbeat__register_config_divert
@@ -68,7 +68,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Manage snippet diversion and reversion
-  community.general.dpkg_divert:
+  dpkg_divert:
     path: '{{ "/etc/metricbeat/" + (item.name | regex_replace(".yml","") + ".yml") }}'
     state: '{{ "absent" if item.state|d("present") == "absent" else "present" }}'
     delete: True
