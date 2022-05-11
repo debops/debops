@@ -95,7 +95,7 @@
   when: (nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Divert default.conf in case nginx nginx.org flavor is used
-  community.general.dpkg_divert:
+  dpkg_divert:
     path: '/etc/nginx/conf.d/default.conf'
   when: (nginx_flavor == 'nginx.org' and nginx__deploy_state in [ 'present', 'config' ])
 
@@ -157,7 +157,7 @@
          nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Divert original /etc/nginx/nginx.conf
-  community.general.dpkg_divert:
+  dpkg_divert:
     path: '/etc/nginx/nginx.conf'
   when: (nginx__deploy_state in [ 'present', 'config' ])
 

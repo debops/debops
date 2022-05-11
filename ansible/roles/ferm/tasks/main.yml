@@ -85,7 +85,7 @@
   notify: [ 'Restart ferm' ]
 
 - name: Add/remove diversion of /etc/ferm/ferm.conf
-  community.general.dpkg_divert:
+  dpkg_divert:
     path: '/etc/ferm/ferm.conf'
     state: '{{ "present" if ferm__enabled|bool else "absent" }}'
     delete: True
