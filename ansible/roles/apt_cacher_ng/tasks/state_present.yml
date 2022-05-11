@@ -10,7 +10,7 @@
     name: 'global_handlers'
 
 - name: Divert Apt-Cacher NG configuration
-  dpkg_divert:
+  community.general.dpkg_divert:
     path: '/{{ item.path }}'
   when: (item.divert|d(True))
   with_items: '{{ apt_cacher_ng__configuration_files }}'

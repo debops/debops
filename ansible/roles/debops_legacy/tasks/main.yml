@@ -8,7 +8,7 @@
     name: 'ansible_plugins'
 
 - name: Remove legacy diversions
-  dpkg_divert:
+  community.general.dpkg_divert:
     path: '{{ item.name }}'
     divert: '{{ item.diversion|d(item.name + ".dpkg-divert") }}'
     state: 'absent'

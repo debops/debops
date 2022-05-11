@@ -102,7 +102,7 @@
         ansible_distribution == "Debian"
 
 - name: Divert main rsyslog configuration file
-  dpkg_divert:
+  community.general.dpkg_divert:
     path: '/etc/rsyslog.conf'
     state: 'present'
   notify: [ 'Check and restart rsyslogd' ]
@@ -118,7 +118,7 @@
   when: rsyslog__enabled|bool and rsyslog__deploy_state != 'absent'
 
 - name: Manage configuration file diversions
-  dpkg_divert:
+  community.general.dpkg_divert:
     path: '{{ "/etc/rsyslog.d/" + (item.divert_to | d(item.name)) }}'
     state: '{{ "present"
                if (item.state|d("present") not in [ "absent", "ignore", "init" ])
