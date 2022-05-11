@@ -33,7 +33,7 @@
     mode: '0644'
 
 - name: Add/remove diversion of /etc/hosts.allow
-  dpkg_divert:
+  community.general.dpkg_divert:
     path: '/etc/hosts.allow'
     divert: '{{ tcpwrappers__divert_hosts_allow }}'
     state: '{{ "present" if tcpwrappers__enabled|bool else "absent" }}'
