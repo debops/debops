@@ -45,6 +45,10 @@ General
   hosts. The :ref:`debops.apache` Ansible role will use this module instead of
   the original one.
 
+- DebOps roles will now use the ``community.general.dpkg_divert`` Ansible
+  module from the official collection instead of the version included with
+  DebOps.
+
 :ref:`debops.java` role
 '''''''''''''''''''''''
 
