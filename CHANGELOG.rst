@@ -152,6 +152,12 @@ General
   :command:`nginx` should be able to resolve upstream services specified via
   DNS names at startup.
 
+:ref:`debops.pdns` role
+'''''''''''''''''''''''
+
+- The SUID/SGID configuration is not needed anymore on PowerDNS >= v4.3.0; UNIX
+  account and group is now managed by a :command:`systemd` service unit.
+
 :ref:`debops.php` role
 ''''''''''''''''''''''
 
