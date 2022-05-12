@@ -193,6 +193,12 @@ debops.boxbackup role
   service without it actually being present on the host. This should now be
   avoided by carefully checking the service status.
 
+:ref:`debops.pdns` role
+'''''''''''''''''''''''
+
+- On pdns installations with version >= 4.5.0 (e.g. on Bookworm systems), the
+  role would cause a syntax error on the local-address configuration option.
+
 :ref:`debops.prosody` role
 ''''''''''''''''''''''''''
 
