@@ -116,6 +116,12 @@ Fixed
   not defined which might cause Ansible execution to fail even when the
   :command:`nullmailer` configuration is disabled.
 
+:ref:`debops.pdns` role
+'''''''''''''''''''''''
+
+- On pdns installations with version >= 4.5.0 (e.g. on Bookworm systems), the
+  role would cause a syntax error on the local-address configuration option.
+
 :ref:`debops.postldap` role
 '''''''''''''''''''''''''''
 
