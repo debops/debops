@@ -271,12 +271,22 @@ pdns__original_configuration:
     value: ''
 
   - name: 'setgid'
-    comment: 'Run as an unprivileged group instead of root.'
+    comment: |-
+      Run as an unprivileged group instead of root. Explicitly configuring this
+      is no longer necessary since pdns 4.3.0.
     value: 'pdns'
+    state: '{{ "present"
+               if ansible_local.pdns.version is version("4.3.0", "<")
+               else "absent" }}'
 
   - name: 'setuid'
-    comment: 'Run as an unprivileged user instead of root.'
+    comment: |-
+      Run as an unprivileged user instead of root. Explicitly configuring this
+      is no longer necessary since pdns 4.3.0.
     value: 'pdns'
+    state: '{{ "present"
+               if ansible_local.pdns.version is version("4.3.0", "<")
+               else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: pdns__default_configuration [[[
