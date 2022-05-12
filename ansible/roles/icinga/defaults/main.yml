@@ -125,6 +125,26 @@ icinga__display_name: '{{ (inventory_hostname_short | d(inventory_hostname.split
                           else ansible_hostname }}'
 
                                                                    # ]]]
+# .. envvar:: icinga__ipv4_address [[[
+#
+# The IPv4 address (or FQDN used to lookup the IPv4 address) of this Icinga 2
+# node. This variable is used during the node registration in the Icinga 2
+# Director (and will be used to contact the node for monitoring purposes).
+icinga__ipv4_address: '{{ ansible_default_ipv4.address
+                          | d(ansible_all_ipv4_addresses | d([]) | first)
+                          | d(icinga_fqdn) }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__ipv6_address [[[
+#
+# The IPv6 address (or FQDN used to lookup the IPv4 address) of this Icinga 2
+# node. This variable is used during the node registration in the Icinga 2
+# Director (and will be used to contact the node for monitoring purposes).
+icinga__ipv6_address: '{{ ansible_default_ipv6.address
+                          | d(ansible_all_ipv6_addresses | d([]) | first)
+                          | d(omit, true) }}'
+
+                                                                   # ]]]
 # .. envvar:: icinga__domain [[[
 #
 # The main DNS domain used by the role to configure Icinga 2.
@@ -404,8 +424,8 @@ icinga__director_register_host_object:
   object_type: 'object'
   object_name: '{{ icinga__fqdn }}'
   display_name: '{{ icinga__display_name }}'
-  address: '{{ ansible_default_ipv4.address | d(ansible_all_ipv4_addresses | d([]) | first) | d(icinga_fqdn) }}'
-  address6: '{{ ansible_default_ipv6.address | d(ansible_all_ipv6_addresses | d([]) | first) | d(omit, true) }}'
+  address: '{{ icinga__ipv4_address }}'
+  address6: '{{ icinga__ipv6_address }}'
   imports: '{{ q("flattened",
                  (icinga__director_register_default_templates
                   + icinga__director_register_templates
