@@ -62,7 +62,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Save temporary grub-mkpasswd formatted password in secrets
-  template:
+  ansible.builtin.template:
     src: 'secret/credentials/inventory_hostname/grub/user_name/password_mkpasswd.j2'
     dest: '{{ secret + "/credentials/" + inventory_hostname + "/grub/" + item.0.name + "/password_mkpasswd" }}'
     mode: '0640'
@@ -101,7 +101,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove temporary grub-mkpassword formatted password
-  file:
+  ansible.builtin.file:
     path: '{{ secret + "/credentials/" + inventory_hostname + "/grub/" + item.0.name + "/password_mkpasswd" }}'
     state: 'absent'
   with_together:
