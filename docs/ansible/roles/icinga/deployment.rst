@@ -115,25 +115,21 @@ in the
 :file:`secret/icinga_web/auth/<inventory_hostname>/credentials/root/password`
 file (see :ref:`debops.secret` for more details).
 
-After logging in, you should create a new basic host template. By default, the
-role will try and register the nodes using the ``generic-host`` template. To
-create it, go to the "Icinga Director" -> "Hosts" -> "Host Templates" section
-and click on "Add". Enter "generic-host" as the "Hostname", set the "Check
-command" option as "hostalive". You should also set a reasonable "Check
-interval", "Retry interval' and "Max check attempts" fields, for example with
-5 minutes, 30 seconds and 5 tries.
+After logging in, and if you haven't already done so, try applying the
+:ref:`debops.icinga` role to some other host which is to be monitored. If
+everything is configured correctly, the role should automatically register the
+new host in Icinga via the Director REST API.  Subsequent execution of the role
+will not change the status of the host in Icinga, but if you remove the host
+from the web interface and re-run the :ref:`debops.icinga` role, the host will
+be registered again.
 
-It might be best to add a separate host template for hosts with Icinga 2 Agent
-installed, in case that you want to include other hosts as well. For this,
-create a new template with a chosen name, and in the "Icinga Agent and zone
-settings" section set the "Icinga 2 Agent", "Estabilish connection" and
-"Accepts config" options to "Yes". You can define the list of templates
-automatically applied during registration using the
-``icinga__director_register_*_templates`` default variables.
+By default, the role will automatically create two host templates,
+``generic-host`` and ``icinga-agent-host`` (the latter depending on the former)
+as part of the host registration process and will register new hosts using the
+``icinga-agent-host`` template.  See
+:envvar:`icinga__director_default_host_templates` for more details. Note that
+if you delete these templates they will, by default, be recreated every time a
+host is (re-)registered with the Director.
 
-After this you can apply the :ref:`debops.icinga` role to other hosts. If
-everything was configured correctly, the role should automatically register
-a new host in Icinga via the Director REST API. Subsequent execution of the
-role will not change the status of the host in Icinga, but if you remove the
-host from the web interface and re-run the :ref:`debops.icinga` role, the host
-will be registered again.
+You can define the list of templates automatically applied during registration
+using the ``icinga__director_register_*_templates`` default variables.
