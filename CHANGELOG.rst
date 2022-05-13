@@ -69,6 +69,12 @@ Changed
 - Unused ``dovecot__ldap_server_port`` variable has been removed from role
   defaults.
 
+:ref:`debops.postldap` role
+'''''''''''''''''''''''''''
+
+- Unused ``postldap__ldap_server_port`` variable has been removed from role
+  defaults.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
