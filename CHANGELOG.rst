@@ -83,6 +83,13 @@ Changed
 Fixed
 ~~~~~
 
+:ref:`debops.dovecot` role
+''''''''''''''''''''''''''
+
+- Fixed the logic of the LDAP STARTTLS configuration parameter - the role
+  should now correctly configure STARTTLS as disabled if it's not enabled in
+  the LDAP environment.
+
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
