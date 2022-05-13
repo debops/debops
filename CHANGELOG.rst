@@ -56,6 +56,12 @@ Changed
 - Role dependencies have been moved from the :file:`meta/main.yml` file to the
   role playbook to avoid issues with :command:`ansible-lint` checks.
 
+:ref:`debops.dovecot` role
+''''''''''''''''''''''''''
+
+- Unused ``dovecot__ldap_server_port`` variable has been removed from role
+  defaults.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
