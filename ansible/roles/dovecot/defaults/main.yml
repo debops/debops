@@ -1197,10 +1197,8 @@ dovecot__ldap_uri: '{{ ansible_local.ldap.uri|d([""]) }}'
 # .. envvar:: dovecot__ldap_start_tls [[[
 #
 # If ``True``, STARTTLS will be used to connect to the LDAP server.
-dovecot__ldap_start_tls: '{{ ansible_local.ldap.start_tls
-                             if (ansible_local|d() and ansible_local.ldap|d() and
-                                (ansible_local.ldap.start_tls|d())|bool)
-                             else True }}'
+dovecot__ldap_start_tls: '{{ ansible_local.ldap.start_tls|d(True)|bool }}'
+
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_user_filter [[[
 #
