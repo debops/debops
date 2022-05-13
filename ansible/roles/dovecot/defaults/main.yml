@@ -764,12 +764,8 @@ dovecot__ldap_uri: '{{ ansible_local.ldap.uri|d([""]) }}'
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_start_tls [[[
 #
-# If ``True``, Postfix will use STARTTLS extension to make encrypted
-# connections to the LDAP server.
-dovecot__ldap_start_tls: '{{ ansible_local.ldap.start_tls
-                             if (ansible_local|d() and ansible_local.ldap|d() and
-                                (ansible_local.ldap.start_tls|d())|bool)
-                             else True }}'
+# If ``True``, STARTTLS will be used to connect to the LDAP server.
+dovecot__ldap_start_tls: '{{ ansible_local.ldap.start_tls|d(True)|bool }}'
                                                                    # ]]]
                                                                    # ]]]
 # LDAP settings [[[
