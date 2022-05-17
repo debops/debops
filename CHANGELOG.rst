@@ -64,6 +64,9 @@ Changed
   using Ansible inventory in case that the authentication, accounting or search
   metrics are needed.
 
+- The role will configure the ``dc`` equality index in the LDAP database to aid
+  lookups of certain services like Postfix.
+
 Fixed
 ~~~~~
 
