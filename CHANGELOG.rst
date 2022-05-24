@@ -97,6 +97,11 @@ General
   will try to use the :file:`~/.ssh/authorized_keys` file to find the keys if
   all other methods fail.
 
+- In the :file:`site.yml` playbook, the :file:`sys.yml` and :file:`net.yml`
+  playbooks will be executed before the :file:`common.yml` playbook. This
+  should ensure that configuration of certain resources like mount points or
+  LVM pools is present before the system is prepared for general operation.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
