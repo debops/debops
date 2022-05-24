@@ -191,6 +191,7 @@
     group: '{{ netbox__group }}'
     mode: '0640'
   notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver', 'Restart netbox Request Queue Worker' ]
+  when: netbox__ldap_enabled|bool
   tags: [ 'role::netbox:config' ]
   no_log: '{{ debops__no_log | d(True) }}'
 
