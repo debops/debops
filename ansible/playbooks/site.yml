@@ -8,24 +8,24 @@
 # sub-playbooks separately for a lighter ansible-playbook run, if needed.
 
 
-  # This playbook contains roles that are run on all hosts in the inventory
-  # - common services like SMTP server, administrative tasks, authentication
-  # and authorization control, system services used by other applications like
-  # firewall, etc.
-- import_playbook: common.yml
+  # This playbook manages network infrastructure, like creation and management
+  # of separate subnets, DNS, DHCP services, routing configuration, etc.
+- import_playbook: net.yml
 
   # This playbook manages internal system plumbing expected on the host by
   # services, like user accounts, NFS mounts from remote hosts, and so on.
   # Everything that is not common, but enabled on a per group/host basis.
 - import_playbook: sys.yml
 
+  # This playbook contains roles that are run on all hosts in the inventory
+  # - common services like SMTP server, administrative tasks, authentication
+  # and authorization control, system services used by other applications like
+  # firewall, etc.
+- import_playbook: common.yml
+
   # This playbook manages different programming language environments available
   # on each host, enabled using Ansible groups.
 - import_playbook: env.yml
-
-  # This playbook manages network infrastructure, like creation and management
-  # of separate subnets, DNS, DHCP services, routing configuration, etc.
-- import_playbook: net.yml
 
   # This playbook manages system services enabled using Ansible groups, like
   # databases, webservers, application servers, and so on.

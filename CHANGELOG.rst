@@ -97,6 +97,11 @@ General
   will try to use the :file:`~/.ssh/authorized_keys` file to find the keys if
   all other methods fail.
 
+- In the :file:`site.yml` playbook, the :file:`sys.yml` and :file:`net.yml`
+  playbooks will be executed before the :file:`common.yml` playbook. This
+  should ensure that configuration of certain resources like mount points or
+  LVM pools is present before the system is prepared for general operation.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
@@ -142,6 +147,12 @@ debops.boxbackup role
 - The internal Java security policy used by Elasticsearch will be configured
   only on Elasticsearch v7.x+ versions. Before them, Elasticsearch used the
   global Java security policy.
+
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- Don't include additional '{' or '}' characters in certain rules when the
+  ``domain_args`` parameter is specified.
 
 :ref:`debops.gitlab_runner` role
 ''''''''''''''''''''''''''''''''
@@ -200,6 +211,14 @@ debops.boxbackup role
   :envvar:`prosody__pki_realm_path` to fix the typo in the variable name. You
   might need to update your inventory in this case so that the role gets
   correct value.
+
+:ref:`debops.resolvconf` role
+'''''''''''''''''''''''''''''
+
+- Fixed an issue where the custom hook script did not add static
+  :command:`resolvconf` configuration after host was rebooted, when the
+  :file:`/run/resolvconf/` path did not exist. It will be created automatically
+  if not found.
 
 Removed
 ~~~~~~~
