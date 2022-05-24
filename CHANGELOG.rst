@@ -26,6 +26,14 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+General
+'''''''
+
+- In the :file:`site.yml` playbook, the :file:`sys.yml` and :file:`net.yml`
+  playbooks will be executed before the :file:`common.yml` playbook. This
+  should ensure that configuration of certain resources like mount points or
+  LVM pools is present before the system is prepared for general operation.
+
 :ref:`debops.netbox` role
 '''''''''''''''''''''''''
 
