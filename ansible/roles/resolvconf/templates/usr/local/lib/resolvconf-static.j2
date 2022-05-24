@@ -23,6 +23,11 @@ reload_resolvconf () {
 
 if [ "${static_enabled}" = "true" ] ; then
 
+    # Ensure that the parent directories exist
+    if ! [ -d "$(dirname "${static_filename}")" ] ; then
+        mkdir -p "$(dirname "${static_filename}")"
+    fi
+
     # shellcheck disable=SC1117
     cat <<EOF > "${static_filename}"
 {{ resolvconf__static_content | regex_replace("\n$","") }}
