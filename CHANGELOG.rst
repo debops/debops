@@ -83,6 +83,14 @@ Fixed
   might need to update your inventory in this case so that the role gets
   correct value.
 
+:ref:`debops.resolvconf` role
+'''''''''''''''''''''''''''''
+
+- Fixed an issue where the custom hook script did not add static
+  :command:`resolvconf` configuration after host was rebooted, when the
+  :file:`/run/resolvconf/` path did not exist. It will be created automatically
+  if not found.
+
 
 `debops v3.0.2`_ - 2022-03-28
 -----------------------------
