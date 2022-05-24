@@ -51,6 +51,12 @@ Fixed
 - Don't include additional '{' or '}' characters in certain rules when the
   ``domain_args`` parameter is specified.
 
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- The LDAP configuration file will generated only when LDAP environment is
+  enabled.
+
 :ref:`debops.nullmailer` role
 '''''''''''''''''''''''''''''
 
