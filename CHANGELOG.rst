@@ -33,6 +33,15 @@ Added
   the :ref:`debops.ldap` role is detected on the host. Currently only user
   authentication and Django ACL system is supported via LDAP groups.
 
+Changed
+~~~~~~~
+
+``debops.boxbackup`` role
+'''''''''''''''''''''''''
+
+- Role dependencies have been moved from the :file:`meta/main.yml` file to the
+  role playbook to avoid issues with :command:`ansible-lint` checks.
+
 Fixed
 ~~~~~
 
