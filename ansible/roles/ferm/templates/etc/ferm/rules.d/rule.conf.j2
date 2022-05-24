@@ -366,8 +366,6 @@
         REJECT;
     }
 {%   elif ferm__tpl_config['type'] in [ 'custom', 'raw' ] %}
-{%     if ferm__tpl_config['domain_args'] %}{{ ferm__tpl_config['domain_args'] | join(" ") + " {" }}
-{%     endif %}
 {%     if config.rules|d() %}
 {%       if ferm__tpl_config['domain_args'] %}
 {{ config.rules | indent(4,true) }}
@@ -375,7 +373,6 @@
 {{ config.rules }}
 {%       endif %}
 {%     endif %}
-{%     if ferm__tpl_config['domain_args'] %}}{% endif %}
 {%   elif ferm__tpl_config['type'] == 'dmz' %}
 {%     if ferm__tpl_config['domain_args'] %}{{ ferm__tpl_config['domain_args'] | join(" ") }} {% endif %}{
 {%       if ferm__tpl_config['interface']|d() %}

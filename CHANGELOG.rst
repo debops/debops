@@ -143,6 +143,12 @@ debops.boxbackup role
   only on Elasticsearch v7.x+ versions. Before them, Elasticsearch used the
   global Java security policy.
 
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- Don't include additional '{' or '}' characters in certain rules when the
+  ``domain_args`` parameter is specified.
+
 :ref:`debops.gitlab_runner` role
 ''''''''''''''''''''''''''''''''
 
