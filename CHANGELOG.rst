@@ -55,6 +55,12 @@ Changed
 Fixed
 ~~~~~
 
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- Don't include additional '{' or '}' characters in certain rules when the
+  ``domain_args`` parameter is specified.
+
 :ref:`debops.nullmailer` role
 '''''''''''''''''''''''''''''
 
