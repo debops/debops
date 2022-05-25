@@ -328,14 +328,16 @@ apt_install__firmware_packages:
     state: '{{ "present" if (ansible_form_factor in [ "Rack Mount Chassis" ])
                          and (ansible_virtualization_role is undefined or
                               ansible_virtualization_role not in [ "guest" ])
+                         and (ansible_kernel.find("-pve") == -1)
                          else "absent" }}'
 
   - name: 'firmware-linux-nonfree'
     distribution: [ 'Debian' ]
     areas: [ 'non-free' ]
     state: '{{ "present" if (ansible_form_factor in [ "Rack Mount Chassis" ])
-                             and (ansible_virtualization_role is undefined or
+                         and (ansible_virtualization_role is undefined or
                               ansible_virtualization_role not in [ "guest" ])
+                         and (ansible_kernel.find("-pve") == -1)
                          else "absent" }}'
 
   - name: 'intel-microcode'
