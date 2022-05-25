@@ -44,6 +44,12 @@ General
 Changed
 ~~~~~~~
 
+:ref:`debops.apt_install` role
+''''''''''''''''''''''''''''''
+
+- The kernel firmware Debian pakcages won't be installed on hosts which might
+  be Proxmox hypervisors, to avoid issues with custom kernel dependencies.
+
 ``debops.boxbackup`` role
 '''''''''''''''''''''''''
 
