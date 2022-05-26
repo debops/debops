@@ -1,9 +1,11 @@
 ---
 # Copyright (C) 2020 Nicolas Quiniou-Briand <nqb@azyx.fr>
+# Copyright (C) 2022 Julien Lecomte <julien@lecomte.at>
+# Copyright (C) 2022 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 #
 # This playbook will reboot all DebOps hosts (use with caution)
-# after explicit confirmation on command-line.
+# if required, or if forced.
 
 - name: Reboot DebOps hosts
   hosts: [ 'debops_all_hosts' ]
@@ -15,20 +17,7 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
-  vars_prompt:
+  roles:
 
-    - name: 'reboot_confirmation'
-      prompt: 'Are you sure you want to reboot all these nodes ?'
-      default: no
-      private: no
-
-  tasks:
-
-    - name: Reboot DebOps hosts
-      reboot:
-        search_paths:
-          - '/lib/molly-guard'
-          - '/sbin'
-          - '/usr/sbin'
-          - '/usr/local/sbin'
-      when: reboot_confirmation|bool
+    - role: reboot
+      tags: [ 'role::reboot', 'skip::reboot' ]

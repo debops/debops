@@ -1,0 +1,18 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Copyright (C) 2022 Julien Lecomte <julien@lecomte.at>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+- name: Check if reboot is required
+  ansible.builtin.stat:
+    path: '/var/run/reboot-required'
+    get_checksum: false
+  register: reboot__register_required
+
+- name: Reboot DebOps hosts
+  ansible.builtin.reboot:
+    search_paths: '{{ (reboot__search_paths + reboot__additional_search_paths) | flatten }}'
+    reboot_timeout: "{{ reboot__timeout | d(600) }}"
+  when: "reboot__register_required.stat.exists|bool or reboot__force | d(false)"

@@ -1,10 +1,12 @@
 ---
 # Copyright (C) 2020 Ellen Papsch <ellenpapsch@gmail.com>
+# Copyright (C) 2022 Julien Lecomte <julien@lecomte.at>
+# Copyright (C) 2022 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 #
 # Upgrade packages which are safe to be updated. This means no
 # packages will be removed. The machine is rebooted if
-# necessary. Skip the reboot tag to avoid that.
+# necessary.
 
 - name: Upgrade a machine and reboot if necessary
   hosts: [ 'debops_all_hosts' ]
@@ -22,19 +24,7 @@
         update_cache: yes
         upgrade: 'safe'
 
-    - name: Check if reboot is required
-      stat:
-        path: '/var/run/reboot-required'
-        get_checksum: no
-      register: reboot_required
-
-    - name: Reboot a machine when required
-      reboot:
-        search_paths:
-          - '/lib/molly-guard'
-          - '/sbin'
-          - '/usr/sbin'
-          - '/usr/local/sbin'
-      when: reboot_required.stat.exists
-      tags:
-        - reboot
+    - name: Reboot DebOps host if necessary
+      include_role:
+        name: reboot
+      tags: [ 'role::reboot', 'skip::reboot' ]
