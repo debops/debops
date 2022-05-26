@@ -6,8 +6,16 @@
 #
 # Upgrade packages which are safe to be updated. This means no
 # packages will be removed.
+#
+# You can chain the 'reboot.yml' playbook to tell the host to reboot after an
+# upgrade:
+#
+#   debops run upgrade reboot -l <host>
+#
+# THe 'reboot' DebOps role will check if the reboot is required and do it only
+# when needed.
 
-- name: Upgrade a machine
+- name: Upgrade a machine using APT
   hosts: [ 'debops_all_hosts' ]
   become: True
   gather_facts: False
@@ -19,6 +27,6 @@
   tasks:
 
     - name: Upgrade safe packages with refreshed cache
-      apt:
-        update_cache: yes
+      ansible.builtin.apt:
+        update_cache: True
         upgrade: 'safe'
