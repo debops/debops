@@ -57,6 +57,14 @@ Changed
 - Role dependencies have been moved from the :file:`meta/main.yml` file to the
   role playbook to avoid issues with :command:`ansible-lint` checks.
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- The default log level used by OpenLDAP has been changed from ``stats`` to
+  ``none`` to minimize log output in large environments. This can be modified
+  using Ansible inventory in case that the authentication, accounting or search
+  metrics are needed.
+
 Fixed
 ~~~~~
 
