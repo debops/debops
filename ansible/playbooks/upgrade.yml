@@ -5,10 +5,9 @@
 # SPDX-License-Identifier: GPL-3.0-only
 #
 # Upgrade packages which are safe to be updated. This means no
-# packages will be removed. The machine is rebooted if
-# necessary.
+# packages will be removed.
 
-- name: Upgrade a machine and reboot if necessary
+- name: Upgrade a machine
   hosts: [ 'debops_all_hosts' ]
   become: True
   gather_facts: False
@@ -23,8 +22,3 @@
       apt:
         update_cache: yes
         upgrade: 'safe'
-
-    - name: Reboot DebOps host if necessary
-      include_role:
-        name: reboot
-      tags: [ 'role::reboot', 'skip::reboot' ]
