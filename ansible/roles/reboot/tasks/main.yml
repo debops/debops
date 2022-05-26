@@ -8,11 +8,12 @@
 - name: Check if reboot is required
   ansible.builtin.stat:
     path: '/var/run/reboot-required'
-    get_checksum: false
+    get_checksum: False
   register: reboot__register_required
 
-- name: Reboot DebOps hosts
+- name: Reboot DebOps hosts if needed or requested
   ansible.builtin.reboot:
-    search_paths: '{{ (reboot__search_paths + reboot__additional_search_paths) | flatten }}'
-    reboot_timeout: "{{ reboot__timeout | d(600) }}"
-  when: "reboot__register_required.stat.exists|bool or reboot__force | d(false)"
+    boot_time_command: '{{ reboot__boot_time_command }}'
+    search_paths: '{{ (reboot__default_search_paths + reboot__search_paths) | flatten }}'
+    reboot_timeout: "{{ reboot__timeout }}"
+  when: "reboot__register_required.stat.exists|bool or reboot__force|bool"
