@@ -345,6 +345,7 @@ System configuration
 - :ref:`debops.nsswitch`
 - :ref:`debops.ntp`
 - :ref:`debops.pam_access`
+- :ref:`debops.reboot`
 - :ref:`debops.resources`
 - :ref:`debops.root_account`
 - :ref:`debops.sssd`
