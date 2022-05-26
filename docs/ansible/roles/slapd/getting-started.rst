@@ -75,6 +75,39 @@ contains the LDAP search query and filtering rules which can be used for access
 control to the OpenLDAP directory itself.
 
 
+Authentication debugging and logs
+---------------------------------
+
+By default the :command:`slapd` log output is set to ``none``, which results in
+minimal logs. If you need to debug or keep track of LDAP authentication and
+search queries, you can easily configure :command:`slapd` to do that through
+the Ansible inventory, by adding a configuration file, for example in a cluster
+of LDAP hosts:
+
+.. code-block:: yaml
+
+   ---
+   # ansible/inventory/group_vars/slapd_cluster/slapd.yml
+
+   slapd__group_tasks:
+
+     - name: 'Configure the OpenLDAP server log level'
+       dn: 'cn=config'
+       attributes:
+         olcLogLevel: 'stats'
+       state: 'exact'
+
+Make sure that the ``name`` parameter corresponds to the correct
+:command:`slapd` option defined in the :envvar:`slapd__default_tasks` variable,
+to modify it using :ref:`universal_configuration` mechanism included in DebOps.
+
+You can use :command:`journald` to view the :command:`slapd` logs:
+
+.. code-block:: console
+
+   journald -f -u slapd.service
+
+
 Example inventory
 -----------------
 
