@@ -1,0 +1,32 @@
+---
+# Copyright (C) 2020 Ellen Papsch <ellenpapsch@gmail.com>
+# Copyright (C) 2022 Julien Lecomte <julien@lecomte.at>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+#
+# Upgrade packages which are safe to be updated. This means no
+# packages will be removed.
+#
+# You can chain the 'reboot.yml' playbook to tell the host to reboot after an
+# upgrade:
+#
+#   debops run upgrade reboot -l <host>
+#
+# THe 'reboot' DebOps role will check if the reboot is required and do it only
+# when needed.
+
+- name: Upgrade a machine using APT
+  hosts: [ 'debops_all_hosts' ]
+  become: True
+  gather_facts: False
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  tasks:
+
+    - name: Upgrade safe packages with refreshed cache
+      ansible.builtin.apt:
+        update_cache: True
+        upgrade: 'safe'

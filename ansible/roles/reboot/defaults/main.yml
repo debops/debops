@@ -1,0 +1,72 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2022 Julien Lecomte <julien@lecomte.at>
+# .. Copyright (C) 2022 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _reboot__ref_defaults:
+
+# debops.reboot default variables
+# ===============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Reboot configuration [[[
+# ------------------------
+
+# .. envvar:: reboot__boot_time_command [[[
+#
+# Command to run that returns a unique string indicating the last time the
+# system was booted.
+#
+# By default, the ``reboot`` Ansible module checks the contents of the
+# :file:`/proc/sys/kernel/random/boot_id` file. This causes issues in LXC
+# containers however. Using the :command:`uptime` command seems to fix the
+# problem, so it is used by the role for the meantime.
+#
+# Ref: https://github.com/ansible/ansible/issues/57768
+reboot__boot_time_command: 'uptime'
+
+                                                                   # ]]]
+# .. envvar:: reboot__force [[[
+#
+# If set to ``True``, the role will reboot the host on each execution even if
+# the :file:`/var/run/reboot-required` file is not present.
+reboot__force: False
+
+                                                                   # ]]]
+# .. envvar:: reboot__default_search_paths [[[
+#
+# List of filesystem paths to search on the remote machine for the
+# :command:`shutdown` command. The ``$PATH`` variable is ignored in the remote
+# node when searching for the :command:`shutdown` command.
+reboot__default_search_paths:
+  - '/lib/molly-guard'
+  - '/sbin'
+  - '/usr/sbin'
+  - '/usr/local/sbin'
+
+                                                                   # ]]]
+# .. envvar:: reboot__search_paths [[[
+#
+# List of additional paths which should be searched for the :command:`shutdown`
+# command.
+reboot__search_paths: []
+
+                                                                   # ]]]
+# .. envvar:: reboot__timeout [[[
+#
+# Maximum number of seconds to wait for machine to reboot and respond to a test
+# command.
+#
+# This timeout is evaluated separately for both reboot verification and test
+# command success so the maximum execution time for the module is twice this
+# amount.
+reboot__timeout: 600
+                                                                   # ]]]
+                                                                   # ]]]

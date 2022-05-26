@@ -35,6 +35,9 @@ New DebOps roles
 
   .. __: https://www.elastic.co/beats/metricbeat
 
+- The :ref:`debops.reboot` role can be used to reboot, forcefully or only if
+  required, any DebOps host.
+
 General
 '''''''
 
@@ -101,6 +104,21 @@ General
   playbooks will be executed before the :file:`common.yml` playbook. This
   should ensure that configuration of certain resources like mount points or
   LVM pools is present before the system is prepared for general operation.
+
+- The :file:`ansible/playbooks/tools/reboot.yml` Ansible playbook has been
+  moved to :file:`ansible/playbooks/reboot.yml` file and uses the new
+  :ref:`debops.reboot` Ansible role to perform operations. To use it, you can
+  run the ``reboot`` playbook instead of ``tools/reboot``.
+
+- The :file:`ansible/playbooks/tools/upgrade-reboot.yml` Ansible playbook has
+  been moved to :file:`ansible/playbooks/upgrade.yml` file and will no longer
+  reboot the host automatically. Users can chain the ``upgrade`` and ``reboot``
+  playbooks to achieve the previous behaviour, for example:
+
+  .. code-block:: console
+
+     debops run upgrade reboot -l <host>
+
 
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
