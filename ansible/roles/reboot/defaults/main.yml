@@ -1,0 +1,40 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# Copyright (C) 2022 Julien Lecomte <julien@lecomte.at>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _reboot__ref_defaults:
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+# Reboot configuration [[[
+# ------------------------
+#
+# Force reboot and ignore presence of /var/run/reboot-required.
+reboot__force: false
+
+# Paths to search on the remote machine for the shutdown command.
+# Only these paths will be searched for the shutdown command.
+# PATH is ignored in the remote node when searching for the shutdown command.
+reboot__search_paths:
+  - '/lib/molly-guard'
+  - '/sbin'
+  - '/usr/sbin'
+  - '/usr/local/sbin'
+
+# Paths to prefix on search path for the shutdown command.
+reboot__additional_search_paths: []
+
+# Maximum seconds to wait for machine to reboot and respond
+# to a test command.
+# This timeout is evaluated separately for both reboot verification
+# and test command success so the maximum execution time for the
+# module is twice this amount.
+reboot__timeout: 600
+
+                                                                   # ]]]

@@ -35,6 +35,9 @@ New DebOps roles
 
   .. __: https://www.elastic.co/beats/metricbeat
 
+- The :ref:`debops.reboot` role can be used to reboot, forcefully or only if
+  required, any DebOps host.
+
 General
 '''''''
 

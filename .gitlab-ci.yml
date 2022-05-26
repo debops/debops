@@ -2113,6 +2113,16 @@ stages:
     JANE_LOG_PATTERN: '\[radvd\]'
   tags: [ 'shell', 'vagrant-vm' ]
 
+'reboot role':
+  <<: *test_role_3rd_deps
+  needs:
+    - 'sshd role'
+  variables:
+    JANE_TEST_FACT: 'reboot.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/reboot.yml'
+    JANE_DIFF_PATTERN: '.*/roles/reboot/.*'
+    JANE_LOG_PATTERN: '\[reboot\]'
+
 'redis_sentinel role':
   <<: *test_role_2nd_deps
   needs:
