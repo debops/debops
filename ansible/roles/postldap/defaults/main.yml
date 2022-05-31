@@ -693,20 +693,12 @@ postldap__ldap_default_virtual_domain_dn: '{{ (["dc="
 postldap__ldap_server_uri: '{{ ansible_local.ldap.uri|d([""]) | first }}'
 
                                                                    # ]]]
-# .. envvar:: postldap__ldap_server_port [[[
-#
-# The TCP port which should be used for connections to the LDAP server.
-postldap__ldap_server_port: '{{ ansible_local.ldap.port|d(("389" if postldap__ldap_start_tls|bool else "636")) }}'
-
-                                                                   # ]]]
 # .. envvar:: postldap__ldap_start_tls [[[
 #
 # If ``True``, Postfix will use STARTTLS extension to make encrypted
 # connections to the LDAP server.
-postldap__ldap_start_tls: '{{ ansible_local.ldap.start_tls
-                                          if (ansible_local|d() and ansible_local.ldap|d() and
-                                              (ansible_local.ldap.start_tls|d())|bool)
-                                          else True }}'
+postldap__ldap_start_tls: '{{ ansible_local.ldap.start_tls|d(True)|bool }}'
+
                                                                    # ]]]
                                                                    # ]]]
 # LDAP settings [[[
