@@ -132,6 +132,15 @@ Fixed
   :file:`/run/resolvconf/` path did not exist. It will be created automatically
   if not found.
 
+Removed
+~~~~~~~
+
+- Federated Learning of Cohorts opt-out in the :ref:`debops.apache` and
+  :ref:`debops.nginx` roles has been removed. Google `abandoned the feature`__
+  in favor of Topics API in web browsers.
+
+  .. __: https://blog.google/products/chrome/get-know-new-topics-api-privacy-sandbox/
+
 
 `debops v2.3.5`_ - 2022-03-28
 -----------------------------
