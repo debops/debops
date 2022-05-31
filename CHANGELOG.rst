@@ -257,6 +257,12 @@ General
   "Debian Wheezy", "Debian Jessie", "Ubuntu Precise Pangolin". The support is
   still available in stable DebOps releases up to v3.0.x if needed.
 
+- Federated Learning of Cohorts opt-out in the :ref:`debops.apache` and
+  :ref:`debops.nginx` roles has been removed. Google `abandoned the feature`__
+  in favor of Topics API in web browsers.
+
+  .. __: https://blog.google/products/chrome/get-know-new-topics-api-privacy-sandbox/
+
 :ref:`debops.apt_install` role
 ''''''''''''''''''''''''''''''
 
