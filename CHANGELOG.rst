@@ -89,6 +89,11 @@ Fixed
   should now correctly configure STARTTLS as disabled if it's not enabled in
   the LDAP environment.
 
+- The role's PKI hook script still referenced an old configuration file that
+  was no longer being managed by :ref:`debops.dovecot` since the role redesign,
+  resulting in the hook script failing to reload dovecot after a certificate or
+  DH param change.
+
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
