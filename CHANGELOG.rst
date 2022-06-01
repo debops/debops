@@ -167,6 +167,14 @@ debops.boxbackup role
   playbook. This fixes an issue with Ansible stopping the site playbook
   execution when it cannot find the ``boxbackup`` role in the Collection.
 
+:ref:`debops.dovecot` role
+''''''''''''''''''''''''''
+
+- The role's PKI hook script still referenced an old configuration file that
+  was no longer being managed by :ref:`debops.dovecot` since the role redesign,
+  resulting in the hook script failing to reload dovecot after a certificate or
+  DH param change.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
