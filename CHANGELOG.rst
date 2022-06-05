@@ -69,6 +69,13 @@ Changed
 - Unused ``dovecot__ldap_server_port`` variable has been removed from role
   defaults.
 
+:ref:`debops.postgresql` role
+'''''''''''''''''''''''''''''
+
+- The tasks that execute PostgreSQL commands will use the
+  ``community.postgresql.*`` Ansible modules explicitly via the FQCNs to
+  benefit from bugfixes in these modules.
+
 :ref:`debops.postldap` role
 '''''''''''''''''''''''''''
 
