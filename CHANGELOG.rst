@@ -273,7 +273,8 @@ General
 ''''''''''''''''''''''''''''''
 
 - The ``ranger`` APT package will not be installed by default. The ``mc``
-  package can be used as an alternative.
+  package can be used as an alternative. Or you can consider installing
+  ``nnn``.
 
 
 `debops v3.0.0`_ - 2022-02-17
