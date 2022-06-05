@@ -123,6 +123,8 @@
   when: (item.name|d() and item.state|d('present') == 'absent' and
          (item.name if ':' not in item.name else item.name.split(':')[1]) in kibana__register_plugins.stdout_lines)
 
+# The keystore handling is very similar to ../../metricbeat/tasks/main.yml
+# Make sure you change it in both places.
 - name: Check if the Kibana keystore exists
   ansible.builtin.stat:
     path: '{{ kibana__keystore_path }}'
