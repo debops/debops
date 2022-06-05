@@ -253,7 +253,8 @@ Removed
 ''''''''''''''''''''''''''''''
 
 - The ``ranger`` APT package will not be installed by default. The ``mc``
-  package can be used as an alternative.
+  package can be used as an alternative. Or you can consider installing
+  ``nnn``.
 
 :ref:`debops.root_account` role
 '''''''''''''''''''''''''''''''
