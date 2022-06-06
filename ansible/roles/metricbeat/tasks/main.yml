@@ -102,6 +102,8 @@
   when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and item.config|d()
   no_log: '{{ debops__no_log | d(True) }}'
 
+# The keystore handling is very similar to ../../kibana/tasks/main.yml
+# Make sure you change it in both places.
 - name: Check if the Metricbeat keystore exists
   ansible.builtin.stat:
     path: '/var/lib/metricbeat/metricbeat.keystore'
