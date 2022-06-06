@@ -84,6 +84,9 @@ Updates of upstream application versions
   has been updated to the next point release, 10.12. Debian Bullseye has been
   updated to the next point relase as well, 11.3.
 
+- In the :ref:`debops.netbox` role, the NetBox version has been updated to
+  ``v3.2.4``.
+
 General
 ~~~~~~~
 
