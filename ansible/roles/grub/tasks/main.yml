@@ -43,22 +43,35 @@
     path: '{{ secret + "/credentials/" + inventory_hostname + "/grub/" + item.name }}'
     state: 'directory'
     mode: '0750'
+  with_items: '{{ grub__combined_users }}'
   become: False
   delegate_to: 'localhost'
-  no_log: '{{ debops__no_log | d(True) }}'
   when: item.name|d()
-  with_items: '{{ grub__combined_users }}'
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Save plaintext password in secrets
   ansible.builtin.copy:
     content: "{{ item.password + '\n' }}"
     dest: '{{ secret + "/credentials/" + inventory_hostname + "/grub/" + item.name + "/password" }}'
     mode: '0640'
-  register: grub__register_pw_plain
   with_items: '{{ grub__combined_users }}'
+  register: grub__register_pw_plain
   become: False
   delegate_to: 'localhost'
   when: item.name|d()
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Save temporary grub-mkpasswd formatted password in secrets
+  ansible.builtin.template:
+    src: 'secret/credentials/inventory_hostname/grub/user_name/password_mkpasswd.j2'
+    dest: '{{ secret + "/credentials/" + inventory_hostname + "/grub/" + item.0.name + "/password_mkpasswd" }}'
+    mode: '0640'
+  with_together:
+    - '{{ grub__combined_users }}'
+    - '{{ grub__register_pw_plain.results|d({}) }}'
+  become: False
+  delegate_to: 'localhost'
+  when: (item.0.name|d() and item.1 is changed)
   no_log: '{{ debops__no_log | d(True) }}'
 
 ## There seems to be no way to specify the salt (except using a custom script).
@@ -69,20 +82,33 @@
   environment:
     GRUB_PLAINTEXT_PASSWORD: '{{ item.0.password }}'
   ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
-         printf "%s\n%s\n" "${GRUB_PLAINTEXT_PASSWORD}" "${GRUB_PLAINTEXT_PASSWORD}" | LANG=C LC_ALL=C grub-mkpasswd-pbkdf2
+         cat '{{ (secret + "/credentials/" + inventory_hostname + "/grub/" + item.0.name + "/password_mkpasswd") | quote }}'
+         | LANG=C LC_ALL=C grub-mkpasswd-pbkdf2
          {{ "" if grub__iter_time|d()   == "default" else ("--iteration-count=" + grub__iter_time) }}
          {{ "" if grub__salt_length|d() == "default" else ("--salt=" + grub__salt_length) }}
          {{ "" if grub__hash_length|d() == "default" else ("--buflen=" + grub__hash_length) }}
          | perl -ne 's/^(:?Your PBKDF2|PBKDF2 hash of your password) is //ms && print'
   args:  # noqa no-handler
     executable: 'bash'
+  with_together:
+    - '{{ grub__combined_users }}'
+    - '{{ grub__register_pw_plain.results|d({}) }}'
   register: grub__register_pw_hashes
+  become: False
+  delegate_to: 'localhost'
+  changed_when: False
+  when: (item.0.name|d() and item.1 is changed)
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Remove temporary grub-mkpassword formatted password
+  ansible.builtin.file:
+    path: '{{ secret + "/credentials/" + inventory_hostname + "/grub/" + item.0.name + "/password_mkpasswd" }}'
+    state: 'absent'
   with_together:
     - '{{ grub__combined_users }}'
     - '{{ grub__register_pw_plain.results|d({}) }}'
   become: False
   delegate_to: 'localhost'
-  changed_when: False
   when: (item.0.name|d() and item.1 is changed)
   no_log: '{{ debops__no_log | d(True) }}'
 

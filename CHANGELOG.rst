@@ -202,8 +202,9 @@ debops.boxbackup role
 '''''''''''''''''''''''
 
 - The :command:`grub` user passwords will be passed for encryption using
-  environment variables instead of directly on the command line, to avoid leaks
-  through the process list.
+  a temporary file stored in the :file:`secret/` directory on the Ansible
+  Controller instead of directly on the command line, to avoid leaks through
+  the process list.
 
 :ref:`debops.kibana` role
 '''''''''''''''''''''''''
