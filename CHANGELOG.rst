@@ -114,6 +114,14 @@ Fixed
 - Don't include additional '{' or '}' characters in certain rules when the
   ``domain_args`` parameter is specified.
 
+:ref:`debops.grub` role
+'''''''''''''''''''''''
+
+- The :command:`grub` user passwords will be passed for encryption using
+  a temporary file stored in the :file:`secret/` directory on the Ansible
+  Controller instead of directly on the command line, to avoid leaks through
+  the process list.
+
 :ref:`debops.netbox` role
 '''''''''''''''''''''''''
 
