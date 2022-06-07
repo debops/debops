@@ -338,6 +338,12 @@ General
 - In the fact script, correctly parse the subprocess output to find out the
   version of installed Python executables.
 
+:ref:`debops.radvd` role
+''''''''''''''''''''''''
+
+- Append the DNSSL parameters to the correct list variable in the generated
+  configuration file.
+
 :ref:`debops.resolvconf` role
 '''''''''''''''''''''''''''''
 
