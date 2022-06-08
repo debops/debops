@@ -112,6 +112,12 @@ General
   maintaining the Diffie-Hellman parameters on the remote hosts, for
   consistency.
 
+:ref:`debops.dokuwiki` role
+'''''''''''''''''''''''''''
+
+- The shell of the DokuWiki UNIX account is now configurable, set as
+  :file:`/bin/false` by default.
+
 :ref:`debops.dovecot` role
 ''''''''''''''''''''''''''
 
