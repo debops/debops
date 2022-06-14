@@ -170,6 +170,10 @@ Each entry is a YAML dictionary that defines a set of one or more
   name must be entirely made up of letters, digits and can only contain the
   special signs underscore ('_') and hyphen ('-').
 
+``user``
+  Optional. Specify the UNIX user account which will execute the job. If not
+  specified, the job will be executed as the ``root`` account.
+
 ``environment``
   Optional. A YAML dictionary which defines what variables should be present in
   a given :program:`cron` job environment. Each dictionary key is the variable
@@ -210,10 +214,6 @@ in a dictionary entry on the ``jobs`` list:
   not be created. If the ``state`` parameter is defined in the main YAML
   dictionary, when it's ``absent`` the entire configuration file will be
   removed.
-
-``user``
-  Optional. Specify the UNIX user account which will execute the job. If not
-  specified, the job will be executed as the ``root`` account.
 
 ``name``
   Optional. Description of a given :program:`cron` job, used as a marker by
