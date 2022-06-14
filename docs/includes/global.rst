@@ -4668,6 +4668,7 @@
 .. _debops.docker_gen: https://github.com/debops/ansible-docker_gen
 .. _debops.dokuwiki: https://github.com/debops/ansible-dokuwiki
 .. _debops.dovecot: https://github.com/debops/ansible-dovecot
+.. _debops.dropbear_initramfs: https://github.com/debops/ansible-dropbear_initramfs
 .. _debops.elastic_co: https://github.com/debops/ansible-elastic_co
 .. _debops.elasticsearch: https://github.com/debops/ansible-elasticsearch
 .. _debops.encfs: https://github.com/debops/ansible-encfs
@@ -4855,7 +4856,6 @@
 
 .. _debops-contrib.openvpn: https://github.com/debops-contrib/ansible-openvpn
 .. _debops-contrib.nullmailer: https://github.com/debops-contrib/ansible-nullmailer
-.. _debops-contrib.dropbear_initramfs: https://github.com/debops-contrib/ansible-dropbear_initramfs
 .. _debops-contrib.apparmor: https://github.com/debops-contrib/ansible-apparmor
 .. _debops-contrib.snapshot_snapper: https://github.com/debops-contrib/ansible-snapshot_snapper
 .. _debops-contrib.roundcube: https://github.com/debops-contrib/ansible-roundcube
