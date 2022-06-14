@@ -25,9 +25,9 @@ Here are a few services that are available
 
 **Security**
 
-+-----------+---------------------+-----------+
-| AppArmor_ | dropbear-initramfs_ | Firejail_ |
-+-----------+---------------------+-----------+
++-----------+-----------+
+| AppArmor_ | Firejail_ |
++-----------+-----------+
 
 **Service monitoring and logging**
 
@@ -60,7 +60,6 @@ Here are a few services that are available
 .. _volkszaehler: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/volkszaehler.yml
 
 .. _AppArmor: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/apparmor.yml
-.. _dropbear-initramfs: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/dropbear_initramfs.yml
 .. _Firejail: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/firejail.yml
 
 .. _`CheckMK agent`: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/checkmk_agent.yml
