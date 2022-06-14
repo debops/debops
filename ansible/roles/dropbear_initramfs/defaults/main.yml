@@ -2,26 +2,22 @@
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
 # .. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-# .. Copyright (C) 2017 DebOps <https://debops.org/>
+# .. Copyright (C) 2017-2022 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _dropbear_initramfs__ref_defaults:
 
-# debops-contrib.dropbear_initramfs default variables [[[
-# =======================================================
-
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
-
+# .. include:: ../../../../includes/global.rst
 
 # Packages and installation [[[
 # -----------------------------
 
 # .. envvar:: dropbear_initramfs__base_packages [[[
 #
-# List of base packages to install.
+# List of APT packages to install for :command:`dropbear_initramfs` support.
 #
 # Supported versions:
 #
@@ -39,7 +35,8 @@ dropbear_initramfs__base_packages:
                                                                    # ]]]
 # .. envvar:: dropbear_initramfs__packages [[[
 #
-# List of additional packages to install.
+# List of additional APT packages to install during :command:`dropbear_initramfs`
+# configuration.
 dropbear_initramfs__packages: []
 
                                                                    # ]]]
@@ -262,13 +259,13 @@ dropbear_initramfs__combined_authorized_keys: '{{ dropbear_initramfs__authorized
                                                   dropbear_initramfs__host_authorized_keys }}'
 
                                                                    # ]]]
-# .. envvar:: dropbear_initramfs__authorized_keys_options [[[
+# .. envvar:: dropbear_initramfs__authorized_keys_key_options [[[
 #
 # List of default SSH options added to all public keys. If it's set to
 # ``{{ omit }}``, no options will be added automatically. The list of options can be
 # overridden by the ``item.options`` parameter.
 # Refer to :manpage:`dropbear(8)` for details.
-dropbear_initramfs__authorized_keys_options: '{{ omit }}'
+dropbear_initramfs__authorized_keys_key_options: '{{ omit }}'
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[
