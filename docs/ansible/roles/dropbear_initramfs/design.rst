@@ -5,8 +5,6 @@
 Design goals
 ============
 
-.. include:: includes/all.rst
-
 - Don’t overwrite global configuration files like
   :file:`/etc/initramfs-tools/initramfs.conf` and similar as this can lead to
   problems like newer package versions trying to upgrade the file.

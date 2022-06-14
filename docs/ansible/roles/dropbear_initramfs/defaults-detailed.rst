@@ -1,14 +1,13 @@
 .. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-.. Copyright (C) 2017 DebOps <https://debops.org/>
+.. Copyright (C) 2017-2022 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
+
+.. include:: ../../../includes/global.rst
 
 Default variable details
 ========================
 
-.. include:: includes/all.rst
-
-
-Some of ``debops-contrib.dropbear_initramfs`` default variables have more extensive
+Some of ``debops.dropbear_initramfs`` default variables have more extensive
 configuration than simple strings or lists, here you can find documentation and
 examples for them.
 
@@ -19,10 +18,10 @@ dropbear_initramfs__interfaces
 ------------------------------
 
 The :envvar:`dropbear_initramfs__interfaces` and similar dictionaries behave
-similar to the ``ifupdown__*_interfaces`` dictionaries of the debops.ifupdown_
-role. Refer to the documentation of debops.ifupdown_ for details.
+similar to the ``ifupdown__*_interfaces`` dictionaries of the :ref:`debops.ifupdown`
+role. Refer to the documentation of :ref:`debops.ifupdown` for details.
 
-Compared to the debops.ifupdown_, only a limited subset of parameters is
+Compared to the :ref:`debops.ifupdown`, only a limited subset of parameters is
 currently supported:
 
 ``type``
@@ -69,39 +68,35 @@ dropbear_initramfs__authorized_keys
 
 The :envvar:`dropbear_initramfs__authorized_keys` and similar variables are
 used to define what SSH keys should be allowed for remote initramfs login.
+
 Each list item is a dictionary with the following supported options:
 
-``sshkeys``
+``key``
   Required. String containing either a SSH public key, or an URL to a resource
   which returns a file with SSH public keys (only one URL is allowed at the
   moment), or a list of SSH public keys.
 
-``options``
+``key_options``
   Optional. String or list of SSH options which should be set for each key
-  specified on the ``item.sshkeys`` list.
+  specified on the ``item.key`` list.
   Refer to :manpage:`dropbear(8)` for details.
 
   If this parameter is not specified, SSH public keys will use options set in
-  the :envvar:`dropbear_initramfs__authorized_keys_options` variable. To
-  override this variable for a particular entry, set the ``item.options``
+  the :envvar:`dropbear_initramfs__authorized_keys_key_options` variable. To
+  override this variable for a particular entry, set the ``item.key_options``
   parameter as empty string or list.
 
   The specified SSH key options are applied to all keys specified in the
-  ``item.sshkeys`` parameter in this specific entry. To use different key
+  ``item.key`` parameter in this specific entry. To use different key
   options for different SSH keys, specify them in separate entries on the list.
-
-``key_options``
-  Optional. Additional set of options to add to the SSH public keys. This can
-  be used with ``item.options`` parameter to easily combine a list of options
-  from another variable with a custom additional options.
 
 ``exclusive``
   Optional, boolean. If defined and ``True``, the role will remove all other
-  SSH public keys and set only the SSH public keys defined by ``item.sshkeys``.
+  SSH public keys and set only the SSH public keys defined by ``item.key``.
 
 ``state``
   Optional. If undefined or ``present``, the SSH public keys specified in the
-  ``item.sshkeys`` parameter will be added. If ``absent``, the specified SSH
+  ``item.keys`` parameter will be added. If ``absent``, the specified SSH
   public keys will be removed.
 
 Examples
