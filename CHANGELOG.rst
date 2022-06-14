@@ -41,6 +41,12 @@ General
   should ensure that configuration of certain resources like mount points or
   LVM pools is present before the system is prepared for general operation.
 
+:ref:`debops.fhs` role
+''''''''''''''''''''''
+
+- The role can now create directories defined on the group or host inventory
+  level if desired.
+
 :ref:`debops.netbox` role
 '''''''''''''''''''''''''
 
