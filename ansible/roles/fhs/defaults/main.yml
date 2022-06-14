@@ -131,8 +131,23 @@ fhs__default_directories:
                                                                    # ]]]
 # .. envvar:: fhs__directories [[[
 #
-# List of additional base directories defined by the user.
+# List of additional base directories defined by the user for all hosts in the
+# Ansible inventory.
 fhs__directories: []
+
+                                                                   # ]]]
+# .. envvar:: fhs__group_directories [[[
+#
+# List of additional base directories defined by the user for hosts in a
+# specific Ansible inventory group.
+fhs__group_directories: []
+
+                                                                   # ]]]
+# .. envvar:: fhs__host_directories [[[
+#
+# List of additional base directories defined by the user for specific hosts in
+# the Ansible inventory.
+fhs__host_directories: []
 
                                                                    # ]]]
 # .. envvar:: fhs__combined_directories [[[
@@ -140,6 +155,8 @@ fhs__directories: []
 # Variable which combines all of the base directory lists and is used in role
 # tasks and templates.
 fhs__combined_directories: '{{ fhs__default_directories
-                               + fhs__directories }}'
+                               + fhs__directories
+                               + fhs__group_directories
+                               + fhs__host_directories }}'
                                                                    # ]]]
                                                                    # ]]]
