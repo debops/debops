@@ -1,13 +1,13 @@
 .. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-.. Copyright (C) 2017 DebOps <https://debops.org/>
+.. Copyright (C) 2017-2022 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
+
+.. include:: ../../../includes/global.rst
 
 Related projects
 ================
 
-.. include:: includes/all.rst
-
-* FDEunlock_ – Check and unlock full disk encrypted systems via ssh
+* `FDEunlock <https://fdeunlock.readthedocs.io/en/latest/>`__ – Check and unlock full disk encrypted systems via ssh
 
 * Mandos_ – System for allowing servers with encrypted root file systems to reboot unattended and/or remotely
 

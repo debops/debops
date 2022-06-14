@@ -122,6 +122,11 @@ General
 
      debops run upgrade reboot -l <host>
 
+- The debops-contrib :file:`dropbear_initramfs` playbook has been moved to
+  the :ref:`debops.dropbear_initramfs` playbook. The role variable
+  ``dropbear_initramfs__host_authorized_keys`` now uses the same keys as 
+  the ``ansible.posix.authorized_key`` module.
+
 
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''

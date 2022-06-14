@@ -15,6 +15,11 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+- The :ref:`debops.dropbear_initramfs` role renamed the
+  ``dropbear_initramfs__*_authorized_keys`` keys according to the
+  ``ansible.posix.authorized_key`` module.
+  Variable ``dropbear_initramfs__authorized_keys_options`` has also
+  been renamed to ``dropbear_initramfs__authorized_keys_key_options``.
 
 v3.0.0 (2022-02-17)
 -------------------
