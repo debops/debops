@@ -193,11 +193,11 @@ other hosts.
 Host provisioning
 -----------------
 
+- :ref:`debops.dropbear_initramfs`
 - :ref:`debops.grub`
 - :ref:`debops.ipxe`
 - :ref:`debops.preseed`
 - :ref:`debops.tftpd`
-- ``debops-contrib.dropbear_initramfs``
 
 
 Kernel
