@@ -70,6 +70,10 @@ General
   dictionaries. To fix this issue, the filters were switched to ``to_yaml`` in
   various Ansible roles.
 
+- The :file:`dropbear_initramfs.yml` playbook has been moved from the "contrib"
+  directory to the main playbook directory, to permit integration of the role
+  with the rest of the DebOps playbooks and roles.
+
 :ref:`debops.apt_install` role
 ''''''''''''''''''''''''''''''
 
