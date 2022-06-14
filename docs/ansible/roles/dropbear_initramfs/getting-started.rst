@@ -1,21 +1,15 @@
 .. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-.. Copyright (C) 2017 DebOps <https://debops.org/>
+.. Copyright (C) 2017-2022 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 Getting started
 ===============
 
-.. include:: includes/all.rst
-
-.. contents::
-   :local:
-
-
 Example inventory
 -----------------
 
 To setup the dropbear ssh server in initramfs of a given host or a set of hosts, they need to
-be added to the ``[debops_service_dropbear_initramfs]`` Ansible group in the inventory:
+be added in the specific Ansible inventory group ``debops_service_dropbear_initramfs``:
 
 .. code:: ini
 
@@ -25,17 +19,12 @@ be added to the ``[debops_service_dropbear_initramfs]`` Ansible group in the inv
 Example playbook
 ----------------
 
-Here's an example playbook that uses the ``debops-contrib.dropbear_initramfs`` role:
+If you are using this role without DebOps, here's an example Ansible playbook
+that uses the ``debops.dropbear_initramfs`` role:
 
-.. literalinclude:: playbooks/dropbear_initramfs.yml
+.. literalinclude:: ../../../../ansible/playbooks/service/dropbear_initramfs.yml
    :language: yaml
    :lines: 1,5-
-
-The playbook is shipped with this role under
-:file:`./docs/playbooks/dropbear_initramfs.yml` from which you can symlink it
-to your playbook directory.
-In case you use multiple `DebOps Contrib`_ roles, consider using the
-`DebOps Contrib playbooks`_.
 
 Ansible tags
 ------------
@@ -50,6 +39,9 @@ Available role tags:
 ``role::dropbear_initramfs``
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
+
+``skip::dropbear_initramfs``
+  Tag used to skip the playbook in a run.
 
 ``role::dropbear_initramfs:pkgs``
   Tasks related to system package management like installing or

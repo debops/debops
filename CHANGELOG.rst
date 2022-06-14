@@ -70,9 +70,10 @@ General
   dictionaries. To fix this issue, the filters were switched to ``to_yaml`` in
   various Ansible roles.
 
-- The :file:`dropbear_initramfs.yml` playbook has been moved from the "contrib"
-  directory to the main playbook directory, to permit integration of the role
-  with the rest of the DebOps playbooks and roles.
+- The debops-contrib :file:`dropbear_initramfs` playbook has been moved to
+  the :ref:`debops.dropbear_initramfs` playbook. The role variable
+  ``dropbear_initramfs__host_authorized_keys`` now uses the same keys as
+  the ``ansible.posix.authorized_key`` module.
 
 :ref:`debops.apt_install` role
 ''''''''''''''''''''''''''''''

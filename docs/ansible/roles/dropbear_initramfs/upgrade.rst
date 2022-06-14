@@ -2,16 +2,17 @@
 .. Copyright (C) 2017 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
+.. _martin-v.sshpreluks: https://github.com/martin-v/ansible-sshpreluks
+.. _systemli.rootcrypto: https://github.com/systemli/ansible-rootcrypto
+.. _FDEunlock: https://gitlab.com/ypid/fdeunlock
+
 .. _dropbear_initramfs__ref_upgrade_nodes:
 
 Upgrade notes
 =============
 
-.. include:: includes/all.rst
-
 The upgrade notes only describe necessary changes that you might need to make
-to your setup in order to use a new role release. Refer to the
-:ref:`dropbear_initramfs__ref_changelog` for more details about what has changed.
+to your setup in order to use a new role release.
 
 .. _dropbear_initramfs__ref_upgrade_nodes_v0.2.0:
 
@@ -30,7 +31,7 @@ Migrating from other Ansible roles
 
 This role tries to work for all common use cases and combine similar roles
 previously created by independent authors which basically do the same thing.
-Refer to `Combine effords <https://github.com/martin-v/ansible-sshpreluks/issues/1>`_ for details.
+Refer to `Combine efforts <https://github.com/martin-v/ansible-sshpreluks/issues/1>`_ for details.
 
 
 From martin-v.sshpreluks_
@@ -48,12 +49,12 @@ All inventory variables have been renamed so you might need to update your
 inventory.
 A subset of them can be automatically updated using this script:
 
-.. literalinclude:: scripts/migrate-from-systemli.rootcrypto-to-debops-contrib.dropbear_initramfs
+.. literalinclude:: scripts/migrate-from-systemli.rootcrypto-to-debops.dropbear_initramfs
    :language: shell
    :lines: 1,6-
 
 The script is bundled with this role under
-:file:`./docs/scripts/migrate-from-systemli.rootcrypto-to-debops-contrib.dropbear_initramfs`
+:file:`./docs/scripts/migrate-from-systemli.rootcrypto-to-debops.dropbear_initramfs`
 and can be invoked from there.
 
 You will need to read the role documentation and upgrade your remaining
