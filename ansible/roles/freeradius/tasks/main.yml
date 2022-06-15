@@ -63,8 +63,8 @@
     divert_path: '{{ freeradius__conf_base_path + "/" + (item.filename | d(item.name)) }}'
     divert_divert: '{{ freeradius__conf_base_path + "/"
                        + (item.divert_filename
-                          | d((((item.filename | d(item.name))|dirname + "/.")
-                               if ((item.filename | d(item.name))|dirname) else ".")
+                          | d((((item.filename | d(item.name)) | dirname + "/.")
+                               if ((item.filename | d(item.name)) | dirname) else ".")
                               + (item.filename | d(item.name))|basename + ".dpkg-divert")) }}'
   dpkg_divert:
     path: '{{ divert_path }}'
