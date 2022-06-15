@@ -7,7 +7,7 @@
 {%   if (element.name|d() and element.port|d() and element.state|d('present') not in [ 'ignore', 'init' ]) %}
 {%     set rule = {'type': 'accept',
                    'rule_state': element.state,
-                   'dport': [ element.port|string ],
+                   'dport': [ element.port | string ],
                    'saddr': (( [ element.allow ] if (element.allow is string) else element.allow) if element.allow|d() else []),
                    'accept_any': True,
                    'weight': '50',
@@ -18,7 +18,7 @@
 {%   if (element.name|d() and element.console_port|d() and element.state|d('present') not in [ 'ignore', 'init' ]) %}
 {%     set rule = {'type': 'accept',
                    'rule_state': element.state,
-                   'dport': [ element.console_port|string ],
+                   'dport': [ element.console_port | string ],
                    'saddr': (( [ element.allow ] if (element.allow is string) else element.allow) if element.allow|d() else []),
                    'accept_any': True,
                    'weight': '50',

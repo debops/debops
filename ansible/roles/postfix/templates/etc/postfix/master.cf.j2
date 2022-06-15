@@ -84,14 +84,14 @@
 {%           if option.value is defined %}
 {%             if option.value | bool and option.value is not iterable %}
 {%               if option.value | int and option.value | string != 'True' %}
-{%                 set _ = option_dict.update({ 'value': option.value|string }) %}
+{%                 set _ = option_dict.update({ 'value': option.value | string }) %}
 {%               else %}
 {%                 set _ = option_dict.update({ 'value': 'yes' }) %}
 {%               endif %}
 {%             elif not option.value | bool and option.value is not iterable %}
 {%               if option.value is not none %}
 {%                 if option.value | int or option.value | string == '0' %}
-{%                   set _ = option_dict.update({ 'value': option.value|string }) %}
+{%                   set _ = option_dict.update({ 'value': option.value | string }) %}
 {%                 else %}
 {%                   set _ = option_dict.update({ 'value': 'no' }) %}
 {%                 endif %}
@@ -105,7 +105,7 @@
 {%               endfor %}
 {%               set _ = option_dict.update({ 'value': option_values }) %}
 {%             else %}
-{%               set _ = option_dict.update({ 'value': option.value|string }) %}
+{%               set _ = option_dict.update({ 'value': option.value | string }) %}
 {%             endif %}
 {%           else %}
 {%             set _ = option_dict.update({'value': [] }) %}

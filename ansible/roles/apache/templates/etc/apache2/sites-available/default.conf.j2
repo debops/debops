@@ -119,12 +119,12 @@ ServerAlias {{ apache__tpl_names[1:] | map("quote") | join(" ") }}
 {%   set item_listen_list = server_port_listen_list %}
 {% endif %}
 {% for item_listen in item_listen_list %}
-{%   if ':' not in item_listen|string %}
+{%   if ':' not in item_listen | string %}
 {# {%     if item_listen in server_port_listen_list %}
 ## Apperently, this is not even needed for Apache to (re)start without issues. #}
-{%     set _ = apache__tpl_listen_sockets.append("*:" + item_listen|string) %}
+{%     set _ = apache__tpl_listen_sockets.append("*:" + item_listen | string) %}
 {%   else %}
-{%     set _ = apache__tpl_listen_sockets.append(item_listen|string) %}
+{%     set _ = apache__tpl_listen_sockets.append(item_listen | string) %}
 {%   endif %}
 {% endfor %}
 {{ apache__tpl_listen_sockets | join(" ") -}}
@@ -310,7 +310,7 @@ handled before all the directives from the alias module.
 #}
 {% set to = to + ("/" if (to[-1] != "/") else "") %}
 {% if module == 'alias' %}
-Redirect {{ code|string }} "{{ from }}" "{{ to }}"
+Redirect {{ code | string }} "{{ from }}" "{{ to }}"
 {% elif module == 'rewrite' %}
 <IfModule mod_rewrite>
 RewriteRule "^{{ from }}?(.*)" "{{ to }}$1" [L,R={{ code }},NE]

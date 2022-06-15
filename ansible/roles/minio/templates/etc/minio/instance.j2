@@ -14,7 +14,7 @@ MINIO_TYPE="{{ item.type | d('server') }}"
 MINIO_VOLUMES="{{ (( [ item.volumes ] if (item.volumes is string) else item.volumes) | join(' ')) if item.volumes|d() else (minio__volumes_dir + '/' + item.name) }}"
 {% endif %}
 MINIO_SERVER_URL="{{ item.server_url | d('https://' + minio__fqdn + '/') }}"
-MINIO_OPTS="{{ '--address ' + (item.bind | d('')) + ':' + item.port|string + ' --console-address ' + (item.console_bind | d('')) + ':' + item.console_port | string + ((' ' + item.minio_options) if item.minio_options|d() else '') }}"
+MINIO_OPTS="{{ '--address ' + (item.bind | d('')) + ':' + item.port | string + ' --console-address ' + (item.console_bind | d('')) + ':' + item.console_port | string + ((' ' + item.minio_options) if item.minio_options|d() else '') }}"
 {% if not (item.standalone|d(False))|bool %}
 MINIO_ROOT_USER="{{ item.root_user         | d(lookup('password', secret + '/minio/distributed/' + item.name + '/root_user length=20 chars=ascii,digits')) }}"
 MINIO_ROOT_PASSWORD="{{ item.root_password | d(lookup('password', secret + '/minio/distributed/' + item.name + '/root_password length=32')) }}"

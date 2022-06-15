@@ -26,14 +26,14 @@
 {%         endif %}
 {%       endfor %}
 {%     endif %}
-{{ ('{:#^' + (section_title.width|string) + 's}').format('') }}
-{{ ('# {:^' + ((section_title.width - 4)|string) + '} #').format(section.value | upper) }}
+{{ ('{:#^' + (section_title.width | string) + 's}').format('') }}
+{{ ('# {:^' + ((section_title.width - 4) | string) + '} #').format(section.value | upper) }}
 {%     if section.comment|d() %}
 {%       for line in (section.comment | regex_replace('\n$', '')).split('\n') %}
-{{ ('# {:<' + ((section_title.width - 4)|string) + '} #').format(line) }}
+{{ ('# {:<' + ((section_title.width - 4) | string) + '} #').format(line) }}
 {%       endfor %}
 {%     endif %}
-{{ ('{:#^' + (section_title.width|string) + 's}').format('') }}
+{{ ('{:#^' + (section_title.width | string) + 's}').format('') }}
 
 {%     for option in host_options %}
 {%       if option.state|d('present') not in [ 'absent', 'ignore' ] %}
@@ -93,7 +93,7 @@
 {%                 endif %}
 {%                 set override_ssh_args = ([ '-i ~/.ssh/' + (host.ssh_identity | d(rsnapshot__ssh_main_identity)) ]) %}
 {%                 if host.ssh_port|d() %}
-{%                   set _ = override_ssh_args.append('-p ' + host.ssh_port|string) %}
+{%                   set _ = override_ssh_args.append('-p ' + host.ssh_port | string) %}
 {%                 endif %}
 {%                 set option_overrides = ([ '+ssh_args=' + (override_ssh_args | join(' ')) ]) %}
 {%               endif %}

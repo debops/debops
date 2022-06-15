@@ -45,7 +45,7 @@
 
 - name: Add/remove diversion of custom sysctl configuration files
   dpkg_divert:
-    path: '/etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}'
+    path: '/etc/sysctl.d/{{ item.filename | d(item.weight | string + "-" + item.name + ".conf") }}'
     state: '{{ item.state|d("present") }}'
     delete: True
   loop: '{{ sysctl__combined_parameters | debops.debops.parse_kv_items }}'
@@ -57,7 +57,7 @@
 
 - name: Remove custom sysctl configuration files
   ansible.builtin.file:
-    path: '/etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}'
+    path: '/etc/sysctl.d/{{ item.filename | d(item.weight | string + "-" + item.name + ".conf") }}'
     state: 'absent'
   with_items: '{{ sysctl__combined_parameters | debops.debops.parse_kv_items }}'
   register: sysctl__register_config_removed
@@ -66,7 +66,7 @@
 - name: Generate custom sysctl configuration files
   ansible.builtin.template:
     src: 'etc/sysctl.d/parameters.conf.j2'
-    dest: '/etc/sysctl.d/{{ item.filename | d(item.weight|string + "-" + item.name + ".conf") }}'
+    dest: '/etc/sysctl.d/{{ item.filename | d(item.weight | string + "-" + item.name + ".conf") }}'
     owner: 'root'
     group: 'root'
     mode: '0644'

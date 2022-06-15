@@ -18,7 +18,7 @@
 {%     if monitor.name|d() and monitor.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
 {%       if ((monitor.instance is defined and monitor.instance == element.name) or monitor.instance is undefined) %}
 {%         set _ = instance_monitors.extend([
-  {"name": ('monitor ' + monitor.name), "value": (monitor.host + ' ' + monitor.port|string + ' ' + monitor.quorum|string), "separator": True},
+  {"name": ('monitor ' + monitor.name), "value": (monitor.host + ' ' + monitor.port | string + ' ' + monitor.quorum | string), "separator": True},
   {"name": ('notification-script ' + monitor.name), "value": ('/etc/redis/sentinel-' + element.name + '/notify.sh')},
   {"name": ('client-reconfig-script ' + monitor.name), "value": ('/etc/redis/sentinel-' + element.name + '/reconfig.sh')}
 ]) %}

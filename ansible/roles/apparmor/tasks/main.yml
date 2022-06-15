@@ -59,7 +59,7 @@
   ansible.builtin.set_fact:
     apparmor__fact_apparmor_enabled_and_loaded: '{{
       (apparmor__enabled|d() | bool) and
-      (ansible_cmdline.apparmor|d(0)|string == "1") and
+      (ansible_cmdline.apparmor|d(0) | string == "1") and
       (ansible_cmdline.security|d("none") == "apparmor") }}'
   check_mode: False
 
