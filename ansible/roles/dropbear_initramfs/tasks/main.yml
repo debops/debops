@@ -55,18 +55,18 @@
               if ("dropbear" in dropbear_initramfs__base_packages)
               else "/etc/dropbear-initramfs/authorized_keys" }}'
     ## Ref: debops.authorized_keys ;-)
-    key_options: '{{ ((item.options if item.options is string else item.options|join(","))
+    key_options: '{{ ((item.options if item.options is string else item.options | join(","))
                        if item.options is defined
                        else (
                          (dropbear_initramfs__authorized_keys_options
                           if dropbear_initramfs__authorized_keys_options is string
-                          else dropbear_initramfs__authorized_keys_options|join(","))
+                          else dropbear_initramfs__authorized_keys_options | join(","))
                          if dropbear_initramfs__authorized_keys_options != omit else ""
                        )
                      ) + (
                        (("," + item.key_options)
                         if item.key_options is string
-                        else ("," + item.key_options|join(",")))
+                        else ("," + item.key_options | join(",")))
                        if item.key_options|d()
                        else ""
                      ) }}'

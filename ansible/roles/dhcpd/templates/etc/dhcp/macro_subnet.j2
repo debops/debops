@@ -22,7 +22,7 @@ subnet6 {{ subnet.subnet|ipaddr('network/prefix') }} {
 {%      endif %}
 
 {%      if subnet.routers|d() and protocol == 'DHCPv4' %}
-    option routers {{ subnet.routers|join(', ') }};
+    option routers {{ subnet.routers | join(', ') }};
 {%      endif %}
 {%      for range in subnet.ranges|d() %}
     {{ "range" if protocol == 'DHCPv4' else "range6" }} {{ range }};

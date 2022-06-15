@@ -34,7 +34,7 @@ DBHOST=localhost
 {%   set _ = mariadb_server__tpl_backup_database_names.append(item)       %}
 {%   set _ = mariadb_server__tpl_backup_database_names.append(' | ')      %}
 {% endfor                                                                 %}
-DBNAMES=`mysql --defaults-file=/etc/mysql/debian.cnf --execute="SHOW DATABASES" | awk '{print $1}' | grep -v ^Database$ | grep -v ^mysql$ | grep -v ^performance_schema$ | grep -v ^information_schema$ | {{ mariadb_server__tpl_backup_database_names|join('') }}tr \\\r\\\n ,\ `
+DBNAMES=`mysql --defaults-file=/etc/mysql/debian.cnf --execute="SHOW DATABASES" | awk '{print $1}' | grep -v ^Database$ | grep -v ^mysql$ | grep -v ^performance_schema$ | grep -v ^information_schema$ | {{ mariadb_server__tpl_backup_database_names | join('') }}tr \\\r\\\n ,\ `
 
 # Backup directory location e.g /backups
 # Folders inside this one will be created (daily, weekly, etc.), and the

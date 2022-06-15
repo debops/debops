@@ -327,7 +327,7 @@ postldap__postfix__dependent_lookup_tables:
       given an alias.
     no_log: '{{ debops__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
-    search_base: '{{ postldap__ldap_base_dn|join(",") }}'
+    search_base: '{{ postldap__ldap_base_dn | join(",") }}'
     query_filter: '(&
                      (objectClass=mailRecipient)
                      (mailAlternateAddress=%s)
@@ -345,7 +345,7 @@ postldap__postfix__dependent_lookup_tables:
       given a distribution list.
     no_log: '{{ debops__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
-    search_base: '{{ postldap__ldap_base_dn|join(",") }}'
+    search_base: '{{ postldap__ldap_base_dn | join(",") }}'
     query_filter: '(&
                      (|
                        (objectClass=mailAlias)
@@ -368,7 +368,7 @@ postldap__postfix__dependent_lookup_tables:
       (and are responsible for them), the virtual_mailbox_maps configuration is used.
     no_log: '{{ debops__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
-    search_base: '{{ postldap__ldap_base_dn|join(",") }}'
+    search_base: '{{ postldap__ldap_base_dn | join(",") }}'
     query_filter: '(&
                     (objectClass=mailRecipient)
                     (|
@@ -389,7 +389,7 @@ postldap__postfix__dependent_lookup_tables:
       if the postfix is responsible for the given domain.
     no_log: '{{ debops__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
-    search_base: '{{ postldap__ldap_domains_dn|join(",") }}'
+    search_base: '{{ postldap__ldap_domains_dn | join(",") }}'
     query_filter: '(&
                     (objectClass=dNSDomain)
                     (dc=%s)
@@ -406,7 +406,7 @@ postldap__postfix__dependent_lookup_tables:
       is set to e.g. @foobar.com
     no_log: '{{ debops__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
-    search_base: '{{ postldap__ldap_base_dn|join(",") }}'
+    search_base: '{{ postldap__ldap_base_dn | join(",") }}'
     query_filter: '(&
                      (|
                        (&
@@ -445,7 +445,7 @@ postldap__postfix__dependent_lookup_tables:
       as them.
     no_log: '{{ debops__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
-    search_base: '{{ postldap__ldap_base_dn|join(",") }}'
+    search_base: '{{ postldap__ldap_base_dn | join(",") }}'
     query_filter: '(&
                     (objectClass=account)
                     (uid=%u)
@@ -470,7 +470,7 @@ postldap__postfix__dependent_lookup_tables:
       that the sender needs to enable SMTP authentication.
     no_log: '{{ debops__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
-    search_base: '{{ postldap__ldap_base_dn|join(",") }}'
+    search_base: '{{ postldap__ldap_base_dn | join(",") }}'
     query_filter: '(|
                     (&
                       (objectClass=mailRecipient)
@@ -499,7 +499,7 @@ postldap__postfix__dependent_lookup_tables:
       SMTP authentication needs to be enabled.
     no_log: '{{ debops__no_log|d(True) }}'
     connection: '{{ postldap__postfix_ldap_connection }}'
-    search_base: '{{ postldap__ldap_base_dn|join(",") }}'
+    search_base: '{{ postldap__ldap_base_dn | join(",") }}'
     query_filter: '(|
                      (&
                        (objectClass=dNSDomain)
