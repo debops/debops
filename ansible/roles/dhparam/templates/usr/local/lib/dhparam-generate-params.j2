@@ -71,6 +71,8 @@ fi
 dhparam_library="{{ dhparam__library }}"
 dhparam_path="{{ dhparam__path + '/params' }}"
 
+dhparam_openssl_options=( {{ dhparam__openssl_options }} )
+
 dhparam_prefix="{{ dhparam__prefix }}"
 read -r -a dhparam_bits <<< "{{ dhparam__bits | join(' ') }}"
 dhparam_suffix="{{ dhparam__suffix }}"
@@ -100,7 +102,7 @@ generate_params () {
       if [ "${dhparam_library}" == "gnutls" ] ; then
         certtool --generate-dh-params --outfile "${dhparam_file}.tmp" --bits "${length}" > /dev/null 2>&1 && mv "${dhparam_file}.tmp" "${dhparam_file}"
       elif [ "${dhparam_library}" == "openssl" ] ; then
-        openssl dhparam -out "${dhparam_file}.tmp" "${length}" > /dev/null 2>&1 && mv "${dhparam_file}.tmp" "${dhparam_file}"
+        openssl dhparam "${dhparam_openssl_options[@]}" -out "${dhparam_file}.tmp" "${length}" > /dev/null 2>&1 && mv "${dhparam_file}.tmp" "${dhparam_file}"
       fi
 
     done
