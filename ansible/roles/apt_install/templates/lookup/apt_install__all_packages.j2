@@ -27,7 +27,7 @@
 {%             set _ = apt_install__tpl_met_condition_list.append(condition_name_to_meet) %}
 {%           endif %}
 {%         endfor %}
-{%         if (apt_install__tpl_met_condition_list | unique|length) == (apt_install__tpl_to_meet_condition_list | unique|length) %}
+{%         if (apt_install__tpl_met_condition_list | unique | length) == (apt_install__tpl_to_meet_condition_list | unique | length) %}
 {%           set _ = apt_install__tpl_package_list.append(get_yaml_list_from_string_or_list(element, 'name') | from_json
                        | intersect(element.whitelist|d(get_yaml_list_from_string_or_list(element, 'name') | from_json)) | list) %}
 {%         endif %}

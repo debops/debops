@@ -498,7 +498,7 @@ nginx_pki_hook_action: 'reload'
 #
 # Path to the file with Diffie-Hellman parameters to use by the webserver.
 nginx_ssl_dhparam: '{{ (""
-                        if nginx_default_tls_protocols|length == 1 and
+                        if nginx_default_tls_protocols | length == 1 and
                            nginx_default_tls_protocols[0] == "TLSv1.3"
                         else
                            (ansible_local.dhparam[nginx_ssl_dhparam_set]
@@ -518,7 +518,7 @@ nginx_ssl_dhparam_set: 'default'
 # Default set of cipher suites to use.
 # Refer to ``nginx_ssl_ciphers`` for details.
 nginx_default_ssl_ciphers: '{{ "mozilla_modern"
-                               if nginx_default_tls_protocols|length == 1 and
+                               if nginx_default_tls_protocols | length == 1 and
                                   nginx_default_tls_protocols[0] == "TLSv1.3"
                                else "mozilla_intermediate" }}'
 

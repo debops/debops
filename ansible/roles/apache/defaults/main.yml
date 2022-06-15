@@ -478,7 +478,7 @@ apache__combined_snippets: '{{ apache__dependent_snippets
 # Defaults to ``True`` if :ref:`debops.pki` is enabled on the remote host.
 apache__https_enabled: '{{ ansible_local|d() and ansible_local.pki|d() and
                            (ansible_local.pki.enabled|d() | bool) and
-                           apache__https_listen|length > 0 }}'
+                           apache__https_listen | length > 0 }}'
 
                                                                    # ]]]
 # .. envvar:: apache__redirect_to_https [[[
@@ -535,7 +535,7 @@ apache__pki_trusted_filename: '{{ ansible_local.pki.trusted|d("trusted.crt") }}'
 # Default set of cipher suites to use.
 # Refer to ``apache_ssl_ciphers`` for details.
 apache__tls_cipher_suite_set_name: '{{ "mozilla_modern"
-                                      if apache__tls_protocols|length == 5 and
+                                      if apache__tls_protocols | length == 5 and
                                         apache__tls_protocols[4] == "-TLSv1.2"
                                       else "mozilla_intermediate" }}'
 

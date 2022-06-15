@@ -203,7 +203,7 @@
   ansible.builtin.command: '{{ owncloud__occ_bin_file_path | quote }} integrity:check-core'
   register: owncloud__register_occ_integrity_check_core
   failed_when: (owncloud__register_occ_integrity_check_core.rc != 0 or
-                owncloud__register_occ_integrity_check_core.stdout_lines|length != 0)
+                owncloud__register_occ_integrity_check_core.stdout_lines | length != 0)
   changed_when: False
   when: owncloud__do_autosetup|bool
 

@@ -20,7 +20,7 @@
 {%     endif %}
 {%   endfor %}
 {% endif %}
-{% if custom_realm_list|length == 0 %}
+{% if custom_realm_list | length == 0 %}
 {%   set _ = custom_realm_list.append(fallback_realm) %}
 {% endif %}
 {{ custom_realm_list | to_nice_yaml }}
@@ -109,13 +109,13 @@ Examples:
 {% set apache__tpl_names = [ apache__server_name ] %}
 {% endif %}
 ServerName {{ apache__tpl_names[0] | quote }}
-{% if apache__tpl_names|length > 1 %}
+{% if apache__tpl_names | length > 1 %}
 ServerAlias {{ apache__tpl_names[1:] | map("quote") | join(" ") }}
 {% endif %}
 {% endmacro %}
 {% macro get_listen_sockets(item_listen_list, server_port_listen_list) %}{# [[[ #}
 {% set apache__tpl_listen_sockets = [] %}
-{% if item_listen_list|length == 0 %}
+{% if item_listen_list | length == 0 %}
 {%   set item_listen_list = server_port_listen_list %}
 {% endif %}
 {% for item_listen in item_listen_list %}
