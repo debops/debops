@@ -44,7 +44,7 @@
     path: '/etc/default/lldpd'
     state: '{{ "present"
                if ((lldpd__default_daemon_arguments
-                    + lldpd__daemon_arguments)|flatten)|d()
+                    + lldpd__daemon_arguments) | flatten)|d()
                else "absent" }}'
     delete: True
   notify: [ 'Restart lldpd' ]
@@ -58,7 +58,7 @@
   notify: [ 'Restart lldpd' ]
   when: lldpd__enabled|bool and
         (lldpd__default_daemon_arguments
-         + lldpd__daemon_arguments)|flatten|d()
+         + lldpd__daemon_arguments) | flatten|d()
 
 - name: Remove lldpd configuration files if requested
   ansible.builtin.file:
