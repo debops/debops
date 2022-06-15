@@ -25,10 +25,10 @@
 
 - name: Set facts about APT package state
   ansible.builtin.set_fact:
-    apt_mark__fact_auto:      '{{ (apt_mark__register_state.stdout|from_json)["auto"] }}'
-    apt_mark__fact_hold:      '{{ (apt_mark__register_state.stdout|from_json)["hold"] }}'
-    apt_mark__fact_installed: '{{ (apt_mark__register_state.stdout|from_json)["installed"] }}'
-    apt_mark__fact_manual:    '{{ (apt_mark__register_state.stdout|from_json)["manual"] }}'
+    apt_mark__fact_auto:      '{{ (apt_mark__register_state.stdout | from_json)["auto"] }}'
+    apt_mark__fact_hold:      '{{ (apt_mark__register_state.stdout | from_json)["hold"] }}'
+    apt_mark__fact_installed: '{{ (apt_mark__register_state.stdout | from_json)["installed"] }}'
+    apt_mark__fact_manual:    '{{ (apt_mark__register_state.stdout | from_json)["manual"] }}'
   when: apt_mark__enabled|bool
 
 - name: Set package state as installed automatically
