@@ -184,8 +184,8 @@ RewriteRule "^{{ item.status_location|d(apache__status_location) }}" "-" [L]
 {% endif %}
 {% endmacro %}
 {% macro get_document_root_directives(item) %}{# [[[ #}
-Options {{ get_yaml_list_for_elem(item.options|d(apache__vhost_options))|from_yaml | join(" ") }}
-AllowOverride {{ get_yaml_list_for_elem(item.allow_override|d(apache__vhost_allow_override))|from_yaml | join(" ") }}
+Options {{ get_yaml_list_for_elem(item.options|d(apache__vhost_options)) | from_yaml | join(" ") }}
+AllowOverride {{ get_yaml_list_for_elem(item.allow_override|d(apache__vhost_allow_override)) | from_yaml | join(" ") }}
 
 {{ get_version_wrapped('Require all granted', "2.4", ">=",
 'Order allow,deny
@@ -197,12 +197,12 @@ Allow from all') -}}
 {% endmacro %}
 {% macro get_content_directives(item) %}{# [[[ #}
 {% if item.include|d() %}
-{% for include_file in get_yaml_list_for_elem(item.include)|from_yaml %}
+{% for include_file in get_yaml_list_for_elem(item.include) | from_yaml %}
 Include {{ include_file | quote }}
 {% endfor %}
 {% endif %}
 {% if item.include_optional|d() %}
-{% for include_optional_file in get_yaml_list_for_elem(item.include_optional)|from_yaml %}
+{% for include_optional_file in get_yaml_list_for_elem(item.include_optional) | from_yaml %}
 IncludeOptional {{ include_optional_file | quote }}
 {% endfor %}
 {% endif %}
@@ -210,7 +210,7 @@ IncludeOptional {{ include_optional_file | quote }}
 DocumentRoot {{ item.root|d(item.document_root) | quote }}
 
 {% if item.index|d() %}
-DirectoryIndex {{ get_yaml_list_for_elem(item.index)|from_yaml | join(" ") }}
+DirectoryIndex {{ get_yaml_list_for_elem(item.index) | from_yaml | join(" ") }}
 {% endif %}
 {% if item.alias|d() %}
 {{ get_alias(item.alias, item.alias_path|d(item.root)|d(item.document_root)) }}
