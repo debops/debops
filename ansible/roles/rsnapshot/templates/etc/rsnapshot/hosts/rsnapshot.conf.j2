@@ -18,11 +18,11 @@
 {%   set host_options = host.options | selectattr('section', 'defined') | selectattr('section', 'equalto', section.name) | list %}
 {%   if host_options|d() %}
 
-{%     set section_title = {'width': ((section.value | length)|int + 4)} %}
+{%     set section_title = {'width': ((section.value | length) | int + 4)} %}
 {%     if section.comment|d() %}
 {%       for line in (section.comment | regex_replace('\n$', '')).split('\n') %}
-{%         if ((line | length)|int + 4) > section_title.width %}
-{%           set _ = section_title.update({'width': ((line | length)|int + 4)}) %}
+{%         if ((line | length) | int + 4) > section_title.width %}
+{%           set _ = section_title.update({'width': ((line | length) | int + 4)}) %}
 {%         endif %}
 {%       endfor %}
 {%     endif %}

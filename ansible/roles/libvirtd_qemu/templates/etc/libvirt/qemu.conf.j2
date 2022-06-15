@@ -18,7 +18,7 @@
 {%   if element is mapping %}
 {%     if element.name|d() and element.state|d('present') != 'ignore' %}
 {%       set parameters = (libvirtd_qemu__tpl_configuration[element.name].copy() if libvirtd_qemu__tpl_configuration[element.name] is defined else {}) %}
-{%       set _ = parameters.update({ 'name': element.name, 'state': element.state|d(parameters.state|d('present')), 'section': element.section|d(parameters.section|d('unknown')), 'weight': element.weight|d(parameters.weight|d(0))|int }) %}
+{%       set _ = parameters.update({ 'name': element.name, 'state': element.state|d(parameters.state|d('present')), 'section': element.section|d(parameters.section|d('unknown')), 'weight': element.weight|d(parameters.weight|d(0)) | int }) %}
 {%       if element.value is defined %}
 {%         set _ = parameters.update({ 'value': element.value }) %}
 {%       else %}
@@ -31,7 +31,7 @@
 {%     elif not element.name|d() %}
 {%       for key, value in element.items() %}
 {%         set loop_parameters = (libvirtd_qemu__tpl_configuration[key].copy() if libvirtd_qemu__tpl_configuration[key] is defined else {}) %}
-{%         set _ = loop_parameters.update({ 'name': key, 'value': value, 'state': 'present', 'section': loop_parameters.section|d('unknown'), 'weight': loop_parameters.weight|d(0)|int }) %}
+{%         set _ = loop_parameters.update({ 'name': key, 'value': value, 'state': 'present', 'section': loop_parameters.section|d('unknown'), 'weight': loop_parameters.weight|d(0) | int }) %}
 {%         set _ = libvirtd_qemu__tpl_configuration.update({ loop_parameters.name: loop_parameters }) %}
 {%       endfor %}
 {%     endif %}

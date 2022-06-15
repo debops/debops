@@ -320,14 +320,14 @@ slapd__groupid_min: '{{ slapd__uid_gid_min }}'
 # matching User Private Groups. Default: 2001999999
 #
 # Ref: https://wiki.debian.org/UserPrivateGroups
-slapd__groupid_max: '{{ slapd__uid_gid_min|int + 1999999 }}'
+slapd__groupid_max: '{{ slapd__uid_gid_min | int + 1999999 }}'
 
                                                                    # ]]]
 # .. envvar:: slapd__uid_gid_max [[[
 #
 # Last UID/GID which is considered to be managed by the LDAP directory and not
 # by the local NSS database. Default: 2099999999
-slapd__uid_gid_max: '{{ slapd__uid_gid_min|int + 99999999 }}'
+slapd__uid_gid_max: '{{ slapd__uid_gid_min | int + 99999999 }}'
                                                                    # ]]]
                                                                    # ]]]
 # LDAP database tuning [[[
@@ -1094,7 +1094,7 @@ slapd__structure_tasks:
     attributes:
       cn: 'UNIX SSH users'
       gid: 'sshusers'
-      gidNumber: '{{ slapd__groupid_min|int + 1 }}'
+      gidNumber: '{{ slapd__groupid_min | int + 1 }}'
       description: 'People who can connect to UNIX-like infrastructure via SSH'
       host: 'posix:all'
 
@@ -1103,7 +1103,7 @@ slapd__structure_tasks:
     objectClass: 'uidNext'
     attributes:
       cn: 'Next POSIX UID'
-      uidNumber: '{{ slapd__groupid_max|int + 2 }}'
+      uidNumber: '{{ slapd__groupid_max | int + 2 }}'
       description: 'The next available uidNumber value'
 
   - name: 'Create cn=Next POSIX GID object'
@@ -1111,7 +1111,7 @@ slapd__structure_tasks:
     objectClass: 'gidNext'
     attributes:
       cn: 'Next POSIX GID'
-      gidNumber: '{{ slapd__groupid_min|int + 2 }}'
+      gidNumber: '{{ slapd__groupid_min | int + 2 }}'
       description: 'The next available gidNumber value'
 
   - name: 'Create SUDOers container'

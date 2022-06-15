@@ -20,7 +20,7 @@
 {%     else %}
 {%       set subnet_prefix = '24' %}
 {%     endif %}
-{%     for i in range(0, (entry | ipsubnet(subnet_prefix)|int)) %}
+{%     for i in range(0, (entry | ipsubnet(subnet_prefix) | int)) %}
 {%       set _ = unbound__tpl_ipv4_revdns_zones.append((entry | ipsubnet(subnet_prefix, i) | ipaddr('revdns')).split('.')[1:-1] | join('.')) %}
 {%     endfor %}
 {%   endfor %}

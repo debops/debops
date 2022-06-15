@@ -234,9 +234,9 @@ root_account__subuid_enabled: True
 # If the :ref:`debops.ldap` role was applied on the host, the default UID/GID
 # ranges will change to include the ranges used :ref:`in the LDAP directory
 # <ldap__ref_posix>`.
-root_account__subuid_start: [ '{{ (ansible_local.ldap.uid_gid_max|int + 1)
+root_account__subuid_start: [ '{{ (ansible_local.ldap.uid_gid_max | int + 1)
                                   if (ansible_local|d() and ansible_local.ldap|d() and
-                                      (ansible_local.ldap.uid_gid_max|int > 100000))
+                                      (ansible_local.ldap.uid_gid_max | int > 100000))
                                   else "100000" }}' ]
 
                                                                    # ]]]
@@ -252,7 +252,7 @@ root_account__subuid_start: [ '{{ (ansible_local.ldap.uid_gid_max|int + 1)
 # <ldap__ref_posix>`.
 root_account__subuid_count: '{{ ansible_local.ldap.uid_gid_max
                                 if (ansible_local|d() and ansible_local.ldap|d() and
-                                    (ansible_local.ldap.uid_gid_max|int > 65536))
+                                    (ansible_local.ldap.uid_gid_max | int > 65536))
                                 else "65535" }}'
                                                                    # ]]]
                                                                    # ]]]

@@ -18,7 +18,7 @@
     {% if swapfile__use_dd|bool %}
     dd if=/dev/zero of={{ item.path | d(item) }} bs=1M count={{ item.size | d(swapfile__size) }}
     {% else %}
-    fallocate -l {{ ((item.size | d(swapfile__size))|int * 1024 * 1024) }} {{ item.path | d(item) }}
+    fallocate -l {{ ((item.size | d(swapfile__size)) | int * 1024 * 1024) }} {{ item.path | d(item) }}
     {% endif %}
   args:
     creates: '{{ item.path | d(item) }}'

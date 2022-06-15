@@ -49,14 +49,14 @@ sysctl__shared_memory_base: '{{ ((ansible_memtotal_mb | int * 1024 * 1024) - 819
 #
 # How much of the total memory is reserved for shared memory.
 sysctl__shared_memory_shmall_limiter: '{{ 0.8
-                                          if (ansible_memtotal_mb|int >= 4096)
+                                          if (ansible_memtotal_mb | int >= 4096)
                                           else 0.5 }}'
 
                                                                    # ]]]
 # .. envvar:: sysctl__shared_memory_shmall [[[
 #
 # Number of memory pages that can be used for shared memory.
-sysctl__shared_memory_shmall: '{{ ((sysctl__shared_memory_base|int *
+sysctl__shared_memory_shmall: '{{ ((sysctl__shared_memory_base | int *
                                     sysctl__shared_memory_shmall_limiter | float) / 4096)
                                   | round | int }}'
 
@@ -65,14 +65,14 @@ sysctl__shared_memory_shmall: '{{ ((sysctl__shared_memory_base|int *
 #
 # Maximum size of shared memory segment as % of available memory
 sysctl__shared_memory_max_limiter: '{{ 0.5
-                                       if (ansible_memtotal_mb|int >= 4096)
+                                       if (ansible_memtotal_mb | int >= 4096)
                                        else 0.2 }}'
 
                                                                    # ]]]
 # .. envvar:: sysctl__shared_memory_shmmax [[[
 #
 # Maximum amount of shared memory a process can reserve for itself
-sysctl__shared_memory_shmmax: '{{ (sysctl__shared_memory_base|int *
+sysctl__shared_memory_shmmax: '{{ (sysctl__shared_memory_base | int *
                                    sysctl__shared_memory_max_limiter | float)
                                    | round | int }}'
                                                                    # ]]]

@@ -29,18 +29,18 @@ NotifyScript = /etc/boxbackup/bbackupd/NotifySysadmin.sh
 {#	# The number of seconds between backup runs under normal conditions. To avoid
 	# cycles of load on the server, this time is randomly adjusted by a small
 	# percentage as the daemon runs. #}
-UpdateStoreInterval = {{ (boxbackup_interval | default(60) * 60|int)|round|int | string }}
+UpdateStoreInterval = {{ (boxbackup_interval | default(60) * 60 | int)|round | int | string }}
 {#
 	# The minimum age of a file, in seconds, that will be uploaded. Avoids
 	# repeated uploads of a file which is constantly being modified. #}
-MinimumFileAge = {{ (boxbackup_minimumfileage | default(6) * 60 * 60|int)|round|int | string }}
+MinimumFileAge = {{ (boxbackup_minimumfileage | default(6) * 60 * 60 | int)|round | int | string }}
 {#
 	# If a file is modified repeated, it won't be uploaded immediately in case
 	# it's modified again, due to the MinimumFileAge specified above. However, it
 	# should be uploaded eventually even if it is being modified repeatedly. This
 	# is how long we should wait, in seconds, after first noticing a change.
 	# (86400 seconds = 1 day) #}
-MaxUploadWait = {{ (boxbackup_maxuploadwait | default(24) * 60 * 60|int)|round|int | string }}
+MaxUploadWait = {{ (boxbackup_maxuploadwait | default(24) * 60 * 60 | int)|round | int | string }}
 {#
 	# If the connection is idle for some time (e.g. over 10 minutes or 600
 	# seconds, not sure exactly how long) then the server will give up and

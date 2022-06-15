@@ -282,20 +282,20 @@ lxc__default_configuration:
 
       # Select how many CPUs are available inside of the container
       - name: 'lxc.cgroup.cpuset.cpus'
-        value: '0-{{ ansible_processor_vcpus|int - 1 }}'
+        value: '0-{{ ansible_processor_vcpus | int - 1 }}'
         state: 'comment'
         separator: True
 
       # Limit the amount of memory available inside of the container
       - name: 'lxc.cgroup.memory.limit_in_bytes'
-        value: '{{ (ansible_memtotal_mb|int / 1024) | round | int }}G'
+        value: '{{ (ansible_memtotal_mb | int / 1024) | round | int }}G'
         state: 'comment'
 
       # Limit available swap space inside of the container. The value is
       # a combined memory (above) + swap size, it should be bigger than the
       # amount of memory allocated to the container.
       - name: 'lxc.cgroup.memory.memsw.limit_in_bytes'
-        value: '{{ ((ansible_memtotal_mb|int + ansible_swaptotal_mb|int) / 1024) | round | int }}G'
+        value: '{{ ((ansible_memtotal_mb | int + ansible_swaptotal_mb | int) / 1024) | round | int }}G'
         state: 'comment'
 
       # Required in AppArmor environment to allow systemd services to start
@@ -402,20 +402,20 @@ lxc__default_configuration:
 
       # Select how many CPUs are available inside of the container
       - name: 'lxc.cgroup.cpuset.cpus'
-        value: '0-{{ ansible_processor_vcpus|int - 1 }}'
+        value: '0-{{ ansible_processor_vcpus | int - 1 }}'
         state: 'comment'
         separator: True
 
       # Limit the amount of memory available inside of the container
       - name: 'lxc.cgroup.memory.limit_in_bytes'
-        value: '{{ (ansible_memtotal_mb|int / 1024) | round | int }}G'
+        value: '{{ (ansible_memtotal_mb | int / 1024) | round | int }}G'
         state: 'comment'
 
       # Limit available swap space inside of the container. The value is
       # a combined memory (above) + swap size, it should be bigger than the
       # amount of memory allocated to the container.
       - name: 'lxc.cgroup.memory.memsw.limit_in_bytes'
-        value: '{{ ((ansible_memtotal_mb|int + ansible_swaptotal_mb|int) / 1024) | round | int }}G'
+        value: '{{ ((ansible_memtotal_mb | int + ansible_swaptotal_mb | int) / 1024) | round | int }}G'
         state: 'comment'
 
       # Required in AppArmor environment to allow systemd services to start

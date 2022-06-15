@@ -101,8 +101,8 @@
   when: root_account__enabled|bool and root_account__subuid_enabled|bool
 
 - name: Add subuids and subgids for root account
-  ansible.builtin.command: usermod --add-subuids {{ (item | string + "-" + (item|int + root_account__subuid_count|int) | string) }}
-                   --add-subgids {{ (item | string + "-" + (item|int + root_account__subuid_count|int) | string) }} root
+  ansible.builtin.command: usermod --add-subuids {{ (item | string + "-" + (item | int + root_account__subuid_count | int) | string) }}
+                   --add-subgids {{ (item | string + "-" + (item | int + root_account__subuid_count | int) | string) }} root
   with_items: '{{ root_account__subuid_start }}'
   when: root_account__enabled|bool and root_account__subuid_enabled|bool and
         not root_account__register_subuid.stdout|d()
