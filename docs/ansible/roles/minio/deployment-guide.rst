@@ -1,5 +1,5 @@
-.. Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2019 DebOps <https://debops.org/>
+.. Copyright (C) 2019-2022 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2019-2022 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 .. _minio__ref_deployment_guide:
@@ -233,12 +233,15 @@ instance to use a subdirectory in the :file:`/data` directory.
 
      - name: 'tenant1'
        port: 9001
+       console_port: 19001
 
      - name: 'tenant2'
        port: 9002
+       console_port: 19002
 
      - name: 'tenant3'
        port: 9003
+       console_port: 19003
 
 Multiple tenants on multiple drives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -266,6 +269,7 @@ for each tenant, so that the data is distributed among the disk drives.
 
      - name: 'tenant1'
        port: 9001
+       console_port: 19001
        volumes:
          - '/disk1/data/tenant1'
          - '/disk2/data/tenant1'
@@ -274,6 +278,7 @@ for each tenant, so that the data is distributed among the disk drives.
 
      - name: 'tenant2'
        port: 9002
+       console_port: 19002
        volumes:
          - '/disk1/data/tenant2'
          - '/disk2/data/tenant2'
@@ -282,6 +287,7 @@ for each tenant, so that the data is distributed among the disk drives.
 
      - name: 'tenant3'
        port: 9003
+       console_port: 19003
        volumes:
          - '/disk1/data/tenant3'
          - '/disk2/data/tenant3'
@@ -370,6 +376,7 @@ MinIO-related variables don't overlap between groups.
 
      - name: 'tenant1'
        port: 9001
+       console_port: 19001
        fqdn: 'tenant1.example.org'
        volumes:
          - 'https://server1.example.org:9001/data/tenant1'
@@ -379,6 +386,7 @@ MinIO-related variables don't overlap between groups.
 
      - name: 'tenant2'
        port: 9002
+       console_port: 19002
        fqdn: 'tenant2.example.org'
        volumes:
          - 'https://server1.example.org:9002/data/tenant2'
@@ -388,6 +396,7 @@ MinIO-related variables don't overlap between groups.
 
      - name: 'tenant3'
        port: 9003
+       console_port: 19003
        fqdn: 'tenant3.example.org'
        volumes:
          - 'https://server1.example.org:9003/data/tenant3'

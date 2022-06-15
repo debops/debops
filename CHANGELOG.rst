@@ -131,6 +131,14 @@ General
   exist. This should help with an upgrade of existing Elasticsearch clusters
   without TLS encrypted traffic and authentication.
 
+:ref:`debops.minio` role
+''''''''''''''''''''''''
+
+- The role has been updated to support newer MinIO features, like the embedded
+  MinIO Console. Some of the instance parameters have been changed, for example
+  access key and secret key have been replaced with root account and password.
+  Check the role documentation for more details.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
