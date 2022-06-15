@@ -493,7 +493,7 @@ elasticsearch__jvm_memory_heap_size_multiplier: '{{ "0.2"
 #
 # Specify the minimum JVM heap size, depending on the available system RAM.
 elasticsearch__jvm_memory_min_heap_size: '{{ (((ansible_memtotal_mb|int
-                                               * elasticsearch__jvm_memory_heap_size_multiplier|float)
+                                               * elasticsearch__jvm_memory_heap_size_multiplier | float)
                                                | round | int) | string + "m")
                                              if (ansible_memtotal_mb|int / 2 <= 32768)
                                              else "32600m" }}'

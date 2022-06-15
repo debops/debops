@@ -57,7 +57,7 @@ sysctl__shared_memory_shmall_limiter: '{{ 0.8
 #
 # Number of memory pages that can be used for shared memory.
 sysctl__shared_memory_shmall: '{{ ((sysctl__shared_memory_base|int *
-                                    sysctl__shared_memory_shmall_limiter|float) / 4096)
+                                    sysctl__shared_memory_shmall_limiter | float) / 4096)
                                   | round | int }}'
 
                                                                    # ]]]
@@ -73,7 +73,7 @@ sysctl__shared_memory_max_limiter: '{{ 0.5
 #
 # Maximum amount of shared memory a process can reserve for itself
 sysctl__shared_memory_shmmax: '{{ (sysctl__shared_memory_base|int *
-                                   sysctl__shared_memory_max_limiter|float)
+                                   sysctl__shared_memory_max_limiter | float)
                                    | round | int }}'
                                                                    # ]]]
                                                                    # ]]]

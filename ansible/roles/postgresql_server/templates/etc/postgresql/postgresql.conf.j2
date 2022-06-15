@@ -102,14 +102,14 @@ tcp_keepalives_count = {{ item.tcp_keepalives_count | d('0') }}
 {%   set postgresql_server__tpl_max_connections = postgresql_server__max_connections|int %}
 {% endif %}
 {% if (postgresql_server__register_sysctl_shmmax.stdout|int >= (ansible_memtotal_mb|int * 1024 * 1024)) %}
-{%   set postgresql_server__tpl_shmmax = ((ansible_memtotal_mb|int * 1024 * 1024) * postgresql_server__shm_memory_limiter|float) | round | int %}
+{%   set postgresql_server__tpl_shmmax = ((ansible_memtotal_mb|int * 1024 * 1024) * postgresql_server__shm_memory_limiter | float) | round | int %}
 {% else %}
 {%   set postgresql_server__tpl_shmmax = postgresql_server__register_sysctl_shmmax.stdout %}
 {% endif %}
 {% if not item.shared_buffers|d() %}
 # (( {{ (postgresql_server__tpl_shmmax|int / 1024 / 1024)|round|int }} MB of maximum shared buffer size * {{ postgresql_server__shmmax_limiter }} ) - ( 16 kB * {{ postgresql_server__tpl_max_connections }} max connections )) / {{ postgresql_server__fact_cluster_count }} cluster(s)
 {% endif %}
-shared_buffers = {{ item.shared_buffers | d((((((postgresql_server__tpl_shmmax|int * postgresql_server__shmmax_limiter|float)|round|int - (16384 * postgresql_server__tpl_max_connections|int)) / postgresql_server__fact_cluster_count|int) / 1024 / 1024))|round|int | string + 'MB') }}
+shared_buffers = {{ item.shared_buffers | d((((((postgresql_server__tpl_shmmax|int * postgresql_server__shmmax_limiter | float)|round|int - (16384 * postgresql_server__tpl_max_connections|int)) / postgresql_server__fact_cluster_count|int) / 1024 / 1024))|round|int | string + 'MB') }}
 temp_buffers = {{ item.temp_buffers | d('8MB') }}
 max_prepared_transactions = {{ item.max_prepared_transactions | d('0') }}
 work_mem = {{ item.work_mem | d('1MB') }}
