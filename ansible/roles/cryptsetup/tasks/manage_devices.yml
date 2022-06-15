@@ -229,8 +229,8 @@
                         if (item.1.stdout|d() and item.0.use_uuid|d(cryptsetup__use_uuid)|bool)
                         else item.0.ciphertext_block_device }}'
     name: '{{ item.0.name }}'
-    opts: '{{ (item.2.crypttab_options|d(cryptsetup__crypttab_options|d([]))|list | sort | unique | join(","))
-              if ((item.2.crypttab_options|d(cryptsetup__crypttab_options|d([]))|list | length) > 0)
+    opts: '{{ (item.2.crypttab_options|d(cryptsetup__crypttab_options|d([])) | list | sort | unique | join(","))
+              if ((item.2.crypttab_options|d(cryptsetup__crypttab_options|d([])) | list | length) > 0)
               else "none" }}'
     ## ``none`` is required by :command:`cryptdisks_start` if no options are given.
     ## Also `crypttab(5)` says that "all four fields are mandatory and that
