@@ -9,7 +9,7 @@
     state: 'present'
   register: logrotate__register_packages
   until: logrotate__register_packages is succeeded
-  when: logrotate__enabled|bool
+  when: logrotate__enabled | bool
 
 - name: Determine current cron log rotation
   ansible.builtin.shell: |
@@ -19,7 +19,7 @@
     executable: 'bash'
   register: logrotate__register_cron_diversion
   changed_when: False
-  when: logrotate__enabled|bool
+  when: logrotate__enabled | bool
 
 - name: Remove previous cron log rotation
   dpkg_divert:
@@ -27,7 +27,7 @@
     divert: '{{ logrotate__register_cron_diversion.stdout }}'
     state: 'absent'
     delete: True
-  when: (logrotate__enabled|bool and
+  when: (logrotate__enabled | bool and
          logrotate__register_cron_diversion.stdout|d() and
          logrotate__register_cron_diversion.stdout|d() !=
          ('/etc/cron.' + logrotate__cron_period + '/logrotate'))
@@ -36,13 +36,13 @@
   dpkg_divert:
     path: '/etc/cron.daily/logrotate'
     divert: '/etc/cron.{{ logrotate__cron_period }}/logrotate'
-  when: (logrotate__enabled|bool and
+  when: (logrotate__enabled | bool and
          logrotate__cron_period in [ 'hourly', 'weekly', 'monthly' ])
 
 - name: Add/remove diversion of the logrotate config file
   dpkg_divert:
     path: '/etc/logrotate.conf'
-    state: '{{ "present" if logrotate__enabled|bool else "absent" }}'
+    state: '{{ "present" if logrotate__enabled | bool else "absent" }}'
     delete: True
 
 - name: Generate logrotate main configuration file
@@ -52,18 +52,18 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: logrotate__enabled|bool
+  when: logrotate__enabled | bool
 
 - name: Add/remove diversion of the custom log rotation configuration
   dpkg_divert:
     path: '/etc/logrotate.d/{{ item.filename }}'
     state: '{{ "present"
                if
-               (logrotate__enabled|bool and item.state|d("present") != "absent")
+               (logrotate__enabled | bool and item.state|d("present") != "absent")
                else "absent" }}'
     delete: True
   loop: '{{ logrotate__combined_config | flatten }}'
-  when: item.filename|d() and item.divert|d(False)|bool
+  when: item.filename|d() and item.divert|d(False) | bool
 
 - name: Generate custom log rotation configuration
   ansible.builtin.template:
@@ -73,7 +73,7 @@
     group: 'root'
     mode: '0644'
   loop: '{{ logrotate__combined_config | flatten }}'
-  when: (logrotate__enabled|bool and item.filename|d() and
+  when: (logrotate__enabled | bool and item.filename|d() and
          item.state|d('present') != 'absent')
 
 - name: Remove custom log rotation configuration
@@ -81,5 +81,5 @@
     path: '/etc/logrotate.d/{{ item.filename }}'
     state: 'absent'
   loop: '{{ logrotate__combined_config | flatten }}'
-  when: (item.filename|d() and not item.divert|d(False)|bool and
-         (not logrotate__enabled|bool or item.state|d('present') == 'absent'))
+  when: (item.filename|d() and not item.divert|d(False) | bool and
+         (not logrotate__enabled | bool or item.state|d('present') == 'absent'))

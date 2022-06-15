@@ -100,7 +100,7 @@ icinga__additional_groups:
   - 'ssl-cert'
   - '{{ ansible_local.proc_hidepid.group
         if (ansible_local.proc_hidepid.group|d() and
-            (ansible_local.proc_hidepid.enabled|d())|bool)
+            (ansible_local.proc_hidepid.enabled|d()) | bool)
         else [] }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -165,7 +165,7 @@ icinga__director_nodes: '{{ q("debops.debops.dig_srv", "_icinga-director._tcp." 
 icinga__node_type: '{{ "master"
                        if (icinga__fqdn in
                            (icinga__master_nodes | map(attribute="target")) or
-                           not icinga__director_enabled|bool)
+                           not icinga__director_enabled | bool)
                        else "client" }}'
 
                                                                    # ]]]
@@ -259,7 +259,7 @@ icinga__director_enabled: '{{ True
 # Enable or disable automatic registration of configured hosts in Icinga 2
 # Director.
 icinga__director_register: '{{ True
-                               if (icinga__director_enabled|bool)
+                               if (icinga__director_enabled | bool)
                                else False }}'
 
                                                                    # ]]]
@@ -389,7 +389,7 @@ icinga__director_register_host_object:
 # 2 Director. The deployment will be triggered only once if any host on the
 # current run is registered in Icinga.
 icinga__director_deploy: '{{ True
-                             if (icinga__director_register|bool)
+                             if (icinga__director_register | bool)
                              else False }}'
 
                                                                    # ]]]
@@ -435,7 +435,7 @@ icinga__director_deploy_api_password: '{{ lookup("password", secret + "/icinga_w
 # configuration will be done to create the internal PKI.
 icinga__pki_enabled: '{{ True
                          if (ansible_local|d() and ansible_local.pki|d() and
-                             (ansible_local.pki.enabled|d())|bool)
+                             (ansible_local.pki.enabled|d()) | bool)
                          else False }}'
 
                                                                    # ]]]
@@ -583,7 +583,7 @@ icinga__default_configuration:
           directory. Each of these files must have the file extension ".conf".
         value: |
           include_recursive "conf.d"
-        state: '{{ "absent" if (icinga__director_enabled|bool) else "present" }}'
+        state: '{{ "absent" if (icinga__director_enabled | bool) else "present" }}'
 
       - name: 'api_users'
         comment: |
@@ -591,7 +591,7 @@ icinga__default_configuration:
         value: |
           include "conf.d/api-users.conf"
         state: '{{ "present"
-                   if (icinga__director_enabled|bool and
+                   if (icinga__director_enabled | bool and
                        icinga__node_type == "master")
                    else "absent" }}'
 
@@ -630,7 +630,7 @@ icinga__default_configuration:
 
           object Zone ZoneName {
             endpoints = [ NodeName ]
-          {% if (icinga__director_enabled|bool and icinga__node_type != 'master') %}
+          {% if (icinga__director_enabled | bool and icinga__node_type != 'master') %}
             parent = "master"
           {% endif %}
           }
@@ -648,7 +648,7 @@ icinga__default_configuration:
           object Zone "director-global" {
             global = true
           }
-        state: '{{ "present" if (icinga__director_enabled|bool) else "absent" }}'
+        state: '{{ "present" if (icinga__director_enabled | bool) else "absent" }}'
 
   - name: 'conf.d/api-users.conf'
     comment: 'The APIUser objects are used for authentication against the API.'
@@ -677,7 +677,7 @@ icinga__default_configuration:
         bind_host = "{{ icinga__api_listen }}"
         bind_port = {{ icinga__api_port }}
 
-      {% if icinga__pki_enabled|bool %}
+      {% if icinga__pki_enabled | bool %}
         cert_path = "{{ icinga__pki_cert_path }}"
         key_path  = "{{ icinga__pki_key_path }}"
         ca_path   = "{{ icinga__pki_ca_path }}"
@@ -687,8 +687,8 @@ icinga__default_configuration:
         ca_path = SysconfDir + "/icinga2/pki/ca.crt"
       {% endif %}
 
-        accept_config   = {{ 'false' if (icinga__director_enabled|bool and icinga__node_type == 'master') else 'true' }}
-        accept_commands = {{ 'false' if (icinga__director_enabled|bool and icinga__node_type == 'master') else 'true' }}
+        accept_config   = {{ 'false' if (icinga__director_enabled | bool and icinga__node_type == 'master') else 'true' }}
+        accept_commands = {{ 'false' if (icinga__director_enabled | bool and icinga__node_type == 'master') else 'true' }}
 
         ticket_salt = TicketSalt
       }
@@ -845,7 +845,7 @@ icinga__keyring__dependent_apt_keys:
 
   - id: '{{ icinga__upstream_apt_key_id }}'
     repo: '{{ icinga__upstream_apt_repo }}'
-    state: '{{ "present" if icinga__upstream|bool else "absent" }}'
+    state: '{{ "present" if icinga__upstream | bool else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: icinga__ferm__dependent_rules [[[
@@ -868,6 +868,6 @@ icinga__unattended_upgrades__dependent_origins:
 
   - origin: 'site=packages.icinga.com'
     by_role: 'debops.icinga'
-    state: '{{ "present" if icinga__upstream|bool else "absent" }}'
+    state: '{{ "present" if icinga__upstream | bool else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]

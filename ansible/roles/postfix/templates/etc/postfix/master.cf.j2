@@ -72,7 +72,7 @@
 {%       set comment_header = ('#' if (element.state|d('present') == 'hidden' or (element.comment.split('\n') | list | count >= 3)) else '') %}
 {%       set comment_footer = ('#\n' if (element.comment.split('\n') | list | count < 5) else '') %}
 {{ element.comment | regex_replace('\n$','') | comment(prefix=comment_header, postfix=comment_footer) -}}
-{%     elif element.separator is defined and element.separator|bool %}
+{%     elif element.separator is defined and element.separator | bool %}
 
 {%     endif %}
 {%     if element.state|d('present') != 'hidden' %}

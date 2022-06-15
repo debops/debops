@@ -20,7 +20,7 @@
     name: 'unattended-upgrades'
     question: 'unattended-upgrades/enable_auto_updates'
     vtype: 'boolean'
-    value: '{{ "true" if unattended_upgrades__enabled|bool else "false" }}'
+    value: '{{ "true" if unattended_upgrades__enabled | bool else "false" }}'
 
 - name: Configure periodic APT updates
   ansible.builtin.template:
@@ -29,9 +29,9 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: ((unattended_upgrades__periodic|bool) or
+  when: ((unattended_upgrades__periodic | bool) or
          (ansible_local|d() and ansible_local.unattended_upgrades|d() and
-          ansible_local.unattended_upgrades.periodic|bool))
+          ansible_local.unattended_upgrades.periodic | bool))
 
 - name: Configure periodic APT upgrades
   ansible.builtin.template:
@@ -40,14 +40,14 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: ((unattended_upgrades__enabled|bool) or
+  when: ((unattended_upgrades__enabled | bool) or
          (ansible_local|d() and ansible_local.unattended_upgrades|d() and
-          ansible_local.unattended_upgrades.enabled|bool))
+          ansible_local.unattended_upgrades.enabled | bool))
 
 - name: Add/remove diversion of unattended-upgrades configuration
   dpkg_divert:
     path: '/etc/apt/apt.conf.d/50unattended-upgrades'
-    state: '{{ "present" if unattended_upgrades__enabled|bool else "absent" }}'
+    state: '{{ "present" if unattended_upgrades__enabled | bool else "absent" }}'
     delete: True
 
 - name: Configure unattended-upgrades

@@ -78,7 +78,7 @@
       This file will be removed when configuration is successfully completed.
     mode: '0644'
   when: (ansible_local|d() and ansible_local.sshd|d() and
-         not (ansible_local.sshd.installed|d())|bool)
+         not (ansible_local.sshd.installed|d()) | bool)
 
   # In a case where the OpenSSH server is installed by the role but not started
   # due to conditions specified above, this task will ensure that the runtime
@@ -135,7 +135,7 @@
   ansible.builtin.include_tasks: authorized_keys_lookup.yml
   when: sshd__register_version.stdout|d() and
         sshd__register_version.stdout is version_compare('6.2', '>=') and
-        sshd__authorized_keys_lookup|bool
+        sshd__authorized_keys_lookup | bool
   tags: [ 'role::sshd:config' ]
 
 - name: Get list of available host keys
@@ -150,7 +150,7 @@
   register: sshd__register_host_certs
   changed_when: False
   check_mode: False
-  when: sshd__scan_for_host_certs|bool
+  when: sshd__scan_for_host_certs | bool
   tags: [ 'role::sshd:config' ]
 
 - name: Setup trusted user CA key file

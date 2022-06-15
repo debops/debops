@@ -65,7 +65,7 @@ saslauthd__default_instances:
     ldap_profile: 'smtpd'
     state: '{{ "present"
                if ((ansible_local|d() and ansible_local.postfix|d() and
-                    (ansible_local.postfix.installed|d())|bool) or
+                    (ansible_local.postfix.installed|d()) | bool) or
                    ("debops_service_postfix" in group_names))
                else "ignore" }}'
 
@@ -178,7 +178,7 @@ saslauthd__ldap_binddn: '{{ ([ saslauthd__ldap_self_rdn ] + saslauthd__ldap_devi
 # service to bind to the LDAP directory.
 saslauthd__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
                                     + saslauthd__ldap_binddn | to_uuid + ".password length=32"))
-                            if saslauthd__ldap_enabled|bool
+                            if saslauthd__ldap_enabled | bool
                             else "" }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -233,7 +233,7 @@ saslauthd__ldap_default_profiles:
     state: '{{ "present"
                if (saslauthd__ldap_device_dn|d() and
                    ((ansible_local|d() and ansible_local.slapd|d() and
-                     (ansible_local.slapd.installed|d())|bool) or
+                     (ansible_local.slapd.installed|d()) | bool) or
                     ("debops_service_slapd" in group_names)))
                else "ignore" }}'
     options:
@@ -279,7 +279,7 @@ saslauthd__ldap_default_profiles:
     state: '{{ "present"
                if (saslauthd__ldap_device_dn|d() and
                    ((ansible_local|d() and ansible_local.postfix|d() and
-                     (ansible_local.postfix.installed|d())|bool) or
+                     (ansible_local.postfix.installed|d()) | bool) or
                     ("debops_service_postfix" in group_names)))
                else "ignore" }}'
     options:

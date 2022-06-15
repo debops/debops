@@ -116,7 +116,7 @@
 {%       for element in section_config %}
 {%         if element.name|d() and element.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
 {%           if ((element.comment|d() and loop_next) or
-                 (element.separator|d())|bool and loop_next) %}
+                 (element.separator|d()) | bool and loop_next) %}
 
 {%           endif %}
 {%           set _ = loop_next.append(True) %}
@@ -128,7 +128,7 @@
 {%           else %}
 {%             set comment_state = '' %}
 {%           endif %}
-{%           if (element.quotes|d(True))|bool %}
+{%           if (element.quotes|d(True)) | bool %}
 {%             set quote_char = "'" %}
 {%           else %}
 {%             set quote_char = "" %}

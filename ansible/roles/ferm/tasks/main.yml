@@ -18,7 +18,7 @@
     name: 'ferm'
     question: 'ferm/enable'
     vtype: 'boolean'
-    value: '{{ "yes" if ferm__enabled|bool else "no" }}'
+    value: '{{ "yes" if ferm__enabled | bool else "no" }}'
   when: ansible_pkg_mgr == 'apt'
 
 - name: Ensure ferm is installed
@@ -39,7 +39,7 @@
     - { 'name': 'ebtables', 'path': '/usr/sbin/ebtables-{{ ferm__iptables_backend_type }}' }
     - { 'name': 'iptables', 'path': '/usr/sbin/iptables-{{ ferm__iptables_backend_type }}' }
     - { 'name': 'ip6tables', 'path': '/usr/sbin/ip6tables-{{ ferm__iptables_backend_type }}' }
-  when: ferm__enabled | bool and ferm__iptables_backend_enabled|bool
+  when: ferm__enabled | bool and ferm__iptables_backend_enabled | bool
 
 - name: Make sure required directories exist
   ansible.builtin.file:
@@ -87,7 +87,7 @@
 - name: Add/remove diversion of /etc/ferm/ferm.conf
   dpkg_divert:
     path: '/etc/ferm/ferm.conf'
-    state: '{{ "present" if ferm__enabled|bool else "absent" }}'
+    state: '{{ "present" if ferm__enabled | bool else "absent" }}'
     delete: True
 
 - name: Configure main ferm config file
@@ -98,7 +98,7 @@
     group: 'adm'
     mode: '0644'
   notify: [ 'Restart ferm' ]
-  when: ferm__enabled|bool
+  when: ferm__enabled | bool
 
 - name: Remove firewall rules
   ansible.builtin.file:
@@ -155,7 +155,7 @@
     - '{{ ferm_input_group_list }}'
     - '{{ ferm_input_host_list }}'
     - '{{ ferm_input_dependent_list }}'
-  when: (ferm__enabled|bool and item.type|d() and (item.delete|d() | bool))
+  when: (ferm__enabled | bool and item.type|d() and (item.delete|d() | bool))
   register: ferm__register_input_rules_del
   tags: [ 'role::ferm:rules' ]
 
@@ -173,7 +173,7 @@
     - '{{ ferm_input_group_list }}'
     - '{{ ferm_input_host_list }}'
     - '{{ ferm_input_dependent_list }}'
-  when: (ferm__enabled|bool and item.type|d() and not (item.delete|d() | bool))
+  when: (ferm__enabled | bool and item.type|d() and not (item.delete|d() | bool))
   register: ferm__register_input_rules_add
   tags: [ 'role::ferm:rules' ]
 

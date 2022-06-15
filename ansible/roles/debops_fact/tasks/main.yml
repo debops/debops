@@ -12,7 +12,7 @@
     name: '{{ debops_fact__private_group }}'
     system: True
     state: 'present'
-  when: debops_fact__enabled|bool
+  when: debops_fact__enabled | bool
 
 - name: Make sure Ansible fact directory exists
   ansible.builtin.file:
@@ -21,7 +21,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: debops_fact__enabled|bool
+  when: debops_fact__enabled | bool
 
 - name: Install local fact script
   ansible.builtin.template:
@@ -31,7 +31,7 @@
     group: 'root'
     mode: '0755'
   notify: [ 'Refresh host facts' ]
-  when: debops_fact__enabled|bool
+  when: debops_fact__enabled | bool
 
 - name: Initialize public DebOps fact file
   ansible.builtin.template:
@@ -41,7 +41,7 @@
     group: 'root'
     mode: '0644'
     force: False
-  when: debops_fact__enabled|bool
+  when: debops_fact__enabled | bool
 
 - name: Initialize private DebOps fact file
   ansible.builtin.template:
@@ -51,7 +51,7 @@
     group: '{{ debops_fact__private_group }}'
     mode: '{{ debops_fact__private_mode }}'
     force: False
-  when: debops_fact__enabled|bool
+  when: debops_fact__enabled | bool
 
 - name: Reload facts if they were modified
   ansible.builtin.meta: 'flush_handlers'

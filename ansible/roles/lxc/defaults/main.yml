@@ -104,7 +104,7 @@ lxc__net_deploy_state: '{{ "absent"
                            if ((ansible_virtualization_type in [ "lxc", "docker", "openvz" ] and
                                 ansible_virtualization_role == "guest") or
                                (inventory_hostname in groups["debops_service_lxd"]|d([])) or
-                               (ansible_local.lxd.installed|d(False))|bool)
+                               (ansible_local.lxd.installed|d(False)) | bool)
                            else "present" }}'
 
                                                                    # ]]]
@@ -246,7 +246,7 @@ lxc__default_configuration:
                   else "lxc.net.0.link" }}'
         value: '{{ "br0"
                    if (ansible_local|d() and ansible_local.ifupdown|d() and
-                       (ansible_local.ifupdown.configured|d())|bool)
+                       (ansible_local.ifupdown.configured|d()) | bool)
                    else (lxc__net_bridge
                          if (lxc__net_deploy_state == "present")
                          else "br0") }}'
@@ -334,7 +334,7 @@ lxc__default_configuration:
                   else "lxc.net.0.link" }}'
         value: '{{ "br0"
                    if (ansible_local|d() and ansible_local.ifupdown|d() and
-                       (ansible_local.ifupdown.configured|d())|bool)
+                       (ansible_local.ifupdown.configured|d()) | bool)
                    else (lxc__net_bridge
                          if (lxc__net_deploy_state == "present")
                          else "br0") }}'
@@ -457,7 +457,7 @@ lxc__default_configuration:
                    else "lxc.net.0.link" }}'
         value: '{{ "br0"
                    if (ansible_local|d() and ansible_local.ifupdown|d() and
-                       (ansible_local.ifupdown.configured|d())|bool)
+                       (ansible_local.ifupdown.configured|d()) | bool)
                    else (lxc__net_bridge
                          if (lxc__net_deploy_state == "present")
                          else "br0") }}'

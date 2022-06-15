@@ -81,7 +81,7 @@ opendkim__pidfile: '/var/run/opendkim/opendkim.pid'
 #
 # path to the UNIX socket used by OpenDKIM.
 opendkim__socket: '{{ "/var/spool/postfix/opendkim/opendkim.sock"
-                      if opendkim__postfix_integration|bool
+                      if opendkim__postfix_integration | bool
                       else "/var/run/opendkim/opendkim.sock" }}'
 
                                                                    # ]]]
@@ -363,7 +363,7 @@ opendkim__default_config:
   - name: 'Socket'
     comment: 'Listen for connections in the Postfix chroot'
     value: 'local:{{ opendkim__socket }}'
-    state: '{{ "present" if opendkim__postfix_integration|bool else "ignore" }}'
+    state: '{{ "present" if opendkim__postfix_integration | bool else "ignore" }}'
 
   - name: 'UserID'
     comment: 'Required by the systemd opendkim.service unit'

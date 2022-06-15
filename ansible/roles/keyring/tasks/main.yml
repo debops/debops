@@ -22,7 +22,7 @@
   ansible.builtin.package:
     name: '{{ q("flattened", (keyring__base_packages + keyring__packages)) }}'
     state: 'present'
-  when: keyring__enabled|bool and ansible_pkg_mgr == 'apt'
+  when: keyring__enabled | bool and ansible_pkg_mgr == 'apt'
 
 - name: Make sure that Ansible local fact directory exists
   ansible.builtin.file:
@@ -59,7 +59,7 @@
   loop: '{{ q("flattened", (keyring__dependent_apt_keys)) }}'
   register: keyring__register_apt_key
   until: keyring__register_apt_key is succeeded
-  when: keyring__enabled|bool and ansible_pkg_mgr == 'apt' and
+  when: keyring__enabled | bool and ansible_pkg_mgr == 'apt' and
         (item.id|d() or item is string) and
         (item.extrepo is undefined or
          item.extrepo not in (ansible_local.extrepo.sources|d([])))
@@ -73,7 +73,7 @@
     update_cache: False
   loop: '{{ q("flattened", (keyring__dependent_apt_keys)) }}'
   register: keyring__register_apt_repository
-  when: keyring__enabled|bool and ansible_pkg_mgr == 'apt' and item.repo|d() and
+  when: keyring__enabled | bool and ansible_pkg_mgr == 'apt' and item.repo|d() and
         (item.extrepo is undefined or
          item.extrepo not in (ansible_local.extrepo.sources|d([])))
   tags: [ 'role::keyring:apt_repository' ]
@@ -83,7 +83,7 @@
     path: '{{ "/etc/apt/auth.conf.d/" + (item.name | regex_replace(".conf$","")) + ".conf" }}'
     state: 'absent'
   loop: '{{ q("flattened", (keyring__dependent_apt_auth_files)) }}'
-  when: keyring__enabled|bool and ansible_pkg_mgr == 'apt' and
+  when: keyring__enabled | bool and ansible_pkg_mgr == 'apt' and
         item.state|d('present') == 'absent'
   no_log: '{{ debops__no_log | d(True) }}'
 
@@ -93,7 +93,7 @@
     dest: '{{ "/etc/apt/auth.conf.d/" + (item.name | regex_replace(".conf$","")) + ".conf" }}'
     mode: '0640'
   loop: '{{ q("flattened", (keyring__dependent_apt_auth_files)) }}'
-  when: keyring__enabled|bool and ansible_pkg_mgr == 'apt' and
+  when: keyring__enabled | bool and ansible_pkg_mgr == 'apt' and
         item.machine|d() and item.login|d() and item.password|d() and
         item.state|d('present') not in [ 'absent', 'ignore' ]
   no_log: '{{ debops__no_log | d(True) }}'
@@ -101,7 +101,7 @@
 - name: Update APT cache when needed
   ansible.builtin.apt:  # noqa no-handler
     update_cache: True
-  when: keyring__enabled|bool and ansible_pkg_mgr == 'apt' and
+  when: keyring__enabled | bool and ansible_pkg_mgr == 'apt' and
         keyring__register_apt_repository is changed
   tags: [ 'role::keyring:apt_repository' ]
 
@@ -111,7 +111,7 @@
     state: 'present'
     system: '{{ item.system | d(True) }}'
   loop: '{{ q("flattened", (keyring__dependent_gpg_keys)) }}'
-  when: keyring__enabled|bool and (item.create_user|d(True))|bool and
+  when: keyring__enabled | bool and (item.create_user|d(True)) | bool and
         item.user|d() and item.state|d('present') not in [ 'absent', 'ignore' ]
 
 - name: Ensure that required UNIX accounts exist
@@ -122,7 +122,7 @@
     system: '{{ item.system | d(True) }}'
     state: 'present'
   loop: '{{ q("flattened", (keyring__dependent_gpg_keys)) }}'
-  when: keyring__enabled|bool and (item.create_user|d(True))|bool and
+  when: keyring__enabled | bool and (item.create_user|d(True)) | bool and
         item.user|d() and item.state|d('present') not in [ 'absent', 'ignore' ]
 
 - name: Gather information about existing UNIX accounts
@@ -169,7 +169,7 @@
   loop: '{{ q("flattened", (keyring__dependent_gpg_keys)) }}'
   register: keyring__register_gpg_key
   until: keyring__register_gpg_key.rc|d(0) == 0
-  when: (keyring__enabled|bool and (item.id|d() or item is string) and
+  when: (keyring__enabled | bool and (item.id|d() or item is string) and
          (item.user | d(keyring__dependent_gpg_user if keyring__dependent_gpg_user|d() else "root")) in getent_passwd.keys())
   changed_when: '("Adding key..." in keyring__register_gpg_key.stdout_lines) or
                  ("Removing key..." in keyring__register_gpg_key.stdout_lines)'

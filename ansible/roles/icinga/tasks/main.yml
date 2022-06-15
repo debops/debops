@@ -37,7 +37,7 @@
     depth: 1
     name: 'icinga__vars_dependent_configuration'
   when: (ansible_local|d() and ansible_local.icinga|d() and
-         (ansible_local.icinga.configured|d())|bool)
+         (ansible_local.icinga.configured|d()) | bool)
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:
@@ -71,7 +71,7 @@
   notify: [ 'Check icinga2 configuration and restart' ]
   when: (item.name|d() and
          item.state|d('present') in [ 'absent', 'present' ] and
-         item.divert|d(False)|bool)
+         item.divert|d(False) | bool)
 
 - name: Ensure that configuration directories exist
   ansible.builtin.file:
@@ -91,7 +91,7 @@
   with_items: '{{ icinga__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Check icinga2 configuration and restart' ]
   when: (item.name|d() and item.state|d('present') == 'absent' and
-         not item.divert|d(False)|bool)
+         not item.divert|d(False) | bool)
 
 - name: Generate Icinga configuration files
   ansible.builtin.template:
@@ -147,7 +147,7 @@
              if (item.feature_state|d("present") == "present") else omit }}'
     state: '{{ "link" if item.feature_state|d("present") == "present" else "absent" }}'
     mode: '0644'
-    force: '{{ True if ansible_check_mode|bool else omit }}'
+    force: '{{ True if ansible_check_mode | bool else omit }}'
   with_items: '{{ icinga__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Check icinga2 configuration and restart' ]
   when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init', 'divert' ] and
@@ -191,7 +191,7 @@
     force_basic_auth: True
   register: icinga__register_director_host
   notify: [ 'Trigger Icinga Director configuration deployment' ]
-  when: icinga__director_enabled|bool and icinga__director_register|bool and
+  when: icinga__director_enabled | bool and icinga__director_register | bool and
         icinga__node_type != 'master'
   changed_when: icinga__register_director_host.status == 201
   tags: [ 'role::icinga:register' ]

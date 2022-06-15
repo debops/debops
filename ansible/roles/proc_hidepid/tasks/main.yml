@@ -14,7 +14,7 @@
     state: 'present'
   register: proc_hidepid__register_install
   until: proc_hidepid__register_install is succeeded
-  when: proc_hidepid__enabled|bool
+  when: proc_hidepid__enabled | bool
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:
@@ -43,7 +43,7 @@
     gid: '{{ proc_hidepid__gid if proc_hidepid__gid|d() else omit }}'
     state: 'present'
     system: True
-  when: proc_hidepid__enabled|bool
+  when: proc_hidepid__enabled | bool
 
 - name: Configure /proc with hidepid= option in /etc/fstab
   ansible.posix.mount:
@@ -53,7 +53,7 @@
     opts: 'defaults,hidepid={{ proc_hidepid__level }},gid={{ proc_hidepid__group }}'
     state: 'mounted'
   notify: [ 'Refresh host facts' ]
-  when: proc_hidepid__enabled|bool and proc_hidepid__remount|bool
+  when: proc_hidepid__enabled | bool and proc_hidepid__remount | bool
 
   # This is a workaround for Ubuntu bug: https://bugs.launchpad.net/ubuntu/+source/mountall/+bug/1039887
 - name: Remount /proc from rc.local when needed
@@ -64,7 +64,7 @@
     insertbefore: 'exit 0'
     state: 'present'
     mode: '0755'
-  when: (proc_hidepid__enabled|bool and proc_hidepid__remount|bool and
+  when: (proc_hidepid__enabled | bool and proc_hidepid__remount | bool and
          (ansible_distribution in [ 'Ubuntu' ] and
           ansible_distribution_release in [ 'trusty' ]))
 
@@ -81,8 +81,8 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Create temporary files' ]
-  when: proc_hidepid__enabled|bool and ansible_service_mgr == 'systemd' and
-        proc_hidepid__secure_scheduler_enabled|bool
+  when: proc_hidepid__enabled | bool and ansible_service_mgr == 'systemd' and
+        proc_hidepid__secure_scheduler_enabled | bool
 
 - name: Create the systemd override directories
   ansible.builtin.file:
@@ -92,7 +92,7 @@
     group: 'root'
     mode: '0755'
   loop: [ 'systemd-logind.service.d', 'user@.service.d' ]
-  when: proc_hidepid__enabled|bool and ansible_service_mgr == 'systemd'
+  when: proc_hidepid__enabled | bool and ansible_service_mgr == 'systemd'
 
 - name: Ensure that systemd services are exempt from hidepid
   ansible.builtin.template:
@@ -103,7 +103,7 @@
     mode: '0644'
   loop: [ 'systemd-logind.service.d', 'user@.service.d' ]
   notify: [ 'Reload service manager' ]
-  when: proc_hidepid__enabled|bool and ansible_service_mgr == 'systemd'
+  when: proc_hidepid__enabled | bool and ansible_service_mgr == 'systemd'
 
 - name: Update Ansible facts if they were modified
   ansible.builtin.meta: 'flush_handlers'

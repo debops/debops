@@ -254,7 +254,7 @@ pm.max_requests = {{ item.pm_max_requests | d(php__fpm_pm_max_requests) }}
 ;       anything, but it may not be a good idea to use the .php extension or it
 ;       may conflict with a real PHP file.
 ; Default Value: not set #}
-{% if ((item.pm_status|d() and item.pm_status|bool) or php__fpm_pm_status|bool) %}
+{% if ((item.pm_status|d() and item.pm_status | bool) or php__fpm_pm_status | bool) %}
 pm.status_path = {{ item.pm_status_path | d(php__fpm_pm_status_path) }}
 {#
 ; The ping URI to call the monitoring page of FPM. If this value is not set, no
@@ -275,7 +275,7 @@ ping.path = {{ item.ping_path | d(php__fpm_ping_path) }}
 ping.response = {{ item.ping_response | d(php__fpm_ping_response) }}
 
 {% endif %}
-{% if ((item.access_log|d() and item.access_log|bool) or php__fpm_access_log|bool) %}
+{% if ((item.access_log|d() and item.access_log | bool) or php__fpm_access_log | bool) %}
 {#
 ; The access log file
 ; Default: not set #}
@@ -393,7 +393,7 @@ chroot = {{ item.chroot }}
 ; Default Value: current directory or / when chroot #}
 chdir = {{ item.chdir | d('/') }}
 
-{% if ((item.catch_workers_output|d() and item.catch_workers_output|bool) or php__fpm_catch_workers_output|bool) %}
+{% if ((item.catch_workers_output|d() and item.catch_workers_output | bool) or php__fpm_catch_workers_output | bool) %}
 {#
 ; Redirect worker stdout and stderr into main error log. If not set, stdout and
 ; stderr will be redirected to /dev/null according to FastCGI specs.
@@ -414,7 +414,7 @@ catch_workers_output = yes
 ; Feature was introduced in PHP 5.6.0: https://secure.php.net/ChangeLog-5.php
 #}
 {% if php__long_version is version_compare('5.6.0', '>=') %}
-clear_env = {{ 'yes' if ((item.clear_env|d() and item.clear_env|bool) or php__fpm_clear_env|bool) else 'no' }}
+clear_env = {{ 'yes' if ((item.clear_env|d() and item.clear_env | bool) or php__fpm_clear_env | bool) else 'no' }}
 {% endif %}
 
 {#

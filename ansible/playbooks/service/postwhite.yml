@@ -24,7 +24,7 @@
           - role: 'postwhite'
             config: '{{ postwhite__postfix__dependent_maincf }}'
       when: (ansible_local|d() and ansible_local.postfix|d() and
-             (ansible_local.postfix.installed|d())|bool)
+             (ansible_local.postfix.installed|d()) | bool)
       tags: [ 'role::postfix', 'role::secret' ]
 
   roles:
@@ -34,7 +34,7 @@
       secret__directories:
         - '{{ postfix__secret__directories }}'
       when: (ansible_local|d() and ansible_local.postfix|d() and
-             (ansible_local.postfix.installed|d())|bool)
+             (ansible_local.postfix.installed|d()) | bool)
 
     - role: postfix
       tags: [ 'role::postfix', 'skip::postfix' ]
@@ -42,7 +42,7 @@
         - role: 'postwhite'
           config: '{{ postwhite__postfix__dependent_maincf }}'
       when: (ansible_local|d() and ansible_local.postfix|d() and
-             (ansible_local.postfix.installed|d())|bool)
+             (ansible_local.postfix.installed|d()) | bool)
 
     - role: postwhite
       tags: [ 'role::postwhite', 'skip::postwhite' ]

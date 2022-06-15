@@ -29,9 +29,9 @@ git ls-files -z "$(git rev-parse --show-toplevel)" | xargs --null -I '{}' find '
             ## var_ref1: ansible_local
             ## var_ref2: ansible_local.pki
 
-            ## Line: ansible_local.pki.enabled|d()|bool)
+            ## Line: ansible_local.pki.enabled|d() | bool)
             \s+(?<expression>\k<var_ref2>\.\w+(?:\s*\|\s*d(?:efault)?\(\))?)\)\n?
-            ## expression: ansible_local.pki.enabled|d()|bool
+            ## expression: ansible_local.pki.enabled|d() | bool
 
             ## Line: else False
             \s+else\s+False\)?(?:\s*\|\s*bool)?
@@ -48,13 +48,13 @@ git ls-files -z "$(git rev-parse --show-toplevel)" | xargs --null -I '{}' find '
             ## var_ref1: ansible_local
             ## var_ref2: ansible_local.pki
 
-            ## Line: ansible_local.pki.enabled|bool)
+            ## Line: ansible_local.pki.enabled | bool)
             \s+(?<expression>\k<var_ref2>\.\w+?)\s*\|\s*bool\)\n?
-            ## expression: ansible_local.pki.enabled|d()|bool
+            ## expression: ansible_local.pki.enabled|d() | bool
 
             ## Line: else False
             \s+else\s+False\)?(?:\s*\|\s*bool)?
-        ~$+{expression}|d()|bool~xg;
+        ~$+{expression}|d() | bool~xg;
 
         s~
             ## Use Ansible 2.8 default shortcut: Thing if defined else fallback
@@ -84,7 +84,7 @@ git ls-files -z "$(git rev-parse --show-toplevel)" | xargs --null -I '{}' find '
             ## var_ref1: ansible_local
             ## var_ref2: ansible_local.pki
 
-            ## Line: ansible_local.pki.enabled|d()|bool
+            ## Line: ansible_local.pki.enabled|d() | bool
             \s+(?<expression>\k<var_ref2>\.\w+\s*\|\s*d(?:efault)?\(\))
             ## expression: ansible_local.pki.enabled|d()
          ~$+{expression}~xg;

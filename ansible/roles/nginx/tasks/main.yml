@@ -153,7 +153,7 @@
     group: 'root'
     mode: '0440'
   when: (ansible_local|d() and ansible_local.sudo|d() and
-         (ansible_local.sudo.installed|d())|bool and
+         (ansible_local.sudo.installed|d()) | bool and
          nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Divert original /etc/nginx/nginx.conf
@@ -241,7 +241,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: (nginx_pki|bool and nginx__deploy_state in [ 'present', 'config' ])
+  when: (nginx_pki | bool and nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Manage PKI nginx hook
   ansible.builtin.template:
@@ -250,7 +250,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: (nginx_pki|bool and nginx__deploy_state in [ 'present', 'config' ])
+  when: (nginx_pki | bool and nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Ensure the PKI nginx hook is absent
   ansible.builtin.file:

@@ -17,7 +17,7 @@
     state: 'present'
   register: machine__register_packages
   until: machine__register_packages is succeeded
-  when: machine__enabled|bool
+  when: machine__enabled | bool
 
 - name: Generate machine-info config file
   ansible.builtin.template:
@@ -26,7 +26,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: machine__enabled|bool
+  when: machine__enabled | bool
 
 - name: Add/remove diversion of /etc/issue
   dpkg_divert:
@@ -35,7 +35,7 @@
                if machine__etc_issue_state|d("present") != "absent"
                else "absent" }}'
     delete: True
-  when: machine__enabled|bool
+  when: machine__enabled | bool
 
 - name: Configure /etc/issue file
   ansible.builtin.template:
@@ -44,13 +44,13 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: machine__enabled|bool and machine__etc_issue_state|d('present') != 'absent'
+  when: machine__enabled | bool and machine__etc_issue_state|d('present') != 'absent'
 
 - name: Remove static /etc/motd file if requested
   ansible.builtin.file:
     path: '/etc/motd'
     state: 'absent'
-  when: machine__enabled|bool and machine__etc_motd_state == 'absent'
+  when: machine__enabled | bool and machine__etc_motd_state == 'absent'
 
 - name: Generate static /etc/motd file
   ansible.builtin.copy:
@@ -59,7 +59,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: machine__enabled|bool and machine__etc_motd_state|d('present') != 'absent' and
+  when: machine__enabled | bool and machine__etc_motd_state|d('present') != 'absent' and
         machine__motd|d()
 
 - name: Ensure that required directories exist
@@ -69,7 +69,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: machine__enabled|bool
+  when: machine__enabled | bool
 
 - name: Create /run/motd.dynamic symlink
   ansible.builtin.meta: 'flush_handlers'
@@ -82,14 +82,14 @@
     path: '{{ divert_path }}'
     divert: '{{ divert_path + ".disabled" }}'
     state: '{{ "present" if
-               (machine__enabled|bool and
+               (machine__enabled | bool and
                 item.state|d("present") not in [ "absent", "revert" ])
                else "absent" }}'
     delete: True
   loop: '{{ machine__motd_combined_scripts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ item.filename|d(item.name) }}'
-  when: item.filename|d(item.name) and item.divert|d(False)|bool
+  when: item.filename|d(item.name) and item.divert|d(False) | bool
 
 - name: Remove dynamic MOTD scripts
   ansible.builtin.file:
@@ -98,9 +98,9 @@
     state: 'absent'
   with_flattened: '{{ machine__motd_combined_scripts | debops.debops.parse_kv_items }}'
   register: machine__register_motd_scripts_removed
-  when: (machine__enabled|bool and
+  when: (machine__enabled | bool and
          item.filename|d(item.name) and
-         item.state|d('present') == 'absent' and not item.divert|d(False)|bool)
+         item.state|d('present') == 'absent' and not item.divert|d(False) | bool)
 
 - name: Install dynamic MOTD scripts
   ansible.builtin.copy:
@@ -115,7 +115,7 @@
   loop_control:
     label: '{{ item.filename|d() or item.name }}'
   register: machine__register_motd_scripts_created
-  when: (machine__enabled|bool and
+  when: (machine__enabled | bool and
          item.filename|d(item.name) and
          item.src|d(item.content) and
          item.state|d('present') not in [ 'init', 'absent', 'ignore', 'divert', 'revert' ])
@@ -129,7 +129,7 @@
             + machine__register_motd_scripts_created.results }}'
   loop_control:
     label: '{{ item.item.name }}'
-  when: (item.item.name|d() and not item.item.divert|d(False)|bool and
+  when: (item.item.name|d() and not item.item.divert|d(False) | bool and
          item.item.filename is undefined and item is changed)
 
 - name: Make sure that Ansible local facts directory exists

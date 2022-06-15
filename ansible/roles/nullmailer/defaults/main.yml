@@ -65,7 +65,7 @@ nullmailer__base_packages: [ 'nullmailer', 'bsd-mailx' ]
 #
 # List of APT packages which will be installed when the ``nullmailer-smtpd``
 # service is enabled.
-nullmailer__smtpd_packages: '{{ [ "xinetd" ] if nullmailer__smtpd|bool else [] }}'
+nullmailer__smtpd_packages: '{{ [ "xinetd" ] if nullmailer__smtpd | bool else [] }}'
 
                                                                    # ]]]
 # .. envvar:: nullmailer__packages [[[
@@ -216,7 +216,7 @@ nullmailer__ldap_binddn: '{{ ([ nullmailer__ldap_self_rdn ] + nullmailer__ldap_d
 # :command:`nullmailer` service to bind to the LDAP directory.
 nullmailer__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
                                      + nullmailer__ldap_binddn | to_uuid + ".password length=32"))
-                             if nullmailer__ldap_enabled|bool
+                             if nullmailer__ldap_enabled | bool
                              else "" }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -238,7 +238,7 @@ nullmailer__starttls: True
 # resource records in the host's domain. See :rfc:`6186` for details.
 nullmailer__smtp_srv_rr: '{{ q("debops.debops.dig_srv", "_smtp._tcp." + nullmailer__domain,
                                "smtp." + nullmailer__domain, 25)
-                             if nullmailer__enabled|bool
+                             if nullmailer__enabled | bool
                              else [] }}'
 
                                                                    # ]]]
@@ -280,12 +280,12 @@ nullmailer__default_remotes:
     auth: True
     user: '{{ nullmailer__ldap_self_rdn.split("=")[1] + "@" + nullmailer__fqdn }}'
     password: '{{ nullmailer__ldap_bindpw }}'
-    state: '{{ "present" if nullmailer__ldap_enabled|bool else "absent" }}'
+    state: '{{ "present" if nullmailer__ldap_enabled | bool else "absent" }}'
 
   - '{{ (nullmailer__relayhost_options | combine({"host": nullmailer__relayhost}))
         if (nullmailer__relayhost_options is mapping)
         else ({"host": nullmailer__relayhost,
-               "state": ("absent" if nullmailer__ldap_enabled|bool else "present"),
+               "state": ("absent" if nullmailer__ldap_enabled | bool else "present"),
                "options": nullmailer__relayhost_options}) }}'
 
                                                                    # ]]]
@@ -476,7 +476,7 @@ nullmailer__ferm__dependent_rules:
     role: 'debops.nullmailer'
     rule_state: '{{ "present"
                     if (nullmailer__deploy_state|d("present") != "absent" and
-                        nullmailer__smtpd|bool) else "absent" }}'
+                        nullmailer__smtpd | bool) else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: nullmailer__tcpwrappers__dependent_allow [[[
@@ -492,7 +492,7 @@ nullmailer__tcpwrappers__dependent_allow:
     comment: 'Allow remote connections to SMTP server'
     state: '{{ "present"
                if (nullmailer__deploy_state|d("present") != "absent" and
-                   nullmailer__smtpd|bool) else "absent" }}'
+                   nullmailer__smtpd | bool) else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: nullmailer__dpkg_cleanup__dependent_packages [[[

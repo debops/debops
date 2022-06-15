@@ -147,7 +147,7 @@
   notify: [ 'Test metricbeat configuration and restart' ]
   when: (item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
          (item.name not in metricbeat__register_keys.stdout_lines or
-          (item.force|d(False))|bool))
+          (item.force|d(False)) | bool))
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Enable metricbeat service on installation

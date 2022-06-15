@@ -191,7 +191,7 @@ postldap__postfix__dependent_maincf:
     value: 'ldap:/etc/postfix/ldap_virtual_mailbox_domains.cf'
     section: 'virtual'
     state: '{{ "present"
-            if (postldap__ldap_enabled|bool and
+            if (postldap__ldap_enabled | bool and
                 postfix__version is version_compare("2.0", ">="))
             else "absent" }}'
 
@@ -200,7 +200,7 @@ postldap__postfix__dependent_maincf:
     value: '{{ postldap__virtual_alias_maps }}'
     section: 'virtual'
     state: '{{ "present"
-            if (postldap__ldap_enabled|bool and
+            if (postldap__ldap_enabled | bool and
                 postfix__version is version_compare("2.0", ">="))
             else "absent" }}'
 
@@ -210,7 +210,7 @@ postldap__postfix__dependent_maincf:
     value: '{{ postldap__mailbox_base }}'
     section: 'virtual'
     state: '{{ "present"
-            if (postldap__ldap_enabled|bool and
+            if (postldap__ldap_enabled | bool and
                 postfix__version is version_compare("2.0", ">="))
             else "absent" }}'
 
@@ -219,7 +219,7 @@ postldap__postfix__dependent_maincf:
     value: 'ldap:/etc/postfix/ldap_virtual_mailbox_maps.cf'
     section: 'virtual'
     state: '{{ "present"
-            if (postldap__ldap_enabled|bool and
+            if (postldap__ldap_enabled | bool and
                 postfix__version is version_compare("2.0", ">="))
             else "absent" }}'
 
@@ -229,7 +229,7 @@ postldap__postfix__dependent_maincf:
     value: 'static:{{ postldap__vmail_posix_uidnumber | mandatory }}'
     section: 'virtual'
     state: '{{ "present"
-            if (postldap__ldap_enabled|bool and
+            if (postldap__ldap_enabled | bool and
                 postfix__version is version_compare("2.0", ">="))
             else "absent" }}'
 
@@ -238,7 +238,7 @@ postldap__postfix__dependent_maincf:
     value: 'static:{{ postldap__vmail_posix_gidnumber | mandatory }}'
     section: 'virtual'
     state: '{{ "present"
-            if (postldap__ldap_enabled|bool and
+            if (postldap__ldap_enabled | bool and
                 postfix__version is version_compare("2.0", ">="))
             else "absent" }}'
 
@@ -254,7 +254,7 @@ postldap__postfix__dependent_maincf:
     value: [ 'ldap:/etc/postfix/ldap_smtpd_sender_login_maps.cf' ]
     section: 'base'
     state: '{{ "present"
-            if (postldap__ldap_enabled|bool)
+            if (postldap__ldap_enabled | bool)
             else "absent" }}'
 
   - name: 'smtpd_sender_restrictions'
@@ -269,7 +269,7 @@ postldap__postfix__dependent_maincf:
         copy_id_from: 'permit_sasl_authenticated'
         weight: 15
     state: '{{ "present"
-            if (postldap__ldap_enabled|bool)
+            if (postldap__ldap_enabled | bool)
             else "ignore" }}'
 
   - name: 'smtpd_relay_restrictions'
@@ -278,13 +278,13 @@ postldap__postfix__dependent_maincf:
         copy_id_from: 'permit_mynetworks'
         weight: 5
     state: '{{ "present"
-            if (postldap__ldap_enabled|bool)
+            if (postldap__ldap_enabled | bool)
             else "ignore" }}'
 
   - name: 'smtpd_restriction_classes'
     value: [ 'smtpd_permit_known_sender_relays' ]
     state: '{{ "present"
-            if (postldap__ldap_enabled|bool)
+            if (postldap__ldap_enabled | bool)
             else "ignore" }}'
 
   - name: 'smtpd_permit_known_sender_relays'
@@ -295,7 +295,7 @@ postldap__postfix__dependent_maincf:
       - 'permit_sasl_authenticated'
       - 'reject'
     state: '{{ "present"
-            if (postldap__ldap_enabled|bool)
+            if (postldap__ldap_enabled | bool)
             else "ignore" }}'
 
                                                                    # ]]]
@@ -305,7 +305,7 @@ postldap__postfix__dependent_maincf:
 postldap__postfix_ldap_connection:
   server_host: '{{ postldap__ldap_uri }}'
   start_tls: '{{ "yes"
-                  if (postldap__ldap_start_tls|bool)
+                  if (postldap__ldap_start_tls | bool)
                   else "no" }}'
   version: '3'
   tls_ca_cert_dir: '{{ postldap__tls_ca_cert_dir }}'
@@ -533,7 +533,7 @@ postldap__postfix__dependent_lookup_tables:
 # send email over this instance.
 postldap__ldap_enabled: '{{ True
                             if (ansible_local|d() and ansible_local.ldap|d() and
-                               (ansible_local.ldap.enabled|d())|bool)
+                               (ansible_local.ldap.enabled|d()) | bool)
                             else False }}'
 
                                                                    # ]]]
@@ -596,7 +596,7 @@ postldap__ldap_binddn: '{{ ([ postldap__ldap_self_rdn ]
 postldap__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
                                    + postldap__ldap_binddn | to_uuid + ".password length=32 "
                                    + "chars=ascii_letters,digits,!@_#$%^&*"))
-                           if postldap__ldap_enabled|bool
+                           if postldap__ldap_enabled | bool
                            else "" }}'
 
                                                                    # ]]]
@@ -654,7 +654,7 @@ postldap__ldap_domains_rdn: '{{ ansible_local.ldap.domains_rdn|d("ou=Domains") }
 # automatically.
 postldap__ldap_groups_dn: '{{ ([ postldap__ldap_groups_rdn, postldap__ldap_self_rdn ]
                                  + postldap__ldap_device_dn)
-                                  if postldap__ldap_private_subtree|bool
+                                  if postldap__ldap_private_subtree | bool
                                   else ([ postldap__ldap_groups_rdn ]
                                         + postldap__ldap_base_dn) }}'
 
@@ -666,7 +666,7 @@ postldap__ldap_groups_dn: '{{ ([ postldap__ldap_groups_rdn, postldap__ldap_self_
 # automatically.
 postldap__ldap_domains_dn: '{{ ([ postldap__ldap_domains_rdn, postldap__ldap_self_rdn ]
                                   + postldap__ldap_device_dn)
-                                    if postldap__ldap_private_subtree|bool
+                                    if postldap__ldap_private_subtree | bool
                                     else ([ postldap__ldap_domains_rdn ]
                                           + postldap__ldap_base_dn) }}'
                                                                    # ]]]
@@ -697,7 +697,7 @@ postldap__ldap_server_uri: '{{ ansible_local.ldap.uri|d([""]) | first }}'
 #
 # If ``True``, Postfix will use STARTTLS extension to make encrypted
 # connections to the LDAP server.
-postldap__ldap_start_tls: '{{ ansible_local.ldap.start_tls|d(True)|bool }}'
+postldap__ldap_start_tls: '{{ ansible_local.ldap.start_tls|d(True) | bool }}'
 
                                                                    # ]]]
                                                                    # ]]]
@@ -751,7 +751,7 @@ postldap__ldap__dependent_tasks:
     attributes: '{{ postldap__ldap_self_attributes }}'
     no_log: '{{ debops__no_log|d(True) }}'
     state: '{{ "present"
-                if (postldap__ldap_enabled|bool and
+                if (postldap__ldap_enabled | bool and
                     postldap__ldap_device_dn|d())
                 else "ignore" }}'
 
@@ -762,9 +762,9 @@ postldap__ldap__dependent_tasks:
       ou: '{{ postldap__ldap_groups_rdn.split("=")[1] }}'
       description: 'User groups used in Postfix'
     state: '{{ "present"
-               if (postldap__ldap_enabled|bool and
+               if (postldap__ldap_enabled | bool and
                    postldap__ldap_device_dn|d() and
-                   postldap__ldap_private_subtree|bool)
+                   postldap__ldap_private_subtree | bool)
                else "ignore" }}'
 
   - name: 'Create Postfix domains container for {{ postldap__ldap_device_dn | join(",") }}'
@@ -774,18 +774,18 @@ postldap__ldap__dependent_tasks:
       ou: '{{ postldap__ldap_domains_rdn.split("=")[1] }}'
       description: 'Virtual Mail Domains used in Postfix'
     state: '{{ "present"
-               if (postldap__ldap_enabled|bool and
+               if (postldap__ldap_enabled | bool and
                    postldap__ldap_device_dn|d() and
-                   postldap__ldap_private_subtree|bool)
+                   postldap__ldap_private_subtree | bool)
                else "ignore" }}'
 
   - name: 'Create Postfix Default Virtual Mail Domain for {{ postldap__ldap_default_virtual_domain_dn }}'
     dn: '{{ postldap__ldap_default_virtual_domain_dn }}'
     objectClass: 'dNSDomain'
     state: '{{ "present"
-               if (postldap__ldap_enabled|bool and
+               if (postldap__ldap_enabled | bool and
                    postldap__ldap_device_dn|d() and
-                   postldap__ldap_private_subtree|bool)
+                   postldap__ldap_private_subtree | bool)
                else "ignore" }}'
                                                                    # ]]]
                                                                    # ]]]

@@ -17,7 +17,7 @@
 
 - name: Prepare OpenLDAP installation to use the rfc2307bis schema
   ansible.builtin.include_tasks: 'prepare_rfc2307bis.yml'
-  when: (slapd__rfc2307bis_enabled|bool and
+  when: (slapd__rfc2307bis_enabled | bool and
          (ansible_local is undefined or ansible_local.slapd is undefined))
 
 - name: Initialize BaseDN value in debconf using a DNS domain
@@ -200,6 +200,6 @@
   become_user: '{{ slapd__user }}'
   register: slapd__register_slapacl_test
   when: slapd__slapacl_deploy_state == 'present' and
-        slapd__slapacl_run_tests|bool
+        slapd__slapacl_run_tests | bool
   changed_when: slapd__register_slapacl_test.stderr|d()
   tags: [ 'role::slapd:slapacl', 'role::slapd:tasks' ]

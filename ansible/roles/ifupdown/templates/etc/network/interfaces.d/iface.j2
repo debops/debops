@@ -11,7 +11,7 @@
 {% set ifupdown__tpl_addresses = [] %}
 {% set ifupdown__tpl_ipv4_addresses = [] %}
 {% set ifupdown__tpl_ipv6_addresses = [] %}
-{% if interface.no_addresses is undefined or not interface.no_addresses|bool %}
+{% if interface.no_addresses is undefined or not interface.no_addresses | bool %}
 {%   set ifupdown__tpl_addresses = (debops__tpl_macros.flattened(interface.address, interface.addresses) | from_json) | unique %}
 {%   set ifupdown__tpl_ipv4_addresses = ifupdown__tpl_addresses | ipv4 %}
 {%   set ifupdown__tpl_ipv6_addresses = ifupdown__tpl_addresses | ipv6 %}
@@ -29,7 +29,7 @@
 {{ (interface.comment if interface.comment is string else interface.comment | join('\n'))  | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
 {% endif %}
 {% set ifupdown__tpl_allow = [] %}
-{% if interface.auto|d() and interface.auto|bool %}
+{% if interface.auto|d() and interface.auto | bool %}
 {%   set _ = ifupdown__tpl_allow.append('auto') %}
 {% endif %}
 {% if interface.allow|d() %}
@@ -38,7 +38,7 @@
 {%       set _ = ifupdown__tpl_allow.append(thing) %}
 {%     endfor %}
 {%   else %}
-{%     if interface.allow|bool %}
+{%     if interface.allow | bool %}
 {%       set _ = ifupdown__tpl_allow.append('hotplug') %}
 {%     endif %}
 {%   endif %}

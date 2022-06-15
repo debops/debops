@@ -18,7 +18,7 @@
     state: 'present'
   register: resolvconf__register_packages
   until: resolvconf__register_packages is succeeded
-  when: resolvconf__enabled|bool
+  when: resolvconf__enabled | bool
 
 - name: Generate static configuration script
   ansible.builtin.template:
@@ -26,14 +26,14 @@
     dest: '/usr/local/lib/resolvconf-static'
     mode: '0755'
   notify: [ 'Apply static resolvconf configuration' ]
-  when: resolvconf__enabled|bool and resolvconf__static_enabled|bool
+  when: resolvconf__enabled | bool and resolvconf__static_enabled | bool
 
 - name: Create systemd override directory
   ansible.builtin.file:
     path: '/etc/systemd/system/resolvconf.service.d'
     state: 'directory'
     mode: '0755'
-  when: resolvconf__enabled|bool and resolvconf__static_enabled|bool
+  when: resolvconf__enabled | bool and resolvconf__static_enabled | bool
 
 - name: Generate systemd service override
   ansible.builtin.template:
@@ -41,7 +41,7 @@
     dest: '/etc/systemd/system/resolvconf.service.d/static.conf'
     mode: '0644'
   notify: [ 'Reload service manager' ]
-  when: resolvconf__enabled|bool and resolvconf__static_enabled|bool
+  when: resolvconf__enabled | bool and resolvconf__static_enabled | bool
 
 - name: Add/remove diversion of /etc/resolvconf/interface-order
   dpkg_divert:
@@ -49,7 +49,7 @@
     state: '{{ resolvconf__deploy_state }}'
     delete: True
   notify: [ 'Refresh /etc/resolv.conf' ]
-  when: (resolvconf__enabled|bool and
+  when: (resolvconf__enabled | bool and
          resolvconf__deploy_state in [ 'present', 'absent' ])
 
 - name: Generate /etc/resolvconf/interface-order configuration
@@ -58,7 +58,7 @@
     dest: '/etc/resolvconf/interface-order'
     mode: '0644'
   notify: [ 'Refresh /etc/resolv.conf' ]
-  when: resolvconf__enabled|bool and resolvconf__deploy_state == 'present'
+  when: resolvconf__enabled | bool and resolvconf__deploy_state == 'present'
 
 - name: Make sure Ansible fact directory exists
   ansible.builtin.file:

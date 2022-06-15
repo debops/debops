@@ -94,7 +94,7 @@
     - 'nullmailer-smtpd'
     - 'nullmailer-smtpd6'
   notify: [ 'Reload xinetd' ]
-  when: (nullmailer__deploy_state|d('present') != 'absent' and nullmailer__smtpd|bool)
+  when: (nullmailer__deploy_state|d('present') != 'absent' and nullmailer__smtpd | bool)
 
 - name: Disable nullmailer-smtpd service in xinetd
   ansible.builtin.file:
@@ -105,7 +105,7 @@
     - 'nullmailer-smtpd6'
   notify: [ 'Reload xinetd' ]
   when: ((nullmailer__deploy_state|d() and nullmailer__deploy_state == 'absent') or
-         not nullmailer__smtpd|bool)
+         not nullmailer__smtpd | bool)
 
 - name: Remove old dpkg cleanup hook and script
   ansible.builtin.file:

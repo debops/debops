@@ -87,8 +87,8 @@ homeassistant__optional_python_packages:
 homeassistant__combined_packages: '{{ (
       homeassistant__base_packages +
       homeassistant__packages +
-      (homeassistant__dependency_python_packages if (not homeassistant__virtualenv|bool) else []) +
-      (homeassistant__optional_python_packages if (not homeassistant__virtualenv|bool) else [])
+      (homeassistant__dependency_python_packages if (not homeassistant__virtualenv | bool) else []) +
+      (homeassistant__optional_python_packages if (not homeassistant__virtualenv | bool) else [])
     ) | unique | sort }}'
 
                                                                    # ]]]
@@ -292,7 +292,7 @@ homeassistant__git_update: True
 #
 # File path where the Home Assistant console script is located.
 homeassistant__daemon_path: '{{ (homeassistant__home_path + "/prod_venv/bin/hass")
-                                if (homeassistant__virtualenv|bool)
+                                if (homeassistant__virtualenv | bool)
                                 else (homeassistant__home_path + "/.local/bin/hass") }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -332,7 +332,7 @@ homeassistant__nginx__dependent_servers:
     by_role: 'debops-contrib.homeassistant'
     state: '{{ "present" if (homeassistant__deploy_state == "present") else "absent" }}'
     type: 'proxy'
-    ssl_verify_client: '{{ homeassistant__verify_client_certificate|bool }}'
+    ssl_verify_client: '{{ homeassistant__verify_client_certificate | bool }}'
     auth_basic: '{{ homeassistant__basic_auth | bool }}'
     auth_basic_realm: '{{ homeassistant__basic_auth_realm }}'
     auth_basic_name: '{{ homeassistant__basic_auth_name }}'

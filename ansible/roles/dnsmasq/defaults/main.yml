@@ -181,7 +181,7 @@ dnsmasq__boot_tftp_root: '/srv/tftp'
 #
 # Name of the file located in the TFTP root directory which will be sent to
 # clients telling them which file to download and boot from.
-dnsmasq__boot_filename: '{{ "menu.ipxe" if dnsmasq__boot_ipxe_enabled|bool else "pxelinux.0" }}'
+dnsmasq__boot_filename: '{{ "menu.ipxe" if dnsmasq__boot_ipxe_enabled | bool else "pxelinux.0" }}'
                                                                    # ]]]
                                                                    # ]]]
 # DHCP hosts, DNS resource records [[[
@@ -270,7 +270,7 @@ dnsmasq__default_configuration:
     raw: |
       server = /consul/127.0.0.1#8600
     state: '{{ "present"
-               if (ansible_local.consul.installed|d()|bool)
+               if (ansible_local.consul.installed|d() | bool)
                else "init" }}'
 
   - name: 'lxd-override'
@@ -373,7 +373,7 @@ dnsmasq__default_configuration:
         option: 'rebind-domain-ok'
         value: '{{ dnsmasq__base_domain }}'
         state: '{{ "present"
-                   if (dnsmasq__base_domain_rebind_ok|bool and
+                   if (dnsmasq__base_domain_rebind_ok | bool and
                        dnsmasq__base_domain|d())
                    else "absent" }}'
 
@@ -385,7 +385,7 @@ dnsmasq__default_configuration:
         option: 'rebind-domain-ok'
         value: '{{ dnsmasq__base_domain.split(".")[1:] | join(".") }}'
         state: '{{ "present"
-                   if (dnsmasq__base_domain_rebind_ok|bool and
+                   if (dnsmasq__base_domain_rebind_ok | bool and
                         dnsmasq__base_domain|d() and
                        (dnsmasq__base_domain.split(".") | length >= 4))
                    else "absent" }}'
@@ -479,7 +479,7 @@ dnsmasq__default_configuration:
       - name: 'boot-ipxe-local'
         comment: 'Set the boot file name based on the matching tag from the vendor class (above)'
         raw: |
-          {% if dnsmasq__boot_ipxe_enabled|bool %}
+          {% if dnsmasq__boot_ipxe_enabled | bool %}
           # Redirect non-iPXE clients to iPXE
           dhcp-boot = tag:!ipxe,tag:BIOS,undionly.kpxe
           dhcp-boot = tag:!ipxe,tag:UEFI32,i386-efi/ipxe.efi
@@ -494,7 +494,7 @@ dnsmasq__default_configuration:
       - name: 'boot-ipxe-remote'
         comment: 'Set the boot file name based on the matching tag from the vendor class (above)'
         raw: |
-          {% if dnsmasq__boot_ipxe_enabled|bool %}
+          {% if dnsmasq__boot_ipxe_enabled | bool %}
           # Redirect non-iPXE clients to iPXE
           dhcp-boot = tag:!ipxe,tag:BIOS,undionly.kpxe,,{{ dnsmasq__boot_server }}
           dhcp-boot = tag:!ipxe,tag:UEFI32,i386-efi/ipxe.efi,,{{ dnsmasq__boot_server }}
@@ -506,7 +506,7 @@ dnsmasq__default_configuration:
           dhcp-boot = {{ dnsmasq__boot_filename }},,{{ dnsmasq__boot_server }}
         state: '{{ "present" if dnsmasq__boot_server|d() else "absent" }}'
 
-    state: '{{ "present" if dnsmasq__boot_enabled|bool else "init" }}'
+    state: '{{ "present" if dnsmasq__boot_enabled | bool else "init" }}'
 
                                                                    # ]]]
 # .. envvar:: dnsmasq__interface_configuration [[[
@@ -567,12 +567,12 @@ dnsmasq__ferm__dependent_rules:
     dport: [ 'domain' ]
     accept_any: True
     interface: '{{ []
-                   if (dnsmasq__public_dns|bool)
+                   if (dnsmasq__public_dns | bool)
                    else (dnsmasq__combined_interfaces | flatten | debops.debops.parse_kv_items
                          | selectattr("state", "equalto", "present")
                          | map(attribute="name") | list) }}'
     rule_state: '{{ "present"
-                    if ((dnsmasq__public_dns|bool) or
+                    if ((dnsmasq__public_dns | bool) or
                         (dnsmasq__combined_interfaces | flatten | debops.debops.parse_kv_items
                             | selectattr("state", "equalto", "present")
                             | map(attribute="name") | list))
@@ -588,7 +588,7 @@ dnsmasq__ferm__dependent_rules:
                    | selectattr("state", "equalto", "present")
                    | map(attribute="name") | list }}'
     rule_state: '{{ "present"
-                    if (dnsmasq__dhcpv4|bool and
+                    if (dnsmasq__dhcpv4 | bool and
                         (dnsmasq__combined_interfaces | flatten | debops.debops.parse_kv_items
                          | selectattr("state", "equalto", "present")
                          | map(attribute="name") | list))
@@ -608,7 +608,7 @@ dnsmasq__ferm__dependent_rules:
                    | selectattr("state", "equalto", "present")
                    | map(attribute="name") | list }}'
     rule_state: '{{ "present"
-                    if (dnsmasq__dhcpv6|bool and
+                    if (dnsmasq__dhcpv6 | bool and
                         (dnsmasq__combined_interfaces | flatten | debops.debops.parse_kv_items
                          | selectattr("state", "equalto", "present")
                          | map(attribute="name") | list))
@@ -624,7 +624,7 @@ dnsmasq__ferm__dependent_rules:
                    | selectattr("state", "equalto", "present")
                    | map(attribute="name") | list }}'
     rule_state: '{{ "present"
-                    if (dnsmasq__boot_enabled|bool and
+                    if (dnsmasq__boot_enabled | bool and
                         (dnsmasq__combined_interfaces | flatten | debops.debops.parse_kv_items
                          | selectattr("state", "equalto", "present")
                          | map(attribute="name") | list))

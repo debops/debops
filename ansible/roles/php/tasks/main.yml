@@ -35,13 +35,13 @@
     dest: '{{ php__composer_upstream_dest }}'
     checksum: '{{ php__composer_upstream_checksum }}'
     mode: '0755'
-  when: php__composer_upstream_enabled|bool
+  when: php__composer_upstream_enabled | bool
 
 - name: Ensure older PHP packages are absent on reset
   ansible.builtin.include_tasks: 'packages_absent_for_version.yml'
   loop_control:
     loop_var: 'php__version_absent'
-  when: (php__reset|bool)
+  when: (php__reset | bool)
   with_items: '{{ php__version_preference | difference([ "php" + php__version|d("") ]) | list }}'
 
 - name: 'Create directory for php*-fpm logs'
@@ -72,7 +72,7 @@
     group: 'root'
     mode: '0440'
   when: (ansible_local|d() and ansible_local.sudo|d() and
-         (ansible_local.sudo.installed|d())|bool)
+         (ansible_local.sudo.installed|d()) | bool)
 
                                                                    # ]]]
 # php.ini management [[[

@@ -31,7 +31,7 @@
 # in the LDAP directory, but may require additional changes in existing
 # databases. See :ref:`the rfc2307bis schema <slapd__ref_rfc2307bis>` for more
 # details.
-slapd__rfc2307bis_enabled: '{{ ansible_local.slapd.rfc2307bis|d(True)|bool }}'
+slapd__rfc2307bis_enabled: '{{ ansible_local.slapd.rfc2307bis|d(True) | bool }}'
 
                                                                    # ]]]
 # .. envvar:: slapd__debops_schema_path [[[
@@ -714,31 +714,31 @@ slapd__default_tasks:
       olcTLSCACertificateFile:  '{{ slapd__tls_ca_certificate }}'
       olcTLSCertificateFile:    '{{ slapd__tls_certificate }}'
       olcTLSCertificateKeyFile: '{{ slapd__tls_private_key }}'
-    state: '{{ "exact" if slapd__pki|bool else "init" }}'
+    state: '{{ "exact" if slapd__pki | bool else "init" }}'
 
   - name: 'Configure Diffie-Hellman parameters'
     dn: 'cn=config'
     attributes:
       olcTLSDHParamFile: '{{ slapd__dhparam_file }}'
-    state: '{{ "exact" if (slapd__pki|bool and slapd__dhparam_file|d()) else "init" }}'
+    state: '{{ "exact" if (slapd__pki | bool and slapd__dhparam_file|d()) else "init" }}'
 
   - name: 'Configure TLS cipher suites'
     dn: 'cn=config'
     attributes:
       olcTLSCipherSuite: '{{ slapd__tls_cipher_suite }}'
-    state: '{{ "exact" if slapd__pki|bool else "init" }}'
+    state: '{{ "exact" if slapd__pki | bool else "init" }}'
 
   - name: 'Set default Security Strength Factors enforced by the server'
     dn: 'cn=config'
     attributes:
       olcLocalSSF: '128'
       olcSecurity: 'ssf=128 update_ssf=128 simple_bind=128'
-    state: '{{ "exact" if slapd__pki|bool else "init" }}'
+    state: '{{ "exact" if slapd__pki | bool else "init" }}'
 
   - name: 'Configure supported SASL authentication methods'
     dn: 'cn=config'
     attributes:
-      olcSaslSecProps: 'noanonymous,minssf={{ "128" if slapd__pki|bool else "0" }}'
+      olcSaslSecProps: 'noanonymous,minssf={{ "128" if slapd__pki | bool else "0" }}'
     state: 'exact'
 
     # Warning: OpenLDAP v2.4.x requires a restart when this attribute is changed
@@ -1214,7 +1214,7 @@ slapd__services:
   - 'ldap:///'
 
   # Listen for encrypted SSL connections (deprecated)
-  - '{{ "ldaps:///" if slapd__pki|bool else [] }}'
+  - '{{ "ldaps:///" if slapd__pki | bool else [] }}'
 
   # Listen for connections on local UNIX domain socket
   - 'ldapi:///'
@@ -1231,7 +1231,7 @@ slapd__ports:
   - 'ldap'
 
   # Encrypted SSL connections on port 636/tcp (deprecated)
-  - '{{ "ldaps" if slapd__pki|bool else [] }}'
+  - '{{ "ldaps" if slapd__pki | bool else [] }}'
 
                                                                    # ]]]
 # .. envvar:: slapd__accept_any [[[

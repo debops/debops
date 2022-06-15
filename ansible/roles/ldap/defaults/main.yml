@@ -32,7 +32,7 @@
 # directory itself).
 ldap__enabled: '{{ ansible_local.ldap.enabled
                    if (ansible_local|d() and ansible_local.ldap|d() and
-                       (ansible_local.ldap.enabled|d())|bool)
+                       (ansible_local.ldap.enabled|d()) | bool)
                    else False }}'
 
                                                                    # ]]]
@@ -65,7 +65,7 @@ ldap__configured: '{{ ansible_local.ldap.configured
 # this variable is ``True``), the role will skip most of its normal tasks and
 # only run the LDAP tasks defined via the dependent variables.
 ldap__dependent_play: '{{ True
-                          if (ldap__configured|bool and
+                          if (ldap__configured | bool and
                               ldap__dependent_tasks|d())
                           else False }}'
                                                                    # ]]]
@@ -120,7 +120,7 @@ ldap__servers: '{{ ldap__servers_srv_rr | map(attribute="target") }}'
 # The ``<protocol>://`` name to use in the configured LDAP URIs, based on the
 # presence of configured :ref:`debops.pki` environment. Role assumes that all
 # detected LDAP servers use the same connection configuration.
-ldap__servers_protocol: '{{ "ldap" if ldap__start_tls|bool else "ldaps" }}'
+ldap__servers_protocol: '{{ "ldap" if ldap__start_tls | bool else "ldaps" }}'
 
                                                                    # ]]]
 # .. envvar:: ldap__servers_uri [[[
@@ -140,7 +140,7 @@ ldap__servers_uri: '{{ ldap__servers
 # environment, managed by the :ref:`debops.pki` role.
 ldap__start_tls: '{{ True
                      if (ansible_local|d() and ansible_local.pki|d() and
-                         (ansible_local.pki.enabled|d())|bool)
+                         (ansible_local.pki.enabled|d()) | bool)
                      else False }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -355,7 +355,7 @@ ldap__device_branch_rdn: '{{ ldap__hosts_rdn }}'
 # Names relative to the hosts' own LDAP object.
 ldap__device_dn: '{{ q("flattened", [ ldap__device_self_rdn ]
                                     + ([ ldap__device_domain_rdn ]
-                                       if ldap__device_separate_domains|bool
+                                       if ldap__device_separate_domains | bool
                                        else [])
                                     + [ ldap__device_branch_rdn ]
                                     + ldap__base_dn) }}'
@@ -660,7 +660,7 @@ ldap__admin_bindpw: '{{ (lookup("env", "DEBOPS_LDAP_ADMIN_BINDPW")
                                            ldap__admin_passwordstore_path + "/"
                                            + ldap__admin_binddn | to_uuid
                                            + " create=false", errors="ignore"))
-                        ) if ldap__enabled|bool else "" }}'
+                        ) if ldap__enabled | bool else "" }}'
 
                                                                    # ]]]
 # .. envvar:: ldap__admin_server_uri [[[
@@ -720,8 +720,8 @@ ldap__default_tasks:
     objectClass: '{{ ldap__device_domain_object_classes }}'
     attributes: '{{ ldap__device_domain_attributes }}'
     state: '{{ "present"
-               if (ldap__device_enabled|bool and
-                   ldap__device_separate_domains|bool)
+               if (ldap__device_enabled | bool and
+                   ldap__device_separate_domains | bool)
                else "ignore" }}'
 
   - name: 'Create device object for {{ ldap__device_dn | join(",") }}'
@@ -729,17 +729,17 @@ ldap__default_tasks:
     objectClass: '{{ ldap__device_object_classes }}'
     attributes: '{{ ldap__device_attributes }}'
     state: '{{ "present"
-               if (ldap__device_enabled|bool)
+               if (ldap__device_enabled | bool)
                else "ignore" }}'
 
   - name: 'Update device object for {{ ldap__device_dn | join(",") }}'
     dn: '{{ ldap__device_dn }}'
     attributes: '{{ ldap__device_attributes }}'
     state: '{{ "present"
-               if (ldap__fact_configured|bool and
-                   ldap__device_enabled|bool)
+               if (ldap__fact_configured | bool and
+                   ldap__device_enabled | bool)
                else ("exact"
-                     if (ldap__device_enabled|bool)
+                     if (ldap__device_enabled | bool)
                      else "ignore") }}'
 
                                                                    # ]]]
@@ -778,7 +778,7 @@ ldap__dependent_tasks: []
 # tasks defined in Ansible inventory when run standalone, and will skip them if
 # it detects the usage as a dependency by another role.
 ldap__combined_tasks: '{{ ldap__dependent_tasks
-                          if (ldap__fact_configured|bool and
+                          if (ldap__fact_configured | bool and
                               ldap__dependent_tasks|d())
                           else (ldap__default_tasks
                                 + ldap__tasks
@@ -799,7 +799,7 @@ ldap__python__dependent_packages3:
          if (ansible_distribution_release in
              ([ "stretch", "trusty", "xenial" ]))
          else "python3-ldap")
-        if ldap__enabled|bool
+        if ldap__enabled | bool
         else [] }}'
 
                                                                    # ]]]
@@ -808,6 +808,6 @@ ldap__python__dependent_packages3:
 # Configuration for the :ref:`debops.python` Ansible role.
 ldap__python__dependent_packages2:
 
-  - '{{ "python-ldap" if ldap__enabled|bool else [] }}'
+  - '{{ "python-ldap" if ldap__enabled | bool else [] }}'
                                                                    # ]]]
                                                                    # ]]]

@@ -61,7 +61,7 @@ kibana__group: 'kibana'
 #
 # List of additional UNIX groups to which the Kibana user will belong.
 kibana__additional_groups: '{{ [ "ssl-cert" ]
-                               if kibana__pki_enabled|bool
+                               if kibana__pki_enabled | bool
                                else [] }}'
 
                                                                    # ]]]
@@ -226,7 +226,7 @@ kibana__secure_connection: '{{ True
 #
 # Enable or disable support for TLS connection encryption based on DebOps PKI,
 # managed by the :ref:`debops.pki` Ansible role.
-kibana__pki_enabled: '{{ (ansible_local.pki.enabled|d())|bool }}'
+kibana__pki_enabled: '{{ (ansible_local.pki.enabled|d()) | bool }}'
 
                                                                    # ]]]
 # .. envvar:: kibana__pki_base_path [[[
@@ -434,26 +434,26 @@ kibana__default_configuration:
     # Reset the list of default certificate authorities.
   - name: 'elasticsearch.ssl.certificateAuthorities'
     value: ''
-    state: '{{ "present" if (kibana__secure_connection|bool and
-                             kibana__pki_enabled|bool)
+    state: '{{ "present" if (kibana__secure_connection | bool and
+                             kibana__pki_enabled | bool)
                          else "ignore" }}'
 
   - name: 'elasticsearch.ssl.certificateAuthorities'
     value: [ '{{ kibana__tls_ca_certificate }}' ]
-    state: '{{ "present" if (kibana__secure_connection|bool and
-                             kibana__pki_enabled|bool)
+    state: '{{ "present" if (kibana__secure_connection | bool and
+                             kibana__pki_enabled | bool)
                          else "ignore" }}'
 
   - name: 'elasticsearch.ssl.certificate'
     value: '{{ kibana__tls_certificate }}'
-    state: '{{ "present" if (kibana__secure_connection|bool and
-                             kibana__pki_enabled|bool)
+    state: '{{ "present" if (kibana__secure_connection | bool and
+                             kibana__pki_enabled | bool)
                          else "ignore" }}'
 
   - name: 'elasticsearch.ssl.key'
     value: '{{ kibana__tls_private_key }}'
-    state: '{{ "present" if (kibana__secure_connection|bool and
-                             kibana__pki_enabled|bool)
+    state: '{{ "present" if (kibana__secure_connection | bool and
+                             kibana__pki_enabled | bool)
                          else "ignore" }}'
 
   - name: 'elasticsearch.ssl.verificationMode'

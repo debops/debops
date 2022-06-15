@@ -25,7 +25,7 @@
     chdir: '/usr/share/elasticsearch'
   register: elasticsearch__register_builtin_users
   changed_when: False
-  when: ((not (ansible_local.elasticsearch.configured|d())|bool) or
+  when: ((not (ansible_local.elasticsearch.configured|d()) | bool) or
          elasticsearch__register_api_builtin_users.status == 401)
   no_log: '{{ debops__no_log | d(True) }}'
 

@@ -35,7 +35,7 @@
                               + mariadb_server__packages_map[mariadb_server__flavor]
                               + mariadb_server__packages
                               + ([ "automysqlbackup" ]
-                                 if mariadb_server__backup|bool
+                                 if mariadb_server__backup | bool
                                  else []))) }}'
     state: 'present'
   register: mariadb_server__register_install_status
@@ -54,7 +54,7 @@
     groups: '{{ mariadb_server__append_groups | join(",") | default(omit) }}'
     append: True
     createhome: False
-  when: mariadb_server__pki|bool
+  when: mariadb_server__pki | bool
 
 - name: Check if MariaDB config directory exists
   ansible.builtin.stat:

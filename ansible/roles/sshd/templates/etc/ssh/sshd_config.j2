@@ -49,7 +49,7 @@ TrustedUserCAKeys {{ sshd__trusted_user_ca_keys_file }}
 {% set sshd__tpl_ciphers_max_version =  sshd__ciphers_map.keys() | select('version_compare', sshd__register_version.stdout, '<=') | max %}
 {% set sshd__tpl_ciphers = sshd__ciphers_map[sshd__tpl_ciphers_max_version] %}
 {% set sshd__tpl_ciphers = (sshd__tpl_ciphers + sshd__ciphers_additional) | unique %}
-{% if sshd__tpl_ciphers and sshd__paranoid|bool %}
+{% if sshd__tpl_ciphers and sshd__paranoid | bool %}
 Ciphers {{ ([ sshd__tpl_ciphers | first ] + sshd__ciphers_additional) | unique | join(",") }}
 
 {% elif sshd__tpl_ciphers %}
@@ -59,7 +59,7 @@ Ciphers {{ sshd__tpl_ciphers | join(",") }}
 {% set sshd__tpl_kex_algorithms_max_version =  sshd__kex_algorithms_map.keys() | select('version_compare', sshd__register_version.stdout, '<=') | max %}
 {% set sshd__tpl_kex_algorithms = sshd__kex_algorithms_map[sshd__tpl_kex_algorithms_max_version] %}
 {% set sshd__tpl_kex_algorithms = (sshd__tpl_kex_algorithms + sshd__kex_algorithms_additional) | unique %}
-{% if sshd__tpl_kex_algorithms and sshd__paranoid|bool %}
+{% if sshd__tpl_kex_algorithms and sshd__paranoid | bool %}
 KexAlgorithms {{ ([ sshd__tpl_kex_algorithms | first ] + sshd__kex_algorithms_additional) | unique | join(",") }}
 
 {% elif sshd__tpl_kex_algorithms %}
@@ -69,7 +69,7 @@ KexAlgorithms {{ sshd__tpl_kex_algorithms | join(",") }}
 {% set sshd__tpl_macs_max_version =  sshd__macs_map.keys() | select('version_compare', sshd__register_version.stdout, '<=') | max %}
 {% set sshd__tpl_macs = sshd__macs_map[sshd__tpl_macs_max_version] %}
 {% set sshd__tpl_macs = (sshd__tpl_macs + sshd__macs_additional) | unique %}
-{% if sshd__tpl_macs and sshd__paranoid|bool %}
+{% if sshd__tpl_macs and sshd__paranoid | bool %}
 MACs {{ ([ sshd__tpl_macs | first ] + sshd__macs_additional) | unique | join(",") }}
 
 {% elif sshd__tpl_macs %}
@@ -106,7 +106,7 @@ RSAAuthentication yes
 {% endif %}
 PubkeyAuthentication yes
 
-{% if sshd__authorized_keys_lookup|bool and
+{% if sshd__authorized_keys_lookup | bool and
       sshd__register_version.stdout|d() and
       sshd__register_version.stdout is version_compare('6.2', '>=') %}
 AuthorizedKeysCommand /etc/ssh/authorized_keys_lookup

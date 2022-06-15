@@ -64,17 +64,17 @@
 - name: Make sure the password file exists
   ansible.builtin.file:
     path: '{{ mosquitto__password_file }}'
-    state: '{{ "file" if (ansible_local.mosquitto.password|d()|bool) else "touch" }}'
+    state: '{{ "file" if (ansible_local.mosquitto.password|d() | bool) else "touch" }}'
     owner: 'root'
     group: '{{ mosquitto__group }}'
     mode:  '0640'
-  when: mosquitto__password|bool
+  when: mosquitto__password | bool
   tags: [ 'role::mosquitto:passwd' ]
 
 - name: Check current list of user entries
   ansible.builtin.command: awk -F ':' '{print $1}' {{ mosquitto__password_file }}
   register: mosquitto__register_passwd
-  when: mosquitto__password|bool
+  when: mosquitto__password | bool
   changed_when: False
   check_mode: False
   tags: [ 'role::mosquitto:passwd' ]
@@ -85,7 +85,7 @@
     - '{{ mosquitto__auth_users }}'
     - '{{ mosquitto__auth_group_users }}'
     - '{{ mosquitto__auth_host_users }}'
-  when: (mosquitto__password|bool and item.state|d('present') == 'absent' and
+  when: (mosquitto__password | bool and item.state|d('present') == 'absent' and
          (item.name | d(item) in mosquitto__register_passwd.stdout_lines) and
          mosquitto__version is version_compare('1.4.0', '>='))
   notify: [ 'Reload mosquitto' ]
@@ -101,7 +101,7 @@
     - '{{ mosquitto__auth_users }}'
     - '{{ mosquitto__auth_group_users }}'
     - '{{ mosquitto__auth_host_users }}'
-  when: (mosquitto__password|bool and item.state|d('present') != 'absent' and
+  when: (mosquitto__password | bool and item.state|d('present') != 'absent' and
          (item.name | d(item) not in mosquitto__register_passwd.stdout_lines) and
          mosquitto__version is version_compare('1.4.0', '>='))
   notify: [ 'Reload mosquitto' ]
@@ -115,7 +115,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: mosquitto__acl|bool
+  when: mosquitto__acl | bool
   notify: [ 'Reload mosquitto' ]
   tags: [ 'role::mosquitto:acl' ]
 
@@ -186,7 +186,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: mosquitto__avahi|bool
+  when: mosquitto__avahi | bool
   tags: [ 'role::mosquitto:avahi', 'role::mosquitto:listeners' ]
 
 - name: Generate Avahi Mosquitto service file
@@ -196,7 +196,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: mosquitto__avahi|bool
+  when: mosquitto__avahi | bool
   tags: [ 'role::mosquitto:avahi', 'role::mosquitto:listeners' ]
 
 - name: Make sure that WebSockets public HTTP directory exists
@@ -206,7 +206,7 @@
     owner: '{{ mosquitto__http_dir_owner }}'
     group: '{{ mosquitto__http_dir_group }}'
     mode:  '{{ mosquitto__http_dir_mode }}'
-  when: mosquitto__websockets|bool
+  when: mosquitto__websockets | bool
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:

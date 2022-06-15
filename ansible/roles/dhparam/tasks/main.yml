@@ -125,7 +125,7 @@
     special_time: '{{ dhparam__generate_cron_period }}'
     state: '{{ "present"
                if (ansible_service_mgr != "systemd" and
-                   dhparam__generate_cron|bool and
+                   dhparam__generate_cron | bool and
                    dhparam__deploy_state in ["present"])
                else "absent" }}'
   when: not ansible_check_mode
@@ -148,10 +148,10 @@
     daemon_reload: True
     name: 'dhparam-generate-params.timer'
     enabled: '{{ True
-                 if (dhparam__generate_cron|bool)
+                 if (dhparam__generate_cron | bool)
                  else False }}'
     state: '{{ "started"
-                 if (dhparam__generate_cron|bool)
+                 if (dhparam__generate_cron | bool)
                  else "stopped" }}'
   when: dhparam__deploy_state in ['present'] and ansible_service_mgr == 'systemd' and
         not ansible_check_mode

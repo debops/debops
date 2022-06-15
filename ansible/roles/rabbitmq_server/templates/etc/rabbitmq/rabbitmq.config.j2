@@ -187,11 +187,11 @@
 {{ option.comment | regex_replace('\n$','') | comment(decoration='    %% ', prefix='', postfix='') -}}
 {%     endif %}
 {%     if option.type != 'raw' %}
-{{ '    {{{:<30} {}}}{}'.format((option.option | d(option.name)) + ',', print_values(option), (',\n' if not loop.last|bool else '')) }}
+{{ '    {{{:<30} {}}}{}'.format((option.option | d(option.name)) + ',', print_values(option), (',\n' if not loop.last | bool else '')) }}
 {%     else %}
 {%       if option.value is string %}
 {%         if option.value.split('\n') | list | count == 1 %}
-{{ '    {{{:<30} {}{}'.format((option.option | d(option.name)) + ',', option.value.split('\n')[0], ('},\n' if not loop.last|bool else '}')) }}
+{{ '    {{{:<30} {}{}'.format((option.option | d(option.name)) + ',', option.value.split('\n')[0], ('},\n' if not loop.last | bool else '}')) }}
 {%         else %}
 {{ '    {{{:<30} {}'.format((option.option | d(option.name)) + ',', option.value.split('\n')[0]) }}
 {%           set outer_loop = loop %}
@@ -199,8 +199,8 @@
 {%             if line %}
 {{ '    {:<31} {}'.format('', line) }}
 {%             endif %}
-{%             if loop.last|bool %}
-{{ '    }}{}'.format((',\n' if not outer_loop.last|bool else '')) }}
+{%             if loop.last | bool %}
+{{ '    }}{}'.format((',\n' if not outer_loop.last | bool else '')) }}
 {%             endif %}
 {%           endfor %}
 {%         endif %}
@@ -223,7 +223,7 @@
 {%       if params.options|d() %}
 {{ print_options(params.options) -}}
 {%       endif %}
-{%       if loop.last|bool %}
+{%       if loop.last | bool %}
   ]}
 {%       else %}
   ]},

@@ -13,7 +13,7 @@
 {%       set element_prefix = element.prefix | d('') %}
 {%     endif %}
 {%     if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
-{%       if (element.separator|d())|bool %}
+{%       if (element.separator|d()) | bool %}
 
 {%       endif %}
 {%       if element.value is string and not element.value | bool %}
@@ -37,7 +37,7 @@
 {%           endif %}
 {%         endif %}
 {%       elif element.value is iterable and element.value is not string and element.value is not mapping %}
-{%         if (element.multiple|d(True))|bool %}
+{%         if (element.multiple|d(True)) | bool %}
 {%           for thing in (element.value | map(attribute='name') | list) %}
 {{ '{}{} {}'.format(element_prefix, element.name, thing) }}
 {%           endfor %}

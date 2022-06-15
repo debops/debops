@@ -10,7 +10,7 @@
 - name: Create required groups
   ansible.builtin.group:
     name: '{{ item.name if item.name|d() else item }}'
-    system: '{{ item.system|bool if item.system is defined else gitlab_runner__system | bool }}'
+    system: '{{ item.system | bool if item.system is defined else gitlab_runner__system | bool }}'
     state: 'present'
   with_flattened:
     - '{{ gitlab_runner__group }}'
@@ -142,7 +142,7 @@
   ansible.builtin.slurp:
     src: '~{{ gitlab_runner__user }}/.ssh/id_rsa.pub'
   register: gitlab_runner__register_ssh_key
-  when: gitlab_runner__ssh_generate|bool
+  when: gitlab_runner__ssh_generate | bool
 
 - name: Distribute SSH key to other hosts
   ansible.posix.authorized_key:
@@ -153,7 +153,7 @@
   delegate_to: '{{ item.host }}'
   become: '{{ item.become | d(True) }}'
   with_items: '{{ gitlab_runner__ssh_install_to }}'
-  when: gitlab_runner__ssh_generate|bool and item.user|d() and item.host|d()
+  when: gitlab_runner__ssh_generate | bool and item.user|d() and item.host|d()
 
 - name: Make sure that the ~/.ssh directory exists
   ansible.builtin.file:
@@ -201,9 +201,9 @@
                     else "libvirt") ]
                  + ([ "kvm" ]
                     if (ansible_local|d() and ansible_local.libvirtd|d() and
-                        (ansible_local.libvirtd.hw_virt|d())|bool)
+                        (ansible_local.libvirtd.hw_virt|d()) | bool)
                     else [])) | join(",") }}'
-  when: gitlab_runner__vagrant_libvirt|bool
+  when: gitlab_runner__vagrant_libvirt | bool
 
 - name: Configure Vagrant libvirt sudo access
   ansible.builtin.template:
@@ -213,13 +213,13 @@
     group: 'root'
     mode: '0440'
   when: (ansible_local|d() and ansible_local.sudo|d() and
-         (ansible_local.sudo.installed|d())|bool and
-         gitlab_runner__vagrant_libvirt|bool)
+         (ansible_local.sudo.installed|d()) | bool and
+         gitlab_runner__vagrant_libvirt | bool)
 
 - name: Find 'vagrant-libvirt' source code
   ansible.builtin.command: find /usr/share/rubygems-integration/all/gems -maxdepth 1 -type d -name 'vagrant-libvirt-*'
   register: gitlab_runner__register_libvirt_source
-  when: gitlab_runner__vagrant_libvirt_patch|bool
+  when: gitlab_runner__vagrant_libvirt_patch | bool
   changed_when: False
   check_mode: False
   tags: [ 'role::gitlab_runner:patch' ]
@@ -231,7 +231,7 @@
     basedir: '{{ item }}'
     state: '{{ gitlab_runner__vagrant_libvirt_patch_state }}'
   with_items: '{{ gitlab_runner__register_libvirt_source.stdout_lines }}'
-  when: gitlab_runner__vagrant_libvirt_patch|bool
+  when: gitlab_runner__vagrant_libvirt_patch | bool
   tags: [ 'role::gitlab_runner:patch' ]
 
 - name: Configure Vagrant LXC sudo access
@@ -242,8 +242,8 @@
     group: 'root'
     mode: '0440'
   when: (ansible_local|d() and ansible_local.sudo|d() and
-         (ansible_local.sudo.installed|d())|bool and
-         gitlab_runner__vagrant_lxc|bool)
+         (ansible_local.sudo.installed|d()) | bool and
+         gitlab_runner__vagrant_lxc | bool)
 
 - name: Make sure that Ansible fact directory exists
   ansible.builtin.file:

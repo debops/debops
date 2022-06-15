@@ -22,7 +22,7 @@
 {%         endif %}
 {%       elif element is mapping %}
 {%         if element.service|d() and element.replace|d() and element.state|d('present') != 'absent' %}
-{%           if ((element.service in nsswitch__combined_services and element.require|d(True)|bool) or (database in nsswitch__tpl_active_database_map.keys() and element.replace in (lookup("flattened", nsswitch__tpl_active_database_map[database]).split(',')) and element.service not in nsswitch__remove_services)) %}
+{%           if ((element.service in nsswitch__combined_services and element.require|d(True) | bool) or (database in nsswitch__tpl_active_database_map.keys() and element.replace in (lookup("flattened", nsswitch__tpl_active_database_map[database]).split(',')) and element.service not in nsswitch__remove_services)) %}
 {%             if element.action|d() %}
 {%               set _ = nsswitch__tpl_service_list.append([ element.service, element.action ]) %}
 {%             else %}
@@ -30,7 +30,7 @@
 {%             endif %}
 {%           endif %}
 {%         elif element.service|d() and element.state|d('present') != 'absent' %}
-{%           if ((element.service in nsswitch__combined_services and element.require|d(True)|bool) or (database in nsswitch__tpl_active_database_map.keys() and element.service in (lookup("flattened", nsswitch__tpl_active_database_map[database]).split(',')) and element.service not in nsswitch__remove_services)) %}
+{%           if ((element.service in nsswitch__combined_services and element.require|d(True) | bool) or (database in nsswitch__tpl_active_database_map.keys() and element.service in (lookup("flattened", nsswitch__tpl_active_database_map[database]).split(',')) and element.service not in nsswitch__remove_services)) %}
 {%             if element.action|d() %}
 {%               set _ = nsswitch__tpl_service_list.append([ element.service, element.action ]) %}
 {%             else %}
@@ -50,7 +50,7 @@
 {%   endif %}
 {% endfor %}
 {% for db_group in nsswitch__database_groups %}
-{%   if not loop.first|bool and (db_group | intersect(nsswitch__tpl_filtered_database_map.keys())) %}
+{%   if not loop.first | bool and (db_group | intersect(nsswitch__tpl_filtered_database_map.keys())) %}
 
 {%   endif %}
 {%   for database in db_group %}

@@ -114,7 +114,7 @@
     label: '{{ {"name": item.name, "state": item.state|d("present"),
                 "packages": q("flattened", rsnapshot__host_packages)} }}'
   when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
-         (item.rsync|d(True))|bool and hostvars[item.name]|d() and
+         (item.rsync|d(True)) | bool and hostvars[item.name]|d() and
          (not rsnapshot__limit|d() or (item.name in rsnapshot__limit)))
 
   # Example: https://github.com/anamba/rrsync-custom
@@ -140,7 +140,7 @@
     label: '{{ {"name": item.name, "state": item.state|d("present"),
                 "packages": q("flattened", rsnapshot__host_packages)} }}'
   when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
-         (item.rsync|d(True))|bool and hostvars[item.name]|d() and
+         (item.rsync|d(True)) | bool and hostvars[item.name]|d() and
          (not rsnapshot__limit|d() or (item.name in rsnapshot__limit)))
 
 - name: Deploy root ssh public key on configured hosts
@@ -158,7 +158,7 @@
     label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
   register: rsnapshot__register_ssh_keys
   when: (item.name|d() and item.state|d('present') not in [ 'ignore' ] and
-         not (item.local|d())|bool and (item.ssh_key|d(True))|bool and
+         not (item.local|d()) | bool and (item.ssh_key|d(True)) | bool and
          (not rsnapshot__limit|d() or (item.name in rsnapshot__limit)))
 
 - name: Remove old SSH host fingerprints if keys were modified
@@ -185,7 +185,7 @@
   loop_control:
     label: '{{ {"name": item.item.name, "state": item.item.state|d("present")} }}'
   when: (item.item.name|d() and item.item.state|d('present') not in [ 'absent', 'ignore' ] and
-         not (item.item.local|d())|bool and (item.item.ssh_scan|d(True))|bool and item is changed and
+         not (item.item.local|d()) | bool and (item.item.ssh_scan|d(True)) | bool and item is changed and
          (not rsnapshot__limit|d() or (item.item.name in rsnapshot__limit)))
 
 - name: Get list of already scanned host fingerprints
@@ -198,7 +198,7 @@
   loop_control:
     label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
   when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
-         not (item.local|d())|bool and (item.ssh_scan|d(True))|bool and
+         not (item.local|d()) | bool and (item.ssh_scan|d(True)) | bool and
          (not rsnapshot__limit|d() or (item.name in rsnapshot__limit)))
   register: rsnapshot__register_known_hosts
   changed_when: False
@@ -212,7 +212,7 @@
   loop_control:
     label: '{{ {"name": item.item.name, "state": item.item.state|d("present")} }}'
   when: (item.item.name|d() and item.item.state|d('present') not in [ 'absent', 'ignore' ] and
-         not (item.item.local|d())|bool and (item.item.ssh_scan|d(True))|bool and item.rc|d() > 0 and
+         not (item.item.local|d()) | bool and (item.item.ssh_scan|d(True)) | bool and item.rc|d() > 0 and
          (not rsnapshot__limit|d() or (item.item.name in rsnapshot__limit)))
 
 - name: Remove host configuration directories if requested

@@ -68,7 +68,7 @@
 - name: Build Docker Registry from upstream
   become: True
   become_user: '{{ docker_registry__user }}'
-  when: docker_registry__upstream|bool
+  when: docker_registry__upstream | bool
   block:
 
     - name: Create required build directories
@@ -110,7 +110,7 @@
     remote_src: True
     mode: '0755'
   notify: [ 'Restart docker-registry' ]
-  when: docker_registry__upstream|bool and
+  when: docker_registry__upstream | bool and
         docker_registry__register_build is changed
 
 - name: Make sure that Ansible local facts directory exists
@@ -161,7 +161,7 @@
   loop:
     - { path: 'usr/local/bin/docker-registry-gc', mode: '0755' }
     - { path: 'etc/sudoers.d/docker-registry-gc', mode: '0440' }
-  when: docker_registry__garbage_collector_enabled|bool
+  when: docker_registry__garbage_collector_enabled | bool
 
 - name: Configure garbage collection in cron
   ansible.builtin.cron:
@@ -171,5 +171,5 @@
     job: '/usr/local/bin/docker-registry-gc'
     special_time: '{{ docker_registry__garbage_collector_interval }}'
     state: '{{ "present"
-               if docker_registry__garbage_collector_enabled|bool
+               if docker_registry__garbage_collector_enabled | bool
                else "absent" }}'

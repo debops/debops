@@ -26,9 +26,9 @@
 # required in containerized environments, where the host takes care for setting
 # time accurately.
 ntp__daemon_enabled: '{{ "True" if (ntp__daemon|d() and
-                                    ((ansible_system_capabilities_enforced|d())|bool and
+                                    ((ansible_system_capabilities_enforced|d()) | bool and
                                       "cap_sys_time" in ansible_system_capabilities) or
-                                     not (ansible_system_capabilities_enforced|d(True))|bool)
+                                     not (ansible_system_capabilities_enforced|d(True)) | bool)
                                 else "False" }}'
 
                                                                    # ]]]
@@ -150,7 +150,7 @@ ntp__purge_packages:
   - '{{ "ntp"      if (ntp__daemon not in [ "ntpd", "openntpd"]) else [] }}'
   - '{{ "openntpd" if (ntp__daemon != "openntpd")                else [] }}'
   - '{{ "ntpdate"  if (ntp__daemon != "ntpdate" and
-                       not ntp__ignore_ntpdate|bool)             else [] }}'
+                       not ntp__ignore_ntpdate | bool)             else [] }}'
                                                                    # ]]]
                                                                    # ]]]
 # OpenNTPd configuration [[[
@@ -254,7 +254,7 @@ ntp__ferm__dependent_rules:
     target: '{{ ntp__ferm_chain }}'
     rule_state: '{{ "present" if (
                       ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
-                      ntp__firewall_access|bool)
+                      ntp__firewall_access | bool)
                     else "absent" }}'
 
   - chain: '{{ ntp__ferm_chain }}'
@@ -271,7 +271,7 @@ ntp__ferm__dependent_rules:
     recent_log: False
     rule_state: '{{ "present" if (
                       ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
-                      ntp__firewall_access|bool)
+                      ntp__firewall_access | bool)
                     else "absent" }}'
 
   - chain: '{{ ntp__ferm_chain }}'
@@ -291,7 +291,7 @@ ntp__ferm__dependent_rules:
     recent_log_prefix: 'ipt-recent-ntp: '
     rule_state: '{{ "present" if (
                       ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
-                      ntp__firewall_access|bool)
+                      ntp__firewall_access | bool)
                     else "absent" }}'
 
   - chain: '{{ ntp__ferm_chain }}'
@@ -305,7 +305,7 @@ ntp__ferm__dependent_rules:
     role_weight: '40'
     rule_state: '{{ "present" if (
                       ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
-                      ntp__firewall_access|bool)
+                      ntp__firewall_access | bool)
                     else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]

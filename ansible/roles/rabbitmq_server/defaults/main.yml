@@ -50,7 +50,7 @@ rabbitmq_server__group: 'rabbitmq'
 #
 # List of additional UNIX groups to add the RabbitMQ user into. The
 # ``ssl-cert`` UNIX group is used for the X.509 private key access.
-rabbitmq_server__append_groups: '{{ ["ssl-cert"] if rabbitmq_server__pki|bool else [] }}'
+rabbitmq_server__append_groups: '{{ ["ssl-cert"] if rabbitmq_server__pki | bool else [] }}'
 
                                                                    # ]]]
 # .. envvar:: rabbitmq_server__home [[[
@@ -174,7 +174,7 @@ rabbitmq_server__combined_environment: '{{ rabbitmq_server__environment
 rabbitmq_server__default_config:
 
   - name: 'ssl'
-    state: '{{ "present" if rabbitmq_server__pki|bool else "ignore" }}'
+    state: '{{ "present" if rabbitmq_server__pki | bool else "ignore" }}'
     options:
 
       - name: 'versions'
@@ -202,7 +202,7 @@ rabbitmq_server__default_config:
       - honor_ecc_order: True
 
   - name: 'rabbit'
-    state: '{{ "present" if rabbitmq_server__pki|bool else "ignore" }}'
+    state: '{{ "present" if rabbitmq_server__pki | bool else "ignore" }}'
     options:
 
       - name: 'tcp_listeners'
@@ -582,7 +582,7 @@ rabbitmq_server__cluster_allow: []
 # Enable or disable PKI support.
 rabbitmq_server__pki: '{{ True
                           if (ansible_local.pki.enabled|d() and
-                              ansible_local.pki.enabled|bool) else False }}'
+                              ansible_local.pki.enabled | bool) else False }}'
 
                                                                    # ]]]
 # .. envvar:: rabbitmq_server__pki_path [[[
@@ -690,14 +690,14 @@ rabbitmq_server__ferm__dependent_rules:
     type: 'accept'
     saddr: '{{ rabbitmq_server__amqp_allow }}'
     dport: [ 'amqp' ]
-    accept_any: '{{ False if rabbitmq_server__pki|bool else True }}'
+    accept_any: '{{ False if rabbitmq_server__pki | bool else True }}'
 
   - name: 'rabbitmq-amqps'
     type: 'accept'
     saddr: '{{ rabbitmq_server__amqps_allow }}'
     dport: [ 'amqps' ]
     accept_any: True
-    rule_state: '{{ "present" if rabbitmq_server__pki|bool else "absent" }}'
+    rule_state: '{{ "present" if rabbitmq_server__pki | bool else "absent" }}'
 
   - name: 'rabbitmq-cluster'
     type: 'accept'

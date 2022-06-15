@@ -79,7 +79,7 @@
     - path: '{{ minio__tls_certs_dir + "/public.crt" }}'
       src: '{{ minio__tls_public_crt }}'
       mode: '0644'
-  when: minio__pki_enabled|bool
+  when: minio__pki_enabled | bool
 
 - name: Install systemd configuration files
   ansible.builtin.template:
@@ -155,7 +155,7 @@
     src: 'etc/pki/hooks/minio.j2'
     dest: '/etc/pki/hooks/minio'
     mode: '0755'
-  when: ansible_service_mgr == 'systemd' and minio__pki_enabled|bool
+  when: ansible_service_mgr == 'systemd' and minio__pki_enabled | bool
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:

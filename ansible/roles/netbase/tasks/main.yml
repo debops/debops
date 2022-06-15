@@ -18,7 +18,7 @@
     state: 'present'
   register: netbase__register_packages
   until: netbase__register_packages is succeeded
-  when: netbase__enabled|bool
+  when: netbase__enabled | bool
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:
@@ -45,7 +45,7 @@
   ansible.builtin.hostname:
     name: '{{ netbase__hostname }}'
   notify: [ 'Refresh host facts' ]
-  when: netbase__enabled|bool and netbase__hostname_config_enabled|bool
+  when: netbase__enabled | bool and netbase__hostname_config_enabled | bool
 
 - name: Generate /etc/hosts database
   ansible.builtin.template:
@@ -55,7 +55,7 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Refresh host facts' ]
-  when: netbase__enabled|bool and netbase__hosts_config_type == 'template'
+  when: netbase__enabled | bool and netbase__hosts_config_type == 'template'
 
 - name: Manage entries in /etc/hosts
   ansible.builtin.lineinfile:  # noqa no-tabs
@@ -70,7 +70,7 @@
   loop_control:
     label: '{{ {item.name: (item.value|d([])) | selectattr("name", "defined") | map(attribute="name") | list} }}'
   notify: [ 'Refresh host facts' ]
-  when: netbase__enabled|bool and netbase__hosts_config_type == 'lineinfile' and item.name|d()
+  when: netbase__enabled | bool and netbase__hosts_config_type == 'lineinfile' and item.name|d()
 
 - name: Manage entries in /etc/networks
   ansible.builtin.lineinfile:  # noqa no-tabs
@@ -81,7 +81,7 @@
     mode:    '0644'
   with_dict: '{{ netbase__networks | combine(netbase__group_networks, netbase__host_networks) }}'
   notify: [ 'Refresh host facts' ]
-  when: netbase__enabled|bool
+  when: netbase__enabled | bool
 
   # This task is here in case that the hostname or domain of the host was
   # changed, to ensure that the Ansible facts are updated

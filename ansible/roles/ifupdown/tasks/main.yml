@@ -49,7 +49,7 @@
     path: '/etc/network/interfaces.config.d'
     state: 'absent'
   when: (ansible_local|d() and ansible_local.debops_fact|d() and
-         ansible_local.debops_fact.enabled|bool and
+         ansible_local.debops_fact.enabled | bool and
          (ansible_local.debops_fact.version is undefined or
           (ansible_local.debops_fact.version.ifupdown|d("0.0.0") is version_compare("0.3.0","<"))))
 
@@ -199,4 +199,4 @@
     value: '{{ ifupdown__role_metadata.version }}'
     mode: '0644'
   when: ansible_local|d() and ansible_local.debops_fact|d() and
-        ansible_local.debops_fact.enabled|bool
+        ansible_local.debops_fact.enabled | bool

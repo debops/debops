@@ -16,7 +16,7 @@
   with_items:
     - 'icinga2-{{ icinga_db__feature }}/dbconfig-install'
     - 'icinga2-{{ icinga_db__feature }}/dbconfig-upgrade'
-  when: icinga_db__icinga_installed|bool and
+  when: icinga_db__icinga_installed | bool and
         icinga_db__type != 'unknown'
 
 - name: Install required packages
@@ -28,7 +28,7 @@
   register: icinga_db__register_packages
   until: icinga_db__register_packages is succeeded
   notify: [ 'Check icinga2 configuration and restart' ]
-  when: icinga_db__icinga_installed|bool and
+  when: icinga_db__icinga_installed | bool and
         icinga_db__type != 'unknown'
 
 - name: Ensure that IDO feature is enabled
@@ -38,7 +38,7 @@
     state: 'link'
     mode: '0600'
   notify: [ 'Check icinga2 configuration and restart' ]
-  when: icinga_db__icinga_installed|bool and
+  when: icinga_db__icinga_installed | bool and
         icinga_db__feature != 'unknown'
 
 - name: Make sure that Ansible local facts directory exists

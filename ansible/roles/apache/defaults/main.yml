@@ -25,7 +25,7 @@
 # List of base packages to install.
 apache__base_packages:
   - 'apache2'
-  - '{{ "libapache2-mod-security2" if (apache__security_module_enabled|bool) else [] }}'
+  - '{{ "libapache2-mod-security2" if (apache__security_module_enabled | bool) else [] }}'
 
                                                                    # ]]]
 # .. envvar:: apache__packages [[[
@@ -330,9 +330,9 @@ apache__role_modules:
   'ssl':
     enabled: '{{ True if (apache__https_listen and apache__https_enabled) else False }}'
   'security2':
-    enabled: '{{ apache__security_module_enabled|bool }}'
+    enabled: '{{ apache__security_module_enabled | bool }}'
   'status':
-    enabled: '{{ apache__status_enabled|bool }}'
+    enabled: '{{ apache__status_enabled | bool }}'
     config: |
       <Location /server-status>
           # Revoke default permissions granted in `/etc/apache2/mods-available/status.conf`.
@@ -340,12 +340,12 @@ apache__role_modules:
       </Location>
   'socache_shmcb':
     enabled: '{{ True
-                 if (apache__ocsp_stapling_enabled|bool
+                 if (apache__ocsp_stapling_enabled | bool
                      and "shmcb" in apache__ocsp_stapling_cache)
                  else omit }}'
   'authz_host':
     enabled: '{{ True
-                 if (apache__status_enabled|bool
+                 if (apache__status_enabled | bool
                      and apache__status_allow_localhost)
                  else omit }}'
   'rewrite':
@@ -454,7 +454,7 @@ apache__role_snippets:
     divert_suffix: ''
 
   'local-debops_apache_security_module':
-    state: '{{ apache__security_module_enabled|bool | ternary("present", "absent") }}'
+    state: '{{ apache__security_module_enabled | bool | ternary("present", "absent") }}'
 
                                                                    # ]]]
 # .. envvar:: apache__combined_snippets [[[
@@ -485,7 +485,7 @@ apache__https_enabled: '{{ ansible_local|d() and ansible_local.pki|d() and
 #
 # This defines the default for each vhost's ``redirect_to_https`` variable.
 # Defaults to ``True``.
-apache__redirect_to_https: '{{ apache__https_enabled|bool }}'
+apache__redirect_to_https: '{{ apache__https_enabled | bool }}'
 
                                                                    # ]]]
 # PKI [[[
@@ -997,7 +997,7 @@ apache__status_directives: ''
 # Refer to the `Apache ExtendedStatus directive documentation`_ for details.
 # Note that this setting cannot be changed during a graceful restart. You will
 # need to restart Apache yourself for a change to take effect!
-apache__status_extended_enabled: '{{ apache__status_enabled|bool }}'
+apache__status_extended_enabled: '{{ apache__status_enabled | bool }}'
 
                                                                    # ]]]
 # .. envvar:: apache__status_vhost_name [[[
@@ -1017,7 +1017,7 @@ apache__status_vhost:
   status_allow_localhost: True
   listen_http: [ 'localhost:80' ]
   https_enabled: False
-  enabled: '{{ apache__status_vhost_enabled|bool }}'
+  enabled: '{{ apache__status_vhost_enabled | bool }}'
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[

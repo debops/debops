@@ -399,7 +399,7 @@ mailman__web_ldap_configuration:
     raw: |
       import ldap
       from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
-    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+    state: '{{ "present" if mailman__ldap_enabled | bool else "ignore" }}'
     copy_id_from: 'secret_key'
     weight: -200
 
@@ -408,19 +408,19 @@ mailman__web_ldap_configuration:
       Integration with the 'django-auth-ldap' library
       https://django-auth-ldap.readthedocs.io/en/latest/reference.html
     value: '{{ mailman__ldap_uri | join(" ") }}'
-    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+    state: '{{ "present" if mailman__ldap_enabled | bool else "ignore" }}'
 
   - name: 'auth_ldap_start_tls'
     value: '{{ mailman__ldap_starttls }}'
-    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+    state: '{{ "present" if mailman__ldap_enabled | bool else "ignore" }}'
 
   - name: 'auth_ldap_bind_dn'
     value: '{{ mailman__ldap_bind_dn }}'
-    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+    state: '{{ "present" if mailman__ldap_enabled | bool else "ignore" }}'
 
   - name: 'auth_ldap_bind_password'
     value: '{{ mailman__ldap_bind_password }}'
-    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+    state: '{{ "present" if mailman__ldap_enabled | bool else "ignore" }}'
 
   - name: 'auth_ldap_user_search'
     raw: |
@@ -429,7 +429,7 @@ mailman__web_ldap_configuration:
           ldap.SCOPE_SUBTREE,
           '{{ mailman__ldap_people_filter }}',
       )
-    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+    state: '{{ "present" if mailman__ldap_enabled | bool else "ignore" }}'
 
   - name: 'auth_ldap_group_search'
     raw: |
@@ -439,34 +439,34 @@ mailman__web_ldap_configuration:
           '{{ mailman__ldap_groups_filter }}',
       )
       AUTH_LDAP_GROUP_TYPE = GroupOfNamesType(name_attr='cn')
-    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+    state: '{{ "present" if mailman__ldap_enabled | bool else "ignore" }}'
 
   - name: 'auth_ldap_user_attr_map'
     config:
       'first_name': 'givenName'
       'last_name': 'sn'
       'email': 'mail'
-    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+    state: '{{ "present" if mailman__ldap_enabled | bool else "ignore" }}'
 
   - name: 'auth_ldap_user_flags_by_group'
     config:
       'is_staff':     '{{ mailman__ldap_superusers_group + "," + mailman__ldap_groups_dn }}'
       'is_superuser': '{{ mailman__ldap_superusers_group + "," + mailman__ldap_groups_dn }}'
-    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+    state: '{{ "present" if mailman__ldap_enabled | bool else "ignore" }}'
 
   - name: 'auth_ldap_find_group_perms'
     value: True
-    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+    state: '{{ "present" if mailman__ldap_enabled | bool else "ignore" }}'
 
   - name: 'auth_ldap_cache_timeout'
     value: 3600
-    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+    state: '{{ "present" if mailman__ldap_enabled | bool else "ignore" }}'
 
   - name: 'authentication_backends'
     value:
       - 'django_auth_ldap.backend.LDAPBackend'
       - 'django.contrib.auth.backends.ModelBackend'
-    state: '{{ "present" if mailman__ldap_enabled|bool else "ignore" }}'
+    state: '{{ "present" if mailman__ldap_enabled | bool else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: mailman__web_configuration [[[

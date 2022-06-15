@@ -23,11 +23,11 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Restart salt-master' ]
-  when: salt__configuration|bool
+  when: salt__configuration | bool
 
 - name: Remove Salt Master configuration file if disabled
   ansible.builtin.file:
     path: '{{ salt__configuration_file }}'
     state: 'absent'
   notify: [ 'Restart salt-master' ]
-  when: not salt__configuration|bool
+  when: not salt__configuration | bool

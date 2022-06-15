@@ -53,7 +53,7 @@ nfs_server__accept_any: False
 #
 # List of protocols which should be opened for NFS communication through the
 # firewall.
-nfs_server__firewall_protocols: '{{ [ "tcp", "udp" ] if nfs_server__v3|bool else "tcp" }}'
+nfs_server__firewall_protocols: '{{ [ "tcp", "udp" ] if nfs_server__v3 | bool else "tcp" }}'
 
                                                                    # ]]]
 # .. envvar:: nfs_server__anchor_port [[[
@@ -81,7 +81,7 @@ nfs_server__service_ports:
 #
 # List of TCP/UDP ports which should be opened in the firewall for NFS access.
 nfs_server__firewall_ports: '{{ ([ "nfs", "sunrpc" ] + (nfs_server__service_ports.keys() | list))
-                                if nfs_server__v3|bool else [ "nfs" ] }}'
+                                if nfs_server__v3 | bool else [ "nfs" ] }}'
                                                                    # ]]]
                                                                    # ]]]
 # NFS server configuration [[[
@@ -148,14 +148,14 @@ nfs_server__root_options: [ 'rw', 'fsid=root', 'sync', 'subtree_check', 'crossmn
 #
 # List of NFS4 security options that are used to export the NFS4 root
 # filesystem.
-nfs_server__root_security_options: '{{ [ "sec=krb5p" ] if nfs_server__kerberos|bool else [] }}'
+nfs_server__root_security_options: '{{ [ "sec=krb5p" ] if nfs_server__kerberos | bool else [] }}'
 
                                                                    # ]]]
 # .. envvar:: nfs_server__root_acl [[[
 #
 # The Access Control List of NFS clients that are allowed to mount the NFS4
 # root filesystem. See :ref:`nfs_server__ref_exports` for more details.
-nfs_server__root_acl: '{{ "*" if nfs_server__accept_any|bool else nfs_server__allow }}'
+nfs_server__root_acl: '{{ "*" if nfs_server__accept_any | bool else nfs_server__allow }}'
                                                                    # ]]]
                                                                    # ]]]
 # NFS server exports [[[
@@ -245,7 +245,7 @@ nfs_server__tcpwrappers__dependent_allow:
     client: '{{ nfs_server__allow }}'
     accept_any: '{{ nfs_server__accept_any }}'
     filename: 'nfs-server'
-    state: '{{ "present" if nfs_server__v3|bool else "absent" }}'
+    state: '{{ "present" if nfs_server__v3 | bool else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: nfs_server__ferm__dependent_rules [[[

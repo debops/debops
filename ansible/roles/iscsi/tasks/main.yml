@@ -100,9 +100,9 @@
 
 - name: Manage LVM
   ansible.builtin.include_tasks: manage_lvm.yml
-  when: (((ansible_system_capabilities_enforced|d())|bool and
+  when: (((ansible_system_capabilities_enforced|d()) | bool and
           "cap_sys_admin" in ansible_system_capabilities) or
-         not (ansible_system_capabilities_enforced|d(True))|bool)
+         not (ansible_system_capabilities_enforced|d(True)) | bool)
 
 - name: DebOps post_tasks hook
   ansible.builtin.include_tasks: "{{ lookup('debops.debops.task_src', 'iscsi/post_main.yml') }}"

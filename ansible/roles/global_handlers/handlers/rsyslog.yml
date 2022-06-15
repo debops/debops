@@ -6,10 +6,10 @@
 - name: Check and restart rsyslogd
   ansible.builtin.command: rsyslogd -N 1
   notify: [ 'Restart rsyslogd' ]
-  when: (ansible_local.rsyslog.installed|d())|bool
+  when: (ansible_local.rsyslog.installed|d()) | bool
 
 - name: Restart rsyslogd
   ansible.builtin.service:
     name: 'rsyslog'
     state: 'restarted'
-  when: (ansible_local.rsyslog.installed|d())|bool
+  when: (ansible_local.rsyslog.installed|d()) | bool

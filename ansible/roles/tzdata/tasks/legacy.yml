@@ -12,7 +12,7 @@
     value: '{{ tzdata__timezone.split("/")[0] }}'
   register: tzdata__register_debconf_set_area
   notify: [ 'Refresh host facts' ]
-  when: tzdata__enabled|bool
+  when: tzdata__enabled | bool
 
 - name: Configure tzdata zone in debconf
   ansible.builtin.debconf:
@@ -22,7 +22,7 @@
     value: '{{ tzdata__timezone.split("/")[1] }}'
   register: tzdata__register_debconf_set_zone
   notify: [ 'Refresh host facts' ]
-  when: tzdata__enabled|bool
+  when: tzdata__enabled | bool
 
   # tzdata ignores debconf answers when configured non-interactively
   # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=704089
@@ -33,13 +33,13 @@
     mode: '0644'
   register: tzdata__register_etc_timezone
   notify: [ 'Refresh host facts' ]
-  when: tzdata__enabled|bool
+  when: tzdata__enabled | bool
 
 - name: Check if /etc/localtime is a symlink
   ansible.builtin.stat:
     path: '/etc/localtime'
   register: tzdata__register_etc_localtime
-  when: tzdata__enabled|bool
+  when: tzdata__enabled | bool
 
 - name: Symlink correct timezone as /etc/localtime
   ansible.builtin.file:  # noqa no-handler
@@ -48,13 +48,13 @@
     state: 'link'
     mode: '0644'
   notify: [ 'Refresh host facts' ]
-  when: (tzdata__enabled|bool and
+  when: (tzdata__enabled | bool and
          tzdata__register_etc_timezone is changed and
-         tzdata__register_etc_localtime.stat.islnk|bool)
+         tzdata__register_etc_localtime.stat.islnk | bool)
 
 - name: Reconfigure tzdata
   ansible.builtin.command: 'dpkg-reconfigure --frontend noninteractive tzdata'  # noqa no-handler
-  when: (tzdata__enabled|bool and
+  when: (tzdata__enabled | bool and
          (tzdata__register_debconf_set_area is changed or
           tzdata__register_debconf_set_zone is changed or
           tzdata__register_etc_timezone is changed))

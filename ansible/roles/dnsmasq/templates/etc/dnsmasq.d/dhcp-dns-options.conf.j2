@@ -46,7 +46,7 @@
 {%     elif entry.lease_time|d() %}
 {%       set _ = dhcp_host.append(entry.lease_time) %}
 {%     endif %}
-{%     if (entry.ignore|d())|bool %}
+{%     if (entry.ignore|d()) | bool %}
 {%       set _ = dhcp_host.append('ignore') %}
 {%     endif %}
 {%     if entry.domain|d() and (entry.ip|d() or entry.ipaddr|d() or entry.address|d()) %}

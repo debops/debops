@@ -44,7 +44,7 @@ sshd__optional_packages: [ 'molly-guard' ]
 #
 # List of packages related to LDAP support required by OpenSSH.
 sshd__ldap_packages: '{{ [ "ldap-utils" ]
-                         if (sshd__authorized_keys_lookup|bool and
+                         if (sshd__authorized_keys_lookup | bool and
                              ("ldap" in sshd__authorized_keys_lookup_type))
                          else [] }}'
 
@@ -241,8 +241,8 @@ sshd__log_level: 'INFO'
 # sysadmin accounts via the :ref:`debops.system_users` disable password-based
 # access.
 sshd__permit_root_login: '{{ "without-password"
-                             if (ansible_local.root_account.ssh_authorized_keys|d()|bool or
-                                 ansible_local.system_users.configured|d()|bool)
+                             if (ansible_local.root_account.ssh_authorized_keys|d() | bool or
+                                 ansible_local.system_users.configured|d() | bool)
                              else "yes" }}'
 
                                                                    # ]]]
@@ -254,8 +254,8 @@ sshd__permit_root_login: '{{ "without-password"
 # configured by the :ref:`debops.system_users` role disables password
 # authentication.
 sshd__password_authentication: '{{ "no"
-                                   if (ansible_local.root_account.ssh_authorized_keys|d()|bool or
-                                       ansible_local.system_users.configured|d()|bool)
+                                   if (ansible_local.root_account.ssh_authorized_keys|d() | bool or
+                                       ansible_local.system_users.configured|d() | bool)
                                    else "yes" }}'
 
                                                                    # ]]]
@@ -542,7 +542,7 @@ sshd__paranoid: False
 #
 # Enable support for looking up authorized public keys in external data sources
 # (currently LDAP is supported). This function works only with OpenSSH 6.2+.
-sshd__authorized_keys_lookup: '{{ ansible_local.ldap.posix_enabled|d()|bool }}'
+sshd__authorized_keys_lookup: '{{ ansible_local.ldap.posix_enabled|d() | bool }}'
 
                                                                    # ]]]
 # .. envvar:: sshd__authorized_keys_lookup_user [[[
@@ -634,7 +634,7 @@ sshd__ldap_binddn: '{{ ([ sshd__ldap_self_rdn ] + sshd__ldap_device_dn) | join("
 # to the LDAP directory.
 sshd__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
                                + sshd__ldap_binddn | to_uuid + ".password length=32"))
-                       if sshd__ldap_enabled|bool
+                       if sshd__ldap_enabled | bool
                        else "" }}'
 
                                                                    # ]]]
@@ -770,14 +770,14 @@ sshd__ferm__dependent_rules:
     weight_class: 'sshd-chain'
     name: 'sshd_jump-filter-ssh'
     target: '{{ sshd__ferm_limit_chain }}'
-    rule_state: '{{ "present" if sshd__ferm_limit|bool else "absent" }}'
+    rule_state: '{{ "present" if sshd__ferm_limit | bool else "absent" }}'
     comment: 'Create a separate "iptables" chain for SSH rules'
 
-  - chain: '{{ sshd__ferm_limit_chain if (sshd__ferm_limit|bool) else "INPUT" }}'
+  - chain: '{{ sshd__ferm_limit_chain if (sshd__ferm_limit | bool) else "INPUT" }}'
     type: 'accept'
     dport: '{{ sshd__ferm_ports }}'
     saddr: '{{ sshd__whitelist + sshd__group_whitelist + sshd__host_whitelist }}'
-    interface: '{{ [] if (sshd__ferm_limit|bool) else sshd__ferm_interface }}'
+    interface: '{{ [] if (sshd__ferm_limit | bool) else sshd__ferm_interface }}'
     weight: '1'
     weight_class: 'sshd-chain'
     name: 'sshd_whitelist'
@@ -789,7 +789,7 @@ sshd__ferm__dependent_rules:
     type: 'accept'
     dport: '{{ sshd__ferm_ports }}'
     saddr: '{{ sshd__allow + sshd__group_allow + sshd__host_allow }}'
-    interface: '{{ [] if (sshd__ferm_limit|bool) else sshd__ferm_interface }}'
+    interface: '{{ [] if (sshd__ferm_limit | bool) else sshd__ferm_interface }}'
     weight: '2'
     weight_class: 'sshd-chain'
     name: 'sshd_allow'
@@ -812,7 +812,7 @@ sshd__ferm__dependent_rules:
     recent_seconds: '{{ sshd__ferm_limit_seconds }}'
     recent_hitcount: '{{ sshd__ferm_limit_hits }}'
     recent_target: 'REJECT'
-    rule_state: '{{ "present" if sshd__ferm_limit|bool else "absent" }}'
+    rule_state: '{{ "present" if sshd__ferm_limit | bool else "absent" }}'
     comment: |
       Block new SSH connections that have been marked as recent if they make
       too many new connection attempts.
@@ -827,7 +827,7 @@ sshd__ferm__dependent_rules:
     subchain: False
     recent_set_name: 'ssh-new'
     recent_log: False
-    rule_state: '{{ "present" if sshd__ferm_limit|bool else "absent" }}'
+    rule_state: '{{ "present" if sshd__ferm_limit | bool else "absent" }}'
     comment: 'Mark new connections to the SSH service for recent tracking'
 
   - chain: '{{ sshd__ferm_limit_chain }}'
@@ -838,7 +838,7 @@ sshd__ferm__dependent_rules:
     role_weight: '60'
     name: 'sshd_accept-ssh'
     dport: '{{ sshd__ferm_ports }}'
-    rule_state: '{{ "present" if sshd__ferm_limit|bool else "absent" }}'
+    rule_state: '{{ "present" if sshd__ferm_limit | bool else "absent" }}'
     comment: 'Accept connections to the SSH service'
 
                                                                    # ]]]
@@ -873,7 +873,7 @@ sshd__ldap__dependent_tasks:
     attributes:
       objectClass: '{{ sshd__ldap_device_object_classes }}'
     state: '{{ "present"
-               if ((ansible_local.ldap.posix_enabled|d())|bool and
+               if ((ansible_local.ldap.posix_enabled|d()) | bool and
                    sshd__ldap_device_dn|d())
                else "ignore" }}'
 
@@ -881,7 +881,7 @@ sshd__ldap__dependent_tasks:
     dn: '{{ sshd__ldap_device_dn }}'
     attributes: '{{ sshd__ldap_device_attributes }}'
     state: '{{ "exact"
-               if ((ansible_local.ldap.posix_enabled|d())|bool and
+               if ((ansible_local.ldap.posix_enabled|d()) | bool and
                    sshd__ldap_device_dn|d())
                else "ignore" }}'
 
@@ -891,7 +891,7 @@ sshd__ldap__dependent_tasks:
     attributes: '{{ sshd__ldap_self_attributes }}'
     no_log: '{{ debops__no_log | d(True) }}'
     state: '{{ "present"
-               if (sshd__authorized_keys_lookup|bool and
+               if (sshd__authorized_keys_lookup | bool and
                    ("ldap" in sshd__authorized_keys_lookup_type))
                else "ignore" }}'
 
@@ -937,7 +937,7 @@ sshd__pam_access__dependent_rules:
         groups: [ 'admins', 'sshusers', 'sftponly' ]
         origins: 'ALL'
         state: '{{ "present"
-                   if (ansible_local.ldap.posix_enabled|d()|bool)
+                   if (ansible_local.ldap.posix_enabled|d() | bool)
                    else "absent" }}'
 
       - name: 'allow-domain'

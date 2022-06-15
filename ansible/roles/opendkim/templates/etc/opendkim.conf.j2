@@ -9,7 +9,7 @@
 {% for section in opendkim__config_sections|d([ {'name': 'unknown'} ]) %}
 {%   if section.state|d('present') != 'absent' %}
 {%     set section_loop = [] %}
-{%     set section_comment_prefix = ('' if loop.first|bool else '\n') %}
+{%     set section_comment_prefix = ('' if loop.first | bool else '\n') %}
 {%     if section.name in opendkim__tpl_sections %}
 {%       if section.title|d() %}
 
@@ -54,7 +54,7 @@
 {%             if element.state|d('present') == 'hidden' %}
 
 {%             endif %}
-{%           elif element.separator is defined and element.separator|bool %}
+{%           elif element.separator is defined and element.separator | bool %}
 
 {%           endif %}
 {%           if element.state|d('present') != 'hidden' %}

@@ -2,7 +2,7 @@
  # Copyright (C) 2014-2020 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
-{% if (ansible_local.postfix.installed|d())|bool %}
+{% if (ansible_local.postfix.installed|d()) | bool %}
 {% set postfix__tpl_persistent_maincf = (
      lookup("file", secret + "/postfix/dependent_config/" + inventory_hostname + "/maincf.json",
             errors="ignore") | d("{}", True) | from_json) %}

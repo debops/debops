@@ -86,7 +86,7 @@ apt_install__condition_map:
 # on first run, and just keep the current version on subsequent runs.
 apt_install__state: '{{ "present"
                         if (ansible_local|d() and ansible_local.apt_install|d() and
-                            (ansible_local.apt_install.configured|d(True))|bool)
+                            (ansible_local.apt_install.configured|d(True)) | bool)
                         else "latest" }}'
 
                                                                    # ]]]
@@ -275,7 +275,7 @@ apt_install__conditional_packages:
                if (ansible_virtualization_role|d("guest") in [ "guest" ] and
                    ansible_virtualization_type|d("unknown") not in ["lxc", "openvz"] and
                    not (ansible_local|d() and ansible_local.apt_install|d() and
-                        ansible_local.apt_install.have_virtual_rng|d(False)|bool)
+                        ansible_local.apt_install.have_virtual_rng|d(False) | bool)
                )
                else "absent" }}'
 

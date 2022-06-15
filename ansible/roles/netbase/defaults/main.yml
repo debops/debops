@@ -51,9 +51,9 @@ netbase__packages: []
 # directory due to host restrictions. Hostname will still be defined in
 # :file:`/etc/hosts` if the local domain configuration is enabled.
 netbase__hostname_config_enabled: '{{ True
-                                      if ((((ansible_system_capabilities_enforced|d())|bool and
+                                      if ((((ansible_system_capabilities_enforced|d()) | bool and
                                            "cap_sys_admin" in ansible_system_capabilities) or
-                                          not (ansible_system_capabilities_enforced|d(True))|bool) and
+                                          not (ansible_system_capabilities_enforced|d(True)) | bool) and
                                           (ansible_virtualization_type is undefined or
                                            ansible_virtualization_type not in [ "lxc", "docker", "openvz" ]))
                                       else False }}'
@@ -99,14 +99,14 @@ netbase__hostname: '{{ (inventory_hostname_short | d(inventory_hostname.split(".
 netbase__domain: '{{ ""
                      if (ansible_local|d() and ansible_local.netbase|d() and
                          (((ansible_local.netbase.self_address|d()) != "127.0.1.1" and
-                           (not ansible_local.netbase.self_local_hostname|d())|bool) or
+                           (not ansible_local.netbase.self_local_hostname|d()) | bool) or
                           ((ansible_local.netbase.self_address|d()) == "127.0.1.1" and
                             ansible_local.netbase.self_domain|d() and
                             ansible_local.netbase.self_domain_source in [ "dns" ])))
                      else (ansible_local.netbase.self_domain
                            if (ansible_local|d() and ansible_local.netbase|d() and
                                (ansible_local.netbase.self_domain|d()) and
-                               (ansible_local.netbase.self_local_hostname|d())|bool)
+                               (ansible_local.netbase.self_local_hostname|d()) | bool)
                            else ((ansible_host | d(ansible_ssh_host | d("0"))).split(".")[1:] | join(".")
                                  if (not (ansible_host | d(ansible_ssh_host | d("0"))) | ipaddr)
                                  else (inventory_hostname.split(".")[1:] | join(".")

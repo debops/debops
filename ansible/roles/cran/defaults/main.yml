@@ -154,7 +154,7 @@ cran__dependent_r_packages: []
 # Java might be required to install some R packages.
 cran__java_integration: '{{ True
                             if (ansible_local|d() and ansible_local.java|d() and
-                                (ansible_local.java.installed|d())|bool)
+                                (ansible_local.java.installed|d()) | bool)
                             else False }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -175,7 +175,7 @@ cran__apt_preferences__dependent_list:
       https://cran.r-project.org/bin/linux/debian/#debian-stretch-stable
     filename: 'debops_cran.pref'
     state: '{{ "present"
-               if (ansible_distribution == "Debian" and cran__upstream|bool)
+               if (ansible_distribution == "Debian" and cran__upstream | bool)
                else "absent" }}'
 
                                                                    # ]]]
@@ -186,6 +186,6 @@ cran__keyring__dependent_apt_keys:
 
   - id: '{{ cran__upstream_apt_key }}'
     repo: '{{ cran__upstream_apt_repo }}'
-    state: '{{ "present" if cran__upstream|bool else "absent" }}'
+    state: '{{ "present" if cran__upstream | bool else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]

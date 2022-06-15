@@ -28,7 +28,7 @@ VOLNAME="{{ backup2l__volname }}"
 
 # List of directories to make backups of.
 # All paths MUST be absolute and start with a '/'!
-{% if backup2l__srclist_from_file|bool %}
+{% if backup2l__srclist_from_file | bool %}
 readarray -t SRCLIST < {{ backup2l__include_file }}
 {% else %}
 SRCLIST=( {{ backup2l__srclist }} )
@@ -91,7 +91,7 @@ MAX_FULL="{{ backup2l__max_full }}"
 GENERATIONS="{{ backup2l__generations }}"
 
 # If the following variable is 1, a check file is automatically generated
-CREATE_CHECK_FILE="{{ '1' if backup2l__create_check_file|bool else '0' }}"
+CREATE_CHECK_FILE="{{ '1' if backup2l__create_check_file | bool else '0' }}"
 
 
 
@@ -126,7 +126,7 @@ POST_BACKUP ()
 # Misc.
 
 # Create a backup when invoked without arguments?
-AUTORUN="{{ '1' if (backup2l__autorun|bool) else '0' }}"
+AUTORUN="{{ '1' if (backup2l__autorun | bool) else '0' }}"
 
 # Size units
 SIZE_UNITS="{{ backup2l__size_units }}"   # set to "B", "K", "M" or "G" to obtain unified units in summary list

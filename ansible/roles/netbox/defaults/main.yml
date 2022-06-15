@@ -50,7 +50,7 @@ netbox__base_packages:
   - 'libpq-dev'
   - 'libssl-dev'
   - '{{ [ "libldap2-dev", "libsasl2-dev" ]
-        if netbox__ldap_enabled|bool
+        if netbox__ldap_enabled | bool
         else [] }}'
 
                                                                    # ]]]
@@ -198,10 +198,10 @@ netbox__virtualenv_pip_packages:
   - 'setproctitle'
   - name: 'napalm'
     state: '{{ "present"
-               if (netbox__config_napalm_username|d() or netbox__napalm_ssh_generate|bool)
+               if (netbox__config_napalm_username|d() or netbox__napalm_ssh_generate | bool)
                else "ignore" }}'
   - name: 'django-auth-ldap'
-    state: '{{ "present" if netbox__ldap_enabled|bool else "ignore" }}'
+    state: '{{ "present" if netbox__ldap_enabled | bool else "ignore" }}'
                                                                    # ]]]
                                                                    # ]]]
 # PostgreSQL database configuration [[[
@@ -306,7 +306,7 @@ netbox__redis_ssl: False
 # Enable or disable support for LDAP authentication in NetBox.
 netbox__ldap_enabled: '{{ True
                           if (ansible_local|d() and ansible_local.ldap|d() and
-                              (ansible_local.ldap.enabled|d())|bool)
+                              (ansible_local.ldap.enabled|d()) | bool)
                           else False }}'
 
                                                                    # ]]]
@@ -365,7 +365,7 @@ netbox__ldap_binddn: '{{ ([ netbox__ldap_self_rdn ] + netbox__ldap_device_dn) | 
 # to bind to the LDAP directory.
 netbox__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
                                  + netbox__ldap_binddn | to_uuid + ".password length=32"))
-                         if netbox__ldap_enabled|bool
+                         if netbox__ldap_enabled | bool
                          else "" }}'
 
                                                                    # ]]]
@@ -412,7 +412,7 @@ netbox__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn|d("ou=Groups") }}'
 # automatically.
 netbox__ldap_groups_dn: '{{ ([ netbox__ldap_groups_rdn, netbox__ldap_self_rdn ]
                                + netbox__ldap_device_dn)
-                              if netbox__ldap_private_groups|bool
+                              if netbox__ldap_private_groups | bool
                               else ([ netbox__ldap_groups_rdn ] + netbox__ldap_base_dn) }}'
 
                                                                    # ]]]
@@ -507,7 +507,7 @@ netbox__ldap_server_uri: '{{ ansible_local.ldap.uri|d([""]) | first }}'
 # .. envvar:: netbox__ldap_server_port [[[
 #
 # The TCP port which should be used for connections to the LDAP server.
-netbox__ldap_server_port: '{{ ansible_local.ldap.port|d("389" if netbox__ldap_start_tls|bool else "636") }}'
+netbox__ldap_server_port: '{{ ansible_local.ldap.port|d("389" if netbox__ldap_start_tls | bool else "636") }}'
 
                                                                    # ]]]
 # .. envvar:: netbox__ldap_start_tls [[[
@@ -516,7 +516,7 @@ netbox__ldap_server_port: '{{ ansible_local.ldap.port|d("389" if netbox__ldap_st
 # connections to the LDAP server.
 netbox__ldap_start_tls: '{{ ansible_local.ldap.start_tls
                             if (ansible_local|d() and ansible_local.ldap|d() and
-                                (ansible_local.ldap.start_tls|d())|bool)
+                                (ansible_local.ldap.start_tls|d()) | bool)
                             else True }}'
 
                                                                    # ]]]
@@ -904,7 +904,7 @@ netbox__superuser_password: '{{ lookup("password", secret + "/netbox/" +
 #
 # Enable or disable support for internal ``gunicorn`` application server.
 netbox__app_internal_appserver: '{{ ansible_local.gunicorn.installed
-                                    |d(ansible_service_mgr == "systemd")|bool }}'
+                                    |d(ansible_service_mgr == "systemd") | bool }}'
 
                                                                    # ]]]
 # .. envvar:: netbox__app_name [[[
@@ -1006,7 +1006,7 @@ netbox__ldap__dependent_tasks:
       description: 'User groups used in NetBox'
     state: '{{ "present"
                if (netbox__ldap_device_dn|d() and
-                   netbox__ldap_private_groups|bool)
+                   netbox__ldap_private_groups | bool)
                else "ignore" }}'
 
   - name: 'Create NetBox user group for {{ netbox__ldap_device_dn | join(",") }}'

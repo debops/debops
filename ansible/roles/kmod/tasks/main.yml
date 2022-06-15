@@ -51,14 +51,14 @@
   loop_control:
     loop_var: 'module'
   with_items: '{{ kmod__combined_modules | debops.debops.parse_kv_items }}'
-  when: kmod__enabled|bool
+  when: kmod__enabled | bool
 
 - name: Remove module load configuration
   ansible.builtin.file:
     dest: '/etc/modules-load.d/{{ item.filename | d(item.name | replace("_","-") + ".conf") }}'
     state: 'absent'
   with_items: '{{ kmod__combined_load | debops.debops.parse_kv_items }}'
-  when: kmod__enabled|bool and ansible_service_mgr == 'systemd' and
+  when: kmod__enabled | bool and ansible_service_mgr == 'systemd' and
         item.name|d() and item.state|d('present') == 'absent'
 
 - name: Configure module loading at boot
@@ -69,7 +69,7 @@
     group: 'root'
     mode: '0644'
   with_items: '{{ kmod__combined_load | debops.debops.parse_kv_items }}'
-  when: kmod__enabled|bool and ansible_service_mgr == 'systemd' and
+  when: kmod__enabled | bool and ansible_service_mgr == 'systemd' and
         item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ]
 
 - name: Manage module loading in /etc/modules
@@ -82,7 +82,7 @@
   loop: '{{ kmod__combined_load | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
-  when: kmod__enabled|bool and ansible_service_mgr != 'systemd' and
+  when: kmod__enabled | bool and ansible_service_mgr != 'systemd' and
         item.name|d() and item.state|d('present') in [ 'present', 'absent' ]
 
 - name: Load missing kernel modules enabled at boot
@@ -91,7 +91,7 @@
     state: 'present'
   with_items: '{{ kmod__combined_load | debops.debops.parse_kv_items }}'
   notify: [ 'Refresh host facts' ]
-  when: kmod__enabled|bool and item.name|d() and item.state|d('present') not in [ 'config', 'absent', 'ignore' ] and
+  when: kmod__enabled | bool and item.name|d() and item.state|d('present') not in [ 'config', 'absent', 'ignore' ] and
         item.modules is undefined and ansible_local.kmod.modules|d() and item.name not in ansible_local.kmod.modules
 
 - name: Update Ansible facts if modules were loaded

@@ -6,7 +6,7 @@
 - name: Configure /etc/environment
   ansible.builtin.blockinfile:
     dest: '{{ environment__file }}'
-    state: '{{ "present" if environment__enabled|bool else "absent" }}'
+    state: '{{ "present" if environment__enabled | bool else "absent" }}'
     block: '{{ lookup("template", "lookup/environment__variables.j2") }}'
     insertbefore: '{{ "BOF" if environment__placement == "before" else omit }}'
     insertafter: '{{ "EOF" if environment__placement == "after" else omit }}'

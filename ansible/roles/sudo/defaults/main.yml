@@ -29,7 +29,7 @@ sudo__enabled: True
 #
 # List of base APT packages to install for :command:`sudo` support.
 sudo__base_packages: '{{ [ "sudo-ldap" ]
-                         if sudo__ldap_enabled|bool
+                         if sudo__ldap_enabled | bool
                          else [ "sudo" ] }}'
 
                                                                    # ]]]
@@ -104,7 +104,7 @@ sudo__ldap_binddn: '{{ ([ sudo__ldap_self_rdn ] + sudo__ldap_device_dn) | join("
 # service to bind to the LDAP directory.
 sudo__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
                                + sudo__ldap_binddn | to_uuid + ".password length=32"))
-                       if sudo__ldap_enabled|bool
+                       if sudo__ldap_enabled | bool
                        else "" }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -170,8 +170,8 @@ sudo__combined_sudoers: '{{ sudo__sudoers
 # not be changed or removed.
 sudo__ldap_enabled: '{{ True
                         if (ansible_local|d() and ansible_local.ldap|d() and
-                            (ansible_local.ldap.posix_enabled|d())|bool and not
-                            (ansible_local.sssd|d() and ansible_local.sssd.installed|d())|bool)
+                            (ansible_local.ldap.posix_enabled|d()) | bool and not
+                            (ansible_local.sssd|d() and ansible_local.sssd.installed|d()) | bool)
                         else False }}'
 
                                                                    # ]]]
@@ -193,7 +193,7 @@ sudo__ldap_default_configuration:
     comment: 'SSL options'
     value: '{{ "start_tls"
                if (ansible_local|d() and ansible_local.ldap|d() and
-                   (ansible_local.ldap.start_tls|d())|bool)
+                   (ansible_local.ldap.start_tls|d()) | bool)
                else "on" }}'
 
   - name: 'tls_reqcert'
@@ -255,7 +255,7 @@ sudo__ldap__dependent_tasks:
     attributes: '{{ sudo__ldap_self_attributes }}'
     no_log: '{{ debops__no_log | d(True) }}'
     state: '{{ "present"
-               if sudo__ldap_enabled|bool
+               if sudo__ldap_enabled | bool
                else "ignore" }}'
                                                                    # ]]]
                                                                    # ]]]

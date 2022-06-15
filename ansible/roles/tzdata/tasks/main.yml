@@ -11,18 +11,18 @@
   ansible.builtin.package:
     name: '{{ q("flattened", tzdata__base_packages + tzdata__packages) }}'
     state: '{{ "present"
-               if ((ansible_local.tzdata.configured|d())|bool)
+               if ((ansible_local.tzdata.configured|d()) | bool)
                else "latest" }}'
   register: tzdata__register_packages
   until: tzdata__register_packages is succeeded
-  when: tzdata__enabled|bool
+  when: tzdata__enabled | bool
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
-  when: tzdata__enabled|bool and not ansible_local|d()
+  when: tzdata__enabled | bool and not ansible_local|d()
 
 - name: Save tzdata local facts
   ansible.builtin.template:
@@ -30,7 +30,7 @@
     dest: '/etc/ansible/facts.d/tzdata.fact'
     mode: '0755'
   notify: [ 'Refresh host facts' ]
-  when: tzdata__enabled|bool
+  when: tzdata__enabled | bool
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
@@ -41,12 +41,12 @@
     name: '{{ tzdata__timezone }}'
   register: tzdata__register_timezone
   notify: [ 'Refresh host facts' ]
-  when: (tzdata__enabled|bool and ansible_service_mgr == "systemd" and
+  when: (tzdata__enabled | bool and ansible_service_mgr == "systemd" and
          (ansible_local.tzdata.timezone|d('Etc/UTC')) != tzdata__timezone)
 
 - name: Execute legacy timezone tasks
   ansible.builtin.include_tasks: 'legacy.yml'
-  when: (tzdata__enabled|bool and ansible_service_mgr != "systemd" and
+  when: (tzdata__enabled | bool and ansible_service_mgr != "systemd" and
          (ansible_local.tzdata.timezone|d('Etc/UTC')) != tzdata__timezone)
 
 - name: Update Ansible facts if time zone was modified
@@ -58,7 +58,7 @@
   args:  # noqa no-handler
     executable: 'bash'
   register: tzdata__register_services
-  when: (tzdata__enabled|bool and ansible_service_mgr == 'systemd' and
+  when: (tzdata__enabled | bool and ansible_service_mgr == 'systemd' and
          tzdata__register_timezone is changed)
 
 - name: Request restart of services affected by time zone modification
@@ -68,6 +68,6 @@
     no_block: True
   loop: '{{ q("flattened", (tzdata__restart_default_services
                             + tzdata__restart_services)) }}'
-  when: (tzdata__enabled|bool and ansible_service_mgr == 'systemd' and
+  when: (tzdata__enabled | bool and ansible_service_mgr == 'systemd' and
          tzdata__register_timezone is changed and
          item in tzdata__register_services.stdout_lines)

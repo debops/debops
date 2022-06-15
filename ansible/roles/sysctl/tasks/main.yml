@@ -20,7 +20,7 @@
 
 - name: Pre hooks
   ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "sysctl/pre_main.yml") }}'
-  when: sysctl__enabled|bool
+  when: sysctl__enabled | bool
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:
@@ -51,9 +51,9 @@
   loop: '{{ sysctl__combined_parameters | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ { "name": item.name, "state": item.state|d("present") } }}'
-  when: (sysctl__enabled|bool and item.name|d() and
+  when: (sysctl__enabled | bool and item.name|d() and
          item.state|d('present') in [ 'present', 'absent' ] and
-         item.divert|d(False)|bool)
+         item.divert|d(False) | bool)
 
 - name: Remove custom sysctl configuration files
   ansible.builtin.file:
@@ -61,7 +61,7 @@
     state: 'absent'
   with_items: '{{ sysctl__combined_parameters | debops.debops.parse_kv_items }}'
   register: sysctl__register_config_removed
-  when: sysctl__enabled|bool and item.name|d() and item.state|d('present') == 'absent'
+  when: sysctl__enabled | bool and item.name|d() and item.state|d('present') == 'absent'
 
 - name: Generate custom sysctl configuration files
   ansible.builtin.template:
@@ -74,7 +74,7 @@
   loop_control:
     label: '{{ item.name }}'
   register: sysctl__register_config_created
-  when: sysctl__enabled|bool and item.name|d() and item.options|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
+  when: sysctl__enabled | bool and item.name|d() and item.options|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Check sysctl command capabilities
   ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
@@ -82,7 +82,7 @@
   args:  # noqa no-handler
     executable: 'bash'
   register: sysctl__register_system
-  when: (sysctl__enabled|bool and
+  when: (sysctl__enabled | bool and
          (sysctl__register_config_created is changed or
           sysctl__register_config_removed is changed))
   check_mode: False
@@ -98,10 +98,10 @@
     {% endif %}
   args:  # noqa no-handler
     executable: 'bash'
-  when: (sysctl__enabled|bool and
+  when: (sysctl__enabled | bool and
          (sysctl__register_config_created is changed or
           sysctl__register_config_removed is changed))
 
 - name: Post hooks
   ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "sysctl/post_main.yml") }}'
-  when: sysctl__enabled|bool
+  when: sysctl__enabled | bool

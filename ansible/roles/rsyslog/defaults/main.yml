@@ -98,22 +98,22 @@ rsyslog__packages: []
 #
 # The unprivileged system user account used by the ``rsyslogd`` daemon, when
 # unprivileged operation is enabled.
-rsyslog__user: '{{ "syslog" if rsyslog__unprivileged|bool else "root" }}'
+rsyslog__user: '{{ "syslog" if rsyslog__unprivileged | bool else "root" }}'
 
                                                                    # ]]]
 # .. envvar:: rsyslog__group [[[
 #
 # The unprivileged system group account used by the ``rsyslogd`` daemon, when
 # unprivileged operation is enabled.
-rsyslog__group: '{{ "syslog" if rsyslog__unprivileged|bool else "root" }}'
+rsyslog__group: '{{ "syslog" if rsyslog__unprivileged | bool else "root" }}'
 
                                                                    # ]]]
 # .. envvar:: rsyslog__append_groups [[[
 #
 # List of additional UNIX groups to add the rsyslog user into. The
 # ``ssl-cert`` UNIX group is used for the X.509 private key access.
-rsyslog__append_groups: '{{ ["ssl-cert"] if (rsyslog__unprivileged|bool
-				and rsyslog__pki|bool) else [] }}'
+rsyslog__append_groups: '{{ ["ssl-cert"] if (rsyslog__unprivileged | bool
+				and rsyslog__pki | bool) else [] }}'
 
                                                                    # ]]]
 # .. envvar:: rsyslog__home [[[
@@ -175,7 +175,7 @@ rsyslog__logfiles: []
 #
 # Enable or disable support for X.509 certificates managed by :ref:`debops.pki`
 # role, used for TLS connections.
-rsyslog__pki: '{{ ansible_local.pki.enabled|d()|bool }}'
+rsyslog__pki: '{{ ansible_local.pki.enabled|d() | bool }}'
 
                                                                    # ]]]
 # .. envvar:: rsyslog__pki_path [[[
@@ -214,7 +214,7 @@ rsyslog__pki_key: '{{ ansible_local.pki.key|d("default.key") }}'
 # ``gtls`` will be enabled by default if the support for PKI is enabled,
 # otherwise ``ptcp`` will be used.
 rsyslog__default_netstream_driver: '{{ "gtls"
-                                       if rsyslog__pki|bool
+                                       if rsyslog__pki | bool
                                        else "ptcp" }}'
 
                                                                    # ]]]
@@ -312,8 +312,8 @@ rsyslog__syslog_srv_rr: '{{ q("debops.debops.dig_srv", "_syslog._tcp." + rsyslog
 # record, logs will be sent to all of them.
 rsyslog__default_forward: '{{ rsyslog__syslog_srv_rr
                               if (rsyslog__syslog_srv_rr[0]["dig_srv_src"]|d("") != "fallback" and
-                                  not rsyslog__remote_enabled|bool and
-                                  rsyslog__pki|bool)
+                                  not rsyslog__remote_enabled | bool and
+                                  rsyslog__pki | bool)
                               else [] }}'
 
                                                                    # ]]]
@@ -516,7 +516,7 @@ rsyslog__default_configuration:
     raw: |
       module(load="imudp")
       input(type="imudp" port="514" ruleset="remote")
-    state: '{{ "present" if rsyslog__remote_enabled|bool else "comment" }}'
+    state: '{{ "present" if rsyslog__remote_enabled | bool else "comment" }}'
 
   - name: 'include_modules'
     comment: 'Include *.input files in /etc/rsyslog.d/'
@@ -532,7 +532,7 @@ rsyslog__default_configuration:
       $FileCreateMode 0640
       $DirCreateMode 0755
       $Umask 0022
-      {% if rsyslog__unprivileged|bool %}
+      {% if rsyslog__unprivileged | bool %}
       $PrivDropToUser {{ rsyslog__user }}
       $PrivDropToGroup {{ rsyslog__group }}
       {% endif %}
@@ -570,7 +570,7 @@ rsyslog__default_configuration:
         $IncludeConfig /etc/rsyslog.d/*.remote
       }
     section: 'rules'
-    state: '{{ "present" if rsyslog__remote_enabled|bool else "absent" }}'
+    state: '{{ "present" if rsyslog__remote_enabled | bool else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: rsyslog__configuration [[[
@@ -662,8 +662,8 @@ rsyslog__default_rules:
 
   - name: '00forward-logs.conf'
     state: '{{ "present"
-               if (rsyslog__forward_enabled|bool and
-                   rsyslog__pki|bool)
+               if (rsyslog__forward_enabled | bool and
+                   rsyslog__pki | bool)
                else "absent" }}'
     options:
 
@@ -710,7 +710,7 @@ rsyslog__default_rules:
           fileCreateMode="0640"
           dirCreateMode="0755"
         )
-      {% if rsyslog__remote_enabled|bool %}
+      {% if rsyslog__remote_enabled | bool %}
         action(
           type="omfile"
           dynaFile="RemoteHostCronLog"
@@ -738,7 +738,7 @@ rsyslog__default_rules:
           fileCreateMode="0640"
           dirCreateMode="0755"
         )
-      {% if rsyslog__remote_enabled|bool %}
+      {% if rsyslog__remote_enabled | bool %}
         action(
           type="omfile"
           dynaFile="RemoteHostCronLog"
@@ -765,20 +765,20 @@ rsyslog__default_rules:
     raw: |-
       global(
         defaultNetstreamDriver="{{ rsyslog__default_netstream_driver }}"
-      {% if rsyslog__pki|bool %}
+      {% if rsyslog__pki | bool %}
         defaultNetstreamDriverCAFile="{{ rsyslog__pki_path + '/' + rsyslog__pki_realm + '/' + rsyslog__pki_ca }}"
         defaultNetstreamDriverCertFile="{{ rsyslog__pki_path + '/' + rsyslog__pki_realm + '/' + rsyslog__pki_crt }}"
         defaultNetstreamDriverKeyFile="{{ rsyslog__pki_path + '/' + rsyslog__pki_realm + '/' + rsyslog__pki_key }}"
       {% endif %}
       )
     state: '{{ "present"
-               if (rsyslog__remote_enabled|bool or
-                   rsyslog__forward_enabled|bool)
+               if (rsyslog__remote_enabled | bool or
+                   rsyslog__forward_enabled | bool)
                else "absent" }}'
 
   - name: 'remote.input'
     state: '{{ "present"
-               if rsyslog__remote_enabled|bool
+               if rsyslog__remote_enabled | bool
                else "absent" }}'
     options:
 
@@ -806,7 +806,7 @@ rsyslog__default_rules:
           {%   endif %}
           {% endif %}
           )
-        state: '{{ "present" if rsyslog__pki|bool else "absent" }}'
+        state: '{{ "present" if rsyslog__pki | bool else "absent" }}'
 
       - name: 'tcp_plain_input'
         comment: 'Enable plain TCP input'
@@ -826,7 +826,7 @@ rsyslog__default_rules:
             port="6514"
             ruleset="remote"
           )
-        state: '{{ "present" if rsyslog__pki|bool else "absent" }}'
+        state: '{{ "present" if rsyslog__pki | bool else "absent" }}'
 
   - name: '20-ufw.conf'
     divert: True
@@ -842,7 +842,7 @@ rsyslog__default_rules:
                else "absent" }}'
 
   - name: 'remote.template'
-    state: '{{ "present" if rsyslog__remote_enabled|bool else "absent" }}'
+    state: '{{ "present" if rsyslog__remote_enabled | bool else "absent" }}'
     options:
 
       - name: 'remote_host_syslog'
@@ -906,7 +906,7 @@ rsyslog__default_rules:
         state: 'present'
 
   - name: 'local-as-remote.ruleset'
-    state: '{{ "present" if rsyslog__remote_enabled|bool else "absent" }}'
+    state: '{{ "present" if rsyslog__remote_enabled | bool else "absent" }}'
     options:
 
       - name: 'remote_log_copy'
@@ -959,7 +959,7 @@ rsyslog__default_rules:
         )
         stop
       }
-    state: '{{ "present" if rsyslog__remote_enabled|bool else "absent" }}'
+    state: '{{ "present" if rsyslog__remote_enabled | bool else "absent" }}'
 
   - name: '50-dynamic-logs.remote'
     state: 'absent'
@@ -973,7 +973,7 @@ rsyslog__default_rules:
       cron.*                              -?RemoteHostCronLog
       cron.*                              -?RemoteServiceCronLog
       mail.*                              -?RemoteServiceMailLog
-    state: '{{ "present" if rsyslog__remote_enabled|bool else "absent" }}'
+    state: '{{ "present" if rsyslog__remote_enabled | bool else "absent" }}'
 
   - name: 'zz-stop.remote'
     comment: |-
@@ -982,7 +982,7 @@ rsyslog__default_rules:
       http://comments.gmane.org/gmane.comp.sysutils.rsyslog/15616
     raw: |-
       stop
-    state: '{{ "present" if rsyslog__remote_enabled|bool else "absent" }}'
+    state: '{{ "present" if rsyslog__remote_enabled | bool else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: rsyslog__legacy_rules [[[
@@ -1104,8 +1104,8 @@ rsyslog__ferm__dependent_rules:
     role: 'rsyslog'
     accept_any: False
     rule_state: '{{ "present"
-                    if (rsyslog__enabled|bool and rsyslog__deploy_state != "absent" and
-                        rsyslog__remote_enabled|bool)
+                    if (rsyslog__enabled | bool and rsyslog__deploy_state != "absent" and
+                        rsyslog__remote_enabled | bool)
                     else "absent" }}'
 
   - name: 'syslog-tls'
@@ -1115,8 +1115,8 @@ rsyslog__ferm__dependent_rules:
     role: 'rsyslog'
     accept_any: False
     rule_state: '{{ "present"
-                    if (rsyslog__enabled|bool and rsyslog__deploy_state != "absent" and
-                        rsyslog__remote_enabled|bool)
+                    if (rsyslog__enabled | bool and rsyslog__deploy_state != "absent" and
+                        rsyslog__remote_enabled | bool)
                     else "absent" }}'
 
                                                                    # ]]]
@@ -1130,8 +1130,8 @@ rsyslog__logrotate__dependent_config:
     options: |
       su root {{ rsyslog__group }}
     state: '{{ "present"
-                if (rsyslog__enabled|bool and rsyslog__deploy_state != "absent" and
-                    rsyslog__unprivileged|bool)
+                if (rsyslog__enabled | bool and rsyslog__deploy_state != "absent" and
+                    rsyslog__unprivileged | bool)
                 else "absent" }}'
 
   - filename: 'rsyslog'
@@ -1169,7 +1169,7 @@ rsyslog__logrotate__dependent_config:
                  ([ "stretch", "trusty" ]))
             else "/usr/lib/rsyslog/rsyslog-rotate" }}
     state: '{{ "present"
-                if (rsyslog__enabled|bool and rsyslog__deploy_state != "absent")
+                if (rsyslog__enabled | bool and rsyslog__deploy_state != "absent")
                 else "absent" }}'
 
   - filename: 'rsyslog-remote'
@@ -1188,8 +1188,8 @@ rsyslog__logrotate__dependent_config:
              ([ "stretch", "trusty" ]))
         else "/usr/lib/rsyslog/rsyslog-rotate" }}
     state: '{{ "present"
-                if (rsyslog__enabled|bool and rsyslog__deploy_state != "absent" and
-                    rsyslog__remote_enabled|bool)
+                if (rsyslog__enabled | bool and rsyslog__deploy_state != "absent" and
+                    rsyslog__remote_enabled | bool)
                 else "absent" }}'
 
                                                                    # ]]]

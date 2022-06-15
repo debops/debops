@@ -70,7 +70,7 @@
   become: False
   delegate_to: 'localhost'
   when: (ansible_local.elasticsearch.installed|d() and
-         elasticsearch__register_dependent_config_file.stat.exists|bool)
+         elasticsearch__register_dependent_config_file.stat.exists | bool)
   tags: [ 'role::elasticsearch:config' ]
 
 - name: Divert original configuration files
@@ -188,4 +188,4 @@
 - name: Manage Elasticsearch authentication
   import_tasks: 'authentication.yml'
   run_once: True
-  when: elasticsearch__xpack_enabled|bool and elasticsearch__pki_enabled|bool
+  when: elasticsearch__xpack_enabled | bool and elasticsearch__pki_enabled | bool

@@ -168,7 +168,7 @@ Add an APT GPG key only on Ubuntu hosts that have been already configured once
      - url: 'http://example.com/apt-key.asc'
        state: '{{ "present"
                   if (ansible_local|d() and ansible_local.apt|d() and
-                      ansible_local.apt.configured|bool and
+                      ansible_local.apt.configured | bool and
                       ansible_distribution == "Ubuntu")
                   else "absent" }}'
 
@@ -245,7 +245,7 @@ once (delayed repository configuration):
      - repo: 'deb http://example.com/ubuntu xenial main'
        state: '{{ "present"
                   if (ansible_local|d() and ansible_local.apt|d() and
-                      ansible_local.apt.configured|bool and
+                      ansible_local.apt.configured | bool and
                       ansible_distribution == "Ubuntu")
                   else "absent" }}'
 

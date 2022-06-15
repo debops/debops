@@ -55,7 +55,7 @@ Set a few custom options for Mosquitto:
    mqtt_log_timestamp: 'true'
 
    mosquitto__options:
-     connection_messages: '{{ "true" if mqtt_connection_messages|bool else "false" }}'
+     connection_messages: '{{ "true" if mqtt_connection_messages | bool else "false" }}'
      log_dest:            '{{ mqtt_log_dest }}'
      log_type:            '{{ mqtt_log_type if mqtt_log_dest == "syslog" else "" }}'
      log_timestamp:       '{{ mqtt_log_timestamp }}'

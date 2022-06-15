@@ -127,7 +127,7 @@ dokuwiki__git_checkout: '{{ dokuwiki__www + "/sites/" + dokuwiki__domains[0] + "
 # instance is supported at the moment.
 dokuwiki__ldap_enabled: '{{ True
                             if (ansible_local|d() and ansible_local.ldap|d() and
-                                (ansible_local.ldap.enabled|d())|bool)
+                                (ansible_local.ldap.enabled|d()) | bool)
                             else False }}'
 
                                                                    # ]]]
@@ -186,7 +186,7 @@ dokuwiki__ldap_binddn: '{{ ([ dokuwiki__ldap_self_rdn ] + dokuwiki__ldap_device_
 # to bind to the LDAP directory.
 dokuwiki__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
                                    + dokuwiki__ldap_binddn | to_uuid + ".password length=32"))
-                           if dokuwiki__ldap_enabled|bool
+                           if dokuwiki__ldap_enabled | bool
                            else "" }}'
 
                                                                    # ]]]
@@ -227,7 +227,7 @@ dokuwiki__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn|d("ou=Groups") }}'
 # automatically.
 dokuwiki__ldap_groups_dn: '{{ ([ dokuwiki__ldap_groups_rdn, dokuwiki__ldap_self_rdn ]
                                + dokuwiki__ldap_device_dn)
-                              if dokuwiki__ldap_private_groups|bool
+                              if dokuwiki__ldap_private_groups | bool
                               else ([ dokuwiki__ldap_groups_rdn ] + dokuwiki__ldap_base_dn) }}'
 
                                                                    # ]]]
@@ -275,7 +275,7 @@ dokuwiki__ldap_server_uri: '{{ ansible_local.ldap.uri|d([""]) | first }}'
 # .. envvar:: dokuwiki__ldap_server_port [[[
 #
 # The TCP port which should be used for connections to the LDAP server.
-dokuwiki__ldap_server_port: '{{ ansible_local.ldap.port|d("389" if dokuwiki__ldap_start_tls|bool else "636") }}'
+dokuwiki__ldap_server_port: '{{ ansible_local.ldap.port|d("389" if dokuwiki__ldap_start_tls | bool else "636") }}'
 
                                                                    # ]]]
 # .. envvar:: dokuwiki__ldap_start_tls [[[
@@ -284,7 +284,7 @@ dokuwiki__ldap_server_port: '{{ ansible_local.ldap.port|d("389" if dokuwiki__lda
 # connections to the LDAP server.
 dokuwiki__ldap_start_tls: '{{ ansible_local.ldap.start_tls
                               if (ansible_local|d() and ansible_local.ldap|d() and
-                                  (ansible_local.ldap.start_tls|d())|bool)
+                                  (ansible_local.ldap.start_tls|d()) | bool)
                               else True }}'
 
                                                                    # ]]]
@@ -330,7 +330,7 @@ dokuwiki__ldap_configuration: |
   $conf['plugin']['authldap']['userfilter'] = '{{ dokuwiki__ldap_user_filter }}';
   $conf['plugin']['authldap']['groupfilter'] = '{{ dokuwiki__ldap_group_filter }}';
   $conf['plugin']['authldap']['version'] = 3;
-  $conf['plugin']['authldap']['starttls'] = {{ "1" if dokuwiki__ldap_start_tls|bool else "0" }};
+  $conf['plugin']['authldap']['starttls'] = {{ "1" if dokuwiki__ldap_start_tls | bool else "0" }};
   $conf['plugin']['authldap']['referrals'] = '0';
   $conf['plugin']['authldap']['deref'] = '0';
   $conf['plugin']['authldap']['binddn'] = '{{ dokuwiki__ldap_binddn }}';
@@ -352,7 +352,7 @@ dokuwiki__ldap_configuration: |
 # configuration file. The contents should be written in PHP, Jinja can be used
 # for logic outside of the PHP engine.
 dokuwiki__protected_conf_php: |
-  {% if dokuwiki__ldap_enabled|bool %}
+  {% if dokuwiki__ldap_enabled | bool %}
   {{ dokuwiki__ldap_configuration }}
   {% endif %}
 # ]]]
@@ -363,7 +363,7 @@ dokuwiki__protected_conf_php: |
 # configuration file. The contents should be written in PHP, Jinja can be used
 # for logic outside of the PHP engine.
 dokuwiki__protected_plugins_php: |
-  {% if dokuwiki__ldap_enabled|bool %}
+  {% if dokuwiki__ldap_enabled | bool %}
   $plugins['authldap'] = 1;
   {% endif %}
 # ]]]
@@ -610,7 +610,7 @@ dokuwiki__ldap__dependent_tasks:
       description: 'User groups used in DokuWiki'
     state: '{{ "present"
                if (dokuwiki__ldap_device_dn|d() and
-                   dokuwiki__ldap_private_groups|bool)
+                   dokuwiki__ldap_private_groups | bool)
                else "ignore" }}'
 
   - name: 'Create DokuWiki admin group for {{ dokuwiki__ldap_device_dn | join(",") }}'

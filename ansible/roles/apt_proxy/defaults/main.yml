@@ -25,7 +25,7 @@
 # List of base packages to install.
 apt_proxy__base_packages:
   - '{{ [ "python3-apt" ]
-        if (apt_proxy__temporally_avoid_unreachable|bool)
+        if (apt_proxy__temporally_avoid_unreachable | bool)
         else [] }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -187,7 +187,7 @@ apt_proxy__temporally_avoid_unreachable: False
 # Value to set as ``Acquire::HTTP::Proxy-Auto-Detect``. Set to ``{{ omit }}`` to
 # avoid setting it.
 apt_proxy__proxy_auto_detect: '{{ "/usr/local/lib/get-reachable-apt-proxy"
-                                  if (apt_proxy__temporally_avoid_unreachable|bool)
+                                  if (apt_proxy__temporally_avoid_unreachable | bool)
                                   else omit }}'
                                                                    # ]]]
                                                                    # ]]]

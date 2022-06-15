@@ -121,7 +121,7 @@ docker_server__base_packages:
   - '{{ [ "virtualenv" ] if docker_server__install_virtualenv else [] }}'
   - "bridge-utils"
   - '{{ [ "cgroup-lite" ] if (ansible_distribution_release in ["trusty"]) else [] }}'
-  - '{{ [] if docker_server__upstream|bool else "docker-compose" }}'
+  - '{{ [] if docker_server__upstream | bool else "docker-compose" }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__packages [[[
@@ -447,7 +447,7 @@ docker_server__pki_key: 'default.key'
 # .. envvar:: docker_server__ferm_post_hook [[[
 #
 # Enable or disable installation for the :program:`ferm` post hook.
-docker_server__ferm_post_hook: '{{ ansible_local.ferm.enabled|d()|bool }}'
+docker_server__ferm_post_hook: '{{ ansible_local.ferm.enabled|d() | bool }}'
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[
@@ -460,7 +460,7 @@ docker_server__keyring__dependent_apt_keys:
 
   - id: '{{ docker_server__upstream_key }}'
     repo: '{{ docker_server__upstream_repository }}'
-    state: '{{ "present" if docker_server__upstream|bool else "absent" }}'
+    state: '{{ "present" if docker_server__upstream | bool else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__python__dependent_packages3 [[[

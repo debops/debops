@@ -80,7 +80,7 @@
 - name: Check which snapper /etc/snapper/configs/ exist
   ansible.builtin.stat:
     path: '/etc/snapper/configs/{{ item.name }}'
-  when: (snapshot_snapper__auto_reinit|bool and item.path|d() and item.name|d() and
+  when: (snapshot_snapper__auto_reinit | bool and item.path|d() and item.name|d() and
          (item.state|d("present") == "present"))
   register: snapshot_snapper__register_snapper_configs
   tags: [ 'role::snapshot_snapper:reinit' ]
@@ -89,7 +89,7 @@
 - name: Check which snapper snapshot directories exist
   ansible.builtin.stat:
     path: '{{ item.path + "/" + snapshot_snapper__directory }}'
-  when: (snapshot_snapper__auto_reinit|bool and item.path|d() and item.name|d() and
+  when: (snapshot_snapper__auto_reinit | bool and item.path|d() and item.name|d() and
          (item.state|d("present") == "present"))
   tags: [ 'role::snapshot_snapper:reinit' ]
   register: snapshot_snapper__register_snapshot_directory
@@ -114,7 +114,7 @@
     hidden: False
     recurse: False
   register: snapshot_snapper__register_snapper_configs_current
-  when: (snapshot_snapper__auto_reinit|bool)
+  when: (snapshot_snapper__auto_reinit | bool)
   tags: [ 'role::snapshot_snapper:reinit' ]
 
 - name: Update active snapper volumes in /etc/default/snapper
@@ -128,7 +128,7 @@
            | map("replace", "/etc/snapper/configs/", "")
            | join(" ") }}"'
     mode: '0644'
-  when: (snapshot_snapper__auto_reinit|bool)
+  when: (snapshot_snapper__auto_reinit | bool)
   tags: [ 'role::snapshot_snapper:reinit' ]
 # .. ]]]
 

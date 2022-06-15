@@ -30,7 +30,7 @@ system_groups__enabled: True
 # Enable or disable support for :file:`/etc/sudoers.d/` configuration.
 system_groups__sudo_enabled: '{{ True
                                  if (ansible_local|d() and ansible_local.sudo|d() and
-                                     (ansible_local.sudo.installed|d()|bool))
+                                     (ansible_local.sudo.installed|d() | bool))
                                  else False }}'
 
                                                                    # ]]]
@@ -75,7 +75,7 @@ system_groups__prefix: '{{ ansible_local.system_groups.local_prefix
                            else ("_"
                                  if ("debops_service_ldap" in group_names or
                                      (ansible_local|d() and ansible_local.ldap|d() and
-                                      (ansible_local.ldap.posix_enabled|d())|bool))
+                                      (ansible_local.ldap.posix_enabled|d()) | bool))
                                  else "") }}'
 
                                                                    # ]]]
@@ -118,7 +118,7 @@ system_groups__default_list:
       # Allow execution of any command as any user on the system.
       # This is required for Ansible operation.
       {{ ('%' + system_groups__prefix + 'admins ALL = (ALL:ALL) '
-          + ('NOPASSWD: ' if system_groups__admins_sudo_nopasswd|bool else '')
+          + ('NOPASSWD: ' if system_groups__admins_sudo_nopasswd | bool else '')
           + 'ALL') }}
     members: '{{ ansible_local.core.admin_users|d([]) }}'
     access: [ 'root', 'sshd' ]
@@ -144,7 +144,7 @@ system_groups__default_list:
       # Allow execution of any command as any user on the system.
       # This is required for Ansible operation.
       {{ ('%' + system_groups__prefix + 'wheel ALL = (ALL:ALL) '
-          + ('NOPASSWD: ' if system_groups__admins_sudo_nopasswd|bool else '')
+          + ('NOPASSWD: ' if system_groups__admins_sudo_nopasswd | bool else '')
           + 'ALL') }}
     members: '{{ ansible_local.core.admin_users|d([]) }}'
     access: [ 'root', 'sshd' ]

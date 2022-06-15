@@ -10,18 +10,18 @@
 {%     if params.state|d('present') in [ 'present', 'absent' ] %}
 {%       set ifupdown__tpl_forward_rules = '' %}
 {%       set ifupdown__tpl_nat_rules = [] %}
-{%       if params.forward|d()|bool %}
+{%       if params.forward|d() | bool %}
 {%         set ifupdown__tpl_forward_rules = (['domain $domains table filter chain FORWARD {']
              + (['    interface ' + interface_name + ' ' + params.forward_interface_ferm_rule|d("ACCEPT") + ";"]
-                if params.forward_interface_ferm_rule_enabled|d(True)|bool
+                if params.forward_interface_ferm_rule_enabled|d(True) | bool
                 else [])
              + (['    outerface ' + interface_name + ' ' + params.forward_outerface_ferm_rule|d("ACCEPT") + ";"]
-                if params.forward_outerface_ferm_rule_enabled|d(True)|bool
+                if params.forward_outerface_ferm_rule_enabled|d(True) | bool
                 else [])
              + ['}']) | join("\n")
 %}
 {%       endif %}
-{%       if params.inet|d() and params.nat|d()|bool %}
+{%       if params.inet|d() and params.nat|d() | bool %}
 {%         set ifupdown__tpl_ipv4_addresses = [] %}
 {%         if params.address|d() %}
 {%           for element in ([ params.address ] if params.address is string else params.address) %}
@@ -51,7 +51,7 @@
         source ' + (network | ipaddr('network')) + '/' + (network | ipaddr('netmask')) + ' destination 224.0.0.0/255.255.255.0 RETURN;
         source ' + (network | ipaddr('network')) + '/' + (network | ipaddr('netmask')) + ' destination 255.255.255.255 RETURN;
         destination ' + (network | ipaddr('network')) + '/' + (network | ipaddr('netmask')) + ' RETURN;
-        source ' + (network | ipaddr('network')) + '/' + (network | ipaddr('netmask')) + (' MASQUERADE' if ((params.nat_masquerade|d(ifupdown__default_nat_masquerade))|bool) else ' SNAT to ' + (params.nat_snat_address if (params.nat_snat_address|d() and params.nat_snat_address | ipv4('address')) else (hostvars[inventory_hostname]["ansible_" + params.nat_snat_interface]["ipv4"].address if params.nat_snat_interface|d() else ansible_default_ipv4.address))) + ';
+        source ' + (network | ipaddr('network')) + '/' + (network | ipaddr('netmask')) + (' MASQUERADE' if ((params.nat_masquerade|d(ifupdown__default_nat_masquerade)) | bool) else ' SNAT to ' + (params.nat_snat_address if (params.nat_snat_address|d() and params.nat_snat_address | ipv4('address')) else (hostvars[inventory_hostname]["ansible_" + params.nat_snat_interface]["ipv4"].address if params.nat_snat_interface|d() else ansible_default_ipv4.address))) + ';
     }
 }') %}
 {%         endfor %}

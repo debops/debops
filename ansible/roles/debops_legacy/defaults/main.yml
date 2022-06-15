@@ -145,7 +145,7 @@ debops_legacy__remove_default_files:
   - name: '/etc/sudoers.d/admins'
     state: '{{ "absent"
                if (ansible_local|d() and ansible_local.system_groups|d() and
-                   (ansible_local.system_groups.configured|d()|bool))
+                   (ansible_local.system_groups.configured|d() | bool))
                else "ignore" }}'
 
   # Legacy 'debops.redis' Ansible local fact

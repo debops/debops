@@ -188,7 +188,7 @@ monit__service_config:
         include /etc/monit/templates/rootbin
       {% endif %}
     state: '{{ "present"
-               if (ansible_local.apache.enabled|d()|bool)
+               if (ansible_local.apache.enabled|d() | bool)
                else "init" }}'
 
   - name: 'atd'
@@ -226,7 +226,7 @@ monit__service_config:
       {% endif %}
     state: '{{ "present"
                if (ansible_local|d() and ansible_local.atd|d() and
-                   (ansible_local.atd.enabled|d())|bool)
+                   (ansible_local.atd.enabled|d()) | bool)
                else "init" }}'
 
   - name: 'cron'
@@ -271,7 +271,7 @@ monit__service_config:
         if failed gid crontab     then unmonitor
     state: '{{ "present"
                if (ansible_local|d() and ansible_local.cron|d() and
-                   (ansible_local.cron.enabled|d())|bool)
+                   (ansible_local.cron.enabled|d()) | bool)
                else "init" }}'
 
   - name: 'memcached'
@@ -312,7 +312,7 @@ monit__service_config:
       {% endif %}
     state: '{{ "present"
                if (ansible_local|d() and ansible_local.memcached|d() and
-                   (ansible_local.memcached.installed|d())|bool)
+                   (ansible_local.memcached.installed|d()) | bool)
                else "init" }}'
 
   - name: 'mysql'
@@ -381,7 +381,7 @@ monit__service_config:
       {% endif %}
     state: '{{ "present"
                if (ansible_local|d() and ansible_local.nginx|d() and
-                   (ansible_local.nginx.enabled|d())|bool)
+                   (ansible_local.nginx.enabled|d()) | bool)
                else "init" }}'
 
   - name: 'openntpd'
@@ -419,7 +419,7 @@ monit__service_config:
       {% endif %}
     state: '{{ "present"
                if (ansible_local|d() and ansible_local.ntp|d() and
-                   (ansible_local.ntp.configured|d())|bool and
+                   (ansible_local.ntp.configured|d()) | bool and
                    ansible_local.ntp.daemon|d("") == "openntpd")
                else "init" }}'
 
@@ -490,7 +490,7 @@ monit__service_config:
       {% endif %}
     state: '{{ "present"
                if (ansible_local|d() and ansible_local.postfix|d() and
-                   (ansible_local.postfix.installed|d())|bool)
+                   (ansible_local.postfix.installed|d()) | bool)
                else "init" }}'
 
   - name: 'rsyslog'
@@ -536,7 +536,7 @@ monit__service_config:
         if failed gid adm         then unmonitor
     state: '{{ "present"
                if (ansible_local|d() and ansible_local.rsyslog|d() and
-                   (ansible_local.rsyslog.enabled|d())|bool)
+                   (ansible_local.rsyslog.enabled|d()) | bool)
                else "init" }}'
 
   - name: 'snmpd'
@@ -553,7 +553,7 @@ monit__service_config:
         if 5 restarts within 5 cycles then timeout
     state: '{{ "present"
                if (ansible_local|d() and ansible_local.snmpd|d() and
-                   (ansible_local.snmpd.installed|d())|bool)
+                   (ansible_local.snmpd.installed|d()) | bool)
                else "init" }}'
 
   - name: 'sshd'
@@ -612,7 +612,7 @@ monit__service_config:
         include /etc/monit/templates/rootstrict
     state: '{{ "present"
                if (ansible_local|d() and ansible_local.sshd|d() and
-                   (ansible_local.sshd.configured|d())|bool)
+                   (ansible_local.sshd.configured|d()) | bool)
                else "init" }}'
 
                                                                    # ]]]

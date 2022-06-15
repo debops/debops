@@ -20,18 +20,18 @@
     state: 'present'
   register: yadm__register_packages
   until: yadm__register_packages is succeeded
-  when: yadm__enabled|bool
+  when: yadm__enabled | bool
 
 - name: Install yadm from upstream
   ansible.builtin.include_tasks: 'upstream_yadm.yml'
-  when: yadm__enabled|bool and yadm__upstream_enabled|bool
+  when: yadm__enabled | bool and yadm__upstream_enabled | bool
 
 - name: Ensure that the /root/.gnupg directory exists
   ansible.builtin.file:
     path: '~/.gnupg'
     state: 'directory'
     mode: '0700'
-  when: yadm__enabled|bool and yadm__dotfiles_enabled|bool
+  when: yadm__enabled | bool and yadm__dotfiles_enabled | bool
 
 - name: Download custom dotfile repositories
   ansible.builtin.include_tasks: 'manage_dotfiles.yml'
@@ -39,7 +39,7 @@
   loop_control:
     loop_var: 'dotfile'
     label: '{{ dotfile.name }}'
-  when: yadm__enabled|bool and yadm__dotfiles_enabled|bool and
+  when: yadm__enabled | bool and yadm__dotfiles_enabled | bool and
         dotfile.name|d()
 
 - name: Make sure that Ansible local facts directory exists

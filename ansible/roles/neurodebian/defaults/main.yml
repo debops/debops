@@ -102,7 +102,7 @@ neurodebian__apt_key_fingerprint: 'DD95 CC43 0502 E37E F840  ACEE A5D3 2F01 2649
 neurodebian__apt_components:
   - 'main'
   - '{{ [ "contrib", "non-free" ]
-        if (ansible_local.apt.nonfree|d()|bool)
+        if (ansible_local.apt.nonfree|d() | bool)
         else [] }}'
 
                                                                    # ]]]
@@ -233,10 +233,10 @@ neurodebian__keyring__dependent_apt_keys:
 
   # This is needed to avoid apt_key removing the GPG key from the
   # 'neurodebian-archive-keyring' APT package
-  - id: '{{ neurodebian__apt_key_fingerprint if neurodebian__upstream|bool else "" }}'
+  - id: '{{ neurodebian__apt_key_fingerprint if neurodebian__upstream | bool else "" }}'
     state: '{{ "present"
                if (neurodebian__deploy_state == "present" and
-                   neurodebian__upstream|bool)
+                   neurodebian__upstream | bool)
                else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]

@@ -110,7 +110,7 @@ mosquitto__group: 'mosquitto'
 # List of additional UNIX groups that the Mosquitto system account should
 # belong to. The ``ssl-cert`` UNIX group is required for access to the PKI
 # private keys to the TLS certificates.
-mosquitto__append_groups: '{{ [ "ssl-cert" ] if mosquitto__pki|bool else [] }}'
+mosquitto__append_groups: '{{ [ "ssl-cert" ] if mosquitto__pki | bool else [] }}'
                                                                    # ]]]
                                                                    # ]]]
 # Network configuration [[[
@@ -229,8 +229,8 @@ mosquitto__http_dir_mode: '0755'
 #
 # The YAML dictionary with default Mosquitto options.
 mosquitto__default_options:
-  password_file:   '{{ mosquitto__password_file if mosquitto__password|bool else "" }}'
-  acl_file:        '{{ mosquitto__acl_file if mosquitto__acl|bool else "" }}'
+  password_file:   '{{ mosquitto__password_file if mosquitto__password | bool else "" }}'
+  acl_file:        '{{ mosquitto__acl_file if mosquitto__acl | bool else "" }}'
   allow_anonymous: '{{ mosquitto__allow_anonymous }}'
 
                                                                    # ]]]
@@ -263,7 +263,7 @@ mosquitto__default_listeners:
   '1883':
     comment:     'The default listener for local clients'
     listener:    '{{ "1883" + ("" if mosquitto__allow|d() else " localhost") }}'
-    avahi_state: '{{ "present" if (mosquitto__network|bool and mosquitto__allow|d()) else "absent" }}'
+    avahi_state: '{{ "present" if (mosquitto__network | bool and mosquitto__allow|d()) else "absent" }}'
     avahi_type:  '_mqtt._tcp'
     avahi_port:  '1883'
 
@@ -272,18 +272,18 @@ mosquitto__default_listeners:
     listener:    '1884 127.0.0.1'
     protocol:    'websockets'
     http_dir:    '{{ mosquitto__http_dir_path }}'
-    state:       '{{ "present" if mosquitto__websockets|bool else "absent" }}'
+    state:       '{{ "present" if mosquitto__websockets | bool else "absent" }}'
 
   '8883':
     comment:     'The default listener for remote clients over TLS'
-    listener:    '{{ "8883" + ("" if mosquitto__network|bool else " localhost") }}'
-    state:       '{{ "present" if mosquitto__pki|bool else "absent" }}'
+    listener:    '{{ "8883" + ("" if mosquitto__network | bool else " localhost") }}'
+    state:       '{{ "present" if mosquitto__pki | bool else "absent" }}'
     cafile:      '{{ mosquitto__broker_cafile }}'
     certfile:    '{{ mosquitto__broker_certfile }}'
     keyfile:     '{{ mosquitto__broker_keyfile }}'
     tls_version: '{{ mosquitto__tls_version }}'
     ciphers:     '{{ mosquitto__ciphers }}'
-    avahi_state: '{{ "present" if (mosquitto__network|bool and mosquitto__pki|bool) else "absent" }}'
+    avahi_state: '{{ "present" if (mosquitto__network | bool and mosquitto__pki | bool) else "absent" }}'
     avahi_type:  '_secure-mqtt._tcp'
     avahi_port:  '8883'
     avahi_txt:   'tls-version={{ mosquitto__tls_version }}'
@@ -496,7 +496,7 @@ mosquitto__tls_version: 'tlsv1.2'
 #
 # Enable or disable Avahi support. See :ref:`mosquitto__ref_avahi_support` for
 # more details.
-mosquitto__avahi: '{{ ansible_local.avahi.installed|d()|bool }}'
+mosquitto__avahi: '{{ ansible_local.avahi.installed|d() | bool }}'
 
                                                                    # ]]]
 # .. envvar:: mosquitto__avahi_name [[[
@@ -542,7 +542,7 @@ mosquitto__password_secret_path: '{{ secret + "/mosquitto/passwd" }}'
 # If any user accounts are defined in the Ansible inventory (password support
 # is enabled), anonymous access to the Mosquitto broker will be disabled.
 # Otherwise anonymous connections are allowed.
-mosquitto__allow_anonymous: '{{ "false" if mosquitto__password|bool else "true" }}'
+mosquitto__allow_anonymous: '{{ "false" if mosquitto__password | bool else "true" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Access Control List support [[[
@@ -654,7 +654,7 @@ mosquitto__keyring__dependent_apt_keys:
 
   - id: '{{ mosquitto__upstream_key_id }}'
     repo: '{{ mosquitto__upstream_repository[ansible_distribution] }}'
-    state: '{{ "present" if mosquitto__upstream|bool else "absent" }}'
+    state: '{{ "present" if mosquitto__upstream | bool else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: mosquitto__tcpwrappers__dependent_allow [[[
@@ -669,7 +669,7 @@ mosquitto__tcpwrappers__dependent_allow:
     filename: 'mosquitto_dependent_allow'
     comment: 'Allow remote connections to Mosquitto server'
     state: '{{ "present"
-               if mosquitto__network|bool
+               if mosquitto__network | bool
                else "absent" }}'
 
   - daemon: 'mosquitto'
@@ -679,8 +679,8 @@ mosquitto__tcpwrappers__dependent_allow:
     filename: 'mosquitto-tls_dependent_allow'
     comment: 'Allow remote connections to Mosquitto server over TLS'
     state: '{{ "present"
-               if (mosquitto__network|bool and
-                   mosquitto__pki|bool)
+               if (mosquitto__network | bool and
+                   mosquitto__pki | bool)
                else "absent" }}'
 
                                                                    # ]]]
@@ -696,7 +696,7 @@ mosquitto__ferm__dependent_rules:
     accept_any: False
     by_role: 'debops.mosquitto'
     rule_state: '{{ "present"
-                    if mosquitto__network|bool
+                    if mosquitto__network | bool
                     else "absent" }}'
 
   - type: 'accept'
@@ -706,8 +706,8 @@ mosquitto__ferm__dependent_rules:
     accept_any: True
     by_role: 'debops.mosquitto'
     rule_state: '{{ "present"
-                    if (mosquitto__network|bool and
-                        mosquitto__pki|bool)
+                    if (mosquitto__network | bool and
+                        mosquitto__pki | bool)
                     else "absent" }}'
 
                                                                    # ]]]

@@ -26,7 +26,7 @@
     chdir: '{{ lxd__golang_gosrc }}'
     creates: '/usr/local/lib/x86_64-linux-gnu/libraft.so.0'
     executable: 'bash'
-  when: lxd__upstream_enabled|bool and lxd__upstream_type == 'git'
+  when: lxd__upstream_enabled | bool and lxd__upstream_type == 'git'
 
 - name: Install required packages
   ansible.builtin.package:
@@ -59,7 +59,7 @@
     mode: '0644'
   loop: [ 'lxd.socket', 'lxd.service', 'lxd-containers.service' ]
   register: lxd__register_systemd
-  when: lxd__upstream_enabled|bool and ansible_service_mgr == 'systemd'
+  when: lxd__upstream_enabled | bool and ansible_service_mgr == 'systemd'
 
 - name: Enable systemd units
   ansible.builtin.systemd:  # noqa no-handler
@@ -75,7 +75,7 @@
   args:
     stdin: '{{ lxd__preseed_data }}'
   changed_when: False
-  when: lxd__init_preseed|bool
+  when: lxd__init_preseed | bool
   tags: [ 'role::lxd:init' ]
 
 - name: Make sure that Ansible local facts directory exists

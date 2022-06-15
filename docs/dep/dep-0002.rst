@@ -413,8 +413,8 @@ the role have been left out.
 
     - name: Configure acme-tiny support
       include: acme_tiny.yml
-      when: (pki__enabled|bool and
-             (pki__acme|bool or pki__acme_install|bool))
+      when: (pki__enabled | bool and
+             (pki__acme | bool or pki__acme_install | bool))
 
 .. _debops_policy__ref_code_standards_task_conditions:
 
@@ -439,7 +439,7 @@ override the decision and have better control about the role's behavior.
         groups: '{{ mariadb_server__append_groups | join(",") | default(omit) }}'
         append: True
         createhome: False
-      when: mariadb_server__pki|bool
+      when: mariadb_server__pki | bool
 
 Here the condition ``mariadb_server__pki`` is a extensive evaluation of the
 current state. The related default variable is defined in

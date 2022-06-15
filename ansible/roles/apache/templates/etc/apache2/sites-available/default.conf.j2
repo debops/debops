@@ -90,7 +90,7 @@ Examples:
 {%   set _ = apache__tpl_xor_compare_operator_map.update({ compare_operator: xor_compare_operator }) %}
 {%   set _ = apache__tpl_xor_compare_operator_map.update({ xor_compare_operator: compare_operator }) %}
 {% endfor %}
-{% if apache__config_use_if_version|bool %}
+{% if apache__config_use_if_version | bool %}
 {{   get_min_version_wrapped(content, version, compare_operator) -}}
 {%   if fallback_content != False %}
 {{     get_min_version_wrapped(fallback_content, version, apache__tpl_xor_compare_operator_map[compare_operator]) -}}
@@ -145,7 +145,7 @@ CustomLog {{ item.custom_log|d('${APACHE_LOG_DIR}/' + sanitized_name + '_access.
 ErrorLog {{ item.error_log|d('${APACHE_LOG_DIR}/' + sanitized_name + '_error.log') }}
 {% endmacro %}
 {% macro get_server_status_directives(item, enabled) %}{# [[[ #}
-{% if enabled|bool %}
+{% if enabled | bool %}
 <Location {{ item.status_location|d(apache__status_location) | quote }}>
     SetHandler server-status
 {%   if item.status_allow_localhost|d(apache__status_allow_localhost) | bool %}
@@ -163,7 +163,7 @@ ErrorLog {{ item.error_log|d('${APACHE_LOG_DIR}/' + sanitized_name + '_error.log
 {% set apache__tpl_use_redirect_module = 'alias' %}
 {% set apache__tpl_status_enabled = item.status_enabled|d(apache__status_for_vhost_enabled) | bool %}
 {{ get_server_status_directives(item, apache__tpl_status_enabled) -}}
-{% if apache__tpl_status_enabled|bool and (
+{% if apache__tpl_status_enabled | bool and (
         (mode == 'http' and (item.redirect_http|d() or item.redirect_to_https|d(apache__redirect_to_https) | bool)) or
         (mode == 'https' and item.redirect_https|d())
     ) %}
@@ -265,7 +265,7 @@ SSLEngine on
 {% set apache__tpl_pki_realm_path = apache__pki_realm_path + "/" + apache__tpl_pki_realm %}
 SSLCertificateFile      {{ item.tls_crt | d(apache__tpl_pki_realm_path + "/" + (item.pki_crt|d(apache__pki_crt_filename))) | quote }}
 SSLCertificateKeyFile   {{ item.tls_key | d(apache__tpl_pki_realm_path + "/" + (item.pki_key|d(apache__pki_key_filename))) | quote }}
-{% if item.ocsp_stapling_enabled|d(apache__ocsp_stapling_enabled)|bool and get_openssl_version() is version_compare("0.9.8h", ">=") %}
+{% if item.ocsp_stapling_enabled|d(apache__ocsp_stapling_enabled) | bool and get_openssl_version() is version_compare("0.9.8h", ">=") %}
 SSLUseStapling on
 {% endif %}
 
@@ -321,10 +321,10 @@ RewriteRule "^{{ from }}?(.*)" "{{ to }}$1" [L,R={{ code }},NE]
 Alias {{ url_path | quote }} {{ (fs_directory + ("/" if (fs_directory[-1] != "/") else "")) | quote }}
 {% endmacro %}
 {% set apache__tpl_vhost_http_enabled = True if (get_listen_sockets(item.listen_http|d([]), apache__http_listen)) else False %}
-{% set apache__tpl_vhost_https_enabled = True if (item.https_enabled|d(apache__https_enabled)|bool and get_listen_sockets(item.listen_https|d([]), apache__https_listen)) else False %}
+{% set apache__tpl_vhost_https_enabled = True if (item.https_enabled|d(apache__https_enabled) | bool and get_listen_sockets(item.listen_https|d([]), apache__https_listen)) else False %}
 {{ get_header_comments(item) }}
 
-{% if apache__tpl_vhost_http_enabled|bool %}
+{% if apache__tpl_vhost_http_enabled | bool %}
 # Virtual host handling HTTP [[[
 <VirtualHost {{ get_listen_sockets(item.listen_http|d([]), apache__http_listen) }}>
 
@@ -336,7 +336,7 @@ Alias {{ url_path | quote }} {{ (fs_directory + ("/" if (fs_directory[-1] != "/"
 # ]]]
 {% endif %}
 
-{% if apache__tpl_vhost_https_enabled|bool %}
+{% if apache__tpl_vhost_https_enabled | bool %}
 # Virtual host handling HTTPS  [[[
 <IfModule ssl_module>
 <VirtualHost {{ get_listen_sockets(item.listen_https|d([]), apache__https_listen) }}>

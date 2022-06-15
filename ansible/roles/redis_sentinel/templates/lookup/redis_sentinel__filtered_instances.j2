@@ -22,7 +22,7 @@
   {"name": ('notification-script ' + monitor.name), "value": ('/etc/redis/sentinel-' + element.name + '/notify.sh')},
   {"name": ('client-reconfig-script ' + monitor.name), "value": ('/etc/redis/sentinel-' + element.name + '/reconfig.sh')}
 ]) %}
-{%         if ((monitor.password is defined and monitor.password|bool) or monitor.password is undefined) %}
+{%         if ((monitor.password is defined and monitor.password | bool) or monitor.password is undefined) %}
 {%           set _ = instance_monitors.extend([
   {"name": ('auth-pass ' + monitor.name), "value": (monitor.password | d(redis_sentinel__auth_password))}
 ]) %}

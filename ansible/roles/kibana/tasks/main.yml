@@ -68,7 +68,7 @@
   become: False
   delegate_to: 'localhost'
   when: (ansible_local.kibana.installed|d() and
-         kibana__register_dependent_config_file.stat.exists|bool)
+         kibana__register_dependent_config_file.stat.exists | bool)
   tags: [ 'role::kibana:config' ]
 
 - name: Divert original configuration files
@@ -175,7 +175,7 @@
   notify: [ 'Restart kibana' ]
   when: (item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
          (item.name not in kibana__register_keys.stdout_lines or
-          (item.force|d(False))|bool))
+          (item.force|d(False)) | bool))
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Save Kibana dependent configuration on Ansible Controller

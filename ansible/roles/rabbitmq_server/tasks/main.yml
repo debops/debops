@@ -83,7 +83,7 @@
   delegate_to: 'localhost'
   when: (ansible_local|d() and ansible_local.rabbitmq_server|d() and
          ansible_local.rabbitmq_server.installed is defined and
-         ansible_local.rabbitmq_server.installed|bool)
+         ansible_local.rabbitmq_server.installed | bool)
   tags: [ 'role::rabbitmq_server:config' ]
 
 - name: Load the dependent configuration from Ansible Controller
@@ -94,8 +94,8 @@
   delegate_to: 'localhost'
   when: (ansible_local|d() and ansible_local.rabbitmq_server|d() and
          ansible_local.rabbitmq_server.installed is defined and
-         ansible_local.rabbitmq_server.installed|bool and
-         rabbitmq_server__register_dependent_config_file.stat.exists|bool)
+         ansible_local.rabbitmq_server.installed | bool and
+         rabbitmq_server__register_dependent_config_file.stat.exists | bool)
   tags: [ 'role::rabbitmq_server:config' ]
 
 - name: Make sure that Ansible local facts directory exists

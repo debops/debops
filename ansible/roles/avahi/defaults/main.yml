@@ -131,7 +131,7 @@ avahi__publish_workstation: False
 # When enabled, Avahi will register a special ``_device-info._tcp`` service
 # which helps configure the host's appearance on compatible devices.
 avahi__publish_device_info: '{{ True
-                                if not avahi__publish_workstation|bool
+                                if not avahi__publish_workstation | bool
                                 else False }}'
 
                                                                    # ]]]
@@ -254,7 +254,7 @@ avahi__allow: []
 # Enable CNAME mDNS support via custom Python script.
 avahi__alias_enabled: '{{ True
                           if (ansible_local|d() and ansible_local.python|d() and
-                              (ansible_local.python.installed2|d())|bool)
+                              (ansible_local.python.installed2|d()) | bool)
                           else False }}'
 
                                                                    # ]]]
@@ -326,7 +326,7 @@ avahi__default_services:
     type: '_device-info._tcp'
     txt: 'model=RackMac'
     state: '{{ "present"
-               if avahi__publish_device_info|bool
+               if avahi__publish_device_info | bool
                else "absent" }}'
 
   'sftp-ssh':
@@ -334,7 +334,7 @@ avahi__default_services:
     type: '_sftp-ssh._tcp'
     port: '22'
     state: '{{ "present"
-               if avahi__publish_ssh|bool
+               if avahi__publish_ssh | bool
                else "absent" }}'
 
   'ssh':
@@ -342,7 +342,7 @@ avahi__default_services:
     type: '_ssh._tcp'
     port: '22'
     state: '{{ "present"
-               if avahi__publish_ssh|bool
+               if avahi__publish_ssh | bool
                else "absent" }}'
 
                                                                    # ]]]
@@ -413,7 +413,7 @@ avahi__ferm__dependent_rules:
     saddr: '{{ avahi__allow }}'
     protocol: 'udp'
     accept_any: True
-    rule_state: '{{ "present" if (avahi__enabled|bool) else "absent" }}'
+    rule_state: '{{ "present" if (avahi__enabled | bool) else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

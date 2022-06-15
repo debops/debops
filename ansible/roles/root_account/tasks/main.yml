@@ -19,7 +19,7 @@
     state: 'present'
   register: root_account__register_packages
   until: root_account__register_packages is succeeded
-  when: root_account__enabled|bool
+  when: root_account__enabled | bool
 
 - name: Check available SSH key types
   ansible.builtin.shell: ssh -Q key 2>/dev/null || echo "ssh-rsa"
@@ -31,12 +31,12 @@
 - name: Check if preferred shell exists
   ansible.builtin.stat: path="{{ root_account__shell }}"
   register: root_account__register_shell
-  when: root_account__enabled|bool and root_account__shell|d(False)
+  when: root_account__enabled | bool and root_account__shell|d(False)
 
 - name: Fail if setting a shell that does not exist
   ansible.builtin.fail:
     msg: "Trying to set a shell that does not exist, this can lock you out!"
-  when: root_account__enabled|bool and root_account__shell|d(False) and not root_account__register_shell.stat.exists and
+  when: root_account__enabled | bool and root_account__shell|d(False) and not root_account__register_shell.stat.exists and
         not ansible_check_mode
 
 - name: Enforce root system group
@@ -45,7 +45,7 @@
     gid: '0'
     system: True
     state: 'present'
-  when: root_account__enabled|bool
+  when: root_account__enabled | bool
 
 - name: Enforce root system account
   ansible.builtin.user:
@@ -65,7 +65,7 @@
     update_password:  '{{ "always" if root_account__password_update | bool else "on_create" }}'
     password:         '{{ root_account__password if root_account__password else omit }}'
     shell:            '{{ root_account__shell if root_account__shell else omit }}'
-  when: root_account__enabled|bool
+  when: root_account__enabled | bool
   no_log: '{{ (debops__no_log | d(True)) if root_account__password else False }}'
 
 - name: Enforce root home permissions
@@ -75,36 +75,36 @@
     owner: 'root'
     group: 'root'
     mode: '0700'
-  when: root_account__enabled|bool
+  when: root_account__enabled | bool
 
 - name: Configure authorized SSH keys for root account
   ansible.posix.authorized_key:
     key: "{{ q('flattened', root_account__combined_authorized_keys)
               | join('\n') }}"
-    exclusive: '{{ root_account__authorized_keys_exclusive|bool }}'
+    exclusive: '{{ root_account__authorized_keys_exclusive | bool }}'
     state: 'present'
     user: 'root'
-  when: root_account__enabled|bool and root_account__combined_authorized_keys|d() and
+  when: root_account__enabled | bool and root_account__combined_authorized_keys|d() and
         root_account__authorized_keys_state != 'absent'
 
 - name: Remove /root/.ssh/authorized_keys file if requested
   ansible.builtin.file:
     path: '/root/.ssh/authorized_keys'
     state: 'absent'
-  when: root_account__enabled|bool and root_account__authorized_keys_state == 'absent'
+  when: root_account__enabled | bool and root_account__authorized_keys_state == 'absent'
 
 - name: Check subuid presence for root account
   ansible.builtin.shell: grep -E '^root:' /etc/subuid || true
   register: root_account__register_subuid
   check_mode: False
   changed_when: False
-  when: root_account__enabled|bool and root_account__subuid_enabled|bool
+  when: root_account__enabled | bool and root_account__subuid_enabled | bool
 
 - name: Add subuids and subgids for root account
   ansible.builtin.command: usermod --add-subuids {{ (item | string + "-" + (item | int + root_account__subuid_count | int) | string) }}
                    --add-subgids {{ (item | string + "-" + (item | int + root_account__subuid_count | int) | string) }} root
   with_items: '{{ root_account__subuid_start }}'
-  when: root_account__enabled|bool and root_account__subuid_enabled|bool and
+  when: root_account__enabled | bool and root_account__subuid_enabled | bool and
         not root_account__register_subuid.stdout|d()
 
 - name: Manage root dotfiles
@@ -118,8 +118,8 @@
     fi
   register: root_account__register_dotfiles
   changed_when: ('Already up to date.' not in root_account__register_dotfiles.stdout_lines|regex_replace('-', ' '))
-  when: ((ansible_local|d() and ansible_local.yadm|d() and (ansible_local.yadm.installed|d())|bool) and
-         root_account__dotfiles_enabled|bool)
+  when: ((ansible_local|d() and ansible_local.yadm|d() and (ansible_local.yadm.installed|d()) | bool) and
+         root_account__dotfiles_enabled | bool)
   check_mode: False
 
 - name: Make sure Ansible fact directory exists

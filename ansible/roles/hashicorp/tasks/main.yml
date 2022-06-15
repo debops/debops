@@ -81,7 +81,7 @@
     group: '{{ hashicorp__group }}'
     mode: '0755'
   with_items: '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
-  when: (hashicorp__consul_webui|bool and item == 'consul')
+  when: (hashicorp__consul_webui | bool and item == 'consul')
 
 - name: Create Consul Web UI directory
   ansible.builtin.file:
@@ -90,7 +90,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: (hashicorp__consul_webui|bool and
+  when: (hashicorp__consul_webui | bool and
          ('consul' in (hashicorp__applications + hashicorp__dependent_applications | unique)))
 
 
@@ -130,7 +130,7 @@
       with_nested:
         - [ 'consul' ]
         - [ '{{ hashicorp__consul_webui_suffix }}' ]
-      when: (hashicorp__consul_webui|bool and
+      when: (hashicorp__consul_webui | bool and
              ('consul' in (hashicorp__applications + hashicorp__dependent_applications) | unique) and
               (ansible_local.hashicorp is not defined or
                (ansible_local.hashicorp|d() and ansible_local.hashicorp.applications|d() and
@@ -196,7 +196,7 @@
                      + hashicorp__combined_version_map[item] + "/web_ui/index.html" }}'
       with_items: '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
       register: hashicorp__register_unpack_webui
-      when: hashicorp__consul_webui|bool and item == 'consul'
+      when: hashicorp__consul_webui | bool and item == 'consul'
       tags: [ 'role::hashicorp:unpack', 'role::hashicorp:install' ]
 
 
@@ -231,7 +231,7 @@
   args:  # noqa no-handler
     warn: False
   with_items: '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
-  when: (hashicorp__consul_webui|bool and item == 'consul' and hashicorp__register_unpack_webui is changed)
+  when: (hashicorp__consul_webui | bool and item == 'consul' and hashicorp__register_unpack_webui is changed)
 
 
 # Ansible local facts [[[1

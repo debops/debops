@@ -87,7 +87,7 @@
 {%         else %}
 {{ '{}{} = ['.format(('#' if param.state|d('present') == 'comment' else ''), param.name) }}
 {%           for thing in param.value %}
-{{ '{:<4}"{}"{}'.format(('#' if param.state|d('present') == 'comment' else ''), thing, (',' if not loop.last|bool else '')) }}
+{{ '{:<4}"{}"{}'.format(('#' if param.state|d('present') == 'comment' else ''), thing, (',' if not loop.last | bool else '')) }}
 {%           endfor %}
 {{ '{}]'.format(('#' if param.state|d('present') == 'comment' else '')) -}}
 {%         endif %}
@@ -120,7 +120,7 @@
 #  --- Go through configuration sections and print them and their parameters ---
 #}
 {% for section in libvirtd__configuration_sections %}
-{%   if not loop.first|bool and section.state|d('present') not in ['hidden', 'absent' ] and section.name in libvirtd__tpl_known_sections %}
+{%   if not loop.first | bool and section.state|d('present') not in ['hidden', 'absent' ] and section.name in libvirtd__tpl_known_sections %}
 
 
 {% endif %}

@@ -93,7 +93,7 @@
 
 - name: Configure Avahi CNAME aliases
   ansible.builtin.include_tasks: avahi_alias.yml
-  when: avahi__alias_enabled|bool
+  when: avahi__alias_enabled | bool
   tags: [ 'role::avahi:alias' ]
 
 - name: Remove Avahi services if requested
@@ -119,8 +119,8 @@
 - name: Ensure that the avahi-daemon service in in the desired state
   ansible.builtin.service:
     name: 'avahi-daemon'
-    enabled: '{{ avahi__enabled|bool }}'
-    state: '{{ "started" if (avahi__enabled|bool) else "stopped" }}'
+    enabled: '{{ avahi__enabled | bool }}'
+    state: '{{ "started" if (avahi__enabled | bool) else "stopped" }}'
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:

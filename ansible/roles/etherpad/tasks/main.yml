@@ -17,7 +17,7 @@
   ansible.builtin.package:
     name: '{{ q("flattened", (etherpad__base_packages
                               + (etherpad__document_packages
-                                 if etherpad_abiword|bool
+                                 if etherpad_abiword | bool
                                  else [])
                               + etherpad__packages)) }}'
     state: 'present'
@@ -82,7 +82,7 @@
     group: '{{ etherpad_group }}'
     mode: '0755'
   when: (etherpad_register_source is defined and etherpad_register_source is changed) or
-        (etherpad_register_directory is defined and not etherpad_register_directory.stat.exists|bool)
+        (etherpad_register_directory is defined and not etherpad_register_directory.stat.exists | bool)
   tags: [ 'role::etherpad:source' ]
 
 - name: Prepare Etherpad worktree
@@ -93,7 +93,7 @@
     group: '{{ etherpad_group }}'
     mode: '0644'
   when: (etherpad_register_source is defined and etherpad_register_source is changed) or
-        (etherpad_register_directory is defined and not etherpad_register_directory.stat.exists|bool)
+        (etherpad_register_directory is defined and not etherpad_register_directory.stat.exists | bool)
   tags: [ 'role::etherpad:source' ]
 
 - name: Checkout Etherpad
@@ -108,7 +108,7 @@
   register: etherpad_register_checkout
   notify: [ 'Restart etherpad-lite' ]
   when: (etherpad_register_source is defined and etherpad_register_source is changed) or
-        (etherpad_register_directory is defined and not etherpad_register_directory.stat.exists|bool)
+        (etherpad_register_directory is defined and not etherpad_register_directory.stat.exists | bool)
   tags: [ 'role::etherpad:source' ]
 
 ## Not used anywhere but it should stay for now: See https://github.com/debops/ansible-etherpad/pull/13

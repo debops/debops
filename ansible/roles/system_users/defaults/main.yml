@@ -97,7 +97,7 @@ system_users__prefix: '{{ ansible_local.system_users.prefix
                           else ("_"
                                 if ("debops_service_ldap" in group_names or
                                     (ansible_local|d() and ansible_local.ldap|d() and
-                                     (ansible_local.ldap.posix_enabled|d())|bool))
+                                     (ansible_local.ldap.posix_enabled|d()) | bool))
                                 else "") }}'
 
                                                                    # ]]]
@@ -112,7 +112,7 @@ system_users__prefix: '{{ ansible_local.system_users.prefix
 system_users__home_root: '{{ "/var/local"
                              if ("debops_service_ldap" in group_names or
                                  (ansible_local|d() and ansible_local.ldap|d() and
-                                  (ansible_local.ldap.posix_enabled|d())|bool))
+                                  (ansible_local.ldap.posix_enabled|d()) | bool))
                              else "/home" }}'
 
                                                                    # ]]]
@@ -254,7 +254,7 @@ system_users__default_accounts:
     admin: True
     sshkeys: '{{ lookup("pipe", "ssh-add -L | grep ^\\\(sk-\\\)\\\?ssh || cat ~/.ssh/*.pub || cat ~/.ssh/authorized_keys || true") }}'
     state: '{{ "present"
-               if system_users__self|bool
+               if system_users__self | bool
                else "ignore" }}'
 
                                                                    # ]]]

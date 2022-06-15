@@ -106,7 +106,7 @@
            '--admin-pass={{ owncloud__admin_password }}'
            {% endif %}
   register: owncloud__register_occ_install
-  when: owncloud__do_autosetup|bool
+  when: owncloud__do_autosetup | bool
 
 # .. ]]]
 
@@ -125,7 +125,7 @@
 - name: Capture occ output in variable
   ansible.builtin.set_fact:
     owncloud__occ_config_current: '{{ owncloud__occ_run_output }}'
-  when: (owncloud__do_autosetup|bool and owncloud__apps_config_combined is mapping and owncloud__apps_config_combined.keys() | length and
+  when: (owncloud__do_autosetup | bool and owncloud__apps_config_combined is mapping and owncloud__apps_config_combined.keys() | length and
          (not ansible_check_mode))
   tags: [ 'role::owncloud:occ_config' ]
 
@@ -134,7 +134,7 @@
   loop_control:
     loop_var: 'owncloud__apps_item'
   with_dict: '{{ owncloud__apps_config_combined|d({}) }}'
-  when: (owncloud__do_autosetup|d()|bool and not ansible_check_mode)
+  when: (owncloud__do_autosetup|d() | bool and not ansible_check_mode)
   tags: [ 'role::owncloud:occ_config' ]
 
 # .. ]]]
@@ -205,6 +205,6 @@
   failed_when: (owncloud__register_occ_integrity_check_core.rc != 0 or
                 owncloud__register_occ_integrity_check_core.stdout_lines | length != 0)
   changed_when: False
-  when: owncloud__do_autosetup|bool
+  when: owncloud__do_autosetup | bool
 
 # ]]]

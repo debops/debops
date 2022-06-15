@@ -187,9 +187,9 @@ foodsoft__database_config:
 foodsoft__webserver: '{{ ansible_local.foodsoft.webserver
                          if (ansible_local.foodsoft.webserver|d())
                          else ("nginx"
-                               if (ansible_local.nginx.enabled|d()|bool)
+                               if (ansible_local.nginx.enabled|d() | bool)
                                else ("apache"
-                                     if (ansible_local.apache.enabled|d()|bool)
+                                     if (ansible_local.apache.enabled|d() | bool)
                                      else "no-webserver-detected")) }}'
 
                                                                    # ]]]
@@ -357,7 +357,7 @@ foodsoft__upstream_config: '{{ lookup("file", "vars/sample_app_config.yml") | fr
 # This dict is managed by the role itself, controlled by other default variables.
 foodsoft__role_config:
 
-  multi_coop_install: '{{ foodsoft__multi_coop_install|bool }}'
+  multi_coop_install: '{{ foodsoft__multi_coop_install | bool }}'
   default_scope: '{{ foodsoft__default_scope }}'
   name: '{{ foodsoft__name }}'
   contact: '{{ foodsoft__contact }}'

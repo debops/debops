@@ -63,7 +63,7 @@
   loop: '{{ ipxe__debian_netboot_combined_release_map | debops.debops.parse_kv_items }}'
   when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
         item.release in ipxe__debian_netboot_releases and item.architecture in ipxe__debian_netboot_architectures and
-        (item.netboot_current|d(True))|bool
+        (item.netboot_current|d(True)) | bool
 
 - name: Create Debian firmware directories
   ansible.builtin.file:
@@ -71,7 +71,7 @@
     state: 'directory'
     mode: '0755'
   loop: '{{ ipxe__debian_netboot_combined_release_map | debops.debops.parse_kv_items }}'
-  when: ipxe__debian_netboot_firmware|bool and item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
+  when: ipxe__debian_netboot_firmware | bool and item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
         item.release in ipxe__debian_netboot_releases and item.firmware_version|d()
 
 - name: Download Debian firmware tarballs
@@ -83,7 +83,7 @@
     checksum: '{{ item.firmware_checksum | d(omit) }}'
     mode: '0644'
   loop: '{{ ipxe__debian_netboot_combined_release_map | debops.debops.parse_kv_items }}'
-  when: ipxe__debian_netboot_firmware|bool and item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
+  when: ipxe__debian_netboot_firmware | bool and item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] and
         item.release in ipxe__debian_netboot_releases and item.firmware_version|d()
   register: ipxe__register_get_firmware
   until: ipxe__register_get_firmware is succeeded
@@ -95,4 +95,4 @@
                    + item.item.netboot_version + (item.item.netboot_subdir | d("")) + "/debian-installer/"
                    + item.item.architecture + "/initrd.gz" }}
   loop: '{{ ipxe__register_debian_installer.results }}'  # noqa no-handler
-  when: ipxe__debian_netboot_firmware|bool and item.item.firmware_version|d() and item is changed
+  when: ipxe__debian_netboot_firmware | bool and item.item.firmware_version|d() and item is changed

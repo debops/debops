@@ -68,7 +68,7 @@ imapproxy__imaps_srv_rr: '{{ q("dig_srv", "_imaps._tcp." + imapproxy__domain,
 # certificate verification.
 imapproxy__imap_fqdn: '{{ ansible_fqdn
                           if (ansible_local|d() and ansible_local.dovecot|d() and
-                             (ansible_local.dovecot.installed|d())|bool)
+                             (ansible_local.dovecot.installed|d()) | bool)
                           else imapproxy__imap_srv_rr[0]["target"]
                               if imapproxy__imap_srv_rr[0]["dig_srv_src"]|d("") != "fallback"
                               else imapproxy__imaps_srv_rr[0]["target"] }}'
@@ -198,14 +198,14 @@ imapproxy__tls_ca_file: '{{ imapproxy__tls_ca_path + "/ca-certificates.crt" }}'
 #
 # Absolute path of the certificate file used in the imapproxy configuration.
 imapproxy__tls_cert_file: '{{ (imapproxy__pki_path + "/" + imapproxy__pki_realm + "/" + imapproxy__pki_crt)
-                            if imapproxy__pki|bool else "/etc/ssl/certs/ssl-cert-snakeoil.pem" }}'
+                            if imapproxy__pki | bool else "/etc/ssl/certs/ssl-cert-snakeoil.pem" }}'
 
                                                                    # ]]]
 # .. envvar:: imapproxy__tls_key_file [[[
 #
 # Absolute path of the private key file used in the imapproxy configuration.
 imapproxy__tls_key_file: '{{ (imapproxy__pki_path + "/" + imapproxy__pki_realm + "/" + imapproxy__pki_key)
-                           if imapproxy__pki|bool else "/etc/ssl/private/ssl-cert-snakeoil.key" }}'
+                           if imapproxy__pki | bool else "/etc/ssl/private/ssl-cert-snakeoil.key" }}'
                                                                    # ]]]
 # .. envvar:: imapproxy__tls_force [[[
 #

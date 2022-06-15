@@ -12,7 +12,7 @@
 {% for section in etc_aliases__sections %}
 {%   if section.state|d('present') != 'absent' %}
 {%     set section_loop = [] %}
-{%     set section_comment_prefix = ('' if loop.first|bool else '\n') %}
+{%     set section_comment_prefix = ('' if loop.first | bool else '\n') %}
 {%     if section.name in etc_aliases__tpl_section_list %}
 {%       if section.title|d() %}
 {{ '{:-^78}'.format(' ' + section.title + ' ') | comment(prefix=section_comment_prefix, postfix='') }}

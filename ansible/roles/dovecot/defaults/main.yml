@@ -51,7 +51,7 @@ dovecot__version: '{{ ansible_local.dovecot.version|d("0.0.0") }}'
 # User account lookup mechanisms, see :ref:`dovecot__ref_user_accounts`
 # for details.
 dovecot__user_accounts: '{{ [ "deny", "ldap" ]
-                            if dovecot__ldap_enabled|bool
+                            if dovecot__ldap_enabled | bool
                             else [ "deny", "system" ] }}'
 
                                                                    # ]]]
@@ -1115,7 +1115,7 @@ dovecot__allow_sieve: []
 # authorize access to the user's mailbox.
 dovecot__ldap_enabled: '{{ True
                            if (ansible_local|d() and ansible_local.ldap|d() and
-                              (ansible_local.ldap.enabled|d())|bool)
+                              (ansible_local.ldap.enabled|d()) | bool)
                            else False }}'
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_base_dn [[[
@@ -1171,7 +1171,7 @@ dovecot__ldap_binddn: '{{ ([ dovecot__ldap_self_rdn ]
 dovecot__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
                            + dovecot__ldap_binddn | to_uuid + ".password length=32 "
                            + "chars=ascii_letters,digits,!@_$%^&*"))
-                          if dovecot__ldap_enabled|bool
+                          if dovecot__ldap_enabled | bool
                           else "" }}'
 
                                                                    # ]]]
@@ -1197,7 +1197,7 @@ dovecot__ldap_uri: '{{ ansible_local.ldap.uri|d([""]) }}'
 # .. envvar:: dovecot__ldap_start_tls [[[
 #
 # If ``True``, STARTTLS will be used to connect to the LDAP server.
-dovecot__ldap_start_tls: '{{ ansible_local.ldap.start_tls|d(True)|bool }}'
+dovecot__ldap_start_tls: '{{ ansible_local.ldap.start_tls|d(True) | bool }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_user_filter [[[
@@ -1254,7 +1254,7 @@ dovecot__ldap__dependent_tasks:
     attributes: '{{ dovecot__ldap_self_attributes }}'
     no_log: '{{ debops__no_log | d(True) }}'
     state: '{{ "present"
-                if (dovecot__ldap_enabled|bool and
+                if (dovecot__ldap_enabled | bool and
                     dovecot__ldap_device_dn|d())
                 else "ignore" }}'
 
@@ -1291,14 +1291,14 @@ dovecot__postfix__dependent_maincf:
     value: '{{ dovecot__postfix_lmtp_transport }}'
     state: '{{ "present"
                if ("lmtp" in dovecot__features and
-                   dovecot__ldap_enabled|bool)
+                   dovecot__ldap_enabled | bool)
                else "ignore" }}'
 
   - name: 'mailbox_transport'
     value: '{{ dovecot__postfix_lmtp_transport }}'
     state: '{{ "present"
                if ("lmtp" in dovecot__features and
-                   not dovecot__ldap_enabled|bool)
+                   not dovecot__ldap_enabled | bool)
                else "ignore" }}'
 
                                                                    # ]]]

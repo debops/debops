@@ -164,7 +164,7 @@ volkszaehler__database_user_priv: |
       volkszaehler__database_name + ".*:SELECT,UPDATE,INSERT",
     ] + ([
           volkszaehler__database_name + ".*:DELETE",
-      ] if (volkszaehler__allow_channel_deletion|bool)
+      ] if (volkszaehler__allow_channel_deletion | bool)
         else [
           volkszaehler__database_name + ".entities_in_aggregator:CREATE,DELETE",
           volkszaehler__database_name + ".properties:CREATE,DELETE",
@@ -237,9 +237,9 @@ volkszaehler__max_file_size: '1M'
 volkszaehler__webserver: '{{ ansible_local.volkszaehler.webserver
                              if (ansible_local.volkszaehler.webserver|d())
                              else ("apache"
-                                   if (ansible_local.apache.enabled|d()|bool)
+                                   if (ansible_local.apache.enabled|d() | bool)
                                    else ("nginx"
-                                         if (ansible_local.nginx.enabled|d()|bool)
+                                         if (ansible_local.nginx.enabled|d() | bool)
                                          else "no-webserver-detected")) }}'
 
                                                                    # ]]]
@@ -253,7 +253,7 @@ volkszaehler__webserver_http_methods: |
        'POST',
        'PATCH',
      ] + ([ 'DELETE' ]
-          if (volkszaehler__allow_channel_deletion|bool)
+          if (volkszaehler__allow_channel_deletion | bool)
           else [])
   }}
 

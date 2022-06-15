@@ -24,8 +24,8 @@
     cache_valid_time: '{{ apt__cache_valid_time }}'
   register: apt__register_apt_first_update
   until: apt__register_apt_first_update is succeeded
-  when: (apt__enabled|bool and
-         not (ansible_local.apt.configured|d())|bool)
+  when: (apt__enabled | bool and
+         not (ansible_local.apt.configured|d()) | bool)
 
 - name: Install required packages
   ansible.builtin.apt:
@@ -34,7 +34,7 @@
     install_recommends: False
   register: apt__register_packages
   until: apt__register_packages is succeeded
-  when: apt__enabled|bool
+  when: apt__enabled | bool
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:
@@ -62,7 +62,7 @@
   ansible.builtin.file:
     path: '/etc/apt/apt.conf'
     state: 'absent'
-  when: (apt__enabled|bool and apt__remove_default_configuration|bool)
+  when: (apt__enabled | bool and apt__remove_default_configuration | bool)
 
 - name: Generate APT configuration files
   ansible.builtin.template:
@@ -73,7 +73,7 @@
     mode: '0644'
   with_items:
     - 'etc/apt/apt.conf.d/25no-recommends.conf'
-  when: apt__enabled|bool
+  when: apt__enabled | bool
 
 - name: Enable extra architectures
   ansible.builtin.command: dpkg --add-architecture {{ item }}
@@ -90,7 +90,7 @@
     state: '{{ apt__sources_deploy_state }}'
     delete: True
   register: apt__register_sources_diversion
-  when: (apt__enabled|bool and apt__sources_deploy_state in [ 'absent', 'present' ])
+  when: (apt__enabled | bool and apt__sources_deploy_state in [ 'absent', 'present' ])
 
 - name: Configure APT distribution sources
   ansible.builtin.template:
@@ -100,7 +100,7 @@
     group: 'root'
     mode: '0644'
   register: apt__register_sources_template
-  when: (apt__enabled|bool and apt__sources_deploy_state == 'present')
+  when: (apt__enabled | bool and apt__sources_deploy_state == 'present')
 
 - name: Configure custom APT keys
   ansible.builtin.apt_key:
@@ -124,7 +124,7 @@
   until: apt__register_apt_key is succeeded
   # `item.state`, `item.architecture`, `item.distribution` and `item.distribution_release` need to be checked here.
   # Ref: https://github.com/debops/ansible-apt/pull/76#pullrequestreview-2529842
-  when: (apt__enabled|bool and (item.url|d() or item.data|d() or item.id|d() or item.file|d()) and
+  when: (apt__enabled | bool and (item.url|d() or item.data|d() or item.id|d() or item.file|d()) and
          (item.state|d("present") == 'present' and
           (item.architecture|d(apt__architecture) == apt__architecture and
            item.distribution|d(apt__distribution) == apt__distribution and
@@ -148,14 +148,14 @@
     - '{{ apt__group_repositories }}'
     - '{{ apt__host_repositories }}'
   register: apt__register_repositories
-  when: (apt__enabled|bool and item.repo|d())
+  when: (apt__enabled | bool and item.repo|d())
 
 - name: Remove APT auth configuration if requested
   ansible.builtin.file:
     path: '{{ "/etc/apt/auth.conf.d/" + (item.name | regex_replace(".conf$","")) + ".conf" }}'
     state: 'absent'
   loop: '{{ q("flattened", (apt__auth_files + apt__group_auth_files + apt__host_auth_files)) }}'
-  when: apt__enabled|bool and item.state|d('present') == 'absent'
+  when: apt__enabled | bool and item.state|d('present') == 'absent'
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate APT auth configuration
@@ -164,7 +164,7 @@
     dest: '{{ "/etc/apt/auth.conf.d/" + (item.name | regex_replace(".conf$","")) + ".conf" }}'
     mode: '0640'
   loop: '{{ q("flattened", (apt__auth_files + apt__group_auth_files + apt__host_auth_files)) }}'
-  when: apt__enabled|bool and item.machine|d() and item.login|d() and item.password|d() and
+  when: apt__enabled | bool and item.machine|d() and item.login|d() and item.password|d() and
         item.state|d('present') not in [ 'absent', 'ignore' ]
   no_log: '{{ debops__no_log | d(True) }}'
 
@@ -181,7 +181,7 @@
     - '{{ apt__conf }}'
     - '{{ apt__group_conf }}'
     - '{{ apt__host_conf }}'
-  when: (apt__enabled|bool  and
+  when: (apt__enabled | bool  and
          (item.src|d() or item.content|d()) and
          (item.dest|d() or item.path|d() or item.name|d()) and
          (item.state|d('present') != 'absent'))
@@ -194,7 +194,7 @@
     - '{{ apt__conf }}'
     - '{{ apt__group_conf }}'
     - '{{ apt__host_conf }}'
-  when: (apt__enabled|bool  and
+  when: (apt__enabled | bool  and
          (item.dest|d() or item.path|d() or item.name|d()) and
          (item.state|d('present') == 'absent'))
                                                                    # ]]]
@@ -209,7 +209,7 @@
                          else apt__cache_valid_time }}'
   register: apt__register_apt_update
   until: apt__register_apt_update is succeeded
-  when: apt__enabled|bool
+  when: apt__enabled | bool
 
 - name: Purge APT packages if requested
   ansible.builtin.apt:
@@ -221,7 +221,7 @@
     autoremove: True
   register: apt__register_purge_packages
   until: apt__register_purge_packages is succeeded
-  when: apt__enabled|bool
+  when: apt__enabled | bool
 
 - name: Update the role status in local facts
   ansible.builtin.lineinfile:
@@ -231,8 +231,8 @@
     state: 'present'
     mode: '0755'
   notify: [ 'Refresh host facts' ]
-  when: (apt__enabled|bool and ansible_local|d() and ansible_local.apt|d() and
-         not ansible_local.apt.configured|bool)
+  when: (apt__enabled | bool and ansible_local|d() and ansible_local.apt|d() and
+         not ansible_local.apt.configured | bool)
 
 - name: Update Ansible facts if they were modified
   ansible.builtin.meta: 'flush_handlers'

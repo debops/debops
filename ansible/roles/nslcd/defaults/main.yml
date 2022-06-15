@@ -26,7 +26,7 @@ nslcd__base_packages:
   - [ 'libpam-ldapd', 'libnss-ldapd', 'nslcd', 'openssl', 'ca-certificates' ]
   - '{{ "nslcd-utils"
         if (ansible_local|d() and ansible_local.python|d() and
-            (ansible_local.python.installed2|d())|bool)
+            (ansible_local.python.installed2|d()) | bool)
         else [] }}'
 
                                                                    # ]]]
@@ -129,7 +129,7 @@ nslcd__ldap_binddn: '{{ ([ nslcd__ldap_self_rdn ] + nslcd__ldap_device_dn) | joi
 # service to bind to the LDAP directory.
 nslcd__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
                                 + nslcd__ldap_binddn | to_uuid + ".password length=32"))
-                        if nslcd__ldap_enabled|bool
+                        if nslcd__ldap_enabled | bool
                         else "" }}'
 
                                                                    # ]]]
@@ -219,7 +219,7 @@ nslcd__default_configuration:
     comment: 'SSL options'
     value: '{{ "start_tls"
                if (ansible_local|d() and ansible_local.ldap|d() and
-                   (ansible_local.ldap.start_tls|d())|bool)
+                   (ansible_local.ldap.start_tls|d()) | bool)
                else "on" }}'
 
   - name: 'tls_reqcert'
@@ -299,7 +299,7 @@ nslcd__ldap__dependent_tasks:
     attributes: '{{ nslcd__ldap_self_attributes }}'
     no_log: '{{ debops__no_log | d(True) }}'
     state: '{{ "present"
-               if ((ansible_local.ldap.posix_enabled|d())|bool and
+               if ((ansible_local.ldap.posix_enabled|d()) | bool and
                    nslcd__ldap_device_dn|d())
                else "ignore" }}'
 

@@ -457,7 +457,7 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
     ]
 {%       endif %}
 {%     endif %}
-{%     if ((runner.cache|d() and runner.cache|bool) or gitlab_runner__cache|bool) %}
+{%     if ((runner.cache|d() and runner.cache | bool) or gitlab_runner__cache | bool) %}
   [runners.cache]
     Type = "{{ runner.cache_type | d(gitlab_runner__cache_type) }}"
     Shared = {{ (runner.cache_shared | d(gitlab_runner__cache_shared)) | bool | lower }}

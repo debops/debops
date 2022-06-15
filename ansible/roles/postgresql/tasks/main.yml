@@ -203,7 +203,7 @@
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
   when: (item.state|d('present') == 'present') and
-        item.enabled|d(True)|bool
+        item.enabled|d(True) | bool
 
 - name: Grant database privileges to PostgreSQL roles
   community.postgresql.postgresql_user:

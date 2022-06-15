@@ -58,7 +58,7 @@ Set a variable in the ``[default]`` section of the public INI file:
        option: 'mta'
        value: True
      when: ansible_local|d() and ansible_local.debops_fact|d() and
-           ansible_local.debops_fact.enabled|bool
+           ansible_local.debops_fact.enabled | bool
 
 Add your role to list of roles applied on this host:
 
@@ -74,7 +74,7 @@ Add your role to list of roles applied on this host:
                         ansible_local.debops_fact.global.applied_roles|d())
                     else []) + [ "username.rolename" ]) | unique | to_json }}'
      when: ansible_local|d() and ansible_local.debops_fact|d() and
-           ansible_local.debops_fact.enabled|bool
+           ansible_local.debops_fact.enabled | bool
 
 
 Example inventory

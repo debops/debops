@@ -47,10 +47,10 @@
     name: '{{ item }}'
     state: 'present'
   with_items: '{{ tinc__modprobe_modules }}'
-  when: (tinc__modprobe|bool and
-         (((ansible_system_capabilities_enforced|d())|bool and
+  when: (tinc__modprobe | bool and
+         (((ansible_system_capabilities_enforced|d()) | bool and
           "cap_sys_admin" in ansible_system_capabilities) or
-         not (ansible_system_capabilities_enforced|d(True))|bool))
+         not (ansible_system_capabilities_enforced|d(True)) | bool))
 
 - name: Make sure that required modules are loaded on boot
   ansible.builtin.lineinfile:
@@ -60,10 +60,10 @@
     state: 'present'
     mode: '0644'
   with_items: '{{ tinc__modprobe_modules }}'
-  when: (tinc__modprobe|bool and
-         (((ansible_system_capabilities_enforced|d())|bool and
+  when: (tinc__modprobe | bool and
+         (((ansible_system_capabilities_enforced|d()) | bool and
           "cap_sys_admin" in ansible_system_capabilities) or
-         not (ansible_system_capabilities_enforced|d(True))|bool))
+         not (ansible_system_capabilities_enforced|d(True)) | bool))
 
 # Tinc configuration [[[1
 - name: Set tincd default environment
@@ -82,7 +82,7 @@
     enabled: False
     state: '{{ (item.state|d("present") in ["absent"]) | ternary("started", "stopped") }}'
   with_dict: '{{ tinc__combined_networks }}'
-  when: tinc__systemd|bool and item.value.state|d('present') == 'absent' and
+  when: tinc__systemd | bool and item.value.state|d('present') == 'absent' and
         not tinc__register_install is changed
 
 - name: Remove tinc network configuration if requested
@@ -129,7 +129,7 @@
     mode: '0750'
     unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
   with_dict: '{{ tinc__combined_networks }}'
-  when: (item.value.state|d('present') != 'absent' and item.value.generate_tinc_up|d(True)|bool)
+  when: (item.value.state|d('present') != 'absent' and item.value.generate_tinc_up|d(True) | bool)
 
 - name: Generate tinc-down network scripts
   ansible.builtin.template:
@@ -140,7 +140,7 @@
     mode: '0750'
     unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
   with_dict: '{{ tinc__combined_networks }}'
-  when: (item.value.state|d('present') != 'absent' and item.value.generate_tinc_up|d(True)|bool)
+  when: (item.value.state|d('present') != 'absent' and item.value.generate_tinc_up|d(True) | bool)
 
 - name: Configure which networks are started at boot
   ansible.builtin.template:
@@ -280,7 +280,7 @@
     mode: '0644'
     unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
   with_dict: '{{ tinc__combined_networks }}'
-  when: tinc__systemd|bool and item.value.state|d('present') != 'absent'
+  when: tinc__systemd | bool and item.value.state|d('present') != 'absent'
   notify: [ 'Reload tinc' ]
 
 - name: Configure tinc-down wrapper script
@@ -321,15 +321,15 @@
   ansible.builtin.service:  # noqa no-handler
     name: 'tinc'
     state: 'restarted'
-  when: not tinc__systemd|bool and tinc__register_install is changed
+  when: not tinc__systemd | bool and tinc__register_install is changed
 
 - name: Configure tinc network services in systemd
   ansible.builtin.service:
     name: 'tinc@{{ item.value.name | d(item.key) }}'
-    enabled: '{{ (item.value.boot|d(True))|bool }}'
+    enabled: '{{ (item.value.boot|d(True)) | bool }}'
     state: '{{ (item.value.state|d("present") in ["absent"]) | ternary("stopped", "started") }}'
   with_dict: '{{ tinc__combined_networks }}'
-  when: tinc__systemd|bool and item.value.state|d('present') != 'absent' and
+  when: tinc__systemd | bool and item.value.state|d('present') != 'absent' and
         item.value.port|d()
 
 # Ansible facts [[[1

@@ -88,7 +88,7 @@ snmpd_combined_custom_options: '{{ snmpd_custom_options
 # Download MIB definitions by default?
 snmpd_download_mibs: '{{ True
                          if (ansible_local|d() and ansible_local.apt|d() and
-                             (ansible_local.apt.nonfree|d())|bool)
+                             (ansible_local.apt.nonfree|d()) | bool)
                          else False }}'
 
                                                                    # ]]]
@@ -289,7 +289,7 @@ snmpd_load_15min: '{{ (((snmpd_load_base | float) *
 # access to the ``/proc`` filesystem?
 snmpd_proc_hidepid: '{{ True
                         if (ansible_local|d() and ansible_local.proc_hidepid|d() and
-                            (ansible_local.proc_hidepid.enabled|d())|bool)
+                            (ansible_local.proc_hidepid.enabled|d()) | bool)
                         else False }}'
 
                                                                    # ]]]

@@ -151,7 +151,7 @@
     mode: '0755'
   when: (lxc__net_deploy_state == 'present' and
          ansible_local|d() and ansible_local.ferm|d() and
-         (ansible_local.ferm.enabled|d())|bool)
+         (ansible_local.ferm.enabled|d()) | bool)
   tags: [ 'role::lxc:net' ]
 
 - name: Create lxc-net service override directory
@@ -433,7 +433,7 @@
   loop: '{{ lxc__containers }}'
   when: ansible_local|d() and ansible_local.lxc|d() and
         (item.name | d(item)) not in ansible_local.lxc.containers|d() and
-        (item.ssh|d(lxc__default_container_ssh))|bool and item.state|d("started") == "started"
+        (item.ssh|d(lxc__default_container_ssh)) | bool and item.state|d("started") == "started"
   tags: [ 'role::lxc:containers' ]
 
 - name: DebOps post_tasks hook

@@ -75,7 +75,7 @@
   notify: [ 'Reload systemd daemon (gunicorn)' ]
   when: ansible_service_mgr == 'systemd' and
         gunicorn__register_systemd_templated.stat|d() and
-        gunicorn__register_systemd_templated.stat.exists|bool and
+        gunicorn__register_systemd_templated.stat.exists | bool and
         item.name|d() and item.state|d('present') == 'absent'
 
 - name: Generate systemd configuration files

@@ -24,7 +24,7 @@
 #
 # List of APT packages required for Docker Registry service.
 docker_registry__base_packages: '{{ [ "docker-registry" ]
-                                    if (not docker_registry__upstream|bool)
+                                    if (not docker_registry__upstream | bool)
                                     else [] }}'
 
                                                                    # ]]]
@@ -155,7 +155,7 @@ docker_registry__git_version: 'v2.7.1'
 # to; alternatively, the path of the Docker Registry binary installed by the
 # APT package.
 docker_registry__binary: '{{ "/usr/local/bin/docker-registry"
-                             if docker_registry__upstream|bool
+                             if docker_registry__upstream | bool
                              else "/usr/bin/docker-registry" }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -202,7 +202,7 @@ docker_registry__max_upload_size: '4G'
 # GitLab Container Registry integration is enabled, the internal HTTP Basic
 # Auth is disabled.
 docker_registry__basic_auth: '{{ False
-                                 if docker_registry__token_enabled|bool
+                                 if docker_registry__token_enabled | bool
                                  else True }}'
 
                                                                    # ]]]
@@ -260,7 +260,7 @@ docker_registry__storage_mode: '0755'
 # .. envvar:: docker_registry__redis_enabled [[[
 #
 # Enable or disable support for Redis Server cache.
-docker_registry__redis_enabled: '{{ ansible_local.redis_server.installed|d()|bool }}'
+docker_registry__redis_enabled: '{{ ansible_local.redis_server.installed|d() | bool }}'
 
                                                                    # ]]]
 # .. envvar:: docker_registry__redis_host [[[
@@ -308,7 +308,7 @@ docker_registry__token_provider: 'gitlab'
 # Enable or disable support for token-based authentication.
 docker_registry__token_enabled: '{{ True
                                     if (ansible_local|d() and ansible_local[docker_registry__token_provider]|d() and
-                                        (ansible_local[docker_registry__token_provider].registry|d())|bool)
+                                        (ansible_local[docker_registry__token_provider].registry|d()) | bool)
                                     else False }}'
 
                                                                    # ]]]
@@ -453,7 +453,7 @@ docker_registry__default_config:
           enabled: True
 
   - name: 'default-redis'
-    state: '{{ "present" if docker_registry__redis_enabled|bool else "absent" }}'
+    state: '{{ "present" if docker_registry__redis_enabled | bool else "absent" }}'
     config:
       redis:
         addr: '{{ docker_registry__redis_host + ":" + docker_registry__redis_port }}'
@@ -464,7 +464,7 @@ docker_registry__default_config:
           blobdescriptor: 'redis'
 
   - name: 'default-token'
-    state: '{{ "present" if docker_registry__token_enabled|bool else "absent" }}'
+    state: '{{ "present" if docker_registry__token_enabled | bool else "absent" }}'
     config:
       auth:
         token:
@@ -545,7 +545,7 @@ docker_registry__keyring__dependent_gpg_keys:
     group: '{{ docker_registry__group }}'
     home: '{{ docker_registry__home }}'
     id: '{{ docker_registry__git_gpg_key }}'
-    state: '{{ "present" if docker_registry__upstream|bool else "absent" }}'
+    state: '{{ "present" if docker_registry__upstream | bool else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: docker_registry__python__dependent_packages3 [[[
@@ -603,7 +603,7 @@ docker_registry__nginx__dependent_servers:
     filename: 'debops.docker_registry'
     allow: '{{ docker_registry__allow }}'
     auth_basic: '{{ False
-                    if (docker_registry__basic_auth_except_get|bool)
+                    if (docker_registry__basic_auth_except_get | bool)
                     else (docker_registry__basic_auth | bool) }}'
     auth_basic_realm: '{{ docker_registry__basic_auth_realm }}'
     auth_basic_name: '{{ docker_registry__basic_auth_name }}'
@@ -618,7 +618,7 @@ docker_registry__nginx__dependent_servers:
 
       - pattern: '/'
         options: |
-          {% if docker_registry__token_enabled|bool %}
+          {% if docker_registry__token_enabled | bool %}
           return 307 $scheme://{{ docker_registry__token_fqdn }}/;
           {% else %}
           return 307 /v2/;
@@ -632,7 +632,7 @@ docker_registry__nginx__dependent_servers:
             return 404;
           }
 
-          {% if docker_registry__basic_auth_except_get|bool %}
+          {% if docker_registry__basic_auth_except_get | bool %}
           set $auth_basic "{{ docker_registry__basic_auth_realm }}";
           if ($request_method ~* "^(GET|HEAD)$") {
               set $auth_basic "off";

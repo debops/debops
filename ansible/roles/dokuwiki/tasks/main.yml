@@ -112,7 +112,7 @@
   with_flattened:
     - '{{ dokuwiki__default_plugins }}'
     - '{{ dokuwiki__plugins }}'
-  when: (dokuwiki__plugins_enabled|bool and
+  when: (dokuwiki__plugins_enabled | bool and
          (item.dest|d() and item.dest) and (item.state|d() and item.state == 'absent'))
 
 - name: Install specified plugins from git repositories
@@ -128,7 +128,7 @@
     - '{{ dokuwiki__plugins }}'
   register: dokuwiki__register_git_plugins
   until: dokuwiki__register_git_plugins is succeeded
-  when: (dokuwiki__plugins_enabled|bool and
+  when: (dokuwiki__plugins_enabled | bool and
          (item.repo|d() and item.repo) and (item.dest|d() and item.dest) and
          (item.state is undefined or (item.state|d() and item.state != 'absent')))
 
@@ -139,7 +139,7 @@
   with_flattened:
     - '{{ dokuwiki__default_templates }}'
     - '{{ dokuwiki__templates }}'
-  when: (dokuwiki__plugins_enabled|bool and
+  when: (dokuwiki__plugins_enabled | bool and
          (item.dest|d() and item.dest) and (item.state|d() and item.state == 'absent'))
 
 - name: Install specified templates from git repositories
@@ -155,7 +155,7 @@
     - '{{ dokuwiki__templates }}'
   register: dokuwiki__register_git_templates
   until: dokuwiki__register_git_templates is succeeded
-  when: (dokuwiki__plugins_enabled|bool and
+  when: (dokuwiki__plugins_enabled | bool and
          (item.repo|d() and item.repo) and (item.dest|d() and item.dest) and
          (item.state is undefined or (item.state|d() and item.state != 'absent')))
 
@@ -206,7 +206,7 @@
     owner: '{{ dokuwiki__user }}'
     group: '{{ dokuwiki__webserver_user }}'
     mode: '0750'
-  when: dokuwiki__farm|bool
+  when: dokuwiki__farm | bool
 
 - name: Create farm animal directories
   ansible.builtin.copy:
@@ -217,13 +217,13 @@
     mode: '0750'
     force: False
   with_items: '{{ dokuwiki__farm_animals }}'
-  when: (dokuwiki__farm|bool and dokuwiki__farm_animals)
+  when: (dokuwiki__farm | bool and dokuwiki__farm_animals)
 
 - name: Disable DokuWiki farm if not enabled
   ansible.builtin.file:
     path: '{{ dokuwiki__git_checkout + "/inc/preload.php" }}'
     state: 'absent'
-  when: (not dokuwiki__farm|bool or not dokuwiki__farm_animals)
+  when: (not dokuwiki__farm | bool or not dokuwiki__farm_animals)
 
 - name: Configure DokuWiki farm preload script
   ansible.builtin.template:
@@ -232,7 +232,7 @@
     owner: '{{ dokuwiki__user }}'
     group: '{{ dokuwiki__group }}'
     mode: '0644'
-  when: (dokuwiki__farm|bool and dokuwiki__farm_animals)
+  when: (dokuwiki__farm | bool and dokuwiki__farm_animals)
 
 - name: Download initial anti-spam blacklist
   ansible.builtin.command: /etc/cron.weekly/dokuwiki-wikipedia-blacklist

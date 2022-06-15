@@ -75,7 +75,7 @@
     - '{{ resources__paths }}'
     - '{{ resources__group_paths }}'
     - '{{ resources__host_paths }}'
-  when: (resources__enabled|bool and
+  when: (resources__enabled | bool and
          ((item.path|d() or item.dest|d() or item.name|d()) or item))
   tags: [ 'role::resources:paths' ]
 
@@ -88,7 +88,7 @@
     owner:   '{{ item.parent_dirs_owner   | d(resources__parent_dirs_owner) }}'
     group:   '{{ item.parent_dirs_group   | d(resources__parent_dirs_group) }}'
     mode:    '{{ item.parent_dirs_mode    | d(resources__parent_dirs_mode) }}'
-  when: (resources__enabled|bool and
+  when: (resources__enabled | bool and
          (item.parent_dirs_create|d(resources__parent_dirs_create) | bool) and
          item.state|d("present") != 'absent')
   with_flattened:
@@ -131,7 +131,7 @@
     - '{{ resources__repositories }}'
     - '{{ resources__group_repositories }}'
     - '{{ resources__host_repositories }}'
-  when: (resources__enabled|bool and (item.repo|d() or item.url|d() or item.src|d()) and
+  when: (resources__enabled | bool and (item.repo|d() or item.url|d() or item.src|d()) and
          (item.dest|d() or item.name|d() or item.path|d()))
   tags: [ 'role::resources:repositories' ]
 
@@ -157,7 +157,7 @@
     - '{{ resources__urls }}'
     - '{{ resources__group_urls }}'
     - '{{ resources__host_urls }}'
-  when: (resources__enabled|bool and (item.url|d() or item.src|d()) and
+  when: (resources__enabled | bool and (item.url|d() or item.src|d()) and
          (item.dest|d() or item.name|d() or item.path|d()))
   no_log: '{{ debops__no_log | d(True if item.url_password|d() else omit) }}'
   tags: [ 'role::resources:urls' ]
@@ -187,7 +187,7 @@
     - '{{ resources__archives }}'
     - '{{ resources__group_archives }}'
     - '{{ resources__host_archives }}'
-  when: (resources__enabled|bool and item.src|d() and
+  when: (resources__enabled | bool and item.src|d() and
          (item.dest|d() or item.name|d() or item.path|d()))
   tags: [ 'role::resources:archives' ]
 
@@ -201,7 +201,7 @@
     - '{{ resources__files }}'
     - '{{ resources__group_files }}'
     - '{{ resources__host_files }}'
-  when: (resources__enabled|bool and
+  when: (resources__enabled | bool and
          (item.dest|d() or item.path|d() or item.name|d()) and
          (item.state|d('present') == 'absent'))
   tags: [ 'role::resources:files' ]
@@ -228,7 +228,7 @@
     - '{{ resources__files }}'
     - '{{ resources__group_files }}'
     - '{{ resources__host_files }}'
-  when: (resources__enabled|bool and
+  when: (resources__enabled | bool and
          (item.src|d() or item.content is defined) and
          (item.dest|d() or item.path|d() or item.name|d()) and
          (item.state|d('present') != 'absent'))
@@ -296,7 +296,7 @@
     - '{{ resources__delayed_paths }}'
     - '{{ resources__group_delayed_paths }}'
     - '{{ resources__host_delayed_paths }}'
-  when: (resources__enabled|bool and
+  when: (resources__enabled | bool and
          ((item.path|d() or item.dest|d() or item.name|d()) or item))
   tags: [ 'role::resources:paths' ]
 
@@ -307,7 +307,7 @@
     state:      '{{ item.state | d("present") }}'
   with_flattened:
     - '{{ resources__combined_file_capabilities }}'
-  when: resources__enabled|bool
+  when: resources__enabled | bool
   tags: [ 'role::resources:capabilities' ]
 
 # Execute custom shell commands [[[1
@@ -317,7 +317,7 @@
   loop: '{{ q("flattened", resources__combined_commands) | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name} }}'
-  when: resources__enabled|bool and
+  when: resources__enabled | bool and
         item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ]
   no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
   tags: [ 'role::resources:commands' ]

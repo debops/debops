@@ -17,10 +17,10 @@
        (ansible_local.lxc.installed|d()) | bool) %}
 {%   set _ = output.append('lxc-host') %}
 {% endif %}
-{% if gitlab_runner__vagrant_libvirt|bool %}
+{% if gitlab_runner__vagrant_libvirt | bool %}
 {%   set _ = output.extend([ 'vagrant', 'vagrant-vm', 'vagrant-libvirt' ]) %}
 {% endif %}
-{% if gitlab_runner__vagrant_lxc|bool %}
+{% if gitlab_runner__vagrant_lxc | bool %}
 {%   set _ = output.extend([ 'vagrant', 'vagrant-lxc' ]) %}
 {% endif %}
 {% set _ = output.append(ansible_local.core.distribution|d(ansible_distribution) | lower) %}
@@ -28,7 +28,7 @@
 {% if ansible_virtualization_type not in [ 'NA' ] %}
 {%   set _ = output.append(ansible_virtualization_type + '-' + ansible_virtualization_role) %}
 {% endif %}
-{% if (ansible_local|d() and ansible_local.libvirtd|d() and (ansible_local.libvirtd.hw_virt|d())|bool) %}
+{% if (ansible_local|d() and ansible_local.libvirtd|d() and (ansible_local.libvirtd.hw_virt|d()) | bool) %}
 {%   set _ = output.append('hw-virt') %}
 {% endif %}
 {% if (ansible_memtotal_mb | int > 2048) %}

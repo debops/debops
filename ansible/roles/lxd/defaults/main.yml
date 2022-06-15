@@ -200,7 +200,7 @@ lxd__combined_preseed: '{{ lxd__default_preseed
 # re-apply the preseed configuration on existing installations.
 lxd__init_preseed: '{{ False
                        if (ansible_local|d() and ansible_local.lxd|d() and
-                           (ansible_local.lxd.installed|d())|bool)
+                           (ansible_local.lxd.installed|d()) | bool)
                        else True }}'
 
                                                                    # ]]]
@@ -220,7 +220,7 @@ lxd__preseed_data: '{{ lookup("template", "lookup/lxd__preseed_data.j2") }}'
 lxd__golang__dependent_packages:
 
   - name: 'lxd'
-    state: '{{ "present" if lxd__upstream_enabled|bool else "absent" }}'
+    state: '{{ "present" if lxd__upstream_enabled | bool else "absent" }}'
     upstream_type: '{{ lxd__upstream_type }}'
     apt_packages: [ 'lxd', 'lxd-client' ]
     apt_dev_packages: [ 'autoconf', 'automake', 'tcl', 'libacl1-dev', 'libcap-dev',
@@ -271,7 +271,7 @@ lxd__golang__dependent_packages:
 lxd__logrotate__dependent_config:
 
   - filename: 'lxd'
-    divert: '{{ False if lxd__upstream_enabled|bool else True }}'
+    divert: '{{ False if lxd__upstream_enabled | bool else True }}'
     log: '/var/log/lxd/lxd.log'
     options: |
       copytruncate
@@ -290,7 +290,7 @@ lxd__logrotate__dependent_config:
 lxd__sysctl__dependent_parameters:
 
   - name: 'lxd-inotify'
-    divert: '{{ False if lxd__upstream_enabled|bool else True }}'
+    divert: '{{ False if lxd__upstream_enabled | bool else True }}'
     weight: '10'
     options:
 

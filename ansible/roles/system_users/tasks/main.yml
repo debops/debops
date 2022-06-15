@@ -39,22 +39,22 @@
     state: 'present'
   register: system_users__register_packages
   until: system_users__register_packages is succeeded
-  when: system_users__enabled|bool
+  when: system_users__enabled | bool
 
 - name: Create UNIX groups for system users
   ansible.builtin.group:
     name:   '{{ (item.prefix | d(system_users__prefix)) + (item.group | d(item.name)) }}'
-    system: '{{ item.system | d(False if (item.user|d(True))|bool else True) }}'
+    system: '{{ item.system | d(False if (item.user|d(True)) | bool else True) }}'
     gid:    '{{ item.gid    | d(omit) }}'
     state:  'present'
-    local: '{{ True if (item.user|d(True))|bool else False }}'
+    local: '{{ True if (item.user|d(True)) | bool else False }}'
   loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + (item.group | d(item.name)),
                 "state": item.state|d("present")} }}'
-  when: (system_users__enabled|bool and item.name|d() and item.name != 'root' and
+  when: (system_users__enabled | bool and item.name|d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and
-         (item.private_group|d(True))|bool)
+         (item.private_group|d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
 
 - name: Gather information about existing remote users
@@ -69,7 +69,7 @@
                             | d(((getent_passwd[(item.prefix | d(system_users__prefix)) + item.name][4])
                                  if (getent_passwd[(item.prefix | d(system_users__prefix)) + item.name]|d())
                                  else (system_users__home_root + "/" + ((item.prefix | d(system_users__prefix)) + item.name)))
-                                if ((item.create_home|d(True))|bool)
+                                if ((item.create_home|d(True)) | bool)
                                 else omit) }}'
     uid:                '{{ item.uid                | d(omit) }}'
     state:              '{{ item.state              | d("present") }}'
@@ -98,8 +98,8 @@
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state|d("present"), "gecos": item.comment|d()} }}'
-  when: (system_users__enabled|bool and item.name|d() and item.name != 'root' and
-         item.state|d('present') not in [ 'ignore' ] and (item.user|d(True))|bool)
+  when: (system_users__enabled | bool and item.name|d() and item.name != 'root' and
+         item.state|d('present') not in [ 'ignore' ] and (item.user|d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
 
 - name: Gather information about existing remote groups
@@ -117,10 +117,10 @@
                     if (item.groups is defined)
                     else [])
                     + (system_users__admin_groups
-                       if ((item.admin|d())|bool)
+                       if ((item.admin|d()) | bool)
                        else []) )
                    | intersect(getent_group.keys()) )
-                if (item.groups is defined or (item.admin|d())|bool)
+                if (item.groups is defined or (item.admin|d()) | bool)
                 else omit }}'
     append: '{{ item.append | d(True) }}'
     state:  '{{ item.state  | d("present") }}'
@@ -130,10 +130,10 @@
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state|d("present"), "gecos": item.comment|d(),
                 "groups": item.groups|d()} }}'
-  when: (system_users__enabled|bool and item.name|d() and item.name != 'root' and
+  when: (system_users__enabled | bool and item.name|d() and item.name != 'root' and
          item.state|d('present') not in [ 'ignore' ] and
-         (item.groups|d() or (item.admin|d())|bool) and
-         (item.user|d(True))|bool)
+         (item.groups|d() or (item.admin|d()) | bool) and
+         (item.user|d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
 
 - name: Manage system users home directories
@@ -142,12 +142,12 @@
               | d(((getent_passwd[(item.prefix | d(system_users__prefix)) + item.name][4])
                    if (getent_passwd[(item.prefix | d(system_users__prefix)) + item.name]|d())
                    else (system_users__home_root + "/" + ((item.prefix | d(system_users__prefix)) + item.name)))
-                  if ((item.create_home|d(True))|bool)
+                  if ((item.create_home|d(True)) | bool)
                   else omit) }}'
     state: 'directory'
     owner: '{{ item.home_owner | d(omit) }}'
     group: '{{ item.home_group | d(omit) }}'
-    mode:  '{{ item.home_mode  | d(system_users__default_home_mode if (item.local|d(True))|bool else omit) }}'
+    mode:  '{{ item.home_mode  | d(system_users__default_home_mode if (item.local|d(True)) | bool else omit) }}'
   loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
@@ -155,12 +155,12 @@
                 "home": (item.home | d(((getent_passwd[(item.prefix | d(system_users__prefix)) + item.name][4])
                                         if (getent_passwd[(item.prefix | d(system_users__prefix)) + item.name]|d())
                                         else (system_users__home_root + "/" + ((item.prefix | d(system_users__prefix)) + item.name)))
-                                       if ((item.create_home|d(True))|bool)
+                                       if ((item.create_home|d(True)) | bool)
                                        else ""))} }}'
-  when: (system_users__enabled|bool and item.name|d() and item.name != 'root' and
-         item.state|d('present') not in [ 'absent', 'ignore' ] and (item.create_home|d(True))|bool and
-         (item.home_owner|d() or item.home_group|d() or item.home_mode|d() or (item.local|d(True))|bool) and
-         (item.user|d(True))|bool)
+  when: (system_users__enabled | bool and item.name|d() and item.name != 'root' and
+         item.state|d('present') not in [ 'absent', 'ignore' ] and (item.create_home|d(True)) | bool and
+         (item.home_owner|d() or item.home_group|d() or item.home_mode|d() or (item.local|d(True)) | bool) and
+         (item.user|d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
 
 - name: Manage system users home directory ACLs
@@ -169,7 +169,7 @@
                      | d(((getent_passwd[(item.0.prefix | d(system_users__prefix)) + item.0.name][4])
                           if (getent_passwd[(item.0.prefix | d(system_users__prefix)) + item.0.name]|d())
                           else (system_users__home_root + "/" + ((item.0.prefix | d(system_users__prefix)) + item.0.name)))
-                         if ((item.0.create_home|d(True))|bool)
+                         if ((item.0.create_home|d(True)) | bool)
                          else omit) }}'
     default:     '{{ item.1.default     | d(omit) }}'
     entity:      '{{ item.1.entity      | d(omit) }}'
@@ -185,10 +185,10 @@
   loop_control:
     label: '{{ {"name": (item.0.prefix | d(system_users__prefix)) + item.0.name,
                 "state": item.0.state | d("present"), "home_acl": item.1} }}'
-  when: (system_users__enabled|bool and system_users__acl_enabled|bool and
+  when: (system_users__enabled | bool and system_users__acl_enabled | bool and
          item.0.name|d() and item.0.name != 'root' and
-         item.0.state|d('present') not in [ 'absent', 'ignore' ] and (item.0.create_home|d(True))|bool and
-         item.0.home_acl|d() and (item.user|d(True))|bool)
+         item.0.state|d('present') not in [ 'absent', 'ignore' ] and (item.0.create_home|d(True)) | bool and
+         item.0.home_acl|d() and (item.user|d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password|d() else False) }}'
   tags: [ 'role::system_users:home_acl', 'skip::system_users:home_acl', 'skip::check' ]
 
@@ -200,10 +200,10 @@
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present"), "linger": item.linger|d(False)} }}'
-  when: (system_users__enabled|bool and ansible_service_mgr == 'systemd' and
+  when: (system_users__enabled | bool and ansible_service_mgr == 'systemd' and
          item.name|d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and
-         item.linger is defined and item.linger|bool and (item.user|d(True))|bool)
+         item.linger is defined and item.linger | bool and (item.user|d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
 
 - name: Disallow specified UNIX accounts to linger when not logged in
@@ -214,10 +214,10 @@
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present"), "linger": item.linger|d(False)} }}'
-  when: (system_users__enabled|bool and ansible_service_mgr == 'systemd' and
+  when: (system_users__enabled | bool and ansible_service_mgr == 'systemd' and
          item.name|d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and
-         item.linger is defined and not item.linger|bool and (item.user|d(True))|bool)
+         item.linger is defined and not item.linger | bool and (item.user|d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
 
 - name: Configure SSH authorized keys for system users
@@ -230,9 +230,9 @@
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present"), "sshkeys": item.sshkeys|d()} }}'
-  when: (system_users__enabled|bool and item.name|d() and item.name != 'root' and
-         item.state|d('present') not in [ 'absent', 'ignore' ] and (item.create_home|d(True))|bool and
-         item.sshkeys|d() and item.sshkeys_state|d('present') != 'absent' and (item.user|d(True))|bool and
+  when: (system_users__enabled | bool and item.name|d() and item.name != 'root' and
+         item.state|d('present') not in [ 'absent', 'ignore' ] and (item.create_home|d(True)) | bool and
+         item.sshkeys|d() and item.sshkeys_state|d('present') != 'absent' and (item.user|d(True)) | bool and
          not ansible_check_mode)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
   tags: [ 'role::system_users:authorized_keys', 'skip::system_users:authorized_keys', 'skip::check' ]
@@ -246,9 +246,9 @@
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present"),
                 "sshkeys_state": item.sshkeys_state|d("present")} }}'
-  when: (system_users__enabled|bool and item.name|d() and item.name != 'root' and
-         item.state|d('present') not in [ 'absent', 'ignore' ] and (item.create_home|d(True))|bool and
-         item.sshkeys|d() and item.sshkeys_state|d('present') == 'absent' and (item.user|d(True))|bool)
+  when: (system_users__enabled | bool and item.name|d() and item.name != 'root' and
+         item.state|d('present') not in [ 'absent', 'ignore' ] and (item.create_home|d(True)) | bool and
+         item.sshkeys|d() and item.sshkeys_state|d('present') == 'absent' and (item.user|d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
 
 - name: Configure system user mail forwarding
@@ -266,9 +266,9 @@
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present"),
                 "forward": item.forward|d()} }}'
-  when: (system_users__enabled|bool and item.name|d() and item.name != 'root' and
+  when: (system_users__enabled | bool and item.name|d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and
-         item.create_home|d(True) and item.forward|d() and (item.user|d(True))|bool)
+         item.create_home|d(True) and item.forward|d() and (item.user|d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
   tags: [ 'role::system_users:forward', 'skip::system_users:forward', 'skip::check' ]
 
@@ -287,18 +287,18 @@
                 "state": item.state|d("present"),
                 "dotfiles": (item.dotfiles | d(item.dotfiles_enabled | d(system_users__dotfiles_enabled))),
                 "dotfiles_repo": ((item.dotfiles_repo | d(system_users__dotfiles_repo))
-                                  if ((item.dotfiles|d(item.dotfiles_enabled|d(system_users__dotfiles_enabled)))|bool)
+                                  if ((item.dotfiles|d(item.dotfiles_enabled|d(system_users__dotfiles_enabled))) | bool)
                                   else "")} }}'
   become: True
   become_user: '{{ (item.prefix | d(system_users__prefix)) + item.name }}'
   check_mode: False
   register: system_users__register_dotfiles
   changed_when: ('Already up to date.' not in system_users__register_dotfiles.stdout_lines|regex_replace('-', ' '))
-  when: (system_users__enabled|bool and item.name|d() and item.name != 'root' and
-         item.state|d('present') not in [ 'absent', 'ignore' ] and (item.create_home|d(True))|bool and
-         (ansible_local|d() and ansible_local.yadm|d() and (ansible_local.yadm.installed|d())|bool) and
+  when: (system_users__enabled | bool and item.name|d() and item.name != 'root' and
+         item.state|d('present') not in [ 'absent', 'ignore' ] and (item.create_home|d(True)) | bool and
+         (ansible_local|d() and ansible_local.yadm|d() and (ansible_local.yadm.installed|d()) | bool) and
          (item.dotfiles | d(item.dotfiles_enabled | d(system_users__dotfiles_enabled))) | bool and
-         (item.dotfiles_repo | d(system_users__dotfiles_repo)) and (item.user|d(True))|bool)
+         (item.dotfiles_repo | d(system_users__dotfiles_repo)) and (item.user|d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
   tags: [ 'role::system_users:dotfiles', 'skip::system_users:dotfiles', 'skip::check' ]
 
@@ -318,10 +318,10 @@
   loop_control:
     label: '{{ {"name": ((item.0.prefix | d(system_users__prefix)) + item.0.name),
                 "state": item.0.state | d("present"), "resources": item.1} }}'
-  when: (system_users__enabled|bool and
+  when: (system_users__enabled | bool and
          item.0.name|d() and item.0.name != 'root' and
          item.0.state|d('present') not in [ 'absent', 'ignore' ] and
-         item.0.create_home|d(True) and item.0.resources|d() and (item.0.user|d(True))|bool and
+         item.0.create_home|d(True) and item.0.resources|d() and (item.0.user|d(True)) | bool and
          item.1.state|d('directory') in [ 'directory', 'link', 'touch' ] and
          item.1.content is undefined)
   no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password|d() else False) }}'
@@ -341,10 +341,10 @@
   loop_control:
     label: '{{ {"name": ((item.0.prefix | d(system_users__prefix)) + item.0.name),
                 "state": item.0.state | d("present"), "resources": item.1} }}'
-  when: (system_users__enabled|bool and
+  when: (system_users__enabled | bool and
          item.0.name|d() and item.0.name != 'root' and
          item.0.state|d('present') not in [ 'absent', 'ignore' ] and
-         item.0.create_home|d(True) and item.0.resources|d() and (item.0.user|d(True))|bool and
+         item.0.create_home|d(True) and item.0.resources|d() and (item.0.user|d(True)) | bool and
          item.1.state|d('directory') in [ 'present', 'file' ])
   no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password|d() else False) }}'
 
@@ -363,10 +363,10 @@
   loop_control:
     label: '{{ {"name": ((item.0.prefix | d(system_users__prefix)) + item.0.name),
                 "state": item.0.state | d("present"), "resources": item.1} }}'
-  when: (system_users__enabled|bool and
+  when: (system_users__enabled | bool and
          item.0.name|d() and item.0.name != 'root' and
          item.0.state|d('present') not in [ 'absent', 'ignore' ] and
-         item.0.create_home|d(True) and item.0.resources|d() and (item.0.user|d(True))|bool and
+         item.0.create_home|d(True) and item.0.resources|d() and (item.0.user|d(True)) | bool and
          item.1.state|d('directory') in [ 'present', 'file' ] and
          (item.1.dest|d() or item.1.path|d()) and (item.1.src|d() or item.1.content|d()))
   no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password|d() else False) }}'
@@ -381,10 +381,10 @@
   loop_control:
     label: '{{ {"name": ((item.0.prefix | d(system_users__prefix)) + item.0.name),
                 "state": item.0.state | d("present"), "resources": item.1} }}'
-  when: (system_users__enabled|bool and
+  when: (system_users__enabled | bool and
          item.0.name|d() and item.0.name != 'root' and
          item.0.state|d('present') not in [ 'absent', 'ignore' ] and
-         item.0.create_home|d(True) and item.0.resources|d() and (item.0.user|d(True))|bool and
+         item.0.create_home|d(True) and item.0.resources|d() and (item.0.user|d(True)) | bool and
          item.1.state|d('directory') == 'absent')
   no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password|d() else False) }}'
 
@@ -392,14 +392,14 @@
   ansible.builtin.group:
     name:  '{{ (item.prefix | d(system_users__prefix)) + (item.group | d(item.name)) }}'
     state: 'absent'
-    local: '{{ item.local | d(True if (item.user|d(True))|bool else False) }}'
+    local: '{{ item.local | d(True if (item.user|d(True)) | bool else False) }}'
   loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present")} }}'
-  when: (system_users__enabled|bool and item.name|d() and item.name != 'root' and
+  when: (system_users__enabled | bool and item.name|d() and item.name != 'root' and
          item.state|d('present') == 'absent' and
-         (item.private_group|d(True))|bool)
+         (item.private_group|d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
 
 - name: Make sure that Ansible local facts directory exists

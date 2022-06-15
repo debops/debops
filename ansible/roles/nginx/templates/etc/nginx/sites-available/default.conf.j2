@@ -295,7 +295,7 @@
 {%         endif                                                                    %}
 
 {%     endif                                                                        %}
-{%     if item.maintenance|d(True)|bool                                             %}
+{%     if item.maintenance|d(True) | bool                                             %}
         if (-f $document_root/{{ item.maintenance_file | d('maintenance.html') }}) {
                 return 503;
         }
@@ -379,7 +379,7 @@
         auth_basic_user_file {{ item.auth_basic_filename | default(nginx_private_path + "/" + item.auth_basic_name|d()) }};
 
 {%     endif %}
-{%     if item.userdir|d()|bool %}
+{%     if item.userdir|d() | bool %}
         location ~ {{ item.userdir_regexp | d('^/~(.+?)(/.*)?$') }} {
                 alias {{ item.userdir_alias | d(nginx_www + '/$1/userdir/public$2') }};
                 index {{ item.userdir_index | d(item.index | default('index.html index.htm')) }};
@@ -717,7 +717,7 @@ server {
 {%         endif                                                %}
 {%     endif                                                    %}
 {%     if item.hsts_enabled|d(True) | bool                      %}
-        add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age }}{{ "; includeSubDomains" if nginx_hsts_subdomains|bool else "" }}{{ "; preload" if ((item.hsts_preload | d(nginx_hsts_preload)) | bool) else "" }}"{% if nginx_version is version_compare('1.7.5','>=') %} always{% endif %};
+        add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age }}{{ "; includeSubDomains" if nginx_hsts_subdomains | bool else "" }}{{ "; preload" if ((item.hsts_preload | d(nginx_hsts_preload)) | bool) else "" }}"{% if nginx_version is version_compare('1.7.5','>=') %} always{% endif %};
 {% endif                                                    %}
 {% if item.csp_enabled|d(False) | bool %}
         add_header                Content-Security-Policy "{{ item.csp|d("default-src https: ;") + (" " + item.csp_append|d(nginx__http_csp_append) if (item.csp_append|d(nginx__http_csp_append)) else "") }}";

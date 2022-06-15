@@ -109,7 +109,7 @@ nsswitch__default_database_map:
 
     - replace: 'mdns4_minimal'
       service: '{{ "mdns_minimal" if (ansible_local|d() and ansible_local.avahi|d() and
-                                      ansible_local.avahi.ipv6|bool) else "mdns4_minimal" }}'
+                                      ansible_local.avahi.ipv6 | bool) else "mdns4_minimal" }}'
       action:  '[NOTFOUND=return]'
 
     - [ 'resolve', '[!UNAVAIL=return]' ]

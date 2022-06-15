@@ -112,7 +112,7 @@ sssd__ldap_binddn: '{{ ([ sssd__ldap_self_rdn ] + sssd__ldap_device_dn) | join("
 # service to bind to the LDAP directory.
 sssd__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
                                + sssd__ldap_binddn | to_uuid + ".password length=32"))
-                       if sssd__ldap_enabled|bool
+                       if sssd__ldap_enabled | bool
                        else "" }}'
 
                                                                    # ]]]
@@ -344,7 +344,7 @@ sssd__default_configuration:
         comment: 'SSL options'
         value: '{{ True
                   if (ansible_local|d() and ansible_local.ldap|d() and
-                      (ansible_local.ldap.start_tls|d())|bool)
+                      (ansible_local.ldap.start_tls|d()) | bool)
                   else False }}'
 
       - name: 'ldap_tls_reqcert'
@@ -422,7 +422,7 @@ sssd__ldap__dependent_tasks:
     attributes: '{{ sssd__ldap_self_attributes }}'
     no_log: '{{ debops__no_log | d(True) }}'
     state: '{{ "present"
-               if ((ansible_local.ldap.posix_enabled|d())|bool and
+               if ((ansible_local.ldap.posix_enabled|d()) | bool and
                    sssd__ldap_device_dn|d())
                else "ignore" }}'
 

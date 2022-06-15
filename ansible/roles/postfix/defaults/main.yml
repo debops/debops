@@ -184,14 +184,14 @@ postfix__tls_ca_file: '/etc/ssl/certs/ca-certificates.crt'
 #
 # Absolute path of the certificate file used in the Postfix configuration.
 postfix__tls_cert_file: '{{ (postfix__pki_path + "/" + postfix__pki_realm + "/" + postfix__pki_crt)
-                            if postfix__pki|bool else "/etc/ssl/certs/ssl-cert-snakeoil.pem" }}'
+                            if postfix__pki | bool else "/etc/ssl/certs/ssl-cert-snakeoil.pem" }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__tls_key_file [[[
 #
 # Absolute path of the private key file used in the Postfix configuration.
 postfix__tls_key_file: '{{ (postfix__pki_path + "/" + postfix__pki_realm + "/" + postfix__pki_key)
-                           if postfix__pki|bool else "/etc/ssl/private/ssl-cert-snakeoil.key" }}'
+                           if postfix__pki | bool else "/etc/ssl/private/ssl-cert-snakeoil.key" }}'
                                                                    # ]]]
 # .. envvar:: postfix__pki_hook_name [[[
 #
@@ -295,7 +295,7 @@ postfix__original_maincf:
 
   - name: 'readme_directory'
     value: '{{ "/usr/share/doc/postfix"
-               if postfix__doc_installed|bool
+               if postfix__doc_installed | bool
                else False }}'
     section: 'base'
 
@@ -419,7 +419,7 @@ postfix__original_maincf:
 
   - name: 'html_directory'
     value: '{{ "/usr/share/doc/postfix/html"
-               if postfix__doc_installed|bool
+               if postfix__doc_installed | bool
                else False }}'
     section: 'base'
 
@@ -486,12 +486,12 @@ postfix__tls_maincf:
 
   - name: 'smtpd_tls_dh1024_param_file'
     value: '{{ postfix__tls_dh1024_param_file }}'
-    state: '{{ "present" if postfix__dhparam|bool else "ignore" }}'
+    state: '{{ "present" if postfix__dhparam | bool else "ignore" }}'
     section: 'smtpd-tls'
 
   - name: 'smtpd_tls_dh512_param_file'
     value: '{{ postfix__tls_dh512_param_file }}'
-    state: '{{ "present" if postfix__dhparam|bool else "ignore" }}'
+    state: '{{ "present" if postfix__dhparam | bool else "ignore" }}'
     section: 'smtpd-tls'
 
   - name: 'smtpd_tls_loglevel'

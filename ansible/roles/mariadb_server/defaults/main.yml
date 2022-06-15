@@ -206,7 +206,7 @@ mariadb_server__local_infile: False
 #
 # Configuration options related to the server security.
 mariadb_server__mysqld_security_options:
-  'local_infile':         '{{ "1" if mariadb_server__local_infile|bool else "0" }}'
+  'local_infile':         '{{ "1" if mariadb_server__local_infile | bool else "0" }}'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__mysqld_charset_options [[[
@@ -233,7 +233,7 @@ mariadb_server__mysqld_network_options:
 mariadb_server__mysqld_pki_options:
   name: 'pki-options'
   comment: 'Support for SSL connections'
-  state: '{{ "present" if mariadb_server__pki|bool else "absent" }}'
+  state: '{{ "present" if mariadb_server__pki | bool else "absent" }}'
   options:
     'ssl':
     'ssl_ca':     '{{ mariadb_server__pki_path + "/" + mariadb_server__pki_realm + "/" + mariadb_server__pki_ca }}'
@@ -301,7 +301,7 @@ mariadb_server__options: {}
 # Absolute path for the client configuration file managed by the
 # ``debops.mariadb_server`` Ansible role.
 mariadb_server__client_cnf_file: '{{ "/etc/mysql/mariadb.conf.d/90-client.cnf"
-                                     if (mariadb_server__register_confd.stat.exists|bool)
+                                     if (mariadb_server__register_confd.stat.exists | bool)
                                      else "/etc/mysql/conf.d/zz-client.cnf" }}'
 
                                                                    # ]]]
@@ -310,7 +310,7 @@ mariadb_server__client_cnf_file: '{{ "/etc/mysql/mariadb.conf.d/90-client.cnf"
 # Absolute path for the server configuration file managed by the
 # ``debops.mariadb_server`` Ansible role.
 mariadb_server__mysqld_cnf_file: '{{ "/etc/mysql/mariadb.conf.d/90-mysqld.cnf"
-                                     if (mariadb_server__register_confd.stat.exists|bool)
+                                     if (mariadb_server__register_confd.stat.exists | bool)
                                      else "/etc/mysql/conf.d/zz-mysqld.cnf" }}'
                                                                    # ]]]
                                                                    # ]]]

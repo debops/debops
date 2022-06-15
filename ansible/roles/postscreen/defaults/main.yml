@@ -227,25 +227,25 @@ postscreen__postfix__dependent_maincf:
   - name: 'postscreen_dnsbl_sites'
     value: '{{ postscreen__dnsbl_sites + postscreen__dnsbl_wl_sites }}'
     state: '{{ "present"
-               if postscreen__dnsbl_enabled|bool
+               if postscreen__dnsbl_enabled | bool
                else "comment" }}'
 
   - name: 'postscreen_dnsbl_reply_map'
     value: [ 'pcre:${config_directory}/postscreen_dnsbl_reply_map.pcre' ]
     state: '{{ "present"
-               if postscreen__dnsbl_enabled|bool
+               if postscreen__dnsbl_enabled | bool
                else "comment" }}'
 
   - name: 'postscreen_dnsbl_threshold'
     value: 3
     state: '{{ "present"
-               if postscreen__dnsbl_enabled|bool
+               if postscreen__dnsbl_enabled | bool
                else "comment" }}'
 
   - name: 'postscreen_dnsbl_whitelist_threshold'
     value: -1
     state: '{{ "present"
-               if postscreen__dnsbl_enabled|bool
+               if postscreen__dnsbl_enabled | bool
                else "comment" }}'
 
   - name: 'postscreen_whitelist_interfaces'

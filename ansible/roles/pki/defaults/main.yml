@@ -244,7 +244,7 @@ pki_acme_challenge_dir: '{{ ansible_local.nginx.acme_root|d("/srv/www/sites/acme
 # Whether the directory where the ACME client should store responses
 # should be created.
 pki_create_acme_challenge_dir: '{{ True if (ansible_local.nginx.acme|d() and
-                                            ansible_local.nginx.acme|bool) else False }}'
+                                            ansible_local.nginx.acme | bool) else False }}'
                                                                    # ]]]
                                                                    # ]]]
 # Certbot configuration [[[
@@ -302,28 +302,28 @@ pki_base_packages: [ 'ssl-cert', 'make', 'ca-certificates',
 #
 # List of APT packages required by ACME support.
 pki_acme_packages:
-  - '{{ "curl" if (pki_acme_type == "acme-tiny" and pki_acme_install|bool) else [] }}'
-  - '{{ "git" if (pki_acme_type == "acme-tiny" and pki_acme_install|bool) else [] }}'
-  - '{{ [] if (pki_acme_install|bool == false or ansible_distribution_release in
+  - '{{ "curl" if (pki_acme_type == "acme-tiny" and pki_acme_install | bool) else [] }}'
+  - '{{ "git" if (pki_acme_type == "acme-tiny" and pki_acme_install | bool) else [] }}'
+  - '{{ [] if (pki_acme_install | bool == false or ansible_distribution_release in
                [ "stretch", "trusty", "xenial", "bionic" ])
            else "acme-tiny" if (pki_acme_type == "acme-tiny") else [] }}'
-  - '{{ "python3-certbot-dns-cloudflare" if (pki_acme_type == "dns-cloudflare" and pki_acme_install|bool) else [] }}'
-  - '{{ "python3-certbot-dns-digitalocean" if (pki_acme_type == "dns-digitalocean" and pki_acme_install|bool) else [] }}'
-  - '{{ "python3-certbot-dns-dnsimple" if (pki_acme_type == "dns-dnsimple" and pki_acme_install|bool) else [] }}'
-  - '{{ "python3-certbot-dns-gehirn" if (pki_acme_type == "dns-gehirn" and pki_acme_install|bool) else [] }}'
-  - '{{ "python3-certbot-dns-google" if (pki_acme_type == "dns-google" and pki_acme_install|bool) else [] }}'
-  - '{{ "python3-certbot-dns-linode" if (pki_acme_type == "dns-linode" and pki_acme_install|bool) else [] }}'
-  - '{{ "python3-certbot-dns-ovh" if (pki_acme_type == "dns-ovh" and pki_acme_install|bool) else [] }}'
-  - '{{ "python3-certbot-dns-rfc2136" if (pki_acme_type == "dns-rfc2136" and pki_acme_install|bool) else [] }}'
-  - '{{ "python3-certbot-dns-route53" if (pki_acme_type == "dns-route53" and pki_acme_install|bool) else [] }}'
-  - '{{ "python3-certbot-dns-sakuracloud" if (pki_acme_type == "dns-sakuracloud" and pki_acme_install|bool) else [] }}'
-  - '{{ "python3-certbot-dns-gandi" if (pki_acme_type == "dns-gandi" and pki_acme_install|bool) else [] }}'
+  - '{{ "python3-certbot-dns-cloudflare" if (pki_acme_type == "dns-cloudflare" and pki_acme_install | bool) else [] }}'
+  - '{{ "python3-certbot-dns-digitalocean" if (pki_acme_type == "dns-digitalocean" and pki_acme_install | bool) else [] }}'
+  - '{{ "python3-certbot-dns-dnsimple" if (pki_acme_type == "dns-dnsimple" and pki_acme_install | bool) else [] }}'
+  - '{{ "python3-certbot-dns-gehirn" if (pki_acme_type == "dns-gehirn" and pki_acme_install | bool) else [] }}'
+  - '{{ "python3-certbot-dns-google" if (pki_acme_type == "dns-google" and pki_acme_install | bool) else [] }}'
+  - '{{ "python3-certbot-dns-linode" if (pki_acme_type == "dns-linode" and pki_acme_install | bool) else [] }}'
+  - '{{ "python3-certbot-dns-ovh" if (pki_acme_type == "dns-ovh" and pki_acme_install | bool) else [] }}'
+  - '{{ "python3-certbot-dns-rfc2136" if (pki_acme_type == "dns-rfc2136" and pki_acme_install | bool) else [] }}'
+  - '{{ "python3-certbot-dns-route53" if (pki_acme_type == "dns-route53" and pki_acme_install | bool) else [] }}'
+  - '{{ "python3-certbot-dns-sakuracloud" if (pki_acme_type == "dns-sakuracloud" and pki_acme_install | bool) else [] }}'
+  - '{{ "python3-certbot-dns-gandi" if (pki_acme_type == "dns-gandi" and pki_acme_install | bool) else [] }}'
   - '{{ "certbot" if (pki_acme_type in
                 [ "dns-cloudflare", "dns-digitalocean",
                   "dns-dnsimple", "dns-gehirn", "dns-google",
                   "dns-linode", "dns-ovh", "dns-rfc2136",
                   "dns-route53", "dns-sakuracloud", "dns-gandi", "manual" ]
-           and pki_acme_install|bool) else [] }}'
+           and pki_acme_install | bool) else [] }}'
 
                                                                    # ]]]
 # .. envvar:: pki_packages [[[
@@ -684,7 +684,7 @@ pki_authorities_ca_service:
   subdomain: 'service-ca'
   subject: '{{ pki_ca_service_dn }}'
   type: 'service'
-  enabled: '{{ True if (pki_ca_domain|d() and pki_ca_service_enabled|bool) else False }}'
+  enabled: '{{ True if (pki_ca_domain|d() and pki_ca_service_enabled | bool) else False }}'
   key_size: '{{ pki_ca_service_key_size }}'
 
                                                                    # ]]]
@@ -799,20 +799,20 @@ pki_system_ca_certificates_whitelist: []
 # .. envvar:: pki_system_ca_certificates_download_by_host [[[
 #
 # If ``True``, by hosts CA certificates are downloaded on remote hosts.
-pki_system_ca_certificates_download_by_host: '{{ pki_enabled|bool }}'
+pki_system_ca_certificates_download_by_host: '{{ pki_enabled | bool }}'
 
                                                                    # ]]]
 # .. envvar:: pki_system_ca_certificates_download_by_group [[[
 #
 # If ``True``, by group CA certificates are downloaded on remote hosts.
-pki_system_ca_certificates_download_by_group: '{{ pki_enabled|bool }}'
+pki_system_ca_certificates_download_by_group: '{{ pki_enabled | bool }}'
 
                                                                    # ]]]
 # .. envvar:: pki_system_ca_certificates_download_all_hosts [[[
 #
 # If ``True``, CA certificates intended for all hosts are downloaded on remote
 # hosts.
-pki_system_ca_certificates_download_all_hosts: '{{ pki_enabled|bool }}'
+pki_system_ca_certificates_download_all_hosts: '{{ pki_enabled | bool }}'
 
                                                                    # ]]]
 # .. envvar:: pki_system_ca_certificates_download_all_hosts_force [[[
