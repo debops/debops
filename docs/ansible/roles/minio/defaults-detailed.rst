@@ -1,5 +1,5 @@
-.. Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2019 DebOps <https://debops.org/>
+.. Copyright (C) 2019-2022 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2019-2022 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 Default variable details
@@ -59,9 +59,11 @@ Create additional instances for new tenants:
 
      - name: 'tenant1'
        port: 9001
+       console_port: 19001
 
      - name: 'tenant2'
        port: 9002
+       console_port: 19002
 
 Configure a MinIO instance as `a NAS gateway`__, with a custom volume mounted
 from a remote storage server elsewhere:
@@ -76,6 +78,7 @@ from a remote storage server elsewhere:
    minio__instances:
      - name: 'nas-gw'
        port: 9001
+       console_port: 19001
        type: 'gateway'
        minio_options: 'nas'
        volumes: [ '/shared/nasvol' ]
@@ -103,6 +106,17 @@ specific parameters:
   Required. The TCP port on which a given MinIO instance listens for
   connections. Usually the port numbers start from ``9000`` up.
 
+``console_port``
+  Required. The static TCP port on which a given MinIO instance listens for
+  connections to the embedded MinIO Console. If not set, MinIO will select
+  a random console port on each startup. By convention, console port is the API
+  port + 10000, so for example ``19000``.
+
+``server_url``
+  Optional. Specify the URL the MinIO Console should use for connecting to the
+  MinIO Server. If not specified, ``https://{{ minio__fqdn }}/`` will be used
+  automatically.
+
 ``state``
   Optional. If not defined or ``present``, a given MinIO instance and all
   related configuration will be created on a host. If ``absent``, a MinIO
@@ -115,6 +129,12 @@ specific parameters:
   instance should listen for connections, for example ``localhost`` or
   ``192.0.2.1``. If not defined, MinIO will listen for connections on all
   available interfaces.
+
+``console_bind``
+  Optional. A string that defines the IP address on which a given MinIO
+  instance should listen for connections to the embedded MinIO Console, for
+  example ``localhost`` or ``192.0.2.1``. If not defined, MinIO will listen for
+  connections on all available interfaces.
 
 ``allow``
   Optional. A list of IP addresses or CIDR subnets which are allowed to connect
@@ -171,21 +191,21 @@ specific parameters:
   a given MinIO instance. The ``--address`` option is generated automatically
   by the role and should not be specified here.
 
-``access_key``
-  Optional. A string which defines the MinIO instance access key, should be an
-  alphanumeric string. If not specified, the role will generate a randomized
-  access key and store it in the :file:`secret/minio/` directory on the Ansible
-  Controller, exact location depending on the instance deployment type
+``root_user``
+  Optional. A string which defines the MinIO instance "root" account, should be
+  an alphanumeric string. If not specified, the role will generate a randomized
+  account name and store it in the :file:`secret/minio/` directory on the
+  Ansible Controller, exact location depending on the instance deployment type
   (distributed or standalone). See :ref:`debops.secret` for more details about
   the :file:`secret/` directory.
 
-``secret_key``
-  Optional. A string which defines the MinIO instance secret key, should be an
-  randomized string. If not specified, the role will generate a randomized
-  secret key and store it in the :file:`secret/minio/` directory on the Ansible
-  Controller, exact location depending on the instance deployment type
-  (distributed or standalone). See :ref:`debops.secret` for more details about
-  the :file:`secret/` directory.
+``root_password``
+  Optional. A string which defines the MinIO instance "root" account password,
+  should be an randomized string. If not specified, the role will generate
+  a randomized password and store it in the :file:`secret/minio/` directory on
+  the Ansible Controller, exact location depending on the instance deployment
+  type (distributed or standalone). See :ref:`debops.secret` for more details
+  about the :file:`secret/` directory.
 
 ``browser``
   Optional, boolean. If not specified or ``True``, the MinIO web interface is

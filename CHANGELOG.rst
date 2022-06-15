@@ -69,6 +69,14 @@ Changed
 - Unused ``dovecot__ldap_server_port`` variable has been removed from role
   defaults.
 
+:ref:`debops.minio` role
+''''''''''''''''''''''''
+
+- The role has been updated to support newer MinIO features, like the embedded
+  MinIO Console. Some of the instance parameters have been changed, for example
+  access key and secret key have been replaced with root account and password.
+  Check the role documentation for more details.
+
 :ref:`debops.postgresql` role
 '''''''''''''''''''''''''''''
 
