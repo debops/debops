@@ -27,10 +27,10 @@ esac
 {%   set ipv4_gateways = gateways | ipv4 %}
 {%   set ipv6_gateways = gateways | ipv6 %}
 
-ip link set dev {{ interface_name|quote }} up
+ip link set dev {{ interface_name | quote }} up
 {%   if interface.inet6 in ['static'] %}
 {%     for address in ipv6_addresses %}
-ip addr add {{ address }} dev {{ interface_name|quote }}
+ip addr add {{ address }} dev {{ interface_name | quote }}
 {%     endfor %}
 {%     if ipv6_gateways %}
 ip route add default via {{ ipv6_gateways | first }}
@@ -38,13 +38,13 @@ ip route add default via {{ ipv6_gateways | first }}
 {%   endif %}
 {%   if interface.inet in ['static'] %}
 {%     for address in ipv4_addresses %}
-ip addr add {{ address }} dev {{ interface_name|quote }} label {{ interface_name|quote }}:{{ loop.index0 }}
+ip addr add {{ address }} dev {{ interface_name | quote }} label {{ interface_name | quote }}:{{ loop.index0 }}
 {%     endfor %}
 {%     if ipv4_gateways %}
 ip route add default via {{ ipv4_gateways | first }}
 {%     endif %}
 {%   endif %}
-ip addr show dev {{ interface_name|quote }}
+ip addr show dev {{ interface_name | quote }}
 {% endfor %}
 
 exit 0
