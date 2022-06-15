@@ -260,7 +260,7 @@ docker_registry__storage_mode: '0755'
 # .. envvar:: docker_registry__redis_enabled [[[
 #
 # Enable or disable support for Redis Server cache.
-docker_registry__redis_enabled: '{{ ansible_local.redis_server.installed|d() | bool }}'
+docker_registry__redis_enabled: '{{ ansible_local.redis_server.installed | d() | bool }}'
 
                                                                    # ]]]
 # .. envvar:: docker_registry__redis_host [[[
@@ -307,8 +307,8 @@ docker_registry__token_provider: 'gitlab'
 #
 # Enable or disable support for token-based authentication.
 docker_registry__token_enabled: '{{ True
-                                    if (ansible_local|d() and ansible_local[docker_registry__token_provider]|d() and
-                                        (ansible_local[docker_registry__token_provider].registry|d()) | bool)
+                                    if (ansible_local | d() and ansible_local[docker_registry__token_provider] | d() and
+                                        (ansible_local[docker_registry__token_provider].registry | d()) | bool)
                                     else False }}'
 
                                                                    # ]]]
@@ -318,8 +318,8 @@ docker_registry__token_enabled: '{{ True
 # will be used to redirect HTTP clients that open the main page of Docker
 # Registry to point them to an useful user interface instead.
 docker_registry__token_fqdn: '{{ ansible_local[docker_registry__token_provider].fqdn
-                                 if (ansible_local|d() and ansible_local[docker_registry__token_provider]|d() and
-                                     ansible_local[docker_registry__token_provider].fqdn|d())
+                                 if (ansible_local | d() and ansible_local[docker_registry__token_provider] | d() and
+                                     ansible_local[docker_registry__token_provider].fqdn | d())
                                  else ("code." + docker_registry__domain) }}'
 
                                                                    # ]]]
@@ -329,8 +329,8 @@ docker_registry__token_fqdn: '{{ ansible_local[docker_registry__token_provider].
 # clients. The clients can use this URL to request signed authentication tokens
 # from the authentication service.
 docker_registry__token_realm_url: '{{ ansible_local[docker_registry__token_provider].registry_token_realm_url
-                                      if (ansible_local|d() and ansible_local[docker_registry__token_provider]|d() and
-                                          ansible_local[docker_registry__token_provider].registry_token_realm_url|d())
+                                      if (ansible_local | d() and ansible_local[docker_registry__token_provider] | d() and
+                                          ansible_local[docker_registry__token_provider].registry_token_realm_url | d())
                                       else "" }}'
 
                                                                    # ]]]
@@ -340,8 +340,8 @@ docker_registry__token_realm_url: '{{ ansible_local[docker_registry__token_provi
 # tokens. This value needs to be the same in the authentication service
 # configuration file.
 docker_registry__token_issuer: '{{ ansible_local[docker_registry__token_provider].registry_token_issuer
-                                   if (ansible_local|d() and ansible_local[docker_registry__token_provider]|d() and
-                                       ansible_local[docker_registry__token_provider].registry_token_issuer|d())
+                                   if (ansible_local | d() and ansible_local[docker_registry__token_provider] | d() and
+                                       ansible_local[docker_registry__token_provider].registry_token_issuer | d())
                                    else "" }}'
                                                                    # ]]]
 # .. envvar:: docker_registry__token_service [[[
@@ -349,8 +349,8 @@ docker_registry__token_issuer: '{{ ansible_local[docker_registry__token_provider
 # Name of the authentication service in Docker Registry, used in the URLs
 # passed to the authentication source API endpoint.
 docker_registry__token_service: '{{ ansible_local[docker_registry__token_provider].registry_token_service
-                                    if (ansible_local|d() and ansible_local[docker_registry__token_provider]|d() and
-                                        ansible_local[docker_registry__token_provider].registry_token_service|d())
+                                    if (ansible_local | d() and ansible_local[docker_registry__token_provider] | d() and
+                                        ansible_local[docker_registry__token_provider].registry_token_service | d())
                                     else "" }}'
 
                                                                    # ]]]
@@ -366,8 +366,8 @@ docker_registry__token_pki_path: '{{ ansible_local.pki.path|d("/etc/pki/realms")
 # Name of the PKI realm used by the authentication service to sign the
 # authentication tokens that provide access to the Docker Registry.
 docker_registry__token_pki_realm: '{{ ansible_local[docker_registry__token_provider].registry_pki_realm
-                                      if (ansible_local|d() and ansible_local[docker_registry__token_provider]|d() and
-                                          ansible_local[docker_registry__token_provider].registry_pki_realm|d())
+                                      if (ansible_local | d() and ansible_local[docker_registry__token_provider] | d() and
+                                          ansible_local[docker_registry__token_provider].registry_pki_realm | d())
                                       else "domain" }}'
 
                                                                    # ]]]

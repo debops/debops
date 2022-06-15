@@ -53,7 +53,7 @@
     daemon_reload: True
     name: 'snmpd.service'
     enabled: True
-  when: ((ansible_service_mgr == "systemd") and not ansible_local.snmpd|d())
+  when: ((ansible_service_mgr == "systemd") and not ansible_local.snmpd | d())
 
 - name: Allow 'snmp' user access to /proc if needed
   ansible.builtin.user:
@@ -72,7 +72,7 @@
     line: '#mibs :'
     mode: '0644'
   notify: [ 'Restart snmpd' ]
-  when: snmpd_download_mibs|d() and snmpd_download_mibs
+  when: snmpd_download_mibs | d() and snmpd_download_mibs
 
 - name: Divert default configuration file
   dpkg_divert:
@@ -82,7 +82,7 @@
 - name: Initialize local account
   ansible.builtin.set_fact:
     snmpd_account_local_username: '{{ ansible_local.snmpd.username
-                                      if (ansible_local|d() and ansible_local.snmpd|d() and
+                                      if (ansible_local | d() and ansible_local.snmpd | d() and
                                           ansible_local.snmpd.username)
                                       else lookup("pipe", "openssl rand -hex "
                                                   + (((snmpd_account_username_length | int) / 2) | int) | string) }}'
@@ -129,7 +129,7 @@
     snmpd_fact_account_agent_username: '{{ snmpd_account_agent_username }}'
     snmpd_fact_account_agent_password: '{{ snmpd_account_agent_password }}'
   no_log: '{{ debops__no_log | d(True) }}'
-  when: snmpd_account|d() and snmpd_account
+  when: snmpd_account | d() and snmpd_account
 
 - name: Configure snmpd service
   ansible.builtin.template:
@@ -142,8 +142,8 @@
 
 - name: Configure SNMPv3 credentials
   ansible.builtin.include_tasks: configure_snmpv3_credentials.yml
-  when: ((snmpd_register_version|d() and not snmpd_register_version.stdout) and
-         (snmpd_account|d() and snmpd_account))
+  when: ((snmpd_register_version | d() and not snmpd_register_version.stdout) and
+         (snmpd_account | d() and snmpd_account))
 
 - name: Save local SNMPv3 password for retrieval via Ansible facts
   ansible.builtin.template:

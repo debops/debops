@@ -5,11 +5,11 @@
 # {{ ansible_managed }}
 {%  for zone in dhcpd__zones %}
 
-{%      if zone.comment|d() %}
+{%      if zone.comment | d() %}
 # {{ zone.comment }}
 {%      endif %}
 zone {{ zone.zone }} {
-{%      if zone.options|d() %}
+{%      if zone.options | d() %}
 
     # Custom zone options
     {{ zone.options|indent(4) }}

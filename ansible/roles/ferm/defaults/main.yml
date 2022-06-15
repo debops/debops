@@ -27,7 +27,7 @@
 # POSIX capability is set on the host.
 ferm__enabled: '{{ True
                    if (ansible_system_capabilities is undefined or
-                       (((ansible_system_capabilities_enforced|d()) | bool and
+                       (((ansible_system_capabilities_enforced | d()) | bool and
                          "cap_net_admin" in ansible_system_capabilities) or
                         not (ansible_system_capabilities_enforced|d(True)) | bool))
                    else False }}'
@@ -89,8 +89,8 @@ ferm__packages: []
 #   Enables IPv6 support (:command:`ip6tables`).
 #
 ferm__domains: '{{ lookup("flattened",
-                   ( ([ "ip"  ] if (ansible_all_ipv4_addresses|d()) else [])
-                   + ([ "ip6" ] if (ansible_all_ipv6_addresses|d()) else []) )
+                   ( ([ "ip"  ] if (ansible_all_ipv4_addresses | d()) else [])
+                   + ([ "ip6" ] if (ansible_all_ipv6_addresses | d()) else []) )
                    , wantlist=True ) }}'
 
                                                                    # ]]]
@@ -561,7 +561,7 @@ ferm__default_rules:
     protocol: 'udp'
     accept_any: True
     rule_state: '{{ "present"
-                    if ((ansible_local.nsswitch.conf|d() and
+                    if ((ansible_local.nsswitch.conf | d() and
                          ("mdns4_minimal" in q("flattened",
                                                ansible_local.nsswitch.conf.hosts|d([])) or
                           "mdns_minimal" in q("flattened",

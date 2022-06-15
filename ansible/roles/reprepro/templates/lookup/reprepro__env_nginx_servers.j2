@@ -4,7 +4,7 @@
  #}
 {% set output = [] %}
 {% for repo in q("flattened", reprepro__combined_instances) | debops.debops.parse_kv_items(merge_keys=["distributions", "incoming", "pulls", "updates"]) %}
-{%   if repo.fqdn|d() %}
+{%   if repo.fqdn | d() %}
 {%     set repo_data_http = {
          'by_role': 'debops.reprepro',
          'state': (repo.state if repo.public|d(True) else 'absent'),
@@ -49,9 +49,9 @@
            }
          ) %}
 {%     endif %}
-{%     if repo.upload_map|d() %}
+{%     if repo.upload_map | d() %}
 {%       for path, alias in repo.upload_map | dictsort %}
-{%         if alias|d() %}
+{%         if alias | d() %}
 {%           set alias_path = alias %}
 {%         else %}
 {%           set alias_path = (reprepro__spool_root + '/' + repo.name + '/incoming') %}
@@ -73,7 +73,7 @@
 {%     endif %}
 {%     set repo_data_https = {
          'by_role': 'debops.reprepro',
-         'state': (repo.state if (ansible_local.pki.enabled|d()) | bool else 'absent'),
+         'state': (repo.state if (ansible_local.pki.enabled | d()) | bool else 'absent'),
          'enabled': True,
          'name': repo.fqdn,
          'filename': ('debops.reprepro_' + repo.name + '_https'),
@@ -85,7 +85,7 @@
 {%     if repo.public|d(True) %}
 {%       set _ = repo_data_https.update({'listen': False}) %}
 {%     endif %}
-{%     if repo.pki_realm|d() %}
+{%     if repo.pki_realm | d() %}
 {%       set _ = repo_data_https.update({'pki_realm': repo.pki_realm}) %}
 {%     endif %}
 {%     set _ = output.append(repo_data_https) %}

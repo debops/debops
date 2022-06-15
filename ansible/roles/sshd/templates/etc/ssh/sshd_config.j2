@@ -5,7 +5,7 @@
  #}
 # {{ ansible_managed }}
 
-{% if sshd__custom_options|d() %}
+{% if sshd__custom_options | d() %}
 # Custom options
 {{ sshd__custom_options }}
 {% endif %}
@@ -14,7 +14,7 @@
 {% for port in sshd__ports %}
 Port {{ port }}
 {% endfor %}
-{% if sshd__listen|d() %}
+{% if sshd__listen | d() %}
 
 # Use these options to restrict which interfaces/protocols sshd will bind to
 {%   for address in sshd__listen %}
@@ -107,7 +107,7 @@ RSAAuthentication yes
 PubkeyAuthentication yes
 
 {% if sshd__authorized_keys_lookup | bool and
-      sshd__register_version.stdout|d() and
+      sshd__register_version.stdout | d() and
       sshd__register_version.stdout is version_compare('6.2', '>=') %}
 AuthorizedKeysCommand /etc/ssh/authorized_keys_lookup
 AuthorizedKeysCommandUser {{ sshd__authorized_keys_lookup_user }}
@@ -181,7 +181,7 @@ Subsystem sftp internal-sftp
 # and ChallengeResponseAuthentication to 'no'.
 UsePAM yes
 
-{% if sshd__default_allow_groups|d() or sshd__allow_groups|d() or sshd__group_allow_groups|d() or sshd__host_allow_groups|d() %}
+{% if sshd__default_allow_groups | d() or sshd__allow_groups | d() or sshd__group_allow_groups | d() or sshd__host_allow_groups | d() %}
 AllowGroups {{ (
       (sshd__default_allow_groups|d([]) | list) +
       (sshd__allow_groups|d([]) | list) +
@@ -191,7 +191,7 @@ AllowGroups {{ (
 {% endif %}
 
 {% for entry in sshd__match_list|d([]) %}
-{%   if entry.match|d() and entry.options|d() %}
+{%   if entry.match | d() and entry.options | d() %}
 Match {{ entry.match }}
 {{ entry.options | indent(8, true) }}
 

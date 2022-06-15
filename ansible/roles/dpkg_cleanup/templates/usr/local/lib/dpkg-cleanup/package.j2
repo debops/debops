@@ -16,7 +16,7 @@ apt_package="{{ item.name }}"
 
 # List of files which should be reverted via the dpkg-divert script
 readarray -t revert_files << EOF
-{% if item.revert_files|d() %}
+{% if item.revert_files | d() %}
 {%   for path in (([ item.revert_files ]
                    if (item.revert_files is string)
                    else item.revert_files)
@@ -30,7 +30,7 @@ EOF
 
 # List of files which should be removed
 readarray -t remove_files << EOF
-{% if item.remove_files|d() %}
+{% if item.remove_files | d() %}
 {%   for path in (([ item.remove_files ]
                    if (item.remove_files is string)
                    else item.remove_files)
@@ -47,7 +47,7 @@ EOF
 
 # List of directories which should be removed
 readarray -t remove_directories << EOF
-{% if item.remove_directories|d() %}
+{% if item.remove_directories | d() %}
 {%   for path in (([ item.remove_directories ]
                    if (item.remove_directories is string)
                    else item.remove_directories)
@@ -61,7 +61,7 @@ EOF
 
 # List of service names which should be reloaded via 'systemctl' command
 readarray -t reload_services << EOF
-{% if item.reload_services|d() %}
+{% if item.reload_services | d() %}
 {%   for service in (([ item.reload_services ]
                       if (item.reload_services is string)
                       else item.reload_services)
@@ -73,7 +73,7 @@ EOF
 
 # List of service names which should be restarted via 'systemctl' command
 readarray -t restart_services << EOF
-{% if item.restart_services|d() %}
+{% if item.restart_services | d() %}
 {%   for service in (([ item.restart_services ]
                       if (item.restart_services is string)
                       else item.restart_services)

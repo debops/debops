@@ -243,7 +243,7 @@ pki_acme_challenge_dir: '{{ ansible_local.nginx.acme_root|d("/srv/www/sites/acme
 #
 # Whether the directory where the ACME client should store responses
 # should be created.
-pki_create_acme_challenge_dir: '{{ True if (ansible_local.nginx.acme|d() and
+pki_create_acme_challenge_dir: '{{ True if (ansible_local.nginx.acme | d() and
                                             ansible_local.nginx.acme | bool) else False }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -549,7 +549,7 @@ pki_scheduler_interval: 'weekly'
 # chain. This is required by applications that don't support DHE parameters in
 # a separate file like HAproxy, ZNC.
 pki_dhparam: '{{ True
-                 if ansible_local.dhparam.default|d()
+                 if ansible_local.dhparam.default | d()
                  else False }}'
 
                                                                    # ]]]
@@ -658,7 +658,7 @@ pki_ca_service_key_size: '4096'
 # Configuration of the Root Certificate Authority.
 pki_authorities_ca_root:
   name: 'root'
-  enabled: '{{ True if pki_ca_domain|d() else False }}'
+  enabled: '{{ True if pki_ca_domain | d() else False }}'
   subdomain: 'root-ca'
   subject: '{{ pki_ca_root_dn }}'
   key_size: '{{ pki_ca_root_key_size }}'
@@ -669,7 +669,7 @@ pki_authorities_ca_root:
 # Configuration of the Domain Certificate Authority.
 pki_authorities_ca_domain:
   name: 'domain'
-  enabled: '{{ True if pki_ca_domain|d() else False }}'
+  enabled: '{{ True if pki_ca_domain | d() else False }}'
   subdomain: 'domain-ca'
   subject: '{{ pki_ca_domain_dn }}'
   issuer_name: 'root'
@@ -684,7 +684,7 @@ pki_authorities_ca_service:
   subdomain: 'service-ca'
   subject: '{{ pki_ca_service_dn }}'
   type: 'service'
-  enabled: '{{ True if (pki_ca_domain|d() and pki_ca_service_enabled | bool) else False }}'
+  enabled: '{{ True if (pki_ca_domain | d() and pki_ca_service_enabled | bool) else False }}'
   key_size: '{{ pki_ca_service_key_size }}'
 
                                                                    # ]]]

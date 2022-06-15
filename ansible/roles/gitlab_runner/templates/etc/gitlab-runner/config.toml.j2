@@ -5,21 +5,21 @@
 # {{ ansible_managed }}
 
 concurrent = {{ gitlab_runner__concurrent }}
-{% if gitlab_runner__metrics_server|d() %}
+{% if gitlab_runner__metrics_server | d() %}
 metrics_server = "{{ gitlab_runner__metrics_server }}"
 {% endif %}
 
 {% set gitlab_runner__tpl_instances = [] %}
 {% set gitlab_runner__tpl_instance_tokens = [] %}
-{% if gitlab_runner__register_new_instances|d() and gitlab_runner__register_new_instances.results %}
+{% if gitlab_runner__register_new_instances | d() and gitlab_runner__register_new_instances.results %}
 {%   for item in gitlab_runner__register_new_instances.results %}
-{%     if item.item.name|d() and item.json|d() and item.json.token|d() %}
+{%     if item.item.name | d() and item.json | d() and item.json.token | d() %}
 {%       set _ = gitlab_runner__tpl_instances.append(item.item.name) %}
 {%       set _ = gitlab_runner__tpl_instance_tokens.append({ "name": item.item.name, "token": item.json.token }) %}
 {%     endif %}
 {%   endfor %}
 {% endif %}
-{% if ansible_local.gitlab_runner.instance_tokens|d() %}
+{% if ansible_local.gitlab_runner.instance_tokens | d() %}
 {%   for item in ansible_local.gitlab_runner.instance_tokens %}
 {%     if item.name not in gitlab_runner__tpl_instances %}
 {%       for element in (gitlab_runner__default_instances + gitlab_runner__instances + gitlab_runner__group_instances + gitlab_runner__host_instances) %}
@@ -55,7 +55,7 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
 {%         set _ = gitlab_runner__tpl_environment.append(element) %}
 {%       endfor %}
 {%     endif %}
-{%     if runner.environment|d() %}
+{%     if runner.environment | d() %}
 {%       if runner.environment is mapping %}
 {%         for key, value in runner.environment.items() %}
 {%           set _ = gitlab_runner__tpl_environment.append(key + "=" + value) %}
@@ -71,59 +71,59 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
 {%     if gitlab_runner__tpl_environment %}
   environment = [ "{{ gitlab_runner__tpl_environment | join('", "') }}" ]
 {%     endif %}
-{%     if runner.tls_ca_file|d() %}
+{%     if runner.tls_ca_file | d() %}
   tls-ca-file = "{{ runner.tls_ca_file }}"
 {%     endif %}
-{%     if runner.shell|d() %}
+{%     if runner.shell | d() %}
   shell = "{{ runner.shell }}"
 {%     endif %}
-{%     if runner.limit|d() %}
+{%     if runner.limit | d() %}
   limit = {{ runner.limit }}
 {%     endif %}
-{%     if runner.output_limit|d() %}
+{%     if runner.output_limit | d() %}
   output_limit = {{ runner.output_limit }}
 {%     endif %}
-{%     if runner.pre_clone_script|d() %}
+{%     if runner.pre_clone_script | d() %}
   pre_clone_script = '''
 {{ runner.pre_clone_script | indent(4, true) | regex_replace("((?m)^\s*$|\n$)", "") }}
   '''
 {%     endif %}
-{%     if runner.pre_build_script|d() %}
+{%     if runner.pre_build_script | d() %}
   pre_build_script = '''
 {{ runner.pre_build_script | indent(4, true) | regex_replace("((?m)^\s*$|\n$)", "") }}
   '''
 {%     endif %}
-{%     if runner.post_build_script|d() %}
+{%     if runner.post_build_script | d() %}
   post_build_script = '''
 {{ runner.post_build_script | indent(4, true) | regex_replace("((?m)^\s*$|\n$)", "") }}
   '''
 {%     endif %}
-{%     if runner.builds_dir|d() %}
+{%     if runner.builds_dir | d() %}
   builds_dir = "{{ runner.builds_dir }}"
 {%     endif %}
-{%     if runner.cache_dir|d() %}
+{%     if runner.cache_dir | d() %}
   cache_dir = "{{ runner.cache_dir }}"
 {%     endif %}
-{%     if runner.disable_verbose|d() %}
+{%     if runner.disable_verbose | d() %}
   disable_verbose = {{ runner.disable_verbose | bool | lower }}
 {%     endif %}
   executor = "{{ runner.executor | d(gitlab_runner__executor) }}"
-{%     if ((runner.executor|d() and runner.executor in [ 'docker', 'docker-ssh', 'docker+machine', 'docker-ssh+machine' ]) or
+{%     if ((runner.executor | d() and runner.executor in [ 'docker', 'docker-ssh', 'docker+machine', 'docker-ssh+machine' ]) or
            (gitlab_runner__executor in [ 'docker', 'docker-ssh', 'docker+machine', 'docker-ssh+machine' ])) %}
   [runners.docker]
     image = "{{ runner.docker_image | d(gitlab_runner__docker_image) }}"
     privileged = {{ (runner.docker_privileged | d(gitlab_runner__docker_privileged)) | bool | lower }}
     disable_cache = {{ (runner.docker_disable_cache | d(gitlab_runner__docker_disable_cache)) | bool | lower }}
-{%       if (runner.docker_cache_dir|d() or gitlab_runner__docker_cache_dir) %}
+{%       if (runner.docker_cache_dir | d() or gitlab_runner__docker_cache_dir) %}
     cache_dir = "{{ runner.docker_cache_dir | d(gitlab_runner__docker_cache_dir) }}"
 {%       endif %}
-{%       if (runner.docker_host|d() or gitlab_runner__docker_host) %}
+{%       if (runner.docker_host | d() or gitlab_runner__docker_host) %}
     host = "{{ runner.docker_host | d(gitlab_runner__docker_host) }}"
 {%       endif %}
-{%       if runner.docker_hostname|d() %}
+{%       if runner.docker_hostname | d() %}
     hostname = "{{ runner.docker_hostname }}"
 {%       endif %}
-{%       if (runner.docker_tls_cert_path|d() or gitlab_runner__docker_tls_cert_path) %}
+{%       if (runner.docker_tls_cert_path | d() or gitlab_runner__docker_tls_cert_path) %}
     tls_cert_path = "{{ runner.docker_tls_cert_path | d(gitlab_runner__docker_tls_cert_path) }}"
 {%       endif %}
 {%       if runner.docker_tls_verify is defined %}
@@ -159,10 +159,10 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
 {%       if runner.docker_shm_size is defined %}
     shm_size = {{ runner.docker_shm_size }}
 {%       endif %}
-{%       if runner.docker_wait_for_services_timeout|d() %}
+{%       if runner.docker_wait_for_services_timeout | d() %}
     wait_for_services_timeout = {{ runner.docker_wait_for_services_timeout }}
 {%       endif %}
-{%       if runner.docker_image_ttl|d() %}
+{%       if runner.docker_image_ttl | d() %}
     image_ttl = {{ runner.docker_image_ttl }}
 {%       endif %}
 {%       set gitlab_runner__tpl_docker_cap_add = [] %}
@@ -175,7 +175,7 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
 {%           endfor %}
 {%         endif %}
 {%       endif %}
-{%       if runner.docker_cap_add|d() %}
+{%       if runner.docker_cap_add | d() %}
 {%         if runner.docker_cap_add is string %}
 {%           set _ = gitlab_runner__tpl_docker_cap_add.append(runner.docker_cap_add) %}
 {%         else %}
@@ -197,7 +197,7 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
 {%           endfor %}
 {%         endif %}
 {%       endif %}
-{%       if runner.docker_cap_drop|d() %}
+{%       if runner.docker_cap_drop | d() %}
 {%         if runner.docker_cap_drop is string %}
 {%           set _ = gitlab_runner__tpl_docker_cap_drop.append(runner.docker_cap_drop) %}
 {%         else %}
@@ -219,7 +219,7 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
 {%           endfor %}
 {%         endif %}
 {%       endif %}
-{%       if runner.docker_devices|d() %}
+{%       if runner.docker_devices | d() %}
 {%         if runner.docker_devices is string %}
 {%           set _ = gitlab_runner__tpl_docker_devices.append(runner.docker_devices) %}
 {%         else %}
@@ -241,7 +241,7 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
 {%           endfor %}
 {%         endif %}
 {%       endif %}
-{%       if runner.docker_extra_hosts|d() %}
+{%       if runner.docker_extra_hosts | d() %}
 {%         if runner.docker_extra_hosts is string %}
 {%           set _ = gitlab_runner__tpl_docker_extra_hosts.append(runner.docker_extra_hosts) %}
 {%         else %}
@@ -263,7 +263,7 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
 {%           endfor %}
 {%         endif %}
 {%       endif %}
-{%       if runner.docker_links|d() %}
+{%       if runner.docker_links | d() %}
 {%         if runner.docker_links is string %}
 {%           set _ = gitlab_runner__tpl_docker_links.append(runner.docker_links) %}
 {%         else %}
@@ -285,7 +285,7 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
 {%           endfor %}
 {%         endif %}
 {%       endif %}
-{%       if runner.docker_services|d() %}
+{%       if runner.docker_services | d() %}
 {%         if runner.docker_services is string %}
 {%           set _ = gitlab_runner__tpl_docker_services.append(runner.docker_services) %}
 {%         else %}
@@ -307,7 +307,7 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
 {%           endfor %}
 {%         endif %}
 {%       endif %}
-{%       if runner.docker_volumes|d() %}
+{%       if runner.docker_volumes | d() %}
 {%         if runner.docker_volumes is string %}
 {%           set _ = gitlab_runner__tpl_docker_volumes.append(runner.docker_volumes) %}
 {%         else %}
@@ -329,7 +329,7 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
 {%           endfor %}
 {%         endif %}
 {%       endif %}
-{%       if runner.docker_allowed_images|d() %}
+{%       if runner.docker_allowed_images | d() %}
 {%         if runner.docker_allowed_images is string %}
 {%           set _ = gitlab_runner__tpl_docker_allowed_images.append(runner.docker_allowed_images) %}
 {%         else %}
@@ -351,7 +351,7 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
 {%           endfor %}
 {%         endif %}
 {%       endif %}
-{%       if runner.docker_allowed_services|d() %}
+{%       if runner.docker_allowed_services | d() %}
 {%         if runner.docker_allowed_services is string %}
 {%           set _ = gitlab_runner__tpl_docker_allowed_services.append(runner.docker_allowed_services) %}
 {%         else %}
@@ -363,55 +363,55 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
 {%       if gitlab_runner__tpl_docker_allowed_services %}
     allowed_services = [ "{{ gitlab_runner__tpl_docker_allowed_services | join('", "') }}" ]
 {%       endif %}
-{%       if runner.docker_pull_policy|d() %}
+{%       if runner.docker_pull_policy | d() %}
     pull_policy = "{{ runner.docker_pull_policy }}"
 {%       endif %}
-{%       if runner.docker_tmpfs|d() %}
+{%       if runner.docker_tmpfs | d() %}
     [runners.docker.tmpfs]
 {%         for directory, options in runner.docker_tmpfs.items() %}
       "{{ directory }}" = "{{ options }}"
 {%         endfor %}
 {%       endif %}
-{%       if runner.docker_services_tmpfs|d() %}
+{%       if runner.docker_services_tmpfs | d() %}
     [runners.docker.services_tmpfs]
 {%         for directory, options in runner.docker_services_tmpfs.items() %}
       "{{ directory }}"= "{{ options }}"
 {%         endfor %}
 {%       endif %}
 {%    endif %}
-{%     if ((runner.executor|d() and runner.executor in [ 'parallels' ]) or
+{%     if ((runner.executor | d() and runner.executor in [ 'parallels' ]) or
            (gitlab_runner__executor in [ 'parallels' ])) %}
   [runners.parallels]
     base_name = "{{ runner.parallels_base_name }}"
-{%       if runner.parallels_template_name|d() %}
+{%       if runner.parallels_template_name | d() %}
     template_name = "{{ runner.parallels_template_name }}"
 {%       endif %}
-{%       if runner.parallels_disable_snapshots|d() %}
+{%       if runner.parallels_disable_snapshots | d() %}
     disable_snapshots = {{ runner.parallels_disable_snapshots | bool | lower }}
 {%       endif %}
 {%     endif %}
-{%     if ((runner.executor|d() and runner.executor in [ 'virtualbox' ]) or
+{%     if ((runner.executor | d() and runner.executor in [ 'virtualbox' ]) or
            (gitlab_runner__executor in [ 'virtualbox' ])) %}
   [runners.virtualbox]
     base_name = "{{ runner.virtualbox_base_name }}"
-{%       if runner.virtualbox_disable_snapshots|d() %}
+{%       if runner.virtualbox_disable_snapshots | d() %}
     disable_snapshots = {{ runner.virtualbox_disable_snapshots | bool | lower }}
 {%       endif %}
 {%     endif %}
-{%     if ((runner.executor|d() and runner.executor in [ 'ssh', 'docker-ssh', 'docker-ssh+machine', 'parallels', 'virtualbox' ]) or
+{%     if ((runner.executor | d() and runner.executor in [ 'ssh', 'docker-ssh', 'docker-ssh+machine', 'parallels', 'virtualbox' ]) or
            (gitlab_runner__executor in [ 'ssh', 'docker-ssh', 'docker-ssh+machine', 'parallels', 'virtualbox' ])) %}
   [runners.ssh]
     host = "{{ runner.ssh_host | d(gitlab_runner__ssh_host) }}"
     port = "{{ runner.ssh_port | d(gitlab_runner__ssh_port) }}"
     user = "{{ runner.ssh_user | d(gitlab_runner__ssh_user) }}"
-{%       if (runner.ssh_password|d() or gitlab_runner__ssh_password) %}
+{%       if (runner.ssh_password | d() or gitlab_runner__ssh_password) %}
     password = "{{ runner.ssh_password | d(gitlab_runner__ssh_password) }}"
 {%       endif %}
-{%       if (runner.ssh_identity_file|d() or gitlab_runner__ssh_identity_file) %}
+{%       if (runner.ssh_identity_file | d() or gitlab_runner__ssh_identity_file) %}
     identity_file = "{{ runner.ssh_identity_file | d(gitlab_runner__ssh_identity_file) }}"
 {%       endif %}
 {%     endif %}
-{%     if ((runner.executor|d() and runner.executor in [ 'docker+machine', 'docker-ssh+machine' ]) or
+{%     if ((runner.executor | d() and runner.executor in [ 'docker+machine', 'docker-ssh+machine' ]) or
            (gitlab_runner__executor in [ 'docker+machine', 'docker-ssh+machine' ])) %}
   [runners.machine]
     IdleCount = {{ runner.machine_idle_count | d(gitlab_runner__machine_idle_count) }}
@@ -419,9 +419,9 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
     MaxBuilds = {{ runner.machine_max_builds | d(gitlab_runner__machine_max_builds) }}
     MachineName = "{{ runner.machine_name | d(gitlab_runner__machine_name) }}"
     MachineDriver = "{{ runner.machine_driver | d(gitlab_runner__machine_driver) }}"
-    {% if runner.machine_offpeakperiods|d() or gitlab_runner__machine_offpeakperiods %}
+    {% if runner.machine_offpeakperiods | d() or gitlab_runner__machine_offpeakperiods %}
      OffPeakPeriods = [
-         {%         if runner.machine_offpeakperiods|d() %}
+         {%         if runner.machine_offpeakperiods | d() %}
          {%           for offpeakperiod in runner.machine_offpeakperiods %}
                "{{ offpeakperiod }}"{% if not loop.last %},
          {% endif %}
@@ -434,15 +434,15 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
          {%         endif %}
      ]
  {% endif %}
- {% if runner.machine_offpeakidlecount|d() or gitlab_runner__machine_offpeakidlecount %}
+ {% if runner.machine_offpeakidlecount | d() or gitlab_runner__machine_offpeakidlecount %}
      OffPeakIdleCount = {{ runner.machine_offpeakidlecount | d(gitlab_runner__machine_offpeakidlecount) }}
  {% endif %}
- {% if runner.machine_offpeakidletime|d() or gitlab_runner__machine_offpeakidletime %}
+ {% if runner.machine_offpeakidletime | d() or gitlab_runner__machine_offpeakidletime %}
      OffPeakIdleTime = {{ runner.machine_offpeakidletime | d(gitlab_runner__machine_offpeakidletime) }}
  {% endif %}
-{%       if runner.machine_options|d() or gitlab_runner__machine_options %}
+{%       if runner.machine_options | d() or gitlab_runner__machine_options %}
     MachineOptions = [
-{%         if runner.machine_options|d() %}
+{%         if runner.machine_options | d() %}
 {%           for option in runner.machine_options %}
       "{{ option }}"{% if not loop.last %},
 {% endif %}
@@ -457,7 +457,7 @@ metrics_server = "{{ gitlab_runner__metrics_server }}"
     ]
 {%       endif %}
 {%     endif %}
-{%     if ((runner.cache|d() and runner.cache | bool) or gitlab_runner__cache | bool) %}
+{%     if ((runner.cache | d() and runner.cache | bool) or gitlab_runner__cache | bool) %}
   [runners.cache]
     Type = "{{ runner.cache_type | d(gitlab_runner__cache_type) }}"
     Shared = {{ (runner.cache_shared | d(gitlab_runner__cache_shared)) | bool | lower }}

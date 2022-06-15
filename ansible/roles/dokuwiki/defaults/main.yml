@@ -126,8 +126,8 @@ dokuwiki__git_checkout: '{{ dokuwiki__www + "/sites/" + dokuwiki__domains[0] + "
 # Enable or disable support for LDAP authentication in DokuWiki. Only the main
 # instance is supported at the moment.
 dokuwiki__ldap_enabled: '{{ True
-                            if (ansible_local|d() and ansible_local.ldap|d() and
-                                (ansible_local.ldap.enabled|d()) | bool)
+                            if (ansible_local | d() and ansible_local.ldap | d() and
+                                (ansible_local.ldap.enabled | d()) | bool)
                             else False }}'
 
                                                                    # ]]]
@@ -283,8 +283,8 @@ dokuwiki__ldap_server_port: '{{ ansible_local.ldap.port|d("389" if dokuwiki__lda
 # If ``True``, DokuWiki will use STARTTLS extension to make encrypted
 # connections to the LDAP server.
 dokuwiki__ldap_start_tls: '{{ ansible_local.ldap.start_tls
-                              if (ansible_local|d() and ansible_local.ldap|d() and
-                                  (ansible_local.ldap.start_tls|d()) | bool)
+                              if (ansible_local | d() and ansible_local.ldap | d() and
+                                  (ansible_local.ldap.start_tls | d()) | bool)
                               else True }}'
 
                                                                    # ]]]
@@ -600,7 +600,7 @@ dokuwiki__ldap__dependent_tasks:
     objectClass: '{{ dokuwiki__ldap_self_object_classes }}'
     attributes: '{{ dokuwiki__ldap_self_attributes }}'
     no_log: '{{ debops__no_log | d(True) }}'
-    state: '{{ "present" if dokuwiki__ldap_device_dn|d() else "ignore" }}'
+    state: '{{ "present" if dokuwiki__ldap_device_dn | d() else "ignore" }}'
 
   - name: 'Create DokuWiki group container for {{ dokuwiki__ldap_device_dn | join(",") }}'
     dn: '{{ dokuwiki__ldap_groups_dn }}'
@@ -609,7 +609,7 @@ dokuwiki__ldap__dependent_tasks:
       ou: '{{ dokuwiki__ldap_groups_rdn.split("=")[1] }}'
       description: 'User groups used in DokuWiki'
     state: '{{ "present"
-               if (dokuwiki__ldap_device_dn|d() and
+               if (dokuwiki__ldap_device_dn | d() and
                    dokuwiki__ldap_private_groups | bool)
                else "ignore" }}'
 
@@ -620,7 +620,7 @@ dokuwiki__ldap__dependent_tasks:
       cn: '{{ dokuwiki__ldap_admin_group_rdn.split("=")[1] }}'
       owner: '{{ dokuwiki__ldap_object_ownerdn }}'
       member: '{{ dokuwiki__ldap_object_ownerdn }}'
-    state: '{{ "present" if dokuwiki__ldap_device_dn|d() else "ignore" }}'
+    state: '{{ "present" if dokuwiki__ldap_device_dn | d() else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: dokuwiki__php__dependent_packages [[[

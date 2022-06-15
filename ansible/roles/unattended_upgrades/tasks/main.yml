@@ -30,7 +30,7 @@
     group: 'root'
     mode: '0644'
   when: ((unattended_upgrades__periodic | bool) or
-         (ansible_local|d() and ansible_local.unattended_upgrades|d() and
+         (ansible_local | d() and ansible_local.unattended_upgrades | d() and
           ansible_local.unattended_upgrades.periodic | bool))
 
 - name: Configure periodic APT upgrades
@@ -41,7 +41,7 @@
     group: 'root'
     mode: '0644'
   when: ((unattended_upgrades__enabled | bool) or
-         (ansible_local|d() and ansible_local.unattended_upgrades|d() and
+         (ansible_local | d() and ansible_local.unattended_upgrades | d() and
           ansible_local.unattended_upgrades.enabled | bool))
 
 - name: Add/remove diversion of unattended-upgrades configuration

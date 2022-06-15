@@ -12,7 +12,7 @@
 
 {% for element in postscreen__dnsbl_reply_pcre_map %}
 {%   if element.state|d('present') != 'absent' %}
-{%     if element.comment|d() %}
+{%     if element.comment | d() %}
 {{ element.comment | regex_replace('\n$','') | comment(prefix='\n', postfix='') -}}
 {%     endif %}
 {{ "{:<50} {}".format(element.pcre | d(element.name | d(element)), element.reply | d(element.value | d(postscreen__dnsbl_default_reply))) }}

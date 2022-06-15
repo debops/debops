@@ -48,7 +48,7 @@
 } %}
 {% set postfix__tpl_mastercf = (postfix__combined_mastercf | debops.debops.parse_kv_items(empty=param_empty, defaults=param_defaults)) %}
 {% for element in postfix__tpl_mastercf %}
-{%   if element.name|d() and element.state|d('present') not in [ 'init', 'absent' ] %}
+{%   if element.name | d() and element.state|d('present') not in [ 'init', 'absent' ] %}
 {%     set option_commented = ('#' if element.state|d('present') == 'comment' else '') %}
 {%     set element_name =     (element.service | d(element.name)) %}
 {%     set element_type =     element.type %}
@@ -68,7 +68,7 @@
 {%     set type_indent =      ((element_name | length > 8) | ternary('4', '5')) %}
 {%     set private_indent =   ((element_name | length > 8 and option_commented) | ternary('6', '7')) %}
 {%     set option_format =    ('{}{:<' + name_indent + '} {:<' + type_indent + '} {:<' + private_indent + '} {:<7} {:<7} {:<7} {:<7} {}') %}
-{%     if element.comment|d() %}
+{%     if element.comment | d() %}
 {%       set comment_header = ('#' if (element.state|d('present') == 'hidden' or (element.comment.split('\n') | list | count >= 3)) else '') %}
 {%       set comment_footer = ('#\n' if (element.comment.split('\n') | list | count < 5) else '') %}
 {{ element.comment | regex_replace('\n$','') | comment(prefix=comment_header, postfix=comment_footer) -}}
@@ -77,7 +77,7 @@
 {%     endif %}
 {%     if element.state|d('present') != 'hidden' %}
 {{ option_format.format(option_commented, element_name, element_type, element_private, element_unpriv, element_chroot, element_wakeup, element_maxproc, element_command) }}
-{%       if element.options|d() %}
+{%       if element.options | d() %}
 {%         set parsed_options = [] %}
 {%         for option in element.options %}
 {%           set option_dict = {'name': (option.option | d(option.name)), 'state': option.state|d('present') } %}
@@ -119,7 +119,7 @@
 {%           endfor %}
 {%         endif %}
 {%       endif %}
-{%       if element_args|d() %}
+{%       if element_args | d() %}
 {%         for line in element_args.split('\n') %}
 {{ '{}{}'.format(option_commented, '  ' + line) }}
 {%         endfor %}

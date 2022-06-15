@@ -6,8 +6,8 @@
 {% for account in getent_passwd.keys() %}
 {%   set system_groups__tpl_append_groups = [] %}
 {%   for element in (system_groups__combined_list | debops.debops.parse_kv_items) %}
-{%     if element.name|d() and element.state|d('present') not in [ 'init', 'absent', 'ignore' ] %}
-{%       if (element.members|d() and (system_groups__prefix + account) in ([ element.members ] if element.members is string else element.members)) %}
+{%     if element.name | d() and element.state|d('present') not in [ 'init', 'absent', 'ignore' ] %}
+{%       if (element.members | d() and (system_groups__prefix + account) in ([ element.members ] if element.members is string else element.members)) %}
 {%         set _ = system_groups__tpl_append_groups.append(element.name) %}
 {%       endif %}
 {%     endif %}

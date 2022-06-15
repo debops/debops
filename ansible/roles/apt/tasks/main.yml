@@ -25,7 +25,7 @@
   register: apt__register_apt_first_update
   until: apt__register_apt_first_update is succeeded
   when: (apt__enabled | bool and
-         not (ansible_local.apt.configured|d()) | bool)
+         not (ansible_local.apt.configured | d()) | bool)
 
 - name: Install required packages
   ansible.builtin.apt:
@@ -81,7 +81,7 @@
     - '{{ apt__extra_architectures }}'
     - '{{ apt__group_extra_architectures }}'
     - '{{ apt__host_extra_architectures }}'
-  when: item not in ansible_facts.ansible_local.apt.foreign_architectures|d()
+  when: item not in ansible_facts.ansible_local.apt.foreign_architectures | d()
   notify: [ 'Refresh host facts' ]
 
 - name: Add/remove diversion of /etc/apt/sources.list
@@ -124,7 +124,7 @@
   until: apt__register_apt_key is succeeded
   # `item.state`, `item.architecture`, `item.distribution` and `item.distribution_release` need to be checked here.
   # Ref: https://github.com/debops/ansible-apt/pull/76#pullrequestreview-2529842
-  when: (apt__enabled | bool and (item.url|d() or item.data|d() or item.id|d() or item.file|d()) and
+  when: (apt__enabled | bool and (item.url | d() or item.data | d() or item.id | d() or item.file | d()) and
          (item.state|d("present") == 'present' and
           (item.architecture|d(apt__architecture) == apt__architecture and
            item.distribution|d(apt__distribution) == apt__distribution and
@@ -148,7 +148,7 @@
     - '{{ apt__group_repositories }}'
     - '{{ apt__host_repositories }}'
   register: apt__register_repositories
-  when: (apt__enabled | bool and item.repo|d())
+  when: (apt__enabled | bool and item.repo | d())
 
 - name: Remove APT auth configuration if requested
   ansible.builtin.file:
@@ -164,7 +164,7 @@
     dest: '{{ "/etc/apt/auth.conf.d/" + (item.name | regex_replace(".conf$","")) + ".conf" }}'
     mode: '0640'
   loop: '{{ q("flattened", (apt__auth_files + apt__group_auth_files + apt__host_auth_files)) }}'
-  when: apt__enabled | bool and item.machine|d() and item.login|d() and item.password|d() and
+  when: apt__enabled | bool and item.machine | d() and item.login | d() and item.password | d() and
         item.state|d('present') not in [ 'absent', 'ignore' ]
   no_log: '{{ debops__no_log | d(True) }}'
 
@@ -182,8 +182,8 @@
     - '{{ apt__group_conf }}'
     - '{{ apt__host_conf }}'
   when: (apt__enabled | bool  and
-         (item.src|d() or item.content|d()) and
-         (item.dest|d() or item.path|d() or item.name|d()) and
+         (item.src | d() or item.content | d()) and
+         (item.dest | d() or item.path | d() or item.name | d()) and
          (item.state|d('present') != 'absent'))
 
 - name: Delete APT configuration files on remote hosts
@@ -195,7 +195,7 @@
     - '{{ apt__group_conf }}'
     - '{{ apt__host_conf }}'
   when: (apt__enabled | bool  and
-         (item.dest|d() or item.path|d() or item.name|d()) and
+         (item.dest | d() or item.path | d() or item.name | d()) and
          (item.state|d('present') == 'absent'))
                                                                    # ]]]
 
@@ -231,7 +231,7 @@
     state: 'present'
     mode: '0755'
   notify: [ 'Refresh host facts' ]
-  when: (apt__enabled | bool and ansible_local|d() and ansible_local.apt|d() and
+  when: (apt__enabled | bool and ansible_local | d() and ansible_local.apt | d() and
          not ansible_local.apt.configured | bool)
 
 - name: Update Ansible facts if they were modified

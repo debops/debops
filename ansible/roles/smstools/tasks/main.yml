@@ -22,15 +22,15 @@
 
 - name: Stop smsd for home directory change
   ansible.builtin.service: name=smstools state=stopped
-  when: smstools_register_home is defined and smstools_register_home.stdout|d()
+  when: smstools_register_home is defined and smstools_register_home.stdout | d()
 
 - name: Fix smsd home directory
   ansible.builtin.user: name=smsd home=/var/spool/sms
-  when: smstools_register_home is defined and smstools_register_home.stdout|d()
+  when: smstools_register_home is defined and smstools_register_home.stdout | d()
 
 - name: Start smsd with new home directory
   ansible.builtin.service: name=smstools state=started
-  when: smstools_register_home is defined and smstools_register_home.stdout|d()
+  when: smstools_register_home is defined and smstools_register_home.stdout | d()
 
 - name: Configure smsd
   ansible.builtin.template: src=etc/smsd.conf.j2 dest=/etc/smsd.conf
@@ -72,8 +72,8 @@
 - name: Configure access to sendsms via sudo
   ansible.builtin.template: src=etc/sudoers.d/smstools.j2 dest=/etc/sudoers.d/smstools
             owner=root group=root mode=0440
-  when: (ansible_local|d() and ansible_local.sudo|d() and
-         (ansible_local.sudo.installed|d()) | bool)
+  when: (ansible_local | d() and ansible_local.sudo | d() and
+         (ansible_local.sudo.installed | d()) | bool)
 
 - name: Configure xinetd SMS service
   ansible.builtin.template: src=etc/xinetd.d/sms.j2 dest=/etc/xinetd.d/sms

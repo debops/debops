@@ -30,7 +30,7 @@
 {% endif %}
 {% set nginx_tpl_default_server = []                                           %}
 {% set nginx_tpl_ipv6only = []                                                 %}
-{% if nginx_register_default_server|d() %}
+{% if nginx_register_default_server | d() %}
 {%     for name in ([ item.name ] if item.name is string else item.name)       %}
 {%         if (name == nginx_register_default_server or
                not name and nginx_register_default_server == "default")        %}
@@ -43,7 +43,7 @@
 {% endif                                                                       %}
 {% set nginx_tpl_default_server_ssl = []                                       %}
 {% set nginx_tpl_ipv6only_ssl = []                                             %}
-{% if nginx_register_default_server_ssl|d() %}
+{% if nginx_register_default_server_ssl | d() %}
 {%     for name in ([ item.name ] if item.name is string else item.name)       %}
 {%         if (name == nginx_register_default_server_ssl or
                not name and nginx_register_default_server_ssl == "default")    %}
@@ -59,7 +59,7 @@
 {% set nginx_tpl_http_redirect = item.redirect | default('https://$host$request_uri') %}
 {% set nginx_tpl_pki_custom_realm = '' %}
 {% set nginx_tpl_pki_custom_realm_list = [] %}
-{% if (nginx_pki | bool and item.name | d() and (ansible_local.pki.known_realms|d())) %}
+{% if (nginx_pki | bool and item.name | d() and (ansible_local.pki.known_realms | d())) %}
 {# TODO: Legacy code. Use debops__tpl_macros.j2 #}
 {%     for name in ([ item.name ] if item.name is string else item.name)                       %}
 {%         if name in ansible_local.pki.known_realms                                           %}
@@ -102,17 +102,17 @@
  #
  #   ---- root directory ----
  #}
-{% if item.owner|d()                                                       %}
+{% if item.owner | d()                                                       %}
 {%     set nginx_tpl_root = item.root | default(nginx_www + '/' + item.owner + '/sites/' + (item.name if item.name is string else item.name[0] | d('default')) + '/' + ( item.public_dir_name | d(nginx_public_dir_name)) ) %}
 {% else                                                                    %}
 {%     set nginx_tpl_root = item.root | default(nginx_www + '/sites/' + (item.name if item.name is string else item.name[0] | d('default')) + '/' + ( item.public_dir_name | d(nginx_public_dir_name)) ) %}
 {% endif                                                                   %}
-{% if item.root_suffix|d()                                          %}
+{% if item.root_suffix | d()                                          %}
 {%     set nginx_tpl_root = nginx_tpl_root + '/' + item.root_suffix %}
 {% endif                                                            %}
 {% macro print_root()                                       %}
 {%     block nginx_tpl_block_root                           %}
-{%       if (not (item.root|d() | bool)) and nginx_tpl_root %}
+{%       if (not (item.root | d() | bool)) and nginx_tpl_root %}
         root {{ nginx_tpl_root }};
 {%       endif                                              %}
 {%     endblock                                             %}
@@ -164,29 +164,29 @@
 {% macro print_location_list(location_list)                                    %}
 {%     if location_list is defined                                             %}
 {%         for entry in location_list                                          %}
-{%             if entry.pattern|d() and (entry.enabled|d(True) | bool)         %}
+{%             if entry.pattern | d() and (entry.enabled|d(True) | bool)         %}
         location {{ entry.pattern_prefix | default('') + entry.pattern }} {
-{%                 if entry.referers|d()                                       %}
+{%                 if entry.referers | d()                                       %}
                 valid_referers none blocked {{ entry.referers | unique | join(' ') }};
                 if ($invalid_referer) {
                         return 403;
                 }
 {%                 endif                                                       %}
-{%                 if entry.options|d()                                        %}
+{%                 if entry.options | d()                                        %}
                 {{ entry.options | indent(16) | regex_replace("(?m)^\s*$", "") }}
 {%                 endif                                                       %}
-{%                 if entry.access_policy|d() and (entry.access_policy in nginx_access_policy_satisfy_map) %}
+{%                 if entry.access_policy | d() and (entry.access_policy in nginx_access_policy_satisfy_map) %}
                 satisfy {{ nginx_access_policy_satisfy_map[entry.access_policy] }};
 
-{%                 elif entry.allow|d() or
-                        (entry.auth_basic|d() | bool) or
-                        (entry.satisfy|d()) or
-                        (entry.access_policy|d() and
+{%                 elif entry.allow | d() or
+                        (entry.auth_basic | d() | bool) or
+                        (entry.satisfy | d()) or
+                        (entry.access_policy | d() and
                          entry.access_policy not in nginx_access_policy_satisfy_map) %}
                 satisfy {{ entry.satisfy | default(nginx_default_satisfy) }};
 
 {%                 endif                                                            %}
-{%                 if entry.allow|d() or entry.access_policy|d()    %}
+{%                 if entry.allow | d() or entry.access_policy | d()    %}
 {%                     if entry.allow is defined                   %}
 {%                         if entry.allow is string                %}
                 allow {{ entry.allow }};
@@ -196,7 +196,7 @@
 {%                             endfor                             %}
 {%                         endif                                  %}
 {%                     endif                                      %}
-{%                     if entry.access_policy|d() and (entry.access_policy in nginx_access_policy_allow_map) %}
+{%                     if entry.access_policy | d() and (entry.access_policy in nginx_access_policy_allow_map) %}
 {%                         for address in nginx_access_policy_allow_map[entry.access_policy] | unique       %}
                 allow {{ address }};
 {%                         endfor                                                                          %}
@@ -204,16 +204,16 @@
                 deny all;
 
 {%                 endif                                                                                   %}
-{%                 if entry.access_policy|d() and (entry.access_policy in nginx_access_policy_auth_basic_map) %}
+{%                 if entry.access_policy | d() and (entry.access_policy in nginx_access_policy_auth_basic_map) %}
                 auth_basic "{{ entry.auth_basic_realm|d(nginx_default_auth_basic_realm) }}";
                 auth_basic_user_file {{ nginx_private_path + "/" + nginx_access_policy_auth_basic_map[entry.access_policy] }};
 
-{%                 elif entry.auth_basic|d() | bool %}
+{%                 elif entry.auth_basic | d() | bool %}
                 auth_basic "{{ entry.auth_basic_realm|d(nginx_default_auth_basic_realm) }}";
-                auth_basic_user_file {{ entry.auth_basic_filename | default(nginx_private_path + "/" + entry.auth_basic_name|d()) }};
+                auth_basic_user_file {{ entry.auth_basic_filename | default(nginx_private_path + "/" + entry.auth_basic_name | d()) }};
 
 {%                 endif %}
-{%                 if entry.locations|d()                                      %}
+{%                 if entry.locations | d()                                      %}
 {{ print_location_list(entry.locations) | indent(8, true) | regex_replace("(?m)^\s*$", "") }}
 {%                 endif                                                       %}
         }
@@ -229,15 +229,15 @@
  #   ---- macro which prints the nginx server block which is shared between HTTP and HTTPS
  #}
 {% macro print_shared_nginx_server_block()                                               %}
-{% if (not nginx_tpl_ssl and ((item.redirect|d()) or (item.redirect_to_ssl|d() | bool))) %}
+{% if (not nginx_tpl_ssl and ((item.redirect | d()) or (item.redirect_to_ssl | d() | bool))) %}
         return {{ item.redirect_code_ssl | default(nginx_tpl_default_redirect_code_ssl) }} {{ nginx_tpl_http_redirect }};
-{% elif nginx_tpl_ssl and item.redirect_ssl|d()                                          %}
+{% elif nginx_tpl_ssl and item.redirect_ssl | d()                                          %}
         return {{ item.redirect_code | default(nginx_tpl_default_redirect_code) }} {{ item.redirect_ssl }};
 {% else                                                                                  %}
         keepalive_timeout {{ item.keepalive | default(nginx_default_keepalive_timeout) | string }};
 
 {%     block nginx_tpl_block_log                                                    %}
-{%         if item.name|d() %}
+{%         if item.name | d() %}
 {%             set nginx_tpl_access_log_format = ''                                 %}
 {%             if item.access_log_format is defined                                 %}
 {%                 set nginx_tpl_access_log_format = ' ' +  item.access_log_format  %}
@@ -276,8 +276,8 @@
 
 {%         endif                                                                    %}
 {%     endblock                                                                     %}
-{%     if nginx_real_ip_from|d() and nginx_real_ip_from                             %}
-{%         if nginx_real_ip_header|d() and nginx_real_ip_header                     %}
+{%     if nginx_real_ip_from | d() and nginx_real_ip_from                             %}
+{%         if nginx_real_ip_header | d() and nginx_real_ip_header                     %}
         real_ip_header {{ nginx_real_ip_header }};
 {%         endif                                                                    %}
 {%         if nginx_real_ip_recursive | bool                                        %}
@@ -305,7 +305,7 @@
         }
 
 {%     endif                                                                        %}
-{%     if item.error_pages|d()                                                      %}
+{%     if item.error_pages | d()                                                      %}
 {%         for code, location in item.error_pages.items()                       %}
         error_page {{ code }} {{ location }};
         location {{ location }} {
@@ -314,19 +314,19 @@
 
 {%         endfor                                                                   %}
 {%     endif                                                                        %}
-{%     if item.include_files_begin|d()                                 %}
+{%     if item.include_files_begin | d()                                 %}
 {%         for file in item.include_files_begin                        %}
         include {{ file }};
 {%         endfor                                                      %}
 
 {%     endif                                                           %}
-{%     if item.error_pages_list|d()                                    %}
+{%     if item.error_pages_list | d()                                    %}
 {%         for element in item.error_pages_list                        %}
-{%             if element.location|d() or element.location_options|d() %}
+{%             if element.location | d() or element.location_options | d() %}
 
 {%             endif                                                   %}
         error_page {{ element.code if (element.code is string) else (element.code | join(" ")) }} {{ element.uri }};
-{%             if element.location|d() or element.location_options|d() %}
+{%             if element.location | d() or element.location_options | d() %}
         location {{ element.location | d(element.uri) }} {
 {{ element.location_options | indent(16, true) | regex_replace("(?m)^\s*$", "") }}
         }
@@ -337,22 +337,22 @@
 {%         endfor                                                      %}
 
 {%     endif                                                           %}
-{%     if item.options|d()                                             %}
+{%     if item.options | d()                                             %}
         {{ item.options | indent(8) | regex_replace("(?m)^\s*$", "") }}
 
 {%     endif                                                           %}
-{%     if item.access_policy|d() and (item.access_policy in nginx_access_policy_satisfy_map) %}
+{%     if item.access_policy | d() and (item.access_policy in nginx_access_policy_satisfy_map) %}
         satisfy {{ nginx_access_policy_satisfy_map[item.access_policy] }};
 
-{%     elif item.allow|d() or
-            (item.auth_basic|d() | bool) or
-            (item.satisfy|d()) or
-            (item.access_policy|d() and
+{%     elif item.allow | d() or
+            (item.auth_basic | d() | bool) or
+            (item.satisfy | d()) or
+            (item.access_policy | d() and
              item.access_policy not in nginx_access_policy_satisfy_map) %}
         satisfy {{ item.satisfy | default(nginx_default_satisfy) }};
 
 {%     endif                                                            %}
-{%     if item.allow|d() or item.access_policy|d()    %}
+{%     if item.allow | d() or item.access_policy | d()    %}
 {%         if item.allow is defined                   %}
 {%             if item.allow is string                %}
         allow {{ item.allow }};
@@ -362,7 +362,7 @@
 {%                 endfor                             %}
 {%             endif                                  %}
 {%         endif                                      %}
-{%         if item.access_policy|d() and (item.access_policy in nginx_access_policy_allow_map) %}
+{%         if item.access_policy | d() and (item.access_policy in nginx_access_policy_allow_map) %}
 {%             for address in nginx_access_policy_allow_map[item.access_policy] | unique       %}
         allow {{ address }};
 {%             endfor                                                                          %}
@@ -370,20 +370,20 @@
         deny all;
 
 {%     endif                                                                                   %}
-{%     if item.access_policy|d() and (item.access_policy in nginx_access_policy_auth_basic_map) %}
+{%     if item.access_policy | d() and (item.access_policy in nginx_access_policy_auth_basic_map) %}
         auth_basic "{{ item.auth_basic_realm|d(nginx_default_auth_basic_realm) }}";
         auth_basic_user_file {{ nginx_private_path + "/" + nginx_access_policy_auth_basic_map[item.access_policy] }};
 
-{%     elif item.auth_basic|d() | bool %}
+{%     elif item.auth_basic | d() | bool %}
         auth_basic "{{ item.auth_basic_realm|d(nginx_default_auth_basic_realm) }}";
-        auth_basic_user_file {{ item.auth_basic_filename | default(nginx_private_path + "/" + item.auth_basic_name|d()) }};
+        auth_basic_user_file {{ item.auth_basic_filename | default(nginx_private_path + "/" + item.auth_basic_name | d()) }};
 
 {%     endif %}
-{%     if item.userdir|d() | bool %}
+{%     if item.userdir | d() | bool %}
         location ~ {{ item.userdir_regexp | d('^/~(.+?)(/.*)?$') }} {
                 alias {{ item.userdir_alias | d(nginx_www + '/$1/userdir/public$2') }};
                 index {{ item.userdir_index | d(item.index | default('index.html index.htm')) }};
-{%         if item.userdir_options|d() %}
+{%         if item.userdir_options | d() %}
 {{             item.userdir_options | indent(16, true) | regex_replace("(?m)^\s*$", "") }}
 {%         else                        %}
                 autoindex on;
@@ -423,7 +423,7 @@
                 allow {{ address }};
 {%             endfor                                         %}
 {%         endif                                              %}
-{%         if item.status|d()                                 %}
+{%         if item.status | d()                                 %}
 {%             for address in item.status | unique            %}
                 allow {{ address }};
 {%             endfor                                         %}
@@ -439,24 +439,24 @@
 
 {%     endif                                               %}
 {%     block nginx_tpl_block_location                      %}
-{%         if item.location|d() or item.location_list|d()  %}
-{%             if item.location_list|d()                   %}
+{%         if item.location | d() or item.location_list | d()  %}
+{%             if item.location_list | d()                   %}
 {{                 print_location_list(item.location_list) }}
 {%             endif                                       %}
-{%             if item.location|d()                        %}
+{%             if item.location | d()                        %}
 {{                 print_location(item.location, item.location_allow, item.location_referers, item.location_deny) }}
 {%            endif                                        %}
 {%         else                                            %}
         location / {
 {%             block nginx_tpl_block_location_root         %}
-                try_files {{ (([ item.try_files ] if item.try_files is string else item.try_files) if item.try_files|d() else nginx_default_try_files) | join(' ') }} =404;
+                try_files {{ (([ item.try_files ] if item.try_files is string else item.try_files) if item.try_files | d() else nginx_default_try_files) | join(' ') }} =404;
 {%             endblock                                    %}
         }
 {%         endif                                           %}
 {%     endblock %}
 {%     block nginx_tpl_block_custom_locations %}
 {%     endblock %}
-{%     if item.include_files_end|d()                       %}
+{%     if item.include_files_end | d()                       %}
 
 {%         for file in item.include_files_end              %}
         include {{ file }};
@@ -470,7 +470,7 @@
  #}
 # {{ ansible_managed }}
 
-{% if item.name|d()                                                         %}
+{% if item.name | d()                                                         %}
 # nginx server configuration for:
 {%     for address in ([ item.name ] if item.name is string else item.name) %}
 {%         if nginx_tpl_ssl and not (item.redirect_to_ssl|d(True) | bool)   %}
@@ -478,18 +478,18 @@
 {%         endif                                                            %}
 #    - {{ "https" if nginx_tpl_ssl else "http" }}://{{ address }}/
 {%     endfor                                                               %}
-{%     if item.by_role|d()                                                  %}
+{%     if item.by_role | d()                                                  %}
 # generated by Ansible role: {{ item.by_role }}
 {%     endif                                                                %}
 
 {% else                                                                     %}
 # nginx server default configuration
-{%     if item.by_role|d()                                                  %}
+{%     if item.by_role | d()                                                  %}
 # generated by Ansible role: {{ item.by_role }}
 {%     endif                                                                %}
 
 {% endif                                                                    %}
-{% set nginx__tpl_hostname_domain = item.hostname_domain | d(((item.name if item.name is string else item.name[0]) if item.name|d() else ansible_fqdn).split('.')[1:] | join('.')) %}
+{% set nginx__tpl_hostname_domain = item.hostname_domain | d(((item.name if item.name is string else item.name[0]) if item.name | d() else ansible_fqdn).split('.')[1:] | join('.')) %}
 {% set nginx__tpl_final_hostname_domain = [] %}
 {% if item.hostname_domain is undefined %}
 {%   for domain_suffix in nginx__hostname_domains[::-1] %}
@@ -519,7 +519,7 @@
 {% else %}
 {%   set nginx__tpl_hostnames = ([ item.hostname ] if (item.hostname is string) else item.hostname) %}
 {% endif %}
-{% if nginx__tpl_hostnames|d() and item.listen|d(True)                  %}
+{% if nginx__tpl_hostnames | d() and item.listen|d(True)                  %}
 # Support for redirection via DNS suffixes in /etc/resolv.conf
 server {
 {%   if item.listen|d(True)                            %}
@@ -568,7 +568,7 @@ server {
 }
 
 {% endif                                                 %}
-{% if item.redirect_from|d() and item.name|d()           %}
+{% if item.redirect_from | d() and item.name | d()           %}
 {%     if item.name is string or item.name | length == 1 %}
 # Cannot redirect from only one name: {{ item.name if item.name is string else item.name | join(', ') }}
 
@@ -604,7 +604,7 @@ server {
 }
 
 {%     endif                                             %}
-{% elif item.redirect_to|d() and item.name|d()           %}
+{% elif item.redirect_to | d() and item.name | d()           %}
 server {
 
 {%     if item.listen|d(True)                            %}
@@ -631,11 +631,11 @@ server {
         listen {{ port }}{% if nginx_tpl_default_server %} {{ nginx_tpl_default_server | join(" ") }}{% endif %}{% if (loop.first and nginx_tpl_ipv6only) %} {{ nginx_tpl_ipv6only | join(" ") }}{% endif %};
 {%     endfor                                            %}
 
-{%     if item.name|d()                                  %}
-{%         if item.redirect_from|d()                     %}
+{%     if item.name | d()                                  %}
+{%         if item.redirect_from | d()                     %}
         server_name {{ item.name if item.name is string else item.name[0] }};
 
-{%         elif item.redirect_to|d()                     %}
+{%         elif item.redirect_to | d()                     %}
         server_name {{ item.redirect_to }};
 
 {%         else                                          %}
@@ -728,7 +728,7 @@ server {
 {%     if item.content_type_options|d(True) != omit             %}
         add_header                X-Content-Type-Options "{{ item.content_type_options | d('nosniff') }}"{% if nginx_version is version_compare('1.7.5','>=') %} always{% endif %};
 {%     endif                                                    %}
-{%     if item.frame_options|d() != omit                        %}
+{%     if item.frame_options | d() != omit                        %}
         add_header                X-Frame-Options "{{ item.frame_options | d('SAMEORIGIN') }}"{% if nginx_version is version_compare('1.7.5','>=') %} always{% endif %};
 {%     endif                                                    %}
 {%     if item.xss_protection | d(nginx__http_xss_protection) != omit %}
@@ -744,11 +744,11 @@ server {
         add_header                X-Permitted-Cross-Domain-Policies "{{ item.permitted_cross_domain_policies | d(nginx__http_permitted_cross_domain_policies) }}";
 {%     endif                                                    %}
 
-{%     if item.name|d()                                         %}
-{%         if item.redirect_from|d()                            %}
+{%     if item.name | d()                                         %}
+{%         if item.redirect_from | d()                            %}
         server_name {{ item.name if item.name is string else item.name[0] }};
 
-{%         elif item.redirect_to|d()                            %}
+{%         elif item.redirect_to | d()                            %}
         server_name {{ item.redirect_to }};
 
 {%         else                                                 %}

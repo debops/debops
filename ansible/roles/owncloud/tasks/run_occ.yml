@@ -41,7 +41,7 @@
   # but `occ` is preferred in the case of Ansible.
 - name: Run given occ commands
   ansible.builtin.command: php --file "{{ owncloud__app_home }}/occ" {{ owncloud__occ_item.command }}
-               {{ "--output=json_pretty" if (owncloud__occ_item.get_output|d() | bool) else "" }}
+               {{ "--output=json_pretty" if (owncloud__occ_item.get_output | d() | bool) else "" }}
   environment: '{{ owncloud__occ_item.env|d({}) }}'
   tags: [ 'role::owncloud:occ' ]
   ## TODO: Upstream needs to fix proper support for `changed_when`.
@@ -58,11 +58,11 @@
   become: True
   become_user: '{{ owncloud__app_user }}'
   ## https://github.com/debops/ansible-owncloud/issues/62
-  when: (owncloud__do_autosetup|d() | bool and
-         owncloud__occ_item|d() and
-         owncloud__occ_item.command|d() and
+  when: (owncloud__do_autosetup | d() | bool and
+         owncloud__occ_item | d() and
+         owncloud__occ_item.command | d() and
          (owncloud__occ_item.when|d(True) | bool) and not (
-           ansible_local.owncloud.maintenance|d() | bool and (
+           ansible_local.owncloud.maintenance | d() | bool and (
              owncloud__occ_item.command.startswith("dav") or
              owncloud__occ_item.command.startswith("federation") or
              owncloud__occ_item.command.startswith("files") or
@@ -88,5 +88,5 @@
     ## regex_replace: Relies on the fact that `json_pretty` indents the JSON encoded object.
     owncloud__occ_run_output: '{{ owncloud__occ_run.stdout_lines
                                   | map("regex_replace", "^[^{} ].*$", "") | join("") | from_json }}'
-  when: (owncloud__do_autosetup|d() | bool and owncloud__occ_item|d() and (owncloud__occ_item.get_output|d() | bool) and (not ansible_check_mode))
+  when: (owncloud__do_autosetup | d() | bool and owncloud__occ_item | d() and (owncloud__occ_item.get_output | d() | bool) and (not ansible_check_mode))
   tags: [ 'role::owncloud:occ_config', 'role::owncloud:occ' ]

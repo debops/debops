@@ -532,8 +532,8 @@ postldap__postfix__dependent_lookup_tables:
 # When enabled, `postfix` will configure mail-boxes locally and allow LDAP authenticated users to
 # send email over this instance.
 postldap__ldap_enabled: '{{ True
-                            if (ansible_local|d() and ansible_local.ldap|d() and
-                               (ansible_local.ldap.enabled|d()) | bool)
+                            if (ansible_local | d() and ansible_local.ldap | d() and
+                               (ansible_local.ldap.enabled | d()) | bool)
                             else False }}'
 
                                                                    # ]]]
@@ -752,7 +752,7 @@ postldap__ldap__dependent_tasks:
     no_log: '{{ debops__no_log|d(True) }}'
     state: '{{ "present"
                 if (postldap__ldap_enabled | bool and
-                    postldap__ldap_device_dn|d())
+                    postldap__ldap_device_dn | d())
                 else "ignore" }}'
 
   - name: 'Create Postfix group container for {{ postldap__ldap_device_dn | join(",") }}'
@@ -763,7 +763,7 @@ postldap__ldap__dependent_tasks:
       description: 'User groups used in Postfix'
     state: '{{ "present"
                if (postldap__ldap_enabled | bool and
-                   postldap__ldap_device_dn|d() and
+                   postldap__ldap_device_dn | d() and
                    postldap__ldap_private_subtree | bool)
                else "ignore" }}'
 
@@ -775,7 +775,7 @@ postldap__ldap__dependent_tasks:
       description: 'Virtual Mail Domains used in Postfix'
     state: '{{ "present"
                if (postldap__ldap_enabled | bool and
-                   postldap__ldap_device_dn|d() and
+                   postldap__ldap_device_dn | d() and
                    postldap__ldap_private_subtree | bool)
                else "ignore" }}'
 
@@ -784,7 +784,7 @@ postldap__ldap__dependent_tasks:
     objectClass: 'dNSDomain'
     state: '{{ "present"
                if (postldap__ldap_enabled | bool and
-                   postldap__ldap_device_dn|d() and
+                   postldap__ldap_device_dn | d() and
                    postldap__ldap_private_subtree | bool)
                else "ignore" }}'
                                                                    # ]]]

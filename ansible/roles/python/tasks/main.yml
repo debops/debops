@@ -44,8 +44,8 @@
     dest: '/etc/ansible/facts.d/python.fact'
     mode: '0755'
   notify: [ 'Refresh host facts' ]
-  when: (python__enabled | bool and ansible_local|d() and
-         ansible_local.python|d() and
+  when: (python__enabled | bool and ansible_local | d() and
+         ansible_local.python | d() and
          not ansible_local.python.configured | bool)
 
 - name: Re-read local facts if they have been modified

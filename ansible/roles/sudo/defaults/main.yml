@@ -169,9 +169,9 @@ sudo__combined_sudoers: '{{ sudo__sudoers
 # file management. If the support is disabled, existing configuration file will
 # not be changed or removed.
 sudo__ldap_enabled: '{{ True
-                        if (ansible_local|d() and ansible_local.ldap|d() and
-                            (ansible_local.ldap.posix_enabled|d()) | bool and not
-                            (ansible_local.sssd|d() and ansible_local.sssd.installed|d()) | bool)
+                        if (ansible_local | d() and ansible_local.ldap | d() and
+                            (ansible_local.ldap.posix_enabled | d()) | bool and not
+                            (ansible_local.sssd | d() and ansible_local.sssd.installed | d()) | bool)
                         else False }}'
 
                                                                    # ]]]
@@ -192,8 +192,8 @@ sudo__ldap_default_configuration:
   - name: 'ssl'
     comment: 'SSL options'
     value: '{{ "start_tls"
-               if (ansible_local|d() and ansible_local.ldap|d() and
-                   (ansible_local.ldap.start_tls|d()) | bool)
+               if (ansible_local | d() and ansible_local.ldap | d() and
+                   (ansible_local.ldap.start_tls | d()) | bool)
                else "on" }}'
 
   - name: 'tls_reqcert'

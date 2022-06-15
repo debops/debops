@@ -4,16 +4,16 @@
  #}
 {% set output = [] %}
 {% for identity in (q("flattened", authorized_keys__combined_identities) | debops.debops.parse_kv_items(merge_keys=["accounts"])) %}
-{%   if (identity.state|d('present') not in [ 'init', 'ignore' ] and (identity.sshkeys|d() or identity.url|d())) %}
+{%   if (identity.state|d('present') not in [ 'init', 'ignore' ] and (identity.sshkeys | d() or identity.url | d())) %}
 {%     for account in identity.accounts | d([]) %}
 {%       set parsed_account = {'identity': identity.name,
                                'user': account.name} %}
-{%       if identity.sshkeys|d() %}
+{%       if identity.sshkeys | d() %}
 {%         set _ = parsed_account.update({'key': ([ identity.sshkeys ]
                                                   if identity.sshkeys is string
                                                   else identity.sshkeys)
                                                  | join('\n')}) %}
-{%       elif identity.url|d() %}
+{%       elif identity.url | d() %}
 {%         set _ = parsed_account.update({'key': identity.url}) %}
 {%       endif %}
 {%       set _ = parsed_account.update({'state': ('present'

@@ -8,10 +8,10 @@
 ## tinyproxy.conf -- tinyproxy daemon configuration file
 ##
 {% for item in tinyproxy__combined_configuration | debops.debops.parse_kv_items %}
-{% if item.comment|d() %}
+{% if item.comment | d() %}
 {{ item.comment | regex_replace('\n$','') | comment() }}
 {% endif %}
-{% if item.options|d() %}
+{% if item.options | d() %}
 {%   for element in item.options %}
 {%     if element is string %}
 {%       if not loop.first %}
@@ -19,15 +19,15 @@
 {%       endif %}
 {{ "{}".format(element) }}
 {%     elif element is mapping %}
-{%       if element.name|d() %}
+{%       if element.name | d() %}
 {%         if element.state|d('present') not in [ 'absent', 'ignore' ] %}
-{%           if (loop.first and item.comment|d() and element.comment|d()) or (not loop.first and (element.comment|d() or (element.separator|d()) | bool)) %}
+{%           if (loop.first and item.comment | d() and element.comment | d()) or (not loop.first and (element.comment | d() or (element.separator | d()) | bool)) %}
 
 {%           endif %}
-{%           if element.comment|d() %}
+{%           if element.comment | d() %}
 {{ element.comment | regex_replace('\n$','') | comment() }}
 {%           endif %}
-{%           if element.value|d() %}
+{%           if element.value | d() %}
 {%             if element.value is string %}
 {{ "{}{} = {}".format(('#' if (element.state|d('present') == 'comment') else ''), element.option | d(element.name), element.value) }}
 {%             else %}
@@ -35,7 +35,7 @@
 {{ "{}{} = {}".format(('#' if (element.state|d('present') == 'comment') else ''), element.option | d(element.name), thing) }}
 {%               endfor %}
 {%             endif %}
-{%           elif element.raw|d() %}
+{%           elif element.raw | d() %}
 {%             if element.state|d('present') == 'comment' %}
 {{ "{}".format(element.raw | regex_replace('\n$','')) | comment() }}
 {%             else %}
@@ -53,7 +53,7 @@
 {%     endif %}
 {%   endfor %}
 {% endif %}
-{% if item.raw|d() %}
+{% if item.raw | d() %}
 {{ item.raw | regex_replace('\n$','') }}
 {% endif %}
 {% endfor %}

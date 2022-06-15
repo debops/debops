@@ -6,7 +6,7 @@
 {% set mariadb__tpl_delegate_to = ansible_local.mariadb.delegate_to|d(mariadb_server__delegate_to) %}
 {% set mariadb__tpl_host        = ansible_local.mariadb.host|d("localhost") %}
 {% set mariadb__tpl_server      = ansible_local.mariadb.server|d("localhost") %}
-{% if (mariadb_server__register_version.stdout or (mariadb_server__register_install_status|d() and mariadb_server__register_install_status.changed | bool)) %}
+{% if (mariadb_server__register_version.stdout or (mariadb_server__register_install_status | d() and mariadb_server__register_install_status.changed | bool)) %}
 {%   set mariadb__tpl_client      = "localhost" %}
 {%   set mariadb__tpl_delegate_to = mariadb_server__delegate_to %}
 {%   set mariadb__tpl_host        = "localhost" %}

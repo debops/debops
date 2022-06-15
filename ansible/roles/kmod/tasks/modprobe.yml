@@ -10,7 +10,7 @@
     state: 'absent'
   notify: [ 'Refresh host facts' ]
   register: kmod__register_module_config_delete
-  when: module.name|d() and module.state|d('present') == 'absent'
+  when: module.name | d() and module.state|d('present') == 'absent'
 
 - name: Generate module configuration
   ansible.builtin.template:
@@ -21,7 +21,7 @@
     mode: '0644'
   notify: [ 'Refresh host facts' ]
   register: kmod__register_module_config_create
-  when: module.name|d() and module.state|d('present') != 'absent'
+  when: module.name | d() and module.state|d('present') != 'absent'
 
 - name: Unload kernel module if configuration changed
   modprobe:  # noqa no-handler
@@ -30,7 +30,7 @@
   when: ((kmod__register_module_config_delete is changed or
           kmod__register_module_config_create is changed) and
          module.blacklist is not defined and
-         ansible_local.kmod.modules|d() and
+         ansible_local.kmod.modules | d() and
          module.name in ansible_local.kmod.modules and
          module.state|d('present') not in [ 'config' ])
 

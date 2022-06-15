@@ -241,8 +241,8 @@ sshd__log_level: 'INFO'
 # sysadmin accounts via the :ref:`debops.system_users` disable password-based
 # access.
 sshd__permit_root_login: '{{ "without-password"
-                             if (ansible_local.root_account.ssh_authorized_keys|d() | bool or
-                                 ansible_local.system_users.configured|d() | bool)
+                             if (ansible_local.root_account.ssh_authorized_keys | d() | bool or
+                                 ansible_local.system_users.configured | d() | bool)
                              else "yes" }}'
 
                                                                    # ]]]
@@ -254,8 +254,8 @@ sshd__permit_root_login: '{{ "without-password"
 # configured by the :ref:`debops.system_users` role disables password
 # authentication.
 sshd__password_authentication: '{{ "no"
-                                   if (ansible_local.root_account.ssh_authorized_keys|d() | bool or
-                                       ansible_local.system_users.configured|d() | bool)
+                                   if (ansible_local.root_account.ssh_authorized_keys | d() | bool or
+                                       ansible_local.system_users.configured | d() | bool)
                                    else "yes" }}'
 
                                                                    # ]]]
@@ -542,7 +542,7 @@ sshd__paranoid: False
 #
 # Enable support for looking up authorized public keys in external data sources
 # (currently LDAP is supported). This function works only with OpenSSH 6.2+.
-sshd__authorized_keys_lookup: '{{ ansible_local.ldap.posix_enabled|d() | bool }}'
+sshd__authorized_keys_lookup: '{{ ansible_local.ldap.posix_enabled | d() | bool }}'
 
                                                                    # ]]]
 # .. envvar:: sshd__authorized_keys_lookup_user [[[
@@ -566,7 +566,7 @@ sshd__authorized_keys_lookup_type: [ 'ldap', 'sss' ]
 # enabled automatically when the :ref:`debops.ldap` environment is configured
 # on the host.
 sshd__ldap_enabled: '{{ ansible_local.ldap.enabled
-                        if (ansible_local|d() and ansible_local.ldap|d() and
+                        if (ansible_local | d() and ansible_local.ldap | d() and
                             ansible_local.ldap.enabled is defined)
                         else False }}'
 
@@ -873,16 +873,16 @@ sshd__ldap__dependent_tasks:
     attributes:
       objectClass: '{{ sshd__ldap_device_object_classes }}'
     state: '{{ "present"
-               if ((ansible_local.ldap.posix_enabled|d()) | bool and
-                   sshd__ldap_device_dn|d())
+               if ((ansible_local.ldap.posix_enabled | d()) | bool and
+                   sshd__ldap_device_dn | d())
                else "ignore" }}'
 
   - name: 'Update SSH host public keys in {{ sshd__ldap_device_dn | join(",") }}'
     dn: '{{ sshd__ldap_device_dn }}'
     attributes: '{{ sshd__ldap_device_attributes }}'
     state: '{{ "exact"
-               if ((ansible_local.ldap.posix_enabled|d()) | bool and
-                   sshd__ldap_device_dn|d())
+               if ((ansible_local.ldap.posix_enabled | d()) | bool and
+                   sshd__ldap_device_dn | d())
                else "ignore" }}'
 
   - name: 'Create sshd account for {{ sshd__ldap_device_dn | join(",") }}'
@@ -937,7 +937,7 @@ sshd__pam_access__dependent_rules:
         groups: [ 'admins', 'sshusers', 'sftponly' ]
         origins: 'ALL'
         state: '{{ "present"
-                   if (ansible_local.ldap.posix_enabled|d() | bool)
+                   if (ansible_local.ldap.posix_enabled | d() | bool)
                    else "absent" }}'
 
       - name: 'allow-domain'

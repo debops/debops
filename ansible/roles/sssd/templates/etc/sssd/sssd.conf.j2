@@ -10,7 +10,7 @@
 #			For more information, see sssd.conf(5)
 {% for section in sssd__combined_configuration | debops.debops.parse_kv_items(name='section') %}
 {%   if section.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
-{%     if section.options|d() %}
+{%     if section.options | d() %}
 {%       if section.state != 'hidden' %}
 {%         if (['present', 'comment'] | intersect(section.options | map(attribute='state') | list)) %}
 {%           set section_title = (' ' + ((section.title | d(section.section)) | upper) + ' ') %}
@@ -28,13 +28,13 @@
 {%       endif %}
 {%       for element in section.options %}
 {%         if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
-{%           if element.comment|d() %}
+{%           if element.comment | d() %}
 {%             if not loop.first %}
 {{               '' }}
 {%             endif %}
 {{             element.comment | regex_replace('\n$', '') | comment(prefix='', decoration='# ', postfix='') -}}
 {%           endif %}
-{%           if element.raw|d() %}
+{%           if element.raw | d() %}
 {%             if element.state|d('present') == 'comment' %}
 {{               '{}'.format(element.raw | regex_replace('\n$', '') | comment(prefix='', decoration='#', postfix='')) -}}
 {%             else %}

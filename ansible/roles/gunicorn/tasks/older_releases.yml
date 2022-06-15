@@ -19,7 +19,7 @@
     - '{{ gunicorn__applications }}'
     - '{{ gunicorn__dependent_applications }}'
   notify: [ 'Restart gunicorn' ]
-  when: item.name|d() and item.state|d('present') == 'absent'
+  when: item.name | d() and item.state|d('present') == 'absent'
 
 - name: Generate gunicorn configuration
   ansible.builtin.template:
@@ -32,4 +32,4 @@
     - '{{ gunicorn__applications }}'
     - '{{ gunicorn__dependent_applications }}'
   notify: [ 'Restart gunicorn' ]
-  when: item.name|d() and item.state|d('present') != 'absent'
+  when: item.name | d() and item.state|d('present') != 'absent'

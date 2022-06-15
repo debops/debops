@@ -56,8 +56,8 @@
     dest: '{{ icinga_web__src + "/" + item.git_repo.split("://")[1] }}'
     version: '{{ item.git_version }}'
   with_items: '{{ (icinga_web__default_modules + icinga_web__modules) | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.git_repo|d() and
-        item.git_version|d() and item.state|d('present') != 'absent'
+  when: item.name | d() and item.git_repo | d() and
+        item.git_version | d() and item.state|d('present') != 'absent'
 
 - name: Symlink Icinga upstream modules to Icinga Web application
   ansible.builtin.file:
@@ -67,8 +67,8 @@
     force: '{{ True if ansible_check_mode | bool else omit }}'
     mode: '0755'
   with_items: '{{ (icinga_web__default_modules + icinga_web__modules) | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.git_repo|d() and
-        item.git_version|d() and item.state|d('present') != 'absent'
+  when: item.name | d() and item.git_repo | d() and
+        item.git_version | d() and item.state|d('present') != 'absent'
 
 - name: Manage Icinga Web modules
   ansible.builtin.file:
@@ -79,7 +79,7 @@
     force: '{{ True if ansible_check_mode | bool else omit }}'
     mode: '0755'
   with_items: '{{ (icinga_web__default_modules + icinga_web__modules) | debops.debops.parse_kv_items }}'
-  when: item.name|d()
+  when: item.name | d()
 
 - name: Generate Icinga Web configuration
   ansible.builtin.template:

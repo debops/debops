@@ -15,5 +15,5 @@
   ansible.builtin.shell: |
     type debops-update > /dev/null 2>&1 && (echo 'debops-update' | batch > /dev/null 2>&1) || true
   when: (not controller__update_method == 'sync' and
-         (ansible_local|d() and ansible_local.atd|d() and
+         (ansible_local | d() and ansible_local.atd | d() and
           ansible_local.atd.enabled | bool))

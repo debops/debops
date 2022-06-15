@@ -16,7 +16,7 @@
 #}
 {% for element in libvirtd_qemu__combined_configuration %}
 {%   if element is mapping %}
-{%     if element.name|d() and element.state|d('present') != 'ignore' %}
+{%     if element.name | d() and element.state|d('present') != 'ignore' %}
 {%       set parameters = (libvirtd_qemu__tpl_configuration[element.name].copy() if libvirtd_qemu__tpl_configuration[element.name] is defined else {}) %}
 {%       set _ = parameters.update({ 'name': element.name, 'state': element.state|d(parameters.state|d('present')), 'section': element.section|d(parameters.section|d('unknown')), 'weight': element.weight|d(parameters.weight|d(0)) | int }) %}
 {%       if element.value is defined %}
@@ -28,14 +28,14 @@
 {%       if element.comment is defined %}
 {%         set _ = parameters.update({ 'comment': element.comment }) %}
 {%       endif %}
-{%     elif not element.name|d() %}
+{%     elif not element.name | d() %}
 {%       for key, value in element.items() %}
 {%         set loop_parameters = (libvirtd_qemu__tpl_configuration[key].copy() if libvirtd_qemu__tpl_configuration[key] is defined else {}) %}
 {%         set _ = loop_parameters.update({ 'name': key, 'value': value, 'state': 'present', 'section': loop_parameters.section|d('unknown'), 'weight': loop_parameters.weight|d(0) | int }) %}
 {%         set _ = libvirtd_qemu__tpl_configuration.update({ loop_parameters.name: loop_parameters }) %}
 {%       endfor %}
 {%     endif %}
-{%     if parameters|d() and parameters.name|d() %}
+{%     if parameters | d() and parameters.name | d() %}
 {%       set _ = libvirtd_qemu__tpl_configuration.update({ parameters.name: parameters }) %}
 {%     endif %}
 {%   endif %}
@@ -54,7 +54,7 @@
 #}
 {% macro print_parameter(param, next_option) %}
 {%   if param.state|d('present') != 'absent' %}
-{%     if param.comment|d() and libvirtd_qemu__configuration_comments | bool %}
+{%     if param.comment | d() and libvirtd_qemu__configuration_comments | bool %}
 {%       if next_option %}
 
 {%       endif %}
@@ -96,7 +96,7 @@
 {%   if element.state|d('present') != 'hidden' %}
 #################################################################
 {{ element.title | comment }}
-{%     if element.comment|d() %}
+{%     if element.comment | d() %}
 {{ element.comment | regex_replace('\n$','') | comment(prefix='',postfix='') -}}
 {%     endif %}
 {%   else %}
@@ -104,7 +104,7 @@
 {%   endif %}
 {%   set option_counter = [] %}
 {%   for option in libvirtd_qemu__tpl_configuration_list | sort(attribute='weight') %}
-{%     if option.section|d() == section_name and option.state|d('present') != 'absent' %}
+{%     if option.section | d() == section_name and option.state|d('present') != 'absent' %}
 {{ print_parameter(option, option_counter) }}
 {%       set _ = option_counter.append(True) %}
 {%     endif %}

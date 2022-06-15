@@ -78,7 +78,7 @@ postgresql__user: 'postgres'
 # FQDN hostname of the remote PostgreSQL server to use. Role detects if a local
 # server is available and uses it automatically.
 postgresql__server: '{{ ansible_local.postgresql.server
-                        if (ansible_local.postgresql.server|d() and
+                        if (ansible_local.postgresql.server | d() and
                             ansible_local.postgresql.server != "localhost")
                         else "" }}'
 
@@ -95,7 +95,7 @@ postgresql__port: '5432'
 # PostgreSQL database and role management. If PostgreSQL server is available
 # locally, host will delegate the tasks to itself automatically.
 postgresql__delegate_to: '{{ postgresql__server
-                             if (postgresql__server|d() and
+                             if (postgresql__server | d() and
                                  postgresql__server != "localhost")
                              else inventory_hostname }}'
 
@@ -144,7 +144,7 @@ postgresql__default_user_clusters:
   - user: '*'
     group: '*'
     cluster: '{{ (postgresql__server + ":" + postgresql__port)
-                  if (postgresql__server|d() and postgresql__server)
+                  if (postgresql__server | d() and postgresql__server)
                   else "main" }}'
     database: '{{ postgresql__default_database }}'
 

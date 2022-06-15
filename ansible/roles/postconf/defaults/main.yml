@@ -91,8 +91,8 @@ postconf__fqdn: '{{ ansible_fqdn }}'
 # installed to allow for more flexible client authentication methods,
 # authenticated mail relays, and the like.
 postconf__sasl_auth_method: '{{ "cyrus"
-                                if (ansible_local|d() and ansible_local.saslauthd|d() and
-                                    (ansible_local.saslauthd.installed|d()) | bool and
+                                if (ansible_local | d() and ansible_local.saslauthd | d() and
+                                    (ansible_local.saslauthd.installed | d()) | bool and
                                     "smtpd" in ansible_local.saslauthd.instances)
                                 else "dovecot" }}'
 

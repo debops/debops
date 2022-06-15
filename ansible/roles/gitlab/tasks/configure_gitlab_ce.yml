@@ -228,8 +228,8 @@
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_bundle_migrate
   notify: [ 'Restart gitlab', 'Restart gitlab.slice' ]
-  when: (ansible_local|d() and ansible_local.gitlab|d() and
-         (ansible_local.gitlab.installed|d() | bool) and
+  when: (ansible_local | d() and ansible_local.gitlab | d() and
+         (ansible_local.gitlab.installed | d() | bool) and
          gitlab_register_ce_checkout is changed)
 
 - name: Clean GitLab assets
@@ -238,8 +238,8 @@
     chdir: '{{ gitlab_ce_git_checkout }}'
   become: True
   become_user: '{{ gitlab_user }}'
-  when: (ansible_local|d() and ansible_local.gitlab|d() and
-         (ansible_local.gitlab.installed|d() | bool) and
+  when: (ansible_local | d() and ansible_local.gitlab | d() and
+         (ansible_local.gitlab.installed | d() | bool) and
          gitlab_register_bundle_migrate is changed)
 
 - name: Precompile GitLab assets
@@ -259,8 +259,8 @@
     chdir: '{{ gitlab_ce_git_checkout }}'
   become: True
   become_user: '{{ gitlab_user }}'
-  when: (ansible_local|d() and ansible_local.gitlab|d() and
-         (ansible_local.gitlab.installed|d() | bool) and
+  when: (ansible_local | d() and ansible_local.gitlab | d() and
+         (ansible_local.gitlab.installed | d() | bool) and
          gitlab_register_bundle_migrate is changed)
 
 - name: Configure periodical GitLab backups

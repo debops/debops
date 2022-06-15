@@ -581,7 +581,7 @@ rabbitmq_server__cluster_allow: []
 #
 # Enable or disable PKI support.
 rabbitmq_server__pki: '{{ True
-                          if (ansible_local.pki.enabled|d() and
+                          if (ansible_local.pki.enabled | d() and
                               ansible_local.pki.enabled | bool) else False }}'
 
                                                                    # ]]]
@@ -657,8 +657,8 @@ rabbitmq_server__ssl_ciphers: '{{ ansible_local.rabbitmq_server.raw_erlang_ssl_c
 # Path to the file with Diffie-Hellman parameters to use by the RabbitMQ
 # service. See :ref:`debops.dhparam` Ansible role for more details.
 rabbitmq_server__ssl_dhparam: '{{ (ansible_local.dhparam[rabbitmq_server__ssl_dhparam_set]
-                                   if (ansible_local|d() and ansible_local.dhparam|d() and
-                                       ansible_local.dhparam[rabbitmq_server__ssl_dhparam_set]|d())
+                                   if (ansible_local | d() and ansible_local.dhparam | d() and
+                                       ansible_local.dhparam[rabbitmq_server__ssl_dhparam_set] | d())
                                    else "") }}'
 
                                                                    # ]]]

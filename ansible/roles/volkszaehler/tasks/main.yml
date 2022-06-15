@@ -90,8 +90,8 @@
   become_user: '{{ volkszaehler__user }}'
   register: volkszaehler__register_sql_init_dump
   when: (not (ansible_local.volkszaehler[volkszaehler__database + "_initialized"] | bool
-              if (ansible_local|d() and ansible_local.volkszaehler|d() and
-                  ansible_local.volkszaehler[volkszaehler__database + "_initialized"]|d())
+              if (ansible_local | d() and ansible_local.volkszaehler | d() and
+                  ansible_local.volkszaehler[volkszaehler__database + "_initialized"] | d())
               else False))
 
 - name: Import database initialization SQL dump
@@ -109,8 +109,8 @@
   become: True
   become_user: '{{ volkszaehler__user }}'
   when: (not (ansible_local.volkszaehler[volkszaehler__database + "_demo_insert"] | bool
-              if (ansible_local|d() and ansible_local.volkszaehler|d() and
-                  ansible_local.volkszaehler[volkszaehler__database + "_demo_insert"]|d())
+              if (ansible_local | d() and ansible_local.volkszaehler | d() and
+                  ansible_local.volkszaehler[volkszaehler__database + "_demo_insert"] | d())
               else False)) and (volkszaehler__database_demo_insert | bool)
 # ]]]
 

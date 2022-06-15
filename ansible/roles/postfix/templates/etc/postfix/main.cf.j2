@@ -20,7 +20,7 @@
 {%     set section_loop = [] %}
 {%     set section_comment_prefix = ('' if loop.first | bool else '\n') %}
 {%     if section.name in postfix__tpl_sections %}
-{%       if section.title|d() %}
+{%       if section.title | d() %}
 
 {{ '{:-^70}'.format(' ' + section.title + ' ') | comment(prefix=section_comment_prefix, postfix='') }}
 {%       endif %}
@@ -57,7 +57,7 @@
 {%           else %}
 {%             set element_value = [] %}
 {%           endif %}
-{%           if element.comment|d() %}
+{%           if element.comment | d() %}
 {%             set comment_footer = ('#\n' if (element.comment.split('\n') | list | count >= 5) else '') %}
 {{ element.comment | regex_replace('\n$','') | comment(prefix=comment_prefix, postfix=comment_footer) -}}
 {%             if element.state|d('present') == 'hidden' %}
@@ -93,7 +93,7 @@
 {%             else %}
 {{ ('{}{} ={}{}').format(option_commented, element_name, (' ' if (element_value or element_value == 0) else ''), element_value) }}
 {%             endif %}
-{%             if option_commented|d() and element.comment|d() %}
+{%             if option_commented | d() and element.comment | d() %}
 
 {%             endif %}
 {%             set _ = section_loop.append(True) %}

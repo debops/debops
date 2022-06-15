@@ -10,7 +10,7 @@ server:
 {% for element in unbound__tpl_server %}
 {%   set element_name = (element.option | d(element.name)) %}
 {%   if element.state | d('present') != 'absent' %}
-{%     if element.comment|d() %}
+{%     if element.comment | d() %}
 
 {{ element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') | indent(4, true) }}
 {%       if element.state|d('present') == 'hidden' %}

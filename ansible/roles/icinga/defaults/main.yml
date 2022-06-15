@@ -99,8 +99,8 @@ icinga__group: 'nagios'
 icinga__additional_groups:
   - 'ssl-cert'
   - '{{ ansible_local.proc_hidepid.group
-        if (ansible_local.proc_hidepid.group|d() and
-            (ansible_local.proc_hidepid.enabled|d()) | bool)
+        if (ansible_local.proc_hidepid.group | d() and
+            (ansible_local.proc_hidepid.enabled | d()) | bool)
         else [] }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -434,8 +434,8 @@ icinga__director_deploy_api_password: '{{ lookup("password", secret + "/icinga_w
 # configured with the default certificate and key paths, but no further
 # configuration will be done to create the internal PKI.
 icinga__pki_enabled: '{{ True
-                         if (ansible_local|d() and ansible_local.pki|d() and
-                             (ansible_local.pki.enabled|d()) | bool)
+                         if (ansible_local | d() and ansible_local.pki | d() and
+                             (ansible_local.pki.enabled | d()) | bool)
                          else False }}'
 
                                                                    # ]]]
@@ -606,7 +606,7 @@ icinga__default_configuration:
       - name: 'object_master'
         value: |
           {% for record in icinga__master_nodes %}
-          {% if record.target|d() %}
+          {% if record.target | d() %}
           object Endpoint "{{ record.target | regex_replace('\.$','') }}" {
             host = "{{ record.target | regex_replace('\.$','') }}"
             port = "{{ record.port }}"

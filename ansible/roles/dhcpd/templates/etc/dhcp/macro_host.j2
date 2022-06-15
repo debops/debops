@@ -3,12 +3,12 @@
  # SPDX-License-Identifier: GPL-3.0-or-later
  #}
 {% macro print_host(host, protocol) %}
-{%  if (protocol == 'DHCPv4' and host.address4|d()) or (protocol == 'DHCPv6' and host.address6|d()) %}
-{%      if host.comment|d() %}
+{%  if (protocol == 'DHCPv4' and host.address4 | d()) or (protocol == 'DHCPv6' and host.address6 | d()) %}
+{%      if host.comment | d() %}
 # {{ host.comment }}
 {%      endif %}
 host {{ host.hostname }} {
-{%      if host.options|d() %}
+{%      if host.options | d() %}
 
     # Custom host options
     {{ host.options|indent(4) }}

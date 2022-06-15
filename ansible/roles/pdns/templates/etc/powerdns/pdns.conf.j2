@@ -6,7 +6,7 @@
 
 {%  for element in pdns__combined_configuration | debops.debops.parse_kv_config %}
 {%      if element.state == "present" %}
-{%          if element.comment|d() %}
+{%          if element.comment | d() %}
 {{ element.comment | regex_replace('$\n', '') | comment(prefix='', postfix='') }}
 {%          endif %}
 {{ element.name }} = {{ element.value }}

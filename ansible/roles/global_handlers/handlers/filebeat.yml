@@ -8,15 +8,15 @@
   notify:
     - 'Restart filebeat'
     - 'Commit changes in etckeeper'
-  when: (ansible_local.filebeat.installed|d()) | bool
+  when: (ansible_local.filebeat.installed | d()) | bool
 
 - name: Test filebeat output and restart
   ansible.builtin.command: 'filebeat test output'
   notify: [ 'Restart filebeat' ]
-  when: (ansible_local.filebeat.installed|d()) | bool
+  when: (ansible_local.filebeat.installed | d()) | bool
 
 - name: Restart filebeat
   ansible.builtin.service:
     name: 'filebeat'
     state: 'restarted'
-  when: (ansible_local.filebeat.installed|d()) | bool
+  when: (ansible_local.filebeat.installed | d()) | bool

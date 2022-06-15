@@ -25,7 +25,7 @@
     chdir: '/usr/share/elasticsearch'
   register: elasticsearch__register_builtin_users
   changed_when: False
-  when: ((not (ansible_local.elasticsearch.configured|d()) | bool) or
+  when: ((not (ansible_local.elasticsearch.configured | d()) | bool) or
          elasticsearch__register_api_builtin_users.status == 401)
   no_log: '{{ debops__no_log | d(True) }}'
 
@@ -37,7 +37,7 @@
   loop: '{{ elasticsearch__register_builtin_users.stdout_lines }}'
   become: False
   delegate_to: 'localhost'
-  when: elasticsearch__register_builtin_users.stdout_lines|d()
+  when: elasticsearch__register_builtin_users.stdout_lines | d()
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Save generated user passwords on Ansible Controller
@@ -48,7 +48,7 @@
   loop: '{{ elasticsearch__register_builtin_users.stdout_lines }}'
   become: False
   delegate_to: 'localhost'
-  when: elasticsearch__register_builtin_users.stdout_lines|d()
+  when: elasticsearch__register_builtin_users.stdout_lines | d()
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Manage native roles in Elasticsearch

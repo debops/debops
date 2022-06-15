@@ -81,7 +81,7 @@
   register: rabbitmq_server__register_dependent_config_file
   become: False
   delegate_to: 'localhost'
-  when: (ansible_local|d() and ansible_local.rabbitmq_server|d() and
+  when: (ansible_local | d() and ansible_local.rabbitmq_server | d() and
          ansible_local.rabbitmq_server.installed is defined and
          ansible_local.rabbitmq_server.installed | bool)
   tags: [ 'role::rabbitmq_server:config' ]
@@ -92,7 +92,7 @@
   register: rabbitmq_server__register_dependent_config
   become: False
   delegate_to: 'localhost'
-  when: (ansible_local|d() and ansible_local.rabbitmq_server|d() and
+  when: (ansible_local | d() and ansible_local.rabbitmq_server | d() and
          ansible_local.rabbitmq_server.installed is defined and
          ansible_local.rabbitmq_server.installed | bool and
          rabbitmq_server__register_dependent_config_file.stat.exists | bool)
@@ -161,7 +161,7 @@
     vhost:     '{{ item.vhost | d(omit) }}'
   with_flattened:
     - '{{ rabbitmq_server__combined_parameters }}'
-  when: (item.name|d() and item.component|d())
+  when: (item.name | d() and item.component | d())
   tags: [ 'role::rabbitmq_server:parameter' ]
 
 - name: Manage RabbitMQ policies
@@ -176,7 +176,7 @@
     vhost:    '{{ item.vhost    | d(omit) }}'
   with_flattened:
     - '{{ rabbitmq_server__combined_policies }}'
-  when: (item.name|d() and item.pattern|d() and item.tags|d())
+  when: (item.name | d() and item.pattern | d() and item.tags | d())
   tags: [ 'role::rabbitmq_server:policy' ]
 
 - name: Manage RabbitMQ user accounts
@@ -196,9 +196,9 @@
                         + "/password length="
                         + rabbitmq_server__account_password_length)) }}'
     tags:           '{{ (((item.tags.split(",") | list)
-                          if (item.tags|d() and item.tags is string)
+                          if (item.tags | d() and item.tags is string)
                           else item.tags) | join(","))
-                        if item.tags|d() else omit }}'
+                        if item.tags | d() else omit }}'
   with_flattened:
     - '{{ rabbitmq_server__combined_accounts }}'
   tags: [ 'role::rabbitmq_server:user' ]

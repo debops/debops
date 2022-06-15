@@ -4,14 +4,14 @@
  #}
 {% set minio__tpl_nginx_dependent_servers = [] %}
 {% for element in minio__combined_instances | debops.debops.parse_kv_items %}
-{%   if (element.name|d() and element.port|d() and element.state|d('present') not in [ 'ignore', 'init' ]) %}
+{%   if (element.name | d() and element.port | d() and element.state|d('present') not in [ 'ignore', 'init' ]) %}
 {%     set server = {'name': [ (element.fqdn | d(element.name + '.' + minio__domain)) ]
                              + ((( ( [ element.domain ] if (element.domain is string) else element.domain)
                                    | map('regex_replace', '^(.*)$', '*.\\1')) | list)
-                                if element.domain|d() else [])
+                                if element.domain | d() else [])
                              + ((( ( [ element.domains ] if (element.domains is string) else element.domains)
                                    | map('regex_replace', '^(.*)$', '*.\\1')) | list)
-                                if element.domains|d() else []),
+                                if element.domains | d() else []),
                      'filename': 'minio-' + element.name,
                      'state': element.state,
                      'type': 'proxy',

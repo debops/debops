@@ -101,7 +101,7 @@ etherpad_log_to_file: False
 #
 # Etherpad git version to install.
 etherpad_version: '{{ "1.7.0"
-                      if (ansible_local.nodejs.npm_version|d() is version("6.4.0", "<"))
+                      if (ansible_local.nodejs.npm_version | d() is version("6.4.0", "<"))
                       else "1.7.5" }}'
 
                                                                    # ]]]
@@ -185,14 +185,14 @@ etherpad_database_password: "{{ lookup('password', secret + '/'
                                          if etherpad__database == 'postgres'
                                          else etherpad__database)) + '/'
                                 + (ansible_local.mariadb.delegate_to + '/'
-                                   if ansible_local.mariadb.delegate_to|d()
+                                   if ansible_local.mariadb.delegate_to | d()
                                    else (ansible_local.postgresql.delegate_to + '/'
-                                         if ansible_local.postgresql.delegate_to|d()
+                                         if ansible_local.postgresql.delegate_to | d()
                                          else ''))
                                 + (ansible_local.mariadb.port + '/'
-                                   if ansible_local.mariadb.port|d()
+                                   if ansible_local.mariadb.port | d()
                                    else (ansible_local.postgresql.port + '/'
-                                         if ansible_local.postgresql.port|d()
+                                         if ansible_local.postgresql.port | d()
                                          else ''))
                                 + '/credentials/' + etherpad_database_user + '/password length=48') }}"
 
@@ -203,9 +203,9 @@ etherpad_database_password: "{{ lookup('password', secret + '/'
 # dirty). Choose mysql even when you use different mysql flavors. More
 # databases will be available in the future.
 etherpad__database: '{{ "mysql"
-                        if (ansible_local|d() and ansible_local.mariadb is defined)
+                        if (ansible_local | d() and ansible_local.mariadb is defined)
                         else ("postgres"
-                              if (ansible_local|d() and ansible_local.postgresql is defined)
+                              if (ansible_local | d() and ansible_local.postgresql is defined)
                               else "sqlite") }}'
 
                                                                    # ]]]

@@ -124,7 +124,7 @@ apache__server_name: '{{ apache__fqdn }}'
 # Refer to :ref:`item.server_admin <apache__ref_vhost_server_admin>` for
 # how to overwrite this for a virtual host.
 apache__server_admin: '{{ ansible_local.core.admin_public_email[0]
-                          if (ansible_local.core.admin_public_email|d())
+                          if (ansible_local.core.admin_public_email | d())
                           else (apache__user + "@" + apache__fqdn) }}'
 
                                                                    # ]]]
@@ -476,8 +476,8 @@ apache__combined_snippets: '{{ apache__dependent_snippets
 # Should HTTPS be enabled by loading the required modules and creating HTTPS
 # virtual hosts?
 # Defaults to ``True`` if :ref:`debops.pki` is enabled on the remote host.
-apache__https_enabled: '{{ ansible_local|d() and ansible_local.pki|d() and
-                           (ansible_local.pki.enabled|d() | bool) and
+apache__https_enabled: '{{ ansible_local | d() and ansible_local.pki | d() and
+                           (ansible_local.pki.enabled | d() | bool) and
                            apache__https_listen | length > 0 }}'
 
                                                                    # ]]]
@@ -654,8 +654,8 @@ apache__tls_dhparam_set_name: 'default'
 # File path for the custom set of Diffie-Hellman parameters to use by the webserver.
 # Refer to :ref:`debops.dhparam` for more details.
 apache__tls_dhparam_file: '{{ ansible_local.dhparam[apache__tls_dhparam_set_name]
-                              if (ansible_local|d() and ansible_local.dhparam|d() and
-                                  ansible_local.dhparam[apache__tls_dhparam_set_name]|d())
+                              if (ansible_local | d() and ansible_local.dhparam | d() and
+                                  ansible_local.dhparam[apache__tls_dhparam_set_name] | d())
                               else "" }}'
                                                                    # ]]]
                                                                    # ]]]

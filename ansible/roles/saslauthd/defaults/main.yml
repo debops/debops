@@ -23,7 +23,7 @@
 #
 # The default authentication mechanism used by :command:`saslauthd` if none is
 # specified.
-saslauthd__default_mechanism: '{{ "ldap" if saslauthd__ldap_device_dn|d() else "pam" }}'
+saslauthd__default_mechanism: '{{ "ldap" if saslauthd__ldap_device_dn | d() else "pam" }}'
                                                                    # ]]]
                                                                    # ]]]
 # APT packages [[[
@@ -64,8 +64,8 @@ saslauthd__default_instances:
     socket_group: 'postfix'
     ldap_profile: 'smtpd'
     state: '{{ "present"
-               if ((ansible_local|d() and ansible_local.postfix|d() and
-                    (ansible_local.postfix.installed|d()) | bool) or
+               if ((ansible_local | d() and ansible_local.postfix | d() and
+                    (ansible_local.postfix.installed | d()) | bool) or
                    ("debops_service_postfix" in group_names))
                else "ignore" }}'
 
@@ -117,7 +117,7 @@ saslauthd__combined_instances: '{{ q("flattened", (saslauthd__default_instances
 # enabled automatically when the :ref:`debops.ldap` environment is configured
 # on the host.
 saslauthd__ldap_enabled: '{{ ansible_local.ldap.enabled
-                             if (ansible_local|d() and ansible_local.ldap|d() and
+                             if (ansible_local | d() and ansible_local.ldap | d() and
                                  ansible_local.ldap.enabled is defined)
                              else False }}'
 
@@ -196,7 +196,7 @@ saslauthd__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
 saslauthd__ldap_default_profiles:
 
   - name: 'global'
-    state: '{{ "present" if saslauthd__ldap_device_dn|d() else "ignore" }}'
+    state: '{{ "present" if saslauthd__ldap_device_dn | d() else "ignore" }}'
     options:
 
       - name: 'ldap_servers'
@@ -231,9 +231,9 @@ saslauthd__ldap_default_profiles:
 
   - name: 'slapd'
     state: '{{ "present"
-               if (saslauthd__ldap_device_dn|d() and
-                   ((ansible_local|d() and ansible_local.slapd|d() and
-                     (ansible_local.slapd.installed|d()) | bool) or
+               if (saslauthd__ldap_device_dn | d() and
+                   ((ansible_local | d() and ansible_local.slapd | d() and
+                     (ansible_local.slapd.installed | d()) | bool) or
                     ("debops_service_slapd" in group_names)))
                else "ignore" }}'
     options:
@@ -277,9 +277,9 @@ saslauthd__ldap_default_profiles:
 
   - name: 'smtpd'
     state: '{{ "present"
-               if (saslauthd__ldap_device_dn|d() and
-                   ((ansible_local|d() and ansible_local.postfix|d() and
-                     (ansible_local.postfix.installed|d()) | bool) or
+               if (saslauthd__ldap_device_dn | d() and
+                   ((ansible_local | d() and ansible_local.postfix | d() and
+                     (ansible_local.postfix.installed | d()) | bool) or
                     ("debops_service_postfix" in group_names)))
                else "ignore" }}'
     options:
@@ -378,7 +378,7 @@ saslauthd__ldap__dependent_tasks:
     objectClass: '{{ saslauthd__ldap_self_object_classes }}'
     attributes: '{{ saslauthd__ldap_self_attributes }}'
     no_log: '{{ debops__no_log | d(True) }}'
-    state: '{{ "present" if saslauthd__ldap_device_dn|d() else "ignore" }}'
+    state: '{{ "present" if saslauthd__ldap_device_dn | d() else "ignore" }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

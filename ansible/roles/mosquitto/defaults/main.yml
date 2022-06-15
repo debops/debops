@@ -157,7 +157,7 @@ mosquitto__allow_tls: []
 #
 # Enable or disable support for WebSockets if the required packages are
 # available.
-mosquitto__websockets: '{{ mosquitto__register_websockets.stdout|d() }}'
+mosquitto__websockets: '{{ mosquitto__register_websockets.stdout | d() }}'
 
                                                                    # ]]]
 # .. envvar:: mosquitto__websockets_package [[[
@@ -262,8 +262,8 @@ mosquitto__default_listeners:
 
   '1883':
     comment:     'The default listener for local clients'
-    listener:    '{{ "1883" + ("" if mosquitto__allow|d() else " localhost") }}'
-    avahi_state: '{{ "present" if (mosquitto__network | bool and mosquitto__allow|d()) else "absent" }}'
+    listener:    '{{ "1883" + ("" if mosquitto__allow | d() else " localhost") }}'
+    avahi_state: '{{ "present" if (mosquitto__network | bool and mosquitto__allow | d()) else "absent" }}'
     avahi_type:  '_mqtt._tcp'
     avahi_port:  '1883'
 
@@ -496,7 +496,7 @@ mosquitto__tls_version: 'tlsv1.2'
 #
 # Enable or disable Avahi support. See :ref:`mosquitto__ref_avahi_support` for
 # more details.
-mosquitto__avahi: '{{ ansible_local.avahi.installed|d() | bool }}'
+mosquitto__avahi: '{{ ansible_local.avahi.installed | d() | bool }}'
 
                                                                    # ]]]
 # .. envvar:: mosquitto__avahi_name [[[

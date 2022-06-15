@@ -92,7 +92,7 @@ docker_server__upstream_repository: '{{ "deb [arch="
 #
 # The full docker package name to be installed.
 docker_server__packagename: '{{ docker_server__upstream_packagename
-                                if docker_server__upstream|d()
+                                if docker_server__upstream | d()
                                 else "docker.io" }}'
 
                                                                    # ]]]
@@ -265,7 +265,7 @@ docker_server__tls_tcp_port: '2376'
 #
 # Port on which to listen for incoming TCP connections.
 docker_server__tcp_port: '{{ docker_server__tls_tcp_port
-                             if (docker_server__pki|d() | bool)
+                             if (docker_server__pki | d() | bool)
                              else docker_server__unencrypted_tcp_port }}'
 
                                                                    # ]]]
@@ -282,7 +282,7 @@ docker_server__tcp_allow: []
 # Default TCP connection configured in addition to local socket connection.
 docker_server__tcp_listen: '{{ ("tcp://" + docker_server__tcp_bind + ":" +
                                 docker_server__tcp_port)
-                               if (docker_server__tcp|d() | bool) else "" }}'
+                               if (docker_server__tcp | d() | bool) else "" }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__custom_ports [[[
@@ -408,7 +408,7 @@ docker_server__options: []
 # .. envvar:: docker_server__pki [[[
 #
 # Enable or disable support for PKI certificates managed by :ref:`debops.pki`.
-docker_server__pki: '{{ ansible_local.pki.enabled|d() | bool }}'
+docker_server__pki: '{{ ansible_local.pki.enabled | d() | bool }}'
 
                                                                    # ]]]
 # .. envvar:: docker_server__pki_path [[[
@@ -447,7 +447,7 @@ docker_server__pki_key: 'default.key'
 # .. envvar:: docker_server__ferm_post_hook [[[
 #
 # Enable or disable installation for the :program:`ferm` post hook.
-docker_server__ferm_post_hook: '{{ ansible_local.ferm.enabled|d() | bool }}'
+docker_server__ferm_post_hook: '{{ ansible_local.ferm.enabled | d() | bool }}'
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[

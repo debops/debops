@@ -46,7 +46,7 @@
   with_items: '{{ grub__combined_users }}'
   become: False
   delegate_to: 'localhost'
-  when: item.name|d()
+  when: item.name | d()
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Save plaintext password in secrets
@@ -58,7 +58,7 @@
   register: grub__register_pw_plain
   become: False
   delegate_to: 'localhost'
-  when: item.name|d()
+  when: item.name | d()
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Save temporary grub-mkpasswd formatted password in secrets
@@ -71,7 +71,7 @@
     - '{{ grub__register_pw_plain.results|d({}) }}'
   become: False
   delegate_to: 'localhost'
-  when: (item.0.name|d() and item.1 is changed)
+  when: (item.0.name | d() and item.1 is changed)
   no_log: '{{ debops__no_log | d(True) }}'
 
 ## There seems to be no way to specify the salt (except using a custom script).
@@ -84,9 +84,9 @@
   ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          cat '{{ (secret + "/credentials/" + inventory_hostname + "/grub/" + item.0.name + "/password_mkpasswd") | quote }}'
          | LANG=C LC_ALL=C grub-mkpasswd-pbkdf2
-         {{ "" if grub__iter_time|d()   == "default" else ("--iteration-count=" + grub__iter_time) }}
-         {{ "" if grub__salt_length|d() == "default" else ("--salt=" + grub__salt_length) }}
-         {{ "" if grub__hash_length|d() == "default" else ("--buflen=" + grub__hash_length) }}
+         {{ "" if grub__iter_time | d()   == "default" else ("--iteration-count=" + grub__iter_time) }}
+         {{ "" if grub__salt_length | d() == "default" else ("--salt=" + grub__salt_length) }}
+         {{ "" if grub__hash_length | d() == "default" else ("--buflen=" + grub__hash_length) }}
          | perl -ne 's/^(:?Your PBKDF2|PBKDF2 hash of your password) is //ms && print'
   args:  # noqa no-handler
     executable: 'bash'
@@ -97,7 +97,7 @@
   become: False
   delegate_to: 'localhost'
   changed_when: False
-  when: (item.0.name|d() and item.1 is changed)
+  when: (item.0.name | d() and item.1 is changed)
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove temporary grub-mkpassword formatted password
@@ -109,7 +109,7 @@
     - '{{ grub__register_pw_plain.results|d({}) }}'
   become: False
   delegate_to: 'localhost'
-  when: (item.0.name|d() and item.1 is changed)
+  when: (item.0.name | d() and item.1 is changed)
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Save hashed password in secrets

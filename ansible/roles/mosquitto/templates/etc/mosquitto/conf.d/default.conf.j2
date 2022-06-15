@@ -5,7 +5,7 @@
 # {{ ansible_managed }}
 
 {% set options = mosquitto__combined_options %}
-{% if options.comment|d() %}
+{% if options.comment | d() %}
 {{ (options.comment if options.comment is string else options.comment | join('\n'))  | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
 {% endif %}
 {% for config_key, config_value in options.items() %}

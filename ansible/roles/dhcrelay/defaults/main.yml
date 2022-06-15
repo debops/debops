@@ -37,7 +37,7 @@ dhcrelay__packages: []
 #
 # List of DHCP servers that should receive the relayed packets.
 dhcrelay__servers: [ '{{ ansible_default_ipv4.gateway
-                         if ansible_default_ipv4.gateway|d()
+                         if ansible_default_ipv4.gateway | d()
                          else [] }}' ]
 
                                                                    # ]]]
@@ -45,7 +45,7 @@ dhcrelay__servers: [ '{{ ansible_default_ipv4.gateway
 #
 # List of network interfaces that dhcrelay should listen on.
 dhcrelay__interfaces: [ '{{ ansible_local.ifupdown.internal_interface
-                            if ansible_local.ifupdown.internal_interface|d()
+                            if ansible_local.ifupdown.internal_interface | d()
                             else ansible_default_ipv4.interface }}' ]
 
                                                                    # ]]]

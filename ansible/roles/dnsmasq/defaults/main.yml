@@ -261,7 +261,7 @@ dnsmasq__default_configuration:
       - name: 'addn-hosts'
         comment: 'Read hosts information from additional files or directories'
         value: '{{ dnsmasq__etc_hosts }}'
-        state: '{{ "present" if dnsmasq__etc_hosts|d() else "absent" }}'
+        state: '{{ "present" if dnsmasq__etc_hosts | d() else "absent" }}'
 
   - name: 'consul.conf'
     comment: |
@@ -270,7 +270,7 @@ dnsmasq__default_configuration:
     raw: |
       server = /consul/127.0.0.1#8600
     state: '{{ "present"
-               if (ansible_local.consul.installed|d() | bool)
+               if (ansible_local.consul.installed | d() | bool)
                else "init" }}'
 
   - name: 'lxd-override'
@@ -374,7 +374,7 @@ dnsmasq__default_configuration:
         value: '{{ dnsmasq__base_domain }}'
         state: '{{ "present"
                    if (dnsmasq__base_domain_rebind_ok | bool and
-                       dnsmasq__base_domain|d())
+                       dnsmasq__base_domain | d())
                    else "absent" }}'
 
       - name: 'rebind-parent-domain-ok'
@@ -386,7 +386,7 @@ dnsmasq__default_configuration:
         value: '{{ dnsmasq__base_domain.split(".")[1:] | join(".") }}'
         state: '{{ "present"
                    if (dnsmasq__base_domain_rebind_ok | bool and
-                        dnsmasq__base_domain|d() and
+                        dnsmasq__base_domain | d() and
                        (dnsmasq__base_domain.split(".") | length >= 4))
                    else "absent" }}'
 
@@ -402,7 +402,7 @@ dnsmasq__default_configuration:
           bogus-priv
         state: '{{ "comment"
                    if (
-                       (ansible_local.lxc.net_domain|d()) or
+                       (ansible_local.lxc.net_domain | d()) or
                        (ansible_local.resolvconf.upstream_nameservers
                           | d(ansible_dns.nameservers) | ipaddr("private"))
                       )
@@ -413,7 +413,7 @@ dnsmasq__default_configuration:
           Use custom list of nameservers instead of the system upstream
           nameservers
         value: '/etc/resolvconf/upstream.conf'
-        state: '{{ "present" if dnsmasq__nameservers|d() else "absent" }}'
+        state: '{{ "present" if dnsmasq__nameservers | d() else "absent" }}'
 
 
   - name: 'lxc-net.conf'
@@ -432,7 +432,7 @@ dnsmasq__default_configuration:
         value: '{{ ansible_local.lxc.net_domain|d("")
                    + "," + ansible_local.lxc.net_address|d("") }}'
         state: '{{ "present"
-                   if ("." not in ansible_local.lxc.net_domain|d())
+                   if ("." not in ansible_local.lxc.net_domain | d())
                    else "absent" }}'
 
       - name: 'rev-server'
@@ -443,7 +443,7 @@ dnsmasq__default_configuration:
         value: '{{ ansible_local.lxc.net_domain|d("") }}'
 
     state: '{{ "present"
-               if (ansible_local.lxc.net_domain|d())
+               if (ansible_local.lxc.net_domain | d())
                else "init" }}'
 
   - name: 'dhcp-boot.conf'
@@ -489,7 +489,7 @@ dnsmasq__default_configuration:
           # Load the main menu in iPXE clients
           {% endif %}
           dhcp-boot = {{ dnsmasq__boot_filename }}
-        state: '{{ "absent" if dnsmasq__boot_server|d() else "present" }}'
+        state: '{{ "absent" if dnsmasq__boot_server | d() else "present" }}'
 
       - name: 'boot-ipxe-remote'
         comment: 'Set the boot file name based on the matching tag from the vendor class (above)'
@@ -504,7 +504,7 @@ dnsmasq__default_configuration:
           # Load the main menu in iPXE clients
           {% endif %}
           dhcp-boot = {{ dnsmasq__boot_filename }},,{{ dnsmasq__boot_server }}
-        state: '{{ "present" if dnsmasq__boot_server|d() else "absent" }}'
+        state: '{{ "present" if dnsmasq__boot_server | d() else "absent" }}'
 
     state: '{{ "present" if dnsmasq__boot_enabled | bool else "init" }}'
 

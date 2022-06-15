@@ -55,7 +55,7 @@
 
 {% macro get_realm_yaml_list(domains, fallback_realm) %}{# [[[ #}
 {% set custom_realm_list = [] %}
-{% if domains and (ansible_local.pki.known_realms|d()) %}
+{% if domains and (ansible_local.pki.known_realms | d()) %}
 {%   for domain in (get_yaml_list_for_elem(domains) | from_yaml) %}
 {%     if domain in ansible_local.pki.known_realms %}
 {%       set _ = custom_realm_list.append(domain) %}
@@ -101,7 +101,7 @@
 {%   if to_merge_dict %}
 {%     if to_merge_dict is mapping %}
 {%       for dict_name in to_merge_dict.keys() | sort %}
-{%         if to_merge_dict[dict_name][dict_key]|d() %}
+{%         if to_merge_dict[dict_name][dict_key] | d() %}
 {%           set _ = merged_dict.update({to_merge_dict[dict_name][dict_key]:(current_dict[to_merge_dict[dict_name][dict_key]]|d({}) | combine(to_merge_dict[dict_name], recursive=True))}) %}
 {%         elif to_merge_dict[dict_name][dict_key] is undefined %}
 {%           set _ = merged_dict.update({dict_name:(current_dict[dict_name]|d({}) | combine(to_merge_dict[dict_name], recursive=True))}) %}
@@ -110,7 +110,7 @@
 {%     elif to_merge_dict is not string and to_merge_dict is not mapping %}
 {%       set flattened_dict = lookup("flattened", to_merge_dict) %}
 {%       for element in ([ flattened_dict ] if flattened_dict is mapping else flattened_dict) %}
-{%         if element[dict_key]|d() %}
+{%         if element[dict_key] | d() %}
 {%           set _ = merged_dict.update({element[dict_key]:(current_dict[element[dict_key]]|d({}) | combine(element, recursive=True))}) %}
 {%         endif %}
 {%       endfor %}

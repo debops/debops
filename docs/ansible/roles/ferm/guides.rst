@@ -68,7 +68,7 @@ forwarding rule list which allows all outgoing traffic::
         comment: 'Forward outgoing traffic to other hosts'
         rule_state: '{{ "present" if (
                           (ferm__forward|d(ferm_forward) | bool) or
-                          (ansible_local|d() and ansible_local.ferm|d() and
+                          (ansible_local | d() and ansible_local.ferm | d() and
                            ansible_local.ferm.forward | bool))
                          else "absent" }}'
 

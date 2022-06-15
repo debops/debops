@@ -21,7 +21,7 @@
   changed_when: False
   become: True
   become_user: '{{ gitlab_user }}'
-  when: gitlab_register_pages_cloned.stat|d() and
+  when: gitlab_register_pages_cloned.stat | d() and
         gitlab_register_pages_cloned.stat.exists
 
 - name: Change current HEAD to master in bare repository for update
@@ -32,7 +32,7 @@
   changed_when: False
   become: True
   become_user: '{{ gitlab_user }}'
-  when: gitlab_register_pages_cloned.stat|d() and
+  when: gitlab_register_pages_cloned.stat | d() and
         gitlab_register_pages_cloned.stat.exists
 
 - name: Clone gitlab-pages source code
@@ -53,7 +53,7 @@
     group: '{{ gitlab_group }}'
     mode: '0644'
   changed_when: False
-  when: gitlab_register_pages_cloned.stat|d() and
+  when: gitlab_register_pages_cloned.stat | d() and
         gitlab_register_pages_cloned.stat.exists
 
 - name: Check if gitlab-pages is checked out
@@ -99,8 +99,8 @@
   become: True
   become_user: '{{ gitlab_user }}'
   register: gitlab_register_pages_checkout
-  when: (gitlab__fact_version.pages|d() != gitlab_register_pages_target_tag.stdout|d()) or
-         (gitlab_register_pages_cloned.stat|d() and not gitlab_register_pages_cloned.stat.exists)
+  when: (gitlab__fact_version.pages | d() != gitlab_register_pages_target_tag.stdout | d()) or
+         (gitlab_register_pages_cloned.stat | d() and not gitlab_register_pages_cloned.stat.exists)
 
 - name: Setup gitlab-pages
   make:  # noqa no-handler

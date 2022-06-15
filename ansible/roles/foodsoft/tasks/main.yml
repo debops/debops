@@ -74,7 +74,7 @@
   tags: [ 'role::foodsoft:gems' ]
   # become: True
   # become_user: '{{ foodsoft__user }}'
-  when: foodsoft__bundler_exclude_groups|d()
+  when: foodsoft__bundler_exclude_groups | d()
 
 ## https://github.com/foodcoops/foodsoft/blob/master/doc/SETUP_DEVELOPMENT.md#manual-configuration
 - name: Configure Foodsoft
@@ -126,8 +126,8 @@
   # become: True
   # become_user: '{{ foodsoft__user }}'
   when: (not (ansible_local.foodsoft[foodsoft__database + "_initialized"] | bool
-              if (ansible_local|d() and ansible_local.foodsoft|d() and
-                  ansible_local.foodsoft[foodsoft__database + "_initialized"]|d())
+              if (ansible_local | d() and ansible_local.foodsoft | d() and
+                  ansible_local.foodsoft[foodsoft__database + "_initialized"] | d())
               else False))
 
 ## Maybe only needed for https://github.com/foodcoop-adam/foodsoft

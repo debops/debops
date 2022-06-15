@@ -67,8 +67,8 @@ imapproxy__imaps_srv_rr: '{{ q("dig_srv", "_imaps._tcp." + imapproxy__domain,
 # The use of the FQDN instead of ``localhost`` is required for X.509
 # certificate verification.
 imapproxy__imap_fqdn: '{{ ansible_fqdn
-                          if (ansible_local|d() and ansible_local.dovecot|d() and
-                             (ansible_local.dovecot.installed|d()) | bool)
+                          if (ansible_local | d() and ansible_local.dovecot | d() and
+                             (ansible_local.dovecot.installed | d()) | bool)
                           else imapproxy__imap_srv_rr[0]["target"]
                               if imapproxy__imap_srv_rr[0]["dig_srv_src"]|d("") != "fallback"
                               else imapproxy__imaps_srv_rr[0]["target"] }}'
@@ -144,7 +144,7 @@ imapproxy__host_allow: []
 #
 # Enable or disable support for TLS in imapproxy, managed by the
 # :ref:`debops.pki` Ansible role.
-imapproxy__pki: '{{ ansible_local.pki.enabled|d() | bool }}'
+imapproxy__pki: '{{ ansible_local.pki.enabled | d() | bool }}'
 
                                                                    # ]]]
 # .. envvar:: imapproxy__pki_path [[[

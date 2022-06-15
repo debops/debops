@@ -48,16 +48,16 @@
     mode:  '0644'
   loop: '{{ etc_services__combined_list | flatten }}'
   when: (etc_services__enabled | bool and item.state|d('present') != 'absent' and
-         ((item.name|d() and item.port|d()) or item.custom|d()))
+         ((item.name | d() and item.port | d()) or item.custom | d()))
 
 - name: Remove list of local services if requested
   ansible.builtin.file:
     path: '/etc/services.d/{{ item.filename | default("20_local_service_" + item.name) }}'
     state: 'absent'
   with_flattened: '{{ etc_services__combined_list }}'
-  when: ((not etc_services__enabled | bool or item.delete|d() or
+  when: ((not etc_services__enabled | bool or item.delete | d() or
           item.state|d('present') == 'absent') and
-         ((item.name|d() and item.port|d()) or item.custom|d()))
+         ((item.name | d() and item.port | d()) or item.custom | d()))
 
 - name: Assemble services.d
   ansible.builtin.assemble:

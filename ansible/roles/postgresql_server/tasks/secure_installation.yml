@@ -15,7 +15,7 @@
   become: True
   become_user: '{{ item.user | d(postgresql_server__user) }}'
   when:
-    - item.name|d()
+    - item.name | d()
     - item.standby is not defined
   no_log: '{{ debops__no_log | d(True) }}'
 
@@ -32,7 +32,7 @@
   become: True
   become_user: '{{ item.user | d(postgresql_server__user) }}'
   when:
-    - item.name|d()
+    - item.name | d()
     - item.standby is not defined
   changed_when: False  # Module always reports "changed" for PUBLIC role
 
@@ -49,6 +49,6 @@
   become: True
   become_user: '{{ item.user | d(postgresql_server__user) }}'
   when:
-    - item.name|d()
+    - item.name | d()
     - item.standby is not defined
   changed_when: False  # Module always reports "changed" for PUBLIC role

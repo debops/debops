@@ -14,8 +14,8 @@
 # documentation about this file.
 
 {% for element in minidlna__combined_configuration | debops.debops.parse_kv_config %}
-{%   if element.name|d() and element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
-{%     if element.comment|d() %}
+{%   if element.name | d() and element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%     if element.comment | d() %}
 {%       if not loop.first %}
 
 {%       endif %}
@@ -47,7 +47,7 @@
 {%         set element_value = element.value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list %}
 {%       endif %}
 {%     else %}
-{%       set element_value = element.value|d() %}
+{%       set element_value = element.value | d() %}
 {%     endif %}
 {%     if element_value is not string and element_value is not mapping and element_value is iterable %}
 {%       for thing in element_value %}

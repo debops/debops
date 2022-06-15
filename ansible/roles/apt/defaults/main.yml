@@ -344,7 +344,7 @@ apt__distribution_suite_map:
 # The variable that specifies the "suite" or an alias of the current
 # distribution release.
 apt__distribution_suite: '{{ apt__distribution_suite_map[apt__distribution + "_" +
-                                                         apt__distribution_release]|d() }}'
+                                                         apt__distribution_release] | d() }}'
 
                                                                    # ]]]
 # .. envvar:: apt__distribution_suffix_map [[[
@@ -373,7 +373,7 @@ apt__distribution_suffix_map:
 # List of repository suffixes to use in the generated APT sources.
 apt__distribution_suffixes: '{{ apt__distribution_suffix_map[apt__distribution + "_" +
                                 apt__distribution_suite_map[apt__distribution + "_" +
-                                apt__distribution_release]|d()] |
+                                apt__distribution_release] | d()] |
                                 d(apt__distribution_suffix_map[apt__distribution] |
                                   d(apt__distribution_suffix_map["default"])) }}'
 
@@ -431,7 +431,7 @@ apt__archive_source_map:
 #
 # The URL of the archive APT repository configured by default when the current
 # OS release is migrated to the archive.
-apt__archive_source: '{{ apt__archive_source_map[apt__distribution]|d() }}'
+apt__archive_source: '{{ apt__archive_source_map[apt__distribution] | d() }}'
                                                                    # ]]]
                                                                    # ]]]
 # Default APT package sources [[[
@@ -466,7 +466,7 @@ apt__host_sources: []
 apt__original_sources:
   - comment: 'Original APT package sources gathered by Ansible'
     uris: '{{ ansible_local.apt.original_mirrors_deb|d([]) }}'
-    state: '{{ "present" if (ansible_local.apt.original_mirrors_deb|d() and
+    state: '{{ "present" if (ansible_local.apt.original_mirrors_deb | d() and
                              apt__distribution_suite != "archive")
                          else "absent" }}'
 

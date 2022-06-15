@@ -26,7 +26,7 @@
 - name: Stop saslauthd instance before removal
   ansible.builtin.command: /etc/init.d/saslauthd stop-instance saslauthd-{{ item.name }}
   with_items: '{{ saslauthd__combined_instances | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.socket_path|d() and
+  when: item.name | d() and item.socket_path | d() and
         item.state|d('present') == 'absent'
 
 - name: Remove saslauthd instance if requested
@@ -34,7 +34,7 @@
     path: '/etc/default/saslauthd-{{ item.name }}'
     state: 'absent'
   with_items: '{{ saslauthd__combined_instances | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.socket_path|d() and
+  when: item.name | d() and item.socket_path | d() and
         item.state|d('present') == 'absent'
 
 - name: Generate saslauthd instance configuration
@@ -46,7 +46,7 @@
     mode: '0644'
   with_items: '{{ saslauthd__combined_instances | debops.debops.parse_kv_items }}'
   notify: [ 'Restart saslauthd' ]
-  when: item.name|d() and item.socket_path|d() and
+  when: item.name | d() and item.socket_path | d() and
         item.state|d('present') != 'absent'
 
 - name: Ensure that required UNIX groups exist
@@ -55,7 +55,7 @@
     state: 'present'
     system: '{{ (item.system | d(True)) | bool }}'
   with_items: '{{ saslauthd__combined_instances | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.group|d() and
+  when: item.name | d() and item.group | d() and
         item.state|d('present') != 'absent'
 
 - name: Create SASL config directory
@@ -66,7 +66,7 @@
     group: '{{ item.config_dir_group | d("root") }}'
     mode: '{{ item.config_dir_mode   | d("0755") }}'
   with_items: '{{ saslauthd__combined_instances | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.config_path|d() and
+  when: item.name | d() and item.config_path | d() and
         item.state|d('present') != 'absent'
 
 - name: Remove SASL instance configuration if requested
@@ -74,8 +74,8 @@
     path: '{{ item.config_path }}'
     state: 'absent'
   with_items: '{{ saslauthd__combined_instances | debops.debops.parse_kv_items }}'
-  notify: '{{ item.notify if item.notify|d() else omit }}'
-  when: item.name|d() and item.config_path|d() and
+  notify: '{{ item.notify if item.notify | d() else omit }}'
+  when: item.name | d() and item.config_path | d() and
         item.state|d('present') == 'absent'
 
 - name: Generate SASL instance configuration
@@ -86,8 +86,8 @@
     group: '{{ item.config_group | d("sasl") }}'
     mode: '{{ item.config_mode | d("0640") }}'
   with_items: '{{ saslauthd__combined_instances | debops.debops.parse_kv_items }}'
-  notify: '{{ item.notify if item.notify|d() else omit }}'
-  when: item.name|d() and item.config_path|d() and
+  notify: '{{ item.notify if item.notify | d() else omit }}'
+  when: item.name | d() and item.config_path | d() and
         item.state|d('present') != 'absent'
 
 - name: Remove SASL LDAP profiles if requested
@@ -97,7 +97,7 @@
               else "/etc/saslauthd-" + item.name + ".conf" }}'
     state: 'absent'
   with_items: '{{ saslauthd__ldap_combined_profiles | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.state|d('present') == 'absent'
+  when: item.name | d() and item.state|d('present') == 'absent'
 
 - name: Generate SASL LDAP profiles
   ansible.builtin.template:
@@ -110,7 +110,7 @@
     mode: '{{ item.mode | d("0640") }}'
   with_items: '{{ saslauthd__ldap_combined_profiles | debops.debops.parse_kv_items }}'
   notify: [ 'Restart saslauthd' ]
-  when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ]
+  when: item.name | d() and item.state|d('present') not in [ 'absent', 'ignore' ]
 
 - name: Get list of dpkg-stateoverride paths
   ansible.builtin.shell: set -o nounset -o pipefail -o errexit && dpkg-statoverride --list | awk '{print $4}'
@@ -124,7 +124,7 @@
   ansible.builtin.command: dpkg-statoverride --remove {{ item.socket_path }}
   with_items: '{{ saslauthd__combined_instances | debops.debops.parse_kv_items }}'
   notify: [ 'Restart saslauthd' ]
-  when: item.name|d() and item.socket_path|d() and item.state|d('present') == 'absent' and
+  when: item.name | d() and item.socket_path | d() and item.state|d('present') == 'absent' and
         item.socket_path in saslauthd__register_statoverride.stdout_lines
 
 - name: Create a dpkg-statoverride entry
@@ -135,7 +135,7 @@
            {{ item.socket_path }}
   with_items: '{{ saslauthd__combined_instances | debops.debops.parse_kv_items }}'
   notify: [ 'Restart saslauthd' ]
-  when: item.name|d() and item.socket_path|d() and item.state|d('present') != 'absent' and
+  when: item.name | d() and item.socket_path | d() and item.state|d('present') != 'absent' and
         item.socket_path not in saslauthd__register_statoverride.stdout_lines
 
 - name: Make sure that Ansible local facts directory exists

@@ -41,12 +41,12 @@
     dest: '{{ controller__project_name if controller__project_name else controller__project_git_repo | basename }}'
     version: 'master'
     update: True
-  when: controller__project_git_repo|d()
+  when: controller__project_git_repo | d()
 
 - name: Initialize new project
   become: '{{ controller__install_systemwide | bool }}'
   ansible.builtin.command: debops-init '{{ controller__project_name }}'
   args:
     creates: '{{ controller__project_name }}/.debops.cfg'
-  when: controller__project_name|d() and
-        not controller__project_git_repo|d()
+  when: controller__project_name | d() and
+        not controller__project_git_repo | d()

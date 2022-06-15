@@ -51,7 +51,7 @@ netbase__packages: []
 # directory due to host restrictions. Hostname will still be defined in
 # :file:`/etc/hosts` if the local domain configuration is enabled.
 netbase__hostname_config_enabled: '{{ True
-                                      if ((((ansible_system_capabilities_enforced|d()) | bool and
+                                      if ((((ansible_system_capabilities_enforced | d()) | bool and
                                            "cap_sys_admin" in ansible_system_capabilities) or
                                           not (ansible_system_capabilities_enforced|d(True)) | bool) and
                                           (ansible_virtualization_type is undefined or
@@ -97,16 +97,16 @@ netbase__hostname: '{{ (inventory_hostname_short | d(inventory_hostname.split(".
 # ``ansible_host`` variable, the host is assumed to be standalone and a domain
 # will not be generated for it.
 netbase__domain: '{{ ""
-                     if (ansible_local|d() and ansible_local.netbase|d() and
-                         (((ansible_local.netbase.self_address|d()) != "127.0.1.1" and
-                           (not ansible_local.netbase.self_local_hostname|d()) | bool) or
-                          ((ansible_local.netbase.self_address|d()) == "127.0.1.1" and
-                            ansible_local.netbase.self_domain|d() and
+                     if (ansible_local | d() and ansible_local.netbase | d() and
+                         (((ansible_local.netbase.self_address | d()) != "127.0.1.1" and
+                           (not ansible_local.netbase.self_local_hostname | d()) | bool) or
+                          ((ansible_local.netbase.self_address | d()) == "127.0.1.1" and
+                            ansible_local.netbase.self_domain | d() and
                             ansible_local.netbase.self_domain_source in [ "dns" ])))
                      else (ansible_local.netbase.self_domain
-                           if (ansible_local|d() and ansible_local.netbase|d() and
-                               (ansible_local.netbase.self_domain|d()) and
-                               (ansible_local.netbase.self_local_hostname|d()) | bool)
+                           if (ansible_local | d() and ansible_local.netbase | d() and
+                               (ansible_local.netbase.self_domain | d()) and
+                               (ansible_local.netbase.self_local_hostname | d()) | bool)
                            else ((ansible_host | d(ansible_ssh_host | d("0"))).split(".")[1:] | join(".")
                                  if (not (ansible_host | d(ansible_ssh_host | d("0"))) | ipaddr)
                                  else (inventory_hostname.split(".")[1:] | join(".")
@@ -132,8 +132,8 @@ netbase__aliases: '{{ ([ netbase__hostname ]
 # not have a proper IPv4 address associated with it and you want to use IPv4
 # networking, you can use ``127.0.1.1`` to set the hostname.
 netbase__host_ipv4_address: '{{ (ansible_default_ipv4.address | d())
-                                if (ansible_domain|d() and
-                                    ansible_local|d() and ansible_local.netbase|d() and
+                                if (ansible_domain | d() and
+                                    ansible_local | d() and ansible_local.netbase | d() and
                                     ansible_local.netbase.self_domain_source in [ "dns" ])
                                 else ansible_local.netbase.self_address|d("127.0.1.1") }}'
 
@@ -150,9 +150,9 @@ netbase__host_ipv6_address: '{{ ansible_default_ipv6.address | d() }}'
 # The actual :file:`/etc/hosts` entry with the local domain definition. It will
 # be set as the IPv4 and/or IPv6 addresses defined in above variables.
 netbase__domain_host_entry: '{{ ([ netbase__hostname + "." + netbase__domain ] + netbase__aliases)
-                                if netbase__domain|d()
+                                if netbase__domain | d()
                                 else (netbase__hostname
-                                      if (not ansible_domain|d())
+                                      if (not ansible_domain | d())
                                       else []) }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -198,7 +198,7 @@ netbase__default_hosts:
     value: '{{ netbase__domain_host_entry }}'
     separator: '{{ True
                    if (netbase__host_ipv4_address == "127.0.1.1" and
-                       (ansible_local|d() and ansible_local.netbase|d() and
+                       (ansible_local | d() and ansible_local.netbase | d() and
                         ansible_local.netbase.self_domain_source not in [ "dns" ]))
                    else False }}'
 

@@ -34,7 +34,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
   notify: [ 'Refresh host facts' ]
   tags: [ 'meta::facts' ]
 
@@ -58,7 +58,7 @@
     state: 'absent'
   with_items: '{{ dnsmasq__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Test and restart dnsmasq' ]
-  when: (item.name|d() and item.state|d('present') == 'absent')
+  when: (item.name | d() and item.state|d('present') == 'absent')
 
 - name: Generate dnsmasq configuration
   ansible.builtin.template:
@@ -69,14 +69,14 @@
     mode: '0644'
   with_items: '{{ dnsmasq__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Test and restart dnsmasq' ]
-  when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ])
+  when: (item.name | d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ])
 
 - name: Remove DHCP host configuration and DNS records if requested
   ansible.builtin.file:
     path: '/etc/dnsmasq.d/{{ dnsmasq__dhcp_dns_filename }}'
     state: 'absent'
   notify: [ 'Test and restart dnsmasq' ]
-  when: not dnsmasq__dhcp_hosts|d() and not dnsmasq__dns_records|d()
+  when: not dnsmasq__dhcp_hosts | d() and not dnsmasq__dns_records | d()
 
 - name: Generate DHCP host configuration and DNS records
   ansible.builtin.template:
@@ -86,7 +86,7 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Test and restart dnsmasq' ]
-  when: dnsmasq__dhcp_hosts|d() or dnsmasq__dns_records|d()
+  when: dnsmasq__dhcp_hosts | d() or dnsmasq__dns_records | d()
 
 - name: Divert original dnsmasq environment file
   dpkg_divert:
@@ -100,7 +100,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
   notify: [ 'Test and restart dnsmasq' ]
 
 - name: Configure custom nameservers in resolvconf
@@ -110,6 +110,6 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
   notify: [ 'Test and restart dnsmasq' ]
-  when: dnsmasq__nameservers|d()
+  when: dnsmasq__nameservers | d()

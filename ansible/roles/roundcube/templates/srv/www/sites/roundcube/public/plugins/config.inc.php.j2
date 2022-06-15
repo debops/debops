@@ -91,11 +91,11 @@
 {%   endif %}
 {% endmacro %}
 {% for section in (item.options_sections | d([ {"name": "unknown", "state": "hidden"} ])) | debops.debops.parse_kv_config %}
-{%   if section.name|d() and section.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%   if section.name | d() and section.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
 {%     set loop_next = [] %}
 {%     set section_config = (item.options | debops.debops.parse_kv_config
                              | selectattr("section", "equalto", section.name) | list) %}
-{%     if section_config|d() %}
+{%     if section_config | d() %}
 {%       if section.state != 'hidden' %}
 {%         if ('present' in (section_config | map(attribute='state') | list)) %}
 {{ (section.title | d(section.name | upper)) | comment(
@@ -107,13 +107,13 @@
 
 {%       endif %}
 {%       for element in section_config %}
-{%         if element.name|d() and element.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
-{%           if ((element.comment|d() and loop_next) or
-                 (element.separator|d()) | bool and loop_next) %}
+{%         if element.name | d() and element.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%           if ((element.comment | d() and loop_next) or
+                 (element.separator | d()) | bool and loop_next) %}
 
 {%           endif %}
 {%           set _ = loop_next.append(True) %}
-{%           if element.comment|d() %}
+{%           if element.comment | d() %}
 {{ element.comment | regex_replace('\n$','') | comment(prefix='', postfix='', decoration='// ') -}}
 {%           endif %}
 {%           if element.state|d('present') == 'comment' %}
@@ -126,7 +126,7 @@
 {%           else %}
 {%             set quote_char = "" %}
 {%           endif %}
-{%           if element.option|d() %}
+{%           if element.option | d() %}
 {%             set element_name = ([ element.option ] if element.option is string else element.option) | join("']['") %}
 {%           else %}
 {%             set element_name = element.name %}
@@ -141,7 +141,7 @@
 {%             if element.state|d('present') == 'comment' %}
 {{ "*/" }}
 {%             endif %}
-{%           elif element.array|d() %}
+{%           elif element.array | d() %}
 {%             if element.state|d('present') == 'comment' %}
 {{ "/*" }}
 {%             endif %}

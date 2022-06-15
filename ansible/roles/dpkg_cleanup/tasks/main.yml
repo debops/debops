@@ -17,7 +17,7 @@
   loop: '{{ q("flattened", dpkg_cleanup__dependent_packages) }}'
   loop_control:
     label: '{{ {"package": item.name} }}'
-  when: dpkg_cleanup__enabled | bool and item.name|d() and
+  when: dpkg_cleanup__enabled | bool and item.name | d() and
         item.state|d('present') == 'absent'
 
 - name: Remove cleanup hooks if requested
@@ -27,7 +27,7 @@
   loop: '{{ q("flattened", dpkg_cleanup__dependent_packages) }}'
   loop_control:
     label: '{{ {"package": item.name} }}'
-  when: dpkg_cleanup__enabled | bool and item.name|d() and
+  when: dpkg_cleanup__enabled | bool and item.name | d() and
         item.state|d('present') == 'absent'
 
 - name: Generate cleanup scripts
@@ -38,7 +38,7 @@
   loop: '{{ q("flattened", dpkg_cleanup__dependent_packages) }}'
   loop_control:
     label: '{{ {"package": item.name} }}'
-  when: dpkg_cleanup__enabled | bool and item.name|d() and
+  when: dpkg_cleanup__enabled | bool and item.name | d() and
         item.state|d('present') != 'absent'
 
 - name: Generate cleanup hooks
@@ -49,5 +49,5 @@
   loop: '{{ q("flattened", dpkg_cleanup__dependent_packages) }}'
   loop_control:
     label: '{{ {"package": item.name} }}'
-  when: dpkg_cleanup__enabled | bool and item.name|d() and
+  when: dpkg_cleanup__enabled | bool and item.name | d() and
         item.state|d('present') != 'absent'

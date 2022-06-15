@@ -4,9 +4,9 @@
  #}
 # {{ ansible_managed }}
 
-{% if item.options|d() %}
+{% if item.options | d() %}
 {%   for element in item.options %}
-{%     if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] and not (element.dynamic|d()) | bool %}
+{%     if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] and not (element.dynamic | d()) | bool %}
 {%       if element.value is string and not element.value | bool %}
 {{ '{} {}'.format(element.name, element.value) }}
 {%       elif element.value | bool and element.value is not iterable %}

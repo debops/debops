@@ -151,7 +151,7 @@ nullmailer__allmailfrom: ''
 # enabled automatically when the :ref:`debops.ldap` environment is configured
 # on the host.
 nullmailer__ldap_enabled: '{{ ansible_local.ldap.enabled
-                              if (ansible_local|d() and ansible_local.ldap|d() and
+                              if (ansible_local | d() and ansible_local.ldap | d() and
                                   ansible_local.ldap.enabled is defined)
                               else False }}'
 
@@ -460,7 +460,7 @@ nullmailer__ldap__dependent_tasks:
     objectClass: '{{ nullmailer__ldap_self_object_classes }}'
     attributes: '{{ nullmailer__ldap_self_attributes }}'
     no_log: '{{ debops__no_log | d(True) }}'
-    state: '{{ "present" if nullmailer__ldap_device_dn|d() else "ignore" }}'
+    state: '{{ "present" if nullmailer__ldap_device_dn | d() else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: nullmailer__ferm__dependent_rules [[[

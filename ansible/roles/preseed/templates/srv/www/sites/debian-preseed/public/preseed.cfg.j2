@@ -14,8 +14,8 @@
 {%   set element_name  = element.option | d(element.name) %}
 {%   set element_type  = element.type   | d('string') %}
 {%   set element_seen  = element.seen   | d(True) %}
-{%   if element.name|d() and element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
-{%     if element.comment|d() %}
+{%   if element.name | d() and element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%     if element.comment | d() %}
 {%       if not loop.first %}
 
 {%       endif %}
@@ -50,7 +50,7 @@
 {%         set element_value = element.value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list | join(' ') %}
 {%       endif %}
 {%     else %}
-{%       set element_value = element.value|d() %}
+{%       set element_value = element.value | d() %}
 {%     endif %}
 {%     if element.state|d('present') not in [ 'hidden' ] %}
 {%       if element_value %}

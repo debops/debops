@@ -9,7 +9,7 @@
 
 - name: Create required groups
   ansible.builtin.group:
-    name: '{{ item.name if item.name|d() else item }}'
+    name: '{{ item.name if item.name | d() else item }}'
     system: '{{ item.system | bool if item.system is defined else gitlab_runner__system | bool }}'
     state: 'present'
   with_flattened:
@@ -41,8 +41,8 @@
     name: '{{ gitlab_runner__user }}'
     groups: 'docker'
     append: True
-  when: (ansible_local|d() and ansible_local.docker_server|d() and
-         (ansible_local.docker_server.installed|d()) | bool)
+  when: (ansible_local | d() and ansible_local.docker_server | d() and
+         (ansible_local.docker_server.installed | d()) | bool)
 
 - name: Copy custom files to GitLab Runner host
   ansible.builtin.copy:
@@ -59,7 +59,7 @@
     - '{{ gitlab_runner__custom_files }}'
     - '{{ gitlab_runner__group_custom_files }}'
     - '{{ gitlab_runner__host_custom_files }}'
-  when: ((item.src|d() or item.content|d()) and item.dest|d())
+  when: ((item.src | d() or item.content | d()) and item.dest | d())
 
 - name: Make sure APT can access HTTPS repositories
   ansible.builtin.apt:
@@ -84,7 +84,7 @@
   ansible.builtin.uri:
     url: '{{ gitlab_runner__api_url }}'
   register: gitlab_runner__register_api
-  when: gitlab_runner__api_url|d() and gitlab_runner__api_url
+  when: gitlab_runner__api_url | d() and gitlab_runner__api_url
   failed_when: False
   no_log: '{{ debops__no_log | d(True) }}'
 
@@ -105,12 +105,12 @@
     - '{{ gitlab_runner__instances }}'
     - '{{ gitlab_runner__group_instances }}'
     - '{{ gitlab_runner__host_instances }}'
-  when: (gitlab_runner__register_api.status|d() and gitlab_runner__register_api.status == 200 and
+  when: (gitlab_runner__register_api.status | d() and gitlab_runner__register_api.status == 200 and
          (item.token | d() or gitlab_runner__token) and item.name and
          (item.state is undefined or item.state != 'absent') and
          (ansible_local is undefined or
-          (ansible_local|d() and (ansible_local.gitlab_runner is undefined or
-           (ansible_local.gitlab_runner|d() and ansible_local.gitlab_runner.instances is defined and
+          (ansible_local | d() and (ansible_local.gitlab_runner is undefined or
+           (ansible_local.gitlab_runner | d() and ansible_local.gitlab_runner.instances is defined and
             item.name not in ansible_local.gitlab_runner.instances)))))
 
 - name: Generate GitLab Runner configuration files
@@ -132,9 +132,9 @@
     - '{{ gitlab_runner__default_instances + gitlab_runner__instances
           + gitlab_runner__group_instances + gitlab_runner__host_instances }}'
     - '{{ ansible_local.gitlab_runner.instance_tokens|d([]) }}'
-  when: (gitlab_runner__register_api.status|d() and gitlab_runner__register_api.status == 200 and
-         gitlab_runner__api_token and item.0.name|d() and item.1.name|d() and item.0.name == item.1.name and
-         (item.0.state|d() and item.0.state == 'absent'))
+  when: (gitlab_runner__register_api.status | d() and gitlab_runner__register_api.status == 200 and
+         gitlab_runner__api_token and item.0.name | d() and item.1.name | d() and item.0.name == item.1.name and
+         (item.0.state | d() and item.0.state == 'absent'))
   failed_when: False
   no_log: '{{ debops__no_log | d(True) }}'
 
@@ -153,7 +153,7 @@
   delegate_to: '{{ item.host }}'
   become: '{{ item.become | d(True) }}'
   with_items: '{{ gitlab_runner__ssh_install_to }}'
-  when: gitlab_runner__ssh_generate | bool and item.user|d() and item.host|d()
+  when: gitlab_runner__ssh_generate | bool and item.user | d() and item.host | d()
 
 - name: Make sure that the ~/.ssh directory exists
   ansible.builtin.file:
@@ -162,7 +162,7 @@
     owner: '{{ gitlab_runner__user }}'
     group: '{{ gitlab_runner__group }}'
     mode: '0700'
-  when: gitlab_runner__ssh_known_hosts|d()
+  when: gitlab_runner__ssh_known_hosts | d()
 
 - name: Make sure the ~/.ssh/known_hosts file exists
   ansible.builtin.copy:
@@ -172,7 +172,7 @@
     group: '{{ gitlab_runner__group }}'
     mode: '0644'
     force: False
-  when: gitlab_runner__ssh_known_hosts|d()
+  when: gitlab_runner__ssh_known_hosts | d()
 
 - name: Get list of already scanned host fingerprints
   ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
@@ -180,7 +180,7 @@
   args:
     executable: 'bash'
   with_items: '{{ gitlab_runner__ssh_known_hosts }}'
-  when: gitlab_runner__ssh_known_hosts|d()
+  when: gitlab_runner__ssh_known_hosts | d()
   register: gitlab_runner__register_known_hosts
   changed_when: False
   failed_when: False
@@ -197,11 +197,11 @@
     name: '{{ gitlab_runner__user }}'
     append: True
     groups: '{{ ([ (ansible_local.libvirtd.unix_sock_group
-                    if (ansible_local.libvirtd.unix_sock_group|d())
+                    if (ansible_local.libvirtd.unix_sock_group | d())
                     else "libvirt") ]
                  + ([ "kvm" ]
-                    if (ansible_local|d() and ansible_local.libvirtd|d() and
-                        (ansible_local.libvirtd.hw_virt|d()) | bool)
+                    if (ansible_local | d() and ansible_local.libvirtd | d() and
+                        (ansible_local.libvirtd.hw_virt | d()) | bool)
                     else [])) | join(",") }}'
   when: gitlab_runner__vagrant_libvirt | bool
 
@@ -212,8 +212,8 @@
     owner: 'root'
     group: 'root'
     mode: '0440'
-  when: (ansible_local|d() and ansible_local.sudo|d() and
-         (ansible_local.sudo.installed|d()) | bool and
+  when: (ansible_local | d() and ansible_local.sudo | d() and
+         (ansible_local.sudo.installed | d()) | bool and
          gitlab_runner__vagrant_libvirt | bool)
 
 - name: Find 'vagrant-libvirt' source code
@@ -241,8 +241,8 @@
     owner: 'root'
     group: 'root'
     mode: '0440'
-  when: (ansible_local|d() and ansible_local.sudo|d() and
-         (ansible_local.sudo.installed|d()) | bool and
+  when: (ansible_local | d() and ansible_local.sudo | d() and
+         (ansible_local.sudo.installed | d()) | bool and
          gitlab_runner__vagrant_lxc | bool)
 
 - name: Make sure that Ansible fact directory exists

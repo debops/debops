@@ -39,7 +39,7 @@
     group: '{{ reprepro__group }}'
     mode: '0755'
   when: repo.state|d('present') not in [ 'absent', 'ignore' ] and
-        not repo.outdir|d()
+        not repo.outdir | d()
 
 - name: Copy GPG public key to public space
   ansible.builtin.copy:
@@ -50,7 +50,7 @@
     group: '{{ reprepro__group }}'
     mode: '0644'
   when: repo.state|d('present') not in [ 'absent', 'ignore' ] and
-        not repo.outdir|d()
+        not repo.outdir | d()
 
 - name: Manage reprepro configuration files
   ansible.builtin.template:
@@ -81,7 +81,7 @@
     chdir: '{{ reprepro__data_root + "/" + repo.name }}'
   become: True
   become_user: '{{ reprepro__user }}'
-  when: (repo.state|d('present') not in [ 'absent', 'ignore' ] and repo.distributions|d() and
+  when: (repo.state|d('present') not in [ 'absent', 'ignore' ] and repo.distributions | d() and
          (reprepro__register_config is changed or reprepro__register_uploaders is changed))
 
 - name: Generate symlinks
@@ -91,7 +91,7 @@
   become: True
   become_user: '{{ reprepro__user }}'
   changed_when: False
-  when: (repo.state|d('present') not in [ 'absent', 'ignore' ] and repo.distributions|d())
+  when: (repo.state|d('present') not in [ 'absent', 'ignore' ] and repo.distributions | d())
 
 - name: Enable incoming queue monitoring
   ansible.builtin.systemd:
@@ -102,7 +102,7 @@
     enabled: '{{ True
                if (repo.state|d("present") not in [ "absent", "ignore" ])
                else False }}'
-  when: repo.incoming|d()
+  when: repo.incoming | d()
 
 - name: Manage reprepro scripts
   ansible.builtin.template:

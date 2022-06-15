@@ -52,10 +52,10 @@
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + (item.group | d(item.name)),
                 "state": item.state|d("present")} }}'
-  when: (system_users__enabled | bool and item.name|d() and item.name != 'root' and
+  when: (system_users__enabled | bool and item.name | d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and
          (item.private_group|d(True)) | bool)
-  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
+  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
 
 - name: Gather information about existing remote users
   ansible.builtin.getent:
@@ -67,7 +67,7 @@
     group:              '{{ ((item.prefix | d(system_users__prefix)) + (item.group | d(item.name))) }}'
     home:               '{{ item.home
                             | d(((getent_passwd[(item.prefix | d(system_users__prefix)) + item.name][4])
-                                 if (getent_passwd[(item.prefix | d(system_users__prefix)) + item.name]|d())
+                                 if (getent_passwd[(item.prefix | d(system_users__prefix)) + item.name] | d())
                                  else (system_users__home_root + "/" + ((item.prefix | d(system_users__prefix)) + item.name)))
                                 if ((item.create_home|d(True)) | bool)
                                 else omit) }}'
@@ -78,7 +78,7 @@
     update_password:    '{{ item.update_password    | d("on_create") }}'
     system:             '{{ item.system             | d(omit) }}'
     shell:              '{{ item.shell              | d(system_users__default_shell
-                                                        if system_users__default_shell|d()
+                                                        if system_users__default_shell | d()
                                                         else omit) }}'
     create_home:        '{{ item.create_home        | d(omit) }}'
     move_home:          '{{ item.move_home          | d(omit) }}'
@@ -97,10 +97,10 @@
   loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
-                "state": item.state|d("present"), "gecos": item.comment|d()} }}'
-  when: (system_users__enabled | bool and item.name|d() and item.name != 'root' and
+                "state": item.state|d("present"), "gecos": item.comment | d()} }}'
+  when: (system_users__enabled | bool and item.name | d() and item.name != 'root' and
          item.state|d('present') not in [ 'ignore' ] and (item.user|d(True)) | bool)
-  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
+  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
 
 - name: Gather information about existing remote groups
   ansible.builtin.getent:
@@ -117,10 +117,10 @@
                     if (item.groups is defined)
                     else [])
                     + (system_users__admin_groups
-                       if ((item.admin|d()) | bool)
+                       if ((item.admin | d()) | bool)
                        else []) )
                    | intersect(getent_group.keys()) )
-                if (item.groups is defined or (item.admin|d()) | bool)
+                if (item.groups is defined or (item.admin | d()) | bool)
                 else omit }}'
     append: '{{ item.append | d(True) }}'
     state:  '{{ item.state  | d("present") }}'
@@ -128,19 +128,19 @@
   loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
-                "state": item.state|d("present"), "gecos": item.comment|d(),
-                "groups": item.groups|d()} }}'
-  when: (system_users__enabled | bool and item.name|d() and item.name != 'root' and
+                "state": item.state|d("present"), "gecos": item.comment | d(),
+                "groups": item.groups | d()} }}'
+  when: (system_users__enabled | bool and item.name | d() and item.name != 'root' and
          item.state|d('present') not in [ 'ignore' ] and
-         (item.groups|d() or (item.admin|d()) | bool) and
+         (item.groups | d() or (item.admin | d()) | bool) and
          (item.user|d(True)) | bool)
-  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
+  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
 
 - name: Manage system users home directories
   ansible.builtin.file:
     path: '{{ item.home
               | d(((getent_passwd[(item.prefix | d(system_users__prefix)) + item.name][4])
-                   if (getent_passwd[(item.prefix | d(system_users__prefix)) + item.name]|d())
+                   if (getent_passwd[(item.prefix | d(system_users__prefix)) + item.name] | d())
                    else (system_users__home_root + "/" + ((item.prefix | d(system_users__prefix)) + item.name)))
                   if ((item.create_home|d(True)) | bool)
                   else omit) }}'
@@ -153,21 +153,21 @@
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state|d("present"),
                 "home": (item.home | d(((getent_passwd[(item.prefix | d(system_users__prefix)) + item.name][4])
-                                        if (getent_passwd[(item.prefix | d(system_users__prefix)) + item.name]|d())
+                                        if (getent_passwd[(item.prefix | d(system_users__prefix)) + item.name] | d())
                                         else (system_users__home_root + "/" + ((item.prefix | d(system_users__prefix)) + item.name)))
                                        if ((item.create_home|d(True)) | bool)
                                        else ""))} }}'
-  when: (system_users__enabled | bool and item.name|d() and item.name != 'root' and
+  when: (system_users__enabled | bool and item.name | d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and (item.create_home|d(True)) | bool and
-         (item.home_owner|d() or item.home_group|d() or item.home_mode|d() or (item.local|d(True)) | bool) and
+         (item.home_owner | d() or item.home_group | d() or item.home_mode | d() or (item.local|d(True)) | bool) and
          (item.user|d(True)) | bool)
-  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
+  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
 
 - name: Manage system users home directory ACLs
   ansible.posix.acl:
     path:        '{{ item.0.home
                      | d(((getent_passwd[(item.0.prefix | d(system_users__prefix)) + item.0.name][4])
-                          if (getent_passwd[(item.0.prefix | d(system_users__prefix)) + item.0.name]|d())
+                          if (getent_passwd[(item.0.prefix | d(system_users__prefix)) + item.0.name] | d())
                           else (system_users__home_root + "/" + ((item.0.prefix | d(system_users__prefix)) + item.0.name)))
                          if ((item.0.create_home|d(True)) | bool)
                          else omit) }}'
@@ -186,10 +186,10 @@
     label: '{{ {"name": (item.0.prefix | d(system_users__prefix)) + item.0.name,
                 "state": item.0.state | d("present"), "home_acl": item.1} }}'
   when: (system_users__enabled | bool and system_users__acl_enabled | bool and
-         item.0.name|d() and item.0.name != 'root' and
+         item.0.name | d() and item.0.name != 'root' and
          item.0.state|d('present') not in [ 'absent', 'ignore' ] and (item.0.create_home|d(True)) | bool and
-         item.0.home_acl|d() and (item.user|d(True)) | bool)
-  no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password|d() else False) }}'
+         item.0.home_acl | d() and (item.user|d(True)) | bool)
+  no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password | d() else False) }}'
   tags: [ 'role::system_users:home_acl', 'skip::system_users:home_acl', 'skip::check' ]
 
 - name: Allow specified system UNIX accounts to linger when not logged in
@@ -201,10 +201,10 @@
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present"), "linger": item.linger|d(False)} }}'
   when: (system_users__enabled | bool and ansible_service_mgr == 'systemd' and
-         item.name|d() and item.name != 'root' and
+         item.name | d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and
          item.linger is defined and item.linger | bool and (item.user|d(True)) | bool)
-  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
+  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
 
 - name: Disallow specified UNIX accounts to linger when not logged in
   ansible.builtin.command: loginctl disable-linger {{ (item.prefix | d(system_users__prefix)) + item.name }}
@@ -215,10 +215,10 @@
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present"), "linger": item.linger|d(False)} }}'
   when: (system_users__enabled | bool and ansible_service_mgr == 'systemd' and
-         item.name|d() and item.name != 'root' and
+         item.name | d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and
          item.linger is defined and not item.linger | bool and (item.user|d(True)) | bool)
-  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
+  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
 
 - name: Configure SSH authorized keys for system users
   ansible.posix.authorized_key:
@@ -229,12 +229,12 @@
   loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
-                "state": item.state | d("present"), "sshkeys": item.sshkeys|d()} }}'
-  when: (system_users__enabled | bool and item.name|d() and item.name != 'root' and
+                "state": item.state | d("present"), "sshkeys": item.sshkeys | d()} }}'
+  when: (system_users__enabled | bool and item.name | d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and (item.create_home|d(True)) | bool and
-         item.sshkeys|d() and item.sshkeys_state|d('present') != 'absent' and (item.user|d(True)) | bool and
+         item.sshkeys | d() and item.sshkeys_state|d('present') != 'absent' and (item.user|d(True)) | bool and
          not ansible_check_mode)
-  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
+  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
   tags: [ 'role::system_users:authorized_keys', 'skip::system_users:authorized_keys', 'skip::check' ]
 
 - name: Remove SSH authorized keys from system user accounts if requested
@@ -246,10 +246,10 @@
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present"),
                 "sshkeys_state": item.sshkeys_state|d("present")} }}'
-  when: (system_users__enabled | bool and item.name|d() and item.name != 'root' and
+  when: (system_users__enabled | bool and item.name | d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and (item.create_home|d(True)) | bool and
-         item.sshkeys|d() and item.sshkeys_state|d('present') == 'absent' and (item.user|d(True)) | bool)
-  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
+         item.sshkeys | d() and item.sshkeys_state|d('present') == 'absent' and (item.user|d(True)) | bool)
+  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
 
 - name: Configure system user mail forwarding
   ansible.builtin.lineinfile:
@@ -265,11 +265,11 @@
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present"),
-                "forward": item.forward|d()} }}'
-  when: (system_users__enabled | bool and item.name|d() and item.name != 'root' and
+                "forward": item.forward | d()} }}'
+  when: (system_users__enabled | bool and item.name | d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and
-         item.create_home|d(True) and item.forward|d() and (item.user|d(True)) | bool)
-  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
+         item.create_home|d(True) and item.forward | d() and (item.user|d(True)) | bool)
+  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
   tags: [ 'role::system_users:forward', 'skip::system_users:forward', 'skip::check' ]
 
 - name: Manage system users dotfiles
@@ -294,12 +294,12 @@
   check_mode: False
   register: system_users__register_dotfiles
   changed_when: ('Already up to date.' not in system_users__register_dotfiles.stdout_lines|regex_replace('-', ' '))
-  when: (system_users__enabled | bool and item.name|d() and item.name != 'root' and
+  when: (system_users__enabled | bool and item.name | d() and item.name != 'root' and
          item.state|d('present') not in [ 'absent', 'ignore' ] and (item.create_home|d(True)) | bool and
-         (ansible_local|d() and ansible_local.yadm|d() and (ansible_local.yadm.installed|d()) | bool) and
+         (ansible_local | d() and ansible_local.yadm | d() and (ansible_local.yadm.installed | d()) | bool) and
          (item.dotfiles | d(item.dotfiles_enabled | d(system_users__dotfiles_enabled))) | bool and
          (item.dotfiles_repo | d(system_users__dotfiles_repo)) and (item.user|d(True)) | bool)
-  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
+  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
   tags: [ 'role::system_users:dotfiles', 'skip::system_users:dotfiles', 'skip::check' ]
 
 - name: Manage system user resource directories
@@ -319,12 +319,12 @@
     label: '{{ {"name": ((item.0.prefix | d(system_users__prefix)) + item.0.name),
                 "state": item.0.state | d("present"), "resources": item.1} }}'
   when: (system_users__enabled | bool and
-         item.0.name|d() and item.0.name != 'root' and
+         item.0.name | d() and item.0.name != 'root' and
          item.0.state|d('present') not in [ 'absent', 'ignore' ] and
-         item.0.create_home|d(True) and item.0.resources|d() and (item.0.user|d(True)) | bool and
+         item.0.create_home|d(True) and item.0.resources | d() and (item.0.user|d(True)) | bool and
          item.1.state|d('directory') in [ 'directory', 'link', 'touch' ] and
          item.1.content is undefined)
-  no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password|d() else False) }}'
+  no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password | d() else False) }}'
 
 - name: Manage system user resource parent directories
   ansible.builtin.file:
@@ -342,11 +342,11 @@
     label: '{{ {"name": ((item.0.prefix | d(system_users__prefix)) + item.0.name),
                 "state": item.0.state | d("present"), "resources": item.1} }}'
   when: (system_users__enabled | bool and
-         item.0.name|d() and item.0.name != 'root' and
+         item.0.name | d() and item.0.name != 'root' and
          item.0.state|d('present') not in [ 'absent', 'ignore' ] and
-         item.0.create_home|d(True) and item.0.resources|d() and (item.0.user|d(True)) | bool and
+         item.0.create_home|d(True) and item.0.resources | d() and (item.0.user|d(True)) | bool and
          item.1.state|d('directory') in [ 'present', 'file' ])
-  no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password|d() else False) }}'
+  no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password | d() else False) }}'
 
 - name: Manage system user resource files
   ansible.builtin.copy:
@@ -364,12 +364,12 @@
     label: '{{ {"name": ((item.0.prefix | d(system_users__prefix)) + item.0.name),
                 "state": item.0.state | d("present"), "resources": item.1} }}'
   when: (system_users__enabled | bool and
-         item.0.name|d() and item.0.name != 'root' and
+         item.0.name | d() and item.0.name != 'root' and
          item.0.state|d('present') not in [ 'absent', 'ignore' ] and
-         item.0.create_home|d(True) and item.0.resources|d() and (item.0.user|d(True)) | bool and
+         item.0.create_home|d(True) and item.0.resources | d() and (item.0.user|d(True)) | bool and
          item.1.state|d('directory') in [ 'present', 'file' ] and
-         (item.1.dest|d() or item.1.path|d()) and (item.1.src|d() or item.1.content|d()))
-  no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password|d() else False) }}'
+         (item.1.dest | d() or item.1.path | d()) and (item.1.src | d() or item.1.content | d()))
+  no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password | d() else False) }}'
 
 - name: Remove system user resources if requested
   ansible.builtin.file:
@@ -382,11 +382,11 @@
     label: '{{ {"name": ((item.0.prefix | d(system_users__prefix)) + item.0.name),
                 "state": item.0.state | d("present"), "resources": item.1} }}'
   when: (system_users__enabled | bool and
-         item.0.name|d() and item.0.name != 'root' and
+         item.0.name | d() and item.0.name != 'root' and
          item.0.state|d('present') not in [ 'absent', 'ignore' ] and
-         item.0.create_home|d(True) and item.0.resources|d() and (item.0.user|d(True)) | bool and
+         item.0.create_home|d(True) and item.0.resources | d() and (item.0.user|d(True)) | bool and
          item.1.state|d('directory') == 'absent')
-  no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password|d() else False) }}'
+  no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password | d() else False) }}'
 
 - name: Remove user groups if requested
   ansible.builtin.group:
@@ -397,10 +397,10 @@
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
                 "state": item.state | d("present")} }}'
-  when: (system_users__enabled | bool and item.name|d() and item.name != 'root' and
+  when: (system_users__enabled | bool and item.name | d() and item.name != 'root' and
          item.state|d('present') == 'absent' and
          (item.private_group|d(True)) | bool)
-  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password|d() else False) }}'
+  no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:

@@ -151,8 +151,8 @@ minio__upstream_git_release: '{{ "RELEASE.2019-03-27T22-35-21Z"
 # Absolute path to the :command:`minio` Go binary installed on the host.
 # See the :ref:`debops.golang` role for more details.
 minio__binary: '{{ ansible_local.golang.binaries["minio"]
-                   if (ansible_local.golang.binaries|d() and
-                       ansible_local.golang.binaries.minio|d())
+                   if (ansible_local.golang.binaries | d() and
+                       ansible_local.golang.binaries.minio | d())
                    else "" }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -237,7 +237,7 @@ minio__domain: '{{ ansible_domain }}'
 # via TLS. The support will be enabled in the :ref:`debops.pki` Ansible role is
 # configured on a host.
 minio__pki_enabled: '{{ ansible_local.pki.enabled
-                        if (ansible_local|d() and ansible_local.pki|d() and
+                        if (ansible_local | d() and ansible_local.pki | d() and
                             ansible_local.pki.enabled is defined)
                         else False }}'
 

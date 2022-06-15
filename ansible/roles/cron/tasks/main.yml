@@ -64,7 +64,7 @@
     - '{{ cron__combined_jobs | selectattr("custom_files", "defined") | list }}'
     - 'custom_files'
   when: (cron__enabled | bool and (item.0.state|d('present') == 'absent' or item.1.state|d('present') == 'absent') and
-         (item.1.src|d() or item.1.content|d()) and item.1.dest|d())
+         (item.1.src | d() or item.1.content | d()) and item.1.dest | d())
 
 - name: Manage custom cron files
   ansible.builtin.copy:
@@ -80,7 +80,7 @@
     - 'custom_files'
   when: (cron__enabled | bool and item.0.state|d('present') not in [ 'absent', 'ignore' ] and
          item.1.state|d('present') != 'absent' and
-         (item.1.src|d() or item.1.content|d()) and item.1.dest|d())
+         (item.1.src | d() or item.1.content | d()) and item.1.dest | d())
 
 - name: Remove cron job files
   ansible.builtin.file:

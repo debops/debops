@@ -6,15 +6,15 @@
 {% set _ = output.append(ansible_pkg_mgr) %}
 {% set _ = output.append(ansible_service_mgr) %}
 {% set _ = output.append(ansible_system | lower) %}
-{% if (ansible_local|d() and ansible_local.tags|d()) %}
+{% if (ansible_local | d() and ansible_local.tags | d()) %}
 {%   set _ = output.extend(ansible_local.tags) %}
 {% endif %}
-{% if (ansible_local|d() and ansible_local.docker_server|d() and
-       (ansible_local.docker_server.installed|d()) | bool) %}
+{% if (ansible_local | d() and ansible_local.docker_server | d() and
+       (ansible_local.docker_server.installed | d()) | bool) %}
 {%   set _ = output.append('docker-host') %}
 {% endif %}
-{% if (ansible_local|d() and ansible_local.lxc|d() and
-       (ansible_local.lxc.installed|d()) | bool) %}
+{% if (ansible_local | d() and ansible_local.lxc | d() and
+       (ansible_local.lxc.installed | d()) | bool) %}
 {%   set _ = output.append('lxc-host') %}
 {% endif %}
 {% if gitlab_runner__vagrant_libvirt | bool %}
@@ -28,7 +28,7 @@
 {% if ansible_virtualization_type not in [ 'NA' ] %}
 {%   set _ = output.append(ansible_virtualization_type + '-' + ansible_virtualization_role) %}
 {% endif %}
-{% if (ansible_local|d() and ansible_local.libvirtd|d() and (ansible_local.libvirtd.hw_virt|d()) | bool) %}
+{% if (ansible_local | d() and ansible_local.libvirtd | d() and (ansible_local.libvirtd.hw_virt | d()) | bool) %}
 {%   set _ = output.append('hw-virt') %}
 {% endif %}
 {% if (ansible_memtotal_mb | int > 2048) %}

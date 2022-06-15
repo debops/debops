@@ -119,9 +119,9 @@ gitlab_runner__shell: '/bin/bash'
 #
 # Global number of jobs that can run concurrently on all configured runners.
 gitlab_runner__concurrent: '{{ ansible_processor_vcpus
-                               if (ansible_local|d() and
-                                   ansible_local.docker_server|d() and
-                                   (ansible_local.docker_server.installed|d()) | bool)
+                               if (ansible_local | d() and
+                                   ansible_local.docker_server | d() and
+                                   (ansible_local.docker_server.installed | d()) | bool)
                                else "1" }}'
 
                                                                    # ]]]
@@ -147,8 +147,8 @@ gitlab_runner__fqdn: '{{ ansible_fqdn }}'
 # address. Finally, ``code.<domain>`` is used as a fallback.
 gitlab_runner__gitlab_srv_rr: '{{ q("debops.debops.dig_srv", "_gitlab._tcp." + gitlab_runner__domain,
                                     ansible_fqdn
-                                    if (ansible_local|d() and ansible_local.gitlab|d() and
-                                       (ansible_local.gitlab.installed|d()) | bool)
+                                    if (ansible_local | d() and ansible_local.gitlab | d() and
+                                       (ansible_local.gitlab.installed | d()) | bool)
                                     else ("code." + gitlab_runner__domain), 443) }}'
 
                                                                    # ]]]
@@ -272,16 +272,16 @@ gitlab_runner__default_instances:
     executor: 'shell'
     run_untagged: False
     state: '{{ "absent"
-               if (ansible_local|d() and ansible_local.docker_server|d() and
-                   (ansible_local.docker_server.installed|d()) | bool)
+               if (ansible_local | d() and ansible_local.docker_server | d() and
+                   (ansible_local.docker_server.installed | d()) | bool)
                else "present" }}'
 
   - name: '{{ ansible_hostname + "-docker" }}'
     executor: 'docker'
     tags: [ 'docker' ]
     state: '{{ "present"
-               if (ansible_local|d() and ansible_local.docker_server|d() and
-                   (ansible_local.docker_server.installed|d()) | bool)
+               if (ansible_local | d() and ansible_local.docker_server | d() and
+                   (ansible_local.docker_server.installed | d()) | bool)
                else "absent" }}'
 
   - name: '{{ ansible_hostname + "-docker-root" }}'
@@ -291,8 +291,8 @@ gitlab_runner__default_instances:
     run_untagged: False
     tags: [ 'docker-privileged' ]
     state: '{{ "present"
-               if (ansible_local|d() and ansible_local.docker_server|d() and
-                   (ansible_local.docker_server.installed|d()) | bool)
+               if (ansible_local | d() and ansible_local.docker_server | d() and
+                   (ansible_local.docker_server.installed | d()) | bool)
                else "absent" }}'
 
                                                                    # ]]]
@@ -356,8 +356,8 @@ gitlab_runner__host_custom_files: []
 # Enabling Vagrant libvirt will add the ``gitlab-runner`` UNIX account to the
 # ``libvirt`` and ``kvm`` UNIX groups, required for libvirt access by Vagrant.
 gitlab_runner__vagrant_libvirt: '{{ True
-                                    if (ansible_local|d() and ansible_local.libvirtd|d() and
-                                        (ansible_local.libvirtd.installed|d()) | bool and
+                                    if (ansible_local | d() and ansible_local.libvirtd | d() and
+                                        (ansible_local.libvirtd.installed | d()) | bool and
                                         (ansible_distribution_release not in
                                          [ "trusty" ]))
                                     else False }}'
@@ -391,8 +391,8 @@ gitlab_runner__vagrant_libvirt_patch_state: 'present'
 # host). Enabling Vagrant LXC will give limited :command:`sudo` access for the
 # GitLab Runner UNIX account to allow access to LXC commands.
 gitlab_runner__vagrant_lxc: '{{ True
-                                if (ansible_local|d() and ansible_local.lxc|d() and
-                                    (ansible_local.lxc.installed|d()) | bool and
+                                if (ansible_local | d() and ansible_local.lxc | d() and
+                                    (ansible_local.lxc.installed | d()) | bool and
                                     (ansible_distribution_release not in
                                      [ "trusty" ]))
                                 else False }}'

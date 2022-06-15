@@ -71,8 +71,8 @@
     owner: 'root'
     group: 'root'
     mode: '0440'
-  when: (ansible_local|d() and ansible_local.sudo|d() and
-         (ansible_local.sudo.installed|d()) | bool)
+  when: (ansible_local | d() and ansible_local.sudo | d() and
+         (ansible_local.sudo.installed | d()) | bool)
 
                                                                    # ]]]
 # php.ini management [[[
@@ -104,7 +104,7 @@
     - '{{ php__group_configuration }}'
     - '{{ php__host_configuration }}'
     - '{{ php__dependent_configuration }}'
-  when: item.state|d() and item.state == 'absent'
+  when: item.state | d() and item.state == 'absent'
   notify: [ 'Restart php-fpm' ]
   tags: [ 'role::php:config' ]
 
@@ -114,7 +114,7 @@
   ansible.builtin.script: script/php-synchronize-config.sh {{ php__version }}
   register: php__register_synchronize_config
   changed_when: php__register_synchronize_config.stdout is defined and
-                php__register_synchronize_config.stdout|d()
+                php__register_synchronize_config.stdout | d()
   notify: [ 'Restart php-fpm' ]
   tags: [ 'role::php:config' ]
 
@@ -169,7 +169,7 @@
     - '{{ php__group_pools }}'
     - '{{ php__host_pools }}'
     - '{{ php__dependent_pools }}'
-  when: '"fpm" in php__server_api_packages and item.state|d() and item.state == "absent"'
+  when: '"fpm" in php__server_api_packages and item.state | d() and item.state == "absent"'
   notify: [ 'Restart php-fpm' ]
   tags: [ 'role::php:pools', 'role::php:config' ]
 
@@ -187,7 +187,7 @@
     - '{{ php__group_pools }}'
     - '{{ php__host_pools }}'
     - '{{ php__dependent_pools }}'
-  when: '"fpm" in php__server_api_packages and item.state|d("present") != "absent" and item.owner|d() and item.home|d()'
+  when: '"fpm" in php__server_api_packages and item.state|d("present") != "absent" and item.owner | d() and item.home | d()'
 
 - name: Make sure required system accounts exist
   ansible.builtin.user:
@@ -203,7 +203,7 @@
     - '{{ php__group_pools }}'
     - '{{ php__host_pools }}'
     - '{{ php__dependent_pools }}'
-  when: '"fpm" in php__server_api_packages and item.state|d("present") != "absent" and item.owner|d() and item.home|d()'
+  when: '"fpm" in php__server_api_packages and item.state|d("present") != "absent" and item.owner | d() and item.home | d()'
 
                                                                    # ]]]
 # Ansible local facts [[[

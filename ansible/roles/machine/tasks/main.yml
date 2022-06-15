@@ -60,7 +60,7 @@
     group: 'root'
     mode: '0644'
   when: machine__enabled | bool and machine__etc_motd_state|d('present') != 'absent' and
-        machine__motd|d()
+        machine__motd | d()
 
 - name: Ensure that required directories exist
   ansible.builtin.file:
@@ -113,7 +113,7 @@
     mode: '0755'
   loop: '{{ machine__motd_combined_scripts | debops.debops.parse_kv_items }}'
   loop_control:
-    label: '{{ item.filename|d() or item.name }}'
+    label: '{{ item.filename | d() or item.name }}'
   register: machine__register_motd_scripts_created
   when: (machine__enabled | bool and
          item.filename|d(item.name) and
@@ -129,7 +129,7 @@
             + machine__register_motd_scripts_created.results }}'
   loop_control:
     label: '{{ item.item.name }}'
-  when: (item.item.name|d() and not item.item.divert|d(False) | bool and
+  when: (item.item.name | d() and not item.item.divert|d(False) | bool and
          item.item.filename is undefined and item is changed)
 
 - name: Make sure that Ansible local facts directory exists

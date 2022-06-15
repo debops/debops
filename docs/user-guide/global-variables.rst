@@ -71,7 +71,7 @@ hides task output depending on presence of a specific parameter:
      no_log: '{{ debops__no_log
                  | d(item.no_log
                      | d(True
-                         if item.password|d()
+                         if item.password | d()
                          else False)) }}'
 
 An example use on the command line to debug an issue without changing the

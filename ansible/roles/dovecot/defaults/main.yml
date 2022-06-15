@@ -267,7 +267,7 @@ dovecot__checkpassword_userdb_command: '/usr/bin/checkpassword'
 # .. envvar:: dovecot__pki [[[
 #
 # Enable or disable support for TLS/SSL using :ref:`debops.pki`.
-dovecot__pki: '{{ ansible_local.pki.enabled|d() | bool }}'
+dovecot__pki: '{{ ansible_local.pki.enabled | d() | bool }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__pki_path [[[
@@ -381,7 +381,7 @@ dovecot__pki_hook_action: 'reload'
 # Enable or disable support for custom Diffie-Hellman parameters managed by the
 # :ref:`debops.dhparam` Ansible role.
 dovecot__dhparam: '{{ ansible_local.dhparam.enabled
-                      if (ansible_local|d() and ansible_local.dhparam|d() and
+                      if (ansible_local | d() and ansible_local.dhparam | d() and
                           ansible_local.dhparam.enabled is defined)
                       else False }}'
 
@@ -397,8 +397,8 @@ dovecot__dhparam_set: 'default'
 #
 # Absolute path to the Diffie-Hellman parameters file which should be used.
 dovecot__ssl_dh_file: '{{ ansible_local.dhparam[dovecot__dhparam_set]
-                          if (ansible_local|d() and ansible_local.dhparam|d() and
-                            ansible_local.dhparam[dovecot__dhparam_set]|d())
+                          if (ansible_local | d() and ansible_local.dhparam | d() and
+                            ansible_local.dhparam[dovecot__dhparam_set] | d())
                           else "" }}'
 
                                                                    # ]]]
@@ -569,7 +569,7 @@ dovecot__default_configuration:
       - name: 'passdb_checkpassword'
         option: 'passdb'
         state: '{{ "present" if ("checkpassword" in dovecot__user_accounts and
-                     dovecot__checkpassword_passdb_command|d()) else "absent" }}'
+                     dovecot__checkpassword_passdb_command | d()) else "absent" }}'
         options:
 
           - name: 'driver'
@@ -581,7 +581,7 @@ dovecot__default_configuration:
       - name: 'userdb_checkpassword_pre'
         option: 'userdb'
         state: '{{ "present" if ("checkpassword" in dovecot__user_accounts and
-                     dovecot__checkpassword_userdb_command|d()) else "absent" }}'
+                     dovecot__checkpassword_userdb_command | d()) else "absent" }}'
         options:
 
           - name: 'driver'
@@ -590,7 +590,7 @@ dovecot__default_configuration:
       - name: 'userdb_checkpassword_main'
         option: 'userdb'
         state: '{{ "present" if ("checkpassword" in dovecot__user_accounts and
-                     dovecot__checkpassword_userdb_command|d()) else "absent" }}'
+                     dovecot__checkpassword_userdb_command | d()) else "absent" }}'
         options:
 
           - name: 'driver'
@@ -874,7 +874,7 @@ dovecot__default_configuration:
 
       - name: 'mail_location'
         value: '{{ dovecot__mail_location }}'
-        state: '{{ "present" if dovecot__mail_location|d() else "comment" }}'
+        state: '{{ "present" if dovecot__mail_location | d() else "comment" }}'
 
   - section: 'mailbox_namespaces'
     title: 'Mailbox Namespaces'
@@ -1114,8 +1114,8 @@ dovecot__allow_sieve: []
 # When enabled, :command:`dovecot` will authenticate users against LDAP and
 # authorize access to the user's mailbox.
 dovecot__ldap_enabled: '{{ True
-                           if (ansible_local|d() and ansible_local.ldap|d() and
-                              (ansible_local.ldap.enabled|d()) | bool)
+                           if (ansible_local | d() and ansible_local.ldap | d() and
+                              (ansible_local.ldap.enabled | d()) | bool)
                            else False }}'
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_base_dn [[[
@@ -1255,7 +1255,7 @@ dovecot__ldap__dependent_tasks:
     no_log: '{{ debops__no_log | d(True) }}'
     state: '{{ "present"
                 if (dovecot__ldap_enabled | bool and
-                    dovecot__ldap_device_dn|d())
+                    dovecot__ldap_device_dn | d())
                 else "ignore" }}'
 
                                                                    # ]]]

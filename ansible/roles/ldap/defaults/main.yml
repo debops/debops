@@ -31,8 +31,8 @@
 # related to LDAP (for example if you want to interact only with the LDAP
 # directory itself).
 ldap__enabled: '{{ ansible_local.ldap.enabled
-                   if (ansible_local|d() and ansible_local.ldap|d() and
-                       (ansible_local.ldap.enabled|d()) | bool)
+                   if (ansible_local | d() and ansible_local.ldap | d() and
+                       (ansible_local.ldap.enabled | d()) | bool)
                    else False }}'
 
                                                                    # ]]]
@@ -54,7 +54,7 @@ ldap__posix_enabled: '{{ ansible_local.ldap.posix_enabled | d(ldap__enabled) }}'
 # by default and those defined in the Ansible inventory to avoid creating long
 # lists of tasks. The state is tracked using a fact during runtime.
 ldap__configured: '{{ ansible_local.ldap.configured
-                      if (ansible_local|d() and ansible_local.ldap|d() and
+                      if (ansible_local | d() and ansible_local.ldap | d() and
                           ansible_local.ldap.configured is defined)
                       else False }}'
 
@@ -66,7 +66,7 @@ ldap__configured: '{{ ansible_local.ldap.configured
 # only run the LDAP tasks defined via the dependent variables.
 ldap__dependent_play: '{{ True
                           if (ldap__configured | bool and
-                              ldap__dependent_tasks|d())
+                              ldap__dependent_tasks | d())
                           else False }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -139,8 +139,8 @@ ldap__servers_uri: '{{ ldap__servers
 # plain ``ldap`` (389) TCP port. This requires configured X.509 PKI
 # environment, managed by the :ref:`debops.pki` role.
 ldap__start_tls: '{{ True
-                     if (ansible_local|d() and ansible_local.pki|d() and
-                         (ansible_local.pki.enabled|d()) | bool)
+                     if (ansible_local | d() and ansible_local.pki | d() and
+                         (ansible_local.pki.enabled | d()) | bool)
                      else False }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -486,7 +486,7 @@ ldap__shell: '/bin/bash'
 ldap__default_urn_patterns:
 
   - '{{ ("deploy:" + ansible_local.machine.deployment)
-        if (ansible_local.machine.deployment|d())
+        if (ansible_local.machine.deployment | d())
         else [] }}'
 
                                                                    # ]]]
@@ -602,7 +602,7 @@ ldap__combined_configuration: '{{ ldap__default_configuration
 # Enable or disable support for performing LDAP tasks on behalf of the LDAP
 # Administrator. This feature will be enabled if the password is available to
 # allow binding to the LDAP directory.
-ldap__admin_enabled: '{{ True if ldap__fact_admin_bindpw|d() else False }}'
+ldap__admin_enabled: '{{ True if ldap__fact_admin_bindpw | d() else False }}'
 
                                                                    # ]]]
 # .. envvar:: ldap__admin_passwordstore_path [[[
@@ -647,7 +647,7 @@ ldap__admin_binddn: '{{ lookup("env", "DEBOPS_LDAP_ADMIN_BINDDN")
 # use of the environment variables. See :ref:`ldap__ref_admin_pass` for more
 # details.
 ldap__admin_bindpw: '{{ (lookup("env", "DEBOPS_LDAP_ADMIN_BINDPW")
-                         if lookup("env", "DEBOPS_LDAP_ADMIN_BINDPW")|d()
+                         if lookup("env", "DEBOPS_LDAP_ADMIN_BINDPW") | d()
                          else (lookup("file", secret + "/ldap/credentials/"
                                               + ldap__admin_binddn | to_uuid
                                               + ".password")
@@ -779,7 +779,7 @@ ldap__dependent_tasks: []
 # it detects the usage as a dependency by another role.
 ldap__combined_tasks: '{{ ldap__dependent_tasks
                           if (ldap__fact_configured | bool and
-                              ldap__dependent_tasks|d())
+                              ldap__dependent_tasks | d())
                           else (ldap__default_tasks
                                 + ldap__tasks
                                 + ldap__group_tasks

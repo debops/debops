@@ -10,41 +10,41 @@
 {% set avahi__tpl_filtered_services = {} %}
 {% for filename, params in avahi__tpl_merge_4.items() %}
 {%   set service_filename = (params.filename | d(filename)) %}
-{%   if params.services is undefined and params.type|d() %}
+{%   if params.services is undefined and params.type | d() %}
 {%     set avahi__tpl_service = {} %}
-{%     if params.type|d() %}
+{%     if params.type | d() %}
 {%       set _ = avahi__tpl_service.update({'type': params.type }) %}
 {%     endif %}
-{%     if params.subtype|d() %}
+{%     if params.subtype | d() %}
 {%       set _ = avahi__tpl_service.update({'subtype': params.subtype }) %}
 {%     endif %}
-{%     if params.port|d() %}
+{%     if params.port | d() %}
 {%       set _ = avahi__tpl_service.update({'port': params.port }) %}
 {%     else %}
 {%       set _ = avahi__tpl_service.update({'port': '0' }) %}
 {%     endif %}
-{%     if params.protocol|d() %}
+{%     if params.protocol | d() %}
 {%       set _ = avahi__tpl_service.update({'protocol': params.protocol }) %}
 {%     endif %}
-{%     if params.hostname|d() %}
+{%     if params.hostname | d() %}
 {%       set _ = avahi__tpl_service.update({'fqdn': params.hostname }) %}
 {%     endif %}
-{%     if params.host_name|d() %}
+{%     if params.host_name | d() %}
 {%       set _ = avahi__tpl_service.update({'fqdn': params.host_name }) %}
 {%     endif %}
-{%     if params.fqdn|d() %}
+{%     if params.fqdn | d() %}
 {%       set _ = avahi__tpl_service.update({'fqdn': params.fqdn }) %}
 {%     endif %}
-{%     if params.domain|d() %}
+{%     if params.domain | d() %}
 {%       set _ = avahi__tpl_service.update({'domain': params.domain }) %}
 {%     endif %}
-{%     if params.domain_name|d() %}
+{%     if params.domain_name | d() %}
 {%       set _ = avahi__tpl_service.update({'domain': params.domain_name }) %}
 {%     endif %}
-{%     if params.txt|d() %}
+{%     if params.txt | d() %}
 {%       set _ = avahi__tpl_service.update({'txt': params.txt }) %}
 {%     endif %}
-{%     if params.txt_record|d() %}
+{%     if params.txt_record | d() %}
 {%       set _ = avahi__tpl_service.update({'txt_record': params.txt_record }) %}
 {%     endif %}
 {%     set _ = params.update({'services': [ avahi__tpl_service ] }) %}

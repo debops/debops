@@ -18,19 +18,19 @@
 {%   else %}
 {%     set commented = False %}
 {%   endif %}
-{%   if element.options|d() and not loop_first %}
+{%   if element.options | d() and not loop_first %}
 {{     '' }}
 {%   endif %}
-{%   if element.comment|d() %}
+{%   if element.comment | d() %}
 {{     element.comment | regex_replace('\n$', '') | comment(prefix='', decoration=comment_prefix, postfix='') -}}
 {%   endif %}
-{%   if element.raw|d() %}
+{%   if element.raw | d() %}
 {%     if commented %}
 {{       '{}'.format(element.raw | regex_replace('\n$', '') | comment(prefix='', decoration=comment_prefix, postfix='')) -}}
 {%     else %}
 {{       '{}'.format(element.raw | regex_replace('\n$', '')) }}
 {%     endif %}
-{%   elif element.options|d() %}
+{%   elif element.options | d() %}
 {{     '{}{} {{'.format(prefix, element.option | d(element.name) | regex_replace('\n$', '')) }}
 {%     for element in element.options %}
 {%       if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
@@ -45,7 +45,7 @@
 {##}
 {% for section in dovecot__combined_configuration | debops.debops.parse_kv_items(name='section') %}
 {%   if section.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
-{%     if section.options|d() %}
+{%     if section.options | d() %}
 {%       if section.state != 'hidden' %}
 {%         if (['present', 'comment'] | intersect(section.options | map(attribute='state') | list)) %}
 {%           set section_title = (' ' + ((section.title | d(section.section)) | upper) + ' ') %}

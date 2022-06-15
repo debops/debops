@@ -65,13 +65,13 @@ nginx__flavor_distribution_release: '{{ ansible_local.core.distribution_release
 # .. envvar:: nginx__flavor_apt_key_id [[[
 #
 # The APT GPG key id of the currently selected flavor.
-nginx__flavor_apt_key_id: '{{ nginx__flavor_apt_key_id_map[nginx_flavor]|d() }}'
+nginx__flavor_apt_key_id: '{{ nginx__flavor_apt_key_id_map[nginx_flavor] | d() }}'
 
                                                                    # ]]]
 # .. envvar:: nginx__flavor_apt_repository [[[
 #
 # The APT repository of the currently selected flavor.
-nginx__flavor_apt_repository: '{{ nginx__flavor_apt_repository_map[nginx_flavor]|d() }}'
+nginx__flavor_apt_repository: '{{ nginx__flavor_apt_repository_map[nginx_flavor] | d() }}'
 
                                                                    # ]]]
 # .. envvar:: nginx__flavor_apt_key_id_map [[[
@@ -425,8 +425,8 @@ nginx_multi_accept: 'off'
 #
 # Enable or disable support for PKI/SSL/TLS in nginx.
 # Defaults to ``True`` if :ref:`debops.pki` is enabled on the remote host.
-nginx_pki: '{{ ansible_local|d() and ansible_local.pki|d() and
-               (ansible_local.pki.enabled|d() | bool) }}'
+nginx_pki: '{{ ansible_local | d() and ansible_local.pki | d() and
+               (ansible_local.pki.enabled | d() | bool) }}'
 
                                                                    # ]]]
 # .. envvar:: nginx_pki_path [[[
@@ -502,8 +502,8 @@ nginx_ssl_dhparam: '{{ (""
                            nginx_default_tls_protocols[0] == "TLSv1.3"
                         else
                            (ansible_local.dhparam[nginx_ssl_dhparam_set]
-                            if (ansible_local|d() and ansible_local.dhparam|d() and
-                                ansible_local.dhparam[nginx_ssl_dhparam_set]|d())
+                            if (ansible_local | d() and ansible_local.dhparam | d() and
+                                ansible_local.dhparam[nginx_ssl_dhparam_set] | d())
                             else "")) }}'
 
                                                                    # ]]]

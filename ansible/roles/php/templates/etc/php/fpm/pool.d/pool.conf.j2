@@ -11,7 +11,7 @@
 ; pool name ('www' here) #}
 [{{ item.name }}]
 
-{% if item.prefix|d() %}
+{% if item.prefix | d() %}
 {#
 ; Per pool prefix
 ; It only applies on the following directives:
@@ -62,7 +62,7 @@ listen.backlog = {{ item.listen_backlog | d(php__fpm_listen_backlog) }}
 listen.owner = {{ item.listen_owner | d(php__fpm_listen_owner) }}
 listen.group = {{ item.listen_group | d(php__fpm_listen_group) }}
 listen.mode  = {{ item.listen_mode  | d(php__fpm_listen_mode) }}
-{% if (php__version is version_compare('7.0', '>=') and (item.listen_acl_users|d() or item.listen_acl_groups|d())) %}
+{% if (php__version is version_compare('7.0', '>=') and (item.listen_acl_users | d() or item.listen_acl_groups | d())) %}
 {#
 ; When POSIX Access Control Lists are supported you can set them using
 ; these options, value is a comma separated list of user/group names.
@@ -125,7 +125,7 @@ pm = {{ item.pm | d(php__fpm_pm) }}
 ; Note: Used when pm is set to 'static', 'dynamic' or 'ondemand'
 ; Note: This value is mandatory. #}
 pm.max_children = {{ item.pm_max_children | d(php__fpm_pm_max_children) }}
-{% if ((item.pm|d() and item.pm == 'dynamic') or php__fpm_pm == 'dynamic')  %}
+{% if ((item.pm | d() and item.pm == 'dynamic') or php__fpm_pm == 'dynamic')  %}
 {#
 ; The number of child processes created on startup.
 ; Note: Used only when pm is set to 'dynamic'
@@ -254,7 +254,7 @@ pm.max_requests = {{ item.pm_max_requests | d(php__fpm_pm_max_requests) }}
 ;       anything, but it may not be a good idea to use the .php extension or it
 ;       may conflict with a real PHP file.
 ; Default Value: not set #}
-{% if ((item.pm_status|d() and item.pm_status | bool) or php__fpm_pm_status | bool) %}
+{% if ((item.pm_status | d() and item.pm_status | bool) or php__fpm_pm_status | bool) %}
 pm.status_path = {{ item.pm_status_path | d(php__fpm_pm_status_path) }}
 {#
 ; The ping URI to call the monitoring page of FPM. If this value is not set, no
@@ -275,7 +275,7 @@ ping.path = {{ item.ping_path | d(php__fpm_ping_path) }}
 ping.response = {{ item.ping_response | d(php__fpm_ping_response) }}
 
 {% endif %}
-{% if ((item.access_log|d() and item.access_log | bool) or php__fpm_access_log | bool) %}
+{% if ((item.access_log | d() and item.access_log | bool) or php__fpm_access_log | bool) %}
 {#
 ; The access log file
 ; Default: not set #}
@@ -341,7 +341,7 @@ access.log = /var/log/php{{ php__version }}-fpm/$pool_access.log
 access.format = "%R - %u %t \"%m %r%Q%q\" %s %f %{mili}d %{kilo}M %C%%"
 
 {% endif %}
-{% if item.request_slowlog_timeout|d() %}
+{% if item.request_slowlog_timeout | d() %}
 {#
 ; The log file for slow requests
 ; Default Value: not set
@@ -374,7 +374,7 @@ rlimit_files = {{ item.rlimit_files | d(php__fpm_rlimit_files) }}
 ; Default Value: system defined value #}
 rlimit_core = {{ item.rlimit_core | d(php__fpm_rlimit_core) }}
 
-{% if item.chroot|d() %}
+{% if item.chroot | d() %}
 {#
 ; Chroot to this directory at the start. This value must be defined as an
 ; absolute path. When this value is not set, chroot is not used.
@@ -393,7 +393,7 @@ chroot = {{ item.chroot }}
 ; Default Value: current directory or / when chroot #}
 chdir = {{ item.chdir | d('/') }}
 
-{% if ((item.catch_workers_output|d() and item.catch_workers_output | bool) or php__fpm_catch_workers_output | bool) %}
+{% if ((item.catch_workers_output | d() and item.catch_workers_output | bool) or php__fpm_catch_workers_output | bool) %}
 {#
 ; Redirect worker stdout and stderr into main error log. If not set, stdout and
 ; stderr will be redirected to /dev/null according to FastCGI specs.
@@ -414,7 +414,7 @@ catch_workers_output = yes
 ; Feature was introduced in PHP 5.6.0: https://secure.php.net/ChangeLog-5.php
 #}
 {% if php__long_version is version_compare('5.6.0', '>=') %}
-clear_env = {{ 'yes' if ((item.clear_env|d() and item.clear_env | bool) or php__fpm_clear_env | bool) else 'no' }}
+clear_env = {{ 'yes' if ((item.clear_env | d() and item.clear_env | bool) or php__fpm_clear_env | bool) else 'no' }}
 {% endif %}
 
 {#
@@ -424,13 +424,13 @@ clear_env = {{ 'yes' if ((item.clear_env|d() and item.clear_env | bool) or php__
 ; exectute php code.
 ; Note: set an empty value to allow all extensions.
 ; Default Value: .php #}
-{% if item.security_limit_extensions|d() %}
+{% if item.security_limit_extensions | d() %}
 security.limit_extensions = {{ item.security_limit_extensions if item.security_limit_extensions is string else item.security_limit_extensions | join(' ') }}
 {% else %}
 security.limit_extensions = {{ php__fpm_security_limit_extensions if php__fpm_security_limit_extensions is string else php__fpm_security_limit_extensions | join(' ') }}
 {% endif %}
 
-{% if (php__fpm_environment or php__fpm_group_environment or php__fpm_host_environment or item.environment|d()) %}
+{% if (php__fpm_environment or php__fpm_group_environment or php__fpm_host_environment or item.environment | d()) %}
 {#
 ; Pass environment variables like LD_LIBRARY_PATH. All $VARIABLEs are taken from
 ; the current environment.
@@ -470,29 +470,29 @@ env[{{ key }}] = {{ value }}
 ;php_admin_value[error_log] = /var/log/fpm-php.www.log
 ;php_admin_flag[log_errors] = on
 ;php_admin_value[memory_limit] = 32M#}
-{% if item.php_flags|d() %}
+{% if item.php_flags | d() %}
 {% for key, value in item.php_flags.items() %}
 php_flag[{{ key }}] = {{ value }}
 {% endfor %}
 
 {% endif %}
-{% if item.php_values|d() %}
+{% if item.php_values | d() %}
 {% for key, value in item.php_values.items() %}
 php_value[{{ key }}] = {{ value }}
 {% endfor %}
 
 {% endif %}
-{% if item.php_admin_flags|d() %}
+{% if item.php_admin_flags | d() %}
 {% for key, value in item.php_admin_flags.items() %}
 php_admin_flag[{{ key }}] = {{ value }}
 {% endfor %}
 
 {% endif %}
-{% if item.open_basedir|d() %}
+{% if item.open_basedir | d() %}
 php_admin_value[open_basedir] = {{ item.open_basedir if item.open_basedir is string else item.open_basedir | join(':') }}
 
 {% endif %}
-{% if item.php_admin_values|d() %}
+{% if item.php_admin_values | d() %}
 {% for key, value in item.php_admin_values.items() %}
 php_admin_value[{{ key }}] = {{ value }}
 {% endfor %}

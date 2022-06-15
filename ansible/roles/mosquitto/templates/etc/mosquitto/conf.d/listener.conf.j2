@@ -6,7 +6,7 @@
 
 {% set listener = item.value %}
 {% set listener_port = (item.value.listener | d(item.key)) %}
-{% if listener.comment|d() %}
+{% if listener.comment | d() %}
 {{ (listener.comment if listener.comment is string else listener.comment | join('\n'))  | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
 {% endif %}
 listener {{ listener_port }}

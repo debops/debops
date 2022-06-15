@@ -17,9 +17,9 @@
 {%     set element_export = ('export ' if (element.export|d(False)) | bool else '') %}
 {%     set element_quote = ('"' if (element.quote|d(True)) | bool else '') %}
 {%     set element_name = ('grub_' + (element.name | lower | regex_replace('^grub_',''))) | upper %}
-{%     set element_original = ((('$grub_' + (element.name | lower | regex_replace('^grub_','')) + ' ') | upper) if (element.original|d()) | bool else '')  %}
+{%     set element_original = ((('$grub_' + (element.name | lower | regex_replace('^grub_','')) + ' ') | upper) if (element.original | d()) | bool else '')  %}
 {%     set element_value = element.value|d('') %}
-{%     if element.comment|d() %}
+{%     if element.comment | d() %}
 {{ element.comment | regex_replace('\n$','') | comment(prefix='\n', postfix='') -}}
 {%     endif %}
 {%     if element_value is string %}

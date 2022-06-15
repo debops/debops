@@ -16,7 +16,7 @@
     owner:   '{{ item.parent_dirs_owner   | d(owncloud__app_user) }}'
     group:   '{{ item.parent_dirs_group   | d(owncloud__app_group) }}'
     mode:    '{{ item.parent_dirs_mode    | d("0755") }}'
-  when: ((item.parent_dirs_create|d(True)| bool) and item.dest|d() and item.state|d("present") != 'absent')
+  when: ((item.parent_dirs_create|d(True)| bool) and item.dest | d() and item.state|d("present") != 'absent')
   with_flattened:
     - '{{ owncloud__user_files }}'
     - '{{ owncloud__user_files_group }}'
@@ -45,7 +45,7 @@
     - '{{ owncloud__user_files }}'
     - '{{ owncloud__user_files_group }}'
     - '{{ owncloud__user_files_host }}'
-  when: ((item.src|d() or item.content|d()) and item.dest|d() and
+  when: ((item.src | d() or item.content | d()) and item.dest | d() and
          (item.state|d('present') != 'absent'))
 
 - name: Delete files on remote hosts
@@ -57,7 +57,7 @@
     - '{{ owncloud__user_files }}'
     - '{{ owncloud__user_files_group }}'
     - '{{ owncloud__user_files_host }}'
-  when: (item.dest|d() and (item.state|d('present') == 'absent'))
+  when: (item.dest | d() and (item.state|d('present') == 'absent'))
 
 - name: Run occ commands as specified in the inventory
   ansible.builtin.include_tasks: 'run_occ.yml'  # noqa no-handler

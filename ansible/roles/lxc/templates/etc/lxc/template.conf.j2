@@ -3,22 +3,22 @@
  # Copyright (C) 2014-2018 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
-{% if item.comment|d() %}
+{% if item.comment | d() %}
 {{ item.comment | regex_replace('\n$','') | comment(prefix='', postfix='') }}
 {% endif %}
-{% if item.options|d() %}
+{% if item.options | d() %}
 {%   for element in item.options %}
 {%     if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
-{%       if element.comment|d() %}
+{%       if element.comment | d() %}
 {%         if not loop.first %}
 
 {%         endif %}
 {{ element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
 {%       endif %}
-{{ '{} = {}'.format(('\n' if (element.separator|d()) | bool else '') + ('#' if (element.state == 'comment') else '') + element.alias | d(element.name), (element.value if (element.value is string) else (element.value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list | join(' ')))) }}
+{{ '{} = {}'.format(('\n' if (element.separator | d()) | bool else '') + ('#' if (element.state == 'comment') else '') + element.alias | d(element.name), (element.value if (element.value is string) else (element.value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list | join(' ')))) }}
 {%     endif %}
 {%   endfor %}
 {% endif %}
-{% if item.raw|d() %}
+{% if item.raw | d() %}
 {{ item.raw }}
 {% endif %}

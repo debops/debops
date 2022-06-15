@@ -39,7 +39,7 @@
   loop: '{{ telegraf__combined_plugins | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
-  when: item.state|d('present') == 'absent' and item.config|d()
+  when: item.state|d('present') == 'absent' and item.config | d()
   notify: [ 'Check telegraf and restart' ]
 
 - name: Find plugins which are in filesystem
@@ -69,7 +69,7 @@
   loop_control:
     label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
   when: (item.state|d('present') not in [ 'absent', 'ignore' ] and
-         (item.config|d() or item.raw|d()))
+         (item.config | d() or item.raw | d()))
   no_log: '{{ debops__no_log | d(True) }}'
   notify: [ 'Check telegraf and restart' ]
 

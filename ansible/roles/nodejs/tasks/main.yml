@@ -24,13 +24,13 @@
                               + nodejs__dependent_packages)) }}'
     state: '{{ "latest"
                if (nodejs__node_upstream | bool and
-                   (ansible_local|d() and ansible_local.nodejs|d() and
+                   (ansible_local | d() and ansible_local.nodejs | d() and
                     ansible_local.nodejs.node_upstream is defined and
                     not ansible_local.nodejs.node_upstream | bool))
                else "present" }}'
     autoremove: '{{ True
                     if (nodejs__node_upstream | bool and
-                        (ansible_local|d() and ansible_local.nodejs|d() and
+                        (ansible_local | d() and ansible_local.nodejs | d() and
                          ansible_local.nodejs.node_upstream is defined and
                          not ansible_local.nodejs.node_upstream | bool))
                     else omit }}'

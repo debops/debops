@@ -58,7 +58,7 @@ opendkim__group: 'opendkim'
 # Enable or disable integration with Postfix SMTP server.
 # See :ref:`opendkim__ref_postfix` for more details.
 opendkim__postfix_integration: '{{ ansible_local.postfix.installed
-                                   if (ansible_local|d() and ansible_local.postfix|d() and
+                                   if (ansible_local | d() and ansible_local.postfix | d() and
                                        ansible_local.postfix.installed is defined)
                                    else False }}'
 
@@ -350,14 +350,14 @@ opendkim__default_config:
 
   - name: 'ResolverConfiguration'
     state: '{{ "present"
-               if (ansible_local|d() and ansible_local.unbound|d() and
-                   (ansible_local.unbound.installed|d()) | bool)
+               if (ansible_local | d() and ansible_local.unbound | d() and
+                   (ansible_local.unbound.installed | d()) | bool)
                else "ignore" }}'
 
   - name: 'TrustAnchorFile'
     state: '{{ "absent"
-               if (ansible_local|d() and ansible_local.unbound|d() and
-                   (ansible_local.unbound.installed|d()) | bool)
+               if (ansible_local | d() and ansible_local.unbound | d() and
+                   (ansible_local.unbound.installed | d()) | bool)
                else "ignore" }}'
 
   - name: 'Socket'

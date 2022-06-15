@@ -26,7 +26,7 @@
 # :file:`common.yml` playbook.
 resolvconf__enabled: '{{ ansible_local.resolvconf.installed
                          |d(ansible_interfaces | count > 2 or
-                            resolvconf__combined_services|d()) | bool }}'
+                            resolvconf__combined_services | d()) | bool }}'
 
                                                                    # ]]]
 # .. envvar:: resolvconf__deploy_state [[[
@@ -259,11 +259,11 @@ resolvconf__combined_interface_order: '{{ resolvconf__original_interface_order
 resolvconf__default_services:
 
   - '{{ "dnsmasq"
-        if (ansible_local.dnsmasq.installed|d() | bool)
+        if (ansible_local.dnsmasq.installed | d() | bool)
         else [] }}'
 
   - '{{ "unbound"
-        if (ansible_local.unbound.installed|d() | bool)
+        if (ansible_local.unbound.installed | d() | bool)
         else [] }}'
 
                                                                    # ]]]

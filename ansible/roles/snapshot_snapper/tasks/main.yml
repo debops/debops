@@ -63,7 +63,7 @@
   failed_when: False
   changed_when: False
   check_mode: False
-  when: snapshot_snapper__directory|d() and "mlocate" in snapshot_snapper__combined_packages
+  when: snapshot_snapper__directory | d() and "mlocate" in snapshot_snapper__combined_packages
   register: snapshot_snapper__register_updatedb_configured
 
 - name: Configure updatedb to exclude snapshots
@@ -80,7 +80,7 @@
 - name: Check which snapper /etc/snapper/configs/ exist
   ansible.builtin.stat:
     path: '/etc/snapper/configs/{{ item.name }}'
-  when: (snapshot_snapper__auto_reinit | bool and item.path|d() and item.name|d() and
+  when: (snapshot_snapper__auto_reinit | bool and item.path | d() and item.name | d() and
          (item.state|d("present") == "present"))
   register: snapshot_snapper__register_snapper_configs
   tags: [ 'role::snapshot_snapper:reinit' ]
@@ -89,7 +89,7 @@
 - name: Check which snapper snapshot directories exist
   ansible.builtin.stat:
     path: '{{ item.path + "/" + snapshot_snapper__directory }}'
-  when: (snapshot_snapper__auto_reinit | bool and item.path|d() and item.name|d() and
+  when: (snapshot_snapper__auto_reinit | bool and item.path | d() and item.name | d() and
          (item.state|d("present") == "present"))
   tags: [ 'role::snapshot_snapper:reinit' ]
   register: snapshot_snapper__register_snapshot_directory
@@ -147,11 +147,11 @@
 - name: Create initial configuration per volume
   ansible.builtin.command: snapper --config '{{ item.name | default("root") }}'
            create-config
-           {{ ("'--template' '" + item.template + "'") if (item.template|d()) else '' }}
+           {{ ("'--template' '" + item.template + "'") if (item.template | d()) else '' }}
            '{{ item.path }}'
   args:
     creates: '/etc/snapper/configs/{{ item.name }}'
-  when: (item.path|d() and item.name|d() and (item.state|d("present") == "present"))
+  when: (item.path | d() and item.name | d() and (item.state|d("present") == "present"))
   with_items: '{{ snapshot_snapper__volumes_combined }}'
 # .. ]]]
 

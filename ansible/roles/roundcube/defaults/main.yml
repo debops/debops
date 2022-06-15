@@ -184,7 +184,7 @@ roundcube__src: '{{ (ansible_local.fhs.src | d("/usr/local/src"))
 #
 # Base web root directory for Roundcube website.
 roundcube__www: '{{ ansible_local.nginx.www
-                    if (ansible_local|d() and ansible_local.nginx|d())
+                    if (ansible_local | d() and ansible_local.nginx | d())
                     else "/srv/www" }}'
 
                                                                    # ]]]
@@ -278,7 +278,7 @@ roundcube__database_schema: '{{ roundcube__database_schema_map[
                                      roundcube__database_map[
                                        roundcube__database
                                      ].dbtype
-                                   ]|d()
+                                   ] | d()
                                 else "" }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -290,8 +290,8 @@ roundcube__database_schema: '{{ roundcube__database_schema_map[
 # Enable or disable support for :command:`memcached` service. It will be
 # enabled automatically if local instance of :command:`memcached` is detected.
 roundcube__memcached_enabled: '{{ True
-                                  if (ansible_local|d() and ansible_local.memcached|d() and
-                                      (ansible_local.memcached.installed|d()) | bool)
+                                  if (ansible_local | d() and ansible_local.memcached | d() and
+                                      (ansible_local.memcached.installed | d()) | bool)
                                   else False }}'
 
                                                                    # ]]]
@@ -308,8 +308,8 @@ roundcube__memcached_hosts: [ 'localhost:11211' ]
 # Enable or disable support for :command:`redis` service. It will be enabled
 # automatically if local instance of :command:`redis` is detected.
 roundcube__redis_enabled: '{{ True
-                              if (ansible_local|d() and ansible_local.redis_server|d() and
-                                  (ansible_local.redis_server.installed|d()) | bool)
+                              if (ansible_local | d() and ansible_local.redis_server | d() and
+                                  (ansible_local.redis_server.installed | d()) | bool)
                               else False }}'
 
                                                                    # ]]]
@@ -379,7 +379,7 @@ roundcube__session_storage: '{{ "redis"
 #
 # Enable or disable LDAP integration in Roundcube.
 roundcube__ldap_enabled: '{{ ansible_local.ldap.enabled
-                             if (ansible_local|d() and ansible_local.ldap|d() and
+                             if (ansible_local | d() and ansible_local.ldap | d() and
                                  ansible_local.ldap.enabled is defined)
                              else False }}'
 
@@ -588,8 +588,8 @@ roundcube__domain: '{{ ansible_domain }}'
 # Finally, ``imap.<domain>`` is used as a fallback.
 roundcube__imap_srv_rr: '{{ q("debops.debops.dig_srv", "_imaps._tcp." + roundcube__domain,
                               ansible_fqdn
-                              if (ansible_local|d() and ansible_local.dovecot|d() and
-                                  (ansible_local.dovecot.installed|d()) | bool)
+                              if (ansible_local | d() and ansible_local.dovecot | d() and
+                                  (ansible_local.dovecot.installed | d()) | bool)
                               else "imap." + roundcube__domain, 993) }}'
 
                                                                    # ]]]
@@ -641,8 +641,8 @@ roundcube__imap_server: '{{ ("ssl://"
 # Finally, ``smtp.<domain>`` is used as a fallback.
 roundcube__smtp_srv_rr: '{{ q("debops.debops.dig_srv", "_submissions._tcp." + roundcube__domain,
                               ansible_fqdn
-                              if (ansible_local|d() and ansible_local.postfix|d() and
-                                  (ansible_local.postfix.installed|d()) | bool)
+                              if (ansible_local | d() and ansible_local.postfix | d() and
+                                  (ansible_local.postfix.installed | d()) | bool)
                               else ("smtp." + roundcube__domain), 465) }}'
 
                                                                    # ]]]
@@ -710,8 +710,8 @@ roundcube__smtp_pass: '%p'
 # Finally, ``sieve.<domain>`` is used as a fallback.
 roundcube__sieve_srv_rr: '{{ q("debops.debops.dig_srv", "_sieve._tcp." + roundcube__domain,
                                ansible_fqdn
-                               if (ansible_local|d() and ansible_local.dovecot|d() and
-                                   (ansible_local.dovecot.installed|d()) | bool)
+                               if (ansible_local | d() and ansible_local.dovecot | d() and
+                                   (ansible_local.dovecot.installed | d()) | bool)
                                else ("sieve." + roundcube__domain), 4190) }}'
 
                                                                    # ]]]
@@ -2878,26 +2878,26 @@ roundcube__default_configuration:
 
   - name: 'db_dsnw'
     value: '{{ "sqlite:///" + roundcube__git_dest + "/"
-                            + roundcube__database_map[roundcube__database].dbname|d()
+                            + roundcube__database_map[roundcube__database].dbname | d()
                             + "?mode=640" }}'
     state: '{{ "present"
                if (roundcube__database_map[roundcube__database].dbtype == "sqlite")
                else "ignore" }}'
 
   - name: 'db_dsnw'
-    value: '{{ "mysql://" + roundcube__database_map[roundcube__database].dbuser|d() + ":"
-                          + roundcube__database_map[roundcube__database].dbpass|d() + "@"
-                          + roundcube__database_map[roundcube__database].dbhost|d() + "/"
-                          + roundcube__database_map[roundcube__database].dbname|d() }}'
+    value: '{{ "mysql://" + roundcube__database_map[roundcube__database].dbuser | d() + ":"
+                          + roundcube__database_map[roundcube__database].dbpass | d() + "@"
+                          + roundcube__database_map[roundcube__database].dbhost | d() + "/"
+                          + roundcube__database_map[roundcube__database].dbname | d() }}'
     state: '{{ "present"
                if (roundcube__database_map[roundcube__database].dbtype == "mysql")
                else "ignore" }}'
 
   - name: 'db_dsnw'
-    value: '{{ "pgsql://" + roundcube__database_map[roundcube__database].dbuser|d() + ":"
-                          + roundcube__database_map[roundcube__database].dbpass|d() + "@"
-                          + roundcube__database_map[roundcube__database].dbhost|d() + "/"
-                          + roundcube__database_map[roundcube__database].dbname|d() }}'
+    value: '{{ "pgsql://" + roundcube__database_map[roundcube__database].dbuser | d() + ":"
+                          + roundcube__database_map[roundcube__database].dbpass | d() + "@"
+                          + roundcube__database_map[roundcube__database].dbhost | d() + "/"
+                          + roundcube__database_map[roundcube__database].dbname | d() }}'
     state: '{{ "present"
                if (roundcube__database_map[roundcube__database].dbtype == "postgresql")
                else "ignore" }}'
@@ -2925,8 +2925,8 @@ roundcube__default_configuration:
   - name: 'messages_cache'
     value: True
     state: '{{ "ignore"
-               if (ansible_local|d() and ansible_local.dovecot|d() and
-                   (ansible_local.dovecot.installed|d()) | bool)
+               if (ansible_local | d() and ansible_local.dovecot | d() and
+                   (ansible_local.dovecot.installed | d()) | bool)
                else "present" }}'
 
   - name: 'smtp_server'
@@ -2968,7 +2968,7 @@ roundcube__default_configuration:
     # Configure preferred session storage backend
   - name: 'session_storage'
     value: '{{ roundcube__session_storage }}'
-    state: '{{ "present" if roundcube__session_storage|d() else "ignore" }}'
+    state: '{{ "present" if roundcube__session_storage | d() else "ignore" }}'
 
   - name: 'des_key'
     value: '{{ roundcube__des_key }}'
@@ -3584,7 +3584,7 @@ roundcube__default_plugins:
           Exemple: array('ldap1.exemple.com', 'ldap2.exemple.com');
           Default: 'localhost'
         value: '{{ (roundcube__ldap_hosts | first)
-                   if roundcube__ldap_hosts|d()
+                   if roundcube__ldap_hosts | d()
                    else "" }}'
 
       - name: 'password_ldap_port'
@@ -4589,7 +4589,7 @@ roundcube__ldap__dependent_tasks:
     attributes: '{{ roundcube__ldap_self_attributes }}'
     no_log: '{{ debops__no_log | d(True) }}'
     state: '{{ "present" if roundcube__ldap_password_enabled and
-                            roundcube__ldap_device_dn|d() else "ignore" }}'
+                            roundcube__ldap_device_dn | d() else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__nginx__dependent_servers [[[

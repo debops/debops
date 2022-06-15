@@ -87,8 +87,8 @@ snmpd_combined_custom_options: '{{ snmpd_custom_options
 #
 # Download MIB definitions by default?
 snmpd_download_mibs: '{{ True
-                         if (ansible_local|d() and ansible_local.apt|d() and
-                             (ansible_local.apt.nonfree|d()) | bool)
+                         if (ansible_local | d() and ansible_local.apt | d() and
+                             (ansible_local.apt.nonfree | d()) | bool)
                          else False }}'
 
                                                                    # ]]]
@@ -288,8 +288,8 @@ snmpd_load_15min: '{{ (((snmpd_load_base | float) *
 # Should the ``debops.snmpd`` add the ``snmp`` user account to a group that has
 # access to the ``/proc`` filesystem?
 snmpd_proc_hidepid: '{{ True
-                        if (ansible_local|d() and ansible_local.proc_hidepid|d() and
-                            (ansible_local.proc_hidepid.enabled|d()) | bool)
+                        if (ansible_local | d() and ansible_local.proc_hidepid | d() and
+                            (ansible_local.proc_hidepid.enabled | d()) | bool)
                         else False }}'
 
                                                                    # ]]]

@@ -8,15 +8,15 @@
   notify:
     - 'Restart metricbeat'
     - 'Commit changes in etckeeper'
-  when: (ansible_local.metricbeat.installed|d()) | bool
+  when: (ansible_local.metricbeat.installed | d()) | bool
 
 - name: Test metricbeat output and restart
   ansible.builtin.command: 'metricbeat test output'
   notify: [ 'Restart metricbeat' ]
-  when: (ansible_local.metricbeat.installed|d()) | bool
+  when: (ansible_local.metricbeat.installed | d()) | bool
 
 - name: Restart metricbeat
   ansible.builtin.service:
     name: 'metricbeat'
     state: 'restarted'
-  when: (ansible_local.metricbeat.installed|d()) | bool
+  when: (ansible_local.metricbeat.installed | d()) | bool

@@ -7,23 +7,23 @@
 <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
 
 <!-- {{ ansible_managed }} -->
-{% if service_dict.comment|d() %}
+{% if service_dict.comment | d() %}
 
 {{ service_dict.comment | comment(style='xml') }}
 {% endif %}
 
 <service-group>
 
-  <name replace-wildcards="{{ 'yes' if service_dict.replace_wildcards|d(True) | bool else 'no' }}">{{ service_dict.name if service_dict.name|d() else '%h' }}</name>
+  <name replace-wildcards="{{ 'yes' if service_dict.replace_wildcards|d(True) | bool else 'no' }}">{{ service_dict.name if service_dict.name | d() else '%h' }}</name>
 
 {% for service in service_dict.services %}
-{%   if service.protocol|d() %}
+{%   if service.protocol | d() %}
   <service protocol="{{ service.protocol }}">
 {%   else %}
   <service>
 {%   endif %}
     <type>{{ service.type }}</type>
-{%   if service.subtype|d() %}
+{%   if service.subtype | d() %}
 {%     if service.subtype is string %}
     <subtype>{{ service.subtype }}</subtype>
 {%     else %}
@@ -33,19 +33,19 @@
 {%     endif %}
 {%   endif %}
     <port>{{ service.port }}</port>
-{%   if service.domain|d() %}
+{%   if service.domain | d() %}
     <domain-name>{{ service.domain }}</domain-name>
-{%   elif service.domain_name|d() %}
+{%   elif service.domain_name | d() %}
     <domain-name>{{ service.domain_name }}</domain-name>
 {%   endif %}
-{%   if service.hostname|d() %}
+{%   if service.hostname | d() %}
     <host-name>{{ service.hostname }}</host-name>
-{%   elif service.host_name|d() %}
+{%   elif service.host_name | d() %}
     <host-name>{{ service.host_name }}</host-name>
-{%   elif service.fqdn|d() %}
+{%   elif service.fqdn | d() %}
     <host-name>{{ service.fqdn }}</host-name>
 {%   endif %}
-{%   if service.txt|d() %}
+{%   if service.txt | d() %}
 {%     if service.txt is string %}
     <txt-record>{{ service.txt }}</txt-record>
 {%     else %}
@@ -54,7 +54,7 @@
 {%       endfor %}
 {%     endif %}
 {%   endif %}
-{%   if service.txt_record|d() %}
+{%   if service.txt_record | d() %}
 {%     if service.txt_record is string %}
     <txt-record>{{ service.txt_record }}</txt-record>
 {%     else %}

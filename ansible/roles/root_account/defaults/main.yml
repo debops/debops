@@ -78,7 +78,7 @@ root_account__password_length: '32'
 # role is executed. If you want to update the password on each run, set this
 # variable to ``True``.
 root_account__password_update: '{{ False
-                                   if (ansible_local.root_account.configured|d())
+                                   if (ansible_local.root_account.configured | d())
                                    else True }}'
 
                                                                    # ]]]
@@ -145,7 +145,7 @@ root_account__shell: ''
 # Enable or disable dotfiles management, depending on the availablility of the
 # dotfiles repository installed by the :ref:`debops.yadm` role.
 root_account__dotfiles_enabled: '{{ True
-                                    if ansible_local.yadm.dotfiles|d()
+                                    if ansible_local.yadm.dotfiles | d()
                                     else False }}'
 
                                                                    # ]]]
@@ -235,7 +235,7 @@ root_account__subuid_enabled: True
 # ranges will change to include the ranges used :ref:`in the LDAP directory
 # <ldap__ref_posix>`.
 root_account__subuid_start: [ '{{ (ansible_local.ldap.uid_gid_max | int + 1)
-                                  if (ansible_local|d() and ansible_local.ldap|d() and
+                                  if (ansible_local | d() and ansible_local.ldap | d() and
                                       (ansible_local.ldap.uid_gid_max | int > 100000))
                                   else "100000" }}' ]
 
@@ -251,7 +251,7 @@ root_account__subuid_start: [ '{{ (ansible_local.ldap.uid_gid_max | int + 1)
 # ranges will change to include the ranges used :ref:`in the LDAP directory
 # <ldap__ref_posix>`.
 root_account__subuid_count: '{{ ansible_local.ldap.uid_gid_max
-                                if (ansible_local|d() and ansible_local.ldap|d() and
+                                if (ansible_local | d() and ansible_local.ldap | d() and
                                     (ansible_local.ldap.uid_gid_max | int > 65536))
                                 else "65535" }}'
                                                                    # ]]]

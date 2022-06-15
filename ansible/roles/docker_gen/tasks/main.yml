@@ -17,7 +17,7 @@
   with_flattened:
     - [ '{{ docker_gen__src }}', '{{ docker_gen__lib }}', '{{ docker_gen__templates }}' ]
     - [ '{{ ((docker_gen__nginx_dest | dirname)
-             if (docker_gen__nginx|d() and docker_gen__nginx)
+             if (docker_gen__nginx | d() and docker_gen__nginx)
              else []) }}' ]
 
 - name: Download docker-gen sources
@@ -94,5 +94,5 @@
     name: 'docker-gen'
     state: 'started'
     enabled: True
-  when: docker_gen__register_install|d() and
+  when: docker_gen__register_install | d() and
         docker_gen__register_install is changed

@@ -86,11 +86,11 @@ gitlab_version: '{{ gitlab__release | replace("-stable","") | replace("-",".") }
 # documentation of the :ref:`debops.postgresql_server` role for information about
 # its features.
 gitlab__database: '{{ ansible_local.gitlab.database
-                      if (ansible_local.gitlab.database|d())
+                      if (ansible_local.gitlab.database | d())
                       else ("postgresql"
-                            if (ansible_local|d() and ansible_local.postgresql is defined)
+                            if (ansible_local | d() and ansible_local.postgresql is defined)
                             else ("mariadb-is-deprecated"
-                                  if (ansible_local|d() and ansible_local.mariadb is defined)
+                                  if (ansible_local | d() and ansible_local.mariadb is defined)
                                   else "no-database-detected")) }}'
 
                                                                    # ]]]
@@ -100,9 +100,9 @@ gitlab__database: '{{ ansible_local.gitlab.database
 # init script provided by GitLab. By default the init script will be used on
 # non-systemd hosts.
 gitlab_use_systemd: '{{ (ansible_local.gitlab.systemd_services
-                         if (ansible_local.gitlab.systemd_services|d())
+                         if (ansible_local.gitlab.systemd_services | d())
                          else (False
-                               if (ansible_local.gitlab.installed|d())
+                               if (ansible_local.gitlab.installed | d())
                                else (True if ansible_service_mgr == "systemd" else False))) }}'
 
                                                                    # ]]]
@@ -110,7 +110,7 @@ gitlab_use_systemd: '{{ (ansible_local.gitlab.systemd_services
 #
 # Whether to enable ``gitlab-pages``. Available in Gitlab 8.17 and newer.
 gitlab_enable_pages: '{{ gitlab_version is version_compare("8.17",
-                         operator="ge", strict=True) and gitlab_pages_domain|d() }}'
+                         operator="ge", strict=True) and gitlab_pages_domain | d() }}'
                                                                    # ]]]
                                                                    # ]]]
 # Application FQDN and DNS addresses [[[
@@ -524,9 +524,9 @@ gitlab_group: 'git'
 # If the LDAP support was enabled after the system groups have been created,
 # the role will keep the current prefix value to not duplicate the UNIX groups.
 gitlab_system_groups_prefix: '{{ ansible_local.system_groups.local_prefix
-                                 if ansible_local.system_groups.local_prefix|d()
+                                 if ansible_local.system_groups.local_prefix | d()
                                  else ("_"
-                                       if (ansible_local.ldap.posix_enabled|d()) | bool)
+                                       if (ansible_local.ldap.posix_enabled | d()) | bool)
                                        else "") }}'
 
                                                                    # ]]]
@@ -783,8 +783,8 @@ gitlab_ce_bundle_install_without:
 #
 # Enable or disable LDAP support.
 gitlab__ldap_enabled: '{{ True
-                          if (ansible_local|d() and ansible_local.ldap|d() and
-                              (ansible_local.ldap.enabled|d()) | bool)
+                          if (ansible_local | d() and ansible_local.ldap | d() and
+                              (ansible_local.ldap.enabled | d()) | bool)
                           else False }}'
 
                                                                    # ]]]
@@ -877,8 +877,8 @@ gitlab__ldap_port: '{{ ansible_local.ldap.port|d("389") }}'
 # The encryption method that should be used to connect to the LDAP server.
 # Available methods: ``start_tls``, ``simple_tls``, ``plain``.
 gitlab__ldap_encryption: '{{ "start_tls"
-                             if (ansible_local|d() and ansible_local.ldap|d() and
-                                 (ansible_local.ldap.start_tls|d()) | bool)
+                             if (ansible_local | d() and ansible_local.ldap | d() and
+                                 (ansible_local.ldap.start_tls | d()) | bool)
                              else "simple_tls" }}'
 
                                                                    # ]]]
@@ -985,8 +985,8 @@ gitlab__piwik_site_id: '0'
 #
 # Enable or disable support for GitLab Container Registry.
 gitlab__registry_enabled: '{{ True
-                              if (ansible_local|d() and ansible_local.docker_registry|d() and
-                                  (ansible_local.docker_registry.installed|d()) | bool)
+                              if (ansible_local | d() and ansible_local.docker_registry | d() and
+                                  (ansible_local.docker_registry.installed | d()) | bool)
                               else False }}'
 
                                                                    # ]]]
@@ -1021,8 +1021,8 @@ gitlab__registry_api_url: '{{ ansible_local.docker_registry.api_url|d("http://lo
 # The absolute path of the Docker Registry filesystem storage. This directory
 # needs to be readable by the Gitlab UNIX account and the webserver.
 gitlab__registry_path: '{{ ansible_local.docker_registry.storage_path
-                           if (ansible_local|d() and ansible_local.docker_registry|d() and
-                               (ansible_local.docker_registry.storage_type|d()) == "filesystem")
+                           if (ansible_local | d() and ansible_local.docker_registry | d() and
+                               (ansible_local.docker_registry.storage_type | d()) == "filesystem")
                            else "shared/registry" }}'
 
                                                                    # ]]]
@@ -1210,7 +1210,7 @@ gitlab__ldap__dependent_tasks:
     objectClass: '{{ gitlab__ldap_self_object_classes }}'
     attributes: '{{ gitlab__ldap_self_attributes }}'
     no_log: '{{ debops__no_log | d(True) }}'
-    state: '{{ "present" if gitlab__ldap_device_dn|d() else "ignore" }}'
+    state: '{{ "present" if gitlab__ldap_device_dn | d() else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab__nginx__dependent_upstreams [[[
@@ -1296,7 +1296,7 @@ gitlab__nginx_pages_server:
   name: [ '{{ gitlab_pages_domain }}', '*.{{ gitlab_pages_domain }}' ]
   filename: 'gitlab-pages'
   proxy_pass: 'http://localhost:{{ gitlab_pages_port }}'
-  state: '{{ "present" if gitlab_pages_domain|d() else "absent" }}'
+  state: '{{ "present" if gitlab_pages_domain | d() else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

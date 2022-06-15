@@ -10,7 +10,7 @@
     attributes:  '{{ item.attributes | d(omit) }}'
     state:       '{{ item.entry_state | d(item.state) }}'
   run_once:      '{{ item.run_once | d(False) }}'
-  when: (item.objectClass|d() or item.entry_state|d()) and item.state not in [ 'init', 'ignore' ]
+  when: (item.objectClass | d() or item.entry_state | d()) and item.state not in [ 'init', 'ignore' ]
   tags: [ 'role::slapd:tasks', 'role::slapd:slapacl' ]
   no_log: '{{ debops__no_log | d(item.no_log)
               | d(True
@@ -25,7 +25,7 @@
     ordered:    '{{ item.ordered | d(False) }}'
     state:      '{{ item.state }}'
   run_once:     '{{ item.run_once | d(False) }}'
-  when: not item.objectClass|d() and not item.entry_state|d() and item.state not in [ 'init', 'ignore' ]
+  when: not item.objectClass | d() and not item.entry_state | d() and item.state not in [ 'init', 'ignore' ]
   tags: [ 'role::slapd:tasks', 'role::slapd:slapacl' ]
   no_log: '{{ debops__no_log | d(item.no_log)
               | d(True

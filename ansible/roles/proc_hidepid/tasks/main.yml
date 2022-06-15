@@ -40,7 +40,7 @@
 - name: Ensure that UNIX system group with /proc access exists
   ansible.builtin.group:
     name: '{{ proc_hidepid__group }}'
-    gid: '{{ proc_hidepid__gid if proc_hidepid__gid|d() else omit }}'
+    gid: '{{ proc_hidepid__gid if proc_hidepid__gid | d() else omit }}'
     state: 'present'
     system: True
   when: proc_hidepid__enabled | bool

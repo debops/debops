@@ -73,7 +73,7 @@ lxd__golang_gosrc: '{{ ansible_local.golang.gosrc|d("") }}'
 # :ref:`debops.golang` Ansible role. The path is used in various
 # :command:`systemd` unit files.
 lxd__binary: '{{ ansible_local.golang.binaries["lxd"]
-                 if (ansible_local.golang.binaries.lxd|d())
+                 if (ansible_local.golang.binaries.lxd | d())
                  else "/usr/bin/lxd" }}'
 
                                                                    # ]]]
@@ -199,8 +199,8 @@ lxd__combined_preseed: '{{ lxd__default_preseed
 # the LXD service. It can be set via the ``--extra-vars`` Ansible argument to
 # re-apply the preseed configuration on existing installations.
 lxd__init_preseed: '{{ False
-                       if (ansible_local|d() and ansible_local.lxd|d() and
-                           (ansible_local.lxd.installed|d()) | bool)
+                       if (ansible_local | d() and ansible_local.lxd | d() and
+                           (ansible_local.lxd.installed | d()) | bool)
                        else True }}'
 
                                                                    # ]]]

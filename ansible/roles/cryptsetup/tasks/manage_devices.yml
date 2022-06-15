@@ -226,7 +226,7 @@
 - name: Ensure ciphertext block device is configured in crypttab
   crypttab:
     backing_device: '{{ ("UUID=" + item.1.stdout)
-                        if (item.1.stdout|d() and item.0.use_uuid|d(cryptsetup__use_uuid) | bool)
+                        if (item.1.stdout | d() and item.0.use_uuid|d(cryptsetup__use_uuid) | bool)
                         else item.0.ciphertext_block_device }}'
     name: '{{ item.0.name }}'
     opts: '{{ (item.2.crypttab_options|d(cryptsetup__crypttab_options|d([])) | list | sort | unique | join(","))
@@ -274,7 +274,7 @@
     force:  '{{ item.0.format_force   | d(omit) }}'
     fstype: '{{ item.0.fstype         | d(cryptsetup__fstype) }}'
     opts:   '{{ item.0.format_options | d(omit) }}'
-  when: (item.1|d() and item.1.stat|d() and item.1.stat.exists|d() and
+  when: (item.1 | d() and item.1.stat | d() and item.1.stat.exists | d() and
          (item.0.create_filesystem|d(item.0.manage_filesystem|d(True)) | bool) and
          not (item.0.swap|d(False) | bool))
   with_together:

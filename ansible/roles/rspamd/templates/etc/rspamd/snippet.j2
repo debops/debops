@@ -5,7 +5,7 @@
 # {{ ansible_managed }}
 #
 # /etc/rspamd/local.d/{{ item.file }}
-{% if item.comment|d() %}
+{% if item.comment | d() %}
 {{   item.comment | regex_replace('\n$', '') | comment(prefix='#', postfix='#', decoration='# ') }}
 {% endif %}
 
@@ -18,19 +18,19 @@
 {%   else %}
 {%     set commented = False %}
 {%   endif %}
-{%   if element.options|d() and not loop_first %}
+{%   if element.options | d() and not loop_first %}
 {{     '' }}
 {%   endif %}
-{%   if element.comment|d() %}
+{%   if element.comment | d() %}
 {{     element.comment | regex_replace('\n$', '') | comment(prefix='', decoration=comment_prefix, postfix='') -}}
 {%   endif %}
-{%   if element.raw|d() %}
+{%   if element.raw | d() %}
 {%     if commented %}
 {{       '{}'.format(element.raw | regex_replace('\n$', '') | comment(prefix='', decoration=comment_prefix, postfix='')) -}}
 {%     else %}
 {{       '{}'.format(element.raw | regex_replace('\n$', '')) }}
 {%     endif %}
-{%   elif element.options|d() %}
+{%   elif element.options | d() %}
 {{     '{}{} {{'.format(prefix, element.option | d(element.name) | regex_replace('\n$', '')) }}
 {%     for element in element.options %}
 {%       if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}

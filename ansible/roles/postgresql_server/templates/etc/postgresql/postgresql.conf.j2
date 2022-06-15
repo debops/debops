@@ -59,9 +59,9 @@ ssl_renegotiation_limit = {{ item.ssl_renegotiation_limit | d('512MB') }}
 
 {% if ((item.version | d(postgresql_server__version)) is version_compare('9.1','>')) %}
 {# ref: https://www.postgresql.org/docs/current/static/release-9-2.html #}
-ssl_cert_file = '{{ item.ssl_cert_file | d(((item.pki_path | d(postgresql_server__pki_path)) + "/" + (item.pki_realm | d(postgresql_server__pki_realm)) + "/" + (item.pki_crt | d(postgresql_server__pki_crt))) if (postgresql_server__pki|d() and postgresql_server__pki | bool) else "") }}'
-ssl_key_file = '{{ item.ssl_key_file | d(((item.pki_path | d(postgresql_server__pki_path)) + "/" + (item.pki_realm | d(postgresql_server__pki_realm)) + "/" + (item.pki_key | d(postgresql_server__pki_key))) if (postgresql_server__pki|d() and postgresql_server__pki | bool) else "") }}'
-ssl_ca_file = '{{ item.ssl_ca_file | d(((item.pki_path | d(postgresql_server__pki_path)) + "/" + (item.pki_realm | d(postgresql_server__pki_realm)) + "/" + (item.pki_ca | d(postgresql_server__pki_ca))) if (postgresql_server__pki|d() and postgresql_server__pki | bool) else "") }}'
+ssl_cert_file = '{{ item.ssl_cert_file | d(((item.pki_path | d(postgresql_server__pki_path)) + "/" + (item.pki_realm | d(postgresql_server__pki_realm)) + "/" + (item.pki_crt | d(postgresql_server__pki_crt))) if (postgresql_server__pki | d() and postgresql_server__pki | bool) else "") }}'
+ssl_key_file = '{{ item.ssl_key_file | d(((item.pki_path | d(postgresql_server__pki_path)) + "/" + (item.pki_realm | d(postgresql_server__pki_realm)) + "/" + (item.pki_key | d(postgresql_server__pki_key))) if (postgresql_server__pki | d() and postgresql_server__pki | bool) else "") }}'
+ssl_ca_file = '{{ item.ssl_ca_file | d(((item.pki_path | d(postgresql_server__pki_path)) + "/" + (item.pki_realm | d(postgresql_server__pki_realm)) + "/" + (item.pki_ca | d(postgresql_server__pki_ca))) if (postgresql_server__pki | d() and postgresql_server__pki | bool) else "") }}'
 #ssl_crl_file = ''
 {% endif %}
 
@@ -106,7 +106,7 @@ tcp_keepalives_count = {{ item.tcp_keepalives_count | d('0') }}
 {% else %}
 {%   set postgresql_server__tpl_shmmax = postgresql_server__register_sysctl_shmmax.stdout %}
 {% endif %}
-{% if not item.shared_buffers|d() %}
+{% if not item.shared_buffers | d() %}
 # (( {{ (postgresql_server__tpl_shmmax | int / 1024 / 1024)|round | int }} MB of maximum shared buffer size * {{ postgresql_server__shmmax_limiter }} ) - ( 16 kB * {{ postgresql_server__tpl_max_connections }} max connections )) / {{ postgresql_server__fact_cluster_count }} cluster(s)
 {% endif %}
 shared_buffers = {{ item.shared_buffers | d((((((postgresql_server__tpl_shmmax | int * postgresql_server__shmmax_limiter | float)|round | int - (16384 * postgresql_server__tpl_max_connections | int)) / postgresql_server__fact_cluster_count | int) / 1024 / 1024))|round | int | string + 'MB') }}
@@ -121,7 +121,7 @@ autovacuum_work_mem = {{ item.autovacuum_work_mem | d('-1') }}
 {% endif %}
 
 {% if (item.version | d(postgresql_server__version)) is version_compare('9.3','>') %}
-{% if postgresql_server__register_shm|d() and postgresql_server__register_shm.stdout %}
+{% if postgresql_server__register_shm | d() and postgresql_server__register_shm.stdout %}
 dynamic_shared_memory_type = {{ item.dynamic_shared_memory_type | d('posix') }}
 {% else %}
 dynamic_shared_memory_type = {{ item.dynamic_shared_memory_type | d('sysv') }}
@@ -201,11 +201,11 @@ checkpoint_warning = {{ item.checkpoint_warning | d('30s') }}
 
 # - Archiving -
 
-{% if item.archive_mode|d() and item.archive_mode %}
+{% if item.archive_mode | d() and item.archive_mode %}
 archive_mode = {{ item.archive_mode }}
-{% elif item.wal_level|d() and item.wal_level == 'archive' %}
+{% elif item.wal_level | d() and item.wal_level == 'archive' %}
 archive_mode = on
-{% elif postgresql_server__wal_level|d() and postgresql_server__wal_level == 'archive' %}
+{% elif postgresql_server__wal_level | d() and postgresql_server__wal_level == 'archive' %}
 archive_mode = on
 {% else %}
 archive_mode = off
@@ -442,7 +442,7 @@ intervalstyle = '{{ item.intervalstyle | d("postgres") }}'
 timezone = '{{ item.timezone | d(postgresql_server__timezone) }}'
 timezone_abbreviations = '{{ item.timezone_abbreviations | d("Default") }}'
 extra_float_digits = {{ item.extra_float_digits | d('0') }}
-{% if item.client_encoding|d() %}
+{% if item.client_encoding | d() %}
 client_encoding = {{ item.client_encoding }}
 {% else %}
 #client_encoding = # based on the database encoding

@@ -149,7 +149,7 @@ elasticsearch__allow_tcp: []
 #
 # Enable or disable support for TLS connection encryption based on DebOps PKI,
 # managed by the :ref:`debops.pki` Ansible role.
-elasticsearch__pki_enabled: '{{ (ansible_local.pki.enabled|d()) | bool }}'
+elasticsearch__pki_enabled: '{{ (ansible_local.pki.enabled | d()) | bool }}'
 
                                                                    # ]]]
 # .. envvar:: elasticsearch__pki_base_path [[[
@@ -227,7 +227,7 @@ elasticsearch__tls_certificate: '{{ elasticsearch__pki_base_path + "/"
 # not useful in a standalone mode.
 elasticsearch__xpack_enabled: '{{ True
                                   if (elasticsearch__pki_enabled | bool and
-                                      elasticsearch__allow_tcp|d())
+                                      elasticsearch__allow_tcp | d())
                                   else False }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -337,7 +337,7 @@ elasticsearch__combined_native_users: '{{ elasticsearch__native_users
 # https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-network.html
 # for more details.
 elasticsearch__network_host: '{{ [ "_local_", "_site_" ]
-                                 if (ansible_local.ferm.enabled|d() and
+                                 if (ansible_local.ferm.enabled | d() and
                                      ansible_local.ferm.enabled | bool)
                                  else [ "_local_" ] }}'
 
@@ -465,8 +465,8 @@ elasticsearch__node_ingest: '{{ True
 # capabilities. If this variable is enabled, :command:`systemd` memlock limit
 # is configured.
 elasticsearch__memory_lock: '{{ True
-                                if (not (ansible_system_capabilities_enforced|d()) | bool or
-                                    ((ansible_system_capabilities_enforced|d()) | bool and
+                                if (not (ansible_system_capabilities_enforced | d()) | bool or
+                                    ((ansible_system_capabilities_enforced | d()) | bool and
                                      "cap_ipc_lock" in (ansible_system_capabilities|d([]))))
                                 else False }}'
 

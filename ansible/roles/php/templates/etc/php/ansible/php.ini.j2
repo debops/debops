@@ -7,16 +7,16 @@
 
 {% macro print_config(config) -%}
 {%   if config.state|d('present') != 'absent' %}
-{%     if config.comment|d() %}
+{%     if config.comment | d() %}
 ; {{ config.comment }}
 {%     endif %}
-{%     if config.name|d() %}
+{%     if config.name | d() %}
 [{{ config.name }}]
 {%     endif %}
-{%     if config.options|d() %}
+{%     if config.options | d() %}
 {{ config.options }}
 {%     endif %}
-{%     if config.sections|d() %}
+{%     if config.sections | d() %}
 {%       for element in config.sections %}
 {{ print_config(element) -}}
 {%       endfor %}

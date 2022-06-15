@@ -11,7 +11,7 @@
 {%     set section_loop = [] %}
 {%     set section_comment_prefix = ('' if loop.first | bool else '\n') %}
 {%     if section.name in opendkim__tpl_sections %}
-{%       if section.title|d() %}
+{%       if section.title | d() %}
 
 {{ '{:-^70}'.format(' ' + section.title + ' ') | comment(prefix=section_comment_prefix, postfix='') }}
 {%       endif %}
@@ -49,7 +49,7 @@
 {%           else %}
 {%             set element_value = [] %}
 {%           endif %}
-{%           if element.comment|d() %}
+{%           if element.comment | d() %}
 {{ element.comment | regex_replace('\n$','') | comment(prefix=comment_prefix, postfix='') -}}
 {%             if element.state|d('present') == 'hidden' %}
 

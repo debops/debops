@@ -21,7 +21,7 @@
   register: etc_aliases__register_dependent_recipients_file
   become: False
   delegate_to: 'localhost'
-  when: (ansible_local|d() and ansible_local.etc_aliases|d() and
+  when: (ansible_local | d() and ansible_local.etc_aliases | d() and
          ansible_local.etc_aliases.configured is defined and
          ansible_local.etc_aliases.configured | bool)
 
@@ -31,7 +31,7 @@
   register: etc_aliases__register_dependent_recipients
   become: False
   delegate_to: 'localhost'
-  when: (ansible_local|d() and ansible_local.etc_aliases|d() and
+  when: (ansible_local | d() and ansible_local.etc_aliases | d() and
          ansible_local.etc_aliases.configured is defined and
          ansible_local.etc_aliases.configured | bool and
          etc_aliases__register_dependent_recipients_file.stat.exists | bool)

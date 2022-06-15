@@ -10,16 +10,16 @@
 {%   endif %}
 {% endmacro %}
 {{ print_comment(ansible_managed) }}
-{% if item.comment|d() %}
+{% if item.comment | d() %}
 {{ print_comment(item.comment) -}}
 {% endif %}
-{% if item.options|d() %}
+{% if item.options | d() %}
 {%   for element in item.options %}
-{%     if element.value|d() and element.state|d('present') not in [ 'absent', 'ignore' ] %}
-{%       if (not loop.first or (loop.first and item.comment|d())) %}
+{%     if element.value | d() and element.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%       if (not loop.first or (loop.first and item.comment | d())) %}
 
 {%       endif %}
-{%       if element.comment|d() %}
+{%       if element.comment | d() %}
 {{ print_comment(element.comment) -}}
 {%       endif %}
 {%       if element.state|d('present') == 'comment' %}
@@ -32,7 +32,7 @@
 {%     endif %}
 {%   endfor %}
 {% endif %}
-{% if item.value|d() %}
+{% if item.value | d() %}
 {%   if item.state|d('present') == 'comment' %}
 /*
 {%   endif %}

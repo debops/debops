@@ -136,7 +136,7 @@ pidfile = '{{ item.pidfile | d(gunicorn__tpl_run_path + "/gunicorn-" + item.name
 umask = {{ item.umask | d('0') }}
 user = '{{ item.user if (item.user is defined and item.user != omit) else gunicorn__user }}'
 group = '{{ item.group if (item.group is defined and item.group != omit) else gunicorn__group }}'
-tmp_upload_dir = {{ ("'" + item.tmp_upload_dir + "'") if item.tmp_upload_dir|d() else 'None' }}
+tmp_upload_dir = {{ ("'" + item.tmp_upload_dir + "'") if item.tmp_upload_dir | d() else 'None' }}
 
 #
 #   Logging
@@ -169,7 +169,7 @@ access_log_format = '%({{ "{" + gunicorn__tpl_remote_host_header + "}" }}i)s %(l
 #       A string or None to choose a default of something like 'gunicorn'.
 #
 
-proc_name = {{ ("'" + item.proc_name + "'") if item.proc_name|d() else 'None' }}
+proc_name = {{ ("'" + item.proc_name + "'") if item.proc_name | d() else 'None' }}
 
 #
 # Server hooks

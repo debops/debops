@@ -50,7 +50,7 @@
 {% endif %}
 # {{ ansible_managed }}
 
-{% if ferm__filter_recent|d() and ferm__filter_recent | bool %}
+{% if ferm__filter_recent | d() and ferm__filter_recent | bool %}
 # Limit new connections on {{ item.dport | join(',') }} port.
 # Allow no more than {{ item.hits | default('5') }} connection attempts from a source IP in {{ item.seconds | default('300') }} seconds.
 {% else %}
@@ -84,7 +84,7 @@ Optional:
 {% endif %}
 {% if ferm__tpl_state == 'enabled' %}
 protocol ({{ (ferm__tpl_protocol if ferm__tpl_protocol else ['tcp']) | join(' ') }}){% if ferm__tpl_syn is defined %} {{ ferm__tpl_syn }}{% endif %} dport ({{ item.dport | join(' ') }}) {
-{% if ferm__filter_recent|d() and ferm__filter_recent | bool %}
+{% if ferm__filter_recent | d() and ferm__filter_recent | bool %}
 
 	@subchain "dport-limit-{{ item.dport[0] }}" {
 		mod recent name {{ item.dport[0] | upper }} {

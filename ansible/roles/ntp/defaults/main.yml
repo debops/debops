@@ -25,8 +25,8 @@
 # If ``True``, role will install and configure an NTP daemon. The daemon is not
 # required in containerized environments, where the host takes care for setting
 # time accurately.
-ntp__daemon_enabled: '{{ "True" if (ntp__daemon|d() and
-                                    ((ansible_system_capabilities_enforced|d()) | bool and
+ntp__daemon_enabled: '{{ "True" if (ntp__daemon | d() and
+                                    ((ansible_system_capabilities_enforced | d()) | bool and
                                       "cap_sys_time" in ansible_system_capabilities) or
                                      not (ansible_system_capabilities_enforced|d(True)) | bool)
                                 else "False" }}'
@@ -46,7 +46,7 @@ ntp__daemon_enabled: '{{ "True" if (ntp__daemon|d() and
 #
 # Set to ``False`` to disable clock management.
 ntp__daemon: '{{ (ansible_local.ntp.daemon
-                  if (ansible_local.ntp.daemon|d())
+                  if (ansible_local.ntp.daemon | d())
                   else ("systemd-timesyncd"
                         if (ansible_distribution == "Ubuntu" and
                             ansible_service_mgr == "systemd")

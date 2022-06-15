@@ -8,7 +8,7 @@
 {% set kibana__tpl_comment = {} %}
 {% for item in kibana__combined_configuration | debops.debops.parse_kv_config %}
 {%   if item is mapping %}
-{%     if item.name|d() %}
+{%     if item.name | d() %}
 {%       if item.state|d('present') != 'absent' %}
 {%         if item.value is defined %}
 {%           set name_exploded = item.name.split('.') %}
@@ -20,7 +20,7 @@
 {%           endif %}
 {%           set _ = kibana__tpl_config.update({ name_exploded[0]: current_dict }) %}
 {#           set _ = kibana__tpl_config.update({ item.name: item.value }) #}
-{%           if item.comment|d() %}
+{%           if item.comment | d() %}
 {%             set _ = kibana__tpl_comment.update({ item.name: item.comment }) %}
 {%           endif %}
 {%         elif item.options is defined %}
@@ -32,7 +32,7 @@
 {%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'options': item.options } }) %}
 {%           endif %}
 {%           set _ = kibana__tpl_config.update({ name_exploded[0]: current_dict }) %}
-{%           if item.comment|d() %}
+{%           if item.comment | d() %}
 {%             set _ = kibana__tpl_comment.update({ item.name: item.comment }) %}
 {%           endif %}
 {%         elif item.empty is defined %}
@@ -44,7 +44,7 @@
 {%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'empty': item.empty } }) %}
 {%           endif %}
 {%           set _ = kibana__tpl_config.update({ name_exploded[0]: current_dict }) %}
-{%           if item.comment|d() %}
+{%           if item.comment | d() %}
 {%             set _ = kibana__tpl_comment.update({ item.name: item.comment }) %}
 {%           endif %}
 {%         elif item.raw is defined %}
@@ -56,7 +56,7 @@
 {%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'raw': item.raw } }) %}
 {%           endif %}
 {%           set _ = kibana__tpl_config.update({ name_exploded[0]: current_dict }) %}
-{%           if item.comment|d() %}
+{%           if item.comment | d() %}
 {%             set _ = kibana__tpl_comment.update({ item.name: item.comment }) %}
 {%           endif %}
 {%         endif %}
@@ -83,7 +83,7 @@
 {% endfor %}
 {% macro print_config(config, key_prefix='') %}
 {%   for key, value in config.items() %}
-{%     if key|d() %}{# key is not empty #}
+{%     if key | d() %}{# key is not empty #}
 {%       if (key_prefix + '.' + key) in kibana__tpl_comment.keys() %}
 
 {{ kibana__tpl_comment[key_prefix + '.' + key] | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
@@ -119,7 +119,7 @@
 {%           elif value.comment is number %}
 {{ '# %s: %s' | format(key_prefix + '.' + key, value.comment) }}
 {%           elif value.comment is mapping %}
-{%             if value.options|d() %}
+{%             if value.options | d() %}
 {%               if value.options is mapping %}
 {%                 for option_key, option_value in value.options.items() %}
 {%                   if option_value | bool and option_value is not iterable %}
@@ -155,7 +155,7 @@
 {%               else %}
 {{ '# %s: %s' | format(key_prefix + '.' + key, value.empty) }}
 {%               endif %}
-{%             elif value.raw|d() %}
+{%             elif value.raw | d() %}
 {{ value.raw | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
 {%             endif %}
 {%           elif value.comment is not string and value.comment is not mapping %}
@@ -169,7 +169,7 @@
 
 {%             endif %}
 {%           endif %}
-{%         elif value.options|d() %}
+{%         elif value.options | d() %}
 {%           if value.options is mapping %}
 {%             for option_key, option_value in value.options.items() %}
 {%               if option_value | bool and option_value is not iterable %}
@@ -205,7 +205,7 @@
 {%           else %}
 {{ '%s: %s' | format(key_prefix + '.' + key, value.empty) }}
 {%           endif %}
-{%         elif value.raw|d() %}
+{%         elif value.raw | d() %}
 {{ value.raw }}
 {%         endif %}
 {%       elif value is not string and value is not mapping %}
@@ -224,14 +224,14 @@
 {% endmacro %}
 {% set kibana__tpl_seen_sections = [] %}
 {% for section in kibana__configuration_sections %}
-{%   if section.name|d() %}
-{%     if section.part|d() and ([ section.part ] if section.part is string else section.part) | intersect(kibana__tpl_config.keys()) %}
+{%   if section.name | d() %}
+{%     if section.part | d() and ([ section.part ] if section.part is string else section.part) | intersect(kibana__tpl_config.keys()) %}
 {{ "{:-^78}".format(' ' + section.name + ' ') | comment }}
-{%     elif section.parts|d() and ([ section.parts ] if section.parts is string else section.parts) | intersect(kibana__tpl_config.keys()) %}
+{%     elif section.parts | d() and ([ section.parts ] if section.parts is string else section.parts) | intersect(kibana__tpl_config.keys()) %}
 {{ "{:-^78}".format(' ' + section.name + ' ') | comment }}
 {%     endif %}
 {%   endif %}
-{%   if section.part|d() and ([ section.part ] if section.part is string else section.part) | intersect(kibana__tpl_config.keys()) %}
+{%   if section.part | d() and ([ section.part ] if section.part is string else section.part) | intersect(kibana__tpl_config.keys()) %}
 {%     for element in ([ section.part ] if section.part is string else section.part) %}
 {%       if element in kibana__tpl_config.keys() and element not in kibana__tpl_seen_sections %}
 {{ print_config(kibana__tpl_config[element], key_prefix=element) -}}
@@ -239,7 +239,7 @@
 {%       endif %}
 {%     endfor %}
 
-{%   elif section.parts|d() and ([ section.parts ] if section.parts is string else section.parts) | intersect(kibana__tpl_config.keys()) %}
+{%   elif section.parts | d() and ([ section.parts ] if section.parts is string else section.parts) | intersect(kibana__tpl_config.keys()) %}
 {%     for element in ([ section.parts ] if section.parts is string else section.parts) %}
 {%       if element in kibana__tpl_config.keys() and element not in kibana__tpl_seen_sections %}
 {{ print_config(kibana__tpl_config[element], key_prefix=element) -}}

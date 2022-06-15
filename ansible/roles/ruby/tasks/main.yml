@@ -17,7 +17,7 @@
 
 - name: Install Ruby gems
   gem:
-    name:                 '{{ item.name if item.name|d() else item }}'
+    name:                 '{{ item.name if item.name | d() else item }}'
     state:                '{{ item.state                | d("present") }}'
     user_install:         '{{ item.user_install         | d(False) }}'
     version:              '{{ item.version              | d(omit) }}'
@@ -42,7 +42,7 @@
     - '{{ ruby__group_user_gems }}'
     - '{{ ruby__host_user_gems }}'
     - '{{ ruby__dependent_user_gems }}'
-  when: (item.group|d() or item.owner|d())
+  when: (item.group | d() or item.owner | d())
 
 - name: Make sure that required users exist
   ansible.builtin.user:
@@ -57,7 +57,7 @@
     - '{{ ruby__group_user_gems }}'
     - '{{ ruby__host_user_gems }}'
     - '{{ ruby__dependent_user_gems }}'
-  when: item.owner|d()
+  when: item.owner | d()
 
 - name: Install Ruby user gems
   gem:
@@ -77,4 +77,4 @@
     - '{{ ruby__dependent_user_gems }}'
   become: True
   become_user: '{{ item.user | d(item.owner) }}'
-  when: (item.user|d() or item.owner|d())
+  when: (item.user | d() or item.owner | d())

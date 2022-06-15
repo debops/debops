@@ -63,8 +63,8 @@
     - '{{ tcpwrappers_group_allow | d([]) }}'
     - '{{ tcpwrappers_host_allow | d([]) }}'
     - '{{ tcpwrappers_dependent_allow | d([]) }}'
-  when: ((item.daemon|d() or item.daemons|d()) and
-         item.state|d() and item.state == 'absent')
+  when: ((item.daemon | d() or item.daemons | d()) and
+         item.state | d() and item.state == 'absent')
 
 - name: Generate hosts.allow entries
   ansible.builtin.template:
@@ -84,7 +84,7 @@
     - '{{ tcpwrappers_group_allow | d([]) }}'
     - '{{ tcpwrappers_host_allow | d([]) }}'
     - '{{ tcpwrappers_dependent_allow | d([]) }}'
-  when: ((item.daemon|d() or item.daemons|d()) and
+  when: ((item.daemon | d() or item.daemons | d()) and
          (item.state is undefined or item.state != 'absent'))
 
 - name: Assemble hosts.allow.d

@@ -49,7 +49,7 @@
   ansible.builtin.set_fact:
     apt_cacher_ng__cache_dir_permissions_change: '{{
       apt_cacher_ng__cache_dir_enforce_permissions != "disabled" and (
-        (apt_cacher_ng__register_cache_perms|d() and apt_cacher_ng__register_cache_perms is changed) or
+        (apt_cacher_ng__register_cache_perms | d() and apt_cacher_ng__register_cache_perms is changed) or
         apt_cacher_ng__cache_dir_enforce_permissions == "strict"
       ) }}'
 
@@ -119,11 +119,11 @@
     name: 'apt-cacher-ng'
     state: 'started'
     enabled: True
-  when: (apt_cacher_ng__enabled|d())
+  when: (apt_cacher_ng__enabled | d())
 
 - name: Disable apt-cacher-ng
   ansible.builtin.service:
     name: 'apt-cacher-ng'
     state: 'stopped'
     enabled: False
-  when: not (apt_cacher_ng__enabled|d())
+  when: not (apt_cacher_ng__enabled | d())

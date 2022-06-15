@@ -27,7 +27,7 @@ dhcp-option = tag:{{ lxc__net_bridge }},option6:domain-search,{{ lxc__net_domain
 # Disable default route advertisement via the {{ lxc__net_bridge }} interface
 dhcp-option = tag:{{ lxc__net_bridge }},option:router
 {% endif %}
-{% if lxc__net_dnsmasq_options|d() %}
+{% if lxc__net_dnsmasq_options | d() %}
 
 # Additional dnsmasq options
 {{ lxc__net_dnsmasq_options | regex_replace('\n$','') }}

@@ -16,7 +16,7 @@
   "comment": ((params.forward_ipv6 | d(params.forward)) | ternary("Enable", "Disable") + " IPv6 forwarding on the " + interface_name + " interface"),
   "state": "present"
 }) %}
-{%         if params.accept_ra|d() %}
+{%         if params.accept_ra | d() %}
 {%           set ra_preference_comment = {
   0: ("Do not accept SLAAC Router Advertisements on the " + interface_name + " interface"),
   1: ("Accept SLAAC Router Advertisements on the " + interface_name + " interface when forwarding is disabled"),

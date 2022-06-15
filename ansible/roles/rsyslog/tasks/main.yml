@@ -88,7 +88,7 @@
   register: rsyslog__register_file_permissions
   when: rsyslog__enabled | bool and rsyslog__deploy_state != 'absent' and
         rsyslog__unprivileged | bool
-  changed_when: rsyslog__register_file_permissions.stdout|d()
+  changed_when: rsyslog__register_file_permissions.stdout | d()
   notify: [ 'Check and restart rsyslogd' ]
 
 - name: Create systemd-tmpfiles override
@@ -143,7 +143,7 @@
     label: '{{ {"name": item.name, "state": (item.state|d("present")) } }}'
   when: (rsyslog__enabled | bool and rsyslog__deploy_state != 'absent' and
          item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
-         (item.options|d() or item.raw|d()))
+         (item.options | d() or item.raw | d()))
   notify: [ 'Check and restart rsyslogd' ]
 
 - name: Remove custom config files when requested

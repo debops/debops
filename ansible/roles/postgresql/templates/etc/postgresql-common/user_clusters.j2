@@ -4,10 +4,10 @@
  #}
 # {{ ansible_managed }}
 {% macro print_user_clusters(postgresql__tpl_user_clusters_list) %}
-{% if postgresql__tpl_user_clusters_list|d() and postgresql__tpl_user_clusters_list %}
+{% if postgresql__tpl_user_clusters_list | d() and postgresql__tpl_user_clusters_list %}
 {%   for entry in postgresql__tpl_user_clusters_list %}
 {%     set entry_tpl_user = [] %}
-{%     if entry.name|d() %}
+{%     if entry.name | d() %}
 {%       if entry.name is string %}
 {%           set entry_tpl_user = [ entry.name ] %}
 {%       else %}
@@ -17,7 +17,7 @@
 {%           endif %}
 {%         endfor %}
 {%       endif %}
-{%     elif entry.user|d() %}
+{%     elif entry.user | d() %}
 {%       if entry.user is string %}
 {%           set entry_tpl_user = [ entry.user ] %}
 {%       else %}
@@ -29,7 +29,7 @@
 {%       endif %}
 {%     endif %}
 {%     set entry_tpl_group = [] %}
-{%     if entry.group|d() %}
+{%     if entry.group | d() %}
 {%       if entry.group is string %}
 {%           set entry_tpl_group = [ entry.group ] %}
 {%       else %}
@@ -41,9 +41,9 @@
 {%       endif %}
 {%     endif %}
 {%     set entry_tpl_cluster = "main" %}
-{%     if entry.cluster|d() %}
+{%     if entry.cluster | d() %}
 {%       set entry_tpl_cluster = entry.cluster %}
-{%     elif entry.host|d() and entry.port|d() %}
+{%     elif entry.host | d() and entry.port | d() %}
 {%       set entry_tpl_host = entry.host %}
 {%       set entry_tpl_port = entry.port %}
 {%       set entry_tpl_cluster = entry.host + ":" + entry_tpl_port %}
@@ -67,7 +67,7 @@
 
 # USER         GROUP          VERSION    CLUSTER              DATABASE
 
-{% if postgresql__user_clusters|d() and postgresql__user_clusters %}
+{% if postgresql__user_clusters | d() and postgresql__user_clusters %}
 {{ print_user_clusters(postgresql__user_clusters) }}{% endif %}
-{% if postgresql__default_user_clusters|d() and postgresql__default_user_clusters %}
+{% if postgresql__default_user_clusters | d() and postgresql__default_user_clusters %}
 {{ print_user_clusters(postgresql__default_user_clusters) }}{% endif %}

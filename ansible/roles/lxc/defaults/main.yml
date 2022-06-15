@@ -52,7 +52,7 @@ lxc__version: '{{ ansible_local.lxc.version|d("0.0.0") }}'
 # Specify the first subUID of the unprivileged LXC containers managed by the
 # ``root`` system account.
 lxc__root_subuid_start: '{{ ansible_local.root_account.subuids[0]["start"]
-                            if (ansible_local.root_account.subuids|d())
+                            if (ansible_local.root_account.subuids | d())
                             else "100000" }}'
 
                                                                    # ]]]
@@ -61,7 +61,7 @@ lxc__root_subuid_start: '{{ ansible_local.root_account.subuids[0]["start"]
 # Specify the number of subUIDs reserved for the unprivileged LXC containers
 # managed by the ``root`` system account.
 lxc__root_subuid_count: '{{ ansible_local.root_account.subuids[0]["count"]
-                            if (ansible_local.root_account.subuids|d())
+                            if (ansible_local.root_account.subuids | d())
                             else "65536" }}'
 
                                                                    # ]]]
@@ -70,7 +70,7 @@ lxc__root_subuid_count: '{{ ansible_local.root_account.subuids[0]["count"]
 # Specify the first subGID of the unprivileged LXC containers managed by the
 # ``root`` system account.
 lxc__root_subgid_start: '{{ ansible_local.root_account.subgids[0]["start"]
-                            if (ansible_local.root_account.subgids|d())
+                            if (ansible_local.root_account.subgids | d())
                             else "100000" }}'
 
                                                                    # ]]]
@@ -79,7 +79,7 @@ lxc__root_subgid_start: '{{ ansible_local.root_account.subgids[0]["start"]
 # Specify the number of subGIDs reserved for the unprivileged LXC containers
 # managed by the ``root`` system account.
 lxc__root_subgid_count: '{{ ansible_local.root_account.subgids[0]["count"]
-                            if (ansible_local.root_account.subgids|d())
+                            if (ansible_local.root_account.subgids | d())
                             else "65536" }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -163,7 +163,7 @@ lxc__net_base_domain: '{{ ansible_domain }}'
 #
 # The DNS domain used in the internal LXC network.
 lxc__net_domain: '{{ "lxc" + (("." + lxc__net_base_domain)
-                              if lxc__net_base_domain|d()
+                              if lxc__net_base_domain | d()
                               else "") }}'
 
                                                                    # ]]]
@@ -245,8 +245,8 @@ lxc__default_configuration:
                   if (lxc__version is version("2.1.0", "<"))
                   else "lxc.net.0.link" }}'
         value: '{{ "br0"
-                   if (ansible_local|d() and ansible_local.ifupdown|d() and
-                       (ansible_local.ifupdown.configured|d()) | bool)
+                   if (ansible_local | d() and ansible_local.ifupdown | d() and
+                       (ansible_local.ifupdown.configured | d()) | bool)
                    else (lxc__net_bridge
                          if (lxc__net_deploy_state == "present")
                          else "br0") }}'
@@ -333,8 +333,8 @@ lxc__default_configuration:
                   if (lxc__version is version("2.1.0", "<"))
                   else "lxc.net.0.link" }}'
         value: '{{ "br0"
-                   if (ansible_local|d() and ansible_local.ifupdown|d() and
-                       (ansible_local.ifupdown.configured|d()) | bool)
+                   if (ansible_local | d() and ansible_local.ifupdown | d() and
+                       (ansible_local.ifupdown.configured | d()) | bool)
                    else (lxc__net_bridge
                          if (lxc__net_deploy_state == "present")
                          else "br0") }}'
@@ -456,8 +456,8 @@ lxc__default_configuration:
                    if (lxc__version is version("2.1.0", "<"))
                    else "lxc.net.0.link" }}'
         value: '{{ "br0"
-                   if (ansible_local|d() and ansible_local.ifupdown|d() and
-                       (ansible_local.ifupdown.configured|d()) | bool)
+                   if (ansible_local | d() and ansible_local.ifupdown | d() and
+                       (ansible_local.ifupdown.configured | d()) | bool)
                    else (lxc__net_bridge
                          if (lxc__net_deploy_state == "present")
                          else "br0") }}'

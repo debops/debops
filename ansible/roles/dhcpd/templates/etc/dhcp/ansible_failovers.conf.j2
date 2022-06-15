@@ -5,22 +5,22 @@
 # {{ ansible_managed }}
 {%  for failover in dhcpd__failovers %}
 
-{%      if failover.comment|d() %}
+{%      if failover.comment | d() %}
 # {{ failover.comment }}
 {%      endif %}
 failover peer "{{ failover.name }}" {
-{%      if failover.options|d() %}
+{%      if failover.options | d() %}
 
     # Custom failover options
     {{ failover.options|indent(4) }}
 {%      endif %}
 
-{%      if failover.primary|d() and failover.primary in ansible_all_ipv4_addresses|d([]) %}
+{%      if failover.primary | d() and failover.primary in ansible_all_ipv4_addresses|d([]) %}
     primary;
     mclt {{ failover.mclt|d(3600) }};
     address {{ failover.primary }};
     peer address {{ failover.secondary }};
-{%          if failover.split|d() %}
+{%          if failover.split | d() %}
     split {{ failover.split }};
 {%          else %}
     hba {{ failover.hba }};

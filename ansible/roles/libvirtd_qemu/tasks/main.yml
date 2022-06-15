@@ -30,8 +30,8 @@
   register: libvirtd_qemu__register_packages
   until: libvirtd_qemu__register_packages is succeeded
   when: (ansible_local is undefined or
-         (ansible_local|d() and ansible_local.libvirtd is undefined or
-          (ansible_local|d() and ansible_local.libvirtd|d() and
+         (ansible_local | d() and ansible_local.libvirtd is undefined or
+          (ansible_local | d() and ansible_local.libvirtd | d() and
            (ansible_local.libvirtd.installed is undefined or
             not ansible_local.libvirtd.installed | bool))))
 

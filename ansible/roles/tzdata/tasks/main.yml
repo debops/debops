@@ -11,7 +11,7 @@
   ansible.builtin.package:
     name: '{{ q("flattened", tzdata__base_packages + tzdata__packages) }}'
     state: '{{ "present"
-               if ((ansible_local.tzdata.configured|d()) | bool)
+               if ((ansible_local.tzdata.configured | d()) | bool)
                else "latest" }}'
   register: tzdata__register_packages
   until: tzdata__register_packages is succeeded
@@ -22,7 +22,7 @@
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
-  when: tzdata__enabled | bool and not ansible_local|d()
+  when: tzdata__enabled | bool and not ansible_local | d()
 
 - name: Save tzdata local facts
   ansible.builtin.template:

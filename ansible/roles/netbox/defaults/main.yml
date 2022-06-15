@@ -198,7 +198,7 @@ netbox__virtualenv_pip_packages:
   - 'setproctitle'
   - name: 'napalm'
     state: '{{ "present"
-               if (netbox__config_napalm_username|d() or netbox__napalm_ssh_generate | bool)
+               if (netbox__config_napalm_username | d() or netbox__napalm_ssh_generate | bool)
                else "ignore" }}'
   - name: 'django-auth-ldap'
     state: '{{ "present" if netbox__ldap_enabled | bool else "ignore" }}'
@@ -305,8 +305,8 @@ netbox__redis_ssl: False
 #
 # Enable or disable support for LDAP authentication in NetBox.
 netbox__ldap_enabled: '{{ True
-                          if (ansible_local|d() and ansible_local.ldap|d() and
-                              (ansible_local.ldap.enabled|d()) | bool)
+                          if (ansible_local | d() and ansible_local.ldap | d() and
+                              (ansible_local.ldap.enabled | d()) | bool)
                           else False }}'
 
                                                                    # ]]]
@@ -515,8 +515,8 @@ netbox__ldap_server_port: '{{ ansible_local.ldap.port|d("389" if netbox__ldap_st
 # If ``True``, NetBox will use STARTTLS extension to make encrypted
 # connections to the LDAP server.
 netbox__ldap_start_tls: '{{ ansible_local.ldap.start_tls
-                            if (ansible_local|d() and ansible_local.ldap|d() and
-                                (ansible_local.ldap.start_tls|d()) | bool)
+                            if (ansible_local | d() and ansible_local.ldap | d() and
+                                (ansible_local.ldap.start_tls | d()) | bool)
                             else True }}'
 
                                                                    # ]]]
@@ -996,7 +996,7 @@ netbox__ldap__dependent_tasks:
     objectClass: '{{ netbox__ldap_self_object_classes }}'
     attributes: '{{ netbox__ldap_self_attributes }}'
     no_log: '{{ debops__no_log | d(True) }}'
-    state: '{{ "present" if netbox__ldap_device_dn|d() else "ignore" }}'
+    state: '{{ "present" if netbox__ldap_device_dn | d() else "ignore" }}'
 
   - name: 'Create NetBox group container for {{ netbox__ldap_device_dn | join(",") }}'
     dn: '{{ netbox__ldap_groups_dn }}'
@@ -1005,7 +1005,7 @@ netbox__ldap__dependent_tasks:
       ou: '{{ netbox__ldap_groups_rdn.split("=")[1] }}'
       description: 'User groups used in NetBox'
     state: '{{ "present"
-               if (netbox__ldap_device_dn|d() and
+               if (netbox__ldap_device_dn | d() and
                    netbox__ldap_private_groups | bool)
                else "ignore" }}'
 
@@ -1016,7 +1016,7 @@ netbox__ldap__dependent_tasks:
       cn: '{{ netbox__ldap_user_group_rdn.split("=")[1] }}'
       owner: '{{ netbox__ldap_object_ownerdn }}'
       member: '{{ netbox__ldap_object_ownerdn }}'
-    state: '{{ "present" if netbox__ldap_device_dn|d() else "ignore" }}'
+    state: '{{ "present" if netbox__ldap_device_dn | d() else "ignore" }}'
 
   - name: 'Create NetBox active user group for {{ netbox__ldap_device_dn | join(",") }}'
     dn: '{{ netbox__ldap_user_active_group_dn }}'
@@ -1025,7 +1025,7 @@ netbox__ldap__dependent_tasks:
       cn: '{{ netbox__ldap_user_active_group_rdn.split("=")[1] }}'
       owner: '{{ netbox__ldap_object_ownerdn }}'
       member: '{{ netbox__ldap_object_ownerdn }}'
-    state: '{{ "present" if netbox__ldap_device_dn|d() else "ignore" }}'
+    state: '{{ "present" if netbox__ldap_device_dn | d() else "ignore" }}'
 
   - name: 'Create NetBox staff group for {{ netbox__ldap_device_dn | join(",") }}'
     dn: '{{ netbox__ldap_user_staff_group_dn }}'
@@ -1034,7 +1034,7 @@ netbox__ldap__dependent_tasks:
       cn: '{{ netbox__ldap_user_staff_group_rdn.split("=")[1] }}'
       owner: '{{ netbox__ldap_object_ownerdn }}'
       member: '{{ netbox__ldap_object_ownerdn }}'
-    state: '{{ "present" if netbox__ldap_device_dn|d() else "ignore" }}'
+    state: '{{ "present" if netbox__ldap_device_dn | d() else "ignore" }}'
 
   - name: 'Create NetBox admin group for {{ netbox__ldap_device_dn | join(",") }}'
     dn: '{{ netbox__ldap_user_admin_group_dn }}'
@@ -1043,7 +1043,7 @@ netbox__ldap__dependent_tasks:
       cn: '{{ netbox__ldap_user_admin_group_rdn.split("=")[1] }}'
       owner: '{{ netbox__ldap_object_ownerdn }}'
       member: '{{ netbox__ldap_object_ownerdn }}'
-    state: '{{ "present" if netbox__ldap_device_dn|d() else "ignore" }}'
+    state: '{{ "present" if netbox__ldap_device_dn | d() else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: netbox__gunicorn__dependent_applications [[[

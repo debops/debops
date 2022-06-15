@@ -15,7 +15,7 @@
 ] %}
 {%   set instance_monitors = [] %}
 {%   for monitor in redis_sentinel__combined_monitors | debops.debops.parse_kv_items %}
-{%     if monitor.name|d() and monitor.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%     if monitor.name | d() and monitor.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
 {%       if ((monitor.instance is defined and monitor.instance == element.name) or monitor.instance is undefined) %}
 {%         set _ = instance_monitors.extend([
   {"name": ('monitor ' + monitor.name), "value": (monitor.host + ' ' + monitor.port | string + ' ' + monitor.quorum | string), "separator": True},
@@ -45,7 +45,7 @@
 {%   if element.port is undefined %}
 {%     set _ = entry.update({'state': "init"}) %}
 {%   endif %}
-{%   if element.systemd_override|d() %}
+{%   if element.systemd_override | d() %}
 {%     set _ = entry.update({'systemd_override': element.systemd_override}) %}
 {%   endif %}
 {%   set _ = output.append(entry) %}

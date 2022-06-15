@@ -9,7 +9,7 @@
   changed_when: False
   with_items: '{{ swapfile__files }}'
   when: (item.state|d("present") == 'absent' and
-         ((ansible_system_capabilities_enforced|d()) | bool and
+         ((ansible_system_capabilities_enforced | d()) | bool and
           "cap_sys_admin" in ansible_system_capabilities) or
          not (ansible_system_capabilities_enforced|d(True)) | bool)
 
@@ -46,7 +46,7 @@
   ansible.builtin.command: 'swapon -p {{ item.item.priority | d(swapfile__priority) }} {{ item.item.path | d(item.item) }}'  # noqa no-handler
   with_items: '{{ swapfile__register_allocation.results|d([]) }}'
   when: (item is changed and item.state|d("present") != 'absent' and
-         ((ansible_system_capabilities_enforced|d()) | bool and
+         ((ansible_system_capabilities_enforced | d()) | bool and
           "cap_sys_admin" in ansible_system_capabilities) or
          not (ansible_system_capabilities_enforced|d(True)) | bool)
 

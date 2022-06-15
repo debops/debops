@@ -198,7 +198,7 @@ postgresql_server__start_conf: 'auto'
 # .. envvar:: postgresql_server__pki [[[
 #
 # Enable or disable support for PKI infrastructure managed by :ref:`debops.pki`.
-postgresql_server__pki: '{{ ansible_local.pki.enabled|d() | bool }}'
+postgresql_server__pki: '{{ ansible_local.pki.enabled | d() | bool }}'
 
                                                                    # ]]]
 # .. envvar:: postgresql_server__pki_path [[[
@@ -639,7 +639,7 @@ postgresql_server__ferm__dependent_rules:
     {% for cluster in postgresql_server__clusters %}
     {% set _ = postgresql_server__tpl_ports.append(cluster.port) %}
     {% endfor %}
-    {% if postgresql_server__tpl_ports|d() and postgresql_server__allow|d() %}
+    {% if postgresql_server__tpl_ports | d() and postgresql_server__allow | d() %}
     domain $domains table filter chain INPUT {
         protocol tcp dport ({{ postgresql_server__tpl_ports | unique | join(" ") }}) {
             @def $ITEMS = ( @ipfilter( ({{ postgresql_server__allow | unique | join(" ") }}) ) );
@@ -651,7 +651,7 @@ postgresql_server__ferm__dependent_rules:
 
     {% endif %}
     {% for cluster in postgresql_server__clusters %}
-    {% if cluster.name|d() and cluster.port|d() and cluster.allow|d() %}
+    {% if cluster.name | d() and cluster.port | d() and cluster.allow | d() %}
     domain $domains table filter chain INPUT {
         protocol tcp dport ({{ cluster.port }}) {
             @def $ITEMS = ( @ipfilter( ({{ cluster.allow | unique | join(" ") }}) ) );

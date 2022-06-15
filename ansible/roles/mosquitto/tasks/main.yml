@@ -33,7 +33,7 @@
   with_items: '{{ mosquitto__pip_packages }}'
   register: mosquitto__register_pip_install
   until: mosquitto__register_pip_install is succeeded
-  when: mosquitto__pip_packages|d()
+  when: mosquitto__pip_packages | d()
 
 - name: Check the installed Mosquitto version
   ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
@@ -64,7 +64,7 @@
 - name: Make sure the password file exists
   ansible.builtin.file:
     path: '{{ mosquitto__password_file }}'
-    state: '{{ "file" if (ansible_local.mosquitto.password|d() | bool) else "touch" }}'
+    state: '{{ "file" if (ansible_local.mosquitto.password | d() | bool) else "touch" }}'
     owner: 'root'
     group: '{{ mosquitto__group }}'
     mode:  '0640'
@@ -123,7 +123,7 @@
   ansible.builtin.file:
     path: '/etc/mosquitto/conf.d/00_default.conf'
     state: 'absent'
-  when: not mosquitto__combined_options|d()
+  when: not mosquitto__combined_options | d()
   notify: [ 'Restart mosquitto' ]
   tags: [ 'role::mosquitto:config', 'role::mosquitto:passwd', 'role::mosquitto:acl' ]
 

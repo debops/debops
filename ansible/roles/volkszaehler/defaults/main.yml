@@ -26,7 +26,7 @@ volkszaehler__base_packages:
   - 'git-core'
 
   - '{{ [ "php-xml", "php-mbstring" ]
-        if (ansible_local.php.version|d() is version_compare("7", ">="))
+        if (ansible_local.php.version | d() is version_compare("7", ">="))
         else [] }}'
 
                                                                    # ]]]
@@ -91,11 +91,11 @@ volkszaehler__domain: '{{ ansible_domain }}'
 # .. Planned are ``mariadb``, ``postgresql``, ``sqlite``.
 #
 volkszaehler__database: '{{ ansible_local.volkszaehler.database
-                            if (ansible_local.volkszaehler.database|d())
+                            if (ansible_local.volkszaehler.database | d())
                             else ("mariadb"
-                                  if (ansible_local|d() and ansible_local.mariadb is defined)
+                                  if (ansible_local | d() and ansible_local.mariadb is defined)
                                   else ("postgresql"
-                                        if (ansible_local|d() and ansible_local.postgresql is defined)
+                                        if (ansible_local | d() and ansible_local.postgresql is defined)
                                         else "no-database-detected")) }}'
 
                                                                    # ]]]
@@ -235,11 +235,11 @@ volkszaehler__max_file_size: '1M'
 #
 # Refer to :ref:`volkszaehler__ref_getting_started` for details.
 volkszaehler__webserver: '{{ ansible_local.volkszaehler.webserver
-                             if (ansible_local.volkszaehler.webserver|d())
+                             if (ansible_local.volkszaehler.webserver | d())
                              else ("apache"
-                                   if (ansible_local.apache.enabled|d() | bool)
+                                   if (ansible_local.apache.enabled | d() | bool)
                                    else ("nginx"
-                                         if (ansible_local.nginx.enabled|d() | bool)
+                                         if (ansible_local.nginx.enabled | d() | bool)
                                          else "no-webserver-detected")) }}'
 
                                                                    # ]]]
@@ -364,7 +364,7 @@ volkszaehler__config_user: '{{ volkszaehler__user
 #
 # The system group of the :file:`etc/volkszaehler.conf.php` file.
 volkszaehler__config_group: '{{ (ansible_local.apache.user
-                                 if (ansible_local.apache.user|d())
+                                 if (ansible_local.apache.user | d())
                                  else "www-data")
                                 if (volkszaehler__webserver in ["apache"])
                                 else volkszaehler__user }}'

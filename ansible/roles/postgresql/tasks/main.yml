@@ -25,9 +25,9 @@
 - name: Set default PostgreSQL version variable
   ansible.builtin.set_fact:
     postgresql__version: '{{ (ansible_local.postgresql.version
-                              if (ansible_local.postgresql.version|d())
+                              if (ansible_local.postgresql.version | d())
                                  else (postgresql__preferred_version
-                                       if postgresql__preferred_version|d()
+                                       if postgresql__preferred_version | d()
                                        else postgresql__register_version.stdout)) }}'
 
 - name: Install PostgreSQL packages
@@ -106,7 +106,7 @@
                   "length=" + postgresql__password_length + " chars=" + postgresql__password_characters)) }}'
     encrypted: '{{ item.encrypted | d(True) }}'
     expires: '{{ item.expires | d(omit) }}'
-    role_attr_flags: '{{ (item.flags|d() | join(",")) | d(omit) }}'
+    role_attr_flags: '{{ (item.flags | d() | join(",")) | d(omit) }}'
     state: 'present'
   with_flattened:
     - '{{ postgresql__roles }}'
@@ -184,7 +184,7 @@
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
   when: (item.state|d('present') == 'present') and
-        item.owner|d()
+        item.owner | d()
 
 - name: Grant PostgreSQL groups
   community.postgresql.postgresql_privs:
@@ -220,7 +220,7 @@
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
   when: (item.state|d('present') == 'present') and
-        (item.db|d() and item.priv|d())
+        (item.db | d() and item.priv | d())
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Make sure required system groups exist

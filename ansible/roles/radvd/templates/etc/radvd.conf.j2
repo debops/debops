@@ -21,66 +21,66 @@
 {% endmacro %}
 {% set radvd__tpl_interfaces = [] %}
 {% for interface in radvd__combined_interfaces | debops.debops.parse_kv_items %}
-{%   if interface.name|d() and interface.state|d('present') not in [ 'init', 'absent' ] %}
+{%   if interface.name | d() and interface.state|d('present') not in [ 'init', 'absent' ] %}
 {%     set _ = radvd__tpl_interfaces.append(interface) %}
 {%   endif %}
 {% endfor %}
 {% for interface in radvd__tpl_interfaces %}
-{%   if interface.name|d() and interface.state|d('present') not in [ 'init', 'absent' ] %}
+{%   if interface.name | d() and interface.state|d('present') not in [ 'init', 'absent' ] %}
 {%     set radvd__tpl_prefixes = [] %}
-{%     if interface.prefix|d() %}
+{%     if interface.prefix | d() %}
 {%       set _ = radvd__tpl_prefixes.extend([ interface.prefix ] if (interface.prefix is string) else interface.prefix) %}
 {%     endif %}
-{%     if interface.prefixes|d() %}
+{%     if interface.prefixes | d() %}
 {%       set _ = radvd__tpl_prefixes.extend([ interface.prefixes ] if (interface.prefixes is string) else interface.prefixes) %}
 {%     endif %}
 {%     set radvd__tpl_clients = [] %}
-{%     if interface.client|d() %}
+{%     if interface.client | d() %}
 {%       set _ = radvd__tpl_clients.extend([ interface.client ] if (interface.client is string) else interface.client) %}
 {%     endif %}
-{%     if interface.clients|d() %}
+{%     if interface.clients | d() %}
 {%       set _ = radvd__tpl_clients.extend([ interface.clients ] if (interface.clients is string) else interface.clients) %}
 {%     endif %}
 {%     set radvd__tpl_routes = [] %}
-{%     if interface.route|d() %}
+{%     if interface.route | d() %}
 {%       set _ = radvd__tpl_routes.extend([ interface.route ] if (interface.route is string) else interface.route) %}
 {%     endif %}
-{%     if interface.routes|d() %}
+{%     if interface.routes | d() %}
 {%       set _ = radvd__tpl_routes.extend([ interface.routes ] if (interface.routes is string) else interface.routes) %}
 {%     endif %}
 {%     set radvd__tpl_rdnss = [] %}
-{%     if interface.rdnss|d() %}
+{%     if interface.rdnss | d() %}
 {%       for element in ([ interface.rdnss ] if interface.rdnss is string else interface.rdnss) %}
 {%         if element is string %}
 {%           set _ = radvd__tpl_rdnss.append(element) %}
 {%         elif element is mapping %}
-{%           if element.name|d() and element.state|d('present') != 'absent' %}
+{%           if element.name | d() and element.state|d('present') != 'absent' %}
 {%             set _ = radvd__tpl_rdnss.append(element.name) %}
 {%           endif %}
 {%         endif %}
 {%       endfor %}
 {%     endif %}
 {%     set radvd__tpl_dnssl = [] %}
-{%     if interface.dnssl|d() %}
+{%     if interface.dnssl | d() %}
 {%       for element in ([ interface.dnssl ] if interface.dnssl is string else interface.dnssl) %}
 {%         if element is string %}
 {%           set _ = radvd__tpl_dnssl.append(element) %}
 {%         elif element is mapping %}
-{%           if element.name|d() and element.state|d('present') != 'absent' %}
+{%           if element.name | d() and element.state|d('present') != 'absent' %}
 {%             set _ = radvd__tpl_rdnss.append(element.name) %}
 {%           endif %}
 {%         endif %}
 {%       endfor %}
 {%     endif %}
 {%     set radvd__tpl_abro = [] %}
-{%     if interface.abro|d() %}
+{%     if interface.abro | d() %}
 {%       set _ = radvd__tpl_abro.extend([ interface.abro ] if (interface.abro is string) else interface.abro) %}
 {%     endif %}
-{%     if interface.comment|d() %}
+{%     if interface.comment | d() %}
 {{ interface.comment | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
 {%     endif %}
 interface {{ interface.name }} {
-{%     if interface.options|d() %}
+{%     if interface.options | d() %}
 {%       for option in interface.options %}
 {%         if option.state|d('present') != 'absent' %}
 {{ "        {} {};".format(option.name, filter_bool(option.value)) }}
@@ -95,12 +95,12 @@ interface {{ interface.name }} {
 {{ "        prefix {} {{\n        }};".format(prefix | ipv6('subnet')) }}
 {%           endif %}
 {%         elif prefix is mapping %}
-{%           if prefix.name|d() and prefix.state|d('present') != 'absent' %}
+{%           if prefix.name | d() and prefix.state|d('present') != 'absent' %}
 
 {{ "        prefix {} {{".format(prefix.name | ipv6('subnet')) }}
-{%             if prefix.options|d() %}
+{%             if prefix.options | d() %}
 {%               for option in prefix.options %}
-{%                 if option.name|d() and option.value|d() and option.state|d('present') != 'absent' %}
+{%                 if option.name | d() and option.value | d() and option.state|d('present') != 'absent' %}
 {{ "                {} {};".format(option.name, filter_bool(option.value)) }}
 {%                 else %}
 {%                   for key, value in option.items() %}
@@ -121,7 +121,7 @@ interface {{ interface.name }} {
 {%         if client is string %}
 {{ "                {};".format(client) }}
 {%         elif client is mapping %}
-{%           if client.name|d() and client.state|d('present') != 'absent' %}
+{%           if client.name | d() and client.state|d('present') != 'absent' %}
 {{ "                {};".format(client.name) }}
 {%           endif %}
 {%         endif %}
@@ -136,12 +136,12 @@ interface {{ interface.name }} {
 {{ "        route {} {{\n        }};".format(route | ipv6('subnet')) }}
 {%           endif %}
 {%         elif route is mapping %}
-{%           if route.name|d() and route.state|d('present') != 'absent' %}
+{%           if route.name | d() and route.state|d('present') != 'absent' %}
 
 {{ "        route {} {{".format(route.name | ipv6('subnet')) }}
-{%             if route.options|d() %}
+{%             if route.options | d() %}
 {%               for option in route.options %}
-{%                 if option.name|d() and option.value|d() and option.state|d('present') != 'absent' %}
+{%                 if option.name | d() and option.value | d() and option.state|d('present') != 'absent' %}
 {{ "                {} {};".format(option.name, filter_bool(option.value)) }}
 {%                 else %}
 {%                   for key, value in option.items() %}
@@ -158,9 +158,9 @@ interface {{ interface.name }} {
 {%     if radvd__tpl_rdnss %}
 
 {{ "        RDNSS {} {{".format(radvd__tpl_rdnss | join(' ')) }}
-{%       if interface.rdnss_options|d() %}
+{%       if interface.rdnss_options | d() %}
 {%         for option in interface.rdnss_options %}
-{%           if option.name|d() and option.value|d() and option.state|d('present') != 'absent' %}
+{%           if option.name | d() and option.value | d() and option.state|d('present') != 'absent' %}
 {{ "                {} {};".format(option.name, filter_bool(option.value)) }}
 {%           else %}
 {%             for key, value in option.items() %}
@@ -174,9 +174,9 @@ interface {{ interface.name }} {
 {%     if radvd__tpl_dnssl %}
 
 {{ "        DNSSL {} {{".format(radvd__tpl_dnssl | join(' ')) }}
-{%       if interface.dnssl_options|d() %}
+{%       if interface.dnssl_options | d() %}
 {%         for option in interface.dnssl_options %}
-{%           if option.name|d() and option.value|d() and option.state|d('present') != 'absent' %}
+{%           if option.name | d() and option.value | d() and option.state|d('present') != 'absent' %}
 {{ "                {} {};".format(option.name, filter_bool(option.value)) }}
 {%           else %}
 {%             for key, value in option.items() %}
@@ -193,12 +193,12 @@ interface {{ interface.name }} {
 
 {{ "        abro {} {{\n        }};".format(abro) }}
 {%         elif abro is mapping %}
-{%           if abro.name|d() and abro.state|d('present') != 'absent' %}
+{%           if abro.name | d() and abro.state|d('present') != 'absent' %}
 
 {{ "        abro {} {{".format(abro.name) }}
-{%             if abro.options|d() %}
+{%             if abro.options | d() %}
 {%               for option in abro.options %}
-{%                 if option.name|d() and option.value|d() and option.state|d('present') != 'absent' %}
+{%                 if option.name | d() and option.value | d() and option.state|d('present') != 'absent' %}
 {{ "                {} {};".format(option.name, filter_bool(option.value)) }}
 {%                 else %}
 {%                   for key, value in option.items() %}

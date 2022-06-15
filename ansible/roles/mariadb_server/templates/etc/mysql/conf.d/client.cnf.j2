@@ -8,12 +8,12 @@
 {%   if config is mapping %}
 {%     if 'section' in config.keys() %}
 {%       if config.state|d('present') == 'present' %}
-{%         if config.comment|d() %}
+{%         if config.comment | d() %}
 {{ config.comment | comment(postfix='') -}}
 {%         endif %}
 [{{ config.section }}]
 
-{%         if config.options|d() %}
+{%         if config.options | d() %}
 {%           if config.options is mapping %}
 {{ print_config(config.options) -}}
 {%           else %}
@@ -25,10 +25,10 @@
 {%       endif %}
 {%     elif 'name' in config.keys() %}
 {%       if config.state|d('present') == 'present' %}
-{%         if config.comment|d() %}
+{%         if config.comment | d() %}
 {{ config.comment | comment(postfix='') -}}
 {%         endif %}
-{%         if config.options|d() %}
+{%         if config.options | d() %}
 {%           if config.options is mapping %}
 {{ print_config(config.options) -}}
 {%           else %}
@@ -36,7 +36,7 @@
 {{ print_config(element) -}}
 {%             endfor %}
 {%           endif %}
-{%         elif config.value|d() %}
+{%         elif config.value | d() %}
 {{ '%-30s = "%s"' | format(config.name, config.value) }}
 {%         else %}
 {{ config.name }}

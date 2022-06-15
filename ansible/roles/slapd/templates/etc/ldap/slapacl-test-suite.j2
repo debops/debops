@@ -121,7 +121,7 @@ if [ ! -t 2 ] && [ -t 1 ] ; then
 fi
 
 {% for element in slapd__slapacl_combined_tests | debops.debops.parse_kv_items(merge_keys=['queries']) %}
-{%   if element.name|d() and element.dn|d() and element.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%   if element.name | d() and element.dn | d() and element.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
 {%     if not loop.first %}
 
 {%     endif %}
@@ -135,32 +135,32 @@ fi
 {%     if element.authzid is defined %}
 {%       set _ = slapacl_command.extend([ '-X', '"${test_authzid}"' ]) %}
 {%     endif %}
-{%     if (element.dry_run|d()) | bool %}
+{%     if (element.dry_run | d()) | bool %}
 {%       set _ = slapacl_command.extend([ '-u' ]) %}
 {%     endif %}
-{%     if element.debug|d() %}
+{%     if element.debug | d() %}
 {%       set _ = slapacl_command.extend([ '-d', '"${debug}"' ]) %}
 {%     endif %}
-{%     if element.options|d() %}
+{%     if element.options | d() %}
 {%       set _ = slapacl_command.extend( (element.options | selectattr('state', 'equalto', 'present') | map(attribute='name') | list) | map('regex_replace', '^(.*)$', '-o \\1') | list ) %}
 {%     endif %}
-{%     if element.queries|d() %}
+{%     if element.queries | d() %}
 {%       set check_command = 'check_multi_acl' %}
 {%       set _ = slapacl_command.extend( (element.queries | selectattr('state', 'equalto', 'present') | map(attribute='name') | list) | map('regex_replace', '^(.*)$', '"\\1"') | list ) %}
-{%     elif element.query|d('entry') and element.policy|d() %}
+{%     elif element.query|d('entry') and element.policy | d() %}
 {%       set check_command = 'check_single_acl' %}
 {%       set _ = slapacl_command.extend( [ '"' + element.query|d('entry') + '"' ] ) %}
 {%     endif %}
 {%     set _ = slapacl_command.extend( [ '2>&1' ] ) %}
-{%     if element.comment|d() %}
+{%     if element.comment | d() %}
 {{ element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
 {%     endif %}
 test_name="{{ element.name }}"
 test_dn="{{ element.dn }}"
-{%     if element.queries|d() %}
+{%     if element.queries | d() %}
 unset policy
 test_case="{{ element.queries | selectattr('state', 'equalto', 'present') | selectattr('result', 'defined') | map(attribute='result') | list | join('\n') }}"
-{%     elif element.query|d('entry') and element.policy|d() %}
+{%     elif element.query|d('entry') and element.policy | d() %}
 {%       if element.policy in [ 'allow', 'allowed', 'accept', 'grant', 'permit' ] %}
 policy="ALLOWED"
 {%       elif element.policy in [ 'disallow', 'denied', 'reject', 'revoke', 'deny' ] %}
@@ -169,7 +169,7 @@ policy="DENIED"
 policy="{{ element.policy }}"
 {%       endif %}
 {%     endif %}
-{%     if element.debug|d() %}
+{%     if element.debug | d() %}
 debug="{{ element.debug }}"
 {%     endif %}
 {%     if element.options is defined %}

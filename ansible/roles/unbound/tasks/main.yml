@@ -28,14 +28,14 @@
     path: '/etc/unbound/unbound.conf.d/ansible-server.conf'
     state: 'absent'
   notify: [ 'Check unbound configuration and reload' ]
-  when: not unbound__combined_server|d()
+  when: not unbound__combined_server | d()
 
 - name: Remove Unbound remote control configuration
   ansible.builtin.file:
     path: '/etc/unbound/unbound.conf.d/ansible-remote-control.conf'
     state: 'absent'
   notify: [ 'Check unbound configuration and reload' ]
-  when: not unbound__combined_remote_control|d()
+  when: not unbound__combined_remote_control | d()
 
 - name: Generate Unbound server configuration
   ansible.builtin.template:
@@ -45,7 +45,7 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Check unbound configuration and reload' ]
-  when: unbound__combined_server|d()
+  when: unbound__combined_server | d()
 
 - name: Generate Unbound remote control configuration
   ansible.builtin.template:
@@ -55,7 +55,7 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Check unbound configuration and reload' ]
-  when: unbound__combined_remote_control|d()
+  when: unbound__combined_remote_control | d()
 
 - name: Remove DNS zones if requested
   ansible.builtin.file:
@@ -64,7 +64,7 @@
   with_flattened:
     - '{{ unbound__parsed_zones }}'
   notify: [ 'Check unbound configuration and reload' ]
-  when: item.name|d() and item.state|d('present') == 'absent'
+  when: item.name | d() and item.state|d('present') == 'absent'
 
 - name: Configure DNS zones
   ansible.builtin.template:
@@ -76,7 +76,7 @@
   with_flattened:
     - '{{ unbound__parsed_zones }}'
   notify: [ 'Check unbound configuration and reload' ]
-  when: item.name|d() and item.state|d('present') != 'absent'
+  when: item.name | d() and item.state|d('present') != 'absent'
 
 - name: Install unbound APT packages
   ansible.builtin.package:

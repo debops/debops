@@ -39,14 +39,14 @@
   ansible.builtin.set_fact:
     mariadb__delegate_to: '{{ mariadb__server|d("undefined") }}'
   when: (not mariadb__register_version.stdout|d(False) and
-         (mariadb__register_tunnel|d() and mariadb__register_tunnel.rc == 0))
+         (mariadb__register_tunnel | d() and mariadb__register_tunnel.rc == 0))
 
 - name: Override configuration if local server is detected
   ansible.builtin.set_fact:
     mariadb__server: 'localhost'
     mariadb__client: 'localhost'
   when: (mariadb__register_version.stdout|d(False) or
-         (mariadb__register_tunnel|d() and mariadb__register_tunnel.rc == 0))
+         (mariadb__register_tunnel | d() and mariadb__register_tunnel.rc == 0))
 
 - name: Install database client packages
   ansible.builtin.package:

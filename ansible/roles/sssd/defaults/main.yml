@@ -52,7 +52,7 @@ sssd__mkhomedir_umask: '{{ ansible_local.core.homedir_umask|d("0027") }}'
 # enabled automatically when the :ref:`debops.ldap` environment is configured
 # on the host.
 sssd__ldap_enabled: '{{ ansible_local.ldap.enabled
-                        if (ansible_local|d() and ansible_local.ldap|d() and
+                        if (ansible_local | d() and ansible_local.ldap | d() and
                             ansible_local.ldap.enabled is defined)
                         else False }}'
 
@@ -122,7 +122,7 @@ sssd__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
 # for a given host in the :ref:`debops.ldap` role.
 # See :ref:`ldap__ref_ldap_access_host` for more details.
 sssd__ldap_posix_urns: '{{ (ansible_local.ldap.urn_patterns
-                            if (ansible_local.ldap.urn_patterns|d())
+                            if (ansible_local.ldap.urn_patterns | d())
                             else [])
                            | map("regex_replace", "^(.*)$", "(host=posix:urn:\1)")
                            | list }}'
@@ -343,8 +343,8 @@ sssd__default_configuration:
       - name: 'ldap_id_use_start_tls'
         comment: 'SSL options'
         value: '{{ True
-                  if (ansible_local|d() and ansible_local.ldap|d() and
-                      (ansible_local.ldap.start_tls|d()) | bool)
+                  if (ansible_local | d() and ansible_local.ldap | d() and
+                      (ansible_local.ldap.start_tls | d()) | bool)
                   else False }}'
 
       - name: 'ldap_tls_reqcert'
@@ -422,8 +422,8 @@ sssd__ldap__dependent_tasks:
     attributes: '{{ sssd__ldap_self_attributes }}'
     no_log: '{{ debops__no_log | d(True) }}'
     state: '{{ "present"
-               if ((ansible_local.ldap.posix_enabled|d()) | bool and
-                   sssd__ldap_device_dn|d())
+               if ((ansible_local.ldap.posix_enabled | d()) | bool and
+                   sssd__ldap_device_dn | d())
                else "ignore" }}'
 
                                                                    # ]]]

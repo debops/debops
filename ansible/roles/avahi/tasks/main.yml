@@ -89,7 +89,7 @@
     state: 'present'
     mode: '0644'
   with_dict: '{{ avahi__hosts | combine(avahi__group_hosts) | combine(avahi__host_hosts) }}'
-  when: item.key|d() and item.value|d()
+  when: item.key | d() and item.value | d()
 
 - name: Configure Avahi CNAME aliases
   ansible.builtin.include_tasks: avahi_alias.yml
@@ -113,7 +113,7 @@
     mode: '0644'
   with_dict: '{{ avahi__combined_services }}'
   when: (item.value.filename|d(item.key) and item.value.state|d('present') != 'absent' and
-         (item.value.services|d() or item.value.type|d()))
+         (item.value.services | d() or item.value.type | d()))
   tags: [ 'role::avahi:alias', 'role::avahi:services' ]
 
 - name: Ensure that the avahi-daemon service in in the desired state

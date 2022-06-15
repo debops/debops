@@ -63,14 +63,14 @@
   ansible.builtin.template:
     src: 'etc/apache2/conf-available/{{ "raw"
                                         if (item.value.type|d("default") in ["divert", "raw"] and
-                                            item.value.raw|d())
+                                            item.value.raw | d())
                                         else item.key }}.conf.j2'
     dest: '{{ apache__config_path + "/conf-available/" + item.key + ".conf" }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
   when: (item.value.state|d("present") != "absent" and
-         (item.value.type|d("default") not in ["divert", "dont-create"] or item.value.raw|d()))
+         (item.value.type|d("default") not in ["divert", "dont-create"] or item.value.raw | d()))
   with_dict: '{{ apache__combined_snippets }}'
   notify: [ 'Test apache and reload' ]
 
@@ -85,7 +85,7 @@
                  | ternary("../conf-available/" + item.key + ".conf",
                            omit) }}'
     mode: '0644'
-    force: '{{ ansible_check_mode|d() | bool }}'
+    force: '{{ ansible_check_mode | d() | bool }}'
     state: '{{ (((item.value.enabled|d(True)
                   if (item.value is mapping)
                   else item.value|d(True)))

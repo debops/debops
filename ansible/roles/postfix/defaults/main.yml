@@ -61,7 +61,7 @@ postfix__version: '{{ ansible_local.postfix.version|d("0.0.0") }}'
 # account during configuration. The package presence is checked by the Ansible
 # local facts.
 postfix__doc_installed: '{{ ansible_local.postfix.doc_installed
-                            if (ansible_local|d() and ansible_local.postfix|d() and
+                            if (ansible_local | d() and ansible_local.postfix | d() and
                                 ansible_local.postfix.doc_installed is defined)
                             else False }}'
                                                                    # ]]]
@@ -136,7 +136,7 @@ postfix__allow_smtps: []
 #
 # Enable or disable support for TLS in Postfix, managed by the :ref:`debops.pki`
 # Ansible role.
-postfix__pki: '{{ ansible_local.pki.enabled|d() | bool }}'
+postfix__pki: '{{ ansible_local.pki.enabled | d() | bool }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__pki_path [[[
@@ -219,7 +219,7 @@ postfix__pki_hook_action: 'reload'
 # Enable or disable support for custom Diffie-Hellman parameters managed by the
 # :ref:`debops.dhparam` Ansible role.
 postfix__dhparam: '{{ ansible_local.dhparam.enabled
-                      if (ansible_local|d() and ansible_local.dhparam|d() and
+                      if (ansible_local | d() and ansible_local.dhparam | d() and
                           ansible_local.dhparam.enabled is defined)
                       else False }}'
 
@@ -236,8 +236,8 @@ postfix__dhparam_set: 'default'
 # Absolute path to Diffie-Hellman parameters file which should be used for
 # non-export grade connections.
 postfix__tls_dh1024_param_file: '{{ ansible_local.dhparam[postfix__dhparam_set]
-                                    if (ansible_local|d() and ansible_local.dhparam|d() and
-                                        ansible_local.dhparam[postfix__dhparam_set]|d())
+                                    if (ansible_local | d() and ansible_local.dhparam | d() and
+                                        ansible_local.dhparam[postfix__dhparam_set] | d())
                                     else "" }}'
 
                                                                    # ]]]
@@ -246,8 +246,8 @@ postfix__tls_dh1024_param_file: '{{ ansible_local.dhparam[postfix__dhparam_set]
 # Absolute path to Diffie-Hellman parameters file which should be used for
 # export grade connections.
 postfix__tls_dh512_param_file: '{{ ansible_local.dhparam[postfix__dhparam_set]
-                                   if (ansible_local|d() and ansible_local.dhparam|d() and
-                                       ansible_local.dhparam[postfix__dhparam_set]|d())
+                                   if (ansible_local | d() and ansible_local.dhparam | d() and
+                                       ansible_local.dhparam[postfix__dhparam_set] | d())
                                    else "" }}'
                                                                    # ]]]
                                                                    # ]]]

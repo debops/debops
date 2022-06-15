@@ -16,9 +16,9 @@ from sys import exit
 {% set system_groups__tpl_acl = {} %}
 {% set system_groups__tpl_access = ansible_local.system_groups.access|d({}) %}
 {% for element in (system_groups__combined_list | debops.debops.parse_kv_items) %}
-{%   if (element.name|d() and element.state|d('present') not in
+{%   if (element.name | d() and element.state|d('present') not in
          [ 'init', 'absent', 'ignore' ]) %}
-{%     if element.access|d() %}
+{%     if element.access | d() %}
 {%       for token in ([ element.access ]
                          if element.access is string
                          else element.access) %}
@@ -28,7 +28,7 @@ from sys import exit
                   + [ element.name ]) | unique)}) %}
 {%       endfor %}
 {%     endif %}
-{%     if element.allow|d() %}
+{%     if element.allow | d() %}
 {%       for token in ([ element.allow ]
                          if element.allow is string
                          else element.allow) %}
@@ -38,7 +38,7 @@ from sys import exit
                   + [ element.name ]) | unique)}) %}
 {%       endfor %}
 {%     endif %}
-{%     if element.deny|d() %}
+{%     if element.deny | d() %}
 {%       for token in ([ element.deny ]
                          if element.deny is string
                          else element.deny) %}

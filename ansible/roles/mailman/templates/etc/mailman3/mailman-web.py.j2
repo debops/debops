@@ -12,19 +12,19 @@
 {%   if element.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
 {%     set element_name = (element.option | d(element.name)) %}
 {%     set option_comment = ('# ' if (element.state|d('present') == 'comment') else '') %}
-{%     if ((element.comment|d() or (element.separator|d() | bool)) and not loop.first) %}
+{%     if ((element.comment | d() or (element.separator | d() | bool)) and not loop.first) %}
 
 {%     endif %}
-{%     if element.comment|d() %}
+{%     if element.comment | d() %}
 {{       element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
 {%     endif %}
-{%     if element.raw|d() %}
+{%     if element.raw | d() %}
 {%       if element.state|d('present') == 'comment' %}
 {{         ('{}'.format(element.raw | regex_replace('\n$', ''))) | comment(prefix='', postfix='') }}
 {%       else %}
 {{         '{}'.format(element.raw | regex_replace('\n$', '')) }}
 {%       endif %}
-{%     elif element.value|d() %}
+{%     elif element.value | d() %}
 {%       if element.value | bool and element.value is not iterable %}
 {%         if element.value | int and element.value | string != 'True' %}
 {{           '{}{} = {}'.format(option_comment, element_name | upper, element.value) }}
@@ -40,7 +40,7 @@
 {%           endif %}
 {%         endif %}
 {%       else %}
-{%         if element.type|d() == 'tuple' %}
+{%         if element.type | d() == 'tuple' %}
 {%           if element.value | count == 2 %}
 {{             "{}{} = ('{}')".format(option_comment, element_name | upper, element.value | join("', '")) }}
 {%           else %}
@@ -54,7 +54,7 @@
 {%             endfor %}
 {{             (option_comment + ')') }}
 {%           endif %}
-{%         elif element.type|d() == 'raw' %}
+{%         elif element.type | d() == 'raw' %}
 {%           if element.state|d('present') == 'comment' %}
 {{             ('{} = {}'.format(element_name | upper, element.value)) | comment(prefix='', postfix='') }}
 {%           else %}
@@ -68,13 +68,13 @@
 {%           endif %}
 {%         endif %}
 {%       endif %}
-{%     elif element.options|d() %}
-{%       if element.type|d() == 'tuple' %}
+{%     elif element.options | d() %}
+{%       if element.type | d() == 'tuple' %}
 {{         '{}{} = ('.format(option_comment, element_name | upper) }}
 {%         for entry in element.options %}
 {%           if entry.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
 {%             set entry_comment = ('#' if (entry.state|d('present') == 'comment') else '') %}
-{%             if entry.comment|d() %}
+{%             if entry.comment | d() %}
 {{               (entry.comment | regex_replace('\n$','') | comment(prefix='', postfix=''))| indent(4, true) -}}
 {%             endif %}
 {{             (option_comment + entry_comment + "'" + entry.name + "',") | indent(4, true) }}
@@ -86,7 +86,7 @@
 {%         for entry in element.options %}
 {%           if entry.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
 {%             set entry_comment = ('#' if (entry.state|d('present') == 'comment') else '') %}
-{%             if entry.comment|d() %}
+{%             if entry.comment | d() %}
 {{               (entry.comment | regex_replace('\n$','') | comment(prefix='', postfix=''))| indent(4, true) -}}
 {%             endif %}
 {{             (option_comment + entry_comment + "'" + entry.name + ("'," if not loop.last else "'")) | indent(4, true) }}
