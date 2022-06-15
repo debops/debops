@@ -303,8 +303,8 @@ dhcpd__ferm__dependent_rules:
   - name: 'accept_dhcp_failover'
     by_role: 'debops.dhcpd'
     type: 'accept'
-    saddr: '{{ (dhcpd__failovers|map(attribute="primary")|list
-                + dhcpd__failovers|map(attribute="secondary")|list)
+    saddr: '{{ (dhcpd__failovers | map(attribute="primary")|list
+                + dhcpd__failovers | map(attribute="secondary")|list)
                if dhcpd__failovers
                else omit }}'
     protocol: 'tcp'
