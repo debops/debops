@@ -145,7 +145,7 @@
 
 # Create initial configuration per volume [[[
 - name: Create initial configuration per volume
-  ansible.builtin.command: snapper --config '{{ item.name|default("root") }}'
+  ansible.builtin.command: snapper --config '{{ item.name | default("root") }}'
            create-config
            {{ ("'--template' '" + item.template + "'") if (item.template|d()) else '' }}
            '{{ item.path }}'
