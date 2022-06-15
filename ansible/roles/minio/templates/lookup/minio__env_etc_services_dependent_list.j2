@@ -1,5 +1,5 @@
-{# Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
- # Copyright (C) 2019 DebOps <https://debops.org/>
+{# Copyright (C) 2019-2022 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2019-2022 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 {% set minio__tpl_etc_services_dependent_list = [] %}
@@ -7,6 +7,13 @@
 {%   if (element.name|d() and element.port|d() and element.state|d('present') not in [ 'ignore', 'init' ]) %}
 {%     set rule = {'name': ('minio-' + element.name),
                    'port': element.port,
+                   'protocol': [ 'tcp' ],
+                   'state': element.state} %}
+{%     set _ = minio__tpl_etc_services_dependent_list.append(rule) %}
+{%   endif %}
+{%   if (element.name|d() and element.console_port|d() and element.state|d('present') not in [ 'ignore', 'init' ]) %}
+{%     set rule = {'name': ('minio-' + element.name + '-console'),
+                   'port': element.console_port,
                    'protocol': [ 'tcp' ],
                    'state': element.state} %}
 {%     set _ = minio__tpl_etc_services_dependent_list.append(rule) %}
