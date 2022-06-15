@@ -226,7 +226,7 @@ postldap__postfix__dependent_maincf:
   # Lookup tables with the per-recipient user ID that the virtual delivery agent uses while writing
   # to the recipient's mailbox.
   - name: 'virtual_uid_maps'
-    value: 'static:{{ postldap__vmail_posix_uidnumber|mandatory }}'
+    value: 'static:{{ postldap__vmail_posix_uidnumber | mandatory }}'
     section: 'virtual'
     state: '{{ "present"
             if (postldap__ldap_enabled|bool and
@@ -235,7 +235,7 @@ postldap__postfix__dependent_maincf:
 
   # Lookup tables with the per-recipient group ID for virtual mailbox delivery.
   - name: 'virtual_gid_maps'
-    value: 'static:{{ postldap__vmail_posix_gidnumber|mandatory }}'
+    value: 'static:{{ postldap__vmail_posix_gidnumber | mandatory }}'
     section: 'virtual'
     state: '{{ "present"
             if (postldap__ldap_enabled|bool and
@@ -245,7 +245,7 @@ postldap__postfix__dependent_maincf:
   # The minimum user ID value that the virtual delivery agent accepts as a result from $virtual_uid_maps table lookup
   # FIXME: problems while parsing number.
   - name: 'virtual_minimum_uid'
-    value: '{{ postldap__vmail_posix_uidnumber|mandatory }}'
+    value: '{{ postldap__vmail_posix_uidnumber | mandatory }}'
     section: 'virtual'
     state: 'absent'
 
