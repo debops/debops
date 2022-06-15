@@ -384,7 +384,7 @@
     dump:   '0'
     passno: '0'
     fstab:  '{{ item.fstab_path | d(cryptsetup__fstab_file) }}'
-    state:  '{{ (item.state|d(cryptsetup__state) == "absent")|ternary("absent", "present") }}'
+    state:  '{{ (item.state|d(cryptsetup__state) == "absent") | ternary("absent", "present") }}'
   register: cryptsetup__register_swap_fstab
   when: item.swap|d(False) | bool
   with_items: '{{ cryptsetup__process_devices|d([]) }}'
