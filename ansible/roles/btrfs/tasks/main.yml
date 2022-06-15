@@ -22,10 +22,10 @@
   btrfs_subvolume:
     state: 'present'
     path: '{{ item.key }}'
-    qgroups: '{{ item.value.qgroups|d(omit) }}'
-    commit: '{{ item.value.commit|d(omit) }}'
-    recursive: '{{ item.value.recursive|d(omit) }}'
-  when: (item.value.state|d("present") == "present")
+    qgroups: '{{ item.value.qgroups | d(omit) }}'
+    commit: '{{ item.value.commit | d(omit) }}'
+    recursive: '{{ item.value.recursive | d(omit) }}'
+  when: (item.value.state | d("present") == "present")
   with_dict: '{{ btrfs__subvolumes_combined }}'
   tags: [ 'role::btrfs:subvolumes' ]
 
@@ -33,7 +33,7 @@
   btrfs_subvolume:
     state: 'absent'
     path: '{{ item.key }}'
-  when: (item.value.state|d("present") != "present")
+  when: (item.value.state | d("present") != "present")
   with_dict: '{{ btrfs__subvolumes_combined }}'
   tags: [ 'role::btrfs:subvolumes' ]
 
@@ -44,6 +44,6 @@
     owner:  '{{ item.value.dir_owner  | d(omit) }}'
     group:  '{{ item.value.dir_group  | d(omit) }}'
     mode:   '{{ item.value.dir_mode   | d(omit) }}'
-  when: (item.value.state|d("present") == "present")
+  when: (item.value.state | d("present") == "present")
   with_dict: '{{ btrfs__subvolumes_combined }}'
   tags: [ 'role::btrfs:subvolumes' ]

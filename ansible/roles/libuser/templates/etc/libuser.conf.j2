@@ -11,7 +11,7 @@
 # to programs (i.e., scripts) working!
 
 {% for element in libuser__combined_configuration | debops.debops.parse_kv_items %}
-{%   if element.name | d() and element.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%   if element.name | d() and element.state | d('present') not in [ 'absent', 'ignore' ] %}
 {%     if not loop.first %}
 
 {%     endif %}
@@ -20,8 +20,8 @@
 {%     endif %}
 {%     if element.options | d() %}
 {%       for thing in element.options %}
-{%         if thing.name | d() and thing.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
-{%           set thing_commented = ('# ' if thing.state|d('present') == 'comment' else '') %}
+{%         if thing.name | d() and thing.state | d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%           set thing_commented = ('# ' if thing.state | d('present') == 'comment' else '') %}
 {%           if (thing.separator | d()) | bool %}
 
 {%           endif %}

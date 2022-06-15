@@ -110,7 +110,7 @@
   loop_control:
     label: '{{ item.key }}'
   register: ferm__register_rules_removed
-  when: (item.value.rule_state|d(item.value.state|d('present')) == 'absent')
+  when: (item.value.rule_state | d(item.value.state | d('present')) == 'absent')
   tags: [ 'role::ferm:rules' ]
 
 - name: Generate firewall rules
@@ -126,7 +126,7 @@
   loop_control:
     label: '{{ item.key }}'
   register: ferm__register_rules_created
-  when: (item.value.rule_state|d(item.value.state|d('present')) not in [ 'absent', 'ignore' ])
+  when: (item.value.rule_state | d(item.value.state | d('present')) not in [ 'absent', 'ignore' ])
   tags: [ 'role::ferm:rules' ]
 
 - name: Remove unknown firewall rules

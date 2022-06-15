@@ -58,7 +58,7 @@
     label: '{{ {"name": item.name, "state": item.state} }}'
   register: extrepo__register_updated_sources
   when: extrepo__enabled | bool and item.name in ansible_local.extrepo.sources | d() and
-        item.state|d('present') not in [ 'absent', 'init', 'ignore' ] and
+        item.state | d('present') not in [ 'absent', 'init', 'ignore' ] and
         extrepo__register_config is changed
 
 - name: Remove external APT sources when requested
@@ -69,7 +69,7 @@
   loop_control:
     label: '{{ {"name": item.name, "state": item.state} }}'
   register: extrepo__register_removed_sources
-  when: extrepo__enabled | bool and item.name and item.state|d('present') == 'absent'
+  when: extrepo__enabled | bool and item.name and item.state | d('present') == 'absent'
 
 - name: Enable external APT sources
   ansible.builtin.command: 'extrepo enable {{ item.name }}'
@@ -78,7 +78,7 @@
     label: '{{ {"name": item.name, "state": item.state} }}'
   register: extrepo__register_enabled_sources
   when: extrepo__enabled | bool and item.name not in ansible_local.extrepo.sources | d() and
-        item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
+        item.state | d('present') not in [ 'absent', 'init', 'ignore' ]
 
 - name: Update APT cache if required
   ansible.builtin.apt:  # noqa no-handler

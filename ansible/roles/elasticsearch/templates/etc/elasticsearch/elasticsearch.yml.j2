@@ -23,11 +23,11 @@
 {% for item in elasticsearch__combined_configuration | debops.debops.parse_kv_config %}
 {%   if item is mapping %}
 {%     if item.name | d() %}
-{%       if item.state|d('present') != 'absent' %}
+{%       if item.state | d('present') != 'absent' %}
 {%         if item.value is defined %}
 {%           set name_exploded = item.name.split('.') %}
 {%           set current_dict = elasticsearch__tpl_config[name_exploded[0]] | d({}) %}
-{%           if item.state|d('present') == 'comment' %}
+{%           if item.state | d('present') == 'comment' %}
 {%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'comment': item.value } }) %}
 {%           else %}
 {%             set _ = current_dict.update({ name_exploded[1:] | join('.'): item.value }) %}
@@ -40,7 +40,7 @@
 {%         elif item.options is defined %}
 {%           set name_exploded = item.name.split('.') %}
 {%           set current_dict = elasticsearch__tpl_config[name_exploded[0]] | d({}) %}
-{%           if item.state|d('present') == 'comment' %}
+{%           if item.state | d('present') == 'comment' %}
 {%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'comment': item.options, 'options': item.options } }) %}
 {%           else %}
 {%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'options': item.options } }) %}
@@ -52,7 +52,7 @@
 {%         elif item.empty is defined %}
 {%           set name_exploded = item.name.split('.') %}
 {%           set current_dict = elasticsearch__tpl_config[name_exploded[0]] | d({}) %}
-{%           if item.state|d('present') == 'comment' %}
+{%           if item.state | d('present') == 'comment' %}
 {%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'comment': item.empty, 'empty': item.empty } }) %}
 {%           else %}
 {%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'empty': item.empty } }) %}
@@ -64,7 +64,7 @@
 {%         elif item.raw is defined %}
 {%           set name_exploded = item.name.split('.') %}
 {%           set current_dict = elasticsearch__tpl_config[name_exploded[0]] | d({}) %}
-{%           if item.state|d('present') == 'comment' %}
+{%           if item.state | d('present') == 'comment' %}
 {%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'comment': item.raw, 'raw': item.raw } }) %}
 {%           else %}
 {%             set _ = current_dict.update({ name_exploded[1:] | join('.'): { 'raw': item.raw } }) %}
@@ -74,7 +74,7 @@
 {%             set _ = elasticsearch__tpl_comment.update({ item.name: item.comment }) %}
 {%           endif %}
 {%         endif %}
-{%       elif item.state|d('present') == 'absent' %}
+{%       elif item.state | d('present') == 'absent' %}
 {%         set name_exploded = item.name.split('.') %}
 {%         set current_dict = elasticsearch__tpl_config[name_exploded[0]] | d({}) %}
 {%         set _ = current_dict.pop(name_exploded[1:] | join('.'), None) %}

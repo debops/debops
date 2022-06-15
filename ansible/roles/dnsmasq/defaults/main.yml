@@ -423,24 +423,24 @@ dnsmasq__default_configuration:
     options:
 
       - name: 'local'
-        value: '{{ "/" + (ansible_local.lxc.net_domain|d(""))
-                   + "/" + ansible_local.lxc.net_address|d("") }}'
+        value: '{{ "/" + (ansible_local.lxc.net_domain | d(""))
+                   + "/" + ansible_local.lxc.net_address | d("") }}'
 
       # Create a separate 'lxc' host record that points to the 'lxcbr0'
       # interface from the outside, if there's no external domain set.
       - name: 'host-record'
-        value: '{{ ansible_local.lxc.net_domain|d("")
-                   + "," + ansible_local.lxc.net_address|d("") }}'
+        value: '{{ ansible_local.lxc.net_domain | d("")
+                   + "," + ansible_local.lxc.net_address | d("") }}'
         state: '{{ "present"
                    if ("." not in ansible_local.lxc.net_domain | d())
                    else "absent" }}'
 
       - name: 'rev-server'
-        value: '{{ ansible_local.lxc.net_subnet|d("")
-                   + "," + ansible_local.lxc.net_address|d("") }}'
+        value: '{{ ansible_local.lxc.net_subnet | d("")
+                   + "," + ansible_local.lxc.net_address | d("") }}'
 
       - name: 'rebind-domain-ok'
-        value: '{{ ansible_local.lxc.net_domain|d("") }}'
+        value: '{{ ansible_local.lxc.net_domain | d("") }}'
 
     state: '{{ "present"
                if (ansible_local.lxc.net_domain | d())

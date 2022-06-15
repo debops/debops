@@ -308,37 +308,37 @@ icinga_web__master_database_enabled: '{{ True
 #
 # Specify the type of the Icinga 2 master database, either ``postgresql`` or
 # ``mariadb``.
-icinga_web__master_database_type: '{{ ansible_local.icinga_db.type|d("") }}'
+icinga_web__master_database_type: '{{ ansible_local.icinga_db.type | d("") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__master_database_name [[[
 #
 # Name of the Icinga 2 master database.
-icinga_web__master_database_name: '{{ ansible_local.icinga_db.dbc_dbname|d("icinga2") }}'
+icinga_web__master_database_name: '{{ ansible_local.icinga_db.dbc_dbname | d("icinga2") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__master_database_user [[[
 #
 # Name of the Icinga 2 master database user.
-icinga_web__master_database_user: '{{ ansible_local.icinga_db.dbc_dbuser|d("icinga2") }}'
+icinga_web__master_database_user: '{{ ansible_local.icinga_db.dbc_dbuser | d("icinga2") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__master_database_password [[[
 #
 # Password for the Icinga 2 master database.
-icinga_web__master_database_password: '{{ ansible_local.icinga_db.dbc_dbpass|d("") }}'
+icinga_web__master_database_password: '{{ ansible_local.icinga_db.dbc_dbpass | d("") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__master_database_host [[[
 #
 # The address of the Icinga 2 master database host.
-icinga_web__master_database_host: '{{ ansible_local.icinga_db.dbc_dbserver|d("localhost") }}'
+icinga_web__master_database_host: '{{ ansible_local.icinga_db.dbc_dbserver | d("localhost") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__master_database_port [[[
 #
 # The port on which the Icinga 2 master database listens for connections.
-icinga_web__master_database_port: '{{ ansible_local.icinga_db.dbc_dbport|d("") }}'
+icinga_web__master_database_port: '{{ ansible_local.icinga_db.dbc_dbport | d("") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Icinga 2 Director support [[[
@@ -527,7 +527,7 @@ icinga_web__x509_database_user: 'icingaweb2_x509'
 #
 # Password for Icinga 2 Web x509 database.
 icinga_web__x509_database_password: '{{ lookup("password", secret + "/mariadb/"
-                                        + ansible_local.mariadb.delegate_to|d(inventory_hostname)
+                                        + ansible_local.mariadb.delegate_to | d(inventory_hostname)
                                         + "/credentials/" + icinga_web__x509_database_user + "/password"
                                         + " length=48 chars=ascii_letters,digits,.-_") }}'
 
@@ -535,14 +535,14 @@ icinga_web__x509_database_password: '{{ lookup("password", secret + "/mariadb/"
 # .. envvar:: icinga_web__x509_database_host [[[
 #
 # Address of the Icinga 2 X509 database server.
-icinga_web__x509_database_host: '{{ ansible_local.mariadb.server|d("localhost") }}'
+icinga_web__x509_database_host: '{{ ansible_local.mariadb.server | d("localhost") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__x509_database_port [[[
 #
 # The port on which the Icinga 2 x509 database server listens for
 # connections.
-icinga_web__x509_database_port: '{{ ansible_local.mariadb.port|d("3306") }}'
+icinga_web__x509_database_port: '{{ ansible_local.mariadb.port | d("3306") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__x5609_database_schema [[[
@@ -651,7 +651,7 @@ icinga_web__ldap_enabled: '{{ True
 #
 # The base Distinguished Name which should be used to create Distinguished
 # Names of the LDAP directory objects, defined as a YAML list.
-icinga_web__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
+icinga_web__ldap_base_dn: '{{ ansible_local.ldap.base_dn | d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__ldap_groups_rdn [[[
@@ -659,7 +659,7 @@ icinga_web__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
 # The Relative Distinguished Name of the object which contains the groups stored
 # in LDAP.
 icinga_web__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn
-                                 |d("ou=Groups") }}'
+                                  | d("ou=Groups") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__ldap_groups_dn [[[
@@ -675,7 +675,7 @@ icinga_web__ldap_groups_dn: '{{ [ icinga_web__ldap_groups_rdn ]
 # The Relative Distinguished Name of the object which contains the user accounts
 # stored in LDAP.
 icinga_web__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn
-                                 |d("ou=People") }}'
+                                  | d("ou=People") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__ldap_people_dn [[[
@@ -692,7 +692,7 @@ icinga_web__ldap_people_dn: '{{ [ icinga_web__ldap_people_rdn ]
 # list. It will be used as a base for the Icinga web service account LDAP
 # object. If the list is empty, the role will not create the account LDAP
 # object automatically.
-icinga_web__ldap_device_dn: '{{ ansible_local.ldap.device_dn|d([]) }}'
+icinga_web__ldap_device_dn: '{{ ansible_local.ldap.device_dn | d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__ldap_self_rdn [[[
@@ -744,7 +744,7 @@ icinga_web__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
 #
 # The LDAP URI that points to the directory server which should be used by
 # Icinga Web.
-icinga_web__ldap_hostname: '{{ ansible_local.ldap.hosts|d([""]) | first }}'
+icinga_web__ldap_hostname: '{{ ansible_local.ldap.hosts | d([""]) | first }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__ldap_encryption [[[
@@ -1246,7 +1246,7 @@ icinga_web__default_roles:
     options:
 
       - name: 'users'
-        value: '{{ ansible_local.core.admin_users|d([]) | join(",") }}'
+        value: '{{ ansible_local.core.admin_users | d([]) | join(",") }}'
 
       - name: 'permissions'
         value: '*'

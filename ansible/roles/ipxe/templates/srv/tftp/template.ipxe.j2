@@ -13,7 +13,7 @@
 {{ item.raw | regex_replace("\n$", "") }}
 {% elif item.options | d() %}
 {%   for element in item.options %}
-{%     if element.raw | d() and element.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%     if element.raw | d() and element.state | d('present') not in [ 'absent', 'ignore' ] %}
 {%       if not loop.first %}
 
 {%       endif %}
@@ -21,7 +21,7 @@
 {{ element.comment | regex_replace("\n$", "") | comment(prefix="", postfix="") }}
 {%       endif %}
 {{ element.raw | regex_replace("\n$", "") }}
-{%     elif element.name | d() and element.value is defined and element.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%     elif element.name | d() and element.value is defined and element.state | d('present') not in [ 'absent', 'ignore' ] %}
 {%       if not loop.first %}
 
 {%       endif %}

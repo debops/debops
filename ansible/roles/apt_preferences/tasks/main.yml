@@ -20,16 +20,16 @@
     state: 'absent'
   with_flattened:
     ## Deprecated: [[[
-    - '{{ apt_preferences_list|d([]) }}'
-    - '{{ apt_preferences_group_list|d([]) }}'
-    - '{{ apt_preferences_host_list|d([]) }}'
-    - '{{ apt_preferences_dependent_list|d([]) }}'
+    - '{{ apt_preferences_list | d([]) }}'
+    - '{{ apt_preferences_group_list | d([]) }}'
+    - '{{ apt_preferences_host_list | d([]) }}'
+    - '{{ apt_preferences_dependent_list | d([]) }}'
     ## ]]]
     - '{{ apt_preferences__list }}'
     - '{{ apt_preferences__group_list }}'
     - '{{ apt_preferences__host_list }}'
     - '{{ apt_preferences__dependent_list }}'
-  when: ("." in item.role|d(item.by_role|d("")))
+  when: ("." in item.role | d(item.by_role | d("")))
 
 - name: Remove APT preferences
   ansible.builtin.file:
@@ -45,10 +45,10 @@
     state: 'absent'
   with_flattened:
     ## Deprecated: [[[
-    - '{{ apt_preferences_list|d([]) }}'
-    - '{{ apt_preferences_group_list|d([]) }}'
-    - '{{ apt_preferences_host_list|d([]) }}'
-    - '{{ apt_preferences_dependent_list|d([]) }}'
+    - '{{ apt_preferences_list | d([]) }}'
+    - '{{ apt_preferences_group_list | d([]) }}'
+    - '{{ apt_preferences_host_list | d([]) }}'
+    - '{{ apt_preferences_dependent_list | d([]) }}'
     ## ]]]
     - '{{ apt_preferences__list }}'
     - '{{ apt_preferences__group_list }}'
@@ -90,10 +90,10 @@
     mode: '0644'
   with_flattened:
     ## Deprecated: [[[
-    - '{{ apt_preferences_list|d([]) }}'
-    - '{{ apt_preferences_group_list|d([]) }}'
-    - '{{ apt_preferences_host_list|d([]) }}'
-    - '{{ apt_preferences_dependent_list|d([]) }}'
+    - '{{ apt_preferences_list | d([]) }}'
+    - '{{ apt_preferences_group_list | d([]) }}'
+    - '{{ apt_preferences_host_list | d([]) }}'
+    - '{{ apt_preferences_dependent_list | d([]) }}'
     ## ]]]
     - '{{ apt_preferences__list }}'
     - '{{ apt_preferences__group_list }}'
@@ -101,7 +101,7 @@
     - '{{ apt_preferences__dependent_list }}'
   when: (
           (
-            ((item.state|d('present')) != 'absent' and (not (item.delete | d() | bool))) and
+            ((item.state | d('present')) != 'absent' and (not (item.delete | d() | bool))) and
             (item.package | d() or item.packages | d())
           ) and
           (

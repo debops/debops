@@ -57,7 +57,7 @@ nslcd__group: 'nslcd'
 #
 # Default umask for new home directories created by the ``pam_mkhomedir`` PAM
 # module.
-nslcd__mkhomedir_umask: '{{ ansible_local.core.homedir_umask|d("0027") }}'
+nslcd__mkhomedir_umask: '{{ ansible_local.core.homedir_umask | d("0027") }}'
                                                                    # ]]]
                                                                    # ]]]
 # LDAP environment [[[
@@ -79,7 +79,7 @@ nslcd__ldap_enabled: '{{ ansible_local.ldap.enabled
 # The base Distinguished Name which should be used to create Distinguished
 # Names of the LDAP directory objects, defined as a YAML list. If this variable
 # is empty, :file:`/etc/nslcd.conf` configuration file will not be generated.
-nslcd__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
+nslcd__ldap_base_dn: '{{ ansible_local.ldap.base_dn | d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: nslcd__ldap_device_dn [[[
@@ -88,7 +88,7 @@ nslcd__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
 # list. It will be used as a base for the :command:`nslcd` service account LDAP
 # object. If the list is empty, the role will not create the account LDAP
 # object automatically.
-nslcd__ldap_device_dn: '{{ ansible_local.ldap.device_dn|d([]) }}'
+nslcd__ldap_device_dn: '{{ ansible_local.ldap.device_dn | d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: nslcd__ldap_self_rdn [[[
@@ -188,7 +188,7 @@ nslcd__default_configuration:
 
   - name: 'uri'
     comment: 'The location at which the LDAP server(s) should be reachable.'
-    value: '{{ ansible_local.ldap.uri|d("") }}'
+    value: '{{ ansible_local.ldap.uri | d("") }}'
 
   - name: 'idle_timelimit'
     comment: 'The idle timelimit for connections with the LDAP server.'
@@ -237,7 +237,7 @@ nslcd__default_configuration:
     comment: |
       First valid UID/GID number expected to be in the LDAP directory.
       UIDs/GIDs lower than this value will be ignored.
-    value: '{{ ansible_local.ldap.uid_gid_min|d("10000") }}'
+    value: '{{ ansible_local.ldap.uid_gid_min | d("10000") }}'
 
   - name: 'map_group_id'
     comment: |

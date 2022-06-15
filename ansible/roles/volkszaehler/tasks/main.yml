@@ -44,7 +44,7 @@
 - name: Enable required Apache modules
   community.general.apache2_module:
     name: '{{ item.key }}'
-    state: '{{ item.value.state|d("present") }}'
+    state: '{{ item.value.state | d("present") }}'
   when: (volkszaehler__webserver == "apache")
   with_dict: '{{ volkszaehler__apache_modules }}'
 

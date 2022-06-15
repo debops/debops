@@ -10,8 +10,8 @@
   {'waitforlock': 3},
   {'verbose': ''}
 ] %}
-{% for option in ((default_options + repo.options|d([])) | debops.debops.parse_kv_config) %}
-{%   if option.state|d('present') not in [ 'absent', 'ignore' ] %}
+{% for option in ((default_options + repo.options | d([])) | debops.debops.parse_kv_config) %}
+{%   if option.state | d('present') not in [ 'absent', 'ignore' ] %}
 {%     if option.value | d() %}
 {{       '{} {}'.format(option.name, option.value) }}
 {%     else %}

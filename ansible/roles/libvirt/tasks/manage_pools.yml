@@ -22,7 +22,7 @@
     mode: '{{ item.item.mode | d(omit) }}'
   with_flattened: '{{ libvirt__register_stop.results }}'
   become: False
-  when: (item is changed and item.item.name | d() and item.item.delete|d(False) and
+  when: (item is changed and item.item.name | d() and item.item.delete | d(False) and
          item.item.state | d() in [ 'undefined' ] and
          item.item.type in [ 'dir', 'nfs', 'logical' ])
 
@@ -44,7 +44,7 @@
   with_flattened: '{{ libvirt__pools }}'
   become: False
   register: libvirt__register_define
-  when: ((item.name | d()) and (item.state|d('active') not in [ 'undefined', 'absent' ]))
+  when: ((item.name | d()) and (item.state | d('active') not in [ 'undefined', 'absent' ]))
 
 - name: Build new storage pools
   virt_pool:  # noqa no-handler
@@ -55,8 +55,8 @@
   with_flattened: '{{ libvirt__register_define.results }}'
   become: False
   when: (item is changed and item.item.name | d() and
-         (item.item.state|d('active') not in [ 'undefined', 'absent' ]) and
-         (item.item.build|d(True)) and
+         (item.item.state | d('active') not in [ 'undefined', 'absent' ]) and
+         (item.item.build | d(True)) and
          (item.item.type in [ 'dir', 'nfs' ] or
          (item.item.type == 'logical' and item.item.devices | d())))
 
@@ -67,13 +67,13 @@
     uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
   with_flattened: '{{ libvirt__pools }}'
   become: False
-  when: (item.name | d() and item.state|d('active') in [ 'active' ])
+  when: (item.name | d() and item.state | d('active') in [ 'active' ])
 
 - name: Set autostart attribute on storage pools
   virt_pool:
     name: '{{ item.name }}'
-    autostart: '{{ "yes" if (item.autostart|d(True)) else "no" }}'
+    autostart: '{{ "yes" if (item.autostart | d(True)) else "no" }}'
     uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
   with_flattened: '{{ libvirt__pools }}'
   become: False
-  when: (item.name | d() and item.state|d('active') not in [ 'undefined', 'absent' ])
+  when: (item.name | d() and item.state | d('active') not in [ 'undefined', 'absent' ])

@@ -31,7 +31,7 @@
   with_flattened: '{{ libvirt__networks }}'
   become: False
   when: ((item.name | d()) and
-         (item.state|d("active") not in [ 'undefined', 'absent' ]) and
+         (item.state | d("active") not in [ 'undefined', 'absent' ]) and
          (item.interface_present is undefined or
           (item.interface_present in ansible_interfaces and not item.uri | d())))
 
@@ -50,7 +50,7 @@
 - name: Set autostart attribute on networks
   virt_net:
     name: '{{ item.name }}'
-    autostart: '{{ "yes" if (item.autostart|d(True)) else "no" }}'
+    autostart: '{{ "yes" if (item.autostart | d(True)) else "no" }}'
     uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
   with_flattened: '{{ libvirt__networks }}'
   become: False

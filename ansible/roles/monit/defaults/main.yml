@@ -342,7 +342,7 @@ monit__service_config:
         include /etc/monit/templates/rootbin
     state: '{{ "present"
                if (ansible_local | d() and ansible_local.mariadb | d() and
-                   ansible_local.mariadb.server|d("") == "localhost")
+                   ansible_local.mariadb.server | d("") == "localhost")
                else "init" }}'
 
   - name: 'nginx'
@@ -420,7 +420,7 @@ monit__service_config:
     state: '{{ "present"
                if (ansible_local | d() and ansible_local.ntp | d() and
                    (ansible_local.ntp.configured | d()) | bool and
-                   ansible_local.ntp.daemon|d("") == "openntpd")
+                   ansible_local.ntp.daemon | d("") == "openntpd")
                else "init" }}'
 
   - name: 'postfix'

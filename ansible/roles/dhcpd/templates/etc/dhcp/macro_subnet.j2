@@ -6,7 +6,7 @@
 {% macro print_subnet(subnet, protocol) %}
 {%  if ((protocol == 'DHCPv4' and subnet.subnet | d()|ipv4) or
         (protocol == 'DHCPv6' and subnet.subnet | d()|ipv6)) and
-       subnet.state|d('present') == 'present' %}
+       subnet.state | d('present') == 'present' %}
 {%      if subnet.comment | d() %}
 # {{ subnet.comment }}
 {%      endif %}

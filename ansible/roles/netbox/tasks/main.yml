@@ -170,7 +170,7 @@
   become_user: '{{ netbox__user }}'
   with_flattened: '{{ netbox__virtualenv_pip_packages }}'
   when: netbox__register_checkout is changed and
-        item.state|d('present') not in [ 'absent', 'ignore' ]
+        item.state | d('present') not in [ 'absent', 'ignore' ]
 
 - name: Generate NetBox configuration
   ansible.builtin.template:

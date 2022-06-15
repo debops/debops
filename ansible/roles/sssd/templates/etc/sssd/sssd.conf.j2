@@ -9,7 +9,7 @@
 #
 #			For more information, see sssd.conf(5)
 {% for section in sssd__combined_configuration | debops.debops.parse_kv_items(name='section') %}
-{%   if section.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%   if section.state | d('present') not in [ 'absent', 'init', 'ignore' ] %}
 {%     if section.options | d() %}
 {%       if section.state != 'hidden' %}
 {%         if (['present', 'comment'] | intersect(section.options | map(attribute='state') | list)) %}
@@ -27,7 +27,7 @@
 {{         '' }}
 {%       endif %}
 {%       for element in section.options %}
-{%         if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%         if element.state | d('present') not in [ 'absent', 'ignore', 'init' ] %}
 {%           if element.comment | d() %}
 {%             if not loop.first %}
 {{               '' }}
@@ -35,7 +35,7 @@
 {{             element.comment | regex_replace('\n$', '') | comment(prefix='', decoration='# ', postfix='') -}}
 {%           endif %}
 {%           if element.raw | d() %}
-{%             if element.state|d('present') == 'comment' %}
+{%             if element.state | d('present') == 'comment' %}
 {{               '{}'.format(element.raw | regex_replace('\n$', '') | comment(prefix='', decoration='#', postfix='')) -}}
 {%             else %}
 {{               '{}'.format(element.raw | regex_replace('\n$', '')) }}
@@ -64,7 +64,7 @@
 {%             else %}
 {%               set element_value = (element.value | selectattr("name", "defined") | map(attribute="name") | list | join(', ')) %}
 {%             endif %}
-{{ '{}{} = {}'.format(('#' if (element.state|d('present') == 'comment') else ''), element.name, element_value) }}
+{{ '{}{} = {}'.format(('#' if (element.state | d('present') == 'comment') else ''), element.name, element_value) }}
 {%           endif %}
 {%         endif %}
 {%       endfor %}

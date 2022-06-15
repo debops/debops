@@ -65,19 +65,19 @@
 {% endmacro %}{# ]]] #}
 
 {% macro get_apache_version() %}{# [[[ #}
-{{ ansible_local.apache.version|d("2.4.0") -}}
+{{ ansible_local.apache.version | d("2.4.0") -}}
 {% endmacro %}{# ]]] #}
 
 {% macro get_apache_min_version() %}{# [[[ #}
-{{ ansible_local.apache.min_version|d("2.4.0") -}}
+{{ ansible_local.apache.min_version | d("2.4.0") -}}
 {% endmacro %}{# ]]] #}
 
 {% macro get_openssl_version() %}{# [[[ #}
-{{ ansible_local.pki.openssl_version|d("0.0.0") }}
+{{ ansible_local.pki.openssl_version | d("0.0.0") }}
 {% endmacro %}{# ]]] #}
 
 {% macro get_gnutls_version() %}{# [[[ #}
-{{ ansible_local.pki.gnutls_version|d("0.0.0") }}
+{{ ansible_local.pki.gnutls_version | d("0.0.0") }}
 {% endmacro %}{# ]]] #}
 
 {% macro indent(content, width=4, indentfirst=False) %}{# [[[ #}
@@ -145,16 +145,16 @@
 {%     if to_merge_dict is mapping %}
 {%       for dict_name in to_merge_dict.keys() | sort %}
 {%         if to_merge_dict[dict_name][dict_key] | d() %}
-{%           set _ = merged_dict.update({to_merge_dict[dict_name][dict_key]:(current_dict[to_merge_dict[dict_name][dict_key]]|d({}) | combine(to_merge_dict[dict_name], recursive=True))}) %}
+{%           set _ = merged_dict.update({to_merge_dict[dict_name][dict_key]:(current_dict[to_merge_dict[dict_name][dict_key]] | d({}) | combine(to_merge_dict[dict_name], recursive=True))}) %}
 {%         elif to_merge_dict[dict_name][dict_key] is undefined %}
-{%           set _ = merged_dict.update({dict_name:(current_dict[dict_name]|d({}) | combine(to_merge_dict[dict_name], recursive=True))}) %}
+{%           set _ = merged_dict.update({dict_name:(current_dict[dict_name] | d({}) | combine(to_merge_dict[dict_name], recursive=True))}) %}
 {%         endif %}
 {%       endfor %}
 {%     elif to_merge_dict is not string and to_merge_dict is not mapping %}
 {%       set flattened_dict = lookup("flattened", to_merge_dict) %}
 {%       for element in ([ flattened_dict ] if flattened_dict is mapping else flattened_dict) %}
 {%         if element[dict_key] | d() %}
-{%           set _ = merged_dict.update({element[dict_key]:(current_dict[element[dict_key]]|d({}) | combine(element, recursive=True))}) %}
+{%           set _ = merged_dict.update({element[dict_key]:(current_dict[element[dict_key]] | d({}) | combine(element, recursive=True))}) %}
 {%         endif %}
 {%       endfor %}
 {%     endif %}
@@ -186,11 +186,11 @@
 ## Ansible versions tested with: 2.1, 2.2
 ## Jinja versions tested with: 2.8.1
 #}
-{% set filter_undef = kwargs.filter_undef|d(True) | bool %}
-{% set filter_mapping = kwargs.filter_mapping|d(True) | bool %}
+{% set filter_undef = kwargs.filter_undef | d(True) | bool %}
+{% set filter_mapping = kwargs.filter_mapping | d(True) | bool %}
 {# The following options are planned but currently don’t work: #}
-{% set append_mapping_keys = kwargs.append_mapping_keys|d(False) | bool %}
-{% set append_mapping_values = kwargs.append_mapping_values|d(False) | bool %}
+{% set append_mapping_keys = kwargs.append_mapping_keys | d(False) | bool %}
+{% set append_mapping_values = kwargs.append_mapping_values | d(False) | bool %}
 {#
 {{ "filter_undef:" + (filter_undef | string) }}
 {{ "filter_mapping:" + (filter_mapping | string) }}

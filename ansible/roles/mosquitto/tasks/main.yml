@@ -85,7 +85,7 @@
     - '{{ mosquitto__auth_users }}'
     - '{{ mosquitto__auth_group_users }}'
     - '{{ mosquitto__auth_host_users }}'
-  when: (mosquitto__password | bool and item.state|d('present') == 'absent' and
+  when: (mosquitto__password | bool and item.state | d('present') == 'absent' and
          (item.name | d(item) in mosquitto__register_passwd.stdout_lines) and
          mosquitto__version is version_compare('1.4.0', '>='))
   notify: [ 'Reload mosquitto' ]
@@ -101,7 +101,7 @@
     - '{{ mosquitto__auth_users }}'
     - '{{ mosquitto__auth_group_users }}'
     - '{{ mosquitto__auth_host_users }}'
-  when: (mosquitto__password | bool and item.state|d('present') != 'absent' and
+  when: (mosquitto__password | bool and item.state | d('present') != 'absent' and
          (item.name | d(item) not in mosquitto__register_passwd.stdout_lines) and
          mosquitto__version is version_compare('1.4.0', '>='))
   notify: [ 'Reload mosquitto' ]
@@ -143,7 +143,7 @@
     state: 'absent'
   with_dict: '{{ mosquitto__combined_listeners }}'
   notify: [ 'Restart mosquitto' ]
-  when: item.value.state|d('present') == 'absent'
+  when: item.value.state | d('present') == 'absent'
   tags: [ 'role::mosquitto:listeners' ]
 
 - name: Generate Mosquitto listener configuration
@@ -155,7 +155,7 @@
     mode: '0644'
   with_dict: '{{ mosquitto__combined_listeners }}'
   notify: [ 'Restart mosquitto' ]
-  when: item.value.state|d('present') != 'absent'
+  when: item.value.state | d('present') != 'absent'
   tags: [ 'role::mosquitto:listeners' ]
 
 - name: Remove Mosquitto bridge configuration
@@ -164,7 +164,7 @@
     state: 'absent'
   with_dict: '{{ mosquitto__combined_bridges }}'
   notify: [ 'Restart mosquitto' ]
-  when: item.value.state|d('present') == 'absent'
+  when: item.value.state | d('present') == 'absent'
   tags: [ 'role::mosquitto:bridges' ]
 
 - name: Generate Mosquitto bridge configuration
@@ -176,7 +176,7 @@
     mode: '{{ item.value.mode | d("0644") }}'
   with_dict: '{{ mosquitto__combined_bridges }}'
   notify: [ 'Restart mosquitto' ]
-  when: item.value.state|d('present') != 'absent'
+  when: item.value.state | d('present') != 'absent'
   tags: [ 'role::mosquitto:bridges' ]
 
 - name: Make sure that Avahi service directory exists

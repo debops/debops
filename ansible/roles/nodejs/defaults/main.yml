@@ -24,7 +24,7 @@
 #
 # Specify the OS distribution release to use for the upstream APT repositories
 # and other configuration.
-nodejs__distribution_release: '{{ ansible_local.core.distribution_release|d(ansible_distribution_release) }}'
+nodejs__distribution_release: '{{ ansible_local.core.distribution_release | d(ansible_distribution_release) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Node upstream configuration [[[
@@ -36,7 +36,7 @@ nodejs__distribution_release: '{{ ansible_local.core.distribution_release|d(ansi
 # distribution versions the upstream package will be installed due to no
 # security support.
 nodejs__node_upstream: '{{ ansible_local.nodejs.node_upstream
-                           |d(nodejs__distribution_release in [ "xenial" ]) | bool }}'
+                            | d(nodejs__distribution_release in [ "xenial" ]) | bool }}'
 
                                                                    # ]]]
 # .. envvar:: nodejs__node_upstream_release [[[
@@ -83,7 +83,7 @@ nodejs__node_upstream_repository: 'deb https://deb.nodesource.com/{{ nodejs__nod
 nodejs__yarn_upstream: '{{ True
                            if nodejs__node_upstream | bool
                            else (ansible_local.nodejs.yarn_upstream
-                                 |d(nodejs__distribution_release in
+                                  | d(nodejs__distribution_release in
                                     [ "stretch", "xenial", "bionic" ])
                            ) }}'
 

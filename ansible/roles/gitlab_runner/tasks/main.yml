@@ -67,7 +67,7 @@
     state: 'present'
     install_recommends: False
     update_cache: True
-    cache_valid_time: '{{ ansible_local.core.cache_valid_time|d("86400") }}'
+    cache_valid_time: '{{ ansible_local.core.cache_valid_time | d("86400") }}'
   register: gitlab_runner__register_apt_https
   until: gitlab_runner__register_apt_https is succeeded
 
@@ -93,7 +93,7 @@
     url: '{{ (item.api_url | d(gitlab_runner__api_url)) + "api/v4/runners" }}'
     method: 'POST'
     body: 'token={{ item.token | d(gitlab_runner__token) }}&description={{ item.name
-           | urlencode }}&tag_list={{ ((item.tags|d([])
+           | urlencode }}&tag_list={{ ((item.tags | d([])
                                         + (gitlab_runner__shell_tags
                                            if (item.executor == "shell") else [])
                                         + gitlab_runner__combined_tags) | unique | join(","))
@@ -131,7 +131,7 @@
   with_together:
     - '{{ gitlab_runner__default_instances + gitlab_runner__instances
           + gitlab_runner__group_instances + gitlab_runner__host_instances }}'
-    - '{{ ansible_local.gitlab_runner.instance_tokens|d([]) }}'
+    - '{{ ansible_local.gitlab_runner.instance_tokens | d([]) }}'
   when: (gitlab_runner__register_api.status | d() and gitlab_runner__register_api.status == 200 and
          gitlab_runner__api_token and item.0.name | d() and item.1.name | d() and item.0.name == item.1.name and
          (item.0.state | d() and item.0.state == 'absent'))

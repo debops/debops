@@ -4,14 +4,14 @@
  #}
 {% set minio__tpl_etc_services_dependent_list = [] %}
 {% for element in minio__combined_instances | debops.debops.parse_kv_items %}
-{%   if (element.name | d() and element.port | d() and element.state|d('present') not in [ 'ignore', 'init' ]) %}
+{%   if (element.name | d() and element.port | d() and element.state | d('present') not in [ 'ignore', 'init' ]) %}
 {%     set rule = {'name': ('minio-' + element.name),
                    'port': element.port,
                    'protocol': [ 'tcp' ],
                    'state': element.state} %}
 {%     set _ = minio__tpl_etc_services_dependent_list.append(rule) %}
 {%   endif %}
-{%   if (element.name | d() and element.console_port | d() and element.state|d('present') not in [ 'ignore', 'init' ]) %}
+{%   if (element.name | d() and element.console_port | d() and element.state | d('present') not in [ 'ignore', 'init' ]) %}
 {%     set rule = {'name': ('minio-' + element.name + '-console'),
                    'port': element.console_port,
                    'protocol': [ 'tcp' ],

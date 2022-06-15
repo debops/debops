@@ -81,7 +81,7 @@
   ansible.builtin.stat:
     path: '/etc/snapper/configs/{{ item.name }}'
   when: (snapshot_snapper__auto_reinit | bool and item.path | d() and item.name | d() and
-         (item.state|d("present") == "present"))
+         (item.state | d("present") == "present"))
   register: snapshot_snapper__register_snapper_configs
   tags: [ 'role::snapshot_snapper:reinit' ]
   with_items: '{{ snapshot_snapper__volumes_combined }}'
@@ -90,7 +90,7 @@
   ansible.builtin.stat:
     path: '{{ item.path + "/" + snapshot_snapper__directory }}'
   when: (snapshot_snapper__auto_reinit | bool and item.path | d() and item.name | d() and
-         (item.state|d("present") == "present"))
+         (item.state | d("present") == "present"))
   tags: [ 'role::snapshot_snapper:reinit' ]
   register: snapshot_snapper__register_snapshot_directory
   with_items: '{{ snapshot_snapper__volumes_combined }}'
@@ -101,7 +101,7 @@
     state: 'absent'
   tags: [ 'role::snapshot_snapper:reinit' ]
   when: (item.0 is not skipped and item.1 is not skipped and
-         item.0.stat.exists|d(item.0.stat.isreg) and not item.1.stat.exists)
+         item.0.stat.exists | d(item.0.stat.isreg) and not item.1.stat.exists)
   register: snapshot_snapper__register_snapper_configs_delete
   with_together:
     - '{{ snapshot_snapper__register_snapper_configs.results }}'
@@ -151,7 +151,7 @@
            '{{ item.path }}'
   args:
     creates: '/etc/snapper/configs/{{ item.name }}'
-  when: (item.path | d() and item.name | d() and (item.state|d("present") == "present"))
+  when: (item.path | d() and item.name | d() and (item.state | d("present") == "present"))
   with_items: '{{ snapshot_snapper__volumes_combined }}'
 # .. ]]]
 

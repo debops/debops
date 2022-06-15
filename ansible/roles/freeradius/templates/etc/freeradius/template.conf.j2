@@ -12,7 +12,7 @@
 {{ item.raw -}}
 {% elif item.options | d() %}
 {%   for element in item.options %}
-{%     if element.name | d() and element.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%     if element.name | d() and element.state | d('present') not in [ 'absent', 'ignore' ] %}
 {%       if element.comment | d() %}
 {{ element.comment | regex_replace('\n$','') | comment(prefix=('\n' if not loop.first else ''), postfix='') -}}
 {%       endif %}

@@ -63,7 +63,7 @@
   with_subelements:
     - '{{ cron__combined_jobs | selectattr("custom_files", "defined") | list }}'
     - 'custom_files'
-  when: (cron__enabled | bool and (item.0.state|d('present') == 'absent' or item.1.state|d('present') == 'absent') and
+  when: (cron__enabled | bool and (item.0.state | d('present') == 'absent' or item.1.state | d('present') == 'absent') and
          (item.1.src | d() or item.1.content | d()) and item.1.dest | d())
 
 - name: Manage custom cron files
@@ -78,8 +78,8 @@
   with_subelements:
     - '{{ cron__combined_jobs | selectattr("custom_files", "defined") | list }}'
     - 'custom_files'
-  when: (cron__enabled | bool and item.0.state|d('present') not in [ 'absent', 'ignore' ] and
-         item.1.state|d('present') != 'absent' and
+  when: (cron__enabled | bool and item.0.state | d('present') not in [ 'absent', 'ignore' ] and
+         item.1.state | d('present') != 'absent' and
          (item.1.src | d() or item.1.content | d()) and item.1.dest | d())
 
 - name: Remove cron job files
@@ -89,7 +89,7 @@
   with_subelements:
     - '{{ cron__combined_jobs }}'
     - 'jobs'
-  when: cron__enabled | bool and item.0.state|d('present') == 'absent'
+  when: cron__enabled | bool and item.0.state | d('present') == 'absent'
 
 - name: Manage cron environment variables
   ansible.builtin.cron:
@@ -102,7 +102,7 @@
   with_subelements:
     - '{{ cron__combined_jobs | selectattr("environment", "defined") | list }}'
     - 'environment'
-  when: cron__enabled | bool and item.0.state|d('present') not in [ 'absent', 'ignore' ]
+  when: cron__enabled | bool and item.0.state | d('present') not in [ 'absent', 'ignore' ]
 
 - name: Manage cron jobs
   ansible.builtin.cron:
@@ -122,4 +122,4 @@
   with_subelements:
     - '{{ cron__combined_jobs }}'
     - 'jobs'
-  when: cron__enabled | bool and item.0.state|d('present') not in [ 'absent', 'ignore' ]
+  when: cron__enabled | bool and item.0.state | d('present') not in [ 'absent', 'ignore' ]

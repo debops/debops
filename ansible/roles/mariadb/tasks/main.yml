@@ -37,15 +37,15 @@
 
 - name: Override delegation if tunnel is detected
   ansible.builtin.set_fact:
-    mariadb__delegate_to: '{{ mariadb__server|d("undefined") }}'
-  when: (not mariadb__register_version.stdout|d(False) and
+    mariadb__delegate_to: '{{ mariadb__server | d("undefined") }}'
+  when: (not mariadb__register_version.stdout | d(False) and
          (mariadb__register_tunnel | d() and mariadb__register_tunnel.rc == 0))
 
 - name: Override configuration if local server is detected
   ansible.builtin.set_fact:
     mariadb__server: 'localhost'
     mariadb__client: 'localhost'
-  when: (mariadb__register_version.stdout|d(False) or
+  when: (mariadb__register_version.stdout | d(False) or
          (mariadb__register_tunnel | d() and mariadb__register_tunnel.rc == 0))
 
 - name: Install database client packages
@@ -69,7 +69,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: mariadb__server|d(False)
+  when: mariadb__server | d(False)
 
 - name: Make sure that local fact directory exists
   ansible.builtin.file:
@@ -94,5 +94,5 @@
 
 - name: Manage database contents
   ansible.builtin.include_tasks: 'manage_contents.yml'
-  when: (mariadb__server|d(False) and mariadb__delegate_to)
+  when: (mariadb__server | d(False) and mariadb__delegate_to)
   tags: [ 'role::mariadb:contents' ]

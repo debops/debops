@@ -125,8 +125,8 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-    force: '{{ ansible_check_mode|d(omit) }}'
-  when: not (item in firejail__combined_program_sandboxes and firejail__combined_program_sandboxes[item].system_wide_sandboxed|d("present") in ["ignored"])
+    force: '{{ ansible_check_mode | d(omit) }}'
+  when: not (item in firejail__combined_program_sandboxes and firejail__combined_program_sandboxes[item].system_wide_sandboxed | d("present") in ["ignored"])
   with_items: '{{ firejail__combined_program_sandboxes.keys() | list | union(firejail__fact_system_wide_profiles) }}'
 # ]]]
 
@@ -149,7 +149,7 @@
     src:            '{{ item.value.profile.src            | d(omit) }}'
     validate:       '{{ item.value.profile.validate       | d(omit) }}'
   when: (firejail__deploy_state in ["present"] and
-         "profile" in item.value and item.value.profile.state|d("present") == "present")
+         "profile" in item.value and item.value.profile.state | d("present") == "present")
   with_dict: '{{ firejail__combined_program_sandboxes }}'
   tags: [ 'role::firejail:profile' ]
 
@@ -158,7 +158,7 @@
     path: '{{ item.value.profile.dest | d(firejail__config_path + "/" + item.key + ".profile") }}'
     state: 'absent'
   when: ("profile" in item.value and
-         (item.value.profile.state|d("present") == "absent" or firejail__deploy_state in ["absent"]))
+         (item.value.profile.state | d("present") == "absent" or firejail__deploy_state in ["absent"]))
   with_dict: '{{ firejail__combined_program_sandboxes }}'
   tags: [ 'role::firejail:profile' ]
 # ]]]
@@ -223,7 +223,7 @@
   become: True
   become_user: '{{ item.name }}'
   no_log: '{{ debops__no_log | d(True) }}'
-  when: firejail__deploy_state in ["present"] and item != "root" and item.state|d("present") == "present"
+  when: firejail__deploy_state in ["present"] and item != "root" and item.state | d("present") == "present"
   with_flattened: '{{ firejail__combined_fix_for_users }}'
 
 - name: Apply workaround for desktop files
@@ -233,7 +233,7 @@
   become: True
   become_user: '{{ item.name }}'
   no_log: '{{ debops__no_log | d(True) }}'
-  when: firejail__deploy_state in ["present"] and item != "root" and item.state|d("present") == "present"
+  when: firejail__deploy_state in ["present"] and item != "root" and item.state | d("present") == "present"
   with_flattened: '{{ firejail__combined_fix_for_users }}'
 
 # ]]]

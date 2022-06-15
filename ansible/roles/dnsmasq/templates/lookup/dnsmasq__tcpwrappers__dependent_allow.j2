@@ -45,7 +45,7 @@
 {%       endif %}
 {%     endfor %}
 {%   endif %}
-{%   if (interface.state|d('present') != 'absent' and (interface.boot_enabled|d(dnsmasq__boot_enabled)) | bool) %}
+{%   if (interface.state | d('present') != 'absent' and (interface.boot_enabled | d(dnsmasq__boot_enabled)) | bool) %}
 {%     set _ = dnsmasq__tpl_subnets.extend(dnsmasq__tpl_ipv4 + dnsmasq__tpl_ipv6) %}
 {%   endif %}
 {% endfor %}

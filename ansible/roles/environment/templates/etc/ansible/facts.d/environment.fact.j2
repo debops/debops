@@ -5,7 +5,7 @@
 {% macro print_environment(element) %}
 {%   if element is mapping %}
 {%     if 'name' in element.keys() and 'value' in element.keys() %}
-{%       if element.state|d('present') != 'absent' %}
+{%       if element.state | d('present') != 'absent' %}
 {%         if ((element.case is undefined and environment__case == 'upper') or (element.case | d() and element.case == 'upper')) %}
 {{ element.name | upper }}: '{{ element.value }}'
 {%         elif ((element.case is undefined and environment__case == 'lower') or (element.case | d() and element.case == 'lower')) %}

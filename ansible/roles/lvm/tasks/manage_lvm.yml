@@ -15,10 +15,10 @@
     fstype: '{{ item.fs_type | d(lvm__default_fs_type) }}'
     state:  'absent'
   with_items: '{{ lvm__logical_volumes }}'
-  when: lvm__logical_volumes|d(False) and
+  when: lvm__logical_volumes | d(False) and
         item.vg | d() and item.lv | d() and item.size | d() and
-        item.mount|d(False) and
-        item.state|d('present') == 'absent'
+        item.mount | d(False) and
+        item.state | d('present') == 'absent'
 
 - name: Remove Logical Volumes if requested
   lvol:
@@ -28,9 +28,9 @@
     force: '{{ item.force | d(omit) }}'
     state: 'absent'
   with_items: '{{ lvm__logical_volumes }}'
-  when: lvm__logical_volumes|d(False) and
+  when: lvm__logical_volumes | d(False) and
         item.vg | d() and item.lv | d() and item.size | d() and
-        item.state|d('present') == 'absent'
+        item.state | d('present') == 'absent'
 
 - name: Manage LVM Volume Groups
   lvg:
@@ -41,7 +41,7 @@
     force:      '{{ item.force   | d(omit) }}'
     vg_options: '{{ item.options | d(omit) }}'
   with_items: '{{ lvm__volume_groups }}'
-  when: item.vg|d(False) and item.pvs|d(False)
+  when: item.vg | d(False) and item.pvs | d(False)
 
 - name: Manage LVM Thin Pools
   lvol:
@@ -50,9 +50,9 @@
     size:     '{{ item.size }}'
     opts:     '{{ item.opts | d(omit) }}'
   with_items: '{{ lvm__thin_pools }}'
-  when: lvm__thin_pools|d(False) and
+  when: lvm__thin_pools | d(False) and
         item.vg | d() and item.thinpool | d() and item.size | d() and
-        item.state|d('present') != 'absent'
+        item.state | d('present') != 'absent'
 
 - name: Manage LVM Logical Volumes
   lvol:
@@ -65,9 +65,9 @@
     shrink:     '{{ item.force | d(False) }}'
     state:      'present'
   with_items: '{{ lvm__logical_volumes }}'
-  when: lvm__logical_volumes|d(False) and
+  when: lvm__logical_volumes | d(False) and
         item.vg | d() and item.lv | d() and item.size | d() and
-        item.state|d('present') != 'absent'
+        item.state | d('present') != 'absent'
   register: lvm__register_logical_volumes
 
 - name: Manage filesystems
@@ -78,10 +78,10 @@
     opts:   '{{ item.fs_opts  | d(omit) }}'
     resizefs: '{{ item.fs_resizefs | d(omit) }}'
   with_items: '{{ lvm__logical_volumes }}'
-  when: lvm__logical_volumes|d(False) and
+  when: lvm__logical_volumes | d(False) and
         item.vg | d() and item.lv | d() and item.size | d() and
-        item.state|d('present') != 'absent' and
-        ((item.mount | d() and item.fs|d(True)) or item.fs | d()) and
+        item.state | d('present') != 'absent' and
+        ((item.mount | d() and item.fs | d(True)) or item.fs | d()) and
         (not ansible_check_mode or
          (ansible_check_mode and lvm__register_logical_volumes is not changed))
 
@@ -96,7 +96,7 @@
     passno: '{{ item.mount_passno | d(omit) }}'
     fstab:  '{{ item.mount_fstab  | d(omit) }}'
   with_items: '{{ lvm__logical_volumes }}'
-  when: lvm__logical_volumes|d(False) and
+  when: lvm__logical_volumes | d(False) and
         item.vg | d() and item.lv | d() and item.size | d() and
-        item.fs|d(True) and item.mount | d() and
-        item.state|d('present') != 'absent'
+        item.fs | d(True) and item.mount | d() and
+        item.state | d('present') != 'absent'

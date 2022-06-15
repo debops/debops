@@ -16,12 +16,12 @@
  #
  #   ---- HTTPS, ports to listen on, default server, HTTPS redirect ----
  #}
-{% set nginx_version            = ansible_local.nginx.version|d("0.0") %}
-{% set nginx_tpl_robots_tag     = [] if (item.robots_tag|d(nginx__http_robots_tag) is string and item.robots_tag|d(nginx__http_robots_tag) == omit)
+{% set nginx_version            = ansible_local.nginx.version | d("0.0") %}
+{% set nginx_tpl_robots_tag     = [] if (item.robots_tag | d(nginx__http_robots_tag) is string and item.robots_tag | d(nginx__http_robots_tag) == omit)
     else (
-        [ item.robots_tag|d(nginx__http_robots_tag) ]
-        if (item.robots_tag|d(nginx__http_robots_tag) is string)
-        else (item.robots_tag|d(nginx__http_robots_tag))) %}
+        [ item.robots_tag | d(nginx__http_robots_tag) ]
+        if (item.robots_tag | d(nginx__http_robots_tag) is string)
+        else (item.robots_tag | d(nginx__http_robots_tag))) %}
 {% set nginx_tpl_acme           = (item.acme      | default(nginx_acme)) | bool %}
 {% set nginx_tpl_ssl            = (item.ssl       | default(nginx_pki)) | bool %}
 {% set nginx_tpl_listen         = item.listen     | default(nginx_listen_port if nginx_listen_port else nginx_listen_socket) %}
@@ -76,23 +76,23 @@
  #
  #   ---- SSL certificate ----
  #}
-{% set nginx_tpl_ssl_certificate = item.ssl_crt|d(nginx_pki_path + "/" + item.pki_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_realm) + "/" + (item.pki_crt|d(nginx_pki_crt))) %}
+{% set nginx_tpl_ssl_certificate = item.ssl_crt | d(nginx_pki_path + "/" + item.pki_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_realm) + "/" + (item.pki_crt | d(nginx_pki_crt))) %}
 {#
  #
  #   ---- SSL certificate key ----
  #}
-{% set nginx_tpl_ssl_certificate_key = item.ssl_key|d(nginx_pki_path + "/" + item.pki_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_realm) + "/" + (item.pki_key|d(nginx_pki_key))) %}
+{% set nginx_tpl_ssl_certificate_key = item.ssl_key | d(nginx_pki_path + "/" + item.pki_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_realm) + "/" + (item.pki_key | d(nginx_pki_key))) %}
 {#
  #
  #  ---- SSL client CA certificate ----
  #}
-{% set nginx_tpl_ssl_client_certificate = item.ssl_ca|d(nginx_pki_path + "/" + item.pki_ca_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_ca_realm) + "/" + (item.pki_ca|d(nginx_pki_ca))) %}
+{% set nginx_tpl_ssl_client_certificate = item.ssl_ca | d(nginx_pki_path + "/" + item.pki_ca_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_ca_realm) + "/" + (item.pki_ca | d(nginx_pki_ca))) %}
 {#
  #
  #   ---- SSL trusted CA certificate ----
  #}
 {% set nginx_tpl_ssl_trusted_certificate = item.ssl_trusted
-     |d(nginx_pki_path + "/" + (item.pki_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_realm) + "/" + item.pki_trusted | d(nginx_pki_trusted))) %}
+      | d(nginx_pki_path + "/" + (item.pki_realm | d(nginx_tpl_pki_custom_realm if nginx_tpl_pki_custom_realm else nginx_pki_realm) + "/" + item.pki_trusted | d(nginx_pki_trusted))) %}
 {#
  #
  #   ---- Diffie-Hellman Key Exchange parameters ----
@@ -164,7 +164,7 @@
 {% macro print_location_list(location_list)                                    %}
 {%     if location_list is defined                                             %}
 {%         for entry in location_list                                          %}
-{%             if entry.pattern | d() and (entry.enabled|d(True) | bool)         %}
+{%             if entry.pattern | d() and (entry.enabled | d(True) | bool)         %}
         location {{ entry.pattern_prefix | default('') + entry.pattern }} {
 {%                 if entry.referers | d()                                       %}
                 valid_referers none blocked {{ entry.referers | unique | join(' ') }};
@@ -205,11 +205,11 @@
 
 {%                 endif                                                                                   %}
 {%                 if entry.access_policy | d() and (entry.access_policy in nginx_access_policy_auth_basic_map) %}
-                auth_basic "{{ entry.auth_basic_realm|d(nginx_default_auth_basic_realm) }}";
+                auth_basic "{{ entry.auth_basic_realm | d(nginx_default_auth_basic_realm) }}";
                 auth_basic_user_file {{ nginx_private_path + "/" + nginx_access_policy_auth_basic_map[entry.access_policy] }};
 
 {%                 elif entry.auth_basic | d() | bool %}
-                auth_basic "{{ entry.auth_basic_realm|d(nginx_default_auth_basic_realm) }}";
+                auth_basic "{{ entry.auth_basic_realm | d(nginx_default_auth_basic_realm) }}";
                 auth_basic_user_file {{ entry.auth_basic_filename | default(nginx_private_path + "/" + entry.auth_basic_name | d()) }};
 
 {%                 endif %}
@@ -250,7 +250,7 @@
 {%             elif nginx_syslog_config is defined                                  %}
 {%                 set nginx_tpl_syslog_config = ',' + nginx_syslog_config          %}
 {%             endif                                                                %}
-{%             if item.access_log_enabled|d(True) | bool %}
+{%             if item.access_log_enabled | d(True) | bool %}
 {%                 if (item.log_to_syslog | d(nginx_log_to_syslog))                 %}
         access_log syslog:server={{ item.log_path | d(nginx_log_path)}}{{ nginx_tpl_syslog_config }}{{ nginx_tpl_access_log_format }};
 {%                 else                                                             %}
@@ -259,7 +259,7 @@
 {%             else %}
         access_log off;
 {%             endif %}
-{%             if item.error_log_enabled|d(True) | bool %}
+{%             if item.error_log_enabled | d(True) | bool %}
 {%                 if (item.log_to_syslog | d(nginx_log_to_syslog))                 %}
         error_log  syslog:server={{ item.log_path | d(nginx_log_path) }}{{ nginx_tpl_syslog_config }};
 {%                 else                                                             %}
@@ -271,7 +271,7 @@
 {%         endif                                                                    %}
 {%     endblock                                                                     %}
 {%     block nginx_tpl_block_index                                                  %}
-{%         if item.index|d(True)                                                    %}
+{%         if item.index | d(True)                                                    %}
         index {{ item.index | default('index.html index.htm') }};
 
 {%         endif                                                                    %}
@@ -295,7 +295,7 @@
 {%         endif                                                                    %}
 
 {%     endif                                                                        %}
-{%     if item.maintenance|d(True) | bool                                             %}
+{%     if item.maintenance | d(True) | bool                                             %}
         if (-f $document_root/{{ item.maintenance_file | d('maintenance.html') }}) {
                 return 503;
         }
@@ -371,11 +371,11 @@
 
 {%     endif                                                                                   %}
 {%     if item.access_policy | d() and (item.access_policy in nginx_access_policy_auth_basic_map) %}
-        auth_basic "{{ item.auth_basic_realm|d(nginx_default_auth_basic_realm) }}";
+        auth_basic "{{ item.auth_basic_realm | d(nginx_default_auth_basic_realm) }}";
         auth_basic_user_file {{ nginx_private_path + "/" + nginx_access_policy_auth_basic_map[item.access_policy] }};
 
 {%     elif item.auth_basic | d() | bool %}
-        auth_basic "{{ item.auth_basic_realm|d(nginx_default_auth_basic_realm) }}";
+        auth_basic "{{ item.auth_basic_realm | d(nginx_default_auth_basic_realm) }}";
         auth_basic_user_file {{ item.auth_basic_filename | default(nginx_private_path + "/" + item.auth_basic_name | d()) }};
 
 {%     endif %}
@@ -392,7 +392,7 @@
         }
 
 {%     endif %}
-{%     if item.deny_hidden|d(True) | bool %}
+{%     if item.deny_hidden | d(True) | bool %}
         # Disallow access to hidden files and directories, except `/.well-known/`
         # https://www.mnot.net/blog/2010/04/07/well-known
         # https://tools.ietf.org/html/rfc5785
@@ -401,7 +401,7 @@
         }
 
 {%     endif %}
-{%     if item.favicon|d(True) | bool %}
+{%     if item.favicon | d(True) | bool %}
         location = /favicon.ico {
                 try_files /favicon.ico =204;
                 access_log off;
@@ -409,7 +409,7 @@
         }
 
 {%     endif                          %}
-{%     if item.status|d(True) and (nginx_status or nginx_status_localhost) %}
+{%     if item.status | d(True) and (nginx_status or nginx_status_localhost) %}
         location = {{ item.status_name | default(nginx_status_name) }} {
                 stub_status on;
                 access_log off;
@@ -473,7 +473,7 @@
 {% if item.name | d()                                                         %}
 # nginx server configuration for:
 {%     for address in ([ item.name ] if item.name is string else item.name) %}
-{%         if nginx_tpl_ssl and not (item.redirect_to_ssl|d(True) | bool)   %}
+{%         if nginx_tpl_ssl and not (item.redirect_to_ssl | d(True) | bool)   %}
 #    - http://{{ address }}/
 {%         endif                                                            %}
 #    - {{ "https" if nginx_tpl_ssl else "http" }}://{{ address }}/
@@ -519,10 +519,10 @@
 {% else %}
 {%   set nginx__tpl_hostnames = ([ item.hostname ] if (item.hostname is string) else item.hostname) %}
 {% endif %}
-{% if nginx__tpl_hostnames | d() and item.listen|d(True)                  %}
+{% if nginx__tpl_hostnames | d() and item.listen | d(True)                  %}
 # Support for redirection via DNS suffixes in /etc/resolv.conf
 server {
-{%   if item.listen|d(True)                            %}
+{%   if item.listen | d(True)                            %}
 {%       for port in nginx_tpl_listen                  %}
         listen {{ port }};
 {%       endfor                                        %}
@@ -538,7 +538,7 @@ server {
 {%   if nginx__tpl_hostname_domain.startswith('lxc.') %}
 # Support for redirection to an internal LXC subdomain
 server {
-{%     if item.listen|d(True)                          %}
+{%     if item.listen | d(True)                          %}
 {%       for port in nginx_tpl_listen                  %}
         listen {{ port }};
 {%       endfor                                        %}
@@ -554,7 +554,7 @@ server {
 {%   endif                                             %}
 # Support for redirection via Avahi/mDNS '*.local' domain
 server {
-{%   if item.listen|d(True)                            %}
+{%   if item.listen | d(True)                            %}
 {%       for port in nginx_tpl_listen                  %}
         listen {{ port }};
 {%       endfor                                        %}
@@ -575,7 +575,7 @@ server {
 {%     else                                              %}
 server {
 
-{%         if item.listen|d(True)                        %}
+{%         if item.listen | d(True)                        %}
 {%             for port in nginx_tpl_listen              %}
         listen {{ port | string }};
 {%             endfor                                    %}
@@ -607,7 +607,7 @@ server {
 {% elif item.redirect_to | d() and item.name | d()           %}
 server {
 
-{%     if item.listen|d(True)                            %}
+{%     if item.listen | d(True)                            %}
 {%         for port in nginx_tpl_listen                  %}
         listen {{ port }};
 {%         endfor                                        %}
@@ -626,7 +626,7 @@ server {
 {% endif                                                 %}
 server {
 
-{% if item.listen|d(True)                                %}
+{% if item.listen | d(True)                                %}
 {%     for port in nginx_tpl_listen %}
         listen {{ port }}{% if nginx_tpl_default_server %} {{ nginx_tpl_default_server | join(" ") }}{% endif %}{% if (loop.first and nginx_tpl_ipv6only) %} {{ nginx_tpl_ipv6only | join(" ") }}{% endif %};
 {%     endfor                                            %}
@@ -652,8 +652,8 @@ server {
 {%     endif                                             %}
 {% endif                                                 %}
 {% if nginx_tpl_ssl                                      %}
-{%     if item.listen|d(True)                            %}
-{%         if not (item.redirect_to_ssl|d(True) | bool)  %}
+{%     if item.listen | d(True)                            %}
+{%         if not (item.redirect_to_ssl | d(True) | bool)  %}
 {{             print_shared_nginx_server_block() }}
 {%         else                                          %}
         location / {
@@ -716,16 +716,16 @@ server {
         ssl_crl                   {{ item.ssl_crl | d(nginx_default_ssl_crl) }};
 {%         endif                                                %}
 {%     endif                                                    %}
-{%     if item.hsts_enabled|d(True) | bool                      %}
+{%     if item.hsts_enabled | d(True) | bool                      %}
         add_header                Strict-Transport-Security "max-age={{ nginx_hsts_age }}{{ "; includeSubDomains" if nginx_hsts_subdomains | bool else "" }}{{ "; preload" if ((item.hsts_preload | d(nginx_hsts_preload)) | bool) else "" }}"{% if nginx_version is version_compare('1.7.5','>=') %} always{% endif %};
 {% endif                                                    %}
-{% if item.csp_enabled|d(False) | bool %}
-        add_header                Content-Security-Policy "{{ item.csp|d("default-src https: ;") + (" " + item.csp_append|d(nginx__http_csp_append) if (item.csp_append|d(nginx__http_csp_append)) else "") }}";
+{% if item.csp_enabled | d(False) | bool %}
+        add_header                Content-Security-Policy "{{ item.csp | d("default-src https: ;") + (" " + item.csp_append | d(nginx__http_csp_append) if (item.csp_append | d(nginx__http_csp_append)) else "") }}";
 {% endif %}
-{% if item.csp_report_enabled|d(False) | bool %}
-        add_header                Content-Security-Policy-Report-Only "{{ item.csp_report|d(item.csp|d("default-src https: ;")) + (" " + item.csp_append|d(nginx__http_csp_append) if (item.csp_append|d(nginx__http_csp_append)) else "") }}";
+{% if item.csp_report_enabled | d(False) | bool %}
+        add_header                Content-Security-Policy-Report-Only "{{ item.csp_report | d(item.csp | d("default-src https: ;")) + (" " + item.csp_append | d(nginx__http_csp_append) if (item.csp_append | d(nginx__http_csp_append)) else "") }}";
 {% endif %}
-{%     if item.content_type_options|d(True) != omit             %}
+{%     if item.content_type_options | d(True) != omit             %}
         add_header                X-Content-Type-Options "{{ item.content_type_options | d('nosniff') }}"{% if nginx_version is version_compare('1.7.5','>=') %} always{% endif %};
 {%     endif                                                    %}
 {%     if item.frame_options | d() != omit                        %}

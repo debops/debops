@@ -38,7 +38,7 @@
                if item.value.cname.endswith("." + avahi__domain)
                else (item.value.cname + "." + avahi__domain)) }}'
     state: '{{ "present"
-               if item.value.cname_state|d(item.value.state | d("present")) != "absent"
+               if item.value.cname_state | d(item.value.state | d("present")) != "absent"
                else "absent" }}'
     mode: '0644'
   with_dict: '{{ avahi__combined_services }}'

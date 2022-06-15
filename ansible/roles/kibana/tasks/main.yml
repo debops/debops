@@ -108,7 +108,7 @@
   become_user: '{{ item.user | d(kibana__user) }}'
   with_flattened:
     - '{{ kibana__combined_plugins }}'
-  when: (item.name | d() and item.state|d('present') != 'absent' and
+  when: (item.name | d() and item.state | d('present') != 'absent' and
          (item.name if ':' not in item.name else item.name.split(':')[1]) not in kibana__register_plugins.stdout_lines)
 
 - name: Remove Kibana plugins
@@ -120,7 +120,7 @@
   become_user: '{{ item.user | d(kibana__user) }}'
   with_flattened:
     - '{{ kibana__combined_plugins }}'
-  when: (item.name | d() and item.state|d('present') == 'absent' and
+  when: (item.name | d() and item.state | d('present') == 'absent' and
          (item.name if ':' not in item.name else item.name.split(':')[1]) in kibana__register_plugins.stdout_lines)
 
 # The keystore handling is very similar to ../../metricbeat/tasks/main.yml
@@ -152,7 +152,7 @@
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
   notify: [ 'Restart kibana' ]
-  when: (item.state|d('present') == 'absent' and
+  when: (item.state | d('present') == 'absent' and
          item.name in kibana__register_keys.stdout_lines)
   no_log: '{{ debops__no_log | d(True) }}'
 
@@ -173,9 +173,9 @@
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
   notify: [ 'Restart kibana' ]
-  when: (item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
+  when: (item.state | d('present') not in [ 'absent', 'ignore', 'init' ] and
          (item.name not in kibana__register_keys.stdout_lines or
-          (item.force|d(False)) | bool))
+          (item.force | d(False)) | bool))
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Save Kibana dependent configuration on Ansible Controller

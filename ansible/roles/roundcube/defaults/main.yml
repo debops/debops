@@ -191,7 +191,7 @@ roundcube__www: '{{ ansible_local.nginx.www
 # .. envvar:: roundcube__webserver_user [[[
 #
 # Roundcube webserver user (needs read-only access to the website code).
-roundcube__webserver_user: '{{ ansible_local.nginx.user|d("www-data") }}'
+roundcube__webserver_user: '{{ ansible_local.nginx.user | d("www-data") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Database configuration [[[
@@ -324,7 +324,7 @@ roundcube__redis_server: 'localhost'
 # .. envvar:: roundcube__redis_port [[[
 #
 # The TCP port to use for Redis connections.
-roundcube__redis_port: '{{ ansible_local.redis_server.port|d("6379") }}'
+roundcube__redis_port: '{{ ansible_local.redis_server.port | d("6379") }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__redis_database [[[
@@ -336,7 +336,7 @@ roundcube__redis_database: '1'
 # .. envvar:: roundcube__redis_password [[[
 #
 # Specify the password required for authentication to Redis.
-roundcube__redis_password: '{{ ansible_local.redis_server.password|d("") }}'
+roundcube__redis_password: '{{ ansible_local.redis_server.password | d("") }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__redis_hosts [[[
@@ -407,26 +407,26 @@ roundcube__ldap_addressbook_name: 'LDAP Address Book'
 #
 # List of the FQDN addresses of the LDAP directory servers which should be used
 # by Roundcube.
-roundcube__ldap_hosts: '{{ ansible_local.ldap.hosts|d([]) }}'
+roundcube__ldap_hosts: '{{ ansible_local.ldap.hosts | d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__ldap_port [[[
 #
 # The TCP port to use to connect to the LDAP directory.
-roundcube__ldap_port: '{{ ansible_local.ldap.port|d("389") }}'
+roundcube__ldap_port: '{{ ansible_local.ldap.port | d("389") }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__ldap_use_tls [[[
 #
 # Enable or disable support for STARTTLS extension while connecting to the LDAP
 # directory.
-roundcube__ldap_use_tls: '{{ ansible_local.ldap.start_tls|d(True) }}'
+roundcube__ldap_use_tls: '{{ ansible_local.ldap.start_tls | d(True) }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__ldap_base_dn [[[
 #
 # The Base Distinguished Name of the LDAP directory, defined as a YAML list.
-roundcube__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
+roundcube__ldap_base_dn: '{{ ansible_local.ldap.base_dn | d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__ldap_device_dn [[[
@@ -435,7 +435,7 @@ roundcube__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
 # list. It will be used as a base for the Roundcube application account LDAP
 # object. If the list is empty, the role will not create the account LDAP
 # object automatically.
-roundcube__ldap_device_dn: '{{ ansible_local.ldap.device_dn|d([]) }}'
+roundcube__ldap_device_dn: '{{ ansible_local.ldap.device_dn | d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__ldap_self_rdn [[[
@@ -484,7 +484,7 @@ roundcube__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
 #
 # The Relative Distinguished Name of the people subtree which contains personal
 # LDAP entries.
-roundcube__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn|d([]) }}'
+roundcube__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn | d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__ldap_people_dn [[[
@@ -499,7 +499,7 @@ roundcube__ldap_people_dn: '{{ [ roundcube__ldap_people_rdn ]
 #
 # The Relative Distinguished Name of the groups subtree which contains group
 # LDAP entries.
-roundcube__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn|d([]) }}'
+roundcube__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn | d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__ldap_groups_dn [[[
@@ -745,7 +745,7 @@ roundcube__sieve_server: '{{ "tls://" + roundcube__sieve_fqdn }}'
 # .. envvar:: roundcube__product_name [[[
 #
 # Name your service. This is displayed on the login screen and in the window title
-roundcube__product_name: '{{ ansible_local.machine.organization|d("Roundcube") + " Webmail" }}'
+roundcube__product_name: '{{ ansible_local.machine.organization | d("Roundcube") + " Webmail" }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__des_key [[[

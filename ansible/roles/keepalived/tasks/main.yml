@@ -43,7 +43,7 @@
   loop: '{{ q("flattened", keepalived__scripts
                            + keepalived__group_scripts
                            + keepalived__host_scripts) }}'
-  when: item.state|d('present') == 'absent'
+  when: item.state | d('present') == 'absent'
 
 - name: Copy custom scripts to remote hosts
   ansible.builtin.copy:
@@ -56,7 +56,7 @@
   loop: '{{ q("flattened", keepalived__scripts
                            + keepalived__group_scripts
                            + keepalived__host_scripts) }}'
-  when: item.state|d('present') not in [ 'absent', 'ignore' ]
+  when: item.state | d('present') not in [ 'absent', 'ignore' ]
 
 - name: Generate keepalive configuration file
   ansible.builtin.template:

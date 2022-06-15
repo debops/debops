@@ -31,7 +31,7 @@ should be present in the ``virtualenv`` environment:
 
      # Install compatible 'gunicorn' module inside the virtualenv
      - name: 'gunicorn'
-       version: '{{ ansible_local.gunicorn.version|d(omit) }}'
+       version: '{{ ansible_local.gunicorn.version | d(omit) }}'
 
      # Install 'setproctitle' for nice process names
      # (You'll need gcc and the python-dev or python3-dev package for this)

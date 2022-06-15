@@ -51,7 +51,7 @@ postfix__purge_packages: [ 'exim4-base', 'exim4-config',
 #
 # The currently installed Postfix version. This variable is defined by the
 # Ansible local facts and it's here for convenience, shouldn't be set manually.
-postfix__version: '{{ ansible_local.postfix.version|d("0.0.0") }}'
+postfix__version: '{{ ansible_local.postfix.version | d("0.0.0") }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__doc_installed [[[
@@ -142,34 +142,34 @@ postfix__pki: '{{ ansible_local.pki.enabled | d() | bool }}'
 # .. envvar:: postfix__pki_path [[[
 #
 # Absolute path to the directory where PKI realms are located.
-postfix__pki_path: '{{ ansible_local.pki.path|d("/etc/pki/realms") }}'
+postfix__pki_path: '{{ ansible_local.pki.path | d("/etc/pki/realms") }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__pki_realm [[[
 #
 # Name of the default PKI realm used by Postfix.
-postfix__pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
+postfix__pki_realm: '{{ ansible_local.pki.realm | d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__pki_ca [[[
 #
 # Name of the Root Certificate Authority certificate file used by Postfix,
 # relative to the PKI realm directory.
-postfix__pki_ca: '{{ ansible_local.pki.ca|d("CA.crt") }}'
+postfix__pki_ca: '{{ ansible_local.pki.ca | d("CA.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__pki_crt [[[
 #
 # Name of the certificate file used by Postfix, relative to the PKI realm
 # directory.
-postfix__pki_crt: '{{ ansible_local.pki.crt|d("default.crt") }}'
+postfix__pki_crt: '{{ ansible_local.pki.crt | d("default.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__pki_key [[[
 #
 # Name of the private key file used by Postfix, relative to the PKI realm
 # directory.
-postfix__pki_key: '{{ ansible_local.pki.key|d("default.key") }}'
+postfix__pki_key: '{{ ansible_local.pki.key | d("default.key") }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__tls_ca_file [[[
@@ -202,7 +202,7 @@ postfix__pki_hook_name: 'postfix'
 # .. envvar:: postfix__pki_hook_path [[[
 #
 # Directory with PKI hooks.
-postfix__pki_hook_path: '{{ ansible_local.pki.hooks|d("/etc/pki/hooks") }}'
+postfix__pki_hook_path: '{{ ansible_local.pki.hooks | d("/etc/pki/hooks") }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__pki_hook_action [[[
@@ -1318,7 +1318,7 @@ postfix__ferm__dependent_rules:
     saddr: '{{ postfix__allow_smtp }}'
     accept_any: '{{ postfix__accept_any }}'
     rule_state: '{{ "present"
-                    if ("smtp" in postfix__env_active_services|d([]))
+                    if ("smtp" in postfix__env_active_services | d([]))
                     else "absent" }}'
 
   - name: 'postfix_smtps'
@@ -1328,7 +1328,7 @@ postfix__ferm__dependent_rules:
     saddr: '{{ postfix__allow_smtps }}'
     accept_any: '{{ postfix__accept_any }}'
     rule_state: '{{ "present"
-                    if ("smtps" in postfix__env_active_services|d([]))
+                    if ("smtps" in postfix__env_active_services | d([]))
                     else "absent" }}'
 
   - name: 'postfix_submission'
@@ -1338,7 +1338,7 @@ postfix__ferm__dependent_rules:
     saddr: '{{ postfix__allow_submission }}'
     accept_any: '{{ postfix__accept_any }}'
     rule_state: '{{ "present"
-                    if ("submission" in postfix__env_active_services|d([]))
+                    if ("submission" in postfix__env_active_services | d([]))
                     else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]

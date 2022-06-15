@@ -14,6 +14,6 @@
   ## Would be another use case for `ok_when`: https://github.com/ansible/ansible/issues/12710
   when: ("apps" in owncloud__occ_config_current and
          owncloud__apps_item.key in owncloud__occ_config_current.apps and
-         owncloud__occ_config_current.apps[owncloud__apps_item.key][owncloud__apps_setting_item.key]|d(omit)
+         owncloud__occ_config_current.apps[owncloud__apps_item.key][owncloud__apps_setting_item.key] | d(omit)
            != owncloud__apps_setting_item.value)
   with_dict: '{{ owncloud__apps_item.value }}'

@@ -13,7 +13,7 @@
   loop_control:
     loop_var: 'build'
   loop: '{{ q("flattened", golang__combined_packages) | debops.debops.parse_kv_items }}'
-  when: build.name | d() and build.state|d('present') not in [ 'absent', 'ignore' ]
+  when: build.name | d() and build.state | d('present') not in [ 'absent', 'ignore' ]
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:

@@ -59,11 +59,11 @@
     path: '/etc/logrotate.d/{{ item.filename }}'
     state: '{{ "present"
                if
-               (logrotate__enabled | bool and item.state|d("present") != "absent")
+               (logrotate__enabled | bool and item.state | d("present") != "absent")
                else "absent" }}'
     delete: True
   loop: '{{ logrotate__combined_config | flatten }}'
-  when: item.filename | d() and item.divert|d(False) | bool
+  when: item.filename | d() and item.divert | d(False) | bool
 
 - name: Generate custom log rotation configuration
   ansible.builtin.template:
@@ -74,12 +74,12 @@
     mode: '0644'
   loop: '{{ logrotate__combined_config | flatten }}'
   when: (logrotate__enabled | bool and item.filename | d() and
-         item.state|d('present') != 'absent')
+         item.state | d('present') != 'absent')
 
 - name: Remove custom log rotation configuration
   ansible.builtin.file:
     path: '/etc/logrotate.d/{{ item.filename }}'
     state: 'absent'
   loop: '{{ logrotate__combined_config | flatten }}'
-  when: (item.filename | d() and not item.divert|d(False) | bool and
-         (not logrotate__enabled | bool or item.state|d('present') == 'absent'))
+  when: (item.filename | d() and not item.divert | d(False) | bool and
+         (not logrotate__enabled | bool or item.state | d('present') == 'absent'))

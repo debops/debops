@@ -68,7 +68,7 @@
     mode:    '0644'
   loop: '{{ netbase__combined_hosts | debops.debops.parse_kv_config }}'
   loop_control:
-    label: '{{ {item.name: (item.value|d([])) | selectattr("name", "defined") | map(attribute="name") | list} }}'
+    label: '{{ {item.name: (item.value | d([])) | selectattr("name", "defined") | map(attribute="name") | list} }}'
   notify: [ 'Refresh host facts' ]
   when: netbase__enabled | bool and netbase__hosts_config_type == 'lineinfile' and item.name | d()
 

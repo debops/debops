@@ -15,7 +15,7 @@
 {% endif %}
 {% for entry in (mosquitto__auth_users + mosquitto__auth_group_users + mosquitto__auth_host_users) %}
 {%   if entry is mapping %}
-{%     if entry.state|d("present") != "absent" and entry.name | d() and entry.acl | d() %}
+{%     if entry.state | d("present") != "absent" and entry.name | d() and entry.acl | d() %}
 
 user {{ entry.name }}
 {%       if entry.acl is string %}

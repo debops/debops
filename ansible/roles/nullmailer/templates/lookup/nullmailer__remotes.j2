@@ -7,11 +7,11 @@
 {%   set nullmailer__tpl_entry = [] %}
 {%   if entry is string %}
 {%     set _ = nullmailer__tpl_remotes.append(entry) %}
-{%   elif entry is mapping and entry.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%   elif entry is mapping and entry.state | d('present') not in [ 'absent', 'init', 'ignore' ] %}
 {%     if entry.host | d() %}
 {%       set _ = nullmailer__tpl_entry.append(entry.host) %}
-{%       set _ = nullmailer__tpl_entry.append(entry.protocol|d('smtp')) %}
-{%       if ((entry.starttls|d(nullmailer__starttls) | bool) and (not entry.ssl | d() | bool) and (not entry.options | d())) %}
+{%       set _ = nullmailer__tpl_entry.append(entry.protocol | d('smtp')) %}
+{%       if ((entry.starttls | d(nullmailer__starttls) | bool) and (not entry.ssl | d() | bool) and (not entry.options | d())) %}
 {%         set _ = nullmailer__tpl_entry.append('--starttls') %}
 {%       endif %}
 {%       if entry.ssl | d() | bool %}

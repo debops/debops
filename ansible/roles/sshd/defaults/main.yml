@@ -574,14 +574,14 @@ sshd__ldap_enabled: '{{ ansible_local.ldap.enabled
 # .. envvar:: sshd__ldap_base_dn [[[
 #
 # The base LDAP Distinguished Name used for SSH public key lookups.
-sshd__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
+sshd__ldap_base_dn: '{{ ansible_local.ldap.base_dn | d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: sshd__ldap_device_dn [[[
 #
 # The Distinguished Name of the device LDAP object that represents current
 # host. It will be used as a base DN for the ``sshd`` LDAP account object.
-sshd__ldap_device_dn: '{{ ansible_local.ldap.device_dn|d([]) }}'
+sshd__ldap_device_dn: '{{ ansible_local.ldap.device_dn | d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: sshd__ldap_device_object_classes [[[
@@ -650,7 +650,7 @@ sshd__ldap_filter: '{{ sshd__ldap_filter_map["service+host"] }}'
 # List of LDAP search filters which are derived from URN-like patterns defined
 # for a given host in the :ref:`debops.ldap` role.
 # See :ref:`ldap__ref_ldap_access_host` for more details.
-sshd__ldap_posix_urns: '{{ ansible_local.ldap.urn_patterns|d([])
+sshd__ldap_posix_urns: '{{ ansible_local.ldap.urn_patterns | d([])
                            | map("regex_replace", "^(.*)$", "(host=posix:urn:\1)")
                            | list }}'
 
@@ -717,7 +717,7 @@ sshd__pam_deploy_state: 'present'
 # Specify the absolute path of the PAM access file to use for the ``sshd``
 # service.
 sshd__pam_access_file: '{{ "/etc/security/access-sshd.conf"
-                           if ("sshd" in ansible_local.pam_access.rules|d([]))
+                           if ("sshd" in ansible_local.pam_access.rules | d([]))
                            else "/etc/security/access.conf" }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -908,7 +908,7 @@ sshd__pam_access__dependent_rules:
         comment: 'Grant access via SSH to root account from the Ansible Controller hosts'
         permission: 'allow'
         users: 'root'
-        origins: '{{ ansible_local.core.ansible_controllers|d([]) }}'
+        origins: '{{ ansible_local.core.ansible_controllers | d([]) }}'
 
       - name: 'allow-root'
         comment: 'Grant access via SSH to root account on the same DNS domain'
@@ -927,7 +927,7 @@ sshd__pam_access__dependent_rules:
           Grant access via SSH to members of UNIX groups defined on this host
         permission: 'allow'
         groups: '{{ ansible_local.system_groups.access.sshd
-                    |d([ "admins", "sshusers", "sftponly" ]) }}'
+                     | d([ "admins", "sshusers", "sftponly" ]) }}'
         origins: 'ALL'
 
       - name: 'allow-ldap-groups'

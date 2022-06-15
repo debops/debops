@@ -64,7 +64,7 @@
   loop: '{{ filebeat__combined_snippets | debops.debops.parse_kv_config }}'
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
-  when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and item.config | d()
+  when: item.state | d('present') not in [ 'absent', 'ignore', 'init' ] and item.config | d()
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove snippet configuration if requested
@@ -75,7 +75,7 @@
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state, "config": item.config} }}'
   notify: [ 'Test filebeat configuration and restart' ]
-  when: item.state|d('present') == 'absent' and item.config | d()
+  when: item.state | d('present') == 'absent' and item.config | d()
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate snippet configuration
@@ -87,7 +87,7 @@
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state, "config": item.config} }}'
   notify: [ 'Test filebeat configuration and restart' ]
-  when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and item.config | d()
+  when: item.state | d('present') not in [ 'absent', 'ignore', 'init' ] and item.config | d()
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Check if the Filebeat keystore exists
@@ -111,7 +111,7 @@
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
   notify: [ 'Test filebeat configuration and restart' ]
-  when: (item.state|d('present') == 'absent' and
+  when: (item.state | d('present') == 'absent' and
          item.name in filebeat__register_keys.stdout_lines)
   no_log: '{{ debops__no_log | d(True) }}'
 
@@ -131,9 +131,9 @@
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
   notify: [ 'Test filebeat configuration and restart' ]
-  when: (item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
+  when: (item.state | d('present') not in [ 'absent', 'ignore', 'init' ] and
          (item.name not in filebeat__register_keys.stdout_lines or
-          (item.force|d(False)) | bool))
+          (item.force | d(False)) | bool))
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Enable filebeat service on installation

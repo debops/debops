@@ -202,7 +202,7 @@ apt_cacher_ng__max_download_speed_kib: ''
 # Set to an empty string to let the package scripts from Apt-Cacher NG decide
 # which upstream mirror to use.
 apt_cacher_ng__upstream_mirror_debian: '{{ ansible_local.apt.default_sources_map.Debian[0]
-                                           |d("http://deb.debian.org/debian") }}'
+                                            | d("http://deb.debian.org/debian") }}'
 
                                                                    # ]]]
 # .. envvar:: apt_cacher_ng__upstream_mirror_ubuntu [[[
@@ -212,7 +212,7 @@ apt_cacher_ng__upstream_mirror_debian: '{{ ansible_local.apt.default_sources_map
 # Set to an empty string to let the package scripts from Apt-Cacher NG decide
 # which upstream mirror to use.
 apt_cacher_ng__upstream_mirror_ubuntu: '{{ ansible_local.apt.default_sources_map.Ubuntu[0]
-                                           |d("http://archive.ubuntu.com/ubuntu") }}'
+                                            | d("http://archive.ubuntu.com/ubuntu") }}'
 
                                                                    # ]]]
 # .. envvar:: apt_cacher_ng__upstream_mirror_gentoo [[[
@@ -221,7 +221,7 @@ apt_cacher_ng__upstream_mirror_ubuntu: '{{ ansible_local.apt.default_sources_map
 # One mirror per line.
 # Set to an empty string to let the package scripts from Apt-Cacher NG decide
 # which upstream mirror to use.
-apt_cacher_ng__upstream_mirror_gentoo: '{{ ansible_local.apt.default_sources_map.Gentoo[0]|d("") }}'
+apt_cacher_ng__upstream_mirror_gentoo: '{{ ansible_local.apt.default_sources_map.Gentoo[0] | d("") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Cache directory [[[
@@ -499,9 +499,9 @@ apt_cacher_ng__ferm__dependent_rules:
 
   - type: 'accept'
     dport: [ 'acng' ]
-    saddr: '{{ (apt_cacher_ng__allow|d([]) | list) +
-      (apt_cacher_ng__group_allow   |d([]) | list) +
-      (apt_cacher_ng__host_allow    |d([]) | list) }}'
+    saddr: '{{ (apt_cacher_ng__allow | d([]) | list) +
+      (apt_cacher_ng__group_allow    | d([]) | list) +
+      (apt_cacher_ng__host_allow     | d([]) | list) }}'
     accept_any: True
     interface: '{{ apt_cacher_ng__interfaces }}'
     weight: '40'

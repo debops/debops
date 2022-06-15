@@ -133,7 +133,7 @@
     state: 'absent'
   with_flattened:
     - '{{ opendkim__combined_keys }}'
-  when: item.state|d('present') == 'absent'
+  when: item.state | d('present') == 'absent'
 
 - name: Download DomainKeys from Ansible Controller
   ansible.builtin.copy:
@@ -148,7 +148,7 @@
     mode: '0640'
   with_flattened:
     - '{{ opendkim__combined_keys }}'
-  when: item.state|d('present') != 'absent'
+  when: item.state | d('present') != 'absent'
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate key configuration files

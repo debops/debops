@@ -20,7 +20,7 @@
 {{ "{}".format(element) }}
 {%     elif element is mapping %}
 {%       if element.name | d() %}
-{%         if element.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%         if element.state | d('present') not in [ 'absent', 'ignore' ] %}
 {%           if (loop.first and item.comment | d() and element.comment | d()) or (not loop.first and (element.comment | d() or (element.separator | d()) | bool)) %}
 
 {%           endif %}
@@ -29,20 +29,20 @@
 {%           endif %}
 {%           if element.value | d() %}
 {%             if element.value is string %}
-{{ "{}{} = {}".format(('#' if (element.state|d('present') == 'comment') else ''), element.option | d(element.name), element.value) }}
+{{ "{}{} = {}".format(('#' if (element.state | d('present') == 'comment') else ''), element.option | d(element.name), element.value) }}
 {%             else %}
 {%               for thing in (element.value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list) %}
-{{ "{}{} = {}".format(('#' if (element.state|d('present') == 'comment') else ''), element.option | d(element.name), thing) }}
+{{ "{}{} = {}".format(('#' if (element.state | d('present') == 'comment') else ''), element.option | d(element.name), thing) }}
 {%               endfor %}
 {%             endif %}
 {%           elif element.raw | d() %}
-{%             if element.state|d('present') == 'comment' %}
+{%             if element.state | d('present') == 'comment' %}
 {{ "{}".format(element.raw | regex_replace('\n$','')) | comment() }}
 {%             else %}
 {{ "{}".format(element.raw | regex_replace('\n$','')) }}
 {%             endif %}
 {%           else %}
-{{ "{}{}".format(('#' if (element.state|d('present') == 'comment') else ''), element.option | d(element.name)) }}
+{{ "{}{}".format(('#' if (element.state | d('present') == 'comment') else ''), element.option | d(element.name)) }}
 {%           endif %}
 {%         endif %}
 {%       else %}

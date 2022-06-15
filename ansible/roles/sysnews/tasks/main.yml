@@ -39,7 +39,7 @@
     path: '/var/lib/sysnews/{{ item.name }}'
     state: 'absent'
   with_items: '{{ sysnews__combined_entries | debops.debops.parse_kv_items }}'
-  when: item.name | d() and item.state|d('present') == 'absent'
+  when: item.name | d() and item.state | d('present') == 'absent'
 
 - name: Generate persistent news files
   ansible.builtin.copy:
@@ -50,7 +50,7 @@
     group: 'root'
     mode: '0644'
   with_items: '{{ sysnews__combined_entries | debops.debops.parse_kv_items }}'
-  when: item.name | d() and item.state|d('present') != 'absent'
+  when: item.name | d() and item.state | d('present') != 'absent'
 
 - name: Update list of persistent news files
   ansible.builtin.blockinfile:

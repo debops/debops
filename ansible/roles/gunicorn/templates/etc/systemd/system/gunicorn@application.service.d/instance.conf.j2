@@ -19,8 +19,8 @@ TimeoutStopSec={{ item.systemd_timeout | d(gunicorn__systemd_timeout) }}
 {% if item.environment | d() %}
 {%   for element in ([ item.environment ] if item.environment is mapping else item.environment) %}
 {%     if element.name | d() %}
-{%       if element.state|d('present') != 'absent' %}
-{{ 'Environment="{}={}"'.format(element.name | upper, element.value|d('')) }}
+{%       if element.state | d('present') != 'absent' %}
+{{ 'Environment="{}={}"'.format(element.name | upper, element.value | d('')) }}
 {%       endif %}
 {%     else %}
 {%       for key, value in element.items() %}

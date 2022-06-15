@@ -13,7 +13,7 @@
 {%     if element is string %}
 {%       set _ = apt_install__tpl_package_list.append(element) %}
 {%     elif element is mapping %}
-{%       if element.state|d('present') == 'present' and element.name | d() %}
+{%       if element.state | d('present') == 'present' and element.name | d() %}
 {%         set apt_install__tpl_to_meet_condition_list = apt_install__condition_map.keys() %}
 {%         set apt_install__tpl_met_condition_list = [] %}
 {%         for condition_name_to_meet in apt_install__tpl_to_meet_condition_list %}
@@ -29,7 +29,7 @@
 {%         endfor %}
 {%         if (apt_install__tpl_met_condition_list | unique | length) == (apt_install__tpl_to_meet_condition_list | unique | length) %}
 {%           set _ = apt_install__tpl_package_list.append(get_yaml_list_from_string_or_list(element, 'name') | from_json
-                       | intersect(element.whitelist|d(get_yaml_list_from_string_or_list(element, 'name') | from_json)) | list) %}
+                       | intersect(element.whitelist | d(get_yaml_list_from_string_or_list(element, 'name') | from_json)) | list) %}
 {%         endif %}
 {%       endif %}
 {%     else %}

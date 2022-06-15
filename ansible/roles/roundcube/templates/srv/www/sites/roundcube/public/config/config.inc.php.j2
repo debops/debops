@@ -98,7 +98,7 @@
 {%   endif %}
 {% endmacro %}
 {% for section in roundcube__combined_configuration_sections | debops.debops.parse_kv_config %}
-{%   if section.name | d() and section.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%   if section.name | d() and section.state | d('present') not in [ 'absent', 'init', 'ignore' ] %}
 {%     set loop_next = [] %}
 {%     set section_config = (roundcube__combined_configuration | debops.debops.parse_kv_config
                              | selectattr("section", "equalto", section.name) | list) %}
@@ -114,7 +114,7 @@
 
 {%       endif %}
 {%       for element in section_config %}
-{%         if element.name | d() and element.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%         if element.name | d() and element.state | d('present') not in [ 'absent', 'init', 'ignore' ] %}
 {%           if ((element.comment | d() and loop_next) or
                  (element.separator | d()) | bool and loop_next) %}
 
@@ -123,12 +123,12 @@
 {%           if element.comment | d() %}
 {{ element.comment | regex_replace('\n$','') | comment(prefix='', postfix='', decoration='// ') -}}
 {%           endif %}
-{%           if element.state|d('present') == 'comment' %}
+{%           if element.state | d('present') == 'comment' %}
 {%             set comment_state = '//' %}
 {%           else %}
 {%             set comment_state = '' %}
 {%           endif %}
-{%           if (element.quotes|d(True)) | bool %}
+{%           if (element.quotes | d(True)) | bool %}
 {%             set quote_char = "'" %}
 {%           else %}
 {%             set quote_char = "" %}
@@ -141,21 +141,21 @@
 {%           if element.raw is not defined and element.value is not defined and element.array is not defined %}
 {{ "{}$config['{}'] = array();".format(comment_state, element_name) }}
 {%           elif element.raw is defined %}
-{%             if element.state|d('present') == 'comment' %}
+{%             if element.state | d('present') == 'comment' %}
 {{ "/*" }}
 {%             endif %}
 {{ element.raw | regex_replace('\n$', '') }}
-{%             if element.state|d('present') == 'comment' %}
+{%             if element.state | d('present') == 'comment' %}
 {{ "*/" }}
 {%             endif %}
 {%           elif element.array | d() %}
-{%             if element.state|d('present') == 'comment' %}
+{%             if element.state | d('present') == 'comment' %}
 {{ "/*" }}
 {%             endif %}
 {{ "$config['{}'] = array(".format(element_name) }}
 {{ print_array(element.array) | indent(4, true) -}}
 {{ ");" }}
-{%             if element.state|d('present') == 'comment' %}
+{%             if element.state | d('present') == 'comment' %}
 {{ "*/" }}
 {%             endif %}
 {%           elif element.value is defined %}

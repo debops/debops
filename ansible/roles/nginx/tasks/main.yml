@@ -198,7 +198,7 @@
     group: 'root'
     mode: '0644'
   when: (item.value and nginx__deploy_state in [ 'present', 'config' ])
-  with_dict: '{{ nginx_local_servers|d({}) }}'
+  with_dict: '{{ nginx_local_servers | d({}) }}'
   notify: [ 'Test nginx and reload' ]
 
 - name: Manage local server definitions - remove symlinks
@@ -206,7 +206,7 @@
     path: '/etc/nginx/sites-enabled/{{ item.key }}'
     state: 'absent'
   when: ((not item.value | d()) and nginx__deploy_state in [ 'present', 'config' ])
-  with_dict: '{{ nginx_local_servers|d({}) }}'
+  with_dict: '{{ nginx_local_servers | d({}) }}'
   notify: [ 'Test nginx and reload' ]
 
   # If nginx local facts are not present, assume that configuration

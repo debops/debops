@@ -54,7 +54,7 @@
 {% macro print_zone(config) %}
 {%   set real_zone_name = (config.zone | d(config.name)) %}
 {%   set zone_name = (real_zone_name + ('.' if not real_zone_name.endswith('.') else '')) %}
-{%   if config.type|d('forward') == 'local' %}
+{%   if config.type | d('forward') == 'local' %}
 server:
     local-zone: "{{ (zone_name | regex_replace('\n$','') | regex_replace('\.$','')) + '.' }}" {{ config.local_zone_type | d('static') }}
 {%     if config.local_zone_data | d() %}
@@ -93,7 +93,7 @@ server:
 {%         elif element.value is not string and element.value is not mapping and element.value is iterable %}
 {%           set element_value = [] %}
 {%           for option in element.value %}
-{%             if option.state|d('present') != 'absent' %}
+{%             if option.state | d('present') != 'absent' %}
 {%               set _ = element_value.append(option.name) %}
 {%             endif %}
 {%           endfor %}
@@ -138,7 +138,7 @@ server:
 {%         elif element.value is not string and element.value is not mapping and element.value is iterable %}
 {%           set element_value = [] %}
 {%           for option in element.value %}
-{%             if option.state|d('present') != 'absent' %}
+{%             if option.state | d('present') != 'absent' %}
 {%               set _ = element_value.append(option.name) %}
 {%             endif %}
 {%           endfor %}

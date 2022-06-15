@@ -73,7 +73,7 @@
     path: '/etc/.gitignore'
     block: |
       {% for item in etckeeper__combined_gitignore | debops.debops.parse_kv_items %}
-      {%   if (item.name | d() and item.state|d('present') != 'absent') %}
+      {%   if (item.name | d() and item.state | d('present') != 'absent') %}
       {%     if item.comment | d() %}
 
       {{ item.comment | regex_replace('\n$', '') | comment(prefix='', postfix='') }}{%     endif %}
@@ -108,8 +108,8 @@
     path: '/etc/.git'
     state: 'directory'
     owner: 'root'
-    group: '{{ etckeeper__repository_group|d("root") }}'
-    mode: '{{ etckeeper__repository_permissions|d("0700") }}'
+    group: '{{ etckeeper__repository_group | d("root") }}'
+    mode: '{{ etckeeper__repository_permissions | d("0700") }}'
   when: etckeeper__enabled | bool and etckeeper__vcs == 'git'
 
 - name: Set user, email for the git repository

@@ -6,8 +6,8 @@
 
 {% set opendkim__tpl_config = (opendkim__combined_config | debops.debops.parse_kv_config) %}
 {% set opendkim__tpl_sections = ((opendkim__tpl_config | map(attribute='section')) | list | unique) %}
-{% for section in opendkim__config_sections|d([ {'name': 'unknown'} ]) %}
-{%   if section.state|d('present') != 'absent' %}
+{% for section in opendkim__config_sections | d([ {'name': 'unknown'} ]) %}
+{%   if section.state | d('present') != 'absent' %}
 {%     set section_loop = [] %}
 {%     set section_comment_prefix = ('' if loop.first | bool else '\n') %}
 {%     if section.name in opendkim__tpl_sections %}
@@ -16,10 +16,10 @@
 {{ '{:-^70}'.format(' ' + section.title + ' ') | comment(prefix=section_comment_prefix, postfix='') }}
 {%       endif %}
 {%       for element in opendkim__tpl_config %}
-{%         if element.section == section.name and element.state|d('present') != 'absent' %}
+{%         if element.section == section.name and element.state | d('present') != 'absent' %}
 {%           set comment_prefix =   ('' if not section_loop else '\n') %}
-{%           set option_commented = ('#' if element.state|d('present') == 'comment' else '') %}
-{%           set option_indent =    ('27' if element.state|d('present') == 'comment' else '28') %}
+{%           set option_commented = ('#' if element.state | d('present') == 'comment' else '') %}
+{%           set option_indent =    ('27' if element.state | d('present') == 'comment' else '28') %}
 {%           set element_name =     (element.option | d(element.name)) %}
 {%           if element.value is defined %}
 {%             if element.value | bool and element.value is not iterable %}
@@ -39,7 +39,7 @@
 {%             elif element.value is not string and element.value is not mapping and element.value is iterable %}
 {%               set element_value = [] %}
 {%               for option in element.value %}
-{%                 if option.state|d('present') != 'absent' %}
+{%                 if option.state | d('present') != 'absent' %}
 {%                   set _ = element_value.append(option.name) %}
 {%                 endif %}
 {%               endfor %}
@@ -51,13 +51,13 @@
 {%           endif %}
 {%           if element.comment | d() %}
 {{ element.comment | regex_replace('\n$','') | comment(prefix=comment_prefix, postfix='') -}}
-{%             if element.state|d('present') == 'hidden' %}
+{%             if element.state | d('present') == 'hidden' %}
 
 {%             endif %}
 {%           elif element.separator is defined and element.separator | bool %}
 
 {%           endif %}
-{%           if element.state|d('present') != 'hidden' %}
+{%           if element.state | d('present') != 'hidden' %}
 {%             if element_value is not string and element_value is not mapping and element_value is iterable %}
 {{ ('{}{:<' + option_indent + '} {}').format(option_commented, element_name, element_value | join(',')) }}
 {%             else %}

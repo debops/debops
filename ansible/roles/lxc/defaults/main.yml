@@ -41,7 +41,7 @@ lxc__packages: []
 #
 # The variable that exposes the version of the LXC service installed on
 # a host. It will be set automatically using the Ansible local facts.
-lxc__version: '{{ ansible_local.lxc.version|d("0.0.0") }}'
+lxc__version: '{{ ansible_local.lxc.version | d("0.0.0") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Unprivileged LXC containers [[[
@@ -103,8 +103,8 @@ lxc__root_subgid_count: '{{ ansible_local.root_account.subgids[0]["count"]
 lxc__net_deploy_state: '{{ "absent"
                            if ((ansible_virtualization_type in [ "lxc", "docker", "openvz" ] and
                                 ansible_virtualization_role == "guest") or
-                               (inventory_hostname in groups["debops_service_lxd"]|d([])) or
-                               (ansible_local.lxd.installed|d(False)) | bool)
+                               (inventory_hostname in groups["debops_service_lxd"] | d([])) or
+                               (ansible_local.lxd.installed | d(False)) | bool)
                            else "present" }}'
 
                                                                    # ]]]
@@ -177,7 +177,7 @@ lxc__net_domain: '{{ "lxc" + (("." + lxc__net_base_domain)
 # :command:`dnsmasq`, configured on the LXC host the containers can then be
 # accessed by their hostnames instead of the IP addresses.
 lxc__net_fqdn: '{{ ansible_hostname + "."
-                   + ansible_local.lxc.net_domain|d(lxc__net_domain) }}'
+                   + ansible_local.lxc.net_domain | d(lxc__net_domain) }}'
 
                                                                    # ]]]
 # .. envvar:: lxc__net_dnsmasq_conf [[[
@@ -644,13 +644,13 @@ lxc__default_container_template: 'download'
 # .. envvar:: lxc__default_container_distribution [[[
 #
 # The default OS distribution used during container creation.
-lxc__default_container_distribution: '{{ ansible_local.core.distribution|d(ansible_distribution) }}'
+lxc__default_container_distribution: '{{ ansible_local.core.distribution | d(ansible_distribution) }}'
 
                                                                    # ]]]
 # .. envvar:: lxc__default_container_release [[[
 #
 # The default OS release used during container creation.
-lxc__default_container_release: '{{ ansible_local.core.distribution_release|d(ansible_distribution_release) }}'
+lxc__default_container_release: '{{ ansible_local.core.distribution_release | d(ansible_distribution_release) }}'
 
                                                                    # ]]]
 # .. envvar:: lxc__default_container_architecture [[[

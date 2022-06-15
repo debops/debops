@@ -7,7 +7,7 @@
 {%   if repo.fqdn | d() %}
 {%     set repo_data_http = {
          'by_role': 'debops.reprepro',
-         'state': (repo.state if repo.public|d(True) else 'absent'),
+         'state': (repo.state if repo.public | d(True) else 'absent'),
          'enabled': True,
          'ssl': False,
          'name': repo.fqdn,
@@ -16,11 +16,11 @@
          'webroot_create': False,
          'location_list': [
            {'pattern': '/',
-            'allow': repo.allow|d([]),
+            'allow': repo.allow | d([]),
             'options': 'try_files $uri $uri/ =404;\nautoindex on;\nautoindex_exact_size off;\nautoindex_localtime on;'
            },
            {'pattern': '~ /(.+)/(.*)',
-            'allow': repo.allow|d([]),
+            'allow': repo.allow | d([]),
             'options': 'try_files $uri $uri/ =404;\nautoindex on;\nautoindex_exact_size off;\nautoindex_localtime on;'
            }
          ]
@@ -28,24 +28,24 @@
 {%     set _ = output.append(repo_data_http) %}
 {%     set location_list_https = [
          {'pattern': '/',
-          'allow': repo.allow|d([]),
+          'allow': repo.allow | d([]),
           'options': 'try_files $uri $uri/ =404;\nautoindex on;\nautoindex_exact_size off;\nautoindex_localtime on;'
          }
        ] %}
-{%     if repo.public|d(True) %}
+{%     if repo.public | d(True) %}
 {%       set _ = location_list_https.append(
            {'pattern': '~ /(.+)/(.*)',
-            'allow': repo.allow|d([]),
+            'allow': repo.allow | d([]),
             'options': 'try_files $uri $uri/ =404;\nautoindex on;\nautoindex_exact_size off;\nautoindex_localtime on;'
            }
          ) %}
 {%     else %}
 {%       set _ = location_list_https.append(
            {'pattern': '~ /(.+)/(.*)',
-            'allow': repo.allow|d([]),
+            'allow': repo.allow | d([]),
             'options': 'try_files $uri $uri/ =404;\nautoindex on;\nautoindex_exact_size off;\nautoindex_localtime on;',
-            'access_policy': repo.access_policy|d(''),
-            'auth_basic_realm': repo.auth_realm|d(reprepro__auth_realm)
+            'access_policy': repo.access_policy | d(''),
+            'auth_basic_realm': repo.auth_realm | d(reprepro__auth_realm)
            }
          ) %}
 {%     endif %}
@@ -58,7 +58,7 @@
 {%         endif %}
 {%         set _ = location_list_https.append(
              {'pattern': '^~ /' + (path | regex_replace('^/','')),
-              'allow': repo.allow_upload|d([]),
+              'allow': repo.allow_upload | d([]),
               'options': ('alias ' + alias_path + ';\ndav_access all:rw;\ndav_methods PUT;\nlimit_except PUT {\n    deny all;\n}')
              }
            ) %}
@@ -66,7 +66,7 @@
 {%     else %}
 {%       set _ = location_list_https.append(
            {'pattern': '^~ /upload',
-            'allow': repo.allow_upload|d([]),
+            'allow': repo.allow_upload | d([]),
             'options': ('alias ' + reprepro__spool_root + '/' + repo.name + '/incoming;\ndav_access all:rw;\ndav_methods PUT;\nlimit_except PUT {\n    deny all;\n}')
            }
          ) %}
@@ -82,7 +82,7 @@
          'options': ('client_max_body_size ' + repo.max_body_size | d(reprepro__max_body_size) + ';'),
          'location_list': location_list_https
        } %}
-{%     if repo.public|d(True) %}
+{%     if repo.public | d(True) %}
 {%       set _ = repo_data_https.update({'listen': False}) %}
 {%     endif %}
 {%     if repo.pki_realm | d() %}

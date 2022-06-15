@@ -26,7 +26,7 @@
 {% set param_tracker = [] %}
 {% set tracker = {'seen_comment': False} %}
 {% for element in item.options %}
-{%   if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%   if element.state | d('present') not in [ 'absent', 'ignore', 'init' ] %}
 {%     if element.comment | d() %}
 {%       if not loop.first and param_tracker and not tracker.seen_comment | bool %}
 
@@ -38,7 +38,7 @@
 {%     endif %}
 {%     set _ = param_tracker.append(True) %}
 {%     set commented_entry = '' %}
-{%     if ((element.state|d('present') == 'comment') or (item.state|d('present') == 'comment')) %}
+{%     if ((element.state | d('present') == 'comment') or (item.state | d('present') == 'comment')) %}
 {%       set commented_entry = '#' %}
 {%     endif %}
 {%     set is_writable = [] %}

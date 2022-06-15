@@ -48,7 +48,7 @@
     group: '{{ item.value.base_directory_group | d(omit) }}'
     mode:  '{{ item.value.base_directory_mode  | d(omit) }}'
   with_dict: '{{ owncloud__theme_copy_files_combined }}'
-  when: (owncloud__theme_directory_name | d() and item.value.state|d("present") == "present")
+  when: (owncloud__theme_directory_name | d() and item.value.state | d("present") == "present")
   tags: [ 'role::owncloud:theme:copy' ]
 
 - name: Copy additional theme files
@@ -70,7 +70,7 @@
     src:            '{{ item.value.src            | d(omit) }}'
     validate:       '{{ item.value.validate       | d(omit) }}'
   with_dict: '{{ owncloud__theme_copy_files_combined }}'
-  when: (owncloud__theme_directory_name | d() and item.value.state|d("present") == "present")
+  when: (owncloud__theme_directory_name | d() and item.value.state | d("present") == "present")
   tags: [ 'role::owncloud:theme:copy' ]
 
 - name: Activate custom theme
@@ -98,7 +98,7 @@
   ansible.builtin.file:
     path: '{{ owncloud__deploy_path + "/themes/" + owncloud__theme_directory_name + "/" + item.key }}'
     state: 'absent'
-  when: (owncloud__theme_directory_name | d() and item.value.state|d("present") == "absent")
+  when: (owncloud__theme_directory_name | d() and item.value.state | d("present") == "absent")
   with_dict: '{{ owncloud__theme_copy_files_combined }}'
   tags: [ 'role::owncloud:theme:copy' ]
 

@@ -5,7 +5,7 @@
 # {{ ansible_managed }}
 
 {% macro print_export(export) %}
-{%   if export is mapping and export.state|d('present') != 'absent' and export.path | d() and export.acl | d() %}
+{%   if export is mapping and export.state | d('present') != 'absent' and export.path | d() and export.acl | d() %}
 {%     set nfs_server__tpl_export_path = export.path %}
 {%     set nfs_server__tpl_export_options = [] %}
 {%     set nfs_server__tpl_export_acl = [] %}
@@ -18,7 +18,7 @@
 {%       for element in export.acl %}
 {%         if element is string %}
 {%           set _ = nfs_server__tpl_export_acl.append(element) %}
-{%         elif element is mapping and element.state|d('present') != 'absent' %}
+{%         elif element is mapping and element.state | d('present') != 'absent' %}
 {%           if element.client | d() %}
 {%             if element.client is string %}
 {%               if element.options | d() %}
@@ -84,7 +84,7 @@
 {%   endif %}
 {% endmacro %}
 {% for entry in (nfs_server__combined_exports) %}
-{%   if entry is mapping and entry.state|d('present') != 'absent' and entry.path | d() and entry.acl | d() %}
+{%   if entry is mapping and entry.state | d('present') != 'absent' and entry.path | d() and entry.acl | d() %}
 {%     if not loop.first | bool and not entry.comment | d() %}
 
 {%     endif %}

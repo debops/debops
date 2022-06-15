@@ -181,31 +181,31 @@ rsyslog__pki: '{{ ansible_local.pki.enabled | d() | bool }}'
 # .. envvar:: rsyslog__pki_path [[[
 #
 # Path to the directory with PKI realms.
-rsyslog__pki_path: '{{ ansible_local.pki.path|d("/etc/pki") }}'
+rsyslog__pki_path: '{{ ansible_local.pki.path | d("/etc/pki") }}'
 
                                                                    # ]]]
 # .. envvar:: rsyslog__pki_realm [[[
 #
 # Name of the PKi realm to use with ``rsyslogd``.
-rsyslog__pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
+rsyslog__pki_realm: '{{ ansible_local.pki.realm | d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: rsyslog__pki_ca [[[
 #
 # Name of the root CA certificate used by the ``debops.rsyslog`` role.
-rsyslog__pki_ca: '{{ ansible_local.pki.ca|d("CA.crt") }}'
+rsyslog__pki_ca: '{{ ansible_local.pki.ca | d("CA.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: rsyslog__pki_crt [[[
 #
 # Name of the client certificate file used by the ``debops.rsyslog`` role.
-rsyslog__pki_crt: '{{ ansible_local.pki.crt|d("default.crt") }}'
+rsyslog__pki_crt: '{{ ansible_local.pki.crt | d("default.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: rsyslog__pki_key [[[
 #
 # Name of the private key file used by the ``debops.rsyslog`` role.
-rsyslog__pki_key: '{{ ansible_local.pki.key|d("default.key") }}'
+rsyslog__pki_key: '{{ ansible_local.pki.key | d("default.key") }}'
 
                                                                    # ]]]
 # .. envvar:: rsyslog__default_netstream_driver [[[
@@ -311,7 +311,7 @@ rsyslog__syslog_srv_rr: '{{ q("debops.debops.dig_srv", "_syslog._tcp." + rsyslog
 # messages will be forwarded. If multiple servers are configured in the SRV
 # record, logs will be sent to all of them.
 rsyslog__default_forward: '{{ rsyslog__syslog_srv_rr
-                              if (rsyslog__syslog_srv_rr[0]["dig_srv_src"]|d("") != "fallback" and
+                              if (rsyslog__syslog_srv_rr[0]["dig_srv_src"] | d("") != "fallback" and
                                   not rsyslog__remote_enabled | bool and
                                   rsyslog__pki | bool)
                               else [] }}'

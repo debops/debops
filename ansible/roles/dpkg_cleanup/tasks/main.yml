@@ -18,7 +18,7 @@
   loop_control:
     label: '{{ {"package": item.name} }}'
   when: dpkg_cleanup__enabled | bool and item.name | d() and
-        item.state|d('present') == 'absent'
+        item.state | d('present') == 'absent'
 
 - name: Remove cleanup hooks if requested
   ansible.builtin.file:
@@ -28,7 +28,7 @@
   loop_control:
     label: '{{ {"package": item.name} }}'
   when: dpkg_cleanup__enabled | bool and item.name | d() and
-        item.state|d('present') == 'absent'
+        item.state | d('present') == 'absent'
 
 - name: Generate cleanup scripts
   ansible.builtin.template:
@@ -39,7 +39,7 @@
   loop_control:
     label: '{{ {"package": item.name} }}'
   when: dpkg_cleanup__enabled | bool and item.name | d() and
-        item.state|d('present') != 'absent'
+        item.state | d('present') != 'absent'
 
 - name: Generate cleanup hooks
   ansible.builtin.template:
@@ -50,4 +50,4 @@
   loop_control:
     label: '{{ {"package": item.name} }}'
   when: dpkg_cleanup__enabled | bool and item.name | d() and
-        item.state|d('present') != 'absent'
+        item.state | d('present') != 'absent'

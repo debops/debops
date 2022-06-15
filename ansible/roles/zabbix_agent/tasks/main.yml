@@ -42,7 +42,7 @@
     owner: 'root'
     group: '{{ zabbix_agent__group }}'
     mode: '0640'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes | d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
   notify: [ 'Check zabbix-agent and restart' ]
 
 - name: Install secret key
@@ -87,7 +87,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes | d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
   notify: [ 'Refresh host facts' ]
   tags: [ 'meta::facts' ]
 

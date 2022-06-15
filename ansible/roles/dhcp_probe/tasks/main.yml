@@ -49,7 +49,7 @@
   loop_control:
     label: '{{ {"name": item.name, "state": item.state} }}'
   when: ansible_service_mgr == 'systemd' and item.name | d() and
-        item.state|d('present') == 'absent'
+        item.state | d('present') == 'absent'
 
 - name: Enable DHCP Probe instances if requested
   ansible.builtin.systemd:
@@ -59,7 +59,7 @@
   loop_control:
     label: '{{ {"name": item.name, "state": item.state} }}'
   when: ansible_service_mgr == 'systemd' and item.name | d() and
-        item.state|d('present') != 'absent'
+        item.state | d('present') != 'absent'
   notify: [ 'Restart dhcp-probe' ]
 
 - name: Ensure that required directories exist

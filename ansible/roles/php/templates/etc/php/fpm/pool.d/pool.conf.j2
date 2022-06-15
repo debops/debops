@@ -440,7 +440,7 @@ security.limit_extensions = {{ php__fpm_security_limit_extensions if php__fpm_se
 ;env[TMP] = /tmp
 ;env[TMPDIR] = /tmp
 ;env[TEMP] = /tmp #}
-{% for key, value in (php__fpm_environment | combine(php__fpm_group_environment | combine(php__fpm_host_environment | combine(item.environment|d({}))))).items() %}
+{% for key, value in (php__fpm_environment | combine(php__fpm_group_environment | combine(php__fpm_host_environment | combine(item.environment | d({}))))).items() %}
 env[{{ key }}] = {{ value }}
 {% endfor %}
 

@@ -12,16 +12,16 @@
 - name: Divert Apt-Cacher NG configuration
   dpkg_divert:
     path: '/{{ item.path }}'
-  when: (item.divert|d(True))
+  when: (item.divert | d(True))
   with_items: '{{ apt_cacher_ng__configuration_files }}'
 
 - name: Configure apt-cacher-ng
   ansible.builtin.template:
-    src: '{{ item.src|d(item.path) }}.j2'
+    src: '{{ item.src | d(item.path) }}.j2'
     dest: '/{{ item.path }}'
-    owner: '{{ item.owner|d("root") }}'
-    group: '{{ item.group|d("root") }}'
-    mode: '{{ item.mode|d("0640") }}'
+    owner: '{{ item.owner | d("root") }}'
+    group: '{{ item.group | d("root") }}'
+    mode: '{{ item.mode | d("0640") }}'
   with_items: '{{ apt_cacher_ng__configuration_files }}'
   notify: [ 'Restart apt-cacher-ng' ]
 
@@ -90,7 +90,7 @@
 #     mode:  '{{ apt_cacher_ng__file_perms }}'
 #   ## UID and GID are reported as number.
 #   when: (item.mode|regex_replace("^0([0-7]{4})$", "\1") != apt_cacher_ng__file_perms)
-#   with_items: '{{ apt_cacher_ng__register_cache_dir_file_list.files|d([]) }}'
+#   with_items: '{{ apt_cacher_ng__register_cache_dir_file_list.files | d([]) }}'
 #
 # - name: Change permissions of directory in the cache directory
 #   ansible.builtin.file:
@@ -98,7 +98,7 @@
 #     owner: '{{ apt_cacher_ng__cache_dir_owner }}'
 #     group: '{{ apt_cacher_ng__cache_dir_group }}'
 #     mode:  '{{ apt_cacher_ng__dir_perms }}'
-#   with_items: '{{ apt_cacher_ng__register_cache_dir_directory_list.files|d([]) }}'
+#   with_items: '{{ apt_cacher_ng__register_cache_dir_directory_list.files | d([]) }}'
 
 # ]]]
 

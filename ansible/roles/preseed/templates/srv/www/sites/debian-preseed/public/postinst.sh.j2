@@ -13,13 +13,13 @@ set -o nounset -o pipefail -o errexit
 export HOME="/root"
 
 # Set of SSH keys used for root access
-PRESEED_ROOT_SSHKEYS="{{ (item.root_sshkeys|d([]) + preseed__root_sshkeys) | join('\n') }}"
+PRESEED_ROOT_SSHKEYS="{{ (item.root_sshkeys | d([]) + preseed__root_sshkeys) | join('\n') }}"
 
 # Name of the administrative UNIX account
 PRESEED_ADMIN_NAME="{{ item.admin_username | d() }}"
 
 # Set of SSH keys used for administrative access
-PRESEED_ADMIN_SSHKEYS="{{ (item.admin_sshkeys|d([]) + preseed__admin_sshkeys) | join('\n') }}"
+PRESEED_ADMIN_SSHKEYS="{{ (item.admin_sshkeys | d([]) + preseed__admin_sshkeys) | join('\n') }}"
 
 
 # Prevent service startup while we are working in chroot

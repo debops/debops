@@ -53,8 +53,8 @@ Set a variable in the ``[default]`` section of the public INI file:
 
    - name: Save DebOps facts
      ini_file:
-       dest: '{{ ansible_local.debops_fact.public_facts|d("/etc/ansible/debops_fact.ini") }}'
-       section: '{{ ansible_local.debops_fact.default_section|d("default") }}'
+       dest: '{{ ansible_local.debops_fact.public_facts | d("/etc/ansible/debops_fact.ini") }}'
+       section: '{{ ansible_local.debops_fact.default_section | d("default") }}'
        option: 'mta'
        value: True
      when: ansible_local | d() and ansible_local.debops_fact | d() and
@@ -66,8 +66,8 @@ Add your role to list of roles applied on this host:
 
    - name: Save DebOps facts
      ini_file:
-       dest: '{{ ansible_local.debops_fact.public_facts|d("/etc/ansible/debops_fact.ini") }}'
-       section: '{{ ansible_local.debops_fact.public_section|d("global") }}'
+       dest: '{{ ansible_local.debops_fact.public_facts | d("/etc/ansible/debops_fact.ini") }}'
+       section: '{{ ansible_local.debops_fact.public_section | d("global") }}'
        option: 'applied_roles'
        value: '{{ ((ansible_local.debops_fact.global.applied_roles
                     if (ansible_local.debops_fact.global | d() and

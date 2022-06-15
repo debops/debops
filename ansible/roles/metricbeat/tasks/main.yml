@@ -64,13 +64,13 @@
   loop: '{{ metricbeat__combined_snippets | debops.debops.parse_kv_config }}'
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
-  when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and item.config | d()
+  when: item.state | d('present') not in [ 'absent', 'ignore', 'init' ] and item.config | d()
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Manage snippet diversion and reversion
   dpkg_divert:
     path: '{{ "/etc/metricbeat/" + (item.name | regex_replace(".yml","") + ".yml") }}'
-    state: '{{ "absent" if item.state|d("present") == "absent" else "present" }}'
+    state: '{{ "absent" if item.state | d("present") == "absent" else "present" }}'
     delete: True
   loop: '{{ metricbeat__combined_snippets | debops.debops.parse_kv_config }}'
   loop_control:
@@ -87,7 +87,7 @@
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state, "config": item.config} }}'
   notify: [ 'Test metricbeat configuration and restart' ]
-  when: item.state|d('present') == 'absent' and item.config | d()
+  when: item.state | d('present') == 'absent' and item.config | d()
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate snippet configuration
@@ -99,7 +99,7 @@
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state, "config": item.config} }}'
   notify: [ 'Test metricbeat configuration and restart' ]
-  when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and item.config | d()
+  when: item.state | d('present') not in [ 'absent', 'ignore', 'init' ] and item.config | d()
   no_log: '{{ debops__no_log | d(True) }}'
 
 # The keystore handling is very similar to ../../kibana/tasks/main.yml
@@ -125,7 +125,7 @@
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
   notify: [ 'Test metricbeat configuration and restart' ]
-  when: (item.state|d('present') == 'absent' and
+  when: (item.state | d('present') == 'absent' and
          item.name in metricbeat__register_keys.stdout_lines)
   no_log: '{{ debops__no_log | d(True) }}'
 
@@ -145,9 +145,9 @@
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
   notify: [ 'Test metricbeat configuration and restart' ]
-  when: (item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
+  when: (item.state | d('present') not in [ 'absent', 'ignore', 'init' ] and
          (item.name not in metricbeat__register_keys.stdout_lines or
-          (item.force|d(False)) | bool))
+          (item.force | d(False)) | bool))
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Enable metricbeat service on installation

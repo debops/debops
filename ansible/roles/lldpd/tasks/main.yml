@@ -66,9 +66,9 @@
     state: 'absent'
   loop: '{{ lldpd__combined_configuration | debops.debops.parse_kv_items }}'
   loop_control:
-    label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   notify: [ 'Restart lldpd' ]
-  when: lldpd__enabled | bool and item.state|d('present') in [ 'absent' ]
+  when: lldpd__enabled | bool and item.state | d('present') in [ 'absent' ]
 
 - name: Generate lldpd configuration files
   ansible.builtin.template:
@@ -77,6 +77,6 @@
     mode: '0644'
   loop: '{{ lldpd__combined_configuration | debops.debops.parse_kv_items }}'
   loop_control:
-    label: '{{ {"name": item.name, "state": item.state|d("present")} }}'
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   notify: [ 'Restart lldpd' ]
-  when: lldpd__enabled | bool and item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
+  when: lldpd__enabled | bool and item.state | d('present') not in [ 'absent', 'init', 'ignore' ]

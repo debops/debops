@@ -111,9 +111,9 @@
     keyserver: '{{ item.keyserver | d(omit) }}'
     url:       '{{ item.url       | d(omit) }}'
     state:     '{{ item.state     | d("present"
-                                      if (item.architecture|d(apt__architecture) == apt__architecture and
-                                          item.distribution|d(apt__distribution) == apt__distribution and
-                                          item.distribution_release|d(apt__distribution_release)
+                                      if (item.architecture | d(apt__architecture) == apt__architecture and
+                                          item.distribution | d(apt__distribution) == apt__distribution and
+                                          item.distribution_release | d(apt__distribution_release)
                                           == apt__distribution_release)
                                       else omit) }}'
   with_flattened:
@@ -125,10 +125,10 @@
   # `item.state`, `item.architecture`, `item.distribution` and `item.distribution_release` need to be checked here.
   # Ref: https://github.com/debops/ansible-apt/pull/76#pullrequestreview-2529842
   when: (apt__enabled | bool and (item.url | d() or item.data | d() or item.id | d() or item.file | d()) and
-         (item.state|d("present") == 'present' and
-          (item.architecture|d(apt__architecture) == apt__architecture and
-           item.distribution|d(apt__distribution) == apt__distribution and
-           item.distribution_release|d(apt__distribution_release) == apt__distribution_release)))
+         (item.state | d("present") == 'present' and
+          (item.architecture | d(apt__architecture) == apt__architecture and
+           item.distribution | d(apt__distribution) == apt__distribution and
+           item.distribution_release | d(apt__distribution_release) == apt__distribution_release)))
   tags: [ 'role::apt:keys' ]
 
 - name: Configure custom APT repositories
@@ -138,9 +138,9 @@
     mode:     '{{ item.mode     | d(omit) }}'
     filename: '{{ item.filename | d(omit) }}'
     state:    '{{ item.state    | d("present"
-                                    if (item.architecture|d(apt__architecture) == apt__architecture and
-                                        item.distribution|d(apt__distribution) == apt__distribution and
-                                        item.distribution_release|d(apt__distribution_release)
+                                    if (item.architecture | d(apt__architecture) == apt__architecture and
+                                        item.distribution | d(apt__distribution) == apt__distribution and
+                                        item.distribution_release | d(apt__distribution_release)
                                         == apt__distribution_release)
                                     else "absent") }}'
   with_flattened:
@@ -155,7 +155,7 @@
     path: '{{ "/etc/apt/auth.conf.d/" + (item.name | regex_replace(".conf$","")) + ".conf" }}'
     state: 'absent'
   loop: '{{ q("flattened", (apt__auth_files + apt__group_auth_files + apt__host_auth_files)) }}'
-  when: apt__enabled | bool and item.state|d('present') == 'absent'
+  when: apt__enabled | bool and item.state | d('present') == 'absent'
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate APT auth configuration
@@ -165,7 +165,7 @@
     mode: '0640'
   loop: '{{ q("flattened", (apt__auth_files + apt__group_auth_files + apt__host_auth_files)) }}'
   when: apt__enabled | bool and item.machine | d() and item.login | d() and item.password | d() and
-        item.state|d('present') not in [ 'absent', 'ignore' ]
+        item.state | d('present') not in [ 'absent', 'ignore' ]
   no_log: '{{ debops__no_log | d(True) }}'
 
 # Manage configuration files [[[
@@ -184,7 +184,7 @@
   when: (apt__enabled | bool  and
          (item.src | d() or item.content | d()) and
          (item.dest | d() or item.path | d() or item.name | d()) and
-         (item.state|d('present') != 'absent'))
+         (item.state | d('present') != 'absent'))
 
 - name: Delete APT configuration files on remote hosts
   ansible.builtin.file:
@@ -196,7 +196,7 @@
     - '{{ apt__host_conf }}'
   when: (apt__enabled | bool  and
          (item.dest | d() or item.path | d() or item.name | d()) and
-         (item.state|d('present') == 'absent'))
+         (item.state | d('present') == 'absent'))
                                                                    # ]]]
 
 - name: Update APT cache

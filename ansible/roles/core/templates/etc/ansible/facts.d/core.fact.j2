@@ -25,10 +25,10 @@ else:
 # Workaround to allow Jinja template inside of a Python script
 """
 {% set core__tpl_facts = {} %}
-{% if not core__reset_facts|d(False) %}
+{% if not core__reset_facts | d(False) %}
 {%   if ansible_local | d() and ansible_local.core | d() %}
 {%     for key, value in ansible_local.core.items() %}
-{%       if key not in (core__remove_facts|d([]) + [ 'admin_users' ]) %}
+{%       if key not in (core__remove_facts | d([]) + [ 'admin_users' ]) %}
 {%         set _ = core__tpl_facts.update({ key: value }) %}
 {%       endif %}
 {%     endfor %}
@@ -36,21 +36,21 @@ else:
 {% endif %}
 {% if core__facts | d() %}
 {%   for key, value in core__facts.items() %}
-{%     if key not in core__remove_facts|d([]) %}
+{%     if key not in core__remove_facts | d([]) %}
 {%       set _ = core__tpl_facts.update({ key: value }) %}
 {%     endif %}
 {%   endfor %}
 {% endif %}
 {% if core__group_facts | d() %}
 {%   for key, value in core__group_facts.items() %}
-{%     if key not in core__remove_facts|d([]) %}
+{%     if key not in core__remove_facts | d([]) %}
 {%       set _ = core__tpl_facts.update({ key: value }) %}
 {%     endif %}
 {%   endfor %}
 {% endif %}
 {% if core__host_facts | d() %}
 {%   for key, value in core__host_facts.items() %}
-{%     if key not in core__remove_facts|d([]) %}
+{%     if key not in core__remove_facts | d([]) %}
 {%       set _ = core__tpl_facts.update({ key: value }) %}
 {%     endif %}
 {%   endfor %}

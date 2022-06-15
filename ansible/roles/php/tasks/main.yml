@@ -42,7 +42,7 @@
   loop_control:
     loop_var: 'php__version_absent'
   when: (php__reset | bool)
-  with_items: '{{ php__version_preference | difference([ "php" + php__version|d("") ]) | list }}'
+  with_items: '{{ php__version_preference | difference([ "php" + php__version | d("") ]) | list }}'
 
 - name: 'Create directory for php*-fpm logs'
   ansible.builtin.file:
@@ -90,7 +90,7 @@
     - '{{ php__group_configuration }}'
     - '{{ php__host_configuration }}'
     - '{{ php__dependent_configuration }}'
-  when: item.state|d('present') != 'absent'
+  when: item.state | d('present') != 'absent'
   notify: [ 'Restart php-fpm' ]
   tags: [ 'role::php:config' ]
 
@@ -155,7 +155,7 @@
     - '{{ php__group_pools }}'
     - '{{ php__host_pools }}'
     - '{{ php__dependent_pools }}'
-  when: '"fpm" in php__server_api_packages and item.state|d("present") != "absent"'
+  when: '"fpm" in php__server_api_packages and item.state | d("present") != "absent"'
   notify: [ 'Restart php-fpm' ]
   tags: [ 'role::php:pools', 'role::php:config' ]
 
@@ -187,7 +187,7 @@
     - '{{ php__group_pools }}'
     - '{{ php__host_pools }}'
     - '{{ php__dependent_pools }}'
-  when: '"fpm" in php__server_api_packages and item.state|d("present") != "absent" and item.owner | d() and item.home | d()'
+  when: '"fpm" in php__server_api_packages and item.state | d("present") != "absent" and item.owner | d() and item.home | d()'
 
 - name: Make sure required system accounts exist
   ansible.builtin.user:
@@ -203,7 +203,7 @@
     - '{{ php__group_pools }}'
     - '{{ php__host_pools }}'
     - '{{ php__dependent_pools }}'
-  when: '"fpm" in php__server_api_packages and item.state|d("present") != "absent" and item.owner | d() and item.home | d()'
+  when: '"fpm" in php__server_api_packages and item.state | d("present") != "absent" and item.owner | d() and item.home | d()'
 
                                                                    # ]]]
 # Ansible local facts [[[

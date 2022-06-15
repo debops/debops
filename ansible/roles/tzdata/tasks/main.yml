@@ -42,12 +42,12 @@
   register: tzdata__register_timezone
   notify: [ 'Refresh host facts' ]
   when: (tzdata__enabled | bool and ansible_service_mgr == "systemd" and
-         (ansible_local.tzdata.timezone|d('Etc/UTC')) != tzdata__timezone)
+         (ansible_local.tzdata.timezone | d('Etc/UTC')) != tzdata__timezone)
 
 - name: Execute legacy timezone tasks
   ansible.builtin.include_tasks: 'legacy.yml'
   when: (tzdata__enabled | bool and ansible_service_mgr != "systemd" and
-         (ansible_local.tzdata.timezone|d('Etc/UTC')) != tzdata__timezone)
+         (ansible_local.tzdata.timezone | d('Etc/UTC')) != tzdata__timezone)
 
 - name: Update Ansible facts if time zone was modified
   ansible.builtin.meta: 'flush_handlers'

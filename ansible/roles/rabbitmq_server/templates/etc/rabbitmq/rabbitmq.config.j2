@@ -15,7 +15,7 @@
 {% set rabbitmq_server__tpl_config = {} %}
 {% for element in rabbitmq_server__combined_config %}
 {%   if element is mapping %}
-{%     if element.name | d() and element.state|d('present') != 'ignore' %}
+{%     if element.name | d() and element.state | d('present') != 'ignore' %}
 {%       set rabbitmq_server__tpl_application = (rabbitmq_server__tpl_config[element.name].copy() if rabbitmq_server__tpl_config[element.name] is defined else {}) %}
 {%       set _ = rabbitmq_server__tpl_application.update({
   'name':   element.name,
@@ -28,7 +28,7 @@
 {%       if element.options | d() %}
 {%         set rabbitmq_server__tpl_options = (rabbitmq_server__tpl_application['options'].copy() if rabbitmq_server__tpl_application['options'] is defined else {}) %}
 {%         for option in element.options %}
-{%           if option.name | d() and option.state|d('present') != 'ignore' %}
+{%           if option.name | d() and option.state | d('present') != 'ignore' %}
 {%             set option_params = (rabbitmq_server__tpl_options[option.name].copy() if rabbitmq_server__tpl_options[option.name] is defined else {}) %}
 {%             set _ = option_params.update({
   'name':   option.name   | d(rabbitmq_server__tpl_options.name),
@@ -178,7 +178,7 @@
 {% macro print_options(elements) %}
 {%   set rabbitmq_server__tpl_print_options = [] %}
 {%   for key, value in elements.items() %}
-{%     if value.state|d('present') not in [ 'absent' ] %}
+{%     if value.state | d('present') not in [ 'absent' ] %}
 {%       set _ = rabbitmq_server__tpl_print_options.append(value) %}
 {%     endif %}
 {%   endfor %}
@@ -215,7 +215,7 @@
 {%     set _ = rabbitmq_server__tpl_sorted_config.append(params) %}
 {%   endfor %}
 {%   for params in rabbitmq_server__tpl_sorted_config | sort(attribute='weight') %}
-{%     if params is mapping and params.state|d('present') != 'absent' %}
+{%     if params is mapping and params.state | d('present') != 'absent' %}
 {%       if params.comment | d() %}
 {{ params.comment | regex_replace('\n$','') | comment(decoration='  %% ', prefix='  %% -------------------------------------------------------------------', postfix='  %% -------------------------------------------------------------------\n') -}}
 {%       endif %}

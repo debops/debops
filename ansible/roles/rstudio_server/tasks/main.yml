@@ -40,15 +40,15 @@
 
 - name: Allow specified user accounts to access RStudio Server
   ansible.builtin.user:
-    name: '{{ item.name|d(item) }}'
+    name: '{{ item.name | d(item) }}'
     groups: '{{ rstudio_server__auth_group }}'
     append: True
   with_flattened:
     - '{{ rstudio_server__allow_users }}'
     - '{{ rstudio_server__group_allow_users }}'
     - '{{ rstudio_server__host_allow_users }}'
-  when: item.name|d(item) in getent_passwd.keys() and
-        item.state|d('present') != 'absent'
+  when: item.name | d(item) in getent_passwd.keys() and
+        item.state | d('present') != 'absent'
 
 - name: Install RStudio Server packages
   ansible.builtin.package:

@@ -59,8 +59,8 @@
   ansible.builtin.set_fact:
     apparmor__fact_apparmor_enabled_and_loaded: '{{
       (apparmor__enabled | d() | bool) and
-      (ansible_cmdline.apparmor|d(0) | string == "1") and
-      (ansible_cmdline.security|d("none") == "apparmor") }}'
+      (ansible_cmdline.apparmor | d(0) | string == "1") and
+      (ansible_cmdline.security | d("none") == "apparmor") }}'
   check_mode: False
 
 - name: Flush the handlers in case the next tasks fails
@@ -70,7 +70,7 @@
   mail:
     from: 'root@{{ ansible_fqdn }}'
     subject: '{{ apparmor__mail_subject }}'
-    to: '{{ apparmor__mail_to|d([]) | list | join(",") }}'
+    to: '{{ apparmor__mail_to | d([]) | list | join(",") }}'
     charset: 'utf8'
     body: '{{ apparmor__mail_body }}'
   when: (apparmor__fact_apparmor_enabled_and_loaded | bool and apparmor__mail_to | d())

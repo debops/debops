@@ -13,7 +13,7 @@
   "saddr": ((([ network.allow ]) if network.allow is string else network.allow) if network.allow | d() else []),
   "by_role": "debops.tinc",
   "name": ("tinc_" + (network.name | d(key))),
-  "rule_state": (((network.state|d("present") not in ["absent"]) and network.node_reachable|d(True)| bool) | ternary("present", "absent"))
+  "rule_state": (((network.state | d("present") not in ["absent"]) and network.node_reachable | d(True)| bool) | ternary("present", "absent"))
 } %}
 {%     set _ = tinc__tpl_rules.append(tinc__tpl_rule) %}
 {%   endif %}

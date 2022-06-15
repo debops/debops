@@ -40,13 +40,13 @@
 {{ 'blacklist {}'.format(element) }}
 {%   endfor %}
 {% endif %}
-{% if module.state|d('present') == 'blacklist' %}
+{% if module.state | d('present') == 'blacklist' %}
 {{ 'blacklist {}'.format(module.name) }}
 {% endif %}
 {% if module.options | d() %}
 {%   for element in ([ module.options ] if module.options is string else module.options) %}
 {%     if element.name | d() and element.value | d() %}
-{%       if element.state|d('present') != 'absent' %}
+{%       if element.state | d('present') != 'absent' %}
 {%         if element.comment | d() %}
 {{ element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
 {%         endif %}

@@ -36,7 +36,7 @@
 {{ ('{:#^' + (section_title.width | string) + 's}').format('') }}
 
 {%     for option in host_options %}
-{%       if option.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%       if option.state | d('present') not in [ 'absent', 'ignore' ] %}
 {%         if option.comment | d() %}
 {%           if not loop.first %}
 
@@ -44,14 +44,14 @@
 {{ option.comment | regex_replace("\n$", "") | comment(prefix='', postfix='#') }}
 {%         endif %}
 {%         if option.raw | d() %}
-{%           if option.state|d('present') == 'comment' %}
+{%           if option.state | d('present') == 'comment' %}
 {{ option.raw | regex_replace('\n$', '') | comment(decoration='#', prefix='', postfix='') -}}
 {%           else %}
 {{ option.raw -}}
 {%           endif %}
 {%         elif option.value is defined %}
 {%           set option_alias = ((option.option + '\t') if option.option | d() else '') %}
-{%           set option_comment = ('#' if (option.state|d('present') == 'comment') else '') %}
+{%           set option_comment = ('#' if (option.state | d('present') == 'comment') else '') %}
 {%           set option_name = option.name %}
 {%           set option_tabs = ('\t' if ((option_comment + option_name) | length < 8) else '') %}
 {%           set option_value = option.value %}

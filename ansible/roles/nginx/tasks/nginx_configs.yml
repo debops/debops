@@ -20,7 +20,7 @@
     - '{{ nginx__maps }}'
     - '{{ nginx__default_maps }}'
     - '{{ nginx__dependent_maps }}'
-    - '{{ nginx_maps |d([]) }}'
+    - '{{ nginx_maps  | d([]) }}'
     - '{{ nginx_default_maps | d([]) }}'
     - '{{ nginx_dependent_maps | d([]) }}'
   notify: [ 'Test nginx and reload' ]
@@ -39,11 +39,11 @@
     - '{{ nginx__maps }}'
     - '{{ nginx__default_maps }}'
     - '{{ nginx__dependent_maps }}'
-    - '{{ nginx_maps |d([]) }}'
+    - '{{ nginx_maps  | d([]) }}'
     - '{{ nginx_default_maps | d([]) }}'
     - '{{ nginx_dependent_maps | d([]) }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name | d() and item.state|d('present') != 'absent' and
+  when: (item.name | d() and item.state | d('present') != 'absent' and
          (item.delete is undefined or not item.delete | bool))
 
 - name: Remove nginx upstreams if requested
@@ -59,7 +59,7 @@
     - '{{ nginx_dependent_upstreams | d([]) }}'
   notify: [ 'Test nginx and reload' ]
   when: (item.name | d() and
-         ((item.state|d('present') == 'absent') or
+         ((item.state | d('present') == 'absent') or
           (item.delete | d() and item.delete | bool)))
 
 - name: Configure nginx upstreams
@@ -77,7 +77,7 @@
     - '{{ nginx_default_upstreams | d([]) }}'
     - '{{ nginx_dependent_upstreams | d([]) }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name | d() and item.state|d('present') != 'absent' and
+  when: (item.name | d() and item.state | d('present') != 'absent' and
          (item.delete is undefined or not item.delete | bool))
 
 - name: Remove nginx log_format if requested
@@ -89,7 +89,7 @@
     - '{{ nginx__dependent_log_format }}'
   notify: [ 'Test nginx and reload' ]
   when: (item.name | d() and
-         ((item.state|d('present') == 'absent') or
+         ((item.state | d('present') == 'absent') or
           (item.delete | d() and item.delete | bool)))
 
 - name: Configure nginx log_format
@@ -103,7 +103,7 @@
     - '{{ nginx__log_format }}'
     - '{{ nginx__dependent_log_format }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name | d() and item.state|d('present') != 'absent' and
+  when: (item.name | d() and item.state | d('present') != 'absent' and
          (item.delete is undefined or not item.delete | bool))
 
 - name: Remove custom nginx configuration if requested
@@ -129,5 +129,5 @@
     - '{{ nginx__custom_config }}'
     - '{{ nginx_custom_config | d([]) }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name | d() and item.state|d('present') != 'absent' and
+  when: (item.name | d() and item.state | d('present') != 'absent' and
          (item.delete is undefined or not item.delete | bool))

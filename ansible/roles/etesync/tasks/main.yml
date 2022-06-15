@@ -185,7 +185,7 @@
   mail:
     from: 'root@{{ ansible_fqdn }}'
     subject: '{{ etesync__mail_subject }}'
-    to: '{{ etesync__mail_to|d([]) | list | join(",") }}'
+    to: '{{ etesync__mail_to | d([]) | list | join(",") }}'
     charset: 'utf8'
     body: '{{ etesync__mail_body }}'
   when: (etesync__http_psk_subpath | d() and etesync__mail_to | d() and "etesync" not in ansible_local)

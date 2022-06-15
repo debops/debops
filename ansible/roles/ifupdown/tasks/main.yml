@@ -51,7 +51,7 @@
   when: (ansible_local | d() and ansible_local.debops_fact | d() and
          ansible_local.debops_fact.enabled | bool and
          (ansible_local.debops_fact.version is undefined or
-          (ansible_local.debops_fact.version.ifupdown|d("0.0.0") is version_compare("0.3.0","<"))))
+          (ansible_local.debops_fact.version.ifupdown | d("0.0.0") is version_compare("0.3.0","<"))))
 
 - name: Create configuration directories
   ansible.builtin.file:
@@ -76,7 +76,7 @@
     state: 'absent'
   with_dict: '{{ ifupdown__combined_interfaces }}'
   register: ifupdown__register_interfaces_removed
-  when: item.value.state|d('present') == 'absent'
+  when: item.value.state | d('present') == 'absent'
 
 - name: Generate network interface configuration
   ansible.builtin.template:
@@ -90,7 +90,7 @@
     mode: '{{ item.value.mode | d("0644") }}'
   with_dict: '{{ ifupdown__combined_interfaces }}'
   register: ifupdown__register_interfaces_created
-  when: item.value.state|d('present') not in [ 'absent', 'ignore' ]
+  when: item.value.state | d('present') not in [ 'absent', 'ignore' ]
 
 - name: Remove unknown interface configuration
   ansible.builtin.shell: find /etc/network/interfaces.config.d -maxdepth 1 -type f
@@ -143,7 +143,7 @@
     - '{{ ifupdown__custom_host_files }}'
     - '{{ ifupdown__custom_dependent_files }}'
   when: ((item.dest | d() or item.path | d()) and
-         item.state|d('present') == 'absent')
+         item.state | d('present') == 'absent')
 
 - name: Generate custom configuration files
   ansible.builtin.copy:
@@ -161,7 +161,7 @@
     - '{{ ifupdown__custom_dependent_files }}'
   when: ((item.dest | d() or item.path | d()) and
          (item.src | d() or item.content | d()) and
-         item.state|d('present') != 'absent')
+         item.state | d('present') != 'absent')
 
 - name: Remove custom ifupdown hooks
   ansible.builtin.file:
@@ -169,7 +169,7 @@
     state: 'absent'
   with_flattened:
     - '{{ ifupdown__custom_hooks }}'
-  when: item.name | d() and item.state|d('present') == 'absent'
+  when: item.name | d() and item.state | d('present') == 'absent'
 
 - name: Install custom ifupdown hooks
   ansible.builtin.template:
@@ -180,7 +180,7 @@
     mode: '{{ item.mode | d("0755") }}'
   with_flattened:
     - '{{ ifupdown__custom_hooks }}'
-  when: item.name | d() and item.state|d('present') != 'absent'
+  when: item.name | d() and item.state | d('present') != 'absent'
 
 - name: Install reconfiguration script if needed
   ansible.builtin.copy:
@@ -193,7 +193,7 @@
 
 - name: Save role version information
   ini_file:
-    dest: '{{ ansible_local.debops_fact.public_facts|d("/etc/ansible/debops_fact.ini") }}'
+    dest: '{{ ansible_local.debops_fact.public_facts | d("/etc/ansible/debops_fact.ini") }}'
     section: 'version'
     option: 'ifupdown'
     value: '{{ ifupdown__role_metadata.version }}'

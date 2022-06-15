@@ -71,7 +71,7 @@
 {%     endif %}
                 try_files {{ (([ item.php_try_files ] if item.php_try_files is string else item.php_try_files) if item.php_try_files | d() else ['$script_name', '=404']) | join(' ') }};
 
-{%     if item.php_include|d(True) %}
+{%     if item.php_include | d(True) %}
 {%       if (nginx_version | d() and nginx_version is version_compare('1.6.1','<')) %}
                 include {{ item.php_include | d('fastcgi_params') }};
 {%       else %}

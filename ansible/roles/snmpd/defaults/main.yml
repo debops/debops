@@ -127,9 +127,9 @@ snmpd_host_allow: []
 #
 # List of IP addresses or CIDR networks which can connect to SNMP service
 # (from localhost). If not specified, remote connections are blocked.
-snmpd_local_allow: '{{ ansible_all_ipv4_addresses|d([]) +
-                       (ansible_all_ipv6_addresses|d([]) |
-                        difference(ansible_all_ipv6_addresses|d([]) | ipaddr("link-local"))) }}'
+snmpd_local_allow: '{{ ansible_all_ipv4_addresses | d([]) +
+                       (ansible_all_ipv6_addresses | d([]) |
+                        difference(ansible_all_ipv6_addresses | d([]) | ipaddr("link-local"))) }}'
 
                                                                    # ]]]
 # .. envvar:: snmpd_agent_address [[[
@@ -297,7 +297,7 @@ snmpd_proc_hidepid: '{{ True
 #
 # Name of the system group which ``snmp`` user will be added to to get
 # information about processes.
-snmpd_proc_hidepid_group: '{{ ansible_local.proc_hidepid.group|d("") }}'
+snmpd_proc_hidepid_group: '{{ ansible_local.proc_hidepid.group | d("") }}'
                                                                    # ]]]
                                                                    # ]]]
 # SNMPv3 admin, agent and local accounts [[[

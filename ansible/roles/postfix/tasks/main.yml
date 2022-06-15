@@ -106,10 +106,10 @@
     state: 'absent'
   with_flattened:
     - '{{ postfix__combined_lookup_tables | debops.debops.parse_kv_items }}'
-  when: item.name | d() and item.state|d('present') == 'absent'
+  when: item.name | d() and item.state | d('present') == 'absent'
   notify: [ 'Process Postfix Makefile', 'Check postfix and reload' ]
   no_log: '{{ debops__no_log | d(item.no_log)
-              | d(True if (item.mode|d("0644") == "0600") else False) }}'
+              | d(True if (item.mode | d("0644") == "0600") else False) }}'
 
 - name: Generate Postfix lookup tables
   ansible.builtin.template:
@@ -121,9 +121,9 @@
   with_flattened:
     - '{{ postfix__combined_lookup_tables | debops.debops.parse_kv_items }}'
   notify: [ 'Process Postfix Makefile', 'Check postfix and reload' ]
-  when: item.name | d() and item.state|d('present') != 'absent'
+  when: item.name | d() and item.state | d('present') != 'absent'
   no_log: '{{ debops__no_log | d(item.no_log)
-              | d(True if (item.mode|d("0640") in ["0640","0600"])
+              | d(True if (item.mode | d("0640") in ["0640","0600"])
                   else False) }}'
 
 - name: Save dependent configuration on Ansible Controller

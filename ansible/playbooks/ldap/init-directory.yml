@@ -44,7 +44,7 @@
     admin_plaintext_password: '{{ admin_input_plaintext_password
                                   if admin_input_plaintext_password | d()
                                   else (lookup("password", "/dev/null length=32")
-                                        if admin_use_password_store|d(True) | bool
+                                        if admin_use_password_store | d(True) | bool
                                         else
                                         lookup("password",
                                                secret + "/ldap/credentials/"
@@ -143,7 +143,7 @@
     - name: Save admin credential in the password store
       set_fact:
         admin_stored_password: '{{ admin_saved_password }}'
-      when: admin_use_password_store|d(True) | bool
+      when: admin_use_password_store | d(True) | bool
       no_log: '{{ debops__no_log | d(True) }}'
       delegate_to: 'localhost'
       become: False

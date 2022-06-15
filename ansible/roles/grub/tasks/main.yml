@@ -68,7 +68,7 @@
     mode: '0640'
   with_together:
     - '{{ grub__combined_users }}'
-    - '{{ grub__register_pw_plain.results|d({}) }}'
+    - '{{ grub__register_pw_plain.results | d({}) }}'
   become: False
   delegate_to: 'localhost'
   when: (item.0.name | d() and item.1 is changed)
@@ -92,7 +92,7 @@
     executable: 'bash'
   with_together:
     - '{{ grub__combined_users }}'
-    - '{{ grub__register_pw_plain.results|d({}) }}'
+    - '{{ grub__register_pw_plain.results | d({}) }}'
   register: grub__register_pw_hashes
   become: False
   delegate_to: 'localhost'
@@ -106,7 +106,7 @@
     state: 'absent'
   with_together:
     - '{{ grub__combined_users }}'
-    - '{{ grub__register_pw_plain.results|d({}) }}'
+    - '{{ grub__register_pw_plain.results | d({}) }}'
   become: False
   delegate_to: 'localhost'
   when: (item.0.name | d() and item.1 is changed)
@@ -119,7 +119,7 @@
     mode: '0640'
   with_together:
     - '{{ grub__combined_users }}'
-    - '{{ grub__register_pw_hashes.results|d({}) }}'
+    - '{{ grub__register_pw_hashes.results | d({}) }}'
   become: False
   delegate_to: 'localhost'
   when: (item.1 is not skipped)

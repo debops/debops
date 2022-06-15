@@ -199,7 +199,7 @@
 
 - name: Scan SSH fingerprints of specified hosts
   ansible.builtin.shell: '{{ sshd__known_hosts_command }} {{ item.item }} >> {{ sshd__known_hosts_file }}'
-  with_items: '{{ sshd__register_known_hosts.results|d([]) }}'
+  with_items: '{{ sshd__register_known_hosts.results | d([]) }}'
   when: item is defined and item.rc > 0
   tags: [ 'role::sshd:known_hosts' ]
 
@@ -225,7 +225,7 @@
   dpkg_divert:
     path: '/etc/pam.d/sshd'
     state: '{{ "present"
-               if sshd__pam_deploy_state|d("present") != "absent"
+               if sshd__pam_deploy_state | d("present") != "absent"
                else "absent" }}'
     delete: True
 

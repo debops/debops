@@ -12,7 +12,7 @@
 {%   for k, v in element.items() %}
 {%     set _ = entry.update({k.lower(): v}) %}
 {%   endfor %}
-{%   if entry.state|d('present') != 'absent' %}
+{%   if entry.state | d('present') != 'absent' %}
 {%     set dhcp_host = [] %}
 {%     set host_record = [] %}
 {%     set cname = [] %}
@@ -133,23 +133,23 @@
 {{ entry.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
 {%       endif %}
 {%       if entry.raw | d() %}
-{%         if entry.state|d('present') == 'comment' %}
+{%         if entry.state | d('present') == 'comment' %}
 {{ "{}".format(entry.raw | regex_replace('\n$','')) | comment(decoration='#', prefix='', postfix='') }}
 {%         else %}
 {{ "{}".format(entry.raw | regex_replace('\n$','')) }}
 {%         endif %}
 {%       elif dhcp_host | d() %}
-{{ '{}dhcp-host = {}'.format(('#' if (entry.state|d('present') == 'comment') else ''), dhcp_host | join(',')) }}
+{{ '{}dhcp-host = {}'.format(('#' if (entry.state | d('present') == 'comment') else ''), dhcp_host | join(',')) }}
 {%         if host_record | d() %}
-{{ '{}host-record = {}'.format(('#' if (entry.state|d('present') == 'comment') else ''), host_record | join(',')) }}
+{{ '{}host-record = {}'.format(('#' if (entry.state | d('present') == 'comment') else ''), host_record | join(',')) }}
 {%           if entry.cname | d() %}
 {%             for cname in ([ entry.cname ] if entry.cname is string else entry.cname) %}
-{{ '{}cname = {},{}'.format(('#' if (entry.state|d('present') == 'comment') else ''), cname + '.' + entry.domain, host_name + '.' + entry.domain) }}
+{{ '{}cname = {},{}'.format(('#' if (entry.state | d('present') == 'comment') else ''), cname + '.' + entry.domain, host_name + '.' + entry.domain) }}
 {%             endfor %}
 {%           endif %}
 {%         endif %}
 {%       elif (record_command | d() and record_content | d()) %}
-{{ '{}{} = {}'.format(('#' if (entry.state|d('present') == 'comment') else ''), record_command, record_content | join(',')) }}
+{{ '{}{} = {}'.format(('#' if (entry.state | d('present') == 'comment') else ''), record_command, record_content | join(',')) }}
 {%       endif %}
 {%     endif %}
 {%   endif %}

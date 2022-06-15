@@ -6,7 +6,7 @@
 
 {% macro print_config(element, global_state='') %}
 {%   set prepend_comment = '' %}
-{%   if global_state == 'comment' or element.state|d('present') == 'comment' %}
+{%   if global_state == 'comment' or element.state | d('present') == 'comment' %}
 {%     set prepend_comment = '#' %}
 {%   endif %}
 {%   if element.comment | d() %}
@@ -27,7 +27,7 @@
 {% endif %}
 {% if item.options | d() %}
 {%   for option in item.options %}
-{%     if option.state|d('present') not in [ 'init', 'absent' ] %}
+{%     if option.state | d('present') not in [ 'init', 'absent' ] %}
 {%     if not loop.first | bool and option.comment | d() %}
 
 {%     endif %}

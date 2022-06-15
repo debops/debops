@@ -2,10 +2,10 @@
  # Copyright (C) 2015-2017 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
-{% set mariadb__tpl_client      = ansible_local.mariadb.client|d(mariadb__client) %}
-{% set mariadb__tpl_delegate_to = ansible_local.mariadb.delegate_to|d(mariadb__delegate_to) %}
-{% set mariadb__tpl_host        = ansible_local.mariadb.host|d(mariadb__client) %}
-{% set mariadb__tpl_server      = ansible_local.mariadb.server|d(mariadb__server) %}
+{% set mariadb__tpl_client      = ansible_local.mariadb.client | d(mariadb__client) %}
+{% set mariadb__tpl_delegate_to = ansible_local.mariadb.delegate_to | d(mariadb__delegate_to) %}
+{% set mariadb__tpl_host        = ansible_local.mariadb.host | d(mariadb__client) %}
+{% set mariadb__tpl_server      = ansible_local.mariadb.server | d(mariadb__server) %}
 {% if mariadb__register_version.stdout %}
 {%   set mariadb__tpl_client      = "localhost" %}
 {%   set mariadb__tpl_delegate_to = mariadb__delegate_to %}
@@ -20,8 +20,8 @@
 {
 "client": "{{ mariadb__tpl_client }}",
 "delegate_to": "{{ mariadb__tpl_delegate_to }}",
-"flavor": "{{ ansible_local.mariadb.flavor|d(mariadb__flavor) }}",
+"flavor": "{{ ansible_local.mariadb.flavor | d(mariadb__flavor) }}",
 "host": "{{ mariadb__tpl_host }}",
-"port": "{{ ansible_local.mariadb.port|d(mariadb__port) }}",
+"port": "{{ ansible_local.mariadb.port | d(mariadb__port) }}",
 "server": "{{ mariadb__tpl_server }}"
 }

@@ -5,7 +5,7 @@
 {% set rabbitmq_server__tpl_accounts_vhosts = [] %}
 {% for account in lookup("flattened", rabbitmq_server__combined_accounts) %}
 {%   set entry = {} %}
-{%   if account.vhost | d() and account.state|d('present') != 'absent' %}
+{%   if account.vhost | d() and account.state | d('present') != 'absent' %}
 {%     set _ = entry.update({'name': account.vhost}) %}
 {%     if account.node | d() %}
 {%       set _ = entry.update({'node': account.node}) %}

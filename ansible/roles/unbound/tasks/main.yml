@@ -64,7 +64,7 @@
   with_flattened:
     - '{{ unbound__parsed_zones }}'
   notify: [ 'Check unbound configuration and reload' ]
-  when: item.name | d() and item.state|d('present') == 'absent'
+  when: item.name | d() and item.state | d('present') == 'absent'
 
 - name: Configure DNS zones
   ansible.builtin.template:
@@ -76,7 +76,7 @@
   with_flattened:
     - '{{ unbound__parsed_zones }}'
   notify: [ 'Check unbound configuration and reload' ]
-  when: item.name | d() and item.state|d('present') != 'absent'
+  when: item.name | d() and item.state | d('present') != 'absent'
 
 - name: Install unbound APT packages
   ansible.builtin.package:

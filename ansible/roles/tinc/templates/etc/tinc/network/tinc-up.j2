@@ -20,7 +20,7 @@ link_metric="{{ item.value.metric | d() }}"
 
 read -r accept_ra << EOF
 {% set tinc__tpl_accept_ra = '1'
-       if item.value.accept_ra|d(True) == True
+       if item.value.accept_ra | d(True) == True
        else item.value.accept_ra  %}
 {{ tinc__tpl_accept_ra
    if tinc__tpl_accept_ra in ['0', '1', '2']
@@ -70,7 +70,7 @@ read -r -d '' resolvconf_config << EOF
 {% endfor %}
 EOF
 
-manage_dhclient="{{ (item.value.dhclient|d(True)) | bool | lower }}"
+manage_dhclient="{{ (item.value.dhclient | d(True)) | bool | lower }}"
 
 if [ -n "${custom_tinc_up}" ] ; then
     eval "${custom_tinc_up}"

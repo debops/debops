@@ -4,7 +4,7 @@
  #}
 {% set output = [] %}
 {% for identity in (q("flattened", authorized_keys__combined_identities) | debops.debops.parse_kv_items(merge_keys=["accounts"])) %}
-{%   if (identity.state|d('present') not in [ 'init', 'ignore' ] and (identity.sshkeys | d() or identity.url | d())) %}
+{%   if (identity.state | d('present') not in [ 'init', 'ignore' ] and (identity.sshkeys | d() or identity.url | d())) %}
 {%     for account in identity.accounts | d([]) %}
 {%       set parsed_account = {'identity': identity.name,
                                'user': account.name} %}
@@ -17,8 +17,8 @@
 {%         set _ = parsed_account.update({'key': identity.url}) %}
 {%       endif %}
 {%       set _ = parsed_account.update({'state': ('present'
-                                                  if (account.state|d('present') != 'absent'
-                                                      and identity.state|d('present') != 'absent')
+                                                  if (account.state | d('present') != 'absent'
+                                                      and identity.state | d('present') != 'absent')
                                                   else 'absent')
                                        }) %}
 {%       if (account.home | d() ) | bool %}
@@ -47,7 +47,7 @@
 {%       if account.options | d() %}
 {%         set _ = key_options.extend(account.options | map(attribute='name') | list) %}
 {%       endif %}
-{%       for key, value in ((identity.environment|d({})) | combine(account.environment|d({}))) | dictsort %}
+{%       for key, value in ((identity.environment | d({})) | combine(account.environment | d({}))) | dictsort %}
 {%         set _ = key_options.append('environment="' + key + '=' + value + '"') %}
 {%       endfor %}
 {%       if account.command | d() %}

@@ -82,14 +82,14 @@
     group: '{{ mailman__group }}'
     mode: '0755'
   loop: '{{ mailman__combined_templates | debops.debops.parse_kv_items }}'
-  when: item.state|d('present') != 'absent'
+  when: item.state | d('present') != 'absent'
 
 - name: Remove custom Mailman templates if requested
   ansible.builtin.file:
     path: '{{ "/var/lib/mailman3/templates/" + item.name }}'
     state: 'absent'
   loop: '{{ mailman__combined_templates | debops.debops.parse_kv_items }}'
-  when: item.state|d('present') == 'absent'
+  when: item.state | d('present') == 'absent'
 
 - name: Generate custom Mailman templates
   ansible.builtin.copy:
@@ -99,7 +99,7 @@
     group: '{{ mailman__group }}'
     mode: '0644'
   loop: '{{ mailman__combined_templates | debops.debops.parse_kv_items }}'
-  when: item.state|d('present') != 'absent'
+  when: item.state | d('present') != 'absent'
 
 - name: Ensure Postfix lookup tables exist
   ansible.builtin.command: 'mailman aliases'

@@ -9,7 +9,7 @@
 {%   set iface = (item | replace('-','_') | regex_replace('^(.*)$', 'ansible_\\1')) %}
 {%   if item | regex_search(ldap__device_ip_iface_regex) %}
 {%     set _ = ldap__tpl_device_interfaces.append(iface) %}
-{%   elif hostvars[inventory_hostname][iface].type|d('ether') == 'bridge' %}
+{%   elif hostvars[inventory_hostname][iface].type | d('ether') == 'bridge' %}
 {%     set _ = ldap__tpl_device_masters.append(iface) %}
 {%   endif %}
 {% endfor %}

@@ -31,7 +31,7 @@ apt_install__enabled: True
 # The variable that indicates host operating system distribution, used to
 # conditionally select packages for installation.
 apt_install__distribution: '{{ ansible_local.core.distribution
-                               |d(ansible_lsb.id|d(ansible_distribution)) }}'
+                                | d(ansible_lsb.id | d(ansible_distribution)) }}'
 
                                                                    # ]]]
 # .. envvar:: apt_install__distribution_release [[[
@@ -39,7 +39,7 @@ apt_install__distribution: '{{ ansible_local.core.distribution
 # The variable that indicates host distribution release, used to conditionally
 # select packages for installation.
 apt_install__distribution_release: '{{ ansible_local.core.distribution_release
-                                       |d(ansible_lsb.codename|d(ansible_distribution_release)) }}'
+                                        | d(ansible_lsb.codename | d(ansible_distribution_release)) }}'
 
                                                                    # ]]]
 # .. envvar:: apt_install__archive_areas_map [[[
@@ -57,7 +57,7 @@ apt_install__archive_areas_map:
 # used to conditionally enable packages for installation, depending on
 # availability of a given archive area.
 apt_install__archive_areas: '{{ ansible_local.apt.components
-                                |d(apt_install__archive_areas_map[apt_install__distribution] | d([])) }}'
+                                 | d(apt_install__archive_areas_map[apt_install__distribution] | d([])) }}'
 
                                                                    # ]]]
 # .. envvar:: apt_install__condition_map [[[
@@ -86,7 +86,7 @@ apt_install__condition_map:
 # on first run, and just keep the current version on subsequent runs.
 apt_install__state: '{{ "present"
                         if (ansible_local | d() and ansible_local.apt_install | d() and
-                            (ansible_local.apt_install.configured|d(True)) | bool)
+                            (ansible_local.apt_install.configured | d(True)) | bool)
                         else "latest" }}'
 
                                                                    # ]]]
@@ -116,7 +116,7 @@ apt_install__update_cache: True
 # .. envvar:: apt_install__cache_valid_time [[[
 #
 # Amount of time between APT cache updates in seconds.
-apt_install__cache_valid_time: '{{ ansible_local.core.cache_valid_time|d(60 * 60 * 24 * 7) }}'
+apt_install__cache_valid_time: '{{ ansible_local.core.cache_valid_time | d(60 * 60 * 24 * 7) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Debconf package configuration [[[
@@ -272,10 +272,10 @@ apt_install__conditional_packages:
     # only controls a guest.
     whitelist: '{{ apt_install__conditional_whitelist_packages }}'
     state: '{{ "present"
-               if (ansible_virtualization_role|d("guest") in [ "guest" ] and
-                   ansible_virtualization_type|d("unknown") not in ["lxc", "openvz"] and
+               if (ansible_virtualization_role | d("guest") in [ "guest" ] and
+                   ansible_virtualization_type | d("unknown") not in ["lxc", "openvz"] and
                    not (ansible_local | d() and ansible_local.apt_install | d() and
-                        ansible_local.apt_install.have_virtual_rng|d(False) | bool)
+                        ansible_local.apt_install.have_virtual_rng | d(False) | bool)
                )
                else "absent" }}'
 
@@ -294,8 +294,8 @@ apt_install__conditional_packages:
   - name: 'open-vm-tools'
     whitelist: '{{ apt_install__conditional_whitelist_packages }}'
     state: '{{ "present"
-               if (ansible_virtualization_role|d("guest") in [ "guest" ] and
-                   ansible_virtualization_type|d("unknown") in [ "VMware" ])
+               if (ansible_virtualization_role | d("guest") in [ "guest" ] and
+                   ansible_virtualization_type | d("unknown") in [ "VMware" ])
                else "absent" }}'
 
                                                                    # ]]]

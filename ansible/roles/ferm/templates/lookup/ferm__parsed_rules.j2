@@ -6,7 +6,7 @@
  #}
 {% set ferm__tpl_filtered_rules = {} %}
 {% for element in ferm__combined_rules %}
-{%   if element.name | d() and element.rule_state|d(element.state|d('present')) != 'ignore' %}
+{%   if element.name | d() and element.rule_state | d(element.state | d('present')) != 'ignore' %}
 {%     set rule_parameters = (ferm__tpl_filtered_rules[element.name].copy() if ferm__tpl_filtered_rules[element.name] is defined else {}) %}
 {%     if rule_parameters.rules is undefined and element.rules is undefined %}
 {%       set ferm__tpl_rule = {} %}

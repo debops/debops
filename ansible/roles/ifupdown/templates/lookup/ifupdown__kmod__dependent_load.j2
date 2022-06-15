@@ -6,7 +6,7 @@
 {% set ifupdown__tpl_packages = [] %}
 {% if ifupdown__combined_interfaces | d() %}
 {%   for interface, params in ifupdown__combined_interfaces.items() %}
-{%     if (params.state|d('present') == 'present' and params.type | d()) %}
+{%     if (params.state | d('present') == 'present' and params.type | d()) %}
 {%       if params.type == 'bonding' %}
 {%         set _ = ifupdown__tpl_packages.append('ifenslave') %}
 {%       elif params.type == 'bridge' %}

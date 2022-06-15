@@ -29,7 +29,7 @@ ferm__enabled: '{{ True
                    if (ansible_system_capabilities is undefined or
                        (((ansible_system_capabilities_enforced | d()) | bool and
                          "cap_net_admin" in ansible_system_capabilities) or
-                        not (ansible_system_capabilities_enforced|d(True)) | bool))
+                        not (ansible_system_capabilities_enforced | d(True)) | bool))
                    else False }}'
 
                                                                    # ]]]
@@ -563,11 +563,11 @@ ferm__default_rules:
     rule_state: '{{ "present"
                     if ((ansible_local.nsswitch.conf | d() and
                          ("mdns4_minimal" in q("flattened",
-                                               ansible_local.nsswitch.conf.hosts|d([])) or
+                                               ansible_local.nsswitch.conf.hosts | d([])) or
                           "mdns_minimal" in q("flattened",
-                                              ansible_local.nsswitch.conf.hosts|d([])))) and
-                        (ansible_local|d(True) and ansible_local.avahi|d(True) and
-                         ((ansible_local["avahi"]|d({})).enabled|d(True)) | bool))
+                                              ansible_local.nsswitch.conf.hosts | d([])))) and
+                        (ansible_local | d(True) and ansible_local.avahi | d(True) and
+                         ((ansible_local["avahi"] | d({})).enabled | d(True)) | bool))
                     else "absent" }}'
 
   - name: 'jump_to_legacy_input_rules'
