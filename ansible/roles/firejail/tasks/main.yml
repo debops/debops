@@ -198,13 +198,13 @@
   ## Disabled because log is not interesting but very verbose.
   when: (item.stat.islnk and (
          (
-           item.stat.lnk_source|basename == "firejail" and (
+           item.stat.lnk_source | basename == "firejail" and (
              item.stat.lnk_source != firejail__program_file_path or
              firejail__deploy_state not in ["present"]
            )
          ) or (
            item.stat.lnk_source == firejail__program_file_path and
-           (item.stat.path|basename not in (firejail__combined_program_sandboxes.keys() | list
+           (item.stat.path | basename not in (firejail__combined_program_sandboxes.keys() | list
                                             | union(firejail__fact_system_wide_profiles)))
          )
         ))
