@@ -29,7 +29,7 @@ Name = {{ network.hostname|d(network.tinc_options.Name|d(tinc__hostname )) | rep
 {%       endif %}
 {%     endif %}
 {%   endfor %}
-{%   if not (network.node_reachable|d(True) | bool) and "BindToInterface"|lower not in tinc__tpl_seen_keys %}
+{%   if not (network.node_reachable|d(True) | bool) and "BindToInterface" | lower not in tinc__tpl_seen_keys %}
 # Disabled because with this experimental feature enabled Tinc failed to
 # connect to the VPN with "Error looking up [peer]: Name or service not known"
 # as of 1.0.24-2.1+b1.
