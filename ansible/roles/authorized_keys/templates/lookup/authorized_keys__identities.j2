@@ -47,7 +47,7 @@
 {%       if account.options | d() %}
 {%         set _ = key_options.extend(account.options | map(attribute='name') | list) %}
 {%       endif %}
-{%       for key, value in ((identity.environment|d({}))|combine(account.environment|d({}))) | dictsort %}
+{%       for key, value in ((identity.environment|d({})) | combine(account.environment|d({}))) | dictsort %}
 {%         set _ = key_options.append('environment="' + key + '=' + value + '"') %}
 {%       endfor %}
 {%       if account.command | d() %}
