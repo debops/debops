@@ -50,7 +50,7 @@ TrustedUserCAKeys {{ sshd__trusted_user_ca_keys_file }}
 {% set sshd__tpl_ciphers = sshd__ciphers_map[sshd__tpl_ciphers_max_version] %}
 {% set sshd__tpl_ciphers = (sshd__tpl_ciphers + sshd__ciphers_additional) | unique %}
 {% if sshd__tpl_ciphers and sshd__paranoid|bool %}
-Ciphers {{ ([ sshd__tpl_ciphers|first ] + sshd__ciphers_additional) | unique | join(",") }}
+Ciphers {{ ([ sshd__tpl_ciphers | first ] + sshd__ciphers_additional) | unique | join(",") }}
 
 {% elif sshd__tpl_ciphers %}
 Ciphers {{ sshd__tpl_ciphers | join(",") }}
@@ -60,7 +60,7 @@ Ciphers {{ sshd__tpl_ciphers | join(",") }}
 {% set sshd__tpl_kex_algorithms = sshd__kex_algorithms_map[sshd__tpl_kex_algorithms_max_version] %}
 {% set sshd__tpl_kex_algorithms = (sshd__tpl_kex_algorithms + sshd__kex_algorithms_additional) | unique %}
 {% if sshd__tpl_kex_algorithms and sshd__paranoid|bool %}
-KexAlgorithms {{ ([ sshd__tpl_kex_algorithms|first ] + sshd__kex_algorithms_additional) | unique | join(",") }}
+KexAlgorithms {{ ([ sshd__tpl_kex_algorithms | first ] + sshd__kex_algorithms_additional) | unique | join(",") }}
 
 {% elif sshd__tpl_kex_algorithms %}
 KexAlgorithms {{ sshd__tpl_kex_algorithms | join(",") }}
@@ -70,7 +70,7 @@ KexAlgorithms {{ sshd__tpl_kex_algorithms | join(",") }}
 {% set sshd__tpl_macs = sshd__macs_map[sshd__tpl_macs_max_version] %}
 {% set sshd__tpl_macs = (sshd__tpl_macs + sshd__macs_additional) | unique %}
 {% if sshd__tpl_macs and sshd__paranoid|bool %}
-MACs {{ ([ sshd__tpl_macs|first ] + sshd__macs_additional) | unique | join(",") }}
+MACs {{ ([ sshd__tpl_macs | first ] + sshd__macs_additional) | unique | join(",") }}
 
 {% elif sshd__tpl_macs %}
 MACs {{ sshd__tpl_macs | join(",") }}

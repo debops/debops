@@ -179,7 +179,7 @@
         creates: '{{ hashicorp__lib + "/" + item + "/" + hashicorp__combined_version_map[item] + "/" +
                      ((hashicorp__combined_binary_map[item]
                        if hashicorp__combined_binary_map[item] is string
-                       else hashicorp__combined_binary_map[item]|first)
+                       else hashicorp__combined_binary_map[item] | first)
                       if hashicorp__combined_binary_map[item]|d() else item) }}'
       with_items: '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
       register: hashicorp__register_unpack
