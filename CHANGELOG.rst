@@ -77,6 +77,11 @@ Changed
   access key and secret key have been replaced with root account and password.
   Check the role documentation for more details.
 
+:ref:`debops.influxdata` role
+'''''''''''''''''''''''''''''
+
+- The URL of the APT upstream repository has been updated.
+
 :ref:`debops.postgresql` role
 '''''''''''''''''''''''''''''
 
