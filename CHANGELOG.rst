@@ -26,6 +26,12 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+:ref:`debops.resources` role
+''''''''''''''''''''''''''''
+
+- The :ref:`debops.resources` role can now be used to repace a line via the
+  ``ansible.builtin.replace`` module.
+
 General
 '''''''
 
