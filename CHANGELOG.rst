@@ -41,6 +41,11 @@ General
   the :ref:`debops.ldap` role is detected on the host. Currently only user
   authentication and Django ACL system is supported via LDAP groups.
 
+:ref:`debops.slapd` role
+''''''''''''''''''''''''
+
+- The playbook can now be configured to skip the saslauthd role execution.
+
 Changed
 ~~~~~~~
 
