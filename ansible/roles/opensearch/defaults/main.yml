@@ -1,0 +1,209 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2022 CipherMail B.V. <https://www.ciphermail.com/>
+# .. Copyright (C) 2022 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-or-later
+
+# .. _opensearch__ref_defaults:
+
+# debops.opensearch default variables [[[
+# ==========================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# General [[[
+# -----------
+
+# .. envvar:: opensearch__version [[[
+#
+# The OpenSearch version to install.
+opensearch__version: '2.0.1'
+
+                                                                   # ]]]
+# .. envvar:: opensearch__tarball [[[
+#
+# The name of the OpenSearch release tarball.
+opensearch__tarball: 'opensearch-{{ opensearch__version }}-linux-x64.tar.gz'
+
+                                                                   # ]]]
+# .. envvar:: opensearch__installation_directory [[[
+#
+# The directory where the OpenSearch release tarball should be extracted.
+opensearch__installation_directory: '/usr/local/share/opensearch'
+
+                                                                   # ]]]
+# .. envvar:: opensearch__user [[[
+#
+# Name of the UNIX user account used by OpenSearch.
+opensearch__user: 'opensearch'
+
+                                                                   # ]]]
+# .. envvar:: opensearch__group [[[
+#
+# Name of the UNIX primary group used by OpenSearch.
+opensearch__group: 'opensearch'
+                                                                   # ]]]
+                                                                   # ]]]
+# Memory options [[[
+# ------------------
+
+# The variables below configure JVM memory allocation options. See
+# https://opensearch.org/docs/latest/opensearch/install/important-settings/
+# for more details.
+
+# .. envvar:: opensearch__memory_lock [[[
+#
+# Enable or disable memory lock depending on availability of required POSIX
+# capabilities. If this variable is enabled, :command:`systemd` memlock limit
+# is configured.
+opensearch__memory_lock: '{{ True
+                                if (not (ansible_system_capabilities_enforced|d())|bool or
+                                    ((ansible_system_capabilities_enforced|d())|bool and
+                                     "cap_ipc_lock" in (ansible_system_capabilities|d([]))))
+                                else False }}'
+
+                                                                   # ]]]
+# .. envvar:: opensearch__jvm_memory_heap_size_multiplier [[[
+#
+# This variable defines a float value which will be used to select the JVM heap
+# size depending on the size of the available system RAM.
+opensearch__jvm_memory_heap_size_multiplier: '{{ "0.2"
+                                                    if (ansible_memtotal_mb|int / 2 <= 2048)
+                                                    else "0.45" }}'
+
+                                                                   # ]]]
+# .. envvar:: opensearch__jvm_memory_min_heap_size [[[
+#
+# Specify the minimum JVM heap size, depending on the available system RAM.
+opensearch__jvm_memory_min_heap_size: '{{ (((ansible_memtotal_mb|int
+                                               * opensearch__jvm_memory_heap_size_multiplier|float)
+                                               | round | int) | string + "m")
+                                             if (ansible_memtotal_mb|int / 2 <= 32768)
+                                             else "32600m" }}'
+
+                                                                   # ]]]
+# .. envvar:: opensearch__jvm_memory_max_heap_size [[[
+#
+# Specify the maximum JVM heap size, depending on the available system RAM.
+# This usually should be the same as the minimum heap size, for performance
+# reasons.
+opensearch__jvm_memory_max_heap_size: '{{ opensearch__jvm_memory_min_heap_size }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# OpenSearch configuration [[[
+# ----------------------------
+
+# .. envvar:: opensearch__default_configuration [[[
+#
+# Default configuration provided by this role.
+opensearch__default_configuration:
+
+  - name: 'cluster.name'
+    comment: 'Use a descriptive name for your cluster'
+    value: '{{ ansible_domain | replace(".","-") }}'
+
+  - name: 'node.name'
+    comment: 'Use a descriptive name for the node'
+    value: '{{ ansible_hostname }}'
+
+  - name: 'path.data'
+    comment: |
+      Path to directory where to store the data (separate multiple locations by
+      comma)
+    value: '/var/local/opensearch'
+
+  - name: 'path.logs'
+    comment: 'Path to log files'
+    value: '/var/log/opensearch'
+
+  - name: 'plugins.security.disabled'
+    comment: 'Disable TLS support'
+    value: True
+
+  - name: 'bootstrap.memory_lock'
+    comment: '# Lock the memory on startup'
+    value: '{{ True if opensearch__memory_lock|bool else False }}'
+
+  - name: 'cluster.initial_master_nodes'
+    comment: |
+      Bootstrap the cluster using an initial set of master-eligible nodes
+    value: [ '{{ ansible_hostname }}' ]
+
+                                                                   # ]]]
+# .. envvar:: opensearch__configuration [[[
+#
+# Configuration to apply to all OpenSearch hosts.
+opensearch__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: opensearch__group_configuration [[[
+#
+# Configuration to apply to all OpenSearch hosts in the inventory group.
+opensearch__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: opensearch__host_configuration [[[
+#
+# Configuration to apply to individual OpenSearch hosts.
+opensearch__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: opensearch__combined_configuration [[[
+#
+# Combined OpenSearch configuration.
+opensearch__combined_configuration: '{{ opensearch__default_configuration
+                                        + opensearch__configuration
+                                        + opensearch__group_configuration
+                                        + opensearch__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: opensearch__etc_services__dependent_list [[[
+#
+# Configuration for the :ref:`debops.etc_services` Ansible role.
+opensearch__etc_services__dependent_list:
+
+  - name: 'opensearch-http'
+    port: 9200
+
+  - name: 'opensearch-tcp'
+    port: 9300
+
+                                                                   # ]]]
+# .. envvar:: opensearch__keyring__dependent_gpg_keys [[[
+#
+# Configuration for the :ref:`debops.keyring` Ansible role.
+opensearch__keyring__dependent_gpg_keys:
+
+  - id: 'C5B7 4989 65EF D1C2 924B  A9D5 39D3 1987 9310 D3FC'
+    url: 'https://artifacts.opensearch.org/publickeys/opensearch.pgp'
+    user: '{{ opensearch__user }}'
+    group: '{{ opensearch__group }}'
+    home: '/var/local/opensearch'
+
+                                                                   # ]]]
+# .. envvar:: opensearch__sysctl__dependent_parameters [[[
+#
+# Configuration for the :ref:`debops.sysctl` Ansible role.
+opensearch__sysctl__dependent_parameters:
+
+  - name: 'opensearch'
+    weight: 80
+    options:
+
+      - name: 'vm.max_map_count'
+        comment: |
+          The OpenSearch documentation recommends setting this as the minimum
+          for production workloads, see
+          https://opensearch.org/docs/latest/opensearch/install/important-settings/
+        value: 262144
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]

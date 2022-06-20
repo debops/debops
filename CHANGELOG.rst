@@ -35,6 +35,12 @@ New DebOps roles
 
   .. __: https://www.elastic.co/beats/metricbeat
 
+- The :ref:`debops.opensearch` role can be used to set up an unsecured,
+  local-only installation of `OpenSearch`__. OpenSearch is a fork of
+  Elasticsearch that continues to be released under a free software license.
+
+  .. __: https://opensearch.org/
+
 - The :ref:`debops.reboot` role can be used to reboot, forcefully or only if
   required, any DebOps host.
 

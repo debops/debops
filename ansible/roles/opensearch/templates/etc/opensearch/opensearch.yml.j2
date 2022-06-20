@@ -1,0 +1,21 @@
+{# Copyright (C) 2022 CipherMail B.V. <https://www.ciphermail.com/>
+ # Copyright (C) 2022 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# {{ ansible_managed }}
+
+{%  for element in opensearch__combined_configuration | debops.debops.parse_kv_items %}
+{%      if element.state == "present" %}
+{%          if element.comment|d() %}
+{{ element.comment | regex_replace('$\n', '') | comment(prefix='', postfix='') -}}
+{%          endif %}
+{%          if element.value is boolean or element.value is integer %}
+{{ element.name }}: {{ element.value }}
+{%          elif element.value is string %}
+{{ element.name }}: "{{ element.value }}"
+{%          elif element.value is iterable %}
+{{ element.name }}: [ "{{ element.value | join('", "') }}" ]
+{%          endif %}
+
+{%      endif %}
+{%  endfor %}
