@@ -19,20 +19,20 @@
     state: 'present'
   register: nullmailer__register_packages
   until: nullmailer__register_packages is succeeded
-  when: nullmailer__deploy_state|d('present') != 'absent'
+  when: nullmailer__deploy_state | d('present') != 'absent'
 
 - name: Purge other SMTP servers
   ansible.builtin.apt:
     name: '{{ nullmailer__purge_mta_packages | flatten }}'
     state: 'absent'
     purge: True
-  when: (nullmailer__deploy_state|d('present') != 'absent' and
+  when: (nullmailer__deploy_state | d('present') != 'absent' and
          nullmailer__purge_mta_packages)
 
 - name: Generate configuration files
   ansible.builtin.copy:
     dest:    '{{ item.dest }}'
-    content: "{{ (item.content + '\n') if item.content|d() else ('' if item.content is defined else omit) }}"
+    content: "{{ (item.content + '\n') if item.content | d() else ('' if item.content is defined else omit) }}"
     src:     '{{ item.src   | d(omit) }}'
     owner:   '{{ item.owner | d(omit) }}'
     group:   '{{ item.group | d(omit) }}'
@@ -40,14 +40,14 @@
   with_flattened:
     - '{{ nullmailer__configuration_files }}'
   notify: [ 'Restart nullmailer' ]
-  when: (nullmailer__deploy_state|d('present') != 'absent' and
-         (item.dest|d() and (item.src|d() or item.content is defined) and
-          item.state|d('present') != 'absent'))
+  when: (nullmailer__deploy_state | d('present') != 'absent' and
+         (item.dest | d() and (item.src | d() or item.content is defined) and
+          item.state | d('present') != 'absent'))
 
 - name: Generate private configuration files
   ansible.builtin.copy:
     dest:    '{{ item.dest }}'
-    content: "{{ (item.content + '\n') if item.content|d() else omit }}"
+    content: "{{ (item.content + '\n') if item.content | d() else omit }}"
     src:     '{{ item.src   | d(omit) }}'
     owner:   '{{ item.owner | d(omit) }}'
     group:   '{{ item.group | d(omit) }}'
@@ -55,9 +55,9 @@
   with_flattened:
     - '{{ nullmailer__private_configuration_files }}'
   notify: [ 'Restart nullmailer' ]
-  when: (nullmailer__deploy_state|d('present') != 'absent' and
-         (item.dest|d() and (item.src|d() or item.content|d()) and
-          item.state|d('present') != 'absent'))
+  when: (nullmailer__deploy_state | d('present') != 'absent' and
+         (item.dest | d() and (item.src | d() or item.content | d()) and
+          item.state | d('present') != 'absent'))
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove configuration files if requested
@@ -67,9 +67,9 @@
   with_flattened:
     - '{{ nullmailer__configuration_files }}'
   notify: [ 'Restart nullmailer' ]
-  when: (nullmailer__deploy_state|d('present') != 'absent' and
-         (item.dest|d() and (item.src|d() or item.content is defined) and
-          item.state|d('present') == 'absent'))
+  when: (nullmailer__deploy_state | d('present') != 'absent' and
+         (item.dest | d() and (item.src | d() or item.content is defined) and
+          item.state | d('present') == 'absent'))
 
 - name: Remove private configuration files if requested
   ansible.builtin.file:
@@ -78,9 +78,9 @@
   with_flattened:
     - '{{ nullmailer__private_configuration_files }}'
   notify: [ 'Restart nullmailer' ]
-  when: (nullmailer__deploy_state|d('present') != 'absent' and
-         (item.dest|d() and (item.src|d() or item.content is defined) and
-          item.state|d('present') == 'absent'))
+  when: (nullmailer__deploy_state | d('present') != 'absent' and
+         (item.dest | d() and (item.src | d() or item.content is defined) and
+          item.state | d('present') == 'absent'))
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Configure nullmailer services in xinetd
@@ -94,7 +94,7 @@
     - 'nullmailer-smtpd'
     - 'nullmailer-smtpd6'
   notify: [ 'Reload xinetd' ]
-  when: (nullmailer__deploy_state|d('present') != 'absent' and nullmailer__smtpd|bool)
+  when: (nullmailer__deploy_state | d('present') != 'absent' and nullmailer__smtpd | bool)
 
 - name: Disable nullmailer-smtpd service in xinetd
   ansible.builtin.file:
@@ -104,8 +104,8 @@
     - 'nullmailer-smtpd'
     - 'nullmailer-smtpd6'
   notify: [ 'Reload xinetd' ]
-  when: ((nullmailer__deploy_state|d() and nullmailer__deploy_state == 'absent') or
-         not nullmailer__smtpd|bool)
+  when: ((nullmailer__deploy_state | d() and nullmailer__deploy_state == 'absent') or
+         not nullmailer__smtpd | bool)
 
 - name: Remove old dpkg cleanup hook and script
   ansible.builtin.file:
@@ -114,7 +114,7 @@
   loop:
     - '/etc/dpkg/dpkg.cfg.d/debops-nullmailer'
     - '/usr/local/lib/debops-nullmailer-dpkg-cleanup'
-  when: nullmailer__deploy_state|d('present') != 'absent'
+  when: nullmailer__deploy_state | d('present') != 'absent'
 
 - name: Prepare cleanup during package removal
   ansible.builtin.import_role:
@@ -122,6 +122,6 @@
   vars:
     dpkg_cleanup__dependent_packages:
       - '{{ nullmailer__dpkg_cleanup__dependent_packages }}'
-  when: nullmailer__deploy_state|d('present') != 'absent'
+  when: nullmailer__deploy_state | d('present') != 'absent'
   tags: [ 'role::dpkg_cleanup', 'skip::dpkg_cleanup',
           'role::nullmailer:dpkg_cleanup' ]

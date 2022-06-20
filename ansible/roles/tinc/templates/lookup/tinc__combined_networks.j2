@@ -8,17 +8,17 @@
 {%   if to_merge_dict %}
 {%     if to_merge_dict is mapping %}
 {%       for dict_name in to_merge_dict.keys() | sort %}
-{%         if to_merge_dict[dict_name][dict_key]|d() %}
-{%           set _ = merged_dict.update({to_merge_dict[dict_name][dict_key]:(current_dict[to_merge_dict[dict_name][dict_key]]|d({}) | combine(to_merge_dict[dict_name], recursive=True))}) %}
+{%         if to_merge_dict[dict_name][dict_key] | d() %}
+{%           set _ = merged_dict.update({to_merge_dict[dict_name][dict_key]:(current_dict[to_merge_dict[dict_name][dict_key]] | d({}) | combine(to_merge_dict[dict_name], recursive=True))}) %}
 {%         elif to_merge_dict[dict_name][dict_key] is undefined %}
-{%           set _ = merged_dict.update({dict_name:(current_dict[dict_name]|d({}) | combine(to_merge_dict[dict_name], recursive=True))}) %}
+{%           set _ = merged_dict.update({dict_name:(current_dict[dict_name] | d({}) | combine(to_merge_dict[dict_name], recursive=True))}) %}
 {%         endif %}
 {%       endfor %}
 {%     elif to_merge_dict is not string and to_merge_dict is not mapping %}
 {%       set flattened_dict = lookup("flattened", to_merge_dict) %}
 {%       for element in ([ flattened_dict ] if flattened_dict is mapping else flattened_dict) %}
-{%         if element[dict_key]|d() %}
-{%           set _ = merged_dict.update({element[dict_key]:(current_dict[element[dict_key]]|d({}) | combine(element, recursive=True))}) %}
+{%         if element[dict_key] | d() %}
+{%           set _ = merged_dict.update({element[dict_key]:(current_dict[element[dict_key]] | d({}) | combine(element, recursive=True))}) %}
 {%         endif %}
 {%       endfor %}
 {%     endif %}
@@ -44,7 +44,7 @@
 {%     set _ = params.update({"user":tinc__user}) %}
 {%   endif %}
 {%   if params["link_type"] is undefined %}
-{%     if params["bridge"]|d() %}
+{%     if params["bridge"] | d() %}
 {%       set _ = params.update({"link_type":"static"}) %}
 {%     else %}
 {%       set _ = params.update({"link_type":"dynamic"}) %}
@@ -85,7 +85,7 @@
 {%     endif %}
 {%   endif %}
 {%   if params["inventory_self"] is undefined %}
-{%     set _ = params.update({"inventory_self":(([ tinc__inventory_self ] if tinc__inventory_self is string else tinc__inventory_self)|unique)}) %}
+{%     set _ = params.update({"inventory_self":(([ tinc__inventory_self ] if tinc__inventory_self is string else tinc__inventory_self) | unique)}) %}
 {%   endif %}
 {%   if params["connect_to"] is undefined %}
 {%     if params["link_type"] != 'static' %}
@@ -107,9 +107,9 @@
   "Compression":   params["compression"],
   "AddressFamily": params["address_family"],
   "Interface":     params["interface"],
-  "ConnectTo":     ((params["connect_to"] + (( [ params["add_connect_to"] ] if params["add_connect_to"] is string else params["add_connect_to"]) if params["add_connect_to"]|d() else [])) | unique)
+  "ConnectTo":     ((params["connect_to"] + (( [ params["add_connect_to"] ] if params["add_connect_to"] is string else params["add_connect_to"]) if params["add_connect_to"] | d() else [])) | unique)
 } %}
-{%     set _ = params.update({"tinc_options":tinc__tpl_tinc_options | combine(params["add_tinc_options"]|d({}))}) %}
+{%     set _ = params.update({"tinc_options":tinc__tpl_tinc_options | combine(params["add_tinc_options"] | d({}))}) %}
 {%   endif %}
 {%   set _ = tinc__tpl_filtered_networks.update({network_name:params}) %}
 {% endfor %}

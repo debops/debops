@@ -6,14 +6,14 @@
 
 {% macro print_config(section) %}
 {%   if section.state is undefined or section.state != 'absent' %}
-{%     if section.comment|d() %}
+{%     if section.comment | d() %}
 {{ section.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
 {%     endif %}
-{%     if section.log|d() %}
+{%     if section.log | d() %}
 {%       if section.log is string %}
 {{ section.log }} {
 {%       else %}
-{%         if section.log|length <= 2 %}
+{%         if section.log | length <= 2 %}
 {{ section.log | join(" ") }} {
 {%         else %}
 {%           for element in section.log %}
@@ -22,11 +22,11 @@
 {
 {%         endif %}
 {%       endif %}
-{%     elif section.logs|d() %}
+{%     elif section.logs | d() %}
 {%       if section.logs is string %}
 {{ section.logs }} {
 {%       else %}
-{%         if section.logs|length <= 2 %}
+{%         if section.logs | length <= 2 %}
 {{ section.logs | join(" ") }} {
 {%         else %}
 {%           for element in section.logs %}
@@ -36,36 +36,36 @@
 {%         endif %}
 {%       endif %}
 {%     endif %}
-{%     if section.options|d() %}
-{%       if section.log|d() or section.logs|d() %}
+{%     if section.options | d() %}
+{%       if section.log | d() or section.logs | d() %}
 {{ section.options | regex_replace('\n$','') | indent(4, true) }}
 {%       else %}
 {{ section.options | regex_replace('\n$','') }}
 {%       endif %}
 {%     endif %}
-{%     if section.log|d() or section.logs|d() %}
-{%       if section.firstaction|d() %}
+{%     if section.log | d() or section.logs | d() %}
+{%       if section.firstaction | d() %}
     firstaction
 {{ section.firstaction | regex_replace('\n$','') | indent(8, true) }}
     endscript
 {%       endif %}
-{%       if section.prerotate|d() %}
+{%       if section.prerotate | d() %}
     prerotate
 {{ section.prerotate | regex_replace('\n$','') | indent(8, true) }}
     endscript
 {%       endif %}
-{%       if section.postrotate|d() %}
+{%       if section.postrotate | d() %}
 
     postrotate
 {{ section.postrotate | regex_replace('\n$','') | indent(8, true) }}
     endscript
 {%       endif %}
-{%       if section.preremove|d() %}
+{%       if section.preremove | d() %}
     preremove
 {{ section.preremove | regex_replace('\n$','') | indent(8, true) }}
     endscript
 {%       endif %}
-{%       if section.lastaction|d() %}
+{%       if section.lastaction | d() %}
     lastaction
 {{ section.lastaction | regex_replace('\n$','') | indent(8, true) }}
     endscript
@@ -74,9 +74,9 @@
 {%     endif %}
 {%   endif %}
 {% endmacro %}
-{% if item.sections|d() %}
+{% if item.sections | d() %}
 {%   for section in item.sections %}
-{%     if (section.log|d() or section.logs|d() or section.filename|d()) and section.state|d('present') != 'absent' %}
+{%     if (section.log | d() or section.logs | d() or section.filename | d()) and section.state | d('present') != 'absent' %}
 {{ print_config(section) | regex_replace('\n$','') }}
 {%       if not loop.last %}
 
@@ -84,7 +84,7 @@
 {%     endif %}
 {%   endfor %}
 {% else %}
-{%   if (item.log|d() or item.logs|d() or item.filename|d()) and item.state|d('present') != 'absent' %}
+{%   if (item.log | d() or item.logs | d() or item.filename | d()) and item.state | d('present') != 'absent' %}
 {{ print_config(item) | regex_replace('\n$','') }}
 {%   endif %}
 {% endif %}

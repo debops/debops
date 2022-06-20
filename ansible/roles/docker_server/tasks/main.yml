@@ -20,9 +20,9 @@
 
 - name: Remove other version if upstream is modified
   ansible.builtin.apt:
-    name: '{{ ((["docker.io"] if docker_server__upstream|d()
+    name: '{{ ((["docker.io"] if docker_server__upstream | d()
                 else [docker_server__upstream_packagename])
-               + (["docker-engine"] if docker_server__upstream|d()
+               + (["docker-engine"] if docker_server__upstream | d()
                  else [])) | flatten }}'
     state: 'absent'
     install_recommends: False
@@ -106,8 +106,8 @@
   with_flattened:
     - '{{ docker_server__default_pip_packages }}'
     - '{{ docker_server__pip_packages }}'
-  when: item.path|d() and item.src|d() and
-        item.state|d('present') != 'absent' and
+  when: item.path | d() and item.src | d() and
+        item.state | d('present') != 'absent' and
         docker_server__install_virtualenv
 
 - name: Install ferm post hook
@@ -117,7 +117,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: docker_server__ferm_post_hook|bool
+  when: docker_server__ferm_post_hook | bool
 
 - name: Configure Docker options
   ansible.builtin.template:
@@ -160,7 +160,7 @@
     groups: 'docker'
     append: True
   with_items: '{{ docker_server__admins }}'
-  when: item|d()
+  when: item | d()
   tags: [ 'role::docker_server:config', 'role::docker_server:admins' ]
 
 - name: Execute pending handlers

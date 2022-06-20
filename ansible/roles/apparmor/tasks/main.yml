@@ -35,7 +35,7 @@
     line: '{{ item.line }}'
     insertbefore: '{{ item.insertbefore }}'
     mode: '0644'
-  when: ((apparmor__manage_grub|d() | bool) and (apparmor__enabled|d() | bool))
+  when: ((apparmor__manage_grub | d() | bool) and (apparmor__enabled | d() | bool))
   with_items:
     - regexp: '^GRUB_CMDLINE_LINUX='
       line: 'GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR {{ apparmor__additional_kernel_parameters }}"'
@@ -52,15 +52,15 @@
     line: 'GRUB_CMDLINE_LINUX="\1 \2"'
     backrefs: yes
     mode: '0644'
-  when: (apparmor__manage_grub and not (apparmor__enabled|d() | bool))
+  when: (apparmor__manage_grub and not (apparmor__enabled | d() | bool))
   notify: [ 'Update grub' ]
 
 - name: Check if the running kernel has been started with AppArmor enabled
   ansible.builtin.set_fact:
     apparmor__fact_apparmor_enabled_and_loaded: '{{
-      (apparmor__enabled|d() | bool) and
-      (ansible_cmdline.apparmor|d(0)|string == "1") and
-      (ansible_cmdline.security|d("none") == "apparmor") }}'
+      (apparmor__enabled | d() | bool) and
+      (ansible_cmdline.apparmor | d(0) | string == "1") and
+      (ansible_cmdline.security | d("none") == "apparmor") }}'
   check_mode: False
 
 - name: Flush the handlers in case the next tasks fails
@@ -70,10 +70,10 @@
   mail:
     from: 'root@{{ ansible_fqdn }}'
     subject: '{{ apparmor__mail_subject }}'
-    to: '{{ apparmor__mail_to|d([]) | list | join(",") }}'
+    to: '{{ apparmor__mail_to | d([]) | list | join(",") }}'
     charset: 'utf8'
     body: '{{ apparmor__mail_body }}'
-  when: (apparmor__fact_apparmor_enabled_and_loaded|bool and apparmor__mail_to|d())
+  when: (apparmor__fact_apparmor_enabled_and_loaded | bool and apparmor__mail_to | d())
 
 ## Seems that there is currently a bug in the version include in Debian Jessie
 ## which throws an exception when AppArmor has not been enabled yet.
@@ -89,20 +89,20 @@
   args:
     executable: 'bash'
   register: apparmor__register_enforce_all_profiles
-  changed_when: (apparmor__register_enforce_all_profiles.stdout|d())
-  when: (apparmor__enforce_all_profiles|d() | bool)
+  changed_when: (apparmor__register_enforce_all_profiles.stdout | d())
+  when: (apparmor__enforce_all_profiles | d() | bool)
 
 - name: Set profile status
   ansible.builtin.command: aa-{{ item.value }} "{{ item.key }}"
   register: apparmor__register_profile_status
-  # changed_when: (apparmor__register_profile_status.stdout|d())
+  # changed_when: (apparmor__register_profile_status.stdout | d())
   ## FIXME: Currently changed_when seems to be tricky.
   changed_when: False
   failed_when: |
     apparmor__register_profile_status.rc != 0 and (
       "Warning: unable to find a suitable fs in /proc/mounts, is it mounted?"
       not in apparmor__register_profile_status.stderr and
-      apparmor__fact_apparmor_enabled_and_loaded|bool
+      apparmor__fact_apparmor_enabled_and_loaded | bool
     )
   ## AppArmor tries to load the profile with the new status into the Kernel after changing it.
   ## This does not work if the Kernel has not been started with AppArmor support.
@@ -114,7 +114,7 @@
     name: 'apparmor'
     state: 'started'
     enabled: True
-  when: apparmor__fact_apparmor_enabled_and_loaded|bool
+  when: apparmor__fact_apparmor_enabled_and_loaded | bool
 
 - name: Ensure tunables directory exists
   ansible.builtin.file:
@@ -150,17 +150,17 @@
   ansible.builtin.service:  # noqa no-handler
     name: 'apparmor'
     state: 'reloaded'
-  when: apparmor__fact_apparmor_enabled_and_loaded|bool and apparmor__register_tunables is changed
+  when: apparmor__fact_apparmor_enabled_and_loaded | bool and apparmor__register_tunables is changed
 
 - name: Unload AppArmor profiles
   ansible.builtin.command: service apparmor teardown
   args:
     warn: False
-  when: (not (apparmor__enabled|d() | bool))
+  when: (not (apparmor__enabled | d() | bool))
 
 - name: Ensure AppArmor service is stopped
   ansible.builtin.service:
     name: 'apparmor'
     state: 'stopped'
     enabled: False
-  when: (not (apparmor__enabled|d() | bool))
+  when: (not (apparmor__enabled | d() | bool))

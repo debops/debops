@@ -5,16 +5,16 @@
  #}
 # {{ ansible_managed }}
 
-{% if repo.incoming|d() %}
+{% if repo.incoming | d() %}
 {%   for section in repo.incoming %}
-{%     if section.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%     if section.state | d('present') not in [ 'absent', 'ignore' ] %}
 {%       if not loop.first %}
 {{         '' }}
 {%       endif %}
-{%       if section.comment|d() %}
+{%       if section.comment | d() %}
 {{         section.comment | regex_replace('\n$', '') | comment(prefix='', postfix='') }}
 {%       endif %}
-{%       if section.raw|d() %}
+{%       if section.raw | d() %}
 {{         section.raw | regex_replace('\n$', '') }}
 {%       else %}
 {{         'Name: {}'.format(section.Name | d(section.name)) }}

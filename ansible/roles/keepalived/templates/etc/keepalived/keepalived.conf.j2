@@ -5,11 +5,11 @@
 # {{ ansible_managed }}
 
 {% for element in keepalived__combined_configuration | debops.debops.parse_kv_config %}
-{%   if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%   if element.state | d('present') not in [ 'absent', 'ignore', 'init' ] %}
 {%     if not loop.first %}
 {{       '' }}
 {%     endif %}
-{%     if element.comment|d() %}
+{%     if element.comment | d() %}
 {{       element.comment | regex_replace('\n$', '') | comment(prefix='', postfix='') }}
 {%     endif %}
 {{     '{}'.format(element.raw | regex_replace('\n$', '')) }}

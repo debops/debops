@@ -38,7 +38,7 @@
     path: '/etc/cron.daily/autopostgresqlbackup-{{ (item.version | d(postgresql_server__version))
                                                    | replace(".","_") }}-{{ item.name }}'
     state: 'absent'
-  when: ((item.auto_backup|d() and not item.auto_backup | bool) or not postgresql_server__auto_backup | bool)
+  when: ((item.auto_backup | d() and not item.auto_backup | bool) or not postgresql_server__auto_backup | bool)
   with_flattened:
     - '{{ postgresql_server__clusters }}'
 

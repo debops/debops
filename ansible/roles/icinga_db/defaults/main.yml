@@ -28,8 +28,8 @@
 # configuring a database for it. The default DebOps playbook should do that
 # automatically if the main Icinga role is enabled on a host.
 icinga_db__icinga_installed: '{{ True
-                                 if (ansible_local|d() and ansible_local.icinga|d() and
-                                     (ansible_local.icinga.installed|d())|bool)
+                                 if (ansible_local | d() and ansible_local.icinga | d() and
+                                     (ansible_local.icinga.installed | d()) | bool)
                                  else False }}'
 
                                                                    # ]]]
@@ -38,11 +38,11 @@ icinga_db__icinga_installed: '{{ True
 # The database type to configure for Icinga 2, either PostgreSQL (preferred) or
 # MariaDB/MySQL. Debian installation supports only one database type at a time.
 icinga_db__type: '{{ ansible_local.icinga_db.type
-                     if (ansible_local.icinga_db.type|d())
+                     if (ansible_local.icinga_db.type | d())
                      else ("postgresql"
-                           if (ansible_local|d() and ansible_local.postgresql is defined)
+                           if (ansible_local | d() and ansible_local.postgresql is defined)
                            else ("mariadb"
-                                 if (ansible_local|d() and ansible_local.mariadb is defined)
+                                 if (ansible_local | d() and ansible_local.mariadb is defined)
                                  else "unknown")) }}'
 
                                                                    # ]]]

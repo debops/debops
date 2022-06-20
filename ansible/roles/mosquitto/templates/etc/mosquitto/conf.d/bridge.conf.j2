@@ -6,7 +6,7 @@
 
 {% set bridge = item.value %}
 {% set bridge_name = (item.value.connection | d(item.key)) %}
-{% if bridge.comment|d() %}
+{% if bridge.comment | d() %}
 {{ (bridge.comment if bridge.comment is string else bridge.comment | join('\n'))  | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
 {% endif %}
 connection {{ bridge_name }}

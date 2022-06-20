@@ -25,9 +25,9 @@
 - name: Set default PostgreSQL version variable
   ansible.builtin.set_fact:
     postgresql__version: '{{ (ansible_local.postgresql.version
-                              if (ansible_local.postgresql.version|d())
+                              if (ansible_local.postgresql.version | d())
                                  else (postgresql__preferred_version
-                                       if postgresql__preferred_version|d()
+                                       if postgresql__preferred_version | d()
                                        else postgresql__register_version.stdout)) }}'
 
 - name: Install PostgreSQL packages
@@ -87,12 +87,12 @@
     state: 'absent'
   with_flattened:
     - '{{ postgresql__roles }}'
-    - '{{ postgresql_roles|d([]) }}'
+    - '{{ postgresql_roles | d([]) }}'
     - '{{ postgresql__dependent_roles }}'
   become: True
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
-  when: item.state|d('present') == 'absent'
+  when: item.state | d('present') == 'absent'
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Create PostgreSQL roles
@@ -106,16 +106,16 @@
                   "length=" + postgresql__password_length + " chars=" + postgresql__password_characters)) }}'
     encrypted: '{{ item.encrypted | d(True) }}'
     expires: '{{ item.expires | d(omit) }}'
-    role_attr_flags: '{{ (item.flags|d() | join(",")) | d(omit) }}'
+    role_attr_flags: '{{ (item.flags | d() | join(",")) | d(omit) }}'
     state: 'present'
   with_flattened:
     - '{{ postgresql__roles }}'
-    - '{{ postgresql_roles|d([]) }}'
+    - '{{ postgresql_roles | d([]) }}'
     - '{{ postgresql__dependent_roles }}'
   become: True
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
-  when: item.state|d('present') == 'present'
+  when: item.state | d('present') == 'present'
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Drop PostgreSQL databases if requested
@@ -125,12 +125,12 @@
     state: 'absent'
   with_flattened:
     - '{{ postgresql__databases }}'
-    - '{{ postgresql_databases|d([]) }}'
+    - '{{ postgresql_databases | d([]) }}'
     - '{{ postgresql__dependent_databases }}'
   become: True
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
-  when: item.state|d('present') == 'absent'
+  when: item.state | d('present') == 'absent'
 
 - name: Create PostgreSQL databases
   community.postgresql.postgresql_db:
@@ -144,13 +144,13 @@
     state: 'present'
   with_flattened:
     - '{{ postgresql__databases }}'
-    - '{{ postgresql_databases|d([]) }}'
+    - '{{ postgresql_databases | d([]) }}'
     - '{{ postgresql__dependent_databases }}'
   become: True
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
-  when: (item.state|d('present') == 'present') and
-        item.create_db|d(True)
+  when: (item.state | d('present') == 'present') and
+        item.create_db | d(True)
 
 - name: Enable or disable specified database extensions
   community.postgresql.postgresql_ext:
@@ -164,7 +164,7 @@
   become: True
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
-  when: item.state|d('present') in ['present', 'absent']
+  when: item.state | d('present') in ['present', 'absent']
 
 - name: Grant public schema permissions
   community.postgresql.postgresql_privs:
@@ -178,13 +178,13 @@
     state: 'present'
   with_flattened:
     - '{{ postgresql__databases }}'
-    - '{{ postgresql_databases|d([]) }}'
+    - '{{ postgresql_databases | d([]) }}'
     - '{{ postgresql__dependent_databases }}'
   become: True
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
-  when: (item.state|d('present') == 'present') and
-        item.owner|d()
+  when: (item.state | d('present') == 'present') and
+        item.owner | d()
 
 - name: Grant PostgreSQL groups
   community.postgresql.postgresql_privs:
@@ -197,13 +197,13 @@
     state: 'present'
   with_flattened:
     - '{{ postgresql__groups }}'
-    - '{{ postgresql_groups|d([]) }}'
+    - '{{ postgresql_groups | d([]) }}'
     - '{{ postgresql__dependent_groups }}'
   become: True
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
-  when: (item.state|d('present') == 'present') and
-        item.enabled|d(True)|bool
+  when: (item.state | d('present') == 'present') and
+        item.enabled | d(True) | bool
 
 - name: Grant database privileges to PostgreSQL roles
   community.postgresql.postgresql_user:
@@ -214,13 +214,13 @@
     state: 'present'
   with_flattened:
     - '{{ postgresql__roles }}'
-    - '{{ postgresql_roles|d([]) }}'
+    - '{{ postgresql_roles | d([]) }}'
     - '{{ postgresql__dependent_roles }}'
   become: True
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
-  when: (item.state|d('present') == 'present') and
-        (item.db|d() and item.priv|d())
+  when: (item.state | d('present') == 'present') and
+        (item.db | d() and item.priv | d())
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Make sure required system groups exist
@@ -230,7 +230,7 @@
     system: '{{ item.system | d(True) }}'
   with_flattened:
     - '{{ postgresql__pgpass }}'
-    - '{{ postgresql_pgpass|d([]) }}'
+    - '{{ postgresql_pgpass | d([]) }}'
     - '{{ postgresql__dependent_pgpass }}'
   no_log: '{{ debops__no_log | d(True) }}'
 
@@ -243,7 +243,7 @@
     system: '{{ item.system | d(True) }}'
   with_flattened:
     - '{{ postgresql__pgpass }}'
-    - '{{ postgresql_pgpass|d([]) }}'
+    - '{{ postgresql_pgpass | d([]) }}'
     - '{{ postgresql__dependent_pgpass }}'
   no_log: '{{ debops__no_log | d(True) }}'
 
@@ -278,6 +278,6 @@
     mode: '0600'
   with_flattened:
     - '{{ postgresql__pgpass }}'
-    - '{{ postgresql_pgpass|d([]) }}'
+    - '{{ postgresql_pgpass | d([]) }}'
     - '{{ postgresql__dependent_pgpass }}'
   no_log: '{{ debops__no_log | d(True) }}'

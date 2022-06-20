@@ -8,10 +8,10 @@
 # This is a configuration file for Zabbix agent daemon (Unix)
 # To get more information about Zabbix, visit http://www.zabbix.com
 {% for element in zabbix_agent__combined_configuration | debops.debops.parse_kv_config %}
-{%   if element.name|d() and element.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%   if element.name | d() and element.state | d('present') not in [ 'absent', 'ignore' ] %}
 
 {{     element.comment | regex_replace('\n$','') | comment() }}
-{%     set element_comment = ('#' if element.state|d('present') == 'comment' else '') %}
+{%     set element_comment = ('#' if element.state | d('present') == 'comment' else '') %}
 {{     '{}{}={}'.format(element_comment, element.name, element.value) }}
 {%   endif %}
 {% endfor %}

@@ -100,7 +100,7 @@ apt__remove_default_configuration: True
 #
 # Update APT cache early in the playbook if it's older than 24h
 # Set to False to disable update (useful when changing APT mirrors)
-apt__cache_valid_time: '{{ ansible_local.core.cache_valid_time|d(60 * 60 * 24) }}'
+apt__cache_valid_time: '{{ ansible_local.core.cache_valid_time | d(60 * 60 * 24) }}'
 
                                                                    # ]]]
 # .. envvar:: apt__install_recommends [[[
@@ -297,14 +297,14 @@ apt__architecture_map:
 #
 # The OS distribution present on the host.
 apt__distribution: '{{ ansible_local.core.distribution
-                       |d(ansible_lsb.id|d(ansible_distribution)) }}'
+                        | d(ansible_lsb.id | d(ansible_distribution)) }}'
 
                                                                    # ]]]
 # .. envvar:: apt__distribution_release [[[
 #
 # The OS release present on the host.
 apt__distribution_release: '{{ ansible_local.core.distribution_release
-                               |d(ansible_lsb.codename|d(ansible_distribution_release)) }}'
+                                | d(ansible_lsb.codename | d(ansible_distribution_release)) }}'
 
                                                                    # ]]]
 # .. envvar:: apt__distribution_release_map [[[
@@ -344,7 +344,7 @@ apt__distribution_suite_map:
 # The variable that specifies the "suite" or an alias of the current
 # distribution release.
 apt__distribution_suite: '{{ apt__distribution_suite_map[apt__distribution + "_" +
-                                                         apt__distribution_release]|d() }}'
+                                                         apt__distribution_release] | d() }}'
 
                                                                    # ]]]
 # .. envvar:: apt__distribution_suffix_map [[[
@@ -373,7 +373,7 @@ apt__distribution_suffix_map:
 # List of repository suffixes to use in the generated APT sources.
 apt__distribution_suffixes: '{{ apt__distribution_suffix_map[apt__distribution + "_" +
                                 apt__distribution_suite_map[apt__distribution + "_" +
-                                apt__distribution_release]|d()] |
+                                apt__distribution_release] | d()] |
                                 d(apt__distribution_suffix_map[apt__distribution] |
                                   d(apt__distribution_suffix_map["default"])) }}'
 
@@ -407,9 +407,9 @@ apt__distribution_components_nonfree:
 #
 # List of APT repository components which should be enabled in the distribution
 # package sources.
-apt__distribution_components: '{{ apt__distribution_components_free[apt__distribution]|d([]) +
-                                  (apt__distribution_components_nonfree[apt__distribution]|d([])
-                                   if apt__nonfree|bool else []) }}'
+apt__distribution_components: '{{ apt__distribution_components_free[apt__distribution] | d([]) +
+                                  (apt__distribution_components_nonfree[apt__distribution] | d([])
+                                   if apt__nonfree | bool else []) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Archived distribution releases [[[
@@ -431,7 +431,7 @@ apt__archive_source_map:
 #
 # The URL of the archive APT repository configured by default when the current
 # OS release is migrated to the archive.
-apt__archive_source: '{{ apt__archive_source_map[apt__distribution]|d() }}'
+apt__archive_source: '{{ apt__archive_source_map[apt__distribution] | d() }}'
                                                                    # ]]]
                                                                    # ]]]
 # Default APT package sources [[[
@@ -465,8 +465,8 @@ apt__host_sources: []
 # using Ansible local facts.
 apt__original_sources:
   - comment: 'Original APT package sources gathered by Ansible'
-    uris: '{{ ansible_local.apt.original_mirrors_deb|d([]) }}'
-    state: '{{ "present" if (ansible_local.apt.original_mirrors_deb|d() and
+    uris: '{{ ansible_local.apt.original_mirrors_deb | d([]) }}'
+    state: '{{ "present" if (ansible_local.apt.original_mirrors_deb | d() and
                              apt__distribution_suite != "archive")
                          else "absent" }}'
 
@@ -585,8 +585,8 @@ apt__security_sources:
     components:   '{{ apt__distribution_components }}'
     distribution: 'Debian'
     state:        '{{ apt__security_sources_state
-                      if (apt__distribution_release|d("unknown")
-                          in apt__distribution_release_map[apt__distribution]|d([]))
+                      if (apt__distribution_release | d("unknown")
+                          in apt__distribution_release_map[apt__distribution] | d([]))
                       else "absent" }}'
 
     # This version may be present on some installations. It's here so that the
@@ -648,8 +648,8 @@ apt__security_sources:
     components:   '{{ apt__distribution_components }}'
     distribution: 'Devuan'
     state:        '{{ apt__security_sources_state
-                      if (apt__distribution_release|d("unknown")
-                          in apt__distribution_release_map[apt__distribution]|d([]))
+                      if (apt__distribution_release | d("unknown")
+                          in apt__distribution_release_map[apt__distribution] | d([]))
                       else "absent" }}'
 
                                                                    # ]]]

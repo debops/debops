@@ -29,7 +29,7 @@
                                  if (ansible_distribution_release in libvirtd__base_packages_map.keys())
                                  else libvirtd__base_packages)
                               + (libvirtd__kvm_packages
-                                 if libvirtd__kvm_support|bool
+                                 if libvirtd__kvm_support | bool
                                  else []))) }}'
     state: 'present'
     install_recommends: False
@@ -91,7 +91,7 @@
     groups: "{{ libvirtd__unix_sock_group }}"
     append: True
   with_items: '{{ libvirtd__admins }}'
-  when: libvirtd__admins|d()
+  when: libvirtd__admins | d()
 
 - name: Install ferm post hook
   ansible.builtin.template:
@@ -100,7 +100,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: libvirtd__ferm_post_hook|bool
+  when: libvirtd__ferm_post_hook | bool
 
 - name: Configure Kernel Same-page Merging
   ansible.builtin.template:

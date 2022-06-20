@@ -51,7 +51,7 @@ preseed__domains:
 # .. envvar:: preseed__www [[[
 #
 # Path to main directory where Preseed files are served from.
-preseed__www: '{{ (ansible_local.fhs.www|d("/srv/www"))
+preseed__www: '{{ (ansible_local.fhs.www | d("/srv/www"))
                   + "/sites/debian-preseed/public" }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -1408,6 +1408,6 @@ preseed__nginx__dependent_servers:
         types {
                 text/plain cfg sh;
         }
-    state: '{{ "present" if (ansible_local.pki.enabled|d())|bool else "absent" }}'
+    state: '{{ "present" if (ansible_local.pki.enabled | d()) | bool else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]

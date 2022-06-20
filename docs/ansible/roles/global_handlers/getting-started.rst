@@ -43,7 +43,7 @@ configuration and restart the service on any changes:
        dest: '/etc/rsyslog.d/application.conf'
        mode: '0644'
      notify: [ 'Check and restart rsyslogd' ]
-     when: (ansible_local.rsyslog.installed|d())|bool
+     when: (ansible_local.rsyslog.installed | d()) | bool
 
 Ansible will restart the :command:`rsyslog` daemon on any changes as long as
 the configuration is parsed correctly. Note that the task will only be executed

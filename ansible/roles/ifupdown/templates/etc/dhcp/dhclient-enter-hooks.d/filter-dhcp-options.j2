@@ -24,7 +24,7 @@ case "$reason" in
 
         case "$interface" in
 {% for interface, options in ifupdown__combined_interfaces.items() %}
-{%   if (options.state|d('present') != 'absent' and
+{%   if (options.state | d('present') != 'absent' and
          options.dhcp_ignore is defined and options.dhcp_ignore) %}
 {% set dhcp_ignore = ([ options.dhcp_ignore ] if (options.dhcp_ignore is string) else options.dhcp_ignore) %}
 

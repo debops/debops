@@ -9,34 +9,34 @@
 #			For more information see
 #			/usr/share/doc/rsyslog-doc/html/rsyslog_conf.html
 {% for section in rsyslog__combined_configuration_sections | debops.debops.parse_kv_config %}
-{%   if section.name|d() and section.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%   if section.name | d() and section.state | d('present') not in [ 'absent', 'init', 'ignore' ] %}
 {%     set section_config = (rsyslog__combined_configuration | debops.debops.parse_kv_config
                              | selectattr("section", "equalto", section.name) | list) %}
-{%     if section_config|d() %}
+{%     if section_config | d() %}
 {%       if section.state != 'hidden' %}
 {%         if ('present' in (section_config | map(attribute='state') | list)) %}
 {%           set section_title = (' ' + ((section.title | d(section.name)) | upper) + ' ') %}
 {%           set section_width = section_title | length + 8 %}
 {{           '' }}
 {{           '' }}
-{{           ("{:#^" + section_width|string + "}").format('#') }}
-{{           ("{:#^" + section_width|string + "}").format(section_title) }}
-{{           ("{:#^" + section_width|string + "}").format('#') }}
+{{           ("{:#^" + section_width | string + "}").format('#') }}
+{{           ("{:#^" + section_width | string + "}").format(section_title) }}
+{{           ("{:#^" + section_width | string + "}").format('#') }}
 {{           '' }}
 {%         endif %}
 {%       else %}
 {{         '' }}
 {%       endif %}
 {%       for element in section_config %}
-{%         if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
-{%           if element.comment|d() %}
+{%         if element.state | d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%           if element.comment | d() %}
 {%             if not loop.first %}
 {{               '' }}
 {%             endif %}
 {{             element.comment | regex_replace('\n$', '') | comment }}
 {%           endif %}
-{%           if element.raw|d() %}
-{%             if element.state|d('present') == 'comment' %}
+{%           if element.raw | d() %}
+{%             if element.state | d('present') == 'comment' %}
 {{               '{}'.format(element.raw | regex_replace('\n$', '') | comment(prefix='', decoration='#', postfix='')) -}}
 {%             else %}
 {{               '{}'.format(element.raw | regex_replace('\n$', '')) }}

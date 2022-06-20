@@ -36,9 +36,9 @@
   dpkg_divert:
     path: '/etc/hosts.allow'
     divert: '{{ tcpwrappers__divert_hosts_allow }}'
-    state: '{{ "present" if tcpwrappers__enabled|bool else "absent" }}'
+    state: '{{ "present" if tcpwrappers__enabled | bool else "absent" }}'
     delete: True
-  when: not ansible_check_mode|bool
+  when: not ansible_check_mode | bool
 
 - name: Allow access from Ansible Controller to sshd
   ansible.builtin.template:
@@ -63,8 +63,8 @@
     - '{{ tcpwrappers_group_allow | d([]) }}'
     - '{{ tcpwrappers_host_allow | d([]) }}'
     - '{{ tcpwrappers_dependent_allow | d([]) }}'
-  when: ((item.daemon|d() or item.daemons|d()) and
-         item.state|d() and item.state == 'absent')
+  when: ((item.daemon | d() or item.daemons | d()) and
+         item.state | d() and item.state == 'absent')
 
 - name: Generate hosts.allow entries
   ansible.builtin.template:
@@ -84,7 +84,7 @@
     - '{{ tcpwrappers_group_allow | d([]) }}'
     - '{{ tcpwrappers_host_allow | d([]) }}'
     - '{{ tcpwrappers_dependent_allow | d([]) }}'
-  when: ((item.daemon|d() or item.daemons|d()) and
+  when: ((item.daemon | d() or item.daemons | d()) and
          (item.state is undefined or item.state != 'absent'))
 
 - name: Assemble hosts.allow.d

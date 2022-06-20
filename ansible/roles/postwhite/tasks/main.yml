@@ -73,9 +73,9 @@
     - 'Update Postwhite in the background using async'
     - 'Update Postwhite in the background using batch'
   when: (ansible_local is undefined or
-         (ansible_local|d() and ansible_local.postwhite is undefined or
-          (ansible_local.postwhite|d() and
-           not (ansible_local.postwhite.installed|d())|bool)))
+         (ansible_local | d() and ansible_local.postwhite is undefined or
+          (ansible_local.postwhite | d() and
+           not (ansible_local.postwhite.installed | d()) | bool)))
 
 - name: Initialize whitelist/blacklist files
   ansible.builtin.file:
@@ -88,9 +88,9 @@
     - '{{ postwhite__spf_whitelist_path }}'
     - '{{ postwhite__spf_blacklist_path }}'
   when: (ansible_local is undefined or
-         (ansible_local|d() and ansible_local.postwhite is undefined or
-          (ansible_local.postwhite|d() and
-           not (ansible_local.postwhite.installed|d())|bool)))
+         (ansible_local | d() and ansible_local.postwhite is undefined or
+          (ansible_local.postwhite | d() and
+           not (ansible_local.postwhite.installed | d()) | bool)))
 
 - name: Update Postwhite access lists daily
   ansible.builtin.cron:

@@ -13,14 +13,14 @@ cat << EOF
 {% if (ansible_local is defined and ansible_local.nginx is defined and
        ansible_local.nginx.default_server is defined) %}
 {%   set nginx_tpl_default_server = ansible_local.nginx.default_server %}
-{% elif nginx_register_default_server|d() %}
+{% elif nginx_register_default_server | d() %}
 {%   set nginx_tpl_default_server = nginx_register_default_server %}
 {% endif %}
 {% set nginx_tpl_default_server_ssl = '' %}
 {% if (ansible_local is defined and ansible_local.nginx is defined and
        ansible_local.nginx.default_server_ssl is defined) %}
 {%   set nginx_tpl_default_server_ssl = ansible_local.nginx.default_server_ssl %}
-{% elif nginx_register_default_server_ssl|d() %}
+{% elif nginx_register_default_server_ssl | d() %}
 {%   set nginx_tpl_default_server_ssl = nginx_register_default_server_ssl %}
 {% endif %}
 {

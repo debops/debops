@@ -5,16 +5,16 @@
 {% set rabbitmq_server__tpl_accounts_vhosts = [] %}
 {% for account in lookup("flattened", rabbitmq_server__combined_accounts) %}
 {%   set entry = {} %}
-{%   if account.vhost|d() and account.state|d('present') != 'absent' %}
+{%   if account.vhost | d() and account.state | d('present') != 'absent' %}
 {%     set _ = entry.update({'name': account.vhost}) %}
-{%     if account.node|d() %}
+{%     if account.node | d() %}
 {%       set _ = entry.update({'node': account.node}) %}
 {%     endif %}
-{%     if account.tracing|d() %}
+{%     if account.tracing | d() %}
 {%       set _ = entry.update({'tracing': account.tracing}) %}
 {%     endif %}
 {%   endif %}
-{%   if entry|d() %}
+{%   if entry | d() %}
 {%     set _ = rabbitmq_server__tpl_accounts_vhosts.append(entry) %}
 {%   endif %}
 {% endfor %}

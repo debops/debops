@@ -47,10 +47,10 @@
     name: '{{ item }}'
     state: 'present'
   with_items: '{{ tinc__modprobe_modules }}'
-  when: (tinc__modprobe|bool and
-         (((ansible_system_capabilities_enforced|d())|bool and
+  when: (tinc__modprobe | bool and
+         (((ansible_system_capabilities_enforced | d()) | bool and
           "cap_sys_admin" in ansible_system_capabilities) or
-         not (ansible_system_capabilities_enforced|d(True))|bool))
+         not (ansible_system_capabilities_enforced | d(True)) | bool))
 
 - name: Make sure that required modules are loaded on boot
   ansible.builtin.lineinfile:
@@ -60,10 +60,10 @@
     state: 'present'
     mode: '0644'
   with_items: '{{ tinc__modprobe_modules }}'
-  when: (tinc__modprobe|bool and
-         (((ansible_system_capabilities_enforced|d())|bool and
+  when: (tinc__modprobe | bool and
+         (((ansible_system_capabilities_enforced | d()) | bool and
           "cap_sys_admin" in ansible_system_capabilities) or
-         not (ansible_system_capabilities_enforced|d(True))|bool))
+         not (ansible_system_capabilities_enforced | d(True)) | bool))
 
 # Tinc configuration [[[1
 - name: Set tincd default environment
@@ -73,16 +73,16 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes | d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
   notify: [ 'Reload tinc' ]
 
 - name: Disable tinc networks in systemd if requested
   ansible.builtin.service:  # noqa no-handler
     name: 'tinc@{{ item.value.name | d(item.key) }}'
     enabled: False
-    state: '{{ (item.state|d("present") in ["absent"]) | ternary("started", "stopped") }}'
+    state: '{{ (item.state | d("present") in ["absent"]) | ternary("started", "stopped") }}'
   with_dict: '{{ tinc__combined_networks }}'
-  when: tinc__systemd|bool and item.value.state|d('present') == 'absent' and
+  when: tinc__systemd | bool and item.value.state | d('present') == 'absent' and
         not tinc__register_install is changed
 
 - name: Remove tinc network configuration if requested
@@ -90,7 +90,7 @@
     path: '/etc/tinc/{{ item.value.name | d(item.key) }}'
     state: 'absent'
   with_dict: '{{ tinc__combined_networks }}'
-  when: item.value.state|d('present') == 'absent'
+  when: item.value.state | d('present') == 'absent'
 
 - name: Create required directories
   ansible.builtin.file:
@@ -101,7 +101,7 @@
     group: 'root'
     mode: '0755'
   with_dict: '{{ tinc__combined_networks }}'
-  when: item.value.state|d('present') != 'absent'
+  when: item.value.state | d('present') != 'absent'
 
 - name: Generate main configuration file
   ansible.builtin.template:
@@ -110,9 +110,9 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes | d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
   with_dict: '{{ tinc__combined_networks }}'
-  when: item.value.state|d('present') != 'absent' and item.value.tinc_options|d()
+  when: item.value.state | d('present') != 'absent' and item.value.tinc_options | d()
   notify: [ 'Reload tinc' ]
 
 - name: Remove deprecated dhclient hook script
@@ -127,20 +127,20 @@
     owner: 'root'
     group: '{{ tinc__group }}'
     mode: '0750'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes | d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
   with_dict: '{{ tinc__combined_networks }}'
-  when: (item.value.state|d('present') != 'absent' and item.value.generate_tinc_up|d(True)|bool)
+  when: (item.value.state | d('present') != 'absent' and item.value.generate_tinc_up | d(True) | bool)
 
 - name: Generate tinc-down network scripts
   ansible.builtin.template:
     src: 'etc/tinc/network/tinc-down.j2'
-    dest: '/etc/tinc/{{ item.value.name |d(item.key) }}/tinc-down'
+    dest: '/etc/tinc/{{ item.value.name  | d(item.key) }}/tinc-down'
     owner: 'root'
     group: '{{ tinc__group }}'
     mode: '0750'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes | d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
   with_dict: '{{ tinc__combined_networks }}'
-  when: (item.value.state|d('present') != 'absent' and item.value.generate_tinc_up|d(True)|bool)
+  when: (item.value.state | d('present') != 'absent' and item.value.generate_tinc_up | d(True) | bool)
 
 - name: Configure which networks are started at boot
   ansible.builtin.template:
@@ -149,7 +149,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes | d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
 
 # RSA key management [[[1
 
@@ -160,7 +160,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes | d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
 
 - name: Initialize RSA key pairs
   ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
@@ -170,7 +170,7 @@
     executable: 'bash'
     creates: '/etc/tinc/{{ item.value.name | d(item.key) }}/rsa_key.priv'
   with_dict: '{{ tinc__combined_networks }}'
-  when: item.value.state|d('present') != 'absent'
+  when: item.value.state | d('present') != 'absent'
 
 - name: Create persistent copy of host public key
   ansible.builtin.command: cp /etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
@@ -181,7 +181,7 @@
     creates: /etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
                                                                     | replace("-","_") + ".d/99_rsa-public-key" }}
   with_dict: '{{ tinc__combined_networks }}'
-  when: item.value.state|d('present') != 'absent'
+  when: item.value.state | d('present') != 'absent'
 
 # Tinc host configuration [[[1
 - name: Generate host configuration file
@@ -192,9 +192,9 @@
     owner: 'root'
     group: 'root'
     mode: '0640'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes | d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
   with_dict: '{{ tinc__combined_networks }}'
-  when: item.value.state|d('present') != 'absent'
+  when: item.value.state | d('present') != 'absent'
 
 - name: Assemble host configuration file from parts
   ansible.builtin.assemble:
@@ -206,7 +206,7 @@
     group: '{{ tinc__group }}'
     mode: '0640'
   with_dict: '{{ tinc__combined_networks }}'
-  when: item.value.state|d('present') != 'absent'
+  when: item.value.state | d('present') != 'absent'
   notify: [ 'Reload tinc' ]
 
 # Tinc host configuration distribution [[[1
@@ -219,7 +219,7 @@
               + (item.value.hostname | d(tinc__hostname) | replace("-","_")) }}'
     flat: True
   with_dict: '{{ tinc__combined_networks }}'
-  when: item.value.state|d('present') != 'absent'
+  when: item.value.state | d('present') != 'absent'
 
 - name: Download public keys per network
   ansible.builtin.copy:
@@ -230,7 +230,7 @@
     group: '{{ tinc__group }}'
     mode: '0640'
   with_dict: '{{ tinc__combined_networks }}'
-  when: item.value.state|d('present') != 'absent'
+  when: item.value.state | d('present') != 'absent'
   notify: [ 'Reload tinc' ]
 
 - name: Download public keys for all hosts
@@ -241,7 +241,7 @@
     group: '{{ tinc__group }}'
     mode: '0640'
   with_dict: '{{ tinc__combined_networks }}'
-  when: item.value.state|d('present') != 'absent'
+  when: item.value.state | d('present') != 'absent'
   notify: [ 'Reload tinc' ]
 
 - name: Download public keys per group
@@ -254,8 +254,8 @@
   with_nested:
     - '{{ lookup("template", "lookup/tinc__network_list.j2", convert_data=False) | from_yaml }}'
     - '{{ lookup("template", "lookup/tinc__inventory_groups.j2", convert_data=False) | from_yaml }}'
-  when: (item.0.name|d() and item.0.state|d('present') != 'absent' and
-         item.1 in item.0.inventory_groups|d([]) and item.1 in group_names)
+  when: (item.0.name | d() and item.0.state | d('present') != 'absent' and
+         item.1 in item.0.inventory_groups | d([]) and item.1 in group_names)
   notify: [ 'Reload tinc' ]
 
 - name: Download public keys per host
@@ -267,7 +267,7 @@
     group: '{{ tinc__group }}'
     mode: '0640'
   with_dict: '{{ tinc__combined_networks }}'
-  when: item.value.state|d('present') != 'absent'
+  when: item.value.state | d('present') != 'absent'
   notify: [ 'Reload tinc' ]
 
 # systemd configuration [[[1
@@ -278,9 +278,9 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes | d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
   with_dict: '{{ tinc__combined_networks }}'
-  when: tinc__systemd|bool and item.value.state|d('present') != 'absent'
+  when: tinc__systemd | bool and item.value.state | d('present') != 'absent'
   notify: [ 'Reload tinc' ]
 
 - name: Configure tinc-down wrapper script
@@ -290,7 +290,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes | d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
   when: tinc__systemd | bool
 
 - name: Clean up old systemd configuration
@@ -305,7 +305,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes | d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
   with_items: [ 'tinc.service', 'tinc@.service' ]
   register: tinc__register_systemd
   when: tinc__systemd | bool
@@ -321,16 +321,16 @@
   ansible.builtin.service:  # noqa no-handler
     name: 'tinc'
     state: 'restarted'
-  when: not tinc__systemd|bool and tinc__register_install is changed
+  when: not tinc__systemd | bool and tinc__register_install is changed
 
 - name: Configure tinc network services in systemd
   ansible.builtin.service:
     name: 'tinc@{{ item.value.name | d(item.key) }}'
-    enabled: '{{ (item.value.boot|d(True))|bool }}'
-    state: '{{ (item.value.state|d("present") in ["absent"]) | ternary("stopped", "started") }}'
+    enabled: '{{ (item.value.boot | d(True)) | bool }}'
+    state: '{{ (item.value.state | d("present") in ["absent"]) | ternary("stopped", "started") }}'
   with_dict: '{{ tinc__combined_networks }}'
-  when: tinc__systemd|bool and item.value.state|d('present') != 'absent' and
-        item.value.port|d()
+  when: tinc__systemd | bool and item.value.state | d('present') != 'absent' and
+        item.value.port | d()
 
 # Ansible facts [[[1
 
@@ -349,7 +349,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+    unsafe_writes: '{{ True if (core__unsafe_writes | d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
   notify: [ 'Refresh host facts' ]
   tags: [ 'meta::facts' ]
 

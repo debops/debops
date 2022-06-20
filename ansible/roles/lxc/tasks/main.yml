@@ -82,7 +82,7 @@
                  if (lxc__version is version("2.1.0", "<"))
                  else "absent" }}'
   register: lxc__register_systemd_overrides_remove
-  when: item.state|d('present') == 'absent'
+  when: item.state | d('present') == 'absent'
 
 - name: Install systemd service overrides
   ansible.builtin.template:
@@ -99,7 +99,7 @@
                  if (lxc__version is version("2.1.0", "<"))
                  else "absent" }}'
   register: lxc__register_systemd_overrides_create
-  when: item.state|d('present') != 'absent'
+  when: item.state | d('present') != 'absent'
 
 - name: Disable internal network when requested
   ansible.builtin.systemd:
@@ -150,8 +150,8 @@
     group: 'root'
     mode: '0755'
   when: (lxc__net_deploy_state == 'present' and
-         ansible_local|d() and ansible_local.ferm|d() and
-         (ansible_local.ferm.enabled|d())|bool)
+         ansible_local | d() and ansible_local.ferm | d() and
+         (ansible_local.ferm.enabled | d()) | bool)
   tags: [ 'role::lxc:net' ]
 
 - name: Create lxc-net service override directory
@@ -181,19 +181,19 @@
     state: '{{ "restarted" if (lxc__net_deploy_state == "present") else omit }}'
     daemon_reload: True
   when: (ansible_service_mgr == 'systemd' and
-         (lxc__register_net_remove|d({}) is changed or
-          lxc__register_net_config|d({}) is changed or
-          lxc__register_net_dnsmasq|d({}) is changed or
-          lxc__register_net_systemd|d({}) is changed or
-          lxc__register_systemd_overrides_create|d({}) is changed or
-          lxc__register_systemd_overrides_remove|d({}) is changed))
+         (lxc__register_net_remove | d({}) is changed or
+          lxc__register_net_config | d({}) is changed or
+          lxc__register_net_dnsmasq | d({}) is changed or
+          lxc__register_net_systemd | d({}) is changed or
+          lxc__register_systemd_overrides_create | d({}) is changed or
+          lxc__register_systemd_overrides_remove | d({}) is changed))
   tags: [ 'role::lxc:net', 'role::lxc:dnsmasq' ]
 
 - name: Remove default SSH keys for root in containers if none are defined
   ansible.builtin.file:
     path: '/etc/lxc/root_authorized_keys'
     state: 'absent'
-  when: not lxc__default_container_ssh_root_sshkeys|d()
+  when: not lxc__default_container_ssh_root_sshkeys | d()
 
 - name: Define default SSH keys for root account in containers
   ansible.posix.authorized_key:
@@ -203,14 +203,14 @@
     user: 'root'
     state: 'present'
     exclusive: True
-  when: lxc__default_container_ssh_root_sshkeys|d()
+  when: lxc__default_container_ssh_root_sshkeys | d()
 
 - name: Remove LXC configuration if requested
   ansible.builtin.file:
     path: '/etc/lxc/{{ item.filename | d(item.name + ".conf") }}'
     state: 'absent'
   with_items: '{{ lxc__combined_configuration | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.state|d('present') == 'absent'
+  when: item.name | d() and item.state | d('present') == 'absent'
 
 - name: Generate LXC configuration
   ansible.builtin.template:
@@ -220,14 +220,14 @@
     group: 'root'
     mode: '0644'
   with_items: '{{ lxc__combined_configuration | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
+  when: item.name | d() and item.state | d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Remove common LXC container configuration if requested
   ansible.builtin.file:
     path: '/usr/share/lxc/config/common.conf.d/{{ item.filename | d(item.name + ".conf") }}'
     state: 'absent'
   with_items: '{{ lxc__common_combined_conf | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.state|d('present') == 'absent'
+  when: item.name | d() and item.state | d('present') == 'absent'
 
 - name: Generate common LXC container configuration
   ansible.builtin.template:
@@ -237,7 +237,7 @@
     group: 'root'
     mode: '0644'
   with_items: '{{ lxc__common_combined_conf | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
+  when: item.name | d() and item.state | d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Stop LXC containers if requested
   ansible.builtin.systemd:
@@ -245,9 +245,9 @@
     state: 'stopped'
     enabled: '{{ True if item.state | d("started") == "stopped" else False }}'
   loop: '{{ lxc__containers }}'
-  when: ansible_local|d() and ansible_local.lxc|d() and
-        (item.name | d(item)) in ansible_local.lxc.containers|d() and
-        item.state|d("started") in [ "stopped", "absent" ]
+  when: ansible_local | d() and ansible_local.lxc | d() and
+        (item.name | d(item)) in ansible_local.lxc.containers | d() and
+        item.state | d("started") in [ "stopped", "absent" ]
   tags: [ 'role::lxc:containers' ]
 
 - name: Destroy LXC containers if requested
@@ -256,9 +256,9 @@
     state: 'absent'
   loop: '{{ lxc__containers }}'
   tags: [ 'role::lxc:containers' ]
-  when: ansible_local|d() and ansible_local.lxc|d() and
-        (item.name | d(item)) in ansible_local.lxc.containers|d() and
-        item.state|d("started") == "absent"
+  when: ansible_local | d() and ansible_local.lxc | d() and
+        (item.name | d(item)) in ansible_local.lxc.containers | d() and
+        item.state | d("started") == "absent"
 
 - name: Remove systemd LXC instance configuration if requested
   ansible.builtin.file:
@@ -266,9 +266,9 @@
     state: 'absent'
   loop: '{{ lxc__containers }}'
   register: lxc__register_systemd_remove_override
-  when: ansible_local|d() and ansible_local.lxc|d() and
-        (item.name | d(item)) in ansible_local.lxc.containers|d() and
-        item.state|d("started") == "absent" and item.systemd_override|d()
+  when: ansible_local | d() and ansible_local.lxc | d() and
+        (item.name | d(item)) in ansible_local.lxc.containers | d() and
+        item.state | d("started") == "absent" and item.systemd_override | d()
   tags: [ 'role::lxc:containers' ]
 
 - name: Create systemd override directories for LXC instances
@@ -279,7 +279,7 @@
     group: 'root'
     mode: '0755'
   loop: '{{ lxc__containers }}'
-  when: item.state|d("started") != "absent" and item.systemd_override|d()
+  when: item.state | d("started") != "absent" and item.systemd_override | d()
   tags: [ 'role::lxc:containers' ]
 
 - name: Generate systemd LXC instance override files
@@ -291,7 +291,7 @@
     mode: '0644'
   loop: '{{ lxc__containers }}'
   register: lxc__register_systemd_create_override
-  when: item.state|d("started") != "absent" and item.systemd_override|d()
+  when: item.state | d("started") != "absent" and item.systemd_override | d()
   tags: [ 'role::lxc:containers' ]
 
 - name: Reload systemd configuration when needed
@@ -329,9 +329,9 @@
     lv_name:             '{{ item.lv_name             | d(omit) }}'
     lxc_path:            '{{ item.lxc_path            | d(omit) }}'
     state:               '{{ item.state               | d("started"
-                                                          if (ansible_local|d() and ansible_local.lxc|d() and
+                                                          if (ansible_local | d() and ansible_local.lxc | d() and
                                                               (item.name | d(item))
-                                                              in ansible_local.lxc.containers|d())
+                                                              in ansible_local.lxc.containers | d())
                                                           else "stopped") }}'
     template:            '{{ item.template            | d(lxc__default_container_template) }}'
     template_options:    '{{ item.template_options    | d((template_options | join(" "))
@@ -343,16 +343,16 @@
     vfs_root:            '{{ item.zfs_root            | d(omit) }}'
   loop: '{{ lxc__containers }}'
   tags: [ 'role::lxc:containers' ]
-  when: ansible_local|d() and ansible_local.lxc|d() and
-        (item.name | d(item)) not in ansible_local.lxc.containers|d() and
-        item.state|d("started") != "absent"
+  when: ansible_local | d() and ansible_local.lxc | d() and
+        (item.name | d(item)) not in ansible_local.lxc.containers | d() and
+        item.state | d("started") != "absent"
 
 - name: Configure static MAC addresses for new LXC containers
   ansible.builtin.command: lxc-hwaddr-static {{ item.name | d(item) }}
   loop: '{{ lxc__containers }}'
-  when: ansible_local|d() and ansible_local.lxc|d() and
-        (item.name | d(item)) not in ansible_local.lxc.containers|d() and
-        item.state|d("started") == "started"
+  when: ansible_local | d() and ansible_local.lxc | d() and
+        (item.name | d(item)) not in ansible_local.lxc.containers | d() and
+        item.state | d("started") == "started"
   tags: [ 'role::lxc:containers' ]
 
 - name: Include fstab parameter in LXC container configuration for lxc<4.0
@@ -364,9 +364,9 @@
     state: 'present'
     mode: '0644'
   loop: '{{ lxc__containers }}'
-  when: ansible_local|d() and ansible_local.lxc|d() and
-        (item.name | d(item)) not in ansible_local.lxc.containers|d() and
-        item.state|d("started") == "started" and item.fstab|d() and
+  when: ansible_local | d() and ansible_local.lxc | d() and
+        (item.name | d(item)) not in ansible_local.lxc.containers | d() and
+        item.state | d("started") == "started" and item.fstab | d() and
         lxc__version is version("4.0", operator="lt", strict=True)
   tags: [ 'role::lxc:containers' ]
 
@@ -379,9 +379,9 @@
     state: 'present'
     mode: '0644'
   loop: '{{ lxc__containers }}'
-  when: ansible_local|d() and ansible_local.lxc|d() and
-        (item.name | d(item)) not in ansible_local.lxc.containers|d() and
-        item.state|d("started") == "started" and item.fstab|d() and
+  when: ansible_local | d() and ansible_local.lxc | d() and
+        (item.name | d(item)) not in ansible_local.lxc.containers | d() and
+        item.state | d("started") == "started" and item.fstab | d() and
         lxc__version is version("4.0", operator=">=", strict=True)
   tags: [ 'role::lxc:containers' ]
 
@@ -395,30 +395,30 @@
     group: 'root'
     mode: '0644'
   loop: '{{ lxc__containers }}'
-  when: ansible_local|d() and ansible_local.lxc|d() and
-        (item.name | d(item)) not in ansible_local.lxc.containers|d() and
-        item.state|d("started") == "started" and item.fstab|d()
+  when: ansible_local | d() and ansible_local.lxc | d() and
+        (item.name | d(item)) not in ansible_local.lxc.containers | d() and
+        item.state | d("started") == "started" and item.fstab | d()
   tags: [ 'role::lxc:containers' ]
 
 - name: Start LXC containers after creation
   ansible.builtin.systemd:
     name: 'lxc@{{ item.name | d(item) }}.service'
     state: '{{ "restarted" if (item.state is defined) else "started" }}'
-    enabled: '{{ True if item.state|d("started") == "started" else False }}'
+    enabled: '{{ True if item.state | d("started") == "started" else False }}'
   loop: '{{ lxc__containers }}'
-  when: ansible_local|d() and ansible_local.lxc|d() and
-        (item.name | d(item)) not in ansible_local.lxc.containers|d() and
-        item.state|d("started") == "started"
+  when: ansible_local | d() and ansible_local.lxc | d() and
+        (item.name | d(item)) not in ansible_local.lxc.containers | d() and
+        item.state | d("started") == "started"
   tags: [ 'role::lxc:containers' ]
 
 - name: Restart LXC containers when modified
   ansible.builtin.systemd:  # noqa no-handler
     name: 'lxc@{{ item.0.name | d(item.0) }}.service'
     state: 'restarted'
-  loop: '{{ lxc__containers | zip(lxc__register_systemd_create_override.results|d([])) | list }}'
-  when: ansible_local|d() and ansible_local.lxc|d() and
-        (item.0.name | d(item.0)) in ansible_local.lxc.containers|d() and
-        item.0.state|d('started') == 'started' and item.1 is changed
+  loop: '{{ lxc__containers | zip(lxc__register_systemd_create_override.results | d([])) | list }}'
+  when: ansible_local | d() and ansible_local.lxc | d() and
+        (item.0.name | d(item.0)) in ansible_local.lxc.containers | d() and
+        item.0.state | d('started') == 'started' and item.1 is changed
   tags: [ 'role::lxc:containers' ]
 
 - name: Prepare SSH access in LXC containers
@@ -431,9 +431,9 @@
        printf "Waiting for network connection inside container to settle...\n" ; sleep 5
     done
   loop: '{{ lxc__containers }}'
-  when: ansible_local|d() and ansible_local.lxc|d() and
-        (item.name | d(item)) not in ansible_local.lxc.containers|d() and
-        (item.ssh|d(lxc__default_container_ssh))|bool and item.state|d("started") == "started"
+  when: ansible_local | d() and ansible_local.lxc | d() and
+        (item.name | d(item)) not in ansible_local.lxc.containers | d() and
+        (item.ssh | d(lxc__default_container_ssh)) | bool and item.state | d("started") == "started"
   tags: [ 'role::lxc:containers' ]
 
 - name: DebOps post_tasks hook

@@ -65,8 +65,8 @@ parameters correctly using Ansible variables. These facts can be found in
 
    # Specify the absolute path to the DH parameters
    role__dhparam: '{{ (ansible_local.dhparam[role__dhparam_set]
-                       if (ansible_local|d() and ansible_local.dhparam|d() and
-                           ansible_local.dhparam[role__dhparam_set]|d())
+                       if (ansible_local | d() and ansible_local.dhparam | d() and
+                           ansible_local.dhparam[role__dhparam_set] | d())
                       else "") }}'
 
    # Specify default parameter set to use

@@ -156,7 +156,7 @@ postwhite__include_yahoo: True
 #
 # If enabled, :command:`postwhite` will generate an additional file with
 # blacklisted SMTP servers.
-postwhite__blacklist: '{{ True if postwhite__blacklist_hosts|d() else False }}'
+postwhite__blacklist: '{{ True if postwhite__blacklist_hosts | d() else False }}'
 
                                                                    # ]]]
 # .. envvar:: postwhite__blacklist_hosts [[[
@@ -214,8 +214,8 @@ postwhite__cron_yahoo_update_frequency: 'weekly'
 # - ``batch``: use :command:`batch` command managed by :command:`at` service
 #
 postwhite__initial_update_method: '{{ "batch"
-                                     if (ansible_local|d() and ansible_local.atd|d() and
-                                         (ansible_local.atd.enabled|d())|bool)
+                                     if (ansible_local | d() and ansible_local.atd | d() and
+                                         (ansible_local.atd.enabled | d()) | bool)
                                      else "async" }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -236,7 +236,7 @@ postwhite__postfix__dependent_maincf:
 
       - name: 'cidr:{{ postwhite__spf_blacklist_path }}'
         weight: 110
-        state: '{{ "present" if postwhite__blacklist|bool else "ignore" }}'
+        state: '{{ "present" if postwhite__blacklist | bool else "ignore" }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

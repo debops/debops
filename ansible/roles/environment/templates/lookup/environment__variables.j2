@@ -5,10 +5,10 @@
 {% macro print_environment(element) %}
 {%   if element is mapping %}
 {%     if 'name' in element.keys() and 'value' in element.keys() %}
-{%       if element.state|d('present') != 'absent' %}
-{%         if ((element.case is undefined and environment__case == 'upper') or (element.case|d() and element.case == 'upper')) %}
+{%       if element.state | d('present') != 'absent' %}
+{%         if ((element.case is undefined and environment__case == 'upper') or (element.case | d() and element.case == 'upper')) %}
 {{ element.name | upper }}: '{{ element.value }}'
-{%         elif ((element.case is undefined and environment__case == 'lower') or (element.case|d() and element.case == 'lower')) %}
+{%         elif ((element.case is undefined and environment__case == 'lower') or (element.case | d() and element.case == 'lower')) %}
 {{ element.name | lower }}: '{{ element.value }}'
 {%         else %}
 {{ element.name }}: '{{ element.value }}'
@@ -45,7 +45,7 @@
 {% set environment__tpl_variables = print_environment(environment__variables) | from_yaml %}
 {% set environment__tpl_group_variables = print_environment(environment__group_variables) | from_yaml %}
 {% set environment__tpl_host_variables = print_environment(environment__host_variables) | from_yaml %}
-{% set environment__tpl_fact_variables = (print_environment(ansible_local.environment.variables) | from_yaml) if (ansible_local.environment.variables|d()) else {} %}
+{% set environment__tpl_fact_variables = (print_environment(ansible_local.environment.variables) | from_yaml) if (ansible_local.environment.variables | d()) else {} %}
 {% set environment__tpl_dependent_variables = print_environment(environment__dependent_variables) | from_yaml %}
 {% set environment__tpl_entries = {} %}
 {% if environment__tpl_default_variables %}

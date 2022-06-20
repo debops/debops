@@ -10,9 +10,9 @@
     fstype: '{{ item.fs_type | d(iscsi__default_fs_type) }}'
     state:  'absent'
   with_items: '{{ iscsi__logical_volumes }}'
-  when: iscsi__logical_volumes|d(False) and
-        item.vg|d() and item.lv|d() and item.size|d() and
-        item.mount|d(False) and
+  when: iscsi__logical_volumes | d(False) and
+        item.vg | d() and item.lv | d() and item.size | d() and
+        item.mount | d(False) and
         (item.state is defined and item.state == 'absent')
 
 - name: Remove Logical Volumes if requested
@@ -23,9 +23,9 @@
     force: '{{ item.force | d(omit) }}'
     state: 'absent'
   with_items: '{{ iscsi__logical_volumes }}'
-  when: iscsi__logical_volumes|d(False) and
-        item.vg|d() and item.lv|d() and item.size|d() and
-        item.state|d() and item.state == 'absent'
+  when: iscsi__logical_volumes | d(False) and
+        item.vg | d() and item.lv | d() and item.size | d() and
+        item.state | d() and item.state == 'absent'
 
 - name: Manage LVM Volume Groups
   lvg:
@@ -36,8 +36,8 @@
     force:      '{{ item.item.lvm_force   | d(omit) }}'
     vg_options: '{{ item.item.lvm_options | d(omit) }}'
   with_items: '{{ iscsi__register_targets.results }}'
-  when: iscsi__register_targets|d(False) and iscsi__register_targets.results|d() and
-        item.devicenodes|d() and item.item.lvm_vg|d()
+  when: iscsi__register_targets | d(False) and iscsi__register_targets.results | d() and
+        item.devicenodes | d() and item.item.lvm_vg | d()
 
 - name: Manage LVM Logical Volumes
   lvol:
@@ -47,8 +47,8 @@
     force: '{{ item.force | d(omit) }}'
     state: 'present'
   with_items: '{{ iscsi__logical_volumes }}'
-  when: iscsi__logical_volumes|d(False) and
-        item.vg|d() and item.lv|d() and item.size|d() and
+  when: iscsi__logical_volumes | d(False) and
+        item.vg | d() and item.lv | d() and item.size | d() and
         (item.state is undefined or item.state != 'absent')
 
 - name: Manage filesystems
@@ -58,11 +58,11 @@
     force:  '{{ item.fs_force | d(omit) }}'
     opts:   '{{ item.fs_opts  | d(omit) }}'
   with_items: '{{ iscsi__logical_volumes }}'
-  when: iscsi__logical_volumes|d(False) and
-        item.vg|d() and item.lv|d() and item.size|d() and
+  when: iscsi__logical_volumes | d(False) and
+        item.vg | d() and item.lv | d() and item.size | d() and
         (item.state is undefined or item.state != 'absent') and
-        ((item.mount|d() and (item.fs is undefined or item.fs|d()) or
-         item.fs|d()))
+        ((item.mount | d() and (item.fs is undefined or item.fs | d()) or
+         item.fs | d()))
 
 - name: Manage mount points
   ansible.posix.mount:
@@ -75,7 +75,7 @@
     passno: '{{ item.mount_passno | d(omit) }}'
     fstab:  '{{ item.mount_fstab  | d(omit) }}'
   with_items: '{{ iscsi__logical_volumes }}'
-  when: iscsi__logical_volumes|d(False) and
-        item.vg|d() and item.lv|d() and item.size|d() and
-        item.mount|d(False) and
+  when: iscsi__logical_volumes | d(False) and
+        item.vg | d() and item.lv | d() and item.size | d() and
+        item.mount | d(False) and
         (item.state is undefined or item.state != 'absent')

@@ -7,23 +7,23 @@
 
 # {{ ansible_managed }}
 
-custom_tinc_down="{{ item.value.tinc_down|d() }}"
-pre_tinc_down="{{ item.value.pre_down|d() }}"
+custom_tinc_down="{{ item.value.tinc_down | d() }}"
+pre_tinc_down="{{ item.value.pre_down | d() }}"
 
-tinc_mode="{{ item.value.tinc_options.Mode|d() }}"
+tinc_mode="{{ item.value.tinc_options.Mode | d() }}"
 
-link_type="{{ item.value.link_type|d() }}"
-link_metric="{{ item.value.metric|d() }}"
+link_type="{{ item.value.link_type | d() }}"
+link_metric="{{ item.value.metric | d() }}"
 
 readarray -t interface_addresses << EOF
 {% set tinc__tpl_addresses = [] %}
-{% if item.value.address|d() %}
+{% if item.value.address | d() %}
 {%   set _ = tinc__tpl_addresses.extend(([ item.value.address ]
                                          if item.value.address is string
                                          else item.value.address)
                                         | ipaddr('host/prefix')) %}
 {% endif %}
-{% if item.value.addresses|d() %}
+{% if item.value.addresses | d() %}
 {%   set _ = tinc__tpl_addresses.extend(([ item.value.addresses ]
                                          if item.value.addresses is string
                                          else item.value.addresses)
@@ -34,18 +34,18 @@ readarray -t interface_addresses << EOF
 {% endfor %}
 EOF
 
-interface_bridge="{{ item.value.bridge|d() }}"
+interface_bridge="{{ item.value.bridge | d() }}"
 
 read -r -d '' resolvconf_config << EOF
 {% set tinc__tpl_resolvconf = [] %}
-{% if item.value.dns_nameservers|d() %}
+{% if item.value.dns_nameservers | d() %}
 {%   for dns_ns in ([ item.value.dns_nameservers ]
                     if item.value.dns_nameservers is string
                     else item.value.dns_nameservers) %}
 {%     set _ = tinc__tpl_resolvconf.append("nameserver " + dns_ns) %}
 {%   endfor %}
 {% endif %}
-{% if item.value.dns_search|d() %}
+{% if item.value.dns_search | d() %}
 {%   for dns_search in ([ item.value.dns_search ]
                         if item.value.dns_search is string
                         else item.value.dns_search) %}
@@ -57,7 +57,7 @@ read -r -d '' resolvconf_config << EOF
 {% endfor %}
 EOF
 
-manage_dhclient="{{ (item.value.dhclient|d(True)) | bool | lower }}"
+manage_dhclient="{{ (item.value.dhclient | d(True)) | bool | lower }}"
 
 if [ -n "${custom_tinc_down}" ] ; then
     eval "${custom_tinc_down}"

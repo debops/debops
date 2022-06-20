@@ -111,7 +111,7 @@ salt__configuration_file: '/etc/salt/master.d/ansible.conf'
 #
 # Specify the network interface the Salt Master will listen on for connections,
 # using an IP address specification.
-salt__interface: '{{ "::" if salt__ipv6|bool else "0.0.0.0" }}'
+salt__interface: '{{ "::" if salt__ipv6 | bool else "0.0.0.0" }}'
 
                                                                    # ]]]
 # .. envvar:: salt__ipv6 [[[
@@ -155,7 +155,7 @@ salt__keyring__dependent_apt_keys:
 
   - id: '{{ salt__upstream_apt_key_id }}'
     repo: '{{ salt__upstream_apt_repo_map[ansible_distribution] }}'
-    state: '{{ "present" if salt__upstream|bool else "absent" }}'
+    state: '{{ "present" if salt__upstream | bool else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: salt__python__dependent_packages3 [[[

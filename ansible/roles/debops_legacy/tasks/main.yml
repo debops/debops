@@ -10,22 +10,22 @@
 - name: Remove legacy diversions
   dpkg_divert:
     path: '{{ item.name }}'
-    divert: '{{ item.diversion|d(item.name + ".dpkg-divert") }}'
+    divert: '{{ item.diversion | d(item.name + ".dpkg-divert") }}'
     state: 'absent'
     delete: True
   with_items: '{{ debops_legacy__remove_combined_diversions | debops.debops.parse_kv_items }}'
-  when: debops_legacy__enabled|bool and item.state|d('present') == 'absent'
+  when: debops_legacy__enabled | bool and item.state | d('present') == 'absent'
 
 - name: Remove legacy packages
   ansible.builtin.package:
     name: '{{ item.name }}'
     state: 'absent'
   with_items: '{{ debops_legacy__remove_combined_packages | debops.debops.parse_kv_items }}'
-  when: debops_legacy__enabled|bool and item.state|d('present') == 'absent'
+  when: debops_legacy__enabled | bool and item.state | d('present') == 'absent'
 
 - name: Remove legacy files and directories
   ansible.builtin.file:
     path: '{{ item.name }}'
     state: 'absent'
   with_items: '{{ debops_legacy__remove_combined_files | debops.debops.parse_kv_items }}'
-  when: debops_legacy__enabled|bool and item.state|d('present') == 'absent'
+  when: debops_legacy__enabled | bool and item.state | d('present') == 'absent'

@@ -7,7 +7,7 @@
 <html lang="en">
 {% set nginx_tpl_domain = item.welcome_domain | d(item.name if (item.name is string) else item.name[0] | d(ansible_domain)) %}
 {% if nginx_tpl_domain %}
-{%   set nginx_tpl_welcome_title = '<a href="' + item.welcome_url_scheme|d("https") + '://' + nginx_tpl_domain + '/">' + nginx_tpl_domain + '</a>' %}
+{%   set nginx_tpl_welcome_title = '<a href="' + item.welcome_url_scheme | d("https") + '://' + nginx_tpl_domain + '/">' + nginx_tpl_domain + '</a>' %}
 {% else %}
 {%   set nginx_tpl_welcome_title = '<a href="http://companyname.website/">CompanyName.website</a>' %}
 {% endif %}
@@ -16,8 +16,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="referrer" content="no-referrer">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ nginx_tpl_domain|d("CompanyName.website") }}</title>
-{% if item.welcome_css|d(True) | bool %}
+    <title>{{ nginx_tpl_domain | d("CompanyName.website") }}</title>
+{% if item.welcome_css | d(True) | bool %}
     <link rel="stylesheet" type="text/css" media="screen" href="normalize.css">
     <style type="text/css" media="screen">
 html {
@@ -66,7 +66,7 @@ a {
       <h2>{{ nginx_tpl_welcome_title }}</h2>
 
 {% if nginx_tpl_domain %}
-      <p id="http-status"><strong>{{ item.welcome_status_choices|d([ '200 OK', "418 I'm a teapot" ]) | random }}</strong></p>
+      <p id="http-status"><strong>{{ item.welcome_status_choices | d([ '200 OK', "418 I'm a teapot" ]) | random }}</strong></p>
 {% elif not nginx_tpl_domain %}
       <p>If you're reading this, the web server was installed correctly.</p>
 {% endif %}

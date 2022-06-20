@@ -5,22 +5,22 @@
 # {{ ansible_managed }}
 {%  for failover in dhcpd__failovers %}
 
-{%      if failover.comment|d() %}
+{%      if failover.comment | d() %}
 # {{ failover.comment }}
 {%      endif %}
 failover peer "{{ failover.name }}" {
-{%      if failover.options|d() %}
+{%      if failover.options | d() %}
 
     # Custom failover options
     {{ failover.options|indent(4) }}
 {%      endif %}
 
-{%      if failover.primary|d() and failover.primary in ansible_all_ipv4_addresses|d([]) %}
+{%      if failover.primary | d() and failover.primary in ansible_all_ipv4_addresses | d([]) %}
     primary;
-    mclt {{ failover.mclt|d(3600) }};
+    mclt {{ failover.mclt | d(3600) }};
     address {{ failover.primary }};
     peer address {{ failover.secondary }};
-{%          if failover.split|d() %}
+{%          if failover.split | d() %}
     split {{ failover.split }};
 {%          else %}
     hba {{ failover.hba }};
@@ -30,13 +30,13 @@ failover peer "{{ failover.name }}" {
     address {{ failover.secondary }};
     peer address {{ failover.primary }};
 {%      endif %}
-    max-response-delay {{ failover.max_response_delay|d(60) }};
-    max-unacked-updates {{ failover.max_unacked_updates|d(10) }};
-    load balance max seconds {{ failover.load_balance_max_seconds|d(5) }};
-    auto-partner-down {{ failover.auto_partner_down|d(0) }};
-    max-lease-misbalance {{ failover.max_lease_misbalance|d(15) }};
-    max-lease-ownership {{ failover.max_lease_ownership|d(10) }};
-    min-balance {{ failover.min_balance|d(60) }};
-    max-balance {{ failover.max_balance|d(3600) }};
+    max-response-delay {{ failover.max_response_delay | d(60) }};
+    max-unacked-updates {{ failover.max_unacked_updates | d(10) }};
+    load balance max seconds {{ failover.load_balance_max_seconds | d(5) }};
+    auto-partner-down {{ failover.auto_partner_down | d(0) }};
+    max-lease-misbalance {{ failover.max_lease_misbalance | d(15) }};
+    max-lease-ownership {{ failover.max_lease_ownership | d(10) }};
+    min-balance {{ failover.min_balance | d(60) }};
+    max-balance {{ failover.max_balance | d(3600) }};
 }
 {%  endfor %}

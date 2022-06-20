@@ -10,12 +10,12 @@
               + (item_git.repo | d(item_git)).split("://")[1] | regex_replace("\.git$","")
               + ".git" }}'
     version: '{{ item_git.version | d("master") }}'
-    verify_commit: '{{ True if dotfile.gpg|d() else omit }}'
+    verify_commit: '{{ True if dotfile.gpg | d() else omit }}'
     bare: True
   loop: '{{ q("flattened", dotfile.git) }}'
   loop_control:
     loop_var: 'item_git'
-  when: dotfile.git|d() and dotfile.state|d('present') not in [ 'absent', 'ignore' ] and
+  when: dotfile.git | d() and dotfile.state | d('present') not in [ 'absent', 'ignore' ] and
         not ansible_check_mode
 
 - name: 'Remove the {{ dotfile.name }} dotfiles mirror if requested'
@@ -27,4 +27,4 @@
   loop: '{{ q("flattened", dotfile.git) }}'
   loop_control:
     loop_var: 'item_git'
-  when: dotfile.git|d() and dotfile.state|d('present') == 'absent'
+  when: dotfile.git | d() and dotfile.state | d('present') == 'absent'

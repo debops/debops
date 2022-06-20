@@ -198,7 +198,7 @@ etesync__config_secret_key_filepath: '{{ etesync__etc + "/secret.txt" }}'
 #
 # Name of the initial admin account created by the role.
 etesync__superuser_name: '{{ ansible_local.core.admin_users[0]
-                             if (ansible_local.core.admin_users|d())
+                             if (ansible_local.core.admin_users | d())
                              else "admin" }}'
 
                                                                    # ]]]
@@ -206,7 +206,7 @@ etesync__superuser_name: '{{ ansible_local.core.admin_users[0]
 #
 # E-mail address of the initial admin account created by the role.
 etesync__superuser_email: '{{ ansible_local.core.admin_private_email[0]
-                              if (ansible_local.core.admin_private_email|d())
+                              if (ansible_local.core.admin_private_email | d())
                               else ("root@" + etesync__domain) }}'
 
                                                                    # ]]]
@@ -248,7 +248,7 @@ etesync__app_bind: 'unix:/run/{{ etesync__app_runtime_dir }}/etesync.sock'
 # .. envvar:: etesync__app_workers [[[
 #
 # Number of worker threads to start for EteSync server.
-etesync__app_workers: '{{ ansible_processor_vcpus|int + 1 }}'
+etesync__app_workers: '{{ ansible_processor_vcpus | int + 1 }}'
 
                                                                    # ]]]
 # .. envvar:: etesync__app_timeout [[[
@@ -282,7 +282,7 @@ etesync__max_file_size: '5'
 # .. envvar:: etesync__python_version [[[
 #
 # Python version, needed to refer to static files as installed by Python modules.
-etesync__python_version: '{{ ansible_local.python.version3|d("3.x") }}'
+etesync__python_version: '{{ ansible_local.python.version3 | d("3.x") }}'
 
                                                                    # ]]]
 # .. envvar:: etesync__http_psk_subpath_enabled [[[
@@ -302,7 +302,7 @@ etesync__http_psk_subpath_enabled: False
 # depth concept if enabled.
 etesync__http_psk_subpath: '{{ lookup("password", secret + "/etesync/" +
                                  inventory_hostname + "/config/subpath chars=ascii_letters,digits length=23")
-                               if etesync__http_psk_subpath_enabled|bool
+                               if etesync__http_psk_subpath_enabled | bool
                                else "" }}'
 
                                                                    # ]]]
@@ -430,7 +430,7 @@ etesync__nginx__dependent_servers:
       - pattern: '/'
         options: |-
           deny all;
-        enabled: '{{ etesync__http_psk_subpath_enabled|bool }}'
+        enabled: '{{ etesync__http_psk_subpath_enabled | bool }}'
 
       - pattern: '/static/admin/'
         options: |-
@@ -446,7 +446,7 @@ etesync__nginx__dependent_servers:
           proxy_set_header X-Forwarded-Host $server_name;
           proxy_set_header X-Real-IP $remote_addr;
           proxy_set_header X-Forwarded-Proto $scheme;
-          {% if etesync__http_psk_subpath|d() %}
+          {% if etesync__http_psk_subpath | d() %}
           proxy_set_header SCRIPT_NAME /{{ etesync__http_psk_subpath }};
           {% endif %}
           proxy_connect_timeout {{ etesync__app_timeout }};
@@ -454,14 +454,14 @@ etesync__nginx__dependent_servers:
           proxy_read_timeout {{ etesync__app_timeout }};
 
       - pattern: '{{ (("/" + etesync__http_psk_subpath)
-                      if (etesync__http_psk_subpath|d())
+                      if (etesync__http_psk_subpath | d())
                       else "") + "/admin" }}'
         options: |-
           proxy_pass http://etesync;
           proxy_set_header X-Forwarded-Host $server_name;
           proxy_set_header X-Real-IP $remote_addr;
           proxy_set_header X-Forwarded-Proto $scheme;
-          {% if etesync__http_psk_subpath|d() %}
+          {% if etesync__http_psk_subpath | d() %}
           proxy_set_header SCRIPT_NAME /{{ etesync__http_psk_subpath }};
           {% endif %}
           proxy_connect_timeout {{ etesync__app_timeout }};
@@ -470,7 +470,7 @@ etesync__nginx__dependent_servers:
 
           auth_basic "{{ etesync__admin_auth_basic_realm }}";
           auth_basic_user_file {{ etesync__admin_auth_basic_filename }};
-        enabled: '{{ True if etesync__admin_auth_basic_filename|d() else False }}'
+        enabled: '{{ True if etesync__admin_auth_basic_filename | d() else False }}'
 # ]]]
 # ]]]
 # ]]]

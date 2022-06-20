@@ -115,7 +115,7 @@ icinga_web__default_modules:
   - name: 'director'
     git_repo: 'https://github.com/Icinga/icingaweb2-module-director'
     git_version: 'v1.8.1'
-    state: '{{ "present" if icinga_web__director_enabled|bool else "ignore" }}'
+    state: '{{ "present" if icinga_web__director_enabled | bool else "ignore" }}'
 
   - name: 'generictts'
     git_repo: 'https://github.com/Icinga/icingaweb2-module-generictts'
@@ -174,7 +174,7 @@ icinga_web__default_modules:
   - name: 'x509'
     git_repo: 'https://github.com/icinga/icingaweb2-module-x509'
     git_version: 'v1.0.0'
-    state: '{{ "present" if icinga_web__x509_enabled|bool else "ignore" }}'
+    state: '{{ "present" if icinga_web__x509_enabled | bool else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__modules [[[
@@ -193,11 +193,11 @@ icinga_web__modules: []
 # either ``postgresql`` (preferred) or ``mariadb``. The role will try to detect
 # the available databases automatically based on the Ansible local facts.
 icinga_web__database_type: '{{ ansible_local.icinga_web.database_type
-                               if (ansible_local.icinga_web.database_type|d())
+                               if (ansible_local.icinga_web.database_type | d())
                                else ("postgresql"
-                                     if (ansible_local|d() and ansible_local.postgresql is defined)
+                                     if (ansible_local | d() and ansible_local.postgresql is defined)
                                      else ("mariadb"
-                                           if (ansible_local|d() and ansible_local.mariadb is defined)
+                                           if (ansible_local | d() and ansible_local.mariadb is defined)
                                            else "Icinga Web requires a database")) }}'
 
                                                                    # ]]]
@@ -239,8 +239,8 @@ icinga_web__database_password: "{{ lookup('password', icinga_web__database_passw
 #
 # The address of the Icinga 2 Web internal database server.
 icinga_web__database_host: '{{ ansible_local[icinga_web__database_type].server
-                               if (ansible_local|d() and ansible_local[icinga_web__database_type]|d() and
-                                   ansible_local[icinga_web__database_type].server|d())
+                               if (ansible_local | d() and ansible_local[icinga_web__database_type] | d() and
+                                   ansible_local[icinga_web__database_type].server | d())
                                else "localhost" }}'
 
                                                                    # ]]]
@@ -249,8 +249,8 @@ icinga_web__database_host: '{{ ansible_local[icinga_web__database_type].server
 # The port on which the Icinga 2 Web internal database server listens for
 # connections.
 icinga_web__database_port: '{{ ansible_local[icinga_web__database_type].port
-                               if (ansible_local|d() and ansible_local[icinga_web__database_type]|d() and
-                                   ansible_local[icinga_web__database_type].port|d())
+                               if (ansible_local | d() and ansible_local[icinga_web__database_type] | d() and
+                                   ansible_local[icinga_web__database_type].port | d())
                                else "" }}'
 
                                                                    # ]]]
@@ -259,8 +259,8 @@ icinga_web__database_port: '{{ ansible_local[icinga_web__database_type].port
 # The Ansible inventory name of the host to which the database tasks will be
 # delegated to.
 icinga_web__database_delegate_to: '{{ ansible_local[icinga_web__database_type].delegate_to
-                                      if (ansible_local|d() and ansible_local[icinga_web__database_type]|d() and
-                                          ansible_local[icinga_web__database_type].delegate_to|d())
+                                      if (ansible_local | d() and ansible_local[icinga_web__database_type] | d() and
+                                          ansible_local[icinga_web__database_type].delegate_to | d())
                                       else inventory_hostname }}'
 
                                                                    # ]]]
@@ -279,8 +279,8 @@ icinga_web__database_schema: '{{ "/usr/share/icingaweb2/etc/schema/"
 #
 # Enable or disable initialization of the Icinga 2 Web internal database.
 icinga_web__database_init: '{{ False
-                               if (ansible_local|d() and ansible_local.icinga_web|d() and
-                                   (ansible_local.icinga_web.installed|d())|bool)
+                               if (ansible_local | d() and ansible_local.icinga_web | d() and
+                                   (ansible_local.icinga_web.installed | d()) | bool)
                                else True }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -299,8 +299,8 @@ icinga_web__database_init: '{{ False
 # This does not control the configuration of the actual database, see
 # :ref:`debops.icinga_db` role for that.
 icinga_web__master_database_enabled: '{{ True
-                                         if (ansible_local|d() and ansible_local.icinga_db|d() and
-                                             (ansible_local.icinga_db.configured|d())|bool)
+                                         if (ansible_local | d() and ansible_local.icinga_db | d() and
+                                             (ansible_local.icinga_db.configured | d()) | bool)
                                          else False }}'
 
                                                                    # ]]]
@@ -308,37 +308,37 @@ icinga_web__master_database_enabled: '{{ True
 #
 # Specify the type of the Icinga 2 master database, either ``postgresql`` or
 # ``mariadb``.
-icinga_web__master_database_type: '{{ ansible_local.icinga_db.type|d("") }}'
+icinga_web__master_database_type: '{{ ansible_local.icinga_db.type | d("") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__master_database_name [[[
 #
 # Name of the Icinga 2 master database.
-icinga_web__master_database_name: '{{ ansible_local.icinga_db.dbc_dbname|d("icinga2") }}'
+icinga_web__master_database_name: '{{ ansible_local.icinga_db.dbc_dbname | d("icinga2") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__master_database_user [[[
 #
 # Name of the Icinga 2 master database user.
-icinga_web__master_database_user: '{{ ansible_local.icinga_db.dbc_dbuser|d("icinga2") }}'
+icinga_web__master_database_user: '{{ ansible_local.icinga_db.dbc_dbuser | d("icinga2") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__master_database_password [[[
 #
 # Password for the Icinga 2 master database.
-icinga_web__master_database_password: '{{ ansible_local.icinga_db.dbc_dbpass|d("") }}'
+icinga_web__master_database_password: '{{ ansible_local.icinga_db.dbc_dbpass | d("") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__master_database_host [[[
 #
 # The address of the Icinga 2 master database host.
-icinga_web__master_database_host: '{{ ansible_local.icinga_db.dbc_dbserver|d("localhost") }}'
+icinga_web__master_database_host: '{{ ansible_local.icinga_db.dbc_dbserver | d("localhost") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__master_database_port [[[
 #
 # The port on which the Icinga 2 master database listens for connections.
-icinga_web__master_database_port: '{{ ansible_local.icinga_db.dbc_dbport|d("") }}'
+icinga_web__master_database_port: '{{ ansible_local.icinga_db.dbc_dbport | d("") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Icinga 2 Director support [[[
@@ -410,11 +410,11 @@ icinga_web__director_api_password: '{{ lookup("password", secret + "/icinga_web/
 # ``postgresql`` (preferred) or ``mariadb``. It's usually the same type as the
 # main Icinga 2 Web database.
 icinga_web__director_database_type: '{{ ansible_local.icinga_web.database_type
-                                        if (ansible_local.icinga_web.database_type|d())
+                                        if (ansible_local.icinga_web.database_type | d())
                                         else ("postgresql"
-                                              if (ansible_local|d() and ansible_local.postgresql is defined)
+                                              if (ansible_local | d() and ansible_local.postgresql is defined)
                                               else ("mariadb"
-                                                    if (ansible_local|d() and ansible_local.mariadb is defined)
+                                                    if (ansible_local | d() and ansible_local.mariadb is defined)
                                                     else "Icinga Director requires a database")) }}'
 
                                                                    # ]]]
@@ -456,8 +456,8 @@ icinga_web__director_database_password: "{{ lookup('password', icinga_web__direc
 #
 # Address of the Icinga 2 Director database server.
 icinga_web__director_database_host: '{{ ansible_local[icinga_web__director_database_type].server
-                                        if (ansible_local|d() and ansible_local[icinga_web__director_database_type]|d() and
-                                            ansible_local[icinga_web__director_database_type].server|d())
+                                        if (ansible_local | d() and ansible_local[icinga_web__director_database_type] | d() and
+                                            ansible_local[icinga_web__director_database_type].server | d())
                                         else "localhost" }}'
 
                                                                    # ]]]
@@ -466,8 +466,8 @@ icinga_web__director_database_host: '{{ ansible_local[icinga_web__director_datab
 # The port on which the Icinga 2 Director database server listens for
 # connections.
 icinga_web__director_database_port: '{{ ansible_local[icinga_web__director_database_type].port
-                                        if (ansible_local|d() and ansible_local[icinga_web__director_database_type]|d() and
-                                            ansible_local[icinga_web__director_database_type].port|d())
+                                        if (ansible_local | d() and ansible_local[icinga_web__director_database_type] | d() and
+                                            ansible_local[icinga_web__director_database_type].port | d())
                                         else "" }}'
 
                                                                    # ]]]
@@ -476,8 +476,8 @@ icinga_web__director_database_port: '{{ ansible_local[icinga_web__director_datab
 # The Ansible inventory hostname of the host where the database-related role
 # tasks will be delegated to.
 icinga_web__director_database_delegate_to: '{{ ansible_local[icinga_web__director_database_type].delegate_to
-                                               if (ansible_local|d() and ansible_local[icinga_web__director_database_type]|d() and
-                                                   ansible_local[icinga_web__director_database_type].delegate_to|d())
+                                               if (ansible_local | d() and ansible_local[icinga_web__director_database_type] | d() and
+                                                   ansible_local[icinga_web__director_database_type].delegate_to | d())
                                                else inventory_hostname }}'
 
                                                                    # ]]]
@@ -485,8 +485,8 @@ icinga_web__director_database_delegate_to: '{{ ansible_local[icinga_web__directo
 #
 # Enable or disable initialization of the Icinga 2 Director database.
 icinga_web__director_database_init: '{{ False
-                                        if (ansible_local|d() and ansible_local.icinga_web|d() and
-                                            (ansible_local.icinga_web.installed|d())|bool)
+                                        if (ansible_local | d() and ansible_local.icinga_web | d() and
+                                            (ansible_local.icinga_web.installed | d()) | bool)
                                         else True }}'
 
                                                                    # ]]]
@@ -495,8 +495,8 @@ icinga_web__director_database_init: '{{ False
 # Enable or disable initial import (kickstart) of the Icinga 2 configuration
 # into the Director database.
 icinga_web__director_kickstart_enabled: '{{ True
-                                            if (ansible_local|d() and ansible_local.icinga|d() and
-                                                (ansible_local.icinga.installed|d())|bool)
+                                            if (ansible_local | d() and ansible_local.icinga | d() and
+                                                (ansible_local.icinga.installed | d()) | bool)
                                             else False }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -527,7 +527,7 @@ icinga_web__x509_database_user: 'icingaweb2_x509'
 #
 # Password for Icinga 2 Web x509 database.
 icinga_web__x509_database_password: '{{ lookup("password", secret + "/mariadb/"
-                                        + ansible_local.mariadb.delegate_to|d(inventory_hostname)
+                                        + ansible_local.mariadb.delegate_to | d(inventory_hostname)
                                         + "/credentials/" + icinga_web__x509_database_user + "/password"
                                         + " length=48 chars=ascii_letters,digits,.-_") }}'
 
@@ -535,14 +535,14 @@ icinga_web__x509_database_password: '{{ lookup("password", secret + "/mariadb/"
 # .. envvar:: icinga_web__x509_database_host [[[
 #
 # Address of the Icinga 2 X509 database server.
-icinga_web__x509_database_host: '{{ ansible_local.mariadb.server|d("localhost") }}'
+icinga_web__x509_database_host: '{{ ansible_local.mariadb.server | d("localhost") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__x509_database_port [[[
 #
 # The port on which the Icinga 2 x509 database server listens for
 # connections.
-icinga_web__x509_database_port: '{{ ansible_local.mariadb.port|d("3306") }}'
+icinga_web__x509_database_port: '{{ ansible_local.mariadb.port | d("3306") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__x5609_database_schema [[[
@@ -643,7 +643,7 @@ icinga_web__default_account_password: '{{ lookup("password", secret + "/icinga_w
 #
 # Enable LDAP support
 icinga_web__ldap_enabled: '{{ True
-                              if ansible_local.ldap.enabled|d()|bool
+                              if ansible_local.ldap.enabled | d() | bool
                               else False }}'
 
                                                                    # ]]]
@@ -651,7 +651,7 @@ icinga_web__ldap_enabled: '{{ True
 #
 # The base Distinguished Name which should be used to create Distinguished
 # Names of the LDAP directory objects, defined as a YAML list.
-icinga_web__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
+icinga_web__ldap_base_dn: '{{ ansible_local.ldap.base_dn | d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__ldap_groups_rdn [[[
@@ -659,7 +659,7 @@ icinga_web__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
 # The Relative Distinguished Name of the object which contains the groups stored
 # in LDAP.
 icinga_web__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn
-                                 |d("ou=Groups") }}'
+                                  | d("ou=Groups") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__ldap_groups_dn [[[
@@ -675,7 +675,7 @@ icinga_web__ldap_groups_dn: '{{ [ icinga_web__ldap_groups_rdn ]
 # The Relative Distinguished Name of the object which contains the user accounts
 # stored in LDAP.
 icinga_web__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn
-                                 |d("ou=People") }}'
+                                  | d("ou=People") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__ldap_people_dn [[[
@@ -692,7 +692,7 @@ icinga_web__ldap_people_dn: '{{ [ icinga_web__ldap_people_rdn ]
 # list. It will be used as a base for the Icinga web service account LDAP
 # object. If the list is empty, the role will not create the account LDAP
 # object automatically.
-icinga_web__ldap_device_dn: '{{ ansible_local.ldap.device_dn|d([]) }}'
+icinga_web__ldap_device_dn: '{{ ansible_local.ldap.device_dn | d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__ldap_self_rdn [[[
@@ -736,7 +736,7 @@ icinga_web__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
                                      + icinga_web__ldap_binddn | to_uuid
                                      + ".password length=48 "
                                      + "chars=ascii_letters,digits,.-_"))
-                              if icinga_web__ldap_enabled|bool
+                              if icinga_web__ldap_enabled | bool
                               else "" }}'
 
                                                                    # ]]]
@@ -744,7 +744,7 @@ icinga_web__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
 #
 # The LDAP URI that points to the directory server which should be used by
 # Icinga Web.
-icinga_web__ldap_hostname: '{{ ansible_local.ldap.hosts|d([""]) | first }}'
+icinga_web__ldap_hostname: '{{ ansible_local.ldap.hosts | d([""]) | first }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__ldap_encryption [[[
@@ -856,7 +856,7 @@ icinga_web__default_authentication:
       - name: 'filter'
         value: '{{ icinga_web__ldap_user_filter }}'
 
-    state: '{{ "present" if icinga_web__ldap_enabled|bool else "ignore" }}'
+    state: '{{ "present" if icinga_web__ldap_enabled | bool else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__authentication [[[
@@ -996,7 +996,7 @@ icinga_web__default_groups:
       - name: 'group_filter'
         value: '{{ icinga_web__ldap_group_filter }}'
 
-    state: '{{ "present" if icinga_web__ldap_enabled|bool else "ignore" }}'
+    state: '{{ "present" if icinga_web__ldap_enabled | bool else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__groups [[[
@@ -1051,7 +1051,7 @@ icinga_web__default_resources:
 
       - name: 'port'
         value: '{{ icinga_web__database_port }}'
-        state: '{{ "present" if icinga_web__database_port|d() else "absent" }}'
+        state: '{{ "present" if icinga_web__database_port | d() else "absent" }}'
 
       - name: 'dbname'
         value: '{{ icinga_web__database_name }}'
@@ -1073,7 +1073,7 @@ icinga_web__default_resources:
 
   - name: 'icinga2'
     state: '{{ "present"
-               if (icinga_web__master_database_enabled|bool)
+               if (icinga_web__master_database_enabled | bool)
                else "ignore" }}'
     options:
 
@@ -1092,7 +1092,7 @@ icinga_web__default_resources:
 
       - name: 'port'
         value: '{{ icinga_web__master_database_port }}'
-        state: '{{ "present" if icinga_web__master_database_port|d() else "absent" }}'
+        state: '{{ "present" if icinga_web__master_database_port | d() else "absent" }}'
 
       - name: 'dbname'
         value: '{{ icinga_web__master_database_name }}'
@@ -1130,7 +1130,7 @@ icinga_web__default_resources:
 
       - name: 'port'
         value: '{{ icinga_web__director_database_port }}'
-        state: '{{ "present" if icinga_web__director_database_port|d() else "absent" }}'
+        state: '{{ "present" if icinga_web__director_database_port | d() else "absent" }}'
 
       - name: 'dbname'
         value: '{{ icinga_web__director_database_name }}'
@@ -1150,7 +1150,7 @@ icinga_web__default_resources:
       - name: 'use_ssl'
         value: '0'
 
-    state: '{{ "present" if icinga_web__director_enabled|bool else "ignore" }}'
+    state: '{{ "present" if icinga_web__director_enabled | bool else "ignore" }}'
 
   - name: 'ldap_db'
     options:
@@ -1176,7 +1176,7 @@ icinga_web__default_resources:
       - name: 'encryption'
         value: '{{ icinga_web__ldap_encryption }}'
 
-    state: '{{ "present" if icinga_web__ldap_enabled|bool else "ignore" }}'
+    state: '{{ "present" if icinga_web__ldap_enabled | bool else "ignore" }}'
 
   - name: 'icingaweb2_x509'
     options:
@@ -1205,7 +1205,7 @@ icinga_web__default_resources:
       - name: 'charset'
         value: 'utf8'
 
-    state: '{{ "present" if icinga_web__x509_enabled|bool else "ignore" }}'
+    state: '{{ "present" if icinga_web__x509_enabled | bool else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__resources [[[
@@ -1246,7 +1246,7 @@ icinga_web__default_roles:
     options:
 
       - name: 'users'
-        value: '{{ ansible_local.core.admin_users|d([]) | join(",") }}'
+        value: '{{ ansible_local.core.admin_users | d([]) | join(",") }}'
 
       - name: 'permissions'
         value: '*'
@@ -1291,7 +1291,7 @@ icinga_web__default_backends:
 
   - name: 'icinga2'
     state: '{{ "present"
-               if (icinga_web__master_database_enabled|bool)
+               if (icinga_web__master_database_enabled | bool)
                else "ignore" }}'
     options:
 
@@ -1357,8 +1357,8 @@ icinga_web__default_commandtransports:
         value: '{{ icinga_web__icinga_api_password }}'
 
     state: '{{ "present"
-               if (ansible_local|d() and ansible_local.icinga|d() and
-                   (ansible_local.icinga.installed|d())|bool)
+               if (ansible_local | d() and ansible_local.icinga | d() and
+                   (ansible_local.icinga.installed | d()) | bool)
                else "ignore" }}'
 
                                                                    # ]]]
@@ -1403,7 +1403,7 @@ icinga_web__default_director_cfg:
       - name: 'resource'
         value: 'icinga2_director'
 
-    state: '{{ "present" if icinga_web__director_enabled|bool else "ignore" }}'
+    state: '{{ "present" if icinga_web__director_enabled | bool else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__director_cfg [[[
@@ -1460,8 +1460,8 @@ icinga_web__default_director_kickstart_cfg:
         value: '{{ icinga_web__icinga_api_password }}'
 
     state: '{{ "present"
-               if (ansible_local|d() and ansible_local.icinga|d() and
-                   (ansible_local.icinga.installed|d())|bool)
+               if (ansible_local | d() and ansible_local.icinga | d() and
+                   (ansible_local.icinga.installed | d()) | bool)
                else "ignore" }}'
 
                                                                    # ]]]
@@ -1505,7 +1505,7 @@ icinga_web__default_x509_cfg:
       - name: 'resource'
         value: 'icingaweb2_x509'
 
-    state: '{{ "present" if icinga_web__x509_enabled|bool else "ignore" }}'
+    state: '{{ "present" if icinga_web__x509_enabled | bool else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__combined_x509_cfg [[[
@@ -1561,13 +1561,13 @@ icinga_web__postgresql__dependent_roles:
 
   - name: '{{ icinga_web__director_database_name }}'
     flags: [ 'NOLOGIN' ]
-    state: '{{ "present" if icinga_web__director_enabled|bool else "ignore" }}'
+    state: '{{ "present" if icinga_web__director_enabled | bool else "ignore" }}'
 
   - name: '{{ icinga_web__director_database_user }}'
     password: '{{ icinga_web__director_database_password }}'
     db: '{{ icinga_web__director_database_name }}'
     priv: [ 'ALL' ]
-    state: '{{ "present" if icinga_web__director_enabled|bool else "ignore" }}'
+    state: '{{ "present" if icinga_web__director_enabled | bool else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__postgresql__dependent_databases [[[
@@ -1581,7 +1581,7 @@ icinga_web__postgresql__dependent_databases:
 
   - name:  '{{ icinga_web__director_database_name }}'
     owner: '{{ icinga_web__director_database_name }}'
-    state: '{{ "present" if icinga_web__director_enabled|bool else "ignore" }}'
+    state: '{{ "present" if icinga_web__director_enabled | bool else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__postgresql__dependent_groups [[[
@@ -1596,7 +1596,7 @@ icinga_web__postgresql__dependent_groups:
   - roles:  [ '{{ icinga_web__director_database_user }}' ]
     groups: [ '{{ icinga_web__director_database_name }}' ]
     database: '{{ icinga_web__director_database_name }}'
-    state: '{{ "present" if icinga_web__director_enabled|bool else "ignore" }}'
+    state: '{{ "present" if icinga_web__director_enabled | bool else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__postgresql__dependent_extensions [[[
@@ -1607,7 +1607,7 @@ icinga_web__postgresql__dependent_extensions:
 
   - database: '{{ icinga_web__director_database_name }}'
     extension: 'pgcrypto'
-    state: '{{ "present" if icinga_web__director_enabled|bool else "ignore" }}'
+    state: '{{ "present" if icinga_web__director_enabled | bool else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__mariadb__dependent_databases [[[
@@ -1620,11 +1620,11 @@ icinga_web__mariadb__dependent_databases:
 
   - name: '{{ icinga_web__director_database_name }}'
     state: '{{ "present"
-                if (icinga_web__director_enabled|bool and icinga_web__director_database_type == "mariadb")
+                if (icinga_web__director_enabled | bool and icinga_web__director_database_type == "mariadb")
                 else "ignore" }}'
 
   - name: '{{ icinga_web__x509_database_name }}'
-    state: '{{ "present" if icinga_web__x509_enabled|bool else "ignore" }}'
+    state: '{{ "present" if icinga_web__x509_enabled | bool else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__mariadb__dependent_users [[[
@@ -1639,12 +1639,12 @@ icinga_web__mariadb__dependent_users:
   - database: '{{ icinga_web__director_database_name }}'
     user: '{{ icinga_web__director_database_user }}'
     state: '{{ "present"
-                if (icinga_web__director_enabled|bool and icinga_web__director_database_type == "mariadb")
+                if (icinga_web__director_enabled | bool and icinga_web__director_database_type == "mariadb")
                 else "ignore" }}'
 
   - database: '{{ icinga_web__x509_database_name }}'
     user: '{{ icinga_web__x509_database_user }}'
-    state: '{{ "present" if icinga_web__x509_enabled|bool else "ignore" }}'
+    state: '{{ "present" if icinga_web__x509_enabled | bool else "ignore" }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__php__dependent_packages [[[

@@ -27,9 +27,9 @@
 - name: Set default PostgreSQL version variable
   ansible.builtin.set_fact:
     postgresql_server__version: '{{ (ansible_local.postgresql.version
-                                     if (ansible_local.postgresql.version|d())
+                                     if (ansible_local.postgresql.version | d())
                                      else (postgresql_server__preferred_version
-                                           if postgresql_server__preferred_version|d()
+                                           if postgresql_server__preferred_version | d()
                                            else postgresql_server__register_version.stdout)) }}'
   tags: [ 'role::postgresql_server:packages', 'role::postgresql_server:config',
           'role::postgresql_server:auto_backup' ]
@@ -62,11 +62,11 @@
     owner: '{{ postgresql_server__user }}'
     group: '{{ postgresql_server__group }}'
     mode: '0750'
-  when: postgresql_server__log_directory|d()
+  when: postgresql_server__log_directory | d()
 
 - name: Count number of currently configured clusters
   ansible.builtin.set_fact:
-    postgresql_server__fact_cluster_count: '{{ (postgresql_server__clusters|length|int) * 1 }}'
+    postgresql_server__fact_cluster_count: '{{ (postgresql_server__clusters | length | int) * 1 }}'
   tags: [ 'role::postgresql_server:config' ]
 
 - name: Get current maximum shared memory value
@@ -84,7 +84,7 @@
 
 - name: Manage AutoPostgreSQLBackup script
   ansible.builtin.include_tasks: manage_autopostgresqlbackup.yml
-  when: postgresql_server__autopostgresqlbackup|bool
+  when: postgresql_server__autopostgresqlbackup | bool
   tags: [ 'role::postgresql_server:auto_backup' ]
 
 - name: Make sure that Ansible local fact directory exists

@@ -15,25 +15,25 @@
 {%     endif %}
 {%   endfor %}
 {%   set entry_disabled = '# ' if (entry.state == 'disabled') else '' %}
-{%   if entry.comments|d() %}
+{%   if entry.comments | d() %}
 {{ entry.comments | join('\n') | regex_replace('\n$', '') | comment(prefix='\n', postfix='') -}}
 {%   endif %}
-{%   if entry.repo|d() %}
+{%   if entry.repo | d() %}
 {%     for entry_repo in entry.repo %}
 {{ "%s%s" | format(entry_disabled, entry_repo) }}
 {%     endfor %}
 {%   else %}
 {%     for entry_uri in entry.uris %}
-{%       set apt__tpl_seen_suites = apt__tpl_seen_sources[entry_uri]|d([]) %}
+{%       set apt__tpl_seen_suites = apt__tpl_seen_sources[entry_uri] | d([]) %}
 {%       for entry_suite in entry.suites %}
-{%         if entry.state == 'disabled' or (entry_uri in apt__tpl_seen_sources.keys() and entry_suite in apt__tpl_seen_sources[entry_uri] and apt__sources_filter_duplicates|bool) %}
+{%         if entry.state == 'disabled' or (entry_uri in apt__tpl_seen_sources.keys() and entry_suite in apt__tpl_seen_sources[entry_uri] and apt__sources_filter_duplicates | bool) %}
 {%           set entry_disabled = '# ' %}
 {%         else %}
 {%           set entry_disabled = '' %}
 {%         endif %}
 {%         for entry_type in entry.types %}
 {%           if entry.options %}
-{{ "%s%s [%s] %s %s %s" | format(entry_disabled, entry_type, entry.options|join(' '), entry_uri, entry_suite, entry.components | unique | join(' ')) }}
+{{ "%s%s [%s] %s %s %s" | format(entry_disabled, entry_type, entry.options | join(' '), entry_uri, entry_suite, entry.components | unique | join(' ')) }}
 {%           else %}
 {{ "%s%s %s %s %s" | format(entry_disabled, entry_type, entry_uri, entry_suite, entry.components | unique | join(' ')) }}
 {%           endif %}
@@ -76,10 +76,10 @@
          "suites": debops__tpl_macros.flattened(element.suite, element.suites) | from_json,
          "components": debops__tpl_macros.flattened(element.component, element.components) | from_json,
          "comments": debops__tpl_macros.flattened(element.comment, element.comments) | from_json,
-         "state": element.state|d(apt__tpl_source.state),
-         "architecture": element.architecture|d(apt__tpl_source.architecture),
-         "distribution": element.distribution|d(apt__tpl_source.distribution),
-         "distribution_release": element.distribution_release|d(apt__tpl_source.distribution_release),
+         "state": element.state | d(apt__tpl_source.state),
+         "architecture": element.architecture | d(apt__tpl_source.architecture),
+         "distribution": element.distribution | d(apt__tpl_source.distribution),
+         "distribution_release": element.distribution_release | d(apt__tpl_source.distribution_release),
       }) %}
 {%     if "repo" in element %}
 {%       set _ = apt__tpl_source.update({ "repo": element.repo }) %}

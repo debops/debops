@@ -48,7 +48,7 @@
 
     - name: 'modules/x509'
 
-  when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
+  when: item.state | d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Download and install Icinga upstream modules
   ansible.builtin.git:
@@ -56,30 +56,30 @@
     dest: '{{ icinga_web__src + "/" + item.git_repo.split("://")[1] }}'
     version: '{{ item.git_version }}'
   with_items: '{{ (icinga_web__default_modules + icinga_web__modules) | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.git_repo|d() and
-        item.git_version|d() and item.state|d('present') != 'absent'
+  when: item.name | d() and item.git_repo | d() and
+        item.git_version | d() and item.state | d('present') != 'absent'
 
 - name: Symlink Icinga upstream modules to Icinga Web application
   ansible.builtin.file:
     path: '{{ "/usr/share/icingaweb2/modules/" + item.name }}'
     src: '{{ icinga_web__src + "/" + item.git_repo.split("://")[1] }}'
     state: 'link'
-    force: '{{ True if ansible_check_mode|bool else omit }}'
+    force: '{{ True if ansible_check_mode | bool else omit }}'
     mode: '0755'
   with_items: '{{ (icinga_web__default_modules + icinga_web__modules) | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.git_repo|d() and
-        item.git_version|d() and item.state|d('present') != 'absent'
+  when: item.name | d() and item.git_repo | d() and
+        item.git_version | d() and item.state | d('present') != 'absent'
 
 - name: Manage Icinga Web modules
   ansible.builtin.file:
     path: '/etc/icingaweb2/enabledModules/{{ item.name }}'
     src: '{{ (item.path | d("/usr/share/icingaweb2/modules/" + item.name))
-             if (item.state|d("present") != "absent" and (item.enabled|d(True))|bool) else omit }}'
-    state: '{{ "link" if (item.state|d("present") != "absent" and (item.enabled|d(True))|bool) else "absent" }}'
-    force: '{{ True if ansible_check_mode|bool else omit }}'
+             if (item.state | d("present") != "absent" and (item.enabled | d(True)) | bool) else omit }}'
+    state: '{{ "link" if (item.state | d("present") != "absent" and (item.enabled | d(True)) | bool) else "absent" }}'
+    force: '{{ True if ansible_check_mode | bool else omit }}'
     mode: '0755'
   with_items: '{{ (icinga_web__default_modules + icinga_web__modules) | debops.debops.parse_kv_items }}'
-  when: item.name|d()
+  when: item.name | d()
 
 - name: Generate Icinga Web configuration
   ansible.builtin.template:
@@ -122,7 +122,7 @@
     - filename: 'modules/x509/config.ini'
       config: '{{ icinga_web__combined_x509_cfg }}'
 
-  when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
+  when: item.state | d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Generate initial data file
   ansible.builtin.template:
@@ -132,7 +132,7 @@
     group: 'root'
     mode: '0600'
   when: icinga_web__database_host == 'localhost' and
-      icinga_web__database_init|bool
+      icinga_web__database_init | bool
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Import Icinga Web database on installation into PostgreSQL
@@ -146,7 +146,7 @@
   delegate_to: '{{ icinga_web__database_delegate_to }}'
   when: icinga_web__database_type == 'postgresql' and
         icinga_web__database_host == 'localhost' and
-        icinga_web__database_init|bool
+        icinga_web__database_init | bool
 
   # Without this, Icinga Web cannot access the database, with error:
   # permission denied for relation icingaweb_user
@@ -159,7 +159,7 @@
   delegate_to: '{{ icinga_web__database_delegate_to }}'
   when: icinga_web__database_type == 'postgresql' and
         icinga_web__database_host == 'localhost' and
-        icinga_web__database_init|bool
+        icinga_web__database_init | bool
 
 - name: Import Icinga Web database on installation into MariaDB
   mysql_db:
@@ -172,7 +172,7 @@
   delegate_to: '{{ icinga_web__database_delegate_to }}'
   when: icinga_web__database_type == 'mariadb' and
         icinga_web__database_host == 'localhost' and
-        icinga_web__database_init|bool
+        icinga_web__database_init | bool
 
 - name: Import Icinga Web x509 database on installation into MariaDB
   mysql_db:
@@ -183,8 +183,8 @@
     login_port: '{{ icinga_web__x509_database_port }}'
     login_user: '{{ icinga_web__x509_database_user }}'
     login_password: '{{ icinga_web__x509_database_password }}'
-  when: icinga_web__x509_enabled|bool and
-        icinga_web__x509_database_init|bool
+  when: icinga_web__x509_enabled | bool and
+        icinga_web__x509_database_init | bool
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Ensure that initial data schema is removed
@@ -194,20 +194,20 @@
 
 - name: Create or migrate Icinga Director database
   ansible.builtin.command: 'icingacli director migration run'
-  when: icinga_web__director_enabled|bool and
-        icinga_web__director_database_init|bool
+  when: icinga_web__director_enabled | bool and
+        icinga_web__director_database_init | bool
 
 - name: Kickstart Icinga Director configuration
   ansible.builtin.command: 'icingacli director kickstart run'
-  when: icinga_web__director_enabled|bool and
-        icinga_web__director_database_init|bool and
-        icinga_web__director_kickstart_enabled|bool
+  when: icinga_web__director_enabled | bool and
+        icinga_web__director_database_init | bool and
+        icinga_web__director_kickstart_enabled | bool
 
 - name: Deploy Icinga Director configuration
   ansible.builtin.command: 'icingacli director config deploy'
-  when: icinga_web__director_enabled|bool and
-        icinga_web__director_database_init|bool and
-        icinga_web__director_kickstart_enabled|bool
+  when: icinga_web__director_enabled | bool and
+        icinga_web__director_database_init | bool and
+        icinga_web__director_kickstart_enabled | bool
 
 - name: Create Director Unix account
   ansible.builtin.user:
@@ -251,19 +251,19 @@
     name: 'icinga-director.service'
     enabled: True
     state: 'started'
-  when: icinga_web__director_enabled|bool
+  when: icinga_web__director_enabled | bool
 
 - name: Stop and disable Director service
   ansible.builtin.systemd:
     name: 'icinga-director.service'
     enabled: False
     state: 'stopped'
-  when: not icinga_web__director_enabled|bool
+  when: not icinga_web__director_enabled | bool
 
 - name: Import CA certificates to Icinga Web x509 truststore
   ansible.builtin.command: 'icingacli x509 import --file /etc/ssl/certs/ca-certificates.crt'
-  when: icinga_web__x509_enabled|bool and
-        icinga_web__x509_database_init|bool
+  when: icinga_web__x509_enabled | bool and
+        icinga_web__x509_database_init | bool
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:

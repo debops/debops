@@ -31,7 +31,7 @@
 
 - name: Set list of available modules
   ansible.builtin.set_fact:
-    apache__tpl_available_modules: '{{ apache__register_mods_available.files|d({})
+    apache__tpl_available_modules: '{{ apache__register_mods_available.files | d({})
                                        | map(attribute="path")
                                        | map("replace", apache__config_path + "/mods-available/", "")
                                        | map("regex_replace", "\.load$", "") | list }}'
@@ -46,52 +46,52 @@
     path: '{{ apache__config_path + "/conf-available/" + item.key + ".conf" }}'
     divert: '{{ (item.value.divert
                  | d(apache__config_path + "/conf-available/"
-                     + (item.value.divert_filename|d(item.key)) + ".conf"))
-                + item.value.divert_suffix|d(".dpkg-divert") }}'
-  when: (item.value.type|d("default") in ["divert"])
+                     + (item.value.divert_filename | d(item.key)) + ".conf"))
+                + item.value.divert_suffix | d(".dpkg-divert") }}'
+  when: (item.value.type | d("default") in ["divert"])
   with_dict: '{{ apache__combined_snippets }}'
 
 - name: Remove conf-available snippets
   ansible.builtin.file:
     path: '{{ apache__config_path + "/conf-available/" + item.key + ".conf" }}'
     state: 'absent'
-  when: (item.value.state|d("present") == "absent")
+  when: (item.value.state | d("present") == "absent")
   with_dict: '{{ apache__combined_snippets }}'
   tags: [ 'role::apache:vhosts' ]
 
 - name: Create conf-available snippets
   ansible.builtin.template:
     src: 'etc/apache2/conf-available/{{ "raw"
-                                        if (item.value.type|d("default") in ["divert", "raw"] and
-                                            item.value.raw|d())
+                                        if (item.value.type | d("default") in ["divert", "raw"] and
+                                            item.value.raw | d())
                                         else item.key }}.conf.j2'
     dest: '{{ apache__config_path + "/conf-available/" + item.key + ".conf" }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: (item.value.state|d("present") != "absent" and
-         (item.value.type|d("default") not in ["divert", "dont-create"] or item.value.raw|d()))
+  when: (item.value.state | d("present") != "absent" and
+         (item.value.type | d("default") not in ["divert", "dont-create"] or item.value.raw | d()))
   with_dict: '{{ apache__combined_snippets }}'
   notify: [ 'Test apache and reload' ]
 
 - name: Enable/disable configuration snippets
   ansible.builtin.file:
     path: '{{ apache__config_path + "/conf-enabled/" + item.key + ".conf" }}'
-    src: '{{ (((item.value.enabled|d(True)
+    src: '{{ (((item.value.enabled | d(True)
                   if (item.value is mapping)
-                  else item.value|d(True)))
-                 if (item.value.state|d("present") != "absent")
+                  else item.value | d(True)))
+                 if (item.value.state | d("present") != "absent")
                  else False) | bool
                  | ternary("../conf-available/" + item.key + ".conf",
                            omit) }}'
     mode: '0644'
-    force: '{{ ansible_check_mode|d() | bool }}'
-    state: '{{ (((item.value.enabled|d(True)
+    force: '{{ ansible_check_mode | d() | bool }}'
+    state: '{{ (((item.value.enabled | d(True)
                   if (item.value is mapping)
-                  else item.value|d(True)))
-                 if (item.value.state|d("present") != "absent")
+                  else item.value | d(True)))
+                 if (item.value.state | d("present") != "absent")
                  else False) | bool | ternary("link", "absent") }}'
-  when: (item.value.type|d("default") not in ["divert"])
+  when: (item.value.type | d("default") not in ["divert"])
   with_dict: '{{ apache__combined_snippets }}'
   notify: [ 'Test apache and reload' ]
 
@@ -99,14 +99,14 @@
 - name: Divert sites-available configuration
   dpkg_divert:
     path: '{{ apache__config_path + "/sites-available/"
-              + item.filename|d([item.name] | flatten | first | d("default"))
+              + item.filename | d([item.name] | flatten | first | d("default"))
               + ".conf" }}'
     divert: '{{ (item.divert
                  | d(apache__config_path + "/sites-available/"
-                     + item.divert_filename|d(item.filename|d([item.name] | flatten | first | d("default")))
+                     + item.divert_filename | d(item.filename | d([item.name] | flatten | first | d("default")))
                      + ".conf")
-                 + item.divert_suffix|d(".dpkg-divert")) }}'
-  when: (item.type|d(apache__vhost_type) in ["divert"])
+                 + item.divert_suffix | d(".dpkg-divert")) }}'
+  when: (item.type | d(apache__vhost_type) in ["divert"])
   with_flattened: '{{ apache__combined_vhosts }}'
 
 - name: Remove sites-available configuration
@@ -115,7 +115,7 @@
                                                                           if (item.name is string)
                                                                           else item.name[0] | d("default")) }}.conf'
     state: 'absent'
-  when: (item.state|d("present") == 'absent')
+  when: (item.state | d("present") == 'absent')
   with_flattened: '{{ apache__combined_vhosts }}'
   tags: [ 'role::apache:vhosts' ]
 
@@ -129,7 +129,7 @@
     group: 'root'
     mode: '0644'
   notify: [ 'Test apache and reload' ]
-  when: (item.state|d("present") != "absent" and item.type|d(apache__vhost_type) not in ["divert", "dont-create"])
+  when: (item.state | d("present") != "absent" and item.type | d(apache__vhost_type) not in ["divert", "dont-create"])
   with_flattened: '{{ apache__combined_vhosts }}'
   tags: [ 'role::apache:vhosts' ]
 
@@ -142,17 +142,17 @@
                                       | d(item.name
                                           if (item.name is string)
                                           else item.name[0] | d("default")) + ".conf")
-             if (item.enabled|d(True) | bool)
+             if (item.enabled | d(True) | bool)
              else omit }}'
-    force: '{{ item.force|d(ansible_check_mode) | bool }}'
-    state: '{{ item.enabled|d(True) | bool | ternary("link", "absent")
-               if (item.state|d("present") != "absent")
+    force: '{{ item.force | d(ansible_check_mode) | bool }}'
+    state: '{{ item.enabled | d(True) | bool | ternary("link", "absent")
+               if (item.state | d("present") != "absent")
                else "absent" }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
   notify: [ 'Test apache and reload' ]
-  when: (item.type|d(apache__vhost_type) not in ["divert"])
+  when: (item.type | d(apache__vhost_type) not in ["divert"])
   with_flattened: '{{ apache__combined_vhosts }}'
   tags: [ 'role::apache:vhosts' ]
 

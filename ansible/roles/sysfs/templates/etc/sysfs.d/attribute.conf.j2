@@ -6,10 +6,10 @@
 
 {% macro print_config(element, global_state='') %}
 {%   set prepend_comment = '' %}
-{%   if global_state == 'comment' or element.state|d('present') == 'comment' %}
+{%   if global_state == 'comment' or element.state | d('present') == 'comment' %}
 {%     set prepend_comment = '#' %}
 {%   endif %}
-{%   if element.comment|d() %}
+{%   if element.comment | d() %}
 {{ element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
 {%   endif %}
 {%   if element.owner is defined %}
@@ -22,13 +22,13 @@
 {{ "{}{} = {}".format(prepend_comment, element.name, element.value) }}
 {%   endif %}
 {% endmacro %}
-{% if item.comment|d() and item.options is defined %}
+{% if item.comment | d() and item.options is defined %}
 {{ item.comment | regex_replace('\n$','') | comment(prefix='', postfix='') }}
 {% endif %}
-{% if item.options|d() %}
+{% if item.options | d() %}
 {%   for option in item.options %}
-{%     if option.state|d('present') not in [ 'init', 'absent' ] %}
-{%     if not loop.first|bool and option.comment|d() %}
+{%     if option.state | d('present') not in [ 'init', 'absent' ] %}
+{%     if not loop.first | bool and option.comment | d() %}
 
 {%     endif %}
 {{ print_config(option, global_state=item.state) -}}

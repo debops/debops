@@ -26,8 +26,8 @@ librenms__base_packages:
   - [ 'snmp', 'imagemagick', 'fping', 'whois', 'mtr-tiny',
       'rrdtool', 'nmap', ]
   - '{{ "snmp-mibs-downloader"
-        if (ansible_local|d() and ansible_local.apt|d() and
-            (ansible_local.apt.nonfree|d())|bool)
+        if (ansible_local | d() and ansible_local.apt | d() and
+            (ansible_local.apt.nonfree | d()) | bool)
         else [] }}'
 
                                                                    # ]]]
@@ -91,7 +91,7 @@ librenms__nginx_access_policy: ''
 #
 # Name of the webserver user account which will be granted read only access to
 # the LibreNMS application directory.
-librenms__webserver_user: '{{ ansible_local.nginx.user|d("www-data") }}'
+librenms__webserver_user: '{{ ansible_local.nginx.user | d("www-data") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Application user, group, directories [[[
@@ -118,7 +118,7 @@ librenms__shell: '/bin/bash'
 # .. envvar:: librenms__home [[[
 #
 # Home directory of the LibreNMS application.
-librenms__home: '{{ ansible_local.nginx.www|d("/srv/www") + "/" + librenms__user }}'
+librenms__home: '{{ ansible_local.nginx.www | d("/srv/www") + "/" + librenms__user }}'
 
                                                                    # ]]]
 # .. envvar:: librenms__install_path [[[
@@ -220,7 +220,7 @@ librenms__database_password: "{{ lookup('password', secret + '/mariadb/' +
 #
 # Passwords will be automatically stored in ``secret/`` directory (see
 # ``debops.secret`` role for more details).
-librenms__admin_accounts: '{{ ansible_local.core.admin_users|d([]) }}'
+librenms__admin_accounts: '{{ ansible_local.core.admin_users | d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: librenms__cron_threads [[[
@@ -370,7 +370,7 @@ librenms__snmp_credentials_default:
 # default it's a ``root`` account, LibreNMS account and admin accounts that
 # exist on the host.
 librenms__home_snmp_conf: '{{ ([ "root", librenms__user ] +
-                              librenms__admin_accounts|d([])) | unique }}'
+                              librenms__admin_accounts | d([])) | unique }}'
                                                                    # ]]]
                                                                    # ]]]
 # LibreNMS config.php contents [[[

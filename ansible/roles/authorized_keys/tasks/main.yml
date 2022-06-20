@@ -22,7 +22,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: authorized_keys__enabled|bool
+  when: authorized_keys__enabled | bool
 
 - name: Ensure the required groups exist
   ansible.builtin.group:
@@ -33,26 +33,26 @@
   loop: '{{ lookup("template", "lookup/authorized_keys__identities.j2") | from_yaml }}'
   loop_control:
     label: '{{ {"identity": item.identity, "group": item.group} }}'
-  when: authorized_keys__enabled|bool and item.group|d() and
-        item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
-        item.file_state|d('present') not in [ 'absent', 'ignore', 'init' ]
+  when: authorized_keys__enabled | bool and item.group | d() and
+        item.state | d('present') not in [ 'absent', 'ignore', 'init' ] and
+        item.file_state | d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Get list of all groups
   ansible.builtin.getent:
     database: 'group'
     split: ':'
-  when: authorized_keys__enabled|bool
+  when: authorized_keys__enabled | bool
 
 - name: Get list of all users
   ansible.builtin.getent:
     database: 'passwd'
     split: ':'
-  when: authorized_keys__enabled|bool
+  when: authorized_keys__enabled | bool
 
 - name: Configure authorized keys for users
   ansible.posix.authorized_key:
     key:         '{{ item.key }}'
-    user:        '{{ item.user if (item.home|d())|bool else "root" }}'
+    user:        '{{ item.user if (item.home | d()) | bool else "root" }}'
     manage_dir:  '{{ item.manage_dir }}'
     state:       '{{ item.state       | d("present") }}'
     key_options: '{{ item.key_options | d(omit) }}'
@@ -62,41 +62,41 @@
   loop: '{{ lookup("template", "lookup/authorized_keys__identities.j2") | from_yaml }}'
   loop_control:
     label: '{{ {"identity": item.identity,
-                "state": (item.state|d("present")
-                          if (item.user in getent_passwd.keys() and (item.home|d())|bool)
+                "state": (item.state | d("present")
+                          if (item.user in getent_passwd.keys() and (item.home | d()) | bool)
                           else ("no user"
-                                if (item.user not in getent_passwd.keys() and (item.home|d())|bool)
-                                else item.state|d("present"))),
+                                if (item.user not in getent_passwd.keys() and (item.home | d()) | bool)
+                                else item.state | d("present"))),
                 "user": item.user,
-                "path": item.path|d("~" + item.user + "/.ssh/authorized_keys")} }}'
-  when: (authorized_keys__enabled|bool and
-         item.file_state|d('present') != 'absent' and
-         ((item.home|d())|bool and item.user in getent_passwd.keys()) or
-          not (item.home|d())|bool)
+                "path": item.path | d("~" + item.user + "/.ssh/authorized_keys")} }}'
+  when: (authorized_keys__enabled | bool and
+         item.file_state | d('present') != 'absent' and
+         ((item.home | d()) | bool and item.user in getent_passwd.keys()) or
+          not (item.home | d()) | bool)
 
 - name: Enforce state of authorized_keys user files
   ansible.builtin.file:
     path:  '{{ item.path }}'
-    owner: '{{ item.owner if (item.owner|d() and item.owner in getent_passwd.keys()) else "root" }}'
+    owner: '{{ item.owner if (item.owner | d() and item.owner in getent_passwd.keys()) else "root" }}'
     group: '{{ (item.group
-                if (item.group|d() and item.group in (getent_group|d({})).keys())
-                else (getent_passwd[item.owner][2]|d({})
-                      if (item.owner in getent_passwd|d({}))
+                if (item.group | d() and item.group in (getent_group | d({})).keys())
+                else (getent_passwd[item.owner][2] | d({})
+                      if (item.owner in getent_passwd | d({}))
                       else omit)) }}'
     mode:  '{{ item.mode }}'
-    state: '{{ "absent" if (item.file_state|d("present") == "absent") else omit }}'
+    state: '{{ "absent" if (item.file_state | d("present") == "absent") else omit }}'
   loop: '{{ lookup("template", "lookup/authorized_keys__identities.j2") | from_yaml }}'
   loop_control:
     label: '{{ {"identity": item.identity,
-                "state": item.file_state|d("present"),
+                "state": item.file_state | d("present"),
                 "group": (item.group
-                          if (item.group|d() and item.group in (getent_group|d({})).keys())
-                          else (getent_passwd[item.owner|d("root")][2]|d({})
-                                if (item.owner|d("root") in getent_passwd|d({}))
+                          if (item.group | d() and item.group in (getent_group | d({})).keys())
+                          else (getent_passwd[item.owner | d("root")][2] | d({})
+                                if (item.owner | d("root") in getent_passwd | d({}))
                                 else "root")),
                 "path": item.path} }}'
-  when: authorized_keys__enabled|bool and item.path|d() and not item.manage_dir|bool and
-        item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and not ansible_check_mode
+  when: authorized_keys__enabled | bool and item.path | d() and not item.manage_dir | bool and
+        item.state | d('present') not in [ 'absent', 'ignore', 'init' ] and not ansible_check_mode
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:

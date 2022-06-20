@@ -52,7 +52,7 @@ rstudio_server__release_deb_map:
 #
 # The URL of the ``rstudio-server`` ``.deb`` package to download.
 rstudio_server__rstudio_deb_url: '{{ rstudio_server__release_deb_map[ansible_distribution + "_" + ansible_distribution_release].package
-                                     if (rstudio_server__release_deb_map[ansible_distribution + "_" + ansible_distribution_release]|d())
+                                     if (rstudio_server__release_deb_map[ansible_distribution + "_" + ansible_distribution_release] | d())
                                      else rstudio_server__release_deb_map[ansible_distribution].package }}'
 
                                                                    # ]]]
@@ -60,7 +60,7 @@ rstudio_server__rstudio_deb_url: '{{ rstudio_server__release_deb_map[ansible_dis
 #
 # The SHA256 checksum of the ``rstudio-server`` ``.deb`` package.
 rstudio_server__rstudio_deb_checksum: '{{ rstudio_server__release_deb_map[ansible_distribution + "_" + ansible_distribution_release].checksum
-                                          if (rstudio_server__release_deb_map[ansible_distribution + "_" + ansible_distribution_release]|d())
+                                          if (rstudio_server__release_deb_map[ansible_distribution + "_" + ansible_distribution_release] | d())
                                           else rstudio_server__release_deb_map[ansible_distribution].checksum }}'
 
                                                                    # ]]]
@@ -81,7 +81,7 @@ rstudio_server__signing_key_id: 'FE85 64CF F1AB 93F1 7286  4519 3F32 EE77 E331 6
 rstudio_server__base_packages:
   - 'dpkg-sig'
   - '{{ "rstudio-server"
-        if rstudio_server__rstudio_in_apt|bool
+        if rstudio_server__rstudio_in_apt | bool
         else [] }}'
 
                                                                    # ]]]
@@ -187,7 +187,7 @@ rstudio_server__session_timeout: '120'
 #
 # The URL of the Comprehensive R Archive Network mirror which should be used by
 # RStudio Server.
-rstudio_server__cran_mirror: '{{ ansible_local.cran.mirror|d("https://cloud.r-project.org/") }}'
+rstudio_server__cran_mirror: '{{ ansible_local.cran.mirror | d("https://cloud.r-project.org/") }}'
                                                                    # ]]]
                                                                    # ]]]
 # RStudio Server configuration files [[[

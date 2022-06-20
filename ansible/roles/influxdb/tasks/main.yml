@@ -29,7 +29,7 @@
 - name: Override configuration if local server is detected
   ansible.builtin.set_fact:
     influxdb__server: '{{ ansible_fqdn if influxdb__pki else "localhost" }}'
-  when: (influxdb__register_version.stdout|d(False))
+  when: (influxdb__register_version.stdout | d(False))
 
 - name: Make sure that local fact directory exists
   ansible.builtin.file:
@@ -54,5 +54,5 @@
 
 - name: Manage database contents
   ansible.builtin.include_tasks: 'manage_contents.yml'
-  when: (influxdb__server|d(False) and influxdb__delegate_to)
+  when: (influxdb__server | d(False) and influxdb__delegate_to)
   tags: [ 'role::influxdb:contents' ]

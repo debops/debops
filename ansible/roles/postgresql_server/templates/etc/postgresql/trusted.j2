@@ -3,7 +3,7 @@
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 {% set postgresql_server__tpl_trusted = [] %}
-{% if item.trusted|d() and item.trusted %}
+{% if item.trusted | d() and item.trusted %}
 {%   if item.trusted is string %}
 {%     if item.trusted == '*postgres*' %}
 {%       set postgresql_server__tpl_trusted = [ item.user | d(postgresql_server__user) ] %}
@@ -21,7 +21,7 @@
 {%       endif %}
 {%     endfor %}
 {%   endif %}
-{% elif postgresql_server__trusted|d() and postgresql_server__trusted %}
+{% elif postgresql_server__trusted | d() and postgresql_server__trusted %}
 {%   if postgresql_server__trusted is string %}
 {%     if postgresql_server__trusted == '*postgres*' %}
 {%       set postgresql_server__tpl_trusted = [ item.user | d(postgresql_server__user) ] %}

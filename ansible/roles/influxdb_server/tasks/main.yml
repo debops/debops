@@ -21,12 +21,12 @@
   ansible.builtin.service:
     name: 'influxdb'
     state: 'restarted'
-  when: not (ansible_local.influxdb_server.installed|d(false)|bool)
+  when: not (ansible_local.influxdb_server.installed | d(false) | bool)
 
 - name: Wait for HTTP endpoint port to become open on the host on first install
   ansible.builtin.wait_for:
     port: '{{ influxdb_server__port }}'
-  when: not (ansible_local.influxdb_server.installed|d(false)|bool)
+  when: not (ansible_local.influxdb_server.installed | d(false) | bool)
 
 - name: Create default admin user on first install
   influxdb_user:
@@ -37,14 +37,14 @@
     proxies:
       http:
       https:
-  when: not (ansible_local.influxdb_server.installed|d(false)|bool)
+  when: not (ansible_local.influxdb_server.installed | d(false) | bool)
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Stop database server on first install
   ansible.builtin.service:
     name: 'influxdb'
     state: 'stopped'
-  when: not (ansible_local.influxdb_server.installed|d(false)|bool)
+  when: not (ansible_local.influxdb_server.installed | d(false) | bool)
 
 - name: Add InfluxDB server user to specified groups
   ansible.builtin.user:
@@ -52,7 +52,7 @@
     groups: '{{ influxdb_server__append_groups | join(",") | default(omit) }}'
     append: True
     createhome: False
-  when: influxdb_server__pki|bool
+  when: influxdb_server__pki | bool
 
 - name: Ensure InfluxDB server directory exists
   ansible.builtin.file:
@@ -65,7 +65,7 @@
 - name: Move InfluxDB data files to data directory
   ansible.builtin.shell:
     'mv {{ influxdb_server__default_directory }}/* {{ influxdb_server__directory }}'
-  when: (not (ansible_local.influxdb_server.installed|d(false)|bool) and
+  when: (not (ansible_local.influxdb_server.installed | d(false) | bool) and
          influxdb_server__directory != influxdb_server__default_directory)
 
 - name: Divert the original influxdb configuration file
@@ -89,11 +89,11 @@
   ansible.builtin.service:
     name: 'influxdb'
     state: 'started'
-  when: not (ansible_local.influxdb_server.installed|d(false)|bool)
+  when: not (ansible_local.influxdb_server.installed | d(false) | bool)
 
 - name: Configure autoinfluxdbbackup
   ansible.builtin.include_tasks: 'autoinfluxdbbackup.yml'
-  when: influxdb_server__backup|bool
+  when: influxdb_server__backup | bool
   tags: [ 'role::influxdb_server:autoinfluxdbbackup' ]
 
 - name: Make sure that Ansible local facts directory exists

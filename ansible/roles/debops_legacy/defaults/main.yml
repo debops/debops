@@ -42,7 +42,7 @@ debops_legacy__remove_default_diversions:
   # Diversion created by the old 'debops.redis' Ansible role
   - name: '/etc/redis/redis.conf'
     state: '{{ "absent"
-               if (ansible_local|d() and
+               if (ansible_local | d() and
                    (ansible_local.redis_server is defined or
                     ansible_local.redis_sentinel is defined))
                else "ignore" }}'
@@ -50,7 +50,7 @@ debops_legacy__remove_default_diversions:
   # Diversion created by the old 'debops.redis' Ansible role
   - name: '/etc/redis/sentinel.conf'
     state: '{{ "absent"
-               if (ansible_local|d() and
+               if (ansible_local | d() and
                    (ansible_local.redis_server is defined or
                     ansible_local.redis_sentinel is defined))
                else "ignore" }}'
@@ -144,14 +144,14 @@ debops_legacy__remove_default_files:
   # The replacement file is: '/etc/sudoers.d/system_groups-admins'.
   - name: '/etc/sudoers.d/admins'
     state: '{{ "absent"
-               if (ansible_local|d() and ansible_local.system_groups|d() and
-                   (ansible_local.system_groups.configured|d()|bool))
+               if (ansible_local | d() and ansible_local.system_groups | d() and
+                   (ansible_local.system_groups.configured | d() | bool))
                else "ignore" }}'
 
   # Legacy 'debops.redis' Ansible local fact
   - name: '/etc/ansible/facts.d/redis.fact'
     state: '{{ "absent"
-               if (ansible_local|d() and
+               if (ansible_local | d() and
                    (ansible_local.redis_server is defined or
                     ansible_local.redis_sentinel is defined))
                else "ignore" }}'
@@ -159,7 +159,7 @@ debops_legacy__remove_default_files:
   # Legacy 'debops.redis' configuration directory
   - name: '/etc/redis/notify.d'
     state: '{{ "absent"
-               if (ansible_local|d() and
+               if (ansible_local | d() and
                    (ansible_local.redis_server is defined or
                     ansible_local.redis_sentinel is defined))
                else "ignore" }}'
@@ -167,7 +167,7 @@ debops_legacy__remove_default_files:
   # Legacy 'debops.redis' configuration directory
   - name: '/etc/redis/trigger.d'
     state: '{{ "absent"
-               if (ansible_local|d() and
+               if (ansible_local | d() and
                    (ansible_local.redis_server is defined or
                     ansible_local.redis_sentinel is defined))
                else "ignore" }}'
@@ -175,7 +175,7 @@ debops_legacy__remove_default_files:
   # Legacy 'debops.redis' script directory
   - name: '/usr/local/lib/redis'
     state: '{{ "absent"
-               if (ansible_local|d() and
+               if (ansible_local | d() and
                    (ansible_local.redis_server is defined or
                     ansible_local.redis_sentinel is defined))
                else "ignore" }}'
@@ -183,7 +183,7 @@ debops_legacy__remove_default_files:
   # Legacy 'debops.redis' configuration file
   - name: '/etc/redis/ansible-redis-dynamic.conf'
     state: '{{ "absent"
-               if (ansible_local|d() and
+               if (ansible_local | d() and
                    (ansible_local.redis_server is defined or
                     ansible_local.redis_sentinel is defined))
                else "ignore" }}'
@@ -191,7 +191,7 @@ debops_legacy__remove_default_files:
   # Legacy 'debops.redis' configuration file
   - name: '/etc/redis/ansible-redis-static.conf'
     state: '{{ "absent"
-               if (ansible_local|d() and
+               if (ansible_local | d() and
                    (ansible_local.redis_server is defined or
                     ansible_local.redis_sentinel is defined))
                else "ignore" }}'
@@ -199,7 +199,7 @@ debops_legacy__remove_default_files:
   # Old IP forwarding configuration defined by 'debops.ferm' role
   - name: '/etc/sysctl.d/30-ferm.conf'
     state: '{{ "absent"
-               if (ansible_local|d() and ansible_local.ferm is defined)
+               if (ansible_local | d() and ansible_local.ferm is defined)
                else "ignore" }}'
 
                                                                    # ]]]

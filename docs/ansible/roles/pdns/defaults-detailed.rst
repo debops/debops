@@ -45,5 +45,5 @@ Example::
       value: '2001:db8:a::1, 2001:db8:b::1, 2001:db8:c::1'
       state: '{{ "present"
                  if ansible_local.machine.deployment
-                    |d("production") == "production"
+                     | d("production") == "production"
                  else "absent" }}'

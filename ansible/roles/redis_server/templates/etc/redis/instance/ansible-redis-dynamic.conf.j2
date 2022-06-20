@@ -13,9 +13,9 @@ set -o nounset -o pipefail -o errexit
 
 # A workaround to have Jinja template in a shell script
 readarray -t redis_dynamic_config_map << EOF
-{% if item.options|d() %}
+{% if item.options | d() %}
 {%   for element in item.options %}
-{%     if element.state|d('present') not in [ 'absent', 'ignore', 'init' ] and (element.dynamic|d())|bool %}
+{%     if element.state | d('present') not in [ 'absent', 'ignore', 'init' ] and (element.dynamic | d()) | bool %}
 {%       if element.value is string and not element.value | bool %}
 {{ '{}={}'.format(element.name, element.value) }}
 {%       elif element.value | bool and element.value is not iterable %}

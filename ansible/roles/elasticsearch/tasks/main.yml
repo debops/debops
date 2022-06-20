@@ -31,7 +31,7 @@
     name: '{{ elasticsearch__user }}'
     groups: '{{ elasticsearch__additional_groups }}'
     append: True
-  when: elasticsearch__additional_groups|d()
+  when: elasticsearch__additional_groups | d()
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:
@@ -60,7 +60,7 @@
   register: elasticsearch__register_dependent_config_file
   become: False
   delegate_to: 'localhost'
-  when: (ansible_local.elasticsearch.installed|d())
+  when: (ansible_local.elasticsearch.installed | d())
   tags: [ 'role::elasticsearch:config' ]
 
 - name: Load the dependent configuration from Ansible Controller
@@ -69,8 +69,8 @@
   register: elasticsearch__register_dependent_config
   become: False
   delegate_to: 'localhost'
-  when: (ansible_local.elasticsearch.installed|d() and
-         elasticsearch__register_dependent_config_file.stat.exists|bool)
+  when: (ansible_local.elasticsearch.installed | d() and
+         elasticsearch__register_dependent_config_file.stat.exists | bool)
   tags: [ 'role::elasticsearch:config' ]
 
 - name: Divert original configuration files
@@ -158,7 +158,7 @@
   notify: [ 'Restart elasticsearch' ]
   with_flattened:
     - '{{ elasticsearch__combined_plugins }}'
-  when: (item.name|d() and item.state|d('present') != 'absent' and
+  when: (item.name | d() and item.state | d('present') != 'absent' and
          (item.name if ':' not in item.name else item.name.split(':')[1])
          not in elasticsearch__register_plugins.stdout_lines)
 
@@ -169,7 +169,7 @@
   notify: [ 'Restart elasticsearch' ]
   with_flattened:
     - '{{ elasticsearch__combined_plugins }}'
-  when: (item.name|d() and item.state|d('present') == 'absent' and
+  when: (item.name | d() and item.state | d('present') == 'absent' and
          (item.name if ':' not in item.name else item.name.split(':')[1])
          in elasticsearch__register_plugins.stdout_lines)
 
@@ -188,4 +188,4 @@
 - name: Manage Elasticsearch authentication
   import_tasks: 'authentication.yml'
   run_once: True
-  when: elasticsearch__xpack_enabled|bool and elasticsearch__pki_enabled|bool
+  when: elasticsearch__xpack_enabled | bool and elasticsearch__pki_enabled | bool

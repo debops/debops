@@ -8,7 +8,7 @@
   ansible.builtin.package:
     name: '{{ q("flattened", apt_proxy__base_packages) }}'
     state: 'present'
-  when: apt_proxy__deploy_state == 'present' and apt_proxy__temporally_avoid_unreachable|bool
+  when: apt_proxy__deploy_state == 'present' and apt_proxy__temporally_avoid_unreachable | bool
   register: apt_proxy__register_packages
   until: apt_proxy__register_packages is succeeded
 
@@ -19,7 +19,7 @@
     owner:    'root'
     group:    'root'
     mode:     '0755'
-  when: apt_proxy__deploy_state == 'present' and apt_proxy__temporally_avoid_unreachable|bool
+  when: apt_proxy__deploy_state == 'present' and apt_proxy__temporally_avoid_unreachable | bool
 
 - name: Remove APT proxy configuration
   ansible.builtin.file:

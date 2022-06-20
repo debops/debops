@@ -9,7 +9,7 @@
 {% macro get_string_or_list_as_json_list(item) %}{# [[[ #}
 {{ ([ item ]
    if (item is string)
-   else (item|list)) | to_nice_json }}
+   else (item | list)) | to_nice_json }}
 {% endmacro %}{# ]]] #}
 
 {% macro assemble_origins_list(origins, unattended_upgrades__tpl_origins, unattended_upgrades__tpl_origins_absent) %}{# [[[ #}
@@ -17,13 +17,13 @@
 {%   if item is string %}
 {%     set _ = unattended_upgrades__tpl_origins.append(item) %}
 {%   elif item is mapping %}
-{%     if item.origin|d(item.origins|d()) and "state" in item and item.state is string %}
+{%     if item.origin | d(item.origins | d()) and "state" in item and item.state is string %}
 {%       if item.state == "present" %}
-{%         for origin in (get_string_or_list_as_json_list(item.origin|d(item.origins|d())) | from_json) %}
+{%         for origin in (get_string_or_list_as_json_list(item.origin | d(item.origins | d())) | from_json) %}
 {%           set _ = unattended_upgrades__tpl_origins.append(origin) %}
 {%         endfor %}
 {%       else %}
-{%         for origin in (get_string_or_list_as_json_list(item.origin|d(item.origins|d())) | from_json) %}
+{%         for origin in (get_string_or_list_as_json_list(item.origin | d(item.origins | d())) | from_json) %}
 {%           set _ = unattended_upgrades__tpl_origins_absent.append(origin) %}
 {%         endfor %}
 {%       endif %}
@@ -41,7 +41,7 @@
    (origins + unattended_upgrades__origins + unattended_upgrades__dependent_origins),
    unattended_upgrades__tpl_origins,
    unattended_upgrades__tpl_origins_absent) %}
-{% if (ansible_local.unattended_upgrades.origins|d()) %}
+{% if (ansible_local.unattended_upgrades.origins | d()) %}
 {%   for item in ansible_local.unattended_upgrades.origins %}
 {%     set _ = unattended_upgrades__tpl_origins.append(item) %}
 {%   endfor %}
@@ -78,7 +78,7 @@
    (blacklist + unattended_upgrades__dependent_blacklist),
    unattended_upgrades__tpl_blacklist,
    unattended_upgrades__tpl_blacklist_absent) %}
-{% if (ansible_local.unattended_upgrades.blacklist|d()) %}
+{% if (ansible_local.unattended_upgrades.blacklist | d()) %}
 {%   for item in ansible_local.unattended_upgrades.blacklist %}
 {%     set _ = unattended_upgrades__tpl_blacklist.append(item) %}
 {%   endfor %}

@@ -17,7 +17,7 @@
   ],
   'state': 'init'
 } %}
-{%       if hostvars[inventory_hostname]['ansible_' + interface].ipv6|d() %}
+{%       if hostvars[inventory_hostname]['ansible_' + interface].ipv6 | d() %}
 {%         set radvd__tpl_prefixes = [] %}
 {%         for element in hostvars[inventory_hostname]['ansible_' + interface].ipv6 %}
 {%           if element.scope == 'global' %}
@@ -33,12 +33,12 @@
 {%         endfor %}
 {%         set _ = radvd__tpl_interface.update({'prefixes': radvd__tpl_prefixes}) %}
 {%         set radvd__tpl_rdnss = [] %}
-{%         if radvd__rdnss|d() %}
+{%         if radvd__rdnss | d() %}
 {%           set _ = radvd__tpl_rdnss.extend([ radvd__rdnss ] if radvd__rdnss is string else radvd__rdnss) %}
 {%         endif %}
 {%         set _ = radvd__tpl_interface.update({'rdnss': radvd__tpl_rdnss}) %}
 {%         set radvd__tpl_dnssl = [] %}
-{%         if radvd__dnssl|d() %}
+{%         if radvd__dnssl | d() %}
 {%           set _ = radvd__tpl_dnssl.extend([ radvd__dnssl ] if radvd__dnssl is string else radvd__dnssl) %}
 {%         endif %}
 {%         set _ = radvd__tpl_interface.update({'dnssl': radvd__tpl_dnssl}) %}

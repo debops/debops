@@ -212,7 +212,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: dovecot__pki|bool
+  when: dovecot__pki | bool
 
 - name: Manage PKI dovecot hook
   ansible.builtin.template:
@@ -221,13 +221,13 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: dovecot__pki|bool
+  when: dovecot__pki | bool
 
 - name: Ensure the PKI dovecot hook is absent
   ansible.builtin.file:
     path: '{{ dovecot__pki_hook_path + "/" + dovecot__pki_hook_name }}'
     state: 'absent'
-  when: not (dovecot__pki|bool)
+  when: not (dovecot__pki | bool)
 
 - name: Divert original Dovecot main configuration file
   dpkg_divert:

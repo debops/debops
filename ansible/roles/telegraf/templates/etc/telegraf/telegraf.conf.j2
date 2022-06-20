@@ -6,7 +6,7 @@
 
 {% set telegraf__tpl_configuration = {} %}
 {% for element in telegraf__combined_configuration | debops.debops.parse_kv_config %}
-{%   if element.name|d() and element.state|d('present') not in [ 'absent', 'init', 'ignore' ] and element.config|d() %}
+{%   if element.name | d() and element.state | d('present') not in [ 'absent', 'init', 'ignore' ] and element.config | d() %}
 {%     set combined_config = telegraf__tpl_configuration | combine(element.config, recursive=True) %}
 {%     set _ = telegraf__tpl_configuration.update(combined_config) %}
 {%   endif %}

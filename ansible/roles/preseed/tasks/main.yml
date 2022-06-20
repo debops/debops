@@ -19,7 +19,7 @@
   loop: '{{ preseed__combined_definitions | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state, "flavor": item.flavor, "release": item.release} }}'
-  when: item.state|d('present') in [ 'absent' ]
+  when: item.state | d('present') in [ 'absent' ]
 
 - name: Create configuration directories
   ansible.builtin.file:
@@ -29,7 +29,7 @@
   loop: '{{ preseed__combined_definitions | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state, "flavor": item.flavor, "release": item.release} }}'
-  when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
+  when: item.state | d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Generate Preseed configuration files
   ansible.builtin.template:
@@ -45,7 +45,7 @@
               }) }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state, "flavor": item.flavor, "release": item.release} }}'
-  when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
+  when: item.state | d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Generate postinst scripts
   ansible.builtin.template:
@@ -61,7 +61,7 @@
               }) }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state, "flavor": item.flavor, "release": item.release} }}'
-  when: item.state|d('present') not in [ 'absent', 'ignore', 'init' ]
+  when: item.state | d('present') not in [ 'absent', 'ignore', 'init' ]
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:

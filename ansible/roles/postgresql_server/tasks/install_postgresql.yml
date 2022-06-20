@@ -21,7 +21,7 @@
                               + postgresql_server__python_packages
                               + postgresql_server__packages
                               + ([ "autopostgresqlbackup" ]
-                                 if (postgresql_server__autopostgresqlbackup|d())|bool
+                                 if (postgresql_server__autopostgresqlbackup | d()) | bool
                                  else []))) }}'
     state: 'present'
   register: postgresql_server__register_packages
@@ -35,9 +35,9 @@
   # Main cluster will be recreated later, with correct encoding
 - name: Remove default PostgreSQL cluster on first install
   ansible.builtin.command: pg_dropcluster --stop {{ postgresql_server__version }} main
-  when: ((postgresql_server__register_installed|d() and not postgresql_server__register_installed.stdout) and
-         (postgresql_server__register_installed_main|d() and postgresql_server__register_installed_main.stat.exists) and
+  when: ((postgresql_server__register_installed | d() and not postgresql_server__register_installed.stdout) and
+         (postgresql_server__register_installed_main | d() and postgresql_server__register_installed_main.stat.exists) and
           (ansible_local is undefined or
-           (ansible_local|d() and ansible_local.postgresql is undefined or
-            (ansible_local|d() and ansible_local.postgresql|d() and
+           (ansible_local | d() and ansible_local.postgresql is undefined or
+            (ansible_local | d() and ansible_local.postgresql | d() and
              ansible_local.postgresql.server != 'localhost'))))

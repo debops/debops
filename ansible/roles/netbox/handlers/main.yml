@@ -13,19 +13,19 @@
   ansible.builtin.service:
     name: 'gunicorn@netbox'
     state: 'restarted'
-  when: (not netbox__app_internal_appserver|bool and
-         ansible_local.gunicorn.installed|d()|bool)
+  when: (not netbox__app_internal_appserver | bool and
+         ansible_local.gunicorn.installed | d() | bool)
 
 - name: Restart netbox internal appserver
   ansible.builtin.service:
     name: 'netbox'
     state: 'restarted'
     enabled: True
-  when: netbox__app_internal_appserver|bool
+  when: netbox__app_internal_appserver | bool
 
 - name: Restart netbox Request Queue Worker
   ansible.builtin.service:
     name: 'netbox-rq'
     state: 'restarted'
     enabled: True
-  when: netbox__app_internal_appserver|bool
+  when: netbox__app_internal_appserver | bool

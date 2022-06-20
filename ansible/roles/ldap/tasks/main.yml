@@ -33,12 +33,12 @@
     state: 'present'
   register: ldap__register_packages
   until: ldap__register_packages is succeeded
-  when: ldap__enabled|bool and not ldap__dependent_play|bool
+  when: ldap__enabled | bool and not ldap__dependent_play | bool
 
 - name: Divert original LDAP client configuration
   dpkg_divert:
     path: '/etc/ldap/ldap.conf'
-  when: ldap__enabled|bool and not ldap__dependent_play|bool
+  when: ldap__enabled | bool and not ldap__dependent_play | bool
 
 - name: Generate system-wide LDAP configuration
   ansible.builtin.template:
@@ -46,14 +46,14 @@
     dest: '/etc/ldap/ldap.conf'
     mode: '0644'
   notify: [ 'Refresh host facts' ]
-  when: ldap__enabled|bool and not ldap__dependent_play|bool
+  when: ldap__enabled | bool and not ldap__dependent_play | bool
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
     mode: '0755'
-  when: ldap__enabled|bool and not ldap__dependent_play|bool
+  when: ldap__enabled | bool and not ldap__dependent_play | bool
 
 - name: Save LDAP client local facts
   ansible.builtin.template:
@@ -61,7 +61,7 @@
     dest: '/etc/ansible/facts.d/ldap.fact'
     mode: '0755'
   notify: [ 'Refresh host facts' ]
-  when: ldap__enabled|bool and not ldap__dependent_play|bool
+  when: ldap__enabled | bool and not ldap__dependent_play | bool
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
@@ -82,12 +82,12 @@
   loop_control:
     label: '{{ {"state": item.state,
                 "dn": item.dn,
-                "attributes": item.attributes|d({})} }}'
-  when: ldap__enabled|bool and ldap__admin_enabled|bool and
-        item.name|d() and item.dn|d() and
-        item.state|d('present') not in [ 'init', 'ignore' ]
+                "attributes": item.attributes | d({})} }}'
+  when: ldap__enabled | bool and ldap__admin_enabled | bool and
+        item.name | d() and item.dn | d() and
+        item.state | d('present') not in [ 'init', 'ignore' ]
   tags: [ 'role::ldap:tasks', 'skip::ldap:tasks' ]
   no_log: '{{ debops__no_log | d(item.no_log | d(True
-                                 if ("userPassword" in (item.attributes|d({})).keys() or
-                                     "olcRootPW"    in (item.attributes|d({})).keys())
+                                 if ("userPassword" in (item.attributes | d({})).keys() or
+                                     "olcRootPW"    in (item.attributes | d({})).keys())
                                  else False)) }}'

@@ -206,7 +206,7 @@ mariadb_server__local_infile: False
 #
 # Configuration options related to the server security.
 mariadb_server__mysqld_security_options:
-  'local_infile':         '{{ "1" if mariadb_server__local_infile|bool else "0" }}'
+  'local_infile':         '{{ "1" if mariadb_server__local_infile | bool else "0" }}'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__mysqld_charset_options [[[
@@ -233,7 +233,7 @@ mariadb_server__mysqld_network_options:
 mariadb_server__mysqld_pki_options:
   name: 'pki-options'
   comment: 'Support for SSL connections'
-  state: '{{ "present" if mariadb_server__pki|bool else "absent" }}'
+  state: '{{ "present" if mariadb_server__pki | bool else "absent" }}'
   options:
     'ssl':
     'ssl_ca':     '{{ mariadb_server__pki_path + "/" + mariadb_server__pki_realm + "/" + mariadb_server__pki_ca }}'
@@ -301,7 +301,7 @@ mariadb_server__options: {}
 # Absolute path for the client configuration file managed by the
 # ``debops.mariadb_server`` Ansible role.
 mariadb_server__client_cnf_file: '{{ "/etc/mysql/mariadb.conf.d/90-client.cnf"
-                                     if (mariadb_server__register_confd.stat.exists|bool)
+                                     if (mariadb_server__register_confd.stat.exists | bool)
                                      else "/etc/mysql/conf.d/zz-client.cnf" }}'
 
                                                                    # ]]]
@@ -310,7 +310,7 @@ mariadb_server__client_cnf_file: '{{ "/etc/mysql/mariadb.conf.d/90-client.cnf"
 # Absolute path for the server configuration file managed by the
 # ``debops.mariadb_server`` Ansible role.
 mariadb_server__mysqld_cnf_file: '{{ "/etc/mysql/mariadb.conf.d/90-mysqld.cnf"
-                                     if (mariadb_server__register_confd.stat.exists|bool)
+                                     if (mariadb_server__register_confd.stat.exists | bool)
                                      else "/etc/mysql/conf.d/zz-mysqld.cnf" }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -328,7 +328,7 @@ mariadb_server__append_groups: [ 'ssl-cert' ]
 #
 # Enable or disable support for SSL in MariaDB (using :ref:`debops.pki`).
 mariadb_server__pki: '{{ (True
-                      if (ansible_local.pki.enabled|d() and
+                      if (ansible_local.pki.enabled | d() and
                           mariadb_server__pki_realm in ansible_local.pki.known_realms)
                       else False) | bool }}'
 
@@ -336,13 +336,13 @@ mariadb_server__pki: '{{ (True
 # .. envvar:: mariadb_server__pki_path [[[
 #
 # Base path for PKI directory.
-mariadb_server__pki_path: '{{ ansible_local.pki.base_path|d("/etc/pki") }}'
+mariadb_server__pki_path: '{{ ansible_local.pki.base_path | d("/etc/pki") }}'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__pki_realm [[[
 #
 # Default PKI realm used by MariaDB server.
-mariadb_server__pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
+mariadb_server__pki_realm: '{{ ansible_local.pki.realm | d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: mariadb_server__pki_ca [[[

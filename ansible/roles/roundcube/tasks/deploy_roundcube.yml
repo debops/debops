@@ -62,8 +62,8 @@
   ansible.builtin.slurp:  # noqa no-handler
     src: '{{ roundcube__git_dest + "/composer.json" }}'
   register: roundcube__register_composer_installed
-  when: (ansible_local|d() and ansible_local.roundcube|d() and
-         (ansible_local.roundcube.installed|d())|bool and
+  when: (ansible_local | d() and ansible_local.roundcube | d() and
+         (ansible_local.roundcube.installed | d()) | bool and
         roundcube__register_git is changed)
 
 - name: Update PHP composer data
@@ -80,8 +80,8 @@
 - name: Install or upgrade PHP packages via Composer
   composer:  # noqa no-handler
     command: '{{ "upgrade"
-                 if (ansible_local|d() and ansible_local.roundcube|d() and
-                     (ansible_local.roundcube.installed|d())|bool)
+                 if (ansible_local | d() and ansible_local.roundcube | d() and
+                     (ansible_local.roundcube.installed | d()) | bool)
                  else "install" }}'
     working_dir: '{{ roundcube__git_dest }}'
     no_dev: True

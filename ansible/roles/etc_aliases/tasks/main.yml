@@ -21,9 +21,9 @@
   register: etc_aliases__register_dependent_recipients_file
   become: False
   delegate_to: 'localhost'
-  when: (ansible_local|d() and ansible_local.etc_aliases|d() and
+  when: (ansible_local | d() and ansible_local.etc_aliases | d() and
          ansible_local.etc_aliases.configured is defined and
-         ansible_local.etc_aliases.configured|bool)
+         ansible_local.etc_aliases.configured | bool)
 
 - name: Load the dependent recipients from Ansible Controller
   ansible.builtin.slurp:
@@ -31,10 +31,10 @@
   register: etc_aliases__register_dependent_recipients
   become: False
   delegate_to: 'localhost'
-  when: (ansible_local|d() and ansible_local.etc_aliases|d() and
+  when: (ansible_local | d() and ansible_local.etc_aliases | d() and
          ansible_local.etc_aliases.configured is defined and
-         ansible_local.etc_aliases.configured|bool and
-         etc_aliases__register_dependent_recipients_file.stat.exists|bool)
+         ansible_local.etc_aliases.configured | bool and
+         etc_aliases__register_dependent_recipients_file.stat.exists | bool)
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:

@@ -35,9 +35,9 @@
   dpkg_divert:
     path: '/etc/services'
     divert: '{{ etc_services__diversion }}'
-    state: '{{ "present" if etc_services__enabled|bool else "absent" }}'
+    state: '{{ "present" if etc_services__enabled | bool else "absent" }}'
     delete: True
-  when: not ansible_check_mode|bool
+  when: not ansible_check_mode | bool
 
 - name: Generate list of local services if requested
   ansible.builtin.template:
@@ -47,17 +47,17 @@
     group: 'root'
     mode:  '0644'
   loop: '{{ etc_services__combined_list | flatten }}'
-  when: (etc_services__enabled|bool and item.state|d('present') != 'absent' and
-         ((item.name|d() and item.port|d()) or item.custom|d()))
+  when: (etc_services__enabled | bool and item.state | d('present') != 'absent' and
+         ((item.name | d() and item.port | d()) or item.custom | d()))
 
 - name: Remove list of local services if requested
   ansible.builtin.file:
     path: '/etc/services.d/{{ item.filename | default("20_local_service_" + item.name) }}'
     state: 'absent'
   with_flattened: '{{ etc_services__combined_list }}'
-  when: ((not etc_services__enabled|bool or item.delete|d() or
-          item.state|d('present') == 'absent') and
-         ((item.name|d() and item.port|d()) or item.custom|d()))
+  when: ((not etc_services__enabled | bool or item.delete | d() or
+          item.state | d('present') == 'absent') and
+         ((item.name | d() and item.port | d()) or item.custom | d()))
 
 - name: Assemble services.d
   ansible.builtin.assemble:
@@ -67,4 +67,4 @@
     owner: 'root'
     group: 'root'
     mode:  '0644'
-  when: etc_services__enabled|bool
+  when: etc_services__enabled | bool

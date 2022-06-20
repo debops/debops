@@ -59,19 +59,19 @@ nginx_flavor: 'full'
 #
 # Specify the OS distribution release to use in flavored repositories.
 nginx__flavor_distribution_release: '{{ ansible_local.core.distribution_release
-                                        |d(ansible_distribution_release) }}'
+                                         | d(ansible_distribution_release) }}'
 
                                                                    # ]]]
 # .. envvar:: nginx__flavor_apt_key_id [[[
 #
 # The APT GPG key id of the currently selected flavor.
-nginx__flavor_apt_key_id: '{{ nginx__flavor_apt_key_id_map[nginx_flavor]|d() }}'
+nginx__flavor_apt_key_id: '{{ nginx__flavor_apt_key_id_map[nginx_flavor] | d() }}'
 
                                                                    # ]]]
 # .. envvar:: nginx__flavor_apt_repository [[[
 #
 # The APT repository of the currently selected flavor.
-nginx__flavor_apt_repository: '{{ nginx__flavor_apt_repository_map[nginx_flavor]|d() }}'
+nginx__flavor_apt_repository: '{{ nginx__flavor_apt_repository_map[nginx_flavor] | d() }}'
 
                                                                    # ]]]
 # .. envvar:: nginx__flavor_apt_key_id_map [[[
@@ -425,26 +425,26 @@ nginx_multi_accept: 'off'
 #
 # Enable or disable support for PKI/SSL/TLS in nginx.
 # Defaults to ``True`` if :ref:`debops.pki` is enabled on the remote host.
-nginx_pki: '{{ ansible_local|d() and ansible_local.pki|d() and
-               (ansible_local.pki.enabled|d() | bool) }}'
+nginx_pki: '{{ ansible_local | d() and ansible_local.pki | d() and
+               (ansible_local.pki.enabled | d() | bool) }}'
 
                                                                    # ]]]
 # .. envvar:: nginx_pki_path [[[
 #
 # Directory path where PKI realm live.
-nginx_pki_path: '{{ ansible_local.pki.path|d("/etc/pki/realms") }}'
+nginx_pki_path: '{{ ansible_local.pki.path | d("/etc/pki/realms") }}'
 
                                                                    # ]]]
 # .. envvar:: nginx_pki_realm [[[
 #
 # Default PKI realm to use.
-nginx_pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
+nginx_pki_realm: '{{ ansible_local.pki.realm | d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: nginx_pki_ca_realm [[[
 #
 # PKI realm to use for client CA.
-nginx_pki_ca_realm: '{{ ansible_local.pki.ca_realm|d("domain") }}'
+nginx_pki_ca_realm: '{{ ansible_local.pki.ca_realm | d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: nginx_pki_crt [[[
@@ -485,7 +485,7 @@ nginx_pki_hook_name: 'nginx'
 # .. envvar:: nginx_pki_hook_path [[[
 #
 # Directory with PKI hooks.
-nginx_pki_hook_path: '{{ ansible_local.pki.hooks|d("/etc/pki/hooks") }}'
+nginx_pki_hook_path: '{{ ansible_local.pki.hooks | d("/etc/pki/hooks") }}'
 
                                                                    # ]]]
 # .. envvar:: nginx_pki_hook_action [[[
@@ -498,12 +498,12 @@ nginx_pki_hook_action: 'reload'
 #
 # Path to the file with Diffie-Hellman parameters to use by the webserver.
 nginx_ssl_dhparam: '{{ (""
-                        if nginx_default_tls_protocols|length == 1 and
+                        if nginx_default_tls_protocols | length == 1 and
                            nginx_default_tls_protocols[0] == "TLSv1.3"
                         else
                            (ansible_local.dhparam[nginx_ssl_dhparam_set]
-                            if (ansible_local|d() and ansible_local.dhparam|d() and
-                                ansible_local.dhparam[nginx_ssl_dhparam_set]|d())
+                            if (ansible_local | d() and ansible_local.dhparam | d() and
+                                ansible_local.dhparam[nginx_ssl_dhparam_set] | d())
                             else "")) }}'
 
                                                                    # ]]]
@@ -518,7 +518,7 @@ nginx_ssl_dhparam_set: 'default'
 # Default set of cipher suites to use.
 # Refer to ``nginx_ssl_ciphers`` for details.
 nginx_default_ssl_ciphers: '{{ "mozilla_modern"
-                               if nginx_default_tls_protocols|length == 1 and
+                               if nginx_default_tls_protocols | length == 1 and
                                   nginx_default_tls_protocols[0] == "TLSv1.3"
                                else "mozilla_intermediate" }}'
 
@@ -530,7 +530,7 @@ nginx_default_ssl_ciphers: '{{ "mozilla_modern"
 #
 # See also: https://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_protocols
 nginx_default_tls_protocols: '{{ [ "TLSv1.2", "TLSv1.3" ]
-                                 if ansible_local.nginx.version|d("0.0.0") is version("1.13.0", ">=")
+                                 if ansible_local.nginx.version | d("0.0.0") is version("1.13.0", ">=")
                                  else [ "TLSv1.2" ] }}'
 
                                                                    # ]]]
@@ -741,9 +741,9 @@ nginx_status: []
 # .. envvar:: nginx_status_localhost [[[
 #
 # By default allow access to the status page from webserver itself
-nginx_status_localhost: '{{ [ "127.0.0.1/32", "::1/128" ] + ansible_all_ipv4_addresses|d([]) +
-                            (ansible_all_ipv6_addresses|d([]) |
-                             difference(ansible_all_ipv6_addresses|d([]) | ipaddr("link-local"))) }}'
+nginx_status_localhost: '{{ [ "127.0.0.1/32", "::1/128" ] + ansible_all_ipv4_addresses | d([]) +
+                            (ansible_all_ipv6_addresses | d([]) |
+                             difference(ansible_all_ipv6_addresses | d([]) | ipaddr("link-local"))) }}'
 
                                                                    # ]]]
 # .. envvar:: nginx_status_name [[[

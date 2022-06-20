@@ -81,7 +81,7 @@
     group: '{{ hashicorp__group }}'
     mode: '0755'
   with_items: '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
-  when: (hashicorp__consul_webui|bool and item == 'consul')
+  when: (hashicorp__consul_webui | bool and item == 'consul')
 
 - name: Create Consul Web UI directory
   ansible.builtin.file:
@@ -90,7 +90,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: (hashicorp__consul_webui|bool and
+  when: (hashicorp__consul_webui | bool and
          ('consul' in (hashicorp__applications + hashicorp__dependent_applications | unique)))
 
 
@@ -115,7 +115,7 @@
         - '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
         - [ '{{ hashicorp__tar_suffix }}', '{{ hashicorp__hash_suffix }}', '{{ hashicorp__sig_suffix }}' ]
       when: (ansible_local.hashicorp is not defined or
-             (ansible_local.hashicorp|d() and ansible_local.hashicorp.applications|d() and
+             (ansible_local.hashicorp | d() and ansible_local.hashicorp.applications | d() and
               (ansible_local.hashicorp.applications[item.0] is not defined or
                (ansible_local.hashicorp.applications[item.0] != hashicorp__combined_version_map[item.0]))))
       tags: [ 'role::hashicorp:download', 'role::hashicorp:verify' ]
@@ -130,10 +130,10 @@
       with_nested:
         - [ 'consul' ]
         - [ '{{ hashicorp__consul_webui_suffix }}' ]
-      when: (hashicorp__consul_webui|bool and
+      when: (hashicorp__consul_webui | bool and
              ('consul' in (hashicorp__applications + hashicorp__dependent_applications) | unique) and
               (ansible_local.hashicorp is not defined or
-               (ansible_local.hashicorp|d() and ansible_local.hashicorp.applications|d() and
+               (ansible_local.hashicorp | d() and ansible_local.hashicorp.applications | d() and
                 (ansible_local.hashicorp.applications['consul'] is not defined or
                  (ansible_local.hashicorp.applications['consul'] != hashicorp__combined_version_map['consul'])) or
                 not ansible_local.hashicorp.consul_webui | bool)))
@@ -179,8 +179,8 @@
         creates: '{{ hashicorp__lib + "/" + item + "/" + hashicorp__combined_version_map[item] + "/" +
                      ((hashicorp__combined_binary_map[item]
                        if hashicorp__combined_binary_map[item] is string
-                       else hashicorp__combined_binary_map[item]|first)
-                      if hashicorp__combined_binary_map[item]|d() else item) }}'
+                       else hashicorp__combined_binary_map[item] | first)
+                      if hashicorp__combined_binary_map[item] | d() else item) }}'
       with_items: '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
       register: hashicorp__register_unpack
       tags: [ 'role::hashicorp:unpack', 'role::hashicorp:install' ]
@@ -196,7 +196,7 @@
                      + hashicorp__combined_version_map[item] + "/web_ui/index.html" }}'
       with_items: '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
       register: hashicorp__register_unpack_webui
-      when: hashicorp__consul_webui|bool and item == 'consul'
+      when: hashicorp__consul_webui | bool and item == 'consul'
       tags: [ 'role::hashicorp:unpack', 'role::hashicorp:install' ]
 
 
@@ -207,7 +207,7 @@
          {{ ((hashicorp__combined_binary_map[item.0]
               if hashicorp__combined_binary_map[item.0] is string
               else hashicorp__combined_binary_map[item.0] | join(' '))
-             if hashicorp__combined_binary_map[item.0]|d() else item.0) }}
+             if hashicorp__combined_binary_map[item.0] | d() else item.0) }}
          {% if item.0 == 'terraform' %}
          ; find . -maxdepth 1 -type f -name 'terraform-*'
                   -exec install -m 755 -o root -g root -t {{ hashicorp__bin }} {} +
@@ -217,9 +217,9 @@
   with_together:
     - '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
     - '{{ hashicorp__register_unpack.results }}'
-  when: (item.1 is changed or (ansible_local|d() and
+  when: (item.1 is changed or (ansible_local | d() and
          (ansible_local.hashicorp is not defined or
-          (ansible_local.hashicorp|d() and ansible_local.hashicorp.applications|d() and
+          (ansible_local.hashicorp | d() and ansible_local.hashicorp.applications | d() and
            (ansible_local.hashicorp.applications[item.0] is not defined or
             (ansible_local.hashicorp.applications[item.0] != hashicorp__combined_version_map[item.0]))))))
   tags: [ 'role::hashicorp:install' ]
@@ -231,7 +231,7 @@
   args:  # noqa no-handler
     warn: False
   with_items: '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
-  when: (hashicorp__consul_webui|bool and item == 'consul' and hashicorp__register_unpack_webui is changed)
+  when: (hashicorp__consul_webui | bool and item == 'consul' and hashicorp__register_unpack_webui is changed)
 
 
 # Ansible local facts [[[1

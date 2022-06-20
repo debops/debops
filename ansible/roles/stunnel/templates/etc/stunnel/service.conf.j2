@@ -69,7 +69,7 @@ key		= {{ stunnel_pki_path + "/" + stunnel_pki_realm + "/" + item.pki_key | defa
 
 {% if stunnel_tpl_server %}
 client		= no
-accept		= {{ item.server_accept if item.server_accept|d() else (':::' + item.server_port) }}
+accept		= {{ item.server_accept if item.server_accept | d() else (':::' + item.server_port) }}
 {% if item.server_connect is defined %}
 {% if item.server_connect is string %}
 connect		= {{ item.server_connect }}
@@ -79,7 +79,7 @@ connect		= {{ key + ':' + value }}
 {% endfor %}
 {% else %}
 {% for entry in item.server_connect %}
-connect		= {{ entry + ':' + (item.client_accept.split(':')[-1] if item.client_accept|d() else item.client_port) }}
+connect		= {{ entry + ':' + (item.client_accept.split(':')[-1] if item.client_accept | d() else item.client_port) }}
 {% endfor %}
 {% endif %}
 {% else %}
@@ -90,7 +90,7 @@ connect		= {{ item.client_port }}
 {% endif %}
 {% else %}
 client		= yes
-accept		= {{ item.client_accept if item.client_accept|d() else (':::' + item.client_port) }}
+accept		= {{ item.client_accept if item.client_accept | d() else (':::' + item.client_port) }}
 {% if item.client_connect is defined and item.client_connect %}
 {% if item.client_connect is string %}
 connect		= {{ item.client_connect }}
@@ -100,7 +100,7 @@ connect		= {{ key + ':' + value }}
 {% endfor %}
 {% else %}
 {% for entry in item.client_connect %}
-connect		= {{ entry + ':' + (item.server_accept.split(':')[-1] if item.server_accept|d() else item.server_port) }}
+connect		= {{ entry + ':' + (item.server_accept.split(':')[-1] if item.server_accept | d() else item.server_port) }}
 {% endfor %}
 {% endif %}
 {% endif %}

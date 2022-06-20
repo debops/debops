@@ -200,7 +200,7 @@ influxdb_server__append_groups: [ 'ssl-cert' ]
 influxdb_server__pki_options:
 
   - name: 'http'
-    state: '{{ "present" if influxdb_server__pki|bool else "absent" }}'
+    state: '{{ "present" if influxdb_server__pki | bool else "absent" }}'
     options:
       - https-certificate: '"{{ influxdb_server__pki_path + "/" + influxdb_server__pki_realm +
                                 "/" + influxdb_server__pki_crt }}"'
@@ -208,7 +208,7 @@ influxdb_server__pki_options:
                                 "/" + influxdb_server__pki_key }}"'
 
   - name: 'subscriber'
-    state: '{{ "present" if influxdb_server__pki|bool else "absent" }}'
+    state: '{{ "present" if influxdb_server__pki | bool else "absent" }}'
     options:
       - ca-certs: '"{{ influxdb_server__pki_path + "/" + influxdb_server__pki_realm +
                        "/" + influxdb_server__pki_ca }}"'
@@ -218,7 +218,7 @@ influxdb_server__pki_options:
 #
 # Enable or disable support for SSL in InfluxDB (using :ref:`debops.pki`).
 influxdb_server__pki: '{{ True
-                          if (ansible_local.pki.enabled|d()|bool and
+                          if (ansible_local.pki.enabled | d() | bool and
                               influxdb_server__pki_realm in ansible_local.pki.known_realms)
                           else False }}'
 
@@ -226,13 +226,13 @@ influxdb_server__pki: '{{ True
 # .. envvar:: influxdb_server__pki_path [[[
 #
 # Base path for PKI directory.
-influxdb_server__pki_path: '{{ ansible_local.pki.base_path|d("/etc/pki") }}'
+influxdb_server__pki_path: '{{ ansible_local.pki.base_path | d("/etc/pki") }}'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__pki_realm [[[
 #
 # Default PKI realm used by InfluxDB server.
-influxdb_server__pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
+influxdb_server__pki_realm: '{{ ansible_local.pki.realm | d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: influxdb_server__pki_ca [[[

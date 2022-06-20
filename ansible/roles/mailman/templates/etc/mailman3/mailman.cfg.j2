@@ -27,35 +27,35 @@
 
 
 {% for section in mailman__core_combined_configuration | debops.debops.parse_kv_items %}
-{%   if section.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%   if section.state | d('present') not in [ 'absent', 'ignore', 'init' ] %}
 {%     if not loop.first %}
 
 {%     endif %}
-{%     if section.separator|d() %}
+{%     if section.separator | d() %}
 
 {%     endif %}
-{%     if section.state|d('present') != 'hidden' %}
+{%     if section.state | d('present') != 'hidden' %}
 {{ "[{}]".format(section.name) }}
 {%     endif %}
-{%     if section.comment|d() %}
+{%     if section.comment | d() %}
 {{ section.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
 {%       if section.name == 'paths.debian' %}
 #
 {%       endif %}
 {%     endif %}
-{%     if section.options|d() %}
+{%     if section.options | d() %}
 {%       for option in section.options %}
-{%         if option.state|d('present') not in [ 'absent', 'ignore', 'init' ] %}
-{%           if ((option.comment|d() or option.separator|d()) and
+{%         if option.state | d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%           if ((option.comment | d() or option.separator | d()) and
                  section.name not in [ 'paths.debian' ] and
-                 (not loop.first or section.comment|d())) %}
+                 (not loop.first or section.comment | d())) %}
 
 {%           endif %}
-{%           if option.comment|d() %}
+{%           if option.comment | d() %}
 {{ option.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
 {%           endif %}
 {%           set option_comment = '' %}
-{%           if option.state|d('present') == 'comment' %}
+{%           if option.state | d('present') == 'comment' %}
 {%             set option_comment = '#' %}
 {%           endif %}
 {%           set option_name = (option.option | d(option.name)) %}

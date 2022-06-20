@@ -76,7 +76,7 @@ iscsi__iqn_authority: '{{ ansible_domain }}'
 # saved in Ansible local facts to prevent changes related to the default date
 # field.
 iscsi__iqn: '{{ (ansible_local.iscsi.iqn
-                 if (ansible_local.iscsi.iqn|d())
+                 if (ansible_local.iscsi.iqn | d())
                  else ("iqn." + iscsi__iqn_date + "." +
                        iscsi__iqn_authority.split(".")[::-1] | join("."))) }}'
 
@@ -157,10 +157,10 @@ iscsi__session_auth_password: '{{ lookup("password", secret + "/iscsi/credential
 # Ansible module.
 iscsi__default_options:
   'node.startup':                          '{{ iscsi__node_startup }}'
-  'discovery.sendtargets.auth.authmethod': '{{ "CHAP" if (iscsi__discovery_auth|d(False)) else "None" }}'
+  'discovery.sendtargets.auth.authmethod': '{{ "CHAP" if (iscsi__discovery_auth | d(False)) else "None" }}'
   'discovery.sendtargets.auth.username':   '{{ iscsi__discovery_auth_username }}'
   'discovery.sendtargets.auth.password':   '{{ iscsi__discovery_auth_password }}'
-  'node.session.auth.authmethod':          '{{ "CHAP" if (iscsi__session_auth|d(False)) else "None" }}'
+  'node.session.auth.authmethod':          '{{ "CHAP" if (iscsi__session_auth | d(False)) else "None" }}'
   'node.session.auth.username':            '{{ iscsi__session_auth_username }}'
   'node.session.auth.password':            '{{ iscsi__session_auth_password }}'
                                                                    # ]]]

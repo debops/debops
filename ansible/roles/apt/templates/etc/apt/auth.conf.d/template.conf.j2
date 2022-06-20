@@ -6,7 +6,7 @@
 
 # Authentication credentials for "{{ item.name }}" APT repository
 
-{% if item.comment|d() %}
+{% if item.comment | d() %}
 {{   item.comment | regex_replace('\n$','') | comment(prefix='', postfix='') }}
 {% endif %}
 {{ 'machine {} login {} password {}'.format(item.machine, item.login, item.password) }}

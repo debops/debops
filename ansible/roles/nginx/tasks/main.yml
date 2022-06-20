@@ -107,7 +107,7 @@
   ansible.builtin.service:
     name: 'nginx'
     state: 'restarted'
-  when: (nginx_register_installed|d() and not nginx_register_installed.stat.exists and
+  when: (nginx_register_installed | d() and not nginx_register_installed.stat.exists and
          nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Get list of nameservers configured in /etc/resolv.conf
@@ -152,8 +152,8 @@
     owner: 'root'
     group: 'root'
     mode: '0440'
-  when: (ansible_local|d() and ansible_local.sudo|d() and
-         (ansible_local.sudo.installed|d())|bool and
+  when: (ansible_local | d() and ansible_local.sudo | d() and
+         (ansible_local.sudo.installed | d()) | bool and
          nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Divert original /etc/nginx/nginx.conf
@@ -198,15 +198,15 @@
     group: 'root'
     mode: '0644'
   when: (item.value and nginx__deploy_state in [ 'present', 'config' ])
-  with_dict: '{{ nginx_local_servers|d({}) }}'
+  with_dict: '{{ nginx_local_servers | d({}) }}'
   notify: [ 'Test nginx and reload' ]
 
 - name: Manage local server definitions - remove symlinks
   ansible.builtin.file:
     path: '/etc/nginx/sites-enabled/{{ item.key }}'
     state: 'absent'
-  when: ((not item.value|d()) and nginx__deploy_state in [ 'present', 'config' ])
-  with_dict: '{{ nginx_local_servers|d({}) }}'
+  when: ((not item.value | d()) and nginx__deploy_state in [ 'present', 'config' ])
+  with_dict: '{{ nginx_local_servers | d({}) }}'
   notify: [ 'Test nginx and reload' ]
 
   # If nginx local facts are not present, assume that configuration
@@ -241,7 +241,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: (nginx_pki|bool and nginx__deploy_state in [ 'present', 'config' ])
+  when: (nginx_pki | bool and nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Manage PKI nginx hook
   ansible.builtin.template:
@@ -250,7 +250,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: (nginx_pki|bool and nginx__deploy_state in [ 'present', 'config' ])
+  when: (nginx_pki | bool and nginx__deploy_state in [ 'present', 'config' ])
 
 - name: Ensure the PKI nginx hook is absent
   ansible.builtin.file:

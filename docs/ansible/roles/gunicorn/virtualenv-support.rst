@@ -31,7 +31,7 @@ should be present in the ``virtualenv`` environment:
 
      # Install compatible 'gunicorn' module inside the virtualenv
      - name: 'gunicorn'
-       version: '{{ ansible_local.gunicorn.version|d(omit) }}'
+       version: '{{ ansible_local.gunicorn.version | d(omit) }}'
 
      # Install 'setproctitle' for nice process names
      # (You'll need gcc and the python-dev or python3-dev package for this)
@@ -70,7 +70,7 @@ in your role's :file:`defaults/main.yml` file, like this:
        user: 'app-user'
        group: 'app-group'
        args: [ '--bind=unix:/run/gunicorn/virtualenv-app.sock',
-               '--workers={{ ansible_processor_vcpus|int + 1 }}',
+               '--workers={{ ansible_processor_vcpus | int + 1 }}',
                '--timeout=10' 'virtualenv-app.wsgi' ]
 
 And the corresponding playbook which uses ``debops.gunicorn`` as a dependent

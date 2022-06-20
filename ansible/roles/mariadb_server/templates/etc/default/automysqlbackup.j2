@@ -34,13 +34,13 @@ DBHOST=localhost
 {%   set _ = mariadb_server__tpl_backup_database_names.append(item)       %}
 {%   set _ = mariadb_server__tpl_backup_database_names.append(' | ')      %}
 {% endfor                                                                 %}
-DBNAMES=`mysql --defaults-file=/etc/mysql/debian.cnf --execute="SHOW DATABASES" | awk '{print $1}' | grep -v ^Database$ | grep -v ^mysql$ | grep -v ^performance_schema$ | grep -v ^information_schema$ | {{ mariadb_server__tpl_backup_database_names|join('') }}tr \\\r\\\n ,\ `
+DBNAMES=`mysql --defaults-file=/etc/mysql/debian.cnf --execute="SHOW DATABASES" | awk '{print $1}' | grep -v ^Database$ | grep -v ^mysql$ | grep -v ^performance_schema$ | grep -v ^information_schema$ | {{ mariadb_server__tpl_backup_database_names | join('') }}tr \\\r\\\n ,\ `
 
 # Backup directory location e.g /backups
 # Folders inside this one will be created (daily, weekly, etc.), and the
 # subfolders will be database names. Note that backups will be owned by
 # root, with Unix rights 0600.
-BACKUPDIR="{{ mariadb_server__backup_directory|d('/var/lib/automysqlbackup') }}"
+BACKUPDIR="{{ mariadb_server__backup_directory | d('/var/lib/automysqlbackup') }}"
 
 # Mail setup
 # What would you like to be mailed to you?
@@ -68,7 +68,7 @@ MDBNAMES="mysql $DBNAMES"
 DBEXCLUDE=""
 
 # Include CREATE DATABASE in backup?
-CREATE_DATABASE={{ 'yes' if mariadb_server__backup_create_database|bool else 'no' }}
+CREATE_DATABASE={{ 'yes' if mariadb_server__backup_create_database | bool else 'no' }}
 
 # Separate backup directory and file for each DB? (yes or no)
 SEPDIR=yes

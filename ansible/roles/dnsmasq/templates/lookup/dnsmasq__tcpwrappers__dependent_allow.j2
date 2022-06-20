@@ -8,18 +8,18 @@
 {% for interface in (dnsmasq__combined_interfaces | flatten | debops.debops.parse_kv_items) %}
 {%   set dnsmasq__tpl_ipv4 = [] %}
 {%   set dnsmasq__tpl_ipv6 = [] %}
-{%   if hostvars[inventory_hostname]["ansible_" + interface.name]|d() %}
-{%     if hostvars[inventory_hostname]["ansible_" + interface.name].ipv4|d() %}
+{%   if hostvars[inventory_hostname]["ansible_" + interface.name] | d() %}
+{%     if hostvars[inventory_hostname]["ansible_" + interface.name].ipv4 | d() %}
 {%       set _ = dnsmasq__tpl_ipv4.append(hostvars[inventory_hostname]["ansible_" + interface.name].ipv4.address + '/'
                                           + (hostvars[inventory_hostname]["ansible_" + interface.name].ipv4.address + '/'
-                                             + hostvars[inventory_hostname]["ansible_" + interface.name].ipv4.netmask) | ipaddr('prefix')|string) %}
-{%       if hostvars[inventory_hostname]["ansible_" + interface.name].ipv4_secondaries|d() %}
+                                             + hostvars[inventory_hostname]["ansible_" + interface.name].ipv4.netmask) | ipaddr('prefix') | string) %}
+{%       if hostvars[inventory_hostname]["ansible_" + interface.name].ipv4_secondaries | d() %}
 {%         for element in hostvars[inventory_hostname]["ansible_" + interface.name].ipv4_secondaries %}
-{%           set _ = dnsmasq__tpl_ipv4.append(element.address + '/' + (element.address + '/' + element.netmask) | ipaddr('prefix')|string) %}
+{%           set _ = dnsmasq__tpl_ipv4.append(element.address + '/' + (element.address + '/' + element.netmask) | ipaddr('prefix') | string) %}
 {%         endfor %}
 {%       endif %}
 {%     endif %}
-{%     if hostvars[inventory_hostname]["ansible_" + interface.name].ipv6|d() %}
+{%     if hostvars[inventory_hostname]["ansible_" + interface.name].ipv6 | d() %}
 {%       for element in hostvars[inventory_hostname]["ansible_" + interface.name].ipv6 %}
 {%         if not element.address | ipv6('link-local') %}
 {%           set _ = dnsmasq__tpl_ipv6.append(element.address + '/' + element.prefix) %}
@@ -27,7 +27,7 @@
 {%       endfor %}
 {%     endif %}
 {%   endif %}
-{%   if interface.address|d() %}
+{%   if interface.address | d() %}
 {%     for element in ([ interface.address ] if interface.address is string else interface.address) %}
 {%       if element | ipv4('host/prefix') %}
 {%         set _ = dnsmasq__tpl_ipv4.append(element) %}
@@ -36,7 +36,7 @@
 {%       endif %}
 {%     endfor %}
 {%   endif %}
-{%   if interface.addresses|d() %}
+{%   if interface.addresses | d() %}
 {%     for element in ([ interface.addresses ] if interface.addresses is string else interface.addresses) %}
 {%       if element | ipv4('host/prefix') %}
 {%         set _ = dnsmasq__tpl_ipv4.append(element) %}
@@ -45,7 +45,7 @@
 {%       endif %}
 {%     endfor %}
 {%   endif %}
-{%   if (interface.state|d('present') != 'absent' and (interface.boot_enabled|d(dnsmasq__boot_enabled))|bool) %}
+{%   if (interface.state | d('present') != 'absent' and (interface.boot_enabled | d(dnsmasq__boot_enabled)) | bool) %}
 {%     set _ = dnsmasq__tpl_subnets.extend(dnsmasq__tpl_ipv4 + dnsmasq__tpl_ipv6) %}
 {%   endif %}
 {% endfor %}
@@ -55,6 +55,6 @@
   "weight": 50,
   "filename": "dnsmasq_dependent_allow",
   "comment": "Allow remote connections to TFTP server",
-  "state": ("present" if (dnsmasq__boot_enabled|bool and dnsmasq__tpl_subnets|d()) else "absent")
+  "state": ("present" if (dnsmasq__boot_enabled | bool and dnsmasq__tpl_subnets | d()) else "absent")
 }) %}
 {{ dnsmasq__tpl_tcpwrappers__dependent_allow | to_nice_yaml }}

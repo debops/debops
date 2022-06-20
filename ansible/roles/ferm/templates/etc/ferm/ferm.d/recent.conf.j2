@@ -11,39 +11,39 @@
 {% set ferm__tpl_domain = ferm__domains %}
 {% set ferm__tpl_table = [ 'filter' ] %}
 {% set ferm__tpl_chain = [ 'INPUT' ] %}
-{% if item.domain|d() %}
+{% if item.domain | d() %}
 {%   if item.domain is string %}
 {%     set ferm__tpl_domain = [ item.domain ] %}
 {%   else %}
 {%     set ferm__tpl_domain = item.domain | unique %}
 {%   endif %}
-{% elif item.domains|d() %}
+{% elif item.domains | d() %}
 {%   if item.domains is string %}
 {%     set ferm__tpl_domain = [ item.domains ] %}
 {%   else %}
 {%     set ferm__tpl_domain = item.domains | unique %}
 {%   endif %}
 {% endif %}
-{% if item.table|d() %}
+{% if item.table | d() %}
 {%   if item.table is string %}
 {%     set ferm__tpl_table = [ item.table ] %}
 {%   else %}
 {%     set ferm__tpl_table = item.table | unique %}
 {%   endif %}
-{% elif item.tables|d() %}
+{% elif item.tables | d() %}
 {%   if item.tables is string %}
 {%     set ferm__tpl_table = [ item.tables ] %}
 {%   else %}
 {%     set ferm__tpl_table = item.tables | unique %}
 {%   endif %}
 {% endif %}
-{% if item.chain|d() %}
+{% if item.chain | d() %}
 {%   if item.chain is string %}
 {%     set ferm__tpl_chain = [ item.chain ] %}
 {%   else %}
 {%     set ferm__tpl_chain = item.chain | unique %}
 {%   endif %}
-{% elif item.chains|d() %}
+{% elif item.chains | d() %}
 {%   if item.chains is string %}
 {%     set ferm__tpl_chain = [ item.chains ] %}
 {%   else %}
@@ -87,13 +87,13 @@
 {% set ferm__tpl_recent_remove = False %}
 {% set ferm__tpl_recent_seconds = '' %}
 {% set ferm__tpl_recent_hitcount = '' %}
-{% if item.protocol|d() %}
+{% if item.protocol | d() %}
 {%   if item.protocol is string %}
 {%     set ferm__tpl_protocol = [ item.protocol ] %}
 {%   else %}
 {%     set ferm__tpl_protocol = item.protocol | unique %}
 {%   endif %}
-{% elif item.protocols|d() %}
+{% elif item.protocols | d() %}
 {%   if item.protocols is string %}
 {%     set ferm__tpl_protocol = [ item.protocols ] %}
 {%   else %}
@@ -107,14 +107,14 @@
 {%     set ferm__tpl_protocol_syn = [ '! syn' ] %}
 {%   endif %}
 {% endif %}
-{% if item.dport|d() %}
+{% if item.dport | d() %}
 {%   if item.dport is string %}
 {%     set ferm__tpl_dport = [ item.dport ] %}
 {%   else %}
 {%     set ferm__tpl_dport = item.dport | unique %}
 {%   endif %}
 {% endif %}
-{% if item.state|d() %}
+{% if item.state | d() %}
 {%   if item.state is string %}
 {%     set ferm__tpl_state = [ item.state ] %}
 {%   else %}
@@ -128,27 +128,27 @@
 {%     set ferm__tpl_subchain = '' %}
 {%   endif %}
 {% endif %}
-{% if item.recent_name|d() %}
+{% if item.recent_name | d() %}
 {%   set ferm__tpl_recent_name = item.recent_name %}
-{% elif item.recent_set_name|d() %}
+{% elif item.recent_set_name | d() %}
 {%   set ferm__tpl_recent_set_name = item.recent_set_name %}
 {% endif %}
-{% if item.recent_update|d() and item.recent_update | bool %}
+{% if item.recent_update | d() and item.recent_update | bool %}
 {%   set ferm__tpl_recent_update = True %}
 {% endif %}
-{% if item.recent_remove|d() and item.recent_remove | bool %}
+{% if item.recent_remove | d() and item.recent_remove | bool %}
 {%   set ferm__tpl_recent_remove = True %}
 {% endif %}
-{% if item.recent_seconds|d() %}
+{% if item.recent_seconds | d() %}
 {%   set ferm__tpl_recent_seconds = item.recent_seconds | string %}
 {% endif %}
-{% if item.recent_hitcount|d() %}
+{% if item.recent_hitcount | d() %}
 {%   set ferm__tpl_recent_hitcount = item.recent_hitcount | string %}
 {% endif %}
-{% if item.recent_target|d() %}
+{% if item.recent_target | d() %}
 {%   set ferm__tpl_recent_target = item.recent_target %}
 {% endif %}
-{% if item.reject_with|d() %}
+{% if item.reject_with | d() %}
 {%   set ferm__tpl_reject_with = item.reject_with %}
 {% endif %}
 {% set ferm__tpl_arguments = [] %}
@@ -165,7 +165,7 @@
 {%   set _ = ferm__tpl_arguments.append(ferm__tpl_protocol_syn | join(" ")) %}
 {% endif %}
 {% if ferm__tpl_dport %}
-{%   if item.multiport|d() and item.multiport | bool %}
+{%   if item.multiport | d() and item.multiport | bool %}
 {%     if ferm__tpl_dport | length == 1 %}
 {%       set _ = ferm__tpl_arguments.append("dport " +  ferm__tpl_dport | join(" ")) %}
 {%     else %}
@@ -211,7 +211,7 @@
 {% endif %}
 {# Main template #}
 {# ============= #}
-{% if item.comment|d() %}
+{% if item.comment | d() %}
 # {{ item.comment }}
 
 {% endif %}
@@ -226,13 +226,13 @@
 {%   endif %}
 {%   if ferm__tpl_recent_target %}
 {%     if ferm__tpl_recent_target not in [ 'ACCEPT', 'DROP', 'REJECT', 'RETURN', 'NOP' ] %}
-{%       if item.include|d() %}
+{%       if item.include | d() %}
 
             @include "{{ item.include }}";
 {%       elif item.realgoto is undefined or not item.realgoto | bool %}
 
             jump "{{ ferm__tpl_recent_target }}";
-{%       elif item.realgoto|d() and item.realgoto | bool %}
+{%       elif item.realgoto | d() and item.realgoto | bool %}
 
             realgoto "{{ ferm__tpl_recent_target }}";
 {%       endif %}

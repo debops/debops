@@ -33,7 +33,7 @@ sysctl__enabled: True
 # the current namespace (host, VM, container). The path elements need to be
 # separated by a dot (``.``) instead of a slash (``/``).
 # See :ref:`sysctl__ref_writable` for more details.
-sysctl__writable: '{{ ansible_local.sysctl.writable|d([]) }}'
+sysctl__writable: '{{ ansible_local.sysctl.writable | d([]) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Shared memory configuration [[[
@@ -49,15 +49,15 @@ sysctl__shared_memory_base: '{{ ((ansible_memtotal_mb | int * 1024 * 1024) - 819
 #
 # How much of the total memory is reserved for shared memory.
 sysctl__shared_memory_shmall_limiter: '{{ 0.8
-                                          if (ansible_memtotal_mb|int >= 4096)
+                                          if (ansible_memtotal_mb | int >= 4096)
                                           else 0.5 }}'
 
                                                                    # ]]]
 # .. envvar:: sysctl__shared_memory_shmall [[[
 #
 # Number of memory pages that can be used for shared memory.
-sysctl__shared_memory_shmall: '{{ ((sysctl__shared_memory_base|int *
-                                    sysctl__shared_memory_shmall_limiter|float) / 4096)
+sysctl__shared_memory_shmall: '{{ ((sysctl__shared_memory_base | int *
+                                    sysctl__shared_memory_shmall_limiter | float) / 4096)
                                   | round | int }}'
 
                                                                    # ]]]
@@ -65,15 +65,15 @@ sysctl__shared_memory_shmall: '{{ ((sysctl__shared_memory_base|int *
 #
 # Maximum size of shared memory segment as % of available memory
 sysctl__shared_memory_max_limiter: '{{ 0.5
-                                       if (ansible_memtotal_mb|int >= 4096)
+                                       if (ansible_memtotal_mb | int >= 4096)
                                        else 0.2 }}'
 
                                                                    # ]]]
 # .. envvar:: sysctl__shared_memory_shmmax [[[
 #
 # Maximum amount of shared memory a process can reserve for itself
-sysctl__shared_memory_shmmax: '{{ (sysctl__shared_memory_base|int *
-                                   sysctl__shared_memory_max_limiter|float)
+sysctl__shared_memory_shmmax: '{{ (sysctl__shared_memory_base | int *
+                                   sysctl__shared_memory_max_limiter | float)
                                    | round | int }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -91,7 +91,7 @@ sysctl__hardening_enabled: True
 # Should the system forward IP traffic for all interfaces?
 # Refer to ``debops.ifupdown`` which can selectively enable traffic forwarding.
 sysctl__system_ip_forwarding_enabled: '{{ True
-                                          if ansible_local.docker_server.installed|d(False)
+                                          if ansible_local.docker_server.installed | d(False)
                                           else False }}'
 
                                                                    # ]]]
@@ -161,34 +161,34 @@ sysctl__default_parameters:
     options:
 
       - name: 'net.ipv4.ip_forward'
-        value: '{{ sysctl__system_ip_forwarding_enabled|bool | ternary(1, 0) }}'
+        value: '{{ sysctl__system_ip_forwarding_enabled | bool | ternary(1, 0) }}'
         comment: 'Enable or disable IPv4 traffic forwarding'
         state: 'present'
 
       - name: 'net.ipv6.conf.all.forwarding'
-        value: '{{ sysctl__system_ip_forwarding_enabled|bool | ternary(1, 0) }}'
+        value: '{{ sysctl__system_ip_forwarding_enabled | bool | ternary(1, 0) }}'
         comment: 'Enable or disable IPv6 traffic forwarding'
         state: 'present'
 
       - name: 'net.ipv6.conf.all.accept_ra'
         value: 0
         comment: 'Ignore IPv6 RAs.'
-        state: '{{ sysctl__hardening_enabled|bool | ternary("present", "absent") }}'
+        state: '{{ sysctl__hardening_enabled | bool | ternary("present", "absent") }}'
 
       - name: 'net.ipv6.conf.default.accept_ra'
         value: 0
         comment: 'Ignore IPv6 RAs.'
-        state: '{{ sysctl__hardening_enabled|bool | ternary("present", "absent") }}'
+        state: '{{ sysctl__hardening_enabled | bool | ternary("present", "absent") }}'
 
       - name: 'net.ipv4.conf.all.rp_filter'
         value: 1
         comment: 'Enable RFC-recommended source validation feature.'
-        state: '{{ sysctl__hardening_enabled|bool | ternary("present", "absent") }}'
+        state: '{{ sysctl__hardening_enabled | bool | ternary("present", "absent") }}'
 
       - name: 'net.ipv4.conf.default.rp_filter'
         value: 1
         comment: 'Enable RFC-recommended source validation feature.'
-        state: '{{ sysctl__hardening_enabled|bool | ternary("present", "absent") }}'
+        state: '{{ sysctl__hardening_enabled | bool | ternary("present", "absent") }}'
 
       - name: 'net.ipv4.icmp_echo_ignore_broadcasts'
         value: 1
@@ -196,7 +196,7 @@ sysctl__default_parameters:
           Reduce the surface on SMURF attacks.
           Make sure to ignore ECHO broadcasts, which are only required in broad
           network analysis.
-        state: '{{ sysctl__hardening_enabled|bool | ternary("present", "absent") }}'
+        state: '{{ sysctl__hardening_enabled | bool | ternary("present", "absent") }}'
 
       - name: 'net.ipv4.icmp_ignore_bogus_error_responses'
         value: 1
@@ -204,12 +204,12 @@ sysctl__default_parameters:
           Do not log bogus ICMP error responses.
           Nobody would want to accept bogus error responses, so we can safely
           ignore them.
-        state: '{{ sysctl__hardening_enabled|bool | ternary("present", "absent") }}'
+        state: '{{ sysctl__hardening_enabled | bool | ternary("present", "absent") }}'
 
       - name: 'net.ipv4.icmp_ratelimit'
         value: 100
         comment: 'Limit the amount of traffic the system uses for ICMP.'
-        state: '{{ sysctl__hardening_enabled|bool | ternary("present", "absent") }}'
+        state: '{{ sysctl__hardening_enabled | bool | ternary("present", "absent") }}'
 
       - name: 'net.ipv4.icmp_ratemask'
         value: 88089
@@ -217,42 +217,42 @@ sysctl__default_parameters:
           Adjust the ICMP ratelimit to include ping, dst unreachable,
           source quench, ime exceed, param problem, timestamp reply,
           information reply
-        state: '{{ sysctl__hardening_enabled|bool | ternary("present", "absent") }}'
+        state: '{{ sysctl__hardening_enabled | bool | ternary("present", "absent") }}'
 
       - name: 'net.ipv6.conf.all.disable_ipv6'
         value: 1
         comment: 'Disable IPv6.'
-        state: '{{ sysctl__hardening_ipv6_disabled|bool | ternary("present", "absent") }}'
+        state: '{{ sysctl__hardening_ipv6_disabled | bool | ternary("present", "absent") }}'
 
       - name: 'net.ipv4.tcp_timestamps'
         value: 0
         comment: 'Protect against wrapping sequence numbers at gigabit speeds.'
-        state: '{{ (sysctl__hardening_enabled|bool and
+        state: '{{ (sysctl__hardening_enabled | bool and
                     not (ansible_virtualization_role == "guest" and ansible_virtualization_type == "openvz"))
                   | ternary("present", "absent") }}'
 
       - name: 'net.ipv4.conf.all.arp_ignore'
         value: 1
         comment: 'Define restriction level for announcing the local source IP.'
-        state: '{{ sysctl__hardening_experimental_enabled|bool | ternary("present", "absent") }}'
+        state: '{{ sysctl__hardening_experimental_enabled | bool | ternary("present", "absent") }}'
 
       - name: 'net.ipv4.conf.all.arp_announce'
         value: 2
         comment: |
           Define mode for sending replies in response to received ARP requests
           that resolve local target IP addresses
-        state: '{{ sysctl__hardening_experimental_enabled|bool | ternary("present", "absent") }}'
+        state: '{{ sysctl__hardening_experimental_enabled | bool | ternary("present", "absent") }}'
 
       - name: 'net.ipv4.tcp_rfc1337'
         value: 1
         comment: 'RFC 1337 fix F1.'
-        state: '{{ (sysctl__hardening_enabled|bool and
+        state: '{{ (sysctl__hardening_enabled | bool and
                     not (ansible_virtualization_role == "guest" and
                          ansible_virtualization_type == "openvz"))
                   | ternary("present", "absent") }}'
 
       - name: 'net.ipv4.tcp_slow_start_after_idle'
-        value: '{{ sysctl__tcp_performance_enabled|bool | ternary(0, 1) }}'
+        value: '{{ sysctl__tcp_performance_enabled | bool | ternary(0, 1) }}'
         comment: |
           If set, provide RFC2861 behavior and time out the congestion window
           after an idle period. An idle period is defined at the current RTO.

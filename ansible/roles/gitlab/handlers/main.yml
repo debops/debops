@@ -8,14 +8,14 @@
     name: 'gitlab'
     state: 'restarted'
   notify: [ 'Tell Phusion Passenger to restart', 'Deactivate GitLab deploy.html page' ]
-  when: (not gitlab_use_systemd|bool and ansible_local is defined and ansible_local.gitlab is defined and
+  when: (not gitlab_use_systemd | bool and ansible_local is defined and ansible_local.gitlab is defined and
          ansible_local.gitlab.installed)
 
 - name: Restart gitaly
   ansible.builtin.service:
     name: 'gitaly'
     state: 'restarted'
-  when: (not gitlab_use_systemd|bool and ansible_local is defined and ansible_local.gitlab is defined and
+  when: (not gitlab_use_systemd | bool and ansible_local is defined and ansible_local.gitlab is defined and
          ansible_local.gitlab.installed)
 
 - name: Restart gitlab.slice
@@ -23,7 +23,7 @@
     name: 'gitlab.slice'
     state: 'restarted'
   notify: [ 'Tell Phusion Passenger to restart', 'Deactivate GitLab deploy.html page' ]
-  when: (gitlab_use_systemd|bool and ansible_local is defined and ansible_local.gitlab is defined and
+  when: (gitlab_use_systemd | bool and ansible_local is defined and ansible_local.gitlab is defined and
          ansible_local.gitlab.installed)
 
 - name: Tell Phusion Passenger to restart
@@ -31,7 +31,7 @@
     path: '{{ gitlab_ce_git_checkout + "/tmp/restart.txt" }}'
     state: 'touch'
     mode: '0644'
-  when: (ansible_local|d() and ansible_local.nginx|d() and
+  when: (ansible_local | d() and ansible_local.nginx | d() and
          ansible_local.nginx.flavor == 'passenger')
 
 - name: Deactivate GitLab deploy.html page

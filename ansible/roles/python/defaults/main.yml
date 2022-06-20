@@ -115,13 +115,13 @@ python__dependent_packages3: []
 # purge Python 2.7 packages automatically. This can be controlled by the
 # :envvar:`python__raw_purge_v2` variable.
 python__v2: '{{ ansible_local.python.enabled2
-                if (ansible_local|d() and ansible_local.python|d() and
+                if (ansible_local | d() and ansible_local.python | d() and
                     ansible_local.python.enabled2 is defined)
                 else (True
-                      if ((ansible_python_interpreter|d("")).endswith("python") or
-                          (discovered_interpreter_python|d("")).endswith("python") or
-                           (python__register_raw_release|d() and
-                            (python__register_raw_release.stdout|d("")).strip() in
+                      if ((ansible_python_interpreter | d("")).endswith("python") or
+                          (discovered_interpreter_python | d("")).endswith("python") or
+                           (python__register_raw_release | d() and
+                            (python__register_raw_release.stdout | d("")).strip() in
                             [ "stretch", "trusty", "xenial" ]))
                       else False) }}'
 
@@ -192,9 +192,9 @@ python__dependent_packages2: []
 # for installation. These packages will be installed in the "raw" mode as well
 # as during normal operation. This variable is used in the role tasks.
 python__core_packages: '{{ (python__core_packages3
-                            if (python__v3|bool) else [])
+                            if (python__v3 | bool) else [])
                            + (python__core_packages2
-                              if (python__v2|bool) else []) }}'
+                              if (python__v2 | bool) else []) }}'
 
                                                                    # ]]]
 # .. envvar:: python__combined_packages [[[
@@ -207,13 +207,13 @@ python__combined_packages: '{{ python__core_packages
                                    + python__group_packages3
                                    + python__host_packages3
                                    + python__dependent_packages3)
-                                  if python__v3|bool else [])
+                                  if python__v3 | bool else [])
                                + ((python__base_packages2
                                    + python__packages2
                                    + python__group_packages2
                                    + python__host_packages2
                                    + python__dependent_packages2)
-                                  if python__v2|bool else []) }}'
+                                  if python__v2 | bool else []) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Python 2 package purging [[[
@@ -230,7 +230,7 @@ python__combined_packages: '{{ python__core_packages
 # The packages will not be purged if the role detects the presence of the
 # :file:`/etc/ansible/facts.d/python.fact` script.
 python__raw_purge_v2: '{{ False
-                          if (python__v2|bool)
+                          if (python__v2 | bool)
                           else True }}'
 
                                                                    # ]]]

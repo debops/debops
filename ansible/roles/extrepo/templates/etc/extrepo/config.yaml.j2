@@ -6,7 +6,7 @@
 # {{ ansible_managed }}
 {% set extrepo__tpl_configuration = {} %}
 {% for element in extrepo__combined_configuration | debops.debops.parse_kv_items %}
-{%   if element.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%   if element.state | d('present') not in [ 'absent', 'init', 'ignore' ] %}
 {%     set combined_config = extrepo__tpl_configuration | combine(element.config, recursive=True) %}
 {%     set _ = extrepo__tpl_configuration.update(combined_config) %}
 {%   endif %}

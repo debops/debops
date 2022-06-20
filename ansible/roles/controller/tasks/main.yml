@@ -27,26 +27,26 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: controller__install_systemwide|bool
+  when: controller__install_systemwide | bool
 
 - name: Update roles and playbooks
-  become: '{{ controller__install_systemwide|bool }}'
+  become: '{{ controller__install_systemwide | bool }}'
   ansible.builtin.command: debops-update
   when: controller__update_method == 'sync'
 
 - name: Clone project repository
-  become: '{{ controller__install_systemwide|bool }}'
+  become: '{{ controller__install_systemwide | bool }}'
   ansible.builtin.git:
     repo: '{{ controller__project_git_repo }}'
     dest: '{{ controller__project_name if controller__project_name else controller__project_git_repo | basename }}'
     version: 'master'
     update: True
-  when: controller__project_git_repo|d()
+  when: controller__project_git_repo | d()
 
 - name: Initialize new project
-  become: '{{ controller__install_systemwide|bool }}'
+  become: '{{ controller__install_systemwide | bool }}'
   ansible.builtin.command: debops-init '{{ controller__project_name }}'
   args:
     creates: '{{ controller__project_name }}/.debops.cfg'
-  when: controller__project_name|d() and
-        not controller__project_git_repo|d()
+  when: controller__project_name | d() and
+        not controller__project_git_repo | d()

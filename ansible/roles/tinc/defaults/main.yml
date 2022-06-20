@@ -87,7 +87,7 @@ tinc__packages: []
 # This list defines which hosts in Ansible inventory participate in a Tinc VPN.
 # They will have their own directories in the :file:`secret/` store on the Ansible
 # Controller used to distribute public host keys.
-tinc__inventory_hosts: '{{ groups.debops_service_tinc|d([]) }}'
+tinc__inventory_hosts: '{{ groups.debops_service_tinc | d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: tinc__inventory_self [[[
@@ -142,7 +142,7 @@ tinc__home: '/etc/tinc'
 # Specify the maximum amount of memory that shouldn't be moved to swap
 # ("memlock) by the kernel. This value is passed to the :command:`ulimit`
 # command and defined in the :command:`tinc` :command:`systemd` unit file.
-tinc__ulimit_memlock: '{{ (1024 * tinc__rsa_key_length|int * 16) }}'
+tinc__ulimit_memlock: '{{ (1024 * tinc__rsa_key_length | int * 16) }}'
 
                                                                    # ]]]
 # .. envvar:: tinc__ulimit_options [[[
@@ -163,7 +163,7 @@ tinc__extra_options: ''
 #
 # Enable support for ``systemd`` if it is detected as the init system.
 tinc__systemd: '{{ True
-                   if (ansible_service_mgr|d("unknown") == "systemd")
+                   if (ansible_service_mgr | d("unknown") == "systemd")
                    else False }}'
 
                                                                    # ]]]
@@ -226,24 +226,24 @@ tinc__host_addresses: '{{ tinc__host_addresses_fqdn +
 #
 # Include the host FQDN if public IP addresses are available.
 tinc__host_addresses_fqdn: '{{ [ ansible_fqdn ]
-                               if ((ansible_all_ipv4_addresses|d([]) + (ansible_all_ipv6_addresses|d([]) |
-                                   difference(ansible_all_ipv6_addresses|d([]) | ipaddr("link-local")))
+                               if ((ansible_all_ipv4_addresses | d([]) + (ansible_all_ipv6_addresses | d([]) |
+                                   difference(ansible_all_ipv6_addresses | d([]) | ipaddr("link-local")))
                                    ) | ipaddr("public")) else [] }}'
 
                                                                    # ]]]
 # .. envvar:: tinc__host_addresses_ip_public [[[
 #
 # Include all public IP addresses, without IPv6 link-local.
-tinc__host_addresses_ip_public: '{{ (ansible_all_ipv4_addresses|d([]) + (ansible_all_ipv6_addresses|d([]) |
-                                     difference(ansible_all_ipv6_addresses|d([]) | ipaddr("link-local")))
+tinc__host_addresses_ip_public: '{{ (ansible_all_ipv4_addresses | d([]) + (ansible_all_ipv6_addresses | d([]) |
+                                     difference(ansible_all_ipv6_addresses | d([]) | ipaddr("link-local")))
                                     ) | ipaddr("public") }}'
 
                                                                    # ]]]
 # .. envvar:: tinc__host_addresses_ip_private [[[
 #
 # Include all private IP addresses, without IPv6 link-local.
-tinc__host_addresses_ip_private: '{{ (ansible_all_ipv4_addresses|d([]) + (ansible_all_ipv6_addresses|d([]) |
-                                      difference(ansible_all_ipv6_addresses|d([]) | ipaddr("link-local")))
+tinc__host_addresses_ip_private: '{{ (ansible_all_ipv4_addresses | d([]) + (ansible_all_ipv6_addresses | d([]) |
+                                      difference(ansible_all_ipv6_addresses | d([]) | ipaddr("link-local")))
                                      ) | ipaddr("private") }}'
 
                                                                    # ]]]
@@ -322,7 +322,7 @@ tinc__persistent_paths__dependent_paths:
         '/etc/systemd/system/tinc@.service',
         '/etc/systemd/system/multi-user.target.wants/tinc.service',
       ] + ((ansible_local.tinc.networks.keys() | map("regex_replace", "^", "/etc/default/tinc-") | list)
-           if (ansible_local.tinc.networks|d())
+           if (ansible_local.tinc.networks | d())
            else [])
       }}
 # ]]]

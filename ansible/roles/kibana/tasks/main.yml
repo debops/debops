@@ -29,7 +29,7 @@
     name: '{{ kibana__user }}'
     groups: '{{ kibana__additional_groups }}'
     append: True
-  when: kibana__additional_groups|d()
+  when: kibana__additional_groups | d()
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:
@@ -58,7 +58,7 @@
   register: kibana__register_dependent_config_file
   become: False
   delegate_to: 'localhost'
-  when: (ansible_local.kibana.installed|d())
+  when: (ansible_local.kibana.installed | d())
   tags: [ 'role::kibana:config' ]
 
 - name: Load the dependent configuration from Ansible Controller
@@ -67,8 +67,8 @@
   register: kibana__register_dependent_config
   become: False
   delegate_to: 'localhost'
-  when: (ansible_local.kibana.installed|d() and
-         kibana__register_dependent_config_file.stat.exists|bool)
+  when: (ansible_local.kibana.installed | d() and
+         kibana__register_dependent_config_file.stat.exists | bool)
   tags: [ 'role::kibana:config' ]
 
 - name: Divert original configuration files
@@ -108,7 +108,7 @@
   become_user: '{{ item.user | d(kibana__user) }}'
   with_flattened:
     - '{{ kibana__combined_plugins }}'
-  when: (item.name|d() and item.state|d('present') != 'absent' and
+  when: (item.name | d() and item.state | d('present') != 'absent' and
          (item.name if ':' not in item.name else item.name.split(':')[1]) not in kibana__register_plugins.stdout_lines)
 
 - name: Remove Kibana plugins
@@ -120,7 +120,7 @@
   become_user: '{{ item.user | d(kibana__user) }}'
   with_flattened:
     - '{{ kibana__combined_plugins }}'
-  when: (item.name|d() and item.state|d('present') == 'absent' and
+  when: (item.name | d() and item.state | d('present') == 'absent' and
          (item.name if ':' not in item.name else item.name.split(':')[1]) in kibana__register_plugins.stdout_lines)
 
 # The keystore handling is very similar to ../../metricbeat/tasks/main.yml
@@ -142,7 +142,7 @@
     chdir: '/usr/share/kibana'
   register: kibana__register_keys
   changed_when: False
-  check_mode: '{{ False if ansible_local.kibana.installed|d() else omit }}'
+  check_mode: '{{ False if ansible_local.kibana.installed | d() else omit }}'
 
 - name: Remove key from Kibana keystore when requested
   ansible.builtin.command: 'bin/kibana-keystore remove {{ item.name }}'
@@ -152,7 +152,7 @@
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
   notify: [ 'Restart kibana' ]
-  when: (item.state|d('present') == 'absent' and
+  when: (item.state | d('present') == 'absent' and
          item.name in kibana__register_keys.stdout_lines)
   no_log: '{{ debops__no_log | d(True) }}'
 
@@ -173,9 +173,9 @@
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
   notify: [ 'Restart kibana' ]
-  when: (item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
+  when: (item.state | d('present') not in [ 'absent', 'ignore', 'init' ] and
          (item.name not in kibana__register_keys.stdout_lines or
-          (item.force|d(False))|bool))
+          (item.force | d(False)) | bool))
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Save Kibana dependent configuration on Ansible Controller

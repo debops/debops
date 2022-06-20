@@ -120,8 +120,8 @@ pki_vcs_ignore_patterns_host: []
 #
 # Enable or disable support for ACME certificates.
 pki_acme: '{{ (True
-               if (((ansible_all_ipv4_addresses|d([]) +
-                    ansible_all_ipv6_addresses|d([])) | ipaddr("public") and
+               if (((ansible_all_ipv4_addresses | d([]) +
+                    ansible_all_ipv6_addresses | d([])) | ipaddr("public") and
                     pki_default_domain)
                   or pki_acme_type != "acme-tiny" )
                else False) | bool }}'
@@ -227,7 +227,7 @@ pki_acme_ca_api_map:
 # List of (mailto:) URLs that the ACME server can use to contact you for issues
 # related to your account. For example, the server may wish to notify you about
 # server-initiated revocation or certificate expiration.
-pki_acme_contacts: [ 'mailto:{{ ansible_local.core.admin_public_email[0]|d("root@" + ansible_domain) }}' ]
+pki_acme_contacts: [ 'mailto:{{ ansible_local.core.admin_public_email[0] | d("root@" + ansible_domain) }}' ]
 
                                                                    # ]]]
 # .. envvar:: pki_acme_challenge_dir [[[
@@ -235,7 +235,7 @@ pki_acme_contacts: [ 'mailto:{{ ansible_local.core.admin_public_email[0]|d("root
 # Directory where the ACME client should store responses to ACME CA challenges.
 # By default it's defined by the ``debops.nginx`` Ansible role using Ansible
 # facts.
-pki_acme_challenge_dir: '{{ ansible_local.nginx.acme_root|d("/srv/www/sites/acme/public")
+pki_acme_challenge_dir: '{{ ansible_local.nginx.acme_root | d("/srv/www/sites/acme/public")
                             + "/.well-known/acme-challenge" }}'
 
                                                                    # ]]]
@@ -243,8 +243,8 @@ pki_acme_challenge_dir: '{{ ansible_local.nginx.acme_root|d("/srv/www/sites/acme
 #
 # Whether the directory where the ACME client should store responses
 # should be created.
-pki_create_acme_challenge_dir: '{{ True if (ansible_local.nginx.acme|d() and
-                                            ansible_local.nginx.acme|bool) else False }}'
+pki_create_acme_challenge_dir: '{{ True if (ansible_local.nginx.acme | d() and
+                                            ansible_local.nginx.acme | bool) else False }}'
                                                                    # ]]]
                                                                    # ]]]
 # Certbot configuration [[[
@@ -302,28 +302,28 @@ pki_base_packages: [ 'ssl-cert', 'make', 'ca-certificates',
 #
 # List of APT packages required by ACME support.
 pki_acme_packages:
-  - '{{ "curl" if (pki_acme_type == "acme-tiny" and pki_acme_install|bool) else [] }}'
-  - '{{ "git" if (pki_acme_type == "acme-tiny" and pki_acme_install|bool) else [] }}'
-  - '{{ [] if (pki_acme_install|bool == false or ansible_distribution_release in
+  - '{{ "curl" if (pki_acme_type == "acme-tiny" and pki_acme_install | bool) else [] }}'
+  - '{{ "git" if (pki_acme_type == "acme-tiny" and pki_acme_install | bool) else [] }}'
+  - '{{ [] if (pki_acme_install | bool == false or ansible_distribution_release in
                [ "stretch", "trusty", "xenial", "bionic" ])
            else "acme-tiny" if (pki_acme_type == "acme-tiny") else [] }}'
-  - '{{ "python3-certbot-dns-cloudflare" if (pki_acme_type == "dns-cloudflare" and pki_acme_install|bool) else [] }}'
-  - '{{ "python3-certbot-dns-digitalocean" if (pki_acme_type == "dns-digitalocean" and pki_acme_install|bool) else [] }}'
-  - '{{ "python3-certbot-dns-dnsimple" if (pki_acme_type == "dns-dnsimple" and pki_acme_install|bool) else [] }}'
-  - '{{ "python3-certbot-dns-gehirn" if (pki_acme_type == "dns-gehirn" and pki_acme_install|bool) else [] }}'
-  - '{{ "python3-certbot-dns-google" if (pki_acme_type == "dns-google" and pki_acme_install|bool) else [] }}'
-  - '{{ "python3-certbot-dns-linode" if (pki_acme_type == "dns-linode" and pki_acme_install|bool) else [] }}'
-  - '{{ "python3-certbot-dns-ovh" if (pki_acme_type == "dns-ovh" and pki_acme_install|bool) else [] }}'
-  - '{{ "python3-certbot-dns-rfc2136" if (pki_acme_type == "dns-rfc2136" and pki_acme_install|bool) else [] }}'
-  - '{{ "python3-certbot-dns-route53" if (pki_acme_type == "dns-route53" and pki_acme_install|bool) else [] }}'
-  - '{{ "python3-certbot-dns-sakuracloud" if (pki_acme_type == "dns-sakuracloud" and pki_acme_install|bool) else [] }}'
-  - '{{ "python3-certbot-dns-gandi" if (pki_acme_type == "dns-gandi" and pki_acme_install|bool) else [] }}'
+  - '{{ "python3-certbot-dns-cloudflare" if (pki_acme_type == "dns-cloudflare" and pki_acme_install | bool) else [] }}'
+  - '{{ "python3-certbot-dns-digitalocean" if (pki_acme_type == "dns-digitalocean" and pki_acme_install | bool) else [] }}'
+  - '{{ "python3-certbot-dns-dnsimple" if (pki_acme_type == "dns-dnsimple" and pki_acme_install | bool) else [] }}'
+  - '{{ "python3-certbot-dns-gehirn" if (pki_acme_type == "dns-gehirn" and pki_acme_install | bool) else [] }}'
+  - '{{ "python3-certbot-dns-google" if (pki_acme_type == "dns-google" and pki_acme_install | bool) else [] }}'
+  - '{{ "python3-certbot-dns-linode" if (pki_acme_type == "dns-linode" and pki_acme_install | bool) else [] }}'
+  - '{{ "python3-certbot-dns-ovh" if (pki_acme_type == "dns-ovh" and pki_acme_install | bool) else [] }}'
+  - '{{ "python3-certbot-dns-rfc2136" if (pki_acme_type == "dns-rfc2136" and pki_acme_install | bool) else [] }}'
+  - '{{ "python3-certbot-dns-route53" if (pki_acme_type == "dns-route53" and pki_acme_install | bool) else [] }}'
+  - '{{ "python3-certbot-dns-sakuracloud" if (pki_acme_type == "dns-sakuracloud" and pki_acme_install | bool) else [] }}'
+  - '{{ "python3-certbot-dns-gandi" if (pki_acme_type == "dns-gandi" and pki_acme_install | bool) else [] }}'
   - '{{ "certbot" if (pki_acme_type in
                 [ "dns-cloudflare", "dns-digitalocean",
                   "dns-dnsimple", "dns-gehirn", "dns-google",
                   "dns-linode", "dns-ovh", "dns-rfc2136",
                   "dns-route53", "dns-sakuracloud", "dns-gandi", "manual" ]
-           and pki_acme_install|bool) else [] }}'
+           and pki_acme_install | bool) else [] }}'
 
                                                                    # ]]]
 # .. envvar:: pki_packages [[[
@@ -454,7 +454,7 @@ pki_realm_key_size: '2048'
 # System-wide PKI realm which is used by services by default for server
 # certificates. It will be set in Ansible local facts for use by other Ansible
 # roles.
-pki_system_realm: '{{ ansible_local.pki.realm|d("domain") }}'
+pki_system_realm: '{{ ansible_local.pki.realm | d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: pki_system_ca_realm [[[
@@ -549,7 +549,7 @@ pki_scheduler_interval: 'weekly'
 # chain. This is required by applications that don't support DHE parameters in
 # a separate file like HAproxy, ZNC.
 pki_dhparam: '{{ True
-                 if ansible_local.dhparam.default|d()
+                 if ansible_local.dhparam.default | d()
                  else False }}'
 
                                                                    # ]]]
@@ -557,7 +557,7 @@ pki_dhparam: '{{ True
 #
 # Path to the Diffie-Hellman parameters file which will be appended to the
 # certificate chain, if specified.
-pki_dhparam_file: '{{ ansible_local.dhparam.default|d("") }}'
+pki_dhparam_file: '{{ ansible_local.dhparam.default | d("") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Internal Certificate Authorities [[[
@@ -658,7 +658,7 @@ pki_ca_service_key_size: '4096'
 # Configuration of the Root Certificate Authority.
 pki_authorities_ca_root:
   name: 'root'
-  enabled: '{{ True if pki_ca_domain|d() else False }}'
+  enabled: '{{ True if pki_ca_domain | d() else False }}'
   subdomain: 'root-ca'
   subject: '{{ pki_ca_root_dn }}'
   key_size: '{{ pki_ca_root_key_size }}'
@@ -669,7 +669,7 @@ pki_authorities_ca_root:
 # Configuration of the Domain Certificate Authority.
 pki_authorities_ca_domain:
   name: 'domain'
-  enabled: '{{ True if pki_ca_domain|d() else False }}'
+  enabled: '{{ True if pki_ca_domain | d() else False }}'
   subdomain: 'domain-ca'
   subject: '{{ pki_ca_domain_dn }}'
   issuer_name: 'root'
@@ -684,7 +684,7 @@ pki_authorities_ca_service:
   subdomain: 'service-ca'
   subject: '{{ pki_ca_service_dn }}'
   type: 'service'
-  enabled: '{{ True if (pki_ca_domain|d() and pki_ca_service_enabled|bool) else False }}'
+  enabled: '{{ True if (pki_ca_domain | d() and pki_ca_service_enabled | bool) else False }}'
   key_size: '{{ pki_ca_service_key_size }}'
 
                                                                    # ]]]
@@ -799,20 +799,20 @@ pki_system_ca_certificates_whitelist: []
 # .. envvar:: pki_system_ca_certificates_download_by_host [[[
 #
 # If ``True``, by hosts CA certificates are downloaded on remote hosts.
-pki_system_ca_certificates_download_by_host: '{{ pki_enabled|bool }}'
+pki_system_ca_certificates_download_by_host: '{{ pki_enabled | bool }}'
 
                                                                    # ]]]
 # .. envvar:: pki_system_ca_certificates_download_by_group [[[
 #
 # If ``True``, by group CA certificates are downloaded on remote hosts.
-pki_system_ca_certificates_download_by_group: '{{ pki_enabled|bool }}'
+pki_system_ca_certificates_download_by_group: '{{ pki_enabled | bool }}'
 
                                                                    # ]]]
 # .. envvar:: pki_system_ca_certificates_download_all_hosts [[[
 #
 # If ``True``, CA certificates intended for all hosts are downloaded on remote
 # hosts.
-pki_system_ca_certificates_download_all_hosts: '{{ pki_enabled|bool }}'
+pki_system_ca_certificates_download_all_hosts: '{{ pki_enabled | bool }}'
 
                                                                    # ]]]
 # .. envvar:: pki_system_ca_certificates_download_all_hosts_force [[[

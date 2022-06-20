@@ -67,7 +67,7 @@ yadm__dotfiles_owner: 'drybjed'
 # in the directory name; be sure to include it in the inventory definition.
 yadm__dotfiles_path: '{{ (yadm__dotfiles_root + "/" + yadm__dotfiles_host + "/"
                           + yadm__dotfiles_owner + "/dotfiles.git")
-                         if yadm__dotfiles_enabled|bool
+                         if yadm__dotfiles_enabled | bool
                          else "" }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -84,7 +84,7 @@ yadm__base_packages:
   - 'less'
   - 'ncurses-term'
   - 'tmux'
-  - '{{ [] if yadm__upstream_enabled|bool else "yadm" }}'
+  - '{{ [] if yadm__upstream_enabled | bool else "yadm" }}'
 
                                                                    # ]]]
 # .. envvar:: yadm__packages [[[
@@ -221,13 +221,13 @@ yadm__apt_preferences__dependent_list:
 yadm__keyring__dependent_gpg_keys:
 
   - id: '{{ yadm__upstream_gpg_id }}'
-    state: '{{ "present" if yadm__upstream_enabled|bool else "absent" }}'
+    state: '{{ "present" if yadm__upstream_enabled | bool else "absent" }}'
 
   # Extract a list of GPG keys from the dotfile configuration; they will be
   # added to the 'root' GPG keyring.
   - '{{ (yadm__combined_dotfiles | debops.debops.parse_kv_items
          | selectattr("gpg", "defined") | selectattr("state", "equalto", "present")
          | map(attribute="gpg") | list)
-        if yadm__dotfiles_enabled|bool else [] }}'
+        if yadm__dotfiles_enabled | bool else [] }}'
                                                                    # ]]]
                                                                    # ]]]

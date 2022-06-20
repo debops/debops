@@ -52,7 +52,7 @@ mariadb__client: '{{ ansible_fqdn }}'
 # of the current host, NOT ``localhost`` because that would delegate the tasks
 # to the Ansible Controller.
 mariadb__delegate_to: '{{ mariadb__server
-                          if (mariadb__server|d() and
+                          if (mariadb__server | d() and
                               mariadb__server != "localhost")
                           else inventory_hostname }}'
                                                                    # ]]]
@@ -80,7 +80,7 @@ mariadb__delegate_to: '{{ mariadb__server
 #
 # The choice depends on availability of MariaDB packages in a distribution.
 # Percona needs to be selected explicitly.
-mariadb__flavor: '{{ ansible_local.mariadb.flavor|d("mariadb") }}'
+mariadb__flavor: '{{ ansible_local.mariadb.flavor | d("mariadb") }}'
 
                                                                    # ]]]
 # .. envvar:: mariadb__apt_key [[[
@@ -187,13 +187,13 @@ mariadb__client_charset_options:
 mariadb__client_remote_host_options:
   - name: 'remote-host-options'
     state: '{{ "present"
-               if (not mariadb__register_version.stdout|d(False))
+               if (not mariadb__register_version.stdout | d(False))
                else "absent" }}'
     options:
 
       - name: 'remote-host-not-tunnel'
         state: '{{ "present"
-                   if (mariadb__register_tunnel.rc|d() != 0)
+                   if (mariadb__register_tunnel.rc | d() != 0)
                    else "absent" }}'
         options:
           'host': '{{ mariadb__server }}'
@@ -201,7 +201,7 @@ mariadb__client_remote_host_options:
 
       - name: 'remote-host-tunnel'
         state: '{{ "present"
-                   if (mariadb__register_tunnel.rc|d() == 0)
+                   if (mariadb__register_tunnel.rc | d() == 0)
                    else "absent" }}'
         options:
           'host': '127.0.0.1'
@@ -209,7 +209,7 @@ mariadb__client_remote_host_options:
 
       - name: 'pki-options'
         comment: 'Support for SSL connections'
-        state: '{{ "present" if mariadb__pki|bool else "absent" }}'
+        state: '{{ "present" if mariadb__pki | bool else "absent" }}'
         options:
           'ssl':
           'ssl_ca':     '{{ mariadb__pki_path + "/" + mariadb__pki_realm + "/" + mariadb__pki_ca }}'
@@ -241,7 +241,7 @@ mariadb__options: {}
 # Absolute path for the client configuration file managed by the
 # ``debops.mariadb`` Ansible role.
 mariadb__client_cnf_file: '{{ "/etc/mysql/mariadb.conf.d/90-client.cnf"
-                              if (mariadb__register_confd.stat.exists|bool)
+                              if (mariadb__register_confd.stat.exists | bool)
                               else "/etc/mysql/conf.d/zz-client.cnf" }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -252,7 +252,7 @@ mariadb__client_cnf_file: '{{ "/etc/mysql/mariadb.conf.d/90-client.cnf"
 #
 # Enable or disable support for SSL in MariaDB (using :ref:`debops.pki`).
 mariadb__pki: '{{ (True
-                   if (ansible_local.pki.enabled|d() and
+                   if (ansible_local.pki.enabled | d() and
                        mariadb__pki_realm in ansible_local.pki.known_realms)
                    else False) | bool }}'
 
@@ -260,14 +260,14 @@ mariadb__pki: '{{ (True
 # .. envvar:: mariadb__pki_path [[[
 #
 # Base path for PKI directory.
-mariadb__pki_path: '{{ ansible_local.pki.base_path|d("/etc/pki") }}'
+mariadb__pki_path: '{{ ansible_local.pki.base_path | d("/etc/pki") }}'
 
                                                                    # ]]]
 # .. envvar:: mariadb__pki_realm [[[
 #
 # Default PKI realm used by MariaDB (Debian MariaDB packages do not support chained
 # certificates, see https://bugs.debian.org/630625).
-mariadb__pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
+mariadb__pki_realm: '{{ ansible_local.pki.realm | d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: mariadb__pki_ca [[[

@@ -4,16 +4,16 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Update DebOps in the background with async
-  become: '{{ controller__install_systemwide|bool }}'
+  become: '{{ controller__install_systemwide | bool }}'
   ansible.builtin.command: debops-update
   async: '{{ controller__async_timeout | int }}'
   poll: 0
   when: not controller__update_method == 'sync'
 
 - name: Update DebOps in the background with batch
-  become: '{{ controller__install_systemwide|bool }}'
+  become: '{{ controller__install_systemwide | bool }}'
   ansible.builtin.shell: |
     type debops-update > /dev/null 2>&1 && (echo 'debops-update' | batch > /dev/null 2>&1) || true
   when: (not controller__update_method == 'sync' and
-         (ansible_local|d() and ansible_local.atd|d() and
-          ansible_local.atd.enabled|bool))
+         (ansible_local | d() and ansible_local.atd | d() and
+          ansible_local.atd.enabled | bool))

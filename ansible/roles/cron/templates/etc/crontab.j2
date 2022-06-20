@@ -23,8 +23,8 @@
 # | |  |  |  |
 # * *  *  *  *  user-name  command to be executed
 {% for element in cron__crontab_combined_jobs | debops.debops.parse_kv_config %}
-{%   if element.name|d() and element.job|d() and element.state|d('present') not in [ 'absent', 'ignore', 'imit' ] %}
-{%     if element.special_time|d() %}
+{%   if element.name | d() and element.job | d() and element.state | d('present') not in [ 'absent', 'ignore', 'imit' ] %}
+{%     if element.special_time | d() %}
 {%       if element.special_time in [ 'reboot', 'yearly', 'annually', 'monthly', 'weekly', 'daily', 'midnight', 'hourly' ] %}
 {{ '{:<15} {}\t{}'.format(
     ('@' + element.special_time),

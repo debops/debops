@@ -67,7 +67,7 @@
     mode: '0755'
   loop: '{{ redis_sentinel__combined_configuration | debops.debops.parse_kv_items
             | product([ "", "/reconfig.d", "/notify.d" ]) | list }}'
-  when: item.0.name|d() and item.0.state|d('present') not in [ 'absent', 'init', 'ignore' ]
+  when: item.0.name | d() and item.0.state | d('present') not in [ 'absent', 'init', 'ignore' ]
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate initial Redis Sentinel configuration
@@ -79,7 +79,7 @@
     mode: '0640'
     force: False
   with_items: '{{ redis_sentinel__combined_configuration | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
+  when: item.name | d() and item.state | d('present') not in [ 'absent', 'init', 'ignore' ]
   notify: [ 'Refresh host facts' ]
   no_log: '{{ debops__no_log | d(True) }}'
 
@@ -92,7 +92,7 @@
     mode: '0755'
   loop: '{{ redis_sentinel__combined_configuration | debops.debops.parse_kv_items
             | product([ "notify.sh", "reconfig.sh" ]) | list }}'
-  when: item.0.name|d() and item.0.state|d('present') not in [ 'absent', 'init', 'ignore' ]
+  when: item.0.name | d() and item.0.state | d('present') not in [ 'absent', 'init', 'ignore' ]
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Install custom systemd unit files
@@ -115,8 +115,8 @@
     group: 'root'
     mode: '0755'
   with_items: '{{ redis_sentinel__combined_configuration | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ] and
-        item.systemd_override|d()
+  when: item.name | d() and item.state | d('present') not in [ 'absent', 'init', 'ignore' ] and
+        item.systemd_override | d()
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate systemd instance override files
@@ -127,8 +127,8 @@
     group: 'root'
     mode: '0644'
   with_items: '{{ redis_sentinel__combined_configuration | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ] and
-        item.systemd_override|d()
+  when: item.name | d() and item.state | d('present') not in [ 'absent', 'init', 'ignore' ] and
+        item.systemd_override | d()
   notify: [ 'Reload service manager' ]
   no_log: '{{ debops__no_log | d(True) }}'
 
@@ -138,8 +138,8 @@
     state: 'stopped'
     enabled: False
   with_items: '{{ redis_sentinel__combined_configuration | debops.debops.parse_kv_items }}'
-  when: ansible_service_mgr == 'systemd' and item.name|d() and
-        item.state|d('present') == 'absent'
+  when: ansible_service_mgr == 'systemd' and item.name | d() and
+        item.state | d('present') == 'absent'
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove Redis Sentinel instance systemd override if requested
@@ -148,8 +148,8 @@
     state: 'absent'
   with_items: '{{ redis_sentinel__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Reload service manager' ]
-  when: ansible_service_mgr == 'systemd' and item.name|d() and
-        item.state|d('present') == 'absent'
+  when: ansible_service_mgr == 'systemd' and item.name | d() and
+        item.state | d('present') == 'absent'
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove Redis Sentinel instance configuration if requested
@@ -157,8 +157,8 @@
     path: '/etc/redis/sentinel-{{ item.name }}'
     state: 'absent'
   with_items: '{{ redis_sentinel__combined_configuration | debops.debops.parse_kv_items }}'
-  when: ansible_service_mgr == 'systemd' and item.name|d() and
-        item.state|d('present') == 'absent'
+  when: ansible_service_mgr == 'systemd' and item.name | d() and
+        item.state | d('present') == 'absent'
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Reload systemd configuration when needed
@@ -170,6 +170,6 @@
     state: 'started'
     enabled: True
   with_items: '{{ redis_sentinel__combined_configuration | debops.debops.parse_kv_items }}'
-  when: ansible_service_mgr == 'systemd' and item.name|d() and
-        item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
+  when: ansible_service_mgr == 'systemd' and item.name | d() and
+        item.state | d('present') not in [ 'absent', 'init', 'ignore' ]
   no_log: '{{ debops__no_log | d(True) }}'

@@ -31,7 +31,7 @@
 
     # Information from the 'passwd' database for the current user on the
     # Ansible Controller
-    admin_gecos: '{{ getent_passwd[admin_user][3]|d() }}'
+    admin_gecos: '{{ getent_passwd[admin_user][3] | d() }}'
 
     # SSH public keys in the 'ssh-agent'
     admin_sshkeys: '{{ lookup("pipe", "ssh-add -L | grep ^\\\(sk-\\\)\\\?ssh || cat ~/.ssh/*.pub || true").split("\n") }}'
@@ -42,9 +42,9 @@
     # been provided and the Password Store is not used, the password will
     # not be stored.
     admin_plaintext_password: '{{ admin_input_plaintext_password
-                                  if admin_input_plaintext_password|d()
+                                  if admin_input_plaintext_password | d()
                                   else (lookup("password", "/dev/null length=32")
-                                        if admin_use_password_store|d(True)|bool
+                                        if admin_use_password_store | d(True) | bool
                                         else
                                         lookup("password",
                                                secret + "/ldap/credentials/"
@@ -101,16 +101,16 @@
         attributes:
 
           # inetOrgPerson attributes
-          commonName:   '{{ admin_gecos.split(",")[0] if admin_gecos|d() else (admin_user | capitalize) }}'
-          givenName:    '{{ (admin_gecos.split(",")[0].split()[0]) if (admin_gecos|d() and " " in admin_gecos) else (admin_user | capitalize) }}'
-          surname:      '{{ (admin_gecos.split(",")[0].split()[1]) if (admin_gecos|d() and " " in admin_gecos) else "AdminUser" }}'
+          commonName:   '{{ admin_gecos.split(",")[0] if admin_gecos | d() else (admin_user | capitalize) }}'
+          givenName:    '{{ (admin_gecos.split(",")[0].split()[0]) if (admin_gecos | d() and " " in admin_gecos) else (admin_user | capitalize) }}'
+          surname:      '{{ (admin_gecos.split(",")[0].split()[1]) if (admin_gecos | d() and " " in admin_gecos) else "AdminUser" }}'
           userPassword: '{{ admin_plaintext_password }}'
 
           # POSIX attributes
           uid:           '{{ admin_rdn.split("=")[1] }}'
           gid:           '{{ admin_rdn.split("=")[1] }}'
-          uidNumber:     '{{ ldap__groupid_max|int + 1 }}'
-          gidNumber:     '{{ ldap__groupid_max|int + 1 }}'
+          uidNumber:     '{{ ldap__groupid_max | int + 1 }}'
+          gidNumber:     '{{ ldap__groupid_max | int + 1 }}'
           homeDirectory: '{{ ldap__home + "/" + admin_user }}'
           loginShell:    '{{ ldap__shell }}'
 
@@ -143,7 +143,7 @@
     - name: Save admin credential in the password store
       set_fact:
         admin_stored_password: '{{ admin_saved_password }}'
-      when: admin_use_password_store|d(True)|bool
+      when: admin_use_password_store | d(True) | bool
       no_log: '{{ debops__no_log | d(True) }}'
       delegate_to: 'localhost'
       become: False

@@ -58,7 +58,7 @@ journald__storage: 'auto'
 journald__persistent_state: '{{ "absent"
                                 if (journald__storage == "none")
                                 else ("present"
-                                      if (ansible_local.journald.persistent|d())|bool
+                                      if (ansible_local.journald.persistent | d()) | bool
                                       else "absent") }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -125,7 +125,7 @@ journald__default_configuration:
 
   - name: 'Seal'
     value: '{{ journald__fss_enabled }}'
-    state: '{{ "init" if journald__fss_enabled|bool else "present" }}'
+    state: '{{ "init" if journald__fss_enabled | bool else "present" }}'
 
   - name: 'SplitMode'
     value: 'uid'

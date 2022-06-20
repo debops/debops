@@ -126,7 +126,7 @@ use it, you need to write your variable like this:
 
 .. code-block:: yaml
 
-   var: '{{ ansible_local.core.fact_name|d("fact_value") }}'
+   var: '{{ ansible_local.core.fact_name | d("fact_value") }}'
 
 That way Ansible won't emit an error about missing dictionary keys at each
 level of the ``ansible_local`` variable namespace.
@@ -165,7 +165,7 @@ Check if a given value is in the tag list:
 
    - name: Show debug output
      debug: msg="Test"
-     when: ansible_local|d() and ansible_local.tags|d() and
+     when: ansible_local | d() and ansible_local.tags | d() and
            'value' in ansible_local.tags
 
 Check if a given value is not in the tag list:
@@ -174,7 +174,7 @@ Check if a given value is not in the tag list:
 
    - name: Show debug output
      debug: msg="Test"
-     when: ansible_local|d() and ansible_local.tags|d() and
+     when: ansible_local | d() and ansible_local.tags | d() and
            'value' not in ansible_local.tags
 
 You can find a list of host tags in the documentation of various roles which use
@@ -206,7 +206,7 @@ Define list of admin accounts to create in the application:
 
 .. code-block:: yaml
 
-   application__admins: '{{ ansible_local.core.admin_users|d([]) }}'
+   application__admins: '{{ ansible_local.core.admin_users | d([]) }}'
 
 Custom distribution and release facts
 -------------------------------------
@@ -233,9 +233,9 @@ information about current distribution and release:
 
 .. code-block:: yaml
 
-   application__distribution: '{{ ansible_local.core.distribution|d(ansible_distribution) }}'
+   application__distribution: '{{ ansible_local.core.distribution | d(ansible_distribution) }}'
 
-   application__distribution_release: '{{ ansible_local.core.distribution_release|d(ansible_distribution_release) }}'
+   application__distribution_release: '{{ ansible_local.core.distribution_release | d(ansible_distribution_release) }}'
 
 .. _core__ref_unsafe_writes:
 
@@ -261,7 +261,7 @@ use the parameter in relevant tasks, like this:
        owner: 'root'
        group: 'root'
        mode: '0644'
-       unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+       unsafe_writes: '{{ True if (core__unsafe_writes | d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
 
 Note that the way :envvar:`core__unsafe_writes` is checked and takes precedence
 even from the context of another role is not otherwise done in DebOps.

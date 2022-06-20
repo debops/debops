@@ -5,11 +5,11 @@
 # {{ ansible_managed }}
 {%  for key in dhcpd__keys %}
 
-{%      if key.comment|d() %}
+{%      if key.comment | d() %}
 # {{ key.comment }}
 {%      endif %}
 key {{ key.name }} {
-{%      if key.options|d() %}
+{%      if key.options | d() %}
     # Custom key options
     {{ key.options|indent(4) }}
 {%      endif %}

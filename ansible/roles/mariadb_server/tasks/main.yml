@@ -35,7 +35,7 @@
                               + mariadb_server__packages_map[mariadb_server__flavor]
                               + mariadb_server__packages
                               + ([ "automysqlbackup" ]
-                                 if mariadb_server__backup|bool
+                                 if mariadb_server__backup | bool
                                  else []))) }}'
     state: 'present'
   register: mariadb_server__register_install_status
@@ -45,8 +45,8 @@
   ansible.builtin.service:  # noqa no-handler
     name: 'mysql'
     state: 'stopped'
-  when: ((mariadb_server__register_version|d() and not mariadb_server__register_version.stdout) and
-         (mariadb_server__register_install_status|d() and mariadb_server__register_install_status is changed))
+  when: ((mariadb_server__register_version | d() and not mariadb_server__register_version.stdout) and
+         (mariadb_server__register_install_status | d() and mariadb_server__register_install_status is changed))
 
 - name: Add database server user to specified groups
   ansible.builtin.user:
@@ -54,7 +54,7 @@
     groups: '{{ mariadb_server__append_groups | join(",") | default(omit) }}'
     append: True
     createhome: False
-  when: mariadb_server__pki|bool
+  when: mariadb_server__pki | bool
 
 - name: Check if MariaDB config directory exists
   ansible.builtin.stat:
@@ -72,8 +72,8 @@
 - name: Move MariaDB data files to data directory
   ansible.builtin.shell:  # noqa no-handler
     'mv {{ mariadb_server__default_datadir }}/* {{ mariadb_server__datadir }}'
-  when: ((mariadb_server__register_version|d() and not mariadb_server__register_version.stdout) and
-         (mariadb_server__register_install_status|d() and mariadb_server__register_install_status is changed) and
+  when: ((mariadb_server__register_version | d() and not mariadb_server__register_version.stdout) and
+         (mariadb_server__register_install_status | d() and mariadb_server__register_install_status is changed) and
          (mariadb_server__datadir != mariadb_server__default_datadir))
 
 - name: Configure database client on first install
@@ -83,7 +83,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  when: (mariadb_server__register_version|d() and not mariadb_server__register_version.stdout)
+  when: (mariadb_server__register_version | d() and not mariadb_server__register_version.stdout)
 
 - name: Configure database server
   ansible.builtin.include_tasks: 'configure_server.yml'
@@ -93,8 +93,8 @@
   ansible.builtin.service:  # noqa no-handler
     name: 'mysql'
     state: 'started'
-  when: ((mariadb_server__register_version|d() and not mariadb_server__register_version.stdout) and
-         (mariadb_server__register_install_status|d() and mariadb_server__register_install_status is changed))
+  when: ((mariadb_server__register_version | d() and not mariadb_server__register_version.stdout) and
+         (mariadb_server__register_install_status | d() and mariadb_server__register_install_status is changed))
 
 - name: Secure database server
   ansible.builtin.include_tasks: 'secure_installation.yml'

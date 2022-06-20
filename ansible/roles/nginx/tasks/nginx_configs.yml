@@ -20,13 +20,13 @@
     - '{{ nginx__maps }}'
     - '{{ nginx__default_maps }}'
     - '{{ nginx__dependent_maps }}'
-    - '{{ nginx_maps |d([]) }}'
+    - '{{ nginx_maps  | d([]) }}'
     - '{{ nginx_default_maps | d([]) }}'
     - '{{ nginx_dependent_maps | d([]) }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name|d() and
-         ((item.state|d() and item.state == 'absent') or
-          (item.delete|d() and item.delete|bool)))
+  when: (item.name | d() and
+         ((item.state | d() and item.state == 'absent') or
+          (item.delete | d() and item.delete | bool)))
 
 - name: Configure nginx maps
   ansible.builtin.template:
@@ -39,12 +39,12 @@
     - '{{ nginx__maps }}'
     - '{{ nginx__default_maps }}'
     - '{{ nginx__dependent_maps }}'
-    - '{{ nginx_maps |d([]) }}'
+    - '{{ nginx_maps  | d([]) }}'
     - '{{ nginx_default_maps | d([]) }}'
     - '{{ nginx_dependent_maps | d([]) }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name|d() and item.state|d('present') != 'absent' and
-         (item.delete is undefined or not item.delete|bool))
+  when: (item.name | d() and item.state | d('present') != 'absent' and
+         (item.delete is undefined or not item.delete | bool))
 
 - name: Remove nginx upstreams if requested
   ansible.builtin.file:
@@ -58,9 +58,9 @@
     - '{{ nginx_default_upstreams | d([]) }}'
     - '{{ nginx_dependent_upstreams | d([]) }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name|d() and
-         ((item.state|d('present') == 'absent') or
-          (item.delete|d() and item.delete|bool)))
+  when: (item.name | d() and
+         ((item.state | d('present') == 'absent') or
+          (item.delete | d() and item.delete | bool)))
 
 - name: Configure nginx upstreams
   ansible.builtin.template:
@@ -77,8 +77,8 @@
     - '{{ nginx_default_upstreams | d([]) }}'
     - '{{ nginx_dependent_upstreams | d([]) }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name|d() and item.state|d('present') != 'absent' and
-         (item.delete is undefined or not item.delete|bool))
+  when: (item.name | d() and item.state | d('present') != 'absent' and
+         (item.delete is undefined or not item.delete | bool))
 
 - name: Remove nginx log_format if requested
   ansible.builtin.file:
@@ -88,9 +88,9 @@
     - '{{ nginx__log_format }}'
     - '{{ nginx__dependent_log_format }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name|d() and
-         ((item.state|d('present') == 'absent') or
-          (item.delete|d() and item.delete|bool)))
+  when: (item.name | d() and
+         ((item.state | d('present') == 'absent') or
+          (item.delete | d() and item.delete | bool)))
 
 - name: Configure nginx log_format
   ansible.builtin.template:
@@ -103,8 +103,8 @@
     - '{{ nginx__log_format }}'
     - '{{ nginx__dependent_log_format }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name|d() and item.state|d('present') != 'absent' and
-         (item.delete is undefined or not item.delete|bool))
+  when: (item.name | d() and item.state | d('present') != 'absent' and
+         (item.delete is undefined or not item.delete | bool))
 
 - name: Remove custom nginx configuration if requested
   ansible.builtin.file:
@@ -114,9 +114,9 @@
     - '{{ nginx__custom_config }}'
     - '{{ nginx_custom_config | d([]) }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name|d() and
-         ((item.state|d() and item.state == 'absent') or
-          (item.delete|d() and item.delete|bool)))
+  when: (item.name | d() and
+         ((item.state | d() and item.state == 'absent') or
+          (item.delete | d() and item.delete | bool)))
 
 - name: Add custom nginx configuration
   ansible.builtin.template:
@@ -129,5 +129,5 @@
     - '{{ nginx__custom_config }}'
     - '{{ nginx_custom_config | d([]) }}'
   notify: [ 'Test nginx and reload' ]
-  when: (item.name|d() and item.state|d('present') != 'absent' and
-         (item.delete is undefined or not item.delete|bool))
+  when: (item.name | d() and item.state | d('present') != 'absent' and
+         (item.delete is undefined or not item.delete | bool))

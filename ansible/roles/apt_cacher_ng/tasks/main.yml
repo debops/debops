@@ -27,7 +27,7 @@
     path: '/{{ item.path }}'
     state: 'absent'
   when: (apt_cacher_ng__deploy_state in [ 'absent', 'purge' ] and
-         not item.divert|d(True))
+         not item.divert | d(True))
   with_items: '{{ apt_cacher_ng__configuration_files }}'
 
 - name: Remove diversion of Apt-Cacher NG configuration
@@ -36,7 +36,7 @@
     state: 'absent'
     delete: True
   when: (apt_cacher_ng__deploy_state in [ 'absent', 'purge' ] and
-         item.divert|d(True))
+         item.divert | d(True))
   with_items: '{{ apt_cacher_ng__configuration_files }}'
 
 - name: Ensure specified packages are in their desired state

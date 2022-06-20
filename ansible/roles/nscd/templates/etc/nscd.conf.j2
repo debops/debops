@@ -37,12 +37,12 @@
 
 
 {% macro print_global(option) %}
-{%   if option.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%   if option.state | d('present') not in [ 'absent', 'ignore' ] %}
 {%     if option.value is defined %}
-{%       set option_comment = ('#\t' if (option.state|d('present') == 'comment') else '\t') %}
+{%       set option_comment = ('#\t' if (option.state | d('present') == 'comment') else '\t') %}
 {%       set option_name = (option.name | replace('_','-')) %}
 {%       set option_tab = ('\t' + ('\t' if (option.name | length < 16) else '') + ('\t' if (option.name | length < 8) else '')) %}
-{%       if option.value is string and not option.value|bool %}
+{%       if option.value is string and not option.value | bool %}
 {{ '{}{}{}{}'.format(option_comment, option_name, option_tab, option.value) }}
 {%       elif option.value | bool and option.value is not iterable %}
 {%         if option.value | string == '1' %}
@@ -67,13 +67,13 @@
 {%   endif %}
 {% endmacro %}
 {% macro print_section(section, option) %}
-{%   if option.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%   if option.state | d('present') not in [ 'absent', 'ignore' ] %}
 {%     if option.value is defined %}
-{%       set option_comment = ('#\t' if (option.state|d('present') == 'comment') else '\t') %}
+{%       set option_comment = ('#\t' if (option.state | d('present') == 'comment') else '\t') %}
 {%       set option_name = (option.name | replace('_','-')) %}
 {%       set option_tab = ('\t' + ('\t' if (option.name | length < 16) else '') + ('\t' if (option.name | length < 8) else '')) %}
 {%       set option_section = (section + ('\t' + ('\t' if (section | length < 8) else ''))) %}
-{%       if option.value is string and not option.value|bool %}
+{%       if option.value is string and not option.value | bool %}
 {{ '{}{}{}{}{}'.format(option_comment, option_name, option_tab, option_section, option.value) }}
 {%       elif option.value | bool and option.value is not iterable %}
 {%         if option.value | string == '1' %}
@@ -98,8 +98,8 @@
 {%   endif %}
 {% endmacro %}
 {% for element in nscd__combined_configuration | debops.debops.parse_kv_items %}
-{%   if element.state|d('present') not in [ 'absent', 'init', 'ignore' ] %}
-{%     if element.name == 'global' and element.options|d() %}
+{%   if element.state | d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%     if element.name == 'global' and element.options | d() %}
 {%       for entry in element.options %}
 {{ print_global(entry) -}}
 {%       endfor %}
@@ -112,11 +112,11 @@
 {%       endif %}
 {%       for entry_name in entry_names %}
 {%         if entry_name in element.keys() %}
-{%             set _ = entry_list.append({'name': entry_name, 'value': element[entry_name], 'state': element.state|d('present')}) %}
+{%             set _ = entry_list.append({'name': entry_name, 'value': element[entry_name], 'state': element.state | d('present')}) %}
 {%         endif %}
 {%       endfor %}
 
-{%       if element.comment|d() %}
+{%       if element.comment | d() %}
 {{ element.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
 {%       endif %}
 {%       for entry in entry_list %}

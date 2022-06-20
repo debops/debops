@@ -35,7 +35,7 @@ redis_server__packages: []
 #
 # The version of the installed Redis Server. It will be detected via Ansible
 # local facts, installed by the role.
-redis_server__version: '{{ ansible_local.redis_server.version|d("0.0.0") }}'
+redis_server__version: '{{ ansible_local.redis_server.version | d("0.0.0") }}'
                                                                    # ]]]
                                                                    # ]]]
 # UNIX environment [[[
@@ -76,7 +76,7 @@ redis_server__domain: '{{ ansible_domain }}'
 # The password used for authentication in Redis. The same password is used on
 # all nodes in the Redis/Sentinel cluster to simplify authentication.
 redis_server__auth_password: '{{ ansible_local.redis_server.password
-                                 if (ansible_local.redis_server.password|d())
+                                 if (ansible_local.redis_server.password | d())
                                  else (lookup("password", secret +
                                        "/redis/clusters/" + redis_server__domain +
                                        "/password length=" + redis_server__password_length +
@@ -105,8 +105,8 @@ redis_server__maxmemory_multiplier: '0.5'
 #
 # Calculate the maximum amount of system memory available to Redis Server
 # instances, based on the specified amount of available memory.
-redis_server__maxmemory_total: '{{ (((ansible_memtotal_mb|int * 1024 * 1024)
-                                     * redis_server__maxmemory_multiplier|float) | round | int) }}'
+redis_server__maxmemory_total: '{{ (((ansible_memtotal_mb | int * 1024 * 1024)
+                                     * redis_server__maxmemory_multiplier | float) | round | int) }}'
 
                                                                    # ]]]
 # .. envvar:: redis_server__maxmemory_instances [[[
@@ -186,11 +186,11 @@ redis_server__default_base_options:
 
   - name: 'masterauth'
     value: '{{ redis_server__auth_password }}'
-    state: '{{ "present" if redis_server__auth_password|d() else "ignore" }}'
+    state: '{{ "present" if redis_server__auth_password | d() else "ignore" }}'
 
   - name: 'requirepass'
     value: '{{ redis_server__auth_password }}'
-    state: '{{ "present" if redis_server__auth_password|d() else "ignore" }}'
+    state: '{{ "present" if redis_server__auth_password | d() else "ignore" }}'
 
   - name: 'always-show-logo'
     value: False

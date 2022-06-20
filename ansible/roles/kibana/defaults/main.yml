@@ -61,7 +61,7 @@ kibana__group: 'kibana'
 #
 # List of additional UNIX groups to which the Kibana user will belong.
 kibana__additional_groups: '{{ [ "ssl-cert" ]
-                               if kibana__pki_enabled|bool
+                               if kibana__pki_enabled | bool
                                else [] }}'
 
                                                                    # ]]]
@@ -217,8 +217,8 @@ kibana__reporting_encryption_key: '{{ lookup("password", secret
 # Enable or disable configuration of secure connection to the Elasticsearch
 # cluster. By default this will be enable if username and password are defined.
 kibana__secure_connection: '{{ True
-                               if (kibana__elasticsearch_username|d() and
-                                   kibana__elasticsearch_password|d())
+                               if (kibana__elasticsearch_username | d() and
+                                   kibana__elasticsearch_password | d())
                                else False }}'
 
                                                                    # ]]]
@@ -226,7 +226,7 @@ kibana__secure_connection: '{{ True
 #
 # Enable or disable support for TLS connection encryption based on DebOps PKI,
 # managed by the :ref:`debops.pki` Ansible role.
-kibana__pki_enabled: '{{ (ansible_local.pki.enabled|d())|bool }}'
+kibana__pki_enabled: '{{ (ansible_local.pki.enabled | d()) | bool }}'
 
                                                                    # ]]]
 # .. envvar:: kibana__pki_base_path [[[
@@ -382,8 +382,8 @@ kibana__default_configuration:
   - name: 'elasticsearch.username'
     value: '{{ kibana__elasticsearch_username }}'
     state: '{{ "present"
-               if (kibana__elasticsearch_username|d() and
-                   kibana__elasticsearch_password|d())
+               if (kibana__elasticsearch_username | d() and
+                   kibana__elasticsearch_password | d())
                else "comment" }}'
     comment: |
       If your Elasticsearch is protected with basic authentication, these settings provide
@@ -394,8 +394,8 @@ kibana__default_configuration:
   - name: 'elasticsearch.password'
     value: '{{ kibana__elasticsearch_password }}'
     state: '{{ "present"
-               if (kibana__elasticsearch_username|d() and
-                   kibana__elasticsearch_password|d())
+               if (kibana__elasticsearch_username | d() and
+                   kibana__elasticsearch_password | d())
                else "comment" }}'
 
   - name: 'server.ssl.enabled'
@@ -434,26 +434,26 @@ kibana__default_configuration:
     # Reset the list of default certificate authorities.
   - name: 'elasticsearch.ssl.certificateAuthorities'
     value: ''
-    state: '{{ "present" if (kibana__secure_connection|bool and
-                             kibana__pki_enabled|bool)
+    state: '{{ "present" if (kibana__secure_connection | bool and
+                             kibana__pki_enabled | bool)
                          else "ignore" }}'
 
   - name: 'elasticsearch.ssl.certificateAuthorities'
     value: [ '{{ kibana__tls_ca_certificate }}' ]
-    state: '{{ "present" if (kibana__secure_connection|bool and
-                             kibana__pki_enabled|bool)
+    state: '{{ "present" if (kibana__secure_connection | bool and
+                             kibana__pki_enabled | bool)
                          else "ignore" }}'
 
   - name: 'elasticsearch.ssl.certificate'
     value: '{{ kibana__tls_certificate }}'
-    state: '{{ "present" if (kibana__secure_connection|bool and
-                             kibana__pki_enabled|bool)
+    state: '{{ "present" if (kibana__secure_connection | bool and
+                             kibana__pki_enabled | bool)
                          else "ignore" }}'
 
   - name: 'elasticsearch.ssl.key'
     value: '{{ kibana__tls_private_key }}'
-    state: '{{ "present" if (kibana__secure_connection|bool and
-                             kibana__pki_enabled|bool)
+    state: '{{ "present" if (kibana__secure_connection | bool and
+                             kibana__pki_enabled | bool)
                          else "ignore" }}'
 
   - name: 'elasticsearch.ssl.verificationMode'
@@ -763,7 +763,7 @@ kibana__nginx__dependent_servers:
     proxy_redirect: 'default'
     allow:               '{{ kibana__webserver_allow }}'
     access_policy:       '{{ kibana__webserver_access_policy }}'
-    auth_basic:          '{{ True if kibana__webserver_auth_basic_filename|d() else False }}'
+    auth_basic:          '{{ True if kibana__webserver_auth_basic_filename | d() else False }}'
     auth_basic_realm:    '{{ kibana__webserver_auth_basic_realm }}'
     auth_basic_filename: '{{ kibana__webserver_auth_basic_filename }}'
 

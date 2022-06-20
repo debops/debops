@@ -13,7 +13,7 @@
 
 - name: Install ISC DHCP relay packages
   ansible.builtin.package:
-    name: '{{ (dhcrelay__base_packages + dhcrelay__packages)|flatten }}'
+    name: '{{ (dhcrelay__base_packages + dhcrelay__packages) | flatten }}'
     state: 'present'
   register: dhcrelay__register_packages
   until: dhcrelay__register_packages is succeeded

@@ -74,7 +74,7 @@
     group: 'root'
     mode: '0755'
   with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
+  when: item.name | d() and item.state | d('present') not in [ 'absent', 'init', 'ignore' ]
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Install the original Redis config file to instance
@@ -83,7 +83,7 @@
   args:
     creates: '/etc/redis/{{ item.name }}/redis.conf'
   with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
+  when: item.name | d() and item.state | d('present') not in [ 'absent', 'init', 'ignore' ]
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate dynamic Redis configuration scripts
@@ -94,7 +94,7 @@
     group: '{{ redis_server__group }}'
     mode: '0750'
   with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
+  when: item.name | d() and item.state | d('present') not in [ 'absent', 'init', 'ignore' ]
   register: redis_server__register_config_dynamic
   notify: [ 'Refresh host facts' ]
   no_log: '{{ debops__no_log | d(True) }}'
@@ -107,7 +107,7 @@
     group: '{{ redis_server__group }}'
     mode: '0640'
   with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
+  when: item.name | d() and item.state | d('present') not in [ 'absent', 'init', 'ignore' ]
   register: redis_server__register_config_static
   notify: [ 'Refresh host facts' ]
   no_log: '{{ debops__no_log | d(True) }}'
@@ -130,7 +130,7 @@
     state: 'present'
     mode: '0640'
   with_items: '{{ redis_server__register_config_static.results }}'
-  when: not ansible_check_mode|bool and item is changed
+  when: not ansible_check_mode | bool and item is changed
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Install custom systemd unit files
@@ -153,8 +153,8 @@
     group: 'root'
     mode: '0755'
   with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ] and
-        item.systemd_override|d()
+  when: item.name | d() and item.state | d('present') not in [ 'absent', 'init', 'ignore' ] and
+        item.systemd_override | d()
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate systemd instance override files
@@ -165,8 +165,8 @@
     group: 'root'
     mode: '0644'
   with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.state|d('present') not in [ 'absent', 'init', 'ignore' ] and
-        item.systemd_override|d()
+  when: item.name | d() and item.state | d('present') not in [ 'absent', 'init', 'ignore' ] and
+        item.systemd_override | d()
   notify: [ 'Reload service manager' ]
   no_log: '{{ debops__no_log | d(True) }}'
 
@@ -176,8 +176,8 @@
     state: 'stopped'
     enabled: False
   with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
-  when: ansible_service_mgr == 'systemd' and item.name|d() and
-        item.state|d('present') == 'absent'
+  when: ansible_service_mgr == 'systemd' and item.name | d() and
+        item.state | d('present') == 'absent'
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove Redis instance systemd override if requested
@@ -186,8 +186,8 @@
     state: 'absent'
   with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Reload service manager' ]
-  when: ansible_service_mgr == 'systemd' and item.name|d() and
-        item.state|d('present') == 'absent'
+  when: ansible_service_mgr == 'systemd' and item.name | d() and
+        item.state | d('present') == 'absent'
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove Redis instance configuration if requested
@@ -195,8 +195,8 @@
     path: '/etc/redis/{{ item.name }}'
     state: 'absent'
   with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
-  when: ansible_service_mgr == 'systemd' and item.name|d() and
-        item.state|d('present') == 'absent'
+  when: ansible_service_mgr == 'systemd' and item.name | d() and
+        item.state | d('present') == 'absent'
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Reload systemd configuration when needed
@@ -208,8 +208,8 @@
     state: 'started'
     enabled: True
   with_items: '{{ redis_server__combined_configuration | debops.debops.parse_kv_items }}'
-  when: ansible_service_mgr == 'systemd' and item.name|d() and
-        item.state|d('present') not in [ 'absent', 'init', 'ignore' ]
+  when: ansible_service_mgr == 'systemd' and item.name | d() and
+        item.state | d('present') not in [ 'absent', 'init', 'ignore' ]
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Restart Redis instances if their configuration changed
@@ -241,6 +241,6 @@
              (ansible_local.redis_server.instances
               | selectattr('name', 'defined') | list
               | map(attribute='name') | list))))) and
-         item.state|d('present') not in [ 'absent', 'ignore', 'init' ] and
-         item.master_host|d() and item.master_port|d())
+         item.state | d('present') not in [ 'absent', 'ignore', 'init' ] and
+         item.master_host | d() and item.master_port | d())
   no_log: '{{ debops__no_log | d(True) }}'

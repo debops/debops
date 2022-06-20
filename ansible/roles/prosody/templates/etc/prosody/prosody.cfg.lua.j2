@@ -42,10 +42,10 @@ VirtualHost "{{ item.name }}"
   enabled = {{ item.enabled }}
 
   ssl = {
-    certificate = "{{ item.tls_crt | d(prosody__tpl_pki_realm_path + "/" + (item.pki_crt|d(prosody__pki_crt_filename))) }}";
-    key =  "{{ item.tls_key | d(prosody__tpl_pki_realm_path + "/" + (item.pki_key|d(prosody__pki_key_filename))) }}";
+    certificate = "{{ item.tls_crt | d(prosody__tpl_pki_realm_path + "/" + (item.pki_crt | d(prosody__pki_crt_filename))) }}";
+    key =  "{{ item.tls_key | d(prosody__tpl_pki_realm_path + "/" + (item.pki_key | d(prosody__pki_key_filename))) }}";
   }
-  {{ item.raw|d("") }}
+  {{ item.raw | d("") }}
 {%   endfor %}
 
 

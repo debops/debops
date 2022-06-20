@@ -22,7 +22,7 @@
     state: 'present'
   register: sysfs__register_packages
   until: sysfs__register_packages is succeeded
-  when: sysfs__enabled|bool
+  when: sysfs__enabled | bool
 
 - name: Check if the dependent configuration exists
   ansible.builtin.stat:
@@ -30,8 +30,8 @@
   register: sysfs__register_dependent_attributes_file
   become: False
   delegate_to: 'localhost'
-  when: (sysfs__enabled|bool and ansible_local|d() and ansible_local.sysfs|d() and
-         (ansible_local.sysfs.configured|d())|bool)
+  when: (sysfs__enabled | bool and ansible_local | d() and ansible_local.sysfs | d() and
+         (ansible_local.sysfs.configured | d()) | bool)
 
 - name: Load the dependent configuration from Ansible Controller
   ansible.builtin.slurp:
@@ -39,9 +39,9 @@
   register: sysfs__register_dependent_attributes
   become: False
   delegate_to: 'localhost'
-  when: (sysfs__enabled|bool and ansible_local|d() and ansible_local.sysfs|d() and
-         (ansible_local.sysfs.configured|d())|bool and
-         sysfs__register_dependent_attributes_file.stat.exists|bool)
+  when: (sysfs__enabled | bool and ansible_local | d() and ansible_local.sysfs | d() and
+         (ansible_local.sysfs.configured | d()) | bool and
+         sysfs__register_dependent_attributes_file.stat.exists | bool)
 
 - name: Remove sysfs configuration files if requested
   ansible.builtin.file:
@@ -49,8 +49,8 @@
     state: 'absent'
   with_items: '{{ sysfs__combined_attributes | debops.debops.parse_kv_items }}'
   notify: [ 'Restart sysfsutils' ]
-  when: (sysfs__enabled|bool and item.name|d() and
-         item.state|d('present') == 'absent')
+  when: (sysfs__enabled | bool and item.name | d() and
+         item.state | d('present') == 'absent')
 
 - name: Generate sysfs configuration files
   ansible.builtin.template:
@@ -61,8 +61,8 @@
     mode: '0644'
   with_items: '{{ sysfs__combined_attributes | debops.debops.parse_kv_items }}'
   notify: [ 'Restart sysfsutils' ]
-  when: (sysfs__enabled|bool and item.name|d() and
-         item.state|d('present') not in [ 'defined', 'absent' ])
+  when: (sysfs__enabled | bool and item.name | d() and
+         item.state | d('present') not in [ 'defined', 'absent' ])
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:
@@ -92,4 +92,4 @@
     mode: '0644'
   become: False
   delegate_to: 'localhost'
-  when: sysfs__enabled|bool
+  when: sysfs__enabled | bool

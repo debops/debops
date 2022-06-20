@@ -22,7 +22,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: apt_install__enabled|bool
+  when: apt_install__enabled | bool
 
 - name: Save local Ansible facts
   ansible.builtin.template:
@@ -31,7 +31,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: apt_install__enabled|bool
+  when: apt_install__enabled | bool
   notify: [ 'Refresh host facts' ]
   tags: [ 'meta::facts' ]
 
@@ -44,7 +44,7 @@
       - 'debconf'
       - 'debconf-utils'
     state: 'present'
-    install_recommends: '{{ apt_install__recommends|bool }}'
+    install_recommends: '{{ apt_install__recommends | bool }}'
   register: apt_install__register_debconf_packages
   until: apt_install__register_debconf_packages is succeeded
 
@@ -62,7 +62,7 @@
     - '{{ apt_install__debconf }}'
     - '{{ apt_install__group_debconf }}'
     - '{{ apt_install__host_debconf }}'
-  when: item.name|d()
+  when: item.name | d()
 
 - name: Install requested APT packages
   ansible.builtin.apt:
@@ -70,12 +70,12 @@
                              "lookup/apt_install__all_packages.j2",
                              convert_data=False) | from_json) }}'
     state: '{{ apt_install__state }}'
-    install_recommends: '{{ apt_install__recommends|bool }}'
-    update_cache: '{{ apt_install__update_cache|bool }}'
+    install_recommends: '{{ apt_install__recommends | bool }}'
+    update_cache: '{{ apt_install__update_cache | bool }}'
     cache_valid_time: '{{ apt_install__cache_valid_time }}'
   register: apt_install__register_packages
   until: apt_install__register_packages is succeeded
-  when: apt_install__enabled|bool
+  when: apt_install__enabled | bool
 
 - name: Configure alternative symlinks
   alternatives:
@@ -88,7 +88,7 @@
     - '{{ apt_install__alternatives }}'
     - '{{ apt_install__group_alternatives }}'
     - '{{ apt_install__host_alternatives }}'
-  when: item.name|d() and item.path|d()
+  when: item.name | d() and item.path | d()
 
 - name: Configure automatic alternatives
   ansible.builtin.command: update-alternatives --auto {{ item.name }}
@@ -97,15 +97,15 @@
     - '{{ apt_install__alternatives }}'
     - '{{ apt_install__group_alternatives }}'
     - '{{ apt_install__host_alternatives }}'
-  when: item.name|d() and not item.path|d()
-  changed_when: apt_install__register_alternatives.stdout|d()
+  when: item.name | d() and not item.path | d()
+  changed_when: apt_install__register_alternatives.stdout | d()
 
 - name: Disable kernel hints about pending upgrades
   ansible.builtin.template:
     src: 'etc/needrestart/conf.d/no-kernel-hints.conf.j2'
     dest: '/etc/needrestart/conf.d/no-kernel-hints.conf'
     mode: '0644'
-  when: apt_install__enabled|bool and apt_install__no_kernel_hints|bool
+  when: apt_install__enabled | bool and apt_install__no_kernel_hints | bool
 
 - name: Post hooks
   ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "apt_install/post_main.yml") }}'

@@ -12,14 +12,14 @@
     owner: '{{ sshd__authorized_keys_lookup_user }}'
     group: 'root'
     mode: '0600'
-  when: '"ldap" in sshd__authorized_keys_lookup_type|d([])'
+  when: '"ldap" in sshd__authorized_keys_lookup_type | d([])'
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove OpenSSH LDAP bind password file
   ansible.builtin.file:
     path: '/etc/ssh/ldap_authorized_keys_bindpw'
     state: 'absent'
-  when: '"ldap" not in sshd__authorized_keys_lookup_type|d([])'
+  when: '"ldap" not in sshd__authorized_keys_lookup_type | d([])'
 
 - name: Create /etc/ssh/authorized_keys_lookup.d directory
   ansible.builtin.file:
@@ -37,7 +37,7 @@
     group: 'root'
     mode: '0755'
   with_items: '{{ sshd__authorized_keys_lookup_type }}'
-  when: sshd__authorized_keys_lookup_type|d()
+  when: sshd__authorized_keys_lookup_type | d()
 
 - name: Generate authorized keys lookup hook
   ansible.builtin.template:

@@ -7,7 +7,7 @@
 {% set unbound__tpl_ipv4_revdns_zones = [] %}
 {% set unbound__tpl_local_zones = [] %}
 {% set unbound__tpl_nameservers = [] %}
-{% if item.revdns|d() %}
+{% if item.revdns | d() %}
 {%   for entry in ([ item.revdns ] if item.revdns is string else item.revdns) | ipv4('subnet') %}
 {#
  # This currently doesn't work properly for subnet sizes < 16
@@ -20,18 +20,18 @@
 {%     else %}
 {%       set subnet_prefix = '24' %}
 {%     endif %}
-{%     for i in range(0, (entry | ipsubnet(subnet_prefix)|int)) %}
+{%     for i in range(0, (entry | ipsubnet(subnet_prefix) | int)) %}
 {%       set _ = unbound__tpl_ipv4_revdns_zones.append((entry | ipsubnet(subnet_prefix, i) | ipaddr('revdns')).split('.')[1:-1] | join('.')) %}
 {%     endfor %}
 {%   endfor %}
 {%   set unbound__tpl_local_zones = item.revdns | ipaddr("private") %}
 {% endif %}
-{% if item.nameserver|d() %}
+{% if item.nameserver | d() %}
 {%   for entry in ([ item.nameserver ] if item.nameserver is string else item.nameserver) %}
 {%     set _ = unbound__tpl_nameservers.append(entry) %}
 {%   endfor %}
 {% endif %}
-{% if item.nameservers|d() %}
+{% if item.nameservers | d() %}
 {%   for entry in ([ item.nameservers ] if item.nameservers is string else item.nameservers) %}
 {%     set _ = unbound__tpl_nameservers.append(entry) %}
 {%   endfor %}
@@ -54,10 +54,10 @@
 {% macro print_zone(config) %}
 {%   set real_zone_name = (config.zone | d(config.name)) %}
 {%   set zone_name = (real_zone_name + ('.' if not real_zone_name.endswith('.') else '')) %}
-{%   if config.type|d('forward') == 'local' %}
+{%   if config.type | d('forward') == 'local' %}
 server:
     local-zone: "{{ (zone_name | regex_replace('\n$','') | regex_replace('\.$','')) + '.' }}" {{ config.local_zone_type | d('static') }}
-{%     if config.local_zone_data|d() %}
+{%     if config.local_zone_data | d() %}
 {%       for record in ([ config.local_zone_data ] if (config.local_zone_data is string) else config.local_zone_data) %}
     local-data: "{{ ((zone_name | regex_replace('\n$','') | regex_replace('\.$','')) + '. ') + record | regex_replace('\n$','') }}"
 {%       endfor %}
@@ -71,7 +71,7 @@ server:
     {{ config.type | d('forward') }}-addr: {{ entry }}
 {%     endfor %}
 {%   endif %}
-{%   if config.options|d() %}
+{%   if config.options | d() %}
 {%     for element in config.options %}
 {%       set element_name = (element.option | d(element.name)) %}
 {%       set element_state = (element.state | d('present')) %}
@@ -93,7 +93,7 @@ server:
 {%         elif element.value is not string and element.value is not mapping and element.value is iterable %}
 {%           set element_value = [] %}
 {%           for option in element.value %}
-{%             if option.state|d('present') != 'absent' %}
+{%             if option.state | d('present') != 'absent' %}
 {%               set _ = element_value.append(option.name) %}
 {%             endif %}
 {%           endfor %}
@@ -114,7 +114,7 @@ server:
 {%       endif %}
 {%     endfor %}
 {%   endif %}
-{%   if config.server_options|d() %}
+{%   if config.server_options | d() %}
 
 server:
 {%     for element in config.server_options %}
@@ -138,7 +138,7 @@ server:
 {%         elif element.value is not string and element.value is not mapping and element.value is iterable %}
 {%           set element_value = [] %}
 {%           for option in element.value %}
-{%             if option.state|d('present') != 'absent' %}
+{%             if option.state | d('present') != 'absent' %}
 {%               set _ = element_value.append(option.name) %}
 {%             endif %}
 {%           endfor %}
@@ -160,7 +160,7 @@ server:
 {%     endfor %}
 {%   endif %}
 {% endmacro %}
-{% if item.comment|d() %}
+{% if item.comment | d() %}
 {{ item.comment | regex_replace('\n$','') | comment(prefix='', postfix='') }}
 {% endif %}
 {% if unbound__tpl_local_zones %}

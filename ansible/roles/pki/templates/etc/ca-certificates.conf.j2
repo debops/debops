@@ -16,17 +16,17 @@
 # line begins with # is comment.
 # line begins with ! is certificate filename to be deselected.
 #
-{% for rootca in pki_register_ca_certificates_known.stdout_lines|d([]) %}
-{% if rootca in (pki_register_ca_certificates_blacklist.stdout_lines|d([]) | intersect(pki_register_ca_certificates_whitelist.stdout_lines|d([]))) %}
+{% for rootca in pki_register_ca_certificates_known.stdout_lines | d([]) %}
+{% if rootca in (pki_register_ca_certificates_blacklist.stdout_lines | d([]) | intersect(pki_register_ca_certificates_whitelist.stdout_lines | d([]))) %}
 !{{ rootca }}
 {% else %}
-{% if rootca in (pki_register_ca_certificates_blacklist.stdout_lines|d([]) | difference(pki_register_ca_certificates_whitelist.stdout_lines|d([]))) %}
+{% if rootca in (pki_register_ca_certificates_blacklist.stdout_lines | d([]) | difference(pki_register_ca_certificates_whitelist.stdout_lines | d([]))) %}
 !{{ rootca }}
-{% elif rootca in pki_register_ca_certificates_whitelist.stdout_lines|d([]) %}
+{% elif rootca in pki_register_ca_certificates_whitelist.stdout_lines | d([]) %}
 {{ rootca }}
-{% elif rootca in pki_register_ca_certificates_untrusted.stdout_lines|d([]) %}
+{% elif rootca in pki_register_ca_certificates_untrusted.stdout_lines | d([]) %}
 !{{ rootca }}
-{% elif rootca in pki_register_ca_certificates_trusted.stdout_lines|d([]) %}
+{% elif rootca in pki_register_ca_certificates_trusted.stdout_lines | d([]) %}
 {{ rootca }}
 {% endif %}
 {% endif %}

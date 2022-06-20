@@ -32,11 +32,11 @@ import os
 {% for repo in apt__default_sources %}
 {%   set repo_uris = (debops__tpl_macros.flattened(
                       repo.uri, repo.uris) | from_json) %}
-{%   if repo.distribution|d() == apt__distribution %}
+{%   if repo.distribution | d() == apt__distribution %}
 {%     set _ = apt__tpl_default_sources.extend(repo_uris) %}
 {%   endif %}
-{%   if repo.distribution|d() and
-        (repo.state|d("present") == "present") %}
+{%   if repo.distribution | d() and
+        (repo.state | d("present") == "present") %}
 {%     set _ = apt__tpl_default_sources_map.update(
                    { repo.distribution: (
                        (apt__tpl_default_sources_map[repo.distribution]
@@ -50,7 +50,7 @@ security_sources = loads('''{{ apt__tpl_security_sources | to_nice_json }}''')
 output = loads('''{{ ({
     "enabled": apt__enabled,
     "configured": (ansible_local.apt.configured
-                   if (ansible_local.apt.configured|d())
+                   if (ansible_local.apt.configured | d())
                    else False),
     "default_mirrors": apt__tpl_default_sources,
     "default_sources_map": apt__tpl_default_sources_map,

@@ -119,7 +119,7 @@ postgresql_server__max_connections: '100'
 # as ``postgres`` role with peer authentication. The special ``*postgres*``
 # account name is replaced with username of the cluster system user.
 postgresql_server__admins: '{{ [ "root", "*postgres*" ] +
-                               ansible_local.core.admin_users|d([]) }}'
+                               ansible_local.core.admin_users | d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: postgresql_server__admin_password [[[
@@ -149,7 +149,7 @@ postgresql_server__password_characters: 'ascii,digits,.-_~&()*='
 #
 # List of local UNIX accounts that are implicitly trusted by PostgreSQL server
 # and can login to their own roles without password.
-postgresql_server__trusted: '{{ ansible_local.core.admin_users|d([]) }}'
+postgresql_server__trusted: '{{ ansible_local.core.admin_users | d([]) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Cluster configuration [[[
@@ -198,19 +198,19 @@ postgresql_server__start_conf: 'auto'
 # .. envvar:: postgresql_server__pki [[[
 #
 # Enable or disable support for PKI infrastructure managed by :ref:`debops.pki`.
-postgresql_server__pki: '{{ ansible_local.pki.enabled|d() | bool }}'
+postgresql_server__pki: '{{ ansible_local.pki.enabled | d() | bool }}'
 
                                                                    # ]]]
 # .. envvar:: postgresql_server__pki_path [[[
 #
 # Base path of PKI infrastructure, managed by :ref:`debops.pki` role.
-postgresql_server__pki_path: '{{ ansible_local.pki.path|d("/etc/pki/realms") }}'
+postgresql_server__pki_path: '{{ ansible_local.pki.path | d("/etc/pki/realms") }}'
 
                                                                    # ]]]
 # .. envvar:: postgresql_server__pki_realm [[[
 #
 # PKI realm used by PostgreSQL role.
-postgresql_server__pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
+postgresql_server__pki_realm: '{{ ansible_local.pki.realm | d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: postgresql_server__pki_ca [[[
@@ -602,7 +602,7 @@ postgresql_server__etc_services__dependent_list:
   custom: |
     {% for item in postgresql_server__clusters %}
     {% if item.port is defined and item.port != "5432" %}
-    postgresql-{{ (item.port|int - 5430) }}    {{ item.port }}/tcp
+    postgresql-{{ (item.port | int - 5430) }}    {{ item.port }}/tcp
     {% endif %}
     {% endfor %}
 
@@ -614,7 +614,7 @@ postgresql_server__keyring__dependent_apt_keys:
 
   - id: '{{ postgresql_server__upstream_key_id }}'
     repo: '{{ postgresql_server__upstream_apt_repo }}'
-    state: '{{ "present" if postgresql_server__upstream|bool else "absent" }}'
+    state: '{{ "present" if postgresql_server__upstream | bool else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: postgresql_server__locales__dependent_list [[[
@@ -639,7 +639,7 @@ postgresql_server__ferm__dependent_rules:
     {% for cluster in postgresql_server__clusters %}
     {% set _ = postgresql_server__tpl_ports.append(cluster.port) %}
     {% endfor %}
-    {% if postgresql_server__tpl_ports|d() and postgresql_server__allow|d() %}
+    {% if postgresql_server__tpl_ports | d() and postgresql_server__allow | d() %}
     domain $domains table filter chain INPUT {
         protocol tcp dport ({{ postgresql_server__tpl_ports | unique | join(" ") }}) {
             @def $ITEMS = ( @ipfilter( ({{ postgresql_server__allow | unique | join(" ") }}) ) );
@@ -651,7 +651,7 @@ postgresql_server__ferm__dependent_rules:
 
     {% endif %}
     {% for cluster in postgresql_server__clusters %}
-    {% if cluster.name|d() and cluster.port|d() and cluster.allow|d() %}
+    {% if cluster.name | d() and cluster.port | d() and cluster.allow | d() %}
     domain $domains table filter chain INPUT {
         protocol tcp dport ({{ cluster.port }}) {
             @def $ITEMS = ( @ipfilter( ({{ cluster.allow | unique | join(" ") }}) ) );

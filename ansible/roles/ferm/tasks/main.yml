@@ -18,7 +18,7 @@
     name: 'ferm'
     question: 'ferm/enable'
     vtype: 'boolean'
-    value: '{{ "yes" if ferm__enabled|bool else "no" }}'
+    value: '{{ "yes" if ferm__enabled | bool else "no" }}'
   when: ansible_pkg_mgr == 'apt'
 
 - name: Ensure ferm is installed
@@ -39,7 +39,7 @@
     - { 'name': 'ebtables', 'path': '/usr/sbin/ebtables-{{ ferm__iptables_backend_type }}' }
     - { 'name': 'iptables', 'path': '/usr/sbin/iptables-{{ ferm__iptables_backend_type }}' }
     - { 'name': 'ip6tables', 'path': '/usr/sbin/ip6tables-{{ ferm__iptables_backend_type }}' }
-  when: ferm__enabled | bool and ferm__iptables_backend_enabled|bool
+  when: ferm__enabled | bool and ferm__iptables_backend_enabled | bool
 
 - name: Make sure required directories exist
   ansible.builtin.file:
@@ -87,7 +87,7 @@
 - name: Add/remove diversion of /etc/ferm/ferm.conf
   dpkg_divert:
     path: '/etc/ferm/ferm.conf'
-    state: '{{ "present" if ferm__enabled|bool else "absent" }}'
+    state: '{{ "present" if ferm__enabled | bool else "absent" }}'
     delete: True
 
 - name: Configure main ferm config file
@@ -98,27 +98,27 @@
     group: 'adm'
     mode: '0644'
   notify: [ 'Restart ferm' ]
-  when: ferm__enabled|bool
+  when: ferm__enabled | bool
 
 - name: Remove firewall rules
   ansible.builtin.file:
     dest: '/etc/ferm/rules.d/{{ "%03d" | format((ferm__combined_weight_map[item.value.weight_class
-                                                 | d(item.value.type | d("default"))] | d("80"))|int
-                                + (item.value.weight | d("0"))|int) }}_rule_{{ item.value.name | d(item.key) }}.conf'
+                                                 | d(item.value.type | d("default"))] | d("80")) | int
+                                + (item.value.weight | d("0")) | int) }}_rule_{{ item.value.name | d(item.key) }}.conf'
     state: 'absent'
   loop: '{{ ferm__parsed_rules | dict2items }}'
   loop_control:
     label: '{{ item.key }}'
   register: ferm__register_rules_removed
-  when: (item.value.rule_state|d(item.value.state|d('present')) == 'absent')
+  when: (item.value.rule_state | d(item.value.state | d('present')) == 'absent')
   tags: [ 'role::ferm:rules' ]
 
 - name: Generate firewall rules
   ansible.builtin.template:
     src: 'etc/ferm/rules.d/{{ item.value.template | d("rule") }}.conf.j2'
     dest: '/etc/ferm/rules.d/{{ "%03d" | format((ferm__combined_weight_map[item.value.weight_class
-                                                 | d(item.value.type | d("default"))] | d("80"))|int
-                                + (item.value.weight | d("0"))|int) }}_rule_{{ item.value.name | d(item.key) }}.conf'
+                                                 | d(item.value.type | d("default"))] | d("80")) | int
+                                + (item.value.weight | d("0")) | int) }}_rule_{{ item.value.name | d(item.key) }}.conf'
     owner: 'root'
     group: 'adm'
     mode: '0644'
@@ -126,45 +126,45 @@
   loop_control:
     label: '{{ item.key }}'
   register: ferm__register_rules_created
-  when: (item.value.rule_state|d(item.value.state|d('present')) not in [ 'absent', 'ignore' ])
+  when: (item.value.rule_state | d(item.value.state | d('present')) not in [ 'absent', 'ignore' ])
   tags: [ 'role::ferm:rules' ]
 
 - name: Remove unknown firewall rules
   ansible.builtin.shell: find /etc/ferm/rules.d -maxdepth 1 -type f
          -name '*_rule_{{ item.item.value.name | d(item.item.key) }}.conf'
          ! -name '{{ "%03d" | format((ferm__combined_weight_map[item.item.value.weight_class
-                                      | d(item.item.value.type | d("default"))] | d("80"))|int
-                     + (item.item.value.weight | d("0"))|int) }}_rule_{{ item.item.value.name
+                                      | d(item.item.value.type | d("default"))] | d("80")) | int
+                     + (item.item.value.weight | d("0")) | int) }}_rule_{{ item.item.value.name
                                                                          | d(item.item.key) }}.conf'
          -exec rm -vf {} +
   loop: '{{ ferm__register_rules_removed.results
             + ferm__register_rules_created.results }}'
   loop_control:
     label: '{{ item.item.key }}'
-  when: (item.item.key|d() and item is changed)
+  when: (item.item.key | d() and item is changed)
   tags: [ 'role::ferm:rules' ]
 
 - name: Remove iptables INPUT rules if requested
   ansible.builtin.file:
-    path: '/etc/ferm/filter-input.d/{{ ferm__weight_map[item.weight_class|d()]
+    path: '/etc/ferm/filter-input.d/{{ ferm__weight_map[item.weight_class | d()]
            | d(item.weight | d("50")) }}_{{ item.filename
-           | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
+           | d(item.type + "_" + item.name | d((item.dport[0] if item.dport | d() else "rules"))) }}.conf'
     state: 'absent'
   with_flattened:
     - '{{ ferm_input_list }}'
     - '{{ ferm_input_group_list }}'
     - '{{ ferm_input_host_list }}'
     - '{{ ferm_input_dependent_list }}'
-  when: (ferm__enabled|bool and item.type|d() and (item.delete|d() | bool))
+  when: (ferm__enabled | bool and item.type | d() and (item.delete | d() | bool))
   register: ferm__register_input_rules_del
   tags: [ 'role::ferm:rules' ]
 
 - name: Configure iptables INPUT rules
   ansible.builtin.template:
     src: 'etc/ferm/filter-input.d/{{ item.type }}.conf.j2'
-    dest: '/etc/ferm/filter-input.d/{{ ferm__weight_map[item.weight_class|d()]
+    dest: '/etc/ferm/filter-input.d/{{ ferm__weight_map[item.weight_class | d()]
            | d(item.weight | d("50")) }}_{{ item.filename
-           | d(item.type + "_" + item.name | d((item.dport[0] if item.dport|d() else "rules"))) }}.conf'
+           | d(item.type + "_" + item.name | d((item.dport[0] if item.dport | d() else "rules"))) }}.conf'
     owner: 'root'
     group: 'adm'
     mode: '0644'
@@ -173,7 +173,7 @@
     - '{{ ferm_input_group_list }}'
     - '{{ ferm_input_host_list }}'
     - '{{ ferm_input_dependent_list }}'
-  when: (ferm__enabled|bool and item.type|d() and not (item.delete|d() | bool))
+  when: (ferm__enabled | bool and item.type | d() and not (item.delete | d() | bool))
   register: ferm__register_input_rules_add
   tags: [ 'role::ferm:rules' ]
 

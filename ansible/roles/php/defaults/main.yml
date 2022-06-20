@@ -33,7 +33,7 @@ php__version_preference: [ 'php7.4', 'php7.3', 'php', 'php5.6' ]
 # maintainer. You can enable these repositories to install PHP 7.0 on Debian
 # Jessie. See :ref:`php__ref_sury` for more details.
 php__sury: '{{ ansible_local.php.sury
-               |d(ansible_distribution_release in [ "stretch", "trusty", "xenial" ]) | bool }}'
+                | d(ansible_distribution_release in [ "stretch", "trusty", "xenial" ]) | bool }}'
 
                                                                    # ]]]
 # .. envvar:: php__sury_apt_key_id [[[
@@ -58,7 +58,7 @@ php__sury_apt_key_id_map:
   'Debian':
     - id: '1505 8500 A023 5D97 F5D1  0063 B188 E2B6 95BD 4743'
       repo: 'deb https://packages.sury.org/php/ {{ ansible_distribution_release }} main'
-      state: '{{ "present" if php__sury|bool else "absent" }}'
+      state: '{{ "present" if php__sury | bool else "absent" }}'
 
     # Key replaced due to security concerns
     # Ref: https://www.patreon.com/posts/dpa-new-signing-25451165
@@ -68,7 +68,7 @@ php__sury_apt_key_id_map:
   'Ubuntu':
     - id: '14AA 40EC 0831 7567 56D7  F66C 4F4E A0AA E526 7A6C'
       repo: 'ppa:ondrej/php'
-      state: '{{ "present" if php__sury|bool else "absent" }}'
+      state: '{{ "present" if php__sury | bool else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: php__sury_apt_repo_map [[[
@@ -106,7 +106,7 @@ php__base_packages:
   - '{{ "php" + php__version }}'
   - 'curl'
   - 'gd'
-  - '{{ [] if php__composer_upstream_enabled|bool else "composer" }}'
+  - '{{ [] if php__composer_upstream_enabled | bool else "composer" }}'
   - '{{ "mcrypt"
         if (php__version is version_compare("7.2","<"))
         else [] }}'
@@ -378,22 +378,22 @@ php__default_configuration:
           max_execution_time =     {{  php__ini_max_execution_time }}
           max_input_time =         {{  php__ini_max_input_time }}
           memory_limit =           {{  php__ini_memory_limit }}
-          error_reporting =        {{ (php__production|bool)|ternary('E_ALL & ~E_DEPRECATED & ~E_STRICT', 'E_ALL') }}
-          display_errors =         {{ (php__production|bool)|ternary('Off', 'On') }}
-          display_startup_errors = {{ (php__production|bool)|ternary('Off', 'On') }}
+          error_reporting =        {{ (php__production | bool) | ternary('E_ALL & ~E_DEPRECATED & ~E_STRICT', 'E_ALL') }}
+          display_errors =         {{ (php__production | bool) | ternary('Off', 'On') }}
+          display_startup_errors = {{ (php__production | bool) | ternary('Off', 'On') }}
           {% if php__version is version_compare("7.2","<") %}
-          track_errors =           {{ (php__production|bool)|ternary('Off', 'On') }}
+          track_errors =           {{ (php__production | bool) | ternary('Off', 'On') }}
           {% endif %}
           post_max_size =          {{  php__ini_post_max_size }}
           default_charset =        {{  php__ini_default_charset }}
-          file_uploads =           {{ (php__ini_file_uploads|bool)|ternary('On', 'Off') }}
+          file_uploads =           {{ (php__ini_file_uploads | bool) | ternary('On', 'Off') }}
           upload_max_filesize =    {{  php__ini_upload_max_filesize }}
           max_file_uploads =       {{  php__ini_max_file_uploads }}
-          allow_url_fopen =        {{ (php__ini_allow_url_fopen|bool)|ternary('On','Off') }}
+          allow_url_fopen =        {{ (php__ini_allow_url_fopen | bool) | ternary('On','Off') }}
 
       - name: 'CGI'
         options: |
-          cgi.fix_pathinfo =       {{ (php__ini_cgi_fix_pathinfo|bool)|ternary('1','0') }}
+          cgi.fix_pathinfo =       {{ (php__ini_cgi_fix_pathinfo | bool) | ternary('1','0') }}
 
       - name: 'Date'
         options: |
@@ -456,7 +456,7 @@ php__fpm_syslog: False
 #
 # If it's set to ``syslog``, error logs are sent to the local log daemon.
 php__fpm_error_log: '{{ ("/var/log/php" + php__version + "-fpm.log")
-                        if not php__fpm_syslog|bool else "syslog" }}'
+                        if not php__fpm_syslog | bool else "syslog" }}'
 
                                                                    # ]]]
 # .. envvar:: php__fpm_syslog_ident [[[
@@ -753,7 +753,7 @@ php__apt_preferences__dependent_list:
     reason: "Don't upgrade software automatically using packages from external repository"
     role: 'debops.php'
     suffix: '_packages_sury_org'
-    state: '{{ "present" if php__sury|bool else "absent" }}'
+    state: '{{ "present" if php__sury | bool else "absent" }}'
 
   - packages: [ 'php', 'php5', 'php5*', 'php7*', 'dh-php', 'php-*',
                 'libpcre2-8-0', 'libpcre3', 'libzip4', 'libpcre16-3',
@@ -764,7 +764,7 @@ php__apt_preferences__dependent_list:
     reason: 'Prefer PHP packages from the same repository for consistency'
     role: 'debops.php'
     suffix: '_packages_sury_org'
-    state: '{{ "present" if php__sury|bool else "absent" }}'
+    state: '{{ "present" if php__sury | bool else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: php__keyring__dependent_apt_keys [[[

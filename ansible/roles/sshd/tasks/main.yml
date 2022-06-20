@@ -77,8 +77,8 @@
       This file disables the ssh server.  It was created by debops.sshd.
       This file will be removed when configuration is successfully completed.
     mode: '0644'
-  when: (ansible_local|d() and ansible_local.sshd|d() and
-         not (ansible_local.sshd.installed|d())|bool)
+  when: (ansible_local | d() and ansible_local.sshd | d() and
+         not (ansible_local.sshd.installed | d()) | bool)
 
   # In a case where the OpenSSH server is installed by the role but not started
   # due to conditions specified above, this task will ensure that the runtime
@@ -100,7 +100,7 @@
              + sshd__packages)
              | flatten }}'
     state: '{{ "present"
-               if (ansible_local|d() and ansible_local.sshd|d())
+               if (ansible_local | d() and ansible_local.sshd | d())
                else "latest" }}'
     install_recommends: False
   register: sshd__register_packages
@@ -127,15 +127,15 @@
   args:
     chdir: '/etc/ssh'
     creates: '/etc/ssh/ssh_host_ed25519_key'
-  when: sshd__register_version.stdout|d() and
+  when: sshd__register_version.stdout | d() and
         sshd__register_version.stdout is version_compare('6.5', '>=')
   tags: [ 'role::sshd:config' ]
 
 - name: Configure authorized_keys lookup
   ansible.builtin.include_tasks: authorized_keys_lookup.yml
-  when: sshd__register_version.stdout|d() and
+  when: sshd__register_version.stdout | d() and
         sshd__register_version.stdout is version_compare('6.2', '>=') and
-        sshd__authorized_keys_lookup|bool
+        sshd__authorized_keys_lookup | bool
   tags: [ 'role::sshd:config' ]
 
 - name: Get list of available host keys
@@ -150,7 +150,7 @@
   register: sshd__register_host_certs
   changed_when: False
   check_mode: False
-  when: sshd__scan_for_host_certs|bool
+  when: sshd__scan_for_host_certs | bool
   tags: [ 'role::sshd:config' ]
 
 - name: Setup trusted user CA key file
@@ -199,18 +199,18 @@
 
 - name: Scan SSH fingerprints of specified hosts
   ansible.builtin.shell: '{{ sshd__known_hosts_command }} {{ item.item }} >> {{ sshd__known_hosts_file }}'
-  with_items: '{{ sshd__register_known_hosts.results|d([]) }}'
+  with_items: '{{ sshd__register_known_hosts.results | d([]) }}'
   when: item is defined and item.rc > 0
   tags: [ 'role::sshd:known_hosts' ]
 
 - name: Check if /etc/ssh/moduli contains weak DH parameters
-  ansible.builtin.shell: awk '$5 < {{ (sshd__moduli_minimum|int -1) }}' /etc/ssh/moduli
+  ansible.builtin.shell: awk '$5 < {{ (sshd__moduli_minimum | int -1) }}' /etc/ssh/moduli
   register: sshd__register_moduli
   changed_when: sshd__register_moduli.stdout
   check_mode: False
 
 - name: Remove DH parameters smaller than the requested size
-  ansible.builtin.shell: awk '$5 >= {{ (sshd__moduli_minimum|int - 1) }}' /etc/ssh/moduli > /etc/ssh/moduli.new ;
+  ansible.builtin.shell: awk '$5 >= {{ (sshd__moduli_minimum | int - 1) }}' /etc/ssh/moduli > /etc/ssh/moduli.new ;
          [ -r /etc/ssh/moduli.new -a -s /etc/ssh/moduli.new ] && mv /etc/ssh/moduli.new /etc/ssh/moduli || true
   notify: [ 'Test sshd configuration and restart' ]
   when: sshd__register_moduli.stdout
@@ -225,7 +225,7 @@
   dpkg_divert:
     path: '/etc/pam.d/sshd'
     state: '{{ "present"
-               if sshd__pam_deploy_state|d("present") != "absent"
+               if sshd__pam_deploy_state | d("present") != "absent"
                else "absent" }}'
     delete: True
 

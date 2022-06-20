@@ -82,7 +82,7 @@ mailman__additional_domains: []
 # If Mailman 3 is not installed, the database will be selected in order of
 # preference - PostgreSQL, MySQL, SQLite.
 mailman__database_type: '{{ ansible_local.mailman.database_class.split(".")[2]
-                            if (ansible_local|d() and ansible_local.mailman is defined)
+                            if (ansible_local | d() and ansible_local.mailman is defined)
                             else ("postgresql"
                                   if (ansible_local.postgresql is defined)
                                   else ("mysql"
@@ -97,7 +97,7 @@ mailman__database_type: '{{ ansible_local.mailman.database_class.split(".")[2]
 #
 # Name of the Django superuser account created by the role.
 mailman__superuser_name: '{{ ansible_local.core.admin_users[0]
-                             if (ansible_local.core.admin_users|d())
+                             if (ansible_local.core.admin_users | d())
                              else "admin" }}'
 
                                                                    # ]]]
@@ -105,7 +105,7 @@ mailman__superuser_name: '{{ ansible_local.core.admin_users[0]
 #
 # E-mail address of the Django superuser account created by the role.
 mailman__superuser_email: '{{ ansible_local.core.admin_private_email[0]
-                              if (ansible_local.core.admin_private_email|d())
+                              if (ansible_local.core.admin_private_email | d())
                               else ("postmaster@" + mailman__domain) }}'
                                                                    # ]]]
                                                                    # ]]]

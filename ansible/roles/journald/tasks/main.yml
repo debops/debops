@@ -34,20 +34,20 @@
   vars:
     secret__directories:
       - '{{ (journald__fss_verify_key_path | dirname)
-            if journald__fss_enabled|bool
+            if journald__fss_enabled | bool
             else [] }}'
 
 - name: Move persistent journal to volatile storage if requested
   ansible.builtin.command: 'journalctl --relinquish-var'
-  when: (journald__enabled|bool and journald__version is version("244", ">=") and
+  when: (journald__enabled | bool and journald__version is version("244", ">=") and
          journald__persistent_state == 'absent' and
-         (ansible_local.journald.persistent|d(False))|bool)
+         (ansible_local.journald.persistent | d(False)) | bool)
 
 - name: Remove persistent journal storage if requested
   ansible.builtin.file:
     path: '/var/log/journal'
     state: 'absent'
-  when: journald__enabled|bool and
+  when: journald__enabled | bool and
         journald__storage in [ 'auto', 'none', 'volatile' ] and
         journald__persistent_state == 'absent'
 
@@ -58,14 +58,14 @@
     group: 'systemd-journal'
     mode: '2755'
   register: journald__register_persistent
-  when: journald__enabled|bool and
+  when: journald__enabled | bool and
         journald__storage in [ 'auto', 'persistent' ] and
         journald__persistent_state != 'absent'
 
 - name: Apply extended permissions in the persistent storage
   ansible.builtin.command: 'systemd-tmpfiles --create --prefix /var/log/journal'
   changed_when: False
-  when: journald__enabled|bool and
+  when: journald__enabled | bool and
         journald__storage in [ 'auto', 'persistent' ] and
         journald__persistent_state != 'absent'
 
@@ -73,11 +73,11 @@
   ansible.builtin.command: 'journalctl --setup-keys --interval={{ journald__fss_interval }}'
   register: journald__register_fss
   changed_when: journald__register_fss.stderr_lines | count > 1
-  when: (journald__enabled|bool and
+  when: (journald__enabled | bool and
          journald__storage in [ 'auto', 'persistent' ] and
          journald__persistent_state != 'absent' and
-         journald__fss_enabled|bool and
-        (not ansible_local.journald.sealed|d())|bool)
+         journald__fss_enabled | bool and
+        (not ansible_local.journald.sealed | d()) | bool)
 
 - name: Save Forward Secure Seal verification key on Ansible Controller
   ansible.builtin.copy:  # noqa no-handler
@@ -92,7 +92,7 @@
   ansible.builtin.systemd:  # noqa no-handler
     name: 'systemd-journal-flush.service'
     state: 'restarted'
-  when: journald__enabled|bool and journald__persistent_state != 'absent' and
+  when: journald__enabled | bool and journald__persistent_state != 'absent' and
         journald__register_persistent is changed
 
 - name: Create journald configuration directory
@@ -100,7 +100,7 @@
     path: '/etc/systemd/journald.conf.d'
     state: 'directory'
     mode: '0755'
-  when: journald__enabled|bool
+  when: journald__enabled | bool
 
 - name: Generate journald configuration
   ansible.builtin.template:
@@ -108,17 +108,17 @@
     dest: '/etc/systemd/journald.conf.d/ansible.conf'
     mode: '0644'
   register: journald__register_config
-  when: journald__enabled|bool
+  when: journald__enabled | bool
 
 - name: Restart journald if its configuration was modified
   ansible.builtin.service:  # noqa no-handler
     name: 'systemd-journald'
     state: 'restarted'
-  when: journald__enabled|bool and journald__register_config is changed
+  when: journald__enabled | bool and journald__register_config is changed
 
 - name: Verify journal logs using FSS when requested
   ansible.builtin.command: 'journalctl --verify --verify-key="{{ journald__fss_verify_key }}"'
   register: journald__register_fss_verify
-  when: journald__enabled|bool and journald__persistent_state != 'absent'
+  when: journald__enabled | bool and journald__persistent_state != 'absent'
   changed_when: False
   tags: [ 'never', 'role::journald:fss:verify' ]

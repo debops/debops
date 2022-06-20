@@ -144,7 +144,7 @@ playbook is the same as in the previous example:
      - id: '573B FD6B 3D8F BC64 1079  A6AB ABF5 BD82 7BD9 BF62'
        url: 'https://nginx.org/keys/nginx_signing.key'
        repo: 'deb http://nginx.org/packages/debian {{ ansible_distribution_release }} nginx'
-       state: '{{ "present" if nginx__upstream|bool else "absent" }}'
+       state: '{{ "present" if nginx__upstream | bool else "absent" }}'
 
 There are many more real-world examples available in various DebOps roles. To
 find them, you can run the command in the DebOps monorepo root directory:
@@ -246,7 +246,7 @@ installation from upstream is enabled. The GPG key will be added to the
    yadm__upstream_gpg_id: '31B9 62F7 CC57...'
    yadm__keyring__dependent_gpg_keys:
      - id: '{{ yadm__upstream_gpg_id }}'
-       state: '{{ "present" if yadm__upstream_enabled|bool else "absent" }}'
+       state: '{{ "present" if yadm__upstream_enabled | bool else "absent" }}'
 
 .. code-block:: yaml
 

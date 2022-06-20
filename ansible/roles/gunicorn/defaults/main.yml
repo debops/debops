@@ -25,8 +25,8 @@
 # applications.
 # This may be defined per application as well.
 gunicorn__binary: '{{ "gunicorn3"
-                      if (ansible_local|d() and ansible_local.python|d() and
-                          (ansible_local.python.installed3|d())|bool)
+                      if (ansible_local | d() and ansible_local.python | d() and
+                          (ansible_local.python.installed3 | d()) | bool)
                       else "gunicorn" }}'
 
                                                                    # ]]]
@@ -34,7 +34,7 @@ gunicorn__binary: '{{ "gunicorn3"
 #
 # The default number of worker threads used by Green Unicorn applications if
 # not specified otherwise.
-gunicorn__workers: '{{ ansible_processor_vcpus|int + 1 }}'
+gunicorn__workers: '{{ ansible_processor_vcpus | int + 1 }}'
 
                                                                    # ]]]
 # .. envvar:: gunicorn__user [[[

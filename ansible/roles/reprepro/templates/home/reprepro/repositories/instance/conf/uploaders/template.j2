@@ -4,10 +4,10 @@
  #}
 # {{ ansible_managed }}
 
-{% if item.comment|d() %}
+{% if item.comment | d() %}
 {{   item.comment | regex_replace('\n$','') | comment(prefix='', postfix='') }}
 {% endif %}
-{% if item.raw|d() %}
+{% if item.raw | d() %}
 {{   '{}'.format(item.raw | regex_replace('\n$','')) }}
 {% else %}
 {{   '# No "{}" uploaders defined for {}'.format(item.name, repo.name) }}

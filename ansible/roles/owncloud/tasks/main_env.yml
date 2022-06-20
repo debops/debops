@@ -11,10 +11,10 @@
   ansible.builtin.file:
     path: '{{ owncloud__nginx_client_body_temp_path }}'
     state: 'directory'
-    owner: '{{ ansible_local.nginx.user|d("www-data") }}'
+    owner: '{{ ansible_local.nginx.user | d("www-data") }}'
     group: 'root'
     mode: '0700'
-  when: (owncloud__webserver in ["nginx"] and owncloud__nginx_client_body_temp_path|d())
+  when: (owncloud__webserver in ["nginx"] and owncloud__nginx_client_body_temp_path | d())
 
 - name: Ensure the custom temp directories are setup
   ansible.builtin.file:
@@ -22,8 +22,8 @@
     state: 'directory'
     owner: '{{ owncloud__app_user }}'
     group: '{{ owncloud__app_group }}'
-    mode: '{{ item.mode|d("1750") }}'
-  when: item.path|d()
+    mode: '{{ item.mode | d("1750") }}'
+  when: item.path | d()
   with_items:
     - path: '{{ owncloud__temp_path }}'
     - path: '{{ owncloud__php_temp_path }}'

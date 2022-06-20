@@ -26,24 +26,24 @@
 
 - name: Remove Monit configuration if requested
   ansible.builtin.file:
-    path: '/etc/monit/conf.d/{{ ((item.weight|string + "_") if (item.weight != 0) else "") + item.name }}'
+    path: '/etc/monit/conf.d/{{ ((item.weight | string + "_") if (item.weight != 0) else "") + item.name }}'
     state: 'absent'
   with_items: '{{ monit__combined_config | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.state|d('present') == 'absent'
+  when: item.name | d() and item.state | d('present') == 'absent'
   notify: [ 'Test monit and reload' ]
-  no_log: '{{ debops__no_log | d(True if (item.mode|d("0644") == "0600") else False) }}'
+  no_log: '{{ debops__no_log | d(True if (item.mode | d("0644") == "0600") else False) }}'
 
 - name: Generate Monit configuration
   ansible.builtin.template:
     src: 'etc/monit/conf.d/template.j2'
-    dest: '/etc/monit/conf.d/{{ ((item.weight|string + "_") if (item.weight != 0) else "") + item.name }}'
+    dest: '/etc/monit/conf.d/{{ ((item.weight | string + "_") if (item.weight != 0) else "") + item.name }}'
     owner: 'root'
     group: 'root'
     mode: '{{ item.mode | d("0600") }}'
   with_items: '{{ monit__combined_config | debops.debops.parse_kv_items }}'
-  when: item.name|d() and item.state|d('present') not in [ 'init', 'absent' ]
+  when: item.name | d() and item.state | d('present') not in [ 'init', 'absent' ]
   notify: [ 'Test monit and reload' ]
-  no_log: '{{ debops__no_log | d(True if (item.mode|d("0644") == "0600") else False) }}'
+  no_log: '{{ debops__no_log | d(True if (item.mode | d("0644") == "0600") else False) }}'
 
 - name: Make sure Ansible local facts directory exists
   ansible.builtin.file:

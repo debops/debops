@@ -5,12 +5,12 @@
  #}
 <pool type='logical'>
   <name>{{ item.name }}</name>
-{% if item.uuid|d() %}
+{% if item.uuid | d() %}
   <uuid>{{ item.uuid }}</uuid>
 {% endif %}
-{% if item.device|d() or item.devices|d() %}
+{% if item.device | d() or item.devices | d() %}
   <source>
-{% if item.device|d() %}
+{% if item.device | d() %}
 {% if item.device is string %}
     <device path="{{ item.device }}"/>
 {% else %}
@@ -18,7 +18,7 @@
     <device path="{{ device }}"/>
 {% endfor %}
 {% endif %}
-{% elif item.devices|d() %}
+{% elif item.devices | d() %}
 {% if item.devices is string %}
     <device path="{{ item.devices }}"/>
 {% else %}

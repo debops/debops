@@ -10,7 +10,7 @@
 - name: Ensure specified packages are in there desired state
   ansible.builtin.apt:
     name: '{{ q("flattened", (debops_api__python3_packages
-                              if (debops_api__python_version|int == 3)
+                              if (debops_api__python_version | int == 3)
                               else debops_api__python2_packages)) }}'
     state: '{{ "present" if (debops_api__deploy_state == "present") else "absent" }}'
     install_recommends: False

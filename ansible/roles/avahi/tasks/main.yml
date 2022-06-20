@@ -89,11 +89,11 @@
     state: 'present'
     mode: '0644'
   with_dict: '{{ avahi__hosts | combine(avahi__group_hosts) | combine(avahi__host_hosts) }}'
-  when: item.key|d() and item.value|d()
+  when: item.key | d() and item.value | d()
 
 - name: Configure Avahi CNAME aliases
   ansible.builtin.include_tasks: avahi_alias.yml
-  when: avahi__alias_enabled|bool
+  when: avahi__alias_enabled | bool
   tags: [ 'role::avahi:alias' ]
 
 - name: Remove Avahi services if requested
@@ -101,7 +101,7 @@
     path: '/etc/avahi/services/{{ item.value.filename | d(item.key) }}.service'
     state: 'absent'
   with_dict: '{{ avahi__combined_services }}'
-  when: item.value.filename|d(item.key) and item.value.state|d('present') == 'absent'
+  when: item.value.filename | d(item.key) and item.value.state | d('present') == 'absent'
   tags: [ 'role::avahi:alias', 'role::avahi:services' ]
 
 - name: Configure Avahi services
@@ -112,15 +112,15 @@
     group: 'root'
     mode: '0644'
   with_dict: '{{ avahi__combined_services }}'
-  when: (item.value.filename|d(item.key) and item.value.state|d('present') != 'absent' and
-         (item.value.services|d() or item.value.type|d()))
+  when: (item.value.filename | d(item.key) and item.value.state | d('present') != 'absent' and
+         (item.value.services | d() or item.value.type | d()))
   tags: [ 'role::avahi:alias', 'role::avahi:services' ]
 
 - name: Ensure that the avahi-daemon service in in the desired state
   ansible.builtin.service:
     name: 'avahi-daemon'
-    enabled: '{{ avahi__enabled|bool }}'
-    state: '{{ "started" if (avahi__enabled|bool) else "stopped" }}'
+    enabled: '{{ avahi__enabled | bool }}'
+    state: '{{ "started" if (avahi__enabled | bool) else "stopped" }}'
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:

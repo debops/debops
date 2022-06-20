@@ -111,13 +111,13 @@ grub__original_configuration:
 grub__fact_configuration:
 
   - name: 'default'
-    value: '{{ ansible_local.grub.default|d("0") }}'
+    value: '{{ ansible_local.grub.default | d("0") }}'
 
   - name: 'cmdline_linux_default'
-    value: '{{ ansible_local.grub.cmdline_default|d([]) }}'
+    value: '{{ ansible_local.grub.cmdline_default | d([]) }}'
 
   - name: 'cmdline_linux'
-    value: '{{ ansible_local.grub.cmdline|d([]) }}'
+    value: '{{ ansible_local.grub.cmdline | d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: grub__default_configuration [[[
@@ -143,19 +143,19 @@ grub__default_configuration:
   # Disable I/O scheduler in virtual machines for better performance
   - name: 'cmdline_linux_default'
     value: [ 'elevator=noop' ]
-    state: '{{ "present" if (ansible_virtualization_role|d() == "guest") else "ignore" }}'
+    state: '{{ "present" if (ansible_virtualization_role | d() == "guest") else "ignore" }}'
 
   # Activate GRUB serial console support when requested
   - name: 'terminal'
     comment: 'Uncomment to disable graphical terminal (grub-pc only)'
     value: 'console serial'
     quote: True
-    state: '{{ "present" if grub__serial_console|bool else "ignore" }}'
+    state: '{{ "present" if grub__serial_console | bool else "ignore" }}'
 
   # Specify additional parameters for the 'serial' GRUB command
   - name: 'serial_command'
     value: 'serial --unit={{ grub__serial_console_unit }} --speed={{ grub__serial_console_speed }} --word=8 --parity=no --stop=1'
-    state: '{{ "present" if grub__serial_console|bool else "ignore" }}'
+    state: '{{ "present" if grub__serial_console | bool else "ignore" }}'
 
   # Configure serial console in Linux kernel when requested. The last device
   # will be used for /dev/console, which has been set to tty0 (the foreground
@@ -164,7 +164,7 @@ grub__default_configuration:
     value:
       - '{{ "console=ttyS{},{}n8".format(grub__serial_console_unit, grub__serial_console_speed) }}'
       - 'console=tty0'
-    state: '{{ "present" if grub__serial_console|bool else "ignore" }}'
+    state: '{{ "present" if grub__serial_console | bool else "ignore" }}'
 
   # Activate custom hack for menu entry access restrictions when requested
   - name: 'linux_menuentry_class_additional'
@@ -174,7 +174,7 @@ grub__default_configuration:
       Currently unlikely because the patch was not accepted upstream.
     value: '{{ grub__menuentry_access }}'
     state: '{{ "present"
-               if (grub__combined_users|length > 0 and
+               if (grub__combined_users | length > 0 and
                    grub__menuentry_access is string)
                else "absent" }}'
     export: True

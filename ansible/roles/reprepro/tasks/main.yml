@@ -44,7 +44,7 @@
     state: 'present'
     user: '{{ reprepro__user }}'
     exclusive: False
-  when: reprepro__admin_sshkeys|d()
+  when: reprepro__admin_sshkeys | d()
 
 - name: Generate queue processing services
   ansible.builtin.template:
@@ -67,7 +67,7 @@
   include_tasks: 'configure_reprepro.yml'
   loop_control:
     loop_var: 'repo'
-    label: '{{ {"name": repo.name, "state": repo.state|d("present"),
+    label: '{{ {"name": repo.name, "state": repo.state | d("present"),
                 "outdir": (repo.outdir | d(reprepro__public_root + "/sites/" + repo.name + "/public"))} }}'
   loop: '{{ q("flattened", reprepro__combined_instances)
             | debops.debops.parse_kv_items(

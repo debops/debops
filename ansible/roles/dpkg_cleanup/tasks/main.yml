@@ -8,7 +8,7 @@
     path: '{{ dpkg_cleanup__scripts_path }}'
     state: 'directory'
     mode: '0755'
-  when: dpkg_cleanup__enabled|bool
+  when: dpkg_cleanup__enabled | bool
 
 - name: Remove cleanup scripts if requested
   ansible.builtin.file:
@@ -17,8 +17,8 @@
   loop: '{{ q("flattened", dpkg_cleanup__dependent_packages) }}'
   loop_control:
     label: '{{ {"package": item.name} }}'
-  when: dpkg_cleanup__enabled|bool and item.name|d() and
-        item.state|d('present') == 'absent'
+  when: dpkg_cleanup__enabled | bool and item.name | d() and
+        item.state | d('present') == 'absent'
 
 - name: Remove cleanup hooks if requested
   ansible.builtin.file:
@@ -27,8 +27,8 @@
   loop: '{{ q("flattened", dpkg_cleanup__dependent_packages) }}'
   loop_control:
     label: '{{ {"package": item.name} }}'
-  when: dpkg_cleanup__enabled|bool and item.name|d() and
-        item.state|d('present') == 'absent'
+  when: dpkg_cleanup__enabled | bool and item.name | d() and
+        item.state | d('present') == 'absent'
 
 - name: Generate cleanup scripts
   ansible.builtin.template:
@@ -38,8 +38,8 @@
   loop: '{{ q("flattened", dpkg_cleanup__dependent_packages) }}'
   loop_control:
     label: '{{ {"package": item.name} }}'
-  when: dpkg_cleanup__enabled|bool and item.name|d() and
-        item.state|d('present') != 'absent'
+  when: dpkg_cleanup__enabled | bool and item.name | d() and
+        item.state | d('present') != 'absent'
 
 - name: Generate cleanup hooks
   ansible.builtin.template:
@@ -49,5 +49,5 @@
   loop: '{{ q("flattened", dpkg_cleanup__dependent_packages) }}'
   loop_control:
     label: '{{ {"package": item.name} }}'
-  when: dpkg_cleanup__enabled|bool and item.name|d() and
-        item.state|d('present') != 'absent'
+  when: dpkg_cleanup__enabled | bool and item.name | d() and
+        item.state | d('present') != 'absent'

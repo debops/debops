@@ -10,7 +10,7 @@
     name: 'global_handlers'
 
 - name: Configure QubesOS environment
-  when: persistent_paths__qubes_os_enabled|bool
+  when: persistent_paths__qubes_os_enabled | bool
   tags: [ 'role::persistent_paths:qubes_os' ]
   block:
 
@@ -29,7 +29,7 @@
       owner: 'root'
       group: 'root'
       mode: '0644'
-    when: (item.value.state|d("present") == "present")
+    when: (item.value.state | d("present") == "present")
     with_dict: '{{ persistent_paths__combined_paths }}'
     notify: [ 'Run bind-dirs' ]
 
@@ -37,7 +37,7 @@
     ansible.builtin.file:
       path: '{{ persistent_paths__qubes_os_config_dir + "/" + item.key + ".conf" }}'
       state: 'absent'
-    when: (item.value.state|d("present") == "absent")
+    when: (item.value.state | d("present") == "absent")
     with_dict: '{{ persistent_paths__combined_paths }}'
     notify: [ 'Run bind-dirs' ]
 

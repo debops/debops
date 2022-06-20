@@ -26,7 +26,7 @@
 libvirtd__kvm_support: '{{ True
                            if (ansible_virtualization_type == "kvm" and
                                (ansible_virtualization_role == "host" or
-                                libvirtd__register_hw_virt.stdout|d()))
+                                libvirtd__register_hw_virt.stdout | d()))
                            else False }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -95,7 +95,7 @@ libvirtd__packages: []
 #
 # The version of the :command:`libvirtd` daemon exposed as a convenient
 # variable for conditional checks.
-libvirtd__version: '{{ ansible_local.libvirtd.version|d("0.0.0") }}'
+libvirtd__version: '{{ ansible_local.libvirtd.version | d("0.0.0") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Access control [[[
@@ -123,7 +123,7 @@ libvirtd__admins: '{{ [ ansible_user | d(lookup("env", "USER")) ]
 #
 # Name of the UNIX system group which is allowed to access :command:`libvirtd`
 # service through its UNIX sockets.
-libvirtd__unix_sock_group: '{{ ansible_local.libvirtd.unix_sock_group|d("libvirt") }}'
+libvirtd__unix_sock_group: '{{ ansible_local.libvirtd.unix_sock_group | d("libvirt") }}'
                                                                    # ]]]
                                                                    # ]]]
 # libvirtd connection URI [[[
@@ -944,8 +944,8 @@ libvirtd__ksm_pages_to_scan: 100
 #
 # Enable or disable installation of the :program:`ferm` post hook.
 libvirtd__ferm_post_hook: '{{ True
-                              if (ansible_local|d() and ansible_local.ferm|d() and
-                                  (ansible_local.ferm.enabled|d())|bool)
+                              if (ansible_local | d() and ansible_local.ferm | d() and
+                                  (ansible_local.ferm.enabled | d()) | bool)
                               else False }}'
                                                                    # ]]]
                                                                    # ]]]

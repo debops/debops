@@ -51,7 +51,7 @@
 # {{ ansible_managed }}
 
 {% if item.jump is undefined or not item.jump %}
-# Accept new connections{% if item.saddr|d() %} from specified IP addresses{% endif %}{% if item.dport|d() %} on {{ item.dport | join(',') }} port{% endif %}
+# Accept new connections{% if item.saddr | d() %} from specified IP addresses{% endif %}{% if item.dport | d() %} on {{ item.dport | join(',') }} port{% endif %}
 {% else %}
 # Jump to specified chain
 {% endif %}
@@ -72,7 +72,7 @@ Optional:
 #}
 
 {% if ferm__tpl_state == 'enabled' %}
-{% if ferm__tpl_protocol or item.dport|d() %}protocol ({{ (ferm__tpl_protocol if ferm__tpl_protocol else ['tcp']) | join(' ') }}){% endif %}{% if item.dport|d() %} dport ({{ item.dport | join(' ') }}){% endif %}{% if ferm__tpl_protocol or item.dport|d() %} {% endif %}{
+{% if ferm__tpl_protocol or item.dport | d() %}protocol ({{ (ferm__tpl_protocol if ferm__tpl_protocol else ['tcp']) | join(' ') }}){% endif %}{% if item.dport | d() %} dport ({{ item.dport | join(' ') }}){% endif %}{% if ferm__tpl_protocol or item.dport | d() %} {% endif %}{
 {% if item.saddr is defined and item.saddr %}
 	@def $ITEMS = ( @ipfilter( ({{ item.saddr | unique | join(" ") }}) ) );
 	@if @ne($ITEMS,"") {

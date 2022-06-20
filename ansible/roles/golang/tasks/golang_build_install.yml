@@ -12,7 +12,7 @@
   args:
     executable: '/bin/bash'
   register: golang__register_build_apt_packages
-  when: build.apt_packages|d()
+  when: build.apt_packages | d()
   changed_when: False
   check_mode: False
 
@@ -22,13 +22,13 @@
     state: 'present'
   register: golang__register_install_apt_packages
   until: golang__register_install_apt_packages is succeeded
-  when: (not (build.upstream|d())|bool and
+  when: (not (build.upstream | d()) | bool and
          (build.apt_packages is defined and
           (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
            | intersect(golang__register_build_apt_packages.stdout_lines))))
 
 - name: Prepare Go UNIX environment
-  when: ((build.git|d() or build.url|d()) and ((build.upstream|d())|bool or
+  when: ((build.git | d() or build.url | d()) and ((build.upstream | d()) | bool or
          (build.apt_packages is undefined or
           (not (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
                 | intersect(golang__register_build_apt_packages.stdout_lines))))))
@@ -52,17 +52,17 @@
 
 - name: 'Install {{ build.name }} required APT packages'
   ansible.builtin.package:
-    name: '{{ q("flattened", (build.apt_required_packages|d([]))) }}'
+    name: '{{ q("flattened", (build.apt_required_packages | d([]))) }}'
     state: 'present'
   register: golang__register_install_apt_required_packages
   until: golang__register_install_apt_required_packages is succeeded
-  when: (build.url|d() and build.upstream_type|d('git') == 'url' and (((build.upstream|d())|bool or
+  when: (build.url | d() and build.upstream_type | d('git') == 'url' and (((build.upstream | d()) | bool or
          (build.apt_packages is undefined or
           (not (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
                 | intersect(golang__register_build_apt_packages.stdout_lines)))))))
 
 - name: Download Go binaries directly
-  when: (build.url|d() and build.upstream_type|d('git') == 'url' and ((build.upstream|d())|bool or
+  when: (build.url | d() and build.upstream_type | d('git') == 'url' and ((build.upstream | d()) | bool or
          (build.apt_packages is undefined or
           (not (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
                 | intersect(golang__register_build_apt_packages.stdout_lines))))))
@@ -101,7 +101,7 @@
       loop: '{{ build.url }}'
       loop_control:
         loop_var: 'url_item'
-      when: (url_item.unarchive|d())|bool
+      when: (url_item.unarchive | d()) | bool
 
     - name: 'Verify {{ build.name }} files with GnuPG'
       ansible.builtin.command: gpg --verify {{ golang__gosrc + "/" + url_item.dest }}
@@ -113,7 +113,7 @@
       register: golang__register_verify
       changed_when: False
       failed_when: golang__register_verify.rc != 0
-      when: (url_item.gpg_verify|d())|bool
+      when: (url_item.gpg_verify | d()) | bool
 
 - name: 'Install downloaded {{ build.name }} binaries'
   ansible.builtin.copy:
@@ -122,34 +122,34 @@
               else (golang__gosrc + "/"))
              + (binary_item.src | d(binary_item)) }}'
     dest: '{{ ((binary_item.dest | dirname)
-               if (binary_item.dest|d() and "/" in binary_item.dest)
+               if (binary_item.dest | d() and "/" in binary_item.dest)
                else "/usr/local/bin") + "/"
               + ((binary_item.dest | d(binary_item.src | d(binary_item))) | basename) }}'
     remote_src: True
     mode: '{{ binary_item.mode | d("0755") }}'
   register: golang__register_download_install
-  notify: '{{ binary_item.notify if binary_item.notify|d() else omit }}'
+  notify: '{{ binary_item.notify if binary_item.notify | d() else omit }}'
   loop: '{{ build.url_binaries | d([]) }}'
   loop_control:
     loop_var: 'binary_item'
-  when: (build.url_binaries|d() and build.upstream_type|d('git') == 'url' and ((build.upstream|d())|bool or
+  when: (build.url_binaries | d() and build.upstream_type | d('git') == 'url' and ((build.upstream | d()) | bool or
          (build.apt_packages is undefined or
           (not (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
                 | intersect(golang__register_build_apt_packages.stdout_lines))))))
 
 - name: 'Install {{ build.name }} APT dev packages'
   ansible.builtin.package:
-    name: '{{ q("flattened", (golang__apt_dev_packages + (build.apt_dev_packages|d([])))) }}'
+    name: '{{ q("flattened", (golang__apt_dev_packages + (build.apt_dev_packages | d([])))) }}'
     state: 'present'
   register: golang__register_install_apt_dev_packages
   until: golang__register_install_apt_dev_packages is succeeded
-  when: (build.git|d() and build.upstream_type|d('git') == 'git' and (((build.upstream|d())|bool or
+  when: (build.git | d() and build.upstream_type | d('git') == 'git' and (((build.upstream | d()) | bool or
          (build.apt_packages is undefined or
           (not (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
                 | intersect(golang__register_build_apt_packages.stdout_lines)))))))
 
 - name: Build Go applications from source
-  when: (build.git|d() and build.upstream_type|d('git') == 'git' and (((build.upstream|d())|bool or
+  when: (build.git | d() and build.upstream_type | d('git') == 'git' and (((build.upstream | d()) | bool or
          (build.apt_packages is undefined or
           (not (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
                 | intersect(golang__register_build_apt_packages.stdout_lines)))))))
@@ -163,7 +163,7 @@
         dest: '{{ golang__gosrc + "/" + (git_item.dest | d(git_item.repo.split("://")[1])) }}'
         version: '{{ git_item.version | d(git_item.branch | d(omit)) }}'
         depth: '{{ git_item.depth | d(golang__git_depth | d(omit)) }}'
-        verify_commit: '{{ True if build.gpg|d() else omit }}'
+        verify_commit: '{{ True if build.gpg | d() else omit }}'
       loop: '{{ build.git }}'
       loop_control:
         loop_var: 'git_item'
@@ -182,7 +182,7 @@
       loop: '{{ build.git }}'
       loop_control:
         loop_var: 'git_item'
-      when: git_item.build_script|d() and
+      when: git_item.build_script | d() and
             golang__register_build_source is changed
       register: golang__register_build
 
@@ -193,17 +193,17 @@
               else (golang__gosrc + "/"))
              + (binary_item.src | d(binary_item)) }}'
     dest: '{{ ((binary_item.dest | dirname)
-               if (binary_item.dest|d() and "/" in binary_item.dest)
+               if (binary_item.dest | d() and "/" in binary_item.dest)
                else "/usr/local/bin") + "/"
               + ((binary_item.dest | d(binary_item.src | d(binary_item))) | basename) }}'
     remote_src: True
     mode: '{{ binary_item.mode | d("0755") }}'
   register: golang__register_build_install
-  notify: '{{ binary_item.notify if binary_item.notify|d() else omit }}'
+  notify: '{{ binary_item.notify if binary_item.notify | d() else omit }}'
   loop: '{{ build.git_binaries | d([]) }}'
   loop_control:
     loop_var: 'binary_item'
-  when: (build.git_binaries|d() and build.upstream_type|d('git') == 'git' and ((build.upstream|d())|bool or
+  when: (build.git_binaries | d() and build.upstream_type | d('git') == 'git' and ((build.upstream | d()) | bool or
          (build.apt_packages is undefined or
           (not (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
                 | intersect(golang__register_build_apt_packages.stdout_lines))))))
@@ -217,7 +217,7 @@
     dest: '{{ golang__bin_database }}'
     mode: '0644'
     force: False
-  when: build.url_binaries|d() or build.git_binaries|d()
+  when: build.url_binaries | d() or build.git_binaries | d()
 
 - name: 'Register {{ build.name }} in database of the local Go binaries'
   ansible.builtin.lineinfile:
@@ -232,14 +232,14 @@
   loop_control:
     loop_var: 'binary_item'
   register: golang__register_build_database
-  when: build.url_binaries|d() or build.git_binaries|d()
+  when: build.url_binaries | d() or build.git_binaries | d()
 
   # An exception to the rule. Role needs to refresh facts without executing any
   # other pending handlers.
 - name: Update Ansible local facts if they were modified
   ansible.builtin.setup:  # noqa no-handler
-  when: (ansible_local|d() and ansible_local.golang|d() and
-         (ansible_local.golang.configured|d())|bool and
+  when: (ansible_local | d() and ansible_local.golang | d() and
+         (ansible_local.golang.configured | d()) | bool and
          (golang__register_build_database is changed or
           golang__register_download_install is changed or
           golang__register_build_install is changed))

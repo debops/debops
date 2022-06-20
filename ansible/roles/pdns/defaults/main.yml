@@ -93,7 +93,7 @@ pdns__autosecondary: False
 # Only one address can be given. A port may be specified after a colon; with
 # IPv6, the address must in that case be enclosed in square brackets.
 pdns__resolver: '{{ ansible_local.resolvconf.nameservers[0]
-                    |d(ansible_dns.nameservers[0]) }}'
+                     | d(ansible_dns.nameservers[0]) }}'
 
                                                                    # ]]]
 # .. envvar:: pdns__backends [[[
@@ -195,19 +195,19 @@ pdns__allow_dnsupdate_from: []
 #
 # The host that Ansible should configure the PostgreSQL database on.
 pdns__postgresql_delegate_to: '{{ ansible_local.postgresql.delegate_to
-                                  |d(ansible_fqdn) }}'
+                                   | d(ansible_fqdn) }}'
 
                                                                    # ]]]
 # .. envvar:: pdns__postgresql_server [[[
 #
 # The host that should be configured in pdns as the PostgreSQL server.
-pdns__postgresql_server: '{{ ansible_local.postgresql.server|d("localhost") }}'
+pdns__postgresql_server: '{{ ansible_local.postgresql.server | d("localhost") }}'
 
                                                                    # ]]]
 # .. envvar:: pdns__postgresql_port [[[
 #
 # The TCP port of the PostgreSQL server.
-pdns__postgresql_port: '{{ ansible_local.postgresql.port|d("5432") }}'
+pdns__postgresql_port: '{{ ansible_local.postgresql.port | d("5432") }}'
 
                                                                    # ]]]
 # .. envvar:: pdns__postgresql_database [[[

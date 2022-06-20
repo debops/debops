@@ -77,10 +77,10 @@ dropbear_initramfs__network_autoconf: 'dhcp'
 # Default network device.
 dropbear_initramfs__network_device: '{{
   ansible_default_ipv6.interface
-  if ansible_default_ipv6.interface|d()
+  if ansible_default_ipv6.interface | d()
   else (
     ansible_default_ipv4.interface
-    if ansible_default_ipv4.interface|d()
+    if ansible_default_ipv4.interface | d()
     else "eth0"
   )
   }}'
@@ -185,7 +185,7 @@ dropbear_initramfs__port: '22'
 # Disable password login?
 dropbear_initramfs__disable_password_login: '{{
   True
-  if dropbear_initramfs__combined_authorized_keys|d()
+  if dropbear_initramfs__combined_authorized_keys | d()
   else False
   }}'
 
@@ -219,11 +219,11 @@ dropbear_initramfs__forced_command: ''
 # Set options parsed to dropbear.
 dropbear_initramfs__dropbear_options: '{{
   "-p " + dropbear_initramfs__port +
-  (" -g -s" if dropbear_initramfs__disable_password_login|d() else "") +
-  (" -j -k" if dropbear_initramfs__disable_port_forwarding|d() else "") +
+  (" -g -s" if dropbear_initramfs__disable_password_login | d() else "") +
+  (" -j -k" if dropbear_initramfs__disable_port_forwarding | d() else "") +
   " -I " + dropbear_initramfs__idle_timeout +
   " -T " + dropbear_initramfs__max_authentication_attempts +
-  (" -c " + dropbear_initramfs__forced_command if dropbear_initramfs__forced_command|d() else "")
+  (" -c " + dropbear_initramfs__forced_command if dropbear_initramfs__forced_command | d() else "")
   }}'
 
                                                                    # ]]]

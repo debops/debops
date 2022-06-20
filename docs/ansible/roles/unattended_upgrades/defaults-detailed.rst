@@ -55,7 +55,7 @@ Include specified packages in the upgrade blacklist on all hosts:
 
      - name: [ '^linux-.*', 'vim' ]
        state: '{{ "present"
-                 if (ansible_local|d() and ansible_local.tags|d()
+                 if (ansible_local | d() and ansible_local.tags | d()
                      and "production" in ansible_local.tags)
                  else "absent" }}'
 

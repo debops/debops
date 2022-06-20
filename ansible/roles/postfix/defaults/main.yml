@@ -51,7 +51,7 @@ postfix__purge_packages: [ 'exim4-base', 'exim4-config',
 #
 # The currently installed Postfix version. This variable is defined by the
 # Ansible local facts and it's here for convenience, shouldn't be set manually.
-postfix__version: '{{ ansible_local.postfix.version|d("0.0.0") }}'
+postfix__version: '{{ ansible_local.postfix.version | d("0.0.0") }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__doc_installed [[[
@@ -61,7 +61,7 @@ postfix__version: '{{ ansible_local.postfix.version|d("0.0.0") }}'
 # account during configuration. The package presence is checked by the Ansible
 # local facts.
 postfix__doc_installed: '{{ ansible_local.postfix.doc_installed
-                            if (ansible_local|d() and ansible_local.postfix|d() and
+                            if (ansible_local | d() and ansible_local.postfix | d() and
                                 ansible_local.postfix.doc_installed is defined)
                             else False }}'
                                                                    # ]]]
@@ -136,40 +136,40 @@ postfix__allow_smtps: []
 #
 # Enable or disable support for TLS in Postfix, managed by the :ref:`debops.pki`
 # Ansible role.
-postfix__pki: '{{ ansible_local.pki.enabled|d() | bool }}'
+postfix__pki: '{{ ansible_local.pki.enabled | d() | bool }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__pki_path [[[
 #
 # Absolute path to the directory where PKI realms are located.
-postfix__pki_path: '{{ ansible_local.pki.path|d("/etc/pki/realms") }}'
+postfix__pki_path: '{{ ansible_local.pki.path | d("/etc/pki/realms") }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__pki_realm [[[
 #
 # Name of the default PKI realm used by Postfix.
-postfix__pki_realm: '{{ ansible_local.pki.realm|d("domain") }}'
+postfix__pki_realm: '{{ ansible_local.pki.realm | d("domain") }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__pki_ca [[[
 #
 # Name of the Root Certificate Authority certificate file used by Postfix,
 # relative to the PKI realm directory.
-postfix__pki_ca: '{{ ansible_local.pki.ca|d("CA.crt") }}'
+postfix__pki_ca: '{{ ansible_local.pki.ca | d("CA.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__pki_crt [[[
 #
 # Name of the certificate file used by Postfix, relative to the PKI realm
 # directory.
-postfix__pki_crt: '{{ ansible_local.pki.crt|d("default.crt") }}'
+postfix__pki_crt: '{{ ansible_local.pki.crt | d("default.crt") }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__pki_key [[[
 #
 # Name of the private key file used by Postfix, relative to the PKI realm
 # directory.
-postfix__pki_key: '{{ ansible_local.pki.key|d("default.key") }}'
+postfix__pki_key: '{{ ansible_local.pki.key | d("default.key") }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__tls_ca_file [[[
@@ -184,14 +184,14 @@ postfix__tls_ca_file: '/etc/ssl/certs/ca-certificates.crt'
 #
 # Absolute path of the certificate file used in the Postfix configuration.
 postfix__tls_cert_file: '{{ (postfix__pki_path + "/" + postfix__pki_realm + "/" + postfix__pki_crt)
-                            if postfix__pki|bool else "/etc/ssl/certs/ssl-cert-snakeoil.pem" }}'
+                            if postfix__pki | bool else "/etc/ssl/certs/ssl-cert-snakeoil.pem" }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__tls_key_file [[[
 #
 # Absolute path of the private key file used in the Postfix configuration.
 postfix__tls_key_file: '{{ (postfix__pki_path + "/" + postfix__pki_realm + "/" + postfix__pki_key)
-                           if postfix__pki|bool else "/etc/ssl/private/ssl-cert-snakeoil.key" }}'
+                           if postfix__pki | bool else "/etc/ssl/private/ssl-cert-snakeoil.key" }}'
                                                                    # ]]]
 # .. envvar:: postfix__pki_hook_name [[[
 #
@@ -202,7 +202,7 @@ postfix__pki_hook_name: 'postfix'
 # .. envvar:: postfix__pki_hook_path [[[
 #
 # Directory with PKI hooks.
-postfix__pki_hook_path: '{{ ansible_local.pki.hooks|d("/etc/pki/hooks") }}'
+postfix__pki_hook_path: '{{ ansible_local.pki.hooks | d("/etc/pki/hooks") }}'
 
                                                                    # ]]]
 # .. envvar:: postfix__pki_hook_action [[[
@@ -219,7 +219,7 @@ postfix__pki_hook_action: 'reload'
 # Enable or disable support for custom Diffie-Hellman parameters managed by the
 # :ref:`debops.dhparam` Ansible role.
 postfix__dhparam: '{{ ansible_local.dhparam.enabled
-                      if (ansible_local|d() and ansible_local.dhparam|d() and
+                      if (ansible_local | d() and ansible_local.dhparam | d() and
                           ansible_local.dhparam.enabled is defined)
                       else False }}'
 
@@ -236,8 +236,8 @@ postfix__dhparam_set: 'default'
 # Absolute path to Diffie-Hellman parameters file which should be used for
 # non-export grade connections.
 postfix__tls_dh1024_param_file: '{{ ansible_local.dhparam[postfix__dhparam_set]
-                                    if (ansible_local|d() and ansible_local.dhparam|d() and
-                                        ansible_local.dhparam[postfix__dhparam_set]|d())
+                                    if (ansible_local | d() and ansible_local.dhparam | d() and
+                                        ansible_local.dhparam[postfix__dhparam_set] | d())
                                     else "" }}'
 
                                                                    # ]]]
@@ -246,8 +246,8 @@ postfix__tls_dh1024_param_file: '{{ ansible_local.dhparam[postfix__dhparam_set]
 # Absolute path to Diffie-Hellman parameters file which should be used for
 # export grade connections.
 postfix__tls_dh512_param_file: '{{ ansible_local.dhparam[postfix__dhparam_set]
-                                   if (ansible_local|d() and ansible_local.dhparam|d() and
-                                       ansible_local.dhparam[postfix__dhparam_set]|d())
+                                   if (ansible_local | d() and ansible_local.dhparam | d() and
+                                       ansible_local.dhparam[postfix__dhparam_set] | d())
                                    else "" }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -295,7 +295,7 @@ postfix__original_maincf:
 
   - name: 'readme_directory'
     value: '{{ "/usr/share/doc/postfix"
-               if postfix__doc_installed|bool
+               if postfix__doc_installed | bool
                else False }}'
     section: 'base'
 
@@ -419,7 +419,7 @@ postfix__original_maincf:
 
   - name: 'html_directory'
     value: '{{ "/usr/share/doc/postfix/html"
-               if postfix__doc_installed|bool
+               if postfix__doc_installed | bool
                else False }}'
     section: 'base'
 
@@ -486,12 +486,12 @@ postfix__tls_maincf:
 
   - name: 'smtpd_tls_dh1024_param_file'
     value: '{{ postfix__tls_dh1024_param_file }}'
-    state: '{{ "present" if postfix__dhparam|bool else "ignore" }}'
+    state: '{{ "present" if postfix__dhparam | bool else "ignore" }}'
     section: 'smtpd-tls'
 
   - name: 'smtpd_tls_dh512_param_file'
     value: '{{ postfix__tls_dh512_param_file }}'
-    state: '{{ "present" if postfix__dhparam|bool else "ignore" }}'
+    state: '{{ "present" if postfix__dhparam | bool else "ignore" }}'
     section: 'smtpd-tls'
 
   - name: 'smtpd_tls_loglevel'
@@ -1318,7 +1318,7 @@ postfix__ferm__dependent_rules:
     saddr: '{{ postfix__allow_smtp }}'
     accept_any: '{{ postfix__accept_any }}'
     rule_state: '{{ "present"
-                    if ("smtp" in postfix__env_active_services|d([]))
+                    if ("smtp" in postfix__env_active_services | d([]))
                     else "absent" }}'
 
   - name: 'postfix_smtps'
@@ -1328,7 +1328,7 @@ postfix__ferm__dependent_rules:
     saddr: '{{ postfix__allow_smtps }}'
     accept_any: '{{ postfix__accept_any }}'
     rule_state: '{{ "present"
-                    if ("smtps" in postfix__env_active_services|d([]))
+                    if ("smtps" in postfix__env_active_services | d([]))
                     else "absent" }}'
 
   - name: 'postfix_submission'
@@ -1338,7 +1338,7 @@ postfix__ferm__dependent_rules:
     saddr: '{{ postfix__allow_submission }}'
     accept_any: '{{ postfix__accept_any }}'
     rule_state: '{{ "present"
-                    if ("submission" in postfix__env_active_services|d([]))
+                    if ("submission" in postfix__env_active_services | d([]))
                     else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]

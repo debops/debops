@@ -24,15 +24,15 @@
                               + nodejs__dependent_packages)) }}'
     state: '{{ "latest"
                if (nodejs__node_upstream | bool and
-                   (ansible_local|d() and ansible_local.nodejs|d() and
+                   (ansible_local | d() and ansible_local.nodejs | d() and
                     ansible_local.nodejs.node_upstream is defined and
-                    not ansible_local.nodejs.node_upstream|bool))
+                    not ansible_local.nodejs.node_upstream | bool))
                else "present" }}'
     autoremove: '{{ True
                     if (nodejs__node_upstream | bool and
-                        (ansible_local|d() and ansible_local.nodejs|d() and
+                        (ansible_local | d() and ansible_local.nodejs | d() and
                          ansible_local.nodejs.node_upstream is defined and
-                         not ansible_local.nodejs.node_upstream|bool))
+                         not ansible_local.nodejs.node_upstream | bool))
                     else omit }}'
   notify: [ 'Refresh host facts' ]
   register: nodejs__register_packages
@@ -44,8 +44,8 @@
 - name: Maintain 'yarn' symlink for the 'yarnpkg' package
   ansible.builtin.file:
     path: '/usr/local/bin/yarn'
-    src: '{{ omit if nodejs__yarn_upstream|bool else "/usr/bin/yarnpkg" }}'
-    state: '{{ "absent" if nodejs__yarn_upstream|bool else "link" }}'
+    src: '{{ omit if nodejs__yarn_upstream | bool else "/usr/bin/yarnpkg" }}'
+    state: '{{ "absent" if nodejs__yarn_upstream | bool else "link" }}'
     mode: '0755'
 
 - name: Install NPM packages

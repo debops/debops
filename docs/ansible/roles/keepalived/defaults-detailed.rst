@@ -73,8 +73,8 @@ first node will be elected MASTER by default.
      - name: 'vrrp_instance_1'
        raw: |
          vrrp_instance VI_1 {
-             state {{ 'MASTER' if (keepalived__host_index|int == 0) else 'BACKUP' }}
-             priority {{ (100 - (keepalived__host_index|int * 10)) }}
+             state {{ 'MASTER' if (keepalived__host_index | int == 0) else 'BACKUP' }}
+             priority {{ (100 - (keepalived__host_index | int * 10)) }}
              interface eth0
              virtual_router_id 51
              advert_int 1

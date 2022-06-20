@@ -190,7 +190,7 @@ rspamd__dkim_update_default_configuration:
 
   - name: 'nsupdate_gsstsig_princ'
     value: '{{ "" if rspamd__dkim_update_method != "nsupdate_gsstsig"
-               else "rspamd@" + ansible_domain|upper }}'
+               else "rspamd@" + ansible_domain | upper }}'
 
   - name: 'nsupdate_ttl'
     value: 3600
@@ -239,19 +239,19 @@ rspamd__dkim_update_combined_configuration: '{{
 # .. envvar:: rspamd__redis_host [[[
 #
 # The hostname of the Redis server.
-rspamd__redis_host: '{{ ansible_local.redis_server.host|d("127.0.0.1") }}'
+rspamd__redis_host: '{{ ansible_local.redis_server.host | d("127.0.0.1") }}'
 
                                                                    # ]]]
 # .. envvar:: rspamd__redis_port [[[
 #
 # The port which the Redis server is listening to.
-rspamd__redis_port: '{{ ansible_local.redis_server.port|d("6379") }}'
+rspamd__redis_port: '{{ ansible_local.redis_server.port | d("6379") }}'
 
                                                                    # ]]]
 # .. envvar:: rspamd__redis_password [[[
 #
 # The Redis authentication password.
-rspamd__redis_password: '{{ ansible_local.redis_server.password|d("") }}'
+rspamd__redis_password: '{{ ansible_local.redis_server.password | d("") }}'
 
                                                                    # ]]]
 # .. envvar:: rspamd__redis_db [[[
@@ -339,7 +339,7 @@ rspamd__default_local_configuration:
     comment: |
       DKIM signing configuration
       https://rspamd.com/doc/modules/dkim_signing.html
-    state: '{{ "present" if rspamd__dkim_enabled|d(False) else "absent" }}'
+    state: '{{ "present" if rspamd__dkim_enabled | d(False) else "absent" }}'
     options:
 
       - name: 'allow_username_mismatch'
@@ -352,7 +352,7 @@ rspamd__default_local_configuration:
     comment: |
       ARC signature check configuration
       https://rspamd.com/doc/modules/arc.html
-    state: '{{ "present" if rspamd__dkim_enabled|d(False) else "absent" }}'
+    state: '{{ "present" if rspamd__dkim_enabled | d(False) else "absent" }}'
     options:
 
       - name: 'allow_username_mismatch'

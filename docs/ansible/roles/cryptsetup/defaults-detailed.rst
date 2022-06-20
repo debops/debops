@@ -305,8 +305,8 @@ Each item of those lists is a dictionary with the following documented keys:
 
     To avoid this, you need to set the following options for the item::
 
-      crypttab_options: '{{ ["noauto"] + (cryptsetup__crypttab_options|d([]) | list) }}'
-      mount_options: '{{ ["noauto"] + (cryptsetup__mount_options|d([]) | list) }}'
+      crypttab_options: '{{ ["noauto"] + (cryptsetup__crypttab_options | d([]) | list) }}'
+      mount_options: '{{ ["noauto"] + (cryptsetup__mount_options | d([]) | list) }}'
 
     Note that this option is currently not idempotent because it copes the
     keyfile to the remote system and erases it again without checking before
@@ -430,8 +430,8 @@ A new filesystem will be created on each boot. By default ``ext4`` will be used.
        remote_keyfile: '/dev/urandom'
        ciphertext_block_device: '/dev/disk/by-partuuid/a7a12244-a4aa-42b7-b605-997165b3fbac'
        create_filesystem: False
-       crypttab_options: '{{ ["tmp"] + (cryptsetup__crypttab_options|d([]) | list) }}'
-       # crypttab_options: '{{ ["tmp=" + cryptsetup__fstype] + (cryptsetup__crypttab_options|d([]) | list) }}'
+       crypttab_options: '{{ ["tmp"] + (cryptsetup__crypttab_options | d([]) | list) }}'
+       # crypttab_options: '{{ ["tmp=" + cryptsetup__fstype] + (cryptsetup__crypttab_options | d([]) | list) }}'
        ## This seems to not work with Debian jessie (results in systemd waiting forever for the cleartext target).
        ## Using "tmp" instead worked.
 
@@ -574,7 +574,7 @@ the first run, use something like this to ensure that the crypto layer is presen
 
        ## Disable for initial setup else enable it:
        # remote_keyfile: 'root_fs'
-       # crypttab_options: '{{ ["keyscript=decrypt_keyctl"] + (cryptsetup__crypttab_options|d([]) | list) }}'
+       # crypttab_options: '{{ ["keyscript=decrypt_keyctl"] + (cryptsetup__crypttab_options | d([]) | list) }}'
 
        ## Enable for initial setup else disable it:
        state: 'ansible_controller_mounted'
@@ -594,7 +594,7 @@ The ``keyfile`` parameter does nothing at this point with ``remote_keyfile`` spe
 
        ## Disable for initial setup else enable it:
        remote_keyfile: 'root_fs'
-       crypttab_options: '{{ ["keyscript=decrypt_keyctl"] + (cryptsetup__crypttab_options|d([]) | list) }}'
+       crypttab_options: '{{ ["keyscript=decrypt_keyctl"] + (cryptsetup__crypttab_options | d([]) | list) }}'
 
        ## Enable for initial setup else disable it:
        # state: 'ansible_controller_mounted'

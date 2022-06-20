@@ -61,8 +61,8 @@ to check against ``version_compare()`` Ansible filter:
 .. code-block:: yaml
 
    application__version: '{{ ansible_local.elastic_co.packages.elasticsearch
-                             if (ansible_local.elastic_co.packages|d() and
-                                 ansible_local.elastic_co.packages.elasticsearch|d())
+                             if (ansible_local.elastic_co.packages | d() and
+                                 ansible_local.elastic_co.packages.elasticsearch | d())
                              else "0.0.0" }}'
 
 You can also use the ``ansible_local.elastic_co.packages`` fact to check if
@@ -71,7 +71,7 @@ a given Elastic application is installed:
 .. code-block:: yaml
 
    application__es_present: '{{ True
-                                if (ansible_local.elastic_co.packages|d() and
+                                if (ansible_local.elastic_co.packages | d() and
                                     "elasticsearch" in ansible_local.elastic_co.packages.keys())
                                 else False }}'
 

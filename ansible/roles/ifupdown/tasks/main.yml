@@ -48,10 +48,10 @@
   ansible.builtin.file:
     path: '/etc/network/interfaces.config.d'
     state: 'absent'
-  when: (ansible_local|d() and ansible_local.debops_fact|d() and
-         ansible_local.debops_fact.enabled|bool and
+  when: (ansible_local | d() and ansible_local.debops_fact | d() and
+         ansible_local.debops_fact.enabled | bool and
          (ansible_local.debops_fact.version is undefined or
-          (ansible_local.debops_fact.version.ifupdown|d("0.0.0") is version_compare("0.3.0","<"))))
+          (ansible_local.debops_fact.version.ifupdown | d("0.0.0") is version_compare("0.3.0","<"))))
 
 - name: Create configuration directories
   ansible.builtin.file:
@@ -70,59 +70,59 @@
 - name: Remove network interface configuration
   ansible.builtin.file:
     dest: '/etc/network/interfaces.config.d/{{ "%03d" | format((ifupdown__interface_weight_map[item.value.weight_class
-                                                                | d(item.value.type | d("default"))] | d("90"))|int
-                                               + (item.value.weight | d("0"))|int) }}_iface_{{ item.value.iface
+                                                                | d(item.value.type | d("default"))] | d("90")) | int
+                                               + (item.value.weight | d("0")) | int) }}_iface_{{ item.value.iface
                                                                                                | d(item.key) }}'
     state: 'absent'
   with_dict: '{{ ifupdown__combined_interfaces }}'
   register: ifupdown__register_interfaces_removed
-  when: item.value.state|d('present') == 'absent'
+  when: item.value.state | d('present') == 'absent'
 
 - name: Generate network interface configuration
   ansible.builtin.template:
     src: 'etc/network/interfaces.d/iface.j2'
     dest: '/etc/network/interfaces.config.d/{{ "%03d" | format((ifupdown__interface_weight_map[item.value.weight_class
-                                                                | d(item.value.type | d("default"))] | d("90"))|int
-                                               + (item.value.weight | d("0"))|int) }}_iface_{{ item.value.iface
+                                                                | d(item.value.type | d("default"))] | d("90")) | int
+                                               + (item.value.weight | d("0")) | int) }}_iface_{{ item.value.iface
                                                                                                | d(item.key) }}'
     owner: 'root'
     group: 'root'
     mode: '{{ item.value.mode | d("0644") }}'
   with_dict: '{{ ifupdown__combined_interfaces }}'
   register: ifupdown__register_interfaces_created
-  when: item.value.state|d('present') not in [ 'absent', 'ignore' ]
+  when: item.value.state | d('present') not in [ 'absent', 'ignore' ]
 
 - name: Remove unknown interface configuration
   ansible.builtin.shell: find /etc/network/interfaces.config.d -maxdepth 1 -type f
          -name '*_iface_{{ item.item.value.iface | d(item.item.key) }}'
          ! -name '{{ "%03d" | format((ifupdown__interface_weight_map[item.item.value.weight_class
-                                      | d(item.item.value.type | d("default"))] | d("90"))|int
-                     + (item.item.value.weight | d("0"))|int) }}_iface_{{ item.item.value.iface | d(item.item.key) }}'
+                                      | d(item.item.value.type | d("default"))] | d("90")) | int
+                     + (item.item.value.weight | d("0")) | int) }}_iface_{{ item.item.value.iface | d(item.item.key) }}'
          -exec rm -vf {} +
   with_items:  # noqa no-handler
     - '{{ ifupdown__register_interfaces_removed.results }}'
     - '{{ ifupdown__register_interfaces_created.results }}'
-  when: (item.item.key|d() and item is changed)
+  when: (item.item.key | d() and item is changed)
 
 - name: Mark modified interfaces for processing
   ansible.builtin.copy:  # noqa no-handler
     content: |
       {{ ("created"
-          if ((item.item.key|replace(':','_')|replace('.','_')) not in ansible_interfaces and
+          if ((item.item.key | replace(':','_') | replace('.','_')) not in ansible_interfaces and
               (item.diff is undefined or
-               (item.diff|d() and item.diff.after|d() and
-                item.diff.after_header|d() and
+               (item.diff | d() and item.diff.after | d() and
+                item.diff.after_header | d() and
                 item.diff.after_header == "dynamically generated")))
           else ("removed"
-                if (item.diff|d() and item.diff.after|d() and
-                    item.diff.after.state|d() and
+                if (item.diff | d() and item.diff.after | d() and
+                    item.diff.after.state | d() and
                     item.diff.after.state == "absent")
                 else "changed")) }}
     dest: '{{ "/run/network/debops-ifupdown-reconfigure," +
               ("%03d" | format(((ifupdown__interface_weight_map[item.item.value.weight_class
                                  | d(item.item.value.type | d("default"))]
-                                 | d(ifupdown__interface_weight_map["default"] | d("90")))|int
-               + (item.item.value.weight | d("0"))|int)))|string + ","
+                                 | d(ifupdown__interface_weight_map["default"] | d("90"))) | int
+               + (item.item.value.weight | d("0")) | int))) | string + ","
                + (item.item.value.iface | d(item.item.key)) }}'
     owner: 'root'
     group: 'root'
@@ -131,7 +131,7 @@
     - '{{ ifupdown__register_interfaces_removed.results }}'
     - '{{ ifupdown__register_interfaces_created.results }}'
   notify: [ 'Apply ifupdown configuration' ]
-  when: (item.item.key|d() and item is changed)
+  when: (item.item.key | d() and item is changed)
 
 - name: Remove custom configuration files
   ansible.builtin.file:
@@ -142,8 +142,8 @@
     - '{{ ifupdown__custom_group_files }}'
     - '{{ ifupdown__custom_host_files }}'
     - '{{ ifupdown__custom_dependent_files }}'
-  when: ((item.dest|d() or item.path|d()) and
-         item.state|d('present') == 'absent')
+  when: ((item.dest | d() or item.path | d()) and
+         item.state | d('present') == 'absent')
 
 - name: Generate custom configuration files
   ansible.builtin.copy:
@@ -159,9 +159,9 @@
     - '{{ ifupdown__custom_group_files }}'
     - '{{ ifupdown__custom_host_files }}'
     - '{{ ifupdown__custom_dependent_files }}'
-  when: ((item.dest|d() or item.path|d()) and
-         (item.src|d() or item.content|d()) and
-         item.state|d('present') != 'absent')
+  when: ((item.dest | d() or item.path | d()) and
+         (item.src | d() or item.content | d()) and
+         item.state | d('present') != 'absent')
 
 - name: Remove custom ifupdown hooks
   ansible.builtin.file:
@@ -169,7 +169,7 @@
     state: 'absent'
   with_flattened:
     - '{{ ifupdown__custom_hooks }}'
-  when: item.name|d() and item.state|d('present') == 'absent'
+  when: item.name | d() and item.state | d('present') == 'absent'
 
 - name: Install custom ifupdown hooks
   ansible.builtin.template:
@@ -180,7 +180,7 @@
     mode: '{{ item.mode | d("0755") }}'
   with_flattened:
     - '{{ ifupdown__custom_hooks }}'
-  when: item.name|d() and item.state|d('present') != 'absent'
+  when: item.name | d() and item.state | d('present') != 'absent'
 
 - name: Install reconfiguration script if needed
   ansible.builtin.copy:
@@ -193,10 +193,10 @@
 
 - name: Save role version information
   ini_file:
-    dest: '{{ ansible_local.debops_fact.public_facts|d("/etc/ansible/debops_fact.ini") }}'
+    dest: '{{ ansible_local.debops_fact.public_facts | d("/etc/ansible/debops_fact.ini") }}'
     section: 'version'
     option: 'ifupdown'
     value: '{{ ifupdown__role_metadata.version }}'
     mode: '0644'
-  when: ansible_local|d() and ansible_local.debops_fact|d() and
-        ansible_local.debops_fact.enabled|bool
+  when: ansible_local | d() and ansible_local.debops_fact | d() and
+        ansible_local.debops_fact.enabled | bool

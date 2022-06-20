@@ -36,8 +36,8 @@
     dir: '{{ secret + "/icinga/dependent_config/" + inventory_hostname }}'
     depth: 1
     name: 'icinga__vars_dependent_configuration'
-  when: (ansible_local|d() and ansible_local.icinga|d() and
-         (ansible_local.icinga.configured|d())|bool)
+  when: (ansible_local | d() and ansible_local.icinga | d() and
+         (ansible_local.icinga.configured | d()) | bool)
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:
@@ -63,15 +63,15 @@
 - name: Add/remove diversion of Icinga configuration files
   dpkg_divert:
     path: '{{ "/etc/icinga2/" + item.filename | d(item.name | regex_replace(".conf$","") + ".conf") }}'
-    state: '{{ item.state|d("present") }}'
+    state: '{{ item.state | d("present") }}'
     delete: True
   loop: '{{ icinga__combined_configuration | debops.debops.parse_kv_items }}'
   loop_control:
-    label: '{{ { "name": item.name, "state": item.state|d("present") } }}'
+    label: '{{ { "name": item.name, "state": item.state | d("present") } }}'
   notify: [ 'Check icinga2 configuration and restart' ]
-  when: (item.name|d() and
-         item.state|d('present') in [ 'absent', 'present' ] and
-         item.divert|d(False)|bool)
+  when: (item.name | d() and
+         item.state | d('present') in [ 'absent', 'present' ] and
+         item.divert | d(False) | bool)
 
 - name: Ensure that configuration directories exist
   ansible.builtin.file:
@@ -81,7 +81,7 @@
     group: 'root'
     mode: '0755'
   with_items: '{{ icinga__combined_configuration | debops.debops.parse_kv_items }}'
-  when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init', 'feature' ] and
+  when: (item.name | d() and item.state | d('present') not in [ 'absent', 'ignore', 'init', 'feature' ] and
          ((item.filename | d(item.name | regex_replace(".conf$","") + ".conf")) | dirname | d()))
 
 - name: Remove Icinga configuration files
@@ -90,8 +90,8 @@
     state: 'absent'
   with_items: '{{ icinga__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Check icinga2 configuration and restart' ]
-  when: (item.name|d() and item.state|d('present') == 'absent' and
-         not item.divert|d(False)|bool)
+  when: (item.name | d() and item.state | d('present') == 'absent' and
+         not item.divert | d(False) | bool)
 
 - name: Generate Icinga configuration files
   ansible.builtin.template:
@@ -102,7 +102,7 @@
     mode:  '{{ item.mode  | d("0644") }}'
   with_items: '{{ icinga__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Check icinga2 configuration and restart' ]
-  when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init', 'divert', 'feature' ])
+  when: (item.name | d() and item.state | d('present') not in [ 'absent', 'ignore', 'init', 'divert', 'feature' ])
   no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
 
 - name: Ensure that configuration directories exist on the master node
@@ -115,7 +115,7 @@
     mode: '0755'
   with_items: '{{ icinga__master_combined_configuration | debops.debops.parse_kv_items }}'
   delegate_to: '{{ icinga__master_delegate_to }}'
-  when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init', 'feature' ] and
+  when: (item.name | d() and item.state | d('present') not in [ 'absent', 'ignore', 'init', 'feature' ] and
          ((item.filename | d(item.name | regex_replace(".conf$","") + ".conf")) | dirname | d()))
 
 - name: Remove Icinga configuration on the master node if requested
@@ -125,7 +125,7 @@
   with_items: '{{ icinga__master_combined_configuration | debops.debops.parse_kv_items }}'
   delegate_to: '{{ icinga__master_delegate_to }}'
   notify: [ 'Check icinga2 configuration and restart it on the master node' ]
-  when: (item.name|d() and item.state|d('present') == 'absent')
+  when: (item.name | d() and item.state | d('present') == 'absent')
 
 - name: Generate Icinga configuration files on the master node
   ansible.builtin.template:
@@ -137,21 +137,21 @@
   with_items: '{{ icinga__master_combined_configuration | debops.debops.parse_kv_items }}'
   delegate_to: '{{ icinga__master_delegate_to }}'
   notify: [ 'Check icinga2 configuration and restart it on the master node' ]
-  when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init', 'divert', 'feature' ])
+  when: (item.name | d() and item.state | d('present') not in [ 'absent', 'ignore', 'init', 'divert', 'feature' ])
   no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
 
 - name: Configure state of Icinga features
   ansible.builtin.file:
     path: '/etc/icinga2/features-enabled/{{ item.feature_name }}.conf'
     src: '{{ ("../features-available/" + item.feature_name + ".conf")
-             if (item.feature_state|d("present") == "present") else omit }}'
-    state: '{{ "link" if item.feature_state|d("present") == "present" else "absent" }}'
+             if (item.feature_state | d("present") == "present") else omit }}'
+    state: '{{ "link" if item.feature_state | d("present") == "present" else "absent" }}'
     mode: '0644'
-    force: '{{ True if ansible_check_mode|bool else omit }}'
+    force: '{{ True if ansible_check_mode | bool else omit }}'
   with_items: '{{ icinga__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Check icinga2 configuration and restart' ]
-  when: (item.name|d() and item.state|d('present') not in [ 'absent', 'ignore', 'init', 'divert' ] and
-         item.feature_name|d() and item.feature_state|d())
+  when: (item.name | d() and item.state | d('present') not in [ 'absent', 'ignore', 'init', 'divert' ] and
+         item.feature_name | d() and item.feature_state | d())
 
 - name: Copy custom files for Icinga
   ansible.builtin.copy:
@@ -166,8 +166,8 @@
     - '{{ icinga__custom_files }}'
     - '{{ icinga__group_custom_files }}'
     - '{{ icinga__host_custom_files }}'
-  when: ((item.src|d() or item.content|d()) and
-         item.dest|d() and item.state|d("present") != "absent")
+  when: ((item.src | d() or item.content | d()) and
+         item.dest | d() and item.state | d("present") != "absent")
 
 - name: Save dependent configuration on Ansible Controller
   ansible.builtin.template:
@@ -191,7 +191,7 @@
     force_basic_auth: True
   register: icinga__register_director_host
   notify: [ 'Trigger Icinga Director configuration deployment' ]
-  when: icinga__director_enabled|bool and icinga__director_register|bool and
+  when: icinga__director_enabled | bool and icinga__director_register | bool and
         icinga__node_type != 'master'
   changed_when: icinga__register_director_host.status == 201
   tags: [ 'role::icinga:register' ]

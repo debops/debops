@@ -78,7 +78,7 @@
     state: 'absent'
   register: netbox__register_virtalenv_deleted
   when: ( netbox__virtualenv_version == '3' and
-          netbox__register_virtualenv_version.stat.lnk_target|d() == 'python2' )
+          netbox__register_virtualenv_version.stat.lnk_target | d() == 'python2' )
 
 - name: Create NetBox checkout directory
   ansible.builtin.file:
@@ -121,10 +121,10 @@
   until: netbox__register_checkout is succeeded
   notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver', 'Restart netbox Request Queue Worker' ]
   when: (netbox__register_source.before is undefined or
-         (netbox__register_source.before|d() and netbox__register_target_branch.stdout|d() and
+         (netbox__register_source.before | d() and netbox__register_target_branch.stdout | d() and
           netbox__register_source.before != netbox__register_target_branch.stdout) or
-          not netbox__register_installed.stat.exists|bool or
-          netbox__register_virtalenv_deleted.changed|bool)
+          not netbox__register_installed.stat.exists | bool or
+          netbox__register_virtalenv_deleted.changed | bool)
 
 - name: Create Python virtualenv for NetBox
   ansible.builtin.pip:
@@ -170,7 +170,7 @@
   become_user: '{{ netbox__user }}'
   with_flattened: '{{ netbox__virtualenv_pip_packages }}'
   when: netbox__register_checkout is changed and
-        item.state|d('present') not in [ 'absent', 'ignore' ]
+        item.state | d('present') not in [ 'absent', 'ignore' ]
 
 - name: Generate NetBox configuration
   ansible.builtin.template:
@@ -191,7 +191,7 @@
     group: '{{ netbox__group }}'
     mode: '0640'
   notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver', 'Restart netbox Request Queue Worker' ]
-  when: netbox__ldap_enabled|bool
+  when: netbox__ldap_enabled | bool
   tags: [ 'role::netbox:config' ]
   no_log: '{{ debops__no_log | d(True) }}'
 
@@ -227,7 +227,7 @@
     virtualenv: '{{ netbox__virtualenv }}'
   become: True
   become_user: '{{ netbox__user }}'
-  when: (not netbox__register_installed.stat.exists|bool and
+  when: (not netbox__register_installed.stat.exists | bool and
          not netbox__register_migration.stdout is search('No migrations to apply.'))
   no_log: '{{ debops__no_log | d(True) }}'
 
@@ -242,7 +242,7 @@
     - 'Reload systemd daemon (netbox)'
     - 'Restart gunicorn for netbox'
     - 'Restart netbox internal appserver'
-  when: netbox__app_internal_appserver|bool
+  when: netbox__app_internal_appserver | bool
 
 - name: Generate NetBox RQ systemd service unit
   ansible.builtin.template:
@@ -254,7 +254,7 @@
   notify:
     - 'Reload systemd daemon (netbox)'
     - 'Restart netbox Request Queue Worker'
-  when: netbox__app_internal_appserver|bool
+  when: netbox__app_internal_appserver | bool
 
 - name: Generate NetBox netbox-manage script
   ansible.builtin.template:

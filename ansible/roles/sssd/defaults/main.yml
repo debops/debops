@@ -40,7 +40,7 @@ sssd__packages: []
 #
 # Default umask for new home directories created by the ``pam_mkhomedir`` PAM
 # module.
-sssd__mkhomedir_umask: '{{ ansible_local.core.homedir_umask|d("0027") }}'
+sssd__mkhomedir_umask: '{{ ansible_local.core.homedir_umask | d("0027") }}'
                                                                    # ]]]
                                                                    # ]]]
 # LDAP environment [[[
@@ -52,7 +52,7 @@ sssd__mkhomedir_umask: '{{ ansible_local.core.homedir_umask|d("0027") }}'
 # enabled automatically when the :ref:`debops.ldap` environment is configured
 # on the host.
 sssd__ldap_enabled: '{{ ansible_local.ldap.enabled
-                        if (ansible_local|d() and ansible_local.ldap|d() and
+                        if (ansible_local | d() and ansible_local.ldap | d() and
                             ansible_local.ldap.enabled is defined)
                         else False }}'
 
@@ -62,7 +62,7 @@ sssd__ldap_enabled: '{{ ansible_local.ldap.enabled
 # The base Distinguished Name which should be used to create Distinguished
 # Names of the LDAP directory objects, defined as a YAML list. If this variable
 # is empty, :file:`/etc/sssd/sssd.conf` configuration file will not be generated.
-sssd__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
+sssd__ldap_base_dn: '{{ ansible_local.ldap.base_dn | d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: sssd__ldap_device_dn [[[
@@ -71,7 +71,7 @@ sssd__ldap_base_dn: '{{ ansible_local.ldap.base_dn|d([]) }}'
 # list. It will be used as a base for the :command:`sssd` service account LDAP
 # object. If the list is empty, the role will not create the account LDAP
 # object automatically.
-sssd__ldap_device_dn: '{{ ansible_local.ldap.device_dn|d([]) }}'
+sssd__ldap_device_dn: '{{ ansible_local.ldap.device_dn | d([]) }}'
 
                                                                    # ]]]
 # .. envvar:: sssd__ldap_self_rdn [[[
@@ -112,7 +112,7 @@ sssd__ldap_binddn: '{{ ([ sssd__ldap_self_rdn ] + sssd__ldap_device_dn) | join("
 # service to bind to the LDAP directory.
 sssd__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
                                + sssd__ldap_binddn | to_uuid + ".password length=32"))
-                       if sssd__ldap_enabled|bool
+                       if sssd__ldap_enabled | bool
                        else "" }}'
 
                                                                    # ]]]
@@ -122,7 +122,7 @@ sssd__ldap_bindpw: '{{ (lookup("password", secret + "/ldap/credentials/"
 # for a given host in the :ref:`debops.ldap` role.
 # See :ref:`ldap__ref_ldap_access_host` for more details.
 sssd__ldap_posix_urns: '{{ (ansible_local.ldap.urn_patterns
-                            if (ansible_local.ldap.urn_patterns|d())
+                            if (ansible_local.ldap.urn_patterns | d())
                             else [])
                            | map("regex_replace", "^(.*)$", "(host=posix:urn:\1)")
                            | list }}'
@@ -282,7 +282,7 @@ sssd__default_configuration:
 
       - name: 'ldap_uri'
         comment: 'The location at which the LDAP server(s) should be reachable.'
-        value: '{{ ansible_local.ldap.uri|d("") }}'
+        value: '{{ ansible_local.ldap.uri | d("") }}'
 
       - name: 'ldap_default_bind_dn'
         comment: 'The DN to bind with for normal lookups.'
@@ -313,13 +313,13 @@ sssd__default_configuration:
         comment: |
           First valid UID/GID number expected to be in the LDAP directory.
           UIDs/GIDs lower than this value will be ignored.
-        value: '{{ ansible_local.ldap.uid_gid_min|d("10000") }}'
+        value: '{{ ansible_local.ldap.uid_gid_min | d("10000") }}'
 
       - name: 'max_id'
         comment: |
           Last valid UID/GID number expected to be in the LDAP directory.
           UIDs/GIDs higher than this value will be ignored (0 = no limit).
-        value: '{{ ansible_local.ldap.uid_gid_max|d("0") }}'
+        value: '{{ ansible_local.ldap.uid_gid_max | d("0") }}'
 
       - name: 'cache_credentials'
         comment: |
@@ -343,8 +343,8 @@ sssd__default_configuration:
       - name: 'ldap_id_use_start_tls'
         comment: 'SSL options'
         value: '{{ True
-                  if (ansible_local|d() and ansible_local.ldap|d() and
-                      (ansible_local.ldap.start_tls|d())|bool)
+                  if (ansible_local | d() and ansible_local.ldap | d() and
+                      (ansible_local.ldap.start_tls | d()) | bool)
                   else False }}'
 
       - name: 'ldap_tls_reqcert'
@@ -422,8 +422,8 @@ sssd__ldap__dependent_tasks:
     attributes: '{{ sssd__ldap_self_attributes }}'
     no_log: '{{ debops__no_log | d(True) }}'
     state: '{{ "present"
-               if ((ansible_local.ldap.posix_enabled|d())|bool and
-                   sssd__ldap_device_dn|d())
+               if ((ansible_local.ldap.posix_enabled | d()) | bool and
+                   sssd__ldap_device_dn | d())
                else "ignore" }}'
 
                                                                    # ]]]

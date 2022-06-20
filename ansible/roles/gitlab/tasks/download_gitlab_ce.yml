@@ -59,8 +59,8 @@
 
 - name: Prepare GitLab installation for an upgrade
   ansible.builtin.include_tasks: gitlab_ce_pre_upgrade.yml
-  when: (ansible_local|d() and ansible_local.gitlab|d() and
-         (ansible_local.gitlab.installed|d() | bool) and
+  when: (ansible_local | d() and ansible_local.gitlab | d() and
+         (ansible_local.gitlab.installed | d() | bool) and
          ((gitlab_register_ce_target_branch.stdout != gitlab_register_ce_source.before) or
          (ansible_local.gitlab.version is defined and ansible_local.gitlab.version != gitlab_version)))
 

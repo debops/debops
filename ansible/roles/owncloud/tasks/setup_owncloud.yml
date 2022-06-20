@@ -64,7 +64,7 @@
 - name: Remove legacy files
   ansible.builtin.file:
     state: 'absent'
-    path: '{{ ansible_local.php.etc_base|d("/etc/php") + "/cli/conf.d/enable_apc.ini" }}'
+    path: '{{ ansible_local.php.etc_base | d("/etc/php") + "/cli/conf.d/enable_apc.ini" }}'
   tags: [ 'role::owncloud:occ' ]
 
 - name: Setup shortcut for the occ command
@@ -88,7 +88,7 @@
 - name: Determine if ownCloud autosetup should be done
   ansible.builtin.set_fact:
     owncloud__do_autosetup: '{{ (owncloud__autosetup and
-                                 owncloud__admin_username|d() and
+                                 owncloud__admin_username | d() and
                                  (owncloud__register_occ_check is not skipped) and
                                  "is not installed" in owncloud__register_occ_check.stdout) }}'
 
@@ -106,7 +106,7 @@
            '--admin-pass={{ owncloud__admin_password }}'
            {% endif %}
   register: owncloud__register_occ_install
-  when: owncloud__do_autosetup|bool
+  when: owncloud__do_autosetup | bool
 
 # .. ]]]
 
@@ -125,7 +125,7 @@
 - name: Capture occ output in variable
   ansible.builtin.set_fact:
     owncloud__occ_config_current: '{{ owncloud__occ_run_output }}'
-  when: (owncloud__do_autosetup|bool and owncloud__apps_config_combined is mapping and owncloud__apps_config_combined.keys() | length and
+  when: (owncloud__do_autosetup | bool and owncloud__apps_config_combined is mapping and owncloud__apps_config_combined.keys() | length and
          (not ansible_check_mode))
   tags: [ 'role::owncloud:occ_config' ]
 
@@ -133,8 +133,8 @@
   ansible.builtin.include_tasks: 'run_occ_app_set.yml'
   loop_control:
     loop_var: 'owncloud__apps_item'
-  with_dict: '{{ owncloud__apps_config_combined|d({}) }}'
-  when: (owncloud__do_autosetup|d()|bool and not ansible_check_mode)
+  with_dict: '{{ owncloud__apps_config_combined | d({}) }}'
+  when: (owncloud__do_autosetup | d() | bool and not ansible_check_mode)
   tags: [ 'role::owncloud:occ_config' ]
 
 # .. ]]]
@@ -203,8 +203,8 @@
   ansible.builtin.command: '{{ owncloud__occ_bin_file_path | quote }} integrity:check-core'
   register: owncloud__register_occ_integrity_check_core
   failed_when: (owncloud__register_occ_integrity_check_core.rc != 0 or
-                owncloud__register_occ_integrity_check_core.stdout_lines|length != 0)
+                owncloud__register_occ_integrity_check_core.stdout_lines | length != 0)
   changed_when: False
-  when: owncloud__do_autosetup|bool
+  when: owncloud__do_autosetup | bool
 
 # ]]]

@@ -119,14 +119,14 @@
 {%       endif %}
 {%     endif %}
 {%   endif %}
-{%   if params.auto is undefined and ((params.inet|d() and params.inet != 'manual') or (params.inet6|d() and params.inet6 != 'manual')) %}
+{%   if params.auto is undefined and ((params.inet | d() and params.inet != 'manual') or (params.inet6 | d() and params.inet6 != 'manual')) %}
 {%     if ansible_service_mgr != 'systemd' %}
 {%       set _ = params.update({"auto":True}) %}
 {%     else %}
 {%       set _ = params.update({"auto":False}) %}
 {%     endif %}
 {%   endif %}
-{%   if params.allow is undefined and ((params.inet|d() and params.inet != 'manual') or (params.inet6|d() and params.inet6 != 'manual')) %}
+{%   if params.allow is undefined and ((params.inet | d() and params.inet != 'manual') or (params.inet6 | d() and params.inet6 != 'manual')) %}
 {%     set _ = params.update({"allow":["boot"]}) %}
 {%   endif %}
 {%   set _ = ifupdown__tpl_filtered_interfaces.update({interface_name:params}) %}
@@ -135,7 +135,7 @@
 {% for name, params in ifupdown__tpl_filtered_interfaces.items() %}
 {%   set interface_name = (params.iface | d(name)) %}
 {%   if params.type == 'vlan' and params.weight_class is undefined %}
-{%     if params.vlan_raw_device|d() %}
+{%     if params.vlan_raw_device | d() %}
 {%       if params.vlan_raw_device.startswith(('en','eth')) %}
 {%         set _ = params.update({"weight_class":"ether"}) %}
 {%       elif params.vlan_raw_device.startswith('sl') %}
@@ -154,7 +154,7 @@
 {%         set _ = params.update({"weight_class":"6to4"}) %}
 {%       endif %}
 {%       set _ = params.update({"weight": "5"}) %}
-{%     elif params.vlan_device|d() %}
+{%     elif params.vlan_device | d() %}
 {%       if params.vlan_device.startswith(('en','eth')) %}
 {%         set _ = params.update({"weight_class":"ether"}) %}
 {%       elif params.vlan_device.startswith('sl') %}

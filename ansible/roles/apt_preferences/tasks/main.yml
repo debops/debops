@@ -12,7 +12,7 @@
                                                        + "_" + ((item.package.split(" ")[0]
                                                                  if item.package is string
                                                                  else item.package[0])
-                                                                if item.package|d()
+                                                                if item.package | d()
                                                                 else (item.packages.split(" ")[0]
                                                                       if item.packages is string
                                                                       else item.packages[0]))
@@ -20,16 +20,16 @@
     state: 'absent'
   with_flattened:
     ## Deprecated: [[[
-    - '{{ apt_preferences_list|d([]) }}'
-    - '{{ apt_preferences_group_list|d([]) }}'
-    - '{{ apt_preferences_host_list|d([]) }}'
-    - '{{ apt_preferences_dependent_list|d([]) }}'
+    - '{{ apt_preferences_list | d([]) }}'
+    - '{{ apt_preferences_group_list | d([]) }}'
+    - '{{ apt_preferences_host_list | d([]) }}'
+    - '{{ apt_preferences_dependent_list | d([]) }}'
     ## ]]]
     - '{{ apt_preferences__list }}'
     - '{{ apt_preferences__group_list }}'
     - '{{ apt_preferences__host_list }}'
     - '{{ apt_preferences__dependent_list }}'
-  when: ("." in item.role|d(item.by_role|d("")))
+  when: ("." in item.role | d(item.by_role | d("")))
 
 - name: Remove APT preferences
   ansible.builtin.file:
@@ -37,7 +37,7 @@
                                      + "_" + ((item.package.split(" ")[0]
                                                if item.package is string
                                                else item.package[0])
-                                              if item.package|d()
+                                              if item.package | d()
                                               else (item.packages.split(" ")[0]
                                                     if item.packages is string
                                                     else item.packages[0]))
@@ -45,10 +45,10 @@
     state: 'absent'
   with_flattened:
     ## Deprecated: [[[
-    - '{{ apt_preferences_list|d([]) }}'
-    - '{{ apt_preferences_group_list|d([]) }}'
-    - '{{ apt_preferences_host_list|d([]) }}'
-    - '{{ apt_preferences_dependent_list|d([]) }}'
+    - '{{ apt_preferences_list | d([]) }}'
+    - '{{ apt_preferences_group_list | d([]) }}'
+    - '{{ apt_preferences_host_list | d([]) }}'
+    - '{{ apt_preferences_dependent_list | d([]) }}'
     ## ]]]
     - '{{ apt_preferences__list }}'
     - '{{ apt_preferences__group_list }}'
@@ -56,8 +56,8 @@
     - '{{ apt_preferences__dependent_list }}'
   when: (
           (
-            ((item.state|d() and item.state == 'absent') or item.delete|d() | bool) and
-            (item.package|d() or item.packages|d()) and
+            ((item.state | d() and item.state == 'absent') or item.delete | d() | bool) and
+            (item.package | d() or item.packages | d()) and
             (item.version is undefined or (item.version is defined and not item.version))
           ) or
           (
@@ -80,7 +80,7 @@
                                      + "_" + ((item.package.split(" ")[0]
                                                if item.package is string
                                                else item.package[0])
-                                              if item.package|d()
+                                              if item.package | d()
                                               else (item.packages.split(" ")[0]
                                                     if item.packages is string
                                                     else item.packages[0]))
@@ -90,10 +90,10 @@
     mode: '0644'
   with_flattened:
     ## Deprecated: [[[
-    - '{{ apt_preferences_list|d([]) }}'
-    - '{{ apt_preferences_group_list|d([]) }}'
-    - '{{ apt_preferences_host_list|d([]) }}'
-    - '{{ apt_preferences_dependent_list|d([]) }}'
+    - '{{ apt_preferences_list | d([]) }}'
+    - '{{ apt_preferences_group_list | d([]) }}'
+    - '{{ apt_preferences_host_list | d([]) }}'
+    - '{{ apt_preferences_dependent_list | d([]) }}'
     ## ]]]
     - '{{ apt_preferences__list }}'
     - '{{ apt_preferences__group_list }}'
@@ -101,12 +101,12 @@
     - '{{ apt_preferences__dependent_list }}'
   when: (
           (
-            ((item.state|d('present')) != 'absent' and (not (item.delete|d() | bool))) and
-            (item.package|d() or item.packages|d())
+            ((item.state | d('present')) != 'absent' and (not (item.delete | d() | bool))) and
+            (item.package | d() or item.packages | d())
           ) and
           (
-            item.raw|d() or
-            item.version|d() or
+            item.raw | d() or
+            item.version | d() or
             (
               item.pin is undefined and
               (
@@ -117,6 +117,6 @@
                 )
               ) and
              ansible_distribution_release in apt_preferences__next_release.keys()
-            ) or item.pin|d()
+            ) or item.pin | d()
           )
         )

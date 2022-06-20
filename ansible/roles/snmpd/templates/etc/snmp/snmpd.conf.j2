@@ -12,8 +12,8 @@ sysContact    {{ snmpd_sys_contact }}
 
 sysServices   72
 
-{% if snmpd_account|d() and snmpd_account %}
-{% if snmpd_register_version|d() and not snmpd_register_version.stdout %}
+{% if snmpd_account | d() and snmpd_account %}
+{% if snmpd_register_version | d() and not snmpd_register_version.stdout %}
 rwuser        {{ snmpd_account_admin_username }}   priv
 {% endif %}
 rouser        {{ snmpd_account_agent_username }}   priv
@@ -25,7 +25,7 @@ agentSecName  {{ snmpd_account_agent_username }}
 {% endif %}
 master agentx
 
-{% if snmpd_load|d() and snmpd_load %}
+{% if snmpd_load | d() and snmpd_load %}
 # CPU load average monitoring
 # ===========================
 # Profile: {{ snmpd_load_profile }}
@@ -36,7 +36,7 @@ master agentx
 load {{ snmpd_load_1min }} {{ snmpd_load_5min }} {{ snmpd_load_15min }}
 
 {% endif %}
-{% if snmpd_combined_custom_options|d() and snmpd_combined_custom_options %}
+{% if snmpd_combined_custom_options | d() and snmpd_combined_custom_options %}
 {{ snmpd_combined_custom_options }}
 {% endif %}
 

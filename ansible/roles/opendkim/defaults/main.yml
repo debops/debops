@@ -35,7 +35,7 @@ opendkim__packages: []
 #
 # The version of the installed OpenDKIM service, gathered automatically by
 # Ansible local facts.
-opendkim__version: '{{ ansible_local.opendkim.version|d("0.0.0") }}'
+opendkim__version: '{{ ansible_local.opendkim.version | d("0.0.0") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Application environment, Postfix support [[[
@@ -58,7 +58,7 @@ opendkim__group: 'opendkim'
 # Enable or disable integration with Postfix SMTP server.
 # See :ref:`opendkim__ref_postfix` for more details.
 opendkim__postfix_integration: '{{ ansible_local.postfix.installed
-                                   if (ansible_local|d() and ansible_local.postfix|d() and
+                                   if (ansible_local | d() and ansible_local.postfix | d() and
                                        ansible_local.postfix.installed is defined)
                                    else False }}'
 
@@ -68,7 +68,7 @@ opendkim__postfix_integration: '{{ ansible_local.postfix.installed
 # Name of the UNIX system group used by Postfix SMTP server. This variable is
 # used to create the OpenDKIM socket directory with correct access permissions
 # for Postfix.
-opendkim__postfix_group: '{{ ansible_local.postfix.system_group|d("postfix") }}'
+opendkim__postfix_group: '{{ ansible_local.postfix.system_group | d("postfix") }}'
 
                                                                    # ]]]
 # .. envvar:: opendkim__pidfile [[[
@@ -81,7 +81,7 @@ opendkim__pidfile: '/var/run/opendkim/opendkim.pid'
 #
 # path to the UNIX socket used by OpenDKIM.
 opendkim__socket: '{{ "/var/spool/postfix/opendkim/opendkim.sock"
-                      if opendkim__postfix_integration|bool
+                      if opendkim__postfix_integration | bool
                       else "/var/run/opendkim/opendkim.sock" }}'
 
                                                                    # ]]]
@@ -350,20 +350,20 @@ opendkim__default_config:
 
   - name: 'ResolverConfiguration'
     state: '{{ "present"
-               if (ansible_local|d() and ansible_local.unbound|d() and
-                   (ansible_local.unbound.installed|d()) | bool)
+               if (ansible_local | d() and ansible_local.unbound | d() and
+                   (ansible_local.unbound.installed | d()) | bool)
                else "ignore" }}'
 
   - name: 'TrustAnchorFile'
     state: '{{ "absent"
-               if (ansible_local|d() and ansible_local.unbound|d() and
-                   (ansible_local.unbound.installed|d()) | bool)
+               if (ansible_local | d() and ansible_local.unbound | d() and
+                   (ansible_local.unbound.installed | d()) | bool)
                else "ignore" }}'
 
   - name: 'Socket'
     comment: 'Listen for connections in the Postfix chroot'
     value: 'local:{{ opendkim__socket }}'
-    state: '{{ "present" if opendkim__postfix_integration|bool else "ignore" }}'
+    state: '{{ "present" if opendkim__postfix_integration | bool else "ignore" }}'
 
   - name: 'UserID'
     comment: 'Required by the systemd opendkim.service unit'

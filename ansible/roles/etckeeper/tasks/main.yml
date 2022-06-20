@@ -38,7 +38,7 @@
 - name: Divert original configuration under /etc
   dpkg_divert:
     path: '/etc/etckeeper/etckeeper.conf'
-  when: etckeeper__enabled|bool and ansible_pkg_mgr == 'apt'
+  when: etckeeper__enabled | bool and ansible_pkg_mgr == 'apt'
 
 - name: Install required packages
   ansible.builtin.package:
@@ -47,7 +47,7 @@
     state: 'present'
   register: etckeeper__register_packages
   until: etckeeper__register_packages is succeeded
-  when: etckeeper__enabled|bool
+  when: etckeeper__enabled | bool
 
 - name: Create etckeeper configuration
   ansible.builtin.template:
@@ -58,7 +58,7 @@
     mode: '0644'
   register: etckeeper__register_config
   notify: [ 'Commit changes in etckeeper' ]
-  when: etckeeper__enabled|bool
+  when: etckeeper__enabled | bool
 
 - name: Initialize VCS in /etc
   ansible.builtin.command: etckeeper init
@@ -66,19 +66,19 @@
     creates: '/etc/.etckeeper'
   register: etckeeper__register_init
   notify: [ 'Commit changes in etckeeper' ]
-  when: etckeeper__enabled|bool
+  when: etckeeper__enabled | bool
 
 - name: Manage entries in /etc/.gitignore
   ansible.builtin.blockinfile:
     path: '/etc/.gitignore'
     block: |
       {% for item in etckeeper__combined_gitignore | debops.debops.parse_kv_items %}
-      {%   if (item.name|d() and item.state|d('present') != 'absent') %}
-      {%     if item.comment|d() %}
+      {%   if (item.name | d() and item.state | d('present') != 'absent') %}
+      {%     if item.comment | d() %}
 
       {{ item.comment | regex_replace('\n$', '') | comment(prefix='', postfix='') }}{%     endif %}
       {{ (item.ignore | d(item.name)) | regex_replace('\n$','') }}
-      {%     if item.comment|d() %}
+      {%     if item.comment | d() %}
 
       {%     endif %}
       {%   endif %}
@@ -91,7 +91,7 @@
     mode: '0600'
   register: etckeeper__register_gitignore
   notify: [ 'Commit changes in etckeeper' ]
-  when: etckeeper__enabled|bool and etckeeper__vcs == 'git'
+  when: etckeeper__enabled | bool and etckeeper__vcs == 'git'
 
 - name: Install /etc/.gitattributes configuration
   ansible.builtin.template:
@@ -101,16 +101,16 @@
     group: 'root'
     mode: '0644'
   register: etckeeper__register_gitattributes
-  when: etckeeper__enabled|bool and etckeeper__vcs == 'git'
+  when: etckeeper__enabled | bool and etckeeper__vcs == 'git'
 
 - name: Set repository permissions
   ansible.builtin.file:
     path: '/etc/.git'
     state: 'directory'
     owner: 'root'
-    group: '{{ etckeeper__repository_group|d("root") }}'
-    mode: '{{ etckeeper__repository_permissions|d("0700") }}'
-  when: etckeeper__enabled|bool and etckeeper__vcs == 'git'
+    group: '{{ etckeeper__repository_group | d("root") }}'
+    mode: '{{ etckeeper__repository_permissions | d("0700") }}'
+  when: etckeeper__enabled | bool and etckeeper__vcs == 'git'
 
 - name: Set user, email for the git repository
   ini_file:
@@ -122,14 +122,14 @@
   with_dict:
     name: '{{ etckeeper__vcs_user }}'
     email: '{{ etckeeper__vcs_email }}'
-  when: etckeeper__enabled|bool and etckeeper__vcs == 'git' and
-        etckeeper__vcs_user|d() and etckeeper__vcs_email|d()
+  when: etckeeper__enabled | bool and etckeeper__vcs == 'git' and
+        etckeeper__vcs_user | d() and etckeeper__vcs_email | d()
 
 - name: Remove e-mail notification hook script
   ansible.builtin.file:
     path: '/etc/etckeeper/commit.d/99email'
     state: 'absent'
-  when: etckeeper__enabled|bool and
+  when: etckeeper__enabled | bool and
         etckeeper__email_on_commit_state == 'absent'
 
 - name: Install e-mail notification hook script
@@ -140,13 +140,13 @@
     group: 'root'
     mode: '0755'
   notify: [ 'Commit changes in etckeeper' ]
-  when: etckeeper__enabled|bool and
+  when: etckeeper__enabled | bool and
         etckeeper__email_on_commit_state == 'present'
 
 - name: Configure other VCS software
   include_tasks: 'other_vcs.yml'
-  when: etckeeper__enabled|bool and etckeeper__vcs != 'git' and
-        etckeeper__vcs_user|d() and etckeeper__vcs_email|d()
+  when: etckeeper__enabled | bool and etckeeper__vcs != 'git' and
+        etckeeper__vcs_user | d() and etckeeper__vcs_email | d()
 
 - name: Unstage and remove ignored files from Git index
   ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
@@ -155,16 +155,16 @@
     executable: 'bash'
   register: etckeeper__register_git_rm_cached_ignored_files
   when:
-    - etckeeper__enabled|bool
+    - etckeeper__enabled | bool
     - etckeeper__vcs == "git"
     - etckeeper__register_gitignore is changed
   changed_when: etckeeper__register_git_rm_cached_ignored_files.stdout
 
 - name: Commit changes in configuration
   ansible.builtin.command: etckeeper commit '{{ etckeeper__commit_message_update
-                                if etckeeper__installed|bool
+                                if etckeeper__installed | bool
                                 else etckeeper__commit_message_init }}'  # noqa no-handler
-  when: (etckeeper__enabled|bool and
+  when: (etckeeper__enabled | bool and
          (etckeeper__register_init is changed or
           etckeeper__register_config is changed or
           etckeeper__register_gitignore is changed or
