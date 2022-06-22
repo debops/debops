@@ -32,6 +32,16 @@ if [ -d "/etc/letsencrypt/live" ] ; then
         chmod 0640 private/key_chain_dhparam.pem
         chown root:ssl-cert private/key_chain_dhparam.pem
 
+        # Verify that public and private parts match
+        pub=$(openssl x509 -noout -modulus -in default.crt | openssl md5)
+        key=$(openssl rsa  -noout -modulus -in default.key | openssl md5)
+        if test "${pub}" != "${key}"; then
+             pub=$(openssl x509 -noout -modulus -in public/cert_intermediate.pem | openssl md5)
+             if test "${pub}" == "${key}"; then
+                # Change the symlink to public/cert_intermediate.pem
+                ln -sf -T public/cert_intermediate.pem default.crt
+             fi
+        fi
     fi
 
 fi
