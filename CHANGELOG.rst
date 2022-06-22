@@ -256,6 +256,14 @@ debops.boxbackup role
 - On pdns installations with version >= 4.5.0 (e.g. on Bookworm systems), the
   role would cause a syntax error on the local-address configuration option.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- After the :command:`certbot` script performs a certificate renewal operation,
+  a deploy hook will update the PEM chains in a given PKI realm
+  :file:`private/` directory to include the new private key created by the
+  :command:`certbot` script.
+
 :ref:`debops.prosody` role
 ''''''''''''''''''''''''''
 
