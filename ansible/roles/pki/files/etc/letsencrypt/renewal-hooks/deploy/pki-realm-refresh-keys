@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+# Copyright (C) 2022 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# When certbot refreshes a certificate, it generates a new private key for it.
+# This script will update the keys stored in 'private/key_chain.pem' and
+# 'private/key_chain_dhparam.pem' files in a given PKI realm.
+
+set -o nounset -o pipefail -o errexit
+
+if [ -d "/etc/letsencrypt/live" ] ; then
+
+    realm_domain="$(basename "${RENEWED_LINEAGE}")"
+
+    if [ -n "${realm_domain}" ] && [ -d "/etc/pki/realms/${realm_domain}" ] ; then
+
+        cd "/etc/pki/realms/${realm_domain}" > /dev/null
+
+        # Refresh public PEM chains
+        cat public/cert.pem public/intermediate.pem > public/cert_intermediate.pem
+        cat public/cert.pem public/intermediate.pem /etc/pki/dhparam/set0 > public/cert_intermediate_dhparam.pem
+
+        # Refresh PEM chain with private key
+        cat private/key.pem public/cert_intermediate.pem > private/key_chain.pem
+        chmod 0640 private/key_chain.pem
+        chown root:ssl-cert private/key_chain.pem
+
+        # Refresh PEM chain with private key and Diffie-Hellman parameters
+        cat private/key.pem public/cert_intermediate_dhparam.pem > private/key_chain_dhparam.pem
+        chmod 0640 private/key_chain_dhparam.pem
+        chown root:ssl-cert private/key_chain_dhparam.pem
+
+    fi
+
+fi

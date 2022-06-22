@@ -69,6 +69,11 @@ Changed
 - Unused ``dovecot__ldap_server_port`` variable has been removed from role
   defaults.
 
+:ref:`debops.influxdata` role
+'''''''''''''''''''''''''''''
+
+- The URL of the APT upstream repository has been updated.
+
 :ref:`debops.minio` role
 ''''''''''''''''''''''''
 
@@ -77,10 +82,13 @@ Changed
   access key and secret key have been replaced with root account and password.
   Check the role documentation for more details.
 
-:ref:`debops.influxdata` role
-'''''''''''''''''''''''''''''
+:ref:`debops.pki` role
+''''''''''''''''''''''
 
-- The URL of the APT upstream repository has been updated.
+- After the :command:`certbot` script performs a certificate renewal operation,
+  a deploy hook will update the PEM chains in a given PKI realm
+  :file:`private/` directory to include the new private key created by the
+  :command:`certbot` script.
 
 :ref:`debops.postgresql` role
 '''''''''''''''''''''''''''''
