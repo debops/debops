@@ -87,6 +87,9 @@ Updates of upstream application versions
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
   ``v3.2.4``.
 
+- In the :ref:`debops.resolvconf` role, you can now write a fully static 
+  :file:`/etc/resolv.conf` file without the ``resolvconf`` package.
+
 General
 ~~~~~~~
 
