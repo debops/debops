@@ -23,9 +23,9 @@
     path: '/{{ item.path }}'
     mode: '{{ item.mode }}'
     state: 'directory'
-  with_filetree: '{{ (resources__host_templates
-                      + resources__group_templates
-                      + resources__templates) | flatten }}'
+  with_community.general.filetree: '{{ (resources__host_templates
+                                        + resources__group_templates
+                                        + resources__templates) | flatten }}'
   when: item.state == 'directory'
 
 - name: Generate custom templates
@@ -33,9 +33,9 @@
     src: '{{ item.src }}'
     dest: '/{{ item.path }}'
     mode: '{{ item.mode }}'
-  with_filetree: '{{ (resources__host_templates
-                      + resources__group_templates
-                      + resources__templates) | flatten }}'
+  with_community.general.filetree: '{{ (resources__host_templates
+                                        + resources__group_templates
+                                        + resources__templates) | flatten }}'
   when: item.state == 'file'
 
 - name: Recreate custom symlinks
@@ -45,9 +45,9 @@
     mode: '{{ item.mode }}'
     state: 'link'
     force: True
-  with_filetree: '{{ (resources__host_templates
-                      + resources__group_templates
-                      + resources__templates) | flatten }}'
+  with_community.general.filetree: '{{ (resources__host_templates
+                                        + resources__group_templates
+                                        + resources__templates) | flatten }}'
   when: item.state == 'link'
 
 # Manage custom paths [[[1
@@ -71,10 +71,9 @@
     access_time_format:       '{{ item.access_time_format       | d(resources__time_format) }}'
     modification_time:        '{{ item.modification_time        | d(omit) }}'
     modification_time_format: '{{ item.modification_time_format | d(resources__time_format) }}'
-  with_flattened:
-    - '{{ resources__paths }}'
-    - '{{ resources__group_paths }}'
-    - '{{ resources__host_paths }}'
+  loop: '{{ q("flattened", resources__paths
+                           + resources__group_paths
+                           + resources__host_paths) }}'
   when: (resources__enabled | bool and
          ((item.path | d() or item.dest | d() or item.name | d()) or item))
   tags: [ 'role::resources:paths' ]
@@ -91,16 +90,15 @@
   when: (resources__enabled | bool and
          (item.parent_dirs_create | d(resources__parent_dirs_create) | bool) and
          item.state | d("present") != 'absent')
-  with_flattened:
-    - '{{ resources__urls }}'
-    - '{{ resources__group_urls }}'
-    - '{{ resources__host_urls }}'
-    - '{{ resources__archives }}'
-    - '{{ resources__group_archives }}'
-    - '{{ resources__host_archives }}'
-    - '{{ resources__files }}'
-    - '{{ resources__group_files }}'
-    - '{{ resources__host_files }}'
+  loop: '{{ q("flattened", resources__urls
+                           + resources__group_urls
+                           + resources__host_urls
+                           + resources__archives
+                           + resources__group_archives
+                           + resources__host_archives
+                           + resources__files
+                           + resources__group_files
+                           + resources__host_files) }}'
   tags: [ 'role::resources:urls', 'role::resources:archives', 'role::resources:files' ]
 
 # Manage git repositories [[[1
@@ -127,10 +125,9 @@
     version:          '{{ item.version          | d(omit) }}'
   become: True
   become_user:        '{{ item.owner            | d("root") }}'
-  with_flattened:
-    - '{{ resources__repositories }}'
-    - '{{ resources__group_repositories }}'
-    - '{{ resources__host_repositories }}'
+  loop: '{{ q("flattened", resources__repositories
+                           + resources__group_repositories
+                           + resources__host_repositories) }}'
   when: (resources__enabled | bool and (item.repo | d() or item.url | d() or item.src | d()) and
          (item.dest | d() or item.name | d() or item.path | d()))
   tags: [ 'role::resources:repositories' ]
@@ -153,10 +150,9 @@
     url_username:     '{{ item.url_username     | d(omit) }}'
     use_proxy:        '{{ item.use_proxy        | d(omit) }}'
     validate_certs:   '{{ item.validate_certs   | d(omit) }}'
-  with_flattened:
-    - '{{ resources__urls }}'
-    - '{{ resources__group_urls }}'
-    - '{{ resources__host_urls }}'
+  loop: '{{ q("flattened", resources__urls
+                           + resources__group_urls
+                           + resources__host_urls) }}'
   when: (resources__enabled | bool and (item.url | d() or item.src | d()) and
          (item.dest | d() or item.name | d() or item.path | d()))
   no_log: '{{ debops__no_log | d(True if item.url_password | d() else omit) }}'
@@ -183,10 +179,9 @@
     remote_src: '{{ item.remote_src | d(omit) }}'
     unsafe_writes: '{{ item.unsafe_writes | d(omit) }}'
     validate_certs: '{{ item.validate_certs | d(omit) }}'
-  with_flattened:
-    - '{{ resources__archives }}'
-    - '{{ resources__group_archives }}'
-    - '{{ resources__host_archives }}'
+  loop: '{{ q("flattened", resources__archives
+                           + resources__group_archives
+                           + resources__host_archives) }}'
   when: (resources__enabled | bool and item.src | d() and
          (item.dest | d() or item.name | d() or item.path | d()))
   tags: [ 'role::resources:archives' ]
@@ -197,10 +192,9 @@
   ansible.builtin.file:
     path:  '{{ item.dest | d(item.path | d(item.name)) }}'
     state: 'absent'
-  with_flattened:
-    - '{{ resources__files }}'
-    - '{{ resources__group_files }}'
-    - '{{ resources__host_files }}'
+  loop: '{{ q("flattened", resources__files
+                           + resources__group_files
+                           + resources__host_files) }}'
   when: (resources__enabled | bool and
          (item.dest | d() or item.path | d() or item.name | d()) and
          (item.state | d('present') == 'absent'))
@@ -224,10 +218,9 @@
     validate: '{{ item.validate | d(omit) }}'
     remote_src: '{{ item.remote_src | d(omit) }}'
     directory_mode: '{{ item.directory_mode | d(omit) }}'
-  with_flattened:
-    - '{{ resources__files }}'
-    - '{{ resources__group_files }}'
-    - '{{ resources__host_files }}'
+  loop: '{{ q("flattened", resources__files
+                           + resources__group_files
+                           + resources__host_files) }}'
   when: (resources__enabled | bool and
          (item.src | d() or item.content is defined) and
          (item.dest | d() or item.path | d() or item.name | d()) and
@@ -292,10 +285,9 @@
     access_time_format:       '{{ item.access_time_format       | d(resources__time_format) }}'
     modification_time:        '{{ item.modification_time        | d(omit) }}'
     modification_time_format: '{{ item.modification_time_format | d(resources__time_format) }}'
-  with_flattened:
-    - '{{ resources__delayed_paths }}'
-    - '{{ resources__group_delayed_paths }}'
-    - '{{ resources__host_delayed_paths }}'
+  loop: '{{ q("flattened", resources__delayed_paths
+                           + resources__group_delayed_paths
+                           + resources__host_delayed_paths) }}'
   when: (resources__enabled | bool and
          ((item.path | d() or item.dest | d() or item.name | d()) or item))
   tags: [ 'role::resources:paths' ]
@@ -305,8 +297,7 @@
     path:       '{{ item.path  | d(item.name) }}'
     capability: '{{ item.capability }}'
     state:      '{{ item.state | d("present") }}'
-  with_flattened:
-    - '{{ resources__combined_file_capabilities }}'
+  loop: '{{ q("flattened", resources__combined_file_capabilities) }}'
   when: resources__enabled | bool
   tags: [ 'role::resources:capabilities' ]
 

@@ -85,10 +85,9 @@
     name: '{{ item.name | d(item.role) }}'
     port: '{{ item.port | d(postgresql__port if postgresql__port else omit) }}'
     state: 'absent'
-  with_flattened:
-    - '{{ postgresql__roles }}'
-    - '{{ postgresql_roles | d([]) }}'
-    - '{{ postgresql__dependent_roles }}'
+  loop: '{{ q("flattened", postgresql__roles
+                           + postgresql_roles | d([])
+                           + postgresql__dependent_roles) }}'
   become: True
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
@@ -108,10 +107,9 @@
     expires: '{{ item.expires | d(omit) }}'
     role_attr_flags: '{{ (item.flags | d() | join(",")) | d(omit) }}'
     state: 'present'
-  with_flattened:
-    - '{{ postgresql__roles }}'
-    - '{{ postgresql_roles | d([]) }}'
-    - '{{ postgresql__dependent_roles }}'
+  loop: '{{ q("flattened", postgresql__roles
+                           + postgresql_roles | d([])
+                           + postgresql__dependent_roles) }}'
   become: True
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
@@ -123,10 +121,9 @@
     name: '{{ item.name | d(item.database) }}'
     port: '{{ item.port | d(postgresql__port if postgresql__port else omit) }}'
     state: 'absent'
-  with_flattened:
-    - '{{ postgresql__databases }}'
-    - '{{ postgresql_databases | d([]) }}'
-    - '{{ postgresql__dependent_databases }}'
+  loop: '{{ q("flattened", postgresql__databases
+                           + postgresql_databases | d([])
+                           + postgresql__dependent_databases) }}'
   become: True
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
@@ -142,10 +139,9 @@
     lc_collate: '{{ item.lc_collate | d(omit) }}'
     lc_ctype: '{{ item.lc_ctype | d(omit) }}'
     state: 'present'
-  with_flattened:
-    - '{{ postgresql__databases }}'
-    - '{{ postgresql_databases | d([]) }}'
-    - '{{ postgresql__dependent_databases }}'
+  loop: '{{ q("flattened", postgresql__databases
+                           + postgresql_databases | d([])
+                           + postgresql__dependent_databases) }}'
   become: True
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
@@ -158,9 +154,8 @@
     name: '{{ item.extension }}'
     port: '{{ item.port | d(postgresql__port if postgresql__port else omit) }}'
     state: '{{ item.state | d("present") }}'
-  with_flattened:
-    - '{{ postgresql__extensions }}'
-    - '{{ postgresql__dependent_extensions }}'
+  loop: '{{ q("flattened", postgresql__extensions
+                           + postgresql__dependent_extensions) }}'
   become: True
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
@@ -176,10 +171,9 @@
     privs: '{{ item.public_privs | d(["ALL"]) | join(",") }}'
     grant_option: '{{ item.grant_option | d("yes") }}'
     state: 'present'
-  with_flattened:
-    - '{{ postgresql__databases }}'
-    - '{{ postgresql_databases | d([]) }}'
-    - '{{ postgresql__dependent_databases }}'
+  loop: '{{ q("flattened", postgresql__databases
+                           + postgresql_databases | d([])
+                           + postgresql__dependent_databases) }}'
   become: True
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
@@ -195,10 +189,9 @@
     objs: '{{ item.groups | join(",") }}'
     grant_option: '{{ item.grant_option | d(omit) }}'
     state: 'present'
-  with_flattened:
-    - '{{ postgresql__groups }}'
-    - '{{ postgresql_groups | d([]) }}'
-    - '{{ postgresql__dependent_groups }}'
+  loop: '{{ q("flattened", postgresql__groups
+                           + postgresql_groups | d([])
+                           + postgresql__dependent_groups) }}'
   become: True
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
@@ -212,10 +205,9 @@
     db: '{{ item.db }}'
     priv: '{{ item.priv | join("/") }}'
     state: 'present'
-  with_flattened:
-    - '{{ postgresql__roles }}'
-    - '{{ postgresql_roles | d([]) }}'
-    - '{{ postgresql__dependent_roles }}'
+  loop: '{{ q("flattened", postgresql__roles
+                           + postgresql_roles | d([])
+                           + postgresql__dependent_roles) }}'
   become: True
   become_user: '{{ postgresql__user }}'
   delegate_to: '{{ postgresql__delegate_to }}'
@@ -228,10 +220,9 @@
     name: '{{ item.group | d(item.owner) }}'
     state: 'present'
     system: '{{ item.system | d(True) }}'
-  with_flattened:
-    - '{{ postgresql__pgpass }}'
-    - '{{ postgresql_pgpass | d([]) }}'
-    - '{{ postgresql__dependent_pgpass }}'
+  loop: '{{ q("flattened", postgresql__pgpass
+                           + postgresql_pgpass | d([])
+                           + postgresql__dependent_pgpass) }}'
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Make sure required system accounts exist
@@ -241,10 +232,9 @@
     home: '{{ item.home | d(omit) }}'
     state: 'present'
     system: '{{ item.system | d(True) }}'
-  with_flattened:
-    - '{{ postgresql__pgpass }}'
-    - '{{ postgresql_pgpass | d([]) }}'
-    - '{{ postgresql__dependent_pgpass }}'
+  loop: '{{ q("flattened", postgresql__pgpass
+                           + postgresql_pgpass | d([])
+                           + postgresql__dependent_pgpass) }}'
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Populate ~/.pgpass file
@@ -276,8 +266,7 @@
     owner: '{{ item.owner }}'
     group: '{{ item.owner }}'
     mode: '0600'
-  with_flattened:
-    - '{{ postgresql__pgpass }}'
-    - '{{ postgresql_pgpass | d([]) }}'
-    - '{{ postgresql__dependent_pgpass }}'
+  loop: '{{ q("flattened", postgresql__pgpass
+                           + postgresql_pgpass | d([])
+                           + postgresql__dependent_pgpass) }}'
   no_log: '{{ debops__no_log | d(True) }}'

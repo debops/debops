@@ -10,8 +10,7 @@
     encrypted: True
     port: '{{ item.port }}'
     state: 'present'
-  with_flattened:
-    - '{{ postgresql_server__clusters }}'
+  loop: '{{ q("flattened", postgresql_server__clusters) }}'
   become: True
   become_user: '{{ item.user | d(postgresql_server__user) }}'
   when:
@@ -27,8 +26,7 @@
     type: 'database'
     privs: 'CONNECT'
     state: 'present'
-  with_flattened:
-    - '{{ postgresql_server__clusters }}'
+  loop: '{{ q("flattened", postgresql_server__clusters) }}'
   become: True
   become_user: '{{ item.user | d(postgresql_server__user) }}'
   when:
@@ -44,8 +42,7 @@
     type: 'database'
     privs: 'TEMPORARY'
     state: 'absent'
-  with_flattened:
-    - '{{ postgresql_server__clusters }}'
+  loop: '{{ q("flattened", postgresql_server__clusters) }}'
   become: True
   become_user: '{{ item.user | d(postgresql_server__user) }}'
   when:

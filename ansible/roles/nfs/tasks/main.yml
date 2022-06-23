@@ -29,10 +29,9 @@
     group: '{{ item.group | d("root") }}'
     mode:  '{{ item.mode  | d("0755") }}'
     state: 'directory'
-  with_flattened:
-    - '{{ nfs__shares }}'
-    - '{{ nfs__group_shares }}'
-    - '{{ nfs__host_shares }}'
+  loop: '{{ q("flattened", nfs__shares
+                           + nfs__group_shares
+                           + nfs__host_shares) }}'
   when: item.path | d() and item.src | d() and item.state | d('mounted') == 'present'
 
 - name: Manage NFS mount points
@@ -45,10 +44,9 @@
     passno: '{{ item.passno | d(omit) }}'
     dump:   '{{ item.dump   | d(omit) }}'
     fstab:  '{{ item.fstab  | d(omit) }}'
-  with_flattened:
-    - '{{ nfs__shares }}'
-    - '{{ nfs__group_shares }}'
-    - '{{ nfs__host_shares }}'
+  loop: '{{ q("flattened", nfs__shares
+                           + nfs__group_shares
+                           + nfs__host_shares) }}'
   register: nfs__register_devices
   when: item.path | d() and item.src | d()
 

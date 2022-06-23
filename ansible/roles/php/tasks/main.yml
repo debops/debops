@@ -84,12 +84,11 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_flattened:
-    - '{{ php__default_configuration }}'
-    - '{{ php__configuration }}'
-    - '{{ php__group_configuration }}'
-    - '{{ php__host_configuration }}'
-    - '{{ php__dependent_configuration }}'
+  loop: '{{ q("flattened", php__default_configuration
+                           + php__configuration
+                           + php__group_configuration
+                           + php__host_configuration
+                           + php__dependent_configuration) }}'
   when: item.state | d('present') != 'absent'
   notify: [ 'Restart php-fpm' ]
   tags: [ 'role::php:config' ]
@@ -98,12 +97,11 @@
   ansible.builtin.file:
     path: '{{ php__etc_base + "/" + item.path | d("ansible/") + (item.filename | d("00-ansible")) + ".ini" }}'
     state: 'absent'
-  with_flattened:
-    - '{{ php__default_configuration }}'
-    - '{{ php__configuration }}'
-    - '{{ php__group_configuration }}'
-    - '{{ php__host_configuration }}'
-    - '{{ php__dependent_configuration }}'
+  loop: '{{ q("flattened", php__default_configuration
+                           + php__configuration
+                           + php__group_configuration
+                           + php__host_configuration
+                           + php__dependent_configuration) }}'
   when: item.state | d() and item.state == 'absent'
   notify: [ 'Restart php-fpm' ]
   tags: [ 'role::php:config' ]
@@ -149,12 +147,11 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_flattened:
-    - '{{ php__default_pools }}'
-    - '{{ php__pools }}'
-    - '{{ php__group_pools }}'
-    - '{{ php__host_pools }}'
-    - '{{ php__dependent_pools }}'
+  loop: '{{ q("flattened", php__default_pools
+                           + php__pools
+                           + php__group_pools
+                           + php__host_pools
+                           + php__dependent_pools) }}'
   when: '"fpm" in php__server_api_packages and item.state | d("present") != "absent"'
   notify: [ 'Restart php-fpm' ]
   tags: [ 'role::php:pools', 'role::php:config' ]
@@ -163,12 +160,11 @@
   ansible.builtin.file:
     dest: '{{ php__etc_base }}/fpm/pool.d/{{ item.name }}.conf'
     state: 'absent'
-  with_flattened:
-    - '{{ php__default_pools }}'
-    - '{{ php__pools }}'
-    - '{{ php__group_pools }}'
-    - '{{ php__host_pools }}'
-    - '{{ php__dependent_pools }}'
+  loop: '{{ q("flattened", php__default_pools
+                           + php__pools
+                           + php__group_pools
+                           + php__host_pools
+                           + php__dependent_pools) }}'
   when: '"fpm" in php__server_api_packages and item.state | d() and item.state == "absent"'
   notify: [ 'Restart php-fpm' ]
   tags: [ 'role::php:pools', 'role::php:config' ]
@@ -181,12 +177,11 @@
     name: '{{ item.group | d(item.owner) }}'
     system: '{{ (item.system | d(True)) | bool }}'
     state: 'present'
-  with_flattened:
-    - '{{ php__default_pools }}'
-    - '{{ php__pools }}'
-    - '{{ php__group_pools }}'
-    - '{{ php__host_pools }}'
-    - '{{ php__dependent_pools }}'
+  loop: '{{ q("flattened", php__default_pools
+                           + php__pools
+                           + php__group_pools
+                           + php__host_pools
+                           + php__dependent_pools) }}'
   when: '"fpm" in php__server_api_packages and item.state | d("present") != "absent" and item.owner | d() and item.home | d()'
 
 - name: Make sure required system accounts exist
@@ -197,12 +192,11 @@
     system: '{{ (item.system | d(True)) | bool }}'
     createhome: '{{ item.createhome | d(omit) }}'
     state: 'present'
-  with_flattened:
-    - '{{ php__default_pools }}'
-    - '{{ php__pools }}'
-    - '{{ php__group_pools }}'
-    - '{{ php__host_pools }}'
-    - '{{ php__dependent_pools }}'
+  loop: '{{ q("flattened", php__default_pools
+                           + php__pools
+                           + php__group_pools
+                           + php__host_pools
+                           + php__dependent_pools) }}'
   when: '"fpm" in php__server_api_packages and item.state | d("present") != "absent" and item.owner | d() and item.home | d()'
 
                                                                    # ]]]

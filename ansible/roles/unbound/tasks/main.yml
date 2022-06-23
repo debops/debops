@@ -61,8 +61,7 @@
   ansible.builtin.file:
     path: '/etc/unbound/unbound.conf.d/zone_{{ item.name }}.conf'
     state: 'absent'
-  with_flattened:
-    - '{{ unbound__parsed_zones }}'
+  loop: '{{ q("flattened", unbound__parsed_zones) }}'
   notify: [ 'Check unbound configuration and reload' ]
   when: item.name | d() and item.state | d('present') == 'absent'
 
@@ -73,8 +72,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_flattened:
-    - '{{ unbound__parsed_zones }}'
+  loop: '{{ q("flattened", unbound__parsed_zones) }}'
   notify: [ 'Check unbound configuration and reload' ]
   when: item.name | d() and item.state | d('present') != 'absent'
 

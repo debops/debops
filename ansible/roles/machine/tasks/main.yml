@@ -96,7 +96,7 @@
     path: '{{ machine__motd_update_dir + "/"
               + (item.filename | d(("%02d" | format(item.weight | int)) | string + "-" + item.name)) }}'
     state: 'absent'
-  with_flattened: '{{ machine__motd_combined_scripts | debops.debops.parse_kv_items }}'
+  loop: '{{ q("flattened", machine__motd_combined_scripts) | debops.debops.parse_kv_items }}'
   register: machine__register_motd_scripts_removed
   when: (machine__enabled | bool and
          item.filename | d(item.name) and

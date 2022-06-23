@@ -19,9 +19,8 @@
   ansible.builtin.package:
     name: '{{ item }}'
     state: 'present'
-  with_flattened:
-    - '{{ freeradius__base_packages }}'
-    - '{{ freeradius__packages }}'
+  loop: '{{ q("flattened", freeradius__base_packages
+                           + freeradius__packages) }}'
   register: freeradius__register_packages
   until: freeradius__register_packages is succeeded
 

@@ -20,8 +20,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_flattened:
-    - '{{ postgresql_server__clusters }}'
+  loop: '{{ q("flattened", postgresql_server__clusters) }}'
 
 - name: Configure autopostgresqlbackup
   ansible.builtin.template:
@@ -30,8 +29,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  with_flattened:
-    - '{{ postgresql_server__clusters }}'
+  loop: '{{ q("flattened", postgresql_server__clusters) }}'
 
 - name: Disable autopostgresqlbackup from running daily
   ansible.builtin.file:
@@ -39,8 +37,7 @@
                                                    | replace(".","_") }}-{{ item.name }}'
     state: 'absent'
   when: ((item.auto_backup | d() and not item.auto_backup | bool) or not postgresql_server__auto_backup | bool)
-  with_flattened:
-    - '{{ postgresql_server__clusters }}'
+  loop: '{{ q("flattened", postgresql_server__clusters) }}'
 
 - name: Enable autopostgresqlbackup to run daily
   ansible.builtin.template:
@@ -51,5 +48,4 @@
     group: 'root'
     mode: '0755'
   when: ((item.auto_backup is undefined or item.auto_backup | bool) and postgresql_server__auto_backup | bool)
-  with_flattened:
-    - '{{ postgresql_server__clusters }}'
+  loop: '{{ q("flattened", postgresql_server__clusters) }}'

@@ -150,11 +150,10 @@
            | d(item.weight | d("50")) }}_{{ item.filename
            | d(item.type + "_" + item.name | d((item.dport[0] if item.dport | d() else "rules"))) }}.conf'
     state: 'absent'
-  with_flattened:
-    - '{{ ferm_input_list }}'
-    - '{{ ferm_input_group_list }}'
-    - '{{ ferm_input_host_list }}'
-    - '{{ ferm_input_dependent_list }}'
+  loop: '{{ q("flattened", ferm_input_list
+                           + ferm_input_group_list
+                           + ferm_input_host_list
+                           + ferm_input_dependent_list) }}'
   when: (ferm__enabled | bool and item.type | d() and (item.delete | d() | bool))
   register: ferm__register_input_rules_del
   tags: [ 'role::ferm:rules' ]
@@ -168,11 +167,10 @@
     owner: 'root'
     group: 'adm'
     mode: '0644'
-  with_flattened:
-    - '{{ ferm_input_list }}'
-    - '{{ ferm_input_group_list }}'
-    - '{{ ferm_input_host_list }}'
-    - '{{ ferm_input_dependent_list }}'
+  loop: '{{ q("flattened", ferm_input_list
+                           + ferm_input_group_list
+                           + ferm_input_host_list
+                           + ferm_input_dependent_list) }}'
   when: (ferm__enabled | bool and item.type | d() and not (item.delete | d() | bool))
   register: ferm__register_input_rules_add
   tags: [ 'role::ferm:rules' ]

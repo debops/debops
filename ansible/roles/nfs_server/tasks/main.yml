@@ -44,8 +44,7 @@
     owner: '{{ item.owner | d("root") }}'
     group: '{{ item.group | d("root") }}'
     mode:  '{{ item.mode  | d("0755") }}'
-  with_flattened:
-    - '{{ nfs_server__combined_exports }}'
+  loop: '{{ q("flattened", nfs_server__combined_exports) }}'
   when: item.path | d() and item.state | d('present') != 'absent' and item.acl | d()
 
 - name: Bind mount requested directories
@@ -55,8 +54,7 @@
     opts: '{{ ( [ "bind" ] + item.bind.options | d([]) ) | join(",") }}'
     fstype: 'none'
     state: 'mounted'
-  with_flattened:
-    - '{{ nfs_server__combined_exports }}'
+  loop: '{{ q("flattened", nfs_server__combined_exports) }}'
   when: item.path | d() and item.state | d('present') != 'absent' and item.acl | d() and item.bind | d()
 
 - name: Configure NFS exports

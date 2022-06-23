@@ -74,7 +74,7 @@
     exclusive: '{{ item.exclusive | d(omit) }}'
     manage_dir: False
   notify: [ 'Update initramfs' ]
-  with_flattened: '{{ dropbear_initramfs__combined_authorized_keys }}'
+  loop: '{{ q("flattened", dropbear_initramfs__combined_authorized_keys) }}'
 
 - name: Remove files in deploy state absent
   ansible.builtin.file:

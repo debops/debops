@@ -13,10 +13,9 @@
     shell: '{{ item.shell | default(gitusers_default_shell) }}'
     home: '{{ item.home | default(gitusers_default_home_prefix + "/" + item.name + gitusers_name_suffix) }}'
     createhome: 'no'
-  with_flattened:
-    - '{{ gitusers_list }}'
-    - '{{ gitusers_group_list }}'
-    - '{{ gitusers_host_list }}'
+  loop: '{{ q("flattened", gitusers_list
+                           + gitusers_group_list
+                           + gitusers_host_list) }}'
   when: ((item.name is defined and item.name) and (item.uid is undefined or (item.uid is defined and not item.uid)))
 
 - name: Manage user accounts with UIDs
@@ -30,10 +29,9 @@
     shell: '{{ item.shell | default(gitusers_default_shell) }}'
     home: '{{ item.home | default(gitusers_default_home_prefix + "/" + item.name + gitusers_name_suffix) }}'
     createhome: 'no'
-  with_flattened:
-    - '{{ gitusers_list }}'
-    - '{{ gitusers_group_list }}'
-    - '{{ gitusers_host_list }}'
+  loop: '{{ q("flattened", gitusers_list
+                           + gitusers_group_list
+                           + gitusers_host_list) }}'
   when: ((item.name is defined and item.name) and (item.uid is defined and item.uid))
 
 - name: Manage user default groups
@@ -42,10 +40,9 @@
     state: '{{ item.state | default("present") }}'
     groups: '{{ gitusers_default_groups_list | join(",") }}'
     append: '{{ gitusers_default_groups_append }}'
-  with_flattened:
-    - '{{ gitusers_list }}'
-    - '{{ gitusers_group_list }}'
-    - '{{ gitusers_host_list }}'
+  loop: '{{ q("flattened", gitusers_list
+                           + gitusers_group_list
+                           + gitusers_host_list) }}'
   when: ((item.name is defined and item.name) and
          (gitusers_default_groups_list is defined and gitusers_default_groups_list))
 
@@ -55,10 +52,9 @@
     state: '{{ item.state | default("present") }}'
     groups: '{{ item.groups | join(",") }}'
     append: '{{ item.append | default("yes") }}'
-  with_flattened:
-    - '{{ gitusers_list }}'
-    - '{{ gitusers_group_list }}'
-    - '{{ gitusers_host_list }}'
+  loop: '{{ q("flattened", gitusers_list
+                           + gitusers_group_list
+                           + gitusers_host_list) }}'
   when: ((item.name is defined and item.name) and (item.groups is defined and item.groups))
 
 - name: Enforce home directories permissions
@@ -68,9 +64,8 @@
     owner: '{{ item.name + gitusers_name_suffix }}'
     group: '{{ item.group | default(item.name + gitusers_name_suffix) }}'
     mode: '{{ gitusers_default_home_mode }}'
-  with_flattened:
-    - '{{ gitusers_list }}'
-    - '{{ gitusers_group_list }}'
-    - '{{ gitusers_host_list }}'
+  loop: '{{ q("flattened", gitusers_list
+                           + gitusers_group_list
+                           + gitusers_host_list) }}'
   when: ((item.name is defined and item.name) and
         (item.state is undefined or (item.state is defined and item.state != 'absent')))

@@ -186,10 +186,9 @@
          ssh-keygen -f {{ sshd__known_hosts_file }} -F {{ item }} | grep -q '^# Host {{ item }} found'
   args:
     executable: 'bash'
-  with_flattened:
-    - '{{ sshd__known_hosts }}'
-    - '{{ sshd__group_known_hosts }}'
-    - '{{ sshd__host_known_hosts }}'
+  loop: '{{ q("flattened", sshd__known_hosts
+                           + sshd__group_known_hosts
+                           + sshd__host_known_hosts) }}'
   when: item is defined and item
   register: sshd__register_known_hosts
   changed_when: False

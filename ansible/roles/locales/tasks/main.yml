@@ -19,12 +19,11 @@
   locale_gen:
     name: '{{ item.name | d(item) }}'
     state: '{{ item.state | d("present") }}'
-  with_flattened:
-    - '{{ locales__default_list }}'
-    - '{{ locales__list }}'
-    - '{{ locales__group_list }}'
-    - '{{ locales__host_list }}'
-    - '{{ locales__dependent_list }}'
+  loop: '{{ q("flattened", locales__default_list
+                           + locales__list
+                           + locales__group_list
+                           + locales__host_list
+                           + locales__dependent_list) }}'
 
 - name: Set default system locale
   ansible.builtin.debconf:

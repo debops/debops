@@ -10,10 +10,9 @@
   ansible.builtin.apt:
     name: '{{ item is search("php.*-") | ternary(item, php__version_absent + "-" + item) }}'
     state: 'absent'
-  with_flattened:
-    - '{{ php__server_api_packages }}'
-    - '{{ php__base_packages }}'
-    - '{{ php__packages }}'
-    - '{{ php__group_packages }}'
-    - '{{ php__host_packages }}'
-    - '{{ php__dependent_packages }}'
+  loop: '{{ q("flattened", php__server_api_packages
+                           + php__base_packages
+                           + php__packages
+                           + php__group_packages
+                           + php__host_packages
+                           + php__dependent_packages) }}'

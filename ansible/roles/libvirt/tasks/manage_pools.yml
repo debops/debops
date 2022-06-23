@@ -9,7 +9,7 @@
     name: '{{ item.name }}'
     uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
     state: 'inactive'
-  with_flattened: '{{ libvirt__pools }}'
+  loop: '{{ q("flattened", libvirt__pools) }}'
   become: False
   register: libvirt__register_stop
   when: ((item.name | d()) and (item.state | d() in [ 'inactive', 'undefined', 'absent' ]))
@@ -20,7 +20,7 @@
     uri: '{{ libvirt__connections[item.item.uri | d(libvirt__uri)] }}'
     command: 'delete'
     mode: '{{ item.item.mode | d(omit) }}'
-  with_flattened: '{{ libvirt__register_stop.results }}'
+  loop: '{{ q("flattened", libvirt__register_stop.results) }}'
   become: False
   when: (item is changed and item.item.name | d() and item.item.delete | d(False) and
          item.item.state | d() in [ 'undefined' ] and
@@ -31,7 +31,7 @@
     name: '{{ item.name }}'
     uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
     state: 'absent'
-  with_flattened: '{{ libvirt__pools }}'
+  loop: '{{ q("flattened", libvirt__pools) }}'
   become: False
   when: ((item.name | d()) and (item.state | d() in [ 'undefined', 'absent' ]))
 
@@ -41,7 +41,7 @@
     xml: '{{ lookup("template", "lookup/pool/" + item.type + ".xml.j2") }}'
     uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
     state: 'present'
-  with_flattened: '{{ libvirt__pools }}'
+  loop: '{{ q("flattened", libvirt__pools) }}'
   become: False
   register: libvirt__register_define
   when: ((item.name | d()) and (item.state | d('active') not in [ 'undefined', 'absent' ]))
@@ -52,7 +52,7 @@
     uri: '{{ libvirt__connections[item.item.uri | d(libvirt__uri)] }}'
     command: 'build'
     mode: '{{ item.item.mode | d(omit) }}'
-  with_flattened: '{{ libvirt__register_define.results }}'
+  loop: '{{ q("flattened", libvirt__register_define.results) }}'
   become: False
   when: (item is changed and item.item.name | d() and
          (item.item.state | d('active') not in [ 'undefined', 'absent' ]) and
@@ -65,7 +65,7 @@
     name: '{{ item.name }}'
     state: 'active'
     uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
-  with_flattened: '{{ libvirt__pools }}'
+  loop: '{{ q("flattened", libvirt__pools) }}'
   become: False
   when: (item.name | d() and item.state | d('active') in [ 'active' ])
 
@@ -74,6 +74,6 @@
     name: '{{ item.name }}'
     autostart: '{{ "yes" if (item.autostart | d(True)) else "no" }}'
     uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
-  with_flattened: '{{ libvirt__pools }}'
+  loop: '{{ q("flattened", libvirt__pools) }}'
   become: False
   when: (item.name | d() and item.state | d('active') not in [ 'undefined', 'absent' ])

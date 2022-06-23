@@ -18,17 +18,14 @@
                                                                       else item.packages[0]))
                                                        + (item.suffix | d("")) + ".pref") | replace("*","all") }}'
     state: 'absent'
-  with_flattened:
-    ## Deprecated: [[[
-    - '{{ apt_preferences_list | d([]) }}'
-    - '{{ apt_preferences_group_list | d([]) }}'
-    - '{{ apt_preferences_host_list | d([]) }}'
-    - '{{ apt_preferences_dependent_list | d([]) }}'
-    ## ]]]
-    - '{{ apt_preferences__list }}'
-    - '{{ apt_preferences__group_list }}'
-    - '{{ apt_preferences__host_list }}'
-    - '{{ apt_preferences__dependent_list }}'
+  loop: '{{ q("flattened", apt_preferences_list | d([])
+                           + apt_preferences_group_list | d([])
+                           + apt_preferences_host_list | d([])
+                           + apt_preferences_dependent_list | d([])
+                           + apt_preferences__list
+                           + apt_preferences__group_list
+                           + apt_preferences__host_list
+                           + apt_preferences__dependent_list) }}'
   when: ("." in item.role | d(item.by_role | d("")))
 
 - name: Remove APT preferences
@@ -43,17 +40,14 @@
                                                     else item.packages[0]))
                                      + (item.suffix | d("")) + ".pref") | replace("*","all") }}'
     state: 'absent'
-  with_flattened:
-    ## Deprecated: [[[
-    - '{{ apt_preferences_list | d([]) }}'
-    - '{{ apt_preferences_group_list | d([]) }}'
-    - '{{ apt_preferences_host_list | d([]) }}'
-    - '{{ apt_preferences_dependent_list | d([]) }}'
-    ## ]]]
-    - '{{ apt_preferences__list }}'
-    - '{{ apt_preferences__group_list }}'
-    - '{{ apt_preferences__host_list }}'
-    - '{{ apt_preferences__dependent_list }}'
+  loop: '{{ q("flattened", apt_preferences_list | d([])
+                           + apt_preferences_group_list | d([])
+                           + apt_preferences_host_list | d([])
+                           + apt_preferences_dependent_list | d([])
+                           + apt_preferences__list
+                           + apt_preferences__group_list
+                           + apt_preferences__host_list
+                           + apt_preferences__dependent_list) }}'
   when: (
           (
             ((item.state | d() and item.state == 'absent') or item.delete | d() | bool) and
@@ -88,17 +82,14 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_flattened:
-    ## Deprecated: [[[
-    - '{{ apt_preferences_list | d([]) }}'
-    - '{{ apt_preferences_group_list | d([]) }}'
-    - '{{ apt_preferences_host_list | d([]) }}'
-    - '{{ apt_preferences_dependent_list | d([]) }}'
-    ## ]]]
-    - '{{ apt_preferences__list }}'
-    - '{{ apt_preferences__group_list }}'
-    - '{{ apt_preferences__host_list }}'
-    - '{{ apt_preferences__dependent_list }}'
+  loop: '{{ q("flattened", apt_preferences_list | d([])
+                           + apt_preferences_group_list | d([])
+                           + apt_preferences_host_list | d([])
+                           + apt_preferences_dependent_list | d([])
+                           + apt_preferences__list
+                           + apt_preferences__group_list
+                           + apt_preferences__host_list
+                           + apt_preferences__dependent_list) }}'
   when: (
           (
             ((item.state | d('present')) != 'absent' and (not (item.delete | d() | bool))) and

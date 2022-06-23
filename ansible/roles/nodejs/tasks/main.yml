@@ -59,11 +59,10 @@
     executable:     '{{ item.executable     | d(omit) }}'
     ignore_scripts: '{{ item.ignore_scripts | d(omit) }}'
     path:           '{{ item.path           | d(omit) }}'
-  with_flattened:
-    - '{{ nodejs__npm_packages }}'
-    - '{{ nodejs__npm_group_packages }}'
-    - '{{ nodejs__npm_host_packages }}'
-    - '{{ nodejs__npm_dependent_packages }}'
+  loop: '{{ q("flattened", nodejs__npm_packages
+                           + nodejs__npm_group_packages
+                           + nodejs__npm_host_packages
+                           + nodejs__npm_dependent_packages) }}'
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:

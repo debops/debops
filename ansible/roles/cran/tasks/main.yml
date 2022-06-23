@@ -28,11 +28,10 @@
     name:  '{{ item.name  | d(item) }}'
     repo:  '{{ item.repo  | d(cran__upstream_mirror) }}'
     state: '{{ item.state | d("present") }}'
-  with_flattened:
-    - '{{ cran__r_packages }}'
-    - '{{ cran__group_r_packages }}'
-    - '{{ cran__host_r_packages }}'
-    - '{{ cran__dependent_r_packages }}'
+  loop: '{{ q("flattened", cran__r_packages
+                           + cran__group_r_packages
+                           + cran__host_r_packages
+                           + cran__dependent_r_packages) }}'
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:

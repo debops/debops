@@ -12,7 +12,7 @@
     name: 'php5'
     state: 'present'
   when: owncloud__webserver == "apache"
-  with_flattened: '{{ owncloud__apache_modules }}'
+  loop: '{{ q("flattened", owncloud__apache_modules) }}'
 
 - name: Ensure restrictive permissions are set for the data directory
   ansible.builtin.file:
@@ -54,7 +54,7 @@
   ansible.builtin.file:
     path: '{{ item }}'
     state: 'absent'
-  with_flattened:
+  loop:
     - '{{ owncloud__deploy_path }}/config/custom.config.php'
 
 # .. ]]]
@@ -118,7 +118,7 @@
     loop_var: 'owncloud__occ_item'
   tags: [ 'role::owncloud:occ_config' ]
   when: (owncloud__apps_config_combined is mapping and owncloud__apps_config_combined.keys() | length)
-  with_flattened:
+  loop:
     - command: 'config:list'
       get_output: True
 
@@ -145,12 +145,11 @@
   loop_control:
     loop_var: 'owncloud__occ_item'
   tags: [ 'role::owncloud:occ' ]
-  with_flattened:
-    - '{{ owncloud__role_occ_cmd_list }}'
-    - '{{ owncloud__occ_cmd_list }}'
-    - '{{ owncloud__group_occ_cmd_list }}'
-    - '{{ owncloud__host_occ_cmd_list }}'
-    - '{{ owncloud__dependent_occ_cmd_list }}'
+  loop: '{{ q("flattened", owncloud__role_occ_cmd_list
+                           + owncloud__occ_cmd_list
+                           + owncloud__group_occ_cmd_list
+                           + owncloud__host_occ_cmd_list
+                           + owncloud__dependent_occ_cmd_list) }}'
 # .. ]]]
 
 # Configure cron job for background tasks [[[

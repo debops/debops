@@ -9,7 +9,7 @@
     name: '{{ item.name }}'
     uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
     state: 'inactive'
-  with_flattened: '{{ libvirt__networks }}'
+  loop: '{{ q("flattened", libvirt__networks) }}'
   become: False
   when: (item.name | d() and (item.state | d() in [ 'inactive', 'undefined', 'absent' ]))
 
@@ -18,7 +18,7 @@
     name: '{{ item.name }}'
     uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
     state: 'absent'
-  with_flattened: '{{ libvirt__networks }}'
+  loop: '{{ q("flattened", libvirt__networks) }}'
   become: False
   when: (item.name | d() and (item.state | d() in [ 'undefined', 'absent' ]))
 
@@ -28,7 +28,7 @@
     xml: '{{ lookup("template", "lookup/network/" + item.type + ".xml.j2") }}'
     uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
     state: 'present'
-  with_flattened: '{{ libvirt__networks }}'
+  loop: '{{ q("flattened", libvirt__networks) }}'
   become: False
   when: ((item.name | d()) and
          (item.state | d("active") not in [ 'undefined', 'absent' ]) and
@@ -40,7 +40,7 @@
     name: '{{ item.name }}'
     state: 'active'
     uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
-  with_flattened: '{{ libvirt__networks }}'
+  loop: '{{ q("flattened", libvirt__networks) }}'
   become: False
   when: ((item.name | d()) and
          (item.state is undefined or item.state in [ 'active' ]) and
@@ -52,7 +52,7 @@
     name: '{{ item.name }}'
     autostart: '{{ "yes" if (item.autostart | d(True)) else "no" }}'
     uri: '{{ libvirt__connections[item.uri | d(libvirt__uri)] }}'
-  with_flattened: '{{ libvirt__networks }}'
+  loop: '{{ q("flattened", libvirt__networks) }}'
   become: False
   when: ((item.name | d()) and
          (item.state is undefined or item.state not in [ 'undefined', 'absent' ]) and

@@ -17,10 +17,9 @@
     group:   '{{ item.parent_dirs_group   | d(owncloud__app_group) }}'
     mode:    '{{ item.parent_dirs_mode    | d("0755") }}'
   when: ((item.parent_dirs_create | d(True)| bool) and item.dest | d() and item.state | d("present") != 'absent')
-  with_flattened:
-    - '{{ owncloud__user_files }}'
-    - '{{ owncloud__user_files_group }}'
-    - '{{ owncloud__user_files_host }}'
+  loop: '{{ q("flattened", owncloud__user_files
+                           + owncloud__user_files_group
+                           + owncloud__user_files_host) }}'
 
 - name: Copy files to ownCloud user profiles
   ansible.builtin.copy:
@@ -41,10 +40,9 @@
     remote_src: '{{ item.remote_src | d(omit) }}'
     directory_mode: '{{ item.directory_mode | d(omit) }}'
   register: owncloud__register_create_user_files
-  with_flattened:
-    - '{{ owncloud__user_files }}'
-    - '{{ owncloud__user_files_group }}'
-    - '{{ owncloud__user_files_host }}'
+  loop: '{{ q("flattened", owncloud__user_files
+                           + owncloud__user_files_group
+                           + owncloud__user_files_host) }}'
   when: ((item.src | d() or item.content | d()) and item.dest | d() and
          (item.state | d('present') != 'absent'))
 
@@ -53,10 +51,9 @@
     path:  '{{ owncloud__data_path + "/" + item.dest }}'
     state: 'absent'
   register: owncloud__register_delete_user_files
-  with_flattened:
-    - '{{ owncloud__user_files }}'
-    - '{{ owncloud__user_files_group }}'
-    - '{{ owncloud__user_files_host }}'
+  loop: '{{ q("flattened", owncloud__user_files
+                           + owncloud__user_files_group
+                           + owncloud__user_files_host) }}'
   when: (item.dest | d() and (item.state | d('present') == 'absent'))
 
 - name: Run occ commands as specified in the inventory

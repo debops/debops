@@ -151,9 +151,8 @@
     path: '{{ etherpad_home + "/" + etherpad_repository }}'
     state: '{{ item.state | d("present") }}'
     production: yes
-  with_flattened:
-    - '{{ etherpad__default_plugins }}'
-    - '{{ etherpad_plugins }}'
+  loop: '{{ q("flattened", etherpad__default_plugins
+                           + etherpad_plugins) }}'
   become: True
   become_user: '{{ etherpad_user }}'
   notify: [ 'Restart etherpad-lite' ]

@@ -45,11 +45,10 @@
     state: '{{ item.state | d("present") }}'
     create: True
     mode: '0644'
-  with_flattened:
-    - '{{ backup2l__default_include }}'
-    - '{{ backup2l__include }}'
-    - '{{ backup2l__group_include }}'
-    - '{{ backup2l__host_include }}'
+  loop: '{{ q("flattened", backup2l__default_include
+                           + backup2l__include
+                           + backup2l__group_include
+                           + backup2l__host_include) }}'
   when: backup2l__srclist_from_file | bool
 
 - name: Generate backup2l configuration
