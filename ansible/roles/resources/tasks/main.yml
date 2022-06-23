@@ -23,9 +23,9 @@
     path: '/{{ item.path }}'
     mode: '{{ item.mode }}'
     state: 'directory'
-  with_filetree: '{{ (resources__host_templates
-                      + resources__group_templates
-                      + resources__templates) | flatten }}'
+  with_community.general.filetree: '{{ (resources__host_templates
+                                        + resources__group_templates
+                                        + resources__templates) | flatten }}'
   when: item.state == 'directory'
 
 - name: Generate custom templates
@@ -33,9 +33,9 @@
     src: '{{ item.src }}'
     dest: '/{{ item.path }}'
     mode: '{{ item.mode }}'
-  with_filetree: '{{ (resources__host_templates
-                      + resources__group_templates
-                      + resources__templates) | flatten }}'
+  with_community.general.filetree: '{{ (resources__host_templates
+                                        + resources__group_templates
+                                        + resources__templates) | flatten }}'
   when: item.state == 'file'
 
 - name: Recreate custom symlinks
@@ -45,9 +45,9 @@
     mode: '{{ item.mode }}'
     state: 'link'
     force: True
-  with_filetree: '{{ (resources__host_templates
-                      + resources__group_templates
-                      + resources__templates) | flatten }}'
+  with_community.general.filetree: '{{ (resources__host_templates
+                                        + resources__group_templates
+                                        + resources__templates) | flatten }}'
   when: item.state == 'link'
 
 # Manage custom paths [[[1
