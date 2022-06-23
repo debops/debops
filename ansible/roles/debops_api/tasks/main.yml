@@ -131,7 +131,7 @@
     state:        '{{ item.state        | d(omit) }}'
     user:         '{{ item.user         | d(debops_api__user) }}'
     weekday:      '{{ item.weekday      | d(omit) }}'
-  with_flattened: '{{ debops_api__cron_entries }}'
+  loop: '{{ debops_api__cron_entries }}'
   tags: [ 'role::debops_api:cron' ]
 
 # ]]]

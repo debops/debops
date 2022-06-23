@@ -119,8 +119,7 @@
     regenerate: '{{ item.regenerate | d("full_idempotence"
                                         if ansible_version.full is version("2.10", ">=")
                                         else omit) }}'
-  with_flattened:
-    - '{{ opendkim__combined_keys }}'
+  loop: '{{ q("flattened", opendkim__combined_keys) }}'
   become: False
   delegate_to: 'localhost'
   no_log: '{{ debops__no_log | d(True) }}'
@@ -131,8 +130,7 @@
               + (item.domain | d(opendkim__domain)) + "_"
               + (item.selector | d(item.name | d(item))) + ".pem" }}'
     state: 'absent'
-  with_flattened:
-    - '{{ opendkim__combined_keys }}'
+  loop: '{{ q("flattened", opendkim__combined_keys) }}'
   when: item.state | d('present') == 'absent'
 
 - name: Download DomainKeys from Ansible Controller
@@ -146,8 +144,7 @@
     owner: 'root'
     group: '{{ opendkim__group }}'
     mode: '0640'
-  with_flattened:
-    - '{{ opendkim__combined_keys }}'
+  loop: '{{ q("flattened", opendkim__combined_keys) }}'
   when: item.state | d('present') != 'absent'
   no_log: '{{ debops__no_log | d(True) }}'
 

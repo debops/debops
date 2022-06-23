@@ -27,15 +27,14 @@
       - '(item.csp_policy is undefined)'
   run_once: True
   delegate_to: 'localhost'
-  with_flattened:
-    - '{{ nginx__servers }}'
-    - '{{ nginx__default_servers }}'
-    - '{{ nginx__internal_servers }}'
-    - '{{ nginx__dependent_servers }}'
-    - '{{ nginx_servers | d([]) }}'
-    - '{{ nginx_default_servers | d([]) }}'
-    - '{{ nginx_internal_servers | d([]) }}'
-    - '{{ nginx_dependent_servers | d([]) }}'
+  loop: '{{ q("flattened", nginx__servers
+                           + nginx__default_servers
+                           + nginx__internal_servers
+                           + nginx__dependent_servers
+                           + nginx_servers | d([])
+                           + nginx_default_servers | d([])
+                           + nginx_internal_servers | d([])
+                           + nginx_dependent_servers | d([])) }}'
 
 - name: Check if nginx is installed
   ansible.builtin.stat:

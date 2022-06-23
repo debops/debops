@@ -12,9 +12,8 @@
     name: '{{ item.name if item.name | d() else item }}'
     system: '{{ item.system | bool if item.system is defined else gitlab_runner__system | bool }}'
     state: 'present'
-  with_flattened:
-    - '{{ gitlab_runner__group }}'
-    - '{{ gitlab_runner__additional_groups }}'
+  loop: '{{ q("flattened", gitlab_runner__group
+                           + gitlab_runner__additional_groups) }}'
 
 - name: Create gitlab-runner user
   ansible.builtin.user:
@@ -55,10 +54,9 @@
     directory_mode: '{{ item.directory_mode | d(omit) }}'
     follow: '{{ item.follow | d(omit) }}'
     force: '{{ item.force | d(omit) }}'
-  with_flattened:
-    - '{{ gitlab_runner__custom_files }}'
-    - '{{ gitlab_runner__group_custom_files }}'
-    - '{{ gitlab_runner__host_custom_files }}'
+  loop: '{{ q("flattened", gitlab_runner__custom_files
+                           + gitlab_runner__group_custom_files
+                           + gitlab_runner__host_custom_files) }}'
   when: ((item.src | d() or item.content | d()) and item.dest | d())
 
 - name: Make sure APT can access HTTPS repositories
@@ -100,11 +98,10 @@
            | urlencode }}&run_untagged={{ item.run_untagged | d(gitlab_runner__run_untagged) }}'
     status_code: '200,201'
   register: gitlab_runner__register_new_instances
-  with_flattened:
-    - '{{ gitlab_runner__default_instances }}'
-    - '{{ gitlab_runner__instances }}'
-    - '{{ gitlab_runner__group_instances }}'
-    - '{{ gitlab_runner__host_instances }}'
+  loop: '{{ q("flattened", gitlab_runner__default_instances
+                           + gitlab_runner__instances
+                           + gitlab_runner__group_instances
+                           + gitlab_runner__host_instances) }}'
   when: (gitlab_runner__register_api.status | d() and gitlab_runner__register_api.status == 200 and
          (item.token | d() or gitlab_runner__token) and item.name and
          (item.state is undefined or item.state != 'absent') and

@@ -37,8 +37,7 @@
     owner:   '{{ item.owner | d(omit) }}'
     group:   '{{ item.group | d(omit) }}'
     mode:    '{{ item.mode  | d(omit) }}'
-  with_flattened:
-    - '{{ nullmailer__configuration_files }}'
+  loop: '{{ q("flattened", nullmailer__configuration_files) }}'
   notify: [ 'Restart nullmailer' ]
   when: (nullmailer__deploy_state | d('present') != 'absent' and
          (item.dest | d() and (item.src | d() or item.content is defined) and
@@ -52,8 +51,7 @@
     owner:   '{{ item.owner | d(omit) }}'
     group:   '{{ item.group | d(omit) }}'
     mode:    '{{ item.mode  | d(omit) }}'
-  with_flattened:
-    - '{{ nullmailer__private_configuration_files }}'
+  loop: '{{ q("flattened", nullmailer__private_configuration_files) }}'
   notify: [ 'Restart nullmailer' ]
   when: (nullmailer__deploy_state | d('present') != 'absent' and
          (item.dest | d() and (item.src | d() or item.content | d()) and
@@ -64,8 +62,7 @@
   ansible.builtin.file:
     path: '{{ item.dest }}'
     state: 'absent'
-  with_flattened:
-    - '{{ nullmailer__configuration_files }}'
+  loop: '{{ q("flattened", nullmailer__configuration_files) }}'
   notify: [ 'Restart nullmailer' ]
   when: (nullmailer__deploy_state | d('present') != 'absent' and
          (item.dest | d() and (item.src | d() or item.content is defined) and
@@ -75,8 +72,7 @@
   ansible.builtin.file:
     path: '{{ item.dest }}'
     state: 'absent'
-  with_flattened:
-    - '{{ nullmailer__private_configuration_files }}'
+  loop: '{{ q("flattened", nullmailer__private_configuration_files) }}'
   notify: [ 'Restart nullmailer' ]
   when: (nullmailer__deploy_state | d('present') != 'absent' and
          (item.dest | d() and (item.src | d() or item.content is defined) and

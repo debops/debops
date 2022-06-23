@@ -56,7 +56,7 @@
     group: 'root'
     mode: '0644'
   when: snapshot_snapper__updatedb_diverted_register is changed
-  with_flattened: '{{ snapshot_snapper__divert_files }}'
+  loop: '{{ q("flattened", snapshot_snapper__divert_files) }}'
 
 - name: Check if snapshots are already excluded from updatedb
   ansible.builtin.command: grep PRUNENAMES=.*{{ snapshot_snapper__directory }}.* /etc/updatedb.conf

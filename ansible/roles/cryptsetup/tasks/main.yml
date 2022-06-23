@@ -57,7 +57,7 @@
     group: 'root'
     mode: '0700'
   when: item.condition
-  with_flattened:
+  loop:
     - path: '{{ cryptsetup__keyfile_remote_location }}'
       condition: '{{ (cryptsetup__combined_devices
                       | selectattr("remote_keyfile", "undefined") | list | length) > 0 }}'

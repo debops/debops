@@ -23,10 +23,9 @@
     owner: 'root'
     group: 'root'
     mode: '0751'
-  with_flattened:
-    - '{{ samba__path }}'
-    - '{{ samba__homes_path }}'
-    - '{{ samba__shares_path }}'
+  loop: '{{ q("flattened", samba__path
+                           + samba__homes_path
+                           + samba__shares_path) }}'
   when: ('samba' in samba__base_packages)
 
 - name: Setup samba-homedir.sh script
@@ -53,7 +52,7 @@
   modprobe:
     name: '{{ item }}'
     state: 'present'
-  with_flattened: '{{ samba__kernel_modules }}'
+  loop: '{{ q("flattened", samba__kernel_modules) }}'
   when: (('samba' in samba__base_packages) and
         (samba__kernel_modules_load | bool))
 

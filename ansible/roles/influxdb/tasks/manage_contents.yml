@@ -15,7 +15,7 @@
     password: '{{ influxdb__root_password }}'
     proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'
     validate_certs: '{{ item.validate_certs | d(influxdb__validate_certs | d(True)) }}'
-  with_flattened: '{{ influxdb__databases + influxdb__dependent_databases | d([]) }}'
+  loop: '{{ q("flattened", influxdb__databases + influxdb__dependent_databases | d([])) }}'
   delegate_to: '{{ influxdb__delegate_to }}'
   when: ((item.database | d(False) or item.name | d(False)) and
          (item.state is defined and item.state == 'absent'))
@@ -30,7 +30,7 @@
     password: '{{ influxdb__root_password }}'
     proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'
     validate_certs: '{{ item.validate_certs | d(influxdb__validate_certs | d(True)) }}'
-  with_flattened: '{{ influxdb__databases + influxdb__dependent_databases | d([]) }}'
+  loop: '{{ q("flattened", influxdb__databases + influxdb__dependent_databases | d([])) }}'
   delegate_to: '{{ influxdb__delegate_to }}'
   when: ((item.database | d(False) or item.name | d(False)) and
          (item.state is undefined or item.state != 'absent'))
@@ -49,7 +49,7 @@
     password: '{{ influxdb__root_password }}'
     proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'
     validate_certs: '{{ item.validate_certs | d(influxdb__validate_certs | d(True)) }}'
-  with_flattened: '{{ influxdb__retention_policies + influxdb__dependent_retention_policies | d([]) }}'
+  loop: '{{ q("flattened", influxdb__retention_policies + influxdb__dependent_retention_policies | d([])) }}'
   delegate_to: '{{ influxdb__delegate_to }}'
   when: item.policy | d(False) or item.name | d(False)
 
@@ -63,7 +63,7 @@
     password: '{{ influxdb__root_password }}'
     proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'
     validate_certs: '{{ item.validate_certs | d(influxdb__validate_certs | d(True)) }}'
-  with_flattened: '{{ influxdb__users + influxdb__dependent_users }}'
+  loop: '{{ q("flattened", influxdb__users + influxdb__dependent_users) }}'
   delegate_to: '{{ influxdb__delegate_to }}'
   when: ((item.user | d(False) or item.name | d(False)) and
          (item.state is defined and item.state == "absent"))
@@ -85,7 +85,7 @@
     password: '{{ influxdb__root_password }}'
     proxies: '{{ item.proxies | d(influxdb__proxies | d(omit)) }}'
     validate_certs: '{{ item.validate_certs | d(influxdb__validate_certs | d(True)) }}'
-  with_flattened: '{{ influxdb__users + influxdb__dependent_users }}'
+  loop: '{{ q("flattened", influxdb__users + influxdb__dependent_users) }}'
   delegate_to: '{{ influxdb__delegate_to }}'
   when: ((item.user | d(False) or item.name | d(False)) and
          (item.state is undefined or item.state != "absent"))

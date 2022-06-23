@@ -107,7 +107,7 @@
                      + ".conf")
                  + item.divert_suffix | d(".dpkg-divert")) }}'
   when: (item.type | d(apache__vhost_type) in ["divert"])
-  with_flattened: '{{ apache__combined_vhosts }}'
+  loop: '{{ q("flattened", apache__combined_vhosts) }}'
 
 - name: Remove sites-available configuration
   ansible.builtin.file:
@@ -116,7 +116,7 @@
                                                                           else item.name[0] | d("default")) }}.conf'
     state: 'absent'
   when: (item.state | d("present") == 'absent')
-  with_flattened: '{{ apache__combined_vhosts }}'
+  loop: '{{ q("flattened", apache__combined_vhosts) }}'
   tags: [ 'role::apache:vhosts' ]
 
 - name: Create sites-available configuration
@@ -130,7 +130,7 @@
     mode: '0644'
   notify: [ 'Test apache and reload' ]
   when: (item.state | d("present") != "absent" and item.type | d(apache__vhost_type) not in ["divert", "dont-create"])
-  with_flattened: '{{ apache__combined_vhosts }}'
+  loop: '{{ q("flattened", apache__combined_vhosts) }}'
   tags: [ 'role::apache:vhosts' ]
 
 - name: Enable/disable Apache virtual hosts
@@ -153,7 +153,7 @@
     mode: '0644'
   notify: [ 'Test apache and reload' ]
   when: (item.type | d(apache__vhost_type) not in ["divert"])
-  with_flattened: '{{ apache__combined_vhosts }}'
+  loop: '{{ q("flattened", apache__combined_vhosts) }}'
   tags: [ 'role::apache:vhosts' ]
 
 

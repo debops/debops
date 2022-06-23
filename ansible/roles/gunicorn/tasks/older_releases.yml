@@ -15,9 +15,8 @@
   ansible.builtin.file:
     path: '/etc/gunicorn.d/{{ item.name }}'
     state: 'absent'
-  with_flattened:
-    - '{{ gunicorn__applications }}'
-    - '{{ gunicorn__dependent_applications }}'
+  loop: '{{ q("flattened", gunicorn__applications
+                           + gunicorn__dependent_applications) }}'
   notify: [ 'Restart gunicorn' ]
   when: item.name | d() and item.state | d('present') == 'absent'
 
@@ -28,8 +27,7 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_flattened:
-    - '{{ gunicorn__applications }}'
-    - '{{ gunicorn__dependent_applications }}'
+  loop: '{{ q("flattened", gunicorn__applications
+                           + gunicorn__dependent_applications) }}'
   notify: [ 'Restart gunicorn' ]
   when: item.name | d() and item.state | d('present') != 'absent'

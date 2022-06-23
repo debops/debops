@@ -84,9 +84,8 @@
     version: '{{ item.version | d(omit) }}'
     virtualenv: '{{ docker_server__virtualenv }}'
     state: '{{ item.state | d("present") }}'
-  with_flattened:
-    - '{{ docker_server__default_pip_packages }}'
-    - '{{ docker_server__pip_packages }}'
+  loop: '{{ q("flattened", docker_server__default_pip_packages
+                           + docker_server__pip_packages) }}'
   when: docker_server__install_virtualenv
 
 - name: Expose Docker virtualenv for Ansible modules
@@ -103,9 +102,8 @@
     src: '{{ item.src }}'
     state: 'link'
     mode: '0755'
-  with_flattened:
-    - '{{ docker_server__default_pip_packages }}'
-    - '{{ docker_server__pip_packages }}'
+  loop: '{{ q("flattened", docker_server__default_pip_packages
+                           + docker_server__pip_packages) }}'
   when: item.path | d() and item.src | d() and
         item.state | d('present') != 'absent' and
         docker_server__install_virtualenv

@@ -16,13 +16,12 @@
   ansible.builtin.file:
     dest: '/etc/nginx/conf.d/map_{{ item.name }}.conf'
     state: 'absent'
-  with_flattened:
-    - '{{ nginx__maps }}'
-    - '{{ nginx__default_maps }}'
-    - '{{ nginx__dependent_maps }}'
-    - '{{ nginx_maps  | d([]) }}'
-    - '{{ nginx_default_maps | d([]) }}'
-    - '{{ nginx_dependent_maps | d([]) }}'
+  loop: '{{ q("flattened", nginx__maps
+                           + nginx__default_maps
+                           + nginx__dependent_maps
+                           + nginx_maps  | d([])
+                           + nginx_default_maps | d([])
+                           + nginx_dependent_maps | d([])) }}'
   notify: [ 'Test nginx and reload' ]
   when: (item.name | d() and
          ((item.state | d() and item.state == 'absent') or
@@ -35,13 +34,12 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_flattened:
-    - '{{ nginx__maps }}'
-    - '{{ nginx__default_maps }}'
-    - '{{ nginx__dependent_maps }}'
-    - '{{ nginx_maps  | d([]) }}'
-    - '{{ nginx_default_maps | d([]) }}'
-    - '{{ nginx_dependent_maps | d([]) }}'
+  loop: '{{ q("flattened", nginx__maps
+                           + nginx__default_maps
+                           + nginx__dependent_maps
+                           + nginx_maps  | d([])
+                           + nginx_default_maps | d([])
+                           + nginx_dependent_maps | d([])) }}'
   notify: [ 'Test nginx and reload' ]
   when: (item.name | d() and item.state | d('present') != 'absent' and
          (item.delete is undefined or not item.delete | bool))
@@ -50,13 +48,12 @@
   ansible.builtin.file:
     dest: '/etc/nginx/conf.d/upstream_{{ item.name }}.conf'
     state: 'absent'
-  with_flattened:
-    - '{{ nginx__upstreams }}'
-    - '{{ nginx__default_upstreams }}'
-    - '{{ nginx__dependent_upstreams }}'
-    - '{{ nginx_upstreams | d([]) }}'
-    - '{{ nginx_default_upstreams | d([]) }}'
-    - '{{ nginx_dependent_upstreams | d([]) }}'
+  loop: '{{ q("flattened", nginx__upstreams
+                           + nginx__default_upstreams
+                           + nginx__dependent_upstreams
+                           + nginx_upstreams | d([])
+                           + nginx_default_upstreams | d([])
+                           + nginx_dependent_upstreams | d([])) }}'
   notify: [ 'Test nginx and reload' ]
   when: (item.name | d() and
          ((item.state | d('present') == 'absent') or
@@ -69,13 +66,12 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_flattened:
-    - '{{ nginx__upstreams }}'
-    - '{{ nginx__default_upstreams }}'
-    - '{{ nginx__dependent_upstreams }}'
-    - '{{ nginx_upstreams | d([]) }}'
-    - '{{ nginx_default_upstreams | d([]) }}'
-    - '{{ nginx_dependent_upstreams | d([]) }}'
+  loop: '{{ q("flattened", nginx__upstreams
+                           + nginx__default_upstreams
+                           + nginx__dependent_upstreams
+                           + nginx_upstreams | d([])
+                           + nginx_default_upstreams | d([])
+                           + nginx_dependent_upstreams | d([])) }}'
   notify: [ 'Test nginx and reload' ]
   when: (item.name | d() and item.state | d('present') != 'absent' and
          (item.delete is undefined or not item.delete | bool))
@@ -84,9 +80,8 @@
   ansible.builtin.file:
     dest: '/etc/nginx/conf.d/log_{{ item.name }}.conf'
     state: 'absent'
-  with_flattened:
-    - '{{ nginx__log_format }}'
-    - '{{ nginx__dependent_log_format }}'
+  loop: '{{ q("flattened", nginx__log_format
+                           + nginx__dependent_log_format) }}'
   notify: [ 'Test nginx and reload' ]
   when: (item.name | d() and
          ((item.state | d('present') == 'absent') or
@@ -99,9 +94,8 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_flattened:
-    - '{{ nginx__log_format }}'
-    - '{{ nginx__dependent_log_format }}'
+  loop: '{{ q("flattened", nginx__log_format
+                           + nginx__dependent_log_format) }}'
   notify: [ 'Test nginx and reload' ]
   when: (item.name | d() and item.state | d('present') != 'absent' and
          (item.delete is undefined or not item.delete | bool))
@@ -110,9 +104,8 @@
   ansible.builtin.file:
     dest: '/etc/nginx/conf.d/{{ item.filename | d("custom_" + item.name + ".conf") }}'
     state: 'absent'
-  with_flattened:
-    - '{{ nginx__custom_config }}'
-    - '{{ nginx_custom_config | d([]) }}'
+  loop: '{{ q("flattened", nginx__custom_config
+                           + nginx_custom_config | d([])) }}'
   notify: [ 'Test nginx and reload' ]
   when: (item.name | d() and
          ((item.state | d() and item.state == 'absent') or
@@ -125,9 +118,8 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_flattened:
-    - '{{ nginx__custom_config }}'
-    - '{{ nginx_custom_config | d([]) }}'
+  loop: '{{ q("flattened", nginx__custom_config
+                           + nginx_custom_config | d([])) }}'
   notify: [ 'Test nginx and reload' ]
   when: (item.name | d() and item.state | d('present') != 'absent' and
          (item.delete is undefined or not item.delete | bool))
