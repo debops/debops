@@ -421,11 +421,12 @@ dovecot__default_configuration:
 
       - name: 'protocols'
         comment: 'Currently active protocols'
-        value: "{{ dovecot__features |
-                   intersect(['imap', 'imaps', 'pop3',
-                              'pop3s', 'sieve', 'lmtp']) |
-                   map('regex_replace', '^(imap|pop3)s$', '\\1') |
-                   list | unique | join(' ') }}"
+        value: |  # noqa var-spacing
+          {{ dovecot__features |
+             intersect(['imap', 'imaps', 'pop3',
+                        'pop3s', 'sieve', 'lmtp']) |
+             map('regex_replace', '^(imap|pop3)s$', '\\1') |
+             list | unique | join(' ') }}
 
   - section: 'authentication'
     title: 'Client Configuration'

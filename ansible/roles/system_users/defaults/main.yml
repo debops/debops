@@ -252,7 +252,7 @@ system_users__default_accounts:
                    in system_users__shell_package_map.keys())
                else omit }}'
     admin: True
-    sshkeys: '{{ lookup("pipe", "ssh-add -L | grep ^\\\(sk-\\\)\\\?ssh || cat ~/.ssh/*.pub || cat ~/.ssh/authorized_keys || true") }}'
+    sshkeys: '{{ lookup("pipe", "ssh-add -L | grep ^\\\(sk-\\\)\\\?ssh || cat ~/.ssh/*.pub || cat ~/.ssh/authorized_keys || true") }}'  # noqa var-spacing
     state: '{{ "present"
                if system_users__self | bool
                else "ignore" }}'
