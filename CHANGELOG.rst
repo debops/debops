@@ -147,6 +147,12 @@ General
   use with third-party authenticator plugins that might not support the
   :command:`certbot --<plugin>` syntax.
 
+:ref:`debops.resolvconf` role
+'''''''''''''''''''''''''''''
+
+- In the :ref:`debops.resolvconf` role, you can now write a fully static
+  :file:`/etc/resolv.conf` file without the ``resolvconf`` package.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
