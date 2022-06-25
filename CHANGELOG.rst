@@ -87,9 +87,6 @@ Updates of upstream application versions
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
   ``v3.2.4``.
 
-- In the :ref:`debops.resolvconf` role, you can now write a fully static 
-  :file:`/etc/resolv.conf` file without the ``resolvconf`` package.
-
 General
 ~~~~~~~
 
@@ -149,6 +146,12 @@ General
   the :command:`certbot --authenticator <plugin>` option explicitly to allow
   use with third-party authenticator plugins that might not support the
   :command:`certbot --<plugin>` syntax.
+
+:ref:`debops.resolvconf` role
+'''''''''''''''''''''''''''''
+
+- In the :ref:`debops.resolvconf` role, you can now write a fully static
+  :file:`/etc/resolv.conf` file without the ``resolvconf`` package.
 
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
