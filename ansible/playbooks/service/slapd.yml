@@ -46,12 +46,13 @@
       tags: [ 'role::ldap', 'skip::ldap' ]
       ldap__dependent_tasks:
         - '{{ saslauthd__ldap__dependent_tasks }}'
+      when: slapd__saslauthd_enabled | bool
 
     - role: saslauthd
       tags: [ 'role::saslauthd', 'skip::saslauthd' ]
       saslauthd__dependent_instances:
         - '{{ slapd__saslauthd__dependent_instances }}'
-      when: slapd__saslauthd__enabled | bool
+      when: slapd__saslauthd_enabled | bool
 
     - role: slapd
       tags: [ 'role::slapd', 'skip::slapd' ]
