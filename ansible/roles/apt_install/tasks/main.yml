@@ -41,7 +41,7 @@
   apt:
     name: '{{ q("flattened", lookup("template",
                              "lookup/apt_install__all_packages.j2",
-                             convert_data=False) | from_json) }}'
+                             convert_data=False) | from_yaml) }}'
     state: '{{ apt_install__state }}'
     install_recommends: '{{ apt_install__recommends|bool }}'
     update_cache: '{{ apt_install__update_cache|bool }}'

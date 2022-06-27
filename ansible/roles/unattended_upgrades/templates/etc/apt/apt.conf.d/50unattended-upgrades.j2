@@ -29,7 +29,7 @@ Unattended-Upgrade::Origins-Pattern {
 {%     endif %}
 {%   endfor %}
 {% endif %}
-{% set unattended_upgrades__tpl_origins = unattended_upgrades__tpl_macros.get_origins_as_json(unattended_upgrades__tpl_security_origins + unattended_upgrades__tpl_release_origins) | from_json %}
+{% set unattended_upgrades__tpl_origins = unattended_upgrades__tpl_macros.get_origins_as_json(unattended_upgrades__tpl_security_origins + unattended_upgrades__tpl_release_origins) | from_yaml %}
 {% for item in unattended_upgrades__tpl_origins %}
         "{{ item }}";
 {% endfor %}
@@ -40,7 +40,7 @@ Unattended-Upgrade::Package-Blacklist {
 {% set unattended_upgrades__tpl_blacklist = unattended_upgrades__tpl_macros.get_blacklist_as_json(
     unattended_upgrades__default_blacklist +
     unattended_upgrades__blacklist +
-    unattended_upgrades__group_blacklist) | from_json %}
+    unattended_upgrades__group_blacklist) | from_yaml %}
 {% for item in unattended_upgrades__tpl_blacklist %}
         "{{ item }}";
 {% endfor %}
