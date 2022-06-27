@@ -9,7 +9,7 @@
 {% macro get_string_or_list_as_json_list(item) %}{# [[[ #}
 {{ ([ item ]
    if (item is string)
-   else (item|list)) | to_nice_json }}
+   else (item | list)) | to_nice_yaml }}
 {% endmacro %}{# ]]] #}
 
 {% macro assemble_origins_list(origins, unattended_upgrades__tpl_origins, unattended_upgrades__tpl_origins_absent) %}{# [[[ #}
@@ -19,11 +19,11 @@
 {%   elif item is mapping %}
 {%     if item.origin|d(item.origins|d()) and "state" in item and item.state is string %}
 {%       if item.state == "present" %}
-{%         for origin in (get_string_or_list_as_json_list(item.origin|d(item.origins|d())) | from_json) %}
+{%         for origin in (get_string_or_list_as_json_list(item.origin | d(item.origins | d())) | from_yaml) %}
 {%           set _ = unattended_upgrades__tpl_origins.append(origin) %}
 {%         endfor %}
 {%       else %}
-{%         for origin in (get_string_or_list_as_json_list(item.origin|d(item.origins|d())) | from_json) %}
+{%         for origin in (get_string_or_list_as_json_list(item.origin | d(item.origins | d())) | from_yaml) %}
 {%           set _ = unattended_upgrades__tpl_origins_absent.append(origin) %}
 {%         endfor %}
 {%       endif %}
@@ -46,7 +46,7 @@
 {%     set _ = unattended_upgrades__tpl_origins.append(item) %}
 {%   endfor %}
 {% endif %}
-{{ unattended_upgrades__tpl_origins | difference(unattended_upgrades__tpl_origins_absent) | sort | unique | to_nice_json }}
+{{ unattended_upgrades__tpl_origins | difference(unattended_upgrades__tpl_origins_absent) | sort | unique | to_nice_yaml }}
 {% endmacro %}{# ]]] #}
 
 {% macro assemble_blacklist(blacklist, unattended_upgrades__tpl_blacklist, unattended_upgrades__tpl_blacklist_absent) %}{# [[[ #}
@@ -56,11 +56,11 @@
 {%   elif item is mapping %}
 {%     if "name" in item and "state" in item and item.state is string %}
 {%       if item.state == "present" %}
-{%         for name in (get_string_or_list_as_json_list(item.name) | from_json) %}
+{%         for name in (get_string_or_list_as_json_list(item.name) | from_yaml) %}
 {%           set _ = unattended_upgrades__tpl_blacklist.append(name) %}
 {%         endfor %}
 {%       else %}
-{%         for name in (get_string_or_list_as_json_list(item.name) | from_json) %}
+{%         for name in (get_string_or_list_as_json_list(item.name) | from_yaml) %}
 {%           set _ = unattended_upgrades__tpl_blacklist_absent.append(name) %}
 {%         endfor %}
 {%       endif %}
@@ -83,5 +83,5 @@
 {%     set _ = unattended_upgrades__tpl_blacklist.append(item) %}
 {%   endfor %}
 {% endif %}
-{{ unattended_upgrades__tpl_blacklist | difference(unattended_upgrades__tpl_blacklist_absent) | sort | unique | to_nice_json }}
+{{ unattended_upgrades__tpl_blacklist | difference(unattended_upgrades__tpl_blacklist_absent) | sort | unique | to_nice_yaml }}
 {% endmacro %}{# ]]] #}
