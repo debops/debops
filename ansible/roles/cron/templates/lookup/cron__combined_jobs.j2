@@ -22,13 +22,13 @@
 {%       endfor %}
 {%     endif %}
 {%   endif %}
-{{ merged_dict | to_json }}
+{{ merged_dict | to_yaml }}
 {% endmacro %}
-{% set cron__tpl_merge_default =   (merge_dict({},                        cron__default_jobs,   'file') | from_json) %}
-{% set cron__tpl_merge_dependent = (merge_dict(cron__tpl_merge_default,   cron__dependent_jobs, 'file') | from_json) %}
-{% set cron__tpl_merge_all =       (merge_dict(cron__tpl_merge_dependent, cron__jobs,           'file') | from_json) %}
-{% set cron__tpl_merge_group =     (merge_dict(cron__tpl_merge_all,       cron__group_jobs,     'file') | from_json) %}
-{% set cron__tpl_items =           (merge_dict(cron__tpl_merge_group,     cron__host_jobs,      'file') | from_json) %}
+{% set cron__tpl_merge_default =   (merge_dict({},                        cron__default_jobs,   'file') | from_yaml) %}
+{% set cron__tpl_merge_dependent = (merge_dict(cron__tpl_merge_default,   cron__dependent_jobs, 'file') | from_yaml) %}
+{% set cron__tpl_merge_all =       (merge_dict(cron__tpl_merge_dependent, cron__jobs,           'file') | from_yaml) %}
+{% set cron__tpl_merge_group =     (merge_dict(cron__tpl_merge_all,       cron__group_jobs,     'file') | from_yaml) %}
+{% set cron__tpl_items =           (merge_dict(cron__tpl_merge_group,     cron__host_jobs,      'file') | from_yaml) %}
 {% set cron__tpl_filtered_items = [] %}
 {% for item_name, params in cron__tpl_items.items() %}
 {%   set cron_file = (params["file"] | d(item_name)) %}

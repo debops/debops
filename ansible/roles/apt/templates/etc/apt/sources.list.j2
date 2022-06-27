@@ -11,7 +11,7 @@
 {%     if key in [ 'state' ] %}
 {%       set _ = entry.update({ key: value | unique }) %}
 {%     else %}
-{%       set _ = entry.update({ key: debops__tpl_macros.flattened(value) | from_json | unique }) %}
+{%       set _ = entry.update({ key: debops__tpl_macros.flattened(value) | from_yaml | unique }) %}
 {%     endif %}
 {%   endfor %}
 {%   set entry_disabled = '# ' if (entry.state == 'disabled') else '' %}
@@ -49,7 +49,7 @@
 {% endmacro %}
 {% set apt__tpl_seen_sources = {} %}
 {% set apt__tpl_suites = [] %}
-{% for apt__tpl_suffix in debops__tpl_macros.flattened(apt__distribution_suffixes) | from_json %}
+{% for apt__tpl_suffix in debops__tpl_macros.flattened(apt__distribution_suffixes) | from_yaml %}
 {%   set _ = apt__tpl_suites.append(apt__distribution_release + apt__tpl_suffix) %}
 {% endfor %}
 {% set apt__tpl_sources = [] %}
@@ -70,12 +70,12 @@
 {%     set _ = apt__tpl_source.update({ "uris": [ element ]}) %}
 {%   elif element is mapping %}
 {%     set _ = apt__tpl_source.update({
-         "types": debops__tpl_macros.flattened(element.type, element.types) | from_json,
-         "options": debops__tpl_macros.flattened(element.option, element.options) | from_json,
-         "uris": debops__tpl_macros.flattened(element.uri, element.uris) | from_json,
-         "suites": debops__tpl_macros.flattened(element.suite, element.suites) | from_json,
-         "components": debops__tpl_macros.flattened(element.component, element.components) | from_json,
-         "comments": debops__tpl_macros.flattened(element.comment, element.comments) | from_json,
+         "types": debops__tpl_macros.flattened(element.type, element.types) | from_yaml,
+         "options": debops__tpl_macros.flattened(element.option, element.options) | from_yaml,
+         "uris": debops__tpl_macros.flattened(element.uri, element.uris) | from_yaml,
+         "suites": debops__tpl_macros.flattened(element.suite, element.suites) | from_yaml,
+         "components": debops__tpl_macros.flattened(element.component, element.components) | from_yaml,
+         "comments": debops__tpl_macros.flattened(element.comment, element.comments) | from_yaml,
          "state": element.state | d(apt__tpl_source.state),
          "architecture": element.architecture | d(apt__tpl_source.architecture),
          "distribution": element.distribution | d(apt__tpl_source.distribution),
@@ -88,12 +88,12 @@
 {%     set _ = apt__tpl_source.update({ "uris": element }) %}
 {%   endif %}
 {%   if not apt__tpl_source.types %}
-{%     set _ = apt__tpl_source.types.extend(debops__tpl_macros.flattened(apt__source_types) | from_json) %}
+{%     set _ = apt__tpl_source.types.extend(debops__tpl_macros.flattened(apt__source_types) | from_yaml) %}
 {%   endif %}
 {%   if not apt__tpl_source.uris %}
 {%     if element is mapping %}
 {%       if apt__distribution in element.keys() %}
-{%         set _ = apt__tpl_source.uris.extend(debops__tpl_macros.flattened(element[apt__distribution]) | from_json) %}
+{%         set _ = apt__tpl_source.uris.extend(debops__tpl_macros.flattened(element[apt__distribution]) | from_yaml) %}
 {%       endif %}
 {%     endif %}
 {%   endif %}
@@ -101,7 +101,7 @@
 {%     set _ = apt__tpl_source.suites.extend(apt__tpl_suites) %}
 {%   endif %}
 {%   if not apt__tpl_source.components %}
-{%     set _ = apt__tpl_source.components.extend(debops__tpl_macros.flattened(apt__distribution_components) | from_json) %}
+{%     set _ = apt__tpl_source.components.extend(debops__tpl_macros.flattened(apt__distribution_components) | from_yaml) %}
 {%   endif %}
 {%   set _ = apt__tpl_sources.append(apt__tpl_source) %}
 {% endfor %}
