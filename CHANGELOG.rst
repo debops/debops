@@ -144,6 +144,14 @@ General
   access key and secret key have been replaced with root account and password.
   Check the role documentation for more details.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- Configure the :file:`nginx.service` systemd unit to start the
+  :command:`nginx` service after the network is configured. This way
+  :command:`nginx` should be able to resolve upstream services specified via
+  DNS names at startup.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
