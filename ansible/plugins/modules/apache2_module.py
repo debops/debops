@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2013-2014, Christian Berendt <berendt@b1-systems.de>
