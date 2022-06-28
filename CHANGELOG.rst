@@ -101,6 +101,12 @@ General
   access key and secret key have been replaced with root account and password.
   Check the role documentation for more details.
 
+:ref:`debops.php` role
+''''''''''''''''''''''
+
+- The ``libsodium23`` APT package will be installed from Sury APT repository
+  when it's enabled in the role.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
