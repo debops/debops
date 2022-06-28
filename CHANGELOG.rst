@@ -122,6 +122,13 @@ General
 Fixed
 ~~~~~
 
+General
+'''''''
+
+- The "shebang" scripts pointing to ``#!/usr/bin/python`` in various Ansible
+  modules were removed to ensure that the remot host will execute them with the
+  correct Python 3.x version.
+
 :ref:`debops.dovecot` role
 ''''''''''''''''''''''''''
 
