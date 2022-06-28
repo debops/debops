@@ -152,6 +152,14 @@ General
   use with third-party authenticator plugins that might not support the
   :command:`certbot --<plugin>` syntax.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- The role will enable Python 2.7 support via the fact script only when an
+  existing Python 2.7 installation is detected. This change should help avoid
+  installing Python 2.7 packages on newer OS releases when they might be
+  unavailable.
+
 :ref:`debops.resolvconf` role
 '''''''''''''''''''''''''''''
 
