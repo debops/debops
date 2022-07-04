@@ -221,6 +221,7 @@ Logging
 - :ref:`debops.journald`
 - :ref:`debops.kibana`
 - :ref:`debops.logrotate`
+- :ref:`debops.opensearch`
 - :ref:`debops.rsyslog`
 
 

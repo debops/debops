@@ -1,0 +1,142 @@
+---
+# Copyright (C) 2022 CipherMail B.V. <https://www.ciphermail.com/>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Import DebOps global handlers
+  ansible.builtin.import_role:
+    name: 'global_handlers'
+
+- name: Create directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: '{{ opensearch__user }}'
+    group: '{{ opensearch__group }}'
+    mode: '0750'
+  loop:
+    - '/etc/opensearch'
+    - '/var/local/opensearch'
+    - '/var/log/opensearch'
+
+- when: ansible_local.opensearch.version|d("0.0.0") != opensearch__version
+  block:
+
+    - name: Download release files
+      ansible.builtin.get_url:
+        url: 'https://artifacts.opensearch.org/releases/bundle/opensearch/{{ opensearch__version + "/" + item }}'
+        dest: '/var/tmp/{{ item }}'
+      loop:
+        - '{{ opensearch__tarball }}'
+        - '{{ opensearch__tarball }}.sig'
+
+    - name: Verify release tarball
+      ansible.builtin.command: >-
+        gpg --verify /var/tmp/{{ opensearch__tarball }}.sig
+      become_user: '{{ opensearch__user }}'
+      changed_when: False
+
+    - name: Stop service
+      ansible.builtin.service:
+        name: 'opensearch'
+        state: 'stopped'
+
+    - name: Remove old installation directory
+      ansible.builtin.file:
+        path: '{{ opensearch__installation_directory }}'
+        state: 'absent'
+
+    - name: Create new installation directory
+      ansible.builtin.file:
+        path: '{{ opensearch__installation_directory }}'
+        state: 'directory'
+        mode: '0755'
+
+    - name: Extract release tarball
+      ansible.builtin.unarchive:
+        src: '/var/tmp/{{ opensearch__tarball }}'
+        dest: '{{ opensearch__installation_directory }}'
+        remote_src: True
+        owner: 'root'
+        group: 'root'
+        mode: 'u=rwX,g=rX,o=rX'
+        extra_opts:
+          - '--strip-components=1'
+      notify: [ 'Refresh host facts', 'Restart opensearch' ]
+
+    - name: Install new configuration files
+      ansible.builtin.copy:
+        src: '{{ opensearch__installation_directory }}/config/'
+        dest: '/etc/opensearch'
+        remote_src: True
+        owner: 'root'
+        group: '{{ opensearch__group }}'
+        mode: '0640'
+
+- name: Configure OpenSearch and the JVM
+  ansible.builtin.template:
+    src: 'etc/opensearch/{{ item }}.j2'
+    dest: '/etc/opensearch/{{ item }}'
+    owner: 'root'
+    group: '{{ opensearch__group }}'
+    mode: '0640'
+  loop:
+    - 'jvm.options'
+    - 'opensearch.yml'
+  notify: [ 'Restart opensearch' ]
+
+- name: Remove redundant configuration directory
+  ansible.builtin.file:
+    path: '{{ opensearch__installation_directory }}/config'
+    state: 'absent'
+
+- name: Symlink log directory
+  ansible.builtin.file:
+    path: '{{ opensearch__installation_directory }}/logs'
+    src: '/var/log/opensearch'
+    state: 'link'
+    force: True
+
+- name: Generate systemd configuration
+  ansible.builtin.template:
+    src: 'etc/systemd/system/opensearch.service.j2'
+    dest: '/etc/systemd/system/opensearch.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify: [ 'Reload service manager' ]
+
+- name: Make sure that Ansible local facts directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/opensearch.fact.j2'
+    dest: '/etc/ansible/facts.d/opensearch.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: Flush handlers
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Start service
+  ansible.builtin.service:
+    name: 'opensearch'
+    state: 'started'
+    enabled: True
+
+- name: Clean up release files
+  ansible.builtin.file:
+    path: '/var/tmp/{{ item }}'
+    state: 'absent'
+  loop:
+    - '{{ opensearch__tarball }}'
+    - '{{ opensearch__tarball }}.sig'

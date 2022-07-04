@@ -1,0 +1,26 @@
+#!{{ ansible_python['executable'] }}
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2022 CipherMail B.V. <https://www.ciphermail.com/>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# {{ ansible_managed }}
+
+from json import dumps
+import re
+
+output = {}
+
+try:
+    # Search the manifest file for the version number. Return on first match.
+    for line in open('{{ opensearch__installation_directory }}/manifest.yml'):
+        match = re.search(r"^\s*version: (\d+\.\d+\.\d+)$", line)
+        if match:
+            output['version'] = match.group(1)
+            break
+
+except Exception:
+    pass
+
+print(dumps(output, sort_keys=True, indent=4))

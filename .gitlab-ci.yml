@@ -1761,6 +1761,19 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/opendkim/.*'
     JANE_LOG_PATTERN: '\[opendkim\]'
 
+'opensearch role':
+  <<: *test_role_1st_deps
+  needs:
+    - 'keyring role'
+    - 'sysctl role'
+    - 'etc_services role'
+  variables:
+    JANE_TEST_FACT: 'opensearch.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/opensearch.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_opensearch'
+    JANE_DIFF_PATTERN: '.*/roles/opensearch/.*'
+    JANE_LOG_PATTERN: '\[opensearch\]'
+
 'owncloud/apache role':
   <<: *test_role_3rd_deps
   needs:
