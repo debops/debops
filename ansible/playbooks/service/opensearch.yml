@@ -1,0 +1,34 @@
+---
+# Copyright (C) 2022 CipherMail B.V. <https://www.ciphermail.com/>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+- name: Install and manage OpenSearch
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_opensearch' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: keyring
+      tags: [ 'role::keyring', 'skip::keyring' ]
+      keyring__dependent_gpg_keys:
+        - '{{ opensearch__keyring__dependent_gpg_keys }}'
+
+    - role: sysctl
+      tags: [ 'role::sysctl', 'skip::sysctl' ]
+      sysctl__dependent_parameters:
+        - '{{ opensearch__sysctl__dependent_parameters }}'
+
+    - role: etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ opensearch__etc_services__dependent_list }}'
+
+    - role: opensearch
+      tags: [ 'role::opensearch', 'skip::opensearch' ]
