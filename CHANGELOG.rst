@@ -38,6 +38,9 @@ New DebOps roles
 - The :ref:`debops.reboot` role can be used to reboot, forcefully or only if
   required, any DebOps host.
 
+- The :ref:`debops.resources` role can now be used to repace a line via the
+  ``ansible.builtin.replace`` module.
+
 General
 '''''''
 
