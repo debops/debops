@@ -227,6 +227,33 @@
          (item.state | d('present') != 'absent'))
   tags: [ 'role::resources:files' ]
 
+- name: Manage replacements inside files
+  ansible.builtin.replace:
+    dest:          '{{ item.dest          | d(item.name | d(item.path)) }}'
+    after:         '{{ item.after         | d(omit) }}'
+    attributes:    '{{ item.attributes    | d(item.attr | d(omit)) }}'
+    backup:        '{{ item.backup        | d(omit) }}'
+    before:        '{{ item.before        | d(omit) }}'
+    encoding:      '{{ item.encoding      | d(omit) }}'
+    group:         '{{ item.group         | d(omit) }}'
+    mode:          '{{ item.mode          | d(omit) }}'
+    others:        '{{ item.others        | d(omit) }}'
+    owner:         '{{ item.owner         | d(omit) }}'
+    regexp:        '{{ item.regexp        | d(omit) }}'
+    replace:       '{{ item.replace       | d(omit) }}'
+    selevel:       '{{ item.selevel       | d(omit) }}'
+    serole:        '{{ item.serole        | d(omit) }}'
+    setype:        '{{ item.setype        | d(omit) }}'
+    seuser:        '{{ item.seuser        | d(omit) }}'
+    unsafe_writes: '{{ item.unsafe_writes | d(omit) }}'
+    validate:      '{{ item.validate      | d(omit) }}'
+  loop: '{{ q("flattened", resources__replacements
+                           + resources__group_replacements
+                           + resources__host_replacements) }}'
+  when: (resources__enabled | bool and item.regexp | d() and
+         (item.dest | d() or item.path | d() or item.name | d()))
+  tags: [ 'role::resources:lineinfile' ]
+
 # Manage ACLs [[[1
 - name: Set ACLs on remote hosts
   ansible.posix.acl:
