@@ -19,13 +19,15 @@
     - '/var/local/opensearch'
     - '/var/log/opensearch'
 
-- when: ansible_local.opensearch.version|d("0.0.0") != opensearch__version
+- name: Install OpenSearch from upstream release
+  when: ansible_local.opensearch.version|d("0.0.0") != opensearch__version
   block:
 
     - name: Download release files
       ansible.builtin.get_url:
         url: 'https://artifacts.opensearch.org/releases/bundle/opensearch/{{ opensearch__version + "/" + item }}'
         dest: '/var/tmp/{{ item }}'
+        mode: '0644'
       loop:
         - '{{ opensearch__tarball }}'
         - '{{ opensearch__tarball }}.sig'

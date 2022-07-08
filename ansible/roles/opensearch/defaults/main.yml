@@ -62,9 +62,9 @@ opensearch__group: 'opensearch'
 # capabilities. If this variable is enabled, :command:`systemd` memlock limit
 # is configured.
 opensearch__memory_lock: '{{ True
-                                if (not (ansible_system_capabilities_enforced|d())|bool or
-                                    ((ansible_system_capabilities_enforced|d())|bool and
-                                     "cap_ipc_lock" in (ansible_system_capabilities|d([]))))
+                                if (not (ansible_system_capabilities_enforced | d()) | bool or
+                                    ((ansible_system_capabilities_enforced | d()) | bool and
+                                     "cap_ipc_lock" in (ansible_system_capabilities | d([]))))
                                 else False }}'
 
                                                                    # ]]]
@@ -73,17 +73,17 @@ opensearch__memory_lock: '{{ True
 # This variable defines a float value which will be used to select the JVM heap
 # size depending on the size of the available system RAM.
 opensearch__jvm_memory_heap_size_multiplier: '{{ "0.2"
-                                                    if (ansible_memtotal_mb|int / 2 <= 2048)
+                                                    if (ansible_memtotal_mb | int / 2 <= 2048)
                                                     else "0.45" }}'
 
                                                                    # ]]]
 # .. envvar:: opensearch__jvm_memory_min_heap_size [[[
 #
 # Specify the minimum JVM heap size, depending on the available system RAM.
-opensearch__jvm_memory_min_heap_size: '{{ (((ansible_memtotal_mb|int
-                                               * opensearch__jvm_memory_heap_size_multiplier|float)
+opensearch__jvm_memory_min_heap_size: '{{ (((ansible_memtotal_mb | int
+                                               * opensearch__jvm_memory_heap_size_multiplier | float)
                                                | round | int) | string + "m")
-                                             if (ansible_memtotal_mb|int / 2 <= 32768)
+                                             if (ansible_memtotal_mb | int / 2 <= 32768)
                                              else "32600m" }}'
 
                                                                    # ]]]
@@ -127,7 +127,7 @@ opensearch__default_configuration:
 
   - name: 'bootstrap.memory_lock'
     comment: '# Lock the memory on startup'
-    value: '{{ True if opensearch__memory_lock|bool else False }}'
+    value: '{{ True if opensearch__memory_lock | bool else False }}'
 
   - name: 'cluster.initial_master_nodes'
     comment: |
