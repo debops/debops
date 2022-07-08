@@ -427,6 +427,44 @@ Parameters related to ACL
     make sense in this context and shouldn't be used.
 
 
+.. _resources__ref_replacements:
+
+resources__replacements
+-----------------------
+
+The ``resources__*_replacements`` variables can be used to modify existing
+files using regexp matches. The role uses the `ansible.builtin.replace`__
+Ansible module to perform the operation. All parameters of this module should
+be supported.
+
+.. __: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/replace_module.html
+
+Examples
+~~~~~~~~
+
+Remove the ``use_authtok`` token from the PAM common password configuration
+file:
+
+.. code-block:: yaml
+
+   resources__replacements:
+
+     - path: '/etc/pam.d/common-password'
+       regexp: 'use_authtok\s+enforce_for_root'
+       replace: 'enforce_for_root'
+
+Syntax
+~~~~~~
+
+The ``resources__*_replacements`` variables are defined as list of YAML
+dictionary entries with specific parameters. Check the documentation of the
+``ansible.builtin.replace`` module to see the avaiable parameters:
+
+.. code-block:: console
+
+   ansible-doc -t module ansible.builtin.replace
+
+
 .. _resources__ref_commands:
 
 resources__commands
