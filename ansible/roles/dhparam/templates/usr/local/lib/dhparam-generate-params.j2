@@ -71,7 +71,7 @@ fi
 dhparam_library="{{ dhparam__library }}"
 dhparam_path="{{ dhparam__path + '/params' }}"
 
-dhparam_openssl_options=( {{ dhparam__openssl_options }} )
+read -r -a dhparam_openssl_options <<< "{{ dhparam__openssl_options | join(' ') }}"
 
 dhparam_prefix="{{ dhparam__prefix }}"
 read -r -a dhparam_bits <<< "{{ dhparam__bits | join(' ') }}"
