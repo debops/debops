@@ -217,6 +217,13 @@ General
 - On pdns installations with version >= 4.5.0 (e.g. on Bookworm systems), the
   role would cause a syntax error on the local-address configuration option.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- Fixed an issue where when a PKI realm was initialized for ACME/Let's Encrypt
+  support, second level domains were not included in the generated X.509
+  certificate request.
+
 :ref:`debops.postldap` role
 '''''''''''''''''''''''''''
 
