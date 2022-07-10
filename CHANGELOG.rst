@@ -197,6 +197,13 @@ General
   not defined which might cause Ansible execution to fail even when the
   :command:`nullmailer` configuration is disabled.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- Fixed an issue where when a PKI realm was initialized for ACME/Let's Encrypt
+  support, second level domains were not included in the generated X.509
+  certificate request.
+
 :ref:`debops.postldap` role
 '''''''''''''''''''''''''''
 
