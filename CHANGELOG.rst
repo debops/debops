@@ -300,6 +300,10 @@ debops.boxbackup role
   :file:`private/` directory to include the new private key created by the
   :command:`certbot` script.
 
+- Fixed an issue where when a PKI realm was initialized for ACME/Let's Encrypt
+  support, second level domains were not included in the generated X.509
+  certificate request.
+
 :ref:`debops.prosody` role
 ''''''''''''''''''''''''''
 
