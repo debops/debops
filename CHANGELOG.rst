@@ -82,6 +82,13 @@ General
 - Role dependencies have been moved from the :file:`meta/main.yml` file to the
   role playbook to avoid issues with :command:`ansible-lint` checks.
 
+:ref:`debops.dhparam` role
+''''''''''''''''''''''''''
+
+- The :envvar:`dhparam__openssl_options` variable will be used in the script
+  maintaining the Diffie-Hellman parameters on the remote hosts, for
+  consistency.
+
 :ref:`debops.dovecot` role
 ''''''''''''''''''''''''''
 
