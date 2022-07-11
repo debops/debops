@@ -214,6 +214,13 @@ debops.boxbackup role
   playbook. This fixes an issue with Ansible stopping the site playbook
   execution when it cannot find the ``boxbackup`` role in the Collection.
 
+:ref:`debops.cron` role
+'''''''''''''''''''''''
+
+- Fixed the order of job parameters applied by the role - now parameters from
+  a specific job will override parameters specified for all jobs in a given
+  configuration entry.
+
 :ref:`debops.dovecot` role
 ''''''''''''''''''''''''''
 
