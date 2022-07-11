@@ -178,6 +178,13 @@ General
   modules were removed to ensure that the remot host will execute them with the
   correct Python 3.x version.
 
+:ref:`debops.cron` role
+'''''''''''''''''''''''
+
+- Fixed the order of job parameters applied by the role - now parameters from
+  a specific job will override parameters specified for all jobs in a given
+  configuration entry.
+
 :ref:`debops.dovecot` role
 ''''''''''''''''''''''''''
 
