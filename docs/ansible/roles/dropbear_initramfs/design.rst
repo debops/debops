@@ -2,10 +2,10 @@
 .. Copyright (C) 2017 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
+.. include:: ../../../includes/global.rst
+
 Design goals
 ============
-
-.. include:: includes/all.rst
 
 - Don’t overwrite global configuration files like
   :file:`/etc/initramfs-tools/initramfs.conf` and similar as this can lead to
