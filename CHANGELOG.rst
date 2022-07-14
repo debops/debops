@@ -54,6 +54,12 @@ General
   the :ref:`debops.ldap` role is detected on the host. Currently only user
   authentication and Django ACL system is supported via LDAP groups.
 
+:ref:`debops.postfix` role
+''''''''''''''''''''''''''
+
+- The role can now install APT packages specified on the group and host level
+  of Ansible inventory, for more flexibility.
+
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
 
