@@ -150,6 +150,17 @@ General
   exist. This should help with an upgrade of existing Elasticsearch clusters
   without TLS encrypted traffic and authentication.
 
+:ref:`debops.gitlab` role
+'''''''''''''''''''''''''
+
+- The role has been rewritten from scratch and now can be used to deploy and
+  manage a `GitLab Omnibus`__ instance (managed internally by Chef) on Debian
+  or Ubuntu hosts. Role integrates various DebOps services (firewall, PKI
+  infrastructure, LDAP environment) with GitLab Omnibus. Bot Community Edition
+  (default) and Enterprise Edition are supported.
+
+  .. __: https://docs.gitlab.com/omnibus/
+
 :ref:`debops.minio` role
 ''''''''''''''''''''''''
 
@@ -5035,7 +5046,7 @@ General
 
 - Redesign the GitLab version management to read the versions of various
   components from the GitLab repository files instead of managing them manually
-  in a YAML dictionary. The new :envvar:`gitlab__release` variable is used to
+  in a YAML dictionary. The new ``gitlab__release`` variable is used to
   specify desired GitLab version to install/manage.
 
 - The :command:`gitaly` service will be installed using the ``git`` UNIX

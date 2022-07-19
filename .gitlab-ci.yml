@@ -798,27 +798,18 @@ stages:
 # --- g --- [[[2
 
 'gitlab role':
-  <<: *test_role_4th_deps
+  <<: *test_role_3rd_deps
   needs:
     - 'keyring role'
-    - 'system_groups role'
-    - 'apt_preferences role'
-    - 'python role'
-    - 'golang role'
-    - 'nodejs role'
+    - 'extrepo role'
     - 'etc_services role'
-    - 'logrotate role'
     - 'ferm role'
-    - 'ruby role'
-    - 'postgresql_server role'
-    - 'postgresql role'
+    - 'python role'
     - 'ldap role'
-    - 'nginx role'
   variables:
     JANE_TEST_FACT: 'gitlab.fact'
-    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt.yml ${DEBOPS_PLAYBOOKS}/service/redis_server.yml ${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/gitlab.yml'
-    JANE_INVENTORY_GROUPS: 'debops_service_postgresql_server,debops_service_redis_server,debops_service_gitlab'
-    JANE_INVENTORY_HOSTVARS: 'postgresql_server__delegate_to=localhost postgresql__delegate_to=localhost'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/pki.yml ${DEBOPS_PLAYBOOKS}/service/gitlab.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_gitlab'
     JANE_DIFF_PATTERN: '.*/roles/gitlab/.*'
     JANE_LOG_PATTERN: '\[gitlab\]'
     VAGRANT_MASTER_MEMORY: '6144'

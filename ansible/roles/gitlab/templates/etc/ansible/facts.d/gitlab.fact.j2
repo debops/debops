@@ -1,16 +1,49 @@
-{# Copyright (C) 2015-2017 Maciej Delmanowski <drybjed@gmail.com>
- # Copyright (C) 2015-2017 DebOps <https://debops.org/>
- # SPDX-License-Identifier: GPL-3.0-only
- #}
-{
-"database": "{{ ansible_local.gitlab.database | d(gitlab__database) }}",
-"fqdn": "{{ gitlab__fqdn }}",
-"installed": true,
-"registry": {{ gitlab__registry_enabled | bool | lower }},
-"registry_pki_realm": "{{ gitlab__registry_pki_realm }}",
-"registry_token_realm_url": "{{ gitlab__registry_token_realm_url }}",
-"registry_token_issuer": "{{ gitlab__registry_token_issuer }}",
-"registry_token_service": "{{ gitlab__registry_token_service }}",
-"systemd_services": {{ ansible_local.gitlab.systemd_services | d(gitlab_use_systemd) | bool | lower }},
-"version": "{{ gitlab_version }}"
-}
+#!{{ ansible_python['executable'] }}
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2022 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+from sys import exit
+import subprocess
+import signal
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+output = {}
+
+output['installed'] = cmd_exists('gitlab-ctl')
+output['omnibus'] = cmd_exists('gitlab-ctl')
+
+if output['omnibus']:
+    try:
+        version_stdout = subprocess.check_output(
+                ["dpkg-query", "-W", "-f=${Version}",
+                 "gitlab-ce"]).decode('utf-8').split('-')[0]
+        if version_stdout:
+            output['version'] = version_stdout
+            output['edition'] = 'community'
+        else:
+            version_stdout = subprocess.check_output(
+                    ["dpkg-query", "-W", "-f=${Version}",
+                     "gitlab-ee"]).decode('utf-8').split('-')[0]
+            if version_stdout:
+                output['version'] = version_stdout
+                output['edition'] = 'enterprise'
+
+    except Exception:
+        pass
+
+print(dumps(output, sort_keys=True, indent=4))
