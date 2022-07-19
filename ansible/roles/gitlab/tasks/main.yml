@@ -1,128 +1,74 @@
 ---
-# Copyright (C) 2015-2017 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2015-2017 DebOps <https://debops.org/>
+# Copyright (C) 2015-2022 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2022 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- name: Import custom Ansible plugins
+- name: Import DebOps global handlers
   ansible.builtin.import_role:
-    name: 'ansible_plugins'
+    name: 'global_handlers'
 
 - name: Import DebOps secret role
   ansible.builtin.import_role:
     name: 'secret'
 
-- name: Install required packages
-  ansible.builtin.package:
-    name: '{{ q("flattened", (gitlab__base_packages
-                              + (gitlab__release_packages[gitlab__distribution_release] | d([]))
-                              + (gitlab__database_packages[gitlab__distribution_release][gitlab__database] | d([])))) }}'
-    state: 'present'
-  register: gitlab__register_packages
-  until: gitlab__register_packages is succeeded
-
-- name: Create GitLab system group
-  ansible.builtin.group:
-    name: '{{ gitlab_group }}'
-    system: True
-    state: 'present'
-
-- name: Create GitLab user
-  ansible.builtin.user:
-    name: '{{ gitlab_user }}'
-    group: '{{ gitlab_group }}'
-    home: '{{ gitlab_home }}'
-    shell: '{{ gitlab__shell }}'
-    comment: 'GitLab'
-    groups: '{{ gitlab_user_append_groups | join(",") | default(omit) }}'
-    append: True
-    system: True
-    state: 'present'
-
-- name: Create GitLab application directory
-  ansible.builtin.file:
-    path: '{{ gitlab_app_root_path }}'
-    state: 'directory'
-    owner: '{{ gitlab_user }}'
-    group: '{{ gitlab_group }}'
-    mode: '0750'
-
-- name: Allow access to GitLab application directory by the webserver
-  ansible.posix.acl:
-    name: '{{ gitlab_app_root_path }}'
-    entity: 'www-data'
-    etype: 'group'
-    permissions: 'x'
-    state: 'present'
-  when: gitlab_support_filesystem_acl | bool
-
-- name: Allow GitLab user to the ~/.ssh directory
-  ansible.builtin.file:
-    path: '{{ gitlab_home + "/.ssh" }}'
-    state: 'directory'
-    owner: '{{ gitlab_user }}'
-    group: '{{ gitlab_group }}'
-    mode: '0700'
-
-- name: Configure ~/.gitconfig
-  ansible.builtin.template:
-    src: 'var/local/git/gitconfig.j2'
-    dest: '{{ gitlab_home + "/.gitconfig" }}'
-    owner: '{{ gitlab_user }}'
-    group: '{{ gitlab_group }}'
-    mode: '0644'
-
-- name: Download GitLab CE sources
-  ansible.builtin.include_tasks: download_gitlab_ce.yml
-
-- name: Check GitLab version numbers
-  ansible.builtin.script: 'script/gitlab-version{{ "2" if (ansible_python_version is version_compare("3.5", "<")) else "3" }}
-           {{ gitlab_ce_git_checkout }}'
-  register: gitlab__register_version
-  changed_when: False
-  check_mode: False
-
-- name: Set facts about GitLab version numbers
-  ansible.builtin.set_fact:
-    gitlab__fact_version:
-      gitaly:    '{{ (gitlab__register_version.stdout | from_json)["gitaly_server_version"]    | d("") }}'
-      pages:     '{{ (gitlab__register_version.stdout | from_json)["gitlab_pages_version"]     | d("") }}'
-      shell:     '{{ (gitlab__register_version.stdout | from_json)["gitlab_shell_version"]     | d("") }}'
-      workhorse: '{{ (gitlab__register_version.stdout | from_json)["gitlab_workhorse_version"] | d("") }}'
-      ce:        '{{ (gitlab__register_version.stdout | from_json)["version"]                  | d("") }}'
-
-- name: Configure gitlab-shell
-  ansible.builtin.include_tasks: configure_gitlab-shell.yml
-
-- name: Configure GitLab Pages
-  ansible.builtin.include_tasks: configure_gitlab-pages.yml
-  when: gitlab_enable_pages | bool
-
-- name: Configure GitLab WorkHorse
-  ansible.builtin.include_tasks: configure_gitlab-workhorse.yml
-
-- name: Configure GitLab CE
-  ansible.builtin.include_tasks: configure_gitlab_ce.yml
-
-- name: Configure Gitaly
-  ansible.builtin.include_tasks: configure_gitaly.yml
-  when: gitlab_version is version_compare("9.0", operator="gt", strict=True)
-
-- name: Start GitLab CE
-  ansible.builtin.include_tasks: start_gitlab_ce.yml
-
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
-    owner: 'root'
-    group: 'root'
     mode: '0755'
 
-- name: Save information about GitLab CE in Ansible Facts
+- name: Save information about GitLab in Ansible Facts
   ansible.builtin.template:
     src: 'etc/ansible/facts.d/gitlab.fact.j2'
     dest: '/etc/ansible/facts.d/gitlab.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
   tags: [ 'meta::facts' ]
+
+- name: Flush handlers if needed
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Create GitLab configuration directories
+  ansible.builtin.file:
+    path: '/etc/gitlab/ssl'
+    state: 'directory'
+    mode: '0775'
+
+- name: Manage private key and SSL certificate symlinks in GitLab environment
+  ansible.builtin.file:  # noqa risky-file-permissions
+    path: '{{ "/etc/gitlab/ssl/" + item.link }}'
+    src:  '{{ item.src }}'
+    state: '{{ item.state | d("link") }}'
+  loop: '{{ q("flattened", (gitlab__ssl_default_symlinks + gitlab__ssl_symlinks)) }}'
+  notify: [ 'Restart GitLab Omnibus' ]
+  when: gitlab__pki_enabled | bool
+
+- name: Generate GitLab Omnibus configuration
+  ansible.builtin.template:
+    src: 'etc/gitlab/gitlab.rb.j2'
+    dest: '/etc/gitlab/gitlab.rb'
+    mode: '0600'
+  notify: [ 'Reconfigure GitLab Omnibus' ]
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Remove GitLab Omnibus backup cron job if requested
+  ansible.builtin.file:
+    path: '/etc/cron.d/backup-gitlab-omnibus'
+    state: 'absent'
+  when: not gitlab__backup_enabled | bool
+
+- name: Configure GitLab Omnibus backup cron job
+  ansible.builtin.template:
+    src: 'etc/cron.d/backup-gitlab-omnibus.j2'
+    dest: '/etc/cron.d/backup-gitlab-omnibus'
+    mode: '0644'
+  when: gitlab__backup_enabled | bool
+
+- name: Install GitLab APT packages
+  environment:
+    GITLAB_ROOT_PASSWORD: '{{ gitlab__initial_root_password }}'
+  ansible.builtin.package:
+    name: '{{ q("flattened", gitlab__base_packages + gitlab__packages) }}'
+    state: 'present'
+  register: gitlab__register_packages
+  until: gitlab__register_packages is succeeded

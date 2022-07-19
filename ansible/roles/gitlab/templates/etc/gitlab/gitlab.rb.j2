@@ -1,0 +1,112 @@
+{# Copyright (C) 2022 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2022 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+{% for item in gitlab__combined_configuration | debops.debops.parse_kv_items %}
+{%   if item.state not in [ 'absent', 'ignore', 'init' ] %}
+{%     if item.separator | d() %}
+{{       '' }}
+{%     endif %}
+{%     if (item.title | d() or item.comment | d()) and not loop.first %}
+{{       '' }}
+{%     endif %}
+{%     if item.title | d() %}
+{{       item.title | regex_replace('\n$','') | comment(prefix='', postfix='', decoration='## ') -}}
+{%     endif %}
+{%     if item.comment | d() %}
+{{       item.comment | regex_replace('\n$','') | comment(prefix='', postfix='', decoration='##! ') -}}
+{%     endif %}
+{%     set item_comment = '' %}
+{%     if item.state == 'comment' %}
+{%       set item_comment = '# ' %}
+{%     endif %}
+{%     if item.raw | d() %}
+{%       if item.state == 'comment' %}
+{{         item.raw | regex_replace('\n$','') | comment(prefix='', postfix='', decoration='# ') -}}
+{%       else %}
+{{         item.raw | regex_replace('\n$','') }}
+{%       endif %}
+{%     elif item.value is defined %}
+{%       if item.value | bool and item.value is not iterable %}
+{%         if item.value | string == '1' %}
+{{           "{}{} {}".format(item_comment, item.name, item.value) }}
+{%         else %}
+{{           "{}{} {}".format(item_comment, item.name, 'true') }}
+{%         endif %}
+{%       elif not item.value | bool and item.value is not iterable %}
+{%         if item.value is not none %}
+{%           if item.value | int or item.value | string == '0' %}
+{{             "{}{} {}".format(item_comment, item.name, item.value) }}
+{%           else %}
+{{             "{}{} {}".format(item_comment, item.name, 'false') }}
+{%           endif %}
+{%         endif %}
+{%       elif item.value is string %}
+{%         if item.value == 'nil' %}
+{{           "{}{} {}".format(item_comment, item.name, item.value) }}
+{%         else %}
+{{           "{}{} '{}'".format(item_comment, item.name, item.value) }}
+{%         endif %}
+{%       elif item.value is number %}
+{{         "{}{} {}".format(item_comment, item.name, item.value) }}
+{%       elif item.value is not string and item.value is not mapping %}
+{{         "{}{} {}".format(item_comment, item.name, "['" + item.value | join("', '") + "']") }}
+{%       endif %}
+{%     elif item.options | d() %}
+{%       for element in item.options %}
+{%         if element.state not in [ 'absent', 'ignore', 'init' ] %}
+{%           if (element.title | d() or element.comment | d()) %}
+{{             '' }}
+{%           endif %}
+{%           if element.title | d() %}
+{{             element.title | regex_replace('\n$','') | comment(prefix='', postfix='', decoration='## ') -}}
+{%           endif %}
+{%           if element.comment | d() %}
+{{             element.comment | regex_replace('\n$','') | comment(prefix='', postfix='', decoration='##! ') -}}
+{%           endif %}
+{%           set element_comment = '' %}
+{%           if element.state == 'comment' %}
+{%             set element_comment = '# ' %}
+{%           endif %}
+{%           if element.raw | d() %}
+{%             if element.state == 'comment' %}
+{{               element.raw | regex_replace('\n$','') | comment(prefix='', postfix='', decoration='# ') -}}
+{%             else %}
+{{               element.raw | regex_replace('\n$','') }}
+{%             endif %}
+{%           elif element.value is defined %}
+{%             if element.value | bool and element.value is not iterable %}
+{%               if element.value | string == '1' %}
+{{                 "{}{}['{}'] = {}".format(element_comment, item.name, element.name, element.value) }}
+{%               else %}
+{{                 "{}{}['{}'] = {}".format(element_comment, item.name, element.name, 'true') }}
+{%               endif %}
+{%             elif not element.value | bool and element.value is not iterable %}
+{%               if element.value is not none %}
+{%                 if element.value | int or element.value | string == '0' %}
+{{                   "{}{}['{}'] = {}".format(element_comment, item.name, element.name, element.value) }}
+{%                 else %}
+{{                   "{}{}['{}'] = {}".format(element_comment, item.name, element.name, 'false') }}
+{%                 endif %}
+{%               endif %}
+{%             elif element.value is string %}
+{%               if element.value == 'nil' %}
+{{                 "{}{}['{}'] = {}".format(element_comment, item.name, element.name, element.value) }}
+{%               else %}
+{{                 "{}{}['{}'] = '{}'".format(element_comment, item.name, element.name, element.value) }}
+{%               endif %}
+{%             elif element.value is number %}
+{{               "{}{}['{}'] = {}".format(element_comment, item.name, element.name, element.value) }}
+{%             elif element.value is not string and element.value is not mapping %}
+{{               "{}{}['{}'] = {}".format(element_comment, item.name, element.name, "['" + element.value | join("', '") + "']") }}
+{%             endif %}
+{%           else %}
+{{             "{}{}['{}'] = []".format(element_comment, item.name, element.name) }}
+{%           endif %}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{% endfor %}

@@ -1,0 +1,12 @@
+---
+# Copyright (C) 2022 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Reconfigure GitLab Omnibus
+  ansible.builtin.command: 'gitlab-ctl reconfigure'
+  when: (ansible_local.gitlab.omnibus | d()) | bool
+
+- name: Restart GitLab Omnibus
+  ansible.builtin.command: 'gitlab-ctl restart'
+  when: (ansible_local.gitlab.omnibus | d()) | bool

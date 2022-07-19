@@ -1,0 +1,18 @@
+{# Copyright (C) 2022 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2022 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+# Create a backup of the GitLab Omnibus installation.
+# Backup tarballs are stored in {{ gitlab__backup_path }}
+
+# Environment variables
+{% for key, value in (gitlab__backup_environment | combine(gitlab__backup_default_environment)) | dictsort %}
+{%   if value %}
+{{     '{}={}'.format(key | upper, value) }}
+{%   endif %}
+{% endfor %}
+
+# Cron job
+@{{ gitlab__backup_frequency }} root test -x /usr/bin/gitlab-backup && /usr/bin/gitlab-backup create
