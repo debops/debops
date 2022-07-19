@@ -55,6 +55,12 @@ General
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.ipxe` role, the Debian Bullseye has been updated to the
+  next point release, 11.4.
+
 General
 '''''''
 
