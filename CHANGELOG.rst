@@ -109,8 +109,9 @@ General
 :ref:`debops.etckeeper` role
 ''''''''''''''''''''''''''''
 
-- The role will ignore GitLab Runner configuration as well as Docker keys to
-  avoid storing sensitive data in :command:`git` repository.
+- The role will ignore GitLab Runner configuration as well as Docker keys and
+  GitLab Omnibus secrets to avoid storing sensitive data in :command:`git`
+  repository.
 
 :ref:`debops.influxdata` role
 '''''''''''''''''''''''''''''
