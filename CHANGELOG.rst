@@ -202,6 +202,12 @@ General
   modules were removed to ensure that the remot host will execute them with the
   correct Python 3.x version.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- In the fact script, parse the ``deb-src`` configuration entries before
+  ``deb`` entries to ensure that there are no duplicates.
+
 :ref:`debops.cron` role
 '''''''''''''''''''''''
 
