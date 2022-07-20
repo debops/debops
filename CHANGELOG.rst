@@ -161,6 +161,13 @@ General
 
   .. __: https://docs.gitlab.com/omnibus/
 
+:ref:`debops.icinga_web` role
+'''''''''''''''''''''''''''''
+
+- The LDAP configuration used by the role to configure LDAP access will be
+  based on the :ref:`debops.ldap` Ansible local facts instead of static values,
+  to better support modified environments.
+
 :ref:`debops.minio` role
 ''''''''''''''''''''''''
 
