@@ -1,8 +1,7 @@
 ---
-# .. vim: foldmarker=[[[,]]]:foldmethod=marker
-
-# Copyright (C) 2016-2017 Robin Schneider <ypid@riseup.net>
-# Copyright (C) 2016-2017 DebOps <https://debops.org/>
+# Copyright (C) 2016-2017,2021 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2016-2022 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
@@ -13,45 +12,94 @@
   ansible.builtin.import_role:
     name: 'secret'
 
-## Was the default but did not prevent the creation of `zz_debconf.conf` either.
-- name: Configure Apt-Cacher NG in debconf to not do autoconfiguration
+- name: Disable autoconfiguration
   ansible.builtin.debconf:
     name: 'apt-cacher-ng'
     question: 'apt-cacher-ng/gentargetmode'
     vtype: 'select'
     value: 'No automated setup'
-  when: (apt_cacher_ng__deploy_state == 'present')
+  when: apt_cacher_ng__deploy_state == 'present'
 
-- name: Remove Apt-Cacher NG configuration
-  ansible.builtin.file:
-    path: '/{{ item.path }}'
-    state: 'absent'
-  when: (apt_cacher_ng__deploy_state in [ 'absent', 'purge' ] and
-         not item.divert | d(True))
-  with_items: '{{ apt_cacher_ng__configuration_files }}'
-
-- name: Remove diversion of Apt-Cacher NG configuration
+- name: Add/remove configuration file diversions
   dpkg_divert:
-    path: '/{{ item.path }}'
-    state: 'absent'
+    path: '{{ item.path }}'
+    state: '{{ "present" if apt_cacher_ng__deploy_state == "present"
+               else "absent" }}'
     delete: True
-  when: (apt_cacher_ng__deploy_state in [ 'absent', 'purge' ] and
-         item.divert | d(True))
-  with_items: '{{ apt_cacher_ng__configuration_files }}'
+  loop: '{{ apt_cacher_ng__configuration_files }}'
+  when: item.divert | d(True)
 
-- name: Ensure specified packages are in their desired state
+- name: Install/remove packages
   ansible.builtin.package:
     name: '{{ q("flattened", apt_cacher_ng__base_packages) }}'
-    state: '{{ "present" if (apt_cacher_ng__deploy_state == "present") else "absent" }}'
+    state: '{{ "present" if apt_cacher_ng__deploy_state == "present"
+               else "absent" }}'
   register: apt_cacher_ng__register_packages
   until: apt_cacher_ng__register_packages is succeeded
 
-- name: Run tasks related to deploy state present
-  ansible.builtin.include_tasks: state_present.yml
-  when: (apt_cacher_ng__deploy_state == 'present')
+- name: Generate configuration files
+  ansible.builtin.template:
+    src: '{{ item.src | d(item.path | regex_replace("^/", "")) }}.j2'
+    dest: '{{ item.path }}'
+    owner: '{{ item.owner | d("root") }}'
+    group: '{{ item.group | d("root") }}'
+    mode: '{{ item.mode | d("0640") }}'
+  loop: '{{ apt_cacher_ng__configuration_files }}'
+  notify: [ 'Restart apt-cacher-ng' ]
+  when: apt_cacher_ng__deploy_state == 'present'
 
-- name: Remove cache directory if deploy state is purge
+- name: Create the cache directory
+  ansible.builtin.file:
+    state: 'directory'
+    path:  '{{ apt_cacher_ng__cache_dir }}'
+    owner: '{{ apt_cacher_ng__cache_dir_owner }}'
+    group: '{{ apt_cacher_ng__cache_dir_group }}'
+    mode:  '{{ apt_cacher_ng__dir_perms }}'
+  when: apt_cacher_ng__deploy_state == 'present'
+
+- name: Lazy check cache directory permissions
+  ansible.builtin.file:
+    state: 'file'
+    path:  '{{ apt_cacher_ng__cache_dir }}/_expending_damaged'
+    owner: '{{ apt_cacher_ng__cache_dir_owner }}'
+    group: '{{ apt_cacher_ng__cache_dir_group }}'
+    mode:  '{{ apt_cacher_ng__file_perms }}'
+  failed_when: False
+  register: apt_cacher_ng__register_cache_perms
+  when: (apt_cacher_ng__deploy_state == 'present' and
+         apt_cacher_ng__cache_dir_enforce_permissions == 'lazy')
+
+# Note: doing this using native Ansible tasks is too slow
+- name: Change cache directory permissions
+  ansible.builtin.shell: |
+    chown --recursive {{ apt_cacher_ng__cache_dir_owner }}:{{ apt_cacher_ng__cache_dir_group }} .
+    find . -type d -exec chmod {{ apt_cacher_ng__dir_perms }} {} \;
+    find . -type f -exec chmod {{ apt_cacher_ng__file_perms }} {} \;
+  args:
+    chdir: '{{ apt_cacher_ng__cache_dir }}'
+    warn: False
+  when: (apt_cacher_ng__deploy_state == 'present' and
+         (apt_cacher_ng__cache_dir_enforce_permissions == "strict" or
+          (apt_cacher_ng__cache_dir_enforce_permissions == "lazy" and
+           apt_cacher_ng__register_cache_perms is changed)))
+
+- name: Enable/disable service
+  ansible.builtin.service:
+    name: 'apt-cacher-ng'
+    state: '{{ "started" if apt_cacher_ng__enabled | d(True) else "stopped" }}'
+    enabled: '{{ True if apt_cacher_ng__enabled | d(True) else False }}'
+  when: apt_cacher_ng__deploy_state == 'present'
+
+- name: Remove configuration files
+  ansible.builtin.file:
+    path: '{{ item.path }}'
+    state: 'absent'
+  loop: '{{ apt_cacher_ng__configuration_files }}'
+  when: (apt_cacher_ng__deploy_state in [ 'absent', 'purge' ] and
+         not item.divert | d(True))
+
+- name: Remove the cache directory
   ansible.builtin.file:
     path: '{{ apt_cacher_ng__cache_dir }}'
     state: 'absent'
-  when: (apt_cacher_ng__deploy_state == 'purge')
+  when: apt_cacher_ng__deploy_state == 'purge'
