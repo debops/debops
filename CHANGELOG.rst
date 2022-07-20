@@ -302,6 +302,12 @@ debops.boxbackup role
 - Fixed formatting in the :file:`/etc/logrotate.conf` configuration file to
   avoid adding :command:`vim` fold markers from the DebOps role defaults.
 
+:ref:`debops.netbase` role
+''''''''''''''''''''''''''
+
+- In the fact script, don't use ``in`` for matching IP addresses and DNS names
+  where substring matching is undesirable.
+
 :ref:`debops.ntp` role
 ''''''''''''''''''''''
 
