@@ -80,27 +80,33 @@ host.
 Default SMTP relay
 ------------------
 
-The upstream SMTP relay is configured in the :envvar:`nullmailer__relayhost`
-variable. The role by default will check the DNS SRV resource records of the
-host's DNS domain to find the preferred SMTP server. You can define these
-records in the DNS:
+The role detects the preferred upstream SMTP relay by using
+:ref:`dns_configuration_srv` for the following service:
 
 .. code-block:: none
 
-   _smtp._tcp     SRV   0 1 25   smtp.example.org.
+   _smtp._tcp.{{ nullmailer__domain }} (default port 25)
 
-Only a single SRV record is supported, with multiple records only one will be
-selected based on the alphabetical order. If the SRV records are not found, the
-role will fall back to using the ``smtp`` subdomain.
+At the moment, only a single SRV resource record is supported.
 
-To set the desired value for all hosts in your environment, set in the
-inventory:
+If the SRV record is not found, the role will fall back to using static domain
+names, based on the host domain (:envvar:`nullmailer__domain`):
+
+.. code-block:: none
+
+   SMTP:  smtp.example.org:25
+
+For details on how to configure DNS SRV records, see
+:ref:`dns_configuration_srv`. Alternatively, you can override the SRV based
+detection by defining a relay host in the Ansible inventory:
 
 .. code-block:: yaml
 
    # ansible/inventory/group_vars/debops_all_hosts/nullmailer.yml
 
    nullmailer__relayhost: '<FQDN address of mail server>'
+
+See :ref:`dns_configuration_override` for more details.
 
 
 LDAP integration

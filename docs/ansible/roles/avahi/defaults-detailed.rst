@@ -88,15 +88,14 @@ specific parameters:
   simpler syntax.
 
 ``type``
-  A string similar to a `SRV record <https://en.wikipedia.org/wiki/SRV_record>`_
-  that defines the service type and protocol (it's similar in a way that only
-  the service name and protocol are relevant, other parts of the SRV record
-  shouldn't be used). Example service types are ``_ssh._tcp``, ``_http._tcp``.
-  The list of possible service names can be found in the `Service Name and Transport Protocol Port Number Registry <https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml>`_ maintained by `IANA <https://www.iana.org/>`_.
+  A string similar to :ref:`dns_configuration_srv` which defines the service
+  type and protocol (only the service name and protocol are relevant, other
+  parts of the SRV record shouldn't be used). Example service types are
+  ``_ssh._tcp`` and ``_http._tcp``.
 
   If the type is not specified and a given entry has no separate ``services``
   list defined, the service will not be published. This can be used to define
-  host CNAME entries without associated service (see below).
+  host CNAME entries without an associated service (see below).
 
 ``subtype``
   Optional. Either a string, or a YAML list of additional subtypes to publish

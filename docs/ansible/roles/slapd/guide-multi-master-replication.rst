@@ -57,9 +57,9 @@ DNS configuration
 -----------------
 
 For flexibility, the LDAP directory cluster will be reachable to the clients
-using ``CNAME`` and ``SRV`` records. Here's an example :man:`dnsmasq(8)`
-configuration for 3 OpenLDAP cluster hosts and 1 OpenLDAP test host used for
-development:
+using ``CNAME`` and :ref:`dns_configuration_srv`. Here's an example
+:man:`dnsmasq(8)` configuration for 3 OpenLDAP cluster hosts and 1 OpenLDAP
+test host used for development:
 
 .. code-block:: ini
 
@@ -81,16 +81,8 @@ development:
 
    cname = ldap-test.example.org,slapd-tests.example.org
 
-The LDAP clients that use the ``SRV`` records will by default connect to the
-``ldap1.example.org`` server, therefore you might expect increased traffic to
-it. Additional OpenLDAP servers will be used as fallback when
-``ldap1.example.org`` server is unreachable. With this setup it should be very
-easy to replace the OpenLDAP servers with new ones on the DNS level, without
-the need to reconfigure LDAP clients everywhere.
-
-Part of the cluster that is used for testing and development should be
-configured to connect directly to the ``ldap-test.example.org`` server and not
-use the ``SRV`` records.
+For a further explanation of this example configuration, see
+:ref:`dns_configuration_srv_example2`.
 
 Keep in mind that in the replicated ``cn=config`` configuration (see below) you
 should use the real server hostnames, and not the ``CNAME`` records, to avoid

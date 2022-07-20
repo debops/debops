@@ -67,27 +67,25 @@ package for more details.
 IMAP server detection
 ---------------------
 
-The role first checks if :ref:`debops.dovecot` is installed on the same host.
-If so, the local IMAP server will be used.
+The role first checks if :ref:`debops.dovecot` is installed on the same host
+by using local Ansible facts. If so, the local IMAP server will be used.
 
-In the alternative, the role detects the preferred IMAP server by checking the
-DNS SRV resource records (defined by :rfc:`6186`), looking for the
-IMAP or IMAPS services. The example DNS resource records used by the role are:
+In the alternative, the role detects the preferred IMAP server by using
+:ref:`dns_configuration_srv` for the following services:
 
 .. code-block:: none
 
-   _imap._tcp           SRV 0 1 143  imap.example.org.
-   _imaps._tcp          SRV 0 1 993  imap.example.org.
+   _imap._tcp.{{ imapproxy__domain }} (default port 143)
+   _imaps._tcp.{{ imapproxy__domain }} (default port 993)
 
 At the moment only a single SRV resource record is supported by the role.
 
-If both SRV resource records and local Ansible facts are not available, the
-:ref:`debops.imapproxy` role will fall back to using static subdomains for the
-respective services, based on the host domain:
+Finally, the role will fall back to using static domain names for the
+respective services, based on the host domain (:envvar:`imapproxy__domain`):
 
 .. code-block:: none
 
-   IMAP:  imap.example.org
+   IMAP:  imap.example.org:143
 
 This allows for deployment of the proxy on a separate host or VM.
 

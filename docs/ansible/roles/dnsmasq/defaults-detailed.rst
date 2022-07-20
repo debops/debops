@@ -456,15 +456,10 @@ The parameters below are related to DNS record configuration:
   record priority.
 
 ``srv``
-  Optional. Define a `DNS SRV record`__. The parameter value is the name of the
-  SRV record in the DNS database; the ``target`` parameter is requied and
-  specifies the corresponding host. The ``port`` parameter is used to specify
-  the TCP/UDP port to connect to.
-
-  .. __: https://en.wikipedia.org/wiki/SRV_record
-
-  The ``preference`` or ``priority`` and ``weight`` parameters are optional and
-  can be used to specify the order in which different hosts should be accessed.
+  Optional. Define :ref:`dns_configuration_srv`. The parameter value is the
+  name of the SRV record; the ``target`` and ``port`` parameters are required
+  while the ``preference``, ``priority`` and ``weight`` parameters are optional,
+  see :ref:`dns_configuration_srv` for further details.
 
 ``target``
   Optional. This parameter is used in various DNS record entries to specify the
