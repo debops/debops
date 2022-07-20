@@ -258,6 +258,12 @@ debops.boxbackup role
   only on Elasticsearch v7.x+ versions. Before them, Elasticsearch used the
   global Java security policy.
 
+:ref:`debops.environment` role
+''''''''''''''''''''''''''''''
+
+- Fixed issues with preserving environment variables across multiple role
+  executions.
+
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
