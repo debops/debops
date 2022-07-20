@@ -257,6 +257,12 @@ General
   resulting in the hook script failing to reload dovecot after a certificate or
   DH param change.
 
+:ref:`debops.environment` role
+''''''''''''''''''''''''''''''
+
+- Fixed issues with preserving environment variables across multiple role
+  executions.
+
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
