@@ -222,6 +222,12 @@ General
 - Fixed an issue with custom Ansible plugins not working in "standalone" mode
   without the DebOps scripts installed on Ansible Controller.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- In the fact script, parse the ``deb-src`` configuration entries before
+  ``deb`` entries to ensure that there are no duplicates.
+
 debops.boxbackup role
 '''''''''''''''''''''
 
