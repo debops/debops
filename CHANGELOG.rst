@@ -238,6 +238,13 @@ General
 - In the fact script, parse the ``deb-src`` configuration entries before
   ``deb`` entries to ensure that there are no duplicates.
 
+:ref:`debops.core` role
+'''''''''''''''''''''''
+
+- Ensure that the ``ansible_controllers`` fact can be reset using the
+  :envvar:`core__remove_facts` variable to avoid infinitely growing list of
+  Ansible Controllers.
+
 :ref:`debops.cron` role
 '''''''''''''''''''''''
 
