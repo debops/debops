@@ -315,6 +315,11 @@ debops.boxbackup role
 - Fixed an issue with the role passing IP and MAC addresses to the LDAP
   directory as a nested YAML list which resulted in a wrong attribute values.
 
+- Fixed an issue with role parsing the already parsed Ansible facts to extract
+  IP/CIDR information which resulted in wrong output in certain cases. The role
+  will now implicitly trust the Ansible facts to be correct when adding IP and
+  prefix details to the LDAP database.
+
 :ref:`debops.logrotate` role
 ''''''''''''''''''''''''''''
 
