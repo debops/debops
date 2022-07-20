@@ -20,7 +20,7 @@ Correct DNS configuration is crucial
 
 Many DebOps roles use the ``ansible_fqdn`` and ``ansible_domain`` variables to
 create correct default values. It's recommended that all hosts which are
-managed via DebOps have proper DNS entries, , which means that they should be
+managed via DebOps have proper DNS entries, which means that they should be
 resolvable via DNS by their Fully Qualified Domain Name (hostname + domain
 name). The FQDN doesn't have to be accessible from the Internet when the hosts
 are on a private network, but it should be possible to resolve the FQDNS
@@ -39,13 +39,13 @@ interface). These default FQDNs are listed below as a help in preparing a DNS
 zone for your local setup:
 
 ================================= =================================== ==================================================================== ==============================
-Role                              Variable                            Default                                                              Example 
+Role                              Variable                            Default                                                              Example
 ================================= =================================== ==================================================================== ==============================
 :ref:`debops.apt_cacher_ng`       :envvar:`apt_cacher_ng__fqdn`       ``software-cache.`` + ``{{ ansible_domain }}``                       ``software-cache.example.com``
 :ref:`debops.docker_registry`     :envvar:`docker_registry__fqdn`     ``registry.`` + :envvar:`docker_registry__domain`                    ``registry.example.com``
 :ref:`debops.dokuwiki`            :envvar:`dokuwiki__fqdn`            ``wiki.`` + ``{{ ansible_domain }}``                                 ``wiki.example.com``
 :ref:`debops.etesync`             :envvar:`etesync__fqdn`             ``etesync.`` + :envvar:`etesync__domain`                             ``etesync.example.com``
-:ref:`debops.gitlab`              :envvar:`gitlab__fqdn`              ``code.`` + :envvar:`gitlab_domain`                                  ``code.example.com``
+:ref:`debops.gitlab`              :envvar:`gitlab__fqdn`              ``code.`` + :envvar:`gitlab__domain`                                 ``code.example.com``
 :ref:`debops.icinga_web`          :envvar:`icinga_web__fqdn`          ``icinga.`` + :envvar:`icinga_web__domain`                           ``icinga.example.com``
 :ref:`debops.kibana`              :envvar:`kibana__fqdn`              ``kibana.`` + :envvar:`kibana__domain`                               ``kibana.example.com``
 :ref:`debops.librenms`            :envvar:`librenms__fqdn`            ``nms.`` + :envvar:`librenms__domain`                                ``nms.example.com``
@@ -292,13 +292,13 @@ be set in the Ansible inventory, for the
        port: 4242
        priority: 10
        weight: 40
-       
+
      - srv: '_foo._tcp.example.com'
        target: 'foobackup.example.com'
        port: 4242
        priority: 20
        weight: 0
-       
+
 Or for the :ref:`second example<dns_configuration_srv_example2>`:
 
 .. code-block:: yaml
@@ -378,19 +378,19 @@ The following table lists the DNS ``SRV`` records used for autoconfiguration by
 various DebOps roles:
 
 =========================== ========================= ====================================== ============================================================================
-Role                        SRV                       Variable                               Fallback                                                                    
+Role                        SRV                       Variable                               Fallback
 =========================== ========================= ====================================== ============================================================================
-:ref:`debops.gitlab_runner` ``_gitlab._tcp``          :envvar:`gitlab_runner__gitlab_srv_rr` ``code.`` + :envvar:`gitlab_runner__domain` + ``:443``                      
-:ref:`debops.icinga`        ``_icinga-master._tcp``   :envvar:`icinga__master_nodes`         ``icinga-master.`` + :envvar:`icinga__domain` + :envvar:`icinga__api_port`  
+:ref:`debops.gitlab_runner` ``_gitlab._tcp``          :envvar:`gitlab_runner__gitlab_srv_rr` ``code.`` + :envvar:`gitlab_runner__domain` + ``:443``
+:ref:`debops.icinga`        ``_icinga-master._tcp``   :envvar:`icinga__master_nodes`         ``icinga-master.`` + :envvar:`icinga__domain` + :envvar:`icinga__api_port`
 :ref:`debops.icinga`        ``_icinga-director._tcp`` :envvar:`icinga__director_nodes`       ``icinga-director.`` + :envvar:`icinga__domain` + :envvar:`icinga__api_port`
-:ref:`debops.imapproxy`     ``_imap._tcp``            :envvar:`imapproxy__imap_srv_rr`       ``imap.`` + :envvar:`imapproxy__domain` + ``:143``                          
-:ref:`debops.imapproxy`     ``_imaps._tcp``           :envvar:`imapproxy__imaps_srv_rr`      ``imap.`` + :envvar:`imapproxy__domain` + ``:993``                          
-:ref:`debops.ldap`          ``_ldap._tcp``            :envvar:`ldap__servers_srv_rr`         ``ldap.`` + :envvar:`ldap__domain` + ``:389``                               
-:ref:`debops.nullmailer`    ``_smtp._tcp``            :envvar:`nullmailer__smtp_srv_rr`      ``smtp.`` + :envvar:`nullmailer__domain` + ``:25``                          
-:ref:`debops.roundcube`     ``_imaps._tcp``           :envvar:`roundcube__imap_srv_rr`       ``imap.`` + :envvar:`roundcube__domain` + ``:993``                          
-:ref:`debops.roundcube`     ``_submissions._tcp``     :envvar:`roundcube__smtp_srv_rr`       ``smtp.`` + :envvar:`roundcube__domain` + ``:465``                          
-:ref:`debops.roundcube`     ``_sieve._tcp``           :envvar:`roundcube__sieve_srv_rr`      ``sieve.`` + :envvar:`roundcube__domain` + ``:4190``                        
-:ref:`debops.rsyslog`       ``_syslog._tcp``          :envvar:`rsyslog__syslog_srv_rr`       ``syslog.`` + :envvar:`rsyslog__domain` + ``:6514``                         
+:ref:`debops.imapproxy`     ``_imap._tcp``            :envvar:`imapproxy__imap_srv_rr`       ``imap.`` + :envvar:`imapproxy__domain` + ``:143``
+:ref:`debops.imapproxy`     ``_imaps._tcp``           :envvar:`imapproxy__imaps_srv_rr`      ``imap.`` + :envvar:`imapproxy__domain` + ``:993``
+:ref:`debops.ldap`          ``_ldap._tcp``            :envvar:`ldap__servers_srv_rr`         ``ldap.`` + :envvar:`ldap__domain` + ``:389``
+:ref:`debops.nullmailer`    ``_smtp._tcp``            :envvar:`nullmailer__smtp_srv_rr`      ``smtp.`` + :envvar:`nullmailer__domain` + ``:25``
+:ref:`debops.roundcube`     ``_imaps._tcp``           :envvar:`roundcube__imap_srv_rr`       ``imap.`` + :envvar:`roundcube__domain` + ``:993``
+:ref:`debops.roundcube`     ``_submissions._tcp``     :envvar:`roundcube__smtp_srv_rr`       ``smtp.`` + :envvar:`roundcube__domain` + ``:465``
+:ref:`debops.roundcube`     ``_sieve._tcp``           :envvar:`roundcube__sieve_srv_rr`      ``sieve.`` + :envvar:`roundcube__domain` + ``:4190``
+:ref:`debops.rsyslog`       ``_syslog._tcp``          :envvar:`rsyslog__syslog_srv_rr`       ``syslog.`` + :envvar:`rsyslog__domain` + ``:6514``
 =========================== ========================= ====================================== ============================================================================
 
 
@@ -398,6 +398,7 @@ Role                        SRV                       Variable                  
 
 The DebOps dig_srv plugin
 -------------------------
+
 DebOps roles use a slightly modified version of the Ansible `dig lookup`__
 plugin to perform DNS ``SRV`` record lookups. The reason that a custom plugin
 is used is that the Ansible version does not make it possible to distinguish
@@ -463,7 +464,7 @@ i.e. higher weight first), ``target`` and ``port``.
 
 In case no ``SRV`` records are available, the lookup will return something like
 this:
- 
+
 .. code-block:: yaml
 
   bar__foo_srv_rr:
