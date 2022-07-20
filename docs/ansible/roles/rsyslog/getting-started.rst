@@ -64,7 +64,7 @@ configuration:
 Quick start: log forwarding
 ---------------------------
 
-`Log forwarding`__ tells :command:`rsyslogd` server to send all, or select,
+`Log forwarding`__ tells :command:`rsyslogd` server to send all, or selected,
 syslog messages to remote syslog server(s). The :ref:`debops.rsyslog` role is
 tailored to perform log forwarding over TLS to a central syslog server using
 :ref:`dns_configuration_srv` for the following service:
