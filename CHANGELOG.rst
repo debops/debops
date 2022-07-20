@@ -151,6 +151,13 @@ General
 - The ``qemu-kvm`` package is not needed on newer Debian/Ubuntu releases,
   therefore it won't be installed by default.
 
+:ref:`debops.icinga_web` role
+'''''''''''''''''''''''''''''
+
+- The LDAP configuration used by the role to configure LDAP access will be
+  based on the :ref:`debops.ldap` Ansible local facts instead of static values,
+  to better support modified environments.
+
 :ref:`debops.minio` role
 ''''''''''''''''''''''''
 
