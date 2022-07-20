@@ -92,7 +92,7 @@ Updates of upstream application versions
 ''''''''''''''''''''''''''''''''''''''''
 
 - In the :ref:`debops.roundcube` role, the Roundcube version installed by
-  default has been updated to ``1.5.2``.
+  default has been updated to ``1.5.3``.
 
 - In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
   has been updated to the next point release, 10.12. Debian Bullseye has been
