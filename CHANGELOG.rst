@@ -341,6 +341,12 @@ debops.boxbackup role
   might need to update your inventory in this case so that the role gets
   correct value.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- In the fact script, correctly parse the subprocess output to find out the
+  version of installed Python executables.
+
 :ref:`debops.resolvconf` role
 '''''''''''''''''''''''''''''
 
