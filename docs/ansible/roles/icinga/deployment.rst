@@ -69,7 +69,7 @@ however only one director node will be used.
 
 .. warning:: The role uses the DNS SRV resource records to determine if a given
              host should be configured as the "master" host, or a client host
-             that should regist itself with the "master". Therefore, you should
+             that should register itself with the "master". Therefore, you should
              create the DNS SRV records *beforehand*, as all the Icinga 2 nodes
              will see themselves as "master" nodes otherwise, and won't connect
              to the "master" node.
