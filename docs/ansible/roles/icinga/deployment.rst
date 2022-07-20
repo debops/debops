@@ -55,54 +55,27 @@ be implemented later if there's demand for it.
 DNS SRV records
 ---------------
 
-The ``debops.icinga`` role uses DNS ``SRV`` records to find the addresses of
-the master Icinga 2 nodes, as well as the Icinga 2 Director API. The nodes
-check the DNS records to determine if they should be configured as the "master"
-hosts, or client hosts that register themselves.
+The role detects the master and director servers by using
+:ref:`dns_configuration_srv` for the following services:
 
-The DNS SRV record service names are:
+.. code-block:: none
 
-- ``_icinga-master._tcp`` (for the master node(s))
-- ``_icinga-director._tcp`` (for the director node(s))
+   _icinga-master._tcp.{{ icinga__domain }} (default port 5665)
+   _icinga-director._tcp.{{ icinga__domain }} (default port 443)
 
 There can be multiple master and director DNS SRV records. The role will
 configure multiple master nodes in the :file:`zones.conf` configuration file,
 however only one director node will be used.
 
-You should create the DNS ``SRV`` records for the master and Director hosts,
-otherwise all of the Icinga 2 nodes will see themselves as "master" nodes and
-won't try to connect to each other. To do that in :command:`dnsmasq`, you can
-add the configuration options:
+.. warning:: The role uses the DNS SRV resource records to determine if a given
+             host should be configured as the "master" host, or a client host
+             that should register itself with the "master". Therefore, you should
+             create the DNS SRV records *beforehand*, as all the Icinga 2 nodes
+             will see themselves as "master" nodes otherwise, and won't connect
+             to the "master" node.
 
-.. code-block:: ini
-
-   srv-host = _icinga-master._tcp.example.org,icinga-master.example.org,5665
-   srv-host = _icinga-director._tcp.example.org,icinga.example.org,443
-
-Similar records in the ISC BIND zone file:
-
-.. code-block:: none
-
-   _icinga-master._tcp.example.org.   86400 IN SRV 0 5 5665 icinga-master.example.org.
-   _icinga-director._tcp.example.org. 86400 IN SRV 0 5 443  icinga.example.org.
-
-The above configuration sets the ``icinga-master.example.org`` host as the
-"master" host. The Director API is available on a separate FQDN,
-``icinga.example.org``.
-
-You can also define the master and director nodes explicitly in the inventory
-variables, using the Ansible ``dig`` lookup syntax. To set the above
-configuration, define in the inventory:
-
-.. code-block:: yaml
-
-   icinga__master_nodes:
-     - target: 'icinga-master.example.org'
-       port: '5665'
-
-   icinga__director_nodes:
-     - target: 'icinga.example.org'
-       port: '443'
+For details on how to configure DNS SRV records, see
+:ref:`dns_configuration_srv`.
 
 
 Initial deployment

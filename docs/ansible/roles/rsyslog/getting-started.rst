@@ -64,20 +64,28 @@ configuration:
 Quick start: log forwarding
 ---------------------------
 
-`Log forwarding`__ tells :command:`rsyslogd` server to send all or specific syslog
-messages to another syslog server(s). The :ref:`debops.rsyslog` role is
-tailored for configuring log forwarding over TLS to a central syslog server
-using `DNS SRV resource records`__.
+`Log forwarding`__ tells :command:`rsyslogd` server to send all, or selected,
+syslog messages to remote syslog server(s). The :ref:`debops.rsyslog` role is
+tailored to perform log forwarding over TLS to a central syslog server using
+:ref:`dns_configuration_srv` for the following service:
 
 .. __: https://www.rsyslog.com/sending-messages-to-a-remote-syslog-server/
-.. __: https://tools.ietf.org/html/draft-schoenw-opsawg-nm-srv-03
 
-The role checks if the ``_syslog._tcp.{{ rsyslog__domain }}`` DNS SRV resource
-record exists. If it's found, the host is not configured to receive logs via
-:envvar:`rsyslog__remote_enabled` variable and the :ref:`debops.pki` role has
-been configured on the host, the :ref:`debops.rsyslog` will generate
-configuration for each target server that will send syslog messages over TLS to
-port 6514 by default. This configuration can be found and changed in the
+.. code-block:: none
+
+   _syslog._tcp.{{ rsyslog__domain }} (default port 6514)
+
+If:
+
+- the resource records are found; *and*
+
+- the host is not configured to receive logs via the
+  :envvar:`rsyslog__remote_enabled` variable; *and*
+
+- the :ref:`debops.pki` role has been configured on the host
+
+Then the :ref:`debops.rsyslog` role will configure each target server to send
+syslog messages over TLS. This configuration can be found and changed in the
 :envvar:`rsyslog__default_forward` and the :envvar:`rsyslog__default_rules`
 variables.
 

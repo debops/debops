@@ -19,6 +19,11 @@ Edition as well as the Enterprise Edition, which can be selected using the
 package is also supported, in which case the role can be used to configure such
 installation and provide integration with the rest of the environment.
 
+By default, the installation will be configured to publish GitLab on the
+``code.{{ gitlab__domain }}`` DNS domain, to aid configuration of GitLab Runner
+instances. This can be changed by overriding the :envvar:`gitlab__fqdn`
+variable via the Ansible inventory.
+
 The initial ``root`` password is randomly generated and stored in the
 :file:`ansible/secret/gitlab/credentials/` directory on the Ansible Controller,
 managed by the :ref:`debops.secret` Ansible role.
