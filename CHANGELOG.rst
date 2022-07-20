@@ -141,6 +141,9 @@ General
   ``dropbear_initramfs__host_authorized_keys`` now uses the same keys as 
   the ``ansible.posix.authorized_key`` module.
 
+- Various tasks that interact with the MariaDB/MySQL databases will now use the
+  :file:`/run/mysqld/mysqld.sock` UNIX socket to do so, due to changes in
+  MariaDB restricting local connections for the ``root`` UNIX account.
 
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''

@@ -49,6 +49,7 @@
     name: '{{ rails_deploy_service }}'
     password: '{{ rails_deploy_mysql_user_password }}'
     state: 'present'
+    login_unix_socket: '/run/mysqld/mysqld.sock'
   when: rails_deploy_database_adapter == 'mysql' and
         inventory_hostname == rails_deploy_hosts_master
   become: True
@@ -64,6 +65,7 @@
     name: '{{ rails_deploy_service }}_{{ rails_deploy_system_env }}'
     encoding: 'UTF-8'
     state: 'present'
+    login_unix_socket: '/run/mysqld/mysqld.sock'
   register: rails_deploy_register_database_created
   when: rails_deploy_database_adapter == 'mysql' and
         inventory_hostname == rails_deploy_hosts_master
