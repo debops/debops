@@ -52,8 +52,16 @@ gitlab__packages: []
 
 # .. envvar:: gitlab__fqdn [[[
 #
-# The Fully Qualified Domain Name on which GitLab Omnibus will be available.
-gitlab__fqdn: '{{ ansible_fqdn }}'
+# The Fully Qualified Domain Name on which GitLab Omnibus will be available. It
+# might be published :ref:`as a SRV record <dns_configuration_srv_usage>` for
+# GitLab Runners to find the API endpoint automatically.
+gitlab__fqdn: 'code.{{ gitlab__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__domain [[[
+#
+# The DNS domain on which GitLab Omnibus is deployed.
+gitlab__domain: '{{ ansible_domain }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab__registry_port [[[
