@@ -221,6 +221,12 @@ General
   Controller instead of directly on the command line, to avoid leaks through
   the process list.
 
+:ref:`debops.netbase` role
+''''''''''''''''''''''''''
+
+- In the fact script, don't use ``in`` for matching IP addresses and DNS names
+  where substring matching is undesirable.
+
 :ref:`debops.netbox` role
 '''''''''''''''''''''''''
 
