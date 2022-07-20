@@ -284,6 +284,14 @@ General
   Controller instead of directly on the command line, to avoid leaks through
   the process list.
 
+:ref:`debops.ldap` role
+'''''''''''''''''''''''
+
+- Fixed an issue with role parsing the already parsed Ansible facts to extract
+  IP/CIDR information which resulted in wrong output in certain cases. The role
+  will now implicitly trust the Ansible facts to be correct when adding IP and
+  prefix details to the LDAP database.
+
 :ref:`debops.netbase` role
 ''''''''''''''''''''''''''
 
