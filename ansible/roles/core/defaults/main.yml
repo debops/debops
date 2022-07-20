@@ -201,8 +201,11 @@ core__cache_valid_time: '{{ (60 * 60 * 24) }}'
                                                                    # ]]]
 # .. envvar:: core__distribution [[[
 #
-# Some of the OS distributions are not detected by Ansible correctly. This
-# variable can be used to fix that issue across all roles that use it.
+# You can override this variable if you use a Linux distribution that is not
+# correctly detected by Ansible, like Raspberry Pi OS. It is stored as a local
+# fact and takes precedence over Ansible's auto-detected distribution name on
+# all roles that support it.
+# Ref: https://github.com/debops/debops/issues/2046
 core__distribution: '{{ ansible_lsb.id
                         if (ansible_lsb.id | d())
                         else ansible_distribution }}'
@@ -210,8 +213,10 @@ core__distribution: '{{ ansible_lsb.id
                                                                    # ]]]
 # .. envvar:: core__distribution_release [[[
 #
-# Some of the OS releases are not detected by Ansible correctly. This variable
-# can be used to fix that issue across all roles that use it.
+# You can override this variable if you use a Linux distribution release that
+# is not correctly detected by Ansible. It is stored as a local fact and takes
+# precedence over Ansible's auto-detected distribution release on all roles
+# that support it.
 core__distribution_release: '{{ ansible_lsb.codename
                                 if (ansible_lsb.codename | d())
                                 else ansible_distribution_release }}'

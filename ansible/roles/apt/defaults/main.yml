@@ -295,16 +295,23 @@ apt__architecture_map:
                                                                    # ]]]
 # .. envvar:: apt__distribution [[[
 #
-# The OS distribution present on the host.
-apt__distribution: '{{ ansible_local.core.distribution
-                        | d(ansible_lsb.id | d(ansible_distribution)) }}'
+# The Linux distribution present on the host.
+# Note: this deliberately does not default to ansible_local.core.distribution
+# because this local fact is set by the 'core' role, which runs later in the
+# common playbook.
+# Ref: https://github.com/debops/debops/issues/2046#issuecomment-1086702657
+apt__distribution: '{{ ansible_lsb.id | d(ansible_distribution) }}'
 
                                                                    # ]]]
 # .. envvar:: apt__distribution_release [[[
 #
-# The OS release present on the host.
-apt__distribution_release: '{{ ansible_local.core.distribution_release
-                                | d(ansible_lsb.codename | d(ansible_distribution_release)) }}'
+# The Linux distribution release present on the host.
+# Note: this deliberately does not default to
+# ansible_local.core.distribution_release because this local fact is set by the
+# 'core' role, which runs later in the common playbook.
+# Ref: https://github.com/debops/debops/issues/2046#issuecomment-1086702657
+apt__distribution_release: '{{ ansible_lsb.codename
+                               | d(ansible_distribution_release) }}'
 
                                                                    # ]]]
 # .. envvar:: apt__distribution_release_map [[[
