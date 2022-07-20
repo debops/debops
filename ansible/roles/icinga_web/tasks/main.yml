@@ -166,6 +166,7 @@
     name: '{{ icinga_web__database_name }}'
     state: 'import'
     target: '{{ item }}'
+    login_unix_socket: '/run/mysqld/mysqld.sock'
   with_items:
     - '{{ icinga_web__database_schema }}'
     - '/tmp/icingaweb-initial-data.sql'
@@ -183,6 +184,7 @@
     login_port: '{{ icinga_web__x509_database_port }}'
     login_user: '{{ icinga_web__x509_database_user }}'
     login_password: '{{ icinga_web__x509_database_password }}'
+    login_unix_socket: '/run/mysqld/mysqld.sock'
   when: icinga_web__x509_enabled | bool and
         icinga_web__x509_database_init | bool
   no_log: '{{ debops__no_log | d(True) }}'
