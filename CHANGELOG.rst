@@ -236,6 +236,13 @@ debops.boxbackup role
   playbook. This fixes an issue with Ansible stopping the site playbook
   execution when it cannot find the ``boxbackup`` role in the Collection.
 
+:ref:`debops.core` role
+'''''''''''''''''''''''
+
+- Ensure that the ``ansible_controllers`` fact can be reset using the
+  :envvar:`core__remove_facts` variable to avoid infinitely growing list of
+  Ansible Controllers.
+
 :ref:`debops.cron` role
 '''''''''''''''''''''''
 
