@@ -364,6 +364,15 @@ debops.boxbackup role
   support, second level domains were not included in the generated X.509
   certificate request.
 
+:ref:`debops.postconf` role
+'''''''''''''''''''''''''''
+
+- The EHLO IP address check was removed. This check would reject a message if
+  the EHLO hostname of the connecting mailserver resolved to a non-publicly
+  routable IP address. However, rejecting messages for this reason is
+  prohibited by :rfc:`5321` section 4.1.4, and sometimes caused deliverability
+  issues for Office 365 users.
+
 :ref:`debops.prosody` role
 ''''''''''''''''''''''''''
 

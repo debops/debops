@@ -147,9 +147,9 @@ postconf__default_lookup_tables:
   - name: 'mx_access.cidr'
     by_role: 'debops.postconf'
     comment: |
-      Check if HELO or sender MX server is in subnets not accessible from the
-      public Internet. If so, reject mail delivery from these servers, because
-      any replies will be non-deliverable.
+      Check if sender MX server is in subnets not accessible from the public
+      Internet. If so, reject mail delivery from these servers, because any
+      replies will be non-deliverable.
     options:
       - '0.0.0.0/8':       'REJECT Domain MX in broadcast network'
       - '10.0.0.0/8':      'REJECT Domain MX in RFC 1918 private network'
@@ -312,13 +312,6 @@ postconf__postfix__dependent_maincf:
                else "private/auth" }}'
     state: '{{ "present"
                if ("auth" in postconf__combined_capabilities)
-               else "ignore" }}'
-
-  - name: 'smtpd_helo_restrictions'
-    value:
-      - name: 'check_helo_mx_access cidr:${config_directory}/mx_access.cidr'
-    state: '{{ "present"
-               if ("public-mx-required" in postconf__combined_capabilities)
                else "ignore" }}'
 
   - name: 'smtpd_sender_restrictions'
