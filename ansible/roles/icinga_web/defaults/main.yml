@@ -752,16 +752,16 @@ icinga_web__ldap_hostname: '{{ ansible_local.ldap.hosts|d([""]) | first }}'
 # The LDAP encryption to use, either ``starttls``, ``ldaps`` or ``plain``
 # (discouraged).
 icinga_web__ldap_encryption: '{{ "ldaps"
-                                 if ansible_local.ldap.protocol|d("") == "ldaps"
+                                 if ansible_local.ldap.protocol | d("") == "ldaps"
                                  else ("starttls"
-                                       if ansible_local.ldap.start_tls|d(True)|bool
+                                       if ansible_local.ldap.start_tls | d(True) | bool
                                        else "plain") }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__ldap_port [[[
 #
 # The TCP port to use for LDAP connections.
-icinga_web__ldap_port: '{{ ansible_local.ldap.port|d(389) }}'
+icinga_web__ldap_port: '{{ ansible_local.ldap.port | d(389) }}'
 
                                                                    # ]]]
 # .. envvar:: icinga_web__ldap_user_filter [[[
