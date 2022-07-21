@@ -1,0 +1,18 @@
+{# Copyright (C) 2021-2022 Berkhan Berkdemir <berkhan@tekdanisman.com>
+ # Copyright (C) 2015-2022 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+{{ ansible_managed | comment }}
+
+[Unit]
+Description=Miniflux
+Documentation=man:miniflux(1) https://miniflux.app/docs/index.html
+After=network.target
+
+[Service]
+ExecStart={{ miniflux__binary }}
+User={{ miniflux__user }}
+EnvironmentFile=/etc/miniflux.conf
+
+[Install]
+WantedBy=multi-user.target

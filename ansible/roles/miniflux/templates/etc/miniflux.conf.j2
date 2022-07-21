@@ -1,0 +1,11 @@
+{# Copyright (C) 2021-2022 Berkhan Berkdemir <berkhan@tekdanisman.com>
+ # Copyright (C) 2015-2022 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+{{ ansible_managed | comment }}
+
+# See https://docs.miniflux.app/en/latest/configuration.html
+RUN_MIGRATIONS=1
+DATABASE_URL=postgres://{{ miniflux__database_user }}:{{ miniflux__database_password }}@{{ miniflux__database_host }}:{{ miniflux__database_port }}/{{ miniflux__database_name }}
+LISTEN_ADDR={{ miniflux__bind }}:{{ miniflux__port }}
+BASE_URL=https://{{ miniflux__fqdn }}
