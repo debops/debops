@@ -1,6 +1,7 @@
 ---
 # Copyright (C) 2021-2022 Berkhan Berkdemir <berkhan@tekdanisman.com>
-# Copyright (C) 2015-2022 DebOps <https://debops.org/>
+# Copyright (C) 2022      Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2022      DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 # .. _miniflux__ref_defaults:
@@ -14,7 +15,7 @@
 # .. include:: ../../../../includes/global.rst
 
 
-# Domain name configuration [[[
+# Web service configuration [[[
 # -----------------------------
 
 # .. envvar:: miniflux__domain [[[
@@ -29,6 +30,18 @@ miniflux__domain: '{{ ansible_domain }}'
 # String of the Fully Qualified domain names on which the Miniflux
 # application will be available, used by the webserver.
 miniflux__fqdn: 'miniflux.{{ miniflux__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: miniflux__bind [[[
+#
+# The ip address on which this Miniflux listens on.
+miniflux__bind: '127.0.0.1'
+
+                                                                   # ]]]
+# .. envvar:: miniflux__port [[[
+#
+# Port number on which this Miniflux listens on.
+miniflux__port: '3366'
                                                                    # ]]]
                                                                    # ]]]
 # Application user, group, home [[[
@@ -56,11 +69,8 @@ miniflux__gecos: 'Miniflux'
 #
 # The default shell set on the Miniflux account.
 miniflux__shell: '/usr/sbin/nologin'
-                                                                   # ]]]
-                                                                   # ]]]
-# Directory paths [[[
-# -------------------
 
+                                                                   # ]]]
 # .. envvar:: miniflux__home [[[
 #
 # The Miniflux account home directory.
@@ -132,10 +142,13 @@ miniflux__upstream_gpg_key: '5A7A 89AC F055 24CA A0F3  6F9B AEB7 A164 0710 8DB5'
                                                                    # ]]]
 # .. envvar:: miniflux__upstream_type [[[
 #
-# Specify the method which should be used to install Miniflux binary.
-# Either ``url`` to download the configured binary directly and verify
-# it using the specified GPG key, or ``git`` to clone the Miniflux
-# :command:`git` repository and build the specified version from source.
+# Specify the method which should be used to install Miniflux binary.  The
+# ``apt`` method will install Miniflux via the configured APT repository, if
+# it's available. The ``url`` method will download the :command:`miniflux`
+# compiled binary and install it directly after verification with the official
+# GPG key. The ``git`` method will download Miniflux source code and compile it
+# locally (this method doesn't work on Debian Bullseye due to missing "embed"
+# Go library).
 miniflux__upstream_type: 'apt'
 
                                                                    # ]]]
@@ -180,16 +193,59 @@ miniflux__binary: '{{ ansible_local.golang.binaries["miniflux"]
 # Miniflux configuration [[[
 # --------------------------
 
-# .. envvar:: miniflux__bind [[[
+# The variables below define the contents of the :file:`/etc/miniflux.conf`
+# configuration file. See :ref:`miniflux__ref_configuration` for more details.
+
+# .. envvar:: miniflux__default_configuration [[[
 #
-# The ip address on which this Miniflux listens on.
-miniflux__bind: '127.0.0.1'
+# Miniflux configuration options defined by the role by default.
+miniflux__default_configuration:
+
+  - name: 'run_migrations'
+    value: True
+
+  - name: 'database_url'
+    value: '{{ "postgres://" + miniflux__database_user
+               + ":" + miniflux__database_password
+               + "@" + miniflux__database_host
+               + ":" + miniflux__database_port
+               + "/" + miniflux__database_name }}'
+
+  - name: 'listen_addr'
+    value: '{{ miniflux__bind + ":" + miniflux__port }}'
+
+  - name: 'base_url'
+    value: '{{ "https://" + miniflux__fqdn }}'
 
                                                                    # ]]]
-# .. envvar:: miniflux__port [[[
+# .. envvar:: miniflux__configuration [[[
 #
-# Port number on which this Miniflux listens on.
-miniflux__port: '3366'
+# Miniflux configuration options defined on all hosts in the Ansible inventory.
+miniflux__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: miniflux__group_configuration [[[
+#
+# Miniflux configuration options defined on hosts in a specific Ansible
+# inventory group.
+miniflux__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: miniflux__host_configuration [[[
+#
+# Miniflux configuration options defined on specific hosts in the Ansible
+# inventory.
+miniflux__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: miniflux__combined_configuration [[[
+#
+# Variable which combines all Miniflux configuration lists and is used in role
+# tasks and templates.
+miniflux__combined_configuration: '{{ miniflux__default_configuration
+                                      + miniflux__configuration
+                                      + miniflux__group_configuration
+                                      + miniflux__host_configuration }}'
                                                                    # ]]]
                                                                    # ]]]
 # Configuration variables for other Ansible roles [[[

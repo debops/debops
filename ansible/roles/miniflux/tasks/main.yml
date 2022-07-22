@@ -32,18 +32,27 @@
     state: 'present'
     system: True
 
+- name: Generate Miniflux configuration
+  ansible.builtin.template:
+    src: 'etc/miniflux.conf.j2'
+    dest: '/etc/miniflux.conf'
+    mode: '0640'
+  notify: [ 'Restart miniflux' ]
+
 - name: Install systemd configuration files
   ansible.builtin.template:
-    src: '{{ item }}.j2'
-    dest: '/{{ item }}'
+    src: 'etc/systemd/system/miniflux.service.j2'
+    dest: '/etc/systemd/system/miniflux.service'
     mode: '0644'
-  loop:
-    - 'etc/systemd/system/miniflux.service'
-    - 'etc/miniflux.conf'
   notify: [ 'Reload service manager' ]
+  when: miniflux__upstream_type != 'apt'
+
+- name: Flush handlers if needed
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Start and enable Miniflux service
   ansible.builtin.service:
     name: 'miniflux'
     state: 'started'
     enabled: True
+  when: miniflux__upstream_type != 'apt'
