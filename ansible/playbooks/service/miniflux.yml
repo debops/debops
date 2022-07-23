@@ -1,0 +1,79 @@
+---
+# Copyright (C) 2015-2022 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021-2022 Berkhan Berkdemir <berkhan@tekdanisman.com>
+# Copyright (C) 2015-2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Manage Miniflux service
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_miniflux' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::golang' ]
+      keyring__dependent_apt_keys:
+        - '{{ miniflux__keyring__dependent_apt_keys }}'
+      keyring__dependent_gpg_user: '{{ golang__keyring__dependent_gpg_user }}'
+      keyring__dependent_gpg_keys:
+        - '{{ nginx__keyring__dependent_apt_keys }}'
+        - '{{ golang__keyring__dependent_gpg_keys }}'
+      golang__dependent_packages:
+        - '{{ miniflux__golang__dependent_packages }}'
+
+    - role: postgresql
+      tags: [ 'role::postgresql', 'skip::postgresql' ]
+      postgresql__dependent_roles:
+        - '{{ miniflux__postgresql__dependent_roles }}'
+      postgresql__dependent_groups:
+        - '{{ miniflux__postgresql__dependent_groups }}'
+      postgresql__dependent_databases:
+        - '{{ miniflux__postgresql__dependent_databases }}'
+      postgresql__dependent_extensions:
+        - '{{ miniflux__postgresql__dependent_extensions }}'
+      postgresql__dependent_pgpass:
+        - '{{ miniflux__postgresql__dependent_pgpass }}'
+
+    - role: apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ golang__apt_preferences__dependent_list }}'
+        - '{{ nginx__apt_preferences__dependent_list }}'
+
+    - role: etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ miniflux__etc_services__dependent_list }}'
+
+    - role: ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ nginx__ferm__dependent_rules }}'
+
+    - role: python
+      tags: [ 'role::python', 'skip::python' ]
+      python__dependent_packages3:
+        - '{{ nginx__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ nginx__python__dependent_packages2 }}'
+
+    - role: nginx
+      tags: [ 'role::nginx', 'skip::nginx' ]
+      nginx__dependent_servers:
+        - '{{ miniflux__nginx__dependent_servers }}'
+      nginx__dependent_upstreams:
+        - '{{ miniflux__nginx__dependent_upstreams }}'
+
+    - role: golang
+      tags: [ 'role::golang', 'skip::golang' ]
+      golang__dependent_packages:
+        - '{{ miniflux__golang__dependent_packages }}'
+
+    - role: miniflux
+      tags: [ 'role::miniflux', 'skip::miniflux' ]

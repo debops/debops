@@ -52,6 +52,7 @@ Role                              Variable                            Default   
 :ref:`debops.lxc`                 :envvar:`lxc__net_fqdn`             ``{{ ansible_hostname }}`` + :envvar:`lxc__net_domain`               ``host1.lxc.example.com``
 :ref:`debops.lxc`                 :envvar:`lxc__net_domain`           ``lxc.`` + :envvar:`lxc__net_base_domain`                            ``lxc.example.com``
 :ref:`debops.mailman`             :envvar:`mailman__fqdn`             ``lists.`` + :envvar:`mailman__domain`                               ``lists.example.com``
+:ref:`debops.miniflux`            :envvar:`miniflux__fqdn`            ``miniflux.`` + :envvar:`miniflux__domain`                           ``miniflux.example.com``
 :ref:`debops.mosquitto`           :envvar:`mosquitto__fqdn`           ``mqtt.`` + :envvar:`mosquitto__domain`                              ``mqtt.example.com``
 :ref:`debops.netbox`              :envvar:`netbox__fqdn`              ``dcim.`` + :envvar:`netbox__domain`                                 ``dcim.example.com``
 :ref:`debops.netbox`              :envvar:`netbox__fqdn`              ``ipam.`` + :envvar:`netbox__domain`                                 ``ipam.example.com``

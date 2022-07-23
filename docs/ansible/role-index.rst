@@ -43,6 +43,7 @@ etc.
 - :ref:`debops.librenms`
 - :ref:`debops.mailman`
 - :ref:`debops.minidlna`
+- :ref:`debops.miniflux`
 - :ref:`debops.netbox`
 - :ref:`debops.owncloud`
 - :ref:`debops.phpipam`

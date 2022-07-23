@@ -1474,6 +1474,27 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/minidlna/.*'
     JANE_LOG_PATTERN: '\[minidlna\]'
 
+'miniflux role':
+  <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'secret role'
+    - 'apt_preferences role'
+    - 'etc_services role'
+    - 'golang role'
+    - 'ferm role'
+    - 'postgresql_server role'
+    - 'postgresql role'
+    - 'python role'
+    - 'nginx role'
+  variables:
+    JANE_TEST_FACT: 'miniflux.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/postgresql_server.yml ${DEBOPS_PLAYBOOKS}/service/miniflux.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_postgresql_server,debops_service_miniflux'
+    JANE_INVENTORY_HOSTVARS: 'postgresql_server__delegate_to=localhost postgresql__delegate_to=localhost'
+    JANE_DIFF_PATTERN: '.*/roles/miniflux/.*'
+    JANE_LOG_PATTERN: '\[miniflux\]'
+
 'minio role':
   <<: *test_role_2nd_deps
   needs:

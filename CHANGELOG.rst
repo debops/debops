@@ -47,6 +47,9 @@ New DebOps roles
 - The :ref:`debops.resources` role can now be used to repace a line via the
   ``ansible.builtin.replace`` module.
 
+- The :ref:`debops.miniflux` role can install and manage Miniflux, a web-based,
+  minimalistic feed reader written in Go.
+
 General
 '''''''
 

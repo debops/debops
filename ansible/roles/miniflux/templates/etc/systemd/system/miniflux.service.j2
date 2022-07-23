@@ -1,0 +1,41 @@
+{# Copyright (C) 2021-2022 Berkhan Berkdemir <berkhan@tekdanisman.com>
+ # Copyright (C) 2022      Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2015-2022 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+{{ ansible_managed | comment(prefix='', postfix='') }}
+[Unit]
+Description=Miniflux
+Documentation=man:miniflux(1) https://miniflux.app/docs/index.html
+After=network.target network-online.target postgresql.service
+
+[Service]
+ExecStart={{ miniflux__binary }}
+User={{ miniflux__user }}
+EnvironmentFile=/etc/miniflux.conf
+Type=notify
+WatchdogSec=60s
+WatchdogSignal=SIGKILL
+Restart=always
+RestartSec=5
+RuntimeDirectory=miniflux
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+ProtectSystem=strict
+PrivateTmp=yes
+NoNewPrivileges=yes
+RestrictNamespaces=yes
+ProtectHome=yes
+PrivateDevices=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectHostname=yes
+RestrictRealtime=yes
+ProtectKernelLogs=yes
+ProtectClock=yes
+SystemCallArchitectures=native
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+
+[Install]
+WantedBy=multi-user.target

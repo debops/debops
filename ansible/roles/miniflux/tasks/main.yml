@@ -1,0 +1,72 @@
+---
+# Copyright (C) 2021-2022 Berkhan Berkdemir <berkhan@tekdanisman.com>
+# Copyright (C) 2015-2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import custom Ansible plugins
+  ansible.builtin.import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  ansible.builtin.import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  ansible.builtin.import_role:
+    name: 'secret'
+
+- name: Create required UNIX system group
+  ansible.builtin.group:
+    name: '{{ miniflux__group }}'
+    state: 'present'
+    system: True
+
+- name: Create required UNIX system account
+  ansible.builtin.user:
+    name: '{{ miniflux__user }}'
+    group: '{{ miniflux__group }}'
+    home: '{{ miniflux__home }}'
+    comment: '{{ miniflux__gecos }}'
+    shell: '{{ miniflux__shell }}'
+    skeleton: '/dev/null'
+    state: 'present'
+    system: True
+
+- name: Generate Miniflux configuration
+  ansible.builtin.template:
+    src: 'etc/miniflux.conf.j2'
+    dest: '/etc/miniflux.conf'
+    mode: '0640'
+  notify: [ 'Restart miniflux' ]
+
+- name: Install systemd configuration files
+  ansible.builtin.template:
+    src: 'etc/systemd/system/miniflux.service.j2'
+    dest: '/etc/systemd/system/miniflux.service'
+    mode: '0644'
+  notify: [ 'Reload service manager' ]
+  when: miniflux__upstream_type != 'apt'
+
+- name: Flush handlers if needed
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Start and enable Miniflux service
+  ansible.builtin.service:
+    name: 'miniflux'
+    state: 'started'
+    enabled: True
+  when: miniflux__upstream_type != 'apt'
+
+- name: Make sure that Ansible local facts directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save Minflux local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/miniflux.fact.j2'
+    dest: '/etc/ansible/facts.d/miniflux.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]

@@ -1,0 +1,54 @@
+{# Copyright (C) 2021-2022 Berkhan Berkdemir <berkhan@tekdanisman.com>
+ # Copyright (C) 2022      Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2015-2022 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+{% for item in miniflux__combined_configuration | debops.debops.parse_kv_config %}
+{%   if item.state not in [ 'absent', 'ignore', 'init' ] %}
+{%     if item.separator | d() %}
+{{       '' }}
+{%     endif %}
+{%     if (item.comment | d()) and not loop.first %}
+{{       '' }}
+{%     endif %}
+{%     if item.comment | d() %}
+{{       item.comment | regex_replace('\n$','') | comment(prefix='', postfix='') -}}
+{%     endif %}
+{%     set item_comment = '' %}
+{%     set item_name = item.name | upper %}
+{%     if item.state == 'comment' %}
+{%       set item_comment = '#' %}
+{%     endif %}
+{%     if item.raw | d() %}
+{%       if item.state == 'comment' %}
+{{         item.raw | regex_replace('\n$','') | comment(prefix='', postfix='', decoration='#') -}}
+{%       else %}
+{{         item.raw | regex_replace('\n$','') }}
+{%       endif %}
+{%     elif item.value is defined %}
+{%       if item.value | bool and item.value is not iterable %}
+{%         if item.value | string == '1' %}
+{{           "{}{}={}".format(item_comment, item_name, item.value) }}
+{%         else %}
+{{           "{}{}={}".format(item_comment, item_name, '1') }}
+{%         endif %}
+{%       elif not item.value | bool and item.value is not iterable %}
+{%         if item.value is not none %}
+{%           if item.value | int or item.value | string == '0' %}
+{{             "{}{}={}".format(item_comment, item_name, item.value) }}
+{%           else %}
+{{             "{}{}={}".format(item_comment, item_name, '0') }}
+{%           endif %}
+{%         endif %}
+{%       elif item.value is string %}
+{{         '{}{}="{}"'.format(item_comment, item_name, item.value) }}
+{%       elif item.value is number %}
+{{         "{}{}={}".format(item_comment, item_name, item.value) }}
+{%       elif item.value is not string and item.value is not mapping %}
+{{         "{}{}={}".format(item_comment, item_name, item.value | join(" ")) }}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
