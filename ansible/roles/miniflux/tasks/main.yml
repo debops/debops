@@ -56,3 +56,17 @@
     state: 'started'
     enabled: True
   when: miniflux__upstream_type != 'apt'
+
+- name: Make sure that Ansible local facts directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save Minflux local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/miniflux.fact.j2'
+    dest: '/etc/ansible/facts.d/miniflux.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
