@@ -42,11 +42,11 @@ import logging
 import tempfile
 import argparse
 import subprocess
-import distutils.spawn
+import shutil
 
 __license__ = 'GPL-2.0 OR Apache-2.0'
 __author__ = 'David Härdeman <david@hardeman.nu>'
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 
 LOG = logging.getLogger(__name__)
 
@@ -628,7 +628,7 @@ def main():
     if args.print_config:
         print_example_config()
 
-    if distutils.spawn.find_executable("rspamadm") is None:
+    if shutil.which("rspamadm") is None:
         die("rspamadm executable not found")
 
     if args.month == 0:
