@@ -176,6 +176,31 @@
   become: False
   delegate_to: 'localhost'
 
+# Note: can't use "run_once" here due to "when" conditional
+#       Ansible issue: #11496
+- name: Register Icinga host templates in Icinga Director
+  ansible.builtin.uri:
+    body_format: 'json'
+    headers:
+      Accept: 'application/json'
+    method: 'POST'
+    body: '{{ item }}'
+    url: '{{ icinga__director_register_api_url }}'
+    user: '{{ icinga__director_register_api_user }}'
+    password: '{{ icinga__director_register_api_password }}'
+    status_code: [ 201, 422, 500 ]
+    force_basic_auth: True
+  loop: '{{ icinga__director_default_host_templates }}'
+  loop_control:
+    label: '{{ item.object_name }}'
+  register: icinga__register_director_host_templates
+  throttle: 1  # avoid race condition in director
+  notify: [ 'Trigger Icinga Director configuration deployment' ]
+  when: icinga__director_enabled|bool and icinga__director_register|bool and
+        icinga__node_type != 'master'
+  changed_when: icinga__register_director_host_templates.status == 201
+  tags: [ 'role::icinga:register' ]
+
 - name: Register Icinga node in Icinga Director
   ansible.builtin.uri:
     body_format: 'json'
@@ -186,7 +211,7 @@
     url: '{{ icinga__director_register_api_url }}'
     user: '{{ icinga__director_register_api_user }}'
     password: '{{ icinga__director_register_api_password }}'
-    status_code: '201,422,500'
+    status_code: [ 201, 422, 500 ]
     force_basic_auth: True
   register: icinga__register_director_host
   notify: [ 'Trigger Icinga Director configuration deployment' ]
