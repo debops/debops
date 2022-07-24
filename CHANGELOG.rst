@@ -44,9 +44,6 @@ New DebOps roles
 - The :ref:`debops.reboot` role can be used to reboot, forcefully or only if
   required, any DebOps host.
 
-- The :ref:`debops.resources` role can now be used to repace a line via the
-  ``ansible.builtin.replace`` module.
-
 - The :ref:`debops.miniflux` role can install and manage Miniflux, a web-based,
   minimalistic feed reader written in Go.
 
@@ -82,6 +79,12 @@ General
 - The role will enable LDAP support in NetBox if LDAP environment managed by
   the :ref:`debops.ldap` role is detected on the host. Currently only user
   authentication and Django ACL system is supported via LDAP groups.
+
+:ref:`debops.resources` role
+''''''''''''''''''''''''''''
+
+- The :ref:`debops.resources` role can now be used to repace a line via the
+  ``ansible.builtin.replace`` module.
 
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
@@ -407,6 +410,12 @@ debops.boxbackup role
   :command:`resolvconf` configuration after host was rebooted, when the
   :file:`/run/resolvconf/` path did not exist. It will be created automatically
   if not found.
+
+:ref:`debops.roundcube` role
+''''''''''''''''''''''''''''
+
+- Locked ``johndoh/contextmenu`` plugin to version 3.2.1 for Roundcube < 1.5
+  due to compatibility issues.
 
 Removed
 ~~~~~~~
@@ -1135,12 +1144,6 @@ debops.reprepro role
 
 - Ensure that the fact script correctly includes information about upstream
   nameservers when :command:`systemd-resolved` service is used.
-
-:ref:`debops.roundcube` role
-''''''''''''''''''''''''''''
-
-- Locked johndoh/contextmenu plugin to version 3.2.1 for Roundcube < 1.5 due to
-  compatibility issues.
 
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
