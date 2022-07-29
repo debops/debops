@@ -77,6 +77,30 @@ however only one director node will be used.
 For details on how to configure DNS SRV records, see
 :ref:`dns_configuration_srv`.
 
+Manual override
+~~~~~~~~~~~~~~~
+
+If SRV records are not feasible or you don't want to publish them everywhere,
+you can specify the required information using Ansible inventory. For example,
+to define the master and director nodes for all hosts in the Ansible inventory,
+you can add the variables below in the
+:file:`ansible/inventory/group_vars/all/icinga.yml` configuration file:
+
+.. code-block:: yaml
+
+   ---
+   # Icinga Masters
+   icinga__master_nodes:
+     - target: 'icinga.example.org'
+       port: '5665'
+
+   # Icinga Directors
+   icinga__director_nodes:
+     - target: 'icinga.example.org'
+       port: '443'
+
+With this information, the role can correctly resolve the needed host and port
+details to use in other variables.
 
 Initial deployment
 ------------------
