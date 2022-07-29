@@ -50,6 +50,13 @@ General
 - The role can now create directories defined on the group or host inventory
   level if desired.
 
+:ref:`debops.icinga_web` role
+'''''''''''''''''''''''''''''
+
+- The role can now create host and service templates using Icinga Director API.
+  This should improve the initial deployment experience, since users don't need
+  to create basic host templates by hand before registering hosts in Icinga.
+
 :ref:`debops.netbox` role
 '''''''''''''''''''''''''
 
@@ -154,6 +161,14 @@ General
 
 - The ``qemu-kvm`` package is not needed on newer Debian/Ubuntu releases,
   therefore it won't be installed by default.
+
+:ref:`debops.icinga` role
+'''''''''''''''''''''''''
+
+- New hosts will be added to Icinga Director using the ``icinga-agent-host``
+  template, created by default by the :ref:`debops.icinga_web` role. On
+  existing installations, you should either create this template by hand, or
+  run the :ref:`debops.icinga_web` role so that it gets added automatically.
 
 :ref:`debops.icinga_web` role
 '''''''''''''''''''''''''''''
