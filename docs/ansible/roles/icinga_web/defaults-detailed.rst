@@ -179,3 +179,54 @@ Examples
 
 See the :envvar:`icinga_web__default_config` or the
 :envvar:`icinga_web__default_resources` variables for example usage.
+
+
+.. _icinga_web__ref_director_templates:
+
+icinga_web__director_templates
+------------------------------
+
+Icinga has a notion of `templates`__ which can be used to define sets of
+objects (host templates, service templates) with multiple attributes and then
+assign them to specific hosts and services. Templates can simplify
+configuration of large environments; each object can use multiple templates,
+they can be inherited and augment each other hierarchically.
+
+.. __: https://icinga.com/docs/icinga-2/latest/doc/03-monitoring-basics/#templates
+
+The :ref:`debops.icinga_web` Ansible role can define new host and service
+templates using Icinga Director API. The ``icinga_web__director_*_templates``
+variables define the lists of YAML dictionaries, each dictionary represents an
+Icinga template. Currently templates can only be created, the role does not
+support removing or modifying existing templates.
+
+Syntax
+~~~~~~
+
+``name``
+  Required. Name of the template, not used otherwise. Multiple entries with the
+  same ``name`` parameter are merged together and can affect each other in
+  order of appearance.
+
+``data``
+  Required. The YAML dictionary with template configuration passed to Icinga
+  Director via its API. See Icinga documentation for information about required
+  keys and values for a specific template.
+
+``api_endpoint``
+  Required. The HTTP API endpoint to use for a given template, for example
+  ``/host`` or ``/service``. It will be appended at the end of the
+  :envvar:`icinga_web__director_api_url` variable to point Ansible to the
+  correct API endpoint.
+
+``state``
+  Optional. If not specified or ``present``, a given template will be created
+  in Icinga Director if not already present. If ``absent``, the role will not
+  try to create a template. If ``ignore``, a given entry will not be evaluated
+  during role execution.
+
+Examples
+~~~~~~~~
+
+You can see the default list of templates imported by the role in the
+:envvar:`icinga_web__director_default_templates` variable.

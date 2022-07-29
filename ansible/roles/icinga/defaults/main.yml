@@ -326,28 +326,6 @@ icinga__director_register_api_password: '{{ lookup("password", secret + "/icinga
                                             + icinga__director_register_api_user + "/password") }}'
 
                                                                    # ]]]
-# .. envvar:: icinga__director_default_host_templates [[[
-#
-# List of default host templates to create before attempting to register any
-# given host.
-icinga__director_default_host_templates:
-
-  - object_type: 'template'
-    object_name: 'generic-host'
-    check_command: 'hostalive'
-    check_interval: '5m'
-    retry_interval: '30s'
-    max_check_attempts: '5'
-
-  - object_type: 'template'
-    object_name: 'icinga-agent-host'
-    has_agent: true
-    master_should_connect: true
-    accept_config: true
-    imports:
-      - 'generic-host'
-
-                                                                   # ]]]
 # .. envvar:: icinga__director_register_default_templates [[[
 #
 # List of default host templates to use for a given host during registration.
