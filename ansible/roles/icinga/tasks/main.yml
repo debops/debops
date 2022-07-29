@@ -191,8 +191,8 @@
     force_basic_auth: True
   register: icinga__register_director_host
   notify: [ 'Trigger Icinga Director configuration deployment' ]
-  when: icinga__director_enabled|bool and icinga__director_register|bool and
-        icinga__node_type != 'master'
+  when: (icinga__director_enabled | bool and icinga__director_register | bool and
+         (icinga__node_type != 'master' or (ansible_local.icinga_web.installed | d()) | bool))
   changed_when: icinga__register_director_host.status == 201
   tags: [ 'role::icinga:register' ]
   no_log: '{{ debops__no_log | d(True) }}'
