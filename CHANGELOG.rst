@@ -57,6 +57,13 @@ General
   hosts. The :ref:`debops.apache` Ansible role will use this module instead of
   the original one.
 
+:ref:`debops.icinga_web` role
+'''''''''''''''''''''''''''''
+
+- The role can now create host and service templates using Icinga Director API.
+  This should improve the initial deployment experience, since users don't need
+  to create basic host templates by hand before registering hosts in Icinga.
+
 :ref:`debops.java` role
 '''''''''''''''''''''''
 
@@ -169,6 +176,14 @@ General
   (default) and Enterprise Edition are supported.
 
   .. __: https://docs.gitlab.com/omnibus/
+
+:ref:`debops.icinga` role
+'''''''''''''''''''''''''
+
+- New hosts will be added to Icinga Director using the ``icinga-agent-host``
+  template, created by default by the :ref:`debops.icinga_web` role. On
+  existing installations, you should either create this template by hand, or
+  run the :ref:`debops.icinga_web` role so that it gets added automatically.
 
 :ref:`debops.icinga_web` role
 '''''''''''''''''''''''''''''
