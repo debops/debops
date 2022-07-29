@@ -388,6 +388,13 @@ icinga_web__director_shell: '/usr/sbin/nologin'
 icinga_web__director_api_fqdn: '{{ icinga_web__fqdn }}'
 
                                                                    # ]]]
+# .. envvar:: icinga_web__director_api_url [[[
+#
+# The URL of the Icinga 2 Director REST API which will be used to interact with
+# Icinga Director.
+icinga_web__director_api_url: 'https://{{ icinga_web__director_api_fqdn }}/director'
+
+                                                                   # ]]]
 # .. envvar:: icinga_web__director_api_user [[[
 #
 # Name of the Icinga 2 Director API user, used by the :ref:`debops.icinga` role
@@ -498,6 +505,70 @@ icinga_web__director_kickstart_enabled: '{{ True
                                             if (ansible_local|d() and ansible_local.icinga|d() and
                                                 (ansible_local.icinga.installed|d())|bool)
                                             else False }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_default_templates [[[
+#
+# List of default templates to create in Icinga Director. See
+# :ref:`icinga_web__ref_director_templates` for more details.
+icinga_web__director_default_templates:
+
+  - name: 'generic-host'
+    api_endpoint: '/host'
+    data:
+      object_type: 'template'
+      object_name: 'generic-host'
+      check_command: 'hostalive'
+      check_interval: '5m'
+      retry_interval: '30s'
+      max_check_attempts: '5'
+    state: 'present'
+
+  - name: 'icinga-agent-host'
+    api_endpoint: '/host'
+    data:
+      object_type: 'template'
+      object_name: 'icinga-agent-host'
+      has_agent: true
+      master_should_connect: true
+      accept_config: true
+      imports:
+        - 'generic-host'
+    state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_templates [[[
+#
+# List of templates to create in Icinga Director defined on all hosts in the
+# Ansible inventory. See :ref:`icinga_web__ref_director_templates` for more
+# details.
+icinga_web__director_templates: []
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_group_templates [[[
+#
+# List of templates to create in Icinga Director defined on hosts in a specific
+# Ansible inventory group. See :ref:`icinga_web__ref_director_templates` for
+# more details.
+icinga_web__director_group_templates: []
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_host_templates [[[
+#
+# List of templates to create in Icinga Director defined on specific hosts in
+# the Ansible inventory. See :ref:`icinga_web__ref_director_templates` for more
+# details.
+icinga_web__director_host_templates: []
+
+                                                                   # ]]]
+# .. envvar:: icinga_web__director_combined_templates [[[
+#
+# Variable which combines all of the Icinga Director template lists and is used
+# in role tasks and templates.
+icinga_web__director_combined_templates: '{{ icinga_web__director_default_templates
+                                             + icinga_web__director_templates
+                                             + icinga_web__director_group_templates
+                                             + icinga_web__director_host_templates }}'
                                                                    # ]]]
                                                                    # ]]]
 # Icinga 2 x509 module support [[[
