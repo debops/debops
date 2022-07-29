@@ -110,8 +110,38 @@ icinga__additional_groups:
 # .. envvar:: icinga__fqdn [[[
 #
 # The Fully Qualified Domain Name of this Icinga 2 node. This variable is used
-# during node registration in Icinga 2 Director and in the zone configuration.
+# during the node registration in the Icinga 2 Director and in the zone
+# configuration.
 icinga__fqdn: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__display_name [[[
+#
+# The short display name of this Icinga 2 node. This variable is used during
+# the node registration in the Icinga 2 Director and in the zone configuration.
+icinga__display_name: '{{ (inventory_hostname_short | d(inventory_hostname.split(".")[0]))
+                          if (inventory_hostname_short | d(inventory_hostname.split(".")[0]) != "localhost")
+                          else ansible_hostname }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__ipv4_address [[[
+#
+# The IPv4 address (or FQDN used to lookup the IPv4 address) of this Icinga 2
+# node. This variable is used during the node registration in the Icinga 2
+# Director (and will be used to contact the node for monitoring purposes).
+icinga__ipv4_address: '{{ ansible_default_ipv4.address
+                          | d(ansible_all_ipv4_addresses | d([]) | first)
+                          | d(icinga_fqdn) }}'
+
+                                                                   # ]]]
+# .. envvar:: icinga__ipv6_address [[[
+#
+# The IPv6 address (or FQDN used to lookup the IPv4 address) of this Icinga 2
+# node. This variable is used during the node registration in the Icinga 2
+# Director (and will be used to contact the node for monitoring purposes).
+icinga__ipv6_address: '{{ ansible_default_ipv6.address
+                          | d(ansible_all_ipv6_addresses | d([]) | first)
+                          | d(omit, true) }}'
 
                                                                    # ]]]
 # .. envvar:: icinga__domain [[[
@@ -301,7 +331,7 @@ icinga__director_register_api_password: '{{ lookup("password", secret + "/icinga
 # List of default host templates to use for a given host during registration.
 # The templates need to be prepared beforehand in the Icinga 2 Director.
 icinga__director_register_default_templates:
-  - 'generic-host'
+  - 'icinga-agent-host'
 
                                                                    # ]]]
 # .. envvar:: icinga__director_register_templates [[[
@@ -370,13 +400,14 @@ icinga__director_register_host_vars: {}
 icinga__director_register_host_object:
   object_type: 'object'
   object_name: '{{ icinga__fqdn }}'
-  address: '{{ icinga__fqdn }}'
-  imports: '{{ lookup("flattened",
-               (icinga__director_register_default_templates
-                + icinga__director_register_templates
-                + icinga__director_register_group_templates
-                + icinga__director_register_host_templates),
-               wantlist=True) }}'
+  display_name: '{{ icinga__display_name }}'
+  address: '{{ icinga__ipv4_address }}'
+  address6: '{{ icinga__ipv6_address }}'
+  imports: '{{ q("flattened",
+                 (icinga__director_register_default_templates
+                  + icinga__director_register_templates
+                  + icinga__director_register_group_templates
+                  + icinga__director_register_host_templates)) }}'
   vars: '{{ icinga__director_register_default_vars
             | combine(icinga__director_register_vars,
                       icinga__director_register_group_vars,
@@ -573,7 +604,7 @@ icinga__default_configuration:
         value: |
           include_recursive "repository.d"
         state: '{{ "absent"
-                   if (icinga__version is version("2.8.0", ">=")
+                   if (icinga__version is version("2.8.0", ">="))
                    else "present" }}'
 
       - name: 'conf.d'
