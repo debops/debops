@@ -127,7 +127,7 @@ By default, the role will automatically create two host templates,
 ``generic-host`` and ``icinga-agent-host`` (the latter depending on the former)
 as part of the host registration process and will register new hosts using the
 ``icinga-agent-host`` template.  See
-:envvar:`icinga__director_default_host_templates` for more details. Note that
+:ref:`icinga_web__ref_director_templates` for more details. Note that
 if you delete these templates they will, by default, be recreated every time a
 host is (re-)registered with the Director.
 
