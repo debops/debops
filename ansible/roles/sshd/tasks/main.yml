@@ -221,7 +221,7 @@
   notify: [ 'Test sshd configuration and restart' ]
 
 - name: Add/remove diversion of /etc/pam.d/sshd
-  dpkg_divert:
+  debops.debops.dpkg_divert:
     path: '/etc/pam.d/sshd'
     state: '{{ "present"
                if sshd__pam_deploy_state | d("present") != "absent"

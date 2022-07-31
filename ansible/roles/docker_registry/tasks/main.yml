@@ -24,7 +24,7 @@
   until: docker_registry__register_packages is succeeded
 
 - name: Divert the original docker-registry config file
-  dpkg_divert:
+  debops.debops.dpkg_divert:
     path: '/etc/docker/registry/config.yml'
   notify: [ 'Restart docker-registry' ]
 

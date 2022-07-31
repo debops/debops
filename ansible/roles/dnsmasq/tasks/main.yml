@@ -89,7 +89,7 @@
   when: dnsmasq__dhcp_hosts | d() or dnsmasq__dns_records | d()
 
 - name: Divert original dnsmasq environment file
-  dpkg_divert:
+  debops.debops.dpkg_divert:
     path: '/etc/default/dnsmasq'
   notify: [ 'Test and restart dnsmasq' ]
 

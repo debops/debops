@@ -45,7 +45,7 @@
           ansible_local.unattended_upgrades.enabled | bool))
 
 - name: Add/remove diversion of unattended-upgrades configuration
-  dpkg_divert:
+  debops.debops.dpkg_divert:
     path: '/etc/apt/apt.conf.d/50unattended-upgrades'
     state: '{{ "present" if unattended_upgrades__enabled | bool else "absent" }}'
     delete: True

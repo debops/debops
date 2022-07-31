@@ -68,7 +68,7 @@
   tags: [ 'meta::facts' ]
 
 - name: Remove old diversions
-  dpkg_divert:
+  debops.debops.dpkg_divert:
     path: '/etc/dovecot/conf.d/{{ item }}'
     state: 'absent'
     delete: True
@@ -230,7 +230,7 @@
   when: not (dovecot__pki | bool)
 
 - name: Divert original Dovecot main configuration file
-  dpkg_divert:
+  debops.debops.dpkg_divert:
     path: '/etc/dovecot/dovecot.conf'
   notify: [ 'Restart dovecot' ]
   tags: [ "role::dovecot:conf" ]
