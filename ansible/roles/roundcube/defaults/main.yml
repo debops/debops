@@ -164,7 +164,7 @@ roundcube__git_dir: '{{ roundcube__src + "/"
 # .. envvar:: roundcube__git_version [[[
 #
 # Roundcube release tag to deploy.
-roundcube__git_version: '1.5.3'
+roundcube__git_version: '1.6.0'
 
                                                                    # ]]]
 # .. envvar:: roundcube__git_dest [[[
@@ -627,7 +627,8 @@ roundcube__imap_server: '{{ ("ssl://"
                              else ("tls://"
                                    if (roundcube__imap_port == "143")
                                    else "tls://"))
-                             + roundcube__imap_fqdn }}'
+                             + roundcube__imap_fqdn
+                             + ":" + roundcube__imap_port }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__smtp_srv_rr [[[
@@ -683,7 +684,8 @@ roundcube__smtp_server: '{{ ("ssl://"
                              else ("tls://"
                                    if (roundcube__smtp_port == "587")
                                    else "tls://"))
-                             + roundcube__smtp_fqdn }}'
+                             + roundcube__smtp_fqdn
+                             + ":" + roundcube__smtp_port }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__smtp_user [[[
@@ -975,28 +977,12 @@ roundcube__original_configuration:
     state: 'init'
                                                                    # ]]]
     # [[[ imap
-  - name: 'default_host'
+  - name: 'imap_host'
     comment: |
-      The IMAP host chosen to perform the log-in.
-      Leave blank to show a textbox at login, give a list of hosts
-      to display a pulldown menu or set one host as string.
-      To use SSL/TLS connection, enter hostname with prefix ssl:// or tls://
-      Supported replacement variables:
-      %n - hostname ($_SERVER['SERVER_NAME'])
-      %t - hostname without the first part
-      %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
-      %s - domain name after the '@' from e-mail address provided at login screen
-      For example %n = mail.domain.tld, %t = domain.tld
-      WARNING: After hostname change update of mail_host column in users table is
-               required to match old user data records with the new host.
-    value: 'localhost'
+      IMAP host chosen to perform the log-in.
+      See defaults.inc.php for the option description.
+    value: 'localhost:143'
     section: 'imap'
-
-  - name: 'default_port'
-    comment: 'TCP port used for IMAP connections'
-    value: 143
-    section: 'imap'
-    state: 'init'
 
   - name: 'imap_auth_type'
     comment: |
@@ -1182,26 +1168,11 @@ roundcube__original_configuration:
     state: 'init'
                                                                    # ]]]
     # [[[ smtp
-  - name: 'smtp_server'
+  - name: 'smtp_host'
     comment: |
       SMTP server host (for sending mails).
-      Enter hostname with prefix tls:// to use STARTTLS, or use
-      prefix ssl:// to use the deprecated SSL over SMTP (aka SMTPS)
-      Supported replacement variables:
-      %h - user's IMAP hostname
-      %n - hostname ($_SERVER['SERVER_NAME'])
-      %t - hostname without the first part
-      %d - domain (http hostname $_SERVER['HTTP_HOST'] without the first part)
-      %z - IMAP domain (IMAP hostname without the first part)
-      For example %n = mail.domain.tld, %t = domain.tld
-    value: 'localhost'
-    section: 'smtp'
-
-  - name: 'smtp_port'
-    comment: |
-      SMTP port (default is 25; use 587 for STARTTLS or 465 for the
-      deprecated SSL over SMTP (aka SMTPS))
-    value: 587
+      See defaults.inc.php for the option description.
+    value: 'localhost:587'
     section: 'smtp'
 
   - name: 'smtp_user'
@@ -2795,7 +2766,6 @@ roundcube__original_configuration:
   - name: 'dsn_default'
     comment: |
       Delivery Status Notification checkbox default state
-      Note: This can be used only if smtp_server is non-empty
     value: 0
     section: 'userprefs'
     state: 'init'
@@ -2907,13 +2877,8 @@ roundcube__default_configuration:
       Log driver: "syslog", "stdout" or "file"
     value: '{{ roundcube__log_driver }}'
 
-  - name: 'default_host'
+  - name: 'imap_host'
     value: '{{ roundcube__imap_server }}'
-
-  - name: 'default_port'
-    comment: 'TCP port used for IMAP connections'
-    value: '{{ roundcube__imap_port }}'
-    value_cast: 'int'
 
     # Enable use of memcached to cache IMAP indexes, if local memcached
     # instance is detected
@@ -2929,12 +2894,8 @@ roundcube__default_configuration:
                    (ansible_local.dovecot.installed | d()) | bool)
                else "present" }}'
 
-  - name: 'smtp_server'
+  - name: 'smtp_host'
     value: '{{ roundcube__smtp_server }}'
-
-  - name: 'smtp_port'
-    value: '{{ roundcube__smtp_port }}'
-    value_cast: 'int'
 
   - name: 'smtp_user'
     value: '{{ roundcube__smtp_user }}'
@@ -3033,9 +2994,9 @@ roundcube__default_configuration:
     state: '{{ "present" if roundcube__ldap_enabled | bool else "ignore" }}'
     array:
       - name: '{{ roundcube__ldap_addressbook_name }}'
-        hosts: '{{ roundcube__ldap_hosts }}'
-        port: '{{ roundcube__ldap_port }}'
-        use_tls: '{{ roundcube__ldap_use_tls }}'
+        hosts: '{{ (["tls://"] if roundcube__ldap_use_tls else [""])
+                   | product(roundcube__ldap_hosts) | map("join")
+                   | product([roundcube__ldap_port]) | map("join") }}'
         ldap_version: 3
         user_specific: True
         base_dn: '{{ roundcube__ldap_people_dn | join(",") }}'
@@ -4312,12 +4273,6 @@ roundcube__default_plugins:
     state: 'enabled'
     options:
 
-      - name: 'managesieve_port'
-        comment: |
-          managesieve server port. When empty the port will be determined automatically
-          using getservbyname() function, with 4190 as a fallback.
-        value: null
-
       - name: 'managesieve_host'
         comment: |
           managesieve server address, default is localhost.
@@ -4345,12 +4300,6 @@ roundcube__default_plugins:
         comment: |
           Optional managesieve authentication password to be used for imap_auth_cid
         value: null
-
-      - name: 'managesieve_usetls'
-        comment: |
-          Use or not TLS for managesieve server connection
-          Note: tls:// prefix in managesieve_host is also supported
-        value: False
 
       - name: 'managesieve_conn_options'
         comment: |
