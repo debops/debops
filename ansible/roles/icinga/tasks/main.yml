@@ -61,7 +61,7 @@
   ansible.builtin.meta: 'flush_handlers'
 
 - name: Add/remove diversion of Icinga configuration files
-  dpkg_divert:
+  debops.debops.dpkg_divert:
     path: '{{ "/etc/icinga2/" + item.filename | d(item.name | regex_replace(".conf$","") + ".conf") }}'
     state: '{{ item.state | d("present") }}'
     delete: True

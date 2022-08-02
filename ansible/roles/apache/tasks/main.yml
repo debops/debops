@@ -42,7 +42,7 @@
 
 # Manage Apache configuration snippets [[[1
 - name: Divert conf-available configuration
-  dpkg_divert:
+  debops.debops.dpkg_divert:
     path: '{{ apache__config_path + "/conf-available/" + item.key + ".conf" }}'
     divert: '{{ (item.value.divert
                  | d(apache__config_path + "/conf-available/"
@@ -97,7 +97,7 @@
 
 # Manage Apache virtual hosts [[[1
 - name: Divert sites-available configuration
-  dpkg_divert:
+  debops.debops.dpkg_divert:
     path: '{{ apache__config_path + "/sites-available/"
               + item.filename | d([item.name] | flatten | first | d("default"))
               + ".conf" }}'

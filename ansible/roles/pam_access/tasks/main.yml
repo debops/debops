@@ -15,7 +15,7 @@
   vars:
     access_conf: '{{ "/etc/security/"
                      + item.filename | d("access-" + (item.name | regex_replace("\.conf$","")) + ".conf") }}'
-  dpkg_divert:
+  debops.debops.dpkg_divert:
     path: '{{ access_conf }}'
     state: '{{ item.state | d("present") }}'
     delete: True
