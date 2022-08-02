@@ -40,7 +40,7 @@ def find_files(directory, strip):
 try:
     import pypandoc
     README = pypandoc.convert_file('README.md', 'rst')
-except(IOError, ImportError):
+except (IOError, ImportError):
     print('Warning: The "pandoc" support is required to convert '
           'the README.md to reStructuredText format')
     README = open('README.md').read()
