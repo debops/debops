@@ -22,7 +22,7 @@
   when: logrotate__enabled | bool
 
 - name: Remove previous cron log rotation
-  dpkg_divert:
+  debops.debops.dpkg_divert:
     path: '/etc/cron.daily/logrotate'
     divert: '{{ logrotate__register_cron_diversion.stdout }}'
     state: 'absent'
@@ -33,14 +33,14 @@
          ('/etc/cron.' + logrotate__cron_period + '/logrotate'))
 
 - name: Configure {{ logrotate__cron_period }} cron log rotation
-  dpkg_divert:
+  debops.debops.dpkg_divert:
     path: '/etc/cron.daily/logrotate'
     divert: '/etc/cron.{{ logrotate__cron_period }}/logrotate'
   when: (logrotate__enabled | bool and
          logrotate__cron_period in [ 'hourly', 'weekly', 'monthly' ])
 
 - name: Add/remove diversion of the logrotate config file
-  dpkg_divert:
+  debops.debops.dpkg_divert:
     path: '/etc/logrotate.conf'
     state: '{{ "present" if logrotate__enabled | bool else "absent" }}'
     delete: True
@@ -55,7 +55,7 @@
   when: logrotate__enabled | bool
 
 - name: Add/remove diversion of the custom log rotation configuration
-  dpkg_divert:
+  debops.debops.dpkg_divert:
     path: '/etc/logrotate.d/{{ item.filename }}'
     state: '{{ "present"
                if
