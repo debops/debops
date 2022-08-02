@@ -28,6 +28,24 @@
 - name: Flush handlers if needed
   ansible.builtin.meta: 'flush_handlers'
 
+- name: Create GitLab UNIX system group
+  ansible.builtin.group:
+    name: '{{ gitlab__group }}'
+    state: 'present'
+    system: True
+
+- name: Create GitLab UNIX system account
+  ansible.builtin.user:
+    name: '{{ gitlab__user }}'
+    group: '{{ gitlab__group }}'
+    groups: '{{ gitlab__additional_groups }}'
+    comment: '{{ gitlab__comment }}'
+    home: '{{ gitlab__home }}'
+    shell: '{{ gitlab__shell }}'
+    state: 'present'
+    append: True
+    system: True
+
 - name: Create GitLab configuration directories
   ansible.builtin.file:
     path: '/etc/gitlab/ssl'

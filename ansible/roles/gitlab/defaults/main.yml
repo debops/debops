@@ -47,6 +47,50 @@ gitlab__base_packages:
 gitlab__packages: []
                                                                    # ]]]
                                                                    # ]]]
+# UNIX environment [[[
+# --------------------
+
+# .. envvar:: gitlab__user [[[
+#
+# Name of the primary UNIX account used by GitLab Omnibus.
+gitlab__user: 'git'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__group [[[
+#
+# Name of the primary UNIX group used by GitLab Omnibus.
+gitlab__group: 'git'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__additional_groups [[[
+#
+# List of additional UNIX groups which the GitLab Omnibus account should belong
+# to.
+gitlab__additional_groups:
+
+  # The "sshusers" UNIX group permits access to a given UNIX account over SSH
+  - '{{ (ansible_local.system_groups.local_prefix | d("")) + "sshusers" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__comment [[[
+#
+# The GECOS field of the primary GitLab Omnibus UNIX account.
+gitlab__comment: 'GitLab Omnibus main account'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__home [[[
+#
+# The home directory of the primary GitLab Omnibus UNIX account. This path is
+# used by default by the Omnibus packages and shouldn't be changed recklessly.
+gitlab__home: '/var/opt/gitlab'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__shell [[[
+#
+# The default UNIX shell used by the primary GitLab Omnibus account.
+gitlab__shell: '/bin/sh'
+                                                                   # ]]]
+                                                                   # ]]]
 # Application environment [[[
 # ---------------------------
 
