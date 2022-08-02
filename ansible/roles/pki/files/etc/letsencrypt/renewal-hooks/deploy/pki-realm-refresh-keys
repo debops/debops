@@ -39,7 +39,7 @@ if [ -d "/etc/letsencrypt/live" ] ; then
              pub=$(openssl x509 -noout -modulus -in public/cert_intermediate.pem | openssl md5)
              if test "${pub}" == "${key}"; then
                 # Change the symlink to public/cert_intermediate.pem
-                ln -sf -T public/cert_intermediate.pem default.crt
+                ln -sf -T public/cert_intermediate.pem default.crt > /dev/null
              fi
         fi
     fi
