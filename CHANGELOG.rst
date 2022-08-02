@@ -382,6 +382,15 @@ General
 - Locked johndoh/contextmenu plugin to version 3.2.1 for Roundcube < 1.5 due to
   compatibility issues.
 
+:ref:`debops.sudo` role
+'''''''''''''''''''''''
+
+- The fact script will check :command:`sudo` version using the :command:`dpkg`
+  command to avoid running :command:`sudo` on each Ansible fact gathering. This
+  proved problematic when LDAP support is enabled and the LDAP directory is not
+  available for any reason - :command:`sudo` tries to connect to the directory
+  and times out, slowing Ansible run into a crawl.
+
 Removed
 ~~~~~~~
 
