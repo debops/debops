@@ -202,6 +202,27 @@ gitlab__ssl_default_symlinks:
 # GitLab Omnibus, located in the :file:`/etc/gitlab/ssl/` directory.
 # See :ref:`gitlab__ref_ssl_symlinks` for more details.
 gitlab__ssl_symlinks: []
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ssl_default_cacerts [[[
+#
+# List of the symlinks to Certificate Authority certificate used by GitLab
+# Omnibus by default, located in the :file:`/etc/gitlab/trusted-certs/`
+# directory. Syntax is the same as the configuration for private keys and
+# certificates. See :ref:`gitlab__ref_ssl_symlinks` for more details.
+gitlab__ssl_default_cacerts:
+
+  - link: '{{ gitlab__pki_realm + "-root.crt" }}'
+    src: '{{ gitlab__pki_path + "/" + gitlab__pki_realm + "/public/root.pem" }}'
+
+                                                                   # ]]]
+# .. envvar:: gitlab__ssl_cacerts [[[
+#
+# List of additional symlinks to Certificate Authority certificate used by
+# GitLab Omnibus, located in the :file:`/etc/gitlab/trusted-certs/` directory.
+# Syntax is the same as the configuration for private keys and certificates.
+# See :ref:`gitlab__ref_ssl_symlinks` for more details.
+gitlab__ssl_cacerts: []
                                                                    # ]]]
                                                                    # ]]]
 # LDAP Authentication configuration [[[

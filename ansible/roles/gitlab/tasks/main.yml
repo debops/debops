@@ -48,9 +48,21 @@
 
 - name: Create GitLab configuration directories
   ansible.builtin.file:
-    path: '/etc/gitlab/ssl'
+    path: '{{ item.path }}'
     state: 'directory'
-    mode: '0775'
+    mode: '{{ item.mode }}'
+  loop:
+    - { path: '/etc/gitlab/ssl',           mode: '0775' }
+    - { path: '/etc/gitlab/trusted-certs', mode: '0755' }
+
+- name: Manage CA certificate symlinks in GitLab environment
+  ansible.builtin.file:  # noqa risky-file-permissions
+    path: '{{ "/etc/gitlab/trusted-certs/" + item.link }}'
+    src:  '{{ item.src }}'
+    state: '{{ item.state | d("link") }}'
+  loop: '{{ q("flattened", (gitlab__ssl_default_cacerts + gitlab__ssl_cacerts)) }}'
+  notify: [ 'Restart GitLab Omnibus' ]
+  when: gitlab__pki_enabled | bool
 
 - name: Manage private key and SSL certificate symlinks in GitLab environment
   ansible.builtin.file:  # noqa risky-file-permissions
