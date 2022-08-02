@@ -34,9 +34,22 @@ output = {'configured': True,
           'installed': cmd_exists('sudo')}
 
 if output['installed']:
-    output['version'] = subprocess.check_output(
-        ['sudo', '--version'], env=os.environ,
-        stderr=DEVNULL
-    ).decode('utf-8').split('\n')[0].split(' ')[-1]
+    try:
+        version_stdout = subprocess.check_output(
+                ["dpkg-query", "-W", "-f=${Version}",
+                 "sudo-ldap"]).decode('utf-8').split('-')[0]
+        if version_stdout:
+            output['version'] = version_stdout.split('p')[0]
+            output['package'] = 'sudo-ldap'
+        else:
+            version_stdout = subprocess.check_output(
+                    ["dpkg-query", "-W", "-f=${Version}",
+                     "sudo"]).decode('utf-8').split('-')[0]
+            if version_stdout:
+                output['version'] = version_stdout.split('p')[0]
+                output['package'] = 'sudo'
+
+    except Exception:
+        pass
 
 print(dumps(output, sort_keys=True, indent=4))
