@@ -25,8 +25,8 @@ resolvable via DNS by their Fully Qualified Domain Name (hostname + domain
 name). The FQDN doesn't have to be accessible from the Internet when the hosts
 are on a private network, but it should be possible to resolve the FQDNS
 internally. This can be achieved e.g. by selecting a subdomain of your main DNS
-domain and configure the DNS servers to advertise the subdomain on your private
-subnet(s).
+domain and configuring the DNS servers to advertise the subdomain on your
+private subnet(s).
 
 
 .. _dns_configuration_default_names:
@@ -42,6 +42,7 @@ zone for your local setup:
 Role                              Variable                            Default                                                              Example
 ================================= =================================== ==================================================================== ==============================
 :ref:`debops.apt_cacher_ng`       :envvar:`apt_cacher_ng__fqdn`       ``software-cache.`` + ``{{ ansible_domain }}``                       ``software-cache.example.com``
+:ref:`debops.cgit`                :envvar:`cgit__fqdn`                ``cgit.`` + :envvar:`cgit__domain`                                   ``cgit.example.com``
 :ref:`debops.docker_registry`     :envvar:`docker_registry__fqdn`     ``registry.`` + :envvar:`docker_registry__domain`                    ``registry.example.com``
 :ref:`debops.dokuwiki`            :envvar:`dokuwiki__fqdn`            ``wiki.`` + ``{{ ansible_domain }}``                                 ``wiki.example.com``
 :ref:`debops.etesync`             :envvar:`etesync__fqdn`             ``etesync.`` + :envvar:`etesync__domain`                             ``etesync.example.com``
