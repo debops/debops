@@ -1,0 +1,270 @@
+#!/usr/bin/env bash
+
+# This file is managed remotely, all changes will be lost
+
+# Copyright (C) 2015-2019 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2015-2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Create .tar.gz backup snapshots of the BIND config and master zones.
+# The script will automatically freeze/sync/thaw the zones as necessary,
+# while keeping track of whether they were already frozen (e.g. manually
+# by the administrator) and not thawing them again in that case.
+
+
+set -o nounset -o pipefail -o errexit
+
+umask 027
+
+SCRIPT="$(basename "${0}")"
+readonly SCRIPT
+readonly PID="$$"
+readonly PIDFILE="/run/${SCRIPT}.pid"
+readonly SUBCOMMAND="${1:-}"
+readonly RNDC="/usr/sbin/rndc"
+
+BACKUP_USER="backup"
+BACKUP_GROUP="backup"
+BACKUP_ROOT="$(getent passwd "${BACKUP_USER}" | cut -f6 -d:)/bind"
+FROZEN_FLAG="/var/lib/bind/.debops.frozen"
+TAR="/usr/bin/tar"
+
+if [ -f "/etc/default/debops-bind-snapshot" ] ; then
+    # shellcheck disable=SC1091
+    . "/etc/default/debops-bind-snapshot"
+fi
+
+print_usage () {
+    cat <<EOF
+Usage: ${SCRIPT} <daily|weekly|monthly|latest|now>
+
+Create periodic backup snapshots of the BIND configuration and zones
+EOF
+}
+
+
+log_message () {
+    # Display a message if script is used interactively, otherwise send it to syslog
+    local msg="${1:-}"
+
+    if [ -n "${msg}" ] ; then
+        if tty -s > /dev/null 2>&1 ; then
+            echo "${SCRIPT}: ${msg}" 1>&2
+        elif type logger > /dev/null 2>&1 ; then
+            logger -t "${SCRIPT}[${PID}]" "${msg}"
+        fi
+    fi
+}
+
+
+clean_up () {
+    # Clean up pidfile
+    local pidfile="${1}"
+
+    if [ -n "${pidfile}" ] && [ -r "${pidfile}" ] ; then
+        rm -f "${pidfile}"
+    fi
+    exit 0
+}
+
+
+wait_for_pid () {
+    # Wait for the specified process to exit
+    local pidfile="${1}"
+
+    if [ -n "${pidfile}" ] && [ -r "${pidfile}" ] ; then
+        local wait_pid
+        wait_pid="$(< "${pidfile}")"
+        while kill -0 "${wait_pid}" > /dev/null 2>&1 ; do
+            log_message "Waiting for PID ${wait_pid} to finish"
+            sleep $(( ( RANDOM % 30 ) + 5 ))
+        done
+        if [ -f "${pidfile}" ] ; then
+            rm -f "${pidfile}"
+        fi
+    fi
+}
+
+
+create_lock () {
+    local pidfile="${1}"
+    local pid="${PID}"
+
+    # Try and lock the script operation
+    echo "${pid}" > "${pidfile}"
+    sleep 0.5
+
+    # Exclusive lock failed
+    if [ "x$(cat "${pidfile}")" != "x${pid}" ] ; then
+        log_message "BIND snapshot procedure started by $(< "${pidfile}")"
+        exit 0
+    fi
+
+    # Exclusive lock succeeded
+    # shellcheck disable=SC2064
+    trap "clean_up ${pidfile}" EXIT
+}
+
+
+enable_read_only_mode () {
+    local output
+
+    
+    if ! pidof -q named > /dev/null 2>&1; then
+        log_message "Not freezing zones, named isn't running"
+    else
+        if ! output="$(LC_ALL=C "${RNDC}" freeze 2>&1)"; then
+            if [[ "${output}" == *"already frozen"* ]]; then
+                log_message "Not freezing zones, already frozen"
+            else
+                log_message "Unable to freeze zones: ${output}"
+                exit 1
+            fi
+        else
+            log_message "Freezing zone updates"
+            touch "${FROZEN_FLAG}"
+        fi
+ 
+        log_message "Synchronizing all zones"
+        "${RNDC}" sync -clean
+    fi
+}
+
+
+disable_read_only_mode () {
+    if ! pidof -q named > /dev/null 2>&1; then
+        log_message "Not thawing zones, named isn't running"
+    elif ! [ -e "${FROZEN_FLAG}" ]; then
+        log_message "Not thawing zones, not frozen by this script"
+    else
+        log_message "Thawing zone updates"
+        "${RNDC}" thaw
+        rm -f "${FROZEN_FLAG}"
+    fi
+}
+
+
+create_snapshot () {
+    local backup_user
+    local backup_group
+    local backup_root
+    local backup_file
+    local backup_dir
+
+    backup_user="${BACKUP_USER}"
+    backup_group="${BACKUP_GROUP}"
+    backup_root="${BACKUP_ROOT}"
+    backup_file="${1}"
+    backup_dir="$(dirname "${backup_file}")"
+
+    if [ ! -d "${backup_dir}" ] ; then
+        mkdir -p "${backup_dir}"
+        chown -R "${backup_user}:${backup_group}" "${backup_root}"
+    fi
+
+    enable_read_only_mode
+    log_message "Dumping the BIND configuration and zones"
+    "${TAR}" -cf "${backup_file}" -C / etc/bind var/lib/bind
+    disable_read_only_mode
+
+    if [ -f "${backup_file}.gz.gpg" ] ; then
+        rm -f "${backup_file}.gz.gpg"
+    fi
+
+    if [ -f "${backup_file}.gz.asc" ] ; then
+        rm -f "${backup_file}.gz.asc"
+    fi
+
+    nice gzip -f "${backup_file}"
+    chown "${backup_user}:${backup_group}" "${backup_file}.gz"
+}
+
+
+snapshot_daily () {
+    local backup_root
+    local day
+    local weekday
+    local backup_file
+
+    backup_root="${BACKUP_ROOT}"
+    day="$(date +%w)"
+    weekday="$(date +%A)"
+    backup_file="${backup_root}/daily/bind_day${day}_${weekday}.tar"
+
+    log_message "Creating daily snapshot of the BIND zones and config"
+    create_snapshot "${backup_file}"
+    log_message "Daily snapshot of the BIND zones and config created successfully"
+}
+
+
+snapshot_weekly () {
+    local backup_root
+    local week
+    local backup_file
+
+    backup_root="${BACKUP_ROOT}"
+    # Find out the week number in the current month
+    week="$(( ( $(date +%_d) - 1 ) / 7 + 1 ))"
+    backup_file="${backup_root}/weekly/bind_week${week}.tar"
+
+    log_message "Creating weekly snapshot of the BIND zones and config"
+    create_snapshot "${backup_file}"
+    log_message "Weekly snapshot of the BIND zones and condig created successfully"
+}
+
+
+snapshot_monthly () {
+    local backup_root
+    local month
+    local month_name
+    local backup_file
+
+    backup_root="${BACKUP_ROOT}"
+    month="$(date +%m)"
+    month_name="$(date +%B)"
+    backup_file="${backup_root}/monthly/bind_month${month}_${month_name}.tar"
+
+    log_message "Creating monthly snapshot of the BIND zones and config"
+    create_snapshot "${backup_file}"
+    log_message "Monthly snapshot of the BIND zones and config created successfully"
+}
+
+
+snapshot_latest () {
+    local backup_root
+    local current_date
+    local backup_file
+
+    backup_root="${BACKUP_ROOT}"
+    current_date="$(date +%F_%R)"
+    backup_file="${backup_root}/latest/bind_${current_date}.tar"
+
+    if [ -d "${backup_root}/latest" ] ; then
+        # Remove old set of database backups
+        find "${backup_root}/latest" -type f -name "bind_*.*" -delete
+    fi
+
+    log_message "Creating a snapshot of the BIND zones and config"
+    create_snapshot "${backup_file}"
+    log_message "Snapshot of the BIND zones and config created successfully"
+}
+
+
+main () {
+    local pidfile="${PIDFILE}"
+    local subcommand="${SUBCOMMAND}"
+
+    wait_for_pid "${pidfile}"
+    create_lock "${pidfile}"
+
+    case "${subcommand}" in
+        daily)      snapshot_daily  ;;
+        weekly)     snapshot_weekly ;;
+        monthly)    snapshot_monthly ;;
+        now|latest) snapshot_latest ;;
+        *)          print_usage && exit 1 ;;
+    esac
+}
+
+main

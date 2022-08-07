@@ -1,0 +1,33 @@
+#!{{ ansible_python['executable'] }}
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps
+import subprocess
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+output = {'installed': cmd_exists('named')}
+
+try:
+    output['version'] = subprocess.check_output(
+            ["named", "-v"]
+            ).decode('utf-8').strip().split()[1]
+
+except Exception:
+    pass
+
+print(dumps(output, sort_keys=True, indent=4))

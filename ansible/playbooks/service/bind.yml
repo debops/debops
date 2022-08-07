@@ -1,0 +1,58 @@
+---
+# Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Manage BIND servers
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_bind' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences',
+              'role::nginx' ]
+      apt_preferences__dependent_list:
+        - '{{ nginx__apt_preferences__dependent_list }}'
+        - '{{ bind__apt_preferences__dependent_list }}'
+
+    - role: ferm
+      tags: [ 'role::ferm', 'skip::ferm', 'role::nginx' ]
+      ferm__dependent_rules:
+        - '{{ nginx__ferm__dependent_rules }}'
+        - '{{ bind__ferm__dependent_rules }}'
+
+    - role: resolvconf
+      tags: [ 'role::resolvconf', 'skip::resolvconf' ]
+      resolvconf__dependent_services:
+        - 'bind'
+
+    - role: cron
+      tags: [ 'role::cron', 'skip::cron' ]
+
+    - role: logrotate
+      tags: [ 'role::logrotate', 'skip::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ slapd__logrotate__dependent_config }}'
+      when:
+        - '"dnssec" in bind__features'
+        - bind__dnssec_script_enabled | d(False)
+
+    - role: bind
+      tags: [ 'role::bind', 'skip::bind' ]
+
+    - role: nginx
+      tags: [ 'role::nginx', 'skip::nginx' ]
+      nginx__dependent_servers:
+        - '{{ bind__nginx__dependent_servers }}'
+      # Run the role even if it is not being used by any
+      # BIND features so that the BIND-specific server can be disabled,
+      # if appropriate.
+      when: ansible_local.nginx.enabled | d(False) or
+            bind__features | intersect([ "doh_proxy", "stats_proxy" ]) | length > 0
