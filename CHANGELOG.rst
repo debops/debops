@@ -42,6 +42,17 @@ Changed
   computers and translate it to ``arm64`` to allow installation of Docker
   Engine from upstream repositories.
 
+Fixed
+~~~~~
+
+:ref:`debops.minio` role
+''''''''''''''''''''''''
+
+- The role will use the default :file:`/etc/skel/` directory instead of
+  :file:`/dev/null` to create the ``minio`` UNIX account, due to a bug in
+  Ansible ``user`` module that forbids use of :file:`/dev/null` as home
+  skeleton.
+
 
 `debops v2.3.6`_ - 2022-09-02
 -----------------------------
