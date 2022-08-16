@@ -210,9 +210,15 @@ Common webserver options
   List of files that will be included at the end of the server
   configuration using `include`.
 
+``toplevel_options``
+  Optional, String or YAML text block with top-level options (i.e. before any
+  ``server`` blocks in the generated configuration) for this server
+  configuration. Semicolons at the end of each line are required.
+
 ``options``
-  Optional, String or YAML text block with options for this server configuration.
-  Semicolons at the end of each line are required.
+  Optional, String or YAML text block with options (included inside the
+  relevant ``server`` block) for this server configuration. Semicolons at the
+  end of each line are required.
 
 Redirects
 ~~~~~~~~~
