@@ -34,7 +34,7 @@
 #
 # List of base packages required by ownCloud.
 owncloud__base_packages:
-  - '{{ [ "owncloud-files" ]
+  - '{{ [ "owncloud-complete-files" ]
         if (owncloud__variant == "owncloud")
         else [] }}'
   - '{{ [ "curl", "unzip" ]
@@ -102,6 +102,7 @@ owncloud__base_php_packages:
 
   - 'mbstring'
   - 'zip'
+  - '{{ [ "php-xml", "php-apcu", "php7.4-mysql", "php7.4-redis"] if (owncloud__variant != "nextcloud") else [] }}'
 
   ## Required for the "OpenOTP Two Factor Authentication" (twofactor_rcdevsopenotp) as of NC 14.
   - 'ldap'
@@ -429,7 +430,7 @@ owncloud__variant_name_map:
 #
 # For ownCloud refer to the `ownCloud Maintenance and Release Schedule <https://github.com/owncloud/core/wiki/Maintenance-and-Release-Schedule>`_
 # and the `package index <https://download.owncloud.org/download/repositories/>`_ for more details.
-owncloud__release: '{{ "10.4"
+owncloud__release: '{{ "10"
                        if (owncloud__variant == "owncloud")
                        else "22.0" }}'
 
@@ -456,14 +457,14 @@ owncloud__distribution_version: '{{ ansible_distribution_major_version }}'
 # .. envvar:: owncloud__apt_repo_base
 #
 # Base APT repository URL starting at the authority part.
-owncloud__apt_repo_base: 'attic.owncloud.org/download/repositories/{{ owncloud__release }}/prod'
+owncloud__apt_repo_base: 'download.opensuse.org/repositories/isv:/ownCloud:/server:/{{ owncloud__release }}'
 
 
 # .. envvar:: owncloud__apt_repo_key_id
 #
 # OpenPGP public key specified by fingerprint which is used to sign the APT
 # repository.
-owncloud__apt_repo_key_id: 'DDA2C105C4B73A6649AD2BBD47AE7F72479BC94B'
+owncloud__apt_repo_key_id: '1B07204CD71B690D409F57D24ABE1AC7557BEFF9'
 
 
 # .. envvar:: owncloud__old_apt_repo_keys
@@ -489,7 +490,7 @@ owncloud__src_remote_dir: '{{
 # .. envvar:: owncloud__apt_repo_source
 #
 # APT ``sources.list`` URL of the ownCloud ``.deb`` repository.
-owncloud__apt_repo_source: '{{ "deb https://" + owncloud__apt_repo_base + "/" +
+owncloud__apt_repo_source: '{{ "deb http://" + owncloud__apt_repo_base + "/" +
                                owncloud__distribution + "/ /" }}'
 
 
