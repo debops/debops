@@ -26,12 +26,6 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
-:ref:`debops.resources` role
-''''''''''''''''''''''''''''
-
-- The :ref:`debops.resources` role can now be used to repace a line via the
-  ``replace`` module.
-
 General
 '''''''
 
@@ -52,6 +46,12 @@ General
 
 - The role can now install APT packages specified on the group and host level
   of Ansible inventory, for more flexibility.
+
+:ref:`debops.resources` role
+''''''''''''''''''''''''''''
+
+- The :ref:`debops.resources` role can now be used to repace a line via the
+  ``replace`` module.
 
 :ref:`debops.slapd` role
 ''''''''''''''''''''''''
