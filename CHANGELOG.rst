@@ -62,6 +62,12 @@ Changed
 - Unused ``dovecot__ldap_server_port`` variable has been removed from role
   defaults.
 
+:ref:`debops.etckeeper` role
+''''''''''''''''''''''''''''
+
+- The role will ignore GitLab Runner configuration as well as Docker keys to
+  avoid storing sensitive data in :command:`git` repository.
+
 :ref:`debops.influxdata` role
 '''''''''''''''''''''''''''''
 
