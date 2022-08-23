@@ -49,6 +49,14 @@ General
 Changed
 ~~~~~~~
 
+General
+'''''''
+
+- The new Jinja2 3.x release changed the behaviour of the ``to_json`` Jinja
+  filter - it doesn't accept YAML lists as input anymore, only YAML
+  dictionaries. To fix this issue, the filters were switched to ``to_yaml`` in
+  various Ansible roles.
+
 :ref:`debops.apt_install` role
 ''''''''''''''''''''''''''''''
 
