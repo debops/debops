@@ -32,6 +32,16 @@ Added
 - The role can now download APT repository GPG keys to separate keyring files,
   which can be used to scope a given GPG key to specific APT repositories.
 
+Changed
+~~~~~~~
+
+:ref:`debops.docker_server` role
+''''''''''''''''''''''''''''''''
+
+- The role will now recognize the ``aarch64`` architecture used on latest Apple
+  computers and translate it to ``arm64`` to allow installation of Docker
+  Engine from upstream repositories.
+
 
 `debops v2.2.8`_ - 2022-09-02
 -----------------------------
