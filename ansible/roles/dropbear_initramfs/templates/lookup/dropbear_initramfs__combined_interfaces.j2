@@ -3,8 +3,8 @@
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 {% import 'templates/import/debops__tpl_macros.j2' as debops__tpl_macros with context %}
-{% set dropbear_initramfs__tpl_merge_1 = (debops__tpl_macros.merge_dict(dropbear_initramfs__interfaces, dropbear_initramfs__group_interfaces, 'iface') | from_json) %}
-{% set dropbear_initramfs__tpl_merge_2 = (debops__tpl_macros.merge_dict(dropbear_initramfs__tpl_merge_1, dropbear_initramfs__host_interfaces, 'iface') | from_json) %}
+{% set dropbear_initramfs__tpl_merge_1 = (debops__tpl_macros.merge_dict(dropbear_initramfs__interfaces, dropbear_initramfs__group_interfaces, 'iface') | from_yaml) %}
+{% set dropbear_initramfs__tpl_merge_2 = (debops__tpl_macros.merge_dict(dropbear_initramfs__tpl_merge_1, dropbear_initramfs__host_interfaces, 'iface') | from_yaml) %}
 {% set dropbear_initramfs__tpl_filtered_interfaces = {} %}
 {% for name, params in dropbear_initramfs__tpl_merge_2.items() %}
 {%   set interface_name = (params.iface | d(name)) %}
