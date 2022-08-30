@@ -190,6 +190,11 @@ The YAML dictionaries are defined using specific parameters:
   .. __: https://keybase.io/
   .. __: https://keybase.io/docs/api/1.0/call/user/pgp_keys.asc
 
+``keyring``
+  Optional. Absolute path for the keyring where the GPG key should be stored.
+  If omitted, the key will be stored in the system-wide keyring
+  (:file:`/etc/apt/trusted.gpg`).
+
 ``keyserver``
   Optional. Override the default GPG keyserver URL specified in the
   :envvar:`keyring__keyserver` variable.
