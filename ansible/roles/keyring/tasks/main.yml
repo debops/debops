@@ -52,6 +52,7 @@
                                       if (keyring__keyserver | d() and item.url is undefined and item.keybase is undefined and
                                           ((item.id | d(item)) | replace(" ","")) not in keyring__fact_local_keys)
                                       else omit) }}'
+    keyring: '{{ item.keyring | d(omit) }}'
     url: '{{ item.url | d((keyring__keybase_api + item.keybase
                            + "/pgp_keys.asc?fingerprint=" + ((item.id | d(item)) | replace(" ","")))
                           if item.keybase | d() else omit) }}'
