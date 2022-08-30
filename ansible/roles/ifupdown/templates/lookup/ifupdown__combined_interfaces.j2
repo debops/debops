@@ -4,11 +4,11 @@
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 {% import 'templates/import/debops__tpl_macros.j2' as debops__tpl_macros with context %}
-{% set ifupdown__tpl_merge_1 = (debops__tpl_macros.merge_dict(ifupdown__ethernet_interfaces, ifupdown__default_interfaces, 'iface') | from_json) %}
-{% set ifupdown__tpl_merge_2 = (debops__tpl_macros.merge_dict(ifupdown__tpl_merge_1, ifupdown__interfaces, 'iface')                 | from_json) %}
-{% set ifupdown__tpl_merge_3 = (debops__tpl_macros.merge_dict(ifupdown__tpl_merge_2, ifupdown__group_interfaces, 'iface')           | from_json) %}
-{% set ifupdown__tpl_merge_4 = (debops__tpl_macros.merge_dict(ifupdown__tpl_merge_3, ifupdown__host_interfaces, 'iface')            | from_json) %}
-{% set ifupdown__tpl_merge_5 = (debops__tpl_macros.merge_dict(ifupdown__tpl_merge_4, ifupdown__dependent_interfaces, 'iface')       | from_json) %}
+{% set ifupdown__tpl_merge_1 = (debops__tpl_macros.merge_dict(ifupdown__ethernet_interfaces, ifupdown__default_interfaces, 'iface') | from_yaml) %}
+{% set ifupdown__tpl_merge_2 = (debops__tpl_macros.merge_dict(ifupdown__tpl_merge_1, ifupdown__interfaces, 'iface')                 | from_yaml) %}
+{% set ifupdown__tpl_merge_3 = (debops__tpl_macros.merge_dict(ifupdown__tpl_merge_2, ifupdown__group_interfaces, 'iface')           | from_yaml) %}
+{% set ifupdown__tpl_merge_4 = (debops__tpl_macros.merge_dict(ifupdown__tpl_merge_3, ifupdown__host_interfaces, 'iface')            | from_yaml) %}
+{% set ifupdown__tpl_merge_5 = (debops__tpl_macros.merge_dict(ifupdown__tpl_merge_4, ifupdown__dependent_interfaces, 'iface')       | from_yaml) %}
 {% set ifupdown__tpl_filtered_interfaces = {} %}
 {% for name, params in ifupdown__tpl_merge_5.items() %}
 {%   set interface_name = (params.iface | d(name)) %}

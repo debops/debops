@@ -116,7 +116,7 @@
 {%       endfor %}
 {%     endif %}
 {%   endif %}
-{{ merged_dict | to_json }}
+{{ merged_dict | to_yaml }}
 {% endmacro %}{# ]]] #}
 
 {% macro flattened() %}{# [[[ #}
@@ -161,10 +161,10 @@
 {#     Filter out. #}
 {%   elif append_mapping_keys and (arg is mapping) %}
 {#     Does not work as of Jinja 2.8? #}
-{%     set _ = elem_flattened.extend(flattened(arg.keys(), filter_undef=filter_undef, filter_mapping=filter_mapping) | from_json) %}
+{%     set _ = elem_flattened.extend(flattened(arg.keys(), filter_undef=filter_undef, filter_mapping=filter_mapping) | from_yaml) %}
 {%   elif append_mapping_values and (arg is mapping) %}
 {#     Does not work as of Jinja 2.8? #}
-{%     set _ = elem_flattened.extend(flattened(arg.values(), filter_undef=filter_undef, filter_mapping=filter_mapping) | from_json) %}
+{%     set _ = elem_flattened.extend(flattened(arg.values(), filter_undef=filter_undef, filter_mapping=filter_mapping) | from_yaml) %}
 {%   elif filter_mapping and (arg is mapping) %}
 {#     Filter out. #}
 {%   elif (arg is undefined) %}
@@ -173,9 +173,9 @@
 {%     set _ = elem_flattened.append(arg) %}
 {%   elif (arg is iterable) %}
 {%     for element in arg %}
-{%       set _ = elem_flattened.extend(flattened(element, filter_undef=filter_undef, filter_mapping=filter_mapping) | from_json) %}
+{%       set _ = elem_flattened.extend(flattened(element, filter_undef=filter_undef, filter_mapping=filter_mapping) | from_yaml) %}
 {%     endfor %}
 {%   endif %}
 {% endfor %}
-{{ elem_flattened | to_json }}
+{{ elem_flattened | to_yaml }}
 {% endmacro %}{# ]]] #}
