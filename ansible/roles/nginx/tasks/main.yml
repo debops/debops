@@ -58,7 +58,7 @@
   until: nginx__register_packages_flavor is succeeded
 
 - name: Create systemd override directory for nginx unit
-  ansible.builtin.file:
+  file:
     path: '/etc/systemd/system/nginx.service.d'
     state: 'directory'
     mode: '0755'
@@ -66,7 +66,7 @@
          ansible_service_mgr == 'systemd')
 
 - name: Create systemd override configuration for nginx unit
-  ansible.builtin.template:
+  template:
     src: 'etc/systemd/system/nginx.service.d/wait-for-network.conf.j2'
     dest: '/etc/systemd/system/nginx.service.d/wait-for-network.conf'
     mode: '0644'
