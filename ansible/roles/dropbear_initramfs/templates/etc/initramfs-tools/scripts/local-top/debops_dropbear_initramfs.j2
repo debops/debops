@@ -20,10 +20,10 @@ esac
 
 {% for name, interface in dropbear_initramfs__combined_interfaces | dictsort %}
 {%   set interface_name = (interface.iface | d(name)) %}
-{%   set addresses = (debops__tpl_macros.flattened(interface.address, interface.addresses) | from_json) | unique %}
+{%   set addresses = (debops__tpl_macros.flattened(interface.address, interface.addresses) | from_yaml) | unique %}
 {%   set ipv4_addresses = addresses | ipv4 %}
 {%   set ipv6_addresses = addresses | ipv6 %}
-{%   set gateways = (debops__tpl_macros.flattened(interface.gateway, interface.gateways) | from_json) | unique %}
+{%   set gateways = (debops__tpl_macros.flattened(interface.gateway, interface.gateways) | from_yaml) | unique %}
 {%   set ipv4_gateways = gateways | ipv4 %}
 {%   set ipv6_gateways = gateways | ipv6 %}
 
