@@ -3,10 +3,10 @@
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 {% import 'templates/import/debops__tpl_macros.j2' as debops__tpl_macros with context %}
-{% set avahi__tpl_merge_1 = (debops__tpl_macros.merge_dict(avahi__default_services, avahi__dependent_services, 'filename') | from_json) %}
-{% set avahi__tpl_merge_2 = (debops__tpl_macros.merge_dict(avahi__tpl_merge_1, avahi__services, 'filename')                | from_json) %}
-{% set avahi__tpl_merge_3 = (debops__tpl_macros.merge_dict(avahi__tpl_merge_2, avahi__group_services, 'filename')          | from_json) %}
-{% set avahi__tpl_merge_4 = (debops__tpl_macros.merge_dict(avahi__tpl_merge_3, avahi__host_services, 'filename')           | from_json) %}
+{% set avahi__tpl_merge_1 = (debops__tpl_macros.merge_dict(avahi__default_services, avahi__dependent_services, 'filename') | from_yaml) %}
+{% set avahi__tpl_merge_2 = (debops__tpl_macros.merge_dict(avahi__tpl_merge_1, avahi__services, 'filename')                | from_yaml) %}
+{% set avahi__tpl_merge_3 = (debops__tpl_macros.merge_dict(avahi__tpl_merge_2, avahi__group_services, 'filename')          | from_yaml) %}
+{% set avahi__tpl_merge_4 = (debops__tpl_macros.merge_dict(avahi__tpl_merge_3, avahi__host_services, 'filename')           | from_yaml) %}
 {% set avahi__tpl_filtered_services = {} %}
 {% for filename, params in avahi__tpl_merge_4.items() %}
 {%   set service_filename = (params.filename | d(filename)) %}
