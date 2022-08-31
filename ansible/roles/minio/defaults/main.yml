@@ -35,7 +35,7 @@ minio__group: 'minio'
 #
 # List of additional UNIX groups to add to the MinIO UNIX account, required for
 # access to additional resources.
-minio__additional_groups: '{{ [ "ssl-cert" ] if minio__pki_enabled | bool else [] }}'
+minio__additional_groups: '{{ ["ssl-cert"] if minio__pki_enabled | bool else [] }}'
 
                                                                    # ]]]
 # .. envvar:: minio__home [[[
@@ -139,10 +139,10 @@ minio__upstream_git_repository: 'https://github.com/minio/minio'
 # are preferable.
 minio__upstream_git_release: '{{ "RELEASE.2019-03-27T22-35-21Z"
                                  if (ansible_distribution_release in
-                                     [ "stretch", "buster", "xenial", "bionic" ])
+                                     ["stretch", "buster", "xenial", "bionic"])
                                      else ("RELEASE.2019-09-05T23-24-38Z"
                                        if (ansible_distribution_release in
-                                           [ "bullseye" ])
+                                           ["bullseye"])
                                        else minio__upstream_url_release) }}'
 
                                                                    # ]]]

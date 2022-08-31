@@ -3,32 +3,32 @@
 # Copyright (C) 2016-2019 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- name: '{{ item.name }}'
+- name: '{{ item.name }}'  # noqa name[casing]
   community.general.ldap_entry:
     dn:          '{{ item.dn if (item.dn is string) else item.dn | join(",") }}'
     objectClass: '{{ item.objectClass | d(omit) }}'
     attributes:  '{{ item.attributes | d(omit) }}'
     state:       '{{ item.entry_state | d(item.state) }}'
   run_once:      '{{ item.run_once | d(False) }}'
-  when: (item.objectClass | d() or item.entry_state | d()) and item.state not in [ 'init', 'ignore' ]
+  when: (item.objectClass | d() or item.entry_state | d()) and item.state not in ['init', 'ignore']
   tags: [ 'role::slapd:tasks', 'role::slapd:slapacl' ]
   no_log: '{{ debops__no_log | d(item.no_log)
               | d(True
                   if ("userPassword" in (item.attributes | d({})).keys() or
-                      "olcRootPW"    in (item.attributes | d({})).keys())
+                      "olcRootPW" in (item.attributes | d({})).keys())
                   else False) }}'
 
-- name: '{{ item.name }}'
+- name: '{{ item.name }}'  # noqa name[casing]
   community.general.ldap_attrs:
     dn:         '{{ item.dn if (item.dn is string) else item.dn | join(",") }}'
     attributes: '{{ item.attributes | d({}) }}'
     ordered:    '{{ item.ordered | d(False) }}'
     state:      '{{ item.state }}'
   run_once:     '{{ item.run_once | d(False) }}'
-  when: not item.objectClass | d() and not item.entry_state | d() and item.state not in [ 'init', 'ignore' ]
+  when: not item.objectClass | d() and not item.entry_state | d() and item.state not in ['init', 'ignore']
   tags: [ 'role::slapd:tasks', 'role::slapd:slapacl' ]
   no_log: '{{ debops__no_log | d(item.no_log)
               | d(True
                   if ("userPassword" in (item.attributes | d({})).keys() or
-                      "olcRootPW"    in (item.attributes | d({})).keys())
+                      "olcRootPW" in (item.attributes | d({})).keys())
                   else False) }}'

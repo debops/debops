@@ -55,7 +55,7 @@
 
 - name: Remove module load configuration
   ansible.builtin.file:
-    dest: '/etc/modules-load.d/{{ item.filename | d(item.name | replace("_","-") + ".conf") }}'
+    dest: '/etc/modules-load.d/{{ item.filename | d(item.name | replace("_", "-") + ".conf") }}'
     state: 'absent'
   with_items: '{{ kmod__combined_load | debops.debops.parse_kv_items }}'
   when: kmod__enabled | bool and ansible_service_mgr == 'systemd' and
@@ -64,7 +64,7 @@
 - name: Configure module loading at boot
   ansible.builtin.template:
     src: 'etc/modules-load.d/module.conf.j2'
-    dest: '/etc/modules-load.d/{{ item.filename | d(item.name | replace("_","-") + ".conf") }}'
+    dest: '/etc/modules-load.d/{{ item.filename | d(item.name | replace("_", "-") + ".conf") }}'
     owner: 'root'
     group: 'root'
     mode: '0644'

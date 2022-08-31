@@ -120,7 +120,7 @@ nginx_flavor_package_map:
     - 'ruby'
     - '{{ "passenger"
           if (nginx__flavor_distribution_release in
-              [ "trusty", "xenial" ])
+              ["trusty", "xenial"])
           else "libnginx-mod-http-passenger" }}'
 
   # Upstream version from https://nginx.org/ packaged for Debian
@@ -529,9 +529,9 @@ nginx_default_ssl_ciphers: '{{ "mozilla_modern"
 # version 1.13.0 and up.
 #
 # See also: https://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_protocols
-nginx_default_tls_protocols: '{{ [ "TLSv1.2", "TLSv1.3" ]
+nginx_default_tls_protocols: '{{ ["TLSv1.2", "TLSv1.3"]
                                  if ansible_local.nginx.version | d("0.0.0") is version("1.13.0", ">=")
-                                 else [ "TLSv1.2" ] }}'
+                                 else ["TLSv1.2"] }}'
 
                                                                    # ]]]
 # .. envvar:: nginx_default_ssl_curve [[[
@@ -742,7 +742,7 @@ nginx_status: []
 # .. envvar:: nginx_status_localhost [[[
 #
 # By default allow access to the status page from webserver itself
-nginx_status_localhost: '{{ [ "127.0.0.1/32", "::1/128" ] + ansible_all_ipv4_addresses | d([]) +
+nginx_status_localhost: '{{ ["127.0.0.1/32", "::1/128"] + ansible_all_ipv4_addresses | d([]) +
                             (ansible_all_ipv6_addresses | d([]) |
                              difference(ansible_all_ipv6_addresses | d([]) | ipaddr("link-local"))) }}'
 
@@ -1097,7 +1097,7 @@ nginx__apt_preferences__dependent_list:
     priority: '600'
     suffix: '_passenger'
     by_role: 'debops.nginx'
-    state: '{{ ((nginx__deploy_state in [ "present" ]) and (nginx_flavor in [ "passenger" ])) | ternary("present", "absent") }}'
+    state: '{{ ((nginx__deploy_state in ["present"]) and (nginx_flavor in ["passenger"])) | ternary("present", "absent") }}'
 
                                                                    # ]]]
 # .. envvar:: nginx_php5_status [[[
@@ -1260,7 +1260,7 @@ nginx__keyring__dependent_apt_keys:
   - id: '{{ nginx__flavor_apt_key_id }}'
     repo: '{{ nginx__flavor_apt_repository }}'
     state: '{{ "present"
-               if (nginx_flavor in [ "nginx.org", "passenger" ] and
+               if (nginx_flavor in ["nginx.org", "passenger"] and
                    nginx__deploy_state == "present")
                else "absent" }}'
 

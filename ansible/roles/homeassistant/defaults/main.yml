@@ -84,12 +84,15 @@ homeassistant__optional_python_packages:
 # .. envvar:: homeassistant__combined_packages [[[
 #
 # List of all system packages which will be installed by the role.
-homeassistant__combined_packages: '{{ (
-      homeassistant__base_packages +
-      homeassistant__packages +
-      (homeassistant__dependency_python_packages if (not homeassistant__virtualenv | bool) else []) +
-      (homeassistant__optional_python_packages if (not homeassistant__virtualenv | bool) else [])
-    ) | unique | sort }}'
+homeassistant__combined_packages: '{{ (homeassistant__base_packages
+                                       + homeassistant__packages
+                                       + (homeassistant__dependency_python_packages
+                                          if (not homeassistant__virtualenv | bool)
+                                          else [])
+                                       + (homeassistant__optional_python_packages
+                                          if (not homeassistant__virtualenv | bool)
+                                          else []))
+                                      | unique | sort }}'
 
                                                                    # ]]]
 # .. envvar:: homeassistant__deploy_state [[[

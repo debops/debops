@@ -278,7 +278,7 @@ gitlab__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
 gitlab__ldap_self_attributes:
   uid: '{{ gitlab__ldap_self_rdn.split("=")[1] }}'
   userPassword: '{{ gitlab__ldap_bindpw }}'
-  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  host: '{{ [ansible_fqdn, ansible_hostname] | unique }}'
   description: 'Account used by the "GitLab" service to access the LDAP directory'
 
                                                                    # ]]]
@@ -286,7 +286,7 @@ gitlab__ldap_self_attributes:
 #
 # The Distinguished Name of the account LDAP object used by the
 # GitLab service to bind to the LDAP directory.
-gitlab__ldap_binddn: '{{ ([ gitlab__ldap_self_rdn ] + gitlab__ldap_device_dn) | join(",") }}'
+gitlab__ldap_binddn: '{{ ([gitlab__ldap_self_rdn] + gitlab__ldap_device_dn) | join(",") }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab__ldap_bindpw [[[
@@ -376,7 +376,7 @@ gitlab__ldap_user_filter: '(&
 # disable this setting, because the userPrincipalName contains an '@'.
 gitlab__ldap_username_or_email_login: '{{ True
                                           if (gitlab__ldap_account_attribute in
-                                              [ "uid", "sAMAccountName" ])
+                                              ["uid", "sAMAccountName"])
                                           else False }}'
 
                                                                    # ]]]

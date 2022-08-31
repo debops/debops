@@ -245,7 +245,7 @@ unattended_upgrades__mail_from: ''
 # List of email addresses to which the :program:`unattended-upgrade` script
 # will sent the emails with upgrade results. Specify an empty list to disable.
 unattended_upgrades__mail_to: '{{ ansible_local.core.admin_private_email
-                                  | d([ "root@" + ansible_domain ]) }}'
+                                  | d(["root@" + ansible_domain]) }}'
 
                                                                    # ]]]
 # .. envvar:: unattended_upgrades__mail_only_on_error [[[
@@ -273,7 +273,7 @@ unattended_upgrades__auto_reboot: False
 #
 # Specify the time of the automatic reboot instead of ``now``.
 unattended_upgrades__auto_reboot_time: '{{ "02:30"
-                                            if (ansible_virtualization_role in [ "host", "NA" ])
+                                            if (ansible_virtualization_role in ["host", "NA"])
                                             else ("02:%02d" | format(55 | random(seed=inventory_hostname, start=40))) }}'
 
                                                                    # ]]]

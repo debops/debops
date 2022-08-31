@@ -499,8 +499,8 @@ apt_cacher_ng__ferm__dependent_rules:
   - type: 'accept'
     dport: [ 'acng' ]
     saddr: '{{ (apt_cacher_ng__allow | d([]) | list) +
-      (apt_cacher_ng__group_allow    | d([]) | list) +
-      (apt_cacher_ng__host_allow     | d([]) | list) }}'
+               (apt_cacher_ng__group_allow | d([]) | list) +
+               (apt_cacher_ng__host_allow | d([]) | list) }}'
     accept_any: True
     interface: '{{ apt_cacher_ng__interfaces }}'
     weight: '40'

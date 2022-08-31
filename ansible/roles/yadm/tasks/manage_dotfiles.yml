@@ -7,7 +7,7 @@
   ansible.builtin.git:
     repo: '{{ item_git.repo | d(item_git) }}'
     dest: '{{ yadm__dotfiles_root + "/"
-              + (item_git.repo | d(item_git)).split("://")[1] | regex_replace("\.git$","")
+              + (item_git.repo | d(item_git)).split("://")[1] | regex_replace("\.git$", "")
               + ".git" }}'
     version: '{{ item_git.version | d("master") }}'
     verify_commit: '{{ True if dotfile.gpg | d() else omit }}'
@@ -21,7 +21,7 @@
 - name: 'Remove the {{ dotfile.name }} dotfiles mirror if requested'
   ansible.builtin.file:
     dest: '{{ (yadm__dotfiles_root + "/"
-               + (item_git.repo | d(item_git)).split("://")[1] | regex_replace("\.git$","")
+               + (item_git.repo | d(item_git)).split("://")[1] | regex_replace("\.git$", "")
                + ".git") | dirname }}'
     state: 'absent'
   loop: '{{ q("flattened", dotfile.git) }}'

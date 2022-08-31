@@ -66,7 +66,7 @@
     group: 'root'
     mode: '0755'
   loop: '{{ redis_sentinel__combined_configuration | debops.debops.parse_kv_items
-            | product([ "", "/reconfig.d", "/notify.d" ]) | list }}'
+            | product(["", "/reconfig.d", "/notify.d"]) | list }}'
   when: item.0.name | d() and item.0.state | d('present') not in [ 'absent', 'init', 'ignore' ]
   no_log: '{{ debops__no_log | d(True) }}'
 
@@ -91,7 +91,7 @@
     group: 'root'
     mode: '0755'
   loop: '{{ redis_sentinel__combined_configuration | debops.debops.parse_kv_items
-            | product([ "notify.sh", "reconfig.sh" ]) | list }}'
+            | product(["notify.sh", "reconfig.sh"]) | list }}'
   when: item.0.name | d() and item.0.state | d('present') not in [ 'absent', 'init', 'ignore' ]
   no_log: '{{ debops__no_log | d(True) }}'
 

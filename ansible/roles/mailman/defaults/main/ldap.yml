@@ -18,7 +18,7 @@ mailman__ldap_enabled: '{{ ansible_local.ldap.enabled | d(False) }}'
 # .. envvar:: mailman__ldap_uri [[[
 #
 # List of LDAP server URIs.
-mailman__ldap_uri: '{{ ansible_local.ldap.uri | d([ "ldap://ldap." + ansible_domain ]) }}'
+mailman__ldap_uri: '{{ ansible_local.ldap.uri | d(["ldap://ldap." + ansible_domain]) }}'
 
                                                                    # ]]]
 # .. envvar:: mailman__ldap_device_dn [[[
@@ -48,7 +48,7 @@ mailman__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
 mailman__ldap_self_attributes:
   uid: '{{ mailman__ldap_self_rdn.split("=")[1] }}'
   userPassword: '{{ mailman__ldap_bind_password }}'
-  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  host: '{{ [ansible_fqdn, ansible_hostname] | unique }}'
   description: 'Account used by the "mailman" service to access the LDAP directory'
 
                                                                    # ]]]
@@ -62,7 +62,7 @@ mailman__ldap_starttls: True
 #
 # The Distinguished Name of the service account object that Mailman 3 uses to
 # access the LDAP directory.
-mailman__ldap_bind_dn: '{{ ([ mailman__ldap_self_rdn ]
+mailman__ldap_bind_dn: '{{ ([mailman__ldap_self_rdn]
                             + mailman__ldap_device_dn) | join(",") }}'
 
                                                                    # ]]]

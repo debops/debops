@@ -55,10 +55,10 @@ libvirtd__base_packages_map:
 #
 # List of QEMU KVM packages to install. They will be installed on all hosts
 # apart from KVM guests, to not create redundant support.
-libvirtd__kvm_packages: '{{ [ "qemu-system-x86", "qemu-utils" ]
-                            + [ "qemu-kvm" ]
-                              if ansible_distribution_release in [ "stretch",
-                                   "buster", "bionic", "focal" ]
+libvirtd__kvm_packages: '{{ ["qemu-system-x86", "qemu-utils"]
+                            + ["qemu-kvm"]
+                              if ansible_distribution_release in ["stretch",
+                                   "buster", "bionic", "focal"]
                               else [] }}'
 
                                                                    # ]]]
@@ -82,7 +82,7 @@ libvirtd__misc_packages:
   - 'ovmf'  # UEFI firmware for amd64 VMs
   - 'pm-utils'
   - 'sysfsutils'
-  - '{{ [] if (ansible_distribution_release in [ "bullseye" ])
+  - '{{ [] if (ansible_distribution_release in ["bullseye"])
            else "virt-top" }}'
 
                                                                    # ]]]
@@ -115,7 +115,7 @@ libvirtd__deployment_mode: '{{ "opennebula"
 #
 # List of administrator accounts which should have access to
 # :program:`libvirtd`.
-libvirtd__admins: '{{ [ ansible_user | d(lookup("env", "USER")) ]
+libvirtd__admins: '{{ [ansible_user | d(lookup("env", "USER"))]
                       if ansible_user | d(lookup("env", "USER")) != "root"
                       else [] }}'
 

@@ -26,14 +26,14 @@
 
 - name: Install required packages
   ansible.builtin.package:
-    name: '{{ q("flattened", ([ "snmp", "snmpd" ]
-                              + ([ "snmp-mibs-downloader" ]
+    name: '{{ q("flattened", (["snmp", "snmpd"]
+                              + (["snmp-mibs-downloader"]
                                  if snmpd_download_mibs
                                  else [])
-                              + ([ "lm-sensors" ]
+                              + (["lm-sensors"]
                                  if (ansible_virtualization_role is undefined or
-                                     ansible_virtualization_role not in [ "guest" ])
-                                 else [] )
+                                     ansible_virtualization_role not in ["guest"])
+                                 else [])
                               + snmpd_packages)) }}'
     state: 'present'
   register: snmpd__register_packages

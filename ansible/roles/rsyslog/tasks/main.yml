@@ -121,13 +121,13 @@
   debops.debops.dpkg_divert:
     path: '{{ "/etc/rsyslog.d/" + (item.divert_to | d(item.name)) }}'
     state: '{{ "present"
-               if (item.state | d("present") not in [ "absent", "ignore", "init" ])
+               if (item.state | d("present") not in ["absent", "ignore", "init"])
                else "absent" }}'
   loop: '{{ rsyslog__combined_rules | flatten | debops.debops.parse_kv_items
             | selectattr("divert", "defined") | list
             | selectattr("divert", "equalto", True) | list }}'
   loop_control:
-    label: '{{ {"name": item.name, "state": (item.state | d("present")) } }}'
+    label: '{{ {"name": item.name, "state": (item.state | d("present"))} }}'
   notify: [ 'Check and restart rsyslogd' ]
   when: rsyslog__enabled | bool and rsyslog__deploy_state != 'absent'
 
@@ -137,10 +137,10 @@
     dest: '{{ "/etc/rsyslog.d/" + item.name }}'
     owner: '{{ item.owner | d("root") }}'
     group: '{{ item.group | d("root") }}'
-    mode:  '{{ item.mode  | d("0644") }}'
+    mode:  '{{ item.mode | d("0644") }}'
   loop: '{{ rsyslog__combined_rules | flatten | debops.debops.parse_kv_items }}'
   loop_control:
-    label: '{{ {"name": item.name, "state": (item.state | d("present")) } }}'
+    label: '{{ {"name": item.name, "state": (item.state | d("present"))} }}'
   when: (rsyslog__enabled | bool and rsyslog__deploy_state != 'absent' and
          item.state | d('present') not in [ 'absent', 'ignore', 'init' ] and
          (item.options | d() or item.raw | d()))
@@ -152,7 +152,7 @@
     state: 'absent'
   loop: '{{ rsyslog__combined_rules | flatten | debops.debops.parse_kv_items }}'
   loop_control:
-    label: '{{ {"name": item.name, "state": (item.state | d("present")) } }}'
+    label: '{{ {"name": item.name, "state": (item.state | d("present"))} }}'
   when: (rsyslog__enabled | bool and rsyslog__deploy_state != 'absent' and
          (item.divert is undefined or not item.divert | bool) and
          item.state | d('present') == 'absent')

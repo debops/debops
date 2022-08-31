@@ -6,12 +6,9 @@
 
 - name: Create global webroot directories if allowed
   ansible.builtin.file:
-    path: '{{ item.root | d(
-              "{}/sites/{}/{}".format(
-                nginx_www + ("/" + item.owner if item.owner | d() else ""),
-                (item.name if item.name is string else item.name[0]) | d("default"),
-                item.public_dir_name | d(nginx_public_dir_name))
-              ) }}'
+    path: '{{ item.root | d("{}/sites/{}/{}".format(nginx_www + ("/" + item.owner if item.owner | d() else ""),
+                                                    (item.name if item.name is string else item.name[0]) | d("default"),
+                                                    item.public_dir_name | d(nginx_public_dir_name))) }}'
     state: 'directory'
     owner: '{{ item.owner | d(nginx_webroot_owner) }}'
     group: '{{ item.group | d(item.owner | d(nginx_webroot_group)) }}'
@@ -32,11 +29,9 @@
     src: '{{ item.welcome_template | d(nginx_welcome_template) }}'
     dest: '{{ item.root + "/index.html"
               if item.root | d()
-              else ("{}/sites/{}/{}/index.html".format(
-                nginx_www + ("/" + item.owner if item.owner | d() else ""),
-                (item.name if item.name is string else item.name[0]) | d("default"),
-                item.public_dir_name | d(nginx_public_dir_name))
-              ) }}'
+              else ("{}/sites/{}/{}/index.html".format(nginx_www + ("/" + item.owner if item.owner | d() else ""),
+                                                       (item.name if item.name is string else item.name[0]) | d("default"),
+                                                       item.public_dir_name | d(nginx_public_dir_name))) }}'
     owner: '{{ item.owner | d(nginx_webroot_owner) }}'
     group: '{{ item.group | d(item.owner | d(nginx_webroot_group)) }}'
     mode:  '0644'
@@ -59,11 +54,9 @@
     src: 'srv/www/sites/welcome/public/normalize.css'
     dest: '{{ item.root + "/normalize.css"
               if item.root | d()
-              else ("{}/sites/{}/{}/normalize.css".format(
-                nginx_www + ("/" + item.owner if item.owner | d() else ""),
-                (item.name if item.name is string else item.name[0]) | d("default"),
-                item.public_dir_name | d(nginx_public_dir_name))
-              ) }}'
+              else ("{}/sites/{}/{}/normalize.css".format(nginx_www + ("/" + item.owner if item.owner | d() else ""),
+                                                          (item.name if item.name is string else item.name[0]) | d("default"),
+                                                          item.public_dir_name | d(nginx_public_dir_name))) }}'
     owner: '{{ item.owner | d(nginx_webroot_owner) }}'
     group: '{{ item.group | d(item.owner | d(nginx_webroot_group)) }}'
     mode:  '0644'
@@ -125,7 +118,7 @@
     nginx_register_default_server_http: '{{ item.name if item.name is string else item.name[0] | d("default") }}'
   loop: '{{ q("flattened", (nginx__servers + nginx__default_servers + nginx__internal_servers + nginx__dependent_servers
                             + nginx_servers | d([]) + nginx_default_servers | d([])
-                            + nginx_internal_servers | d([]) + nginx_dependent_servers | d([]))[::-1]) }}'
+                            + nginx_internal_servers | d([]) + nginx_dependent_servers | d([]))[: : -1]) }}'
   when: (item.state | d('present') != 'absent' and
          (item.enabled | d(True) | bool) and
          (item.listen | d(True)) and
@@ -136,7 +129,7 @@
     nginx_register_default_server_https: '{{ item.name if item.name is string else item.name[0] | d("default") }}'
   loop: '{{ q("flattened", (nginx__servers + nginx__default_servers + nginx__internal_servers + nginx__dependent_servers
                             + nginx_servers | d([]) + nginx_default_servers | d([])
-                            + nginx_internal_servers | d([]) + nginx_dependent_servers | d([]))[::-1]) }}'
+                            + nginx_internal_servers | d([]) + nginx_dependent_servers | d([]))[: : -1]) }}'
   when: (item.state | d('present') != 'absent' and (item.enabled is undefined or item.enabled | bool) and
          (item.listen_ssl is undefined or item.listen_ssl | d()) and
          ((item.ssl | d() and item.ssl | bool) or

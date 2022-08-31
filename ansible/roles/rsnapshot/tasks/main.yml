@@ -52,8 +52,8 @@
     name: 'root'
     generate_ssh_key: True
     ssh_key_file:    '.ssh/{{ item.name }}'
-    ssh_key_type:    '{{ item.type    | d(rsnapshot__ssh_key_type) }}'
-    ssh_key_bits:    '{{ item.bits    | d(rsnapshot__ssh_key_bits) }}'
+    ssh_key_type:    '{{ item.type | d(rsnapshot__ssh_key_type) }}'
+    ssh_key_bits:    '{{ item.bits | d(rsnapshot__ssh_key_bits) }}'
     ssh_key_comment: '{{ item.comment | d(rsnapshot__ssh_key_comment) }}'
   loop: '{{ q("flattened", (rsnapshot__ssh_default_identities + rsnapshot__ssh_identities)) | debops.debops.parse_kv_items }}'
   loop_control:
@@ -241,14 +241,11 @@
     src: 'etc/rsnapshot/hosts/{{ item.1 }}.j2'
     dest: '{{ rsnapshot__config_dir + "/" + item.0.name + "/" + item.1 }}'
     mode: '0644'
-  loop: '{{ (rsnapshot__combined_hosts
-             | debops.debops.parse_kv_items(defaults={
-                                        "options":  (rsnapshot__combined_configuration | debops.debops.parse_kv_config),
-                                        "excludes": (rsnapshot__combined_excludes      | debops.debops.parse_kv_items),
-                                        "includes": (rsnapshot__combined_includes      | debops.debops.parse_kv_items)
-                                       },
-                              merge_keys=["excludes", "includes"])
-            ) | product([ "include.txt", "exclude.txt", "rsnapshot.conf" ]) | list }}'
+  loop: '{{ (rsnapshot__combined_hosts | debops.debops.parse_kv_items(defaults={"options": (rsnapshot__combined_configuration | debops.debops.parse_kv_config),
+                                                                                "excludes": (rsnapshot__combined_excludes | debops.debops.parse_kv_items),
+                                                                                "includes": (rsnapshot__combined_includes | debops.debops.parse_kv_items)},
+                                                                      merge_keys=["excludes", "includes"]))
+            | product(["include.txt", "exclude.txt", "rsnapshot.conf"]) | list }}'
   loop_control:
     label: '{{ {"name": item.0.name, "state": item.0.state | d("present"), "file": item.1} }}'
   when: (item.0.name | d() and item.0.state | d('present') not in [ 'absent', 'ignore' ] and

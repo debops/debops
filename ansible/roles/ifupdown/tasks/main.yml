@@ -108,7 +108,7 @@
   ansible.builtin.copy:  # noqa no-handler
     content: |
       {{ ("created"
-          if ((item.item.key | replace(':','_') | replace('.','_')) not in ansible_interfaces and
+          if ((item.item.key | replace(':', '_') | replace('.', '_')) not in ansible_interfaces and
               (item.diff is undefined or
                (item.diff | d() and item.diff.after | d() and
                 item.diff.after_header | d() and
@@ -146,13 +146,13 @@
 
 - name: Generate custom configuration files
   ansible.builtin.copy:
-    dest:    '{{ item.dest    | d(item.path) }}'
-    src:     '{{ item.src     | d(omit) }}'
+    dest:    '{{ item.dest | d(item.path) }}'
+    src:     '{{ item.src | d(omit) }}'
     content: '{{ item.content | d(omit) }}'
-    owner:   '{{ item.owner   | d("root") }}'
-    group:   '{{ item.group   | d("root") }}'
-    mode:    '{{ item.mode    | d("0644") }}'
-    force:   '{{ item.force   | d(omit) }}'
+    owner:   '{{ item.owner | d("root") }}'
+    group:   '{{ item.group | d("root") }}'
+    mode:    '{{ item.mode | d("0644") }}'
+    force:   '{{ item.force | d(omit) }}'
   loop: '{{ q("flattened", ifupdown__custom_files
                            + ifupdown__custom_group_files
                            + ifupdown__custom_host_files
@@ -170,7 +170,7 @@
 
 - name: Install custom ifupdown hooks
   ansible.builtin.template:
-    src:  '{{ item.src  | d(item.hook + ".j2") }}'
+    src:  '{{ item.src | d(item.hook + ".j2") }}'
     dest: '{{ item.dest | d("/" + item.hook) }}'
     owner: 'root'
     group: 'root'

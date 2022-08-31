@@ -203,7 +203,7 @@
   tags: [ 'role::sshd:known_hosts' ]
 
 - name: Check if /etc/ssh/moduli contains weak DH parameters
-  ansible.builtin.shell: awk '$5 < {{ (sshd__moduli_minimum | int -1) }}' /etc/ssh/moduli
+  ansible.builtin.shell: awk '$5 < {{ (sshd__moduli_minimum | int - 1) }}' /etc/ssh/moduli
   register: sshd__register_moduli
   changed_when: sshd__register_moduli.stdout
   check_mode: False

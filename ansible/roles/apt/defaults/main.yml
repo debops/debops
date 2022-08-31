@@ -56,7 +56,7 @@ apt__host_extra_architectures: []
 # Enable (if ``present``) or disable (if ``absent``) management of
 # :file:`/etc/apt/sources.list` file by the role.
 apt__sources_deploy_state: '{{ "present"
-                               if (apt__distribution in [ "Debian", "Raspbian", "Ubuntu", "Devuan" ])
+                               if (apt__distribution in ["Debian", "Raspbian", "Ubuntu", "Devuan"])
                                else "absent" }}'
 
                                                                    # ]]]
@@ -76,7 +76,7 @@ apt__sources_filter_duplicates: True
 # By default non-free repositories are enabled on hardware-based hosts due to
 # a possible requirement for non-free firmware packages.
 apt__nonfree: '{{ True if (ansible_virtualization_role is undefined or
-                           ansible_virtualization_role not in [ "guest" ])
+                           ansible_virtualization_role not in ["guest"])
                        else False }}'
 
                                                                    # ]]]
@@ -126,7 +126,7 @@ apt__base_packages:
   - 'ca-certificates'
   - '{{ "apt-transport-https"
         if (ansible_distribution_release in
-            [ "stretch", "trusty", "xenial" ])
+            ["stretch", "trusty", "xenial"])
         else [] }}'
   - 'gnupg'
 
@@ -587,7 +587,7 @@ apt__security_sources:
     type:         '{{ apt__source_types }}'
     suite:        '{{ apt__distribution_release
                       + ("/updates"
-                         if apt__distribution_release in [ "stretch", "buster" ]
+                         if apt__distribution_release in ["stretch", "buster"]
                          else "-security") }}'
     components:   '{{ apt__distribution_components }}'
     distribution: 'Debian'

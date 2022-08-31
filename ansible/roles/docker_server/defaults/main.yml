@@ -102,7 +102,7 @@ docker_server__packagename: '{{ docker_server__upstream_packagename
 docker_server__mandatory_packages:
   - '{{ "apt-transport-https"
         if (ansible_distribution_release in
-            [ "stretch", "trusty", "xenial" ])
+            ["stretch", "trusty", "xenial"])
         else [] }}'
   - 'ca-certificates'
   - 'curl'
@@ -114,13 +114,13 @@ docker_server__mandatory_packages:
 #
 # List of base packages to install with Docker.
 docker_server__base_packages:
-  - '{{ [ "aufs-tools" ]
+  - '{{ ["aufs-tools"]
         if (ansible_distribution_release in
-            [ "trusty", "stretch", "buster" ])
+            ["trusty", "stretch", "buster"])
         else [] }}'
-  - '{{ [ "virtualenv" ] if docker_server__install_virtualenv else [] }}'
+  - '{{ ["virtualenv"] if docker_server__install_virtualenv else [] }}'
   - "bridge-utils"
-  - '{{ [ "cgroup-lite" ] if (ansible_distribution_release in ["trusty"]) else [] }}'
+  - '{{ ["cgroup-lite"] if (ansible_distribution_release in ["trusty"]) else [] }}'
   - '{{ [] if docker_server__upstream | bool else "docker-compose" }}'
 
                                                                    # ]]]
@@ -512,7 +512,7 @@ docker_server__ferm__dependent_rules:
     rule_state: 'absent'
 
   - type: 'accept'
-    dport: '{{ [ docker_server__tcp_port ] + docker_server__custom_ports }}'
+    dport: '{{ [docker_server__tcp_port] + docker_server__custom_ports }}'
     protocol: [ 'tcp', 'udp' ]
     saddr: '{{ docker_server__tcp_allow }}'
     accept_any: False

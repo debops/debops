@@ -8,7 +8,7 @@
 ## Prepare [[[
 - name: Set device list to process to a single device
   ansible.builtin.set_fact:
-    cryptsetup__process_devices: '{{ [ cryptsetup__process_device ] }}'
+    cryptsetup__process_devices: '{{ [cryptsetup__process_device] }}'
   when: cryptsetup__process_device is defined
 
 - name: Assert that device configuration is valid
@@ -39,8 +39,8 @@
 ## Generate keyfile and copy it to the remote system [[[
 
 - name: Generate binary keyfile on the Ansible controller
-  ansible.builtin.shell: head -c {{ ((512/8) if (item.key_size | d(cryptsetup__key_size) == "default")
-                             else ((item.key_size | d(cryptsetup__key_size))/8)) | int }} \
+  ansible.builtin.shell: head -c {{ ((512 / 8) if (item.key_size | d(cryptsetup__key_size) == "default")
+                             else ((item.key_size | d(cryptsetup__key_size)) / 8)) | int }} \
                  {{ cryptsetup__keyfile_source_dev | quote }} > \
                  {{ (item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw")) | quote }}
   args:
@@ -85,18 +85,18 @@
               if (item.state | d(cryptsetup__state) == "ansible_controller_mounted")
               else cryptsetup__keyfile_remote_location)
               + "/" + item.name + "_keyfile.raw" }}'
-    backup:   '{{ item.keyfile_backup         | d(omit) }}'
-    follow:   '{{ item.keyfile_follow         | d(omit) }}'
-    force:    '{{ item.keyfile_force          | d(omit) }}'
-    group:    '{{ item.keyfile_group          | d(cryptsetup__keyfile_group) }}'
-    mode:     '{{ item.keyfile_mode           | d(cryptsetup__keyfile_mode) }}'
-    owner:    '{{ item.keyfile_owner          | d(cryptsetup__keyfile_owner) }}'
-    selevel:  '{{ item.keyfile_selevel        | d(omit) }}'
-    serole:   '{{ item.keyfile_serole         | d(omit) }}'
-    setype:   '{{ item.keyfile_setype         | d(omit) }}'
-    seuser:   '{{ item.keyfile_seuser         | d(omit) }}'
-    src:      '{{ item.keyfile                | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw") }}'
-    validate: '{{ item.keyfile_validate       | d(omit) }}'
+    backup:   '{{ item.keyfile_backup | d(omit) }}'
+    follow:   '{{ item.keyfile_follow | d(omit) }}'
+    force:    '{{ item.keyfile_force | d(omit) }}'
+    group:    '{{ item.keyfile_group | d(cryptsetup__keyfile_group) }}'
+    mode:     '{{ item.keyfile_mode | d(cryptsetup__keyfile_mode) }}'
+    owner:    '{{ item.keyfile_owner | d(cryptsetup__keyfile_owner) }}'
+    selevel:  '{{ item.keyfile_selevel | d(omit) }}'
+    serole:   '{{ item.keyfile_serole | d(omit) }}'
+    setype:   '{{ item.keyfile_setype | d(omit) }}'
+    seuser:   '{{ item.keyfile_seuser | d(omit) }}'
+    src:      '{{ item.keyfile | d(cryptsetup__secret_path + "/" + item.name + "/keyfile.raw") }}'
+    validate: '{{ item.keyfile_validate | d(omit) }}'
   when: (item.state | d(cryptsetup__state) in [ 'mounted', 'ansible_controller_mounted', 'unmounted', 'present' ]
          and not ansible_check_mode and 'remote_keyfile' not in item)
   with_items: '{{ cryptsetup__process_devices | d([]) }}'
@@ -271,8 +271,8 @@
 - name: Create filesystem on plaintext device mapper target
   filesystem:
     dev:    '/dev/mapper/{{ item.0.name }}'
-    force:  '{{ item.0.format_force   | d(omit) }}'
-    fstype: '{{ item.0.fstype         | d(cryptsetup__fstype) }}'
+    force:  '{{ item.0.format_force | d(omit) }}'
+    fstype: '{{ item.0.fstype | d(cryptsetup__fstype) }}'
     opts:   '{{ item.0.format_options | d(omit) }}'
   when: (item.1 | d() and item.1.stat | d() and item.1.stat.exists | d() and
          (item.0.create_filesystem | d(item.0.manage_filesystem | d(True)) | bool) and
@@ -351,11 +351,11 @@
 - name: Manage fstab and mount state of the plaintext device mapper targets
   ansible.posix.mount:
     src:    '/dev/mapper/{{ item.name }}'
-    fstype: '{{ item.fstype         | d(cryptsetup__fstype) }}'
-    name:   '{{ item.mount          | d(cryptsetup__mountpoint_parent_directory + "/" + item.name) }}'
+    fstype: '{{ item.fstype | d(cryptsetup__fstype) }}'
+    name:   '{{ item.mount | d(cryptsetup__mountpoint_parent_directory + "/" + item.name) }}'
     opts:   '{{ (item.mount_options | d(cryptsetup__mount_options | d([]))) | list | sort | unique | join(",") }}'
-    dump:   '{{ item.mount_dump     | d(omit) }}'
-    passno: '{{ item.mount_passno   | d(omit) }}'
+    dump:   '{{ item.mount_dump | d(omit) }}'
+    passno: '{{ item.mount_passno | d(omit) }}'
     fstab:  '{{ item.fstab_path | d(cryptsetup__fstab_file) }}'
     state:  '{{ "mounted"
                 if (item.state | d(cryptsetup__state) == "ansible_controller_mounted")

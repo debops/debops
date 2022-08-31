@@ -41,9 +41,9 @@ roundcube__required_php_packages:
 # List of recommended/optional PHP packages for Roundcube.
 # Refer to the `official Roundcube documentation <https://github.com/roundcube/roundcubemail/wiki/Install-Requirements>`__ for details.
 roundcube__optional_php_packages:
-  - '{{ "ldap"      if roundcube__ldap_enabled | bool      else [] }}'
+  - '{{ "ldap" if roundcube__ldap_enabled | bool else [] }}'
   - '{{ "memcached" if roundcube__memcached_enabled | bool else [] }}'
-  - '{{ "redis"     if roundcube__redis_enabled | bool     else [] }}'
+  - '{{ "redis" if roundcube__redis_enabled | bool else [] }}'
   - 'fileinfo'
   - 'enchant'
   - 'zip'
@@ -62,9 +62,9 @@ roundcube__base_php_packages:
   - '{{ roundcube__required_php_packages }}'
   - '{{ roundcube__apt_php_packages }}'
   - '{{ roundcube__optional_php_packages }}'
-  - '{{ [ "mysql" ] if (roundcube__database_map[roundcube__database].dbtype == "mysql") else [] }}'
-  - '{{ [ "pgsql" ] if (roundcube__database_map[roundcube__database].dbtype == "postgresql") else [] }}'
-  - '{{ [ "sqlite3" ] if (roundcube__database_map[roundcube__database].dbtype == "sqlite") else [] }}'
+  - '{{ ["mysql"] if (roundcube__database_map[roundcube__database].dbtype == "mysql") else [] }}'
+  - '{{ ["pgsql"] if (roundcube__database_map[roundcube__database].dbtype == "postgresql") else [] }}'
+  - '{{ ["sqlite3"] if (roundcube__database_map[roundcube__database].dbtype == "sqlite") else [] }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__apt_php_packages [[[
@@ -74,8 +74,8 @@ roundcube__base_php_packages:
 # minimal versions are taken from the file:`composer.json.dist` of the Roundcube
 # 1.3.0 release. If you install an older version of Roundcube you may want
 # to adjust this list.
-roundcube__apt_php_packages: '{{ [ "mail-mime", "net-smtp", "pear" ]
-                                 if ansible_distribution_release in [ "stretch", "buster", "sid", "xenial", "yakkety", "zesty", "artful" ]
+roundcube__apt_php_packages: '{{ ["mail-mime", "net-smtp", "pear"]
+                                 if ansible_distribution_release in ["stretch", "buster", "sid", "xenial", "yakkety", "zesty", "artful"]
                                  else [] }}'
 
                                                                    # ]]]
@@ -269,16 +269,8 @@ roundcube__database_schema_map:
 # .. envvar:: roundcube__database_schema [[[
 #
 # Initial Roundcube database schema loaded by Ansible.
-roundcube__database_schema: '{{ roundcube__database_schema_map[
-                                  roundcube__database_map[
-                                    roundcube__database
-                                  ].dbtype
-                                ]
-                                if roundcube__database_schema_map[
-                                     roundcube__database_map[
-                                       roundcube__database
-                                     ].dbtype
-                                   ] | d()
+roundcube__database_schema: '{{ roundcube__database_schema_map[roundcube__database_map[roundcube__database].dbtype]
+                                if roundcube__database_schema_map[roundcube__database_map[roundcube__database].dbtype] | d()
                                 else "" }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -343,10 +335,10 @@ roundcube__redis_password: '{{ ansible_local.redis_server.password | d("") }}'
 #
 # List of the Redis instances which should be used by Roundcube. Currently only
 # a single instance is supported, but the variable expects a list.
-roundcube__redis_hosts: [ '{{ ([ roundcube__redis_server,
-                                 roundcube__redis_port,
-                                 roundcube__redis_database,
-                                 roundcube__redis_password ])
+roundcube__redis_hosts: [ '{{ ([roundcube__redis_server,
+                                roundcube__redis_port,
+                                roundcube__redis_database,
+                                roundcube__redis_password])
                               | join(":") }}' ]
 
                                                                    # ]]]
@@ -459,7 +451,7 @@ roundcube__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
 roundcube__ldap_self_attributes:
   uid: '{{ roundcube__ldap_self_rdn.split("=")[1] }}'
   userPassword: '{{ roundcube__ldap_bindpw }}'
-  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  host: '{{ [ansible_fqdn, ansible_hostname] | unique }}'
   description: 'Account used by the "Roundcube" application to access the LDAP directory'
 
                                                                    # ]]]
@@ -467,7 +459,7 @@ roundcube__ldap_self_attributes:
 #
 # The Distinguished Name of the account LDAP object used by the
 # Roundcube application to bind to the LDAP directory.
-roundcube__ldap_binddn: '{{ ([ roundcube__ldap_self_rdn ] + roundcube__ldap_device_dn) | join(",") }}'
+roundcube__ldap_binddn: '{{ ([roundcube__ldap_self_rdn] + roundcube__ldap_device_dn) | join(",") }}'
 
                                                                    # ]]]
 # .. envvar:: roundcube__ldap_bindpw [[[
@@ -491,7 +483,7 @@ roundcube__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn | d([]) }}'
 #
 # The Distinguished Name of the people subtree which will be used for LDAP
 # address book searches.
-roundcube__ldap_people_dn: '{{ [ roundcube__ldap_people_rdn ]
+roundcube__ldap_people_dn: '{{ [roundcube__ldap_people_rdn]
                                + roundcube__ldap_base_dn }}'
 
                                                                    # ]]]
@@ -506,7 +498,7 @@ roundcube__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn | d([]) }}'
 #
 # The Distinguished Name of the groups subtree which will be used for LDAP
 # address book searches.
-roundcube__ldap_groups_dn: '{{ [ roundcube__ldap_groups_rdn ]
+roundcube__ldap_groups_dn: '{{ [roundcube__ldap_groups_rdn]
                                + roundcube__ldap_base_dn }}'
 
                                                                    # ]]]
@@ -2973,7 +2965,7 @@ roundcube__default_configuration:
 
     # Enable autocompletion for the LDAP address book.
   - name: 'autocomplete_addressbooks'
-    value: '{{ ([ "sql" ] + ([ "People" ] if roundcube__ldap_enabled | bool else []))
+    value: '{{ (["sql"] + (["People"] if roundcube__ldap_enabled | bool else []))
                | flatten }}'
     state: '{{ "present" if roundcube__ldap_enabled | bool else "ignore" }}'
 

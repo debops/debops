@@ -84,7 +84,7 @@
   ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          cat '{{ (secret + "/credentials/" + inventory_hostname + "/grub/" + item.0.name + "/password_mkpasswd") | quote }}'
          | LANG=C LC_ALL=C grub-mkpasswd-pbkdf2
-         {{ "" if grub__iter_time | d()   == "default" else ("--iteration-count=" + grub__iter_time) }}
+         {{ "" if grub__iter_time | d() == "default" else ("--iteration-count=" + grub__iter_time) }}
          {{ "" if grub__salt_length | d() == "default" else ("--salt=" + grub__salt_length) }}
          {{ "" if grub__hash_length | d() == "default" else ("--buflen=" + grub__hash_length) }}
          | perl -ne 's/^(:?Your PBKDF2|PBKDF2 hash of your password) is //ms && print'

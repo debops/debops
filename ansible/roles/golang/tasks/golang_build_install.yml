@@ -7,7 +7,7 @@
 - name: 'Check if {{ build.name }} APT packages are available'
   ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          apt-cache madison \
-           {{ ([ build.apt_packages ] if build.apt_packages is string else build.apt_packages) | join(' ') }} \
+           {{ ([build.apt_packages] if build.apt_packages is string else build.apt_packages) | join(' ') }} \
            | awk '{print $1}' | sort | uniq
   args:
     executable: '/bin/bash'

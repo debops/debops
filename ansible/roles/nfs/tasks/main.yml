@@ -27,7 +27,7 @@
     path:  '{{ item.path }}'
     owner: '{{ item.owner | d("root") }}'
     group: '{{ item.group | d("root") }}'
-    mode:  '{{ item.mode  | d("0755") }}'
+    mode:  '{{ item.mode | d("0755") }}'
     state: 'directory'
   loop: '{{ q("flattened", nfs__shares
                            + nfs__group_shares
@@ -40,10 +40,10 @@
     src:    '{{ item.src }}'
     fstype: '{{ item.fstype | d(nfs__default_mount_type) }}'
     opts:   '{{ lookup("template", "lookup/mount_options.j2") | from_yaml }}'
-    state:  '{{ item.state  | d("mounted") }}'
+    state:  '{{ item.state | d("mounted") }}'
     passno: '{{ item.passno | d(omit) }}'
-    dump:   '{{ item.dump   | d(omit) }}'
-    fstab:  '{{ item.fstab  | d(omit) }}'
+    dump:   '{{ item.dump | d(omit) }}'
+    fstab:  '{{ item.fstab | d(omit) }}'
   loop: '{{ q("flattened", nfs__shares
                            + nfs__group_shares
                            + nfs__host_shares) }}'

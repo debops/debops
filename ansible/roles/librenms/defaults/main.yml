@@ -36,7 +36,7 @@ librenms__base_packages:
 # List of monitoring packages to install (some distributions didn't rename the
 # old packages and they need overrides).
 librenms__monitoring_packages: '{{ librenms__monitoring_packages_map[ansible_distribution]
-                                   | d([ "monitoring-plugins" ]) }}'
+                                   | d(["monitoring-plugins"]) }}'
 
                                                                    # ]]]
 # .. envvar:: librenms__monitoring_packages_map [[[
@@ -369,7 +369,7 @@ librenms__snmp_credentials_default:
 # List of UNIX accounts for which ``~/.snmp/snmp.conf`` will be generated. By
 # default it's a ``root`` account, LibreNMS account and admin accounts that
 # exist on the host.
-librenms__home_snmp_conf: '{{ ([ "root", librenms__user ] +
+librenms__home_snmp_conf: '{{ (["root", librenms__user] +
                               librenms__admin_accounts | d([])) | unique }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -519,8 +519,8 @@ librenms__logrotate__dependent_config:
 # List of PHP packages to install by ``debops.php`` role.
 librenms__php__dependent_packages:
   - [ 'mysql', 'gmp', 'gd', 'snmp', 'curl', 'mcrypt', 'json' ]
-  - '{{ [ "xml", "mbstring", "zip" ]
-        if (php__version is version_compare("7.0",">=")) else [] }}'
+  - '{{ ["xml", "mbstring", "zip"]
+        if (php__version is version_compare("7.0", ">=")) else [] }}'
 
                                                                    # ]]]
 # .. envvar:: librenms__php__dependent_pools [[[

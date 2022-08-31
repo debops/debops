@@ -737,7 +737,7 @@ icinga_web__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn
 #
 # The Distinguished Name where Icinga Web will look for groups, defined as a
 # YAML list.
-icinga_web__ldap_groups_dn: '{{ [ icinga_web__ldap_groups_rdn ]
+icinga_web__ldap_groups_dn: '{{ [icinga_web__ldap_groups_rdn]
                                 + icinga_web__ldap_base_dn }}'
 
                                                                    # ]]]
@@ -753,7 +753,7 @@ icinga_web__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn
 #
 # The base Distinguished Name where Icinga Web will look for users, defined as a
 # YAML list.
-icinga_web__ldap_people_dn: '{{ [ icinga_web__ldap_people_rdn ]
+icinga_web__ldap_people_dn: '{{ [icinga_web__ldap_people_rdn]
                                 + icinga_web__ldap_base_dn }}'
 
                                                                    # ]]]
@@ -787,7 +787,7 @@ icinga_web__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
 icinga_web__ldap_self_attributes:
   uid: '{{ icinga_web__ldap_self_rdn.split("=")[1] }}'
   userPassword: '{{ icinga_web__ldap_bindpw }}'
-  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  host: '{{ [ansible_fqdn, ansible_hostname] | unique }}'
   description: 'Account used by the "Icinga Web" service to access the LDAP directory'
 
                                                                    # ]]]
@@ -795,7 +795,7 @@ icinga_web__ldap_self_attributes:
 #
 # The Distinguished Name of the account LDAP object used by the
 # Icinga Web service to bind to the LDAP directory.
-icinga_web__ldap_binddn: '{{ ([ icinga_web__ldap_self_rdn ]
+icinga_web__ldap_binddn: '{{ ([icinga_web__ldap_self_rdn]
                               + icinga_web__ldap_device_dn) | join(",") }}'
 
                                                                    # ]]]

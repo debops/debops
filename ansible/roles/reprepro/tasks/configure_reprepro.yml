@@ -97,10 +97,10 @@
   ansible.builtin.systemd:
     name: '{{ "reprepro-incoming@" + repo.name + ".path" }}'
     state: '{{ "started"
-               if (repo.state | d("present") not in [ "absent", "ignore" ])
+               if (repo.state | d("present") not in ["absent", "ignore"])
                else "stopped" }}'
     enabled: '{{ True
-               if (repo.state | d("present") not in [ "absent", "ignore" ])
+               if (repo.state | d("present") not in ["absent", "ignore"])
                else False }}'
   when: repo.incoming | d()
 

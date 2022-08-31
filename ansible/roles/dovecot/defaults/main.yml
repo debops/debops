@@ -50,9 +50,9 @@ dovecot__version: '{{ ansible_local.dovecot.version | d("0.0.0") }}'
 #
 # User account lookup mechanisms, see :ref:`dovecot__ref_user_accounts`
 # for details.
-dovecot__user_accounts: '{{ [ "deny", "ldap" ]
+dovecot__user_accounts: '{{ ["deny", "ldap"]
                             if dovecot__ldap_enabled | bool
-                            else [ "deny", "system" ] }}'
+                            else ["deny", "system"] }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__deny_users [[[
@@ -91,7 +91,7 @@ dovecot__auth_default_realm: '{{ ansible_domain }}'
 # Whether the virtual mail support should be enabled.
 dovecot__vmail_enabled: '{{ True if (dovecot__user_accounts |
                                      intersect(["mysql", "pgsql", "sqlite",
-                                                "ldap", "passwdfile" ]))
+                                                "ldap", "passwdfile"]))
                             else False }}'
 
                                                                    # ]]]
@@ -1155,15 +1155,15 @@ dovecot__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
 dovecot__ldap_self_attributes:
   uid: '{{ dovecot__ldap_self_rdn.split("=")[1] }}'
   userPassword: '{{ dovecot__ldap_bindpw }}'
-  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  host: '{{ [ansible_fqdn, ansible_hostname] | unique }}'
   description: 'Account used by the "Dovecot" service to access the LDAP directory'
 
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_binddn [[[
 #
 # The Distinguished Name used to bind to the LDAP directory.
-dovecot__ldap_binddn: '{{ ([ dovecot__ldap_self_rdn ]
-                             + dovecot__ldap_device_dn) | join(",") }}'
+dovecot__ldap_binddn: '{{ ([dovecot__ldap_self_rdn]
+                           + dovecot__ldap_device_dn) | join(",") }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_bindpw [[[
@@ -1186,8 +1186,8 @@ dovecot__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn | d("ou=People") }}'
 # .. envvar:: dovecot__ldap_people_dn [[[
 #
 # The Distinguished Name of the LDAP object which contains the user accounts.
-dovecot__ldap_people_dn: '{{ [ dovecot__ldap_people_rdn ]
-                               + dovecot__ldap_base_dn }}'
+dovecot__ldap_people_dn: '{{ [dovecot__ldap_people_rdn]
+                             + dovecot__ldap_base_dn }}'
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_uri [[[
 #

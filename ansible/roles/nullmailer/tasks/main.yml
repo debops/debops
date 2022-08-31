@@ -33,10 +33,10 @@
   ansible.builtin.copy:
     dest:    '{{ item.dest }}'
     content: "{{ (item.content + '\n') if item.content | d() else ('' if item.content is defined else omit) }}"
-    src:     '{{ item.src   | d(omit) }}'
+    src:     '{{ item.src | d(omit) }}'
     owner:   '{{ item.owner | d(omit) }}'
     group:   '{{ item.group | d(omit) }}'
-    mode:    '{{ item.mode  | d(omit) }}'
+    mode:    '{{ item.mode | d(omit) }}'
   loop: '{{ q("flattened", nullmailer__configuration_files) }}'
   notify: [ 'Restart nullmailer' ]
   when: (nullmailer__deploy_state | d('present') != 'absent' and
@@ -47,10 +47,10 @@
   ansible.builtin.copy:
     dest:    '{{ item.dest }}'
     content: "{{ (item.content + '\n') if item.content | d() else omit }}"
-    src:     '{{ item.src   | d(omit) }}'
+    src:     '{{ item.src | d(omit) }}'
     owner:   '{{ item.owner | d(omit) }}'
     group:   '{{ item.group | d(omit) }}'
-    mode:    '{{ item.mode  | d(omit) }}'
+    mode:    '{{ item.mode | d(omit) }}'
   loop: '{{ q("flattened", nullmailer__private_configuration_files) }}'
   notify: [ 'Restart nullmailer' ]
   when: (nullmailer__deploy_state | d('present') != 'absent' and

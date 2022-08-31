@@ -42,9 +42,9 @@ preseed__base_domain: '{{ preseed__subdomain + "." + ansible_domain }}'
 preseed__domains:
   - '{{ preseed__base_domain }}'
   - '{{ preseed__base_domain | split(".") | first }}'
-  - '{{ "~^(?<preseed>.+)\." + preseed__base_domain | replace(".","\.") + "$" }}'
-  - '{{ "~^(?<preseed>.+)\." + ansible_domain       | replace(".","\.") + "$" }}'
-  - '{{ "~^(?<preseed>.+)\." + preseed__subdomain   | replace(".","\.") + "$" }}'
+  - '{{ "~^(?<preseed>.+)\." + preseed__base_domain | replace(".", "\.") + "$" }}'
+  - '{{ "~^(?<preseed>.+)\." + ansible_domain | replace(".", "\.") + "$" }}'
+  - '{{ "~^(?<preseed>.+)\." + preseed__subdomain | replace(".", "\.") + "$" }}'
   - '{{ "~^(?<preseed>.+)$" }}'
 
                                                                    # ]]]

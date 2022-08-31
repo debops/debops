@@ -64,7 +64,7 @@
     state: 'directory'
     owner: '{{ item.config_dir_owner | d("root") }}'
     group: '{{ item.config_dir_group | d("root") }}'
-    mode: '{{ item.config_dir_mode   | d("0755") }}'
+    mode: '{{ item.config_dir_mode | d("0755") }}'
   with_items: '{{ saslauthd__combined_instances | debops.debops.parse_kv_items }}'
   when: item.name | d() and item.config_path | d() and
         item.state | d('present') != 'absent'
@@ -131,7 +131,7 @@
   ansible.builtin.command: dpkg-statoverride --add
            {{ item.socket_owner | d('root') }}
            {{ item.socket_group | d('sasl') }}
-           {{ item.socket_mode  | d('710') }}
+           {{ item.socket_mode | d('710') }}
            {{ item.socket_path }}
   with_items: '{{ saslauthd__combined_instances | debops.debops.parse_kv_items }}'
   notify: [ 'Restart saslauthd' ]

@@ -128,10 +128,10 @@ ntp__servers_as_pool: True
 #
 # List of APT packages to install for NTP support.
 ntp__base_packages:
-  - '{{ "chrony"   if (ntp__daemon == "chrony")   else [] }}'
-  - '{{ "ntp"      if (ntp__daemon == "ntpd")     else [] }}'
+  - '{{ "chrony" if (ntp__daemon == "chrony") else [] }}'
+  - '{{ "ntp" if (ntp__daemon == "ntpd") else [] }}'
   - '{{ "openntpd" if (ntp__daemon == "openntpd") else [] }}'
-  - '{{ "ntpdate"  if (ntp__daemon == "ntpdate")  else [] }}'
+  - '{{ "ntpdate" if (ntp__daemon == "ntpdate") else [] }}'
 
 
                                                                    # ]]]
@@ -146,11 +146,11 @@ ntp__packages: []
 # List of APT packages to purge during NTP configuration to avoid issues with
 # conflicting services.
 ntp__purge_packages:
-  - '{{ "chrony"   if (ntp__daemon != "chrony")                  else [] }}'
-  - '{{ "ntp"      if (ntp__daemon not in [ "ntpd", "openntpd"]) else [] }}'
-  - '{{ "openntpd" if (ntp__daemon != "openntpd")                else [] }}'
-  - '{{ "ntpdate"  if (ntp__daemon != "ntpdate" and
-                       not ntp__ignore_ntpdate | bool)             else [] }}'
+  - '{{ "chrony" if (ntp__daemon != "chrony") else [] }}'
+  - '{{ "ntp" if (ntp__daemon not in ["ntpd", "openntpd"]) else [] }}'
+  - '{{ "openntpd" if (ntp__daemon != "openntpd") else [] }}'
+  - '{{ "ntpdate" if (ntp__daemon != "ntpdate" and
+                      not ntp__ignore_ntpdate | bool) else [] }}'
                                                                    # ]]]
                                                                    # ]]]
 # OpenNTPd configuration [[[
@@ -252,9 +252,9 @@ ntp__ferm__dependent_rules:
     role_weight: '10'
     name: 'jump-filter-ntp'
     target: '{{ ntp__ferm_chain }}'
-    rule_state: '{{ "present" if (
-                      ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
-                      ntp__firewall_access | bool)
+    rule_state: '{{ "present"
+                    if (ntp__daemon in ["openntpd", "ntpd", "chrony"] and
+                        ntp__firewall_access | bool)
                     else "absent" }}'
 
   - chain: '{{ ntp__ferm_chain }}'
@@ -269,9 +269,9 @@ ntp__ferm__dependent_rules:
     subchain: False
     recent_set_name: 'ntp-new'
     recent_log: False
-    rule_state: '{{ "present" if (
-                      ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
-                      ntp__firewall_access | bool)
+    rule_state: '{{ "present"
+                    if (ntp__daemon in ["openntpd", "ntpd", "chrony"] and
+                        ntp__firewall_access | bool)
                     else "absent" }}'
 
   - chain: '{{ ntp__ferm_chain }}'
@@ -289,9 +289,9 @@ ntp__ferm__dependent_rules:
     recent_hitcount: '{{ ntp__ferm_recent_hitcount }}'
     recent_target: '{{ ntp__ferm_recent_target }}'
     recent_log_prefix: 'ipt-recent-ntp: '
-    rule_state: '{{ "present" if (
-                      ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
-                      ntp__firewall_access | bool)
+    rule_state: '{{ "present"
+                    if (ntp__daemon in ["openntpd", "ntpd", "chrony"] and
+                        ntp__firewall_access | bool)
                     else "absent" }}'
 
   - chain: '{{ ntp__ferm_chain }}'
@@ -303,9 +303,9 @@ ntp__ferm__dependent_rules:
     weight: '{{ ntp__ferm_weight }}'
     role: 'ntp'
     role_weight: '40'
-    rule_state: '{{ "present" if (
-                      ntp__daemon in [ "openntpd", "ntpd", "chrony" ] and
-                      ntp__firewall_access | bool)
+    rule_state: '{{ "present"
+                    if (ntp__daemon in ["openntpd", "ntpd", "chrony"] and
+                        ntp__firewall_access | bool)
                     else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]

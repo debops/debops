@@ -103,18 +103,18 @@
 
 - name: Configure custom APT keys
   ansible.builtin.apt_key:
-    data:      '{{ item.data      | d(omit) }}'
-    file:      '{{ item.file      | d(omit) }}'
-    id:        '{{ item.id        | d(omit) }}'
-    keyring:   '{{ item.keyring   | d(omit) }}'
+    data:      '{{ item.data | d(omit) }}'
+    file:      '{{ item.file | d(omit) }}'
+    id:        '{{ item.id | d(omit) }}'
+    keyring:   '{{ item.keyring | d(omit) }}'
     keyserver: '{{ item.keyserver | d(omit) }}'
-    url:       '{{ item.url       | d(omit) }}'
-    state:     '{{ item.state     | d("present"
-                                      if (item.architecture | d(apt__architecture) == apt__architecture and
-                                          item.distribution | d(apt__distribution) == apt__distribution and
-                                          item.distribution_release | d(apt__distribution_release)
-                                          == apt__distribution_release)
-                                      else omit) }}'
+    url:       '{{ item.url | d(omit) }}'
+    state:     '{{ item.state | d("present"
+                                  if (item.architecture | d(apt__architecture) == apt__architecture and
+                                      item.distribution | d(apt__distribution) == apt__distribution and
+                                      item.distribution_release | d(apt__distribution_release)
+                                      == apt__distribution_release)
+                                  else omit) }}'
   loop: '{{ q("flattened", apt__keys
                            + apt__group_keys
                            + apt__host_keys) }}'
@@ -133,14 +133,14 @@
   ansible.builtin.apt_repository:
     update_cache: False
     repo:     '{{ item.repo }}'
-    mode:     '{{ item.mode     | d(omit) }}'
+    mode:     '{{ item.mode | d(omit) }}'
     filename: '{{ item.filename | d(omit) }}'
-    state:    '{{ item.state    | d("present"
-                                    if (item.architecture | d(apt__architecture) == apt__architecture and
-                                        item.distribution | d(apt__distribution) == apt__distribution and
-                                        item.distribution_release | d(apt__distribution_release)
-                                        == apt__distribution_release)
-                                    else "absent") }}'
+    state:    '{{ item.state | d("present"
+                                 if (item.architecture | d(apt__architecture) == apt__architecture and
+                                     item.distribution | d(apt__distribution) == apt__distribution and
+                                     item.distribution_release | d(apt__distribution_release)
+                                     == apt__distribution_release)
+                                 else "absent") }}'
   loop: '{{ q("flattened", apt__repositories
                            + apt__group_repositories
                            + apt__host_repositories) }}'
@@ -149,7 +149,7 @@
 
 - name: Remove APT auth configuration if requested
   ansible.builtin.file:
-    path: '{{ "/etc/apt/auth.conf.d/" + (item.name | regex_replace(".conf$","")) + ".conf" }}'
+    path: '{{ "/etc/apt/auth.conf.d/" + (item.name | regex_replace(".conf$", "")) + ".conf" }}'
     state: 'absent'
   loop: '{{ q("flattened", (apt__auth_files + apt__group_auth_files + apt__host_auth_files)) }}'
   when: apt__enabled | bool and item.state | d('present') == 'absent'
@@ -158,7 +158,7 @@
 - name: Generate APT auth configuration
   ansible.builtin.template:
     src: 'etc/apt/auth.conf.d/template.conf.j2'
-    dest: '{{ "/etc/apt/auth.conf.d/" + (item.name | regex_replace(".conf$","")) + ".conf" }}'
+    dest: '{{ "/etc/apt/auth.conf.d/" + (item.name | regex_replace(".conf$", "")) + ".conf" }}'
     mode: '0640'
   loop: '{{ q("flattened", (apt__auth_files + apt__group_auth_files + apt__host_auth_files)) }}'
   when: apt__enabled | bool and item.machine | d() and item.login | d() and item.password | d() and
@@ -169,8 +169,8 @@
 - name: Generate additional APT configuration files
   ansible.builtin.copy:
     dest:     "/etc/apt/apt.conf.d/{{ (item.priority | d('60')) + (item.dest | d(item.path | d(item.name))) }}"
-    src:      '{{ item.src       | d(omit) }}'
-    content:  '{{ item.content   | d(omit) }}'
+    src:      '{{ item.src | d(omit) }}'
+    content:  '{{ item.content | d(omit) }}'
     owner:    'root'
     group:    'root'
     mode:     '0644'

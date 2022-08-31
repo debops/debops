@@ -40,9 +40,8 @@
     group: 'www-data'
     mode: '0640'
   loop: '{{ preseed__combined_definitions
-            | debops.debops.parse_kv_items(defaults={
-                "options": preseed__combined_configuration | debops.debops.parse_kv_config
-              }) }}'
+            | debops.debops.parse_kv_items(defaults={"options": preseed__combined_configuration
+                                                                | debops.debops.parse_kv_config}) }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state, "flavor": item.flavor, "release": item.release} }}'
   when: item.state | d('present') not in [ 'absent', 'ignore', 'init' ]
@@ -56,9 +55,8 @@
     group: 'www-data'
     mode: '0640'
   loop: '{{ preseed__combined_definitions
-            | debops.debops.parse_kv_items(defaults={
-                "options": preseed__combined_configuration | debops.debops.parse_kv_config
-              }) }}'
+            | debops.debops.parse_kv_items(defaults={"options": preseed__combined_configuration
+                                                                | debops.debops.parse_kv_config}) }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state, "flavor": item.flavor, "release": item.release} }}'
   when: item.state | d('present') not in [ 'absent', 'ignore', 'init' ]

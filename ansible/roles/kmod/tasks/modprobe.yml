@@ -6,7 +6,7 @@
 
 - name: Remove module configuration
   ansible.builtin.file:
-    dest: '/etc/modprobe.d/{{ module.filename | d(module.name | replace("_","-") + ".conf") }}'
+    dest: '/etc/modprobe.d/{{ module.filename | d(module.name | replace("_", "-") + ".conf") }}'
     state: 'absent'
   notify: [ 'Refresh host facts' ]
   register: kmod__register_module_config_delete
@@ -15,7 +15,7 @@
 - name: Generate module configuration
   ansible.builtin.template:
     src: 'etc/modprobe.d/module.conf.j2'
-    dest: '/etc/modprobe.d/{{ module.filename | d(module.name | replace("_","-") + ".conf") }}'
+    dest: '/etc/modprobe.d/{{ module.filename | d(module.name | replace("_", "-") + ".conf") }}'
     owner: 'root'
     group: 'root'
     mode: '0644'

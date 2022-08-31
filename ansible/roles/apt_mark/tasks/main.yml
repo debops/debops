@@ -32,7 +32,7 @@
   when: apt_mark__enabled | bool
 
 - name: Set package state as installed automatically
-  ansible.builtin.command: apt-mark auto {{ ((item.packages | d([ item.name ])) | intersect(apt_mark__fact_installed)) | join(' ') }}
+  ansible.builtin.command: apt-mark auto {{ ((item.packages | d([item.name])) | intersect(apt_mark__fact_installed)) | join(' ') }}
   with_items: '{{ apt_mark__combined_packages | debops.debops.parse_kv_items }}'
   when: (apt_mark__enabled | bool and
          (item.packages | d([ item.name ]) | intersect(apt_mark__fact_installed))
@@ -42,7 +42,7 @@
          item.state | d('manual') in [ 'auto', 'auto-hold', 'auto-unhold' ])
 
 - name: Set package state as installed manually
-  ansible.builtin.command: apt-mark manual {{ ((item.packages | d([ item.name ]))
+  ansible.builtin.command: apt-mark manual {{ ((item.packages | d([item.name]))
                                | intersect(apt_mark__fact_installed)) | join(' ') }}
   with_items: '{{ apt_mark__combined_packages | debops.debops.parse_kv_items }}'
   when: (apt_mark__enabled | bool and
@@ -53,7 +53,7 @@
          item.state | d('manual') in [ 'manual', 'manual-hold', 'manual-unhold' ])
 
 - name: Hold current package state
-  ansible.builtin.command: apt-mark hold {{ ((item.packages | d([ item.name ]))
+  ansible.builtin.command: apt-mark hold {{ ((item.packages | d([item.name]))
                              | intersect(apt_mark__fact_installed)) | join(' ') }}
   with_items: '{{ apt_mark__combined_packages | debops.debops.parse_kv_items }}'
   when: (apt_mark__enabled | bool and
@@ -62,7 +62,7 @@
         item.state | d('manual') in [ 'hold', 'auto-hold', 'manual-hold' ])
 
 - name: Unhold current package state
-  ansible.builtin.command: apt-mark unhold {{ ((item.packages | d([ item.name ]))
+  ansible.builtin.command: apt-mark unhold {{ ((item.packages | d([item.name]))
                                | intersect(apt_mark__fact_installed)) | join(' ') }}
   with_items: '{{ apt_mark__combined_packages | debops.debops.parse_kv_items }}'
   when: (apt_mark__enabled | bool and

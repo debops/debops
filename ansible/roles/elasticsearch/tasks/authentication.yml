@@ -54,10 +54,10 @@
 - name: Manage native roles in Elasticsearch
   ansible.builtin.uri:
     url: '{{ elasticsearch__api_base_url + "/_security/role/" + item.name }}'
-    method:      '{{ "DELETE"         if (item.state | d("present") in [ "absent" ]) else "POST" }}'
-    body_format: '{{ omit             if (item.state | d("present") in [ "absent" ]) else "json" }}'
-    body:        '{{ omit             if (item.state | d("present") in [ "absent" ]) else (item.data | to_json) }}'
-    status_code: '{{ [ "200", "404" ] if (item.state | d("present") in [ "absent" ]) else "200" }}'
+    method:      '{{ "DELETE" if (item.state | d("present") in ["absent"]) else "POST" }}'
+    body_format: '{{ omit if (item.state | d("present") in ["absent"]) else "json" }}'
+    body:        '{{ omit if (item.state | d("present") in ["absent"]) else (item.data | to_json) }}'
+    status_code: '{{ ["200", "404"] if (item.state | d("present") in ["absent"]) else "200" }}'
     user: "{{ elasticsearch__api_username }}"
     password: "{{ elasticsearch__api_password }}"
     force_basic_auth: True
@@ -70,10 +70,10 @@
 - name: Manage native users in Elasticsearch
   ansible.builtin.uri:
     url: '{{ elasticsearch__api_base_url + "/_security/user/" + item.name }}'
-    method:      '{{ "DELETE"         if (item.state | d("present") in [ "absent" ]) else "POST" }}'
-    body_format: '{{ omit             if (item.state | d("present") in [ "absent" ]) else "json" }}'
-    body:        '{{ omit             if (item.state | d("present") in [ "absent" ]) else (item.data | to_json) }}'
-    status_code: '{{ [ "200", "404" ] if (item.state | d("present") in [ "absent" ]) else "200" }}'
+    method:      '{{ "DELETE" if (item.state | d("present") in ["absent"]) else "POST" }}'
+    body_format: '{{ omit if (item.state | d("present") in ["absent"]) else "json" }}'
+    body:        '{{ omit if (item.state | d("present") in ["absent"]) else (item.data | to_json) }}'
+    status_code: '{{ ["200", "404"] if (item.state | d("present") in ["absent"]) else "200" }}'
     user: "{{ elasticsearch__api_username }}"
     password: "{{ elasticsearch__api_password }}"
     force_basic_auth: True

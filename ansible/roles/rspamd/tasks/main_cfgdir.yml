@@ -20,7 +20,7 @@
     group: '{{ item.group | d("_rspamd") }}'
     mode: '{{ item.mode | d("0640") }}'
   loop: '{{ cfgdir.config
-             | rejectattr("state", "in", [ "absent", "init", "ignore" ]) }}'
+             | rejectattr("state", "in", ["absent", "init", "ignore"]) }}'
   loop_control:
     label: '{{ item.file }}'
   notify: [ 'Restart rspamd' ]
@@ -29,7 +29,7 @@
   ansible.builtin.set_fact:
     rspamd__created_snippets: '{{
       cfgdir.config
-       | rejectattr("state", "in", [ "absent", "init" ])
+       | rejectattr("state", "in", ["absent", "init"])
        | map(attribute="file")
        | map("regex_replace", "^", cfgdir.path + "/") }}'
 

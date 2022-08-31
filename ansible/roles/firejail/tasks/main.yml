@@ -102,26 +102,18 @@
     path: '{{ firejail__system_local_bin_path + "/" + item }}'
     src: '{{ firejail__program_file_path }}'
     state: '{{ "link"
-               if (
-                 firejail__deploy_state in ["present"] and (
-                   (item in firejail__combined_program_sandboxes and (
-                     (firejail__combined_program_sandboxes[item].system_wide_sandboxed
+               if (firejail__deploy_state in ["present"] and
+                   ((item in firejail__combined_program_sandboxes and
+                    ((firejail__combined_program_sandboxes[item].system_wide_sandboxed
                       | d(firejail__program_sandboxes_system_wide_sandboxed) == "present") or
-                     (
-                       (firejail__combined_program_sandboxes[item].system_wide_sandboxed
-                        | d(firejail__program_sandboxes_system_wide_sandboxed) == "if_installed") and
-                       item in firejail__fact_installed_programs
-                     )
-                   )) or (item not in firejail__combined_program_sandboxes and (
-                     (
-                       firejail__global_profiles_system_wide_sandboxed == "present"
-                     ) or (
-                       firejail__global_profiles_system_wide_sandboxed == "if_installed" and
-                       item in firejail__fact_installed_programs
-                     )
-                   ))
-                 )
-               ) else "absent" }}'
+                     ((firejail__combined_program_sandboxes[item].system_wide_sandboxed
+                       | d(firejail__program_sandboxes_system_wide_sandboxed) == "if_installed") and
+                       item in firejail__fact_installed_programs))) or
+                    (item not in firejail__combined_program_sandboxes and
+                     ((firejail__global_profiles_system_wide_sandboxed == "present") or
+                     (firejail__global_profiles_system_wide_sandboxed == "if_installed" and
+                      item in firejail__fact_installed_programs)))))
+               else "absent" }}'
     owner: 'root'
     group: 'root'
     mode: '0755'
@@ -133,21 +125,21 @@
 # Manage profile [[[
 - name: Provide (additional) profiles
   ansible.builtin.copy:
-    dest:           '{{ item.value.profile.dest           | d(firejail__config_path + "/" + item.key + ".profile") }}'
-    backup:         '{{ item.value.profile.backup         | d(omit) }}'
-    content:        '{{ item.value.profile.content        | d(omit) }}'
+    dest:           '{{ item.value.profile.dest | d(firejail__config_path + "/" + item.key + ".profile") }}'
+    backup:         '{{ item.value.profile.backup | d(omit) }}'
+    content:        '{{ item.value.profile.content | d(omit) }}'
     directory_mode: '{{ item.value.profile.directory_mode | d(omit) }}'
-    follow:         '{{ item.value.profile.follow         | d(omit) }}'
-    force:          '{{ item.value.profile.force          | d(omit) }}'
-    owner:          '{{ item.value.profile.owner          | d("root") }}'
-    group:          '{{ item.value.profile.group          | d("root") }}'
-    mode:           '{{ item.value.profile.mode           | d("0644") }}'
-    selevel:        '{{ item.value.profile.selevel        | d(omit) }}'
-    serole:         '{{ item.value.profile.serole         | d(omit) }}'
-    setype:         '{{ item.value.profile.setype         | d(omit) }}'
-    seuser:         '{{ item.value.profile.seuser         | d(omit) }}'
-    src:            '{{ item.value.profile.src            | d(omit) }}'
-    validate:       '{{ item.value.profile.validate       | d(omit) }}'
+    follow:         '{{ item.value.profile.follow | d(omit) }}'
+    force:          '{{ item.value.profile.force | d(omit) }}'
+    owner:          '{{ item.value.profile.owner | d("root") }}'
+    group:          '{{ item.value.profile.group | d("root") }}'
+    mode:           '{{ item.value.profile.mode | d("0644") }}'
+    selevel:        '{{ item.value.profile.selevel | d(omit) }}'
+    serole:         '{{ item.value.profile.serole | d(omit) }}'
+    setype:         '{{ item.value.profile.setype | d(omit) }}'
+    seuser:         '{{ item.value.profile.seuser | d(omit) }}'
+    src:            '{{ item.value.profile.src | d(omit) }}'
+    validate:       '{{ item.value.profile.validate | d(omit) }}'
   when: (firejail__deploy_state in ["present"] and
          "profile" in item.value and item.value.profile.state | d("present") == "present")
   with_dict: '{{ firejail__combined_program_sandboxes }}'

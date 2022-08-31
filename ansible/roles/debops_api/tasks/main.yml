@@ -120,17 +120,17 @@
 
 - name: Configuring cron jobs
   ansible.builtin.cron:
-    cron_file:    '{{ item.cron_file    | d(omit) }}'
-    day:          '{{ item.day          | d(omit) }}'
-    hour:         '{{ item.hour         | d(omit) }}'
-    job:          '{{ item.job          | d(debops_api__cron_script) }}'
-    minute:       '{{ item.minute       | d(omit) }}'
-    month:        '{{ item.month        | d(omit) }}'
-    name:         '{{ item.name         | d(item) }}'
+    cron_file:    '{{ item.cron_file | d(omit) }}'
+    day:          '{{ item.day | d(omit) }}'
+    hour:         '{{ item.hour | d(omit) }}'
+    job:          '{{ item.job | d(debops_api__cron_script) }}'
+    minute:       '{{ item.minute | d(omit) }}'
+    month:        '{{ item.month | d(omit) }}'
+    name:         '{{ item.name | d(item) }}'
     special_time: '{{ item.special_time | d(omit) }}'
-    state:        '{{ item.state        | d(omit) }}'
-    user:         '{{ item.user         | d(debops_api__user) }}'
-    weekday:      '{{ item.weekday      | d(omit) }}'
+    state:        '{{ item.state | d(omit) }}'
+    user:         '{{ item.user | d(debops_api__user) }}'
+    weekday:      '{{ item.weekday | d(omit) }}'
   loop: '{{ debops_api__cron_entries }}'
   tags: [ 'role::debops_api:cron' ]
 

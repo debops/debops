@@ -161,7 +161,7 @@ saslauthd__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
 saslauthd__ldap_self_attributes:
   uid: '{{ saslauthd__ldap_self_rdn.split("=")[1] }}'
   userPassword: '{{ saslauthd__ldap_bindpw }}'
-  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  host: '{{ [ansible_fqdn, ansible_hostname] | unique }}'
   description: 'Account used by the "saslauthd" service to access the LDAP directory'
 
                                                                    # ]]]
@@ -169,7 +169,7 @@ saslauthd__ldap_self_attributes:
 #
 # The Distinguished Name of the account LDAP object used by the
 # :command:`saslauthd` service to bind to the LDAP directory.
-saslauthd__ldap_binddn: '{{ ([ saslauthd__ldap_self_rdn ] + saslauthd__ldap_device_dn) | join(",") }}'
+saslauthd__ldap_binddn: '{{ ([saslauthd__ldap_self_rdn] + saslauthd__ldap_device_dn) | join(",") }}'
 
                                                                    # ]]]
 # .. envvar:: saslauthd__ldap_bindpw [[[
@@ -209,7 +209,7 @@ saslauthd__ldap_default_profiles:
         value: '{{ saslauthd__ldap_bindpw }}'
 
       - name: 'ldap_search_base'
-        value: '{{ ([ "ou=People" ] + saslauthd__ldap_base_dn) | join(",") }}'
+        value: '{{ (["ou=People"] + saslauthd__ldap_base_dn) | join(",") }}'
 
       - name: 'ldap_filter'
         value: '(&

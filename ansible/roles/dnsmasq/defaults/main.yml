@@ -401,11 +401,9 @@ dnsmasq__default_configuration:
         raw: |
           bogus-priv
         state: '{{ "comment"
-                   if (
-                       (ansible_local.lxc.net_domain | d()) or
+                   if ((ansible_local.lxc.net_domain | d()) or
                        (ansible_local.resolvconf.upstream_nameservers
-                          | d(ansible_dns.nameservers) | ipaddr("private"))
-                      )
+                          | d(ansible_dns.nameservers) | ipaddr("private")))
                    else "present" }}'
 
       - name: 'resolv-file'

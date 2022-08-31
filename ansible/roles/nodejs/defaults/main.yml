@@ -36,7 +36,7 @@ nodejs__distribution_release: '{{ ansible_local.core.distribution_release | d(an
 # distribution versions the upstream package will be installed due to no
 # security support.
 nodejs__node_upstream: '{{ ansible_local.nodejs.node_upstream
-                            | d(nodejs__distribution_release in [ "xenial" ]) | bool }}'
+                            | d(nodejs__distribution_release in ["xenial"]) | bool }}'
 
                                                                    # ]]]
 # .. envvar:: nodejs__node_upstream_release [[[
@@ -53,8 +53,8 @@ nodejs__node_upstream: '{{ ansible_local.nodejs.node_upstream
 #
 nodejs__node_upstream_release: '{{ "node_8.x"
                                    if (nodejs__distribution_release in
-                                       [ "stretch", "trusty",
-                                         "xenial", "bionic" ])
+                                       ["stretch", "trusty",
+                                        "xenial", "bionic"])
                                    else "node_10.x" }}'
 
                                                                    # ]]]
@@ -84,8 +84,7 @@ nodejs__yarn_upstream: '{{ True
                            if nodejs__node_upstream | bool
                            else (ansible_local.nodejs.yarn_upstream
                                   | d(nodejs__distribution_release in
-                                    [ "stretch", "xenial", "bionic" ])
-                           ) }}'
+                                    ["stretch", "xenial", "bionic"])) }}'
 
                                                                    # ]]]
 # .. envvar:: nodejs__yarn_upstream_key_id [[[
@@ -126,8 +125,8 @@ nodejs__base_packages:
         if nodejs__yarn_upstream | bool
         else ([]
               if (nodejs__distribution_release in
-                  [ "stretch", "trusty",
-                    "xenial", "bionic" ])
+                  ["stretch", "trusty",
+                   "xenial", "bionic"])
               else "yarnpkg") }}'
 
                                                                    # ]]]

@@ -25,7 +25,7 @@
 # repository. On older OS releases, using the upstream package might enable
 # websocket support. The upstream repository is enabled automatically on OS
 # releases with unsuitable Mosquitto version.
-mosquitto__upstream: '{{ True if ansible_distribution_release in [ "trusty" ]
+mosquitto__upstream: '{{ True if ansible_distribution_release in ["trusty"]
                          else False }}'
 
                                                                    # ]]]
@@ -84,9 +84,9 @@ mosquitto__version: '{{ mosquitto__register_version.stdout | d("0.0.0") }}'
 #
 # List of PyPI packages to install system-wide using :command:`pip` package
 # manager.
-mosquitto__pip_packages: '{{ ["paho-mqtt" ]
+mosquitto__pip_packages: '{{ ["paho-mqtt"]
                              if (mosquitto__distribution_release in
-                                 [ "trusty", "xenial" ])
+                                 ["trusty", "xenial"])
                              else [] }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -110,7 +110,7 @@ mosquitto__group: 'mosquitto'
 # List of additional UNIX groups that the Mosquitto system account should
 # belong to. The ``ssl-cert`` UNIX group is required for access to the PKI
 # private keys to the TLS certificates.
-mosquitto__append_groups: '{{ [ "ssl-cert" ] if mosquitto__pki | bool else [] }}'
+mosquitto__append_groups: '{{ ["ssl-cert"] if mosquitto__pki | bool else [] }}'
                                                                    # ]]]
                                                                    # ]]]
 # Network configuration [[[
@@ -615,7 +615,7 @@ mosquitto__auth_patterns: []
 mosquitto__python__dependent_packages3:
 
   - '{{ []
-        if (mosquitto__distribution_release in [ "trusty", "xenial" ])
+        if (mosquitto__distribution_release in ["trusty", "xenial"])
         else ["python3-paho-mqtt"] }}'
 
                                                                    # ]]]
@@ -625,7 +625,7 @@ mosquitto__python__dependent_packages3:
 mosquitto__python__dependent_packages2:
 
   - '{{ []
-        if (mosquitto__distribution_release in [ "trusty", "xenial" ])
+        if (mosquitto__distribution_release in ["trusty", "xenial"])
         else ["python-paho-mqtt"] }}'
 
                                                                    # ]]]

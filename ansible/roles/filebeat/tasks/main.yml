@@ -69,7 +69,7 @@
 
 - name: Remove snippet configuration if requested
   ansible.builtin.file:
-    path: '{{ "/etc/filebeat/" + (item.name | regex_replace(".yml","") + ".yml") }}'
+    path: '{{ "/etc/filebeat/" + (item.name | regex_replace(".yml", "") + ".yml") }}'
     state: 'absent'
   loop: '{{ filebeat__combined_snippets | debops.debops.parse_kv_config }}'
   loop_control:
@@ -81,7 +81,7 @@
 - name: Generate snippet configuration
   ansible.builtin.template:
     src: 'etc/filebeat/snippets.d/snippet.yml.j2'
-    dest: '{{ "/etc/filebeat/" + (item.name | regex_replace(".yml","") + ".yml") }}'
+    dest: '{{ "/etc/filebeat/" + (item.name | regex_replace(".yml", "") + ".yml") }}'
     mode: '{{ item.mode | d("0600") }}'
   loop: '{{ filebeat__combined_snippets | debops.debops.parse_kv_config }}'
   loop_control:

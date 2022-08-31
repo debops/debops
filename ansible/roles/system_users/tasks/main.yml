@@ -45,7 +45,7 @@
   ansible.builtin.group:
     name:   '{{ (item.prefix | d(system_users__prefix)) + (item.group | d(item.name)) }}'
     system: '{{ item.system | d(False if (item.user | d(True)) | bool else True) }}'
-    gid:    '{{ item.gid    | d(omit) }}'
+    gid:    '{{ item.gid | d(omit) }}'
     state:  'present'
     local: '{{ True if (item.user | d(True)) | bool else False }}'
   loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items }}'
@@ -71,29 +71,29 @@
                                  else (system_users__home_root + "/" + ((item.prefix | d(system_users__prefix)) + item.name)))
                                 if ((item.create_home | d(True)) | bool)
                                 else omit) }}'
-    uid:                '{{ item.uid                | d(omit) }}'
-    state:              '{{ item.state              | d("present") }}'
-    comment:            '{{ item.comment            | d(omit) }}'
-    password:           '{{ item.password           | d("*") }}'
-    update_password:    '{{ item.update_password    | d("on_create") }}'
-    system:             '{{ item.system             | d(omit) }}'
-    shell:              '{{ item.shell              | d(system_users__default_shell
-                                                        if system_users__default_shell | d()
-                                                        else omit) }}'
-    create_home:        '{{ item.create_home        | d(omit) }}'
-    move_home:          '{{ item.move_home          | d(omit) }}'
-    skeleton:           '{{ item.skeleton           | d(omit) }}'
-    expires:            '{{ item.expires            | d(omit) }}'
-    remove:             '{{ item.remove             | d(omit) }}'
-    force:              '{{ item.force              | d(omit) }}'
-    non_unique:         '{{ item.non_unique         | d(omit) }}'
-    generate_ssh_key:   '{{ item.generate_ssh_key   | d(omit) }}'
-    ssh_key_bits:       '{{ item.ssh_key_bits       | d(omit) }}'
-    ssh_key_comment:    '{{ item.ssh_key_comment    | d(omit) }}'
-    ssh_key_file:       '{{ item.ssh_key_file       | d(omit) }}'
+    uid:                '{{ item.uid | d(omit) }}'
+    state:              '{{ item.state | d("present") }}'
+    comment:            '{{ item.comment | d(omit) }}'
+    password:           '{{ item.password | d("*") }}'
+    update_password:    '{{ item.update_password | d("on_create") }}'
+    system:             '{{ item.system | d(omit) }}'
+    shell:              '{{ item.shell | d(system_users__default_shell
+                                           if system_users__default_shell | d()
+                                           else omit) }}'
+    create_home:        '{{ item.create_home | d(omit) }}'
+    move_home:          '{{ item.move_home | d(omit) }}'
+    skeleton:           '{{ item.skeleton | d(omit) }}'
+    expires:            '{{ item.expires | d(omit) }}'
+    remove:             '{{ item.remove | d(omit) }}'
+    force:              '{{ item.force | d(omit) }}'
+    non_unique:         '{{ item.non_unique | d(omit) }}'
+    generate_ssh_key:   '{{ item.generate_ssh_key | d(omit) }}'
+    ssh_key_bits:       '{{ item.ssh_key_bits | d(omit) }}'
+    ssh_key_comment:    '{{ item.ssh_key_comment | d(omit) }}'
+    ssh_key_file:       '{{ item.ssh_key_file | d(omit) }}'
     ssh_key_passphrase: '{{ item.ssh_key_passphrase | d(omit) }}'
-    ssh_key_type:       '{{ item.ssh_key_type       | d(omit) }}'
-    local:              '{{ item.local              | d(True) }}'
+    ssh_key_type:       '{{ item.ssh_key_type | d(omit) }}'
+    local:              '{{ item.local | d(True) }}'
   loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
@@ -111,19 +111,19 @@
 - name: Manage additional UNIX groups for system users
   ansible.builtin.user:
     name:   '{{ (item.prefix | d(system_users__prefix)) + item.name }}'
-    groups: '{{ (( (([ item.groups ]
-                     if (item.groups is string)
-                     else item.groups)
-                    if (item.groups is defined)
-                    else [])
-                    + (system_users__admin_groups
-                       if ((item.admin | d()) | bool)
-                       else []) )
-                   | intersect(getent_group.keys()) )
+    groups: '{{ (((([item.groups]
+                    if (item.groups is string)
+                    else item.groups)
+                   if (item.groups is defined)
+                   else [])
+                  + (system_users__admin_groups
+                     if ((item.admin | d()) | bool)
+                     else []))
+                 | intersect(getent_group.keys()))
                 if (item.groups is defined or (item.admin | d()) | bool)
                 else omit }}'
     append: '{{ item.append | d(True) }}'
-    state:  '{{ item.state  | d("present") }}'
+    state:  '{{ item.state | d("present") }}'
     create_home: '{{ item.create_home | d(omit) }}'
   loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
@@ -147,7 +147,7 @@
     state: 'directory'
     owner: '{{ item.home_owner | d(omit) }}'
     group: '{{ item.home_group | d(omit) }}'
-    mode:  '{{ item.home_mode  | d(system_users__default_home_mode if (item.local | d(True)) | bool else omit) }}'
+    mode:  '{{ item.home_mode | d(system_users__default_home_mode if (item.local | d(True)) | bool else omit) }}'
   loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.prefix | d(system_users__prefix)) + item.name,
@@ -171,14 +171,14 @@
                           else (system_users__home_root + "/" + ((item.0.prefix | d(system_users__prefix)) + item.0.name)))
                          if ((item.0.create_home | d(True)) | bool)
                          else omit) }}'
-    default:     '{{ item.1.default     | d(omit) }}'
-    entity:      '{{ item.1.entity      | d(omit) }}'
-    entry:       '{{ item.1.entry       | d(omit) }}'
-    etype:       '{{ item.1.etype       | d(omit) }}'
+    default:     '{{ item.1.default | d(omit) }}'
+    entity:      '{{ item.1.entity | d(omit) }}'
+    entry:       '{{ item.1.entry | d(omit) }}'
+    etype:       '{{ item.1.etype | d(omit) }}'
     permissions: '{{ item.1.permissions | d(omit) }}'
-    follow:      '{{ item.1.follow      | d(omit) }}'
-    recursive:   '{{ item.1.recursive   | d(omit) }}'
-    state:       '{{ item.1.state       | d("present") }}'
+    follow:      '{{ item.1.follow | d(omit) }}'
+    recursive:   '{{ item.1.recursive | d(omit) }}'
+    state:       '{{ item.1.state | d("present") }}'
   loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items
             | selectattr("home_acl", "defined") | list
             | subelements("home_acl") }}'
@@ -305,12 +305,12 @@
 - name: Manage system user resource directories
   ansible.builtin.file:
     path:    '{{ "~" + (item.0.prefix | d(system_users__prefix)) + item.0.name + "/" + (item.1.path | d(item.1.dest | d(item.1))) }}'
-    src:     '{{ item.1.src     | d(omit) }}'
-    state:   '{{ item.1.state   | d("directory") }}'
-    owner:   '{{ item.1.owner   | d((item.0.prefix | d(system_users__prefix)) + item.0.name) }}'
-    group:   '{{ item.1.group   | d((item.0.prefix | d(system_users__prefix)) + (item.0.group | d(item.0.name))) }}'
-    mode:    '{{ item.1.mode    | d(omit) }}'
-    force:   '{{ item.1.force   | d(omit) }}'
+    src:     '{{ item.1.src | d(omit) }}'
+    state:   '{{ item.1.state | d("directory") }}'
+    owner:   '{{ item.1.owner | d((item.0.prefix | d(system_users__prefix)) + item.0.name) }}'
+    group:   '{{ item.1.group | d((item.0.prefix | d(system_users__prefix)) + (item.0.group | d(item.0.name))) }}'
+    mode:    '{{ item.1.mode | d(omit) }}'
+    force:   '{{ item.1.force | d(omit) }}'
     recurse: '{{ item.1.recurse | d(omit) }}'
   loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items
             | selectattr("resources", "defined") | list
@@ -330,10 +330,10 @@
   ansible.builtin.file:
     path:    '{{ ("~" + (item.0.prefix | d(system_users__prefix)) + item.0.name + "/" + (item.1.path | d(item.1.dest))) | dirname }}'
     state:   'directory'
-    owner:   '{{ item.1.parent_owner   | d((item.0.prefix | d(system_users__prefix)) + item.0.name) }}'
-    group:   '{{ item.1.parent_group   | d((item.0.prefix | d(system_users__prefix)) + (item.0.group | d(item.0.name))) }}'
-    mode:    '{{ item.1.parent_mode    | d(omit) }}'
-    force:   '{{ item.1.force          | d(omit) }}'
+    owner:   '{{ item.1.parent_owner | d((item.0.prefix | d(system_users__prefix)) + item.0.name) }}'
+    group:   '{{ item.1.parent_group | d((item.0.prefix | d(system_users__prefix)) + (item.0.group | d(item.0.name))) }}'
+    mode:    '{{ item.1.parent_mode | d(omit) }}'
+    force:   '{{ item.1.force | d(omit) }}'
     recurse: '{{ item.1.parent_recurse | d(omit) }}'
   loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items
             | selectattr("resources", "defined") | list
@@ -351,12 +351,12 @@
 - name: Manage system user resource files
   ansible.builtin.copy:
     dest:    '{{ "~" + (item.0.prefix | d(system_users__prefix)) + item.0.name + "/" + (item.1.path | d(item.1.dest)) }}'
-    src:     '{{ item.1.src     | d(omit) }}'
+    src:     '{{ item.1.src | d(omit) }}'
     content: '{{ item.1.content | d(omit) }}'
-    owner:   '{{ item.1.owner   | d((item.0.prefix | d(system_users__prefix)) + item.0.name) }}'
-    group:   '{{ item.1.group   | d((item.0.prefix | d(system_users__prefix)) + (item.0.group | d(item.0.name))) }}'
-    mode:    '{{ item.1.mode    | d(omit) }}'
-    force:   '{{ item.1.force   | d(omit) }}'
+    owner:   '{{ item.1.owner | d((item.0.prefix | d(system_users__prefix)) + item.0.name) }}'
+    group:   '{{ item.1.group | d((item.0.prefix | d(system_users__prefix)) + (item.0.group | d(item.0.name))) }}'
+    mode:    '{{ item.1.mode | d(omit) }}'
+    force:   '{{ item.1.force | d(omit) }}'
   loop: '{{ system_users__combined_accounts | debops.debops.parse_kv_items
             | selectattr("resources", "defined") | list
             | subelements("resources") }}'

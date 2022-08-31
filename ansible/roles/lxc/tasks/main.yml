@@ -308,39 +308,39 @@
   vars:
     template_options:
       - '--dist {{ (item.distribution | d(lxc__default_container_distribution)) | lower }}'
-      - '--release {{ (item.release   | d(lxc__default_container_release))      | lower }}'
+      - '--release {{ (item.release | d(lxc__default_container_release)) | lower }}'
       - '--arch {{ (item.architecture | d(lxc__default_container_architecture)) | lower }}'
   lxc_container:
-    name:                '{{ item.name                | d(item) }}'
-    archive:             '{{ item.archive             | d(omit) }}'
+    name:                '{{ item.name | d(item) }}'
+    archive:             '{{ item.archive | d(omit) }}'
     archive_compression: '{{ item.archive_compression | d(omit) }}'
-    archive_path:        '{{ item.archive_path        | d(omit) }}'
-    backing_store:       '{{ item.backing_store       | d(lxc__default_container_backing_store) }}'
-    clone_name:          '{{ item.clone_name          | d(omit) }}'
-    clone_snapshot:      '{{ item.clone_snapshot      | d(omit) }}'
-    config:              '{{ item.config              | d(lxc__default_container_config) }}'
-    container_command:   '{{ item.container_command   | d(omit) }}'
-    container_config:    '{{ item.container_config    | d(omit) }}'
-    container_log:       '{{ item.container_log       | d(omit) }}'
+    archive_path:        '{{ item.archive_path | d(omit) }}'
+    backing_store:       '{{ item.backing_store | d(lxc__default_container_backing_store) }}'
+    clone_name:          '{{ item.clone_name | d(omit) }}'
+    clone_snapshot:      '{{ item.clone_snapshot | d(omit) }}'
+    config:              '{{ item.config | d(lxc__default_container_config) }}'
+    container_command:   '{{ item.container_command | d(omit) }}'
+    container_config:    '{{ item.container_config | d(omit) }}'
+    container_log:       '{{ item.container_log | d(omit) }}'
     container_log_level: '{{ item.container_log_level | d(omit) }}'
-    directory:           '{{ item.directory           | d(omit) }}'
-    fs_size:             '{{ item.fs_size             | d(omit) }}'
-    fs_type:             '{{ item.fs_type             | d(omit) }}'
-    lv_name:             '{{ item.lv_name             | d(omit) }}'
-    lxc_path:            '{{ item.lxc_path            | d(omit) }}'
-    state:               '{{ item.state               | d("started"
-                                                          if (ansible_local | d() and ansible_local.lxc | d() and
-                                                              (item.name | d(item))
-                                                              in ansible_local.lxc.containers | d())
-                                                          else "stopped") }}'
-    template:            '{{ item.template            | d(lxc__default_container_template) }}'
-    template_options:    '{{ item.template_options    | d((template_options | join(" "))
-                                                          if ((item.template
-                                                               | d(lxc__default_container_template)) == "download")
-                                                          else omit) }}'
-    thinpool:            '{{ item.thinpool            | d(omit) }}'
-    vg_name:             '{{ item.vg_name             | d(omit) }}'
-    vfs_root:            '{{ item.zfs_root            | d(omit) }}'
+    directory:           '{{ item.directory | d(omit) }}'
+    fs_size:             '{{ item.fs_size | d(omit) }}'
+    fs_type:             '{{ item.fs_type | d(omit) }}'
+    lv_name:             '{{ item.lv_name | d(omit) }}'
+    lxc_path:            '{{ item.lxc_path | d(omit) }}'
+    state:               '{{ item.state | d("started"
+                                            if (ansible_local | d() and ansible_local.lxc | d() and
+                                                (item.name | d(item))
+                                                in ansible_local.lxc.containers | d())
+                                            else "stopped") }}'
+    template:            '{{ item.template | d(lxc__default_container_template) }}'
+    template_options:    '{{ item.template_options | d((template_options | join(" "))
+                                                       if ((item.template
+                                                            | d(lxc__default_container_template)) == "download")
+                                                       else omit) }}'
+    thinpool:            '{{ item.thinpool | d(omit) }}'
+    vg_name:             '{{ item.vg_name | d(omit) }}'
+    vfs_root:            '{{ item.zfs_root | d(omit) }}'
   loop: '{{ lxc__containers }}'
   tags: [ 'role::lxc:containers' ]
   when: ansible_local | d() and ansible_local.lxc | d() and
@@ -389,7 +389,7 @@
   ansible.builtin.copy:
     content: |
       # Filesystem table for the '{{ item.name | d(item) }}' LXC container
-      {{ item.fstab | regex_replace('\n$','') }}
+      {{ item.fstab | regex_replace('\n$', '') }}
     dest: '/var/lib/lxc/{{ item.name | d(item) }}/fstab'
     owner: 'root'
     group: 'root'

@@ -111,7 +111,7 @@
 
 - name: Generate DomainKeys on Ansible Controller
   community.crypto.openssl_privatekey:
-    size:  '{{ item.size  | d(opendkim__default_key_size) }}'
+    size:  '{{ item.size | d(opendkim__default_key_size) }}'
     type:  '{{ (item.type | d("rsa")) | upper }}'
     path:  '{{ secret + "/opendkim/domainkeys/"
                + (item.domain | d(opendkim__domain)) + "_"

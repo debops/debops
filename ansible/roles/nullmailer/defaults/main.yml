@@ -65,7 +65,7 @@ nullmailer__base_packages: [ 'nullmailer', 'bsd-mailx' ]
 #
 # List of APT packages which will be installed when the ``nullmailer-smtpd``
 # service is enabled.
-nullmailer__smtpd_packages: '{{ [ "xinetd" ] if nullmailer__smtpd | bool else [] }}'
+nullmailer__smtpd_packages: '{{ ["xinetd"] if nullmailer__smtpd | bool else [] }}'
 
                                                                    # ]]]
 # .. envvar:: nullmailer__packages [[[
@@ -198,7 +198,7 @@ nullmailer__ldap_self_object_classes: [ 'account', 'simpleSecurityObject',
 nullmailer__ldap_self_attributes:
   uid: '{{ nullmailer__ldap_self_rdn.split("=")[1] }}'
   userPassword: '{{ nullmailer__ldap_bindpw }}'
-  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  host: '{{ [ansible_fqdn, ansible_hostname] | unique }}'
   description: 'Account used by the "nullmailer" service to send authenticated mail messages'
   authorizedService: 'mail:send'
 
@@ -207,7 +207,7 @@ nullmailer__ldap_self_attributes:
 #
 # The Distinguished Name of the account LDAP object used by the
 # :command:`nullmailer` service to bind to the LDAP directory.
-nullmailer__ldap_binddn: '{{ ([ nullmailer__ldap_self_rdn ] + nullmailer__ldap_device_dn) | join(",") }}'
+nullmailer__ldap_binddn: '{{ ([nullmailer__ldap_self_rdn] + nullmailer__ldap_device_dn) | join(",") }}'
 
                                                                    # ]]]
 # .. envvar:: nullmailer__ldap_bindpw [[[

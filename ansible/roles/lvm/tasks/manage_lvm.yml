@@ -36,9 +36,9 @@
   lvg:
     vg:         '{{ item.vg }}'
     pvs:        '{{ item.pvs if item.pvs is string else (item.pvs | join(",")) }}'
-    state:      '{{ item.state   | d("present") }}'
-    pesize:     '{{ item.pesize  | d(omit) }}'
-    force:      '{{ item.force   | d(omit) }}'
+    state:      '{{ item.state | d("present") }}'
+    pesize:     '{{ item.pesize | d(omit) }}'
+    force:      '{{ item.force | d(omit) }}'
     vg_options: '{{ item.options | d(omit) }}'
   with_items: '{{ lvm__volume_groups }}'
   when: item.vg | d(False) and item.pvs | d(False)
@@ -73,9 +73,9 @@
 - name: Manage filesystems
   filesystem:
     dev:    '{{ "/dev/mapper/" + item.vg | regex_replace("-", "--") + "-" + item.lv | regex_replace("-", "--") }}'
-    fstype: '{{ item.fs_type  | d(lvm__default_fs_type) }}'
+    fstype: '{{ item.fs_type | d(lvm__default_fs_type) }}'
     force:  '{{ item.fs_force | d(omit) }}'
-    opts:   '{{ item.fs_opts  | d(omit) }}'
+    opts:   '{{ item.fs_opts | d(omit) }}'
     resizefs: '{{ item.fs_resizefs | d(omit) }}'
   with_items: '{{ lvm__logical_volumes }}'
   when: lvm__logical_volumes | d(False) and
@@ -89,12 +89,12 @@
   ansible.posix.mount:
     name:   '{{ item.mount }}'
     src:    '{{ "/dev/mapper/" + item.vg | regex_replace("-", "--") + "-" + item.lv | regex_replace("-", "--") }}'
-    fstype: '{{ item.fs_type      | d(lvm__default_fs_type) }}'
-    opts:   '{{ item.mount_opts   | d(lvm__default_mount_options) }}'
-    state:  '{{ item.mount_state  | d("mounted") }}'
-    dump:   '{{ item.mount_dump   | d(omit) }}'
+    fstype: '{{ item.fs_type | d(lvm__default_fs_type) }}'
+    opts:   '{{ item.mount_opts | d(lvm__default_mount_options) }}'
+    state:  '{{ item.mount_state | d("mounted") }}'
+    dump:   '{{ item.mount_dump | d(omit) }}'
     passno: '{{ item.mount_passno | d(omit) }}'
-    fstab:  '{{ item.mount_fstab  | d(omit) }}'
+    fstab:  '{{ item.mount_fstab | d(omit) }}'
   with_items: '{{ lvm__logical_volumes }}'
   when: lvm__logical_volumes | d(False) and
         item.vg | d() and item.lv | d() and item.size | d() and
