@@ -1,0 +1,23 @@
+---
+# Copyright (C) 2022 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# This test is used to verify DebOps codebase against 'ansible-lint' project
+# using its 'main' branch, to anticipate any future changes.
+# Ref: https://github.com/ansible/ansible-lint/discussions/1403#discussioncomment-2654415
+
+name: Checking codebase using ansible-lint main branch
+on: [ 'push', 'pull_request' ]
+
+jobs:
+  build:
+    runs-on: 'ubuntu-latest'
+
+    steps:
+
+      - name: Clone the repository
+        uses: 'actions/checkout@v2'
+
+      - name: Run ansible-lint from main branch
+        uses: 'ansible-community/ansible-lint-action@main'
