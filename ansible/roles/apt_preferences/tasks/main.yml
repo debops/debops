@@ -16,7 +16,7 @@
                                                                 else (item.packages.split(" ")[0]
                                                                       if item.packages is string
                                                                       else item.packages[0]))
-                                                       + (item.suffix | d("")) + ".pref") | replace("*","all") }}'
+                                                       + (item.suffix | d("")) + ".pref") | replace("*", "all") }}'
     state: 'absent'
   loop: '{{ q("flattened", apt_preferences_list | d([])
                            + apt_preferences_group_list | d([])
@@ -38,7 +38,7 @@
                                               else (item.packages.split(" ")[0]
                                                     if item.packages is string
                                                     else item.packages[0]))
-                                     + (item.suffix | d("")) + ".pref") | replace("*","all") }}'
+                                     + (item.suffix | d("")) + ".pref") | replace("*", "all") }}'
     state: 'absent'
   loop: '{{ q("flattened", apt_preferences_list | d([])
                            + apt_preferences_group_list | d([])
@@ -48,24 +48,15 @@
                            + apt_preferences__group_list
                            + apt_preferences__host_list
                            + apt_preferences__dependent_list) }}'
-  when: (
-          (
-            ((item.state | d() and item.state == 'absent') or item.delete | d() | bool) and
-            (item.package | d() or item.packages | d()) and
-            (item.version is undefined or (item.version is defined and not item.version))
-          ) or
-          (
-            item.raw is undefined and
-            item.pin is undefined and
-            (
-              item.backports is undefined or
-              (
-                item.backports is iterable and item.backports and
-                ansible_distribution_release not in item.backports
-              )
-            ) and ansible_distribution_release not in apt_preferences__next_release.keys()
-          )
-        )
+  when: ((((item.state | d() and item.state == 'absent') or item.delete | d() | bool) and
+          (item.package | d() or item.packages | d()) and
+          (item.version is undefined or (item.version is defined and not item.version))) or
+         (item.raw is undefined and
+          item.pin is undefined and
+          (item.backports is undefined or
+           (item.backports is iterable and item.backports and
+            ansible_distribution_release not in item.backports)) and
+           ansible_distribution_release not in apt_preferences__next_release.keys()))
 
 - name: Create APT preferences
   ansible.builtin.template:
@@ -78,7 +69,7 @@
                                               else (item.packages.split(" ")[0]
                                                     if item.packages is string
                                                     else item.packages[0]))
-                                     + (item.suffix | d("")) + ".pref") | replace("*","all") }}'
+                                     + (item.suffix | d("")) + ".pref") | replace("*", "all") }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
@@ -90,24 +81,13 @@
                            + apt_preferences__group_list
                            + apt_preferences__host_list
                            + apt_preferences__dependent_list) }}'
-  when: (
-          (
-            ((item.state | d('present')) != 'absent' and (not (item.delete | d() | bool))) and
-            (item.package | d() or item.packages | d())
-          ) and
-          (
-            item.raw | d() or
-            item.version | d() or
-            (
-              item.pin is undefined and
-              (
-                item.backports is undefined or
-                (
-                  item.backports is iterable and item.backports and
-                  ansible_distribution_release in item.backports
-                )
-              ) and
-             ansible_distribution_release in apt_preferences__next_release.keys()
-            ) or item.pin | d()
-          )
-        )
+  when: ((((item.state | d('present')) != 'absent' and (not (item.delete | d() | bool))) and
+          (item.package | d() or item.packages | d())) and
+         (item.raw | d() or
+          item.version | d() or
+          (item.pin is undefined and
+           (item.backports is undefined or
+            (item.backports is iterable and item.backports and
+             ansible_distribution_release in item.backports)) and
+            ansible_distribution_release in apt_preferences__next_release.keys()) or
+           item.pin | d()))

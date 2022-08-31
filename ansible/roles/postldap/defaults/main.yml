@@ -21,7 +21,7 @@
 # .. envvar:: postldap__postfix__dependent_packages [[[
 #
 # List of additional APT packages needed for the LDAP support.
-postldap__postfix__dependent_packages: '{{ [ "postfix-ldap" ]
+postldap__postfix__dependent_packages: '{{ ["postfix-ldap"]
                                            if postldap__ldap_enabled else [] }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -576,7 +576,7 @@ postldap__ldap_self_object_classes: [ 'account', 'simpleSecurityObject',
 postldap__ldap_self_attributes:
   uid: '{{ postldap__ldap_self_rdn.split("=")[1] }}'
   userPassword: '{{ postldap__ldap_bindpw }}'
-  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  host: '{{ [ansible_fqdn, ansible_hostname] | unique }}'
   description: 'Account used by the "Postfix" service to access the LDAP directory'
   authorizedService: 'mail:send'
 
@@ -585,8 +585,8 @@ postldap__ldap_self_attributes:
 #
 # The Distinguished Name of the account LDAP object used by the
 # Postfix service to bind to the LDAP directory.
-postldap__ldap_binddn: '{{ ([ postldap__ldap_self_rdn ]
-                              + postldap__ldap_device_dn) | join(",") }}'
+postldap__ldap_binddn: '{{ ([postldap__ldap_self_rdn]
+                            + postldap__ldap_device_dn) | join(",") }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_bindpw [[[
@@ -611,8 +611,8 @@ postldap__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn | d("ou=People") }}
 #
 # The Distinguished Name of the LDAP object which contains the user accounts
 # used by Postfix.
-postldap__ldap_people_dn: '{{ [ postldap__ldap_people_rdn ]
-                                + postldap__ldap_base_dn }}'
+postldap__ldap_people_dn: '{{ [postldap__ldap_people_rdn]
+                              + postldap__ldap_base_dn }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_uri [[[
@@ -652,11 +652,11 @@ postldap__ldap_domains_rdn: '{{ ansible_local.ldap.domains_rdn | d("ou=Domains")
 # The Distinguished Name of the LDAP object which contains the groups used by
 # Postfix. If private groups are enabled, this object will be created
 # automatically.
-postldap__ldap_groups_dn: '{{ ([ postldap__ldap_groups_rdn, postldap__ldap_self_rdn ]
-                                 + postldap__ldap_device_dn)
-                                  if postldap__ldap_private_subtree | bool
-                                  else ([ postldap__ldap_groups_rdn ]
-                                        + postldap__ldap_base_dn) }}'
+postldap__ldap_groups_dn: '{{ ([postldap__ldap_groups_rdn, postldap__ldap_self_rdn]
+                               + postldap__ldap_device_dn)
+                              if postldap__ldap_private_subtree | bool
+                              else ([postldap__ldap_groups_rdn]
+                                    + postldap__ldap_base_dn) }}'
 
                                                                    # ]]]
 # .. envvar:: postldap__ldap_domains_dn [[[
@@ -664,11 +664,12 @@ postldap__ldap_groups_dn: '{{ ([ postldap__ldap_groups_rdn, postldap__ldap_self_
 # The Distinguished Name of the LDAP object which contains the (virtual mail) domains used by
 # Postfix. If private groups are enabled, this object will be created
 # automatically.
-postldap__ldap_domains_dn: '{{ ([ postldap__ldap_domains_rdn, postldap__ldap_self_rdn ]
-                                  + postldap__ldap_device_dn)
-                                    if postldap__ldap_private_subtree | bool
-                                    else ([ postldap__ldap_domains_rdn ]
-                                          + postldap__ldap_base_dn) }}'
+postldap__ldap_domains_dn: '{{ ([postldap__ldap_domains_rdn, postldap__ldap_self_rdn]
+                                + postldap__ldap_device_dn)
+                               if postldap__ldap_private_subtree | bool
+                               else ([postldap__ldap_domains_rdn]
+                                     + postldap__ldap_base_dn) }}'
+
                                                                    # ]]]
 # .. envvar:: postldap__ldap_default_virtual_domain_rdn [[[
 #

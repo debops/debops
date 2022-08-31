@@ -60,7 +60,7 @@
 - name: Manage entries in /etc/hosts
   ansible.builtin.lineinfile:  # noqa no-tabs
     dest:    '/etc/hosts'
-    regexp:  '^{{ item.name | replace(".","\.") }}\s+'
+    regexp:  '^{{ item.name | replace(".", "\.") }}\s+'
     line:    "{{ item.name }}\t{{ ('\t' if (item.name | string | length < 8) else '') }}{{ item.value
                  if (item.value is string)
                  else ((item.value | d()) | selectattr('name', 'defined') | map(attribute='name') | list | join(' ')) }}"
@@ -75,7 +75,7 @@
 - name: Manage entries in /etc/networks
   ansible.builtin.lineinfile:  # noqa no-tabs
     dest:    '/etc/networks'
-    regexp:  '^{{ item.key | replace(".","\.") }}\s+'
+    regexp:  '^{{ item.key | replace(".", "\.") }}\s+'
     line:    "{{ item.key }}\t{{ item.value if (item.value is string) else (item.value | d() | join(' ')) }}"
     state:   '{{ "present" if item.value | d() else "absent" }}'
     mode:    '0644'

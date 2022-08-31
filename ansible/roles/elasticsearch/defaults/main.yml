@@ -63,7 +63,7 @@ elasticsearch__group: 'elasticsearch'
 # .. envvar:: elasticsearch__additional_groups [[[
 #
 # List of additional UNIX groups to which the Elasticsearch user will belong.
-elasticsearch__additional_groups: '{{ [ "ssl-cert" ]
+elasticsearch__additional_groups: '{{ ["ssl-cert"]
                                       if elasticsearch__pki_enabled | bool
                                       else [] }}'
                                                                    # ]]]
@@ -336,10 +336,10 @@ elasticsearch__combined_native_users: '{{ elasticsearch__native_users
 # Elasticsearch will listen on ``localhost`` and private IP addresses only. See
 # https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-network.html
 # for more details.
-elasticsearch__network_host: '{{ [ "_local_", "_site_" ]
+elasticsearch__network_host: '{{ ["_local_", "_site_"]
                                  if (ansible_local.ferm.enabled | d() and
                                      ansible_local.ferm.enabled | bool)
-                                 else [ "_local_" ] }}'
+                                 else ["_local_"] }}'
 
                                                                    # ]]]
 # .. envvar:: elasticsearch__http_port [[[
@@ -367,7 +367,7 @@ elasticsearch__domain: '{{ ansible_domain }}'
 #
 # Name of the Elasticsearch cluster, should be the same on all of the cluster
 # nodes. By default it's based on the host domain name.
-elasticsearch__cluster_name: '{{ elasticsearch__domain | replace(".","-") }}'
+elasticsearch__cluster_name: '{{ elasticsearch__domain | replace(".", "-") }}'
 
                                                                    # ]]]
 # .. envvar:: elasticsearch__node_name [[[

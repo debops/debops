@@ -28,9 +28,9 @@ sudo__enabled: True
 # .. envvar:: sudo__base_packages [[[
 #
 # List of base APT packages to install for :command:`sudo` support.
-sudo__base_packages: '{{ [ "sudo-ldap" ]
+sudo__base_packages: '{{ ["sudo-ldap"]
                          if sudo__ldap_enabled | bool
-                         else [ "sudo" ] }}'
+                         else ["sudo"] }}'
 
                                                                    # ]]]
 # .. envvar:: sudo__packages [[[
@@ -87,7 +87,7 @@ sudo__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
 sudo__ldap_self_attributes:
   uid: '{{ sudo__ldap_self_rdn.split("=")[1] }}'
   userPassword: '{{ sudo__ldap_bindpw }}'
-  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  host: '{{ [ansible_fqdn, ansible_hostname] | unique }}'
   description: 'Account used by the "sudo" service to access the LDAP directory'
 
                                                                    # ]]]
@@ -95,7 +95,7 @@ sudo__ldap_self_attributes:
 #
 # The Distinguished Name of the account LDAP object used by the
 # :command:`sudo` service to bind to the LDAP directory.
-sudo__ldap_binddn: '{{ ([ sudo__ldap_self_rdn ] + sudo__ldap_device_dn) | join(",") }}'
+sudo__ldap_binddn: '{{ ([sudo__ldap_self_rdn] + sudo__ldap_device_dn) | join(",") }}'
 
                                                                    # ]]]
 # .. envvar:: sudo__ldap_bindpw [[[
@@ -183,7 +183,7 @@ sudo__ldap_default_configuration:
 
   - name: 'sudoers_base'
     comment: 'The base DN to use when performing "sudo" LDAP queries.'
-    value: '{{ ([ "ou=SUDOers" ] + sudo__ldap_base_dn) | join(",") }}'
+    value: '{{ (["ou=SUDOers"] + sudo__ldap_base_dn) | join(",") }}'
 
   - name: 'uri'
     comment: 'The location at which the LDAP server(s) should be reachable.'

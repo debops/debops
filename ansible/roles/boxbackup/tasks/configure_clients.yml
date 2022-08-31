@@ -10,7 +10,7 @@
 
 - name: Set backup softlimit size for client hosts
   ansible.builtin.set_fact:
-    boxbackup_softlimit: '{{ (ansible_mounts | sum(attribute="size_total")/1024/1024
+    boxbackup_softlimit: '{{ (ansible_mounts | sum(attribute="size_total") / 1024 / 1024
                               + boxbackup_softlimit_padding) | int }}'
   when: (boxbackup_softlimit is undefined or not boxbackup_softlimit)
 

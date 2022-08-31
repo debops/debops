@@ -29,9 +29,9 @@ sshd__base_packages: [ 'openssh-server', 'openssh-client' ]
 # .. envvar:: sshd__recommended_packages [[[
 #
 # List of recommended packages that should be installed with OpenSSH.
-sshd__recommended_packages: '{{ [ "openssh-blacklist", "openssh-blacklist-extra" ]
+sshd__recommended_packages: '{{ ["openssh-blacklist", "openssh-blacklist-extra"]
                                 if (ansible_distribution_release in
-                                    [ "trusty", "xenial" ]) else [] }}'
+                                    ["trusty", "xenial"]) else [] }}'
 
                                                                    # ]]]
 # .. envvar:: sshd__optional_packages [[[
@@ -43,7 +43,7 @@ sshd__optional_packages: [ 'molly-guard' ]
 # .. envvar:: sshd__ldap_packages [[[
 #
 # List of packages related to LDAP support required by OpenSSH.
-sshd__ldap_packages: '{{ [ "ldap-utils" ]
+sshd__ldap_packages: '{{ ["ldap-utils"]
                          if (sshd__authorized_keys_lookup | bool and
                              ("ldap" in sshd__authorized_keys_lookup_type))
                          else [] }}'
@@ -617,7 +617,7 @@ sshd__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
 sshd__ldap_self_attributes:
   uid: '{{ sshd__ldap_self_rdn.split("=")[1] }}'
   userPassword: '{{ sshd__ldap_bindpw }}'
-  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  host: '{{ [ansible_fqdn, ansible_hostname] | unique }}'
   description: 'Account used by the "sshd" service to access the LDAP directory'
 
                                                                    # ]]]
@@ -625,7 +625,7 @@ sshd__ldap_self_attributes:
 #
 # The Distinguished Name of the ``sshd`` LDAP account object used to
 # authenticate to the LDAP directory, defined as a string.
-sshd__ldap_binddn: '{{ ([ sshd__ldap_self_rdn ] + sshd__ldap_device_dn) | join(",") }}'
+sshd__ldap_binddn: '{{ ([sshd__ldap_self_rdn] + sshd__ldap_device_dn) | join(",") }}'
 
                                                                    # ]]]
 # .. envvar:: sshd__ldap_bindpw [[[
@@ -927,7 +927,7 @@ sshd__pam_access__dependent_rules:
           Grant access via SSH to members of UNIX groups defined on this host
         permission: 'allow'
         groups: '{{ ansible_local.system_groups.access.sshd
-                     | d([ "admins", "sshusers", "sftponly" ]) }}'
+                     | d(["admins", "sshusers", "sftponly"]) }}'
         origins: 'ALL'
 
       - name: 'allow-ldap-groups'

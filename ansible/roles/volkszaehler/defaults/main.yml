@@ -25,7 +25,7 @@
 volkszaehler__base_packages:
   - 'git-core'
 
-  - '{{ [ "php-xml", "php-mbstring" ]
+  - '{{ ["php-xml", "php-mbstring"]
         if (ansible_local.php.version | d() is version_compare("7", ">="))
         else [] }}'
 
@@ -197,12 +197,12 @@ volkszaehler__base_php_packages:
   - 'doctrine-orm'
   - 'doctrine-dbal'
   - 'symfony-console'
-  - '{{ [ "symfony-http-foundation" ] if (not (ansible_distribution == "Ubuntu" and ansible_distribution_release in ["trusty"])) else [] }}'
-  - '{{ [ "symfony-http-kernel" ] if (not (ansible_distribution == "Ubuntu" and ansible_distribution_release in ["trusty"])) else [] }}'
+  - '{{ ["symfony-http-foundation"] if (not (ansible_distribution == "Ubuntu" and ansible_distribution_release in ["trusty"])) else [] }}'
+  - '{{ ["symfony-http-kernel"] if (not (ansible_distribution == "Ubuntu" and ansible_distribution_release in ["trusty"])) else [] }}'
   - 'symfony-routing'
 
-  - '{{ [ "mysql" ] if (volkszaehler__database in [ "mariadb", "mysql" ]) else [] }}'
-  - '{{ [ "pgsql" ] if (volkszaehler__database in [ "postgresql" ]) else [] }}'
+  - '{{ ["mysql"] if (volkszaehler__database in ["mariadb", "mysql"]) else [] }}'
+  - '{{ ["pgsql"] if (volkszaehler__database in ["postgresql"]) else [] }}'
   - '{{ ["libapache2-mod-php"] if (volkszaehler__webserver == "apache") else [] }}'
 
   ## Included in normal PHP installations but require it here because it is
@@ -247,15 +247,10 @@ volkszaehler__webserver: '{{ ansible_local.volkszaehler.webserver
 #
 # List of allowed HTTP methods.
 volkszaehler__webserver_http_methods: |
-  {{ [
-       'GET',
-       'HEAD',
-       'POST',
-       'PATCH',
-     ] + ([ 'DELETE' ]
-          if (volkszaehler__allow_channel_deletion | bool)
-          else [])
-  }}
+  {{ ['GET', 'HEAD', 'POST', 'PATCH']
+     + (['DELETE']
+        if (volkszaehler__allow_channel_deletion | bool)
+         else []) }}
 
 # ]]]
 # .. envvar:: volkszaehler__apache_modules [[[
@@ -470,11 +465,10 @@ volkszaehler__host_config: {}
 #
 # The configuration written to :file:`etc/volkszaehler.conf.php`.
 volkszaehler__combined_config: '{{ volkszaehler__upstream_config
-                                   | combine(
-                                       volkszaehler__role_config,
-                                       volkszaehler__config,
-                                       volkszaehler__group_config,
-                                       volkszaehler__host_config) }}'
+                                   | combine(volkszaehler__role_config,
+                                             volkszaehler__config,
+                                             volkszaehler__group_config,
+                                             volkszaehler__host_config) }}'
                                                                    # ]]]
                                                                    # ]]]
 # Configuration for other Ansible roles [[[

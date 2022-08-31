@@ -25,10 +25,10 @@
 # List of base APT packages to install for LXC support.
 lxc__base_packages:
   - [ 'lxc', 'lxcfs', 'debootstrap', 'xz-utils' ]
-  - '{{ [ "dnsmasq-base" ] if (lxc__net_deploy_state == "present") else [] }}'
+  - '{{ ["dnsmasq-base"] if (lxc__net_deploy_state == "present") else [] }}'
   - '{{ []
-        if (ansible_distribution_release in [ "stretch", "trusty", "xenial" ])
-        else [ "apparmor", "lxc-templates" ] }}'
+        if (ansible_distribution_release in ["stretch", "trusty", "xenial"])
+        else ["apparmor", "lxc-templates"] }}'
 
                                                                    # ]]]
 # .. envvar:: lxc__packages [[[
@@ -101,7 +101,7 @@ lxc__root_subgid_count: '{{ ansible_local.root_account.subgids[0]["count"]
 # the host is also configured to support LXD service using the
 # :ref:`debops.lxd` role.
 lxc__net_deploy_state: '{{ "absent"
-                           if ((ansible_virtualization_type in [ "lxc", "docker", "openvz" ] and
+                           if ((ansible_virtualization_type in ["lxc", "docker", "openvz"] and
                                 ansible_virtualization_role == "guest") or
                                (inventory_hostname in groups["debops_service_lxd"] | d([])) or
                                (ansible_local.lxd.installed | d(False)) | bool)
@@ -275,10 +275,10 @@ lxc__default_configuration:
 
       - name: 'lxc.cap.drop_secure'
         alias: 'lxc.cap.drop'
-        value: '{{ [ "mknod", "sys_rawio", "syslog", "wake_alarm", "sys_time" ]
+        value: '{{ ["mknod", "sys_rawio", "syslog", "wake_alarm", "sys_time"]
                   + ([] if (lxc__version is version("3.0.0", "<") or
                             lxc__version is version("4.0.0", ">="))
-                  else [ "sys_admin" ]) }}'
+                  else ["sys_admin"]) }}'
 
       # Select how many CPUs are available inside of the container
       - name: 'lxc.cgroup.cpuset.cpus'
@@ -350,10 +350,10 @@ lxc__default_configuration:
 
       - name: 'lxc.cap.drop_secure'
         alias: 'lxc.cap.drop'
-        value: '{{ [ "mknod", "sys_rawio", "syslog", "wake_alarm", "sys_time" ]
+        value: '{{ ["mknod", "sys_rawio", "syslog", "wake_alarm", "sys_time"]
                   + ([] if (lxc__version is version("3.0.0", "<") or
                             lxc__version is version("4.0.0", ">="))
-                            else [ "sys_admin" ]) }}'
+                            else ["sys_admin"]) }}'
 
     # Configuration for unprivileged LXC containers that uses only the internal
     # bridge managed by the 'lxc-net' service
@@ -395,10 +395,10 @@ lxc__default_configuration:
 
       - name: 'lxc.cap.drop_secure'
         alias: 'lxc.cap.drop'
-        value: '{{ [ "mknod", "sys_rawio", "syslog", "wake_alarm", "sys_time" ]
+        value: '{{ ["mknod", "sys_rawio", "syslog", "wake_alarm", "sys_time"]
                   + ([] if (lxc__version is version("3.0.0", "<") or
                             lxc__version is version("4.0.0", ">="))
-                            else [ "sys_admin" ]) }}'
+                            else ["sys_admin"]) }}'
 
       # Select how many CPUs are available inside of the container
       - name: 'lxc.cgroup.cpuset.cpus'
@@ -493,10 +493,10 @@ lxc__default_configuration:
 
       - name: 'lxc.cap.drop_secure'
         alias: 'lxc.cap.drop'
-        value: '{{ [ "mknod", "sys_rawio", "syslog", "wake_alarm", "sys_time" ]
+        value: '{{ ["mknod", "sys_rawio", "syslog", "wake_alarm", "sys_time"]
                   + ([] if (lxc__version is version("3.0.0", "<") or
                             lxc__version is version("4.0.0", ">="))
-                  else [ "sys_admin" ]) }}'
+                  else ["sys_admin"]) }}'
 
                                                                    # ]]]
 # .. envvar:: lxc__configuration [[[

@@ -65,7 +65,7 @@ system_users__base_packages: [ 'acl' ]
 # .. envvar:: system_users__shell_packages [[[
 #
 # List of login shell APT packages expected on the host.
-system_users__shell_packages: '{{ lookup("template", "lookup/system_users__shell_packages.j2") }}'
+system_users__shell_packages: '{{ lookup("template", "lookup/system_users__shell_packages.j2") | from_yaml }}'
 
                                                                    # ]]]
 # .. envvar:: system_users__packages [[[
@@ -136,7 +136,7 @@ system_users__default_home_mode: '0751'
 system_users__admin_groups: '{{ ansible_local.system_groups.access.root
                                 if (ansible_local.system_groups.access | d() and
                                     ansible_local.system_groups.access.root | d())
-                                else [ "admins" ] }}'
+                                else ["admins"] }}'
                                                                    # ]]]
                                                                    # ]]]
 # User configuration files (dotfiles) [[[
@@ -245,7 +245,7 @@ system_users__default_accounts:
     prefix: '{{ "" if ansible_user | d() else system_users__prefix }}'
     comment: '{{ system_users__fact_self_comment
                  | d(system_users__self_comment)
-                 | regex_replace(",,,$","") }}'
+                 | regex_replace(",,,$", "") }}'
     # home path is generated automatically
     shell: '{{ (system_users__fact_self_shell | d(system_users__self_shell))
                if ((system_users__fact_self_shell | d(system_users__self_shell))

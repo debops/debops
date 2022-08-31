@@ -112,7 +112,7 @@ nslcd__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
 nslcd__ldap_self_attributes:
   uid: '{{ nslcd__ldap_self_rdn.split("=")[1] }}'
   userPassword: '{{ nslcd__ldap_bindpw }}'
-  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  host: '{{ [ansible_fqdn, ansible_hostname] | unique }}'
   description: 'Account used by the "nslcd" service to access the LDAP directory'
 
                                                                    # ]]]
@@ -120,7 +120,7 @@ nslcd__ldap_self_attributes:
 #
 # The Distinguished Name of the account LDAP object used by the
 # :command:`nslcd` service to bind to the LDAP directory.
-nslcd__ldap_binddn: '{{ ([ nslcd__ldap_self_rdn ] + nslcd__ldap_device_dn) | join(",") }}'
+nslcd__ldap_binddn: '{{ ([nslcd__ldap_self_rdn] + nslcd__ldap_device_dn) | join(",") }}'
 
                                                                    # ]]]
 # .. envvar:: nslcd__ldap_bindpw [[[

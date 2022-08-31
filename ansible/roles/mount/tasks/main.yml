@@ -15,42 +15,42 @@
   # will not change them while the device is mounted.
 - name: Ensure that the mount points exist
   ansible.builtin.file:
-    path:    '{{ item.path    | d(item.dest | d(item.name)) }}'
-    owner:   '{{ item.owner   | d(omit) }}'
-    group:   '{{ item.group   | d(item.owner | d(omit)) }}'
-    mode:    '{{ item.mode    | d("0755") }}'
+    path:    '{{ item.path | d(item.dest | d(item.name)) }}'
+    owner:   '{{ item.owner | d(omit) }}'
+    group:   '{{ item.group | d(item.owner | d(omit)) }}'
+    mode:    '{{ item.mode | d("0755") }}'
     state:   'directory'
   loop: '{{ (mount__devices
              + mount__group_devices
              + mount__host_devices)
             | flatten }}'
-  when: (mount__enabled | bool and item.state | d('mounted') in [ 'mounted', 'present', 'unmounted' ] and
+  when: (mount__enabled | bool and item.state | d('mounted') in ['mounted', 'present', 'unmounted'] and
          (item.device | d(item.src)) not in (ansible_mounts | map(attribute='device') | list))
 
 - name: Stop devices automounted by systemd if requested
   ansible.builtin.systemd:
-    name: '{{ item.name | regex_replace("^/","") | regex_replace("/","-") + ".automount" }}'
+    name: '{{ item.name | regex_replace("^/", "") | regex_replace("/", "-") + ".automount" }}'
     state: 'stopped'
   loop: '{{ (mount__devices
              + mount__group_devices
              + mount__host_devices)
             | flatten }}'
   when: (mount__enabled | bool and ansible_service_mgr == 'systemd' and
-         item.state | d('mounted') in [ 'unmounted', 'absent' ] and
+         item.state | d('mounted') in ['unmounted', 'absent'] and
          (((item.opts if (item.opts is string) else item.opts | join(','))
            if item.opts | d() else 'defaults') is match(".*x-systemd.automount.*")))
 
 - name: Manage device mounts
   ansible.posix.mount:
     src:    '{{ item.src }}'
-    path:   '{{ item.path   | d(item.dest | d(item.name)) }}'
+    path:   '{{ item.path | d(item.dest | d(item.name)) }}'
     fstype: '{{ item.fstype | d("auto") }}'
     opts:   '{{ ((item.opts if (item.opts is string) else (item.opts | join(",")))
                  if item.opts | d() else "defaults") }}'
-    dump:   '{{ item.dump   | d(omit) }}'
+    dump:   '{{ item.dump | d(omit) }}'
     passno: '{{ item.passno | d(omit) }}'
-    state:  '{{ item.state  | d("mounted") }}'
-    fstab:  '{{ item.fstab  | d(omit) }}'
+    state:  '{{ item.state | d("mounted") }}'
+    fstab:  '{{ item.fstab | d(omit) }}'
   loop: '{{ (mount__devices
              + mount__group_devices
              + mount__host_devices)
@@ -81,29 +81,29 @@
 
 - name: Manage directories
   ansible.builtin.file:
-    path:    '{{ item.path    | d(item.dest | d(item.name)) }}'
-    owner:   '{{ item.owner   | d(omit) }}'
-    group:   '{{ item.group   | d(item.owner | d(omit)) }}'
-    mode:    '{{ item.mode    | d("0755") }}'
+    path:    '{{ item.path | d(item.dest | d(item.name)) }}'
+    owner:   '{{ item.owner | d(omit) }}'
+    group:   '{{ item.group | d(item.owner | d(omit)) }}'
+    mode:    '{{ item.mode | d("0755") }}'
     recurse: '{{ item.recurse | d(omit) }}'
-    state:   '{{ item.state   | d("directory") }}'
+    state:   '{{ item.state | d("directory") }}'
   loop: '{{ (mount__directories
              + mount__group_directories
              + mount__host_directories)
             | flatten }}'
   when: mount__enabled | bool and (item.path | d() or item.dest | d() or item.name | d()) and
-        item.state | d('directory') in [ 'directory', 'absent' ]
+        item.state | d('directory') in ['directory', 'absent']
 
 - name: Manage directory ACLs
   ansible.posix.acl:
-    path:        '{{ item.0.path        | d(item.0.dest | d(item.0.name)) }}'
-    default:     '{{ item.1.default     | d(omit) }}'
-    entity:      '{{ item.1.entity      | d(omit) }}'
-    etype:       '{{ item.1.etype       | d(omit) }}'
+    path:        '{{ item.0.path | d(item.0.dest | d(item.0.name)) }}'
+    default:     '{{ item.1.default | d(omit) }}'
+    entity:      '{{ item.1.entity | d(omit) }}'
+    etype:       '{{ item.1.etype | d(omit) }}'
     permissions: '{{ item.1.permissions | d(omit) }}'
-    follow:      '{{ item.1.follow      | d(omit) }}'
-    recursive:   '{{ item.1.recursive   | d(omit) }}'
-    state:       '{{ item.1.state       | d("present") }}'
+    follow:      '{{ item.1.follow | d(omit) }}'
+    recursive:   '{{ item.1.recursive | d(omit) }}'
+    state:       '{{ item.1.state | d("present") }}'
   loop: '{{ ((mount__directories
              + mount__group_directories
              + mount__host_directories)
@@ -117,13 +117,13 @@
 - name: Manage bind mounts
   ansible.posix.mount:
     src:    '{{ item.src }}'
-    path:   '{{ item.path   | d(item.dest | d(item.name)) }}'
+    path:   '{{ item.path | d(item.dest | d(item.name)) }}'
     fstype: '{{ item.fstype | d("none") }}'
     opts:   '{{ ((item.opts if (item.opts is string) else (item.opts | join(","))) if item.opts | d() else "bind") }}'
-    dump:   '{{ item.dump   | d(omit) }}'
+    dump:   '{{ item.dump | d(omit) }}'
     passno: '{{ item.passno | d(omit) }}'
-    state:  '{{ item.state  | d("mounted") }}'
-    fstab:  '{{ item.fstab  | d(omit) }}'
+    state:  '{{ item.state | d("mounted") }}'
+    fstab:  '{{ item.fstab | d(omit) }}'
   loop: '{{ (mount__binds
              + mount__group_binds
              + mount__host_binds)

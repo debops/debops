@@ -18,13 +18,13 @@
 - name: Install Ruby gems
   gem:
     name:                 '{{ item.name if item.name | d() else item }}'
-    state:                '{{ item.state                | d("present") }}'
-    user_install:         '{{ item.user_install         | d(False) }}'
-    version:              '{{ item.version              | d(omit) }}'
-    repository:           '{{ item.repository           | d(omit) }}'
-    include_doc:          '{{ item.include_doc          | d(omit) }}'
-    build_flags:          '{{ item.build_flags          | d(omit) }}'
-    executable:           '{{ item.executable           | d(omit) }}'
+    state:                '{{ item.state | d("present") }}'
+    user_install:         '{{ item.user_install | d(False) }}'
+    version:              '{{ item.version | d(omit) }}'
+    repository:           '{{ item.repository | d(omit) }}'
+    include_doc:          '{{ item.include_doc | d(omit) }}'
+    build_flags:          '{{ item.build_flags | d(omit) }}'
+    executable:           '{{ item.executable | d(omit) }}'
     include_dependencies: '{{ item.include_dependencies | d(omit) }}'
   loop: '{{ q("flattened", ruby__gems
                            + ruby__group_gems
@@ -59,13 +59,13 @@
 - name: Install Ruby user gems
   gem:
     name:                 '{{ item.name }}'
-    state:                '{{ item.state                | d("present") }}'
-    user_install:         '{{ item.user_install         | d(True) }}'
-    version:              '{{ item.version              | d(omit) }}'
-    repository:           '{{ item.repository           | d(omit) }}'
-    include_doc:          '{{ item.include_doc          | d(omit) }}'
-    build_flags:          '{{ item.build_flags          | d(omit) }}'
-    executable:           '{{ item.executable           | d(omit) }}'
+    state:                '{{ item.state | d("present") }}'
+    user_install:         '{{ item.user_install | d(True) }}'
+    version:              '{{ item.version | d(omit) }}'
+    repository:           '{{ item.repository | d(omit) }}'
+    include_doc:          '{{ item.include_doc | d(omit) }}'
+    build_flags:          '{{ item.build_flags | d(omit) }}'
+    executable:           '{{ item.executable | d(omit) }}'
     include_dependencies: '{{ item.include_dependencies | d(omit) }}'
   loop: '{{ q("flattened", ruby__user_gems
                            + ruby__group_user_gems

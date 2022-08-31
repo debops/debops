@@ -54,7 +54,7 @@
 
 - name: Remove dnsmasq configuration if requested
   ansible.builtin.file:
-    path: '/etc/dnsmasq.d/{{ item.filename | d(item.name | regex_replace("\.conf$","") + ".conf") }}'
+    path: '/etc/dnsmasq.d/{{ item.filename | d(item.name | regex_replace("\.conf$", "") + ".conf") }}'
     state: 'absent'
   with_items: '{{ dnsmasq__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Test and restart dnsmasq' ]
@@ -63,13 +63,13 @@
 - name: Generate dnsmasq configuration
   ansible.builtin.template:
     src: 'etc/dnsmasq.d/template.conf.j2'
-    dest: '/etc/dnsmasq.d/{{ item.filename | d(item.name | regex_replace(".conf$","") + ".conf") }}'
+    dest: '/etc/dnsmasq.d/{{ item.filename | d(item.name | regex_replace(".conf$", "") + ".conf") }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
   with_items: '{{ dnsmasq__combined_configuration | debops.debops.parse_kv_items }}'
   notify: [ 'Test and restart dnsmasq' ]
-  when: (item.name | d() and item.state | d('present') not in [ 'absent', 'ignore', 'init' ])
+  when: (item.name | d() and item.state | d('present') not in ['absent', 'ignore', 'init'])
 
 - name: Remove DHCP host configuration and DNS records if requested
   ansible.builtin.file:

@@ -234,7 +234,7 @@ etesync__app_name: '{{ etesync__user }}'
 # configuration of the ``gunicorn`` service is idempotent.
 etesync__app_runtime_dir: '{{ "gunicorn"
                               if (ansible_distribution_release in
-                                  [ "trusty", "xenial" ])
+                                  ["trusty", "xenial"])
                               else "gunicorn-etesync" }}'
 
                                                                    # ]]]
@@ -434,11 +434,11 @@ etesync__nginx__dependent_servers:
 
       - pattern: '/static/admin/'
         options: |-
-          alias {{ etesync__virtualenv + "/lib/python" + (etesync__python_version.split('.')[:2] | join('.')) }}/site-packages/django/contrib/admin/static/admin/;
+          alias {{ etesync__virtualenv + "/lib/python" + (etesync__python_version.split('.')[: 2] | join('.')) }}/site-packages/django/contrib/admin/static/admin/;
 
       - pattern: '/static/rest_framework/'
         options: |-
-          alias {{ etesync__virtualenv + "/lib/python" + (etesync__python_version.split('.')[:2] | join('.')) }}/site-packages/rest_framework/static/rest_framework/;
+          alias {{ etesync__virtualenv + "/lib/python" + (etesync__python_version.split('.')[: 2] | join('.')) }}/site-packages/rest_framework/static/rest_framework/;
 
       - pattern: '/{{ etesync__http_psk_subpath }}'
         options: |-

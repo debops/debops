@@ -32,12 +32,12 @@
   ansible.builtin.group:
     name:   '{{ item.group | d(item.name) }}'
     system: '{{ item.system | d(False if (item.user | d(True)) | bool else True) }}'
-    gid:    '{{ item.gid    | d(omit) }}'
+    gid:    '{{ item.gid | d(omit) }}'
     state: 'present'
     local: '{{ item.local | d(True if (item.user | d(True)) | bool else False) }}'
   loop: '{{ users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
-    label: '{{ {"name":  (item.group | d(item.name)),
+    label: '{{ {"name": (item.group | d(item.name)),
                 "state": item.state | d("present")} }}'
   when: (users__enabled | bool and item.name | d() and item.name != 'root' and
          item.state | d('present') != 'absent' and (item.private_group | d(True)) | bool)
@@ -50,42 +50,42 @@
 - name: Manage user accounts
   ansible.builtin.user:
     name:               '{{ item.name }}'
-    group:              '{{ item.group              | d(item.name) }}'
+    group:              '{{ item.group | d(item.name) }}'
     home:               '{{ item.home
                             | d((getent_passwd[item.name][4])
                                 if (getent_passwd[item.name] | d())
                                 else omit) }}'
-    uid:                '{{ item.uid                | d(omit) }}'
-    state:              '{{ item.state              | d("present") }}'
-    comment:            '{{ item.comment            | d(omit) }}'
-    password:           '{{ item.password           | d("*") }}'
-    update_password:    '{{ item.update_password    | d("on_create") }}'
-    system:             '{{ item.system             | d(omit) }}'
-    shell:              '{{ item.shell              | d(users__chroot_shell
-                                                        if (item.chroot | d()) | bool
-                                                        else (users__default_shell
-                                                              if users__default_shell | d()
-                                                              else omit)) }}'
-    create_home:        '{{ item.create_home        | d(omit) }}'
-    move_home:          '{{ item.move_home          | d(omit) }}'
-    skeleton:           '{{ item.skeleton           | d(omit) }}'
-    expires:            '{{ item.expires            | d(omit) }}'
-    remove:             '{{ item.remove             | d(omit) }}'
-    force:              '{{ item.force              | d(omit) }}'
-    non_unique:         '{{ item.non_unique         | d(omit) }}'
-    generate_ssh_key:   '{{ item.generate_ssh_key   | d(omit) }}'
-    ssh_key_bits:       '{{ item.ssh_key_bits       | d(omit) }}'
-    ssh_key_comment:    '{{ item.ssh_key_comment    | d(omit) }}'
-    ssh_key_file:       '{{ item.ssh_key_file       | d(omit) }}'
+    uid:                '{{ item.uid | d(omit) }}'
+    state:              '{{ item.state | d("present") }}'
+    comment:            '{{ item.comment | d(omit) }}'
+    password:           '{{ item.password | d("*") }}'
+    update_password:    '{{ item.update_password | d("on_create") }}'
+    system:             '{{ item.system | d(omit) }}'
+    shell:              '{{ item.shell | d(users__chroot_shell
+                                           if (item.chroot | d()) | bool
+                                           else (users__default_shell
+                                                 if users__default_shell | d()
+                                                 else omit)) }}'
+    create_home:        '{{ item.create_home | d(omit) }}'
+    move_home:          '{{ item.move_home | d(omit) }}'
+    skeleton:           '{{ item.skeleton | d(omit) }}'
+    expires:            '{{ item.expires | d(omit) }}'
+    remove:             '{{ item.remove | d(omit) }}'
+    force:              '{{ item.force | d(omit) }}'
+    non_unique:         '{{ item.non_unique | d(omit) }}'
+    generate_ssh_key:   '{{ item.generate_ssh_key | d(omit) }}'
+    ssh_key_bits:       '{{ item.ssh_key_bits | d(omit) }}'
+    ssh_key_comment:    '{{ item.ssh_key_comment | d(omit) }}'
+    ssh_key_file:       '{{ item.ssh_key_file | d(omit) }}'
     ssh_key_passphrase: '{{ item.ssh_key_passphrase | d(omit) }}'
-    ssh_key_type:       '{{ item.ssh_key_type       | d(omit) }}'
-    local:              '{{ item.local              | d(True) }}'
+    ssh_key_type:       '{{ item.ssh_key_type | d(omit) }}'
+    local:              '{{ item.local | d(True) }}'
   loop: '{{ users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name,
                 "state": item.state | d("present"), "gecos": item.comment | d()} }}'
   when: (users__enabled | bool and item.name | d() and item.name != 'root' and
-         item.state | d('present') not in [ 'ignore' ] and (item.user | d(True)) | bool)
+         item.state | d('present') not in ['ignore'] and (item.user | d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
 
 - name: Gather information about existing remote groups
@@ -97,27 +97,27 @@
 - name: Manage additional UNIX groups for UNIX accounts
   ansible.builtin.user:
     name:         '{{ item.name }}'
-    groups:       '{{ (( (([ item.groups ]
+    groups:       '{{ (((([item.groups]
                           if (item.groups is string)
                           else item.groups)
-                          if (item.groups is defined)
-                          else [])
-                          + (users__chroot_groups
-                            if ((item.chroot | d()) | bool)
-                            else []) )
-                        | intersect(getent_group.keys()) )
+                         if (item.groups is defined)
+                         else [])
+                        + (users__chroot_groups
+                           if ((item.chroot | d()) | bool)
+                           else []))
+                       | intersect(getent_group.keys()))
                       if (item.groups is defined or (item.chroot | d()) | bool)
                       else omit }}'
-    append:       '{{ item.append       | d(True) }}'
-    state:        '{{ item.state        | d("present") }}'
-    create_home:  '{{ item.create_home  | d(omit) }}'
+    append:       '{{ item.append | d(True) }}'
+    state:        '{{ item.state | d("present") }}'
+    create_home:  '{{ item.create_home | d(omit) }}'
   loop: '{{ users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name,
                 "state": item.state | d("present"), "gecos": item.comment | d(),
                 "groups": item.groups | d()} }}'
   when: (users__enabled | bool and item.name | d() and item.name != 'root' and
-         item.state | d('present') not in [ 'ignore' ] and
+         item.state | d('present') not in ['ignore'] and
          (item.groups | d() or (item.chroot | d()) | bool) and
          (item.user | d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
@@ -133,7 +133,7 @@
     state: 'directory'
     owner: '{{ item.home_owner | d("root" if ((item.chroot | d()) | bool) else omit) }}'
     group: '{{ item.home_group | d(omit) }}'
-    mode:  '{{ item.home_mode  | d(users__default_home_mode if (item.local | d(True)) | bool else omit) }}'
+    mode:  '{{ item.home_mode | d(users__default_home_mode if (item.local | d(True)) | bool else omit) }}'
   loop: '{{ users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name,
@@ -144,7 +144,7 @@
                                        if ((item.create_home | d(True)) | bool)
                                        else ""))} }}'
   when: (users__enabled | bool and item.name | d() and item.name != 'root' and
-         item.state | d('present') not in [ 'absent', 'ignore' ] and item.create_home | d(True) and
+         item.state | d('present') not in ['absent', 'ignore'] and item.create_home | d(True) and
          (item.home_owner | d() or item.home_group | d() or item.home_mode | d() or (item.local | d(True)) | bool) and
          (item.user | d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
@@ -157,14 +157,14 @@
                           else ("~" + item.0.name))
                          if ((item.0.create_home | d(True)) | bool)
                          else omit) }}'
-    default:     '{{ item.1.default     | d(omit) }}'
-    entity:      '{{ item.1.entity      | d(omit) }}'
-    entry:       '{{ item.1.entry       | d(omit) }}'
-    etype:       '{{ item.1.etype       | d(omit) }}'
+    default:     '{{ item.1.default | d(omit) }}'
+    entity:      '{{ item.1.entity | d(omit) }}'
+    entry:       '{{ item.1.entry | d(omit) }}'
+    etype:       '{{ item.1.etype | d(omit) }}'
     permissions: '{{ item.1.permissions | d(omit) }}'
-    follow:      '{{ item.1.follow      | d(omit) }}'
-    recursive:   '{{ item.1.recursive   | d(omit) }}'
-    state:       '{{ item.1.state       | d("present") }}'
+    follow:      '{{ item.1.follow | d(omit) }}'
+    recursive:   '{{ item.1.recursive | d(omit) }}'
+    state:       '{{ item.1.state | d("present") }}'
   loop: '{{ users__combined_accounts | debops.debops.parse_kv_items
             | selectattr("home_acl", "defined") | list
             | subelements("home_acl") }}'
@@ -173,7 +173,7 @@
                 "state": item.0.state | d("present"), "home_acl": item.1} }}'
   when: (users__enabled | bool and users__acl_enabled | bool and
          item.0.name | d() and item.0.name != 'root' and
-         item.0.state | d('present') not in [ 'absent', 'ignore' ] and
+         item.0.state | d('present') not in ['absent', 'ignore'] and
          item.0.create_home | d(True) and item.0.home_acl | d() and (item.0.user | d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
   tags: [ 'role::users:home_acl', 'skip::users:home_acl', 'skip::check' ]
@@ -188,7 +188,7 @@
                 "state": item.state | d("present"), "linger": item.linger | d(False)} }}'
   when: (users__enabled | bool and ansible_service_mgr == 'systemd' and
          item.name | d() and item.name != 'root' and
-         item.state | d('present') not in [ 'absent', 'ignore' ] and
+         item.state | d('present') not in ['absent', 'ignore'] and
          item.linger is defined and item.linger | bool and (item.user | d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
 
@@ -202,7 +202,7 @@
                 "state": item.state | d("present"), "linger": item.linger | d(False)} }}'
   when: (users__enabled | bool and ansible_service_mgr == 'systemd' and
          item.name | d() and item.name != 'root' and
-         item.state | d('present') not in [ 'absent', 'ignore' ] and
+         item.state | d('present') not in ['absent', 'ignore'] and
          item.linger is defined and not item.linger | bool and (item.user | d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
 
@@ -217,7 +217,7 @@
     label: '{{ {"name": item.name,
                 "state": item.state | d("present"), "sshkeys": item.sshkeys | d()} }}'
   when: (users__enabled | bool and item.name | d() and item.name != 'root' and
-         item.state | d('present') not in [ 'absent', 'ignore' ] and item.create_home | d(True) and
+         item.state | d('present') not in ['absent', 'ignore'] and item.create_home | d(True) and
          item.sshkeys | d() and item.sshkeys_state | d('present') != 'absent' and (item.user | d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
   tags: [ 'role::users:authorized_keys', 'skip::users:authorized_keys', 'skip::check' ]
@@ -232,7 +232,7 @@
                 "state": item.state | d("present"),
                 "sshkeys_state": item.sshkeys_state | d("present")} }}'
   when: (users__enabled | bool and item.name | d() and item.name != 'root' and
-         item.state | d('present') not in [ 'absent', 'ignore' ] and item.create_home | d(True) and
+         item.state | d('present') not in ['absent', 'ignore'] and item.create_home | d(True) and
          item.sshkeys_state | d('present') == 'absent' and (item.user | d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
 
@@ -254,7 +254,7 @@
                 "state": item.state | d("present"),
                 "forward": item.forward | d()} }}'
   when: (users__enabled | bool and item.name | d() and item.name != 'root' and
-         item.state | d('present') not in [ 'absent', 'ignore' ] and
+         item.state | d('present') not in ['absent', 'ignore'] and
          item.create_home | d(True) and item.forward | d() and (item.user | d(True)) | bool)
   no_log: '{{ debops__no_log | d(item.no_log) | d(True if item.password | d() else False) }}'
   tags: [ 'role::users:forward', 'skip::users:forward', 'skip::check' ]
@@ -280,9 +280,9 @@
   become_user: '{{ item.name }}'
   check_mode: False
   register: users__register_dotfiles
-  changed_when: ('Already up to date.' not in users__register_dotfiles.stdout_lines|regex_replace('-', ' '))
+  changed_when: ('Already up to date.' not in users__register_dotfiles.stdout_lines | regex_replace('-', ' '))
   when: (users__enabled | bool and item.name | d() and item.name != 'root' and
-         item.state | d('present') not in [ 'absent', 'ignore' ] and item.create_home | d(True) and
+         item.state | d('present') not in ['absent', 'ignore'] and item.create_home | d(True) and
          (ansible_local | d() and ansible_local.yadm | d() and (ansible_local.yadm.installed | d()) | bool) and
          (item.dotfiles | d(item.dotfiles_enabled | d(users__dotfiles_enabled))) | bool and
          (item.dotfiles_repo | d(users__dotfiles_repo)) and (item.user | d(True)) | bool and not (item.chroot | d()) | bool)
@@ -292,12 +292,12 @@
 - name: Manage user resource directories
   ansible.builtin.file:
     path:    '{{ "~" + item.0.name + "/" + (item.1.path | d(item.1.dest | d(item.1))) }}'
-    src:     '{{ item.1.src     | d(omit) }}'
-    state:   '{{ item.1.state   | d("directory") }}'
-    owner:   '{{ item.1.owner   | d(item.0.name) }}'
-    group:   '{{ item.1.group   | d(item.0.group | d(item.0.name)) }}'
-    mode:    '{{ item.1.mode    | d(omit) }}'
-    force:   '{{ item.1.force   | d(omit) }}'
+    src:     '{{ item.1.src | d(omit) }}'
+    state:   '{{ item.1.state | d("directory") }}'
+    owner:   '{{ item.1.owner | d(item.0.name) }}'
+    group:   '{{ item.1.group | d(item.0.group | d(item.0.name)) }}'
+    mode:    '{{ item.1.mode | d(omit) }}'
+    force:   '{{ item.1.force | d(omit) }}'
     recurse: '{{ item.1.recurse | d(omit) }}'
   loop: '{{ users__combined_accounts | debops.debops.parse_kv_items
             | selectattr("resources", "defined") | list
@@ -307,9 +307,9 @@
                 "state": item.0.state | d("present"), "resources": item.1} }}'
   when: (users__enabled | bool and
          item.0.name | d() and item.0.name != 'root' and
-         item.0.state | d('present') not in [ 'absent', 'ignore' ] and
+         item.0.state | d('present') not in ['absent', 'ignore'] and
          item.0.create_home | d(True) and item.0.resources | d() and (item.0.user | d(True)) | bool and
-         item.1.state | d('directory') in [ 'directory', 'link', 'touch' ] and
+         item.1.state | d('directory') in ['directory', 'link', 'touch'] and
          item.1.content is undefined)
   no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password | d() else False) }}'
 
@@ -317,10 +317,10 @@
   ansible.builtin.file:
     path:    '{{ ("~" + item.0.name + "/" + (item.1.path | d(item.1.dest))) | dirname }}'
     state:   'directory'
-    owner:   '{{ item.1.parent_owner   | d(item.0.name) }}'
-    group:   '{{ item.1.parent_group   | d(item.0.group | d(item.0.name)) }}'
-    mode:    '{{ item.1.parent_mode    | d(omit) }}'
-    force:   '{{ item.1.force          | d(omit) }}'
+    owner:   '{{ item.1.parent_owner | d(item.0.name) }}'
+    group:   '{{ item.1.parent_group | d(item.0.group | d(item.0.name)) }}'
+    mode:    '{{ item.1.parent_mode | d(omit) }}'
+    force:   '{{ item.1.force | d(omit) }}'
     recurse: '{{ item.1.parent_recurse | d(omit) }}'
   loop: '{{ users__combined_accounts | debops.debops.parse_kv_items
             | selectattr("resources", "defined") | list
@@ -330,20 +330,20 @@
                 "state": item.0.state | d("present"), "resources": item.1} }}'
   when: (users__enabled | bool and
          item.0.name | d() and item.0.name != 'root' and
-         item.0.state | d('present') not in [ 'absent', 'ignore' ] and
+         item.0.state | d('present') not in ['absent', 'ignore'] and
          item.0.create_home | d(True) and item.0.resources | d() and (item.0.user | d(True)) | bool and
-         item.1.state | d('directory') in [ 'present', 'file' ])
+         item.1.state | d('directory') in ['present', 'file'])
   no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password | d() else False) }}'
 
 - name: Manage user resource files
   ansible.builtin.copy:
     dest:    '{{ "~" + item.0.name + "/" + (item.1.path | d(item.1.dest)) }}'
-    src:     '{{ item.1.src     | d(omit) }}'
+    src:     '{{ item.1.src | d(omit) }}'
     content: '{{ item.1.content | d(omit) }}'
-    owner:   '{{ item.1.owner   | d(item.0.name) }}'
-    group:   '{{ item.1.group   | d(item.0.group | d(item.0.name)) }}'
-    mode:    '{{ item.1.mode    | d(omit) }}'
-    force:   '{{ item.1.force   | d(omit) }}'
+    owner:   '{{ item.1.owner | d(item.0.name) }}'
+    group:   '{{ item.1.group | d(item.0.group | d(item.0.name)) }}'
+    mode:    '{{ item.1.mode | d(omit) }}'
+    force:   '{{ item.1.force | d(omit) }}'
   loop: '{{ users__combined_accounts | debops.debops.parse_kv_items
             | selectattr("resources", "defined") | list
             | subelements("resources") }}'
@@ -352,9 +352,9 @@
                 "state": item.0.state | d("present"), "resources": item.1} }}'
   when: (users__enabled | bool and
          item.0.name | d() and item.0.name != 'root' and
-         item.0.state | d('present') not in [ 'absent', 'ignore' ] and
+         item.0.state | d('present') not in ['absent', 'ignore'] and
          item.0.create_home | d(True) and item.0.resources | d() and (item.0.user | d(True)) | bool and
-         item.1.state | d('directory') in [ 'present', 'file' ] and
+         item.1.state | d('directory') in ['present', 'file'] and
          (item.1.dest | d() or item.1.path | d()) and (item.1.src | d() or item.1.content | d()))
   no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password | d() else False) }}'
 
@@ -370,7 +370,7 @@
                 "state": item.0.state | d("present"), "resources": item.1} }}'
   when: (users__enabled | bool and
          item.0.name | d() and item.0.name != 'root' and
-         item.0.state | d('present') not in [ 'absent', 'ignore' ] and
+         item.0.state | d('present') not in ['absent', 'ignore'] and
          item.0.create_home | d(True) and item.0.resources | d() and (item.0.user | d(True)) | bool and
          item.1.state | d('directory') == 'absent')
   no_log: '{{ debops__no_log | d(item.0.no_log) | d(True if item.0.password | d() else False) }}'

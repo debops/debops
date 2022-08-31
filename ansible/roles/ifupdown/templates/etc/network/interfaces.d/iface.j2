@@ -12,10 +12,10 @@
 {% set ifupdown__tpl_ipv4_addresses = [] %}
 {% set ifupdown__tpl_ipv6_addresses = [] %}
 {% if interface.no_addresses is undefined or not interface.no_addresses | bool %}
-{%   set ifupdown__tpl_addresses = (debops__tpl_macros.flattened(interface.address, interface.addresses) | from_json) | unique %}
+{%   set ifupdown__tpl_addresses = (debops__tpl_macros.flattened(interface.address, interface.addresses) | from_yaml) | unique %}
 {%   set ifupdown__tpl_ipv4_addresses = ifupdown__tpl_addresses | ipv4 %}
 {%   set ifupdown__tpl_ipv6_addresses = ifupdown__tpl_addresses | ipv6 %}
-{%   set ifupdown__tpl_gateways = (debops__tpl_macros.flattened(interface.gateway, interface.gateways) | from_json) | unique %}
+{%   set ifupdown__tpl_gateways = (debops__tpl_macros.flattened(interface.gateway, interface.gateways) | from_yaml) | unique %}
 {%   set ifupdown__tpl_ipv4_gateways = ifupdown__tpl_gateways | unique | ipv4 %}
 {%   set ifupdown__tpl_ipv6_gateways = ifupdown__tpl_gateways | unique | ipv6 %}
 {% endif %}

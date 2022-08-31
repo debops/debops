@@ -41,9 +41,9 @@
   ansible.builtin.file:
     path:   '{{ item.key }}'
     state:  'directory'
-    owner:  '{{ item.value.dir_owner  | d(omit) }}'
-    group:  '{{ item.value.dir_group  | d(omit) }}'
-    mode:   '{{ item.value.dir_mode   | d(omit) }}'
+    owner:  '{{ item.value.dir_owner | d(omit) }}'
+    group:  '{{ item.value.dir_group | d(omit) }}'
+    mode:   '{{ item.value.dir_mode | d(omit) }}'
   when: (item.value.state | d("present") == "present")
   with_dict: '{{ btrfs__subvolumes_combined }}'
   tags: [ 'role::btrfs:subvolumes' ]

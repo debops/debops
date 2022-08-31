@@ -18,8 +18,8 @@
 - name: Manage systemd-timesyncd state
   ansible.builtin.service:
     name: 'systemd-timesyncd'
-    state: '{{ "started" if (ntp__daemon in [ "systemd-timesyncd" ]) else "stopped" }}'
-    enabled: '{{ True if (ntp__daemon in [ "systemd-timesyncd" ]) else False }}'
+    state: '{{ "started" if (ntp__daemon in ["systemd-timesyncd"]) else "stopped" }}'
+    enabled: '{{ True if (ntp__daemon in ["systemd-timesyncd"]) else False }}'
   when:
     - ansible_service_mgr == "systemd"
     - ("systemd-timesyncd.service" in ansible_facts.services and

@@ -24,7 +24,7 @@
 # Enable or disable support for Icinga 2 upstream packages instead of the ones
 # included in a given OS release.
 icinga__upstream: '{{ True
-                      if (ansible_distribution_release in [ "trusty" ])
+                      if (ansible_distribution_release in ["trusty"])
                       else False }}'
 
                                                                    # ]]]
@@ -638,8 +638,8 @@ icinga__default_configuration:
         value: |
           {% for record in icinga__master_nodes %}
           {% if record.target | d() %}
-          object Endpoint "{{ record.target | regex_replace('\.$','') }}" {
-            host = "{{ record.target | regex_replace('\.$','') }}"
+          object Endpoint "{{ record.target | regex_replace('\.$', '') }}" {
+            host = "{{ record.target | regex_replace('\.$', '') }}"
             port = "{{ record.port }}"
           }
 

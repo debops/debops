@@ -37,7 +37,7 @@
 - name: Configure iSCSI discovery authentication
   ansible.builtin.lineinfile:
     dest:    '/etc/iscsi/iscsid.conf'
-    regexp:  '{{ (item.key | replace(".","\.")) + "\s=\s" }}'
+    regexp:  '{{ (item.key | replace(".", "\.")) + "\s=\s" }}'
     line:    '{{ item.key + " = " + item.value }}'
     state:   'present'
     mode:    '0600'

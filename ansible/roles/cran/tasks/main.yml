@@ -25,8 +25,8 @@
 
 - name: Manage R packages
   cran:
-    name:  '{{ item.name  | d(item) }}'
-    repo:  '{{ item.repo  | d(cran__upstream_mirror) }}'
+    name:  '{{ item.name | d(item) }}'
+    repo:  '{{ item.repo | d(cran__upstream_mirror) }}'
     state: '{{ item.state | d("present") }}'
   loop: '{{ q("flattened", cran__r_packages
                            + cran__group_r_packages

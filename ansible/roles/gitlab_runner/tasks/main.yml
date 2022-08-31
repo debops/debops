@@ -193,10 +193,10 @@
   ansible.builtin.user:
     name: '{{ gitlab_runner__user }}'
     append: True
-    groups: '{{ ([ (ansible_local.libvirtd.unix_sock_group
-                    if (ansible_local.libvirtd.unix_sock_group | d())
-                    else "libvirt") ]
-                 + ([ "kvm" ]
+    groups: '{{ ([(ansible_local.libvirtd.unix_sock_group
+                   if (ansible_local.libvirtd.unix_sock_group | d())
+                   else "libvirt")]
+                 + (["kvm"]
                     if (ansible_local | d() and ansible_local.libvirtd | d() and
                         (ansible_local.libvirtd.hw_virt | d()) | bool)
                     else [])) | join(",") }}'
@@ -224,7 +224,7 @@
 - name: Patch 'vagrant-libvirt' source code
   ansible.posix.patch:
     src: '{{ "patches/package_domain-keep-ssh-host-keys-"
-             + (item | basename | replace("vagrant-libvirt-","")) + ".patch" }}'
+             + (item | basename | replace("vagrant-libvirt-", "")) + ".patch" }}'
     basedir: '{{ item }}'
     state: '{{ gitlab_runner__vagrant_libvirt_patch_state }}'
   with_items: '{{ gitlab_runner__register_libvirt_source.stdout_lines }}'

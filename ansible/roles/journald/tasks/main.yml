@@ -48,7 +48,7 @@
     path: '/var/log/journal'
     state: 'absent'
   when: journald__enabled | bool and
-        journald__storage in [ 'auto', 'none', 'volatile' ] and
+        journald__storage in ['auto', 'none', 'volatile'] and
         journald__persistent_state == 'absent'
 
 - name: Create persistent journal storage directory
@@ -59,14 +59,14 @@
     mode: '2755'
   register: journald__register_persistent
   when: journald__enabled | bool and
-        journald__storage in [ 'auto', 'persistent' ] and
+        journald__storage in ['auto', 'persistent'] and
         journald__persistent_state != 'absent'
 
 - name: Apply extended permissions in the persistent storage
   ansible.builtin.command: 'systemd-tmpfiles --create --prefix /var/log/journal'
   changed_when: False
   when: journald__enabled | bool and
-        journald__storage in [ 'auto', 'persistent' ] and
+        journald__storage in ['auto', 'persistent'] and
         journald__persistent_state != 'absent'
 
 - name: Create Foward Secure Seal keys when requested
@@ -74,7 +74,7 @@
   register: journald__register_fss
   changed_when: journald__register_fss.stderr_lines | count > 1
   when: (journald__enabled | bool and
-         journald__storage in [ 'auto', 'persistent' ] and
+         journald__storage in ['auto', 'persistent'] and
          journald__persistent_state != 'absent' and
          journald__fss_enabled | bool and
         (not ansible_local.journald.sealed | d()) | bool)

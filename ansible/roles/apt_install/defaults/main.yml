@@ -252,14 +252,14 @@ apt_install__conditional_packages:
     state: '{{ "present"
                if (ansible_processor_cores >= 2 and
                    (ansible_virtualization_role is undefined or
-                    ansible_virtualization_role not in [ "guest" ]))
+                    ansible_virtualization_role not in ["guest"]))
                else "absent" }}'
 
   - name: 'uptimed'
     whitelist: '{{ apt_install__conditional_whitelist_packages }}'
     state: '{{ "present"
                if (ansible_virtualization_role is undefined or
-                   ansible_virtualization_role not in [ "guest" ])
+                   ansible_virtualization_role not in ["guest"])
                else "absent" }}'
 
   - name: 'libpam-systemd'
@@ -272,11 +272,10 @@ apt_install__conditional_packages:
     # only controls a guest.
     whitelist: '{{ apt_install__conditional_whitelist_packages }}'
     state: '{{ "present"
-               if (ansible_virtualization_role | d("guest") in [ "guest" ] and
+               if (ansible_virtualization_role | d("guest") in ["guest"] and
                    ansible_virtualization_type | d("unknown") not in ["lxc", "openvz"] and
                    not (ansible_local | d() and ansible_local.apt_install | d() and
-                        ansible_local.apt_install.have_virtual_rng | d(False) | bool)
-               )
+                        ansible_local.apt_install.have_virtual_rng | d(False) | bool))
                else "absent" }}'
 
   - name: 'gnupg-curl'
@@ -284,7 +283,7 @@ apt_install__conditional_packages:
     whitelist: '{{ apt_install__conditional_whitelist_packages }}'
     state: '{{ "present"
                if ansible_distribution_release in
-                  [ "trusty", "xenial" ]
+                  ["trusty", "xenial"]
                else "absent" }}'
 
   - name: 'needrestart'
@@ -294,8 +293,8 @@ apt_install__conditional_packages:
   - name: 'open-vm-tools'
     whitelist: '{{ apt_install__conditional_whitelist_packages }}'
     state: '{{ "present"
-               if (ansible_virtualization_role | d("guest") in [ "guest" ] and
-                   ansible_virtualization_type | d("unknown") in [ "VMware" ])
+               if (ansible_virtualization_role | d("guest") in ["guest"] and
+                   ansible_virtualization_type | d("unknown") in ["VMware"])
                else "absent" }}'
 
                                                                    # ]]]
@@ -312,9 +311,9 @@ apt_install__firmware_packages:
     # virtual machines, be sure to set the correct CPU flags in QEMU:
     # https://www.qemu.org/docs/master/system/target-i386.html#important-cpu-features-for-intel-x86-hosts
     distribution: [ 'Debian', 'Devuan', 'Ubuntu' ]
-    areas: '{{ [ "main" ]
-               if ansible_distribution in [ "Ubuntu" ]
-               else [ "non-free" ] }}'
+    areas: '{{ ["main"]
+               if ansible_distribution in ["Ubuntu"]
+               else ["non-free"] }}'
     state: '{{ "present"
                if ansible_virtualization_role == "host" and
                   "AuthenticAMD" in ansible_processor
@@ -322,45 +321,45 @@ apt_install__firmware_packages:
 
   - name: 'firmware-linux-free'
     distribution: [ 'Debian' ]
-    state: '{{ "present" if (ansible_form_factor in [ "Rack Mount Chassis" ])
+    state: '{{ "present" if (ansible_form_factor in ["Rack Mount Chassis"])
                          and (ansible_virtualization_role is undefined or
-                              ansible_virtualization_role not in [ "guest" ])
-                         and (ansible_kernel.find("-pve") == -1)
+                              ansible_virtualization_role not in ["guest"])
+                         and (ansible_kernel.find("-pve") == "-1")
                          else "absent" }}'
 
   - name: 'firmware-linux-nonfree'
     distribution: [ 'Debian' ]
     areas: [ 'non-free' ]
-    state: '{{ "present" if (ansible_form_factor in [ "Rack Mount Chassis" ])
+    state: '{{ "present" if (ansible_form_factor in ["Rack Mount Chassis"])
                          and (ansible_virtualization_role is undefined or
-                              ansible_virtualization_role not in [ "guest" ])
-                         and (ansible_kernel.find("-pve") == -1)
+                              ansible_virtualization_role not in ["guest"])
+                         and (ansible_kernel.find("-pve") == "-1")
                          else "absent" }}'
 
   - name: 'intel-microcode'
     # Same as amd64-microcode, but for Intel CPUs.
     distribution: [ 'Debian', 'Devuan', 'Ubuntu' ]
-    areas: '{{ [ "main" ]
-               if ansible_distribution in [ "Ubuntu" ]
-               else [ "non-free" ] }}'
+    areas: '{{ ["main"]
+               if ansible_distribution in ["Ubuntu"]
+               else ["non-free"] }}'
     state: '{{ "present" if ansible_virtualization_role == "host" and
                             "GenuineIntel" in ansible_processor
                          else "absent" }}'
 
   - name: 'linux-firmware'
     distribution: [ 'Ubuntu' ]
-    state: '{{ "present" if (ansible_form_factor in [ "Rack Mount Chassis" ])
+    state: '{{ "present" if (ansible_form_factor in ["Rack Mount Chassis"])
                              and (ansible_virtualization_role is undefined or
-                              ansible_virtualization_role not in [ "guest" ])
+                              ansible_virtualization_role not in ["guest"])
                          else "absent" }}'
 
   - name: 'linux-firmware-nonfree'
     distribution: [ 'Ubuntu' ]
     release: [ 'precise', 'trusty', 'wily' ]
     areas: [ 'multiverse' ]
-    state: '{{ "present" if (ansible_form_factor in [ "Rack Mount Chassis" ])
+    state: '{{ "present" if (ansible_form_factor in ["Rack Mount Chassis"])
                              and (ansible_virtualization_role is undefined or
-                              ansible_virtualization_role not in [ "guest" ])
+                              ansible_virtualization_role not in ["guest"])
                          else "absent" }}'
 
                                                                    # ]]]

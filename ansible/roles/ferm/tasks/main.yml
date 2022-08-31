@@ -62,10 +62,10 @@
     dest:  '{{ item.dest }}'
     owner: '{{ item.owner | d(omit) }}'
     group: '{{ item.group | d(omit) }}'
-    mode:  '{{ item.mode  | d(omit) }}'
+    mode:  '{{ item.mode | d(omit) }}'
     directory_mode: '{{ item.directory_mode | d(omit) }}'
     follow: '{{ item.follow | d(omit) }}'
-    force:  '{{ item.force  | d(omit) }}'
+    force:  '{{ item.force | d(omit) }}'
   loop: '{{ (ferm__custom_files + ferm__group_custom_files
              + ferm__host_custom_files) | flatten }}'
   loop_control:
@@ -126,7 +126,7 @@
   loop_control:
     label: '{{ item.key }}'
   register: ferm__register_rules_created
-  when: (item.value.rule_state | d(item.value.state | d('present')) not in [ 'absent', 'ignore' ])
+  when: (item.value.rule_state | d(item.value.state | d('present')) not in ['absent', 'ignore'])
   tags: [ 'role::ferm:rules' ]
 
 - name: Remove unknown firewall rules

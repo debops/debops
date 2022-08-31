@@ -34,10 +34,10 @@
 #
 # List of base packages required by ownCloud.
 owncloud__base_packages:
-  - '{{ [ "owncloud-files" ]
+  - '{{ ["owncloud-files"]
         if (owncloud__variant == "owncloud")
         else [] }}'
-  - '{{ [ "curl", "unzip" ]
+  - '{{ ["curl", "unzip"]
         if (owncloud__variant == "nextcloud")
         else [] }}'
 
@@ -47,11 +47,11 @@ owncloud__base_packages:
   ## FIXME: Collaborative document editing in ownCloud is now done with Collabora Online.
   ## FIXME: Is it necessary to install all LibreOffice packages? https://github.com/owncloud/documents#known-issues
   ## Upstream documentation does not specify it more clearly. Installing ``libreoffice`` just to be sure.
-  - '{{ [ "libreoffice" ] if (owncloud__app_documents_libreoffice_enabled | bool) else [] }}'
+  - '{{ ["libreoffice"] if (owncloud__app_documents_libreoffice_enabled | bool) else [] }}'
 
   ## Useful for debugging. Refer to `owncloud__base_php_packages` for the PHP packages
-  - '{{ [ "smbclient" ] if (owncloud__smb_support | bool) else [] }}'
-  - '{{ [ "libsmbclient" ] if (owncloud__smb_support | bool and owncloud__release is version_compare("9.0", ">=")) else [] }}'
+  - '{{ ["smbclient"] if (owncloud__smb_support | bool) else [] }}'
+  - '{{ ["libsmbclient"] if (owncloud__smb_support | bool and owncloud__release is version_compare("9.0", ">=")) else [] }}'
 
 
 # .. envvar:: owncloud__required_php_packages
@@ -107,19 +107,19 @@ owncloud__base_php_packages:
   - 'ldap'
   - 'soap'
 
-  - '{{ [ "apcu" ] if (owncloud__apcu_enabled | bool) else [] }}'
-  - '{{ [ "mysql" ] if (owncloud__database in [ "mariadb", "mysql" ]) else [] }}'
-  - '{{ [ "pgsql" ] if (owncloud__database in [ "postgresql" ]) else [] }}'
-  - '{{ [ "redis" ] if (owncloud__redis_enabled | bool) else [] }}'
+  - '{{ ["apcu"] if (owncloud__apcu_enabled | bool) else [] }}'
+  - '{{ ["mysql"] if (owncloud__database in ["mariadb", "mysql"]) else [] }}'
+  - '{{ ["pgsql"] if (owncloud__database in ["postgresql"]) else [] }}'
+  - '{{ ["redis"] if (owncloud__redis_enabled | bool) else [] }}'
 
   ## Seems to be required at least for PHP7.0 to fix:
   ## PHP Warning: PHP Startup: Unable to load dynamic library '/usr/lib/php/20151012/redis.so'
   ## - /usr/lib/php/20151012/redis.so: undefined symbol: igbinary_serialize in Unknown on line 0
-  - '{{ [ "igbinary" ]
+  - '{{ ["igbinary"]
         if (not (ansible_distribution == "Ubuntu" and (ansible_distribution_version is version_compare("15.10", "<"))))
         else [] }}'
 
-  - '{{ [ "libsmbclient" ] if (owncloud__smb_support | bool and owncloud__release is version_compare("8.9.9", "<=")) else [] }}'
+  - '{{ ["libsmbclient"] if (owncloud__smb_support | bool and owncloud__release is version_compare("8.9.9", "<=")) else [] }}'
 
   ## Included in normal PHP installations but require it here because it is
   ## used internally by the role:
@@ -510,11 +510,9 @@ owncloud__app_group: '{{ owncloud__app_user }}'
 # Directory under which ownCloud will be installed.
 owncloud__app_home: '{{ "/var/www/owncloud"
                         if (owncloud__variant == "owncloud")
-                        else (
-                          (ansible_local.nginx.www
-                          if (ansible_local.nginx.www | d())
-                          else "/srv/www") + "/" + owncloud__system_user
-                        ) }}'
+                        else ((ansible_local.nginx.www
+                              if (ansible_local.nginx.www | d())
+                              else "/srv/www") + "/" + owncloud__system_user) }}'
 
 
 # .. envvar:: owncloud__data_path
@@ -687,7 +685,7 @@ owncloud__database_map:
 #
 # Default admin username, in the form 'admin-$USER'.
 # Set to ``False`` to disable automatic username and password.
-owncloud__admin_username: 'admin-{{ lookup("env","USER") }}'
+owncloud__admin_username: 'admin-{{ lookup("env", "USER") }}'
 
 
 # .. envvar:: owncloud__admin_password_path
@@ -798,7 +796,7 @@ owncloud__app_user_webfinger_support: False
 # This variable is used internally, controlled by other variables of this role.
 owncloud__role_config:
 
-  trusted_domains: '{{ [ owncloud__fqdn ] if owncloud__fqdn is string else owncloud__fqdn }}'
+  trusted_domains: '{{ [owncloud__fqdn] if owncloud__fqdn is string else owncloud__fqdn }}'
 
   ## https://github.com/owncloud/core/issues/22257
   ## TODO: Temporary workaround until all package maintainers have caught up.
@@ -1245,7 +1243,7 @@ owncloud__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
 owncloud__ldap_self_attributes:
   uid: '{{ owncloud__ldap_self_rdn.split("=")[1] }}'
   userPassword: '{{ owncloud__ldap_bindpw }}'
-  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  host: '{{ [ansible_fqdn, ansible_hostname] | unique }}'
   description: 'Account used by the "Nextcloud" service to access the LDAP directory'
 
                                                                    # ]]]
@@ -1253,7 +1251,7 @@ owncloud__ldap_self_attributes:
 #
 # The Distinguished Name of the account LDAP object used by the
 # Nextcloud service to bind to the LDAP directory.
-owncloud__ldap_binddn: '{{ ([ owncloud__ldap_self_rdn ] + owncloud__ldap_device_dn) | join(",") }}'
+owncloud__ldap_binddn: '{{ ([owncloud__ldap_self_rdn] + owncloud__ldap_device_dn) | join(",") }}'
 
                                                                    # ]]]
 # .. envvar:: owncloud__ldap_bindpw [[[
@@ -1564,7 +1562,7 @@ owncloud__ldap_default_config:
     value: '1'
 
   - name: 'ldapDefaultPPolicyDN'
-    value: '{{ ([ "cn=Default Password Policy", "ou=Password Policies" ]
+    value: '{{ (["cn=Default Password Policy", "ou=Password Policies"]
                 + owncloud__ldap_base_dn) | join(",") }}'
 
                                                                    # ]]]
@@ -1665,7 +1663,7 @@ owncloud__mail_smtpport: '25'
 # if you want to be able to configure/change this via the admin web interface.
 owncloud__mail_conf_map:
   mail_domain: '{{ owncloud__mail_domain }}'
-  mail_from_address: '{{ owncloud__mail_from_address  }}'
+  mail_from_address: '{{ owncloud__mail_from_address }}'
   mail_smtpmode: '{{ owncloud__mail_smtpmode }}'
   mail_smtphost: '{{ owncloud__mail_smtphost }}'
   mail_smtpport: '{{ owncloud__mail_smtpport }}'
@@ -2007,7 +2005,7 @@ owncloud__ldap__dependent_tasks:
     state: '{{ "present" if owncloud__ldap_device_dn | d() else "ignore" }}'
 
   - name: 'Enable password management by {{ owncloud__ldap_binddn }}'
-    dn: '{{ ([ "cn=Password Reset Agent", "ou=Roles" ] + owncloud__ldap_base_dn) | join(",") }}'
+    dn: '{{ (["cn=Password Reset Agent", "ou=Roles"] + owncloud__ldap_base_dn) | join(",") }}'
     attributes:
       roleOccupant: '{{ owncloud__ldap_binddn }}'
     state: '{{ "present" if owncloud__ldap_device_dn | d() else "ignore" }}'
@@ -2300,7 +2298,7 @@ owncloud__nginx__dependent_servers:
           {% if (ansible_local.nginx.version
                  if (ansible_local.nginx.version | d())
                  else "0.0")
-                is version_compare("1.7.11",'>=') %}
+                is version_compare("1.7.11", '>=') %}
           fastcgi_request_buffering off;
           {% endif %}
 

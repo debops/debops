@@ -22,31 +22,31 @@
 
 - name: Install Dovecot packages
   ansible.builtin.package:
-    name: '{{ q("flattened", ([ "dovecot-core" ]
-                              + ([ "dovecot-imapd" ]
+    name: '{{ q("flattened", (["dovecot-core"]
+                              + (["dovecot-imapd"]
                                  if ("imap" in dovecot__features or
                                      "imaps" in dovecot__features)
                                  else [])
-                              + ([ "dovecot-pop3d" ]
+                              + (["dovecot-pop3d"]
                                  if ("pop3" in dovecot__features or
                                      "pop3s" in dovecot__features)
                                  else [])
-                              + ([ "dovecot-lmtpd" ]
+                              + (["dovecot-lmtpd"]
                                  if "lmtp" in dovecot__features
                                  else [])
-                              + ([ "dovecot-mysql" ]
+                              + (["dovecot-mysql"]
                                  if "mysql" in dovecot__user_accounts
                                  else [])
-                              + ([ "dovecot-pgsql" ]
+                              + (["dovecot-pgsql"]
                                  if "pgsql" in dovecot__user_accounts
                                  else [])
-                              + ([ "dovecot-sqlite" ]
+                              + (["dovecot-sqlite"]
                                  if "sqlite" in dovecot__user_accounts
                                  else [])
-                              + ([ "dovecot-ldap" ]
+                              + (["dovecot-ldap"]
                                  if "ldap" in dovecot__user_accounts
                                  else [])
-                              + ([ "dovecot-managesieved" ]
+                              + (["dovecot-managesieved"]
                                  if "sieve" in dovecot__features
                                  else []))) }}'
     state: 'present'
@@ -93,30 +93,30 @@
 
 - name: Uninstall disabled Dovecot protocols
   ansible.builtin.package:
-    pkg: '{{ q("flattened", (([ "dovecot-imapd" ]
+    pkg: '{{ q("flattened", ((["dovecot-imapd"]
                               if ("imap" not in dovecot__features and
                                   "imaps" not in dovecot__features)
                               else [])
-                             + ([ "dovecot-pop3d" ]
+                             + (["dovecot-pop3d"]
                                 if ("pop3" not in dovecot__features and
                                     "pop3s" not in dovecot__features)
                                 else [])
-                             + ([ "dovecot-lmtpd" ]
+                             + (["dovecot-lmtpd"]
                                 if "lmtp" not in dovecot__features
                                 else [])
-                             + ([ "dovecot-mysql" ]
+                             + (["dovecot-mysql"]
                                  if "mysql" not in dovecot__user_accounts
                                  else [])
-                             + ([ "dovecot-pgsql" ]
+                             + (["dovecot-pgsql"]
                                 if "pgsql" not in dovecot__user_accounts
                                 else [])
-                             + ([ "dovecot-sqlite" ]
+                             + (["dovecot-sqlite"]
                                 if "sqlite" not in dovecot__user_accounts
                                 else [])
-                             + ([ "dovecot-ldap" ]
+                             + (["dovecot-ldap"]
                                 if ("ldap" not in dovecot__user_accounts)
                                 else [])
-                             + ([ "dovecot-managesieved" ]
+                             + (["dovecot-managesieved"]
                                 if "sieve" not in dovecot__features
                                 else []))) }}'
     state: 'absent'

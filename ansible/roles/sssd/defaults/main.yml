@@ -95,7 +95,7 @@ sssd__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
 sssd__ldap_self_attributes:
   uid: '{{ sssd__ldap_self_rdn.split("=")[1] }}'
   userPassword: '{{ sssd__ldap_bindpw }}'
-  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  host: '{{ [ansible_fqdn, ansible_hostname] | unique }}'
   description: 'Account used by the "sssd" service to access the LDAP directory'
 
                                                                    # ]]]
@@ -103,7 +103,7 @@ sssd__ldap_self_attributes:
 #
 # The Distinguished Name of the account LDAP object used by the
 # :command:`sssd` service to bind to the LDAP directory.
-sssd__ldap_binddn: '{{ ([ sssd__ldap_self_rdn ] + sssd__ldap_device_dn) | join(",") }}'
+sssd__ldap_binddn: '{{ ([sssd__ldap_self_rdn] + sssd__ldap_device_dn) | join(",") }}'
 
                                                                    # ]]]
 # .. envvar:: sssd__ldap_bindpw [[[
@@ -169,7 +169,7 @@ sssd__default_configuration:
       - name: 'services'
         comment: 'Services to offer (nss, pam, sudo, autofs, ssh, pac, ifp)'
         value: [ 'nss', 'pam', 'sudo', 'ssh' ]
-        state: '{{ "present" if ansible_distribution_release in [ "stretch", "buster", "bionic" ] else "ignore" }}'
+        state: '{{ "present" if ansible_distribution_release in ["stretch", "buster", "bionic"] else "ignore" }}'
 
       - name: 'debug_level'
         comment: |

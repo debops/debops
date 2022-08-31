@@ -23,11 +23,11 @@
 {%       endfor %}
 {%     endif %}
 {%   endif %}
-{{ merged_dict | to_json }}
+{{ merged_dict | to_yaml }}
 {% endmacro %}
-{% set tinc__tpl_merge_all =   (merge_dict(tinc__default_networks, tinc__networks,       'name') | from_json) %}
-{% set tinc__tpl_merge_group = (merge_dict(tinc__tpl_merge_all,    tinc__group_networks, 'name') | from_json) %}
-{% set tinc__tpl_networks =    (merge_dict(tinc__tpl_merge_group,  tinc__host_networks,  'name') | from_json) %}
+{% set tinc__tpl_merge_all =   (merge_dict(tinc__default_networks, tinc__networks,       'name') | from_yaml) %}
+{% set tinc__tpl_merge_group = (merge_dict(tinc__tpl_merge_all,    tinc__group_networks, 'name') | from_yaml) %}
+{% set tinc__tpl_networks =    (merge_dict(tinc__tpl_merge_group,  tinc__host_networks,  'name') | from_yaml) %}
 {% set tinc__tpl_filtered_networks = {} %}
 {% for name, params in tinc__tpl_networks.items() %}
 {%   set network_name = (params["name"] | d(name)) %}

@@ -81,9 +81,9 @@
   debops.debops.dpkg_divert:
     path: '{{ divert_path }}'
     divert: '{{ divert_path + ".disabled" }}'
-    state: '{{ "present" if
-               (machine__enabled | bool and
-                item.state | d("present") not in [ "absent", "revert" ])
+    state: '{{ "present"
+               if (machine__enabled | bool and
+                   item.state | d("present") not in ["absent", "revert"])
                else "absent" }}'
     delete: True
   loop: '{{ machine__motd_combined_scripts | debops.debops.parse_kv_items }}'
@@ -118,7 +118,7 @@
   when: (machine__enabled | bool and
          item.filename | d(item.name) and
          item.src | d(item.content) and
-         item.state | d('present') not in [ 'init', 'absent', 'ignore', 'divert', 'revert' ])
+         item.state | d('present') not in ['init', 'absent', 'ignore', 'divert', 'revert'])
 
 - name: Remove unknown MOTD scripts
   ansible.builtin.shell: find /etc/update-motd.d -maxdepth 1 -type f

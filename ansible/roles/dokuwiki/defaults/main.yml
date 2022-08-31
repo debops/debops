@@ -28,7 +28,7 @@ dokuwiki__fqdn: 'wiki.{{ ansible_domain }}'
 # .. envvar:: dokuwiki__domains [[[
 #
 # List of domains on which DokuWiki is configured in nginx.
-dokuwiki__domains: '{{ [ dokuwiki__fqdn ] +
+dokuwiki__domains: '{{ [dokuwiki__fqdn] +
                        dokuwiki__farm_animals | d([]) }}'
 
                                                                    # ]]]
@@ -175,7 +175,7 @@ dokuwiki__ldap_self_object_classes: [ 'account', 'simpleSecurityObject' ]
 dokuwiki__ldap_self_attributes:
   uid: '{{ dokuwiki__ldap_self_rdn.split("=")[1] }}'
   userPassword: '{{ dokuwiki__ldap_bindpw }}'
-  host: '{{ [ ansible_fqdn, ansible_hostname ] | unique }}'
+  host: '{{ [ansible_fqdn, ansible_hostname] | unique }}'
   description: 'Account used by the "DokuWiki" service to access the LDAP directory'
 
                                                                    # ]]]
@@ -183,7 +183,7 @@ dokuwiki__ldap_self_attributes:
 #
 # The Distinguished Name of the account LDAP object used by the
 # DokuWiki service to bind to the LDAP directory.
-dokuwiki__ldap_binddn: '{{ ([ dokuwiki__ldap_self_rdn ] + dokuwiki__ldap_device_dn) | join(",") }}'
+dokuwiki__ldap_binddn: '{{ ([dokuwiki__ldap_self_rdn] + dokuwiki__ldap_device_dn) | join(",") }}'
 
                                                                    # ]]]
 # .. envvar:: dokuwiki__ldap_bindpw [[[
@@ -207,7 +207,7 @@ dokuwiki__ldap_people_rdn: '{{ ansible_local.ldap.people_rdn | d("ou=People") }}
 #
 # The Distinguished Name of the LDAP object which contains the user accounts
 # used by DokuWiki.
-dokuwiki__ldap_people_dn: '{{ [ dokuwiki__ldap_people_rdn ] + dokuwiki__ldap_base_dn }}'
+dokuwiki__ldap_people_dn: '{{ [dokuwiki__ldap_people_rdn] + dokuwiki__ldap_base_dn }}'
 
                                                                    # ]]]
 # .. envvar:: dokuwiki__ldap_private_groups [[[
@@ -231,10 +231,10 @@ dokuwiki__ldap_groups_rdn: '{{ ansible_local.ldap.groups_rdn | d("ou=Groups") }}
 # The Distinguished Name of the LDAP object which contains the groups used by
 # DokuWiki. If private groups are enabled, this object will be created
 # automatically.
-dokuwiki__ldap_groups_dn: '{{ ([ dokuwiki__ldap_groups_rdn, dokuwiki__ldap_self_rdn ]
+dokuwiki__ldap_groups_dn: '{{ ([dokuwiki__ldap_groups_rdn, dokuwiki__ldap_self_rdn]
                                + dokuwiki__ldap_device_dn)
                               if dokuwiki__ldap_private_groups | bool
-                              else ([ dokuwiki__ldap_groups_rdn ] + dokuwiki__ldap_base_dn) }}'
+                              else ([dokuwiki__ldap_groups_rdn] + dokuwiki__ldap_base_dn) }}'
 
                                                                    # ]]]
 # .. envvar:: dokuwiki__ldap_admin_group_rdn [[[
@@ -248,7 +248,7 @@ dokuwiki__ldap_admin_group_rdn: 'cn=DokuWiki Administrators'
 #
 # The Distinguished Name of the LDAP object which defines who has
 # administrative access to a given DokuWiki instance.
-dokuwiki__ldap_admin_group_dn: '{{ [ dokuwiki__ldap_admin_group_rdn ]
+dokuwiki__ldap_admin_group_dn: '{{ [dokuwiki__ldap_admin_group_rdn]
                                    + dokuwiki__ldap_groups_dn }}'
 
                                                                    # ]]]
@@ -265,7 +265,7 @@ dokuwiki__ldap_object_owner_rdn: 'uid={{ lookup("env", "USER") }}'
 # The Distinguished Name of the LDAP object of the person who installed a given
 # DokuWiki instance and is used as the owner of the "DokuWiki Administrators"
 # group, defined as a string.
-dokuwiki__ldap_object_ownerdn: '{{ ([ dokuwiki__ldap_object_owner_rdn, dokuwiki__ldap_people_rdn ]
+dokuwiki__ldap_object_ownerdn: '{{ ([dokuwiki__ldap_object_owner_rdn, dokuwiki__ldap_people_rdn]
                                     + dokuwiki__ldap_base_dn) | join(",") }}'
                                                                    # ]]]
                                                                    # ]]]

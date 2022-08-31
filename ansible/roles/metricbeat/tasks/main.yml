@@ -64,12 +64,12 @@
   loop: '{{ metricbeat__combined_snippets | debops.debops.parse_kv_config }}'
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
-  when: item.state | d('present') not in [ 'absent', 'ignore', 'init' ] and item.config | d()
+  when: item.state | d('present') not in ['absent', 'ignore', 'init'] and item.config | d()
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Manage snippet diversion and reversion
   debops.debops.dpkg_divert:
-    path: '{{ "/etc/metricbeat/" + (item.name | regex_replace(".yml","") + ".yml") }}'
+    path: '{{ "/etc/metricbeat/" + (item.name | regex_replace(".yml", "") + ".yml") }}'
     state: '{{ "absent" if item.state | d("present") == "absent" else "present" }}'
     delete: True
   loop: '{{ metricbeat__combined_snippets | debops.debops.parse_kv_config }}'
@@ -81,7 +81,7 @@
 
 - name: Remove snippet configuration if requested
   ansible.builtin.file:
-    path: '{{ "/etc/metricbeat/" + (item.name | regex_replace(".yml","") + ".yml") }}'
+    path: '{{ "/etc/metricbeat/" + (item.name | regex_replace(".yml", "") + ".yml") }}'
     state: 'absent'
   loop: '{{ metricbeat__combined_snippets | debops.debops.parse_kv_config }}'
   loop_control:
@@ -93,13 +93,13 @@
 - name: Generate snippet configuration
   ansible.builtin.template:
     src: 'etc/metricbeat/snippets.d/snippet.yml.j2'
-    dest: '{{ "/etc/metricbeat/" + (item.name | regex_replace(".yml","") + ".yml") }}'
+    dest: '{{ "/etc/metricbeat/" + (item.name | regex_replace(".yml", "") + ".yml") }}'
     mode: '{{ item.mode | d("0600") }}'
   loop: '{{ metricbeat__combined_snippets | debops.debops.parse_kv_config }}'
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state, "config": item.config} }}'
   notify: [ 'Test metricbeat configuration and restart' ]
-  when: item.state | d('present') not in [ 'absent', 'ignore', 'init' ] and item.config | d()
+  when: item.state | d('present') not in ['absent', 'ignore', 'init'] and item.config | d()
   no_log: '{{ debops__no_log | d(True) }}'
 
 # The keystore handling is very similar to ../../kibana/tasks/main.yml
@@ -145,7 +145,7 @@
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
   notify: [ 'Test metricbeat configuration and restart' ]
-  when: (item.state | d('present') not in [ 'absent', 'ignore', 'init' ] and
+  when: (item.state | d('present') not in ['absent', 'ignore', 'init'] and
          (item.name not in metricbeat__register_keys.stdout_lines or
           (item.force | d(False)) | bool))
   no_log: '{{ debops__no_log | d(True) }}'

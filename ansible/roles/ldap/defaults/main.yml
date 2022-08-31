@@ -353,11 +353,11 @@ ldap__device_branch_rdn: '{{ ldap__hosts_rdn }}'
 # will be available using the ``ansible_local.ldap.device_dn`` Ansible local
 # fact, from where other Ansible roles can use it to construct Distinguished
 # Names relative to the hosts' own LDAP object.
-ldap__device_dn: '{{ q("flattened", [ ldap__device_self_rdn ]
-                                    + ([ ldap__device_domain_rdn ]
+ldap__device_dn: '{{ q("flattened", [ldap__device_self_rdn]
+                                    + ([ldap__device_domain_rdn]
                                        if ldap__device_separate_domains | bool
                                        else [])
-                                    + [ ldap__device_branch_rdn ]
+                                    + [ldap__device_branch_rdn]
                                     + ldap__base_dn) }}'
 
                                                                    # ]]]
@@ -390,11 +390,11 @@ ldap__device_domain_attributes:
 #
 # List of LDAP ``objectClass`` names which will be used to create the LDAP
 # device object.
-ldap__device_object_classes: '{{ [ "device", "ieee802Device", "ipHost" ]
+ldap__device_object_classes: '{{ ["device", "ieee802Device", "ipHost"]
                                  + ([]
                                     if (ansible_virtualization_role == "guest" and
-                                        ansible_virtualization_type in [ "lxc", "docker", "openvz" ])
-                                    else [ "bootableDevice" ]) }}'
+                                        ansible_virtualization_type in ["lxc", "docker", "openvz"])
+                                    else ["bootableDevice"]) }}'
 
                                                                    # ]]]
 # .. envvar:: ldap__device_attributes [[[
@@ -406,7 +406,7 @@ ldap__device_object_classes: '{{ [ "device", "ieee802Device", "ipHost" ]
 # These attributes will be used to update the existing LDAP device object as
 # well on any changes.
 ldap__device_attributes:
-  cn: '{{ ([ ldap__device_self_rdn.split("=")[1] ] + ldap__device_aliases) | unique }}'
+  cn: '{{ ([ldap__device_self_rdn.split("=")[1]] + ldap__device_aliases) | unique }}'
   ipHostNumber: '{{ ldap__device_ip_addresses }}'
   macAddress:   '{{ ldap__device_mac_addresses }}'
   manager:      '{{ ldap__device_managers }}'
@@ -628,7 +628,7 @@ ldap__admin_rdn: '{{ "uid=" + lookup("env", "USER") }}'
 #
 # The Distinguished Name of the system administrator account, defined as a YAML
 # list.
-ldap__admin_dn: '{{ [ ldap__admin_rdn, ldap__people_rdn ] + ldap__base_dn }}'
+ldap__admin_dn: '{{ [ldap__admin_rdn, ldap__people_rdn] + ldap__base_dn }}'
 
                                                                    # ]]]
 # .. envvar:: ldap__admin_binddn [[[
@@ -652,15 +652,15 @@ ldap__admin_bindpw: '{{ (lookup("env", "DEBOPS_LDAP_ADMIN_BINDPW")
                                               + ldap__admin_binddn | to_uuid
                                               + ".password")
                                if lookup("first_found",
-                                         [ secret + "/ldap/credentials/"
-                                           + ldap__admin_binddn | to_uuid
-                                           + ".password" ],
+                                         [secret + "/ldap/credentials/"
+                                          + ldap__admin_binddn | to_uuid
+                                          + ".password"],
                                          skip=True, errors="ignore")
                                else lookup("passwordstore",
                                            ldap__admin_passwordstore_path + "/"
                                            + ldap__admin_binddn | to_uuid
-                                           + " create=false", errors="ignore"))
-                        ) if ldap__enabled | bool else "" }}'
+                                           + " create=false", errors="ignore")))
+                        if ldap__enabled | bool else "" }}'
 
                                                                    # ]]]
 # .. envvar:: ldap__admin_server_uri [[[
@@ -708,14 +708,14 @@ ldap__admin_become_user: 'root'
 ldap__default_tasks:
 
   - name: 'Ensure that {{ ldap__hosts_rdn }} object exists in LDAP directory'
-    dn: '{{ [ ldap__hosts_rdn ] + ldap__base_dn }}'
+    dn: '{{ [ldap__hosts_rdn] + ldap__base_dn }}'
     objectClass: [ 'organizationalStructure' ]
     attributes:
       ou: '{{ ldap__hosts_rdn.split("=")[1] }}'
       description: 'Servers and other data center equipment'
 
   - name: 'Create domain object for {{ ldap__device_dn | join(",") }}'
-    dn: '{{ [ ldap__device_domain_rdn, ldap__device_branch_rdn ]
+    dn: '{{ [ldap__device_domain_rdn, ldap__device_branch_rdn]
             + ldap__base_dn }}'
     objectClass: '{{ ldap__device_domain_object_classes }}'
     attributes: '{{ ldap__device_domain_attributes }}'
@@ -797,7 +797,7 @@ ldap__python__dependent_packages3:
 
   - '{{ ([]
          if (ansible_distribution_release in
-             ([ "stretch", "trusty", "xenial" ]))
+             (["stretch", "trusty", "xenial"]))
          else "python3-ldap")
         if ldap__enabled | bool
         else [] }}'

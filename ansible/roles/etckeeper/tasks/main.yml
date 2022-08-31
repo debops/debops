@@ -73,15 +73,15 @@
     path: '/etc/.gitignore'
     block: |
       {% for item in etckeeper__combined_gitignore | debops.debops.parse_kv_items %}
-      {%   if (item.name | d() and item.state | d('present') != 'absent') %}
-      {%     if item.comment | d() %}
+      {% if (item.name | d() and item.state | d('present') != 'absent') %}
+      {% if item.comment | d() %}
 
-      {{ item.comment | regex_replace('\n$', '') | comment(prefix='', postfix='') }}{%     endif %}
-      {{ (item.ignore | d(item.name)) | regex_replace('\n$','') }}
-      {%     if item.comment | d() %}
+      {{ item.comment | regex_replace('\n$', '') | comment(prefix='', postfix='') }}{% endif %}
+      {{ (item.ignore | d(item.name)) | regex_replace('\n$', '') }}
+      {% if item.comment | d() %}
 
-      {%     endif %}
-      {%   endif %}
+      {% endif %}
+      {% endif %}
       {% endfor %}
     insertbefore: 'BOF'
     marker: '{{ etckeeper__block_marker }}'

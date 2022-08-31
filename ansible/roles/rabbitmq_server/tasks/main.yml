@@ -141,9 +141,9 @@
 
 - name: Manage RabbitMQ virtual hosts
   rabbitmq_vhost:
-    name:    '{{ item.name    | d(item) }}'
-    node:    '{{ item.node    | d(omit) }}'
-    state:   '{{ item.state   | d("present") }}'
+    name:    '{{ item.name | d(item) }}'
+    node:    '{{ item.node | d(omit) }}'
+    state:   '{{ item.state | d("present") }}'
     tracing: '{{ item.tracing | d(omit) }}'
   loop: '{{ q("flattened", rabbitmq_server__combined_vhosts) }}'
   tags: [ 'role::rabbitmq_server:vhost', 'role::rabbitmq_server:parameter',
@@ -153,7 +153,7 @@
   rabbitmq_parameter:
     component: '{{ item.component }}'
     name:      '{{ item.name }}'
-    node:      '{{ item.node  | d(omit) }}'
+    node:      '{{ item.node | d(omit) }}'
     state:     '{{ item.state | d("present") }}'
     value:     '{{ item.value | d(omit) }}'
     vhost:     '{{ item.vhost | d(omit) }}'
@@ -167,26 +167,26 @@
     pattern:  '{{ item.pattern }}'
     tags:     '{{ item.tags }}'
     apply_to: '{{ item.apply_to | d(omit) }}'
-    node:     '{{ item.node     | d(omit) }}'
+    node:     '{{ item.node | d(omit) }}'
     priority: '{{ item.priority | d(omit) }}'
-    state:    '{{ item.state    | d("present") }}'
-    vhost:    '{{ item.vhost    | d(omit) }}'
+    state:    '{{ item.state | d("present") }}'
+    vhost:    '{{ item.vhost | d(omit) }}'
   loop: '{{ q("flattened", rabbitmq_server__combined_policies) }}'
   when: (item.name | d() and item.pattern | d() and item.tags | d())
   tags: [ 'role::rabbitmq_server:policy' ]
 
 - name: Manage RabbitMQ user accounts
   rabbitmq_user:
-    user:           '{{ item.user           | d(item.name) | d(item) }}'
-    force:          '{{ item.force          | d(omit) }}'
-    node:           '{{ item.node           | d(omit) }}'
-    permissions:    '{{ item.permissions    | d(omit) }}'
+    user:           '{{ item.user | d(item.name) | d(item) }}'
+    force:          '{{ item.force | d(omit) }}'
+    node:           '{{ item.node | d(omit) }}'
+    permissions:    '{{ item.permissions | d(omit) }}'
     configure_priv: '{{ item.configure_priv | d(omit) }}'
-    read_priv:      '{{ item.read_priv      | d(omit) }}'
-    write_priv:     '{{ item.write_priv     | d(omit) }}'
-    state:          '{{ item.state          | d("present") }}'
-    vhost:          '{{ item.vhost          | d(omit) }}'
-    password:       '{{ item.password       | d(lookup("password",
+    read_priv:      '{{ item.read_priv | d(omit) }}'
+    write_priv:     '{{ item.write_priv | d(omit) }}'
+    state:          '{{ item.state | d("present") }}'
+    vhost:          '{{ item.vhost | d(omit) }}'
+    password:       '{{ item.password | d(lookup("password",
                         secret + "/rabbitmq_server/accounts/"
                         + (item.user | d(item.name | d(item)))
                         + "/password length="

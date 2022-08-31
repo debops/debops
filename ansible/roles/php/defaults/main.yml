@@ -33,7 +33,7 @@ php__version_preference: [ 'php7.4', 'php7.3', 'php', 'php5.6' ]
 # maintainer. You can enable these repositories to install PHP 7.0 on Debian
 # Jessie. See :ref:`php__ref_sury` for more details.
 php__sury: '{{ ansible_local.php.sury
-                | d(ansible_distribution_release in [ "stretch", "trusty", "xenial" ]) | bool }}'
+                | d(ansible_distribution_release in ["stretch", "trusty", "xenial"]) | bool }}'
 
                                                                    # ]]]
 # .. envvar:: php__sury_apt_key_id [[[
@@ -108,7 +108,7 @@ php__base_packages:
   - 'gd'
   - '{{ [] if php__composer_upstream_enabled | bool else "composer" }}'
   - '{{ "mcrypt"
-        if (php__version is version_compare("7.2","<"))
+        if (php__version is version_compare("7.2", "<"))
         else [] }}'
 
                                                                    # ]]]
@@ -192,17 +192,17 @@ php__release_included_map:
 #
 # PHP packages usually part of the php5/php5-common packaging.
 php__php5_included_packages: '{{ php__common_included_packages
-                                 + [ "bcmath", "bz2", "dba", "dom", "ereg",
-                                     "mbstring", "mhash", "SimpleXML", "soap",
-                                     "wddx", "xml", "xmlreader", "xmlwriter",
-                                     "zip" ] }}'
+                                 + ["bcmath", "bz2", "dba", "dom", "ereg",
+                                    "mbstring", "mhash", "SimpleXML", "soap",
+                                    "wddx", "xml", "xmlreader", "xmlwriter",
+                                    "zip"] }}'
 
                                                                    # ]]]
 # .. envvar:: php__php_included_packages [[[
 #
 # PHP packages usually part of the php/php-common (PHP 7.x) packaging.
 php__php_included_packages: '{{ php__common_included_packages
-                                + [ "sysvsem", "sysvshm" ] }}'
+                                + ["sysvsem", "sysvshm"] }}'
 
                                                                    # ]]]
 # .. envvar:: php__common_included_packages [[[
@@ -248,8 +248,8 @@ php__common_included_packages:
 # will be installed instead.
 php__composer_upstream_enabled: '{{ True
                                     if (ansible_distribution_release in
-                                        [ "stretch", "trusty", "xenial",
-                                          "bionic", "focal" ])
+                                        ["stretch", "trusty", "xenial",
+                                         "bionic", "focal"])
                                     else False }}'
 
                                                                    # ]]]
@@ -375,25 +375,25 @@ php__default_configuration:
     sections:
 
       - options: |
-          max_execution_time =     {{  php__ini_max_execution_time }}
-          max_input_time =         {{  php__ini_max_input_time }}
-          memory_limit =           {{  php__ini_memory_limit }}
+          max_execution_time =     {{ php__ini_max_execution_time }}
+          max_input_time =         {{ php__ini_max_input_time }}
+          memory_limit =           {{ php__ini_memory_limit }}
           error_reporting =        {{ (php__production | bool) | ternary('E_ALL & ~E_DEPRECATED & ~E_STRICT', 'E_ALL') }}
           display_errors =         {{ (php__production | bool) | ternary('Off', 'On') }}
           display_startup_errors = {{ (php__production | bool) | ternary('Off', 'On') }}
-          {% if php__version is version_compare("7.2","<") %}
+          {% if php__version is version_compare("7.2", "<") %}
           track_errors =           {{ (php__production | bool) | ternary('Off', 'On') }}
           {% endif %}
-          post_max_size =          {{  php__ini_post_max_size }}
-          default_charset =        {{  php__ini_default_charset }}
+          post_max_size =          {{ php__ini_post_max_size }}
+          default_charset =        {{ php__ini_default_charset }}
           file_uploads =           {{ (php__ini_file_uploads | bool) | ternary('On', 'Off') }}
-          upload_max_filesize =    {{  php__ini_upload_max_filesize }}
-          max_file_uploads =       {{  php__ini_max_file_uploads }}
-          allow_url_fopen =        {{ (php__ini_allow_url_fopen | bool) | ternary('On','Off') }}
+          upload_max_filesize =    {{ php__ini_upload_max_filesize }}
+          max_file_uploads =       {{ php__ini_max_file_uploads }}
+          allow_url_fopen =        {{ (php__ini_allow_url_fopen | bool) | ternary('On', 'Off') }}
 
       - name: 'CGI'
         options: |
-          cgi.fix_pathinfo =       {{ (php__ini_cgi_fix_pathinfo | bool) | ternary('1','0') }}
+          cgi.fix_pathinfo =       {{ (php__ini_cgi_fix_pathinfo | bool) | ternary('1', '0') }}
 
       - name: 'Date'
         options: |
@@ -795,7 +795,7 @@ php__logrotate__dependent_config:
       compress
       delaycompress
     postrotate: |
-      {% if php__long_version is version_compare("5.5","<") %}
+      {% if php__long_version is version_compare("5.5", "<") %}
       invoke-rc.d php{{ php__version }}-fpm reopen-logs > /dev/null
       {% else %}
       {{ php__logrotate_lib_base }}/php{{ php__version }}-fpm-reopenlogs

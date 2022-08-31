@@ -95,7 +95,7 @@
 - name: Create required directories
   ansible.builtin.file:
     path: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.hostname | d(tinc__hostname))
-                                                                  | replace("-","_") }}.d'
+                                                                  | replace("-", "_") }}.d'
     state: 'directory'
     owner: 'root'
     group: 'root'
@@ -134,7 +134,7 @@
 - name: Generate tinc-down network scripts
   ansible.builtin.template:
     src: 'etc/tinc/network/tinc-down.j2'
-    dest: '/etc/tinc/{{ item.value.name  | d(item.key) }}/tinc-down'
+    dest: '/etc/tinc/{{ item.value.name | d(item.key) }}/tinc-down'
     owner: 'root'
     group: '{{ tinc__group }}'
     mode: '0750'
@@ -174,12 +174,12 @@
 
 - name: Create persistent copy of host public key
   ansible.builtin.command: cp /etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
-                                                                     | replace("-","_") }}
+                                                                     | replace("-", "_") }}
               /etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
-                                                                     | replace("-","_") + ".d/99_rsa-public-key" }}
+                                                                     | replace("-", "_") + ".d/99_rsa-public-key" }}
   args:
     creates: /etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
-                                                                    | replace("-","_") + ".d/99_rsa-public-key" }}
+                                                                    | replace("-", "_") + ".d/99_rsa-public-key" }}
   with_dict: '{{ tinc__combined_networks }}'
   when: item.value.state | d('present') != 'absent'
 
@@ -188,7 +188,7 @@
   ansible.builtin.template:
     src: 'etc/tinc/network/hosts/host-config.j2'
     dest: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
-                                                                  | replace("-","_") }}.d/00_host-config'
+                                                                  | replace("-", "_") }}.d/00_host-config'
     owner: 'root'
     group: 'root'
     mode: '0640'
@@ -199,9 +199,9 @@
 - name: Assemble host configuration file from parts
   ansible.builtin.assemble:
     src: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
-                                                                 | replace("-","_") }}.d'
+                                                                 | replace("-", "_") }}.d'
     dest: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
-                                                                  | replace("-","_") }}'
+                                                                  | replace("-", "_") }}'
     owner: 'root'
     group: '{{ tinc__group }}'
     mode: '0640'
@@ -213,10 +213,10 @@
 - name: Upload public keys from hosts to Ansible Controller
   ansible.builtin.fetch:
     src: '/etc/tinc/{{ item.value.name | d(item.key) }}/hosts/{{ (item.value.hostname | d(tinc__hostname))
-                                                                 | replace("-","_") }}'
+                                                                 | replace("-", "_") }}'
     dest: '{{ secret + "/tinc/networks/" + item.value.name | d(item.key)
               + "/by-network/" + item.value.name | d(item.key) + "/hosts/"
-              + (item.value.hostname | d(tinc__hostname) | replace("-","_")) }}'
+              + (item.value.hostname | d(tinc__hostname) | replace("-", "_")) }}'
     flat: True
   with_dict: '{{ tinc__combined_networks }}'
   when: item.value.state | d('present') != 'absent'

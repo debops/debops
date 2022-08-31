@@ -87,7 +87,7 @@
   with_items: '{{ sudo__combined_sudoers | flatten | debops.debops.parse_kv_items }}'
   notify: [ 'Refresh host facts' ]
   when: sudo__enabled | bool and
-        item.name | d() and item.state | d('present') not in [ 'init', 'absent', 'ignore' ]
+        item.name | d() and item.state | d('present') not in ['init', 'absent', 'ignore']
 
 - name: Configure workaround for logind sessions via sudo
   ansible.builtin.template:

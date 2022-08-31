@@ -95,7 +95,7 @@
   loop: '{{ q("flattened", slapd__combined_schemas) }}'
   register: slapd__register_load_schemas
   changed_when: (slapd__register_load_schemas.stdout | d() and
-                 (item | basename | regex_replace('.schema$','') + ' already exists in the LDAP, skipping…')
+                 (item | basename | regex_replace('.schema$', '') + ' already exists in the LDAP, skipping…')
                  not in slapd__register_load_schemas.stdout_lines)
   tags: [ 'role::slapd:schema' ]
 

@@ -41,7 +41,7 @@ neurodebian__deploy_state: 'present'
 # ``neurodebian`` APT package included in Debian and let it configure the
 # repositories. The package is included since Debian Stretch.
 neurodebian__upstream: '{{ True
-                           if (ansible_distribution_release in [ "trusty" ])
+                           if (ansible_distribution_release in ["trusty"])
                            else False }}'
                                                                    # ]]]
                                                                    # ]]]
@@ -101,7 +101,7 @@ neurodebian__apt_key_fingerprint: 'DD95 CC43 0502 E37E F840  ACEE A5D3 2F01 2649
 # Supported choices: ``main``, ``contrib``, ``non-free``.
 neurodebian__apt_components:
   - 'main'
-  - '{{ [ "contrib", "non-free" ]
+  - '{{ ["contrib", "non-free"]
         if (ansible_local.apt.nonfree | d() | bool)
         else [] }}'
 

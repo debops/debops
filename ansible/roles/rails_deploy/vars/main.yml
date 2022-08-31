@@ -7,7 +7,7 @@
 # Break down the git location.
 rails_deploy_git_location_pieces: "{{ rails_deploy_git_location.split('@')[1].split('/') if not 'file://' in rails_deploy_git_location else False }}"
 rails_deploy_git_host: "{{ (rails_deploy_git_location_pieces[0] if 'ssh://' in rails_deploy_git_location else rails_deploy_git_location_pieces[0].split(':')[0]) if rails_deploy_git_location_pieces else '' }}"
-rails_deploy_git_account: "{{ (rails_deploy_git_location_pieces[-2] if 'ssh://' in rails_deploy_git_location else rails_deploy_git_location_pieces[0].split(':')[1]) if rails_deploy_git_location_pieces else '' }}"
+rails_deploy_git_account: "{{ (rails_deploy_git_location_pieces[- 2] if 'ssh://' in rails_deploy_git_location else rails_deploy_git_location_pieces[0].split(':')[1]) if rails_deploy_git_location_pieces else '' }}"
 rails_deploy_git_repo: "{{ rails_deploy_git_location | basename | replace('.git', '') if not 'file://' in rails_deploy_git_location else '' }}"
 
 # Service/Worker related paths.

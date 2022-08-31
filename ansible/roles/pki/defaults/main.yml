@@ -123,7 +123,7 @@ pki_acme: '{{ (True
                if (((ansible_all_ipv4_addresses | d([]) +
                     ansible_all_ipv6_addresses | d([])) | ipaddr("public") and
                     pki_default_domain)
-                  or pki_acme_type != "acme-tiny" )
+                  or pki_acme_type != "acme-tiny")
                else False) | bool }}'
 
                                                                    # ]]]
@@ -305,7 +305,7 @@ pki_acme_packages:
   - '{{ "curl" if (pki_acme_type == "acme-tiny" and pki_acme_install | bool) else [] }}'
   - '{{ "git" if (pki_acme_type == "acme-tiny" and pki_acme_install | bool) else [] }}'
   - '{{ [] if (pki_acme_install | bool == false or ansible_distribution_release in
-               [ "stretch", "trusty", "xenial", "bionic" ])
+               ["stretch", "trusty", "xenial", "bionic"])
            else "acme-tiny" if (pki_acme_type == "acme-tiny") else [] }}'
   - '{{ "python3-certbot-dns-cloudflare" if (pki_acme_type == "dns-cloudflare" and pki_acme_install | bool) else [] }}'
   - '{{ "python3-certbot-dns-digitalocean" if (pki_acme_type == "dns-digitalocean" and pki_acme_install | bool) else [] }}'
@@ -319,10 +319,10 @@ pki_acme_packages:
   - '{{ "python3-certbot-dns-sakuracloud" if (pki_acme_type == "dns-sakuracloud" and pki_acme_install | bool) else [] }}'
   - '{{ "python3-certbot-dns-gandi" if (pki_acme_type == "dns-gandi" and pki_acme_install | bool) else [] }}'
   - '{{ "certbot" if (pki_acme_type in
-                [ "dns-cloudflare", "dns-digitalocean",
-                  "dns-dnsimple", "dns-gehirn", "dns-google",
-                  "dns-linode", "dns-ovh", "dns-rfc2136",
-                  "dns-route53", "dns-sakuracloud", "dns-gandi", "manual" ]
+                ["dns-cloudflare", "dns-digitalocean",
+                 "dns-dnsimple", "dns-gehirn", "dns-google",
+                 "dns-linode", "dns-ovh", "dns-rfc2136",
+                 "dns-route53", "dns-sakuracloud", "dns-gandi", "manual"]
            and pki_acme_install | bool) else [] }}'
 
                                                                    # ]]]

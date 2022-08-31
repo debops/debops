@@ -14,15 +14,15 @@
 # Configuration for the :ref:`debops.python` Ansible role.
 mailman__python__dependent_packages3:
 
-  - '{{ [ "python3-django-auth-ldap" ]
+  - '{{ ["python3-django-auth-ldap"]
         if mailman__ldap_enabled | bool
         else [] }}'
 
-  - '{{ [ "python3-psycopg2" ]
+  - '{{ ["python3-psycopg2"]
         if (mailman__database_type == "postgresql")
         else [] }}'
 
-  - '{{ [ "python3-pymysql", "python3-mysqldb" ]
+  - '{{ ["python3-pymysql", "python3-mysqldb"]
         if (mailman__database_type == "mysql")
         else [] }}'
 
@@ -32,15 +32,15 @@ mailman__python__dependent_packages3:
 # Configuration for the :ref:`debops.python` Ansible role.
 mailman__python__dependent_packages2:
 
-  - '{{ [ "python-django-auth-ldap" ]
+  - '{{ ["python-django-auth-ldap"]
         if mailman__ldap_enabled | bool
         else [] }}'
 
-  - '{{ [ "python-psycopg2" ]
+  - '{{ ["python-psycopg2"]
         if (mailman__database_type == "postgresql")
         else [] }}'
 
-  - '{{ [ "python-pymysql", "python-mysqldb" ]
+  - '{{ ["python-pymysql", "python-mysqldb"]
         if (mailman__database_type == "mysql")
         else [] }}'
 
@@ -99,7 +99,7 @@ mailman__nginx__dependent_servers:
 
   - by_role: 'debops.mailman'
     enabled: True
-    name: '{{ [ mailman__fqdn ] + mailman__additional_domains }}'
+    name: '{{ [mailman__fqdn] + mailman__additional_domains }}'
     redirect_from: True
     filename: 'debops.mailman'
 

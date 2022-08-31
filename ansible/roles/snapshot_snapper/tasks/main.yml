@@ -14,15 +14,15 @@
   ansible.builtin.set_fact:
     snapshot_snapper__templates_combined: '{{
                 snapshot_snapper__templates
-      | combine(snapshot_snapper__host_group_templates, recursive=True )
-      | combine(snapshot_snapper__host_templates      , recursive=True ) }}'
+      | combine(snapshot_snapper__host_group_templates, recursive=True)
+      | combine(snapshot_snapper__host_templates, recursive=True) }}'
     snapshot_snapper__volumes_combined: '{{
-      (snapshot_snapper__volumes            | list) +
+      (snapshot_snapper__volumes | list) +
       (snapshot_snapper__host_group_volumes | list) +
-      (snapshot_snapper__host_volumes       | list) }}'
+      (snapshot_snapper__host_volumes | list) }}'
     snapshot_snapper__combined_packages: '{{
       (snapshot_snapper__base_packages | list) +
-      (snapshot_snapper__packages      | list) }}'
+      (snapshot_snapper__packages | list) }}'
   tags:
     - 'role::snapshot_snapper:reinit'
 # .. ]]]
@@ -43,7 +43,7 @@
   debops.debops.dpkg_divert:
     path: '{{ item }}'
   register: snapshot_snapper__updatedb_diverted_register
-  when: ansible_os_family in [ "Debian" ]
+  when: ansible_os_family in ["Debian"]
   loop: '{{ snapshot_snapper__divert_files | flatten }}'
 
 - name: Copy diverted configuration file to original location

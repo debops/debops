@@ -330,11 +330,11 @@ mailman__web_default_configuration:
     config:
       'default':
         'ENGINE':   'django.db.backends.mysql'
-        'NAME':     '{{ ansible_local.mailman.web_db_name     | d("mailman3web") }}'
-        'USER':     '{{ ansible_local.mailman.web_db_user     | d("mailman3web") }}'
+        'NAME':     '{{ ansible_local.mailman.web_db_name | d("mailman3web") }}'
+        'USER':     '{{ ansible_local.mailman.web_db_user | d("mailman3web") }}'
         'PASSWORD': '{{ ansible_local.mailman.web_db_password | d("password") }}'
-        'HOST':     '{{ ansible_local.mailman.web_db_host     | d("localhost") }}'
-        'PORT':     '{{ ansible_local.mailman.web_db_port     | d("") }}'
+        'HOST':     '{{ ansible_local.mailman.web_db_host | d("localhost") }}'
+        'PORT':     '{{ ansible_local.mailman.web_db_port | d("") }}'
         'OPTIONS':
           'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
 
@@ -345,11 +345,11 @@ mailman__web_default_configuration:
     config:
       'default':
         'ENGINE':   'django.db.backends.postgresql_psycopg2'
-        'NAME':     '{{ ansible_local.mailman.web_db_name     | d("mailman3web") }}'
-        'USER':     '{{ ansible_local.mailman.web_db_user     | d("mailman3web") }}'
+        'NAME':     '{{ ansible_local.mailman.web_db_name | d("mailman3web") }}'
+        'USER':     '{{ ansible_local.mailman.web_db_user | d("mailman3web") }}'
         'PASSWORD': '{{ ansible_local.mailman.web_db_password | d("password") }}'
-        'HOST':     '{{ ansible_local.mailman.web_db_host     | d("localhost") }}'
-        'PORT':     '{{ ansible_local.mailman.web_db_port     | d("") }}'
+        'HOST':     '{{ ansible_local.mailman.web_db_host | d("localhost") }}'
+        'PORT':     '{{ ansible_local.mailman.web_db_port | d("") }}'
         'OPTIONS': {}
 
     # Reset the variable to make sure it is empty by default
@@ -362,7 +362,7 @@ mailman__web_default_configuration:
     value: 'https://seccdn.libravatar.org/'
 
   - name: 'gravatar_default_image'
-    value: '{{ [ "mm", "identicon", "monsterid", "wavatar", "retro", "robohash", "pagan" ]
+    value: '{{ ["mm", "identicon", "monsterid", "wavatar", "retro", "robohash", "pagan"]
                | random(seed=inventory_hostname) }}'
 
   - name: 'gravatar_default_rating'
@@ -380,9 +380,9 @@ mailman__web_default_configuration:
     value: '{{ "https://" + mailman__fqdn + "/" }}'
 
   - name: 'mailman_archiver_from'
-    value: '{{ ([ "127.0.0.1", "::1" ]
+    value: '{{ (["127.0.0.1", "::1"]
                 + ansible_all_ipv4_addresses | d([])
-                + ((ansible_all_ipv4_addresses | map("regex_replace", "^","::ffff:") | list)
+                + ((ansible_all_ipv4_addresses | map("regex_replace", "^", "::ffff:") | list)
                    if ansible_all_ipv4_addresses | d([]) else [])
                 + (ansible_all_ipv6_addresses | d([])
                    | difference(ansible_all_ipv6_addresses | d([]) | ipaddr("link-local"))))

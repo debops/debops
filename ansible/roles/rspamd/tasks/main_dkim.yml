@@ -50,7 +50,7 @@
     rspamd__dkim_local_keyfile: '{{ lookup("debops.debops.file_src", "etc/rspamd/dkim_dns_key", errors="ignore") }}'
   when: >
     rspamd__dkim_enabled | d(False) and
-    rspamd__dkim_update_method in [ "nsupdate_tsig", "nsupdate_gsstsig" ]
+    rspamd__dkim_update_method in ["nsupdate_tsig", "nsupdate_gsstsig"]
 
 - name: Copy nsupdate keyfile/keytab from controller to host
   ansible.builtin.copy:
@@ -61,7 +61,7 @@
     mode: '0640'
   when: >
     rspamd__dkim_enabled | d(False) and
-    rspamd__dkim_update_method in [ "nsupdate_tsig", "nsupdate_gsstsig" ] and
+    rspamd__dkim_update_method in ["nsupdate_tsig", "nsupdate_gsstsig"] and
     rspamd__dkim_local_keyfile is defined and
     rspamd__dkim_local_keyfile | length > 0
 
@@ -71,7 +71,7 @@
   become_user: '_rspamd'
   register: rspamd__dkim_tmp_output
   changed_when: rspamd__dkim_tmp_output.rc == 2
-  failed_when: rspamd__dkim_tmp_output.rc not in [ 0, 2 ]
+  failed_when: rspamd__dkim_tmp_output.rc not in [0, 2]
   when: rspamd__dkim_enabled | d(False)
   notify: [ 'Restart rspamd' ]
 
