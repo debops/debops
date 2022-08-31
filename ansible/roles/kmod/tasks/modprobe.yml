@@ -32,7 +32,7 @@
          module.blacklist is not defined and
          ansible_local.kmod.modules | d() and
          module.name in ansible_local.kmod.modules and
-         module.state | d('present') not in [ 'config' ])
+         module.state | d('present') not in ['config'])
 
 - name: Load kernel module if configuration changed
   modprobe:  # noqa no-handler
@@ -41,4 +41,4 @@
   when: ((kmod__register_module_config_delete is changed or
           kmod__register_module_config_create is changed) and
          module.blacklist is not defined and
-         module.state | d('present') not in [ 'config', 'absent', 'blacklist' ])
+         module.state | d('present') not in ['config', 'absent', 'blacklist'])

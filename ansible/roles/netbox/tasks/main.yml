@@ -77,8 +77,8 @@
     path: '{{ netbox__virtualenv }}'
     state: 'absent'
   register: netbox__register_virtalenv_deleted
-  when: ( netbox__virtualenv_version == '3' and
-          netbox__register_virtualenv_version.stat.lnk_target | d() == 'python2' )
+  when: (netbox__virtualenv_version == '3' and
+         netbox__register_virtualenv_version.stat.lnk_target | d() == 'python2')
 
 - name: Create NetBox checkout directory
   ansible.builtin.file:
@@ -170,7 +170,7 @@
   become_user: '{{ netbox__user }}'
   loop: '{{ q("flattened", netbox__virtualenv_pip_packages) }}'
   when: netbox__register_checkout is changed and
-        item.state | d('present') not in [ 'absent', 'ignore' ]
+        item.state | d('present') not in ['absent', 'ignore']
 
 - name: Generate NetBox configuration
   ansible.builtin.template:

@@ -64,7 +64,7 @@
   loop: '{{ metricbeat__combined_snippets | debops.debops.parse_kv_config }}'
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
-  when: item.state | d('present') not in [ 'absent', 'ignore', 'init' ] and item.config | d()
+  when: item.state | d('present') not in ['absent', 'ignore', 'init'] and item.config | d()
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Manage snippet diversion and reversion
@@ -99,7 +99,7 @@
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state, "config": item.config} }}'
   notify: [ 'Test metricbeat configuration and restart' ]
-  when: item.state | d('present') not in [ 'absent', 'ignore', 'init' ] and item.config | d()
+  when: item.state | d('present') not in ['absent', 'ignore', 'init'] and item.config | d()
   no_log: '{{ debops__no_log | d(True) }}'
 
 # The keystore handling is very similar to ../../kibana/tasks/main.yml
@@ -145,7 +145,7 @@
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
   notify: [ 'Test metricbeat configuration and restart' ]
-  when: (item.state | d('present') not in [ 'absent', 'ignore', 'init' ] and
+  when: (item.state | d('present') not in ['absent', 'ignore', 'init'] and
          (item.name not in metricbeat__register_keys.stdout_lines or
           (item.force | d(False)) | bool))
   no_log: '{{ debops__no_log | d(True) }}'

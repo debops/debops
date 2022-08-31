@@ -110,7 +110,7 @@
     mode: '{{ item.mode | d("0640") }}'
   with_items: '{{ saslauthd__ldap_combined_profiles | debops.debops.parse_kv_items }}'
   notify: [ 'Restart saslauthd' ]
-  when: item.name | d() and item.state | d('present') not in [ 'absent', 'ignore' ]
+  when: item.name | d() and item.state | d('present') not in ['absent', 'ignore']
 
 - name: Get list of dpkg-stateoverride paths
   ansible.builtin.shell: set -o nounset -o pipefail -o errexit && dpkg-statoverride --list | awk '{print $4}'

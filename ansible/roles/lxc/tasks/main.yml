@@ -220,7 +220,7 @@
     group: 'root'
     mode: '0644'
   with_items: '{{ lxc__combined_configuration | debops.debops.parse_kv_items }}'
-  when: item.name | d() and item.state | d('present') not in [ 'absent', 'ignore', 'init' ]
+  when: item.name | d() and item.state | d('present') not in ['absent', 'ignore', 'init']
 
 - name: Remove common LXC container configuration if requested
   ansible.builtin.file:
@@ -237,7 +237,7 @@
     group: 'root'
     mode: '0644'
   with_items: '{{ lxc__common_combined_conf | debops.debops.parse_kv_items }}'
-  when: item.name | d() and item.state | d('present') not in [ 'absent', 'ignore', 'init' ]
+  when: item.name | d() and item.state | d('present') not in ['absent', 'ignore', 'init']
 
 - name: Stop LXC containers if requested
   ansible.builtin.systemd:
@@ -247,7 +247,7 @@
   loop: '{{ lxc__containers }}'
   when: ansible_local | d() and ansible_local.lxc | d() and
         (item.name | d(item)) in ansible_local.lxc.containers | d() and
-        item.state | d("started") in [ "stopped", "absent" ]
+        item.state | d("started") in ["stopped", "absent"]
   tags: [ 'role::lxc:containers' ]
 
 - name: Destroy LXC containers if requested

@@ -51,7 +51,7 @@
   when: (ansible_local | d() and ansible_local.debops_fact | d() and
          ansible_local.debops_fact.enabled | bool and
          (ansible_local.debops_fact.version is undefined or
-          (ansible_local.debops_fact.version.ifupdown | d("0.0.0") is version_compare("0.3.0","<"))))
+          (ansible_local.debops_fact.version.ifupdown | d("0.0.0") is version_compare("0.3.0", "<"))))
 
 - name: Create configuration directories
   ansible.builtin.file:
@@ -90,7 +90,7 @@
     mode: '{{ item.value.mode | d("0644") }}'
   with_dict: '{{ ifupdown__combined_interfaces }}'
   register: ifupdown__register_interfaces_created
-  when: item.value.state | d('present') not in [ 'absent', 'ignore' ]
+  when: item.value.state | d('present') not in ['absent', 'ignore']
 
 - name: Remove unknown interface configuration
   ansible.builtin.shell: find /etc/network/interfaces.config.d -maxdepth 1 -type f

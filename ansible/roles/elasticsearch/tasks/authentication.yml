@@ -12,7 +12,7 @@
     method: 'GET'
     status_code: [ '200', '401' ]
   register: elasticsearch__register_api_builtin_users
-  until: elasticsearch__register_api_builtin_users.status in [ 200, 401 ]
+  until: elasticsearch__register_api_builtin_users.status in [200, 401]
   retries: 10
   delay: 5
   no_log: '{{ debops__no_log | d(True) }}'
@@ -64,7 +64,7 @@
   loop: '{{ elasticsearch__combined_native_roles | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
-  when: elasticsearch__api_base_url and item.state | d('present') not in [ 'init', 'ignore' ]
+  when: elasticsearch__api_base_url and item.state | d('present') not in ['init', 'ignore']
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Manage native users in Elasticsearch
@@ -80,5 +80,5 @@
   loop: '{{ elasticsearch__combined_native_users | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
-  when: elasticsearch__api_base_url and item.state | d('present') not in [ 'init', 'ignore' ]
+  when: elasticsearch__api_base_url and item.state | d('present') not in ['init', 'ignore']
   no_log: '{{ debops__no_log | d(True) }}'

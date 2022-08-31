@@ -89,7 +89,7 @@
     state: '{{ apt__sources_deploy_state }}'
     delete: True
   register: apt__register_sources_diversion
-  when: (apt__enabled | bool and apt__sources_deploy_state in [ 'absent', 'present' ])
+  when: (apt__enabled | bool and apt__sources_deploy_state in ['absent', 'present'])
 
 - name: Configure APT distribution sources
   ansible.builtin.template:
@@ -162,7 +162,7 @@
     mode: '0640'
   loop: '{{ q("flattened", (apt__auth_files + apt__group_auth_files + apt__host_auth_files)) }}'
   when: apt__enabled | bool and item.machine | d() and item.login | d() and item.password | d() and
-        item.state | d('present') not in [ 'absent', 'ignore' ]
+        item.state | d('present') not in ['absent', 'ignore']
   no_log: '{{ debops__no_log | d(True) }}'
 
 # Manage configuration files [[[
@@ -177,7 +177,7 @@
   loop: '{{ q("flattened", apt__conf
                            + apt__group_conf
                            + apt__host_conf) }}'
-  when: (apt__enabled | bool  and
+  when: (apt__enabled | bool and
          (item.src | d() or item.content | d()) and
          (item.dest | d() or item.path | d() or item.name | d()) and
          (item.state | d('present') != 'absent'))
@@ -189,7 +189,7 @@
   loop: '{{ q("flattened", apt__conf
                            + apt__group_conf
                            + apt__host_conf) }}'
-  when: (apt__enabled | bool  and
+  when: (apt__enabled | bool and
          (item.dest | d() or item.path | d() or item.name | d()) and
          (item.state | d('present') == 'absent'))
                                                                    # ]]]

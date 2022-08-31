@@ -142,7 +142,7 @@
   loop_control:
     label: '{{ {"name": item.name, "state": (item.state | d("present"))} }}'
   when: (rsyslog__enabled | bool and rsyslog__deploy_state != 'absent' and
-         item.state | d('present') not in [ 'absent', 'ignore', 'init' ] and
+         item.state | d('present') not in ['absent', 'ignore', 'init'] and
          (item.options | d() or item.raw | d()))
   notify: [ 'Check and restart rsyslogd' ]
 

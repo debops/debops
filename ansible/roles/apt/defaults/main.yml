@@ -350,8 +350,8 @@ apt__distribution_suite_map:
 #
 # The variable that specifies the "suite" or an alias of the current
 # distribution release.
-apt__distribution_suite: '{{ apt__distribution_suite_map[apt__distribution + "_" +
-                                                         apt__distribution_release] | d() }}'
+apt__distribution_suite: '{{ apt__distribution_suite_map[apt__distribution + "_"
+                                                         + apt__distribution_release] | d() }}'
 
                                                                    # ]]]
 # .. envvar:: apt__distribution_suffix_map [[[
@@ -378,11 +378,11 @@ apt__distribution_suffix_map:
 # .. envvar:: apt__distribution_suffixes [[[
 #
 # List of repository suffixes to use in the generated APT sources.
-apt__distribution_suffixes: '{{ apt__distribution_suffix_map[apt__distribution + "_" +
-                                apt__distribution_suite_map[apt__distribution + "_" +
-                                apt__distribution_release] | d()] |
-                                d(apt__distribution_suffix_map[apt__distribution] |
-                                  d(apt__distribution_suffix_map["default"])) }}'
+apt__distribution_suffixes: '{{ apt__distribution_suffix_map[apt__distribution + "_"
+                                                             + apt__distribution_suite_map[apt__distribution + "_"
+                                                             + apt__distribution_release] | d()]
+                                | d(apt__distribution_suffix_map[apt__distribution]
+                                | d(apt__distribution_suffix_map["default"])) }}'
 
                                                                    # ]]]
 # .. envvar:: apt__distribution_components_free [[[

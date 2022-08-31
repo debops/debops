@@ -24,13 +24,13 @@
   until: golang__register_install_apt_packages is succeeded
   when: (not (build.upstream | d()) | bool and
          (build.apt_packages is defined and
-          (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
+          (([build.apt_packages] if (build.apt_packages is string) else build.apt_packages)
            | intersect(golang__register_build_apt_packages.stdout_lines))))
 
 - name: Prepare Go UNIX environment
   when: ((build.git | d() or build.url | d()) and ((build.upstream | d()) | bool or
          (build.apt_packages is undefined or
-          (not (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
+          (not (([build.apt_packages] if (build.apt_packages is string) else build.apt_packages)
                 | intersect(golang__register_build_apt_packages.stdout_lines))))))
   block:
 
@@ -58,13 +58,13 @@
   until: golang__register_install_apt_required_packages is succeeded
   when: (build.url | d() and build.upstream_type | d('git') == 'url' and (((build.upstream | d()) | bool or
          (build.apt_packages is undefined or
-          (not (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
+          (not (([build.apt_packages] if (build.apt_packages is string) else build.apt_packages)
                 | intersect(golang__register_build_apt_packages.stdout_lines)))))))
 
 - name: Download Go binaries directly
   when: (build.url | d() and build.upstream_type | d('git') == 'url' and ((build.upstream | d()) | bool or
          (build.apt_packages is undefined or
-          (not (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
+          (not (([build.apt_packages] if (build.apt_packages is string) else build.apt_packages)
                 | intersect(golang__register_build_apt_packages.stdout_lines))))))
   become: True
   become_user: '{{ golang__user }}'
@@ -134,7 +134,7 @@
     loop_var: 'binary_item'
   when: (build.url_binaries | d() and build.upstream_type | d('git') == 'url' and ((build.upstream | d()) | bool or
          (build.apt_packages is undefined or
-          (not (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
+          (not (([build.apt_packages] if (build.apt_packages is string) else build.apt_packages)
                 | intersect(golang__register_build_apt_packages.stdout_lines))))))
 
 - name: 'Install {{ build.name }} APT dev packages'
@@ -145,13 +145,13 @@
   until: golang__register_install_apt_dev_packages is succeeded
   when: (build.git | d() and build.upstream_type | d('git') == 'git' and (((build.upstream | d()) | bool or
          (build.apt_packages is undefined or
-          (not (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
+          (not (([build.apt_packages] if (build.apt_packages is string) else build.apt_packages)
                 | intersect(golang__register_build_apt_packages.stdout_lines)))))))
 
 - name: Build Go applications from source
   when: (build.git | d() and build.upstream_type | d('git') == 'git' and (((build.upstream | d()) | bool or
          (build.apt_packages is undefined or
-          (not (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
+          (not (([build.apt_packages] if (build.apt_packages is string) else build.apt_packages)
                 | intersect(golang__register_build_apt_packages.stdout_lines)))))))
   become: True
   become_user: '{{ golang__user }}'
@@ -205,7 +205,7 @@
     loop_var: 'binary_item'
   when: (build.git_binaries | d() and build.upstream_type | d('git') == 'git' and ((build.upstream | d()) | bool or
          (build.apt_packages is undefined or
-          (not (([ build.apt_packages ] if (build.apt_packages is string) else build.apt_packages)
+          (not (([build.apt_packages] if (build.apt_packages is string) else build.apt_packages)
                 | intersect(golang__register_build_apt_packages.stdout_lines))))))
 
 - name: Create the initial Go binaries database file

@@ -11,7 +11,7 @@
     state: 'inactive'
   loop: '{{ q("flattened", libvirt__networks) }}'
   become: False
-  when: (item.name | d() and (item.state | d() in [ 'inactive', 'undefined', 'absent' ]))
+  when: (item.name | d() and (item.state | d() in ['inactive', 'undefined', 'absent']))
 
 - name: Undefine networks if requested
   virt_net:
@@ -20,7 +20,7 @@
     state: 'absent'
   loop: '{{ q("flattened", libvirt__networks) }}'
   become: False
-  when: (item.name | d() and (item.state | d() in [ 'undefined', 'absent' ]))
+  when: (item.name | d() and (item.state | d() in ['undefined', 'absent']))
 
 - name: Define networks
   virt_net:
@@ -31,7 +31,7 @@
   loop: '{{ q("flattened", libvirt__networks) }}'
   become: False
   when: ((item.name | d()) and
-         (item.state | d("active") not in [ 'undefined', 'absent' ]) and
+         (item.state | d("active") not in ['undefined', 'absent']) and
          (item.interface_present is undefined or
           (item.interface_present in ansible_interfaces and not item.uri | d())))
 
@@ -43,7 +43,7 @@
   loop: '{{ q("flattened", libvirt__networks) }}'
   become: False
   when: ((item.name | d()) and
-         (item.state is undefined or item.state in [ 'active' ]) and
+         (item.state is undefined or item.state in ['active']) and
          (item.interface_present is undefined or
           (item.interface_present in ansible_interfaces and not item.uri | d())))
 
@@ -55,6 +55,6 @@
   loop: '{{ q("flattened", libvirt__networks) }}'
   become: False
   when: ((item.name | d()) and
-         (item.state is undefined or item.state not in [ 'undefined', 'absent' ]) and
+         (item.state is undefined or item.state not in ['undefined', 'absent']) and
          (item.interface_present is undefined or
           (item.interface_present in ansible_interfaces and not item.uri | d())))

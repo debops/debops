@@ -24,7 +24,7 @@
              + mount__group_devices
              + mount__host_devices)
             | flatten }}'
-  when: (mount__enabled | bool and item.state | d('mounted') in [ 'mounted', 'present', 'unmounted' ] and
+  when: (mount__enabled | bool and item.state | d('mounted') in ['mounted', 'present', 'unmounted'] and
          (item.device | d(item.src)) not in (ansible_mounts | map(attribute='device') | list))
 
 - name: Stop devices automounted by systemd if requested
@@ -36,7 +36,7 @@
              + mount__host_devices)
             | flatten }}'
   when: (mount__enabled | bool and ansible_service_mgr == 'systemd' and
-         item.state | d('mounted') in [ 'unmounted', 'absent' ] and
+         item.state | d('mounted') in ['unmounted', 'absent'] and
          (((item.opts if (item.opts is string) else item.opts | join(','))
            if item.opts | d() else 'defaults') is match(".*x-systemd.automount.*")))
 
@@ -92,7 +92,7 @@
              + mount__host_directories)
             | flatten }}'
   when: mount__enabled | bool and (item.path | d() or item.dest | d() or item.name | d()) and
-        item.state | d('directory') in [ 'directory', 'absent' ]
+        item.state | d('directory') in ['directory', 'absent']
 
 - name: Manage directory ACLs
   ansible.posix.acl:

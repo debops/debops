@@ -63,7 +63,7 @@
     group: '{{ minio__group }}'
     mode: '0750'
   loop: '{{ minio__volumes + minio__group_volumes + minio__host_volumes }}'
-  when: item.state | d('present') not in [ 'absent', 'ignore', 'init' ]
+  when: item.state | d('present') not in ['absent', 'ignore', 'init']
 
 - name: Symlink TLS files to MinIO home directory
   ansible.builtin.file:
@@ -101,7 +101,7 @@
     enabled: False
   loop: '{{ minio__combined_instances | debops.debops.parse_kv_items }}'
   when: ansible_service_mgr == 'systemd' and
-        item.name | d() and item.state | d('present') in [ 'absent' ]
+        item.name | d() and item.state | d('present') in ['absent']
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Remove MinIO instance configuration files if requested
@@ -109,7 +109,7 @@
     path: '{{ minio__config_dir + "/" + item.name }}'
     state: 'absent'
   loop: '{{ minio__combined_instances | debops.debops.parse_kv_items }}'
-  when: item.name | d() and item.state | d('present') in [ 'absent' ]
+  when: item.name | d() and item.state | d('present') in ['absent']
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Generate MinIO instance configuration files
@@ -122,7 +122,7 @@
   loop: '{{ minio__combined_instances | debops.debops.parse_kv_items }}'
   register: minio__register_instance_config
   when: item.name | d() and item.port | d() and
-        item.state | d('present') not in [ 'absent', 'ignore', 'init' ]
+        item.state | d('present') not in ['absent', 'ignore', 'init']
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Start and enable MinIO instances
@@ -133,7 +133,7 @@
   loop: '{{ minio__combined_instances | debops.debops.parse_kv_items }}'
   when: ansible_service_mgr == 'systemd' and
         item.name | d() and item.port | d() and
-        item.state | d('present') not in [ 'absent', 'ignore', 'init' ]
+        item.state | d('present') not in ['absent', 'ignore', 'init']
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Start and enable MinIO service

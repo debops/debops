@@ -19,7 +19,7 @@
   register: resolvconf__register_packages
   until: resolvconf__register_packages is succeeded
   when: (resolvconf__enabled | bool and
-         resolvconf__deploy_state in [ 'present', 'absent' ])
+         resolvconf__deploy_state in ['present', 'absent'])
 
 - name: Generate static configuration script
   ansible.builtin.template:
@@ -28,7 +28,7 @@
     mode: '0755'
   notify: [ 'Apply static resolvconf configuration' ]
   when: (resolvconf__enabled | bool and resolvconf__static_enabled | bool and
-         resolvconf__deploy_state in [ 'present' ])
+         resolvconf__deploy_state in ['present'])
 
 - name: Create systemd override directory
   ansible.builtin.file:
@@ -36,7 +36,7 @@
     state: 'directory'
     mode: '0755'
   when: (resolvconf__enabled | bool and resolvconf__static_enabled | bool and
-         resolvconf__deploy_state in [ 'present' ])
+         resolvconf__deploy_state in ['present'])
 
 - name: Generate systemd service override
   ansible.builtin.template:
@@ -45,7 +45,7 @@
     mode: '0644'
   notify: [ 'Reload service manager' ]
   when: (resolvconf__enabled | bool and resolvconf__static_enabled | bool and
-         resolvconf__deploy_state in [ 'present' ])
+         resolvconf__deploy_state in ['present'])
 
 - name: Add diversion of /etc/resolvconf/interface-order
   debops.debops.dpkg_divert:
@@ -54,7 +54,7 @@
     delete: True
   notify: [ 'Refresh /etc/resolv.conf' ]
   when: (resolvconf__enabled | bool and
-         resolvconf__deploy_state in [ 'present' ])
+         resolvconf__deploy_state in ['present'])
 
 - name: Remove diversion of /etc/resolvconf/interface-order
   debops.debops.dpkg_divert:
@@ -62,7 +62,7 @@
     state: '{{ resolvconf__deploy_state }}'
     delete: True
   when: (resolvconf__enabled | bool and
-         resolvconf__deploy_state in [ 'absent' ])
+         resolvconf__deploy_state in ['absent'])
 
 - name: Generate /etc/resolvconf/interface-order configuration
   ansible.builtin.template:
@@ -77,7 +77,7 @@
     path: '{{ item }}'
     state: 'absent'
   when: (resolvconf__enabled | bool and
-         resolvconf__deploy_state in [ 'absent' ])
+         resolvconf__deploy_state in ['absent'])
   loop:
     - '/usr/local/lib/resolvconf-static'
     - '/etc/systemd/system/resolvconf.service.d/static.conf'

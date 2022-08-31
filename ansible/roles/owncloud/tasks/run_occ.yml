@@ -61,16 +61,13 @@
   when: (owncloud__do_autosetup | d() | bool and
          owncloud__occ_item | d() and
          owncloud__occ_item.command | d() and
-         (owncloud__occ_item.when | d(True) | bool) and not (
-           ansible_local.owncloud.maintenance | d() | bool and (
-             owncloud__occ_item.command.startswith("dav") or
-             owncloud__occ_item.command.startswith("federation") or
-             owncloud__occ_item.command.startswith("files") or
-             owncloud__occ_item.command.startswith("trashbin") or
-             owncloud__occ_item.command.startswith("versions")
-           )
-         )
-         )
+         (owncloud__occ_item.when | d(True) | bool) and not
+          (ansible_local.owncloud.maintenance | d() | bool and
+           (owncloud__occ_item.command.startswith("dav") or
+            owncloud__occ_item.command.startswith("federation") or
+            owncloud__occ_item.command.startswith("files") or
+            owncloud__occ_item.command.startswith("trashbin") or
+            owncloud__occ_item.command.startswith("versions"))))
 
 # - name: Debug occ command
 #   debug:

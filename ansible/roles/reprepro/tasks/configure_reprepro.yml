@@ -10,7 +10,7 @@
     owner: '{{ reprepro__user }}'
     group: '{{ reprepro__group }}'
     mode: '0755'
-  when: repo.state | d('present') not in [ 'absent', 'ignore' ]
+  when: repo.state | d('present') not in ['absent', 'ignore']
 
 - name: Create directory for reprepro uploads
   ansible.builtin.file:
@@ -19,7 +19,7 @@
     owner: '{{ reprepro__user }}'
     group: 'www-data'
     mode: '0730'
-  when: repo.state | d('present') not in [ 'absent', 'ignore' ]
+  when: repo.state | d('present') not in ['absent', 'ignore']
 
 - name: Create reprepro internal directories
   ansible.builtin.file:
@@ -29,7 +29,7 @@
     group: '{{ reprepro__group }}'
     mode: '0755'
   loop: [ 'conf/uploaders', 'tmp' ]
-  when: repo.state | d('present') not in [ 'absent', 'ignore' ]
+  when: repo.state | d('present') not in ['absent', 'ignore']
 
 - name: Create public reprepro repository
   ansible.builtin.file:
@@ -38,7 +38,7 @@
     owner: '{{ reprepro__user }}'
     group: '{{ reprepro__group }}'
     mode: '0755'
-  when: repo.state | d('present') not in [ 'absent', 'ignore' ] and
+  when: repo.state | d('present') not in ['absent', 'ignore'] and
         not repo.outdir | d()
 
 - name: Copy GPG public key to public space
@@ -49,7 +49,7 @@
     owner: '{{ reprepro__user }}'
     group: '{{ reprepro__group }}'
     mode: '0644'
-  when: repo.state | d('present') not in [ 'absent', 'ignore' ] and
+  when: repo.state | d('present') not in ['absent', 'ignore'] and
         not repo.outdir | d()
 
 - name: Manage reprepro configuration files
@@ -61,8 +61,8 @@
     mode: '0644'
   loop: [ 'distributions', 'incoming', 'options', 'pulls', 'updates' ]
   register: reprepro__register_config
-  when: (repo.state | d('present') not in [ 'absent', 'ignore' ] and
-         (item in repo.keys() or item in [ 'options' ]))
+  when: (repo.state | d('present') not in ['absent', 'ignore'] and
+         (item in repo.keys() or item in ['options']))
 
 - name: Configure uploaders configuration files
   ansible.builtin.template:
@@ -73,7 +73,7 @@
     mode: '0644'
   loop: '{{ repo.uploaders }}'
   register: reprepro__register_uploaders
-  when: repo.state | d('present') not in [ 'absent', 'ignore' ] and 'uploaders' in repo.keys()
+  when: repo.state | d('present') not in ['absent', 'ignore'] and 'uploaders' in repo.keys()
 
 - name: Initialize reprepro repositories
   ansible.builtin.command: 'reprepro export'
@@ -81,7 +81,7 @@
     chdir: '{{ reprepro__data_root + "/" + repo.name }}'
   become: True
   become_user: '{{ reprepro__user }}'
-  when: (repo.state | d('present') not in [ 'absent', 'ignore' ] and repo.distributions | d() and
+  when: (repo.state | d('present') not in ['absent', 'ignore'] and repo.distributions | d() and
          (reprepro__register_config is changed or reprepro__register_uploaders is changed))
 
 - name: Generate symlinks
@@ -91,7 +91,7 @@
   become: True
   become_user: '{{ reprepro__user }}'
   changed_when: False
-  when: (repo.state | d('present') not in [ 'absent', 'ignore' ] and repo.distributions | d())
+  when: (repo.state | d('present') not in ['absent', 'ignore'] and repo.distributions | d())
 
 - name: Enable incoming queue monitoring
   ansible.builtin.systemd:
@@ -112,4 +112,4 @@
     group: '{{ reprepro__group }}'
     mode: '0755'
   with_items: [ 'email-changes.sh' ]
-  when: repo.state | d('present') not in [ 'absent', 'ignore' ]
+  when: repo.state | d('present') not in ['absent', 'ignore']
