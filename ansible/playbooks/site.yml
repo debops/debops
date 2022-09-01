@@ -10,47 +10,56 @@
 
   # This playbook manages network infrastructure, like creation and management
   # of separate subnets, DNS, DHCP services, routing configuration, etc.
-- import_playbook: net.yml
+- name: Manage network layer
+  import_playbook: 'net.yml'
 
   # This playbook manages internal system plumbing expected on the host by
   # services, like user accounts, NFS mounts from remote hosts, and so on.
   # Everything that is not common, but enabled on a per group/host basis.
-- import_playbook: sys.yml
+- name: Manage system service layer
+  import_playbook: 'sys.yml'
 
   # This playbook contains roles that are run on all hosts in the inventory
   # - common services like SMTP server, administrative tasks, authentication
   # and authorization control, system services used by other applications like
   # firewall, etc.
-- import_playbook: common.yml
+- name: Manage services common on all hosts
+  import_playbook: 'common.yml'
 
   # This playbook manages different programming language environments available
   # on each host, enabled using Ansible groups.
-- import_playbook: env.yml
+- name: Manage programming language environments
+  import_playbook: 'env.yml'
 
   # This playbook manages system services enabled using Ansible groups, like
   # databases, webservers, application servers, and so on.
-- import_playbook: srv.yml
+- name: Manage userspace service layer
+  import_playbook: 'srv.yml'
 
   # This playbook contains plays which install and manage more complex
   # applications which can use multiple services at a time, or are user-facing
   # applications like webservices.
-- import_playbook: app.yml
+- name: Manage userspace applications
+  import_playbook: 'app.yml'
 
   # This playbook manages virtualized environments installed on hosts, like
   # OpenVZ Hardware Nodes, support for LXC containers in a host, or support for
   # KVM virtual machines. This is meant for the host-side of the virtualization
   # support, guest-side is managed by the rest of the playbook without the use
   # of the plays contained here.
-- import_playbook: virt.yml
+- name: Manage virtual machine layer
+  import_playbook: 'virt.yml'
 
   # This playbook manages hardware-related roles - device management, disk
   # partitioning, hardware monitoring, kernel management, any roles that would
   # require a reboot.
-- import_playbook: hw.yml
+- name: Manage hardware layer
+  import_playbook: 'hw.yml'
 
   # This playbook manages services or applications that are used as agents by
   # other services, on local or remote hosts. These agents may contact their
   # parent services to register themselves or provide data about their
   # environment, therefore they should be executed after the hosts they run on
   # are configured.
-- import_playbook: agent.yml
+- name: Manage service agents
+  import_playbook: 'agent.yml'

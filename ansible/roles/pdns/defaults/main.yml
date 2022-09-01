@@ -298,9 +298,8 @@ pdns__default_configuration:
     comment: |-
       Local IP addresses to which we bind. Accepts IPv6 addresses since pdns
       4.3.0.
-    value: '{{ (pdns__local_address
-                if ansible_local.pdns.version is version("4.3.0", ">=")
-                else (pdns__local_address | ipv4)) | join (",") }}'
+    value: '{{ (pdns__local_address if ansible_local.pdns.version is version("4.3.0", ">=")
+                else (pdns__local_address | ipv4)) | join(",") }}'
 
   - name: 'local-ipv6'
     comment: |-
