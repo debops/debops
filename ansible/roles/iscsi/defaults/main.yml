@@ -78,7 +78,7 @@ iscsi__iqn_authority: '{{ ansible_domain }}'
 iscsi__iqn: '{{ (ansible_local.iscsi.iqn
                  if (ansible_local.iscsi.iqn | d())
                  else ("iqn." + iscsi__iqn_date + "." +
-                       iscsi__iqn_authority.split(".")[: : -1] | join("."))) }}'
+                       iscsi__iqn_authority.split(".")[::-1] | join("."))) }}'
 
                                                                    # ]]]
 # .. envvar:: iscsi__hostname [[[

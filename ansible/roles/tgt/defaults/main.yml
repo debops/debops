@@ -44,7 +44,7 @@ tgt_iqn_authority: '{{ ansible_domain }}'
 tgt_iqn_base: '{{ (ansible_local.tgt.iqn_base
                    if (ansible_local.tgt.iqn_base | d())
                    else ("iqn." + tgt_iqn_date + "." +
-                         tgt_iqn_authority.split(".")[: : -1] | join("."))) }}'
+                         tgt_iqn_authority.split(".")[::-1] | join("."))) }}'
 
                                                                    # ]]]
 # .. envvar:: tgt_allow [[[
