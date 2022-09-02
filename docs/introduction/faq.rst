@@ -170,6 +170,51 @@ Second, undo what DebOps has done:
 Finally, read the :ref:`debops.sshd` role documentation. It explains how it
 works and how you can configure it so that it does what you want.
 
+DebOps is very slow.
+--------------------
+
+There are a few things you can do to speed it up.
+
+First, in :file:`.debops.cfg`, enable ssh pipelining::
+
+    [ansible ssh_connection]
+    pipelining = True
+
+See the `Ansible documentation on pipelining`_ for more information.
+
+Second, use as Ansible/Debops controller a machine that is "near" (on
+the same network as) the controlled machines.
+
+These two adjustments alone can often halve the time needed for DebOps
+to run.
+
+Third, the ``site`` playbook runs everything, but you don't always need
+to run everything. Very often you can run only a subset of the
+playbooks; so instead of ``debops run site``, you can run this::
+
+    debops run service/core srv app
+
+Read :ref:`playbooks` for more information.
+
+If your controlled machine is already configured, and you make
+a change that affects only something very specific (e.g. a configuration
+change that concerns only the ``owncloud`` role), you can ask to run
+only the relevant playbook::
+
+    debops run service/owncloud
+
+The DebOps playbooks make extensive use of tags to enable you to further
+narrow this down. This will only run tasks that configure nginx in the
+context of owncloud::
+
+    debops run service/owncloud --tags role::nginx
+
+The :ref:`documentation of the DebOps roles <ansible_roles>` contains,
+in the "Getting started" section of each role, an "Ansible tags" section
+describing more tags that you can use.
+
+.. _Ansible documentation on pipelining: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/ssh_connection.html#parameter-pipelining
+
 
 .. rubric:: Footnotes
 
