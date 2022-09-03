@@ -23,6 +23,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.0: https://github.com/debops/debops/compare/v3.0.0...stable-3.0
 
+Added
+~~~~~
+
+:ref:`debops.keyring` role
+''''''''''''''''''''''''''
+
+- The role can now download APT repository GPG keys to separate keyring files,
+  which can be used to scope a given GPG key to specific APT repositories.
+
 
 `debops v3.0.3`_ - 2022-09-02
 -----------------------------
