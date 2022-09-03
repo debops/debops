@@ -146,6 +146,26 @@ playbook is the same as in the previous example:
        repo: 'deb http://nginx.org/packages/debian {{ ansible_distribution_release }} nginx'
        state: '{{ "present" if nginx__upstream | bool else "absent" }}'
 
+Also with the :ref:`debops.nginx` role, install the APT GPG key in a separate
+keyring and tell APT to use this key only for Nginx official packages. The APT
+repository configuration will be stored in the
+:file:`/etc/apt/sources.list.d/nginx-upstream.list' configuration file (note
+the ``>`` YAML block marker, which will fold the repository string to a single
+line):
+
+.. code-block:: yaml
+
+   nginx__keyring__dependent_apt_keys:
+
+     - id: '573B FD6B 3D8F BC64 1079  A6AB ABF5 BD82 7BD9 BF62'
+       url: 'https://nginx.org/keys/nginx_signing.key'
+       keyring: '/usr/share/keyring/nginx-archive-keyring.gpg'
+       repo: >
+         deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg]
+             http://nginx.org/packages/debian {{ ansible_distribution_release }} nginx
+       filename: 'nginx-upstream'
+       state: '{{ "present" if nginx__upstream | bool else "absent" }}'
+
 There are many more real-world examples available in various DebOps roles. To
 find them, you can run the command in the DebOps monorepo root directory:
 
@@ -189,6 +209,11 @@ The YAML dictionaries are defined using specific parameters:
 
   .. __: https://keybase.io/
   .. __: https://keybase.io/docs/api/1.0/call/user/pgp_keys.asc
+
+``keyring``
+  Optional. Absolute path for the keyring where the GPG key should be stored.
+  If omitted, the key will be stored in the system-wide keyring
+  (:file:`/etc/apt/trusted.gpg`).
 
 ``keyserver``
   Optional. Override the default GPG keyserver URL specified in the
