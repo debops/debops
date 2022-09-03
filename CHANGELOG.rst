@@ -74,6 +74,12 @@ General
   applications can use the existing X.509 certificates and private keys for TLS
   encryption support.
 
+:ref:`debops.keyring` role
+''''''''''''''''''''''''''
+
+- The role can now download APT repository GPG keys to separate keyring files,
+  which can be used to scope a given GPG key to specific APT repositories.
+
 :ref:`debops.kibana` role
 '''''''''''''''''''''''''
 
