@@ -35,6 +35,12 @@ Added
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.owncloud` role, the ownCloud support has been updated to
+  ``v10.10``.
+
 :ref:`debops.docker_server` role
 ''''''''''''''''''''''''''''''''
 
