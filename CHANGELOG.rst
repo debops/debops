@@ -331,6 +331,8 @@ debops.boxbackup role
   task on systems other than Debian 9 or 10. The patch is not required since
   the ``vagrant-libvirt`` v0.1.0 package.
 
+- Fixed a templating type error in the task that creates required Unix groups.
+
 :ref:`debops.grub` role
 '''''''''''''''''''''''
 
