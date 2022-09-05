@@ -7,7 +7,7 @@
   ansible.builtin.import_role:
     name: 'global_handlers'
 
-- name: Create directories
+- name: Create data directories
   ansible.builtin.file:
     path: '{{ item }}'
     state: 'directory'
@@ -15,7 +15,6 @@
     group: '{{ opensearch__group }}'
     mode: '0750'
   loop:
-    - '/etc/opensearch'
     - '/var/local/opensearch'
     - '/var/log/opensearch'
 
@@ -61,7 +60,7 @@
         remote_src: True
         owner: 'root'
         group: 'root'
-        mode: 'u=rwX,g=rX,o=rX'
+        mode: '0755'
         extra_opts:
           - '--strip-components=1'
       notify: [ 'Refresh host facts', 'Restart opensearch' ]
@@ -71,15 +70,15 @@
         src: '{{ opensearch__installation_directory }}/config/'
         dest: '/etc/opensearch'
         remote_src: True
-        owner: 'root'
+        owner: '{{ opensearch__user }}'
         group: '{{ opensearch__group }}'
-        mode: '0640'
+        mode: '0755'
 
 - name: Configure OpenSearch and the JVM
   ansible.builtin.template:
     src: 'etc/opensearch/{{ item }}.j2'
     dest: '/etc/opensearch/{{ item }}'
-    owner: 'root'
+    owner: '{{ opensearch__user }}'
     group: '{{ opensearch__group }}'
     mode: '0640'
   loop:
@@ -103,8 +102,6 @@
   ansible.builtin.template:
     src: 'etc/systemd/system/opensearch.service.j2'
     dest: '/etc/systemd/system/opensearch.service'
-    owner: 'root'
-    group: 'root'
     mode: '0644'
   notify: [ 'Reload service manager' ]
 
@@ -112,16 +109,12 @@
   ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
-    owner: 'root'
-    group: 'root'
     mode: '0755'
 
 - name: Save local facts
   ansible.builtin.template:
     src: 'etc/ansible/facts.d/opensearch.fact.j2'
     dest: '/etc/ansible/facts.d/opensearch.fact'
-    owner: 'root'
-    group: 'root'
     mode: '0755'
   notify: [ 'Refresh host facts' ]
   tags: [ 'meta::facts' ]
