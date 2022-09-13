@@ -199,6 +199,12 @@ General
   MTA configuration exposed via variables in case the mail should be sent via
   a remote server instead of a local one.
 
+- DebOps playbooks have been reorganized to not use a large set of symlinks
+  inside of the repository. Instead different sections of the :file:`site.yml`
+  playbook have been organized into "layers", new playbooks are located under
+  the :file:`ansible/playbooks/layers/` subdirectory. See the new
+  :ref:`playbooks` documentation for more details.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 

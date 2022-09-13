@@ -3,8 +3,8 @@
 # Build an Ansible Galaxy collection tarball with Ansible artifacts
 # Usage: run "make collection" in the root of the repository
 
-# Copyright (C) 2019-2022 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2019-2022 DebOps <https://debops.org/>
+# Copyright (C) 2019-2023 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2019-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
@@ -69,7 +69,7 @@ done
 
 # Count the number of times a given role is present in common and bootstrap playbooks
 for role in "${!debops_role_map[@]}" ; do
-    number_in_commons="$(git grep -h --word-regexp -e "role::${role}" --and -e "skip::${role}" ansible/playbooks/*.yml | wc -l)" || true
+    number_in_commons="$(git grep -h --word-regexp -e "role::${role}" --and -e "skip::${role}" ansible/playbooks/*.yml ansible/playbooks/layer/common.yml | wc -l)" || true
     if [ "${number_in_commons}" -gt 0 ] ; then
         debops_role_map["${role}"]=$(( collection_floor_map[${collections[0]}] + debops_role_map["${role}"] + number_in_commons ))
     fi
