@@ -118,7 +118,7 @@ Updates of upstream application versions
   updated to the next point release as well, 11.4.
 
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
-  ``v3.2.4``.
+  ``v3.3.8``.
 
 - In the :ref:`debops.owncloud` role, the ownCloud support has been updated to
   ``v10.10``.
