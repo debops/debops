@@ -131,8 +131,7 @@
     owner: 'root'
     group: 'root'
     mode: '0600'
-  when: icinga_web__database_host == 'localhost' and
-      icinga_web__database_init | bool
+  when: icinga_web__database_init | bool
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Import Icinga Web database on installation into PostgreSQL
@@ -147,6 +146,30 @@
   when: icinga_web__database_type == 'postgresql' and
         icinga_web__database_host == 'localhost' and
         icinga_web__database_init | bool
+
+- name: Create Icinga Web database on installation into PostgreSQL (remote database)
+  postgresql_db:
+    name: '{{ icinga_web__database_name }}'
+    state: 'present'
+  delegate_to: '{{ icinga_web__database_delegate_to }}'
+  when: icinga_web__database_type == 'postgresql' and
+        icinga_web__database_host != 'localhost' and
+        icinga_web__database_init|bool
+
+- name: Import Icinga Web database on installation into PostgreSQL (remote database)
+  postgresql_db:
+    name: '{{ icinga_web__database_name }}'
+    state: 'restore'
+    target: '{{ item }}'
+    login_host: '{{ icinga_web__database_host }}'
+    login_user: '{{ icinga_web__database_user }}'
+    login_password: '{{ icinga_web__database_password }}'
+  with_items:
+    - '{{ icinga_web__database_schema }}'
+    - '/tmp/icingaweb-initial-data.sql'
+  when: icinga_web__database_type == 'postgresql' and
+        icinga_web__database_host != 'localhost' and
+        icinga_web__database_init|bool
 
   # Without this, Icinga Web cannot access the database, with error:
   # permission denied for relation icingaweb_user
