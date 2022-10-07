@@ -133,6 +133,7 @@ ntp__base_packages:
   - '{{ "chrony"   if (ntp__daemon == "chrony")   else [] }}'
   - '{{ "ntp"      if (ntp__daemon == "ntpd")     else [] }}'
   - '{{ "openntpd" if (ntp__daemon == "openntpd") else [] }}'
+  - '{{ "systemd-timesyncd" if (ntp__daemon == "systemd-timesyncd") else [] }}'
   - '{{ "ntpdate"  if (ntp__daemon == "ntpdate")  else [] }}'
 
 
@@ -151,6 +152,7 @@ ntp__purge_packages:
   - '{{ "chrony"   if (ntp__daemon != "chrony")                  else [] }}'
   - '{{ "ntp"      if (ntp__daemon not in [ "ntpd", "openntpd"]) else [] }}'
   - '{{ "openntpd" if (ntp__daemon != "openntpd")                else [] }}'
+  - '{{ "systemd-timesyncd" if (ntp__daemon != "systemd-timesyncd") else [] }}'
   - '{{ "ntpdate"  if (ntp__daemon != "ntpdate" and
                        not ntp__ignore_ntpdate|bool)             else [] }}'
                                                                    # ]]]
