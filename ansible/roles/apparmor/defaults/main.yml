@@ -47,15 +47,6 @@ apparmor__packages: []
 apparmor__enabled: True
 
                                                                    # ]]]
-# .. envvar:: apparmor__kernel_options [[[
-#
-# Default kernel options needed to enable AppArmor.
-# You probably don’t need to change this.
-apparmor__kernel_options:
-  - 'apparmor=1'
-  - 'security=apparmor'
-
-                                                                   # ]]]
 # .. envvar:: apparmor__manage_grub [[[
 #
 # How should role write the required kernel options into the Grub configuration.
@@ -65,11 +56,14 @@ apparmor__kernel_options:
 apparmor__manage_grub: False
 
                                                                    # ]]]
-# .. envvar:: apparmor__additional_kernel_parameters [[[
+# .. envvar:: apparmor__kernel_parameters [[[
 #
-# Legacy:
-# Only considered when `apparmor__manage_grub == True`.
-apparmor__additional_kernel_parameters: ''
+# Kernel parameters needed to enable AppArmor (if not already enabled by
+# default, as in recent Debian/Ubuntu kernel packages). Only relevant if
+# :ref:`apparmor__manage_grub` is enabled.
+apparmor__kernel_parameters:
+  - 'apparmor=1'
+  - 'security=apparmor'
 
                                                                    # ]]]
 # .. envvar:: apparmor__mail_to [[[
@@ -240,19 +234,6 @@ apparmor__host_tunables: ''
 #
 # Variable definitions managed by roles using this role as dependency.
 apparmor__tunables_dependent: ''
-                                                                   # ]]]
-                                                                   # ]]]
-# Configuration for other Ansible roles [[[
-# ----------------------------------------
-
-# .. envvar:: apparmor__grub__dependent_configuration [[[
-#
-# Configuration for the :ref:`debops.grub` Ansible role.
-apparmor__grub__dependent_configuration:
-
-  - name: 'cmdline_linux_default'
-    value: '{{ apparmor__kernel_options }}'
-
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

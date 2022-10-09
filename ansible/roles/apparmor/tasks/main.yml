@@ -3,6 +3,14 @@
 # Copyright (C) 2015-2017 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Import custom Ansible plugins
+  ansible.builtin.import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  ansible.builtin.import_role:
+    name: 'global_handlers'
+
 - name: Combine variables
   ansible.builtin.set_fact:
     apparmor__profile_status: '{{ apparmor__global_profile_status | d({})
@@ -25,32 +33,33 @@
   register: apparmor__register_packages
   until: apparmor__register_packages is succeeded
 
-- name: Setup apparmor=1 security=apparmor as kernel parameter
-  ansible.builtin.lineinfile:
-    dest: '/etc/default/grub'
-    regexp: '{{ item.regexp }}'
-    line: '{{ item.line }}'
-    insertbefore: '{{ item.insertbefore }}'
+- name: Add AppArmor kernel parameters to GRUB configuration
+  ansible.builtin.template:
+    src: 'etc/default/grub.d/debops.apparmor.cfg.j2'
+    dest: '/etc/default/grub.d/debops.apparmor.cfg'
     mode: '0644'
-  when: ((apparmor__manage_grub | d() | bool) and (apparmor__enabled | d() | bool))
-  with_items:
-    - regexp: '^GRUB_CMDLINE_LINUX='
-      line: 'GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR {{ apparmor__additional_kernel_parameters }}"'
-      insertbefore: ''
-    - regexp: '^GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR='
-      line: 'GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR="apparmor=1 security=apparmor"'
-      insertbefore: '^GRUB_CMDLINE_LINUX='
-  notify: [ 'Update grub' ]
+  when: >
+    apparmor__enabled | d(False) | bool and
+    apparmor__manage_grub | d(False) | bool
+  notify: [ 'Update GRUB' ]
 
-- name: Remove apparmor=1 security=apparmor from kernel parameter list
+- name: Remove AppArmor kernel parameters from GRUB configuration
+  ansible.builtin.file:
+    path: '/etc/default/grub.d/debops.apparmor.cfg'
+    state: 'absent'
+  when: >
+    not apparmor__enabled | d(False) | bool or
+    not apparmor__manage_grub | d(False) | bool
+  notify: [ 'Update GRUB' ]
+
+- name: Remove legacy GRUB configuration options
   ansible.builtin.lineinfile:
     dest: '/etc/default/grub'
     regexp: '^GRUB_CMDLINE_LINUX="(.*?)\$GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR(.*)"'
     line: 'GRUB_CMDLINE_LINUX="\1 \2"'
     backrefs: yes
     mode: '0644'
-  when: (apparmor__manage_grub and not (apparmor__enabled | d() | bool))
-  notify: [ 'Update grub' ]
+  notify: [ 'Update GRUB' ]
 
 - name: Check if the running kernel has been started with AppArmor enabled
   ansible.builtin.set_fact:
