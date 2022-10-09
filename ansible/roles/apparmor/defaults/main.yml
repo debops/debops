@@ -201,10 +201,10 @@ apparmor__local_host_config: {}
 apparmor__local_dependent_config: {}
 
                                                                    # ]]]
-# .. envvar:: apparmor__global_tunables [[[
+                                                                   # ]]]
+# AppArmor tunables [[[
+# ---------------------
 #
-# Allows you to define or append variables which will be included by most
-# profiles via the tunable concept of AppArmor.
 # See also: https://wiki.ubuntu.com/DebuggingApparmor#Adjusting_Tunables
 #
 # Examples:
@@ -215,25 +215,47 @@ apparmor__local_dependent_config: {}
 #    apparmor__global_tunables: |
 #      @{HOMEDIRS}+=/exports/home/
 #
-apparmor__global_tunables: ''
+
+# .. envvar:: apparmor__default_tunables [[[
+#
+# List of default tunables defined by the role.
+apparmor__default_tunables: []
+
+                                                                   # ]]]
+# .. envvar:: apparmor__tunables [[[
+#
+# List of tunables defined for all hosts in the Ansible inventory.
+apparmor__tunables: []
 
                                                                    # ]]]
 # .. envvar:: apparmor__group_tunables [[[
 #
-# Host group definitions or additions to variables.
-apparmor__group_tunables: ''
+# List of tunables defined on hosts in a specific Ansible inventory group.
+apparmor__group_tunables: []
 
                                                                    # ]]]
 # .. envvar:: apparmor__host_tunables [[[
 #
-# Host definitions or additions to variables.
-apparmor__host_tunables: ''
+# List of tunables defined on specific hosts in the Ansible inventory.
+apparmor__host_tunables: []
 
                                                                    # ]]]
-# .. envvar:: apparmor__tunables_dependent [[[
+# .. envvar:: apparmor__dependent_tunables [[[
 #
 # Variable definitions managed by roles using this role as dependency.
-apparmor__tunables_dependent: ''
+apparmor__dependent_tunables: []
+
+                                                                   # ]]]
+# .. envvar:: apparmor__combined_tunables [[[
+#
+# A combination of the tunables defined by the other variables, used in
+# role tasks.
+apparmor__combined_tunables: '{{ apparmor__default_tunables
+                                 + apparmor__tunables
+                                 + apparmor__group_tunables
+                                 + apparmor__host_tunables
+                                 + apparmor__dependent_tunables }}'
+
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]

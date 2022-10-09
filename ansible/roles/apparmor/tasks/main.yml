@@ -20,10 +20,6 @@
                                 | combine(apparmor__local_config_global | d({}))
                                 | combine(apparmor__local_group_config | d({}))
                                 | combine(apparmor__local_host_config | d({})) }}'
-    apparmor__tunables: '{{ (apparmor__tunables_dependent | d([]) | list) +
-                            (apparmor__global_tunables | d([]) | list) +
-                            (apparmor__group_tunables | d([]) | list) +
-                            (apparmor__host_tunables | d([]) | list) }}'
 
 - name: Install required packages
   ansible.builtin.package:
@@ -122,20 +118,12 @@
     enabled: True
   when: apparmor__fact_apparmor_enabled_and_loaded | bool
 
-- name: Ensure tunables directory exists
-  ansible.builtin.file:
-    path: '/etc/apparmor.d/tunables/home.d'
-    state: 'directory'
-    mode: '0755'
-
 - name: Configure tunables
-  ansible.builtin.template:
-    src: 'etc/apparmor.d/tunables/home.d/debops.j2'
-    dest: '/etc/apparmor.d/tunables/home.d/debops'
-    mode: '0640'
-    owner: 'root'
-    group: 'root'
-  register: apparmor__register_tunables
+  ansible.builtin.include_tasks: handle_tunables.yml
+  loop: '{{ apparmor__combined_tunables | debops.debops.parse_kv_items() }}'
+  loop_control:
+    label: '{{ item.name }}'
+  tags: [ 'apparmor::tunables' ]
 
 - name: Configure additions or overrides of system profiles
   ansible.builtin.template:
@@ -147,18 +135,19 @@
   register: apparmor__register_local_config
   with_dict: '{{ apparmor__local_config }}'
 
-- name: Reload changed profiles
-  ansible.builtin.command: 'apparmor_parser --replace "/etc/apparmor.d/{{ item.item.key }}"'  # noqa no-handler
-  register: apparmor__register_reload
-  changed_when: apparmor__register_reload.changed | bool
-  when: (item is changed and apparmor__register_tunables is not changed)
-  with_items: '{{ apparmor__register_local_config.results }}'
-
-- name: Reload all AppArmor profiles
-  ansible.builtin.service:  # noqa no-handler
-    name: 'apparmor'
-    state: 'reloaded'
-  when: apparmor__fact_apparmor_enabled_and_loaded | bool and apparmor__register_tunables is changed
+# FIXME: Use handlers
+#- name: Reload changed profiles
+#  ansible.builtin.command: 'apparmor_parser --replace "/etc/apparmor.d/{{ item.item.key }}"'  # noqa no-handler
+#  register: apparmor__register_reload
+#  changed_when: apparmor__register_reload.changed | bool
+#  when: (item is changed and apparmor__register_tunables is not changed)
+#  with_items: '{{ apparmor__register_local_config.results }}'
+#
+#- name: Reload all AppArmor profiles
+#  ansible.builtin.service:  # noqa no-handler
+#    name: 'apparmor'
+#    state: 'reloaded'
+#  when: apparmor__fact_apparmor_enabled_and_loaded | bool and apparmor__register_tunables is changed
 
 - name: Disable the AppArmor service
   ansible.builtin.service:
