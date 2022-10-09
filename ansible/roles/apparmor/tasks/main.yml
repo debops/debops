@@ -154,21 +154,19 @@
   when: (item is changed and apparmor__register_tunables is not changed)
   with_items: '{{ apparmor__register_local_config.results }}'
 
-- name: Reload AppArmor all profiles
+- name: Reload all AppArmor profiles
   ansible.builtin.service:  # noqa no-handler
     name: 'apparmor'
     state: 'reloaded'
   when: apparmor__fact_apparmor_enabled_and_loaded | bool and apparmor__register_tunables is changed
 
-- name: Unload AppArmor profiles
-  ansible.builtin.command: service apparmor teardown  # noqa command-instead-of-module
-  register: apparmor__register_teardown
-  changed_when: apparmor__register_teardown.changed | bool
-  when: (not (apparmor__enabled | d() | bool))
-
-- name: Ensure AppArmor service is stopped
+- name: Disable the AppArmor service
   ansible.builtin.service:
     name: 'apparmor'
     state: 'stopped'
     enabled: False
-  when: (not (apparmor__enabled | d() | bool))
+  when: not apparmor__enabled | d(False) | bool
+
+- name: Unload all AppArmor profiles
+  ansible.builtin.command: aa-teardown
+  when: not apparmor__enabled | d(False) | bool
