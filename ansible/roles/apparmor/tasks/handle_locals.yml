@@ -1,0 +1,54 @@
+---
+# Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Create base directory for local modification {{ item.name }}
+  ansible.builtin.file:
+    path: '{{ "/etc/apparmor.d/local/" + item.name | dirname }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when:
+    - item.state | d("present") == "present"
+    - item.name | dirname != "."
+  tags: [ 'apparmor::locals' ]
+
+- name: Create local modification {{ item.name }}
+  ansible.builtin.template:
+    src: 'etc/apparmor.d/snippet.j2'
+    dest: '{{ "/etc/apparmor.d/local/" + item.name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when: item.state | d("present") == "present"
+  tags: [ 'apparmor::locals' ]
+
+- name: Check the presence of profile {{ item.name }}
+  ansible.builtin.stat:
+    path: '{{ "/etc/apparmor.d/" + item.name }}'
+  register: apparmor__register_local_profile
+  when: item.state | d("present") == "absent"
+  tags: [ 'apparmor::locals' ]
+
+- name: Truncate local modification {{ item.name }}
+  ansible.builtin.copy:
+    dest: '{{ "/etc/apparmor.d/local/" + item.name }}'
+    content: ''
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  when:
+    - item.state | d("present") == "absent"
+    - apparmor__register_local_profile.stat.exists | d(False)
+  tags: [ 'apparmor::locals' ]
+
+- name: Remove local modification {{ item.name }}
+  ansible.builtin.file:
+    path: '{{ "/etc/apparmor.d/local/" + item.name }}'
+    state: 'absent'
+  when:
+    - item.state | d("present") == "absent"
+    - not apparmor__register_local_profile.stat.exists | d(False)
+  tags: [ 'apparmor::locals' ]

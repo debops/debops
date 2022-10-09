@@ -16,10 +16,6 @@
     apparmor__profile_status: '{{ apparmor__global_profile_status | d({})
                                   | combine(apparmor__host_group_profile_status | d({}))
                                   | combine(apparmor__host_profile_status | d({})) }}'
-    apparmor__local_config: '{{ apparmor__local_dependent_config | d({})
-                                | combine(apparmor__local_config_global | d({}))
-                                | combine(apparmor__local_group_config | d({}))
-                                | combine(apparmor__local_host_config | d({})) }}'
 
 - name: Install required packages
   ansible.builtin.package:
@@ -125,15 +121,12 @@
     label: '{{ item.name }}'
   tags: [ 'apparmor::tunables' ]
 
-- name: Configure additions or overrides of system profiles
-  ansible.builtin.template:
-    src: 'etc/apparmor.d/local/local.j2'
-    dest: '/etc/apparmor.d/local/{{ item.key }}'
-    mode: '0640'
-    owner: 'root'
-    group: 'root'
-  register: apparmor__register_local_config
-  with_dict: '{{ apparmor__local_config }}'
+- name: Configure local changes to system profiles
+  ansible.builtin.include_tasks: handle_locals.yml
+  loop: '{{ apparmor__combined_locals | debops.debops.parse_kv_items() }}'
+  loop_control:
+    label: '{{ item.name }}'
+  tags: [ 'apparmor::locals' ]
 
 # FIXME: Use handlers
 #- name: Reload changed profiles

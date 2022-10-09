@@ -138,9 +138,12 @@ apparmor__host_group_profile_status: {}
 apparmor__host_profile_status: {}
 
                                                                    # ]]]
-# .. envvar:: apparmor__local_config_global [[[
+                                                                   # ]]]
+# AppArmor local profile modifications [[[
+# ----------------------------------------
 #
-# Global additions or overrides of system profiles.
+# Local modifications to system profiles.
+#
 # Those changes will be configured in :file:`/etc/apparmor.d/local/`.
 # Check :file:`/etc/apparmor.d/local/README` for details.
 # All three dictionaries are merged into one profile configuration.
@@ -180,25 +183,59 @@ apparmor__host_profile_status: {}
 #          rules:
 #            - '@{HOME}/.purple/plugins/** rm'
 #
-apparmor__local_config_global: {}
+# See also: https://wiki.ubuntu.com/DebuggingApparmor#Adjusting_Tunables
+#
+# Examples:
+#
+# .. code-block:: yaml
+#    :linenos:
+#
+#    apparmor__global_tunables: |
+#      @{HOMEDIRS}+=/exports/home/
+#
+
+# .. envvar:: apparmor__default_locals [[[
+#
+# List of default local profile modifications defined by the role.
+apparmor__default_locals: []
 
                                                                    # ]]]
-# .. envvar:: apparmor__local_group_config [[[
+# .. envvar:: apparmor__locals [[[
 #
-# Host group additions or overrides of system profiles.
-apparmor__local_group_config: {}
+# List of local profile modifications defined for all hosts in the Ansible
+# inventory.
+apparmor__locals: []
 
                                                                    # ]]]
-# .. envvar:: apparmor__local_host_config [[[
+# .. envvar:: apparmor__group_locals [[[
 #
-# Host additions or overrides of system profiles.
-apparmor__local_host_config: {}
+# List of local profile modifications defined on hosts in a specific Ansible
+# inventory group.
+apparmor__group_locals: []
 
                                                                    # ]]]
-# .. envvar:: apparmor__local_dependent_config [[[
+# .. envvar:: apparmor__host_locals [[[
 #
-# System profiles managed by other roles using this role as dependency.
-apparmor__local_dependent_config: {}
+# List of local profile modifications defined on specific hosts in the Ansible
+# inventory.
+apparmor__host_locals: []
+
+                                                                   # ]]]
+# .. envvar:: apparmor__dependent_locals [[[
+#
+# Variable definitions managed by roles using this role as dependency.
+apparmor__dependent_locals: []
+
+                                                                   # ]]]
+# .. envvar:: apparmor__combined_locals [[[
+#
+# A combination of the local profile modifications defined by the other
+# variables, used in role tasks.
+apparmor__combined_locals: '{{ apparmor__default_locals
+                               + apparmor__locals
+                               + apparmor__group_locals
+                               + apparmor__host_locals
+                               + apparmor__dependent_locals }}'
 
                                                                    # ]]]
                                                                    # ]]]
