@@ -93,8 +93,6 @@ apparmor__mail_body: |
 # AppArmor profiles [[[
 # ---------------------
 
-# .. envvar:: apparmor__global_profile_status [[[
-#
 # Global configuration of the status of individual profiles.
 # More specific matches overwrite more generic matches (example host overrules
 # global).
@@ -116,19 +114,49 @@ apparmor__mail_body: |
 #    apparmor__global_profile_status:
 #      'usr.sbin.nmbd': 'complain'
 #
-apparmor__global_profile_status: {}
+
+# .. envvar:: apparmor__default_profiles [[[
+#
+# List of profiles to enable/disable, defined by the role.
+apparmor__default_profiles: []
 
                                                                    # ]]]
-# .. envvar:: apparmor__host_group_profile_status [[[
+# .. envvar:: apparmor__profiles [[[
 #
-# Host group configuration of the status of individual profiles.
-apparmor__host_group_profile_status: {}
+# List of profiles to enable/disable, defined for all hosts in the Ansible
+# inventory.
+apparmor__profiles: []
 
                                                                    # ]]]
-# .. envvar:: apparmor__host_profile_status [[[
+# .. envvar:: apparmor__group_profiles [[[
 #
-# Host configuration of the status of individual profiles.
-apparmor__host_profile_status: {}
+# List of profiles to enable/disable, defined on hosts in a specific Ansible
+# inventory group.
+apparmor__group_profiles: []
+
+                                                                   # ]]]
+# .. envvar:: apparmor__host_profiles [[[
+#
+# List of profiles to enable/disable, defined on specific hosts in the Ansible
+# inventory.
+apparmor__host_profiles: []
+
+                                                                   # ]]]
+# .. envvar:: apparmor__dependent_profiles [[[
+#
+# Variable definitions managed by roles using this role as dependency.
+apparmor__dependent_profiles: []
+
+                                                                   # ]]]
+# .. envvar:: apparmor__combined_profiles [[[
+#
+# A combination of the profiles to enable/disable, defined by the other
+# variables, used in role tasks.
+apparmor__combined_profiles: '{{ apparmor__default_profiles
+                                 + apparmor__profiles
+                                 + apparmor__group_profiles
+                                 + apparmor__host_profiles
+                                 + apparmor__dependent_profiles }}'
 
                                                                    # ]]]
                                                                    # ]]]
