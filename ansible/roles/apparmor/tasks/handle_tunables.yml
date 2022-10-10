@@ -10,6 +10,7 @@
     state: 'absent'
     delete: True
   when: item.state | d("present") == "absent"
+  notify: [ 'Reload all AppArmor profiles' ]
   tags: [ 'apparmor::tunables' ]
 
 - name: Divert tunable {{ item.name }}
@@ -18,6 +19,7 @@
     state: 'present'
     delete: True
   when: item.state | d("present") == "present"
+  notify: [ 'Reload all AppArmor profiles' ]
   tags: [ 'apparmor::tunables' ]
 
 - name: Create base directory for tunable {{ item.name }}
@@ -40,4 +42,5 @@
     group: 'root'
     mode: '0644'
   when: item.state | d("present") == "present"
+  notify: [ 'Reload all AppArmor profiles' ]
   tags: [ 'apparmor::tunables' ]

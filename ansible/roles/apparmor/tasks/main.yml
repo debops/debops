@@ -47,13 +47,6 @@
     mode: '0644'
   notify: [ 'Update GRUB' ]
 
-- name: Ensure AppArmor service is started
-  ansible.builtin.service:
-    name: 'apparmor'
-    state: 'started'
-    enabled: True
-  when: apparmor__fact_apparmor_enabled_and_loaded | bool
-
 - name: Configure tunables
   ansible.builtin.include_tasks: handle_tunables.yml
   loop: '{{ apparmor__combined_tunables | debops.debops.parse_kv_items() }}'
@@ -89,7 +82,14 @@
 #    state: 'reloaded'
 #  when: apparmor__fact_apparmor_enabled_and_loaded | bool and apparmor__register_tunables is changed
 
-- name: Disable the AppArmor service
+- name: Start and enable the AppArmor service
+  ansible.builtin.service:
+    name: 'apparmor'
+    state: 'started'
+    enabled: True
+  when: apparmor__enabled | d(False) | bool
+
+- name: Stop and disable the AppArmor service
   ansible.builtin.service:
     name: 'apparmor'
     state: 'stopped'
