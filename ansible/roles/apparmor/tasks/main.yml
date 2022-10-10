@@ -47,26 +47,6 @@
     mode: '0644'
   notify: [ 'Update GRUB' ]
 
-- name: Check if the running kernel has been started with AppArmor enabled
-  ansible.builtin.set_fact:
-    apparmor__fact_apparmor_enabled_and_loaded: '{{
-      (apparmor__enabled | d() | bool) and
-      (ansible_cmdline.apparmor | d(0) | string == "1") and
-      (ansible_cmdline.security | d("none") == "apparmor") }}'
-  check_mode: False
-
-- name: Flush the handlers in case the next tasks fails
-  ansible.builtin.meta: flush_handlers
-
-- name: Send mail to administrator if reboot is required to enable AppArmor
-  community.general.mail:
-    from: 'root@{{ ansible_fqdn }}'
-    subject: '{{ apparmor__mail_subject }}'
-    to: '{{ apparmor__mail_to | d([]) | list | join(",") }}'
-    charset: 'utf8'
-    body: '{{ apparmor__mail_body }}'
-  when: (apparmor__fact_apparmor_enabled_and_loaded | bool and apparmor__mail_to | d())
-
 - name: Ensure AppArmor service is started
   ansible.builtin.service:
     name: 'apparmor'
