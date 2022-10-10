@@ -13,7 +13,7 @@
   when:
     - item.state | d("present") == "present"
     - item.name | dirname != "."
-  tags: [ 'apparmor::locals' ]
+  tags: [ 'role::apparmor:locals' ]
 
 - name: Create local modification {{ item.name }}
   ansible.builtin.template:
@@ -24,14 +24,14 @@
     mode: '0644'
   when: item.state | d("present") == "present"
   notify: [ 'Reload all AppArmor profiles' ]
-  tags: [ 'apparmor::locals' ]
+  tags: [ 'role::apparmor:locals' ]
 
 - name: Check the presence of profile {{ item.name }}
   ansible.builtin.stat:
     path: '{{ "/etc/apparmor.d/" + item.name }}'
   register: apparmor__register_local_profile
   when: item.state | d("present") == "absent"
-  tags: [ 'apparmor::locals' ]
+  tags: [ 'role::apparmor:locals' ]
 
 - name: Truncate local modification {{ item.name }}
   ansible.builtin.copy:
@@ -44,7 +44,7 @@
     - item.state | d("present") == "absent"
     - apparmor__register_local_profile.stat.exists | d(False)
   notify: [ 'Reload all AppArmor profiles' ]
-  tags: [ 'apparmor::locals' ]
+  tags: [ 'role::apparmor:locals' ]
 
 - name: Remove local modification {{ item.name }}
   ansible.builtin.file:
@@ -54,4 +54,4 @@
     - item.state | d("present") == "absent"
     - not apparmor__register_local_profile.stat.exists | d(False)
   notify: [ 'Reload all AppArmor profiles' ]
-  tags: [ 'apparmor::locals' ]
+  tags: [ 'role::apparmor:locals' ]

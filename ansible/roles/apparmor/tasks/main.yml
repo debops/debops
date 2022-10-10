@@ -18,6 +18,7 @@
     state: 'present'
   register: apparmor__register_packages
   until: apparmor__register_packages is succeeded
+  tags: [ 'role::apparmor:pkg' ]
 
 - name: Make sure that the Ansible local facts directory exists
   ansible.builtin.file:
@@ -48,6 +49,7 @@
     apparmor__enabled | d(False) | bool and
     apparmor__manage_grub | d(False) | bool
   notify: [ 'Update GRUB' ]
+  tags: [ 'role::apparmor:grub' ]
 
 - name: Remove AppArmor kernel parameters from GRUB configuration
   ansible.builtin.file:
@@ -57,6 +59,7 @@
     not apparmor__enabled | d(False) | bool or
     not apparmor__manage_grub | d(False) | bool
   notify: [ 'Update GRUB' ]
+  tags: [ 'role::apparmor:grub' ]
 
 - name: Remove legacy GRUB configuration options
   ansible.builtin.lineinfile:
@@ -66,27 +69,28 @@
     backrefs: yes
     mode: '0644'
   notify: [ 'Update GRUB' ]
+  tags: [ 'role::apparmor:grub' ]
 
 - name: Configure tunables
   ansible.builtin.include_tasks: handle_tunables.yml
   loop: '{{ apparmor__combined_tunables | debops.debops.parse_kv_items() }}'
   loop_control:
     label: '{{ item.name }}'
-  tags: [ 'apparmor::tunables' ]
+  tags: [ 'role::apparmor:tunables' ]
 
 - name: Configure local changes to system profiles
   ansible.builtin.include_tasks: handle_locals.yml
   loop: '{{ apparmor__combined_locals | debops.debops.parse_kv_items() }}'
   loop_control:
     label: '{{ item.name }}'
-  tags: [ 'apparmor::locals' ]
+  tags: [ 'role::apparmor:locals' ]
 
 - name: Configure profiles
   ansible.builtin.include_tasks: handle_profiles.yml
   loop: '{{ apparmor__combined_profiles | debops.debops.parse_kv_items() }}'
   loop_control:
     label: '{{ item.name }}'
-  tags: [ 'apparmor::profiles' ]
+  tags: [ 'role::apparmor:profiles' ]
 
 - name: Start and enable the AppArmor service
   ansible.builtin.service:
@@ -96,9 +100,11 @@
   when:
     - apparmor__enabled | d(False) | bool
     - ansible_local.apparmor.installed | d(False) | bool
+  tags: [ 'role::apparmor:service' ]
 
 - name: Reload AppArmor profiles if necessary
   ansible.builtin.meta: 'flush_handlers'
+  tags: [ 'role::apparmor:profiles' ]
 
 - name: Stop and disable the AppArmor service
   ansible.builtin.service:
@@ -108,9 +114,11 @@
   when:
     - not apparmor__enabled | d(False) | bool
     - ansible_local.apparmor.installed | d(False) | bool
+  tags: [ 'role::apparmor:service' ]
 
 - name: Unload all AppArmor profiles
   ansible.builtin.command: aa-teardown
   when:
     - not apparmor__enabled | d(False) | bool
     - ansible_local.apparmor.installed | d(False) | bool
+  tags: [ 'role::apparmor:profiles' ]

@@ -11,7 +11,7 @@
     delete: True
   when: item.state | d("present") == "absent"
   notify: [ 'Reload all AppArmor profiles' ]
-  tags: [ 'apparmor::tunables' ]
+  tags: [ 'role::apparmor:tunables' ]
 
 - name: Divert tunable {{ item.name }}
   debops.debops.dpkg_divert:
@@ -20,7 +20,7 @@
     delete: True
   when: item.state | d("present") == "present"
   notify: [ 'Reload all AppArmor profiles' ]
-  tags: [ 'apparmor::tunables' ]
+  tags: [ 'role::apparmor:tunables' ]
 
 - name: Create base directory for tunable {{ item.name }}
   ansible.builtin.file:
@@ -32,7 +32,7 @@
   when:
     - item.state | d("present") == "present"
     - item.name | dirname != "."
-  tags: [ 'apparmor::tunables' ]
+  tags: [ 'role::apparmor:tunables' ]
 
 - name: Create tunable {{ item.name }}
   ansible.builtin.template:
@@ -43,4 +43,4 @@
     mode: '0644'
   when: item.state | d("present") == "present"
   notify: [ 'Reload all AppArmor profiles' ]
-  tags: [ 'apparmor::tunables' ]
+  tags: [ 'role::apparmor:tunables' ]
