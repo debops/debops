@@ -3,7 +3,7 @@
 # Copyright (C) 2022 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- name: Ensure that profile {{ item.name }} has a valid state
+- name: Ensure a valid state for profile {{ item.name }}
   ansible.builtin.assert:
     that: item.state | d() in [ "enforce", "complain", "disable", "ignore" ]
     quiet: True
@@ -17,7 +17,7 @@
   tags: [ 'apparmor::profiles' ]
 
 # Note: the aa-* utils happily exit with 0 even when the profile doesn't exist
-- name: Ensure that profile {{ item.name }} exists
+- name: Ensure existance of profile {{ item.name }}
   ansible.builtin.assert:
     that: apparmor__stat_profile.stat.exists | d(False)
     quiet: True
@@ -32,7 +32,7 @@
   tags: [ 'apparmor::profiles' ]
 
 # Note: can't use --no-reload here, because aa-status won't show any changes
-- name: Set profile {{ item.name }} to {{ item.state }}
+- name: Set profile {{ item.name + " to " + item.state }}
   ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          aa-{{ item.state }} {{ ("/etc/apparmor.d/" + item.name) | quote }}
             > /dev/null 2>&1 &&

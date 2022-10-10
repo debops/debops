@@ -40,9 +40,10 @@ apparmor__packages: []
 # Enable or disable support the AppArmor. Since the role is included from the
 # DebOps ``common`` playbook, this allows a manual override of the default
 # behavior.
-apparmor__enabled: '{{ False
-                       if ansible_distribution_release in [ "stretch" ]
-                       else True }}'
+apparmor__enabled: '{{ ansible_local.apparmor.enabled
+                       | d(False
+                           if ansible_distribution_release in ["stretch"]
+                           else True) }}'
 
                                                                    # ]]]
 # .. envvar:: apparmor__manage_grub [[[
@@ -52,10 +53,11 @@ apparmor__enabled: '{{ False
 # Debian/Ubuntu kernel packages already include and enable this support by
 # default, so this is only necessary for old distributions and/or customized
 # kernel builds.
-apparmor__manage_grub: '{{ True
-                           if (apparmor__enabled | d(False) | bool and
-                               ansible_distribution_release in [ "stretch" ])
-                           else False }}'
+apparmor__manage_grub: '{{ ansible_local.apparmor.grub_enabled
+                           | d(True
+                               if (apparmor__enabled | d(False) | bool and
+                                   ansible_distribution_release in ["stretch"])
+                               else False) }}'
 
                                                                    # ]]]
 # .. envvar:: apparmor__kernel_parameters [[[

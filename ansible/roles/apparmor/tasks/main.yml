@@ -19,6 +19,26 @@
   register: apparmor__register_packages
   until: apparmor__register_packages is succeeded
 
+- name: Make sure that the Ansible local facts directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save AppArmor local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/apparmor.fact.j2'
+    dest: '/etc/ansible/facts.d/apparmor.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  tags: [ 'meta::facts' ]
+
+- name: Update Ansible facts if they were modified
+  ansible.builtin.meta: 'flush_handlers'
+
 - name: Add AppArmor kernel parameters to GRUB configuration
   ansible.builtin.template:
     src: 'etc/default/grub.d/debops.apparmor.cfg.j2'
@@ -68,34 +88,29 @@
     label: '{{ item.name }}'
   tags: [ 'apparmor::profiles' ]
 
-# FIXME: Use handlers
-#- name: Reload changed profiles
-#  ansible.builtin.command: 'apparmor_parser --replace "/etc/apparmor.d/{{ item.item.key }}"'  # noqa no-handler
-#  register: apparmor__register_reload
-#  changed_when: apparmor__register_reload.changed | bool
-#  when: (item is changed and apparmor__register_tunables is not changed)
-#  with_items: '{{ apparmor__register_local_config.results }}'
-#
-#- name: Reload all AppArmor profiles
-#  ansible.builtin.service:  # noqa no-handler
-#    name: 'apparmor'
-#    state: 'reloaded'
-#  when: apparmor__fact_apparmor_enabled_and_loaded | bool and apparmor__register_tunables is changed
-
 - name: Start and enable the AppArmor service
   ansible.builtin.service:
     name: 'apparmor'
     state: 'started'
     enabled: True
-  when: apparmor__enabled | d(False) | bool
+  when:
+    - apparmor__enabled | d(False) | bool
+    - ansible_local.apparmor.installed | d(False) | bool
+
+- name: Reload AppArmor profiles if necessary
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Stop and disable the AppArmor service
   ansible.builtin.service:
     name: 'apparmor'
     state: 'stopped'
     enabled: False
-  when: not apparmor__enabled | d(False) | bool
+  when:
+    - not apparmor__enabled | d(False) | bool
+    - ansible_local.apparmor.installed | d(False) | bool
 
 - name: Unload all AppArmor profiles
   ansible.builtin.command: aa-teardown
-  when: not apparmor__enabled | d(False) | bool
+  when:
+    - not apparmor__enabled | d(False) | bool
+    - ansible_local.apparmor.installed | d(False) | bool
