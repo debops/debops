@@ -2,18 +2,19 @@
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
 # .. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-# .. Copyright (C) 2015-2017 DebOps <https://debops.org/>
+# .. Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+# .. Copyright (C) 2015-2022 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _apparmor__ref_defaults:
 
-# debops-contrib.apparmor default variables [[[
-# =============================================
-
+# Default variables
+# =================
+#
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../../includes/global.rst
 
 
 # Packages and installation [[[
@@ -64,7 +65,7 @@ apparmor__manage_grub: '{{ ansible_local.apparmor.grub_enabled
 #
 # Kernel parameters needed to enable AppArmor (if not already enabled by
 # default, as in recent Debian/Ubuntu kernel packages). Only relevant if
-# :ref:`apparmor__manage_grub` is enabled.
+# :envvar:`apparmor__manage_grub` is enabled.
 apparmor__kernel_parameters:
   - 'apparmor=1'
   - 'security=apparmor'
@@ -74,27 +75,8 @@ apparmor__kernel_parameters:
 # AppArmor profiles [[[
 # ---------------------
 
-# Global configuration of the status of individual profiles.
-# More specific matches overwrite more generic matches (example host overrules
-# global).
-#
-# Choices are:
-#
-# ``enforce``
-#   Result in enforcement of the policy defined in the profile as well as
-#   logging policy violation attempts.
-#
-# ``complain``
-#  This will not enforce the policy.  Instead, it will log policy violations.
-#
-# ``disable``
-#   In this mode, policy violations are neither prevented nor logged.
-#
-# Example::
-#
-#    apparmor__global_profile_status:
-#      'usr.sbin.nmbd': 'complain'
-#
+# These variables control the state of individual AppArmor profiles. See
+# :ref:`apparmor__ref_profiles` for more details.
 
 # .. envvar:: apparmor__default_profiles [[[
 #
@@ -143,58 +125,9 @@ apparmor__combined_profiles: '{{ apparmor__default_profiles
                                                                    # ]]]
 # AppArmor local profile modifications [[[
 # ----------------------------------------
-#
-# Local modifications to system profiles.
-#
-# Those changes will be configured in :file:`/etc/apparmor.d/local/`.
-# Check :file:`/etc/apparmor.d/local/README` for details.
-# All three dictionaries are merged into one profile configuration.
-#
-# ``comment``
-#   String, optional, default "Uncommented rule group". Comment for the given
-#   rules.
-#
-# ``rules``
-#   List of strings, required. AppArmor rules. Note that the rules are not
-#   comma terminated, this is done by the role template.
-#
-# ``by_role``
-#   Strings, optional, default "". Name of a role which manages the rules.
-#   Useful for using this role as role dependency.
-#
-# ``delete``
-#   Boolean, optional, default ``False``. Delete the given rule(s).
-#
-# Example::
-#
-#    apparmor__local_config_global:
-#
-#      'usr.sbin.dnsmasq':
-#        - comment: 'Allow dnsmasq to read upstream DNS servers'
-#          rules:
-#            - '/etc/resolvconf/upstream.conf r'
-#            - '/etc/hosts.dnsmasq r'
-#          by_role: 'debops.dnsmasq'
-#        - comment: 'Allow dnsmasq to read /usr/share/dnsmasq-base/trust-anchors.conf'
-#          rules:
-#            - '/usr/share/dnsmasq-base/* r'
-#          by_role: 'debops.dnsmasq'
-#
-#      'usr.bin.pidgin':
-#        - comment: 'Allow local Pidgin plugins'
-#          rules:
-#            - '@{HOME}/.purple/plugins/** rm'
-#
-# See also: https://wiki.ubuntu.com/DebuggingApparmor#Adjusting_Tunables
-#
-# Examples:
-#
-# .. code-block:: yaml
-#    :linenos:
-#
-#    apparmor__global_tunables: |
-#      @{HOMEDIRS}+=/exports/home/
-#
+
+# These variables control local profile modifications. See
+# :ref:`apparmor__ref_locals` for more details.
 
 # .. envvar:: apparmor__default_locals [[[
 #
@@ -243,17 +176,9 @@ apparmor__combined_locals: '{{ apparmor__default_locals
                                                                    # ]]]
 # AppArmor tunables [[[
 # ---------------------
-#
-# See also: https://wiki.ubuntu.com/DebuggingApparmor#Adjusting_Tunables
-#
-# Examples:
-#
-# .. code-block:: yaml
-#    :linenos:
-#
-#    apparmor__global_tunables: |
-#      @{HOMEDIRS}+=/exports/home/
-#
+
+# These variables control profile tunables. See :ref:`apparmor__ref_tunables`
+# for more details.
 
 # .. envvar:: apparmor__default_tunables [[[
 #
@@ -295,6 +220,5 @@ apparmor__combined_tunables: '{{ apparmor__default_tunables
                                  + apparmor__host_tunables
                                  + apparmor__dependent_tunables }}'
 
-                                                                   # ]]]
                                                                    # ]]]
                                                                    # ]]]
