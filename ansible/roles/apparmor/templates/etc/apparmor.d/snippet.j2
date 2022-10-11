@@ -5,7 +5,7 @@
  #}
 # {{ ansible_managed }}
 #
-# {{ item.name }} - Configuration snippet
+# {{ item.name }} - {{ template_title | d('Configuration snippet') }}
 
 {% macro print_option(option, commented, loop_first, level) %}
 {%   if option.state | d('present') not in [ 'absent', 'init', 'ignore' ] %}
@@ -32,7 +32,19 @@
 {%       endfor %}
 {{       '{}}}'.format(prefix) }}
 {%     else %}
-{{       '{}{}={}'.format(prefix, option.option | d(option.name), option.value | d("")) }}
+{%       if option.operator | d() %}
+{%         set operator = option.operator %}
+{%       elif option.option | d(option.name) == '#include' %}
+{%         set operator = ' ' %}
+{%       else %}
+{%         set operator = template_operator | d('=') %}
+{%       endif %}
+{%       set suffix = option.suffix | d(template_suffix | d('')) %}
+{{       '{}{}{}{}{}'.format(prefix,
+                             option.option | d(option.name),
+                             operator,
+                             option.value | d(""),
+                             suffix) }}
 {%     endif %}
 {%   endif %}
 {% endmacro %}

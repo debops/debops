@@ -12,7 +12,7 @@
     mode: '0755'
   when:
     - item.state | d("present") == "present"
-    - item.name | dirname != "."
+    - item.name | dirname != ""
   tags: [ 'role::apparmor:locals' ]
 
 - name: Create local modification {{ item.name }}
@@ -23,6 +23,10 @@
     group: 'root'
     mode: '0644'
   when: item.state | d("present") == "present"
+  vars:
+    template_title: 'AppArmor local modification'
+    template_suffix: ','
+    template_operator: ' '
   notify: [ 'Reload all AppArmor profiles' ]
   tags: [ 'role::apparmor:locals' ]
 

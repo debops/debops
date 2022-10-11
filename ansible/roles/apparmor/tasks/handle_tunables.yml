@@ -31,7 +31,7 @@
     mode: '0755'
   when:
     - item.state | d("present") == "present"
-    - item.name | dirname != "."
+    - item.name | dirname != ""
   tags: [ 'role::apparmor:tunables' ]
 
 - name: Create tunable {{ item.name }}
@@ -41,6 +41,10 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
+  vars:
+    template_title: 'AppArmor tunable'
+    template_suffix: ''
+    template_operator: '='
   when: item.state | d("present") == "present"
   notify: [ 'Reload all AppArmor profiles' ]
   tags: [ 'role::apparmor:tunables' ]
