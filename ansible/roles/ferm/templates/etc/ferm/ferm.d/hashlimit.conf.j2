@@ -285,7 +285,7 @@
                          hashlimit-mode {{ item.hashlimit_mode | d("srcip") }}
                          hashlimit-name {{ item.name | d(item.hashlimit_name) }}
 {%     if item.hashlimit_expire is undefined or item.hashlimit_expire %}
-                         hashlimit-htable-expire {{ ((item.hashlimit_expire|d("1800")) | int * 1000) }}
+                         hashlimit-htable-expire {{ ((item.hashlimit_expire | d("1800")) | int * 1000) | string }}
 {%     endif %}
 {%     if ferm__tpl_hashlimit_target not in [ 'ACCEPT', 'DROP', 'REJECT', 'RETURN', 'NOP' ] %}
 {%       if item.include|d() %}
