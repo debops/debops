@@ -74,6 +74,9 @@ Fixed
 Added
 ~~~~~
 
+- The :ref:`debops.docker_server` role can now directly handle the daemon
+  log-driver parameter.
+
 General
 '''''''
 
