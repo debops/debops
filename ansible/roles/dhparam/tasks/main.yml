@@ -12,7 +12,7 @@
   ansible.builtin.import_role:
     name: 'secret'
 
-- name: Check Ansible Controller library version
+- name: Check Ansible Controller library version  # noqa no-shorthand
   ansible.builtin.shell: |
     set -o nounset -o pipefail -o errexit &&
     {% if dhparam__source_library == 'gnutls' %}
@@ -49,7 +49,7 @@
   run_once: True
   tags: [ 'meta::provision' ]
 
-- name: Generate Diffie-Hellman params on Ansible Controller
+- name: Generate Diffie-Hellman params on Ansible Controller  # noqa no-shorthand
   ansible.builtin.command: |
     {% if dhparam__source_library == 'gnutls' %}
     certtool --generate-dh-params

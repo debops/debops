@@ -38,7 +38,7 @@
 
 ## Generate keyfile and copy it to the remote system [[[
 
-- name: Generate binary keyfile on the Ansible controller
+- name: Generate binary keyfile on the Ansible controller  # noqa no-shorthand
   ansible.builtin.shell: head -c {{ ((512 / 8) if (item.key_size | d(cryptsetup__key_size) == "default")
                              else ((item.key_size | d(cryptsetup__key_size)) / 8)) | int }} \
                  {{ cryptsetup__keyfile_source_dev | quote }} > \
@@ -179,7 +179,7 @@
 
 ## The `luks_device` Ansible module is way too limited in terms of supported
 ## parameters as of Ansible 2.9 to replace this yet unfortunately.
-- name: Create encryption layer
+- name: Create encryption layer  # noqa no-shorthand
   ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          cryptsetup isLuks "{{ item.0.ciphertext_block_device }}" || cryptsetup luksFormat
          --batch-mode --verbose
@@ -224,7 +224,7 @@
     - '{{ cryptsetup__register_ciphertext_device.results | d([]) }}'
 
 - name: Ensure ciphertext block device is configured in crypttab
-  crypttab:
+  community.general.crypttab:
     backing_device: '{{ ("UUID=" + item.1.stdout)
                         if (item.1.stdout | d() and item.0.use_uuid | d(cryptsetup__use_uuid) | bool)
                         else item.0.ciphertext_block_device }}'
@@ -269,7 +269,7 @@
   with_items: '{{ cryptsetup__process_devices | d([]) }}'
 
 - name: Create filesystem on plaintext device mapper target
-  filesystem:
+  community.general.filesystem:
     dev:    '/dev/mapper/{{ item.0.name }}'
     force:  '{{ item.0.format_force | d(omit) }}'
     fstype: '{{ item.0.fstype | d(cryptsetup__fstype) }}'
@@ -421,7 +421,7 @@
     - '{{ cryptsetup__register_cryptdisks_start.results | d([]) }}'
 
 - name: Ensure ciphertext block device is absent in crypttab
-  crypttab:
+  community.general.crypttab:
     name:  '{{ item.name }}'
     path:  '{{ item.crypttab_path | d(omit) }}'
     state: 'absent'

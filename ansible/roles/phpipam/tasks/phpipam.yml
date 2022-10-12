@@ -104,7 +104,7 @@
   register: phpipam__register_mysql
 
 - name: Create phpIPAM database in local MySQL instance
-  mysql_db:
+  community.mysql.mysql_db:
     name: '{{ phpipam__database_name }}'
     state: 'present'
     login_unix_socket: '/run/mysqld/mysqld.sock'
@@ -112,7 +112,7 @@
   register: phpipam__register_database_status
 
 - name: Import initial database schema
-  mysql_db:  # noqa no-handler
+  community.mysql.mysql_db:  # noqa no-handler
     name: '{{ phpipam__database_name }}'
     state: 'import'
     target: '{{ phpipam__database_schema }}'

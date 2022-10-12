@@ -60,7 +60,7 @@
   when: (iscsi__interfaces | d(False) and item in ansible_interfaces)
 
 - name: Discover iSCSI targets on portals
-  open_iscsi:
+  community.general.open_iscsi:
     discover: True
     portal:   '{{ item }}'
   with_items: '{{ iscsi__portals }}'
@@ -69,7 +69,7 @@
         item not in ansible_local.iscsi.discovered_portals | d([])
 
 - name: Log in to specified iSCSI targets
-  open_iscsi:
+  community.general.open_iscsi:
     target:    '{{ item.target }}'
     login:     '{{ False if (not item.login | d(True)) else True }}'
     node_auth: '{{ "CHAP" if (item.auth | d(False)) else omit }}'

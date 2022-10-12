@@ -19,7 +19,7 @@
   tags: [ 'role::btrfs:pkts' ]
 
 - name: Create BTRFS subvolumes
-  btrfs_subvolume:
+  btrfs_subvolume:  # noqa fqcn
     state: 'present'
     path: '{{ item.key }}'
     qgroups: '{{ item.value.qgroups | d(omit) }}'
@@ -30,7 +30,7 @@
   tags: [ 'role::btrfs:subvolumes' ]
 
 - name: Remove BTRFS subvolumes
-  btrfs_subvolume:
+  btrfs_subvolume:  # noqa fqcn
     state: 'absent'
     path: '{{ item.key }}'
   when: (item.value.state | d("present") != "present")

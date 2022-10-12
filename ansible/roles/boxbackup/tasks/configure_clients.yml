@@ -4,7 +4,9 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Install Box Backup client package
-  ansible.builtin.apt: pkg=boxbackup-client state=present install_recommends=no
+  ansible.builtin.package:
+    name: 'boxbackup-client'
+    state: 'present'
   register: boxbackup__register_client_packages
   until: boxbackup__register_client_packages is succeeded
 
@@ -22,11 +24,17 @@
 - name: Create accounts for client hosts
   ansible.builtin.command: bbstoreaccounts create {{ boxbackup_account }} {{ boxbackup_discnum }}
                                   {{ boxbackup_softlimit }}M {{ boxbackup_hardlimit }}M
-           creates={{ boxbackup_storage }}/backup/{{ boxbackup_account }}/info.rfw
+  args:
+    creates: '{{ boxbackup_storage }}/backup/{{ boxbackup_account }}/info.rfw'
   delegate_to: '{{ boxbackup_server }}'
 
 - name: Make sure that boxbackup client directories exists
-  ansible.builtin.file: path={{ item }} state=directory owner=root group=root mode=0700
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0700'
   with_items: [ '/etc/boxbackup', '/etc/boxbackup/bbackupd', '/etc/boxbackup/servers/{{ boxbackup_server }}' ]
 
 - name: Check if encryption key exists on Ansible Controller
@@ -49,20 +57,31 @@
 - name: Create encryption key on client hosts
   ansible.builtin.command: openssl rand -out /etc/boxbackup/bbackupd/{{ boxbackup_account }}-FileEncKeys.raw
                         {{ boxbackup_encrypt_bits }}
-           creates=/etc/boxbackup/bbackupd/{{ boxbackup_account }}-FileEncKeys.raw
+  args:
+    creates: '/etc/boxbackup/bbackupd/{{ boxbackup_account }}-FileEncKeys.raw'
   notify:
     - Restart boxbackup-client
 
 - name: Archive client encryption key
-  ansible.builtin.fetch: src=/etc/boxbackup/bbackupd/{{ boxbackup_account }}-FileEncKeys.raw flat=yes
-         dest={{ secret }}/storage/boxbackup/clients/{{ ansible_fqdn }}/{{ boxbackup_account }}-FileEncKeys.raw
+  ansible.builtin.fetch:
+    src: '/etc/boxbackup/bbackupd/{{ boxbackup_account }}-FileEncKeys.raw'
+    dest: '{{ secret }}/storage/boxbackup/clients/{{ ansible_fqdn }}/{{ boxbackup_account }}-FileEncKeys.raw'
+    flat: 'yes'
 
 - name: Install notification script on client hosts
-  ansible.builtin.template: src=etc/boxbackup/bbackupd/NotifySysadmin.sh.j2 dest=/etc/boxbackup/bbackupd/NotifySysadmin.sh
-            owner=root group=root mode=0700
+  ansible.builtin.template:
+    src: 'etc/boxbackup/bbackupd/NotifySysadmin.sh.j2'
+    dest: '/etc/boxbackup/bbackupd/NotifySysadmin.sh'
+    owner: 'root'
+    group: 'root'
+    mode: '0700'
 
 - name: Configure client hosts
-  ansible.builtin.template: src=etc/boxbackup/bbackupd.conf.j2 dest=/etc/boxbackup/bbackupd.conf
-            owner=root group=root mode=0600
+  ansible.builtin.template:
+    src: 'etc/boxbackup/bbackupd.conf.j2'
+    dest: '/etc/boxbackup/bbackupd.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
   notify:
     - Restart boxbackup-client

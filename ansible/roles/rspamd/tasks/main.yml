@@ -40,7 +40,7 @@
   tags: [ 'meta::facts' ]
 
 - name: Create configuration directories and files
-  include_tasks: main_cfgdir.yml
+  ansible.builtin.include_tasks: main_cfgdir.yml
   loop:
     - { 'path': '/etc/rspamd/local.d',
         'config': '{{ rspamd__combined_local_configuration
@@ -53,7 +53,7 @@
     label: '{{ cfgdir.path }}'
 
 - name: Handle DKIM configuration
-  include_tasks: main_dkim.yml
+  ansible.builtin.include_tasks: main_dkim.yml
 
 - name: Update Ansible facts and restart Rspamd if necessary
   ansible.builtin.meta: 'flush_handlers'

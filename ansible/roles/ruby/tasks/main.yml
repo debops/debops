@@ -16,7 +16,7 @@
   until: ruby__register_packages is succeeded
 
 - name: Install Ruby gems
-  gem:
+  community.general.gem:
     name:                 '{{ item.name if item.name | d() else item }}'
     state:                '{{ item.state | d("present") }}'
     user_install:         '{{ item.user_install | d(False) }}'
@@ -57,7 +57,7 @@
   when: item.owner | d()
 
 - name: Install Ruby user gems
-  gem:
+  community.general.gem:
     name:                 '{{ item.name }}'
     state:                '{{ item.state | d("present") }}'
     user_install:         '{{ item.user_install | d(True) }}'

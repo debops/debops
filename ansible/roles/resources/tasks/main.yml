@@ -320,7 +320,7 @@
   tags: [ 'role::resources:paths' ]
 
 - name: Set custom file capabilities
-  capabilities:
+  community.general.capabilities:
     path:       '{{ item.path | d(item.name) }}'
     capability: '{{ item.capability }}'
     state:      '{{ item.state | d("present") }}'
@@ -331,7 +331,7 @@
 # Execute custom shell commands [[[1
 # This is not an alternative to a fully-fledged Ansible role.
 - name: Execute shell commands
-  include_tasks: 'shell_commands.yml'
+  ansible.builtin.include_tasks: 'shell_commands.yml'
   loop: '{{ q("flattened", resources__combined_commands) | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name} }}'
