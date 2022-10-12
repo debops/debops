@@ -62,6 +62,9 @@
 {%-   endfor %}
 {%    set _ = docker_server__tpl_options.update({"labels": docker_server__tpl_labels}) %}
 {%- endif %}
+{%  if docker_server__log_driver | d() -%}
+{%    set _ = docker_server__tpl_options.update({"log-driver": docker_server__log_driver}) %}
+{%- endif %}
 {%  if docker_server__storage_driver|d() -%}
 {%    set _ = docker_server__tpl_options.update({"storage-driver": docker_server__storage_driver}) %}
 {%- endif %}
