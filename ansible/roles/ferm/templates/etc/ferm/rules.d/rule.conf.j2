@@ -448,7 +448,7 @@
                          hashlimit-mode {{ config.hashlimit_mode | d("srcip") }}
                          hashlimit-name {{ config.hashlimit_name | d(config.name | d(rule_name)) }}
 {%       if config.hashlimit_expire is undefined or config.hashlimit_expire %}
-                         hashlimit-htable-expire {{ ((config.hashlimit_expire | d("1800")) | int * 1000) }}
+                         hashlimit-htable-expire {{ ((config.hashlimit_expire | d("1800")) | int * 1000) | string }}
 {%       endif %}
 {%       if ferm__tpl_config['hashlimit_target'] not in [ 'ACCEPT', 'DROP', 'REJECT', 'RETURN', 'NOP' ] %}
 {%         if config.include | d() %}
