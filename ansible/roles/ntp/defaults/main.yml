@@ -133,7 +133,9 @@ ntp__base_packages:
   - '{{ "chrony" if (ntp__daemon == "chrony") else [] }}'
   - '{{ "ntp" if (ntp__daemon == "ntpd") else [] }}'
   - '{{ "openntpd" if (ntp__daemon == "openntpd") else [] }}'
-  - '{{ "systemd-timesyncd" if (ntp__daemon == "systemd-timesyncd") else [] }}'
+  - '{{ "systemd-timesyncd" if (ntp__daemon == "systemd-timesyncd" and
+                                ansible_distribution_release
+                                not in ["stretch", "buster"]) else [] }}'
   - '{{ "ntpdate" if (ntp__daemon == "ntpdate") else [] }}'
 
 
