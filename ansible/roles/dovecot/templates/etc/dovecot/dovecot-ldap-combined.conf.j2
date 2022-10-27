@@ -1,0 +1,81 @@
+{# Copyright (C) 2015      Reto Gantenbein <reto.gantenbein@linuxmonk.ch>
+ # Copyright (C) 2017-2020 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2021-2022 David Härdeman <david@hardeman.nu>
+ # Copyright (C) 2015-2022 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+debug_level = 0
+
+## LDAP Connection Settings
+uris = {{ dovecot__ldap_uri | join(",") }}
+ldap_version = 3
+base = {{ dovecot__ldap_people_dn | join(",") }}
+scope = subtree
+dn = {{ dovecot__ldap_binddn }}
+dnpass = {{ dovecot__ldap_bindpw }}
+tls = '{{ "yes" if (dovecot__ldap_start_tls | bool) else "no" }}'
+tls_ca_cert_dir = {{ dovecot__tls_ca_cert_dir }}
+tls_require_cert = hard
+
+## Passdb using LDAP with authentication binds
+#
+# This means that the password is checked by attempting to bind (login)
+# to the LDAP server using the user's DN (determined with a first query, as
+# defined in pass_filter below) and password. As a result, Dovecot doesn't
+# need to have access to stored passwords, meaning that a security hole
+# in Dovecot doesn't give attacker access to all the users' password hashes
+# (and Dovecot admins in general don't have direct access to them).
+#
+# https://doc.dovecot.org/configuration_manual/authentication/ldap_settings_auth/#auth-bind
+auth_bind = yes
+
+## Prefetch User Database
+#
+# This combines passdb and userdb lookups into a single lookup by
+# configuring the passdb lookup to return the userdb information in
+# extra fields with "userdb_" prefixes.
+#
+# https://doc.dovecot.org/configuration_manual/authentication/prefetch_userdb/
+#
+# Some of the variables which can be used:
+#   %u - username
+#   %n - user part in user@domain, same as %u if there's no domain
+#   %d - domain part in user@domain, empty if user there's no domain
+#
+# https://doc.dovecot.org/configuration_manual/config_file/config_variables/
+#
+# Note: password isn't actually used with auth_bind = yes
+pass_filter = {{ dovecot__ldap_user_filter }}
+pass_attrs = \
+    mailAddress=user,\
+    userPassword=password,\
+    uid=userdb_home={{ dovecot__vmail_base }}/%d/%{ldap:uid},\
+    mailHomeDirectory=userdb_home={{ dovecot__vmail_base }}%{ldap:mailHomeDirectory},\
+    mailQuota=userdb_quota_rule=*:bytes=%{ldap:{{ dovecot__ldap_quota_attribute }}}:storage=%$,\
+    mailGroupACL=userdb_acl_groups,\
+    mailExpungeTrash=userdb_{{ dovecot__ldap_trash_field }}
+
+# Only used by LDA/LMTP
+user_filter = {{ dovecot__ldap_user_filter }}
+user_attrs = \
+    uid=home={{ dovecot__vmail_base }}/%d/%{ldap:uid},\
+    mailHomeDirectory=home={{ dovecot__vmail_base }}%{ldap:mailHomeDirectory},\
+    mailQuota=quota_rule=*:bytes=%{ldap:{{ dovecot__ldap_quota_attribute }}}:storage=%$,\
+    mailGroupACL=acl_groups,\
+    mailExpungeTrash={{ dovecot__ldap_trash_field }}
+
+# Used to get a canonical list of all valid users
+iterate_filter = {{ dovecot__ldap_iterate_filter }}
+iterate_attrs = mailAddress=user
+
+# In theory, the LDAP database could also hold per-user Sieve scripts, the
+# problem is that:
+#  a) the functionality doesn't seem to be compiled into Debian's packages
+#  b) the plugin only supports reading Sieve scripts
+#
+# https://doc.dovecot.org/configuration_manual/sieve/ldap/
+#sieve_ldap_filter = {{ dovecot__ldap_user_filter }}
+#sieve_ldap_script_attr = mailSieveRuleSource
+#sieve_ldap_mod_attr = modifyTimestamp
