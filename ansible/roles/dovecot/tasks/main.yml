@@ -122,14 +122,18 @@
     state: 'absent'
   notify: [ 'Restart dovecot' ]
 
-- name: Remove old local configuration
+- name: Remove old configuration files
   ansible.builtin.file:
-    path: '/etc/dovecot/local.conf'
+    path: '/etc/dovecot/{{ item }}'
     state: 'absent'
+  loop:
+    - 'local.conf'
+    - 'dovecot-ldap-passdb.conf'
+    - 'dovecot-ldap-userdb.conf'
   notify: [ 'Restart dovecot' ]
   tags: [ "role::dovecot:conf" ]
 
-- name: Generate Dovecot sql configuration
+- name: Generate Dovecot SQL configuration
   ansible.builtin.template:
     src: "{{ lookup('debops.debops.template_src', 'etc/dovecot/dovecot-sql.conf.ext.j2') }}"
     dest: '/etc/dovecot/dovecot-sql.conf.ext'
@@ -140,17 +144,14 @@
   when: "dovecot__user_accounts | d([]) | intersect(['mysql', 'pgsql', 'sqlite'])"
   tags: [ "role::dovecot:conf", "role::dovecot:conf:sql" ]
 
-- name: Generate Dovecot ldap configuration
+- name: Generate Dovecot LDAP configuration
   ansible.builtin.template:
-    src: "{{ lookup('debops.debops.template_src', 'etc/dovecot/' + item + '.j2') }}"
-    dest: '/etc/dovecot/{{ item }}'
+    src: "{{ lookup('debops.debops.template_src', 'etc/dovecot/dovecot-ldap-combined.conf.j2') }}"
+    dest: '/etc/dovecot/dovecot-ldap-combined.conf'
     owner: 'root'
     group: 'root'
     mode: '0600'
   notify: [ 'Restart dovecot' ]
-  loop:
-    - 'dovecot-ldap-userdb.conf'
-    - 'dovecot-ldap-passdb.conf'
   when: "'ldap' in dovecot__user_accounts"
   tags: [ "role::dovecot:conf", "role::dovecot:conf:ldap" ]
 
