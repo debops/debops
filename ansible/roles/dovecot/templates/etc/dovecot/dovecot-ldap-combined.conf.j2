@@ -53,6 +53,7 @@ pass_attrs = \
     userPassword=password,\
     uid=userdb_home={{ dovecot__vmail_base }}/%d/%{ldap:uid},\
     mailHomeDirectory=userdb_home={{ dovecot__vmail_base }}%{ldap:mailHomeDirectory},\
+    mailMessageStore=userdb_mail,\
     mailQuota=userdb_quota_rule=*:bytes=%{ldap:{{ dovecot__ldap_quota_attribute }}}:storage=%$,\
     mailGroupACL=userdb_acl_groups,\
     mailExpungeTrash=userdb_{{ dovecot__ldap_trash_field }}
@@ -62,6 +63,7 @@ user_filter = {{ dovecot__ldap_user_filter }}
 user_attrs = \
     uid=home={{ dovecot__vmail_base }}/%d/%{ldap:uid},\
     mailHomeDirectory=home={{ dovecot__vmail_base }}%{ldap:mailHomeDirectory},\
+    mailMessageStore=mail,\
     mailQuota=quota_rule=*:bytes=%{ldap:{{ dovecot__ldap_quota_attribute }}}:storage=%$,\
     mailGroupACL=acl_groups,\
     mailExpungeTrash={{ dovecot__ldap_trash_field }}
