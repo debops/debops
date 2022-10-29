@@ -898,6 +898,12 @@ dovecot__default_configuration:
             value: 'yes'
             comment: 'There can be only one INBOX, and this setting defines which namespace has it.'
 
+          - name: 'separator'
+            value: '.'
+            comment: |
+              We set the separator explicitly so that it doesn't change if the
+              mailbox format is changed.
+
           - name: 'mailbox Drafts'
             options:
               - name: 'special_use'
@@ -919,8 +925,9 @@ dovecot__default_configuration:
 
           - name: 'mailbox Sent'
             comment: |
-              For \Sent mailboxes there are two widely used names. We'll mark both of
-              them as \Sent. User typically deletes one of them if duplicates are created.
+              For \Sent mailboxes there are two widely used names. We'll mark
+              both of them as \Sent. Users typically delete one of them if
+              duplicates are created.
             options:
 
               - name: 'special_use'
@@ -932,7 +939,7 @@ dovecot__default_configuration:
               - name: 'special_use'
                 value: '\Sent'
 
-          - name: 'mailbox virtual/All'
+          - name: 'mailbox virtual.All'
             comment: 'If you have a virtual "All Messages" mailbox:'
             state: 'comment'
             options:
@@ -943,7 +950,7 @@ dovecot__default_configuration:
               - name: 'comment'
                 value: 'All my messages'
 
-          - name: 'mailbox virtual/Flagged'
+          - name: 'mailbox virtual.Flagged'
             comment: 'If you have a virtual "Flagged" mailbox:'
             state: 'comment'
             options:
@@ -954,7 +961,7 @@ dovecot__default_configuration:
               - name: 'comment'
                 value: 'All my flagged messages'
 
-          - name: 'mailbox virtual/Important'
+          - name: 'mailbox virtual.Important'
             comment: 'If you have a virtual "Important" mailbox:'
             state: 'comment'
             options:
