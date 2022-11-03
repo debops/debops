@@ -390,6 +390,14 @@ debops.boxbackup role
 - In the fact script, don't use ``in`` for matching IP addresses and DNS names
   where substring matching is undesirable.
 
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- Using boolean variables in :envvar:`netbox__config_plugins_config` for
+  example resulted in an error because the role used the ``to_nice_json``
+  Jinja2 filter internally to render Python configuration.
+  This is fixed for all uses of ``to_nice_json``
+
 :ref:`debops.ntp` role
 ''''''''''''''''''''''
 
