@@ -48,7 +48,12 @@
                                  else [])
                               + (["dovecot-managesieved"]
                                  if "sieve" in dovecot__features
-                                 else []))) }}'
+                                 else [])
+                              + (["zstd"]
+                                 if dovecot__snapshot_deploy_state
+                                    | d("absent") == "present"
+                                 else [])
+                             )) }}'
     state: 'present'
   register: dovecot__register_packages
   until: dovecot__register_packages is succeeded
@@ -245,6 +250,38 @@
     mode: '0640'
   notify: [ 'Restart dovecot' ]
   tags: [ "role::dovecot:conf" ]
+
+- name: Install helper scripts
+  ansible.builtin.copy:
+    src: 'usr/local/sbin/'
+    dest: '/usr/local/sbin/'
+    mode: '0755'
+  tags: [ 'role::dovecot:backup' ]
+
+- name: Generate backup configuration file
+  ansible.builtin.template:
+    src: 'etc/default/debops-dovecot-snapshot.j2'
+    dest: '/etc/default/debops-dovecot-snapshot'
+    mode: '0644'
+  tags: [ 'role::dovecot:backup' ]
+
+- name: Configure backup cron jobs
+  ansible.builtin.cron:
+    name: 'Create {{ item }} backup snapshots of Dovecot mailboxes'
+    special_time: '{{ item }}'
+    cron_file: 'debops-dovecot-snapshot'
+    user: 'root'
+    state: '{{ dovecot__snapshot_deploy_state
+               if (item in dovecot__snapshot_cron_jobs)
+               else "absent" }}'
+    job: '/usr/local/sbin/debops-dovecot-snapshot {{ item }}'
+  loop: [ 'daily', 'weekly', 'monthly' ]
+  loop_control:
+    label: '{{ {"state": (dovecot__snapshot_deploy_state
+                          if (item in dovecot__snapshot_cron_jobs)
+                          else "absent"),
+                "cron_job": item} }}'
+  tags: [ 'role::dovecot:backup' ]
 
 - name: Update Ansible facts and restart dovecot, if necessary
   ansible.builtin.meta: 'flush_handlers'

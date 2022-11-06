@@ -81,7 +81,7 @@ dovecot__auth_default_realm: '{{ ansible_domain }}'
                                                                    # ]]]
 # Virtual Mail [[[
 # ----------------
-#
+
 # These settings makes it possible to host multiple (virtual) domains and to
 # manage mail for users which do not need to have a local system account.
 #
@@ -136,9 +136,42 @@ dovecot__vmail_home: '{{ dovecot__vmail_base ~ "/%d/%n" }}'
 
                                                                    # ]]]
                                                                    # ]]]
-# DSync Settings [[[
-# --------------
+# Backup snapshots [[[
+# --------------------
+
+# These variables configure periodic backup snapshots of users' mailboxes.
+# See :ref:`dovecot__ref_backup_restore` for more details.
+
+# .. envvar:: dovecot__snapshot_deploy_state [[[
 #
+# If ``present``, the snapshot :command:`cron` jobs will be configured to run
+# the :command:`debops-dovecot-snapshot` script periodically to create
+# snapshots of user mailboxes. If ``absent``, the :command:`cron` jobs will be
+# removed.
+dovecot__snapshot_deploy_state: 'absent'
+
+                                                                   # ]]]
+# .. envvar:: dovecot__snapshot_user_filter [[[
+#
+# A list of strings corresponding to usernames for which backups should be
+# created. By default, usernames are in ``user@domain`` (e.g.
+# ``foo@example.com``) format, but this depends on the Dovecot settings.
+# The wildcards ``*`` and ``?`` are supported (e.g. ``*@example.com``).
+# Use :command:`doveadm user "<some_pattern>"` on the Dovecot server to get
+# a list of users which correspond to a given pattern.
+dovecot__snapshot_user_filter: [ '*' ]
+
+                                                                   # ]]]
+# .. envvar:: dovecot__snapshot_cron_jobs [[[
+#
+# List of :command:`cron` periods during which the
+# :command:`debops-dovecot-snapshot` script should be executed.
+dovecot__snapshot_cron_jobs: [ 'daily', 'weekly', 'monthly' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# DSync Settings [[[
+# ------------------
+
 # Dovecot supports master/master replication using ``dsync``.  For more
 # information, see :ref:`dovecot__ref_dsync`.
 
@@ -181,7 +214,7 @@ dovecot__dsync_password: '{{ lookup("password", secret + "/"
                                                                    # ]]]
                                                                    # ]]]
 # SQL Authentication Settings [[[
-# ---------------------------
+# -------------------------------
 #
 
 # .. envvar:: dovecot__sql_connect [[[
