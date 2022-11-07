@@ -47,9 +47,6 @@ New DebOps roles
 - The :ref:`debops.miniflux` role can install and manage Miniflux, a web-based,
   minimalistic feed reader written in Go.
 
-- The :ref:`debops.docker_server` role can now directly handle the daemon
-  log-driver parameter.
-
 General
 '''''''
 
@@ -169,6 +166,11 @@ General
 - Various tasks that interact with the MariaDB/MySQL databases will now use the
   :file:`/run/mysqld/mysqld.sock` UNIX socket to do so, due to changes in
   MariaDB restricting local connections for the ``root`` UNIX account.
+
+:ref:`debops.docker_server` role
+''''''''''''''''''''''''''''''''
+
+- The role can now directly handle the daemon ``log-driver`` parameter.
 
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
