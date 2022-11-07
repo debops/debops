@@ -65,6 +65,12 @@ Fixed
   Ansible ``user`` module that forbids use of :file:`/dev/null` as home
   skeleton.
 
+:ref:`debops.sysctl` role
+'''''''''''''''''''''''''
+
+- Fixed an issue in the configuration template that caused a templating type
+  error where Jinja expected a string but found an int value instead.
+
 
 `debops v3.0.3`_ - 2022-09-02
 -----------------------------
