@@ -233,6 +233,9 @@ General
   installing Python 2.7 packages on newer OS releases when they might be
   unavailable.
 
+- The :file:`/etc/pip.conf` configuration file template can be overridden via
+  the DebOps template override mechanism.
+
 :ref:`debops.resolvconf` role
 '''''''''''''''''''''''''''''
 
