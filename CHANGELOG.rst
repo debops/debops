@@ -51,6 +51,12 @@ Updates of upstream application versions
 Fixed
 ~~~~~
 
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- Fixed an issue in the rule template that caused a templating type error where
+  Jinja expected a string but found an int value instead.
+
 :ref:`debops.minio` role
 ''''''''''''''''''''''''
 
