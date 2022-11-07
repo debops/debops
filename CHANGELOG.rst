@@ -324,6 +324,9 @@ debops.boxbackup role
 - Don't include additional '{' or '}' characters in certain rules when the
   ``domain_args`` parameter is specified.
 
+- Fixed an issue in the rule template that caused a templating type error where
+  Jinja expected a string but found an int value instead.
+
 :ref:`debops.gitlab_runner` role
 ''''''''''''''''''''''''''''''''
 
