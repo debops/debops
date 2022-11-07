@@ -461,6 +461,12 @@ dovecot__default_configuration:
              map("regex_replace", "^(imap|pop3)s$", "\1") |
              list | unique | join(' ') }}
 
+      - name: 'mail_plugins_zlib'
+        option: 'mail_plugins'
+        value: '$mail_plugins zlib'
+        comment: 'The zlib plugin needs to be enabled globally for e.g. dsync'
+        state: '{{ "present" if "zlib" in dovecot__features else "absent" }}'
+
   - section: 'authentication'
     title: 'Client Configuration'
     options:
@@ -1023,6 +1029,15 @@ dovecot__default_configuration:
           - name: 'mail_replica'
             value: '{{ dovecot__dsync_replica }}'
             state: '{{ "present" if "dsync" in dovecot__features else "absent" }}'
+
+          - name: 'zlib_save'
+            value: 'zstd'
+            comment: 'zstd requires Dovecot v2.3.12+ (Debian Bullseye)'
+            state: '{{ "present" if "zlib" in dovecot__features else "absent" }}'
+
+          - name: 'zlib_save_level'
+            value: '3'
+            state: '{{ "present" if "zlib" in dovecot__features else "absent" }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__configuration [[[
