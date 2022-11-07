@@ -42,6 +42,8 @@ Changed
   computers and translate it to ``arm64`` to allow installation of Docker
   Engine from upstream repositories.
 
+- The role can now directly handle the daemon ``log-driver`` parameter.
+
 Fixed
 ~~~~~
 
@@ -73,9 +75,6 @@ Fixed
 
 Added
 ~~~~~
-
-- The :ref:`debops.docker_server` role can now directly handle the daemon
-  log-driver parameter.
 
 General
 '''''''
