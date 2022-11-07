@@ -453,6 +453,12 @@ debops.boxbackup role
   available for any reason - :command:`sudo` tries to connect to the directory
   and times out, slowing Ansible run into a crawl.
 
+:ref:`debops.sysctl` role
+'''''''''''''''''''''''''
+
+- Fixed an issue in the configuration template that caused a templating type
+  error where Jinja expected a string but found an int value instead.
+
 Removed
 ~~~~~~~
 
