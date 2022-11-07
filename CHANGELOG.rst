@@ -167,6 +167,11 @@ General
   :file:`/run/mysqld/mysqld.sock` UNIX socket to do so, due to changes in
   MariaDB restricting local connections for the ``root`` UNIX account.
 
+:ref:`debops.docker_server` role
+''''''''''''''''''''''''''''''''
+
+- The role can now directly handle the daemon ``log-driver`` parameter.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
