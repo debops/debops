@@ -48,6 +48,12 @@ Updates of upstream application versions
   computers and translate it to ``arm64`` to allow installation of Docker
   Engine from upstream repositories.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- The :file:`/etc/pip.conf` configuration file template can be overridden via
+  the DebOps template override mechanism.
+
 Fixed
 ~~~~~
 
