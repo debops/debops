@@ -77,7 +77,7 @@
   tags: [ 'role::ldap:tasks', 'skip::ldap:tasks' ]
 
 - name: Perform LDAP tasks
-  include_tasks: 'ldap_tasks.yml'
+  ansible.builtin.include_tasks: 'ldap_tasks.yml'
   loop: '{{ q("flattened", ldap__combined_tasks) | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"state": item.state,
@@ -89,5 +89,5 @@
   tags: [ 'role::ldap:tasks', 'skip::ldap:tasks' ]
   no_log: '{{ debops__no_log | d(item.no_log | d(True
                                  if ("userPassword" in (item.attributes | d({})).keys() or
-                                     "olcRootPW"    in (item.attributes | d({})).keys())
+                                     "olcRootPW" in (item.attributes | d({})).keys())
                                  else False)) }}'

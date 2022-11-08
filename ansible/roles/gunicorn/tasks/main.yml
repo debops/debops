@@ -12,12 +12,12 @@
     name: 'secret'
 
 - name: Configure Green Unicorn on older OS releases
-  include_tasks: 'older_releases.yml'
+  ansible.builtin.include_tasks: 'older_releases.yml'
   when: ansible_distribution_release in
         [ 'trusty', 'xenial' ]
 
 - name: Configure Green Unicorn on newer OS releases
-  include_tasks: 'newer_releases.yml'
+  ansible.builtin.include_tasks: 'newer_releases.yml'
   when: ansible_distribution_release not in
         [ 'trusty', 'xenial' ]
 

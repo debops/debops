@@ -6,7 +6,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 - name: Drop databases if requested
-  influxdb_database:
+  community.general.influxdb_database:
     database_name: '{{ item.database | d(item.name) }}'
     state: 'absent'
     hostname: '{{ influxdb__server }}'
@@ -22,7 +22,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Create databases
-  influxdb_database:
+  community.general.influxdb_database:
     database_name: '{{ item.database | d(item.name) }}'
     state: 'present'
     hostname: '{{ influxdb__server }}'
@@ -38,7 +38,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Create retention policies
-  influxdb_retention_policy:
+  community.general.influxdb_retention_policy:
     policy_name: '{{ item.policy | d(item.name) }}'
     database_name: '{{ item.database }}'
     duration: '{{ item.duration }}'
@@ -56,7 +56,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Drop user accounts if requested
-  influxdb_user:
+  community.general.influxdb_user:
     user_name: '{{ item.user | d(item.name) }}'
     state: 'absent'
     hostname: '{{ influxdb__server }}'
@@ -72,7 +72,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Create user accounts
-  influxdb_user:
+  community.general.influxdb_user:
     user_name: '{{ item.user | d(item.name) }}'
     user_password: '{{ item.password | d(lookup("password",
                        secret + "/influxdb/" + influxdb__server +

@@ -14,7 +14,7 @@
          (item.state is defined and item.state == 'absent'))
 
 - name: Create databases
-  mysql_db:
+  community.mysql.mysql_db:
     name: '{{ item.database | d(item.name) }}'
     state: 'present'
     encoding: '{{ item.encoding | d(omit) }}'
@@ -45,7 +45,7 @@
          (item.0.name == item.1.db and item.1 is changed))
 
 - name: Import source file contents into database
-  mysql_db:  # noqa no-handler
+  community.mysql.mysql_db:  # noqa no-handler
     name: '{{ item.0.database | d(item.0.name) }}'
     target: '{{ item.0.target }}'
     state: 'import'
@@ -72,7 +72,7 @@
          (item.target_delete is undefined or item.target_delete))
 
 - name: Drop user accounts if requested
-  mysql_user:
+  community.mysql.mysql_user:
     name: '{{ item.user | d(item.name) }}'
     host: '{{ item.host | default(mariadb__client) }}'
     state: 'absent'
@@ -84,7 +84,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Create user accounts
-  mysql_user:
+  community.mysql.mysql_user:
     name: '{{ item.user | d(item.name) }}'
     host: '{{ item.host | default(mariadb__client) }}'
     state: 'present'
@@ -101,7 +101,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Grant default privileges to users
-  mysql_user:
+  community.mysql.mysql_user:
     name: '{{ item.0.user | d(item.0.name) }}'
     host: '{{ item.0.host | default(mariadb__client) }}'
     priv: '{{ (item.0.database | d(item.0.name)) + ".*:" + mariadb__default_privileges_grant }}'
@@ -118,7 +118,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Grant auxiliary privileges to users
-  mysql_user:
+  community.mysql.mysql_user:
     name: '{{ item.0.user | d(item.0.name) }}'
     host: '{{ item.0.host | default(mariadb__client) }}'
     priv: '{{ (item.0.database | d(item.0.name)) + "\_%.*:" + mariadb__default_privileges_grant }}'
@@ -135,7 +135,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Grant custom privileges to users
-  mysql_user:
+  community.mysql.mysql_user:
     name: '{{ item.0.user | d(item.0.name) }}'
     host: '{{ item.0.host | default(mariadb__client) }}'
     priv: '{{ item.0.priv if (item.0.priv is string) else (item.0.priv | join("/")) }}'

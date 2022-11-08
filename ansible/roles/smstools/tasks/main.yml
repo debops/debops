@@ -8,7 +8,9 @@
     name: 'global_handlers'
 
 - name: Install SMS Tools packages
-  ansible.builtin.apt: name={{ item }} state=present install_recommends=no
+  ansible.builtin.package:
+    name: '{{ item }}'
+    state: 'present'
   with_items: [ 'smstools', 'xinetd', 'libconfig-tiny-perl' ]
   register: smstools__register_packages
   until: smstools__register_packages is succeeded
@@ -21,101 +23,170 @@
   changed_when: False
 
 - name: Stop smsd for home directory change
-  ansible.builtin.service: name=smstools state=stopped
+  ansible.builtin.service:
+    name: 'smstools'
+    state: 'stopped'
   when: smstools_register_home is defined and smstools_register_home.stdout | d()
 
 - name: Fix smsd home directory
-  ansible.builtin.user: name=smsd home=/var/spool/sms
+  ansible.builtin.user:
+    name: 'smsd'
+    home: '/var/spool/sms'
   when: smstools_register_home is defined and smstools_register_home.stdout | d()
 
 - name: Start smsd with new home directory
-  ansible.builtin.service: name=smstools state=started
+  ansible.builtin.service:
+    name: 'smstools'
+    state: 'started'
   when: smstools_register_home is defined and smstools_register_home.stdout | d()
 
 - name: Configure smsd
-  ansible.builtin.template: src=etc/smsd.conf.j2 dest=/etc/smsd.conf
-            owner=root group=root mode=0644
+  ansible.builtin.template:
+    src: 'etc/smsd.conf.j2'
+    dest: '/etc/smsd.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   notify: [ 'Restart smstools' ]
 
 - name: Make sure /srv/users home directory exists
-  ansible.builtin.file: dest=/srv/users state=directory owner=root group=root mode=0751
+  ansible.builtin.file:
+    dest: '/srv/users'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0751'
 
 - name: Create SMS service system group
-  ansible.builtin.group: name={{ smstools_service_group }} system=yes state=present
+  ansible.builtin.group:
+    name: '{{ smstools_service_group }}'
+    system: True
+    state: 'present'
 
 - name: Create SMS service system user
-  ansible.builtin.user: name={{ smstools_service_user }} group={{ smstools_service_group }}
-        system=yes home={{ smstools_service_home }} state=present shell=/bin/false
+  ansible.builtin.user:
+    name: '{{ smstools_service_user }}'
+    group: '{{ smstools_service_group }}'
+    system: True
+    home: '{{ smstools_service_home }}'
+    state: 'present'
+    shell: '/bin/false'
 
 - name: Create directory for SMS service scripts
-  ansible.builtin.file: dest=/usr/local/lib/smstools state=directory
-        owner=root group=staff mode=0755
+  ansible.builtin.file:
+    dest: '/usr/local/lib/smstools'
+    state: 'directory'
+    owner: 'root'
+    group: 'staff'
+    mode: '0755'
 
 - name: Install smsd scripts
-  ansible.builtin.template: src={{ item }}.j2 dest=/{{ item }} owner=smsd group=sms mode=0750
+  ansible.builtin.template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'smsd'
+    group: 'sms'
+    mode: '0750'
   with_items: [ 'usr/local/bin/sendsms',
                 'usr/local/lib/smstools/sms-service',
                 'usr/local/lib/smstools/sms-transport',
                 'usr/local/lib/smstools/test-sms-on-reboot' ]
 
 - name: Install root scripts
-  ansible.builtin.template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0750
+  ansible.builtin.template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0750'
   with_items: [ 'usr/local/lib/smstools/fix-device-permissions' ]
 
 - name: Install Postfix configuration files
-  ansible.builtin.template: src=usr/local/lib/smstools/{{ item }}.j2 dest=/usr/local/lib/smstools/{{ item }}
-            owner=root group=root mode=0644
+  ansible.builtin.template:
+    src: 'usr/local/lib/smstools/{{ item }}.j2'
+    dest: '/usr/local/lib/smstools/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   with_items: [ 'postfix_recipient_canonical_map', 'postfix_transport',
                 'postfix_relay_recipient_map', 'postfix_virtual_alias_map' ]
   notify: [ 'Reload postfix' ]
 
 - name: Configure access to sendsms via sudo
-  ansible.builtin.template: src=etc/sudoers.d/smstools.j2 dest=/etc/sudoers.d/smstools
-            owner=root group=root mode=0440
+  ansible.builtin.template:
+    src: 'etc/sudoers.d/smstools.j2'
+    dest: '/etc/sudoers.d/smstools'
+    owner: 'root'
+    group: 'root'
+    mode: '0440'
   when: (ansible_local | d() and ansible_local.sudo | d() and
          (ansible_local.sudo.installed | d()) | bool)
 
 - name: Configure xinetd SMS service
-  ansible.builtin.template: src=etc/xinetd.d/sms.j2 dest=/etc/xinetd.d/sms
-            owner=root group=root mode=0644
+  ansible.builtin.template:
+    src: 'etc/xinetd.d/sms.j2'
+    dest: '/etc/xinetd.d/sms'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   notify: [ 'Reload xinetd' ]
 
 - name: Configure mail to SMS transport
-  ansible.builtin.template: src={{ item }}.j2 dest=/{{ item }} owner=root group=root mode=0644
+  ansible.builtin.template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   with_items: [ 'etc/sms-senders', 'etc/sms-msgdel', 'etc/sms-transport.conf' ]
 
 - name: Fix device permissions on boot in OpenVZ containers
-  ansible.builtin.lineinfile: dest=/etc/rc.local state=present insertbefore='^exit 0'
-              regexp='^/usr/local/lib/smstools/fix-device-permissions'
-              line='/usr/local/lib/smstools/fix-device-permissions'
-              mode='0755'
+  ansible.builtin.lineinfile:
+    dest: '/etc/rc.local'
+    state: 'present'
+    insertbefore: '^exit 0'
+    regexp: '^/usr/local/lib/smstools/fix-device-permissions'
+    line: '/usr/local/lib/smstools/fix-device-permissions'
+    mode: '0755'
   register: smstools_register_fixpermissions
   when: (ansible_virtualization_type is defined and ansible_virtualization_type == 'openvz') and
         (ansible_virtualization_role is defined and ansible_virtualization_role == 'guest')
 
 - name: Fix permissions manually if installed
-  ansible.builtin.command: '/usr/local/lib/smstools/fix-device-permissions'  # noqa no-handler
+  ansible.builtin.command: /usr/local/lib/smstools/fix-device-permissions  # noqa no-handler
   when: smstools_register_fixpermissions is defined and smstools_register_fixpermissions is changed
 
 - name: Configure SMS gateway test on reboot
-  ansible.builtin.cron: name="SMS gateway test on reboot" user={{ smstools_service_user }}
-        job="/usr/local/lib/smstools/test-sms-on-reboot" special_time=reboot
-        state=present
+  ansible.builtin.cron:
+    name: 'SMS gateway test on reboot'
+    user: '{{ smstools_service_user }}'
+    job: '/usr/local/lib/smstools/test-sms-on-reboot'
+    special_time: 'reboot'
+    state: 'present'
   when: (smstools_test_recipients is defined and smstools_test_recipients)
 
 - name: Check if rsyslog is installed
-  ansible.builtin.stat: path=/etc/rsyslog.d
+  ansible.builtin.stat:
+    path: '/etc/rsyslog.d'
   register: smstools_register_rsyslog
 
 - name: Configure syslog
-  ansible.builtin.template: src=etc/rsyslog.d/smstools.conf.j2 dest=/etc/rsyslog.d/smstools.conf
-            owner=root group=root mode=0644
+  ansible.builtin.template:
+    src: 'etc/rsyslog.d/smstools.conf.j2'
+    dest: '/etc/rsyslog.d/smstools.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   notify: [ 'Restart rsyslogd' ]
   when: (smstools_register_rsyslog is defined and smstools_register_rsyslog) and
         smstools_register_rsyslog.stat.exists
 
 - name: Configure logrotate
-  ansible.builtin.template: src=etc/logrotate.d/sms.j2 dest=/etc/logrotate.d/sms
-            owner=root group=root mode=0644
+  ansible.builtin.template:
+    src: 'etc/logrotate.d/sms.j2'
+    dest: '/etc/logrotate.d/sms'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
   when: (smstools_register_rsyslog is defined and smstools_register_rsyslog) and
         smstools_register_rsyslog.stat.exists
