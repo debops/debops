@@ -61,7 +61,7 @@
 
 - name: Generate netplan configuration
   ansible.builtin.template:
-    src: 'etc/netplan/config.yaml.j2'
+    src: "{{ lookup('debops.debops.template_src', 'etc/netplan/config.yaml.j2') }}"
     dest: '{{ netplan__config_file }}'
     owner: 'root'
     group: 'root'
