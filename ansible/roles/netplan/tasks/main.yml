@@ -46,15 +46,15 @@
       ansible.builtin.find:
         paths: /etc/netplan
         patterns: "*.yml,*.yaml"
-      register: _netplan__register_existing_configs
+      register: netplan__register_existing_configs
 
     - name: Removing existing netplan config files
       ansible.builtin.file:
         path: "{{ item['path'] }}"
         state: absent
-      with_items: "{{ _netplan__register_existing_configs['files'] }}"
+      with_items: "{{ netplan__register_existing_configs['files'] }}"
       when:
-        - _netplan__register_existing_configs['files'] | length > 0
+        - netplan__register_existing_configs['files'] | length > 0
         - item['path'] != netplan__config_file
 
   when: netplan__purge_existing_config
