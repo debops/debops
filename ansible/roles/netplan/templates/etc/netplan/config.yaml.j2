@@ -1,0 +1,29 @@
+{# Copyright (C) 2015-2022 Pablo Escobar Lopez <pescobar001@gmail.com>
+# Copyright (C) 2015-2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+#}
+# {{ ansible_managed }}
+---
+network:
+  version: {{ netplan__configuration['network']['version']|default('2') }}
+  renderer: {{ netplan__renderer | default('networkd') }}
+{% if netplan__configuration['network']['ethernets'] is defined %}
+  ethernets:
+{{ netplan__configuration['network']['ethernets']|to_nice_yaml|indent(4, true) }}
+{% endif %}
+{% if netplan__configuration['network']['wifis'] is defined %}
+  wifis:
+{{ netplan__configuration['network']['wifis']|to_nice_yaml|indent(4, true) }}
+{% endif %}
+{% if netplan__configuration['network']['bonds'] is defined %}
+  bonds:
+{{ netplan__configuration['network']['bonds']|to_nice_yaml|indent(4, true) }}
+{% endif %}
+{% if netplan__configuration['network']['bridges'] is defined %}
+  bridges:
+{{ netplan__configuration['network']['bridges']|to_nice_yaml|indent(4, true) }}
+{% endif %}
+{% if netplan__configuration['network']['vlans'] is defined %}
+  vlans:
+{{ netplan__configuration['network']['vlans']|to_nice_yaml|indent(4, true) }}
+{% endif %}

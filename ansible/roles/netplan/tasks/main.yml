@@ -1,0 +1,83 @@
+---
+# Copyright (C) 2015-2022 Pablo Escobar Lopez <pescobar001@gmail.com>
+# Copyright (C) 2015-2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import DebOps global handlers
+  ansible.builtin.import_role:
+    name: 'global_handlers'
+
+# - name: Make sure that Ansible local facts directory exists
+#   ansible.builtin.file:
+#     path: '/etc/ansible/facts.d'
+#     state: 'directory'
+#     mode: '0755'
+
+# - name: Save netplan local facts
+#   ansible.builtin.template:
+#     src: 'etc/ansible/facts.d/netplan.fact.j2' # this file doesn't exist
+#     dest: '/etc/ansible/facts.d/netplan.fact'
+#     mode: '0755'
+#   notify: [ 'Refresh host facts' ]
+#   tags: [ 'meta::facts' ]
+
+# - name: Update Ansible facts if they have been modified
+#   ansible.builtin.meta: 'flush_handlers'
+
+- name: Install required packages
+  ansible.builtin.package:
+    name: '{{ q("flattened", (netplan__base_packages
+                              + netplan__packages)) }}'
+    state: 'present'
+  register: netplan__register_packages
+  until: netplan__register_packages is succeeded
+
+- name: Purge conflicting packages
+  ansible.builtin.apt:
+    name: '{{ q("flattened", netplan__purge_packages) }}'
+    state: 'absent'
+    purge: True
+
+- name: Purge existing netplan configs not deployed by this role
+  block:
+
+    - name: Locate existing netplan configurations
+      ansible.builtin.find:
+        paths: /etc/netplan
+        patterns: "*.yml,*.yaml"
+      register: netplan__register_existing_configs
+
+    - name: Removing existing netplan config files
+      ansible.builtin.file:
+        path: "{{ item['path'] }}"
+        state: absent
+      with_items: "{{ netplan__register_existing_configs['files'] }}"
+      when:
+        - netplan__register_existing_configs['files'] | length > 0
+        - item['path'] != netplan__config_file
+
+  when: netplan__purge_existing_config
+
+
+- name: Apply netplan configuration
+  ansible.builtin.template:
+    src: "{{ lookup('debops.debops.template_src', 'etc/netplan/config.yaml.j2') }}"
+    dest: '{{ netplan__config_file }}'
+    owner: 'root'
+    group: 'root'
+    mode: '{{ item.value.mode | d("0644") }}'
+    backup: yes
+  when:
+    - netplan__configuration.keys() | length > 0
+    - netplan__apply_config_auto
+  notify: Check netplan config and apply
+
+# - name: Save role version information
+#   ini_file:
+#     dest: '{{ ansible_local.debops_fact.public_facts | d("/etc/ansible/debops_fact.ini") }}'
+#     section: 'version'
+#     option: 'netplan'
+#     value: '{{ netplan__role_metadata.version }}'
+#     mode: '0644'
+#   when: ansible_local | d() and ansible_local.debops_fact | d() and
+#         ansible_local.debops_fact.enabled | bool
