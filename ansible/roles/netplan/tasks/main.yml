@@ -59,7 +59,7 @@
   when: netplan__purge_existing_config
 
 
-- name: Generate netplan configuration
+- name: Apply netplan configuration
   ansible.builtin.template:
     src: "{{ lookup('debops.debops.template_src', 'etc/netplan/config.yaml.j2') }}"
     dest: '{{ netplan__config_file }}'
@@ -69,6 +69,7 @@
     backup: yes
   when:
     - netplan__configuration.keys() | length > 0
+    - netplan__apply_config_auto
   notify: Check netplan config and apply
 
 # - name: Save role version information
