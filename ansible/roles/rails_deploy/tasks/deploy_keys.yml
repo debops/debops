@@ -5,7 +5,8 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Slurp the deploy key
-  ansible.builtin.slurp: src={{ rails_deploy_home }}/.ssh/id_rsa.pub
+  ansible.builtin.slurp:
+    src: '{{ rails_deploy_home }}/.ssh/id_rsa.pub'
   register: rails_deploy_register_deploy_key
   when: rails_deploy_service is defined and rails_deploy_service and
         rails_deploy_register_deploy_key is undefined
@@ -32,9 +33,10 @@
         'github' in rails_deploy_git_host
 
 - name: Get the Gitlab repo id
-  ansible.builtin.uri: url=https://{{ rails_deploy_git_host }}/api/v3/projects/{{
-           rails_deploy_git_account }}%2F{{ rails_deploy_git_repo }}
-       HEADER_PRIVATE-TOKEN='{{ rails_deploy_git_access_token }}'
+  ansible.builtin.uri:
+    url: 'https://{{ rails_deploy_git_host }}/api/v3/projects/{{
+                     rails_deploy_git_account }}%2F{{ rails_deploy_git_repo }}'
+    HEADER_PRIVATE-TOKEN: '{{ rails_deploy_git_access_token }}'
   register: rails_deploy_register_gitlab_response
   when: rails_deploy_git_access_token and
         'file://' not in rails_deploy_git_location and

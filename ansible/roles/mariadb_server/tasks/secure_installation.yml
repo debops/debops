@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Delete anonymous database user
-  mysql_user:
+  community.mysql.mysql_user:
     user: ""
     host: '{{ item }}'
     state: 'absent'
@@ -12,7 +12,7 @@
   with_items: [ '{{ ansible_hostname }}', 'localhost' ]
 
 - name: Remove test database on first install
-  mysql_db:  # noqa no-handler
+  community.mysql.mysql_db:  # noqa no-handler
     db: 'test'
     state: 'absent'
     login_unix_socket: '/run/mysqld/mysqld.sock'

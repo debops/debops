@@ -4,7 +4,9 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Install Box Backup server packages
-  ansible.builtin.apt: pkg=boxbackup-server state=present install_recommends=no
+  ansible.builtin.package:
+    name: 'boxbackup-server'
+    state: 'present'
   register: boxbackup__register_server_packages
   until: boxbackup__register_server_packages is succeeded
 

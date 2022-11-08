@@ -4,7 +4,7 @@
 # Copyright (C) 2015-2019 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- name: 'Check if {{ build.name }} APT packages are available'
+- name: Check package availability for {{ build.name }}
   ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
          apt-cache madison \
            {{ ([build.apt_packages] if build.apt_packages is string else build.apt_packages) | join(' ') }} \
@@ -16,7 +16,7 @@
   changed_when: False
   check_mode: False
 
-- name: 'Install {{ build.name }} APT packages'
+- name: Install packages for {{ build.name }}
   ansible.builtin.package:
     name: '{{ build.apt_packages }}'
     state: 'present'
@@ -50,7 +50,7 @@
         state: 'present'
         system: True
 
-- name: 'Install {{ build.name }} required APT packages'
+- name: Install required packages for {{ build.name }}
   ansible.builtin.package:
     name: '{{ q("flattened", (build.apt_required_packages | d([]))) }}'
     state: 'present'
@@ -70,7 +70,7 @@
   become_user: '{{ golang__user }}'
   block:
 
-    - name: 'Create the required directories for {{ build.name }} files'
+    - name: Create the required directories for {{ build.name }}
       ansible.builtin.file:
         dest: '{{ (golang__gosrc + "/" + url_item.dest) | dirname }}'
         state: 'directory'
@@ -79,7 +79,7 @@
       loop_control:
         loop_var: 'url_item'
 
-    - name: 'Download {{ build.name }} files'
+    - name: Download files for {{ build.name }}
       ansible.builtin.get_url:
         url: '{{ url_item.src }}'
         dest: '{{ golang__gosrc + "/" + url_item.dest }}'
@@ -91,7 +91,7 @@
       register: golang__register_get_url
       until: golang__register_get_url is succeeded
 
-    - name: 'Extract {{ build.name }} files from archive'
+    - name: Extract archive for {{ build.name }}
       ansible.builtin.unarchive:
         src: '{{ golang__gosrc + "/" + url_item.dest }}'
         dest: '{{ golang__gosrc + "/" + (url_item.unarchive_dest | d(url_item.dest | dirname)) }}'
@@ -103,7 +103,7 @@
         loop_var: 'url_item'
       when: (url_item.unarchive | d()) | bool
 
-    - name: 'Verify {{ build.name }} files with GnuPG'
+    - name: Verify files for {{ build.name }}
       ansible.builtin.command: gpg --verify {{ golang__gosrc + "/" + url_item.dest }}
       args:
         chdir: '{{ (golang__gosrc + "/" + url_item.dest) | dirname }}'
@@ -115,7 +115,7 @@
       failed_when: golang__register_verify.rc != 0
       when: (url_item.gpg_verify | d()) | bool
 
-- name: 'Install downloaded {{ build.name }} binaries'
+- name: Install binaries for {{ build.name }}
   ansible.builtin.copy:
     src: '{{ (""
               if ((binary_item.src | d(binary_item)).startswith("/"))
@@ -137,7 +137,7 @@
           (not (([build.apt_packages] if (build.apt_packages is string) else build.apt_packages)
                 | intersect(golang__register_build_apt_packages.stdout_lines))))))
 
-- name: 'Install {{ build.name }} APT dev packages'
+- name: Install dev packages for {{ build.name }}
   ansible.builtin.package:
     name: '{{ q("flattened", (golang__apt_dev_packages + (build.apt_dev_packages | d([])))) }}'
     state: 'present'
@@ -157,7 +157,7 @@
   become_user: '{{ golang__user }}'
   block:
 
-    - name: 'Clone {{ build.name }} source code'
+    - name: Clone repo for {{ build.name }}
       ansible.builtin.git:
         repo: '{{ git_item.repo }}'
         dest: '{{ golang__gosrc + "/" + (git_item.dest | d(git_item.repo.split("://")[1])) }}'
@@ -169,7 +169,7 @@
         loop_var: 'git_item'
       register: golang__register_build_source
 
-    - name: 'Build {{ build.name }} binaries'
+    - name: Build binaries for {{ build.name }}
       environment:
         GOPATH: '{{ golang__env_gopath }}'
         GOCACHE: '{{ golang__env_gocache }}'
@@ -186,7 +186,7 @@
             golang__register_build_source is changed
       register: golang__register_build
 
-- name: 'Install built {{ build.name }} binaries'
+- name: Install binaries for {{ build.name }}
   ansible.builtin.copy:
     src: '{{ (""
               if ((binary_item.src | d(binary_item)).startswith("/"))
@@ -219,7 +219,7 @@
     force: False
   when: build.url_binaries | d() or build.git_binaries | d()
 
-- name: 'Register {{ build.name }} in database of the local Go binaries'
+- name: Register binaries for {{ build.name }}
   ansible.builtin.lineinfile:
     path: '{{ golang__bin_database }}'
     regexp: "{{ '^' + (((binary_item.dest | d(binary_item.src | d(binary_item))) | basename)

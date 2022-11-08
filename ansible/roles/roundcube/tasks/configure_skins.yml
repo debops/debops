@@ -4,6 +4,10 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Generate CSS files for the 'elastic' skin
+  when: roundcube__skin_folder is defined
+        and roundcube__skin_folder == 'elastic'
+        and roundcube__git_dest is defined
+  tags: [ 'role::roundcube:skin:elastic' ]
   block:
     - name: Set 'elastic' skin CSS files
       ansible.builtin.set_fact:
@@ -26,8 +30,3 @@
         group: '{{ roundcube__group }}'
         mode: '0644'
       loop: '{{ roundcube__fact_skin_elastic_css_files }}'
-
-  when: roundcube__skin_folder is defined
-        and roundcube__skin_folder == 'elastic'
-        and roundcube__git_dest is defined
-  tags: [ 'role::roundcube:skin:elastic' ]

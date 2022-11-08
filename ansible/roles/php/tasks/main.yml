@@ -41,8 +41,8 @@
   ansible.builtin.include_tasks: 'packages_absent_for_version.yml'
   loop_control:
     loop_var: 'php__version_absent'
-  when: (php__reset | bool)
-  with_items: '{{ php__version_preference | difference([ "php" + php__version | d("") ]) | list }}'
+  when: php__reset | bool
+  with_items: '{{ php__version_preference | difference(["php" + php__version | d("")]) | list }}'
 
 - name: 'Create directory for php*-fpm logs'
   ansible.builtin.file:

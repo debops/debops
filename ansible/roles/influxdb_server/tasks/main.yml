@@ -29,7 +29,7 @@
   when: not (ansible_local.influxdb_server.installed | d(false) | bool)
 
 - name: Create default admin user on first install
-  influxdb_user:
+  community.general.influxdb_user:
     user_name: 'root'
     user_password: '{{ influxdb_server__root_password }}'
     state: 'present'

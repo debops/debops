@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Create PostgreSQL user
-  postgresql_user:
+  community.general.postgresql_user:
     login_host: '{{ rails_deploy_database_host }}'
     port: '{{ rails_deploy_database_port }}'
     login_user: '{{ rails_deploy_postgresql_super_username }}'
@@ -23,7 +23,7 @@
   become_user: '{{ rails_deploy_postgresql_super_username }}'
 
 - name: Create PostgreSQL database if enabled
-  postgresql_db:
+  community.general.postgresql_db:
     login_host: '{{ rails_deploy_database_host }}'
     port: '{{ rails_deploy_database_port }}'
     login_user: '{{ rails_deploy_postgresql_super_username }}'
@@ -41,7 +41,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Create MySQL user
-  mysql_user:
+  community.mysql.mysql_user:
     login_host: '{{ rails_deploy_database_host }}'
     login_port: '{{ rails_deploy_database_port }}'
     login_user: '{{ rails_deploy_mysql_super_username }}'
@@ -57,7 +57,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Create MySQL database if enabled
-  mysql_db:
+  community.mysql.mysql_db:
     login_host: '{{ rails_deploy_database_host }}'
     login_port: '{{ rails_deploy_database_port }}'
     login_user: '{{ rails_deploy_mysql_super_username }}'

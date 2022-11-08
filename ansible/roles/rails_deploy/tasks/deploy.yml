@@ -5,21 +5,28 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Clone the app's source code
-  ansible.builtin.git: repo={{ rails_deploy_git_location }} dest={{ rails_deploy_src }}
-       version={{ rails_deploy_git_version }}
-       remote={{ rails_deploy_git_remote }} accept_hostkey=yes
+  ansible.builtin.git:
+    repo: '{{ rails_deploy_git_location }}'
+    dest: '{{ rails_deploy_src }}'
+    version: '{{ rails_deploy_git_version }}'
+    remote: '{{ rails_deploy_git_remote }}'
+    accept_hostkey: True
   register: rails_deploy_register_repo_status
   when: rails_deploy_git_location is defined and rails_deploy_git_location
   become: True
   become_user: '{{ rails_deploy_service }}'
 
 - name: Detect a temporary public deploy page
-  ansible.builtin.stat: path={{ rails_deploy_src }}/public/deploy.html
+  ansible.builtin.stat:
+    path: '{{ rails_deploy_src }}/public/deploy.html'
   register: register_rails_deploy_public_deploy_page
 
 - name: Enable the temporary deploy page
-  ansible.builtin.command: cp public/deploy.html public/index.html
-           chdir={{ rails_deploy_src }}
+  ansible.builtin.copy:
+    src: '{{ rails_deploy_src }}/public/deploy.html'
+    dest: '{{ rails_deploy_src }}/public/index.html'
+    mode: '0644'
+    remote_src: True
   when: register_rails_deploy_public_deploy_page.stat.exists and
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed
@@ -30,7 +37,8 @@
 - name: Update gems
   ansible.builtin.command: bundle install --deployment
            --without={{ rails_deploy_bundle_without | difference([rails_deploy_system_env]) | join(',') }}
-           chdir={{ rails_deploy_src }}
+  args:
+    chdir: '{{ rails_deploy_src }}'
   changed_when: False
   when: rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed
@@ -38,15 +46,16 @@
   become_user: '{{ rails_deploy_service }}'  # noqa no-handler
 
 - name: Restart the background worker asynchronously
-  ansible.builtin.service: name={{ rails_deploy_worker }} state=restarted
+  ansible.builtin.service:
+    name: '{{ rails_deploy_worker }}'
+    state: 'restarted'
   async: 90  # noqa no-handler
   when: rails_deploy_worker_enabled and
         rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed
 
 - name: Prepare the database
-  ansible.builtin.shell: '{{ rails_deploy_env_source }} && bundle exec rake db:schema:load db:seed
-           chdir={{ rails_deploy_src }}'
+  ansible.builtin.shell: '{{ rails_deploy_env_source }} && bundle exec rake db:schema:load db:seed chdir={{ rails_deploy_src }}'
   when: (rails_deploy_database_create and rails_deploy_register_database_created is defined and
         rails_deploy_register_database_created is changed and
         rails_app_database_prepare) and
@@ -57,13 +66,15 @@
   become_user: '{{ rails_deploy_service }}'  # noqa no-handler
 
 - name: Store mtime of the config folder
-  ansible.builtin.stat: path={{ rails_deploy_src }}/config
+  ansible.builtin.stat:
+    path: '{{ rails_deploy_src }}/config'
   register: rails_deploy_register_mtime_config
   when: inventory_hostname == rails_deploy_hosts_master and
         rails_deploy_git_location is defined and rails_deploy_git_location
 
 - name: Store mtime of the db/schema.rb file
-  ansible.builtin.stat: path={{ rails_deploy_src }}/db/schema.rb
+  ansible.builtin.stat:
+    path: '{{ rails_deploy_src }}/db/schema.rb'
   register: rails_deploy_register_mtime_schema
   when: inventory_hostname == rails_deploy_hosts_master and
         rails_deploy_git_location is defined and rails_deploy_git_location
@@ -100,7 +111,9 @@
   become_user: '{{ rails_deploy_service }}'  # noqa no-handler
 
 - name: Reload the backend server
-  ansible.builtin.service: name={{ rails_deploy_service }} state=reloaded
+  ansible.builtin.service:
+    name: '{{ rails_deploy_service }}'
+    state: 'reloaded'
   when: rails_deploy_backend and (rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed and
         (inventory_hostname == rails_deploy_hosts_master or
@@ -113,7 +126,9 @@
   with_items: '{{ groups[rails_deploy_hosts_group] }}'  # noqa no-handler
 
 - name: Restart the backend server
-  ansible.builtin.service: name={{ rails_deploy_service }} state=restarted
+  ansible.builtin.service:
+    name: '{{ rails_deploy_service }}'
+    state: 'restarted'
   when: rails_deploy_backend and (rails_deploy_database_force_migrate or
         ((rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed) and rails_deploy_register_migration is changed) and
@@ -129,29 +144,33 @@
   with_items: '{{ groups[rails_deploy_hosts_group] }}'  # noqa no-handler
 
 - name: Set the extra services state
-  ansible.builtin.service: name={{ item.name }}
-           state={{ item.changed_state | default('reloaded') }}
+  ansible.builtin.service:
+    name: '{{ item.name }}'
+    state: '{{ item.changed_state | default("reloaded") }}'
   when: rails_deploy_register_repo_status is defined and
         rails_deploy_register_repo_status is changed and rails_deploy_extra_services
   with_items: '{{ rails_deploy_extra_services }}'  # noqa no-handler
 
 - name: Set the initial backend server state
-  ansible.builtin.service: name={{ rails_deploy_service }}
-           state={{ rails_deploy_backend_state }}
-           enabled={{ rails_deploy_backend_enabled }}
+  ansible.builtin.service:
+    name: '{{ rails_deploy_service }}'
+    state: '{{ rails_deploy_backend_state }}'
+    enabled: '{{ rails_deploy_backend_enabled }}'
   when: rails_deploy_git_location is defined and rails_deploy_git_location and rails_deploy_backend
 
 - name: Set the initial background worker state
-  ansible.builtin.service: name={{ rails_deploy_worker }}
-           state={{ rails_deploy_worker_state }}
-           enabled={{ rails_deploy_worker_enabled }}
+  ansible.builtin.service:
+    name: '{{ rails_deploy_worker }}'
+    state: '{{ rails_deploy_worker_state }}'
+    enabled: '{{ rails_deploy_worker_enabled }}'
   when: rails_deploy_worker_enabled and
         rails_deploy_git_location is defined and rails_deploy_git_location
 
 - name: Set the initial extra services state
-  ansible.builtin.service: name={{ item.name }}
-           state={{ item.state | default('started') }}
-           enabled={{ item.enabled | default(True) }}
+  ansible.builtin.service:
+    name: '{{ item.name }}'
+    state: '{{ item.state | default("started") }}'
+    enabled: '{{ item.enabled | default(True) }}'
   when: rails_deploy_git_location is defined and rails_deploy_git_location and
         rails_deploy_extra_services
   with_items: '{{ rails_deploy_extra_services }}'

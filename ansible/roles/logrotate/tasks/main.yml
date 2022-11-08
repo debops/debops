@@ -32,7 +32,7 @@
          logrotate__register_cron_diversion.stdout | d() !=
          ('/etc/cron.' + logrotate__cron_period + '/logrotate'))
 
-- name: Configure {{ logrotate__cron_period }} cron log rotation
+- name: Configure cron log rotation {{ logrotate__cron_period }}
   debops.debops.dpkg_divert:
     path: '/etc/cron.daily/logrotate'
     divert: '/etc/cron.{{ logrotate__cron_period }}/logrotate'
