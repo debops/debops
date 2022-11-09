@@ -375,7 +375,8 @@ track_io_timing = {{ item.track_io_timing | d('off') }}
 track_functions = {{ item.track_functions | d('none') }}
 track_activity_query_size = {{ item.track_activity_query_size | d('1024') }}
 update_process_title = {{ item.update_process_title | d('on') }}
-{% if (item.version | d(postgresql_server__version)) is version_compare('9.1','>') %}
+{% if (item.version | d(postgresql_server__version)) is version_compare('15','>=') %}
+{% elif (item.version | d(postgresql_server__version)) is version_compare('9.1','>') %}
 stats_temp_directory = '{{ item.stats_temp_directory | d("/var/run/postgresql/" + (item.version | d(postgresql_server__version)) + "-" + item.name + ".pg_stat_tmp") }}'
 {% else %}
 stats_temp_directory = '{{ item.stats_temp_directory | d("pg_stat_tmp") }}'
