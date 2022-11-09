@@ -45,6 +45,15 @@
     # If this file exists, failed upgrade will be tried again
     dist_upgrade_lockfile: '/tmp/dist-upgrade-in-progress'
 
+    # Host to send the mail to
+    dist_upgrade_mail_host: 'localhost'
+
+    # Port to send the mail to
+    dist_upgrade_mail_port: 25
+
+    # Secure mode to send the mail
+    dist_upgrade_mail_secure: 'try'
+
     # List of mail recipients
     dist_upgrade_mail_to: [ '{{ "root@" + ansible_domain }}' ]
 
@@ -201,6 +210,9 @@
 
     - name: Send mail with information about the upgrade
       mail:  # noqa no-handler
+        host: '{{ dist_upgrade_mail_host }}'
+        port: '{{ dist_upgrade_mail_port }}'
+        secure: '{{ dist_upgrade_mail_secure }}'
         from: '{{ "root@" + ansible_fqdn }}'
         to: '{{ dist_upgrade_mail_to | join(",") }}'
         subject: '{{ dist_upgrade_mail_subject }}'
