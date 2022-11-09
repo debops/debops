@@ -208,6 +208,11 @@
       when: dist_upgrade_register_etc_services is defined and
             dist_upgrade_register_etc_services.stat.exists
 
+    - name: Remove the lockfile
+      file:
+        path: '{{ dist_upgrade_lockfile }}'
+        state: 'absent'
+
     - name: Send mail with information about the upgrade
       mail:  # noqa no-handler
         host: '{{ dist_upgrade_mail_host }}'
@@ -220,8 +225,3 @@
         body: '{{ dist_upgrade_mail_body }}'
       when: dist_upgrade_register_upgrade is defined and
             dist_upgrade_register_upgrade is changed
-
-    - name: Remove the lockfile
-      file:
-        path: '{{ dist_upgrade_lockfile }}'
-        state: 'absent'
