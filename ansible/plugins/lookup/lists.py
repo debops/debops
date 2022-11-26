@@ -31,7 +31,7 @@ Example:
      - ["Mapping", "Nobody-User", "nobody"]
      - ["Mapping", "Nobody-Group", "nogroup"]
 
-Output (shortend):
+Output (shortened):
     "msg": "General -- Verbosity -- 0"
     "msg": "Mapping -- Nobody-User -- nobody"
     "msg": "Mapping -- Nobody-Group -- nogroup"
