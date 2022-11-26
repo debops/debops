@@ -32,6 +32,12 @@ Added
 - The role can now download APT repository GPG keys to separate keyring files,
   which can be used to scope a given GPG key to specific APT repositories.
 
+:ref:`debops.mount` role
+'''''''''''''''''''''''''''''
+
+- The :ref:`debops.mount` role can now create a file with credentials before
+  trying to mount the network device.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
