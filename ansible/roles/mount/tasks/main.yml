@@ -40,6 +40,33 @@
          (((item.opts if (item.opts is string) else item.opts | join(','))
            if item.opts | d() else 'defaults') is match(".*x-systemd.automount.*")))
 
+# Manage custom files [[[1
+- name: Copy files to remote hosts
+  ansible.builtin.copy:
+    dest:     '{{ item.dest | d(item.path | d(item.name)) }}'
+    src:      '{{ item.src | d(omit) }}'
+    content:  '{{ item.content | d(omit) }}'
+    owner:    '{{ item.owner | d(omit) }}'
+    group:    '{{ item.group | d(omit) }}'
+    mode:     '{{ item.mode | d(omit) }}'
+    selevel:  '{{ item.selevel | d(omit) }}'
+    serole:   '{{ item.serole | d(omit) }}'
+    setype:   '{{ item.setype | d(omit) }}'
+    seuser:   '{{ item.seuser | d(omit) }}'
+    follow:   '{{ item.follow | d(omit) }}'
+    force:    '{{ item.force | d(omit) }}'
+    backup:   '{{ item.backup | d(omit) }}'
+    validate: '{{ item.validate | d(omit) }}'
+    remote_src: '{{ item.remote_src | d(omit) }}'
+    directory_mode: '{{ item.directory_mode | d(omit) }}'
+  loop: '{{ q("flattened", mount__files
+                           + mount__group_files
+                           + mount__host_files) }}'
+  when: (mount__enabled | bool and
+         (item.src | d() or item.content is defined) and
+         (item.dest | d() or item.path | d() or item.name | d()) and
+         (item.state | d('present') != 'absent'))
+
 - name: Manage device mounts
   ansible.posix.mount:
     src:    '{{ item.src }}'
