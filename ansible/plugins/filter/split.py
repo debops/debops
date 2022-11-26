@@ -129,9 +129,9 @@
 import re
 
 
-def split_string(string, seperator=None, maxsplit=-1):
+def split_string(string, separator=None, maxsplit=-1):
     try:
-        return string.split(seperator, maxsplit)
+        return string.split(separator, maxsplit)
     except Exception:
         return list(string)
 
