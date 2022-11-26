@@ -233,7 +233,7 @@ roundcube__database_name: '{{ roundcube__database_user
                                                                    # ]]]
 # .. envvar:: roundcube__database_map [[[
 #
-# Database connection definitions. Selet the database connection to use in
+# Database connection definitions. Select the database connection to use in
 # :envvar:`roundcube__database`.
 roundcube__database_map:
 
@@ -2197,7 +2197,7 @@ roundcube__original_configuration:
     # [[[ addressbook
   - name: 'address_book_type'
     comment: |
-      This indicates which type of address book to use. Possible choises:
+      This indicates which type of address book to use. Possible choices:
       'sql' - built-in sql addressbook enabled (default),
       ''    - built-in sql addressbook disabled.
               Still LDAP or plugin-added addressbooks will be available.
@@ -3241,7 +3241,7 @@ roundcube__default_plugins:
   - name: 'archive'
     state: 'enabled'
 
-    # This is a core plugin which provides supprt for handling attachments
+    # This is a core plugin which provides support for handling attachments
     # through the filesystem. It might be required by other plugins.
   - name: 'filesystem_attachments'
     state: 'enabled'
@@ -3290,7 +3290,7 @@ roundcube__default_plugins:
               if roundcube__git_version is version("1.5", "<") else "" }}'
     state: 'enabled'
 
-    # This plugin provides a toolbar button annd folder menu option which
+    # This plugin provides a toolbar button and folder menu option which
     # calculates and displays the sizes of the message folders.
   - name: 'show_folder_size'
     package: 'jfcherng/show-folder-size'
@@ -3501,10 +3501,10 @@ roundcube__default_plugins:
           The SQL query used to change the password.
           The query can contain the following macros that will be expanded as follows:
                %p is replaced with the plaintext new password
-               %P is replaced with the crypted/hashed new password
+               %P is replaced with the encrypted/hashed new password
                   according to configured password_method
                %o is replaced with the old (current) password
-               %O is replaced with the crypted/hashed old (current) password
+               %O is replaced with the encrypted/hashed old (current) password
                   according to configured password_method
                %h is replaced with the imap host (from the session info)
                %u is replaced with the username (from the session info)
@@ -3582,7 +3582,7 @@ roundcube__default_plugins:
           -----------------------------------
           LDAP server name to connect to.
           You can provide one or several hosts in an array in which case the hosts are tried from left to right.
-          Exemple: array('ldap1.exemple.com', 'ldap2.exemple.com');
+          Example: array('ldap1.example.com', 'ldap2.example.com');
           Default: 'localhost'
         value: '{{ (roundcube__ldap_hosts | first)
                    if roundcube__ldap_hosts|d()
@@ -3610,7 +3610,7 @@ roundcube__default_plugins:
       - name: 'password_ldap_basedn'
         comment: |
           LDAP base name (root directory)
-          Exemple: 'dc=exemple,dc=com'
+          Example: 'dc=example,dc=com'
         value: '{{ roundcube__ldap_base_dn | join(",") }}'
 
       - name: 'password_ldap_method'
@@ -3645,8 +3645,8 @@ roundcube__default_plugins:
           '%name' will be replaced by the current roundcube user's name part
           '%domain' will be replaced by the current roundcube user's domain part
           '%dc' will be replaced by domain name hierarchal string e.g. "dc=test,dc=domain,dc=com"
-          Exemple: 'uid=%login,ou=people,dc=exemple,dc=com'
-        value: 'uid=%login,ou=people,dc=exemple,dc=com'
+          Example: 'uid=%login,ou=people,dc=example,dc=com'
+        value: 'uid=%login,ou=people,dc=example,dc=com'
         state: 'comment'  # use searches instead
 
       - name: 'password_ldap_searchDN'
@@ -3668,8 +3668,8 @@ roundcube__default_plugins:
           If password_ldap_searchDN is set, the password to use for
           binding to search for user's DN. Note that you should comment out the default
           password_ldap_userDN_mask setting for this to take effect.
-          Warning: Be sure to set approperiate permissions on this file so this password
-          is only accesible to roundcube and don't forget to restrict roundcube's access to
+          Warning: Be sure to set appropriate permissions on this file so this password
+          is only accessible to roundcube and don't forget to restrict roundcube's access to
           your directory as much as possible using ACLs. Should this password be compromised
           you want to minimize the damage.
         value: '{{ roundcube__ldap_bindpw }}'
@@ -3766,7 +3766,7 @@ roundcube__default_plugins:
       - name: 'password_ldap_ppolicy_basedn'
         comment: |
           LDAP base name (root directory)
-          Exemple: 'dc=exemple,dc=com'
+          Example: 'dc=example,dc=com'
         value: 'dc=example,dc=com'
 
       - name: 'password_ldap_ppolicy_searchDN'
@@ -4376,8 +4376,8 @@ roundcube__default_plugins:
 
       - name: 'managesieve_mbox_encoding'
         comment: |
-          Sieve RFC says that we should use UTF-8 endcoding for mailbox names,
-          but some implementations does not covert UTF-8 to modified UTF-7.
+          Sieve RFC says that we should use UTF-8 encoding for mailbox names,
+          but some implementations does not convert UTF-8 to modified UTF-7.
           Defaults to UTF7-IMAP
         value: 'UTF-8'
 
