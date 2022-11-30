@@ -61,7 +61,7 @@ the :envvar:`gitlab_runner__token` variable to your inventory.
 
    gitlab_runner__token: '{{ lookup("password", secret
                            + "/credentials/" + gitlab_runner__api_fqdn
-                           + "/gitlab/runner/token chars=ascii,numbers") }}'
+                           + "/gitlab/runner/token chars=ascii_letters,numbers") }}'
 
 This allows the token to be safely stored outside of the inventory but
 accessible at runtime.
