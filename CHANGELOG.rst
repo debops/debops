@@ -80,6 +80,13 @@ General
   been removed in Ansible 2.14. It has been removed in various DebOps roles to
   allow playbook execution to work correctly.
 
+- Fixed all password lookups which used ``chars=ascii`` instead of
+  ``chars=ascii_letters``. This resulted in passwords which only contained the
+  letters a,c,i,s instead of all lowercase and uppercase ASCII letters. Because
+  all occurences of this bug at least also included all digits in the character
+  set and the password length was at least 20 characters, this did not result
+  in weak passwords.
+
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
