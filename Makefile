@@ -7,6 +7,8 @@
 # Use the Bash shell by default
 SHELL := /bin/bash
 
+SPHINXFLAGS ?= -n -W
+
 .PHONY: all
 all: help
 
@@ -157,7 +159,7 @@ check-versions:
 .PHONY: test-docs
 test-docs:
 	@printf "%s\n" "Testing HTML documentation generation..."
-	@cd docs && sphinx-build -n -W -b html -d _build/doctrees . _build/html
+	@cd docs && sphinx-build $(SPHINXFLAGS) -b html -d _build/doctrees . _build/html
 
 .PHONY: test-man
 test-man:
