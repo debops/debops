@@ -48,6 +48,17 @@ for element in os.listdir(rst_ansible_roles):
                             print("Creation of the directory %s failed"
                                   % defaults_dir)
 
+                    # Only rebuild files that have changed, thus
+                    # taking avantage of the sphinx cache
+                    dst_file = (
+                            os.path.splitext(defaults_file)[0] + '.rst'
+                        ).lstrip('../')
+                    if os.path.exists(dst_file):
+                        src_stat = os.stat(defaults_file)
+                        dst_stat = os.stat(dst_file)
+                        if dst_stat.st_mtime_ns >= src_stat.st_mtime_ns:
+                            continue
+
                     yaml2rst.convert_file(
                         defaults_file,
                         (os.path.splitext(defaults_file)[0]
