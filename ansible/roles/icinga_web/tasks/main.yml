@@ -136,7 +136,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Import Icinga Web database on installation into PostgreSQL
-  postgresql_db:
+  community.general.postgresql_db:
     name: '{{ icinga_web__database_name }}'
     state: 'restore'
     target: '{{ item }}'
@@ -151,7 +151,7 @@
   # Without this, Icinga Web cannot access the database, with error:
   # permission denied for relation icingaweb_user
 - name: Ensure that PostgreSQL database tables are accessible
-  postgresql_privs:
+  community.general.postgresql_privs:
     db: '{{ icinga_web__database_name }}'
     role: '{{ icinga_web__database_user }}'
     objs: 'ALL_IN_SCHEMA'
@@ -162,7 +162,7 @@
         icinga_web__database_init | bool
 
 - name: Import Icinga Web database on installation into MariaDB
-  mysql_db:
+  community.mysql.mysql_db:
     name: '{{ icinga_web__database_name }}'
     state: 'import'
     target: '{{ item }}'
@@ -176,7 +176,7 @@
         icinga_web__database_init | bool
 
 - name: Import Icinga Web x509 database on installation into MariaDB
-  mysql_db:
+  community.mysql.mysql_db:
     name: '{{ icinga_web__x509_database_name }}'
     state: 'import'
     target: '{{ icinga_web__x509_database_schema }}'

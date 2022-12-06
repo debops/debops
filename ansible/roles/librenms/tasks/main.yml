@@ -108,7 +108,7 @@
   tags: [ 'role::librenms:config', 'role::librenms:database', 'role::librenms:snmp_conf' ]
 
 - name: Create LibreNMS database
-  mysql_db:
+  community.mysql.mysql_db:
     name: '{{ librenms__database_name }}'
     state: 'present'
     login_unix_socket: '/run/mysqld/mysqld.sock'
@@ -126,7 +126,7 @@
   tags: [ 'role::librenms:config', 'role::librenms:database' ]
 
 - name: Install missing PHP packages via Composer
-  composer:  # noqa no-handler
+  community.general.composer:  # noqa no-handler
     command: 'install'
     working_dir: '{{ librenms__install_path }}'
   register: librenms__register_composer

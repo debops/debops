@@ -167,6 +167,11 @@ General
   :file:`/run/mysqld/mysqld.sock` UNIX socket to do so, due to changes in
   MariaDB restricting local connections for the ``root`` UNIX account.
 
+:ref:`debops.docker_server` role
+''''''''''''''''''''''''''''''''
+
+- The role can now directly handle the daemon ``log-driver`` parameter.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
@@ -232,6 +237,9 @@ General
   existing Python 2.7 installation is detected. This change should help avoid
   installing Python 2.7 packages on newer OS releases when they might be
   unavailable.
+
+- The :file:`/etc/pip.conf` configuration file template can be overridden via
+  the DebOps template override mechanism.
 
 :ref:`debops.resolvconf` role
 '''''''''''''''''''''''''''''
@@ -323,6 +331,9 @@ debops.boxbackup role
 
 - Don't include additional '{' or '}' characters in certain rules when the
   ``domain_args`` parameter is specified.
+
+- Fixed an issue in the rule template that caused a templating type error where
+  Jinja expected a string but found an int value instead.
 
 :ref:`debops.gitlab_runner` role
 ''''''''''''''''''''''''''''''''
@@ -449,6 +460,12 @@ debops.boxbackup role
   proved problematic when LDAP support is enabled and the LDAP directory is not
   available for any reason - :command:`sudo` tries to connect to the directory
   and times out, slowing Ansible run into a crawl.
+
+:ref:`debops.sysctl` role
+'''''''''''''''''''''''''
+
+- Fixed an issue in the configuration template that caused a templating type
+  error where Jinja expected a string but found an int value instead.
 
 Removed
 ~~~~~~~

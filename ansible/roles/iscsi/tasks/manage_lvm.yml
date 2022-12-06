@@ -16,7 +16,7 @@
         (item.state is defined and item.state == 'absent')
 
 - name: Remove Logical Volumes if requested
-  lvol:
+  community.general.lvol:
     vg:    '{{ item.vg }}'
     lv:    '{{ item.lv }}'
     size:  '{{ item.size }}'
@@ -28,7 +28,7 @@
         item.state | d() and item.state == 'absent'
 
 - name: Manage LVM Volume Groups
-  lvg:
+  community.general.lvg:
     vg:         '{{ item.item.lvm_vg }}'
     pvs:        '{{ item.devicenodes | join(",") }}'
     state:      '{{ item.item.lvm_state | d("present") }}'
@@ -40,7 +40,7 @@
         item.devicenodes | d() and item.item.lvm_vg | d()
 
 - name: Manage LVM Logical Volumes
-  lvol:
+  community.general.lvol:
     vg:    '{{ item.vg }}'
     lv:    '{{ item.lv }}'
     size:  '{{ item.size }}'
@@ -52,7 +52,7 @@
         (item.state is undefined or item.state != 'absent')
 
 - name: Manage filesystems
-  filesystem:
+  community.general.filesystem:
     dev:    '{{ "/dev/mapper/" + item.vg + "-" + item.lv }}'
     fstype: '{{ item.fs_type | d(iscsi__default_fs_type) }}'
     force:  '{{ item.fs_force | d(omit) }}'

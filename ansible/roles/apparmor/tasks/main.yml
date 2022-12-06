@@ -64,7 +64,7 @@
   ansible.builtin.meta: flush_handlers
 
 - name: Send mail to administrator if reboot is required to enable AppArmor
-  mail:
+  community.general.mail:
     from: 'root@{{ ansible_fqdn }}'
     subject: '{{ apparmor__mail_subject }}'
     to: '{{ apparmor__mail_to | d([]) | list | join(",") }}'
@@ -79,7 +79,7 @@
     set -o nounset -o pipefail -o errexit &&
     find /etc/apparmor.d -maxdepth 1 -type f | while read file
     do
-      if grep --quiet "flags\s*=.*complain" "$file"; then
+      if grep --quiet "flags.*complain" "$file"; then
         aa-enforce "$file"
       fi
     done

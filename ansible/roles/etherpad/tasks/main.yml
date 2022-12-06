@@ -146,7 +146,7 @@
   when: etherpad_register_checkout is changed
 
 - name: Manage Etherpad plugins
-  npm:
+  community.general.npm:
     name: '{{ item.name | d(item) }}'
     path: '{{ etherpad_home + "/" + etherpad_repository }}'
     state: '{{ item.state | d("present") }}'
@@ -230,7 +230,8 @@
   tags: [ 'role::etherpad:api', 'role::etherpad:api:call' ]
 
 - name: Display API call responses for debugging
-  ansible.builtin.debug: var=etherpad_api_calls_exec
+  ansible.builtin.debug:
+    var: etherpad_api_calls_exec
   when: etherpad_api_calls_exec | d() and etherpad_api_calls_debug
   tags: [ 'role::etherpad:api', 'role::etherpad:api:call' ]
 

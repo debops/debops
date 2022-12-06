@@ -23,7 +23,8 @@
   register: pdns__register_packages
   until: pdns__register_packages is succeeded
 
-- include_tasks: init_postgresql.yml
+- name: Configure PostgreSQL
+  ansible.builtin.include_tasks: init_postgresql.yml
   when: ('gpgsql' in pdns__backends)
 
 - name: Divert original configuration

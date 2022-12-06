@@ -24,7 +24,7 @@
   when: module.name | d() and module.state | d('present') != 'absent'
 
 - name: Unload kernel module if configuration changed
-  modprobe:  # noqa no-handler
+  community.general.modprobe:  # noqa no-handler
     name: '{{ module.name }}'
     state: 'absent'
   when: ((kmod__register_module_config_delete is changed or
@@ -35,7 +35,7 @@
          module.state | d('present') not in ['config'])
 
 - name: Load kernel module if configuration changed
-  modprobe:  # noqa no-handler
+  community.general.modprobe:  # noqa no-handler
     name: '{{ module.name }}'
     state: 'present'
   when: ((kmod__register_module_config_delete is changed or

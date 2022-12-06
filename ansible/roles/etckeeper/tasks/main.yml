@@ -113,7 +113,7 @@
   when: etckeeper__enabled | bool and etckeeper__vcs == 'git'
 
 - name: Set user, email for the git repository
-  ini_file:
+  community.general.ini_file:
     dest: '/etc/.git/config'
     section: 'user'
     option: '{{ item.key }}'
@@ -144,7 +144,7 @@
         etckeeper__email_on_commit_state == 'present'
 
 - name: Configure other VCS software
-  include_tasks: 'other_vcs.yml'
+  ansible.builtin.include_tasks: 'other_vcs.yml'
   when: etckeeper__enabled | bool and etckeeper__vcs != 'git' and
         etckeeper__vcs_user | d() and etckeeper__vcs_email | d()
 

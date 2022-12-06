@@ -61,17 +61,16 @@
   ansible.builtin.meta: 'flush_handlers'
 
 - name: Manage the GnuPG environment for reprepro
-  import_tasks: 'configure_gnupg.yml'
+  ansible.builtin.import_tasks: 'configure_gnupg.yml'
 
 - name: Manage reprepro instances
-  include_tasks: 'configure_reprepro.yml'
+  ansible.builtin.include_tasks: 'configure_reprepro.yml'
   loop_control:
     loop_var: 'repo'
     label: '{{ {"name": repo.name, "state": repo.state | d("present"),
                 "outdir": (repo.outdir | d(reprepro__public_root + "/sites/" + repo.name + "/public"))} }}'
   loop: '{{ q("flattened", reprepro__combined_instances)
-            | debops.debops.parse_kv_items(
-                merge_keys=["distributions", "incoming", "pulls", "updates"]) }}'
+            | debops.debops.parse_kv_items(merge_keys=["distributions", "incoming", "pulls", "updates"]) }}'
 
 - name: Make sure Ansible fact directory exists
   ansible.builtin.file:

@@ -251,7 +251,7 @@
   tags: [ 'role::lxc:containers' ]
 
 - name: Destroy LXC containers if requested
-  lxc_container:
+  community.general.lxc_container:
     name:  '{{ item.name | d(item) }}'
     state: 'absent'
   loop: '{{ lxc__containers }}'
@@ -303,14 +303,7 @@
   tags: [ 'role::lxc:containers' ]
 
 - name: Manage LXC containers
-  environment:
-    DOWNLOAD_KEYSERVER: '{{ ansible_local.keyring.keyserver | d("hkp://keyserver.ubuntu.com") }}'
-  vars:
-    template_options:
-      - '--dist {{ (item.distribution | d(lxc__default_container_distribution)) | lower }}'
-      - '--release {{ (item.release | d(lxc__default_container_release)) | lower }}'
-      - '--arch {{ (item.architecture | d(lxc__default_container_architecture)) | lower }}'
-  lxc_container:
+  community.general.lxc_container:
     name:                '{{ item.name | d(item) }}'
     archive:             '{{ item.archive | d(omit) }}'
     archive_compression: '{{ item.archive_compression | d(omit) }}'
@@ -341,6 +334,13 @@
     thinpool:            '{{ item.thinpool | d(omit) }}'
     vg_name:             '{{ item.vg_name | d(omit) }}'
     vfs_root:            '{{ item.zfs_root | d(omit) }}'
+  environment:
+    DOWNLOAD_KEYSERVER: '{{ ansible_local.keyring.keyserver | d("hkp://keyserver.ubuntu.com") }}'
+  vars:
+    template_options:
+      - '--dist {{ (item.distribution | d(lxc__default_container_distribution)) | lower }}'
+      - '--release {{ (item.release | d(lxc__default_container_release)) | lower }}'
+      - '--arch {{ (item.architecture | d(lxc__default_container_architecture)) | lower }}'
   loop: '{{ lxc__containers }}'
   tags: [ 'role::lxc:containers' ]
   when: ansible_local | d() and ansible_local.lxc | d() and

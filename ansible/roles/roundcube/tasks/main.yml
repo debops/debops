@@ -16,7 +16,7 @@
     name: 'secret'
 
 - name: Pre hooks
-  include_tasks: '{{ lookup("debops.debops.task_src", "roundcube/pre_main.yml") }}'
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "roundcube/pre_main.yml") }}'
 
 
 # ---- Environment ----
@@ -43,7 +43,8 @@
   until: roundcube__register_packages is succeeded
   tags: [ 'role::roundcube:pkg' ]
 
-- include_tasks: deploy_roundcube.yml
+- name: Deploy Roundcube
+  ansible.builtin.include_tasks: deploy_roundcube.yml
   tags: [ 'role::roundcube:deployment' ]
 
 - name: Make sure that Ansible local facts directory exists
@@ -64,7 +65,9 @@
   ansible.builtin.meta: 'flush_handlers'
 
 # ---- Skins/Themes ----
-- include_tasks: configure_skins.yml
+
+- name: Configure skins
+  ansible.builtin.include_tasks: configure_skins.yml
   tags: [ 'role::roundcube:skins', 'role::roundcube:themes' ]
 
 # ---- Configuration ----
@@ -79,11 +82,13 @@
   when: roundcube__database_map[roundcube__database].dbtype == 'sqlite'
   tags: [ 'role::roundcube:database' ]
 
-- include_tasks: configure_mysql.yml
+- name: Configure MySQL/MariaDB support
+  ansible.builtin.include_tasks: configure_mysql.yml
   when: roundcube__database_map[roundcube__database].dbtype == 'mysql'
   tags: [ 'role::roundcube:database' ]
 
-- include_tasks: configure_postgresql.yml
+- name: Configure PostgreSQL support
+  ansible.builtin.include_tasks: configure_postgresql.yml
   when: roundcube__database_map[roundcube__database].dbtype == 'postgresql'
   tags: [ 'role::roundcube:database' ]
 
@@ -123,4 +128,4 @@
   tags: [ 'role::roundcube:database' ]
 
 - name: Post hooks
-  include_tasks: '{{ lookup("debops.debops.task_src", "roundcube/post_main.yml") }}'
+  ansible.builtin.include_tasks: '{{ lookup("debops.debops.task_src", "roundcube/post_main.yml") }}'

@@ -219,12 +219,12 @@
   register: netbox__register_migration
 
 - name: Create Django superuser account
-  environment:
-    DJANGO_SUPERUSER_PASSWORD: '{{ netbox__superuser_password }}'
-  django_manage:
+  community.general.django_manage:
     command: 'createsuperuser --noinput --username={{ netbox__superuser_name }} --email={{ netbox__superuser_email }}'
     app_path: '{{ netbox__git_checkout + "/netbox" }}'
     virtualenv: '{{ netbox__virtualenv }}'
+  environment:
+    DJANGO_SUPERUSER_PASSWORD: '{{ netbox__superuser_password }}'
   become: True
   become_user: '{{ netbox__user }}'
   when: (not netbox__register_installed.stat.exists | bool and

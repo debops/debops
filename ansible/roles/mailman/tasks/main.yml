@@ -110,7 +110,7 @@
   become_user: '{{ mailman__user }}'
 
 - name: Create Django superuser account
-  django_manage:  # noqa no-handler
+  community.general.django_manage:  # noqa no-handler
     command: 'createsuperuser --noinput --username={{ mailman__superuser_name }} --email={{ mailman__superuser_email }}'
     app_path: '/usr/share/mailman3-web'
   when: mailman__register_aliases is changed and
