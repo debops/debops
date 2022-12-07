@@ -167,6 +167,16 @@ General
   :file:`/run/mysqld/mysqld.sock` UNIX socket to do so, due to changes in
   MariaDB restricting local connections for the ``root`` UNIX account.
 
+:ref:`debops.apt_preferences` role
+''''''''''''''''''''''''''''''''''
+
+- The pin priorities for the Debian ``-updates`` and ``-security`` APT
+  repositories have been raised to 550 to match the raised priority of the
+  primary repository. This should ensure that when the custom pin priorities
+  are active, updates to Debian packages are correctly installed as well. See
+  :envvar:`apt_preferences__debian_stable_default_preset_list` variable for
+  details.
+
 :ref:`debops.docker_server` role
 ''''''''''''''''''''''''''''''''
 

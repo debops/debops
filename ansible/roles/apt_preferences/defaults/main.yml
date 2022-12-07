@@ -90,6 +90,16 @@ apt_preferences__debian_stable_default_preset_list:
       Pin: release o=Debian,n={{ ansible_distribution_release }}
       Pin-Priority: 550
 
+      Explanation: Configure the security updates explicitly to slightly higher than the default priority of 500 so that security updates are not missing
+      Package: *
+      Pin: release o=Debian,n={{ ansible_distribution_release }}-security
+      Pin-Priority: 550
+
+      Explanation: Configure the stable-updates explicitly to slightly higher than the default priority of 500 so that stable-updates are not missing
+      Package: *
+      Pin: release o=Debian,n={{ ansible_distribution_release }}-updates
+      Pin-Priority: 550
+
       Explanation: Configure the installed release explicitly to slightly higher than the default priority of 500 so that release packages are preferred over third party repos.
       Package: *
       Pin: release o=Qubes Debian,n={{ ansible_distribution_release }}
