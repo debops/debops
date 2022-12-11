@@ -42,6 +42,19 @@ if [ -d "/etc/letsencrypt/live" ] ; then
                 ln -sf -T public/cert_intermediate.pem default.crt > /dev/null
              fi
         fi
+
+        # When on proxmox, update the application certificates
+        if test -f "/etc/pve/.members"; then
+            nodename=$(python3 <<_EOF
+import json
+with open("/etc/pve/.members") as fd:
+    data = json.load(fd)
+print(data["nodename"])
+_EOF
+)
+            # Use a set without DH params
+            pvesh create /nodes/${nodename}/certificates/custom -restart 1 -force -certificate "$(cat public/cert_intermediate.pem)" -key "$(cat default.key)"
+        fi
     fi
 
 fi
