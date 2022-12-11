@@ -32,6 +32,13 @@ Added
 - The role can now download APT repository GPG keys to separate keyring files,
   which can be used to scope a given GPG key to specific APT repositories.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- The Let's Encrypt/ACME certificate renewal script will check if a Proxmox VE
+  is present on the host, in which case it will attempt to update the
+  certificates stored in the internal Proxmox certificate store.
+
 Changed
 ~~~~~~~
 
