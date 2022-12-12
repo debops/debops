@@ -41,6 +41,15 @@ Updates of upstream application versions
 - In the :ref:`debops.owncloud` role, the ownCloud support has been updated to
   ``v10.10``.
 
+General
+'''''''
+
+- The HTML documentation build process has been improved. The
+  :command:`yaml2rst` script will be invoked only when a defaults file is
+  modified, significantly speeding up documentation rebuilds. Users can also
+  modify the :command:`sphinx` options specified in the Makefile via an
+  environment variable if they wish.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 
