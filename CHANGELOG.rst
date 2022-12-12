@@ -167,6 +167,12 @@ General
   :file:`/run/mysqld/mysqld.sock` UNIX socket to do so, due to changes in
   MariaDB restricting local connections for the ``root`` UNIX account.
 
+- The HTML documentation build process has been improved. The
+  :command:`yaml2rst` script will be invoked only when a defaults file is
+  modified, significantly speeding up documentation rebuilds. Users can also
+  modify the :command:`sphinx` options specified in the Makefile via an
+  environment variable if they wish.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 
