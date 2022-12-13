@@ -34,6 +34,13 @@
     append: True
   notify: [ 'Check zabbix-agent and restart' ]
 
+- name: Divert Zabbix agent configuration file
+  debops.debops.dpkg_divert:
+    path: '/etc/zabbix/zabbix_agentd.conf'
+    state: 'present'
+    delete: True
+  notify: [ 'Check zabbix-agent and restart' ]
+
 # Zabbix agent configuration [[[1
 - name: Generate Zabbix agent configuration file
   ansible.builtin.template:
