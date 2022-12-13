@@ -75,6 +75,12 @@ General
 - The :file:`/etc/pip.conf` configuration file template can be overridden via
   the DebOps template override mechanism.
 
+:ref:`debops.zabbix_agent` role
+'''''''''''''''''''''''''''''''
+
+- The original Zabbix Agent configuration file will be diverted before a new
+  one is generated (makes sense only on new installations).
+
 Fixed
 ~~~~~
 
