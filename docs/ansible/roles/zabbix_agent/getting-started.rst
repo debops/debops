@@ -8,7 +8,22 @@ Getting started
 Default configuration
 ---------------------
 
-The service will be configured to serve run a Zabbix monitoring agent.
+The role supports `multiple flavors of Zabbix Agent`__ included in Debian, one
+if which needs to be specified using :envvar:`zabbix_agent__flavor` variable
+(the default is ``C`` flavor). To change the installed flavor, the current
+installation needs to be removed - to do that, you can execute the role with
+and extra variable on the command line:
+
+.. code-block:: console
+
+   debops run service/zabbix_agent -e 'zabbix_agent__deploy_state=absent'
+
+This will tell the role to remove the current installation. After that, by
+changing the :envvar:`zabbix_agent__flavor` in the Ansible inventory, you can
+install a different flavor of the Zabbix Agent.
+
+.. __: https://www.zabbix.com/documentation/current/en/manual/appendix/agent_comparison
+
 
 Example inventory
 -----------------
