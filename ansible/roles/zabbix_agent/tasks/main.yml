@@ -22,7 +22,8 @@
   ansible.builtin.apt:
     name: '{{ (zabbix_agent__base_packages
              + zabbix_agent__packages) | flatten }}'
-    state: 'present'
+    state: '{{ zabbix_agent__deploy_state }}'
+    purge: True
   register: zabbix_agent__register_packages
   until: zabbix_agent__register_packages is succeeded
 
@@ -33,13 +34,14 @@
     state: 'present'
     append: True
   notify: [ 'Check zabbix-agent and restart' ]
+  when: zabbix_agent__deploy_state != 'absent'
 
 - name: Divert Zabbix agent configuration file
   debops.debops.dpkg_divert:
     path: '/etc/zabbix/zabbix_agentd.conf'
     state: 'present'
-    delete: True
   notify: [ 'Check zabbix-agent and restart' ]
+  when: zabbix_agent__deploy_state != 'absent'
 
 # Zabbix agent configuration [[[1
 - name: Generate Zabbix agent configuration file
@@ -51,6 +53,7 @@
     mode: '0640'
     unsafe_writes: '{{ True if (core__unsafe_writes | d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
   notify: [ 'Check zabbix-agent and restart' ]
+  when: zabbix_agent__deploy_state != 'absent'
 
 - name: Install secret key
   ansible.builtin.copy:
@@ -61,6 +64,7 @@
     mode: '0640'
   no_log: '{{ debops__no_log | d(True) }}'
   notify: [ 'Check zabbix-agent and restart' ]
+  when: zabbix_agent__deploy_state != 'absent'
 
 - name: Ensure configuration folder exists
   ansible.builtin.file:
@@ -69,6 +73,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
+  when: zabbix_agent__deploy_state != 'absent'
 
 - name: Ensure log folder exists
   ansible.builtin.file:
@@ -77,6 +82,7 @@
     owner: '{{ zabbix_agent__user }}'
     group: '{{ zabbix_agent__group }}'
     mode: '0755'
+  when: zabbix_agent__deploy_state != 'absent'
 
 # Ansible facts [[[1
 - name: Make sure that Ansible local fact directory exists
@@ -86,6 +92,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
+  when: zabbix_agent__deploy_state != 'absent'
 
 - name: Create local facts of Zabbix agent
   ansible.builtin.template:
@@ -96,7 +103,18 @@
     mode: '0755'
     unsafe_writes: '{{ True if (core__unsafe_writes | d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
   notify: [ 'Refresh host facts' ]
+  when: zabbix_agent__deploy_state != 'absent'
   tags: [ 'meta::facts' ]
+
+- name: Prepare cleanup during package removal
+  ansible.builtin.import_role:
+    name: 'dpkg_cleanup'
+  vars:
+    dpkg_cleanup__dependent_packages:
+      - '{{ zabbix_agent__dpkg_cleanup__dependent_packages }}'
+  when: zabbix_agent__deploy_state != 'absent'
+  tags: [ 'role::dpkg_cleanup', 'skip::dpkg_cleanup',
+          'role::zabbix_agent:dpkg_cleanup' ]
 
 - name: Reload facts if they were modified
   ansible.builtin.meta: 'flush_handlers'
