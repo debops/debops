@@ -81,6 +81,10 @@ General
 - The original Zabbix Agent configuration file will be diverted before a new
   one is generated (makes sense only on new installations).
 
+- The :ref:`debops.etc_services` role integration has been removed because
+  ``zabbix-agent`` entry already exists in official :file:`/etc/services`
+  database included in Debian.
+
 Fixed
 ~~~~~
 
