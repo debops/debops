@@ -1,9 +1,9 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# .. Copyright (C) 2021 Julien Lecomte <julien@lecomte.at>
-# .. Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
-# .. Copyright (C) 2021 DebOps <https://debops.org/>
+# .. Copyright (C) 2021      Julien Lecomte <julien@lecomte.at>
+# .. Copyright (C) 2021-2022 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2021-2022 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _zabbix_agent__ref_defaults:
@@ -45,7 +45,9 @@ zabbix_agent__deploy_state: 'present'
 # .. envvar:: zabbix_agent__base_packages [[[
 #
 # List of APT packages to install for :command:`zabbix_agent` support.
-zabbix_agent__base_packages: [ 'zabbix-agent' ]
+zabbix_agent__base_packages: '{{ ["zabbix-agent"]
+                                 if (zabbix_agent__flavor == "C")
+                                 else ["zabbix-agent2"] }}'
 
                                                                    # ]]]
 # .. envvar:: zabbix_agent__packages [[[
@@ -107,13 +109,21 @@ zabbix_agent__additional_groups:
   - '{{ (ansible_local.proc_hidepid.group|d("procadmins"))
         if (ansible_local.proc_hidepid.enabled|d())|bool
         else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: zabbix_agent__conf_file_path [[[
+#
+# The absolute path to the main Zabbix Agent configuration file.
+zabbix_agent__conf_file_path: '{{ "/etc/zabbix/zabbix_agentd.conf"
+                                  if (zabbix_agent__flavor == "C")
+                                  else "/etc/zabbix/zabbix_agent2.conf" }}'
                                                                    # ]]]
                                                                    # ]]]
 # Zabbix agent configuration [[[
 # ------------------------------
 
-# These variables define the contents of the
-# :file:`/etc/zabbix/zabbix_agentd.conf` configuration file.
+# These variables define the contents of the main Zabbix Agent configuration
+# file.
 
 # .. envvar:: zabbix_agent__tls_psk_identity [[[
 #
@@ -141,7 +151,7 @@ zabbix_agent__original_configuration:
     comment: |
       Name of PID file.
     value: '/var/run/zabbix/zabbix_agentd.pid'
-    state: 'present'
+    state: '{{ "present" if (zabbix_agent__flavor == "C") else "comment" }}'
 
   - name: 'LogType'
     comment: |
@@ -157,7 +167,7 @@ zabbix_agent__original_configuration:
       Log file name for LogType 'file' parameter.
       Mandatory: yes, if LogType is set to file, otherwise no
     value: '/var/log/zabbix-agent/zabbix_agentd.log'
-    state: 'present'
+    state: '{{ "present" if (zabbix_agent__flavor == "C") else "comment" }}'
 
   - name: 'LogFileSize'
     comment: |
@@ -165,12 +175,6 @@ zabbix_agent__original_configuration:
       0 - disable automatic log rotation.
       Range: 0-1024
     value: 0
-    state: 'present'
-
-  - name: 'PidFile'
-    comment: |
-      Name of PID file.
-    value: '/var/run/zabbix/zabbix_agentd.pid'
     state: 'present'
 
   - name: 'DebugLevel'
@@ -359,7 +363,9 @@ zabbix_agent__original_configuration:
     comment: |
       You may include individual files or all files in a directory in the configuration file.
       Installing Zabbix will create include directory in /etc/zabbix, unless modified during the compile time.
-    value: '/etc/zabbix/zabbix_agentd.conf.d/*.conf'
+    value: '{{ "/etc/zabbix/zabbix_agentd.conf.d/*.conf"
+               if (zabbix_agent__flavor == "C")
+               else "/etc/zabbix/zabbix_agent2.d/*.conf" }}'
     state: 'present'
 
   - name: 'UnsafeUserParameters'
@@ -468,6 +474,13 @@ zabbix_agent__original_configuration:
       Full pathname of a file containing the pre-shared key.
     value: ''
     state: 'comment'
+
+  - name: 'IncludePlugins'
+    option: 'Include'
+    comment: 'Include configuration files for plugins'
+    value: './zabbix_agent2.d/plugins.d/*.conf'
+    state: '{{ "present" if zabbix_agent__flavor == "Go" else "absent" }}'
+
                                                                    # ]]]
 # .. envvar:: zabbix_agent__default_configuration [[[
 #
@@ -484,7 +497,7 @@ zabbix_agent__default_configuration:
 
   - name: 'User'
     value: '{{ zabbix_agent__user }}'
-    state: 'present'
+    state: '{{ "present" if zabbix_agent__flavor == "C" else "ignore" }}'
 
   - name: 'TLSConnect'
     value: 'psk'
@@ -560,5 +573,16 @@ zabbix_agent__dpkg_cleanup__dependent_packages:
       - '/etc/zabbix/zabbix_agentd.conf.d'
     restart_services:
       - 'ferm'
+    state: '{{ "present" if (zabbix_agent__flavor == "C") else "absent" }}'
+
+  - name: 'zabbix-agent2'
+    ansible_fact: 'zabbix_agent'
+    revert_files:
+      - '/etc/zabbix/zabbix_agent2.conf'
+    remove_files:
+      - '/etc/zabbix/secret.key'
+    restart_services:
+      - 'ferm'
+    state: '{{ "present" if (zabbix_agent__flavor == "Go") else "absent" }}'
                                                                    # ]]]
                                                                    # ]]]
