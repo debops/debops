@@ -104,6 +104,14 @@ General
 
 - The playbook can now be configured to skip the saslauthd role execution.
 
+:ref:`debops.zabbix_agent` role
+'''''''''''''''''''''''''''''''
+
+- The role now supports management of Zabbix Agent (written in C) as well as
+  Zabbix Agent 2 (written in Go), available in Debian repositories. Only one
+  flavor can be managed at a time, but role provides an easy way to switch
+  between the two flavors.
+
 Changed
 ~~~~~~~
 

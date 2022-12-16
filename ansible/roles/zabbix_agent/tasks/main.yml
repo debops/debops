@@ -1,8 +1,9 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# Copyright (C) 2021 Julien Lecomte <julien@lecomte.at>
-# Copyright (C) 2021 DebOps <https://debops.org/>
+# Copyright (C) 2021      Julien Lecomte <julien@lecomte.at>
+# Copyright (C) 2021-2022 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021-2022 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
@@ -33,26 +34,26 @@
     groups: '{{ zabbix_agent__additional_groups | flatten | join(",") }}'
     state: 'present'
     append: True
-  notify: [ 'Check zabbix-agent and restart' ]
+  notify: [ 'Check zabbix-agent and restart', 'Check zabbix-agent2 and restart' ]
   when: zabbix_agent__deploy_state != 'absent'
 
 - name: Divert Zabbix agent configuration file
   debops.debops.dpkg_divert:
-    path: '/etc/zabbix/zabbix_agentd.conf'
+    path: '{{ zabbix_agent__conf_file_path }}'
     state: 'present'
-  notify: [ 'Check zabbix-agent and restart' ]
+  notify: [ 'Check zabbix-agent and restart', 'Check zabbix-agent2 and restart' ]
   when: zabbix_agent__deploy_state != 'absent'
 
 # Zabbix agent configuration [[[1
 - name: Generate Zabbix agent configuration file
   ansible.builtin.template:
     src: 'etc/zabbix/zabbix_agentd.conf.j2'
-    dest: '/etc/zabbix/zabbix_agentd.conf'
+    dest: '{{ zabbix_agent__conf_file_path }}'
     owner: 'root'
     group: '{{ zabbix_agent__group }}'
     mode: '0640'
     unsafe_writes: '{{ True if (core__unsafe_writes | d(ansible_local.core.unsafe_writes | d()) | bool) else omit }}'
-  notify: [ 'Check zabbix-agent and restart' ]
+  notify: [ 'Check zabbix-agent and restart', 'Check zabbix-agent2 and restart' ]
   when: zabbix_agent__deploy_state != 'absent'
 
 - name: Install secret key
@@ -63,7 +64,7 @@
     group: '{{ zabbix_agent__group }}'
     mode: '0640'
   no_log: '{{ debops__no_log | d(True) }}'
-  notify: [ 'Check zabbix-agent and restart' ]
+  notify: [ 'Check zabbix-agent and restart', 'Check zabbix-agent2 and restart' ]
   when: zabbix_agent__deploy_state != 'absent'
 
 - name: Ensure configuration folder exists
@@ -73,7 +74,8 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
-  when: zabbix_agent__deploy_state != 'absent'
+  when: zabbix_agent__deploy_state != 'absent' and
+        zabbix_agent__flavor == 'C'
 
 - name: Ensure log folder exists
   ansible.builtin.file:
@@ -82,7 +84,8 @@
     owner: '{{ zabbix_agent__user }}'
     group: '{{ zabbix_agent__group }}'
     mode: '0755'
-  when: zabbix_agent__deploy_state != 'absent'
+  when: zabbix_agent__deploy_state != 'absent' and
+        zabbix_agent__flavor == 'C'
 
 # Ansible facts [[[1
 - name: Make sure that Ansible local fact directory exists
