@@ -150,9 +150,7 @@
   when: apparmor__fact_apparmor_enabled_and_loaded | bool and apparmor__register_tunables is changed
 
 - name: Unload AppArmor profiles
-  ansible.builtin.command: service apparmor teardown
-  args:
-    warn: False
+  ansible.builtin.command: service apparmor teardown  # noqa command-instead-of-module
   when: (not (apparmor__enabled | d() | bool))
 
 - name: Ensure AppArmor service is stopped
