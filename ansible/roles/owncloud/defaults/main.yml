@@ -259,109 +259,9 @@ owncloud__keyserver: '{{ ansible_local.keyring.keyserver | d("hkp://keyserver.ub
 # ---------------------
 #   ownCloud upgrades
 # ---------------------
-
-# .. envvar:: owncloud__auto_database_upgrade_enabled
 #
-# On each update of ownCloud, a database update must be performed before
-# ownCloud can be used again.
-# The ownCloud package maintainers have not automated this setup so that even
-# security upgrades can not be installed unattended.
-#
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/maintenance/package_upgrade.html#upgrade-quickstart>`__ for details.
-#
-# When this option is set to ``True``, the role enables a hook script for
-# :command:`dpkg` so that when :command:`dpkg` upgrades ownCloud, the database upgrade is
-# automatically performed.
-#
-# Change to ``False`` when you want to do database upgrades manually after upgrading the ownCloud packages.
-#
-# .. note:: :envvar:`owncloud__auto_database_upgrade_enabled` depends on
-#    automatic database upgrades to be enabled.
-#
-owncloud__auto_database_upgrade_enabled: '{{ True if (owncloud__variant == "owncloud") else False }}'
-
-
-# .. envvar:: owncloud__dpkg_hook_script
-#
-# File path where the package manager hook script is stored.
-owncloud__dpkg_hook_script: '{{
-  (ansible_local.fhs.lib | d("/usr/local/lib"))
-  + "/owncloud_dpkg_hook" }}'
-
-
-# .. envvar:: owncloud__auto_database_upgrade_migration_test
-#
-# Whether database schema migration should be simulated before upgrading the production database.
-# For Nextcloud it cannot be configured and this variable is ignored.
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/maintenance/upgrade.html#migration-test>`__ for details.
-owncloud__auto_database_upgrade_migration_test: True
-
-
-# .. envvar:: owncloud__auto_database_upgrade_3party_app_disable
-#
-# Should third party apps by disabled during/after upgrades? The upstream default as of ownCloud 9.0
-# is ``True``. For Nextcloud it cannot be configured and this variable is ignored.
-owncloud__auto_database_upgrade_3party_app_disable: True
-
-
-# .. envvar:: owncloud__auto_database_upgrade_hook_script_packages_trigger
-#
-# List of packages for which the package manager hook script should attempt to
-# do a database upgrade when :envvar:`owncloud__auto_database_upgrade_enabled`
-# is ``True``.
-#
-# This variable is currently not being used.
-# The check if ownCloud needs an upgrade is performed for each
-# installed/upgraded package but in an very efficient way.
-owncloud__auto_database_upgrade_hook_script_packages_trigger:
-  - 'owncloud'
-
-
-# .. envvar:: owncloud__auto_security_updates_enabled
-#
-# Whether automatic ownCloud upgrades should be performed by
-# ``unattended_upgrades``.
-#
-# FIXME: Needs more testing before the role maintainers feel confident to enable this by default.
-# Refer to: https://github.com/debops/ansible-owncloud/issues/28
-owncloud__auto_security_updates_enabled: False
-
-
-# .. envvar:: owncloud__post_upgrade_hook_role_list
-#
-# List of script file paths which should be executed after every ownCloud
-# update.
-# For more information refer to :ref:`owncloud__ref_post_upgrade_hook`.
-# This variable is used internally, controlled by other variables of this role.
-owncloud__post_upgrade_hook_role_list: []
-
-
-# .. envvar:: owncloud__post_upgrade_hook_list
-#
-# List of script file paths which should be executed after every ownCloud
-# update.
-# For more information refer to :ref:`owncloud__ref_post_upgrade_hook`.
-# This variable is intended to be used in Ansible’s global inventory.
-owncloud__post_upgrade_hook_list: []
-
-
-# .. envvar:: owncloud__post_upgrade_hook_group_list
-#
-# List of script file paths which should be executed after every ownCloud
-# update.
-# For more information refer to :ref:`owncloud__ref_post_upgrade_hook`.
-# This variable is intended to be used in a host inventory group of Ansible
-# (only one host group is supported).
-owncloud__post_upgrade_hook_group_list: []
-
-
-# .. envvar:: owncloud__post_upgrade_hook_host_list
-#
-# List of script file paths which should be executed after every ownCloud
-# update.
-# For more information refer to :ref:`owncloud__ref_post_upgrade_hook`.
-# This variable is intended to be used in the inventory of hosts.
-owncloud__post_upgrade_hook_host_list: []
+# .. warning:: Auto upgrading is deprecated. If you want this, add support for
+#    https://github.com/nextcloud/docker to this Ansible role.
 
 
 # .. ownCloud source and deployment [[[1
@@ -2468,7 +2368,4 @@ owncloud__unattended_upgrades__dependent_origins:
 
   - origin: 'site=download.owncloud.org'
     by_role: 'debops.owncloud'
-    state: '{{ "present"
-               if (owncloud__variant in ["owncloud"] and
-                   owncloud__auto_security_updates_enabled | bool)
-               else "absent" }}'
+    state: 'absent'

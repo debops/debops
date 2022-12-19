@@ -515,6 +515,13 @@ General
   package can be used as an alternative. Or you can consider installing
   ``nnn``.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Drop ownCloud full auto upgrade support. Was never fully supported. Strategy
+  of Nextcloud is Docker to provide auto upgrades. DebOps will not provide a
+  custom solution.
+
 
 `debops v3.0.0`_ - 2022-02-17
 -----------------------------

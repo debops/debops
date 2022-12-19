@@ -179,21 +179,10 @@
 
 # ownCloud upgrades [[[
 
-- name: Enable the package manager hook script for ownCloud
-  ansible.builtin.template:
-    src: 'etc/apt/apt.conf.d/dpkg-hook.j2'
-    dest: '/etc/apt/apt.conf.d/80owncloud-dpkg-hook'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  tags: [ 'role::owncloud:auto_upgrade' ]
-  when: (owncloud__auto_database_upgrade_enabled | bool)
-
 - name: Disable the package manager hook script for ownCloud
   ansible.builtin.file:
     path: '/etc/apt/apt.conf.d/80owncloud-dpkg-hook'
     state: 'absent'
-  when: not (owncloud__auto_database_upgrade_enabled | bool)
 
 # .. ]]]
 
