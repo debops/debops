@@ -315,11 +315,11 @@ owncloud__variant_name_map:
 #
 # Supported releases:
 #
-# * Nextcloud ``22.0``
+# * Nextcloud ``24.0``
 #
 # Upcoming:
 #
-# * Nextcloud ``23.0`` (Implemented based on documentation changes but untested).
+# * Nextcloud ``25.0`` (Implemented based on documentation changes but untested).
 #
 # Unsupported:
 #
@@ -332,7 +332,7 @@ owncloud__variant_name_map:
 # and the `package index <https://download.owncloud.org/download/repositories/>`_ for more details.
 owncloud__release: '{{ "10"
                        if (owncloud__variant == "owncloud")
-                       else "22.0" }}'
+                       else "24.0" }}'
 
 
 # .. envvar:: owncloud__distribution
@@ -2039,13 +2039,24 @@ owncloud__apache__dependent_vhosts:
     http_sec_headers_directive_options: 'set'
 
 
+# .. envvar:: owncloud__nginx__dependent_maps
+#
+# :program:`nginx` maps managed by the :ref:`debops.nginx` role.
+owncloud__nginx__dependent_maps:
+
+  - name: 'asset_immutable'
+    map: '$arg_v $asset_immutable'
+    mapping: '"" "";'
+    default: 'immutable'
+
+
 # .. envvar:: owncloud__nginx__dependent_servers
 #
 # :program:`nginx` server configuration managed by the :ref:`debops.nginx` role.
 owncloud__nginx__dependent_servers:
 
   ## https://docs.nextcloud.com/server/17/admin_manual/installation/nginx.html
-  ## Corresponds to 65ff129d27a912a27c0b4ebe42b2c59df262b72a
+  ## Corresponds to 5527a8c1ffc18d614e51ab18b61daccbbb047af9
   ## from https://github.com/nextcloud/documentation.git
   - type: 'default'
     enabled: True
@@ -2116,6 +2127,14 @@ owncloud__nginx__dependent_servers:
       # Uncomment if your server is build with the ngx_pagespeed module
       # This module is currently not supported.
       #pagespeed off;
+
+      # The settings allows you to optimize the HTTP2 bandwitdth.
+      # See https://blog.cloudflare.com/delivering-http-2-upload-speed-improvements/
+      # for tunning hints
+      # TODO(ypid): Nginx will be able to autotune this value when the patch gets accepted.
+      # DebOps will drop this manual tuning based on Nextcloud recommendation
+      # when the Nginx release is available in Debian oldstable.
+      client_body_buffer_size 512k;
 
       {% if not (owncloud__variant == "nextcloud" and
                  owncloud__release is version("18.0", ">=")) %}
@@ -2208,7 +2227,7 @@ owncloud__nginx__dependent_servers:
       - pattern: '~ \.(?:css|js|svg|gif|png|jpg|ico|wasm|tflite)$'
         options: |
           try_files $uri /index.php$request_uri;
-          expires 6M;         # Cache-Control policy borrowed from `.htaccess`
+          add_header Cache-Control "public, max-age=15778463, $asset_immutable";
           access_log off;     # Optional: Don't log access to assets
 
           {% if not (owncloud__nginx_access_log_assets | bool) %}

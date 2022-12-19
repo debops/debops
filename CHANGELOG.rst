@@ -131,6 +131,9 @@ Updates of upstream application versions
 - In the :ref:`debops.owncloud` role, the ownCloud support has been updated to
   ``v10.10``.
 
+- In the :ref:`debops.owncloud` role, the Nextcloud support has been updated to
+  ``v24.0`` and ``v25.0``.
+
 General
 ~~~~~~~
 
