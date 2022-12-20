@@ -294,6 +294,10 @@ General
 - Fixed an issue with custom Ansible plugins not working in "standalone" mode
   without the DebOps scripts installed on Ansible Controller.
 
+- The ``warn`` parameter in the ``shell`` and ``command`` Ansible modules has
+  been removed in Ansible 2.14. It has been removed in various DebOps roles to
+  allow playbook execution to work correctly.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
