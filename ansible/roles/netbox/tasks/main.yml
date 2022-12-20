@@ -99,10 +99,9 @@
 - name: Get commit hash of target checkout
   environment:
     GIT_WORK_TREE: '{{ netbox__git_checkout }}'
-  ansible.builtin.command: git rev-parse {{ netbox__git_version }}
+  ansible.builtin.command: git rev-parse {{ netbox__git_version }}  # noqa command-instead-of-module
   args:
     chdir: '{{ netbox__git_dest }}'
-    warn: False
   become: True
   become_user: '{{ netbox__user }}'
   register: netbox__register_target_branch
@@ -111,10 +110,9 @@
 - name: Checkout NetBox
   environment:  # noqa no-handler
     GIT_WORK_TREE: '{{ netbox__git_checkout }}'
-  ansible.builtin.command: git checkout -f {{ netbox__git_version }}
+  ansible.builtin.command: git checkout -f {{ netbox__git_version }}  # noqa command-instead-of-module
   args:
     chdir: '{{ netbox__git_dest }}'
-    warn: False
   become: True
   become_user: '{{ netbox__user }}'
   register: netbox__register_checkout

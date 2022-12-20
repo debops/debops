@@ -78,10 +78,9 @@
 - name: Get commit hash of target checkout
   environment:
     GIT_WORK_TREE: '{{ dokuwiki__git_checkout }}'
-  ansible.builtin.command: git rev-parse {{ dokuwiki__git_version }}
+  ansible.builtin.command: git rev-parse {{ dokuwiki__git_version }}  # noqa command-instead-of-module
   args:
     chdir: '{{ dokuwiki__git_dest }}'
-    warn: False
   become: True
   become_user: '{{ dokuwiki__user }}'
   register: dokuwiki__register_target_branch
@@ -90,10 +89,9 @@
 - name: Checkout DokuWiki
   environment:
     GIT_WORK_TREE: '{{ dokuwiki__git_checkout }}'
-  ansible.builtin.command: git checkout -f {{ dokuwiki__git_version }}
+  ansible.builtin.command: git checkout -f {{ dokuwiki__git_version }}   # noqa command-instead-of-module
   args:
     chdir: '{{ dokuwiki__git_dest }}'
-    warn: False
   become: True
   become_user: '{{ dokuwiki__user }}'
   register: dokuwiki__register_checkout

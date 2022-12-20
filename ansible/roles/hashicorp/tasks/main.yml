@@ -224,12 +224,10 @@
             (ansible_local.hashicorp.applications[item.0] != hashicorp__combined_version_map[item.0]))))))
   tags: [ 'role::hashicorp:install' ]
 
-- name: Synchronize Consul Web UI public directory
+- name: Synchronize Consul Web UI public directory  # noqa command-instead-of-module
   ansible.builtin.shell: 'rsync --delete --recursive --prune-empty-dirs
          {{ hashicorp__lib + "/" + item + "/" + hashicorp__combined_version_map[item] + "/web_ui/" }}
          {{ hashicorp__consul_webui_path }} && chown -R root:root {{ hashicorp__consul_webui_path }}'
-  args:  # noqa no-handler
-    warn: False
   with_items: '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
   when: (hashicorp__consul_webui | bool and item == 'consul' and hashicorp__register_unpack_webui is changed)
 

@@ -67,10 +67,9 @@
   register: etesync__register_source
 
 - name: Verify git tag signature
-  ansible.builtin.shell: git verify-tag --raw "$(git describe)"
+  ansible.builtin.shell: git verify-tag --raw "$(git describe)"  # noqa command-instead-of-module
   args:
     chdir: '{{ etesync__git_checkout }}'
-    warn: False
   become: True
   become_user: '{{ etesync__user }}'
   changed_when: False
