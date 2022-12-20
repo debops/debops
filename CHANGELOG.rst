@@ -96,6 +96,13 @@ General
 Fixed
 ~~~~~
 
+General
+'''''''
+
+- The ``warn`` parameter in the ``shell`` and ``command`` Ansible modules has
+  been removed in Ansible 2.14. It has been removed in various DebOps roles to
+  allow playbook execution to work correctly.
+
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
