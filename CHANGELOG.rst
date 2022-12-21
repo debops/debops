@@ -131,6 +131,9 @@ Updates of upstream application versions
 - In the :ref:`debops.owncloud` role, the ownCloud support has been updated to
   ``v10.10``.
 
+- In the :ref:`debops.owncloud` role, the Nextcloud support has been updated to
+  ``v24.0`` and ``v25.0``.
+
 General
 ~~~~~~~
 
@@ -518,6 +521,13 @@ General
 - The ``ranger`` APT package will not be installed by default. The ``mc``
   package can be used as an alternative. Or you can consider installing
   ``nnn``.
+
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Drop ownCloud full auto upgrade support. Was never fully supported. Strategy
+  of Nextcloud is Docker to provide auto upgrades. DebOps will not provide a
+  custom solution.
 
 
 `debops v3.0.0`_ - 2022-02-17
