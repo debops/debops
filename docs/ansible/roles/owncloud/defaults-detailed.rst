@@ -150,21 +150,6 @@ The ownCloud admin user can change/delete the file and directory:
          Changes done to this file will be overwritten by subsequent Ansible runs.
 
 
-.. _owncloud__ref_post_upgrade_hook:
-
-owncloud__post_upgrade_hook_list
---------------------------------
-
-Each element of the  :envvar:`owncloud__post_upgrade_hook_list` list either
-is a simple string of the script‘s file path or a dict with the following options:
-
-``path``
-  Optional, string. File path of the script.
-
-``state``
-  Required, string. Allows to specify if upgrade hook script should be invoked
-  (``present``) or ignored (``absent``) during after the upgrade.
-
 .. _owncloud__ref_ldap_config:
 
 owncloud__ldap_config

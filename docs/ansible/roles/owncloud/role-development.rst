@@ -13,7 +13,7 @@ Nextcloud version upgrade
 
 This is a checklist to upgrade the role to a new Nextcloud major version. It only documents steps specific to Nextcloud. DebOps procedures that are common for application version upgrades are ignored.
 
-- Run something like :command:`git diff stable22..stable23 -- admin_manual/installation/nginx.rst admin_manual/installation/nginx-root.conf.sample admin_manual/installation/source_installation.rst`
+- Run something like :command:`git diff origin/stable23..origin/stable25 -- admin_manual/installation/nginx.rst admin_manual/installation/nginx-root.conf.sample admin_manual/installation/source_installation.rst admin_manual/installation/system_requirements.rst`
   in the `Nextcloud documentation git repo`__ and apply all changes to the role.
 
 .. __: in https://github.com/nextcloud/documentation

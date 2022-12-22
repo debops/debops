@@ -259,109 +259,9 @@ owncloud__keyserver: '{{ ansible_local.keyring.keyserver | d("hkp://keyserver.ub
 # ---------------------
 #   ownCloud upgrades
 # ---------------------
-
-# .. envvar:: owncloud__auto_database_upgrade_enabled
 #
-# On each update of ownCloud, a database update must be performed before
-# ownCloud can be used again.
-# The ownCloud package maintainers have not automated this setup so that even
-# security upgrades can not be installed unattended.
-#
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/maintenance/package_upgrade.html#upgrade-quickstart>`__ for details.
-#
-# When this option is set to ``True``, the role enables a hook script for
-# :command:`dpkg` so that when :command:`dpkg` upgrades ownCloud, the database upgrade is
-# automatically performed.
-#
-# Change to ``False`` when you want to do database upgrades manually after upgrading the ownCloud packages.
-#
-# .. note:: :envvar:`owncloud__auto_database_upgrade_enabled` depends on
-#    automatic database upgrades to be enabled.
-#
-owncloud__auto_database_upgrade_enabled: '{{ True if (owncloud__variant == "owncloud") else False }}'
-
-
-# .. envvar:: owncloud__dpkg_hook_script
-#
-# File path where the package manager hook script is stored.
-owncloud__dpkg_hook_script: '{{
-  (ansible_local.fhs.lib | d("/usr/local/lib"))
-  + "/owncloud_dpkg_hook" }}'
-
-
-# .. envvar:: owncloud__auto_database_upgrade_migration_test
-#
-# Whether database schema migration should be simulated before upgrading the production database.
-# For Nextcloud it cannot be configured and this variable is ignored.
-# Refer to the `official ownCloud documentation <https://doc.owncloud.org/server/10.3/admin_manual/maintenance/upgrade.html#migration-test>`__ for details.
-owncloud__auto_database_upgrade_migration_test: True
-
-
-# .. envvar:: owncloud__auto_database_upgrade_3party_app_disable
-#
-# Should third party apps by disabled during/after upgrades? The upstream default as of ownCloud 9.0
-# is ``True``. For Nextcloud it cannot be configured and this variable is ignored.
-owncloud__auto_database_upgrade_3party_app_disable: True
-
-
-# .. envvar:: owncloud__auto_database_upgrade_hook_script_packages_trigger
-#
-# List of packages for which the package manager hook script should attempt to
-# do a database upgrade when :envvar:`owncloud__auto_database_upgrade_enabled`
-# is ``True``.
-#
-# This variable is currently not being used.
-# The check if ownCloud needs an upgrade is performed for each
-# installed/upgraded package but in an very efficient way.
-owncloud__auto_database_upgrade_hook_script_packages_trigger:
-  - 'owncloud'
-
-
-# .. envvar:: owncloud__auto_security_updates_enabled
-#
-# Whether automatic ownCloud upgrades should be performed by
-# ``unattended_upgrades``.
-#
-# FIXME: Needs more testing before the role maintainers feel confident to enable this by default.
-# Refer to: https://github.com/debops/ansible-owncloud/issues/28
-owncloud__auto_security_updates_enabled: False
-
-
-# .. envvar:: owncloud__post_upgrade_hook_role_list
-#
-# List of script file paths which should be executed after every ownCloud
-# update.
-# For more information refer to :ref:`owncloud__ref_post_upgrade_hook`.
-# This variable is used internally, controlled by other variables of this role.
-owncloud__post_upgrade_hook_role_list: []
-
-
-# .. envvar:: owncloud__post_upgrade_hook_list
-#
-# List of script file paths which should be executed after every ownCloud
-# update.
-# For more information refer to :ref:`owncloud__ref_post_upgrade_hook`.
-# This variable is intended to be used in Ansible’s global inventory.
-owncloud__post_upgrade_hook_list: []
-
-
-# .. envvar:: owncloud__post_upgrade_hook_group_list
-#
-# List of script file paths which should be executed after every ownCloud
-# update.
-# For more information refer to :ref:`owncloud__ref_post_upgrade_hook`.
-# This variable is intended to be used in a host inventory group of Ansible
-# (only one host group is supported).
-owncloud__post_upgrade_hook_group_list: []
-
-
-# .. envvar:: owncloud__post_upgrade_hook_host_list
-#
-# List of script file paths which should be executed after every ownCloud
-# update.
-# For more information refer to :ref:`owncloud__ref_post_upgrade_hook`.
-# This variable is intended to be used in the inventory of hosts.
-owncloud__post_upgrade_hook_host_list: []
+# .. warning:: Auto upgrading is deprecated. If you want this, add support for
+#    https://github.com/nextcloud/docker to this Ansible role.
 
 
 # .. ownCloud source and deployment [[[1
@@ -415,11 +315,11 @@ owncloud__variant_name_map:
 #
 # Supported releases:
 #
-# * Nextcloud ``22.0``
+# * Nextcloud ``24.0``
 #
 # Upcoming:
 #
-# * Nextcloud ``23.0`` (Implemented based on documentation changes but untested).
+# * Nextcloud ``25.0`` (Implemented based on documentation changes but untested).
 #
 # Unsupported:
 #
@@ -432,7 +332,7 @@ owncloud__variant_name_map:
 # and the `package index <https://download.owncloud.org/download/repositories/>`_ for more details.
 owncloud__release: '{{ "10"
                        if (owncloud__variant == "owncloud")
-                       else "22.0" }}'
+                       else "24.0" }}'
 
 
 # .. envvar:: owncloud__distribution
@@ -2139,13 +2039,24 @@ owncloud__apache__dependent_vhosts:
     http_sec_headers_directive_options: 'set'
 
 
+# .. envvar:: owncloud__nginx__dependent_maps
+#
+# :program:`nginx` maps managed by the :ref:`debops.nginx` role.
+owncloud__nginx__dependent_maps:
+
+  - name: 'asset_immutable'
+    map: '$arg_v $asset_immutable'
+    mapping: '"" "";'
+    default: 'immutable'
+
+
 # .. envvar:: owncloud__nginx__dependent_servers
 #
 # :program:`nginx` server configuration managed by the :ref:`debops.nginx` role.
 owncloud__nginx__dependent_servers:
 
   ## https://docs.nextcloud.com/server/17/admin_manual/installation/nginx.html
-  ## Corresponds to 65ff129d27a912a27c0b4ebe42b2c59df262b72a
+  ## Corresponds to 5527a8c1ffc18d614e51ab18b61daccbbb047af9
   ## from https://github.com/nextcloud/documentation.git
   - type: 'default'
     enabled: True
@@ -2216,6 +2127,14 @@ owncloud__nginx__dependent_servers:
       # Uncomment if your server is build with the ngx_pagespeed module
       # This module is currently not supported.
       #pagespeed off;
+
+      # The settings allows you to optimize the HTTP2 bandwitdth.
+      # See https://blog.cloudflare.com/delivering-http-2-upload-speed-improvements/
+      # for tunning hints
+      # TODO(ypid): Nginx will be able to autotune this value when the patch gets accepted.
+      # DebOps will drop this manual tuning based on Nextcloud recommendation
+      # when the Nginx release is available in Debian oldstable.
+      client_body_buffer_size 512k;
 
       {% if not (owncloud__variant == "nextcloud" and
                  owncloud__release is version("18.0", ">=")) %}
@@ -2308,7 +2227,7 @@ owncloud__nginx__dependent_servers:
       - pattern: '~ \.(?:css|js|svg|gif|png|jpg|ico|wasm|tflite)$'
         options: |
           try_files $uri /index.php$request_uri;
-          expires 6M;         # Cache-Control policy borrowed from `.htaccess`
+          add_header Cache-Control "public, max-age=15778463, $asset_immutable";
           access_log off;     # Optional: Don't log access to assets
 
           {% if not (owncloud__nginx_access_log_assets | bool) %}
@@ -2468,7 +2387,4 @@ owncloud__unattended_upgrades__dependent_origins:
 
   - origin: 'site=download.owncloud.org'
     by_role: 'debops.owncloud'
-    state: '{{ "present"
-               if (owncloud__variant in ["owncloud"] and
-                   owncloud__auto_security_updates_enabled | bool)
-               else "absent" }}'
+    state: 'absent'
