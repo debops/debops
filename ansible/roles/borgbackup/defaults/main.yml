@@ -93,23 +93,14 @@ borgbackup__source_directories:
 
   ## Not included by default: We assume you run a dedicated, append-only log
   ## server which already archives your logs.
-  # - '{{ ansible_local.root.log
-  #       if (ansible_local|d() and ansible_local.root|d() and
-  #           ansible_local.root.log|d())
-  #       else "/var/log" }}'
+  # - '{{ ansible_local.root.log | d("/var/log") }}'
 
   ## Don’t backup spool data which is waiting to be processed.
-  # - '{{ ansible_local.root.spool
-  #       if (ansible_local|d() and ansible_local.root|d() and
-  #           ansible_local.root.spool|d())
-  #       else "/var/spool" }}'
+  # - '{{ ansible_local.root.spool | d("/var/spool") }}'
 
   ## Don’t backup cache data which application must be able to regenerate or
   ## restore the data themselves.
-  # - '{{ ansible_local.root.cache
-  #       if (ansible_local|d() and ansible_local.root|d() and
-  #           ansible_local.root.cache|d())
-  #       else "/var/cache" }}'
+  # - '{{ ansible_local.root.cache | d("/var/cache") }}'
                                                                    # ]]]
 # .. envvar:: borgbackup__exclude_patterns [[[
 #
