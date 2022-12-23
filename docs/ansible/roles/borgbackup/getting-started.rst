@@ -11,7 +11,7 @@ Role design
 ``debops.borgbackup`` is designed to configure cluster-wide backup for hosts
 to dedicated backup servers.
 
-The role itself only handles installation and configuration of borgbackup and
+The role itself only handles installation and configuration of BorgBackup and
 borgmatic. Other integration into the environment is proposed to be done using
 dedicated DebOps roles and the following example inventory configuration. The
 example configuration presented here takes the principle of least privilege to
@@ -34,7 +34,7 @@ Example inventory
 -----------------
 
 Hosts which should be backed up need to be added to the
-``[debops_service_borgbackup]`` group in Ansible’s inventory. Fortuermore, the
+``[debops_service_borgbackup]`` group in Ansible’s inventory. Furthermore, the
 example below assumes that the host is also assigned to a site/location group:
 
 .. code-block:: none
@@ -96,7 +96,7 @@ controller for running a script which triggers the backups sequentially:
 .. literalinclude:: inventory/group_vars/all/default_controller.yml
    :language: yaml
 
-``backup-mgt`` needs the priviliate to run borgmatic as root to backup the
+``backup-mgt`` needs the privilege to run borgmatic as root to backup the
 whole system. For this sudo needs to be configured like this in
 :file:`inventory/group_vars/debops_service_borgbackup.yml`.
 
