@@ -29,10 +29,7 @@ borgbackup__packages: []
 #
 # The OS distribution release which is used to decide if we should install
 # borgmatic using pip or not.
-borgbackup__distribution_release: '{{ ansible_local.core.distribution_release
-                                      if (ansible_local|d() and ansible_local.core|d() and
-                                          ansible_local.core.distribution_release|d())
-                                      else ansible_distribution_release }}'
+borgbackup__distribution_release: '{{ ansible_local.core.distribution_release | d(ansible_distribution_release) }}'
 
                                                                    # ]]]
 # .. envvar:: borgbackup__borgmatic_pip_install [[[
@@ -72,20 +69,14 @@ borgbackup__borgmatic_packages: '{{ borgbackup__pip_install_dependency_packages
 # .. envvar:: borgbackup__virtualenv [[[
 #
 # Path where the borgmatic ``virtualenv`` directory will be stored.
-borgbackup__virtualenv: '{{ (ansible_local.root.lib
-                             if (ansible_local|d() and ansible_local.root|d() and
-                                 ansible_local.root.lib|d())
-                             else "/usr/local/lib") + "/borgbackup/virtualenv" }}'
+borgbackup__virtualenv: '{{ ansible_local.root.lib | d("/usr/local/lib") + "/borgbackup/virtualenv") }}'
 
                                                                    # ]]]
 # .. envvar:: borgbackup__bin_path [[[
 #
 # Bin path where the borgmatic executables should be symlinked to when
 # installing with pip.
-borgbackup__bin_path: '{{ (ansible_local.root.bin
-                           if (ansible_local|d() and ansible_local.root|d() and
-                               ansible_local.root.bin|d())
-                           else "/usr/local/bin") }}'
+borgbackup__bin_path: '{{ ansible_local.root.bin | d("/usr/local/bin") }}'
 
                                                                    # ]]]
 # .. envvar:: borgbackup__virtualenv_executables [[[
@@ -159,54 +150,18 @@ borgbackup__source_directories:
     ## The default locations are still included (see above) and will be
     ## deduplicated from this list automatically if ``debops.core`` is
     ## configured with the same paths.
-  - '{{ ansible_local.root.bin
-        if (ansible_local|d() and ansible_local.root|d() and
-            ansible_local.root.bin|d())
-        else "/usr/local/bin" }}'
-  - '{{ ansible_local.root.etc
-        if (ansible_local|d() and ansible_local.root|d() and
-            ansible_local.root.etc|d())
-        else "/usr/local/etc" }}'
-  - '{{ ansible_local.root.lib
-        if (ansible_local|d() and ansible_local.root|d() and
-            ansible_local.root.lib|d())
-        else "/usr/local/lib" }}'
-  - '{{ ansible_local.root.sbin
-        if (ansible_local|d() and ansible_local.root|d() and
-            ansible_local.root.sbin|d())
-        else "/usr/local/sbin" }}'
-  - '{{ ansible_local.root.share
-        if (ansible_local|d() and ansible_local.root|d() and
-            ansible_local.root.share|d())
-        else "/usr/local/share" }}'
-  - '{{ ansible_local.root.src
-        if (ansible_local|d() and ansible_local.root|d() and
-            ansible_local.root.src|d())
-        else "/usr/local/src" }}'
-  - '{{ ansible_local.root.data
-        if (ansible_local|d() and ansible_local.root|d() and
-            ansible_local.root.data|d())
-        else "/srv" }}'
-  - '{{ ansible_local.root.srv
-        if (ansible_local|d() and ansible_local.root|d() and
-            ansible_local.root.srv|d())
-        else "/srv" }}'
-  - '{{ ansible_local.root.backup
-        if (ansible_local|d() and ansible_local.root|d() and
-            ansible_local.root.backup|d())
-        else "/var/backups" }}'
-  - '{{ ansible_local.root.var
-        if (ansible_local|d() and ansible_local.root|d() and
-            ansible_local.root.var|d())
-        else "/var/local" }}'
-  - '{{ ansible_local.root.home
-        if (ansible_local|d() and ansible_local.root|d() and
-            ansible_local.root.home|d())
-        else "/var/local" }}'
-  - '{{ ansible_local.root.app
-        if (ansible_local|d() and ansible_local.root|d() and
-            ansible_local.root.app|d())
-        else "/var/local" }}'
+  - '{{ ansible_local.root.bin | d("/usr/local/bin") }}'
+  - '{{ ansible_local.root.etc | d("/usr/local/etc") }}'
+  - '{{ ansible_local.root.lib | d("/usr/local/lib") }}'
+  - '{{ ansible_local.root.sbin | d("/usr/local/sbin") }}'
+  - '{{ ansible_local.root.share | d("/usr/local/share") }}'
+  - '{{ ansible_local.root.src | d("/usr/local/src") }}'
+  - '{{ ansible_local.root.data | d("/srv") }}'
+  - '{{ ansible_local.root.srv | d("/srv") }}'
+  - '{{ ansible_local.root.backup | d("/var/backups") }}'
+  - '{{ ansible_local.root.var | d("/var/local") }}'
+  - '{{ ansible_local.root.home | d("/var/local") }}'
+  - '{{ ansible_local.root.app | d("/var/local") }}'
 
   ## Not included by default: We assume you run a dedicated, append-only log
   ## server which already archives your logs.
@@ -717,10 +672,7 @@ borgbackup__combined_configuration: '{{ borgbackup__skeleton_configuration
 # .. envvar:: borgbackup__fqdn [[[
 #
 # FQDN to use for together with the :ref:`debops.secret` role.
-borgbackup__fqdn: '{{ ansible_local.core.fqdn
-                      if (ansible_local|d() and ansible_local.core|d() and
-                        ansible_local.core.fqdn|d())
-                      else ansible_fqdn }}'
+borgbackup__fqdn: '{{ ansible_local.core.fqdn | d(ansible_fqdn) }}'
 
                                                                    # ]]]
 # .. envvar:: borgbackup__secret_base_path [[[

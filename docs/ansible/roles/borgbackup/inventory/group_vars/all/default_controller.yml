@@ -52,10 +52,7 @@ users__accounts:
     home_group: 'backup-mgt'
     home_mode: '0750'
     move_home: True
-    home: '{{ (ansible_local.root.home
-               if (ansible_local|d() and ansible_local.root|d() and
-                   ansible_local.root.home|d())
-               else "/var/local") + "/backup-mgt" }}'
+    home: '{{ ansible_local.root.home | d("/var/local") + "/backup-mgt") }}'
     groups:
       - 'sshusers'
     sshkeys: '{{ system_users__admin_sshkeys }}'
