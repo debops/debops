@@ -143,7 +143,9 @@ Upgrade
 -------
 
 All upgrades be it major or patch need to be done manually for now. The role
-currently does not automate this.
+does not automate this. The way to support Nextcloud auto upgrades would be to
+use the Nextcloud Docker image because it includes an application upgrade
+script. The role could be extended to support using the Docker image if needed.
 
 Upgrade the application using the build-in upgrade feature, then rerun the
 service playbook for this role to ensure the matching settings are applied.
