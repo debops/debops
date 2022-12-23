@@ -10,38 +10,8 @@
 - name: Install required packages
   package:
     name: '{{ q("flattened", borgbackup__base_packages,
-                             borgbackup__packages,
-                             borgbackup__borgmatic_packages) }}'
+                             borgbackup__packages) }}'
     state: 'present'
-  tags: [ 'role::borgbackup:install' ]
-
-# Create Python virtualenv and install Python modules [[[1
-- name: Create Python virtualenv
-  pip:
-    name:       '{{ item.name | d(item) }}'
-    version:    '{{ item.version | d(omit) }}'
-    virtualenv: '{{ borgbackup__virtualenv }}'
-    virtualenv_python: 'python3'
-    virtualenv_site_packages: True
-  when: borgbackup__borgmatic_pip_install|bool
-  with_flattened: '{{ borgbackup__virtualenv_pip_packages }}'
-  tags: [ 'role::borgbackup:install' ]
-
-- name: Symlink virtualenv executables to directory in PATH
-  file:
-    src: '{{ borgbackup__virtualenv + "/bin/" + item }}'
-    dest: '{{ borgbackup__bin_path + "/" + item }}'
-    state: 'link'
-  when: borgbackup__borgmatic_pip_install|bool
-  with_flattened: '{{ borgbackup__virtualenv_executables }}'
-  tags: [ 'role::borgbackup:install' ]
-
-- name: Ensure virtualenv executables are absent in PATH
-  file:
-    path: '{{ borgbackup__bin_path + "/" + item }}'
-    state: 'absent'
-  when: not borgbackup__borgmatic_pip_install|bool
-  with_flattened: '{{ borgbackup__virtualenv_executables }}'
   tags: [ 'role::borgbackup:install' ]
 
 # Configure borgmatic [[[1

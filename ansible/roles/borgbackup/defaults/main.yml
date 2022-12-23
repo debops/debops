@@ -16,7 +16,7 @@
 # .. envvar:: borgbackup__base_packages [[[
 #
 # List of base APT packages to install.
-borgbackup__base_packages: [ 'borgbackup' ]
+borgbackup__base_packages: [ 'borgbackup', 'borgmatic' ]
 
                                                                    # ]]]
 # .. envvar:: borgbackup__packages [[[
@@ -24,78 +24,6 @@ borgbackup__base_packages: [ 'borgbackup' ]
 # List of additional APT packages to install.
 borgbackup__packages: []
 
-                                                                   # ]]]
-# .. envvar:: borgbackup__distribution_release [[[
-#
-# The OS distribution release which is used to decide if we should install
-# borgmatic using pip or not.
-borgbackup__distribution_release: '{{ ansible_local.core.distribution_release | d(ansible_distribution_release) }}'
-
-                                                                   # ]]]
-# .. envvar:: borgbackup__borgmatic_pip_install [[[
-#
-# Whether borgmatic should be installed using pip.
-# The version in buster is too old so we install one last time from upstream.
-borgbackup__borgmatic_pip_install: '{{ borgbackup__distribution_release in ["stretch", "buster"] }}'
-
-                                                                   # ]]]
-# .. envvar:: borgbackup__pip_install_dependency_packages [[[
-#
-# This list contains all dependencies of borgbackup as system packages.
-# If we install borgbackup via pip we still want to install as many Python
-# dependency packages using the system package manager.
-# This list will only be installed if
-# :envvar:`borgbackup__borgmatic_pip_install` is ``True``.
-borgbackup__pip_install_dependency_packages:
-  - 'python3-yaml'
-  - 'python3-dateutil'
-  - 'python3-ruamel.yaml'
-  - 'python3-docopt'
-
-                                                                   # ]]]
-# .. envvar:: borgbackup__borgbackup_packages [[[
-#
-# List of base APT packages to install.
-borgbackup__borgmatic_packages: '{{ borgbackup__pip_install_dependency_packages
-                                    if (borgbackup__borgmatic_pip_install|bool)
-                                    else ["borgmatic"] }}'
-                                                                   # ]]]
-                                                                   # ]]]
-# Python virtualenv configuration [[[
-# -----------------------------------
-#
-# This section is only relevant when installing borgmatic with pip.
-
-# .. envvar:: borgbackup__virtualenv [[[
-#
-# Path where the borgmatic ``virtualenv`` directory will be stored.
-borgbackup__virtualenv: '{{ ansible_local.root.lib | d("/usr/local/lib") + "/borgbackup/virtualenv") }}'
-
-                                                                   # ]]]
-# .. envvar:: borgbackup__bin_path [[[
-#
-# Bin path where the borgmatic executables should be symlinked to when
-# installing with pip.
-borgbackup__bin_path: '{{ ansible_local.root.bin | d("/usr/local/bin") }}'
-
-                                                                   # ]]]
-# .. envvar:: borgbackup__virtualenv_executables [[[
-#
-# List of borgmatic executables.
-borgbackup__virtualenv_executables:
-  - 'borgmatic'
-  - 'generate-borgmatic-config'
-  - 'upgrade-borgmatic-config'
-  - 'validate-borgmatic-config'
-
-                                                                   # ]]]
-# .. envvar:: borgbackup__virtualenv_pip_packages [[[
-#
-# List of Python modules installed inside of the ``virtualenv`` environment.
-borgbackup__virtualenv_pip_packages:
-  # git commit hash lock to release 1.3.3.
-  # The `version` parameter does not work with commit hashes.
-  - name: 'git+https://github.com/witten/borgmatic.git@8650a15db1d3634cc8047b896efcffff15ee673b'
                                                                    # ]]]
                                                                    # ]]]
 # borgbackup configuration [[[
@@ -691,25 +619,6 @@ borgbackup__passphrase_base_path: '{{ borgbackup__configuration_base_path + "/pa
 #
 # Length of randomly generated borgbackup repository passphrase.
 borgbackup__passphrase_length: 123
-                                                                   # ]]]
-                                                                   # ]]]
-# Configuration for other Ansible roles [[[
-# -----------------------------------------
-
-# .. envvar:: borgbackup__apt_preferences__dependent_list [[[
-#
-# Configuration for the :ref:`debops.apt_preferences` Ansible role.
-borgbackup__apt_preferences__dependent_list:
-
-  - package: 'borgbackup'
-    backports: [ 'stretch' ]
-    reason:  'borgmatic requires at least borgbackup 1.1'
-    by_role: 'debops.borgbackup'
-
-  - package: 'python3-ruamel.yaml'
-    backports: [ 'stretch' ]
-    reason:  'Required by borgmatic'
-    by_role: 'debops.borgbackup'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
