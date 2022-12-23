@@ -71,13 +71,14 @@ users__accounts:
     sshkeys_exclusive: True
 
 
-authorized_keys__list:
+authorized_keys__identities:
 
   - name: 'backup-mgt'
+    accounts: [ 'backup-mgt' ]
     state: '{{ "present" if ("debops_service_borgbackup" in group_names and borgbackup__borg_mgt_sshkeys|length > 0) else "absent" }}'
     file_state: '{{ "present" if ("debops_service_borgbackup" in group_names and borgbackup__borg_mgt_sshkeys|length > 0) else "absent" }}'
     sshkeys: '{{ borgbackup__borg_mgt_sshkeys }}'
     exclusive: True
+    command: 'sudo borgmatic --prune --create --stats'
     options:
-      - 'command="sudo borgmatic --prune --create --stats"'
       - 'restrict'

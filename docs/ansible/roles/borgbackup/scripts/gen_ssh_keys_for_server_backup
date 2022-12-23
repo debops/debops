@@ -42,7 +42,11 @@ do
     username="$(echo "borg_${hostname}" | tr '.' '_')"
     echo "
   - name: '$username'
+    accounts: [ '$username' ]
     exclusive: True
+    command: 'cd $HOME && borg serve --restrict-to-path $HOME'
+    options:
+      - 'restrict'
     sshkeys:
       - '{{ hostvars[\"$hostname\"].ansible_facts.ansible_local.root_account.ssh_public_key }}'"
 done
