@@ -16,10 +16,10 @@ MINIO_VOLUMES="{{ (( [ item.volumes ] if (item.volumes is string) else item.volu
 MINIO_SERVER_URL="{{ item.server_url | d('https://' + minio__fqdn + '/') }}"
 MINIO_OPTS="{{ '--address ' + (item.bind | d('')) + ':' + item.port | string + ' --console-address ' + (item.console_bind | d('')) + ':' + item.console_port | string + ((' ' + item.minio_options) if item.minio_options | d() else '') }}"
 {% if not (item.standalone | d(False)) | bool %}
-MINIO_ROOT_USER="{{ item.root_user         | d(lookup('password', secret + '/minio/distributed/' + item.name + '/root_user length=20 chars=ascii,digits')) }}"
+MINIO_ROOT_USER="{{ item.root_user         | d(lookup('password', secret + '/minio/distributed/' + item.name + '/root_user length=20 chars=ascii_letters,digits')) }}"
 MINIO_ROOT_PASSWORD="{{ item.root_password | d(lookup('password', secret + '/minio/distributed/' + item.name + '/root_password length=32')) }}"
 {% else %}
-MINIO_ROOT_USER="{{ item.root_user         | d(lookup('password', secret + '/minio/standalone/' + inventory_hostname + '/' + item.name + '/root_user length=20 chars=ascii,digits')) }}"
+MINIO_ROOT_USER="{{ item.root_user         | d(lookup('password', secret + '/minio/standalone/' + inventory_hostname + '/' + item.name + '/root_user length=20 chars=ascii_letters,digits')) }}"
 MINIO_ROOT_PASSWORD="{{ item.root_password | d(lookup('password', secret + '/minio/standalone/' + inventory_hostname + '/' + item.name + '/root_password length=32')) }}"
 {% endif %}
 {% if item.browser is defined %}
