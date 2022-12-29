@@ -114,7 +114,7 @@
 - name: Generate Etherpad session key
   ansible.builtin.set_fact:
     etherpad_session_key: '{{ lookup("password", secret + "/credentials/" + ansible_fqdn
-                              + "/etherpad/session_key chars=ascii,numbers,digits,hexdigits length=30") }}'
+                              + "/etherpad/session_key chars=ascii_letters,numbers,digits,hexdigits length=30") }}'
   when: secret is defined and secret
 
 - name: Generate Etherpad configuration
