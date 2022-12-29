@@ -126,7 +126,7 @@ Updates of upstream application versions
   updated to the next point release as well, 11.4.
 
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
-  ``v3.2.4``.
+  ``v3.3.8``.
 
 - In the :ref:`debops.owncloud` role, the ownCloud support has been updated to
   ``v10.10``.
@@ -420,6 +420,14 @@ debops.boxbackup role
 
 - In the fact script, don't use ``in`` for matching IP addresses and DNS names
   where substring matching is undesirable.
+
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- Using boolean variables in :envvar:`netbox__config_plugins_config` for
+  example resulted in an error because the role used the ``to_nice_json``
+  Jinja2 filter internally to render Python configuration.
+  This is fixed for all uses of ``to_nice_json``
 
 :ref:`debops.ntp` role
 ''''''''''''''''''''''

@@ -6,6 +6,8 @@
 # {{ ansible_managed }}
 # -*- coding: utf-8 -*-
 
+import json
+
 #########################
 #                       #
 #   Required settings   #
@@ -149,7 +151,7 @@ INTERNAL_IPS = ('127.0.0.1', '::1')
 
 # Enable custom logging. Please see the Django documentation for detailed guidance on configuring custom logs:
 #   https://docs.djangoproject.com/en/stable/topics/logging/
-LOGGING = {{ netbox__config_logging | to_nice_json }}
+LOGGING = json.loads('''{{ netbox__config_logging | to_nice_json }}''')
 
 # Setting this to True will permit only authenticated users to access any part of NetBox. By default, anonymous users
 # are permitted to access most data in NetBox (excluding secrets) but not make any changes.
@@ -200,17 +202,17 @@ NAPALM_TIMEOUT = {{ netbox__config_napalm_timeout }}
 
 # NAPALM optional arguments (see https://napalm.readthedocs.io/en/latest/support/#optional-arguments). Arguments must
 # be provided as a dictionary.
-NAPALM_ARGS = {{ netbox__config_napalm_args | to_nice_json }}
+NAPALM_ARGS = json.loads('''{{ netbox__config_napalm_args | to_nice_json }}''')
 
 # Determine how many objects to display per page within a list. (Default: 50)
 PAGINATE_COUNT = {{ netbox__config_paginate_count }}
 
 # Enable installed plugins. Add the name of each plugin to the list.
-PLUGINS = {{ netbox__config_plugins | to_nice_json }}
+PLUGINS = json.loads('''{{ netbox__config_plugins | to_nice_json }}''')
 
 # Plugins configuration settings. These settings are used by various plugins that the user may have installed.
 # Each key in the dictionary is the name of an installed plugin and its value is a dictionary of settings.
-PLUGINS_CONFIG = {{ netbox__config_plugins_config | to_nice_json }}
+PLUGINS_CONFIG = json.loads('''{{ netbox__config_plugins_config | to_nice_json }}''')
 
 # When determining the primary IP address for a device, IPv6 is preferred over IPv4 by default. Set this to True to
 # prefer IPv4 instead.
