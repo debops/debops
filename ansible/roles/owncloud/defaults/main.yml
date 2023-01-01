@@ -1754,12 +1754,11 @@ owncloud__theme_conf_map:
 # Variable containing the webserver which should be used.
 # Refer to :ref:`owncloud__ref_getting_started` for how to switch webservers.
 owncloud__webserver: '{{ ansible_local.owncloud.webserver
-                         if (ansible_local.owncloud.webserver | d())
-                         else ("apache"
-                               if (ansible_local.apache.enabled | d() | bool)
-                               else ("nginx"
-                                     if (ansible_local.nginx.enabled | d() | bool)
-                                     else "no-webserver-detected")) }}'
+                         | d("apache"
+                             if (ansible_local.apache.enabled | d() | bool)
+                             else ("nginx"
+                                   if (ansible_local.nginx.enabled | d() | bool)
+                                   else "no-webserver-detected")) }}'
 
                                                                    # ]]]
 # .. envvar:: owncloud__apache_modules [[[
