@@ -106,6 +106,12 @@ General
 - The moved :file:`dropbear_initramfs.yml` playbook is not included
   anymore in the "contrib" playbooks, because it was moved elsewhere.
 
+:ref:`debops.etesync` role
+''''''''''''''''''''''''''
+
+- The :envvar:`etesync__http_psk_subpath_enabled` bool variable is used for
+  conditions instead of the subpath itself.
+
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
