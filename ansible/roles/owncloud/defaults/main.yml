@@ -2319,6 +2319,11 @@ owncloud__nginx__dependent_servers:
           {{ owncloud__nginx_options }}
         enabled: '{{ owncloud__http_psk_subpath_enabled | bool }}'
 
+      - pattern: '/{{ owncloud__http_psk_subpath_end_slash }}remote'
+        options: |
+          # Rule borrowed from `.htaccess`
+          return 301 /{{ owncloud__http_psk_subpath_end_slash }}remote.php$request_uri;
+
       - pattern: '/{{ owncloud__http_psk_subpath_end_slash }}'
         options: |
           try_files $uri $uri/ /{{ owncloud__http_psk_subpath_end_slash }}index.php$request_uri;

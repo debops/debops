@@ -454,6 +454,9 @@ debops.boxbackup role
 - Access to static assets was not logged regardless of the
   ``owncloud__nginx_access_log_assets`` setting.
 
+- Access to the ``/remote`` URI path was not configured in Nginx as proposed in
+  the upstream Nginx example in the Nextcloud docs.
+
 :ref:`debops.pdns` role
 '''''''''''''''''''''''
 
