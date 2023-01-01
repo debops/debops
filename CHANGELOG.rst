@@ -443,6 +443,12 @@ debops.boxbackup role
   service without it actually being present on the host. This should now be
   avoided by carefully checking the service status.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Access to static assets was not logged regardless of the
+  ``owncloud__nginx_access_log_assets`` setting.
+
 :ref:`debops.pdns` role
 '''''''''''''''''''''''
 
