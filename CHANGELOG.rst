@@ -93,6 +93,11 @@ General
   the :ref:`debops.ldap` role is detected on the host. Currently only user
   authentication and Django ACL system is supported via LDAP groups.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Support to host the application on a subpath for security reasons.
+
 :ref:`debops.resources` role
 ''''''''''''''''''''''''''''
 
