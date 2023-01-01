@@ -128,7 +128,7 @@
         location {{ path }} {
 {%                 if location_referers is defined                             %}
 {%                     if location_referers[path] is defined and location_referers[path] %}
-                valid_referers none blocked {{ location_referers[path] | unique | join(' ') }};
+                valid_referers none blocked {{ location_referers[path] | unique | sort | join(' ') }};
                 if ($invalid_referer) {
                         return 403;
                 }
@@ -137,12 +137,12 @@
                 {{ item.location[path] | indent(16) | regex_replace("(?m)^\s*$", "") }}
 {%                 if location_allow is defined                                %}
 {%                     if location_allow[path] is defined and location_allow[path] %}
-{%                         for address in location_allow[path] | unique        %}
+{%                         for address in location_allow[path] | unique | sort %}
                 allow {{ address }};
 {%                         endfor                                              %}
 {%                         if location_deny is defined                         %}
 {%                             if location_deny[path] is defined               %}
-{%                                 for address in location_deny[path] | unique %}
+{%                                 for address in location_deny[path] | unique | sort %}
                 deny {{ address }};
 {%                                 endfor                                      %}
 {%                             endif                                           %}
@@ -191,13 +191,13 @@
 {%                         if entry.allow is string                %}
                 allow {{ entry.allow }};
 {%                         else                                   %}
-{%                             for address in entry.allow | unique %}
+{%                             for address in entry.allow | unique | sort %}
                 allow {{ address }};
 {%                             endfor                             %}
 {%                         endif                                  %}
 {%                     endif                                      %}
 {%                     if entry.access_policy|d() and (entry.access_policy in nginx_access_policy_allow_map) %}
-{%                         for address in nginx_access_policy_allow_map[entry.access_policy] | unique       %}
+{%                         for address in nginx_access_policy_allow_map[entry.access_policy] | unique | sort %}
                 allow {{ address }};
 {%                         endfor                                                                          %}
 {%                     endif                                                                               %}
@@ -357,13 +357,13 @@
 {%             if item.allow is string                %}
         allow {{ item.allow }};
 {%             else                                   %}
-{%                 for address in item.allow | unique %}
+{%                 for address in item.allow | unique | sort %}
         allow {{ address }};
 {%                 endfor                             %}
 {%             endif                                  %}
 {%         endif                                      %}
 {%         if item.access_policy|d() and (item.access_policy in nginx_access_policy_allow_map) %}
-{%             for address in nginx_access_policy_allow_map[item.access_policy] | unique       %}
+{%             for address in nginx_access_policy_allow_map[item.access_policy] | unique | sort %}
         allow {{ address }};
 {%             endfor                                                                          %}
 {%         endif                                                                               %}
@@ -413,18 +413,18 @@
         location = {{ item.status_name | default(nginx_status_name) }} {
                 stub_status on;
                 access_log off;
-{%         if nginx_status_localhost                          %}
-{%             for address in nginx_status_localhost | unique %}
+{%         if nginx_status_localhost                                 %}
+{%             for address in nginx_status_localhost | unique | sort %}
                 allow {{ address }};
 {%             endfor                                         %}
 {%         endif                                              %}
 {%         if nginx_status                                    %}
-{%             for address in nginx_status | unique           %}
+{%             for address in nginx_status | unique | sort    %}
                 allow {{ address }};
 {%             endfor                                         %}
 {%         endif                                              %}
 {%         if item.status|d()                                 %}
-{%             for address in item.status | unique            %}
+{%             for address in item.status | unique | sort     %}
                 allow {{ address }};
 {%             endfor                                         %}
 {%         endif                                              %}
@@ -527,7 +527,7 @@ server {
         listen {{ port }};
 {%       endfor                                        %}
 
-{%       for address in nginx__tpl_hostnames | unique %}
+{%       for address in nginx__tpl_hostnames | unique | sort %}
         server_name {{ address }};
 {%       endfor                                        %}
 
@@ -543,7 +543,7 @@ server {
         listen {{ port }};
 {%       endfor                                        %}
 
-{%       for address in nginx__tpl_hostnames | unique %}
+{%       for address in nginx__tpl_hostnames | unique | sort %}
         server_name {{ address + '.lxc' }};
 {%       endfor                                        %}
 
@@ -559,7 +559,7 @@ server {
         listen {{ port }};
 {%       endfor                                        %}
 
-{%       for address in nginx__tpl_hostnames | unique %}
+{%       for address in nginx__tpl_hostnames | unique | sort %}
         server_name {{ address }}.local;
 {%       endfor                                        %}
 

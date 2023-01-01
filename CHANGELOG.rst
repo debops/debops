@@ -150,6 +150,12 @@ General
   Ansible ``user`` module that forbids use of :file:`/dev/null` as home
   skeleton.
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- Lists in different configuration templates are sorted to ensure stable order
+  of elements and prevent random changes in order on subsequent role runs.
+
 :ref:`debops.proc_hidepid` role
 '''''''''''''''''''''''''''''''
 

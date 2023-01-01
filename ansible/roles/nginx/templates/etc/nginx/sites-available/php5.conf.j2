@@ -75,17 +75,17 @@
         location ~ ^/({{ item.php5_status_name | default(nginx_php5_status_name) }}|{{ item.php5_ping_name | default(nginx_php5_ping_name) }})$ {
                 access_log off;
 {% if nginx_status_localhost %}
-{% for address in nginx_status_localhost | unique %}
+{% for address in nginx_status_localhost | unique | sort %}
                 allow {{ address }};
 {% endfor %}
 {% endif %}
 {% if nginx_status %}
-{% for address in nginx_status | unique %}
+{% for address in nginx_status | unique | sort %}
                 allow {{ address }};
 {% endfor %}
 {% endif %}
 {% if item.php5_status is defined and item.php5_status %}
-{% for address in item.php5_status | unique %}
+{% for address in item.php5_status | unique | sort %}
                 allow {{ address }};
 {% endfor %}
 {% endif %}
