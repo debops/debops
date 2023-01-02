@@ -50,15 +50,6 @@ New DebOps roles
 General
 '''''''
 
-:ref:`debops.mount` role
-'''''''''''''''''''''''''''''
-
-- The :ref:`debops.mount` role can now create a file with credentials before
-  trying to mount the network device.
-
-:ref:`debops.apache` role
-'''''''''''''''''''''''''''''
-
 - DebOps now includes a custom version of the
   ``community.general.apache2_module`` Ansible module, available as
   ``debops.debops.apache2_module``. The custom module includes a fixed
@@ -94,6 +85,12 @@ General
 
 - The role can now manage passwords and other confidental data stored in the
   Kibana keystore.
+
+:ref:`debops.mount` role
+''''''''''''''''''''''''
+
+- The role can now create custom files which can be used to store credentials
+  required to mount remote devices.
 
 :ref:`debops.netbox` role
 '''''''''''''''''''''''''
