@@ -86,6 +86,12 @@ General
 - The role can now manage passwords and other confidental data stored in the
   Kibana keystore.
 
+:ref:`debops.mount` role
+''''''''''''''''''''''''
+
+- The role can now create custom files which can be used to store credentials
+  required to mount remote devices.
+
 :ref:`debops.netbox` role
 '''''''''''''''''''''''''
 
