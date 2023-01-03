@@ -99,6 +99,11 @@ General
   the :ref:`debops.ldap` role is detected on the host. Currently only user
   authentication and Django ACL system is supported via LDAP groups.
 
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Support to host the application on a subpath for security reasons.
+
 :ref:`debops.resources` role
 ''''''''''''''''''''''''''''
 
@@ -448,6 +453,15 @@ debops.boxbackup role
 - Fix an issue where the role tried to manage the :command:`systemd-timesyncd`
   service without it actually being present on the host. This should now be
   avoided by carefully checking the service status.
+
+:ref:`debops.owncloud` role
+'''''''''''''''''''''''''''
+
+- Access to static assets was not logged regardless of the
+  ``owncloud__nginx_access_log_assets`` setting.
+
+- Access to the ``/remote`` URI path was not configured in Nginx as proposed in
+  the upstream Nginx example in the Nextcloud docs.
 
 :ref:`debops.pdns` role
 '''''''''''''''''''''''
