@@ -14,7 +14,7 @@ Code contributions
 Pull requests welcome
 ~~~~~~~~~~~~~~~~~~~~~
 
-DebOps is primarly developed using GitHub pull requests. After forking the main
+DebOps is primarily developed using GitHub pull requests. After forking the main
 project repository to your own GitHub account, you should create a branch for
 a new feature or a bugfix; this helps separate your work on different parts of
 the repository. You can read the `DEVELOPMENT.rst <https://github.com/debops/debops/blob/master/DEVELOPMENT.rst>`__

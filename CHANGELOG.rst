@@ -83,7 +83,7 @@ General
 :ref:`debops.kibana` role
 '''''''''''''''''''''''''
 
-- The role can now manage passwords and other confidental data stored in the
+- The role can now manage passwords and other confidential data stored in the
   Kibana keystore.
 
 :ref:`debops.mount` role
@@ -107,7 +107,7 @@ General
 :ref:`debops.resources` role
 ''''''''''''''''''''''''''''
 
-- The :ref:`debops.resources` role can now be used to repace a line via the
+- The :ref:`debops.resources` role can now be used to replace a line via the
   ``ansible.builtin.replace`` module.
 
 :ref:`debops.slapd` role
@@ -783,7 +783,7 @@ Updates of upstream application versions
 
 - In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
   has been updated to the next point release, 10.11. Debian Bullseye has been
-  updated to the next point relase as well, 11.2.
+  updated to the next point release as well, 11.2.
 
   Debian 11 (Bullseye) has been released. The :ref:`debops.ipxe` role will now
   prepare a netboot installer with this release and set Bullseye as the default
@@ -915,7 +915,7 @@ LDAP
 :ref:`debops.dovecot` role
 ''''''''''''''''''''''''''
 
-- The role has been throughly refreshed and now uses the
+- The role has been thoroughly refreshed and now uses the
   :ref:`universal_configuration` format for the service configuration. All role
   variables have been renamed to put them in a separate namespace.
 
@@ -1655,7 +1655,7 @@ General
 '''''''''''''''''''''''''
 
 - NetBox crashed when it tried to send Emails.
-  For example when an exception occured during page loading, the reponse was
+  For example when an exception occurred during page loading, the response was
   just "Internal Server Error". The service as a whole survives this.
   The bug in the configuration template has been fixed.
 
@@ -1682,7 +1682,7 @@ General
 
 - Fixed an issue where role did not have a list of PHP packages for an unknown
   OS release which stopped its execution. Now the role should fallback to
-  a defult list in this case.
+  a default list in this case.
 
 :ref:`debops.python` role
 '''''''''''''''''''''''''
@@ -1961,7 +1961,7 @@ LDAP
 
 - The fact script will generate the list of private e-mail addresses used to
   send administrative mail notifications based on the list of admin accounts
-  and the detected domain of the host; this can be overriden via the
+  and the detected domain of the host; this can be overridden via the
   :envvar:`core__admin_private_email` variable. The change is done to avoid
   sending mail messages to 'account-only' addresses on hosts without local mail
   support.
@@ -3687,7 +3687,7 @@ General
 ''''''''''''''''''''''''
 
 - Fix an issue in the :file:`php.conf.j2` server template when an
-  ``item.location`` parameter is specified, overridding the default set of
+  ``item.location`` parameter is specified, overriding the default set of
   ``location`` blocks defined in the :file:`default.conf.j` template. If the
   ``/`` location is not specified in the ``item.location`` dictionary,
   a default one will be included by the role.
@@ -3865,7 +3865,7 @@ LDAP
 :ref:`debops.users` role
 ''''''''''''''''''''''''
 
-- Readd :envvar:`users__default_shell` which was removed in `debops v1.0.0`_.
+- Read :envvar:`users__default_shell` which was removed in `debops v1.0.0`_.
 
 Changed
 ~~~~~~~
@@ -4079,7 +4079,7 @@ User management
 
 - The role now checks the version of the installed LXC support and uses the old
   or new configuration keys accordingly. You can review the `changed
-  configuration keys`__ between the old and new LXC version for comparsion.
+  configuration keys`__ between the old and new LXC version for comparison.
 
   .. __: https://discuss.linuxcontainers.org/t/lxc-2-1-has-been-released/487
 
@@ -4139,7 +4139,7 @@ User management
 - Role will check if the configured FQDN of a host exists in the DNS database.
   If it does, the entry in the :file:`/etc/hosts` file will be removed to allow
   the DNS to take over. If it doesn't, the configuration will be left intact
-  with assumtion that the domain is configured locally.
+  with assumption that the domain is configured locally.
 
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
@@ -4267,7 +4267,7 @@ Fixed
 :ref:`debops.lvm` role
 ''''''''''''''''''''''
 
-- Make sure logical volumes will only be shrinked when volume item defines
+- Make sure logical volumes will only be shrunk when volume item defines
   ``force: yes``.
 
 :ref:`debops.nsswitch` role
@@ -4642,7 +4642,7 @@ Mail Transport Agents
   permissions, which is probably too restrictive. Because of that, the role
   will automatically change the home directory permissions to ``0751`` (defined
   in the :envvar:`users__default_home_mode` variable). This also affects
-  existing UNIX accounts managed by the role; the mode can be overriden using
+  existing UNIX accounts managed by the role; the mode can be overridden using
   the ``item.home_mode`` parameter.
 
 - The ``users__*_resources`` variables have been reimplemented as the
