@@ -10,7 +10,7 @@
 # This script is based of the AutoMySQLBackup Script Ver 2.2
 # It can be found at https://sourceforge.net/projects/automysqlbackup/
 #
-# The PostgreSQL changes are based on a patch agaisnt AutoMySQLBackup 1.9
+# The PostgreSQL changes are based on a patch against AutoMySQLBackup 1.9
 # created by Friedrich Lobenstock <fl@fl.priv.at>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -71,7 +71,7 @@ fi
 #
 # The MAILCONTENT and MAILADDR options and pretty self explanitory, use
 # these to have the backup log mailed to you at any email address or multiple
-# email addresses in a space seperated list.
+# email addresses in a space separated list.
 # (If you set mail content to "log" you will require access to the "mail" program
 # on your server. If you set this to "files" you will have to have mutt installed
 # on your server. If you set it to "stdout" it will log to the screen if run from
@@ -87,11 +87,11 @@ fi
 # to set executable permission. You can also copy the script to
 # /etc/cron.daily to have it execute automatically every night or simply
 # place a symlink in /etc/cron.daily to the file if you wish to keep it
-# somwhere else.
-# NOTE:On Debian copy the file with no extention for it to be run
+# somewhere else.
+# NOTE:On Debian copy the file with no extension for it to be run
 # by cron e.g just name the file "autopostgresqlbackup"
 #
-# Thats it..
+# That's it..
 #
 #
 # === Advanced options doc's ===
@@ -116,7 +116,7 @@ fi
 #
 # The SEPDIR option allows you to choose to have all DBs backed up to
 # a single file (fast restore of entire server in case of crash) or to
-# seperate directories for each DB (each DB can be restored seperately
+# separate directories for each DB (each DB can be restored separately
 # in case of single DB corruption or loss).
 #
 # To set the day of the week that you would like the weekly backup to happen
@@ -129,10 +129,10 @@ fi
 #
 # COMMCOMP is used to set the compression level (from 0 to 9, 0 means no compression)
 # between the client and the server, so it is useful to save bandwidth when backing up
-# a remote PostgresSQL server over the network.
+# a remote postgresql server over the network.
 #
 # LATEST is to store an additional copy of the latest backup to a standard
-# location so it can be downloaded bt thrid party scripts.
+# location so it can be downloaded bt third party scripts.
 #
 # Use PREBACKUP and POSTBACKUP to specify Per and Post backup commands
 # or scripts to perform tasks either before or after the backup process.
@@ -155,7 +155,7 @@ fi
 # Please Note!!
 #=====================================================================
 #
-# I take no resposibility for any data loss or corruption when using
+# I take no responsibility for any data loss or corruption when using
 # this script..
 # This script will not help in the event of a hard drive crash. If a
 # copy of the backup has not be stored offline or on another PC..
@@ -336,7 +336,7 @@ if [ "$PREBACKUP" ]
 fi
 
 
-if [ "$SEPDIR" = "yes" ]; then # Check if CREATE DATABSE should be included in Dump
+if [ "$SEPDIR" = "yes" ]; then # Check if CREATE DATABASE should be included in Dump
   if [ "$CREATE_DATABASE" = "no" ]; then
     OPT="$OPT"
   else
@@ -386,7 +386,7 @@ echo
 echo "Backup of Database Server - $HOST"
 echo ======================================================================
 
-# Test is seperate DB backups are required
+# Test is separate DB backups are required
 if [ "$SEPDIR" = "yes" ]; then
 echo "Backup Start Time $(date)"
 echo ======================================================================
@@ -417,7 +417,7 @@ echo ======================================================================
   # shellcheck disable=SC2001
   DB="$(echo "$DB" | sed 's/%/ /g')"
 
-  # Create Seperate directory for each DB
+  # Create Separate directory for each DB
   if [ ! -e "$BACKUPDIR/daily/$DB" ]            # Check Daily DB Directory exists.
     then
     mkdir -p "$BACKUPDIR/daily/$DB"
