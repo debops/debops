@@ -107,6 +107,12 @@ General
   Ansible ``user`` module that forbids use of :file:`/dev/null` as home
   skeleton.
 
+:ref:`debops.proc_hidepid` role
+'''''''''''''''''''''''''''''''
+
+- The fact script has been optimized for environments with large UNIX group
+  databases, for example connected to ActiveDirectory domains.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 
