@@ -3,12 +3,17 @@
 # Copyright (C) 2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- import_role:
+- name: Import DebOps global handlers
+  ansible.builtin.import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  ansible.builtin.import_role:
     name: 'secret'
 
 # Install system packages [[[1
 - name: Install required packages
-  package:
+  ansible.builtin.package:
     name: '{{ q("flattened", (nodered__base_packages
                               + nodered__packages)) }}'
     state: 'present'
@@ -17,13 +22,13 @@
 
 # Create Node-RED system user [[[1
 - name: Create Node-RED system group
-  group:
+  ansible.builtin.group:
     name: '{{ nodered__group }}'
     state: 'present'
     system: True
 
 - name: Create Node-RED system user
-  user:
+  ansible.builtin.user:
     name: '{{ nodered__user }}'
     group: '{{ nodered__group }}'
     home: '{{ nodered__home }}'
@@ -33,7 +38,7 @@
     system: True
 
 - name: Create additional directories used by Node-RED
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     state: 'directory'
     owner: '{{ nodered__user }}'
@@ -48,15 +53,16 @@
 
 # Install npm packages [[[1
 - name: Install Node-RED
-  npm:
+  community.general.npm:
     name: 'node-red'
     path: '{{ nodered__lib }}'
   become: True
   become_user: '{{ nodered__user }}'
+  notify: [ 'Restart nodered' ]
 
 # systemd configuration [[[1
 - name: Configure systemd unit file
-  template:
+  ansible.builtin.template:
     src: 'etc/systemd/system/nodered.service.j2'
     dest: '/etc/systemd/system/nodered.service'
     owner: 'root'
@@ -65,7 +71,7 @@
   register: nodered__register_systemd_unit_file
 
 - name: Set Node-RED state using systemd
-  systemd:
+  ansible.builtin.systemd:
     name: 'nodered'
     state: 'started'
     enabled: True

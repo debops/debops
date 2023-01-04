@@ -18,11 +18,13 @@
       tags: [ 'role::keyring', 'skip::keyring',
               'role::nginx', 'role::nodered' ]
       keyring__dependent_apt_keys:
+        - '{{ nodejs__keyring__dependent_apt_keys }}'
         - '{{ nginx__keyring__dependent_apt_keys }}'
 
     - role: apt_preferences
       tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
       apt_preferences__dependent_list:
+        - '{{ nodejs__apt_preferences__dependent_list }}'
         - '{{ nginx__apt_preferences__dependent_list }}'
 
     - role: ferm
