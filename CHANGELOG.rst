@@ -490,6 +490,12 @@ debops.boxbackup role
   prohibited by :rfc:`5321` section 4.1.4, and sometimes caused deliverability
   issues for Office 365 users.
 
+:ref:`debops.proc_hidepid` role
+'''''''''''''''''''''''''''''''
+
+- The fact script has been optimized for environments with large UNIX group
+  databases, for example connected to ActiveDirectory domains.
+
 :ref:`debops.prosody` role
 ''''''''''''''''''''''''''
 
