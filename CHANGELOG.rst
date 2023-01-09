@@ -65,6 +65,10 @@ General
   modify the :command:`sphinx` options specified in the Makefile via an
   environment variable if they wish.
 
+- The :file:`ansible/playbooks/tools/dist-upgrade.yml` Ansible playbook now has
+  MTA configuration exposed via variables in case the mail should be sent via
+  a remote server instead of a local one.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 
