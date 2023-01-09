@@ -76,6 +76,12 @@ General
 
 - The role can now directly handle the daemon ``log-driver`` parameter.
 
+:ref:`debops.postgresql_server` role
+''''''''''''''''''''''''''''''''''''
+
+- The role has been updated to support configuration changes in PostgreSQL 14
+  and 15 versions.
+
 Fixed
 ~~~~~
 
