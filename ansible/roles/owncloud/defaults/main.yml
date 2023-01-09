@@ -2377,17 +2377,18 @@ owncloud__php__dependent_configuration:
                if (owncloud__variant in ["nextcloud"] and owncloud__release is version_compare("12.0", ">="))
                else "absent" }}'
     options: |
-      ; https://docs.nextcloud.com/server/17/admin_manual/installation/server_tuning.html#enable-php-opcache
+      ; https://docs.nextcloud.com/server/25/admin_manual/installation/server_tuning.html#enable-php-opcache
+      ; https://github.com/nextcloud/docker/blob/master/25/fpm/Dockerfile
 
       [opcache]
 
       opcache.enable=1
       opcache.enable_cli=1
-      opcache.interned_strings_buffer=8
+      opcache.interned_strings_buffer=16
       opcache.max_accelerated_files=10000
       opcache.memory_consumption=128
       opcache.save_comments=1
-      opcache.revalidate_freq=1
+      opcache.revalidate_freq=60
 
   - filename: 'debops.owncloud'
     path: 'apache2/conf.d/'
