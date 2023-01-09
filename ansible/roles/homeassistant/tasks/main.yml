@@ -69,6 +69,20 @@
   when: homeassistant__virtualenv | bool and homeassistant__register_git is changed
   notify: [ 'Restart Home Assistant' ]
 
+  # https://community.home-assistant.io/t/wth-why-are-brand-icons-a-cloud-dependency/226359/13
+  # Does not work. Home assistant still requests the files from https://brands.home-assistant.io/ …
+# - name: Change hardcoded brands.home-assistant.io domain and point to Nginx
+#   ansible.builtin.shell: |
+#     set -o pipefail -o errexit;
+#     for i in $(find lib/python*/site-packages/hass_frontend/ lib/python*/site-packages/homeassistant/components/ -iname '*.js.gz' -type f); do zcat "$i" | sed --regexp-extended 's#https://brands\.home-assistant\.io/#https://{{ homeassistant__fqdn }}/local_brands/brands/#g;s#brands\.home-assistant\.io#{{ homeassistant__fqdn }}#g;' > "$i.copy"; gzip "$i.copy"; mv "$i.copy.gz" "$i" ; done
+#     find lib/python*/site-packages/hass_frontend/ lib/python*/site-packages/homeassistant/components/ -not -iname '*.gz' -type f -print0 | xargs --null sed --in-place --regexp-extended 's#https://brands\.home-assistant\.io/#https://{{ homeassistant__fqdn }}/local_brands/brands/#g;s#brands\.home-assistant\.io#{{ homeassistant__fqdn }}#g;'
+#   args:
+#     chdir: '{{ homeassistant__virtualenv_path }}'
+#     executable: 'bash'
+#   become: True
+#   become_user: '{{ homeassistant__user }}'
+#   when: homeassistant__register_git is changed
+
 - name: Ensure Home Assistant config dir exists
   ansible.builtin.file:
     path: '{{ homeassistant__home_path }}/.homeassistant'

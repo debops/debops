@@ -13,6 +13,15 @@
                    | combine(inventory__group_environment | d({}))
                    | combine(inventory__host_environment  | d({})) }}'
 
+  pre_tasks:
+
+    - name: Prepare homeassistant environment
+      ansible.builtin.import_role:
+        name: 'homeassistant'
+        tasks_from: 'main_env'
+      tags: [ 'role::homeassistant', 'role::nginx' ]
+
+
   roles:
 
     - role: keyring

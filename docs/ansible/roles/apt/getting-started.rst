@@ -66,7 +66,7 @@ exclusively, you could compose your inventory like this:
    apt__group_security_sources:
      - uri:          'http://mirrors.domain.fqdn/debian-security'
        comment:      '{{ "Local " + apt__distribution + " Security repository" }}'
-       suite:        '{{ apt__distribution_release + "/updates" }}'
+       suite:        '{{ apt__distribution_release + "-security" }}'
        distribution: 'Debian'
 
 
