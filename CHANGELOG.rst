@@ -182,7 +182,7 @@ General
 
 - The debops-contrib :file:`dropbear_initramfs` playbook has been moved to
   the :ref:`debops.dropbear_initramfs` playbook. The role variable
-  ``dropbear_initramfs__host_authorized_keys`` now uses the same keys as 
+  ``dropbear_initramfs__host_authorized_keys`` now uses the same keys as
   the ``ansible.posix.authorized_key`` module.
 
 - Various tasks that interact with the MariaDB/MySQL databases will now use the
@@ -227,9 +227,9 @@ General
 
 - The role has been rewritten from scratch and now can be used to deploy and
   manage a `GitLab Omnibus`__ instance (managed internally by Chef) on Debian
-  or Ubuntu hosts. Role integrates various DebOps services (firewall, PKI
-  infrastructure, LDAP environment) with GitLab Omnibus. Bot Community Edition
-  (default) and Enterprise Edition are supported.
+  or Ubuntu hosts. The role integrates with various DebOps services (firewall,
+  PKI infrastructure, LDAP environment) with GitLab Omnibus. Both Community
+  Edition (default) and Enterprise Edition are supported.
 
   .. __: https://docs.gitlab.com/omnibus/
 
