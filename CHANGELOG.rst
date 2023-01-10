@@ -103,6 +103,9 @@ General
   set and the password length was at least 20 characters, this did not result
   in weak passwords.
 
+- The moved :file:`dropbear_initramfs.yml` playbook is not included
+  anymore in the "contrib" playbooks, because it was moved elsewhere.
+
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
