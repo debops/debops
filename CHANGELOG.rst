@@ -264,6 +264,16 @@ General
   :command:`nginx` should be able to resolve upstream services specified via
   DNS names at startup.
 
+:ref:`debops.ntp` role
+''''''''''''''''''''''
+
+- The default NTP daemon used on hosts with the :command:`systemd` service
+  manager will be :command:`systemd-timesyncd`. Existing systems with
+  a different NTP server should not be affected by this change.
+
+- The role should better detect Linux Container environment and not try to
+  install an NTP daemon inside of a container.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
