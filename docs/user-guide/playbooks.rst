@@ -141,7 +141,7 @@ order of layers is defined in the :file:`site.yml` playbook, but if needed,
 each layer can be executed in the order specified by the user.
 
 Check the playbooks in the :file:`ansible/playbooks/layer/` directory to see
-order of execution of specific services.
+the order of execution of specific services.
 
 .. note:: This setup applies since DebOps v3.1.0, older releases use a set of
           symlinks to achieve a similar result.
@@ -257,7 +257,7 @@ either via the command line or imported into other playbooks, must exist before
 Ansible execution can proceed. So in DebOps there's no way to provide some kind
 of hooks where external playbooks can be plugged in later.
 
-Let's create an exmaple playbook in the DebOps project directory,
+Let's create an example playbook in the DebOps project directory,
 :file:`ansible/playbooks/custom.yml`:
 
 .. code-block:: yaml
