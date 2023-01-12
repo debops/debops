@@ -158,10 +158,10 @@ configure a :command:`nginx` webserver:
    # ansible/inventory/hosts
 
    [debops_all_hosts]
-   webserver    ansible_host=server.example.org
+   server.example.org
 
    [debops_service_nginx]
-   webserver
+   server.example.org
 
 You can apply a specific playbook using the :command:`ansible-playbook` command
 by specifying it directly. For example, with the cloned :command:`git`
