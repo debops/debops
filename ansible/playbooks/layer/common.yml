@@ -1,0 +1,269 @@
+---
+# Copyright (C) 2013-2023 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2014-2023 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Security assertions
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'all' ]
+  tags: [ 'play::security-assertions' ]
+  gather_facts: False
+  become: False
+
+  tasks:
+
+    - name: Check for Ansible version without known vulnerabilities
+      ansible.builtin.assert:
+        that:
+          - 'ansible_version.full is version_compare("2.1.5.0", ">=")'
+          - '((ansible_version.minor == 2) and
+              (ansible_version.full is version_compare("2.2.2.0", ">="))) or
+             (ansible_version.minor != 2)'
+        msg: |
+          VULNERABLE or unsupported Ansible version DETECTED, please update to
+          Ansible >= v2.1.5 or a newer Ansible release >= v2.2.2! To skip, add
+          "--skip-tags play::security-assertions" parameter. Check the
+          debops-playbook changelog for details. Exiting.
+      run_once: True
+      delegate_to: 'localhost'
+
+- name: Prepare APT configuration on a host
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_all_hosts', '!debops_no_common' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: apt_proxy
+      tags: [ 'role::apt_proxy', 'skip::apt_proxy' ]
+
+    - role: apt
+      tags: [ 'role::apt', 'skip::apt' ]
+
+
+- name: Apply core configuration
+  import_playbook: '../service/core.yml'
+
+
+- name: Common configuration for all hosts
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_all_hosts', '!debops_no_common' ]
+  gather_facts: True
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  pre_tasks:
+
+    - name: Prepare nullmailer environment
+      ansible.builtin.import_role:
+        name: 'nullmailer'
+        tasks_from: 'main_env'
+      tags: [ 'role::nullmailer', 'role::ferm', 'role::tcpwrappers' ]
+
+    - name: Prepare pki environment
+      ansible.builtin.import_role:
+        name: 'pki'
+        tasks_from: 'main_env'
+      tags: [ 'role::pki', 'role::pki:secret', 'role::secret' ]
+
+    - name: Prepare sshd environment
+      ansible.builtin.import_role:
+        name: 'sshd'
+        tasks_from: 'main_env'
+      tags: [ 'role::sshd', 'role::ldap' ]
+
+  roles:
+
+    - role: debops_fact
+      tags: [ 'role::debops_fact', 'skip::debops_fact' ]
+
+    - role: environment
+      tags: [ 'role::environment', 'skip::environment' ]
+
+    - role: resolvconf
+      tags: [ 'role::resolvconf', 'skip::resolvconf' ]
+
+    - role: python
+      tags: [ 'role::python', 'skip::python', 'role::netbase', 'role::ldap' ]
+      python__dependent_packages3:
+        - '{{ netbase__python__dependent_packages3 }}'
+        - '{{ ldap__python__dependent_packages3 }}'
+      python__dependent_packages2:
+        - '{{ netbase__python__dependent_packages2 }}'
+        - '{{ ldap__python__dependent_packages2 }}'
+
+    - role: netbase
+      tags: [ 'role::netbase', 'skip::netbase' ]
+
+    - role: secret
+      tags: [ 'role::secret', 'role::pki', 'role::pki:secret' ]
+      secret_directories:
+        - '{{ pki_env_secret_directories }}'
+
+    - role: fhs
+      tags: [ 'role::fhs', 'skip::fhs' ]
+
+    - role: apt_preferences
+      tags: [ 'role::apt_preferences', 'skip::apt_preferences' ]
+      apt_preferences__dependent_list:
+        - '{{ etckeeper__apt_preferences__dependent_list }}'
+        - '{{ apt_install__apt_preferences__dependent_list }}'
+        - '{{ yadm__apt_preferences__dependent_list }}'
+
+    - role: tzdata
+      tags: [ 'role::tzdata', 'skip::tzdata' ]
+
+    - role: etckeeper
+      tags: [ 'role::etckeeper', 'skip::etckeeper' ]
+
+    - role: cron
+      tags: [ 'role::cron', 'skip::cron' ]
+
+    - role: atd
+      tags: [ 'role::atd', 'skip::atd' ]
+
+    - role: dhparam
+      tags: [ 'role::dhparam', 'skip::dhparam' ]
+
+    - role: pki
+      tags: [ 'role::pki', 'skip::pki' ]
+
+    - role: machine
+      tags: [ 'role::machine', 'skip::machine' ]
+
+    - role: lldpd
+      tags: [ 'role::lldpd', 'skip::lldpd' ]
+
+    # LDAP client initialization should be done separately to prepare local
+    # facts for other roles to use in configuration.
+    - role: ldap
+      tags: [ 'role::ldap', 'skip::ldap' ]
+
+    - role: ldap
+      tags: [ 'role::ldap', 'skip::ldap' ]
+      ldap__dependent_tasks:
+        - '{{ nullmailer__ldap__dependent_tasks }}'
+        - '{{ sudo__ldap__dependent_tasks }}'
+        - '{{ sshd__ldap__dependent_tasks }}'
+
+    - role: keyring
+      tags: [ 'role::keyring', 'skip::keyring', 'role::yadm' ]
+      keyring__dependent_gpg_keys:
+        - '{{ yadm__keyring__dependent_gpg_keys }}'
+
+    - role: yadm
+      tags: [ 'role::yadm', 'skip::yadm' ]
+
+    - role: sudo
+      tags: [ 'role::sudo', 'skip::sudo' ]
+      sudo__dependent_sudoers:
+        - '{{ sshd__sudo__dependent_sudoers }}'
+
+    # The 'sudo' APT package modifies '/etc/nsswitch.conf' by itself, running
+    # this role after 'debops.sudo' role skips additional changes done in the
+    # configuration later on.
+    - role: nsswitch
+      tags: [ 'role::nsswitch', 'skip::nsswitch' ]
+
+    - role: root_account
+      tags: [ 'role::root_account', 'skip::root_account' ]
+
+    - role: libuser
+      tags: [ 'role::libuser', 'skip::libuser' ]
+
+    - role: system_groups
+      tags: [ 'role::system_groups', 'skip::system_groups' ]
+
+    - role: system_users
+      tags: [ 'role::system_users', 'skip::system_users' ]
+
+    - role: pam_access
+      tags: [ 'role::pam_access', 'skip::pam_access' ]
+      pam_access__dependent_rules:
+        - '{{ sshd__pam_access__dependent_rules }}'
+
+    - role: apt_listchanges
+      tags: [ 'role::apt_listchanges', 'skip::apt_listchanges' ]
+
+    - role: apt_install
+      tags: [ 'role::apt_install', 'skip::apt_install' ]
+
+    - role: etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+
+    - role: logrotate
+      tags: [ 'role::logrotate', 'skip::logrotate' ]
+      logrotate__dependent_config:
+        - '{{ rsyslog__logrotate__dependent_config }}'
+
+    - role: auth
+      tags: [ 'role::auth', 'skip::auth' ]
+
+    - role: users
+      tags: [ 'role::users', 'skip::users' ]
+
+    - role: mount
+      tags: [ 'role::mount', 'skip::mount' ]
+
+    - role: resources
+      tags: [ 'role::resources', 'skip::resources' ]
+
+    - role: ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ ntp__ferm__dependent_rules }}'
+        - '{{ nullmailer__ferm__dependent_rules }}'
+        - '{{ rsyslog__ferm__dependent_rules }}'
+        - '{{ sshd__ferm__dependent_rules }}'
+
+    - role: tcpwrappers
+      tags: [ 'role::tcpwrappers', 'skip::tcpwrappers' ]
+      tcpwrappers_dependent_allow:
+        - '{{ nullmailer__tcpwrappers__dependent_allow }}'
+        - '{{ sshd__tcpwrappers__dependent_allow }}'
+
+    - role: locales
+      tags: [ 'role::locales', 'skip::locales' ]
+
+    - role: ntp
+      tags: [ 'role::ntp', 'skip::ntp' ]
+
+    - role: proc_hidepid
+      tags: [ 'role::proc_hidepid', 'skip::proc_hidepid' ]
+
+    - role: console
+      tags: [ 'role::console', 'skip::console' ]
+
+    - role: sysctl
+      tags: [ 'role::sysctl', 'skip::sysctl' ]
+
+    - role: nullmailer
+      tags: [ 'role::nullmailer', 'skip::nullmailer' ]
+
+    - role: journald
+      tags: [ 'role::journald', 'skip::journald' ]
+
+    - role: rsyslog
+      tags: [ 'role::rsyslog', 'skip::rsyslog' ]
+
+    - role: unattended_upgrades
+      tags: [ 'role::unattended_upgrades', 'skip::unattended_upgrades' ]
+
+    - role: authorized_keys
+      tags: [ 'role::authorized_keys', 'skip::authorized_keys' ]
+
+    - role: sshd
+      tags: [ 'role::sshd', 'skip::sshd' ]
+
+    - role: apt_mark
+      tags: [ 'role::apt_mark', 'skip::apt_mark' ]

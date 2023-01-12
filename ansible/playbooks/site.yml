@@ -1,46 +1,53 @@
 ---
-# Copyright (C) 2015-2016 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2015-2016 DebOps <https://debops.org/>
+# Copyright (C) 2015-2023 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-# This is main entry point for DebOps playbooks. By default 'debops' script
-# accesses this playbook; with command line arguments you can access
-# sub-playbooks separately for a lighter ansible-playbook run, if needed.
+# This is main entry point for DebOps playbooks. An example execution command:
+#
+#    debops run site -l <host>
+#
+# This playbook can be slow depending on the network and I/O on Ansible
+# Controller and remote hosts. You can use sub-playbooks to make execution
+# faster. For example, to apply a common set of Ansible roles on a host, you
+# can run the command:
+#
+#    debops run common -l <host>
 
 
   # This playbook manages network infrastructure, like creation and management
   # of separate subnets, DNS, DHCP services, routing configuration, etc.
 - name: Manage network layer
-  import_playbook: 'net.yml'
+  import_playbook: 'layer/net.yml'
 
   # This playbook manages internal system plumbing expected on the host by
   # services, like user accounts, NFS mounts from remote hosts, and so on.
   # Everything that is not common, but enabled on a per group/host basis.
 - name: Manage system service layer
-  import_playbook: 'sys.yml'
+  import_playbook: 'layer/sys.yml'
 
   # This playbook contains roles that are run on all hosts in the inventory
   # - common services like SMTP server, administrative tasks, authentication
   # and authorization control, system services used by other applications like
   # firewall, etc.
 - name: Manage services common on all hosts
-  import_playbook: 'common.yml'
+  import_playbook: 'layer/common.yml'
 
   # This playbook manages different programming language environments available
   # on each host, enabled using Ansible groups.
 - name: Manage programming language environments
-  import_playbook: 'env.yml'
+  import_playbook: 'layer/env.yml'
 
   # This playbook manages system services enabled using Ansible groups, like
   # databases, webservers, application servers, and so on.
 - name: Manage userspace service layer
-  import_playbook: 'srv.yml'
+  import_playbook: 'layer/srv.yml'
 
   # This playbook contains plays which install and manage more complex
   # applications which can use multiple services at a time, or are user-facing
   # applications like webservices.
 - name: Manage userspace applications
-  import_playbook: 'app.yml'
+  import_playbook: 'layer/app.yml'
 
   # This playbook manages virtualized environments installed on hosts, like
   # OpenVZ Hardware Nodes, support for LXC containers in a host, or support for
@@ -48,13 +55,13 @@
   # support, guest-side is managed by the rest of the playbook without the use
   # of the plays contained here.
 - name: Manage virtual machine layer
-  import_playbook: 'virt.yml'
+  import_playbook: 'layer/virt.yml'
 
   # This playbook manages hardware-related roles - device management, disk
   # partitioning, hardware monitoring, kernel management, any roles that would
   # require a reboot.
 - name: Manage hardware layer
-  import_playbook: 'hw.yml'
+  import_playbook: 'layer/hw.yml'
 
   # This playbook manages services or applications that are used as agents by
   # other services, on local or remote hosts. These agents may contact their
@@ -62,4 +69,4 @@
   # environment, therefore they should be executed after the hosts they run on
   # are configured.
 - name: Manage service agents
-  import_playbook: 'agent.yml'
+  import_playbook: 'layer/agent.yml'
