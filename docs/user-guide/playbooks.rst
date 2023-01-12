@@ -271,7 +271,7 @@ Let's create an exmaple playbook in the DebOps project directory,
      tasks:
        - name: Message the user that we are in a custom playbook
          ansible.builtin.debug:
-           msg: 'Hello from a custom playbook"
+           msg: 'Hello from a custom playbook'
 
 This playbook can be executed by the :command:`debops` script very easily:
 
@@ -316,7 +316,7 @@ Here, we import a playbook from the cloned DebOps :command:`git` repository
      tasks:
        - name: Message the user that we are in a custom playbook
          ansible.builtin.debug:
-           msg: 'Hello from a custom playbook"
+           msg: 'Hello from a custom playbook'
 
 If DebOps Collection has been installed from Ansible Galaxy, or the Python
 package has been installed, the playbooks can be referenced using the Fully
@@ -336,7 +336,7 @@ Qualified Collection Name of the playbook:
      tasks:
        - name: Message the user that we are in a custom playbook
          ansible.builtin.debug:
-           msg: 'Hello from a custom playbook"
+           msg: 'Hello from a custom playbook'
 
 This way the custom playbook is a lot more portable and doesn't depend on the
 location of the imported playbooks in the filesystem.
