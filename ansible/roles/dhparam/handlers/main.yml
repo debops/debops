@@ -8,7 +8,7 @@
   ansible.builtin.command: run-parts {{ dhparam__hook_path }}
 
 - name: Regenerate DH parameters on first install
-  ansible.posix.at:  # noqa var-spacing
+  ansible.posix.at:  # noqa jinja[spacing]
     command: |
       test -x {{ dhparam__generate_params }} \
       && (echo 'nice {{ dhparam__generate_params }} run' | batch > /dev/null 2>&1) || true
