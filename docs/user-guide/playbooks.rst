@@ -266,7 +266,6 @@ Let's create an exmaple playbook in the DebOps project directory,
 
    - name: Custom playbook
      hosts: 'debops_all_hosts'
-     become: True
 
      tasks:
        - name: Message the user that we are in a custom playbook
@@ -311,7 +310,6 @@ Here, we import a playbook from the cloned DebOps :command:`git` repository
 
    - name: Custom playbook
      hosts: 'debops_all_hosts'
-     become: True
 
      tasks:
        - name: Message the user that we are in a custom playbook
@@ -331,7 +329,6 @@ Qualified Collection Name of the playbook:
 
    - name: Custom playbook
      hosts: 'debops_all_hosts'
-     become: True
 
      tasks:
        - name: Message the user that we are in a custom playbook
