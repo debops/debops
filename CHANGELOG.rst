@@ -162,6 +162,11 @@ General
 - The fact script has been optimized for environments with large UNIX group
   databases, for example connected to ActiveDirectory domains.
 
+:ref:`debops.root_account` role
+'''''''''''''''''''''''''''''''
+
+- The password length can now be set using a number, not just a string.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 
