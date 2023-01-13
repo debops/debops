@@ -21,10 +21,10 @@
       etc_services__dependent_list:
         - '{{ grafana__etc_services__dependent_list }}'
 
-    - role: keyring
-      tags: [ 'role::keyring', 'skip::keyring', 'role::grafana' ]
-      keyring__dependent_apt_keys:
-        - '{{ grafana__keyring__dependent_apt_keys }}'
+    - role: extrepo
+      tags: [ 'role::extrepo', 'skip::extrepo', 'role::grafana' ]
+      extrepo__dependent_sources:
+        - '{{ grafana__extrepo__dependent_sources }}'
 
     - role: ferm
       tags: [ 'role::ferm', 'skip::ferm' ]
