@@ -70,4 +70,3 @@ future for better control over PKI realm directory structure:
 
 ``ansible_local.pki.trusted``
   Name of the trusted CA chain symlink located in the PKI realm main directory.
-

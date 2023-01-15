@@ -164,4 +164,3 @@ database:
        state: 'present'
      delegate_to: '{{ ansible_local.postgresql.delegate_to }}'
      register: application_register_database
-

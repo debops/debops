@@ -176,4 +176,3 @@ Add custom local filter ``root-auth`` with a single ``failregex`` rule::
       - name: root-auth
         failregex: 'Authentication failure for .* from <HOST>'
         state: present
-

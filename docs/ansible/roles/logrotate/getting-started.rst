@@ -31,4 +31,3 @@ Here's an example playbook which uses ``debops.logrotate`` role::
 
         - role: debops.logrotate
           tags: [ 'role::logrotate' ]
-

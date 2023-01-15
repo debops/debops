@@ -291,4 +291,3 @@ Create a LVM-based storage pool from existing Volume Group::
    :keywords: libvirt, libvirt storage, libvirt storage pools,
               network, libvirt network, libvirt networks,
               libvirt connection, libvirt connections
-

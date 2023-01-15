@@ -77,4 +77,3 @@ generated accounts are:
   a particular host, read only. Allows access from the host to itself from the
   ``root`` account, can be used to grant access to a particular host data to
   other users or services.
-

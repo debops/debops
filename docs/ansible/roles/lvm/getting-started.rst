@@ -43,4 +43,3 @@ Here's an example playbook which uses ``debops.lvm`` role::
       roles:
         - role: debops.lvm
           tags: [ 'role::lvm' ]
-

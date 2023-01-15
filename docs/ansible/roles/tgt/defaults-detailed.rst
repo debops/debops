@@ -116,4 +116,3 @@ How to create an iSCSI Target with an image file presented as a CD/DVD drive::
           device-type cd
           readonly 1
           MaxConnections 10
-
