@@ -18,6 +18,19 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Debops.  If not, see <https://www.gnu.org/licenses/>.
+'''
+
+This file implements the `template_src` lookup filter for Ansible. In
+difference to the `template` filter, this searches values based on the
+`template-paths` variable (colon separated) as configured in DebOps.
+
+NOTE: This means this filter relies on DebOps.
+
+'''
+
+__author__ = "Robert Chady <rchady@sitepen.com>"
+__copyright__ = "Copyright 2015 by Robert Chady <rchady@sitepen.com>"
+__license__ = "GNU General Public LIcense version 3 (GPL v3) or later"
 
 import os
 
@@ -47,20 +60,6 @@ except ImportError:
 
 from distutils.version import LooseVersion
 from ansible import __version__ as __ansible_version__
-
-'''
-
-This file implements the `template_src` lookup filter for Ansible. In
-difference to the `template` filter, this searches values based on the
-`template-paths` variable (colon separated) as configured in DebOps.
-
-NOTE: This means this filter relies on DebOps.
-
-'''
-
-__author__ = "Robert Chady <rchady@sitepen.com>"
-__copyright__ = "Copyright 2015 by Robert Chady <rchady@sitepen.com>"
-__license__ = "GNU General Public LIcense version 3 (GPL v3) or later"
 
 
 if LooseVersion(__ansible_version__) < LooseVersion("2.0"):
