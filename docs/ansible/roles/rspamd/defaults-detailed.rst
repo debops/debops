@@ -78,7 +78,7 @@ the following content:
            rbl = "rbl.example.net";
            checks = ["from"];
        }
-   } 
+   }
 
 
 .. _rspamd__ref_configuration_syntax:
@@ -269,7 +269,7 @@ The key file needs to be stored on the :command:`rspamd` host, by default at
 :file:`/etc/rspamd/dkim_dns_key` (preferably with ``0640`` permissions and
 ``root:_rspamd`` ownership). This can be automated by transferring the key
 file to the Ansible controller and putting it in the appropriate override
-directory (e.g. :file:`project-dir/ansible/overrides/files/etc/rspamd/dkim_dns_key` as 
+directory (e.g. :file:`project-dir/ansible/overrides/files/etc/rspamd/dkim_dns_key` as
 explained below in the :ref:`rspamd__ref_dkim_override` section).
 
 Once the keyfile has been prepared, check the values of ``nsupdate_*`` in the

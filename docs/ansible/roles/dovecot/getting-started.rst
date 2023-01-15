@@ -54,7 +54,7 @@ List of other useful resources related to the ``debops.dovecot`` Ansible role:
 
 .. __: https://www.dovecot.org/
 .. __: https://doc.dovecot.org/
- 
+
 
 Example playbook
 ----------------
