@@ -100,4 +100,3 @@ will be created if it doesn't exist:
    ruby__user_gems:
      - name: 'mako'
        owner: 'application'
-

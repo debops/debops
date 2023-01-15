@@ -105,4 +105,3 @@ multiple hosts at once, you can still do this one host at a time::
 
         # Accept connections from anywhere
         accept_any: True
-

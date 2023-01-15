@@ -99,4 +99,3 @@ Available role tags:
 
 ``role::libvirt:pools``
   Configure ``libvirt`` storage pools.
-

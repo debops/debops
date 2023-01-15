@@ -21,4 +21,3 @@ debops.libuser
  mode: rst
  ispell-local-dictionary: "american"
  End:
-

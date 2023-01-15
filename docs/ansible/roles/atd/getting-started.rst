@@ -79,4 +79,3 @@ Available role tags:
 ``role::atd:users``
   Configure contents of :file:`/etc/at.allow`` and :file:`/etc/at.deny` configuration
   files.
-

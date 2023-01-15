@@ -69,4 +69,3 @@ Install a custom private key from a Jinja variable on all hosts:
    pki_private_files:
      - content: '{{ custom_variable }}'
        dest: '/etc/pki/realms/domain/private/key.pem'
-

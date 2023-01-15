@@ -125,4 +125,3 @@ Supported parameters are:
   ``null``/``none``, ``bool``/``boolean``. This parameter is onlu useful when
   the value is defined using another variable, in which case the type
   information is not preserved by Jinja templating.
-
