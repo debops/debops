@@ -65,7 +65,7 @@ How ACME certificates are managed
 When a new PKI realm is created and support for ACME Certificate Authority is
 enabled, a separate configuration for a Certificate Request will be created in
 the :file:`acme/` directory. The `acme-tiny` request does not use a wildcard
-certificate, instead the default domain and a set of subdomains will be 
+certificate, instead the default domain and a set of subdomains will be
 requested (see below for configuration variables). The directory structure at
 this time looks like this:
 

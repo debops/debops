@@ -251,10 +251,10 @@ Autosubscribe users to the ``Junk`` mailbox:
 .. code-block:: yaml
 
   dovecot__group_configuration:
-  
+
     - section: 'mailbox_namespaces'
       options:
-  
+
         - name: 'namespace inbox'
           options:
 
@@ -269,10 +269,10 @@ Rename the ``Junk`` mailbox to ``INBOX.Spam``:
 .. code-block:: yaml
 
   dovecot__group_configuration:
-  
+
     - section: 'mailbox_namespaces'
       options:
-  
+
         - name: 'namespace inbox'
           options:
 
