@@ -206,3 +206,8 @@ fail-if-git-dirty:
 	@git diff --quiet && git diff --cached --quiet || ( \
 		printf "%s\n" "Sanity check: uncommited git changes detected" ; \
 		git status --short ; exit 1 )
+
+.PHONY: pc precommit pre-commit
+precommit:      ## Run pre-commit on all files
+pc precommit pre-commit:
+	@pre-commit run --all
