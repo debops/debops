@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # DebOps documentation build configuration file
 # Copyright (C) 2014-2022 DebOps <https://debops.org/>
