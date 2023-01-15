@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2021 David Härdeman <david@hardeman.nu>
 # Copyright (C) 2021 DebOps <https://debops.org/>
 #
