@@ -119,7 +119,7 @@ After making your changes, you can apply them by running the command:
 
 .. code-block:: console
 
-   debops service/postldap -l mail-server -t role::postfix --diff
+   debops run service/postldap -l mail-server -t role::postfix --diff
 
 This will execute the :ref:`debops.postfix` role in the context of the
 :ref:`debops.postldap` role and correct set of variables will be active.

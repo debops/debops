@@ -24,7 +24,7 @@ Ansible checks the log integrity by running the command:
 
 .. code-block:: console
 
-   debops service/journald --tags role::journald:fss:verify
+   debops run service/journald --tags role::journald:fss:verify
 
 With this tag, only the task that verifies the logs will be executed.
 

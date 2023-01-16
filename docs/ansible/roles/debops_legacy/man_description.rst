@@ -16,7 +16,7 @@ before implementing them, you can run the role against DebOps hosts with:
 
 .. code-block:: console
 
-   debops service/debops_legacy -l <host> --diff --check
+   debops run service/debops_legacy -l <host> --diff --check
 
 Any changes that the role will create on the hosts can be overridden via the
 Ansible inventory if needed.

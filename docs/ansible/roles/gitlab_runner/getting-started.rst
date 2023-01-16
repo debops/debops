@@ -35,7 +35,7 @@ GitLab CI:
 
 .. code-block:: console
 
-   GITLAB_RUNNER_TOKEN=<random-token> debops service/gitlab_runner
+   GITLAB_RUNNER_TOKEN=<random-token> debops run service/gitlab_runner
 
 To change the environment variable that holds the registration token, or save
 the token in Ansible inventory, you can use the :envvar:`gitlab_runner__token`

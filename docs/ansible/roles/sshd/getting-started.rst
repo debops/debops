@@ -58,7 +58,7 @@ the :ref:`debops.sshd` role, for example by executing the command:
 
 .. code-block:: console
 
-   debops service/sshd -l <host> --tags role::pam_access --diff
+   $ debops run service/sshd -l <host> --tags role::pam_access --diff
 
 This command will apply the PAM access configuration defined by the
 :ref:`debops.sshd` role with modifications from the inventory; they won't be

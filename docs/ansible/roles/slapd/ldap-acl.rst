@@ -357,7 +357,7 @@ execute the :ref:`debops.slapd` playbook with a special tag:
 
 .. code-block:: console
 
-   debops service/slapd -l <host> -t role::slapd:slapacl
+   debops run service/slapd -l <host> -t role::slapd:slapacl
 
 This command will regenerate the script and execute it to check the ACL rules.
 
