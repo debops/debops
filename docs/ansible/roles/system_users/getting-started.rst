@@ -102,4 +102,4 @@ You can see full list of available role tags by executing the command:
 
 .. code-block:: console
 
-   debops service/system_users --list-tags
+   debops run service/system_users --list-tags

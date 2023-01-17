@@ -55,7 +55,7 @@ Then run the playbook of the role:
 
 .. code-block:: shell
 
-   debops service/cryptsetup -l "$hostname"
+   debops run service/cryptsetup -l "$hostname"
 
 which should have the following effects:
 
@@ -121,7 +121,7 @@ Then run the playbook of the role:
 
 .. code-block:: shell
 
-   debops service/cryptsetup -l "$hostname"
+   debops run service/cryptsetup -l "$hostname"
 
 which should have the following effects:
 

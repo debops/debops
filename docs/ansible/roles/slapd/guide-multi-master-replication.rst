@@ -185,7 +185,7 @@ OpenLDAP servers in the cluster at once:
 
 .. code-block:: console
 
-   debops service/slapd -l slapd_masters_cluster1 --diff
+   debops run service/slapd -l slapd_masters_cluster1 --diff
 
 When the deployment is complete, the OpenLDAP configuration should be defined
 on the group level instead of on an individual host level in the inventory. The

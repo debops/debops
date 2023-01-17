@@ -23,8 +23,8 @@ To perform an upgrade, you can use the following command:
 
 .. code-block:: yaml
 
-   debops service/mcli -l <host|group> -t role::golang \
-                       -e 'mcli__upstream_upgrade=true'
+   debops run service/mcli -l <host|group> -t role::golang \
+                           -e 'mcli__upstream_upgrade=true'
 
 This command will execute the :ref:`debops.golang` Ansible role in the context
 of the :file:`service/mcli` playbook and perform the upgrade of MinIO Client
