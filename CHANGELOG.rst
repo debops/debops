@@ -167,6 +167,12 @@ General
 
 - The password length can now be set using a number, not just a string.
 
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- The role will make sure that the :file:`/run/sshd/` directory exists on all
+  hosts, to fix issues with :command:`sshd` daemon not restarting properly.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 
