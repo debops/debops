@@ -204,7 +204,7 @@ test-debops-ansible_plugins:
 .PHONY: fail-if-git-dirty
 fail-if-git-dirty:
 	@git diff --quiet && git diff --cached --quiet || ( \
-		printf "%s\n" "Sanity check: uncommited git changes detected" ; \
+		printf "%s\n" "Sanity check: uncommitted git changes detected" ; \
 		git status --short ; exit 1 )
 
 .PHONY: pc precommit pre-commit
