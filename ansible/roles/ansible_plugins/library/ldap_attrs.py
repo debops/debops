@@ -238,7 +238,7 @@ class LdapAttr(object):
         self.connection = self._connect_to_ldap()
 
     def _order_values(self, values):
-        """ Preprend X-ORDERED index numbers to attribute's values. """
+        """ Prepend X-ORDERED index numbers to attribute's values. """
         ordered_values = []
 
         if isinstance(values, list):

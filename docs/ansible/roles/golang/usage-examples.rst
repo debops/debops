@@ -108,7 +108,7 @@ This is an example install configuration for the :ref:`debops.golang` role:
 The :ref:`debops.golang` Ansible role will check if the specified APT packages
 are available; if not, the specified version will be cloned from the sources
 repository and the :command:`git` tag will be verified using the specified GPG
-key. When the build is finished, the pecified binaries will be installed in the
+key. When the build is finished, the specified binaries will be installed in the
 :file:`/usr/local/bin/` directory.
 
 

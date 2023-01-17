@@ -21,8 +21,8 @@ TCP ports and UNIX socket the same as the default Redis Server setup. This
 should allow easy creation of additional Redis instances when necessary.
 
 
-Access control and autorization
--------------------------------
+Access control and authorization
+--------------------------------
 
 The :ref:`debops.redis_server` role configures Redis Server instances with
 a randomly generated password, the same for all instances in the same domain.

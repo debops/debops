@@ -62,7 +62,7 @@ Copy file from the Ansible Controller to all remote hosts:
 .. code-block:: yaml
 
    apt__conf:
-     - name: personnal
+     - name: personal
        src: 'path/to/apt.conf.d/02personnal.conf'
        priority: '99'
 

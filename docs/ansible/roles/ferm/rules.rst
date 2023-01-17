@@ -63,7 +63,7 @@ the following keys:
 
 ``by_role``
   Optional. Name of the Ansible role in the format ``ROLE_OWNER.ROLE_NAME``
-  which is responsable for the rule. This will be included as a comment in the
+  which is responsible for the rule. This will be included as a comment in the
   generated rule file.
 
 Depending on the chosen type, many additional variables are supported.

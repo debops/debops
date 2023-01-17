@@ -165,7 +165,7 @@ using the :ref:`debops.pki` role, by executing the command:
 
    debops run service/pki -l hostname --diff
 
-After it finishes, the :command:`certbot` aplication should be installed, and symlinks to the :file:`/etc/letsencrypt/` directory should be present in the configured PKI realm. You can see an example realm directory structure below:
+After it finishes, the :command:`certbot` application should be installed, and symlinks to the :file:`/etc/letsencrypt/` directory should be present in the configured PKI realm. You can see an example realm directory structure below:
 
 .. code-block:: none
 

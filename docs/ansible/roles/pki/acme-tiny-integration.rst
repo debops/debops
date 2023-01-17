@@ -56,7 +56,7 @@ script from quickly retrying the request and potentially hitting a rate limit.
 If this file exists and it was modified less than two days ago, the
 :program:`pki-realm` script will not perform the request. If the file is older
 than two days, it will move the file out of the way and perform the request as
-usual. If you want to retry the request straightaway, you can just move
+usual. If you want to retry the request straight away, you can just move
 :file:`acme/error.log` out of the way yourself.
 
 How ACME certificates are managed

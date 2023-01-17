@@ -62,7 +62,7 @@ Each configuration option is defined as a YAML dictionary with specific paramete
   features.
 
 ``separator``
-  Optional, boolean. If defined and ``True``, the secion will have an
+  Optional, boolean. If defined and ``True``, the section will have an
   additional empty line before it for cosmetic reasons.
 
 ``comment``

@@ -63,7 +63,7 @@ parameters:
 
 ``accept_any``
   Optional, boolean. If not specified or ``True``, without a specific client
-  list the service that is being configured will acceppt connections from all
+  list the service that is being configured will accept connections from all
   hosts (``ALL``). If specified and ``False``, connections won't be allowed
   unless a list of clients is specified and not empty.
 

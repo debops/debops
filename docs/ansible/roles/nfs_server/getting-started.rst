@@ -26,7 +26,7 @@ By default role expects a list of allowed clients in the
    nfs_server__allow: [ '192.0.2.0/24' ]
 
 When this list is not empty and contains IP addresses or CIDR subnets, the role
-will allow access to the ``nfs`` service through the firewall and cofigure NFS
+will allow access to the ``nfs`` service through the firewall and configure NFS
 exports in the :file:`/etc/exports.d/ansible.exports` configuration file. Only the
 NFS root pseudo filesystem is defined by default, in the :file:`/srv/nfs/`
 directory. You should define additional exports, for example:

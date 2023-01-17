@@ -458,7 +458,7 @@ Syntax
 
 The ``resources__*_replacements`` variables are defined as list of YAML
 dictionary entries with specific parameters. Check the documentation of the
-``ansible.builtin.replace`` module to see the avaiable parameters:
+``ansible.builtin.replace`` module to see the available parameters:
 
 .. code-block:: console
 

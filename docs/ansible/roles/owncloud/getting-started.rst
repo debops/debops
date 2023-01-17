@@ -147,7 +147,7 @@ does not automate this. The way to support Nextcloud auto upgrades would be to
 use the Nextcloud Docker image because it includes an application upgrade
 script. The role could be extended to support using the Docker image if needed.
 
-Upgrade the application using the build-in upgrade feature, then rerun the
+Upgrade the application using the built-in upgrade feature, then rerun the
 service playbook for this role to ensure the matching settings are applied.
 
 If the application complains under ``/settings/admin/overview`` then you might need to run:

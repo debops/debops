@@ -186,7 +186,7 @@ developer of a project designed to set up and configure thousands of servers
 results in a lot of responsibility. I am doing what I can to keep up with that.
 For example, I switched to Qubes OS in 2016-12. All my development work is done
 from there from now on. OpenPGP signatures come from stripped down, offline
-VMs. The reason I am doing all of this as a responsable sysadmin and developer
+VMs. The reason I am doing all of this as a responsible sysadmin and developer
 is to keep our dear users safe during those difficult and advanced times.
 
 DebOps is already one of a kind when it comes to configuration management for

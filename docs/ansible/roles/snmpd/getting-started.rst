@@ -45,7 +45,7 @@ Here's an example playbook which uses ``debops.snmpd`` role:
 Firewall, TCP wrappers access
 -----------------------------
 
-SNMP is primarly used over the network, but for security reasons access from
+SNMP is primarily used over the network, but for security reasons access from
 remote hosts is filtered by a firewall and TCP wrappers. To allow access to
 SNMP from other hosts using ``debops.ferm`` and ``debops.tcpwrappers`` Ansible
 roles, you need to add IP addresses or CIDR subnets which can access the

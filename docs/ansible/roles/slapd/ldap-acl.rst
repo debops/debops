@@ -266,7 +266,7 @@ Group owners
 
 - The owners of the LDAP groups under the ``ou=Groups,dc=example,dc=org`` LDAP
   subtree, defined by the ``owner`` attribute, can add, modify or remove
-  members in their respecitve groups, using the ``member`` attribute.
+  members in their respective groups, using the ``member`` attribute.
 
 Object owners
 ~~~~~~~~~~~~~

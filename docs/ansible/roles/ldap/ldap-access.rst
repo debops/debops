@@ -47,7 +47,7 @@ a personal LDAP entry with the ``uid`` attribute stored in
 find the LDAP entry of a person or a service account in the LDAP directory
 using their username (in the ``uid`` attribute) or the provided e-mail address
 (in the ``mail`` attribute). After finding the correct Distinguished Name,
-applications need to privde the plaintext password over the TLS connection to
+applications need to provide the plaintext password over the TLS connection to
 the LDAP directory which will then verify it and confirm the validity.
 Successful bind operations should grant access to the application.
 
@@ -305,8 +305,8 @@ Access control   Description
 ``shell``        Grants access to the UNIX environment through a service, for
                  example SSH. To be fully effective, a given LDAP entry also
                  needs to have a corresponding ``host`` attribute with the
-                 ``posix:`` value which specifices the hosts on which the
-                 accounts and groups are present, as well as required objet
+                 ``posix:`` value which specifies the hosts on which the
+                 accounts and groups are present, as well as required object
                  classes (``posixAccount``, ``posixGroup``, ``posixGroupId``).
                  See "Host-based access control" below for more details.
 ---------------- ------------------------------------------------------------

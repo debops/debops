@@ -185,7 +185,7 @@ rabbitmq_server__plugins
 ------------------------
 
 The ``rabbitmq_server__*_plugins`` lists can be used to enable or disable
-RabbitMQ plugins conditionally. You can find the available plugins on a givem
+RabbitMQ plugins conditionally. You can find the available plugins on a given
 host by running the command:
 
 .. code-block:: console

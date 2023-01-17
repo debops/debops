@@ -50,7 +50,7 @@ defined using specific parameters:
 ``name``
   Required. An identifier for a particular configuration entry, not used in the
   configuration file itself. Entries with the same ``name`` parameter can be
-  overriden by subsequent entries.
+  overridden by subsequent entries.
 
 ``config``
   Required. YAML dictionary with the :command:`extrepo` configuration options.
