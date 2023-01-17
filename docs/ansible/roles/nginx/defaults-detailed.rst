@@ -433,8 +433,8 @@ Locations
        '~ ^/doc$': [ 'all' ]
 
 ``location_referers``
-  Optional. Dict with lists of valid referers accepted for a given
-  location, all other referers will be blocked by nginx. Each location
+  Optional. Dict with lists of valid refferers accepted for a given
+  location, all other refferers will be blocked by nginx. Each location
   needs to have corresponding entry in ``location`` dict. Examples:
 
   .. code-block:: yaml
