@@ -85,7 +85,7 @@ order of merging the entries.
 Each definition is created using a specific set of parameters:
 
 ``name``
-  Required. An indentifier of a given Preseed definition, not used otherwise.
+  Required. An identifier of a given Preseed definition, not used otherwise.
   Must be unique across all definitions. Entries with the same ``name`` are
   merged in order of appearance and can affect each other.
 

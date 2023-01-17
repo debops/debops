@@ -34,7 +34,7 @@ want to read the `upstream documentation`__ to learn how to configure Icinga
 
 .. __: https://www.icinga.com/docs/icinga2/latest/doc/04-configuring-icinga-2/
 
-The vriables contain lists of YAML dictionaries, each dictionary can be defined
+The variables contain lists of YAML dictionaries, each dictionary can be defined
 using specific parameters:
 
 ``name``

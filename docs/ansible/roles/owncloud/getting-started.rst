@@ -145,7 +145,7 @@ Upgrade
 All upgrades be it major or patch need to be done manually for now. The role
 currently does not automate this.
 
-Upgrade the application using the build-in upgrade feature, then rerun the
+Upgrade the application using the built-in upgrade feature, then rerun the
 service playbook for this role to ensure the matching settings are applied.
 
 If the application complains under ``/settings/admin/overview`` then you might need to run:

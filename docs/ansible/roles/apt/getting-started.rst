@@ -96,6 +96,6 @@ Available role tags:
   tasks as well as role dependencies.
 
 ``role::apt:keys``
-  Deploy only keys defined in inventory. Usefull, if some keys are expired and
+  Deploy only keys defined in inventory. Useful, if some keys are expired and
   the apt role refuses to work. Or start using debops on existing hosts with
   expired keys.

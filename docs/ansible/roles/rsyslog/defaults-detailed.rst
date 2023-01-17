@@ -185,7 +185,7 @@ Each configuration entry is a YAML dictionary with specific parameters:
   Optional. A positive or negative number which can be used to affect the order
   of sections in the generated configuration file. Positive numbers add more
   "weight" to the section making it appear "lower" in the file; negative
-  numbers substract the "weight" and therefore move the section upper in the
+  numbers subtract the "weight" and therefore move the section upper in the
   file.
 
 

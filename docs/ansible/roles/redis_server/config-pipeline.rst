@@ -8,7 +8,7 @@ Redis Server configuration pipeline
 ===================================
 
 The default Redis Server installation in Debian Jessie and Debian Stretch
-supports only 1 instance of Redis per host. The pacakges in Debian Buster and
+supports only 1 instance of Redis per host. The packages in Debian Buster and
 the ``stretch-backports`` repository support multiple instances by using
 a single :file:`/etc/redis/redis-<instance>.conf` configuration file per
 a :command:`systemd` instance. However, due to the Redis modifying its own
@@ -56,7 +56,7 @@ The variables are merged in the following order:
   Redis Server configuration files, :command:`systemd` service configuration.
   The variables are joined together in the
   :envvar:`redis_server__combined_configuration` variable which is used in
-  varius role tasks and templates. These variables can be used to override
+  various role tasks and templates. These variables can be used to override
   per-instance configuration if needed.
 
 

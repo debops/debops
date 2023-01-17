@@ -110,7 +110,7 @@ the following parameters:
 ``weight``
   Optional. A positive or negative number which can be used to affect the order
   of files to be generated. Positive numbers add more "weight" to the section
-  making it appear "lower" in the list; negative numbers substract the "weight"
+  making it appear "lower" in the list; negative numbers subtract the "weight"
   and therefore move the file up in the list.
 
 ``options``

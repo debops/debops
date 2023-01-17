@@ -88,7 +88,7 @@ the following parameters:
   Optional. A positive or negative number which can be used to affect the order
   of sections in the generated configuration file. Positive numbers add more
   "weight" to the section making it appear "lower" in the file; negative
-  numbers substract the "weight" and therefore move the section upper in the
+  numbers subtract the "weight" and therefore move the section upper in the
   file.
 
 ``options``
@@ -97,7 +97,7 @@ the following parameters:
   ``section`` parameter are merged together in order of appearance and can
   affect each other.
 
-  The options can be specified in a simple form as key/vaule pairs, where the
+  The options can be specified in a simple form as key/value pairs, where the
   key is the option name and value is the option value. Alternatively, if the
   ``name`` and ``value`` parameters are used, the entries can use an extended
   format with specific parameters:

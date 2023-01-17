@@ -132,7 +132,7 @@ def main():
                 result['changed'] = True
 
         elif module.params['recursive']:
-            # Check parent subvolumes and create it if they doesnt exist
+            # Check parent subvolumes and create it if they doesn't exist
             parents = param_path.split(os.path.sep)
             for idx, subvolume in enumerate(parents):
                 if len(subvolume) == 0:

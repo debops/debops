@@ -22,7 +22,7 @@ page of your GitLab installation.
 The registration token is generated randomly on each GitLab startup, and
 unfortunately cannot be accessed using an API. Therefore, the easiest way to
 provide it to the role is to store it in an environment variable. The
-``debops.gitlab_runner`` checks the value ofthe ``$GITLAB_RUNNER_TOKEN`` system
+``debops.gitlab_runner`` checks the value of the ``$GITLAB_RUNNER_TOKEN`` system
 variable and uses the token found there.
 
 The registration token is required to perform changes on the GitLab server

@@ -476,7 +476,7 @@ describes one test using specific parameters:
   merged together, and their entries can modify each other when they have the
   same ``name`` value.
 
-  Each test case is defined using specific paramters:
+  Each test case is defined using specific parameters:
 
   ``name``
     Required. The attribute to test, with optional access level and value,
