@@ -550,6 +550,12 @@ debops.boxbackup role
 - Locked ``johndoh/contextmenu`` plugin to version 3.2.1 for Roundcube < 1.5
   due to compatibility issues.
 
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- The role will now correctly handle hosts where :command:`sshd` is launched
+  via :command:`systemd` socket activation mechanism.
+
 :ref:`debops.sudo` role
 '''''''''''''''''''''''
 

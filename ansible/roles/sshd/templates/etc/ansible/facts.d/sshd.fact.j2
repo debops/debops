@@ -12,6 +12,7 @@ from __future__ import print_function
 from json import dumps
 from re import match, IGNORECASE
 from sys import exit
+import subprocess
 import os
 
 
@@ -55,5 +56,13 @@ try:
 except Exception as e:
     print("{}")
     exit()
+
+try:
+    socket_activation = subprocess.check_output(
+            ["systemctl", "is-enabled", "ssh.socket"]).decode('utf-8')
+    output['socket_activation'] = socket_activation.strip()
+
+except subprocess.CalledProcessError:
+    output['socket_activation'] = 'disabled'
 
 print(dumps(output, sort_keys=True, indent=4))
