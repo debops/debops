@@ -155,6 +155,9 @@ General
 - The role will make sure that the :file:`/run/sshd/` directory exists on all
   hosts, to fix issues with :command:`sshd` daemon not restarting properly.
 
+- The role will now correctly handle hosts where :command:`sshd` is launched
+  via :command:`systemd` socket activation mechanism.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 
