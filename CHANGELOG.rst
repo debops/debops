@@ -80,6 +80,12 @@ General
 
 - The role can now directly handle the daemon ``log-driver`` parameter.
 
+:ref:`debops.influxdata` role
+'''''''''''''''''''''''''''''
+
+- InfluxData has published a new APT repository GPG key, the role should
+  refresh it automatically.
+
 :ref:`debops.postgresql_server` role
 ''''''''''''''''''''''''''''''''''''
 
