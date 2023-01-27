@@ -254,6 +254,12 @@ General
   based on the :ref:`debops.ldap` Ansible local facts instead of static values,
   to better support modified environments.
 
+:ref:`debops.influxdata` role
+'''''''''''''''''''''''''''''
+
+- InfluxData has published a new APT repository GPG key, the role should
+  refresh it automatically.
+
 :ref:`debops.minio` role
 ''''''''''''''''''''''''
 
