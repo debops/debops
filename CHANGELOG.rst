@@ -39,6 +39,12 @@ Added
   is present on the host, in which case it will attempt to update the
   certificates stored in the internal Proxmox certificate store.
 
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- The :file:`sshd.fact` script now exposes the version number of installed
+  :command:`sshd` daemon via Ansible local facts.
+
 :ref:`debops.zabbix_agent` role
 '''''''''''''''''''''''''''''''
 
