@@ -39,6 +39,16 @@ for item in sshd_facts:
     output.update({item['fact']: item['default']})
 
 try:
+    version_stdout = subprocess.check_output(
+            ["dpkg-query", "-W", "-f=${Version}",
+             "openssh-server"]).decode('utf-8').split('-')[0]
+    if version_stdout:
+        output['version'] = version_stdout.split(':')[1].split('p')[0]
+
+except Exception:
+    pass
+
+try:
     with open("/etc/ssh/sshd_config") as fd:
         for line in fd.readlines():
             for item in sshd_facts:
