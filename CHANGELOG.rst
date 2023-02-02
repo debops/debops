@@ -33,6 +33,13 @@ Added
   outside of the ``server`` and ``upstream`` blocks using the new
   ``item.toplevel_options`` parameter.
 
+:ref:`debops.resources` role
+''''''''''''''''''''''''''''
+
+- The :ref:`debops.resources` role can now be used to install pip library
+  dependencies or virtual environments via the ``ansible.builtin.pip``
+  module.
+
 Changed
 ~~~~~~~
 
