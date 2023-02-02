@@ -41,6 +41,13 @@ Added
   preseeding is used in image building scenarios, for example with Hashicorp
   Packer.
 
+:ref:`debops.resources` role
+''''''''''''''''''''''''''''
+
+- The :ref:`debops.resources` role can now be used to install pip library
+  dependencies or virtual environments via the ``ansible.builtin.pip``
+  module.
+
 Changed
 ~~~~~~~
 
