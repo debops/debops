@@ -109,31 +109,17 @@
 - name: Reload Ansible local facts
   ansible.builtin.meta: 'flush_handlers'
 
-- name: Check OpenSSH server version
-  environment:
-    LC_MESSAGES: 'C'
-  ansible.builtin.shell: 'set -o nounset -o pipefail -o errexit &&
-          dpkg-query -W -f="\${Version}\n" "openssh-server" | sed -re "s/^.*:([0-9]+\.[0-9]+).*/\1/"'
-  args:
-    executable: 'bash'
-  register: sshd__register_version
-  changed_when: False
-  check_mode: False
-  tags: [ 'role::sshd:config' ]
-
 - name: Ensure that Ed25519 host key is present
   ansible.builtin.command: ssh-keygen -q -t ed25519 -N "" -f ssh_host_ed25519_key
   args:
     chdir: '/etc/ssh'
     creates: '/etc/ssh/ssh_host_ed25519_key'
-  when: sshd__register_version.stdout | d() and
-        sshd__register_version.stdout is version_compare('6.5', '>=')
+  when: sshd__version is version('6.5', '>=')
   tags: [ 'role::sshd:config' ]
 
 - name: Configure authorized_keys lookup
   ansible.builtin.include_tasks: authorized_keys_lookup.yml
-  when: sshd__register_version.stdout | d() and
-        sshd__register_version.stdout is version_compare('6.2', '>=') and
+  when: sshd__version is version('6.2', '>=') and
         sshd__authorized_keys_lookup | bool
   tags: [ 'role::sshd:config' ]
 
@@ -172,6 +158,24 @@
     mode:   '0644'
   notify: [ 'Test sshd configuration and restart' ]
   tags: [ 'role::sshd:config' ]
+
+- name: Configuration of additional SSH ports with socket activation
+  when: (sshd__ports | length > 1 and ansible_service_mgr == 'systemd' and
+         (ansible_local.sshd.socket_activation | d('disabled')) == 'enabled')
+  block:
+
+    - name: Create systemd override directory if needed
+      ansible.builtin.file:
+        path: '/etc/systemd/system/ssh.socket.d'
+        state: 'directory'
+        mode: '0755'
+
+    - name: Generate systemd socket configuration
+      ansible.builtin.template:
+        src: 'etc/systemd/system/ssh.socket.d/listen.conf.j2'
+        dest: '/etc/systemd/system/ssh.socket.d/listen.conf'
+        mode: '0644'
+      notify: [ 'Reload systemd daemon' ]
 
 - name: Make sure the system-wide known_hosts file exists
   ansible.builtin.command: touch {{ sshd__known_hosts_file }}

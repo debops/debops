@@ -15,11 +15,47 @@ perform the upgrades between different stable releases.
 Unreleased
 ----------
 
+Changes in inventory variables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 - The :ref:`debops.dropbear_initramfs` role renamed the
   ``dropbear_initramfs__*_authorized_keys`` keys according to the
   ``ansible.posix.authorized_key`` module.
   Variable ``dropbear_initramfs__authorized_keys_options`` has also
   been renamed to ``dropbear_initramfs__authorized_keys_key_options``.
+
+- The :ref:`debops.sshd` role was refreshed and multiple variables related to
+  the contents of the :file:`/etc/ssh/sshd_config` configuration file were
+  removed. Their values are now managed using :ref:`universal_configuration`.
+  In the process, some of the configuration options will use their default
+  values from Debian or upstream. List of removed default variables:
+
+  - ``sshd__listen``
+  - ``sshd__banner``
+  - ``sshd__log_level``
+  - ``sshd__accept_env``
+  - ``sshd__x11_forwarding``
+  - ``sshd__permit_root_login``
+  - ``sshd__password_authentication``
+  - ``sshd__compression``
+  - ``sshd__use_dns``
+  - ``sshd__max_auth_tries``
+  - ``sshd__max_sessions``
+  - ``sshd__max_startups``
+  - ``sshd__login_grace_time``
+  - ``sshd__client_alive_count_max``
+  - ``sshd__privilege_separation``
+  - ``sshd__custom_options``
+  - ``sshd__default_allow_groups``
+  - ``sshd__allow_groups``
+  - ``sshd__group_allow_groups``
+  - ``sshd__host_allow_groups``
+  - ``sshd__authorized_keys``
+  - ``sshd__authorized_keys_system``
+  - ``sshd__authorized_keys_user``
+  - ``sshd__match_list``
+  - ``sshd__match_group_sftponly``
+
 
 v3.0.0 (2022-02-17)
 -------------------
@@ -786,7 +822,7 @@ Inventory variable changes
   | ``auth_nslcd_pam_authz_search_host_and_service`` | Removed                          | No                                               |
   +--------------------------------------------------+----------------------------------+--------------------------------------------------+
 
-- The :envvar:`sshd__default_allow_groups` default variable has been changed to
+- The ``sshd__default_allow_groups`` default variable has been changed to
   an empty list. The group-based access control has been moved to a PAM access
   control rules defined in the :envvar:`sshd__pam_access__dependent_rules`
   variable.
@@ -1131,8 +1167,8 @@ Inventory variable changes
   groups with ``root`` access defined by the :ref:`debops.system_groups` via
   Ansible local facts.
 
-- The contents of the :envvar:`sshd__allow_groups` variable have been moved to
-  the new :envvar:`sshd__default_allow_groups` variable. The new variable also
+- The contents of the ``sshd__allow_groups`` variable have been moved to
+  the new ``sshd__default_allow_groups`` variable. The new variable also
   uses the :ref:`debops.system_groups` Ansible local facts as a data source.
 
 - The ``bootstrap__raw`` and ``bootstrap__mandatory_packages`` variables have
