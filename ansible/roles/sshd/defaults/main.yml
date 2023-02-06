@@ -174,7 +174,11 @@ sshd__ferm_limit_target: 'REJECT'
 #
 # List of TCP ports to open in the firewall for SSH connections. You can use
 # port numbers or service names from :file:`/etc/services`.
-sshd__ferm_ports: '{{ sshd__ports }}'
+# If you use socket activation, remember to define firewall ports separately.
+sshd__ferm_ports: '{{ sshd__ports
+                      if ((ansible_local.sshd.socket_activation | d("disabled")) == "disabled")
+                      else [ "22" ] }}'
+
                                                                    # ]]]
 # .. envvar:: sshd__ferm_interface [[[
 #
@@ -191,8 +195,14 @@ sshd__ferm_interface: []
 # .. envvar:: sshd__ports [[[
 #
 # List of ports which ``sshd`` will listen on. Make sure that the ``22`` TCP
-# port is included if you want to change this list.
-sshd__ports: [ '22' ]
+# port is included if you want to change this list. When :command:`systemd`
+# socket activation is enabled, you can define here listen streams using the
+# :man:`systemd.socket(5)` configuration syntax.
+#
+# With socket activation enabled, you might need to open access to the
+# additional TCP ports in the firewall separately, using the
+# :envvar:`sshd__ferm_ports` variable.
+sshd__ports: [ '22', '3333', '4444' ]
 
                                                                    # ]]]
 # .. envvar:: sshd__host_keys [[[
@@ -525,7 +535,9 @@ sshd__default_configuration:
     state: '{{ "ignore"
                if (sshd__ports | length == 1 and
                    sshd__ports | first | string == "22")
-               else "present" }}'
+               else ("ignore"
+                     if ((ansible_local.sshd.socket_activation | d("disabled")) == "enabled")
+                     else "present") }}'
 
   # Generate a set of "HostKey" configuration options based on the list of
   # "allowed" host keys. We cannot use a list as the value, because each host

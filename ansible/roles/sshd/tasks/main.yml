@@ -159,6 +159,24 @@
   notify: [ 'Test sshd configuration and restart' ]
   tags: [ 'role::sshd:config' ]
 
+- name: Configuration of additional SSH ports with socket activation
+  when: (sshd__ports | length > 1 and ansible_service_mgr == 'systemd' and
+         (ansible_local.sshd.socket_activation | d('disabled')) == 'enabled')
+  block:
+
+    - name: Create systemd override directory if needed
+      ansible.builtin.file:
+        path: '/etc/systemd/system/ssh.socket.d'
+        state: 'directory'
+        mode: '0755'
+
+    - name: Generate systemd socket configuration
+      ansible.builtin.template:
+        src: 'etc/systemd/system/ssh.socket.d/listen.conf.j2'
+        dest: '/etc/systemd/system/ssh.socket.d/listen.conf'
+        mode: '0644'
+      notify: [ 'Reload systemd daemon' ]
+
 - name: Make sure the system-wide known_hosts file exists
   ansible.builtin.command: touch {{ sshd__known_hosts_file }}
   args:
