@@ -1,15 +1,15 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# .. Copyright (C) 2013-2020      Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2013-2023      Maciej Delmanowski <drybjed@gmail.com>
 # .. Copyright (C) 2015-2017,2020 Robin Schneider <ypid@riseup.net>
-# .. Copyright (C) 2014-2020      DebOps <https://debops.org/>
+# .. Copyright (C) 2014-2023      DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _sshd__ref_defaults:
 
-# debops.sshd default variables [[[
-# =================================
+# debops.sshd default variables
+# =============================
 
 # .. contents:: Sections
 #    :local:
@@ -190,15 +190,9 @@ sshd__ferm_interface: []
 
 # .. envvar:: sshd__ports [[[
 #
-# List of ports which ``sshd`` will listen on.
+# List of ports which ``sshd`` will listen on. Make sure that the ``22`` TCP
+# port is included if you want to change this list.
 sshd__ports: [ '22' ]
-
-                                                                   # ]]]
-# .. envvar:: sshd__listen [[[
-#
-# List of IP addresses on which ``sshd`` should listen for new connections. If
-# it's empty, ``sshd`` listens on all interfaces.
-sshd__listen: []
 
                                                                    # ]]]
 # .. envvar:: sshd__host_keys [[[
@@ -225,189 +219,517 @@ sshd__trusted_user_ca_keys_file: '/etc/ssh/trusted-user-ca-keys.pem'
 # ssh_host_*_key-cert.pub, as long as the key type matches whats in
 # `sshd__host_keys`
 sshd__scan_for_host_certs: False
+                                                                   # ]]]
+                                                                   # ]]]
+# SSH daemon configuration file [[[
+# ---------------------------------
+
+# These variables define the contents of the :file:`/etc/ssh/sshd_config`
+# configuration file. See :ref:`sshd__ref_configuration` for more details.
+
+# .. envvar:: sshd__original_configuration [[[
+#
+# List of SSH daemon configuration options defined by default by the Debian
+# package on installation. You can find the original configuration in the
+# :file:`/usr/share/openssh/sshd_config` file.
+sshd__original_configuration:
+
+  - name: 'Include_sshd_config.d'
+    option: 'Include'
+    value: '/etc/ssh/sshd_config.d/*.conf'
+
+  - name: 'Port'
+    value: 22
+    state: 'comment'
+    separator: True
+
+  - name: 'AddressFamily'
+    value: 'any'
+    state: 'comment'
+
+  - name: 'ListenAddress_ipv4'
+    option: 'ListenAddress'
+    value: '0.0.0.0'
+    state: 'comment'
+
+  - name: 'ListenAddress_ipv6'
+    option: 'ListenAddress'
+    value: '::'
+    state: 'comment'
+
+    # Define host keys in one entry, so that it can be easily regenerated later
+  - name: 'HostKey'
+    raw: |
+      HostKey /etc/ssh/ssh_host_rsa_key
+      HostKey /etc/ssh/ssh_host_ecdsa_key
+      HostKey /etc/ssh/ssh_host_ed25519_key
+    state: 'comment'
+    separator: True
+
+  - name: 'RekeyLimit'
+    comment: 'Ciphers and keyring'
+    value: 'default none'
+    state: 'comment'
+
+  - name: 'SyslogFacility'
+    comment: 'Logging'
+    value: 'AUTH'
+    state: 'comment'
+
+  - name: 'LogLevel'
+    value: 'INFO'
+    state: 'comment'
+
+  - name: 'LoginGraceTime'
+    comment: 'Authentication'
+    value: '2m'
+    state: 'comment'
+
+  - name: 'PermitRootLogin'
+    value: 'prohibit-password'
+    state: 'comment'
+
+  - name: 'StrictMode'
+    value: True
+    state: 'comment'
+
+  - name: 'MaxAuthTries'
+    value: 6
+    state: 'comment'
+
+  - name: 'MaxSessions'
+    value: 10
+    state: 'comment'
+
+  - name: 'PubkeyAuthentication'
+    value: True
+    state: 'comment'
+    separator: True
+
+  - name: 'AuthorizedKeysFile'
+    comment: 'Expect .ssh/authorized_keys2 to be disregarded by default in future.'
+    value:
+      - '.ssh/authorized_keys'
+      - '.ssh/authorized_keys2'
+    state: 'comment'
+
+  - name: 'AuthorizedPrincipalsFile'
+    value: 'none'
+    state: 'comment'
+    separator: True
+
+  - name: 'AuthorizedKeysCommand'
+    value: 'none'
+    state: 'comment'
+    separator: True
+
+  - name: 'AuthorizedKeysCommandUser'
+    value: 'nobody'
+    state: 'comment'
+
+  - name: 'HostbasedAuthentication'
+    comment: 'For this to work you will also need host keys in /etc/ssh/ssh_known_hosts'
+    value: False
+    state: 'comment'
+
+  - name: 'IgnoreUserKnownHosts'
+    comment: |
+      Change to yes if you don't trust ~/.ssh/known_hosts for
+      HostbasedAuthentication
+    value: False
+    state: 'comment'
+
+  - name: 'IgnoreRhosts'
+    comment: "Don't read the user's ~/.rhosts and ~/.shosts files"
+    value: True
+    state: 'comment'
+
+  - name: 'PasswordAuthentication'
+    comment: 'To disable tunneled clear text passwords, change to no here!'
+    value: True
+    state: 'comment'
+
+  - name: 'PermitEmptyPasswords'
+    value: False
+    state: 'comment'
+
+  - name: 'KerberosAuthentication'
+    comment: 'Kerberos options'
+    value: False
+    state: 'comment'
+
+  - name: 'KerberosOrLocalPasswd'
+    value: True
+    state: 'comment'
+
+  - name: 'KerberosTicketClenaup'
+    value: True
+    state: 'comment'
+
+  - name: 'KerberosGetAFSToken'
+    value: False
+    state: 'comment'
+
+  - name: 'GSSAPIAuthentication'
+    comment: 'GSSAPI options'
+    value: False
+    state: 'comment'
+
+  - name: 'GSSAPICleanupCredentials'
+    value: True
+    state: 'comment'
+
+  - name: 'GSSAPIStrictAcceptorCheck'
+    value: True
+    state: 'comment'
+
+  - name: 'GSSAPIKeyExchange'
+    value: False
+    state: 'comment'
+
+  - name: 'UsePAM'
+    comment: |
+      Set this to 'yes' to enable PAM authentication, account processing,
+      and session processing. If this is enabled, PAM authentication will
+      be allowed through the ChallengeResponseAuthentication and
+      PasswordAuthentication.  Depending on your PAM configuration,
+      PAM authentication via ChallengeResponseAuthentication may bypass
+      the setting of "PermitRootLogin without-password".
+      If you just want the PAM account and session checks to run without
+      PAM authentication, then enable this but set PasswordAuthentication
+      and ChallengeResponseAuthentication to 'no'.
+    value: True
+
+  - name: 'AllowAgentForwarding'
+    value: True
+    state: 'comment'
+    separator: True
+
+  - name: 'AllowTcpForwarding'
+    value: True
+    state: 'comment'
+
+  - name: 'GatewayPorts'
+    value: False
+    state: 'comment'
+
+  - name: 'X11Forwarding'
+    value: True
+
+  - name: 'X11DisplayOffset'
+    value: 10
+    state: 'comment'
+
+  - name: 'X11UseLocalhost'
+    value: True
+    state: 'comment'
+
+  - name: 'PermitTTY'
+    value: True
+    state: 'comment'
+
+  - name: 'PrintMotd'
+    value: False
+
+  - name: 'PrintLastLog'
+    value: True
+    state: 'comment'
+
+  - name: 'TCPKeepAlive'
+    value: True
+    state: 'comment'
+
+  - name: 'PermitUserEnvironment'
+    value: False
+    state: 'comment'
+
+  - name: 'Compression'
+    value: 'delayed'
+    state: 'comment'
+
+  - name: 'ClientAliveInterval'
+    value: 0
+    state: 'comment'
+
+  - name: 'ClientAliveCountMax'
+    value: 3
+    state: 'comment'
+
+  - name: 'UseDNS'
+    value: False
+    state: 'comment'
+
+  - name: 'PidFile'
+    value: '/var/run/sshd.pid'
+    state: 'comment'
+
+  - name: 'MaxStartups'
+    value: '10:30:100'
+    state: 'comment'
+
+  - name: 'PermitTunnel'
+    value: False
+    state: 'comment'
+
+  - name: 'ChrootDirectory'
+    value: 'none'
+    state: 'comment'
+
+  - name: 'VersionAddendum'
+    value: 'none'
+    state: 'comment'
+
+  - name: 'Banner'
+    comment: 'no default banner path'
+    value: 'none'
+    state: 'comment'
+
+  - name: 'AcceptEnv'
+    comment: 'Allow client to pass locale environment variables'
+    value:
+      - 'LANG'
+      - 'LC_*'
+
+  - name: 'Subsystem_sftp'
+    option: 'Subsystem'
+    comment: 'override default of no subsystems'
+    value: 'sftp   /usr/lib/openssh/sftp-server'
+
+  - name: 'Match_user_anoncvs'
+    option: 'Match'
+    comment: 'Example of overriding settings on a per-user basis'
+    value:
+      - 'User anoncvs'
+    config: |
+      X11Forwarding no
+      AllowTcpForwarding no
+      PermitTTY no
+      ForceCommand cvs server
+    state: 'comment'
 
                                                                    # ]]]
-# .. envvar:: sshd__banner [[[
+# .. envvar:: sshd__default_configuration [[[
 #
-# Path to file which should be displayed before user authentication.
-sshd__banner: 'none'
+# List of SSH daemon configuration options defined by default by the
+# :ref:`debops.sshd` Ansible role.
+sshd__default_configuration:
+
+  # Generate a set of "Port" configuration options based on the default list of
+  # ports to listen on. We cannot use a list as the value, because each port
+  # needs to be specified in its own "Port" entry.
+  - name: 'Port'
+    raw: |
+      {% for port in sshd__ports %}
+      {{   'Port {}'.format(port) }}
+      {% endfor %}
+    state: '{{ "ignore"
+               if (sshd__ports | length == 1 and
+                   sshd__ports | first | string == "22")
+               else "present" }}'
+
+  # Generate a set of "HostKey" configuration options based on the list of
+  # "allowed" host keys. We cannot use a list as the value, because each host
+  # key needs to be specified in its own "HostKey" entry.
+  - name: 'HostKey'
+    raw: |
+      {% for hostkey in sshd__host_keys %}
+      {%   if ('ssh_host_' + hostkey + '_key') in sshd__register_host_keys.stdout_lines %}
+      {{     'HostKey /etc/ssh/ssh_host_{}_key'.format(hostkey) }}
+      {%   endif %}
+      {% endfor %}
+    state: 'present'
+
+  # Generate a list of host certificates detected on the host.
+  - name: 'HostCertificate'
+    raw: |
+      {% if (sshd__register_host_certs is defined and
+                   "stdout_lines" in sshd__register_host_certs) %}
+      {%   for cert in sshd__register_host_certs.stdout_lines %}
+      {%     set sshd__key_matching_cert = cert | regex_replace('-cert', '') %}
+      {%     set sshd__key_matching_host_keys = sshd__key_matching_cert | regex_replace('ssh_host_(\w+)_key', '\\1') %}
+      {%     if sshd__key_matching_cert in sshd__register_host_keys.stdout_lines and sshd__key_matching_host_keys in sshd__host_keys %}
+      {{       'HostCertificate /etc/ssh/{}.pub'.format(cert) }}
+      {%     endif %}
+      {%   endfor %}
+      {% endif %}
+    state: '{{ "present"
+               if (sshd__register_host_certs is defined and
+                   "stdout_lines" in sshd__register_host_certs)
+               else "ignore" }}'
+    copy_id_from: 'HostKey'
+
+  # Add support for authorized keys managed by the
+  # "debops.authorized_keys" Ansible role.
+  - name: 'AuthorizedKeysFile'
+    value:
+      - name: '/etc/ssh/authorized_keys/%u'
+        weight: -100
+    state: 'present'
+
+  # If trusted CA keys are defined in the Ansible inventory, include them in
+  # the configuration file as well.
+  - name: 'TrustedUserCAKeys'
+    value: '{{ sshd__trusted_user_ca_keys_file }}'
+    state: '{{ "present"
+               if (sshd__trusted_user_ca_keys | d() | length > 0)
+               else "ignore" }}'
+    copy_id_from: 'AuthorizedKeysFile'
+
+  # Default "Match" conditional block which defines configuration for SFTPonly
+  # accounts. The 'stfponly' UNIX system group is created by the
+  # 'debops.system_groups' Ansible role.
+  - name: 'Match_group_sftponly'
+    option: 'Match'
+    comment: 'Support for strict SFTP UNIX accounts'
+    value: 'Group sftponly'
+    config: |
+      AuthorizedKeysFile /etc/ssh/authorized_keys/%u
+      ChrootDirectory %h
+      X11Forwarding no
+      AllowAgentForwarding no
+      AllowTcpForwarding no
+      PermitTunnel no
+      ForceCommand internal-sftp
+    state: 'present'
+    separator: True
+
+  # Specify if access to "root" UNIX account should be granted. By default, if
+  # the 'debops.root_account' role has been applied on the host, the "root"
+  # UNIX account can be accessed only using SSH public keys, since the role is
+  # expected to set them up. Otherwise, access via password is allowed.
+  # Alternatively, configured sysadmin accounts via the 'debops.system_users'
+  # role disable password-based access.
+  - name: 'PermitRootLogin'
+    value: '{{ "prohibit-password"
+               if (ansible_local.root_account.ssh_authorized_keys | d() | bool or
+                   ansible_local.system_users.configured | d() | bool)
+               else True }}'
+    state: 'present'
+
+  # Enable or disable password authentication. This option will be enabled if
+  # the 'root' account does not have SSH authorized keys present, to allow the
+  # 'root' account to login to the host. Alternatively, sysadmin access
+  # configured by the 'debops.system_users' role disables password
+  # authentication.
+  - name: 'PasswordAuthentication'
+    value: '{{ False
+               if (ansible_local.root_account.ssh_authorized_keys | d() | bool or
+                   ansible_local.system_users.configured | d() | bool)
+               else True }}'
+    state: 'present'
+
+  # Enable support for client hostname lookups by the SSH service. This is
+  # required if access control based on hostnames is used in the SSH server
+  # configuration, authorized keys or PAM access rules.
+  - name: 'UseDNS'
+    value: True
+    state: 'present'
+
+  - name: 'Ciphers'
+    comment: 'List of ciphers which are allowed for connections'
+    raw: |
+      {% set sshd__tpl_ciphers_max_version =  sshd__ciphers_map.keys() | select('version_compare', sshd__version, '<=') | max %}
+      {% set sshd__tpl_ciphers = sshd__ciphers_map[sshd__tpl_ciphers_max_version] %}
+      {% set sshd__tpl_ciphers = (sshd__tpl_ciphers + sshd__ciphers_additional) | unique %}
+      {% if sshd__tpl_ciphers and sshd__paranoid | bool %}
+      {{   'Ciphers {}'.format(([ sshd__tpl_ciphers | first ] + sshd__ciphers_additional) | unique | join(",")) }}
+      {% elif sshd__tpl_ciphers %}
+      {{   'Ciphers {}'.format(sshd__tpl_ciphers | join(",")) }}
+      {% endif %}
+    state: 'present'
+    copy_id_from: 'RekeyLimit'
+
+  - name: 'KexAlgorithms'
+    comment: 'List of allowed key exchange algorithms'
+    raw: |
+      {% set sshd__tpl_kex_algorithms_max_version =  sshd__kex_algorithms_map.keys() | select('version_compare', sshd__version, '<=') | max %}
+      {% set sshd__tpl_kex_algorithms = sshd__kex_algorithms_map[sshd__tpl_kex_algorithms_max_version] %}
+      {% set sshd__tpl_kex_algorithms = (sshd__tpl_kex_algorithms + sshd__kex_algorithms_additional) | unique %}
+      {% if sshd__tpl_kex_algorithms and sshd__paranoid | bool %}
+      {{   'KexAlgorithms {}'.format(([ sshd__tpl_kex_algorithms | first ] + sshd__kex_algorithms_additional) | unique | join(",")) }}
+      {% elif sshd__tpl_kex_algorithms %}
+      {{   'KexAlgorithms {}'.format(sshd__tpl_kex_algorithms | join(",")) }}
+      {% endif %}
+    state: 'present'
+    copy_id_from: 'RekeyLimit'
+
+  - name: 'MACs'
+    comment: 'List of allowed Message Authentication Code algorithms'
+    raw: |
+      {% set sshd__tpl_macs_max_version =  sshd__macs_map.keys() | select('version_compare', sshd__version, '<=') | max %}
+      {% set sshd__tpl_macs = sshd__macs_map[sshd__tpl_macs_max_version] %}
+      {% set sshd__tpl_macs = (sshd__tpl_macs + sshd__macs_additional) | unique %}
+      {% if sshd__tpl_macs and sshd__paranoid | bool %}
+      {{   'MACs {}'.format(([ sshd__tpl_macs | first ] + sshd__macs_additional) | unique | join(",")) }}
+      {% elif sshd__tpl_macs %}
+      {{   'MACs {}'.format(sshd__tpl_macs | join(",")) }}
+      {% endif %}
+    state: 'present'
+    copy_id_from: 'RekeyLimit'
+
+    # Privilege Separation is default for sshd v7.5+
+  - name: 'UsePrivilegeSeparation'
+    comment: 'Privilege Separation is turned on for security'
+    value: 'sandbox'
+    state: '{{ "present" if (sshd__version is version("7.5", "<")) else "ignore" }}'
+    copy_id_from: 'RekeyLimit'
+
+  - name: 'KeyRegenerationInterval'
+    comment: 'Lifetime and size of ephemeral version 1 server key'
+    value: 3600
+    state: '{{ "present" if (sshd__version is version("7.4", "<")) else "ignore" }}'
+    copy_id_from: 'RekeyLimit'
+
+  - name: 'ServerKeyBits'
+    value: 1024
+    state: '{{ "present" if (sshd__version is version("7.4", "<")) else "ignore" }}'
+    copy_id_from: 'RekeyLimit'
+
+  - name: 'AuthorizedKeysCommand'
+    value: '/etc/ssh/authorized_keys_lookup'
+    state: '{{ "present"
+               if (sshd__authorized_keys_lookup | bool and
+                   sshd__version is version("6.2", ">="))
+               else "ignore" }}'
+
+  - name: 'AuthorizedKeysCommandUser'
+    value: '{{ sshd__authorized_keys_lookup_user }}'
+    state: '{{ "present"
+               if (sshd__authorized_keys_lookup | bool and
+                   sshd__version is version("6.2", ">="))
+               else "ignore" }}'
 
                                                                    # ]]]
-# .. envvar:: sshd__log_level [[[
+# .. envvar:: sshd__configuration [[[
 #
-# How much information should be logged by ``sshd`` server.
-sshd__log_level: 'INFO'
+# List of SSH daemon configuration options which should be defined on all hosts
+# in the Ansible inventory.
+sshd__configuration: []
 
                                                                    # ]]]
-# .. envvar:: sshd__permit_root_login [[[
+# .. envvar:: sshd__group_configuration [[[
 #
-# Specify if access to ``root`` account should be granted. By default, if the
-# :ref:`debops.root_account` role has been applied on the host, the ``root``
-# can be accessed only using SSH public keys since the role is expected to set
-# them up. Otherwise, access via password is allowed. Alternatively, configured
-# sysadmin accounts via the :ref:`debops.system_users` disable password-based
-# access.
-sshd__permit_root_login: '{{ "without-password"
-                             if (ansible_local.root_account.ssh_authorized_keys | d() | bool or
-                                 ansible_local.system_users.configured | d() | bool)
-                             else "yes" }}'
+# List of SSH daemon configuration options which should be defined on hosts in
+# a specific Ansible inventory group.
+sshd__group_configuration: []
 
                                                                    # ]]]
-# .. envvar:: sshd__password_authentication [[[
+# .. envvar:: sshd__host_configuration [[[
 #
-# Enable or disable password authentication. This option will be enabled if the
-# ``root`` account does not have SSH authorized keys present, to allow the
-# ``root`` account to login to the host. Alternatively, sysadmin access
-# configured by the :ref:`debops.system_users` role disables password
-# authentication.
-sshd__password_authentication: '{{ "no"
-                                   if (ansible_local.root_account.ssh_authorized_keys | d() | bool or
-                                       ansible_local.system_users.configured | d() | bool)
-                                   else "yes" }}'
+# List of SSH daemon configuration options which should be defined on specific
+# hosts in the Ansible inventory.
+sshd__host_configuration: []
 
                                                                    # ]]]
-# .. envvar:: sshd__accept_env [[[
+# .. envvar:: sshd__combined_configuration [[[
 #
-# Specifies what environment variables sent by the client will be copied into
-# the session's environment.
-sshd__accept_env:
-  - 'LANG'
-  - 'LC_*'
-                                                                   # ]]]
-# .. envvar:: sshd__x11_forwarding [[[
-#
-# Enable or disable X11 forwarding by the server.
-sshd__x11_forwarding: 'no'
-
-                                                                   # ]]]
-# .. envvar:: sshd__max_auth_tries [[[
-#
-# Maximum number of failed authentication attempts allowed by the server.
-sshd__max_auth_tries: '4'
-
-                                                                   # ]]]
-# .. envvar:: sshd__max_sessions [[[
-#
-# Maximum number of open shell, login or subsystem (e.g. sftp) sessions
-# permitted per network connection.
-sshd__max_sessions: '10'
-
-                                                                   # ]]]
-# .. envvar:: sshd__max_startups [[[
-#
-# Maximum number of unauthenticated connections (3), after which there's 80%
-# probability of next unauthenticated connection to be dropped, finishing at 7,
-# after which all new unauthenticated connections will be refused.
-sshd__max_startups: '3:80:7'
-
-                                                                   # ]]]
-# .. envvar:: sshd__login_grace_time [[[
-#
-# Time after which unauthenticated sessions are disconnected. Note: setting this
-# much lower is not recommended when ``sshd__use_dns`` is enabled.
-# Ref: https://github.com/debops/debops/issues/1904
-sshd__login_grace_time: '60s'
-
-                                                                   # ]]]
-# .. envvar:: sshd__client_alive_count_max [[[
-#
-# Sets the number of client alive messages which may be sent without sshd
-# receiving any messages back from the client.
-sshd__client_alive_count_max: '3'
-
-                                                                   # ]]]
-# .. envvar:: sshd__compression [[[
-#
-# Specifies whether compression is enabled after the user has authenticated
-# successfully. The argument must be yes, delayed (a legacy synonym for yes)
-# or no.  The default is yes.
-sshd__compression: 'yes'
-
-                                                                   # ]]]
-# .. envvar:: sshd__privilege_separation [[[
-#
-# Specify if ``sshd`` should use unprivileged processes for incoming session
-# authentication. Setting this to ``sandbox`` enables use of additional
-# kernel restrictions. This option has no effect with ``sshd`` version 7.5+
-# since privilege separation became mandatory.
-sshd__privilege_separation: 'sandbox'
-
-                                                                   # ]]]
-# .. envvar:: sshd__use_dns [[[
-#
-# Enable or disable support for client hostname lookups by the SSH service.
-# This is required if access control based on hostnames is used in the SSH
-# server configuration, authorized keys or PAM access rules.
-sshd__use_dns: 'yes'
-
-                                                                   # ]]]
-# .. envvar:: sshd__custom_options [[[
-#
-# Additional :manpage:`sshd_config(5)` options specified in a YAML text block format.
-sshd__custom_options: ''
-                                                                   # ]]]
-                                                                   # ]]]
-# Group-based access control [[[
-# ------------------------------
-
-# .. warning::
-#    The user and group access control on the :file:`sshd_config` level is
-#    deprecated. Use the PAM access control rules managed by the
-#    :ref:`debops.pam_access` role instead. Default rules are defined in the
-#    :envvar:`sshd__pam_access__dependent_rules` variable.
-
-# .. envvar:: sshd__default_allow_groups [[[
-#
-# List of UNIX system groups which allow connections to SSH service defined by
-# default.
-sshd__default_allow_groups: []
-
-                                                                   # ]]]
-# .. envvar:: sshd__allow_groups [[[
-#
-# List of UNIX groups which allow connections to SSH service (global).
-sshd__allow_groups: []
-
-                                                                   # ]]]
-# .. envvar:: sshd__group_allow_groups [[[
-#
-# List of UNIX groups which allow connections to SSH service (host group).
-sshd__group_allow_groups: []
-
-                                                                   # ]]]
-# .. envvar:: sshd__host_allow_groups [[[
-#
-# List of UNIX groups which allow connections to SSH service (host).
-sshd__host_allow_groups: []
-                                                                   # ]]]
-                                                                   # ]]]
-# Authorized keys management [[[
-# ------------------------------
-
-# .. envvar:: sshd__authorized_keys [[[
-#
-# List of files which contain SSH public keys, to be used to authenticate
-# remote users.
-sshd__authorized_keys: '{{ sshd__authorized_keys_system +
-                           sshd__authorized_keys_user }}'
-
-                                                                   # ]]]
-# .. envvar:: sshd__authorized_keys_system [[[
-#
-# List of system-wide files containing SSH public keys. These files are
-# expected to be maintained by system administrator and might be used in
-# restricted environments (for example SFTPonly accounts).
-sshd__authorized_keys_system:
-  - '/etc/ssh/authorized_keys/%u'
-
-                                                                   # ]]]
-# .. envvar:: sshd__authorized_keys_user [[[
-#
-# List of user files containing SSH public keys. These files are maintained by
-# the users themselves.
-sshd__authorized_keys_user:
-  - '%h/.ssh/authorized_keys'
-  - '%h/.ssh/authorized_keys2'
+# Variable which combines all of the SSH daemon configuration lists and is used
+# in role tasks and templates.
+sshd__combined_configuration: '{{ sshd__original_configuration
+                                  + sshd__default_configuration
+                                  + sshd__configuration
+                                  + sshd__group_configuration
+                                  + sshd__host_configuration }}'
                                                                    # ]]]
                                                                    # ]]]
 # System-wide host fingerprints [[[
@@ -728,40 +1050,6 @@ sshd__pam_access_file: '{{ "/etc/security/access-sshd.conf"
                            else "/etc/security/access.conf" }}'
                                                                    # ]]]
                                                                    # ]]]
-# Match conditional blocks [[[
-# ----------------------------
-
-# .. envvar:: sshd__match_list [[[
-#
-# List of conditional ``Match`` blocks to include in ``sshd_config``.
-# Required parameters:
-#
-# - ``match``: specify User, Group, or other Match arguments which should
-#   activate a given configuration block.
-#
-# - ``options``: YAML text block which contains :manpage:`sshd_config(5)` options
-#   active in a given Match block.
-#
-sshd__match_list: [ '{{ sshd__match_group_sftponly }}' ]
-
-                                                                   # ]]]
-# .. envvar:: sshd__match_group_sftponly [[[
-#
-# Default ``Match`` conditional block which defines configuration for SFTPonly
-# accounts. The ``stfponly`` UNIX system group is created by the
-# :ref:`debops.system_groups` Ansible role.
-sshd__match_group_sftponly:
-  match: 'Group sftponly'
-  options: |
-    AuthorizedKeysFile {{ sshd__authorized_keys_system | join(' ') }}
-    ChrootDirectory %h
-    X11Forwarding no
-    AllowAgentForwarding no
-    AllowTcpForwarding no
-    PermitTunnel no
-    ForceCommand internal-sftp
-# ]]]
-# ]]]
 # Configuration of other services [[[
 # -----------------------------------
 
@@ -983,6 +1271,5 @@ sshd__sudo__dependent_sudoers:
           that new shell are correct.
         value: |
           Defaults env_keep += SSH_CONNECTION
-# ]]]
 # ]]]
 # ]]]

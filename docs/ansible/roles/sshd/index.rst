@@ -16,6 +16,7 @@ debops.sshd
 
    getting-started
    defaults/main
+   defaults-detailed
    ldap-dit
 
 Copyright

@@ -319,6 +319,15 @@ General
   using Ansible inventory in case that the authentication, accounting or search
   metrics are needed.
 
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- The management of the :file:`/etc/ssh/sshd_config` configuration file has
+  been redesigned and now uses :ref:`universal_configuration`. Multiple default
+  variables have been removed as a result. Any changes in configuration applied
+  through Ansible inventory might need to be converted to the new format. Check
+  the changes on existing hosts before applying new configuration.
+
 Fixed
 ~~~~~
 
@@ -1317,8 +1326,8 @@ debops.reprepro role
 
 - The role will no longer create an LDAP account when it is not needed.
 
-- The default :envvar:`sshd__login_grace_time` has been increased from 30 to 60
-  seconds. This mitigates a lock-out issue when :envvar:`sshd__use_dns` is
+- The default ``sshd__login_grace_time`` has been increased from 30 to 60
+  seconds. This mitigates a lock-out issue when ``sshd__use_dns`` is
   enabled (the default) and your DNS resolvers are unreachable.
 
 - The role will avoid leaking the LDAP bind password through the process list

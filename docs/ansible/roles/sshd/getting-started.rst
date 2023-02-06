@@ -1,6 +1,6 @@
-.. Copyright (C) 2013-2016 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2013-2023 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-.. Copyright (C) 2014-2017 DebOps <https://debops.org/>
+.. Copyright (C) 2014-2023 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 Getting started
@@ -17,8 +17,7 @@ Changes from Debian defaults
 The ``debops.sshd`` role will configure the OpenSSH server to lookup the client
 hostnames in DNS by setting the ``UseDNS`` option to ``yes`` (the Debian and
 upstream default is ``no``). This allows use of the DNS hostnames and domains
-in the authorized keys files and PAM access control rules. DNS lookup can be
-controlled using the :envvar:`sshd__use_dns` variable.
+in the authorized keys files and PAM access control rules.
 
 The role will divert the original :file:`/etc/pam.d/sshd` configuration file
 and generate a new one, with PAM access control enabled and using the separate
@@ -78,7 +77,7 @@ file is present on the host, using Ansible local facts defined by the
 :ref:`debops.root_account` role. If the file is present, we assume that the
 sysadmin SSH keys are on the host, and password-based access to the ``root``
 account is disabled by setting the ``PermitRootLogin`` option to
-``without-password`` and the ``PasswordAuthentication`` option to ``no``.
+``prohibit-password`` and the ``PasswordAuthentication`` option to ``no``.
 
 If the SSH authorized keys file is not present, the host is assumed to not be
 fully provisioned yet. The ``PermitRootLogin`` option as well as the
