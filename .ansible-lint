@@ -38,3 +38,13 @@ skip_list:
   # This can be removed when situation with publishing DebOps Collection on
   # Ansible Galaxy in multiple tarballs is resolved.
   - 'fqcn[keyword]'
+
+  # This check warns that a 'run_once' keyword will not work correctly on task
+  # level in playbooks with "free" strategy, but ansible-lint doesn't take the
+  # strategy of a given play into account, so the check is moot. A solution is
+  # to ignore the check on the task level.
+  # Ref: https://github.com/ansible/ansible-lint/issues/2815
+  #
+  # This tag is not correctly detected on the task level using "noqa" comment,
+  # so instead it's ignored globally for now.
+  - 'run-once[task]'
