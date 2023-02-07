@@ -9,17 +9,22 @@
     name: 'secret'
 
 - name: Configure system environment
-  ansible.builtin.include_tasks: system.yml tags=rails_deploy
+  ansible.builtin.include_tasks: system.yml
+  tags: 'rails_deploy'
 
 - name: Configure database
-  ansible.builtin.include_tasks: database.yml tags=rails_deploy_setup
+  ansible.builtin.include_tasks: database.yml
   when: rails_deploy_database_create
+  tags: 'rails_deploy_setup'
 
 - name: Deploy access keys
-  ansible.builtin.include_tasks: deploy_keys.yml tags=rails_deploy_setup
+  ansible.builtin.include_tasks: deploy_keys.yml
+  tags: 'rails_deploy_setup'
 
 - name: Deploy application
-  ansible.builtin.include_tasks: deploy.yml tags=rails_deploy
+  ansible.builtin.include_tasks: deploy.yml
+  tags: 'rails_deploy'
 
 - name: Configure local facts
-  ansible.builtin.include_tasks: local_facts.yml tags=rails_deploy
+  ansible.builtin.include_tasks: local_facts.yml
+  tags: 'rails_deploy'
