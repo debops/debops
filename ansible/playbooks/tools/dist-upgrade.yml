@@ -171,9 +171,9 @@
       register: dist_upgrade_register_init
 
     - name: Install dbus package (required by systemd)
-      ansible.builtin.apt:  # noqa package-latest
+      ansible.builtin.apt:
         name: 'dbus'
-        state: 'latest'
+        state: 'present'
         install_recommends: False
       when: dist_upgrade_register_init.stat.lnk_source is defined and
             dist_upgrade_register_init.stat.lnk_source == '/lib/systemd/systemd'
