@@ -110,19 +110,19 @@
   tasks:
 
     - name: Check if lockfile exists
-      stat:
+      ansible.builtin.stat:
         path: '{{ dist_upgrade_lockfile }}'
       register: dist_upgrade_register_lockfile
 
     - name: Find all apt sources.list files
-      find:
+      ansible.builtin.find:
         paths: "/etc/apt/"
         patterns: "*.list"
         recurse: True
       register: dist_upgrade_register_apt_sources
 
     - name: Change current release in APT sources
-      replace:
+      ansible.builtin.replace:
         dest: "{{ item.path }}"
         regexp: '{{ dist_upgrade_current_release }}'
         replace: '{{ dist_upgrade_new_release }}'
@@ -133,7 +133,7 @@
             dist_upgrade_new_release is defined and dist_upgrade_new_release
 
     - name: Fix APT sources (buster/updates becomes bullseye-security)
-      replace:
+      ansible.builtin.replace:
         dest: "{{ item.path }}"
         regexp: '\s{{ dist_upgrade_new_release }}/updates\s'
         replace: ' {{ dist_upgrade_new_release }}-security '
@@ -142,20 +142,20 @@
       when: dist_upgrade_new_release == 'bullseye'
 
     - name: Remove all APT preferences for backported packages
-      shell: "set -o nounset -o pipefail -o errexit && grep -lrIZ 'Pin: release .*={{ dist_upgrade_current_release }}-backports' /etc/apt/preferences.d | xargs -0 rm -f -- || true"  # noqa no-handler
+      ansible.builtin.shell: "set -o nounset -o pipefail -o errexit && grep -lrIZ 'Pin: release .*={{ dist_upgrade_current_release }}-backports' /etc/apt/preferences.d | xargs -0 rm -f -- || true"  # noqa no-handler
       args:
         executable: 'bash'
       when: dist_upgrade_register_replace is defined and dist_upgrade_register_replace is changed
 
     - name: Create a lockfile
-      file:  # noqa no-handler
+      ansible.builtin.file:  # noqa no-handler
         path: '{{ dist_upgrade_lockfile }}'
         state: 'touch'
         mode: '0644'
       when: dist_upgrade_register_replace is defined and dist_upgrade_register_replace is changed
 
     - name: Perform apt-get dist-upgrade (this might take a while)
-      apt:  # noqa no-handler
+      ansible.builtin.apt:  # noqa no-handler
         update_cache: True
         upgrade: 'dist'
       register: dist_upgrade_register_upgrade
@@ -166,39 +166,41 @@
 
 
     - name: Check what init system is active
-      stat:
+      ansible.builtin.stat:
         path: '/sbin/init'
       register: dist_upgrade_register_init
 
     - name: Install dbus package (required by systemd)
-      apt:  # noqa package-latest
+      ansible.builtin.apt:
         name: 'dbus'
-        state: 'latest'
+        state: 'present'
         install_recommends: False
       when: dist_upgrade_register_init.stat.lnk_source is defined and
             dist_upgrade_register_init.stat.lnk_source == '/lib/systemd/systemd'
 
     - name: Automatically remove packages that are no longer needed
-      command: 'apt-get --yes autoremove'  # noqa no-handler command-instead-of-module
+      ansible.builtin.apt:
+        autoremove: True
       register: dist_upgrade_register_autoremove
       when: dist_upgrade_register_upgrade is defined and
             dist_upgrade_register_upgrade is changed
 
     - name: Clean APT package cache
-      command: 'apt-get autoclean'  # noqa no-handler command-instead-of-module
+      ansible.builtin.apt:
+        autoclean: True
       register: dist_upgrade_register_autoclean
       when: dist_upgrade_register_upgrade is defined and
             dist_upgrade_register_upgrade is changed
 
     - name: Check if /etc/services.d exists
-      stat:  # noqa no-handler
+      ansible.builtin.stat:  # noqa no-handler
         path: '/etc/services.d'
       register: dist_upgrade_register_etc_services
       when: dist_upgrade_register_upgrade is defined and
             dist_upgrade_register_upgrade is changed
 
     - name: Assemble /etc/services
-      assemble:
+      ansible.builtin.assemble:
         src: '/etc/services.d'
         dest: '/etc/services'
         owner: 'root'
@@ -209,12 +211,12 @@
             dist_upgrade_register_etc_services.stat.exists
 
     - name: Remove the lockfile
-      file:
+      ansible.builtin.file:
         path: '{{ dist_upgrade_lockfile }}'
         state: 'absent'
 
     - name: Send mail with information about the upgrade
-      mail:  # noqa no-handler
+      community.general.mail:  # noqa no-handler
         host: '{{ dist_upgrade_mail_host }}'
         port: '{{ dist_upgrade_mail_port }}'
         secure: '{{ dist_upgrade_mail_secure }}'

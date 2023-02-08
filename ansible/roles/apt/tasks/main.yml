@@ -102,7 +102,7 @@
   when: (apt__enabled | bool and apt__sources_deploy_state == 'present')
 
 - name: Configure custom APT keys
-  ansible.builtin.apt_key:
+  ansible.builtin.apt_key:  # noqa args[module]
     data:      '{{ item.data | d(omit) }}'
     file:      '{{ item.file | d(omit) }}'
     id:        '{{ item.id | d(omit) }}'
