@@ -34,7 +34,8 @@
   ansible.builtin.uri:
     url: 'https://{{ rails_deploy_git_host }}/api/v3/projects/{{
                      rails_deploy_git_account }}%2F{{ rails_deploy_git_repo }}'
-    HEADER_PRIVATE-TOKEN: '{{ rails_deploy_git_access_token }}'
+    headers:
+      'PRIVATE-TOKEN': '{{ rails_deploy_git_access_token }}'
   register: rails_deploy_register_gitlab_response
   when: rails_deploy_git_access_token and
         'file://' not in rails_deploy_git_location and
