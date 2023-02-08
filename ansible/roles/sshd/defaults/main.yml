@@ -177,7 +177,7 @@ sshd__ferm_limit_target: 'REJECT'
 # If you use socket activation, remember to define firewall ports separately.
 sshd__ferm_ports: '{{ sshd__ports
                       if ((ansible_local.sshd.socket_activation | d("disabled")) == "disabled")
-                      else [ "22" ] }}'
+                      else ["22"] }}'
 
                                                                    # ]]]
 # .. envvar:: sshd__ferm_interface [[[
@@ -530,7 +530,7 @@ sshd__default_configuration:
   - name: 'Port'
     raw: |
       {% for port in sshd__ports %}
-      {{   'Port {}'.format(port) }}
+      {{ 'Port {}'.format(port) }}
       {% endfor %}
     state: '{{ "ignore"
                if (sshd__ports | length == 1 and
@@ -545,9 +545,9 @@ sshd__default_configuration:
   - name: 'HostKey'
     raw: |
       {% for hostkey in sshd__host_keys %}
-      {%   if ('ssh_host_' + hostkey + '_key') in sshd__register_host_keys.stdout_lines %}
-      {{     'HostKey /etc/ssh/ssh_host_{}_key'.format(hostkey) }}
-      {%   endif %}
+      {% if ('ssh_host_' + hostkey + '_key') in sshd__register_host_keys.stdout_lines %}
+      {{ 'HostKey /etc/ssh/ssh_host_{}_key'.format(hostkey) }}
+      {% endif %}
       {% endfor %}
     state: 'present'
 
@@ -556,13 +556,13 @@ sshd__default_configuration:
     raw: |
       {% if (sshd__register_host_certs is defined and
                    "stdout_lines" in sshd__register_host_certs) %}
-      {%   for cert in sshd__register_host_certs.stdout_lines %}
-      {%     set sshd__key_matching_cert = cert | regex_replace('-cert', '') %}
-      {%     set sshd__key_matching_host_keys = sshd__key_matching_cert | regex_replace('ssh_host_(\w+)_key', '\\1') %}
-      {%     if sshd__key_matching_cert in sshd__register_host_keys.stdout_lines and sshd__key_matching_host_keys in sshd__host_keys %}
-      {{       'HostCertificate /etc/ssh/{}.pub'.format(cert) }}
-      {%     endif %}
-      {%   endfor %}
+      {% for cert in sshd__register_host_certs.stdout_lines %}
+      {% set sshd__key_matching_cert = cert | regex_replace('-cert', '') %}
+      {% set sshd__key_matching_host_keys = sshd__key_matching_cert | regex_replace('ssh_host_(\w+)_key', '\\1') %}
+      {% if sshd__key_matching_cert in sshd__register_host_keys.stdout_lines and sshd__key_matching_host_keys in sshd__host_keys %}
+      {{ 'HostCertificate /etc/ssh/{}.pub'.format(cert) }}
+      {% endif %}
+      {% endfor %}
       {% endif %}
     state: '{{ "present"
                if (sshd__register_host_certs is defined and
@@ -640,13 +640,13 @@ sshd__default_configuration:
   - name: 'Ciphers'
     comment: 'List of ciphers which are allowed for connections'
     raw: |
-      {% set sshd__tpl_ciphers_max_version =  sshd__ciphers_map.keys() | select('version_compare', sshd__version, '<=') | max %}
+      {% set sshd__tpl_ciphers_max_version = sshd__ciphers_map.keys() | select('version_compare', sshd__version, '<=') | max %}
       {% set sshd__tpl_ciphers = sshd__ciphers_map[sshd__tpl_ciphers_max_version] %}
       {% set sshd__tpl_ciphers = (sshd__tpl_ciphers + sshd__ciphers_additional) | unique %}
       {% if sshd__tpl_ciphers and sshd__paranoid | bool %}
-      {{   'Ciphers {}'.format(([ sshd__tpl_ciphers | first ] + sshd__ciphers_additional) | unique | join(",")) }}
+      {{ 'Ciphers {}'.format(([sshd__tpl_ciphers | first] + sshd__ciphers_additional) | unique | join(",")) }}
       {% elif sshd__tpl_ciphers %}
-      {{   'Ciphers {}'.format(sshd__tpl_ciphers | join(",")) }}
+      {{ 'Ciphers {}'.format(sshd__tpl_ciphers | join(",")) }}
       {% endif %}
     state: 'present'
     copy_id_from: 'RekeyLimit'
@@ -654,13 +654,13 @@ sshd__default_configuration:
   - name: 'KexAlgorithms'
     comment: 'List of allowed key exchange algorithms'
     raw: |
-      {% set sshd__tpl_kex_algorithms_max_version =  sshd__kex_algorithms_map.keys() | select('version_compare', sshd__version, '<=') | max %}
+      {% set sshd__tpl_kex_algorithms_max_version = sshd__kex_algorithms_map.keys() | select('version_compare', sshd__version, '<=') | max %}
       {% set sshd__tpl_kex_algorithms = sshd__kex_algorithms_map[sshd__tpl_kex_algorithms_max_version] %}
       {% set sshd__tpl_kex_algorithms = (sshd__tpl_kex_algorithms + sshd__kex_algorithms_additional) | unique %}
       {% if sshd__tpl_kex_algorithms and sshd__paranoid | bool %}
-      {{   'KexAlgorithms {}'.format(([ sshd__tpl_kex_algorithms | first ] + sshd__kex_algorithms_additional) | unique | join(",")) }}
+      {{ 'KexAlgorithms {}'.format(([sshd__tpl_kex_algorithms | first] + sshd__kex_algorithms_additional) | unique | join(",")) }}
       {% elif sshd__tpl_kex_algorithms %}
-      {{   'KexAlgorithms {}'.format(sshd__tpl_kex_algorithms | join(",")) }}
+      {{ 'KexAlgorithms {}'.format(sshd__tpl_kex_algorithms | join(",")) }}
       {% endif %}
     state: 'present'
     copy_id_from: 'RekeyLimit'
@@ -668,13 +668,13 @@ sshd__default_configuration:
   - name: 'MACs'
     comment: 'List of allowed Message Authentication Code algorithms'
     raw: |
-      {% set sshd__tpl_macs_max_version =  sshd__macs_map.keys() | select('version_compare', sshd__version, '<=') | max %}
+      {% set sshd__tpl_macs_max_version = sshd__macs_map.keys() | select('version_compare', sshd__version, '<=') | max %}
       {% set sshd__tpl_macs = sshd__macs_map[sshd__tpl_macs_max_version] %}
       {% set sshd__tpl_macs = (sshd__tpl_macs + sshd__macs_additional) | unique %}
       {% if sshd__tpl_macs and sshd__paranoid | bool %}
-      {{   'MACs {}'.format(([ sshd__tpl_macs | first ] + sshd__macs_additional) | unique | join(",")) }}
+      {{ 'MACs {}'.format(([sshd__tpl_macs | first] + sshd__macs_additional) | unique | join(",")) }}
       {% elif sshd__tpl_macs %}
-      {{   'MACs {}'.format(sshd__tpl_macs | join(",")) }}
+      {{ 'MACs {}'.format(sshd__tpl_macs | join(",")) }}
       {% endif %}
     state: 'present'
     copy_id_from: 'RekeyLimit'
