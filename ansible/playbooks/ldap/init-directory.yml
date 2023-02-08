@@ -133,7 +133,7 @@
   pre_tasks:
 
     - name: Check local user information
-      getent:
+      ansible.builtin.getent:
         database: 'passwd'
         key: '{{ admin_user }}'
       delegate_to: 'localhost'
@@ -141,7 +141,7 @@
       failed_when: False
 
     - name: Save admin credential in the password store
-      set_fact:
+      ansible.builtin.set_fact:
         admin_stored_password: '{{ admin_saved_password }}'
       when: admin_use_password_store | d(True) | bool
       no_log: '{{ debops__no_log | d(True) }}'

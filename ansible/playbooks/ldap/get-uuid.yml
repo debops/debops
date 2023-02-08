@@ -58,18 +58,18 @@
   tasks:
 
     - name: Get the UUID of an user account based on uid
-      pause:
+      ansible.builtin.pause:
         prompt: 'uid (case-sensitive)'
       register: person_uid
 
     - name: Get the UUID of a Distinguished Name
-      pause:
+      ansible.builtin.pause:
         prompt: 'dn (case-sensitive)'
       register: object_dn_string
       when: not person_uid.user_input | d()
 
     - name: LDAP object information
-      debug:
+      ansible.builtin.debug:
         msg: '{{ {"DN:": object_dn,
                   "UUID:": (object_dn | to_uuid)} }}'
       when: object_dn | d()
