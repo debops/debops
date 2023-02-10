@@ -134,7 +134,7 @@
 
 # Manage custom remote resources [[[1
 - name: Download online resources to remote hosts
-  ansible.builtin.get_url:
+  ansible.builtin.get_url:  # noqa args[module]
     url:              '{{ item.url | d(item.src) }}'
     dest:             '{{ item.dest | d(item.name | d(item.path)) }}'
     owner:            '{{ item.owner | d(omit) }}'
