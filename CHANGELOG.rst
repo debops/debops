@@ -52,6 +52,12 @@ Updates of upstream application versions
 Fixed
 ~~~~~
 
+General
+'''''''
+
+- Extrepo facts file did not detect a disabled repository as being disabled
+  due to a change in the extrepo file format.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
