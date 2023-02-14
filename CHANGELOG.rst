@@ -334,6 +334,9 @@ Fixed
 General
 '''''''
 
+- Extrepo facts file did not detect a disabled repository as being disabled
+  due to a change in the extrepo file format.
+
 - Ensure that the custom Ansible plugins included in DebOps are present in the
   Ansible Collection build from the DebOps repository.
 
