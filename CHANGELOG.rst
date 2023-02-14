@@ -76,6 +76,9 @@ General
   Ansible requires use of FQCNs in filters. The ``ansible.utils`` Ansible
   Collection is now a dependency of the DebOps Collection.
 
+- Extrepo facts file did not detect a disabled repository as being disabled
+  due to a change in the extrepo file format.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
