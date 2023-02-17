@@ -1,0 +1,13 @@
+{# Copyright (C) 2023-2023 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+#
+{% set grafana__tpl_config = {} %}
+{% for element in grafana__combined_ldap_configuration | debops.debops.parse_kv_config %}
+{%   if element.name | d() and element.state | d('present') not in [ 'absent', 'init', 'ignore' ] and element.config | d() %}
+{%     set combined_config = grafana__tpl_config | combine(element.config, recursive=True) %}
+{%     set _ = grafana__tpl_config.update(combined_config) %}
+{%   endif %}
+{% endfor %}
+{{ grafana__tpl_config | debops.debops.to_toml | regex_replace('\n$', '') }}

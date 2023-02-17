@@ -45,12 +45,22 @@
     unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
   register: grafana__register_configuration
 
+- name: Generate Grafana LDAP configuration file
+  template:
+    src: 'etc/grafana/ldap.toml.j2'
+    dest: '/etc/grafana/ldap.toml'
+    owner: 'root'
+    group: 'grafana'
+    mode: '0640'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+  register: grafana__register_ldap_configuration
+
 # Systemd service [[[1
 - name: Restart Grafana
   service:  # noqa no-handler
     name: 'grafana-server'
     state: 'restarted'
-  when: grafana__register_configuration is changed
+  when: grafana__register_configuration is changed or grafana__register_ldap_configuration is changed
 
 - name: Start Grafana
   service:  # noqa no-handler
