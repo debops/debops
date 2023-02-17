@@ -244,6 +244,12 @@ General
 
   .. __: https://docs.gitlab.com/omnibus/
 
+:ref:`debops.global_handlers` role
+''''''''''''''''''''''''''''''''''
+
+- The :command:`systemd` handlers have been moved to a separate
+  :file:`handlers/systemd.yml` configuration file.
+
 :ref:`debops.icinga` role
 '''''''''''''''''''''''''
 
