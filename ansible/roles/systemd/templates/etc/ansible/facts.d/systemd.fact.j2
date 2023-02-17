@@ -1,0 +1,39 @@
+#!{{ ansible_python['executable'] }}
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2023 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import loads, dumps
+import subprocess
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+output = {'installed': cmd_exists('systemctl'),
+          'enabled': loads('''{{ systemd__enabled
+                                 | bool | to_json }}''')}
+
+try:
+    systemd_version_stdout = subprocess.check_output(
+            ["systemctl", "--version"]
+            ).decode('utf-8').strip()
+
+    for line in systemd_version_stdout.split('\n'):
+        if line.lower().startswith('systemd '):
+            output['version'] = line.split()[1]
+
+except Exception:
+    pass
+
+print(dumps(output, sort_keys=True, indent=4))

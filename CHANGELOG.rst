@@ -47,6 +47,11 @@ New DebOps roles
 - The :ref:`debops.miniflux` role can install and manage Miniflux, a web-based,
   minimalistic feed reader written in Go.
 
+- The :ref:`debops.systemd` role is included in the common playbook by default.
+  It configures the :command:`systemd` system and service manager. Both
+  system-wide, as well as user services configured globally can be managed with
+  this role.
+
 General
 '''''''
 
