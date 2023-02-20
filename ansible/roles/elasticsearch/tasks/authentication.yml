@@ -57,7 +57,7 @@
     method:      '{{ "DELETE" if (item.state | d("present") in ["absent"]) else "POST" }}'
     body_format: '{{ omit if (item.state | d("present") in ["absent"]) else "json" }}'
     body:        '{{ omit if (item.state | d("present") in ["absent"]) else (item.data | to_json) }}'
-    status_code: '{{ ["200", "404"] if (item.state | d("present") in ["absent"]) else "200" }}'
+    status_code: '{{ ["200", "404"] if (item.state | d("present") in ["absent"]) else "200" }}'  # noqa args[module]
     user: "{{ elasticsearch__api_username }}"
     password: "{{ elasticsearch__api_password }}"
     force_basic_auth: True
@@ -73,7 +73,7 @@
     method:      '{{ "DELETE" if (item.state | d("present") in ["absent"]) else "POST" }}'
     body_format: '{{ omit if (item.state | d("present") in ["absent"]) else "json" }}'
     body:        '{{ omit if (item.state | d("present") in ["absent"]) else (item.data | to_json) }}'
-    status_code: '{{ ["200", "404"] if (item.state | d("present") in ["absent"]) else "200" }}'
+    status_code: '{{ ["200", "404"] if (item.state | d("present") in ["absent"]) else "200" }}'  # noqa args[module]
     user: "{{ elasticsearch__api_username }}"
     password: "{{ elasticsearch__api_password }}"
     force_basic_auth: True

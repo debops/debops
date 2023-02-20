@@ -254,6 +254,12 @@ General
   based on the :ref:`debops.ldap` Ansible local facts instead of static values,
   to better support modified environments.
 
+:ref:`debops.influxdata` role
+'''''''''''''''''''''''''''''
+
+- InfluxData has published a new APT repository GPG key, the role should
+  refresh it automatically.
+
 :ref:`debops.minio` role
 ''''''''''''''''''''''''
 
@@ -312,6 +318,15 @@ General
   ``none`` to minimize log output in large environments. This can be modified
   using Ansible inventory in case that the authentication, accounting or search
   metrics are needed.
+
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- The management of the :file:`/etc/ssh/sshd_config` configuration file has
+  been redesigned and now uses :ref:`universal_configuration`. Multiple default
+  variables have been removed as a result. Any changes in configuration applied
+  through Ansible inventory might need to be converted to the new format. Check
+  the changes on existing hosts before applying new configuration.
 
 Fixed
 ~~~~~
@@ -543,6 +558,12 @@ debops.boxbackup role
 
 - Locked ``johndoh/contextmenu`` plugin to version 3.2.1 for Roundcube < 1.5
   due to compatibility issues.
+
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- The role will now correctly handle hosts where :command:`sshd` is launched
+  via :command:`systemd` socket activation mechanism.
 
 :ref:`debops.sudo` role
 '''''''''''''''''''''''
@@ -1305,8 +1326,8 @@ debops.reprepro role
 
 - The role will no longer create an LDAP account when it is not needed.
 
-- The default :envvar:`sshd__login_grace_time` has been increased from 30 to 60
-  seconds. This mitigates a lock-out issue when :envvar:`sshd__use_dns` is
+- The default ``sshd__login_grace_time`` has been increased from 30 to 60
+  seconds. This mitigates a lock-out issue when ``sshd__use_dns`` is
   enabled (the default) and your DNS resolvers are unreachable.
 
 - The role will avoid leaking the LDAP bind password through the process list

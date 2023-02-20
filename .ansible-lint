@@ -1,6 +1,6 @@
 ---
-# Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2021 DebOps <https://debops.org/>
+# Copyright (C) 2021-2023 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2021-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # Configuration file for ansible-lint
@@ -27,3 +27,24 @@ enable_list:
   - 'fqcn-builtins'
   - 'no-log-password'
   - 'no-same-owner'
+
+# List of rules currently ignored in DebOps repository
+skip_list:
+
+  # The 'collections' keyword in playbooks is currently needed to ensure that
+  # FQCN role lookup works across multiple Ansible Collections. Therefore let's
+  # skip warnings for it for now.
+  #
+  # This can be removed when situation with publishing DebOps Collection on
+  # Ansible Galaxy in multiple tarballs is resolved.
+  - 'fqcn[keyword]'
+
+  # This check warns that a 'run_once' keyword will not work correctly on task
+  # level in playbooks with "free" strategy, but ansible-lint doesn't take the
+  # strategy of a given play into account, so the check is moot. A solution is
+  # to ignore the check on the task level.
+  # Ref: https://github.com/ansible/ansible-lint/issues/2815
+  #
+  # This tag is not correctly detected on the task level using "noqa" comment,
+  # so instead it's ignored globally for now.
+  - 'run-once[task]'

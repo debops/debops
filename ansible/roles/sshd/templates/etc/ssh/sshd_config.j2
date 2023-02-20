@@ -1,199 +1,68 @@
-{# Copyright (C) 2013-2016 Maciej Delmanowski <drybjed@gmail.com>
- # Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
- # Copyright (C) 2014-2017 DebOps <https://debops.org/>
+{# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2023 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 # {{ ansible_managed }}
 
-{% if sshd__custom_options | d() %}
-# Custom options
-{{ sshd__custom_options }}
-{% endif %}
+# This is the sshd server system-wide configuration file.  See
+# sshd_config(5) for more information. The original configuration file can be
+# found at /usr/share/openssh/sshd_config.
 
-# What ports, IPs and protocols we listen for
-{% for port in sshd__ports %}
-Port {{ port }}
-{% endfor %}
-{% if sshd__listen | d() %}
+# The strategy used for options in the default sshd_config shipped with
+# OpenSSH is to specify options with their default value where
+# possible, but leave them commented.  Uncommented options override the
+# default value.
 
-# Use these options to restrict which interfaces/protocols sshd will bind to
-{%   for address in sshd__listen %}
-ListenAddress {{ address }}
-{%   endfor %}
-{% endif %}
-
-Protocol 2
-
-# HostKeys for protocol version 2
-{% for hostkey in sshd__host_keys %}
-{%   if ('ssh_host_' + hostkey + '_key') in sshd__register_host_keys.stdout_lines %}
-HostKey /etc/ssh/ssh_host_{{ hostkey }}_key
-{%   endif %}
-{% endfor %}
-
-{% if sshd__register_host_certs is defined and 'stdout_lines' in sshd__register_host_certs %}
-# List of host key certificates signed by CA
-{%   for cert in sshd__register_host_certs.stdout_lines %}
-{%     set sshd__key_matching_cert = cert | regex_replace('-cert', '') %}
-{%     set sshd__key_matching_host_keys = sshd__key_matching_cert | regex_replace('ssh_host_(\w+)_key', '\\1') %}
-{%     if sshd__key_matching_cert in sshd__register_host_keys.stdout_lines and sshd__key_matching_host_keys in sshd__host_keys %}
-HostCertificate /etc/ssh/{{ cert }}.pub
+{% for element in sshd__combined_configuration | debops.debops.parse_kv_config %}
+{%   if element.name | d() and element.state | d('present') not in [ 'absent', 'ignore' ] %}
+{%     set element_comment = ('#' if (element.state | d('present') in [ 'init', 'comment' ]) else '') %}
+{%     set element_name = (element.option | d(element.name)) %}
+{%     if element.value is defined %}
+{%       if element.value is string and not element.value | bool %}
+{%         set element_value = element.value %}
+{%       elif element.value | bool and element.value is not iterable %}
+{%         if element.value | string == '1' %}
+{%           set element_value = element.value %}
+{%         else %}
+{%           set element_value = 'yes' %}
+{%         endif %}
+{%       elif not element.value | bool and element.value is not iterable %}
+{%         if element.value is not none %}
+{%           if element.value | int %}
+{%             set element_value = element.value %}
+{%           else %}
+{%             if element.value | string == '0' %}
+{%               set element_value = element.value %}
+{%             else %}
+{%               set element_value = 'no' %}
+{%             endif %}
+{%           endif %}
+{%         endif %}
+{%       else %}
+{%         set element_value = element.value | map(attribute='name') | list | join(' ') %}
+{%       endif %}
 {%     endif %}
-{%   endfor %}
-{% endif %}
-
-{% if sshd__trusted_user_ca_keys | d() | length > 0 and sshd__trusted_user_ca_keys_file is defined %}
-TrustedUserCAKeys {{ sshd__trusted_user_ca_keys_file }}
-{% endif %}
-
-{% set sshd__tpl_ciphers_max_version =  sshd__ciphers_map.keys() | select('version_compare', sshd__register_version.stdout, '<=') | max %}
-{% set sshd__tpl_ciphers = sshd__ciphers_map[sshd__tpl_ciphers_max_version] %}
-{% set sshd__tpl_ciphers = (sshd__tpl_ciphers + sshd__ciphers_additional) | unique %}
-{% if sshd__tpl_ciphers and sshd__paranoid | bool %}
-Ciphers {{ ([ sshd__tpl_ciphers | first ] + sshd__ciphers_additional) | unique | join(",") }}
-
-{% elif sshd__tpl_ciphers %}
-Ciphers {{ sshd__tpl_ciphers | join(",") }}
-
-{% endif %}
-{% set sshd__tpl_kex_algorithms_max_version =  sshd__kex_algorithms_map.keys() | select('version_compare', sshd__register_version.stdout, '<=') | max %}
-{% set sshd__tpl_kex_algorithms = sshd__kex_algorithms_map[sshd__tpl_kex_algorithms_max_version] %}
-{% set sshd__tpl_kex_algorithms = (sshd__tpl_kex_algorithms + sshd__kex_algorithms_additional) | unique %}
-{% if sshd__tpl_kex_algorithms and sshd__paranoid | bool %}
-KexAlgorithms {{ ([ sshd__tpl_kex_algorithms | first ] + sshd__kex_algorithms_additional) | unique | join(",") }}
-
-{% elif sshd__tpl_kex_algorithms %}
-KexAlgorithms {{ sshd__tpl_kex_algorithms | join(",") }}
-
-{% endif %}
-{% set sshd__tpl_macs_max_version =  sshd__macs_map.keys() | select('version_compare', sshd__register_version.stdout, '<=') | max %}
-{% set sshd__tpl_macs = sshd__macs_map[sshd__tpl_macs_max_version] %}
-{% set sshd__tpl_macs = (sshd__tpl_macs + sshd__macs_additional) | unique %}
-{% if sshd__tpl_macs and sshd__paranoid | bool %}
-MACs {{ ([ sshd__tpl_macs | first ] + sshd__macs_additional) | unique | join(",") }}
-
-{% elif sshd__tpl_macs %}
-MACs {{ sshd__tpl_macs | join(",") }}
-
-{% endif %}
-{% if sshd__register_version.stdout is version_compare('7.5', '<') %}
-# Privilege Separation is turned on for security
-UsePrivilegeSeparation {{ sshd__privilege_separation }}
-
-{% endif %}
-{% if sshd__register_version.stdout is version_compare('7.4', '<') %}
-# Lifetime and size of ephemeral version 1 server key
-KeyRegenerationInterval 3600
-ServerKeyBits 1024
-
-{% endif %}
-# Logging
-SyslogFacility AUTH
-LogLevel {{ sshd__log_level }}
-
-MaxAuthTries {{ sshd__max_auth_tries }}
-MaxSessions {{ sshd__max_sessions }}
-MaxStartups {{ sshd__max_startups }}
-LoginGraceTime {{ sshd__login_grace_time }}
-ClientAliveCountMax {{ sshd__client_alive_count_max }}
-
-# Authentication:
-PermitRootLogin {{ sshd__permit_root_login }}
-StrictModes yes
-
-{% if sshd__register_version.stdout is version_compare('7.4', '<') %}
-RSAAuthentication yes
-{% endif %}
-PubkeyAuthentication yes
-
-{% if sshd__authorized_keys_lookup | bool and
-      sshd__register_version.stdout | d() and
-      sshd__register_version.stdout is version_compare('6.2', '>=') %}
-AuthorizedKeysCommand /etc/ssh/authorized_keys_lookup
-AuthorizedKeysCommandUser {{ sshd__authorized_keys_lookup_user }}
-
-{% endif %}
-AuthorizedKeysFile {{ sshd__authorized_keys | join(" ") }}
-
-# Don't read the user's ~/.rhosts and ~/.shosts files
-IgnoreRhosts yes
-
-{% if sshd__register_version.stdout is version_compare('7.4', '<') %}
-# For this to work you will also need host keys in /etc/ssh_known_hosts
-RhostsRSAAuthentication no
-
-{% endif %}
-# similar for protocol version 2
-HostbasedAuthentication no
-
-# If enabled, sshd will resolve the client hostnames and check their reverse
-# PTR records to see if they are the same. This is required for hostname
-# matching in authorized keys, Allow/Deny options and PAM access rules that use
-# hostnames/domains.
-UseDNS {{ sshd__use_dns }}
-
-# Uncomment if you don't trust ~/.ssh/known_hosts for RhostsRSAAuthentication
-#IgnoreUserKnownHosts yes
-
-# To enable empty passwords, change to yes (NOT RECOMMENDED)
-PermitEmptyPasswords no
-
-# Change to yes to enable challenge-response passwords (beware issues with
-# some PAM modules and threads)
-ChallengeResponseAuthentication no
-
-# Change to no to disable tunnelled clear text passwords
-PasswordAuthentication {{ sshd__password_authentication }}
-
-# Kerberos options
-#KerberosAuthentication no
-#KerberosGetAFSToken no
-#KerberosOrLocalPasswd yes
-#KerberosTicketCleanup yes
-
-# GSSAPI options
-#GSSAPIAuthentication no
-#GSSAPICleanupCredentials yes
-
-X11Forwarding {{ sshd__x11_forwarding }}
-X11DisplayOffset 10
-PrintMotd no
-PrintLastLog yes
-TCPKeepAlive yes
-Compression {{ sshd__compression }}
-#UseLogin no
-
-Banner {{ sshd__banner }}
-
-# Allow client to pass locale environment variables
-AcceptEnv {{ sshd__accept_env | sort | join(" ") }}
-
-Subsystem sftp internal-sftp
-
-# Set this to 'yes' to enable PAM authentication, account processing,
-# and session processing. If this is enabled, PAM authentication will
-# be allowed through the ChallengeResponseAuthentication and
-# PasswordAuthentication.  Depending on your PAM configuration,
-# PAM authentication via ChallengeResponseAuthentication may bypass
-# the setting of "PermitRootLogin without-password".
-# If you just want the PAM account and session checks to run without
-# PAM authentication, then enable this but set PasswordAuthentication
-# and ChallengeResponseAuthentication to 'no'.
-UsePAM yes
-
-{% if sshd__default_allow_groups | d() or sshd__allow_groups | d() or sshd__group_allow_groups | d() or sshd__host_allow_groups | d() %}
-AllowGroups {{ (
-      (sshd__default_allow_groups | d([]) | list) +
-      (sshd__allow_groups | d([]) | list) +
-      (sshd__group_allow_groups | d([]) | list) +
-      (sshd__host_allow_groups | d([]) | list)) | unique | join(" ") }}
-
-{% endif %}
-
-{% for entry in sshd__match_list | d([]) %}
-{%   if entry.match | d() and entry.options | d() %}
-Match {{ entry.match }}
-{{ entry.options | indent(8, true) }}
-
+{%     if (element.separator | d()) | bool or element.comment | d() %}
+{{       '' }}
+{%     endif %}
+{%     if element.comment | d() %}
+{{       element.comment | regex_replace('\n$', '') | comment(prefix='', postfix='') -}}
+{%     endif %}
+{%     if element.raw | d() %}
+{%       if element.state == 'comment' %}
+{{         element.raw | regex_replace('\n$', '') | comment(decoration='#', prefix='', postfix='') }}
+{%       else %}
+{{         element.raw | regex_replace('\n$', '') }}
+{%       endif %}
+{%     else %}
+{{       '{}{} {}'.format(element_comment, element_name, element_value) }}
+{%       if element.config | d() %}
+{%         if element.state == 'comment' %}
+{{           element.config | regex_replace('\n$', '') | indent(8, true) | comment(decoration='#', prefix='', postfix='') }}
+{%         else %}
+{{           element.config | regex_replace('\n$', '') | indent(8, true) }}
+{%         endif %}
+{%       endif %}
+{%     endif %}
 {%   endif %}
 {% endfor %}

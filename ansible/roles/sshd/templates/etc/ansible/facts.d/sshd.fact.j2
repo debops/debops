@@ -12,6 +12,7 @@ from __future__ import print_function
 from json import dumps
 from re import match, IGNORECASE
 from sys import exit
+import subprocess
 import os
 
 
@@ -38,6 +39,16 @@ for item in sshd_facts:
     output.update({item['fact']: item['default']})
 
 try:
+    version_stdout = subprocess.check_output(
+            ["dpkg-query", "-W", "-f=${Version}",
+             "openssh-server"]).decode('utf-8').split('-')[0]
+    if version_stdout:
+        output['version'] = version_stdout.split(':')[1].split('p')[0]
+
+except Exception:
+    pass
+
+try:
     with open("/etc/ssh/sshd_config") as fd:
         for line in fd.readlines():
             for item in sshd_facts:
@@ -55,5 +66,13 @@ try:
 except Exception as e:
     print("{}")
     exit()
+
+try:
+    socket_activation = subprocess.check_output(
+            ["systemctl", "is-enabled", "ssh.socket"]).decode('utf-8')
+    output['socket_activation'] = socket_activation.strip()
+
+except subprocess.CalledProcessError:
+    output['socket_activation'] = 'disabled'
 
 print(dumps(output, sort_keys=True, indent=4))

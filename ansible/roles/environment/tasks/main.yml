@@ -8,7 +8,7 @@
     name: 'global_handlers'
 
 - name: Configure /etc/environment
-  ansible.builtin.blockinfile:
+  ansible.builtin.blockinfile:  # noqa args[module]
     dest: '{{ environment__file }}'
     state: '{{ "present" if environment__enabled | bool else "absent" }}'
     block: '{{ lookup("template", "lookup/environment__variables.j2") }}'

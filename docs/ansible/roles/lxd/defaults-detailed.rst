@@ -51,7 +51,7 @@ To re-apply the preseed configuration via Ansible you can execute the command:
 
 .. code-block:: console
 
-   debops service/lxd -l <host> -t role::lxd:init -e 'lxd__init_preseed=true'
+   debops run service/lxd -l <host> -t role::lxd:init -e 'lxd__init_preseed=true'
 
 This will re-run the command and apply the current preseed configuration again.
 

@@ -1,0 +1,15 @@
+{# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2023 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+# List of additional SSH service listening sockets to enable in systemd
+[Socket]
+{% for socket in sshd__ports %}
+{%   if socket | string == '22' %}
+{{     '#ListenStream={}'.format(socket) }}
+{%   else %}
+{{     'ListenStream={}'.format(socket) }}
+{%   endif %}
+{% endfor %}

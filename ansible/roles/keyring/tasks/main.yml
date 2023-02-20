@@ -42,7 +42,7 @@
   ansible.builtin.meta: 'flush_handlers'
 
 - name: Import specified GPG keys to APT keyring
-  ansible.builtin.apt_key:
+  ansible.builtin.apt_key:  # noqa args[module]
     id: '{{ (item.id | d(item)) | replace(" ", "") }}'
     data: '{{ item.data | d((lookup("file", keyring__local_path + "/0x" + ((item.id | d(item)) | replace(" ", "")) + ".asc"))
                             if (item.state | d("present") != "absent" and item.url is undefined and item.keybase is undefined and
