@@ -1,0 +1,22 @@
+---
+# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2023 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Example network configuration for a network interface configured with static
+# IP addressing.
+
+# File: ansible/inventory/host_vars/hostname/networkd.yml
+
+networkd__units:
+
+  - name: '50-static.network'
+    comment: 'Configure specific interface with static IP address'
+    raw: |
+      [Match]
+      Name=enp2s0
+
+      [Network]
+      Address=192.0.2.15/24
+      Gateway=192.0.2.1
+    state: 'present'

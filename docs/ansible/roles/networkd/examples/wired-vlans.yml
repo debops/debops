@@ -1,0 +1,30 @@
+---
+# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2023 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Configure an interface on a specific host with a bridge connection and VLANs:
+
+# File: ansible/inventory/host_vars/hostname/networkd.yml
+
+networkd__host_units:
+
+  - name: '20-bridge-slave-interface-vlan.network'
+    raw: |
+      [Match]
+      Name=enp2s0
+
+      [Network]
+      Bridge=bridge0
+
+      [BridgeVLAN]
+      VLAN=1-32
+      PVID=42
+      EgressUntagged=42
+
+      [BridgeVLAN]
+      VLAN=100-200
+
+      [BridgeVLAN]
+      EgressUntagged=300-400
+    state: 'present'

@@ -275,6 +275,7 @@ Networking
 - :ref:`debops.keepalived`
 - :ref:`debops.lldpd`
 - :ref:`debops.netbase`
+- :ref:`debops.networkd`
 - :ref:`debops.radvd`
 - :ref:`debops.resolvconf`
 - :ref:`debops.stunnel`

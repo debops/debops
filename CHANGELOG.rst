@@ -52,6 +52,10 @@ New DebOps roles
   system-wide, as well as user services configured globally can be managed with
   this role.
 
+- The :ref:`debops.networkd` role can be used to configure the
+  :command:`systemd-networkd` service, part of the :command:`systemd` project
+  responsible for network interface configuration.
+
 General
 '''''''
 

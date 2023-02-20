@@ -1628,6 +1628,15 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/netbox/.*'
     JANE_LOG_PATTERN: '\[netbox\]'
 
+'networkd role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_FACT: 'networkd.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/networkd.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_networkd'
+    JANE_DIFF_PATTERN: '.*/roles/networkd/.*'
+    JANE_LOG_PATTERN: '\[networkd\]'
+
 'neurodebian role':
   <<: *test_role_1st_deps
   needs:

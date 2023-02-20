@@ -1,0 +1,42 @@
+---
+# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2023 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Configure a bridge interface and connect two network interfaces to it. Bridge
+# with be configured with a static IP address.
+
+# File: ansible/inventory/group_vars/group0/networkd.yml
+
+bridge_if: 'bridge0'
+
+networkd__group_units:
+
+  - name: '25-bridge-static.network'
+    raw: |
+      [Match]
+      Name={{ bridge_if }}
+
+      [Network]
+      Address=192.0.2.15/24
+      Gateway=192.0.2.1
+      DNS=192.0.2.1
+    state: 'present'
+
+  - name: '25-bridge-slave-interface-1.network'
+    raw: |
+      [Match]
+      Name=enp2s0
+
+      [Network]
+      Bridge={{ bridge_if }}
+    state: 'present'
+
+  - name: '25-bridge-slave-interface-2.network'
+    raw: |
+      [Match]
+      Name=wlp3s0
+
+      [Network]
+      Bridge={{ bridge_if }}
+    state: 'present'

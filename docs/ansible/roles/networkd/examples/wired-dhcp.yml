@@ -1,0 +1,24 @@
+---
+# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2023 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Example network configuration for a network interface configured via DHCP.
+# The host will use search domains provided remotely in DNS configuration.
+
+# File: ansible/inventory/group_vars/all/networkd.yml
+
+networkd__units:
+
+  - name: 'wired-dhcp.network'
+    comment: 'Configure any wired Ethernet interface via DHCP'
+    raw: |
+      [Match]
+      Name=en*
+
+      [Network]
+      DHCP=yes
+
+      [DHCPv4]
+      UseDomains=true
+    state: 'present'
