@@ -19,4 +19,5 @@ The :ref:`debops.systemd` Ansible role focuses on management of the
 project can be used to manage disparate components like :command:`journald` via
 the :ref:`debops.journald` role. This role manages the "system" instance of
 :command:`systemd`, as well as the global configuration of the
-:command:`systemd --user` instances.
+:command:`systemd --user` instances and the configuration of the
+:command:`systemd-logind` login manager.

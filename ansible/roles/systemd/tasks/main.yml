@@ -28,7 +28,7 @@
   ansible.builtin.file:
     path: '{{ "/etc/systemd/" + item + ".d/ansible.conf" }}'
     state: 'absent'
-  loop: [ 'system.conf', 'user.conf' ]
+  loop: [ 'system.conf', 'user.conf', 'logind.conf' ]
   notify: [ 'Reload systemd daemon' ]
   when: systemd__enabled | bool and systemd__deploy_state == 'absent'
 
@@ -37,7 +37,7 @@
     path: '{{ "/etc/systemd/" + item + ".d" }}'
     state: 'directory'
     mode: '0755'
-  loop: [ 'system.conf', 'user.conf' ]
+  loop: [ 'system.conf', 'user.conf', 'logind.conf' ]
   when: systemd__enabled | bool and systemd__deploy_state != 'absent'
 
 - name: Generate systemd configuration
@@ -45,7 +45,7 @@
     src: '{{ "etc/systemd/" + item + ".d/ansible.conf.j2" }}'
     dest: '{{ "/etc/systemd/" + item + ".d/ansible.conf" }}'
     mode: '0644'
-  loop: [ 'system.conf', 'user.conf' ]
+  loop: [ 'system.conf', 'user.conf', 'logind.conf' ]
   notify: [ 'Reload systemd daemon' ]
   when: systemd__enabled | bool and systemd__deploy_state != 'absent'
 

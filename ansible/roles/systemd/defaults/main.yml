@@ -513,6 +513,164 @@ systemd__user_combined_configuration: '{{ systemd__user_default_configuration
                                           + systemd__user_host_configuration }}'
                                                                    # ]]]
                                                                    # ]]]
+# The :command:`systemd-logind` configuration [[[
+# -----------------------------------------------
+
+# These variables define configuration of the :command:`systemd-logind`
+# service. Check the :man:`logind.conf(5)` manual page for more information
+# about the configuration options, and :ref:`systemd__ref_configuration` for
+# details about the configuration of the role itself.
+#
+# By default the system configuration is not applied on the hosts, you need to
+# set :envvar:`systemd__deploy_state` variable to ``present`` to deploy the
+# configuration.
+
+# .. envvar:: systemd__logind_default_configuration [[[
+#
+# List of the default configuration options for the :command:`systemd-logind`
+# service, defined by the role.
+systemd__logind_default_configuration:
+
+  - name: 'NAutoVTs'
+    value: 6
+    state: 'init'
+
+  - name: 'ReserveVT'
+    value: 6
+    state: 'init'
+
+  - name: 'KillUserProcesses'
+    value: False
+    state: 'init'
+
+  - name: 'KillOnlyUsers'
+    value: []
+    state: 'init'
+
+  - name: 'KillExcludeUsers'
+    value: [ 'root' ]
+    state: 'init'
+
+  - name: 'InhibitDelayMaxSec'
+    value: 5
+    state: 'init'
+
+  - name: 'UserStopDelaySec'
+    value: 10
+    state: 'init'
+
+  - name: 'HandlePowerKey'
+    value: 'poweroff'
+    state: 'init'
+
+  - name: 'HandleSuspendKey'
+    value: 'suspend'
+    state: 'init'
+
+  - name: 'HandleHibernateKey'
+    value: 'hibernate'
+    state: 'init'
+
+  - name: 'HandleLidSwitch'
+    value: 'suspend'
+    state: 'init'
+
+  - name: 'HandleLidSwitchExternalPower'
+    value: 'suspend'
+    state: 'init'
+
+  - name: 'HandleLidSwitchDocked'
+    value: 'ignore'
+    state: 'init'
+
+  - name: 'HandleRebootKey'
+    value: 'reboot'
+    state: 'init'
+
+  - name: 'PowerKeyIgnoreInhibited'
+    value: False
+    state: 'init'
+
+  - name: 'SuspendKeyIgnoreInhibited'
+    value: False
+    state: 'init'
+
+  - name: 'HibernateKeyIgnoreInhibited'
+    value: False
+    state: 'init'
+
+  - name: 'LidSwitchIgnoreInhibited'
+    value: True
+    state: 'init'
+
+  - name: 'RebootKeyIgnoreInhibited'
+    value: False
+    state: 'init'
+
+  - name: 'HoldoffTimeoutSec'
+    value: '30s'
+    state: 'init'
+
+  - name: 'IdleAction'
+    value: 'ignore'
+    state: 'init'
+
+  - name: 'IdleActionSec'
+    value: '30min'
+    state: 'init'
+
+  - name: 'RuntimeDirectorySize'
+    value: '10%'
+    state: 'init'
+
+  - name: 'RuntimeDirectoryInodes'
+    value: '400k'
+    state: 'init'
+
+  - name: 'RemoveIPC'
+    value: True
+    state: 'init'
+
+  - name: 'InhibitorsMax'
+    value: 8192
+    state: 'init'
+
+  - name: 'SessionsMax'
+    value: 8192
+    state: 'init'
+
+                                                                   # ]]]
+# .. envvar:: systemd__logind_configuration [[[
+#
+# List of the :command:`systemd-logind` service configuration options which
+# should be present on all hosts in the Ansible inventory.
+systemd__logind_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: systemd__logind_group_configuration [[[
+#
+# List of the :command:`systemd-logind` service configuration options which
+# should be present on hosts in a specific Ansible inventory group.
+systemd__logind_group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: systemd__logind_host_configuration [[[
+#
+# List of the :command:`systemd-logind` service configuration options which
+# should be present on specific hosts in the Ansible inventory.
+systemd__logind_host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: systemd__logind_combined_configuration [[[
+#
+# Variable which combines all :command:`systemd-logind` service configuration
+# lists and is used in role tasks and templates.
+systemd__logind_combined_configuration: '{{ systemd__logind_default_configuration
+                                            + systemd__logind_configuration
+                                            + systemd__logind_group_configuration
+                                            + systemd__logind_host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
 # The :command:`systemd` system instance units [[[
 # ------------------------------------------------
 
