@@ -2639,6 +2639,15 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/tgt/.*'
     JANE_LOG_PATTERN: '\[tgt\]'
 
+'timesyncd role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_FACT: 'timesyncd.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/timesyncd.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_timesyncd'
+    JANE_DIFF_PATTERN: '.*/roles/timesyncd/.*'
+    JANE_LOG_PATTERN: '\[timesyncd\]'
+
 'tinc/gateway role':
   <<: *test_role_3rd_deps
   needs:

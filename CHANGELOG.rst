@@ -56,6 +56,11 @@ New DebOps roles
   :command:`systemd-networkd` service, part of the :command:`systemd` project
   responsible for network interface configuration.
 
+- The :ref:`debops.timesyncd` role is used to configure the
+  :command:`systemd-timesyncd` service, a minimal SNTP/NTP client. The role is
+  included in the :file:`layer/common.yml` playbook instead of the
+  :ref:`debops.ntp` role to provide NTP support by default.
+
 General
 '''''''
 

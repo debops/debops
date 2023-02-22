@@ -359,6 +359,7 @@ System configuration
 - :ref:`debops.system_groups`
 - :ref:`debops.system_users`
 - :ref:`debops.systemd`
+- :ref:`debops.timesyncd`
 - :ref:`debops.tzdata`
 - :ref:`debops.users`
 - :ref:`debops.yadm`
