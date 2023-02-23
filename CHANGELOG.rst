@@ -219,6 +219,14 @@ General
   the :file:`ansible/playbooks/layers/` subdirectory. See the new
   :ref:`playbooks` documentation for more details.
 
+- The new :ref:`debops.timesyncd` role has replaced the :ref:`debops.ntp` role
+  as the default NTP service provider in the :file:`layer/common.yml` playbook.
+  Existing hosts shouldn't be affected - the new role can automatically
+  recognize that a different time daemon package is installed on the host and
+  will not try to configure :command:`systemd-timesyncd` service in such case.
+  You might need to add your hosts to the ``[debops_service_ntp]`` Ansible
+  inventory group to keep using the old role.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 
