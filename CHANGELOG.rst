@@ -231,6 +231,12 @@ General
   You might need to add your hosts to the ``[debops_service_ntp]`` Ansible
   inventory group to keep using the old role.
 
+- The new :ref:`debops.resolved` role has replaced the :ref:`debops.resolvconf`
+  role as the default DNS resolver in the :file:`layer/common.yml` and the
+  bootstrap playbooks. Existing hosts shouldn't be affected, the role detects
+  presence of the ``resolvconf`` APT package and does not modify the host
+  configuration in such case.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 
