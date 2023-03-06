@@ -82,6 +82,14 @@ General
   DNS support is disabled to avoid conflict with the :command:`avahi-daemon`
   service.
 
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- Multicast DNS traffic is accepted by default in the firewall to allow for the
+  ``.local`` mDNS domain resolution by the :command:`systemd-resolved` service.
+  The role provides a set of variables to limit the traffic by subnet, or
+  disable it completely.
+
 :ref:`debops.icinga_web` role
 '''''''''''''''''''''''''''''
 
