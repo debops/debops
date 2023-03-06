@@ -20,9 +20,15 @@ def cmd_exists(cmd):
     )
 
 
-output = {'installed': cmd_exists('networkctl'),
-          'enabled': loads('''{{ networkd__enabled
-                                 | bool | to_json }}''')}
+output = {'installed': cmd_exists('networkctl')}
+
+try:
+    is_enabled = subprocess.check_output(
+            ["systemctl", "is-enabled",
+                "systemd-networkd.service"]).decode('utf-8')
+    output['state'] = is_enabled.strip()
+except subprocess.CalledProcessError:
+    output['state'] = 'disabled'
 
 try:
     networkd_version_stdout = subprocess.check_output(
