@@ -7,6 +7,12 @@
   ansible.builtin.import_role:
     name: 'global_handlers'
 
+- name: Ensure that systemd-networkd service is enabled
+  ansible.builtin.systemd:
+    name: 'systemd-networkd.service'
+    enabled: True
+  when: networkd__enabled | bool
+
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:
     path: '/etc/ansible/facts.d'
@@ -89,13 +95,6 @@
   notify: [ 'Restart systemd-networkd service' ]
   when: networkd__enabled | bool and item.raw | d() and
         item.state | d("present") not in ['absent', 'ignore', 'init']
-
-- name: Ensure that systemd-networkd service is enabled
-  ansible.builtin.systemd:
-    name: 'systemd-networkd.service'
-    enabled: True
-  notify: [ 'Restart systemd-networkd service' ]
-  when: networkd__enabled | bool
 
 - name: Flush handlers when needed
   ansible.builtin.meta: 'flush_handlers'
