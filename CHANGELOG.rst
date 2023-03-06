@@ -61,6 +61,10 @@ New DebOps roles
   included in the :file:`layer/common.yml` playbook instead of the
   :ref:`debops.ntp` role to provide NTP support by default.
 
+- The :ref:`debops.resolved` role is included in the :file:`layer/common.yml`
+  playbook by default, replacing the :ref:`debops.resolvconf` role. It manages
+  the :command:`systemd-resolved` service, a local DNS resolver.
+
 General
 '''''''
 

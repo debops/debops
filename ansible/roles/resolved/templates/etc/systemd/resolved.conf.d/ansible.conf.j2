@@ -1,0 +1,52 @@
+{# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2023 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+# See resolved.conf(5) for details.
+
+[Resolve]
+# Some examples of DNS servers which may be used for DNS= and FallbackDNS=:
+# Cloudflare: 1.1.1.1 1.0.0.1 2606:4700:4700::1111 2606:4700:4700::1001
+# Google:     8.8.8.8 8.8.4.4 2001:4860:4860::8888 2001:4860:4860::8844
+# Quad9:      9.9.9.9 2620:fe::fe
+{% for element in resolved__combined_configuration | debops.debops.parse_kv_config %}
+{%   if element.name | d() and element.state | d('present') not in [ 'absent', 'ignore' ] %}
+{%     set element_comment = ('#' if (element.state | d('present') in [ 'init', 'comment' ]) else '') %}
+{%     if element.value is undefined %}
+{%       set element_value = '' %}
+{%     elif element.value is string and not element.value | bool %}
+{%       set element_value = element.value %}
+{%     elif element.value | bool and element.value is not iterable %}
+{%       if element.value | string == '1' %}
+{%         set element_value = element.value %}
+{%       else %}
+{%         set element_value = 'yes' %}
+{%       endif %}
+{%     elif not element.value | bool and element.value is not iterable %}
+{%       if element.value is not none %}
+{%         if element.value | int %}
+{%           set element_value = element.value %}
+{%         else %}
+{%           if element.value | string == '0' %}
+{%             set element_value = element.value %}
+{%           else %}
+{%             set element_value = 'no' %}
+{%           endif %}
+{%         endif %}
+{%       endif %}
+{%     else %}
+{%       set element_value = element.value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list | join(' ') %}
+{%     endif %}
+{%     if element.raw | d() %}
+{%       if element.state | d('present') in [ 'init', 'comment' ] %}
+{{         '{}'.format(element.raw | regex_replace('\n$', '') | comment(decoration='#', prefix='', postfix='')) -}}
+{%       else %}
+{{         '{}'.format(element.raw | regex_replace('\n$', '')) }}
+{%       endif %}
+{%     else %}
+{{       '{}{}={}'.format(element_comment, element.name, element_value) }}
+{%     endif %}
+{%   endif %}
+{% endfor %}

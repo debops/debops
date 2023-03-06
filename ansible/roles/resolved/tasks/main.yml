@@ -1,0 +1,162 @@
+---
+# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2023 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import DebOps global handlers
+  ansible.builtin.import_role:
+    name: 'global_handlers'
+
+- name: Check if other resolvers are installed
+  environment:
+    LC_MESSAGES: 'C'
+  ansible.builtin.shell: |
+    set -o nounset -o pipefail -o errexit &&
+    dpkg --get-selections | grep -w -E '({{ resolved__skip_packages | join("|") }})'
+                          | awk '{print $1}' || true
+  args:
+    executable: '/bin/bash'
+  register: resolved__register_resolvers
+  changed_when: False
+  failed_when: False
+  check_mode: False
+
+- name: Set resolved deployment state
+  ansible.builtin.set_fact:
+    resolved__fact_service_state: '{{ "present"
+                                       if (not resolved__register_resolvers.stdout | d())
+                                       else "absent" }}'
+
+- name: Install required resolved packages
+  ansible.builtin.package:
+    name: '{{ resolved__base_packages + resolved__packages }}'
+    state: 'present'
+  register: resolved__register_packages
+  until: resolved__register_packages is succeeded
+  when: resolved__enabled | bool
+
+- name: Enable and start systemd-resolved service
+  ansible.builtin.systemd:
+    name: 'systemd-resolved.service'
+    state: 'started'
+    enabled: True
+  when: resolved__enabled | bool
+
+- name: Make sure that Ansible local facts directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+  when: resolved__enabled | bool
+
+- name: Save resolved local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/resolved.fact.j2'
+    dest: '/etc/ansible/facts.d/resolved.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  when: resolved__enabled | bool
+  tags: [ 'meta::facts' ]
+
+- name: Update Ansible facts if they were modified
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Remove systemd-resolved configuuration if requested
+  ansible.builtin.file:
+    path: '/etc/systemd/resolved.conf.d/ansible.conf'
+    state: 'absent'
+  notify: [ 'Restart systemd-resolved service' ]
+  when: resolved__enabled | bool and resolved__deploy_state == 'absent'
+
+- name: Create systemd-resolved configuration directory
+  ansible.builtin.file:
+    path: '/etc/systemd/resolved.conf.d'
+    state: 'directory'
+    mode: '0755'
+  when: resolved__enabled | bool and resolved__deploy_state != 'absent'
+
+- name: Generate systemd-resolved configuration
+  ansible.builtin.template:
+    src: 'etc/systemd/resolved.conf.d/ansible.conf.j2'
+    dest: '/etc/systemd/resolved.conf.d/ansible.conf'
+    mode: '0644'
+  notify: [ 'Restart systemd-resolved service' ]
+  when: resolved__enabled | bool and resolved__deploy_state != 'absent'
+
+- name: Ensure that /etc/systemd/dnssd/ directory exists
+  ansible.builtin.file:
+    path: '/etc/systemd/dnssd'
+    state: 'directory'
+    mode: '0755'
+  when: resolved__enabled | bool and resolved__dnssd_enabled | bool
+
+- name: Remove dnssd units if requested
+  ansible.builtin.file:
+    path: '{{ "/etc/systemd/dnssd/" + item.name }}'
+    state: 'absent'
+  loop: '{{ resolved__combined_units | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  notify: [ 'Restart systemd-resolved service' ]
+  when: resolved__enabled | bool and resolved__dnssd_enabled | bool and
+        item.state | d("present") == 'absent'
+
+- name: Remove dnssd unit overrides if requested
+  ansible.builtin.file:
+    path: '{{ "/etc/systemd/dnssd/" + item.name + ".d" }}'
+    state: 'absent'
+  loop: '{{ resolved__combined_units | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  notify: [ 'Restart systemd-resolved service' ]
+  when: resolved__enabled | bool and resolved__dnssd_enabled | bool and
+        item.state | d("present") == 'absent'
+
+- name: Create directories for dnssd units
+  ansible.builtin.file:
+    path: '{{ "/etc/systemd/dnssd/" + (item.name | dirname) }}'
+    state: 'directory'
+    mode: '0755'
+  loop: '{{ resolved__combined_units | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  when: resolved__enabled | bool and resolved__dnssd_enabled | bool and
+        item.raw | d() and item.state | d("present") not in ['absent', 'ignore', 'init'] and
+        (item.name | dirname).endswith('.d')
+
+- name: Generate dnssd units
+  ansible.builtin.template:
+    src: 'etc/systemd/dnssd/template.j2'
+    dest: '{{ "/etc/systemd/dnssd/" + item.name }}'
+    mode: '0644'
+  loop: '{{ resolved__combined_units | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  notify: [ 'Restart systemd-resolved service' ]
+  when: resolved__enabled | bool and resolved__dnssd_enabled | bool and
+        item.raw | d() and item.state | d("present") not in ['absent', 'ignore', 'init']
+
+- name: Flush handlers when needed
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Manage /etc/resolv.conf configuration file
+  ansible.builtin.file:
+    path: '/etc/resolv.conf'
+    src: '{{ resolved__resolv_conf }}'
+    state: 'link'
+    force: True
+  when:
+    - resolved__enabled | bool
+    - resolved__resolv_conf != '/etc/resolv.conf'
+    - (ansible_local.networkd.state | d('disabled')) == 'enabled'
+    - (ansible_local.resolved.state | d('disabled')) == 'enabled'
+
+- name: Prepare cleanup during package removal
+  ansible.builtin.import_role:
+    name: 'dpkg_cleanup'
+  vars:
+    dpkg_cleanup__dependent_packages:
+      - '{{ resolved__dpkg_cleanup__dependent_packages }}'
+  when: resolved__enabled | bool
+  tags: [ 'role::dpkg_cleanup', 'skip::dpkg_cleanup',
+          'role::resolved:dpkg_cleanup' ]

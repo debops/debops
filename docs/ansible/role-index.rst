@@ -161,6 +161,7 @@ It's always DNS.
 - :ref:`debops.netbase`
 - :ref:`debops.pdns`
 - :ref:`debops.resolvconf`
+- :ref:`debops.resolved`
 - :ref:`debops.unbound`
 
 
@@ -278,6 +279,7 @@ Networking
 - :ref:`debops.networkd`
 - :ref:`debops.radvd`
 - :ref:`debops.resolvconf`
+- :ref:`debops.resolved`
 - :ref:`debops.stunnel`
 - :ref:`debops.tinc`
 - :ref:`debops.unbound`
