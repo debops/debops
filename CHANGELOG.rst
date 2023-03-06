@@ -75,6 +75,13 @@ General
   hosts. The :ref:`debops.apache` Ansible role will use this module instead of
   the original one.
 
+:ref:`debops.avahi` role
+''''''''''''''''''''''''
+
+- The role will ensure that the :command:`systemd-resolved` service Multicast
+  DNS support is disabled to avoid conflict with the :command:`avahi-daemon`
+  service.
+
 :ref:`debops.icinga_web` role
 '''''''''''''''''''''''''''''
 

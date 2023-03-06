@@ -1,0 +1,13 @@
+{# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2023 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+# The internal mDNS resolver and responder in systemd-resolved conflicts with
+# Avahi, which wants to use the same 5353/udp port for its service. Since
+# various other tools that come with Avahi (for example avahi-browse) don't
+# want to work when avahi-daemon service is not running, we need to yeld to
+# Avahi in this case and stop resolving Multicast DNS in systemd-resolved.
+[Resolve]
+MulticastDNS=no
