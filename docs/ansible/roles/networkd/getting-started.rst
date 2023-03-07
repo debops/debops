@@ -11,6 +11,53 @@ Getting started
       :local:
 
 
+Replacing ``ifupdown`` scripts with ``systemd-networkd``
+--------------------------------------------------------
+
+The default non-GUI Debian installation uses the ``ifupdown`` package to
+configure network interfaces. It's not compatible with the
+:command:`systemd-networkd` service, therefore it's best to purge it from the
+host after the new configuration has been applied. This has to be done through
+local console, since during removal the post-rm scripts will bring the network
+interfaces down, disconnecting the host from the network.
+
+Specific steps to take to replace the ``ifupdown`` package with
+:command:`systemd-networkd` service:
+
+1. Make sure that the host is in the ``[debops_service_networkd]`` Ansible inventory group.
+
+   .. code-block:: none
+
+      [debops_all_hosts]
+      hostname
+
+      [debops_service_networkd]
+      hostname
+
+2. Apply the :ref:`debops.networkd` playbook, check if the host has network connection.
+
+   .. code-block:: console
+
+      user@host:~$ debops check service/networkd -l hostname
+      user@host:~$ debops run service/networkd -l hostname
+
+3. Login to the host on the local console, purge ``ifupdown`` package and reboot the host.
+
+   .. code-block:: console
+
+      user@host:~$ sudo apt purge ifupdown
+      user@host:~$ sudo systemctl reboot
+
+4. Login to the host and check if the new configuration has been set up
+   correctly. Apply the :ref:`debops.resolved` playbook to configure
+   :file:`/etc/resolv.conf` configuration file.
+
+   .. code-block:: console
+
+      user@host:~$ debops check service/resolved -l hostname
+      user@host:~$ debops run service/resolved -l hostname
+
+
 Example inventory
 -----------------
 
