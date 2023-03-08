@@ -304,6 +304,21 @@ ferm__log_group: '32'
 ferm__include_legacy: True
 
                                                                    # ]]]
+# .. envvar:: ferm__mdns_state [[[
+#
+# Enable or disable the firewall rule to allow Multicast DNS packets. Multicast
+# DNS is used by :command:`systemd-resolved` service to resolve the ``.local``
+# domain, also used by Avahi/Bonjour services.
+ferm__mdns_state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: ferm__mdns_allow [[[
+#
+# List of IP addresses or CIDR subneds which are allowed to send Multicast DNS
+# packets to the host. If the list is empty, any host will be accepted.
+ferm__mdns_allow: []
+
+                                                                   # ]]]
 # .. envvar:: ferm__dependent_rules [[[
 #
 # YAML list which contains :command:`ferm` rules to manage defined by other
@@ -568,6 +583,17 @@ ferm__default_rules:
     sport: [ 'dhcpv6-server' ]
     dport: [ 'dhcpv6-client' ]
     rule_state: '{{ "present" if ("ip6" in ferm__domains) else "absent" }}'
+
+    # Multicast DNS is used by systemd-resolved for '.local' name resolution.
+  - name: 'accept_mdns'
+    type: 'accept'
+    dport: 'mdns'
+    comment: 'Accept Multicast DNS packets from other hosts'
+    saddr: '{{ ferm__mdns_allow }}'
+    daddr: [ '224.0.0.251', 'ff02::fb' ]
+    accept_any: True
+    protocol: 'udp'
+    rule_state: '{{ ferm__mdns_state }}'
 
     # Avahi is usually installed by default on workstations and laptops where
     # it is useful. To manage Avahi on servers, you should enable the

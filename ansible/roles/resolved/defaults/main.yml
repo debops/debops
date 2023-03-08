@@ -1,0 +1,299 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2023 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _resolved__ref_defaults:
+
+# debops.resolved default variables
+# =================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# General options [[[
+# -------------------
+
+# .. envvar:: resolved__enabled [[[
+#
+# Enable or disable management of the :command:`systemd-resolved` service using
+# DebOps. If the parameter is set to ``False``, the role will not touch service
+# configuration.
+resolved__enabled: '{{ True
+                       if (ansible_service_mgr == "systemd" and
+                           resolved__fact_service_state == "present")
+                       else False }}'
+
+                                                                   # ]]]
+# .. envvar:: resolved__deploy_state [[[
+#
+# This variable controls if the :command:`systemd-resolved` main configuration
+# file is managed on the host (``present``) or not (``absent``, default). If
+# deployment state is disabled, :command:`systemd-resolved` will use the
+# configuration provided with the OS package.
+resolved__deploy_state: 'absent'
+
+                                                                   # ]]]
+# .. envvar:: resolved__resolv_conf [[[
+#
+# Specify the file which will be symlinked as the system-wide resolver
+# configuration file (see :man:`resolv.conf(5)` for details). The role will
+# symlink the specified file as :file:`/etc/resolv.conf` when both
+# :command:`systemd-networkd` and :command:`systemd-resolved` services are
+# enabled on a host.
+#
+# To not make any changes, set this variable to ``/etc/resolv.conf``.
+resolved__resolv_conf: '/run/systemd/resolve/stub-resolv.conf'
+
+                                                                   # ]]]
+# .. envvar:: resolved__dnssd_enabled [[[
+#
+# Enable or disable support for publishing and resolving DNS-SD resource
+# records using the Multicast DNS protocol. See :man:`systemd.dnssd(5)` for
+# more details about the service configuration itself and
+# :ref:`resolved__ref_dnssd` documentation section about support of this
+# functionality in the Ansible role. For this variable to work, the
+# :envvar:`resolved__deploy_state` variable needs to be set to ``present``.
+resolved__dnssd_enabled: True
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages and installation [[[
+# ---------------------------------
+
+# .. envvar:: resolved__base_packages [[[
+#
+# List of base APT packages for :command:`systemd-resolved` support. The APT
+# package is separate from ``systemd`` APT package since Debian Bookworm to
+# allow for conflict resolution with other APT packages that provide the
+# ``resolvconf`` service.
+resolved__base_packages: '{{ [ "libnss-resolve" ]
+                              if (ansible_distribution_release in
+                                  ([ "stretch", "buster", "bullseye",
+                                     "bionic", "focal", "jammy" ]))
+                              else [ "systemd-resolved", "libnss-resolve" ] }}'
+
+                                                                   # ]]]
+# .. envvar:: resolved__packages [[[
+#
+# List of additional APT packages to install for :command:`systemd-resolved`
+# support.
+resolved__packages: []
+
+                                                                   # ]]]
+# .. envvar:: resolved__skip_packages [[[
+#
+# List of APT packages which provide the ``resolvconf`` service. When the role
+# detects that they are installed on the host, it will turn itself off to avoid
+# conflicts.
+resolved__skip_packages: [ 'resolvconf', 'openresolv' ]
+
+                                                                   # ]]]
+# .. envvar:: resolved__version [[[
+#
+# Specify the version of the :command:`systemd-resolved` daemon installed on
+# the host. By default this variable is defined using Ansible local facts and
+# can be used to alter configuration depending on the version of the service.
+resolved__version: '{{ ansible_local.resolved.version | d("0") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# The :command:`systemd-resolved` daemon configuration [[[
+# --------------------------------------------------------
+
+# These variables define the contents of the
+# :file:`/etc/systemd/resolved.conf` configuration file. Check the
+# :man:`resolved.conf(5)` manual page for more information about the
+# configuration options, and :ref:`resolved__ref_configuration` for details
+# about the configuration of the role itself.
+#
+# By default the configuration is not applied on the hosts, you need to set
+# :envvar:`resolved__deploy_state` variable to ``present`` to deploy the
+# configuration.
+
+# .. envvar:: resolved__default_configuration [[[
+#
+# List of the default configuration options defined by the role.
+resolved__default_configuration:
+
+  - name: 'DNS'
+    value: []
+    state: 'init'
+
+  - name: 'FallbackDNS'
+    value: []
+    state: 'init'
+
+  - name: 'Domains'
+    value: []
+    state: 'init'
+
+  - name: 'DNSSEC'
+    value: False
+    state: 'init'
+
+  - name: 'DNSOverTLS'
+    value: False
+    state: 'init'
+
+  - name: 'MulticastDNS'
+    value: '{{ resolved__dnssd_enabled | bool }}'
+    state: '{{ "init" if (resolved__dnssd_enabled | bool) else "present" }}'
+
+  - name: 'LLMNR'
+    value: True
+    state: 'init'
+
+  - name: 'Cache'
+    value: True
+    state: 'init'
+
+  - name: 'DNSStubListener'
+    value: True
+    state: 'init'
+
+  - name: 'DNSStubListenerExtra'
+    value: ''
+    state: 'init'
+
+  - name: 'ReadEtcHosts'
+    value: True
+    state: 'init'
+
+  - name: 'ResolveUnicastSingleLabel'
+    value: False
+    state: 'init'
+
+                                                                   # ]]]
+# .. envvar:: resolved__configuration [[[
+#
+# List of the configuration options which should be present on all hosts in the
+# Ansible inventory.
+resolved__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: resolved__group_configuration [[[
+#
+# List of the configuration options which should be present on hosts in
+# a specific Ansible inventory group.
+resolved__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: resolved__host_configuration [[[
+#
+# List of the configuration options which should be present on specific hosts
+# in the Ansible inventory.
+resolved__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: resolved__combined_configuration [[[
+#
+# Variable which combines all configuration lists and is used in the role tasks
+# and templates.
+resolved__combined_configuration: '{{ resolved__default_configuration
+                                      + resolved__configuration
+                                      + resolved__group_configuration
+                                      + resolved__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# The DNS-SD configuration units [[[
+# ----------------------------------
+
+# These variables can be used to manage :command:`systemd-resolved`
+# :file:`*.dnssd` files located in the :file:`/etc/systemd/dnssd/` directory.
+# Check the :man:`systemd.dnssd(5)` manual page for more information about
+# files themselves, and :ref:`resolved__ref_units` for details about
+# configuring units using this role.
+
+# .. envvar:: resolved__default_units [[[
+#
+# List of the default :command:`systemd-resolved` units defined by the role.
+resolved__default_units:
+
+  - name: 'workstation.dnssd'
+    comment: 'Publish information about the host in mDNS'
+    raw: |
+      [Service]
+      Name=%H
+      Type=_workstation._tcp
+      Port=9
+    state: 'present'
+
+  - name: 'ssh.dnssd'
+    comment: 'Publish information about the SSH service'
+    raw: |
+      [Service]
+      Name=%H
+      Type=_ssh._tcp
+      Port=22
+    state: 'present'
+
+  - name: 'sftp-ssh.dnssd'
+    comment: 'Publish information about the SFTP service'
+    raw: |
+      [Service]
+      Name=%H
+      Type=_sftp-ssh._tcp
+      Port=22
+    state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: resolved__units [[[
+#
+# List of :command:`systemd-resolved` units which should be present on all
+# hosts in the Ansible inventory.
+resolved__units: []
+
+                                                                   # ]]]
+# .. envvar:: resolved__group_units [[[
+#
+# List of :command:`systemd-resolved` units which should be present on hosts in
+# a specific Ansible inventory group.
+resolved__group_units: []
+
+                                                                   # ]]]
+# .. envvar:: resolved__host_units [[[
+#
+# List of :command:`systemd-resolved` units which should be present on specific
+# hosts in the Ansible inventory.
+resolved__host_units: []
+
+                                                                   # ]]]
+# .. envvar:: resolved__dependent_units [[[
+#
+# List of :command:`systemd-resolved` units which are defined by other Ansible
+# roles using dependent role variables.
+resolved__dependent_units: []
+
+                                                                   # ]]]
+# .. envvar:: resolved__combined_units [[[
+#
+# Variable which combines all of the :command:`systemd-resolved` unit lists and
+# is used in role tasks and templates.
+resolved__combined_units: '{{ resolved__default_units
+                              + resolved__dependent_units
+                              + resolved__units
+                              + resolved__group_units
+                              + resolved__host_units }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: resolved__dpkg_cleanup__dependent_packages [[[
+#
+# Configuration for the :ref:`debops.dpkg_cleanup` Ansible role.
+resolved__dpkg_cleanup__dependent_packages:
+
+  - name: 'systemd-resolved'
+    ansible_fact: 'resolved'
+    state: '{{ "absent"
+               if (ansible_distribution_release in
+                   ([ "stretch", "buster", "bullseye",
+                      "bionic", "focal", "jammy" ]))
+               else "present" }}'
+                                                                   # ]]]
+                                                                   # ]]]

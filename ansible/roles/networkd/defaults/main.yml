@@ -1,0 +1,241 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2023 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _networkd__ref_defaults:
+
+# debops.networkd default variables
+# =================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# General options [[[
+# -------------------
+
+# .. envvar:: networkd__enabled [[[
+#
+# Enable or disable management of the :command:`systemd-networkd` service using
+# DebOps. If the parameter is set to ``False``, the role will not touch service
+# configuration.
+networkd__enabled: '{{ True
+                       if (ansible_service_mgr == "systemd")
+                       else False }}'
+
+                                                                   # ]]]
+# .. envvar:: networkd__deploy_state [[[
+#
+# This variable controls if the :command:`systemd-networkd` main configuration
+# file is managed on the host (``present``) or not (``absent``, default). If
+# deployment state is disabled, :command:`systemd-networkd` will use the
+# configuration provided with the OS package. Configuration of the specific
+# service units is not affected by this variable.
+networkd__deploy_state: 'absent'
+
+                                                                   # ]]]
+# .. envvar:: networkd__version [[[
+#
+# Specify the version of the :command:`systemd-networkd` daemon installed on
+# the host. By default this variable is defined using Ansible local facts and
+# can be used to alter configuration depending on the version of the service.
+networkd__version: '{{ ansible_local.networkd.version | d("0") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# The :command:`systemd-networkd` daemon configuration [[[
+# --------------------------------------------------------
+
+# These variables define the contents of the ``[Network]`` section in the
+# :file:`/etc/systemd/networkd.conf` configuration file. Check the
+# :man:`networkd.conf(5)` manual page for more information about the
+# configuration options, and :ref:`networkd__ref_configuration` for details
+# about the configuration of the role itself.
+#
+# By default the configuration is not applied on the hosts, you need to set
+# :envvar:`networkd__deploy_state` variable to ``present`` to deploy the
+# configuration.
+
+# .. envvar:: networkd__default_configuration [[[
+#
+# List of the default configuration options defined by the role.
+networkd__default_configuration:
+
+  - name: 'SpeedMeter'
+    value: False
+    state: 'init'
+
+  - name: 'SpeedMeterIntervalSec'
+    value: '10sec'
+    state: 'init'
+
+  - name: 'ManageForeignRoutes'
+    value: True
+    state: 'init'
+
+                                                                   # ]]]
+# .. envvar:: networkd__configuration [[[
+#
+# List of the configuration options which should be present on all hosts in the
+# Ansible inventory.
+networkd__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: networkd__group_configuration [[[
+#
+# List of the configuration options which should be present on hosts in
+# a specific Ansible inventory group.
+networkd__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: networkd__host_configuration [[[
+#
+# List of the configuration options which should be present on specific hosts
+# in the Ansible inventory.
+networkd__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: networkd__combined_configuration [[[
+#
+# Variable which combines all configuration lists and is used in the role tasks
+# and templates.
+networkd__combined_configuration: '{{ networkd__default_configuration
+                                     + networkd__configuration
+                                     + networkd__group_configuration
+                                     + networkd__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# The :command:`systemd-networkd` DHCP configuration [[[
+# ------------------------------------------------------
+
+# These variables define configuration of the ``[DHCP]`` section in the
+# :file:`/etc/systemd/networkd.conf` configuration file. Check the
+# :man:`networkd.conf(5)` manual page for more information about the
+# configuration options, and :ref:`networkd__ref_configuration` for details
+# about the configuration of the role itself.
+#
+# By default the configuration is not applied on the hosts, you need to set
+# :envvar:`networkd__deploy_state` variable to ``present`` to deploy the
+# configuration.
+
+# .. envvar:: networkd__dhcp_default_configuration [[[
+#
+# List of the default DHCP configuration options for the user instances,
+# defined by the role.
+networkd__dhcp_default_configuration:
+
+  - name: 'DUIDType'
+    value: 'vendor'
+    state: 'init'
+
+  - name: 'DUIDRawData'
+    value: ''
+    state: 'init'
+
+                                                                   # ]]]
+# .. envvar:: networkd__dhcp_configuration [[[
+#
+# List of the DHCP configuration options which should be present on all hosts
+# in the Ansible inventory.
+networkd__dhcp_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: networkd__dhcp_group_configuration [[[
+#
+# List of the DHCP configuration options which should be present on hosts in
+# a specific Ansible inventory group.
+networkd__dhcp_group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: networkd__dhcp_host_configuration [[[
+#
+# List of the DHCP configuration options which should be present on specific
+# hosts in the Ansible inventory.
+networkd__dhcp_host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: networkd__dhcp_combined_configuration [[[
+#
+# Variable which combines all DHCP configuration lists and is used in role
+# tasks and templates.
+networkd__dhcp_combined_configuration: '{{ networkd__dhcp_default_configuration
+                                          + networkd__dhcp_configuration
+                                          + networkd__dhcp_group_configuration
+                                          + networkd__dhcp_host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# The command:`systemd-networkd` configuration units [[[
+# ------------------------------------------------------
+
+# These variables can be used to manage :command:`systemd-networkd`
+# :file:`*.network`, :file:`*.netdev` and :file:`*.link` files located in the
+# :file:`/etc/systemd/network/` directory. Check the :man:`systemd.network(5)`,
+# :man:`systemd.netdev(5)` and :file:`systemd.link(5)` manual pages for more
+# information about files themselves, and :ref:`networkd__ref_units` for
+# details about configuring units using this role.
+
+# .. envvar:: networkd__default_units [[[
+#
+# List of the default :command:`systemd-networkd` units defined by the role.
+networkd__default_units:
+
+  - name: 'wired-dhcp.network'
+    comment: 'Configure any wired Ethernet interface via DHCP'
+    raw: |
+      [Match]
+      Name=e*
+
+      [Network]
+      DHCP=yes
+      MulticastDNS=yes
+      LLDP=yes
+      EmitLLDP=yes
+
+      [DHCPv4]
+      UseDomains=true
+    state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: networkd__units [[[
+#
+# List of :command:`systemd-networkd` units which should be present on all
+# hosts in the Ansible inventory.
+networkd__units: []
+
+                                                                   # ]]]
+# .. envvar:: networkd__group_units [[[
+#
+# List of :command:`systemd-networkd` units which should be present on hosts in
+# a specific Ansible inventory group.
+networkd__group_units: []
+
+                                                                   # ]]]
+# .. envvar:: networkd__host_units [[[
+#
+# List of :command:`systemd-networkd` units which should be present on specific
+# hosts in the Ansible inventory.
+networkd__host_units: []
+
+                                                                   # ]]]
+# .. envvar:: networkd__dependent_units [[[
+#
+# List of :command:`systemd-networkd` units which are defined by other Ansible
+# roles using dependent role variables.
+networkd__dependent_units: []
+
+                                                                   # ]]]
+# .. envvar:: networkd__combined_units [[[
+#
+# Variable which combines all of the :command:`systemd-networkd` unit lists and
+# is used in role tasks and templates.
+networkd__combined_units: '{{ networkd__default_units
+                              + networkd__dependent_units
+                              + networkd__units
+                              + networkd__group_units
+                              + networkd__host_units }}'
+                                                                   # ]]]
+                                                                   # ]]]

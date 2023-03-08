@@ -1,0 +1,162 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2023 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _timesyncd__ref_defaults:
+
+# debops.timesyncd default variables
+# ==================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# General options [[[
+# -------------------
+
+# .. envvar:: timesyncd__enabled [[[
+#
+# Enable or disable management of the :command:`systemd-timesyncd` service using
+# DebOps. If the parameter is set to ``False``, the role will not touch service
+# configuration.
+timesyncd__enabled: '{{ True
+                       if (ansible_service_mgr == "systemd" and
+                           timesyncd__fact_service_state == "present")
+                       else False }}'
+
+                                                                   # ]]]
+# .. envvar:: timesyncd__deploy_state [[[
+#
+# This variable controls if the :command:`systemd-timesyncd` main configuration
+# file is managed on the host (``present``) or not (``absent``, default). If
+# deployment state is disabled, :command:`systemd-timesyncd` will use the
+# configuration provided with the OS package.
+timesyncd__deploy_state: 'absent'
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages and installation [[[
+# ---------------------------------
+
+# .. envvar:: timesyncd__base_packages [[[
+#
+# List of base APT packages for :command:`systemd-timesyncd` support. The APT
+# package is separate from ``systemd`` APT package to allow for conflict
+# resolution with other APT packages that provide the ``time-daemon`` virtual
+# package.
+timesyncd__base_packages: [ 'systemd-timesyncd' ]
+
+                                                                   # ]]]
+# .. envvar:: timesyncd__packages [[[
+#
+# List of additional APT packages to install for :command:`systemd-timesyncd`
+# support.
+timesyncd__packages: []
+
+                                                                   # ]]]
+# .. envvar:: timesyncd__skip_packages [[[
+#
+# List of APT packages which provide the ``time-daemon`` virtual package. When
+# the role detects that they are installed on the host, it will turn itself off
+# to avoid conflicts.
+timesyncd__skip_packages: [ 'openntpd', 'ntpsec', 'ntp', 'chrony' ]
+
+                                                                   # ]]]
+# .. envvar:: timesyncd__version [[[
+#
+# Specify the version of the :command:`systemd-timesyncd` daemon installed on
+# the host. By default this variable is defined using Ansible local facts and
+# can be used to alter configuration depending on the version of the service.
+timesyncd__version: '{{ ansible_local.timesyncd.version | d("0") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# The :command:`systemd-timesyncd` daemon configuration [[[
+# ---------------------------------------------------------
+
+# These variables define the contents of the
+# :file:`/etc/systemd/timesyncd.conf` configuration file. Check the
+# :man:`timesyncd.conf(5)` manual page for more information about the
+# configuration options, and :ref:`timesyncd__ref_configuration` for details
+# about the configuration of the role itself.
+#
+# By default the configuration is not applied on the hosts, you need to set
+# :envvar:`timesyncd__deploy_state` variable to ``present`` to deploy the
+# configuration.
+
+# .. envvar:: timesyncd__default_configuration [[[
+#
+# List of the default configuration options defined by the role.
+timesyncd__default_configuration:
+
+  - name: 'NTP'
+    value: []
+    state: 'init'
+
+  - name: 'FallbackNTP'
+    value:
+      - '0.debian.pool.ntp.org'
+      - '1.debian.pool.ntp.org'
+      - '2.debian.pool.ntp.org'
+      - '3.debian.pool.ntp.org'
+    state: 'init'
+
+  - name: 'RootDistanceMaxSec'
+    value: 5
+    state: 'init'
+
+  - name: 'PollIntervalMinSec'
+    value: 32
+    state: 'init'
+
+  - name: 'PollIntervalMaxSec'
+    value: 2048
+    state: 'init'
+
+                                                                   # ]]]
+# .. envvar:: timesyncd__configuration [[[
+#
+# List of the configuration options which should be present on all hosts in the
+# Ansible inventory.
+timesyncd__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: timesyncd__group_configuration [[[
+#
+# List of the configuration options which should be present on hosts in
+# a specific Ansible inventory group.
+timesyncd__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: timesyncd__host_configuration [[[
+#
+# List of the configuration options which should be present on specific hosts
+# in the Ansible inventory.
+timesyncd__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: timesyncd__combined_configuration [[[
+#
+# Variable which combines all configuration lists and is used in the role tasks
+# and templates.
+timesyncd__combined_configuration: '{{ timesyncd__default_configuration
+                                       + timesyncd__configuration
+                                       + timesyncd__group_configuration
+                                       + timesyncd__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: timesyncd__dpkg_cleanup__dependent_packages [[[
+#
+# Configuration for the :ref:`debops.dpkg_cleanup` Ansible role.
+timesyncd__dpkg_cleanup__dependent_packages:
+
+  - name: 'systemd-timesyncd'
+    ansible_fact: 'timesyncd'
+                                                                   # ]]]
+                                                                   # ]]]

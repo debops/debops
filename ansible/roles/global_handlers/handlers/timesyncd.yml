@@ -1,0 +1,10 @@
+---
+# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2023 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Restart systemd-timesyncd service
+  ansible.builtin.systemd:
+    name: 'systemd-timesyncd.service'
+    state: 'restarted'
+  when: ansible_service_mgr == 'systemd'

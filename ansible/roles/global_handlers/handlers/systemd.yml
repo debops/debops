@@ -1,0 +1,17 @@
+---
+# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2023 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: True
+  listen:
+    - 'Reload service manager'
+  when: ansible_service_mgr == 'systemd'
+
+- name: Create temporary files with systemd-tmpfiles
+  ansible.builtin.command: 'systemd-tmpfiles --create'
+  listen:
+    - 'Create temporary files'
+  when: ansible_service_mgr == 'systemd'

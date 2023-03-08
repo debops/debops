@@ -47,6 +47,24 @@ New DebOps roles
 - The :ref:`debops.miniflux` role can install and manage Miniflux, a web-based,
   minimalistic feed reader written in Go.
 
+- The :ref:`debops.systemd` role is included in the common playbook by default.
+  It configures the :command:`systemd` system and service manager. Both
+  system-wide, as well as user services configured globally can be managed with
+  this role.
+
+- The :ref:`debops.networkd` role can be used to configure the
+  :command:`systemd-networkd` service, part of the :command:`systemd` project
+  responsible for network interface configuration.
+
+- The :ref:`debops.timesyncd` role is used to configure the
+  :command:`systemd-timesyncd` service, a minimal SNTP/NTP client. The role is
+  included in the :file:`layer/common.yml` playbook instead of the
+  :ref:`debops.ntp` role to provide NTP support by default.
+
+- The :ref:`debops.resolved` role is included in the :file:`layer/common.yml`
+  playbook by default, replacing the :ref:`debops.resolvconf` role. It manages
+  the :command:`systemd-resolved` service, a local DNS resolver.
+
 General
 '''''''
 
@@ -56,6 +74,21 @@ General
   idempotency check for enabled Apache 2 modules that works on Debian or Ubuntu
   hosts. The :ref:`debops.apache` Ansible role will use this module instead of
   the original one.
+
+:ref:`debops.avahi` role
+''''''''''''''''''''''''
+
+- The role will ensure that the :command:`systemd-resolved` service Multicast
+  DNS support is disabled to avoid conflict with the :command:`avahi-daemon`
+  service.
+
+:ref:`debops.ferm` role
+'''''''''''''''''''''''
+
+- Multicast DNS traffic is accepted by default in the firewall to allow for the
+  ``.local`` mDNS domain resolution by the :command:`systemd-resolved` service.
+  The role provides a set of variables to limit the traffic by subnet, or
+  disable it completely.
 
 :ref:`debops.icinga_web` role
 '''''''''''''''''''''''''''''
@@ -205,6 +238,20 @@ General
   the :file:`ansible/playbooks/layers/` subdirectory. See the new
   :ref:`playbooks` documentation for more details.
 
+- The new :ref:`debops.timesyncd` role has replaced the :ref:`debops.ntp` role
+  as the default NTP service provider in the :file:`layer/common.yml` playbook.
+  Existing hosts shouldn't be affected - the new role can automatically
+  recognize that a different time daemon package is installed on the host and
+  will not try to configure :command:`systemd-timesyncd` service in such case.
+  You might need to add your hosts to the ``[debops_service_ntp]`` Ansible
+  inventory group to keep using the old role.
+
+- The new :ref:`debops.resolved` role has replaced the :ref:`debops.resolvconf`
+  role as the default DNS resolver in the :file:`layer/common.yml` and the
+  bootstrap playbooks. Existing hosts shouldn't be affected, the role detects
+  presence of the ``resolvconf`` APT package and does not modify the host
+  configuration in such case.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 
@@ -238,6 +285,12 @@ General
   Edition (default) and Enterprise Edition are supported.
 
   .. __: https://docs.gitlab.com/omnibus/
+
+:ref:`debops.global_handlers` role
+''''''''''''''''''''''''''''''''''
+
+- The :command:`systemd` handlers have been moved to a separate
+  :file:`handlers/systemd.yml` configuration file.
 
 :ref:`debops.icinga` role
 '''''''''''''''''''''''''

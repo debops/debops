@@ -1,6 +1,6 @@
 ---
-# Copyright (C) 2017-2019 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2017-2019 DebOps <https://debops.org/>
+# Copyright (C) 2017-2023 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2017-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 # The tasks below are a fix for an issue where Avahi service cannot start in an
@@ -11,6 +11,26 @@
 - name: Import DebOps global handlers
   ansible.builtin.import_role:
     name: 'global_handlers'
+
+- name: Create systemd-resolved configuration directory
+  ansible.builtin.file:
+    path: '/etc/systemd/resolved.conf.d'
+    state: 'directory'
+    mode: '0755'
+  when: (ansible_service_mgr == 'systemd' and
+         (ansible_local.resolved.installed | d()) | bool)
+
+- name: Disable MulticastDNS support in systemd-resolved
+  ansible.builtin.template:
+    src: 'etc/systemd/resolved.conf.d/avahi-mdns.conf.j2'
+    dest: '/etc/systemd/resolved.conf.d/avahi-mdns.conf'
+    mode: '0644'
+  notify: [ 'Restart systemd-resolved service' ]
+  when: (ansible_service_mgr == 'systemd' and
+         (ansible_local.resolved.installed | d()) | bool)
+
+- name: Flush handlers when needed
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Make sure that Avahi config directory exists
   ansible.builtin.file:

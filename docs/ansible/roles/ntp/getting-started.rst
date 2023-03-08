@@ -43,8 +43,18 @@ configuration has been completed.
 Example inventory
 -----------------
 
-``debops.ntp`` is included by default in the :file:`common.yml` DebOps playbook;
-you don't need to do anything to have it executed.
+To configure the NTP service using the :ref:`debops.ntp` role, a host needs to
+be included in the ``[debops_service_ntp]`` Ansible inventory group. An example
+inventory can look like this:
+
+.. code-block:: none
+
+   [debops_all_hosts]
+   hostname
+
+   [debops_service_ntp]
+   hostname
+
 
 Example playbook
 ----------------

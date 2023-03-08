@@ -1,0 +1,188 @@
+---
+# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2023 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import DebOps global handlers
+  ansible.builtin.import_role:
+    name: 'global_handlers'
+
+- name: Make sure that Ansible local facts directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save systemd local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/systemd.fact.j2'
+    dest: '/etc/ansible/facts.d/systemd.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: Update Ansible facts if they were modified
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Remove systemd configuuration if requested
+  ansible.builtin.file:
+    path: '{{ "/etc/systemd/" + item + ".d/ansible.conf" }}'
+    state: 'absent'
+  loop: [ 'system.conf', 'user.conf', 'logind.conf' ]
+  notify: [ 'Reload systemd daemon' ]
+  when: systemd__enabled | bool and systemd__deploy_state == 'absent'
+
+- name: Create systemd configuration directories
+  ansible.builtin.file:
+    path: '{{ "/etc/systemd/" + item + ".d" }}'
+    state: 'directory'
+    mode: '0755'
+  loop: [ 'system.conf', 'user.conf', 'logind.conf' ]
+  when: systemd__enabled | bool and systemd__deploy_state != 'absent'
+
+- name: Generate systemd configuration
+  ansible.builtin.template:
+    src: '{{ "etc/systemd/" + item + ".d/ansible.conf.j2" }}'
+    dest: '{{ "/etc/systemd/" + item + ".d/ansible.conf" }}'
+    mode: '0644'
+  loop: [ 'system.conf', 'user.conf', 'logind.conf' ]
+  notify: [ 'Reload systemd daemon' ]
+  when: systemd__enabled | bool and systemd__deploy_state != 'absent'
+
+- name: Remove system units if requested
+  ansible.builtin.file:
+    path: '{{ "/etc/systemd/system/" + item.name }}'
+    state: 'absent'
+  loop: '{{ systemd__combined_units | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  register: systemd__register_units_removed
+  notify: [ 'Reload systemd daemon' ]
+  when: systemd__enabled | bool and
+        item.state | d("present") == 'absent'
+
+- name: Remove system unit overrides if requested
+  ansible.builtin.file:
+    path: '{{ "/etc/systemd/system/" + item.name + ".d" }}'
+    state: 'absent'
+  loop: '{{ systemd__combined_units | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  notify: [ 'Reload systemd daemon' ]
+  when: systemd__enabled | bool and
+        item.state | d("present") == 'absent'
+
+- name: Create directories for system units
+  ansible.builtin.file:
+    path: '{{ "/etc/systemd/system/" + (item.name | dirname) }}'
+    state: 'directory'
+    mode: '0755'
+  loop: '{{ systemd__combined_units | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  when: systemd__enabled | bool and item.raw | d() and
+        item.state | d("present") not in ['absent', 'ignore', 'init'] and
+        (item.name | dirname).endswith('.d')
+
+- name: Generate system units
+  ansible.builtin.template:
+    src: 'etc/systemd/system/template.j2'
+    dest: '{{ "/etc/systemd/system/" + item.name }}'
+    mode: '0644'
+  loop: '{{ systemd__combined_units | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  register: systemd__register_units_created
+  notify: [ 'Reload systemd daemon' ]
+  when: systemd__enabled | bool and item.raw | d() and
+        item.state | d("present") not in ['absent', 'ignore', 'init']
+
+- name: Remove user units if requested
+  ansible.builtin.file:
+    path: '{{ "/etc/systemd/user/" + item.name }}'
+    state: 'absent'
+  loop: '{{ systemd__user_combined_units | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  notify: [ 'Reload systemd daemon' ]
+  when: systemd__enabled | bool and
+        item.state | d("present") == 'absent'
+
+- name: Remove user unit overrides if requested
+  ansible.builtin.file:
+    path: '{{ "/etc/systemd/user/" + item.name + ".d" }}'
+    state: 'absent'
+  loop: '{{ systemd__user_combined_units | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  notify: [ 'Reload systemd daemon' ]
+  when: systemd__enabled | bool and
+        item.state | d("present") == 'absent'
+
+- name: Create directories for user units
+  ansible.builtin.file:
+    path: '{{ "/etc/systemd/user/" + (item.name | dirname) }}'
+    state: 'directory'
+    mode: '0755'
+  loop: '{{ systemd__user_combined_units | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  when: systemd__enabled | bool and item.raw | d() and
+        item.state | d("present") not in ['absent', 'ignore', 'init'] and
+        (item.name | dirname).endswith('.d')
+
+- name: Generate user units
+  ansible.builtin.template:
+    src: 'etc/systemd/user/template.j2'
+    dest: '{{ "/etc/systemd/user/" + item.name }}'
+    mode: '0644'
+  loop: '{{ systemd__user_combined_units | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  notify: [ 'Reload systemd daemon' ]
+  when: systemd__enabled | bool and item.raw | d() and
+        item.state | d("present") not in ['absent', 'ignore', 'init']
+
+- name: Flush handlers when needed
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Configure system units
+  ansible.builtin.systemd:
+    name: '{{ item.name }}'
+    enabled: '{{ item.enabled | d(False if (item.masked | d() | bool) else True) }}'
+    force: '{{ item.force | d(omit) }}'
+    masked: '{{ item.masked | d(omit) }}'
+    state: '{{ item.state if (item.state in ["reloaded", "restarted", "started", "stopped"]) else omit }}'
+  loop: '{{ systemd__combined_units | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  when: systemd__enabled | bool and
+        item.state | d("present") not in ['absent', 'ignore', 'init'] and
+        not (item.name | dirname).endswith('.d')
+
+- name: Restart system units if modified
+  ansible.builtin.systemd:
+    name: '{{ item.restart }}'
+    state: 'restarted'
+  loop: '{{ systemd__combined_units | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"restart": item.restart | d()} }}'
+  when: systemd__enabled | bool and item.restart | d() and
+        item.state | d("present") not in ['ignore', 'init'] and
+        ((item.name in (systemd__register_units_removed.results | selectattr("changed", "true") | map(attribute="item.name") | list)) or
+         (item.name in (systemd__register_units_created.results | selectattr("changed", "true") | map(attribute="item.name") | list)))
+
+- name: Configure user units
+  ansible.builtin.systemd:
+    name: '{{ item.name }}'
+    enabled: '{{ item.enabled | d(False if (item.masked | d() | bool) else True) }}'
+    force: '{{ item.force | d(omit) }}'
+    masked: '{{ item.masked | d(omit) }}'
+    state: '{{ item.state if (item.state in ["reloaded", "restarted", "started", "stopped"]) else omit }}'
+    scope: 'global'
+  loop: '{{ systemd__user_combined_units | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  when: systemd__enabled | bool and
+        item.state | d("present") not in ['absent', 'ignore', 'init'] and
+        not (item.name | dirname).endswith('.d')

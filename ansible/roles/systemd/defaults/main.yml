@@ -1,0 +1,767 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2023 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _systemd__ref_defaults:
+
+# debops.systemd default variables
+# ================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# General options [[[
+# -------------------
+
+# .. envvar:: systemd__enabled [[[
+#
+# Enable or disable management of the :command:`systemd` service manager using
+# DebOps. If the parameter is set to ``False``, the role will not touch service
+# configuration.
+systemd__enabled: '{{ True
+                      if (ansible_service_mgr == "systemd")
+                      else False }}'
+
+                                                                   # ]]]
+# .. envvar:: systemd__deploy_state [[[
+#
+# This variable controls if the :command:`systemd` configuration files for the
+# "system" and "user" scope are managed on the host (``present``) or not
+# (``absent``, default). If deployment state is disabled, :command:`systemd`
+# will use the configuration provided with the OS package. Configuration of
+# the specific service units is not affected by this variable.
+systemd__deploy_state: 'absent'
+
+                                                                   # ]]]
+# .. envvar:: systemd__version [[[
+#
+# Specify the version of the :command:`systemd` daemon installed on the host.
+# By default this variable is defined using Ansible local facts and can be used
+# to alter configuration depending on the version of the service.
+systemd__version: '{{ ansible_local.systemd.version | d("0") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# The :command:`systemd` system instance configuration [[[
+# --------------------------------------------------------
+
+# These variables define the contents of the system-wide :command:`systemd`
+# configuration. Check the :man:`systemd-system.conf(5)` manual page for more
+# information about the configuration options, and
+# :ref:`systemd__ref_configuration` for details about the configuration of the
+# role itself.
+#
+# By default the system configuration is not applied on the hosts, you need to
+# set :envvar:`systemd__deploy_state` variable to ``present`` to deploy the
+# configuration.
+
+# .. envvar:: systemd__default_configuration [[[
+#
+# List of the default system-wide configuration options defined by the role.
+systemd__default_configuration:
+
+  - name: 'LogLevel'
+    value: 'info'
+    state: 'init'
+
+  - name: 'LogTarget'
+    value: 'journal-or-kmsg'
+    state: 'init'
+
+  - name: 'LogColor'
+    value: True
+    state: 'init'
+
+  - name: 'LogLocation'
+    value: False
+    state: 'init'
+
+  - name: 'LogTime'
+    value: False
+    state: 'init'
+
+  - name: 'DumpCore'
+    value: True
+    state: 'init'
+
+  - name: 'ShowStatus'
+    value: True
+    state: 'init'
+
+  - name: 'CrashChangeVT'
+    value: False
+    state: 'init'
+
+  - name: 'CrashShell'
+    value: False
+    state: 'init'
+
+  - name: 'CrashReboot'
+    value: False
+    state: 'init'
+
+  - name: 'CtrlAltDelBurstAction'
+    value: 'reboot-force'
+    state: 'init'
+
+  - name: 'CPUAffinity'
+    value: '1 2'
+    state: 'init'
+
+  - name: 'NUMAPolicy'
+    value: 'default'
+    state: 'init'
+
+  - name: 'NUMAMask'
+    value: ''
+    state: 'init'
+
+  - name: 'RuntimeWatchdogSec'
+    value: 0
+    state: 'init'
+
+  - name: 'RebootWatchdogSec'
+    value: '10min'
+    state: 'init'
+
+  - name: 'ShutdownWatchdogSec'
+    value: '10min'
+    state: 'init'
+
+  - name: 'KExecWatchdogSec'
+    value: 0
+    state: 'init'
+
+  - name: 'WatchdogDevice'
+    value: ''
+    state: 'init'
+
+  - name: 'CapabilityBoundingSet'
+    value: ''
+    state: 'init'
+
+  - name: 'NoNewPrivileges'
+    value: False
+    state: 'init'
+
+  - name: 'SystemCallArchitectures'
+    value: ''
+    state: 'init'
+
+  - name: 'TimerSlackNSec'
+    value: ''
+    state: 'init'
+
+  - name: 'StatusUnitFormat'
+    value: 'description'
+    state: 'init'
+
+  - name: 'DefaultTimerAccuracySec'
+    value: '1min'
+    state: 'init'
+
+  - name: 'DefaultStandardOutput'
+    value: 'journal'
+    state: 'init'
+
+  - name: 'DefaultStandardError'
+    value: 'inherit'
+    state: 'init'
+
+  - name: 'DefaultTimeoutStartSec'
+    value: '90s'
+    state: 'init'
+
+  - name: 'DefaultTimeoutStopSec'
+    value: '90s'
+    state: 'init'
+
+  - name: 'DefaultTimeoutAbortSec'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultRestartSec'
+    value: '100ms'
+    state: 'init'
+
+  - name: 'DefaultStartLimitIntervalSec'
+    value: '10s'
+    state: 'init'
+
+  - name: 'DefaultStartLimitBurst'
+    value: 5
+    state: 'init'
+
+  - name: 'DefaultEnvironment'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultCPUAccounting'
+    value: False
+    state: 'init'
+
+  - name: 'DefaultIOAccounting'
+    value: False
+    state: 'init'
+
+  - name: 'DefaultIPAccounting'
+    value: False
+    state: 'init'
+
+  - name: 'DefaultBlockIOAccounting'
+    value: False
+    state: 'init'
+
+  - name: 'DefaultMemoryAccounting'
+    value: True
+    state: 'init'
+
+  - name: 'DefaultTasksAccounting'
+    value: True
+    state: 'init'
+
+  - name: 'DefaultTasksMax'
+    value: '15%'
+    state: 'init'
+
+  - name: 'DefaultLimitCPU'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitFSIZE'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitDATA'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitSTACK'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitCORE'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitRSS'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitNOFILE'
+    value: '1024:524288'
+    state: 'init'
+
+  - name: 'DefaultLimitAS'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitNPROC'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitMEMLOCK'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitLOCKS'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitSIGPENDING'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitMSGQUEUE'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitNICE'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitRTPRIO'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitRTTIME'
+    value: ''
+    state: 'init'
+
+                                                                   # ]]]
+# .. envvar:: systemd__configuration [[[
+#
+# List of the system-wide configuration options which should be present on all
+# hosts in the Ansible inventory.
+systemd__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: systemd__group_configuration [[[
+#
+# List of the system-wide configuration options which should be present on
+# hosts in a specific Ansible inventory group.
+systemd__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: systemd__host_configuration [[[
+#
+# List of the system-wide configuration options which should be present on
+# specific hosts in the Ansible inventory.
+systemd__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: systemd__combined_configuration [[[
+#
+# Variable which combines all system-wide configuration lists and is used in
+# the role tasks and templates.
+systemd__combined_configuration: '{{ systemd__default_configuration
+                                     + systemd__configuration
+                                     + systemd__group_configuration
+                                     + systemd__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# The :command:`systemd` user instance global configuration [[[
+# -------------------------------------------------------------
+
+# These variables define configuration of all :command:`systemd --user`
+# instances system-wide. Check the :man:`systemd-user.conf(5)` manual page for
+# more information about the configuration options, and
+# :ref:`systemd__ref_configuration` for details about the configuration of the
+# role itself.
+#
+# By default the system configuration is not applied on the hosts, you need to
+# set :envvar:`systemd__deploy_state` variable to ``present`` to deploy the
+# configuration.
+
+# .. envvar:: systemd__user_default_configuration [[[
+#
+# List of the default system-wide configuration options for the user instances,
+# defined by the role.
+systemd__user_default_configuration:
+
+  - name: 'LogLevel'
+    value: 'info'
+    state: 'init'
+
+  - name: 'LogTarget'
+    value: 'console'
+    state: 'init'
+
+  - name: 'LogColor'
+    value: True
+    state: 'init'
+
+  - name: 'LogLocation'
+    value: False
+    state: 'init'
+
+  - name: 'LogTime'
+    value: False
+    state: 'init'
+
+  - name: 'SystemCallArchitectures'
+    value: ''
+    state: 'init'
+
+  - name: 'TimerSlackNSec'
+    value: ''
+    state: 'init'
+
+  - name: 'StatusUnitFormat'
+    value: 'description'
+    state: 'init'
+
+  - name: 'DefaultTimerAccuracySec'
+    value: '1min'
+    state: 'init'
+
+  - name: 'DefaultStandardOutput'
+    value: 'inherit'
+    state: 'init'
+
+  - name: 'DefaultStandardError'
+    value: 'inherit'
+    state: 'init'
+
+  - name: 'DefaultTimeoutStartSec'
+    value: '90s'
+    state: 'init'
+
+  - name: 'DefaultTimeoutStopSec'
+    value: '90s'
+    state: 'init'
+
+  - name: 'DefaultTimeoutAbortSec'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultRestartSec'
+    value: '100ms'
+    state: 'init'
+
+  - name: 'DefaultStartLimitIntervalSec'
+    value: '10s'
+    state: 'init'
+
+  - name: 'DefaultStartLimitBurst'
+    value: 5
+    state: 'init'
+
+  - name: 'DefaultEnvironment'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitCPU'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitFSIZE'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitDATA'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitSTACK'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitCORE'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitRSS'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitNOFILE'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitAS'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitNPROC'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitMEMLOCK'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitLOCKS'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitSIGPENDING'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitMSGQUEUE'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitNICE'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitRTPRIO'
+    value: ''
+    state: 'init'
+
+  - name: 'DefaultLimitRTTIME'
+    value: ''
+    state: 'init'
+
+                                                                   # ]]]
+# .. envvar:: systemd__user_configuration [[[
+#
+# List of the :command:`systemd --user` instances system-wide configuration
+# options which should be present on all hosts in the Ansible inventory.
+systemd__user_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: systemd__user_group_configuration [[[
+#
+# List of the :command:`systemd --user` instances system-wide configuration
+# options which should be present on hosts in a specific Ansible inventory
+# group.
+systemd__user_group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: systemd__user_host_configuration [[[
+#
+# List of the :command:`systemd --user` instances system-wide configuration
+# options which should be present on specific hosts in the Ansible inventory.
+systemd__user_host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: systemd__user_combined_configuration [[[
+#
+# Variable which combines all system-wide :command:`systemd --user` instance
+# configuration lists and is used in role tasks and templates.
+systemd__user_combined_configuration: '{{ systemd__user_default_configuration
+                                          + systemd__user_configuration
+                                          + systemd__user_group_configuration
+                                          + systemd__user_host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# The :command:`systemd-logind` configuration [[[
+# -----------------------------------------------
+
+# These variables define configuration of the :command:`systemd-logind`
+# service. Check the :man:`logind.conf(5)` manual page for more information
+# about the configuration options, and :ref:`systemd__ref_configuration` for
+# details about the configuration of the role itself.
+#
+# By default the system configuration is not applied on the hosts, you need to
+# set :envvar:`systemd__deploy_state` variable to ``present`` to deploy the
+# configuration.
+
+# .. envvar:: systemd__logind_default_configuration [[[
+#
+# List of the default configuration options for the :command:`systemd-logind`
+# service, defined by the role.
+systemd__logind_default_configuration:
+
+  - name: 'NAutoVTs'
+    value: 6
+    state: 'init'
+
+  - name: 'ReserveVT'
+    value: 6
+    state: 'init'
+
+  - name: 'KillUserProcesses'
+    value: False
+    state: 'init'
+
+  - name: 'KillOnlyUsers'
+    value: []
+    state: 'init'
+
+  - name: 'KillExcludeUsers'
+    value: [ 'root' ]
+    state: 'init'
+
+  - name: 'InhibitDelayMaxSec'
+    value: 5
+    state: 'init'
+
+  - name: 'UserStopDelaySec'
+    value: 10
+    state: 'init'
+
+  - name: 'HandlePowerKey'
+    value: 'poweroff'
+    state: 'init'
+
+  - name: 'HandleSuspendKey'
+    value: 'suspend'
+    state: 'init'
+
+  - name: 'HandleHibernateKey'
+    value: 'hibernate'
+    state: 'init'
+
+  - name: 'HandleLidSwitch'
+    value: 'suspend'
+    state: 'init'
+
+  - name: 'HandleLidSwitchExternalPower'
+    value: 'suspend'
+    state: 'init'
+
+  - name: 'HandleLidSwitchDocked'
+    value: 'ignore'
+    state: 'init'
+
+  - name: 'HandleRebootKey'
+    value: 'reboot'
+    state: 'init'
+
+  - name: 'PowerKeyIgnoreInhibited'
+    value: False
+    state: 'init'
+
+  - name: 'SuspendKeyIgnoreInhibited'
+    value: False
+    state: 'init'
+
+  - name: 'HibernateKeyIgnoreInhibited'
+    value: False
+    state: 'init'
+
+  - name: 'LidSwitchIgnoreInhibited'
+    value: True
+    state: 'init'
+
+  - name: 'RebootKeyIgnoreInhibited'
+    value: False
+    state: 'init'
+
+  - name: 'HoldoffTimeoutSec'
+    value: '30s'
+    state: 'init'
+
+  - name: 'IdleAction'
+    value: 'ignore'
+    state: 'init'
+
+  - name: 'IdleActionSec'
+    value: '30min'
+    state: 'init'
+
+  - name: 'RuntimeDirectorySize'
+    value: '10%'
+    state: 'init'
+
+  - name: 'RuntimeDirectoryInodes'
+    value: '400k'
+    state: 'init'
+
+  - name: 'RemoveIPC'
+    value: True
+    state: 'init'
+
+  - name: 'InhibitorsMax'
+    value: 8192
+    state: 'init'
+
+  - name: 'SessionsMax'
+    value: 8192
+    state: 'init'
+
+                                                                   # ]]]
+# .. envvar:: systemd__logind_configuration [[[
+#
+# List of the :command:`systemd-logind` service configuration options which
+# should be present on all hosts in the Ansible inventory.
+systemd__logind_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: systemd__logind_group_configuration [[[
+#
+# List of the :command:`systemd-logind` service configuration options which
+# should be present on hosts in a specific Ansible inventory group.
+systemd__logind_group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: systemd__logind_host_configuration [[[
+#
+# List of the :command:`systemd-logind` service configuration options which
+# should be present on specific hosts in the Ansible inventory.
+systemd__logind_host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: systemd__logind_combined_configuration [[[
+#
+# Variable which combines all :command:`systemd-logind` service configuration
+# lists and is used in role tasks and templates.
+systemd__logind_combined_configuration: '{{ systemd__logind_default_configuration
+                                            + systemd__logind_configuration
+                                            + systemd__logind_group_configuration
+                                            + systemd__logind_host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# The :command:`systemd` system instance units [[[
+# ------------------------------------------------
+
+# These variables can be used to manage system-wide :command:`systemd` units
+# located in the :file:`/etc/systemd/system/` directory. Check the
+# :man:`systemd.unit(5)` for more information about units themselves, and
+# :ref:`systemd__ref_units` for details about configuring units using this
+# role.
+
+# .. envvar:: systemd__units [[[
+#
+# List of :command:`systemd` units which should be present on all hosts in the
+# Ansible inventory.
+systemd__units: []
+
+                                                                   # ]]]
+# .. envvar:: systemd__group_units [[[
+#
+# List of :command:`systemd` units which should be present on hosts in
+# a specific Ansible inventory group.
+systemd__group_units: []
+
+                                                                   # ]]]
+# .. envvar:: systemd__host_units [[[
+#
+# List of :command:`systemd` units which should be present on specific hosts in
+# the Ansible inventory.
+systemd__host_units: []
+
+                                                                   # ]]]
+# .. envvar:: systemd__dependent_units [[[
+#
+# List of :command:`systemd` units which are defined by other Ansible roles
+# using dependent role variables.
+systemd__dependent_units: []
+
+                                                                   # ]]]
+# .. envvar:: systemd__combined_units [[[
+#
+# Variable which combines all of the :command:`systemd` unit lists and is used
+# in role tasks and templates.
+systemd__combined_units: '{{ systemd__dependent_units
+                             + systemd__units
+                             + systemd__group_units
+                             + systemd__host_units }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# The :command:`systemd --user` instance global units [[[
+# -------------------------------------------------------
+
+# These variables can be used to manage global units present in the
+# :command:`systemd --user` instances, located in the
+# :file:`/etc/systemd/user/` directory. Check the :man:`systemd.unit(5)` for
+# more information about units themselves, and :ref:`systemd__ref_units` for
+# details about configuring units using this role.
+
+# .. envvar:: systemd__user_units [[[
+#
+# List of :command:`systemd --user` global units which should be present on all
+# hosts in the Ansible inventory.
+systemd__user_units: []
+
+                                                                   # ]]]
+# .. envvar:: systemd__user_group_units [[[
+#
+# List of :command:`systemd --user` global units which should be present on
+# hosts in a specific Ansible inventory group.
+systemd__user_group_units: []
+
+                                                                   # ]]]
+# .. envvar:: systemd__user_host_units [[[
+#
+# List of :command:`systemd --user` global units which should be present on
+# specific hosts in the Ansible inventory.
+systemd__user_host_units: []
+
+                                                                   # ]]]
+# .. envvar:: systemd__user_dependent_units [[[
+#
+# List of :command:`systemd --user` global units which are defined by other
+# Ansible roles using dependent role variables.
+systemd__user_dependent_units: []
+
+                                                                   # ]]]
+# .. envvar:: systemd__user_combined_units [[[
+#
+# Variable which combines all of the :command:`systemd --user` global unit
+# lists and is used in role tasks and templates.
+systemd__user_combined_units: '{{ systemd__user_dependent_units
+                                  + systemd__user_units
+                                  + systemd__user_group_units
+                                  + systemd__user_host_units }}'
+                                                                   # ]]]
+                                                                   # ]]]

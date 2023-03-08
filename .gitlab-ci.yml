@@ -1628,6 +1628,15 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/netbox/.*'
     JANE_LOG_PATTERN: '\[netbox\]'
 
+'networkd role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_FACT: 'networkd.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/networkd.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_networkd'
+    JANE_DIFF_PATTERN: '.*/roles/networkd/.*'
+    JANE_LOG_PATTERN: '\[networkd\]'
+
 'neurodebian role':
   <<: *test_role_1st_deps
   needs:
@@ -2204,6 +2213,15 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/resolvconf/.*'
     JANE_LOG_PATTERN: '\[resolvconf\]'
 
+'resolved role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_FACT: 'resolved.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/resolved.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_resolved'
+    JANE_DIFF_PATTERN: '.*/roles/resolved/.*'
+    JANE_LOG_PATTERN: '\[resolved\]'
+
 'resources role':
   <<: *test_role_no_deps
   variables:
@@ -2574,6 +2592,15 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/system_users/.*'
     JANE_LOG_PATTERN: '\[system_users\]'
 
+'systemd role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_FACT: 'systemd.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/systemd.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_systemd'
+    JANE_DIFF_PATTERN: '.*/roles/systemd/.*'
+    JANE_LOG_PATTERN: '\[systemd\]'
+
 
 # --- t --- [[[2
 
@@ -2620,6 +2647,15 @@ stages:
     JANE_INVENTORY_GROUPS: 'debops_service_tgt'
     JANE_DIFF_PATTERN: '.*/roles/tgt/.*'
     JANE_LOG_PATTERN: '\[tgt\]'
+
+'timesyncd role':
+  <<: *test_role_no_deps
+  variables:
+    JANE_TEST_FACT: 'timesyncd.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/timesyncd.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_timesyncd'
+    JANE_DIFF_PATTERN: '.*/roles/timesyncd/.*'
+    JANE_LOG_PATTERN: '\[timesyncd\]'
 
 'tinc/gateway role':
   <<: *test_role_3rd_deps

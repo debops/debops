@@ -1,0 +1,14 @@
+---
+# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2023 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Restart systemd-resolved service
+  ansible.builtin.systemd:
+    name: 'systemd-resolved.service'
+    state: 'restarted'
+  listen:
+    - 'Restart DNS resolver'
+  when:
+    - ansible_service_mgr == 'systemd'
+    - (ansible_local.resolved.state | d('disabled')) == 'enabled'

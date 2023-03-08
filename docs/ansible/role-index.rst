@@ -161,6 +161,7 @@ It's always DNS.
 - :ref:`debops.netbase`
 - :ref:`debops.pdns`
 - :ref:`debops.resolvconf`
+- :ref:`debops.resolved`
 - :ref:`debops.unbound`
 
 
@@ -275,8 +276,10 @@ Networking
 - :ref:`debops.keepalived`
 - :ref:`debops.lldpd`
 - :ref:`debops.netbase`
+- :ref:`debops.networkd`
 - :ref:`debops.radvd`
 - :ref:`debops.resolvconf`
+- :ref:`debops.resolved`
 - :ref:`debops.stunnel`
 - :ref:`debops.tinc`
 - :ref:`debops.unbound`
@@ -357,6 +360,8 @@ System configuration
 - :ref:`debops.sysnews`
 - :ref:`debops.system_groups`
 - :ref:`debops.system_users`
+- :ref:`debops.systemd`
+- :ref:`debops.timesyncd`
 - :ref:`debops.tzdata`
 - :ref:`debops.users`
 - :ref:`debops.yadm`

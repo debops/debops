@@ -1,0 +1,100 @@
+---
+# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2023 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import DebOps global handlers
+  ansible.builtin.import_role:
+    name: 'global_handlers'
+
+- name: Ensure that systemd-networkd service is enabled
+  ansible.builtin.systemd:
+    name: 'systemd-networkd.service'
+    enabled: True
+  when: networkd__enabled | bool
+
+- name: Make sure that Ansible local facts directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save networkd local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/networkd.fact.j2'
+    dest: '/etc/ansible/facts.d/networkd.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: Update Ansible facts if they were modified
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Remove systemd-networkd configuuration if requested
+  ansible.builtin.file:
+    path: '/etc/systemd/networkd.conf.d/ansible.conf'
+    state: 'absent'
+  notify: [ 'Restart systemd-networkd service' ]
+  when: networkd__enabled | bool and networkd__deploy_state == 'absent'
+
+- name: Create systemd-networkd configuration directory
+  ansible.builtin.file:
+    path: '/etc/systemd/networkd.conf.d'
+    state: 'directory'
+    mode: '0755'
+  when: networkd__enabled | bool and networkd__deploy_state != 'absent'
+
+- name: Generate systemd-networkd configuration
+  ansible.builtin.template:
+    src: 'etc/systemd/networkd.conf.d/ansible.conf.j2'
+    dest: '/etc/systemd/networkd.conf.d/ansible.conf'
+    mode: '0644'
+  notify: [ 'Restart systemd-networkd service' ]
+  when: networkd__enabled | bool and networkd__deploy_state != 'absent'
+
+- name: Remove network units if requested
+  ansible.builtin.file:
+    path: '{{ "/etc/systemd/network/" + item.name }}'
+    state: 'absent'
+  loop: '{{ networkd__combined_units | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  notify: [ 'Restart systemd-networkd service' ]
+  when: networkd__enabled | bool and item.state | d("present") == 'absent'
+
+- name: Remove network unit overrides if requested
+  ansible.builtin.file:
+    path: '{{ "/etc/systemd/network/" + item.name + ".d" }}'
+    state: 'absent'
+  loop: '{{ networkd__combined_units | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  notify: [ 'Restart systemd-networkd service' ]
+  when: networkd__enabled | bool and item.state | d("present") == 'absent'
+
+- name: Create directories for network units
+  ansible.builtin.file:
+    path: '{{ "/etc/systemd/network/" + (item.name | dirname) }}'
+    state: 'directory'
+    mode: '0755'
+  loop: '{{ networkd__combined_units | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  when: networkd__enabled | bool and item.raw | d() and
+        item.state | d("present") not in ['absent', 'ignore', 'init'] and
+        (item.name | dirname).endswith('.d')
+
+- name: Generate network units
+  ansible.builtin.template:
+    src: 'etc/systemd/network/template.j2'
+    dest: '{{ "/etc/systemd/network/" + item.name }}'
+    mode: '0644'
+  loop: '{{ networkd__combined_units | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  notify: [ 'Restart systemd-networkd service' ]
+  when: networkd__enabled | bool and item.raw | d() and
+        item.state | d("present") not in ['absent', 'ignore', 'init']
+
+- name: Flush handlers when needed
+  ansible.builtin.meta: 'flush_handlers'
