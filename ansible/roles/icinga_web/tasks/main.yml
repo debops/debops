@@ -148,19 +148,6 @@
   when: icinga_web__database_type == 'postgresql' and
         icinga_web__database_init | bool
 
-  # Without this, Icinga Web cannot access the database, with error:
-  # permission denied for relation icingaweb_user
-- name: Ensure that PostgreSQL database tables are accessible
-  community.general.postgresql_privs:
-    db: '{{ icinga_web__database_name }}'
-    role: '{{ icinga_web__database_user }}'
-    objs: 'ALL_IN_SCHEMA'
-    privs: 'SELECT,INSERT,UPDATE,DELETE'
-  delegate_to: '{{ icinga_web__database_delegate_to }}'
-  when: icinga_web__database_type == 'postgresql' and
-        icinga_web__database_host == 'localhost' and
-        icinga_web__database_init | bool
-
 - name: Import Icinga Web database on installation into MariaDB
   community.mysql.mysql_db:
     name: '{{ icinga_web__database_name }}'

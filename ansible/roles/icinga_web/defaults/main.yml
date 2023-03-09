@@ -1672,6 +1672,19 @@ icinga_web__postgresql__dependent_groups:
     state: '{{ "present" if icinga_web__director_enabled | bool else "ignore" }}'
 
                                                                    # ]]]
+# .. envvar:: icinga_web__postgresql__dependent_privileges [[[
+#
+# Configuration of PostgreSQL privileges for the :ref:`debops.postgresql`
+# Ansible role.
+icinga_web__postgresql__dependent_privileges:
+
+  - roles:  [ '{{ icinga_web__database_user }}' ]
+    database: '{{ icinga_web__database_name }}'
+    objs:   [ 'ALL_DEFAULT' ]
+    privs:  [ 'SELECT', 'INSERT', 'UPDATE', 'DELETE' ]
+    type:     'default_privs'
+
+                                                                   # ]]]
 # .. envvar:: icinga_web__postgresql__dependent_extensions [[[
 #
 # Configuration of PostgreSQL extensions for the :ref:`debops.postgresql` Ansible

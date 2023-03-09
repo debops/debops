@@ -286,6 +286,79 @@ Create database owned by a specified role and grant select privilege on all tabl
        public_privs: [ 'SELECT' ]
        grant_option: 'no'
 
+.. _postgresql__ref_privileges:
+
+postgresql__privileges
+----------------------
+
+List of additional privileges to grant or revoke on a PostgreSQL server. The
+parameters closely match those of the `PostgreSQL Ansible module`__. Known
+parameters:
+
+.. __: https://docs.ansible.com/ansible/latest/collections/community/postgresql/postgresql_privs_module.html
+
+``database``
+  Required. Database name.
+
+``roles``
+  Required. List of role (user/group) names to set permissions for.
+
+``port``
+  Optional. TCP port to use when connecting to the PostgreSQL server.
+
+``objs``
+  Optional. List of database objects to set privileges on. Default: public.
+
+``privs``
+  Optional. Comma separated list of privileges to grant. Default: ALL.
+
+``state``
+  Optional. If ``present``, the specified privileges are granted, if ``absent``
+  they are revoked. Default: ``present``.
+
+``type``
+  Optional. Type of database object to set privileges on. Default: table.
+
+``schema``
+  Optional. Schema that contains the database objects specified via ``objs``.
+
+``target_roles``
+  Optional. A list of existing role (user/group) names for which to set the
+  default permissions for database objects subsequently created by them. Only
+  relevant when ``type=default_privs``.
+
+``grant_option``
+  Optional. Whether role (``owner``) may grant/revoke the specified privileges
+  to others.
+
+Examples
+~~~~~~~~
+
+Give the role ``reader`` default rights to any default objects created in the
+database ``library`` (e.g. tables created by another user).
+
+.. code-block:: yaml
+
+   postgresql__privileges:
+     - roles: [ 'reader' ]
+       database: 'library'
+       objs: [ 'ALL_DEFAULT' ]
+       privs: [ 'SELECT', 'INSERT', 'UPDATE', 'DELETE' ]
+       type: 'default_privs'
+
+Give ``SELECT`` privileges to the role ``reader`` for any tables created by
+``librarian`` in database ``library``.
+
+.. code-block:: yaml
+
+   postgresql__privileges:
+     - roles: [ 'reader' ]
+       database: 'library'
+       objs: [ 'TABLES' ]
+       privs: [ 'SELECT' ]
+       target_roles: [ 'librarian' ]
+       type: 'default_privs'
+
 .. _postgresql__ref_extensions:
 
 postgresql__extensions
