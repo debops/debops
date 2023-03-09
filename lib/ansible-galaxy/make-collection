@@ -441,8 +441,17 @@ tags:
   - "cluster"
   - "datacenter"
 
+EOF
+
+        if [ "${collection_flavor}" == "single" ] ; then
+            cat <<EOF >> "${workdir_map[${collection}]}/galaxy.yml"
+dependencies: {}
+EOF
+        else
+            cat <<EOF >> "${workdir_map[${collection}]}/galaxy.yml"
 dependencies:
 EOF
+        fi
         for collection_dep in "${collections[@]}" ; do
             if [[ -v "collection_name_map[${collection_dep}]" ]] && [ "${collection_dep}" != "${collections[0]}" ] ; then
                 cat <<EOF >> "${workdir_map[${collection}]}/galaxy.yml"
