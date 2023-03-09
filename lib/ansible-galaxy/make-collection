@@ -10,6 +10,11 @@
 
 set -o nounset -o pipefail -o errexit
 
+# Specify how the roles should be distributed:
+#   'multi' - roles split in multiple collections
+#   'single' - all roles in a single collection
+collection_flavor="${1:-single}"
+
 repository_root="$(git rev-parse --show-toplevel)"
 current_branch="${CURRENT_BRANCH:-$(git name-rev --name-only HEAD)}"
 debops_version="${DEBOPS_VERSION:-$(git describe | tr -d 'v')}"
@@ -20,16 +25,22 @@ declare -A collection_name_map
 declare -A collection_floor_map
 declare -A workdir_map
 
-collections=( debops roles01 roles02 roles03 )
+if [ "${collection_flavor}" == "multi" ] ; then
+    collections=( debops roles01 roles02 roles03 )
+else
+    collections=( debops )
+fi
 
 for i in "${!collections[@]}" ; do
     collection_name_map[${collections[${i}]}]="${i}"
 done
 
 collection_floor_map[${collections[0]}]=100000
-collection_floor_map[${collections[1]}]=600
-collection_floor_map[${collections[2]}]=300
-collection_floor_map[${collections[3]}]=10
+if [ "${collection_flavor}" == "multi" ] ; then
+    collection_floor_map[${collections[1]}]=600
+    collection_floor_map[${collections[2]}]=300
+    collection_floor_map[${collections[3]}]=10
+fi
 
 # Check if we are in the correct directory
 if ! [ -f lib/ansible-galaxy/make-collection ] ; then
@@ -79,7 +90,11 @@ done
 for role in "${!debops_role_map[@]}" ; do
     number_of_facts="$(git grep -l -e "ansible_local\\.${role}\\." ansible/roles | wc -l)" || true
     if [ "${number_of_facts}" -gt 0 ] ; then
-        debops_role_map["${role}"]=$(( collection_floor_map[${collections[2]}] + debops_role_map["${role}"] + (number_of_facts * 80) ))
+        if [ "${collection_flavor}" == "multi" ] ; then
+            debops_role_map["${role}"]=$(( collection_floor_map[${collections[2]}] + debops_role_map["${role}"] + (number_of_facts * 80) ))
+        else
+            debops_role_map["${role}"]=$(( collection_floor_map[${collections[0]}] + debops_role_map["${role}"] + (number_of_facts * 80) ))
+        fi
     fi
 done
 
@@ -189,20 +204,31 @@ printf '\n'
 
 # Generate list of roles separated by collection
 roles_not_included=""
-for role in "${!debops_role_map[@]}" ; do
-    weight="${debops_role_map[${role}]}"
-    if [ "${weight}" -ge "${collection_floor_map[${collections[0]}]}" ] ; then
-        role_collection_map[${collections[0]}]+=" ${role}"
-    elif [ "${weight}" -lt "${collection_floor_map[${collections[0]}]}" ] && [ "${weight}" -ge "${collection_floor_map[${collections[1]}]}" ] ; then
-        role_collection_map[${collections[1]}]+=" ${role}"
-    elif [ "${weight}" -lt "${collection_floor_map[${collections[1]}]}" ] && [ "${weight}" -ge "${collection_floor_map[${collections[2]}]}" ] ; then
-        role_collection_map[${collections[2]}]+=" ${role}"
-    elif [ "${weight}" -lt "${collection_floor_map[${collections[2]}]}" ] && [ "${weight}" -ge "${collection_floor_map[${collections[-1]}]}" ] ; then
-        role_collection_map[${collections[-1]}]+=" ${role}"
-    else
-        roles_not_included+=" ${role}"
-    fi
-done
+if [ "${collection_flavor}" == "multi" ] ; then
+    for role in "${!debops_role_map[@]}" ; do
+        weight="${debops_role_map[${role}]}"
+        if [ "${weight}" -ge "${collection_floor_map[${collections[0]}]}" ] ; then
+            role_collection_map[${collections[0]}]+=" ${role}"
+        elif [ "${weight}" -lt "${collection_floor_map[${collections[0]}]}" ] && [ "${weight}" -ge "${collection_floor_map[${collections[1]}]}" ] ; then
+            role_collection_map[${collections[1]}]+=" ${role}"
+        elif [ "${weight}" -lt "${collection_floor_map[${collections[1]}]}" ] && [ "${weight}" -ge "${collection_floor_map[${collections[2]}]}" ] ; then
+            role_collection_map[${collections[2]}]+=" ${role}"
+        elif [ "${weight}" -lt "${collection_floor_map[${collections[2]}]}" ] && [ "${weight}" -ge "${collection_floor_map[${collections[-1]}]}" ] ; then
+            role_collection_map[${collections[-1]}]+=" ${role}"
+        else
+            roles_not_included+=" ${role}"
+        fi
+    done
+else
+    for role in "${!debops_role_map[@]}" ; do
+        weight="${debops_role_map[${role}]}"
+        if [ "${weight}" -ge "${collection_floor_map[${collections[0]}]}" ] ; then
+            role_collection_map[${collections[0]}]+=" ${role}"
+        else
+            roles_not_included+=" ${role}"
+        fi
+    done
+fi
 
 for collection in "${collections[@]}" ; do
     if [[ -v "role_collection_map[${collection}]" ]] ; then
@@ -252,10 +278,13 @@ mkdir -p "${workdir_map[${collections[0]}]}/playbooks" \
          "${workdir_map[${collections[0]}]}/plugins/connection" \
          "${workdir_map[${collections[0]}]}/plugins/filter" \
          "${workdir_map[${collections[0]}]}/plugins/lookup" \
-         "${workdir_map[${collections[0]}]}/plugins/modules" \
-         "${workdir_map[${collections[1]}]}/roles" \
-         "${workdir_map[${collections[2]}]}/roles" \
-         "${workdir_map[${collections[3]}]}/roles"
+         "${workdir_map[${collections[0]}]}/plugins/modules"
+
+if [ "${collection_flavor}" == "multi" ] ; then
+    mkdir -p "${workdir_map[${collections[1]}]}/roles" \
+             "${workdir_map[${collections[2]}]}/roles" \
+             "${workdir_map[${collections[3]}]}/roles"
+fi
 
 # Copy DebOps roles to the Ansible Collection build directory.
 # Omit specific DebOps roles from Ansible Collections.
