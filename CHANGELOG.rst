@@ -252,6 +252,11 @@ General
   presence of the ``resolvconf`` APT package and does not modify the host
   configuration in such case.
 
+- Multiple DebOps Collections on Ansible Galaxy have been merged into a single
+  ``debops.debops`` Collection to prepare the project to switch role references
+  to FQCNs. This is also a test to see if Ansible Galaxy allows >2 MB
+  collection tarballs.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 
