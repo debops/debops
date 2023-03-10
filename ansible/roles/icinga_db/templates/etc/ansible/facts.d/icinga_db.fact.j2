@@ -12,56 +12,24 @@ from json import loads, dumps
 from sys import exit
 import os
 
-try:
-    from configparser import ConfigParser
-except ImportError:
-    from ConfigParser import ConfigParser
-
-# Python 2 compatibility
-try:
-    from StringIO import StringIO
-except ImportError:
-    pass
-
-
-def get_config(config_file):
-    config_data = []
-    if os.path.isfile(config_file):
-        with open(config_file, 'r') as f:
-            config_string = '[global]\n' + f.read()
-            config = ConfigParser()
-            try:
-                config.read_string(config_string.decode('utf-8'))
-            except AttributeError:
-                try:
-                    config.read_string(config_string)
-                except AttributeError:
-                    # Python 2 compatibility
-                    sbuffer = StringIO(config_string)
-                    config.readfp(sbuffer)
-
-            for section in config.sections():
-
-                section_options = {}
-                for name, value in config.items(section):
-                    section_options[name] = value.strip("'")
-
-    return section_options
-
 
 output = loads('''{{ {"configured": False,
-                      "type": icinga_db__type}
+                      "type": icinga_db__type,
+                      "ido": icinga_db__database_map[icinga_db__type].ido,
+                      "db_name": icinga_db__database,
+                      "db_host": icinga_db__host,
+                      "db_port": icinga_db__port,
+                      "db_ssl": icinga_db__ssl,
+                      "db_user": icinga_db__user,
+                      "db_password": icinga_db__password}
                      | to_nice_json }}''')
 
 db_config_files = [
-    '/etc/dbconfig-common/icinga2-ido-pgsql.conf',
-    '/etc/dbconfig-common/icinga2-ido-mysql.conf'
+    '/etc/icinga2/features-available/ido-{{ icinga_db__database_map[icinga_db__type].ido }}.conf'
 ]
 
 for config_file in db_config_files:
     if os.path.exists(config_file) and os.path.isfile(config_file):
         output['configured'] = True
-        if os.access(config_file, os.R_OK):
-            output.update(get_config(config_file))
 
 print(dumps(output, sort_keys=True, indent=4))

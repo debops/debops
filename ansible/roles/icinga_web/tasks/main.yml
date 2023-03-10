@@ -1,6 +1,8 @@
 ---
 # Copyright (C) 2018 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2018 DebOps <https://debops.org/>
+# Copyright (C) 2020 Gabriel Lewertowski <gabriel.lewertowski@trust-in-soft.com>
+# Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2018-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
@@ -15,11 +17,21 @@
   ansible.builtin.import_role:
     name: 'secret'
 
+- name: Assert that the DB types are valid
+  ansible.builtin.assert:
+    that:
+      - 'icinga_web__database_map[icinga_web__database_type].db_name is defined'
+      - 'icinga_web__director_enabled | d(False) | bool == False or
+         icinga_web__director_database_map[icinga_web__director_database_type].db_name is defined'
+      - 'icinga_web__x509_enabled | d(False) | bool == False or
+         icinga_web__x509_database_map[icinga_web__x509_database_type].db_name is defined'
+  become: False
+  run_once: True
+  delegate_to: 'localhost'
+
 - name: Install required Icinga Web packages
   ansible.builtin.package:
-    name: '{{ lookup("flattened",
-                     (icinga_web__base_packages + icinga_web__packages),
-                     wantlist=True) }}'
+    name: '{{ q("flattened", icinga_web__base_packages + icinga_web__packages) }}'
     state: 'present'
   register: icinga_web__register_packages
   until: icinga_web__register_packages is succeeded
@@ -38,16 +50,11 @@
     group: '{{ icinga_web__group }}'
     mode: '{{ item.mode | d("02770") }}'
   with_items:
-
     - name: 'enabledModules'
       mode: '02750'
-
     - name: 'modules/monitoring'
-
     - name: 'modules/director'
-
     - name: 'modules/x509'
-
   when: item.state | d('present') not in ['absent', 'ignore', 'init']
 
 - name: Download and install Icinga upstream modules
@@ -90,38 +97,27 @@
     mode: '0660'
   no_log: '{{ debops__no_log | d(item.no_log) | d(False) }}'
   with_items:
-
     - filename: 'authentication.ini'
       config: '{{ icinga_web__combined_authentication }}'
-
     - filename: 'config.ini'
       config: '{{ icinga_web__combined_config }}'
-
     - filename: 'groups.ini'
       config: '{{ icinga_web__combined_groups }}'
-
     - filename: 'resources.ini'
       config: '{{ icinga_web__combined_resources }}'
       no_log: '{{ debops__no_log | d(True) }}'
-
     - filename: 'roles.ini'
       config: '{{ icinga_web__combined_roles }}'
-
     - filename: 'modules/monitoring/backends.ini'
       config: '{{ icinga_web__combined_backends }}'
-
     - filename: 'modules/monitoring/commandtransports.ini'
       config: '{{ icinga_web__combined_commandtransports }}'
-
     - filename: 'modules/director/config.ini'
       config: '{{ icinga_web__combined_director_cfg }}'
-
     - filename: 'modules/director/kickstart.ini'
       config: '{{ icinga_web__combined_director_kickstart_cfg }}'
-
     - filename: 'modules/x509/config.ini'
       config: '{{ icinga_web__combined_x509_cfg }}'
-
   when: item.state | d('present') not in ['absent', 'ignore', 'init']
 
 - name: Generate initial data file
@@ -134,36 +130,53 @@
   when: icinga_web__database_init | bool
   no_log: '{{ debops__no_log | d(True) }}'
 
-- name: Import Icinga Web database on installation into PostgreSQL
+- name: Create Icinga Web PostgreSQL tables
   community.general.postgresql_db:
     name: '{{ icinga_web__database_name }}'
     state: 'restore'
+    target: '{{ item }}'
     login_host: '{{ icinga_web__database_host }}'
     login_user: '{{ icinga_web__database_user }}'
     login_password: '{{ icinga_web__database_password }}'
-    target: '{{ item }}'
+    ssl_mode: '{{ "verify-full" if icinga_web__database_ssl | d(False) | bool else "disable" }}'
   with_items:
     - '{{ icinga_web__database_schema }}'
     - '/tmp/icingaweb-initial-data.sql'
+  no_log: '{{ debops__no_log | d(True) }}'
   when: icinga_web__database_type == 'postgresql' and
         icinga_web__database_init | bool
 
-- name: Import Icinga Web database on installation into MariaDB
+- name: Create Icinga Web x509 PostgreSQL tables
+  community.general.postgresql_db:
+    name: '{{ icinga_web__x509_database_name }}'
+    state: 'restore'
+    target: '{{ icinga_web__x509_database_schema }}'
+    login_host: '{{ icinga_web__x509_database_host }}'
+    login_user: '{{ icinga_web__x509_database_user }}'
+    login_password: '{{ icinga_web__x509_database_password }}'
+    ssl_mode: '{{ "verify-full" if icinga_web__x509_database_ssl | d(False) | bool else "disable" }}'
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: icinga_web__x509_enabled | bool and
+        icinga_web__x509_database_type == 'postgresql' and
+        icinga_web__x509_database_init | bool
+
+- name: Create Icinga Web MariaDB tables
   community.mysql.mysql_db:
     name: '{{ icinga_web__database_name }}'
     state: 'import'
+    target: '{{ item }}'
     login_host: '{{ icinga_web__database_host }}'
     login_user: '{{ icinga_web__database_user }}'
     login_password: '{{ icinga_web__database_password }}'
-    target: '{{ item }}'
-    login_unix_socket: '/run/mysqld/mysqld.sock'
+    check_hostname: '{{ icinga_web__database_ssl | d(False) | bool }}'
   with_items:
     - '{{ icinga_web__database_schema }}'
     - '/tmp/icingaweb-initial-data.sql'
+  no_log: '{{ debops__no_log | d(True) }}'
   when: icinga_web__database_type == 'mariadb' and
         icinga_web__database_init | bool
 
-- name: Import Icinga Web x509 database on installation into MariaDB
+- name: Create Icinga Web x509 MariaDB tables
   community.mysql.mysql_db:
     name: '{{ icinga_web__x509_database_name }}'
     state: 'import'
@@ -172,10 +185,11 @@
     login_port: '{{ icinga_web__x509_database_port }}'
     login_user: '{{ icinga_web__x509_database_user }}'
     login_password: '{{ icinga_web__x509_database_password }}'
-    login_unix_socket: '/run/mysqld/mysqld.sock'
-  when: icinga_web__x509_enabled | bool and
-        icinga_web__x509_database_init | bool
+    check_hostname: '{{ icinga_web__x509_database_ssl | d(False) | bool }}'
   no_log: '{{ debops__no_log | d(True) }}'
+  when: icinga_web__x509_enabled | bool and
+        icinga_web__x509_database_type == 'mariadb' and
+        icinga_web__x509_database_init | bool
 
 - name: Ensure that initial data schema is removed
   ansible.builtin.file:
