@@ -166,8 +166,8 @@ Updates of upstream application versions
   default has been updated to ``1.6.0``.
 
 - In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
-  has been updated to the next point release, 10.12. Debian Bullseye has been
-  updated to the next point release as well, 11.4.
+  has been updated to the next point release, 10.13. Debian Bullseye has been
+  updated to the next point release as well, 11.7.
 
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
   ``v3.4.2``.
