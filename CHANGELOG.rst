@@ -23,6 +23,17 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.0: https://github.com/debops/debops/compare/v3.0.0...stable-3.0
 
+Added
+~~~~~
+
+:ref:`debops.preseed` role
+''''''''''''''''''''''''''
+
+- Debian Installer will make sure that the ``cdrom:`` APT sources are disabled
+  in :file:`/etc/apt/sources.list` configuration file. This might happen when
+  preseeding is used in image building scenarios, for example with Hashicorp
+  Packer.
+
 Changed
 ~~~~~~~
 
