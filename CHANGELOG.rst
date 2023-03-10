@@ -583,6 +583,14 @@ debops.boxbackup role
   prohibited by :rfc:`5321` section 4.1.4, and sometimes caused deliverability
   issues for Office 365 users.
 
+:ref:`debops.preseed` role
+''''''''''''''''''''''''''
+
+- Fixed an issue with the ``d-i`` keyboard preseed that resulted in the
+  ``keyboard-configuration`` APT package not being installed and configured
+  correctly. The default keymap is changed to ``us`` and the option is no
+  longer based on the system language which might be incorrect in this case.
+
 :ref:`debops.proc_hidepid` role
 '''''''''''''''''''''''''''''''
 
