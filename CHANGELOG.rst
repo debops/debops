@@ -33,6 +33,14 @@ Updates of upstream application versions
   has been updated to the next point release, 10.13. Debian Bullseye has been
   updated to the next point release as well, 11.7.
 
+:ref:`debops.preseed` role
+''''''''''''''''''''''''''
+
+- The default guided partition recipe used by the Debian Installer is changed
+  from ``atomic`` to ``multi``. This should allow for easier changes in the
+  parition layout via LVM due to separate partitions for :file:`/home` and
+  :file:`/var` mount points.
+
 Fixed
 ~~~~~
 
