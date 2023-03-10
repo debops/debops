@@ -12,7 +12,7 @@
     name: '{{ item.name if item.name | d() else item }}'
     system: '{{ item.system | bool if item.system is defined else gitlab_runner__system | bool }}'
     state: 'present'
-  loop: '{{ q("flattened", gitlab_runner__group
+  loop: '{{ q("flattened", [gitlab_runner__group]
                            + gitlab_runner__additional_groups) }}'
 
 - name: Create gitlab-runner user
