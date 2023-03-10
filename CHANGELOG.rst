@@ -352,6 +352,14 @@ General
   use with third-party authenticator plugins that might not support the
   :command:`certbot --<plugin>` syntax.
 
+:ref:`debops.preseed` role
+''''''''''''''''''''''''''
+
+- The default guided partition recipe used by the Debian Installer is changed
+  from ``atomic`` to ``multi``. This should allow for easier changes in the
+  parition layout via LVM due to separate partitions for :file:`/home` and
+  :file:`/var` mount points.
+
 :ref:`debops.python` role
 '''''''''''''''''''''''''
 
