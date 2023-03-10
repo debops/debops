@@ -33,6 +33,17 @@ Updates of upstream application versions
   has been updated to the next point release, 10.13. Debian Bullseye has been
   updated to the next point release as well, 11.7.
 
+Fixed
+~~~~~
+
+:ref:`debops.preseed` role
+''''''''''''''''''''''''''
+
+- Fixed an issue with the ``d-i`` keyboard preseed that resulted in the
+  ``keyboard-configuration`` APT package not being installed and configured
+  correctly. The default keymap is changed to ``us`` and the option is no
+  longer based on the system language which might be incorrect in this case.
+
 
 `debops v3.0.4`_ - 2023-03-09
 -----------------------------
