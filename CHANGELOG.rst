@@ -23,6 +23,16 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.0: https://github.com/debops/debops/compare/v3.0.0...stable-3.0
 
+Changed
+~~~~~~~
+
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
+  has been updated to the next point release, 10.13. Debian Bullseye has been
+  updated to the next point release as well, 11.7.
+
 
 `debops v3.0.4`_ - 2023-03-09
 -----------------------------
