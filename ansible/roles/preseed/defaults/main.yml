@@ -311,7 +311,7 @@ preseed__original_configuration:
   - name: 'keyboard-configuration/xkb-keymap'
     comment: 'Keyboard selection.'
     type: 'select'
-    value: 'en'
+    value: 'us'
 
   - name: 'keyboard-configuration/toggle'
     type: 'select'
@@ -665,7 +665,7 @@ preseed__original_configuration:
       - home:   separate /home partition
       - multi:  separate /home, /var, and /tmp partitions
     type: 'select'
-    value: 'atomic'
+    value: 'multi'
 
   - name: 'partman-auto/expert_recipe_file'
     comment: |
@@ -1134,9 +1134,6 @@ preseed__default_configuration:
   - name: 'debian-installer/locale'
     value: '{{ ansible_local.locales.system_locale | d("en_US.UTF-8") }}'
 
-  - name: 'keyboard-configuration/xkb-keymap'
-    value: '{{ ansible_local.locales.system_language | d("en") }}'
-
   - name: 'mirror/http/hostname'
     value: 'deb.debian.org'
 
@@ -1186,6 +1183,10 @@ preseed__default_configuration:
   - name: 'apt-setup/cdrom/set-failed'
     copy_id_from: 'apt-setup/multiarch'
     value: False
+
+  - name: 'apt-setup/disable-cdrom-entries'
+    copy_id_from: 'apt-setup/multiarch'
+    value: True
 
   - name: 'tasksel/first'
     value: 'ssh-server'

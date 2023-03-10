@@ -166,8 +166,8 @@ Updates of upstream application versions
   default has been updated to ``1.6.0``.
 
 - In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
-  has been updated to the next point release, 10.12. Debian Bullseye has been
-  updated to the next point release as well, 11.4.
+  has been updated to the next point release, 10.13. Debian Bullseye has been
+  updated to the next point release as well, 11.7.
 
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
   ``v3.4.2``.
@@ -351,6 +351,14 @@ General
   the :command:`certbot --authenticator <plugin>` option explicitly to allow
   use with third-party authenticator plugins that might not support the
   :command:`certbot --<plugin>` syntax.
+
+:ref:`debops.preseed` role
+''''''''''''''''''''''''''
+
+- The default guided partition recipe used by the Debian Installer is changed
+  from ``atomic`` to ``multi``. This should allow for easier changes in the
+  parition layout via LVM due to separate partitions for :file:`/home` and
+  :file:`/var` mount points.
 
 :ref:`debops.python` role
 '''''''''''''''''''''''''
@@ -582,6 +590,14 @@ debops.boxbackup role
   routable IP address. However, rejecting messages for this reason is
   prohibited by :rfc:`5321` section 4.1.4, and sometimes caused deliverability
   issues for Office 365 users.
+
+:ref:`debops.preseed` role
+''''''''''''''''''''''''''
+
+- Fixed an issue with the ``d-i`` keyboard preseed that resulted in the
+  ``keyboard-configuration`` APT package not being installed and configured
+  correctly. The default keymap is changed to ``us`` and the option is no
+  longer based on the system language which might be incorrect in this case.
 
 :ref:`debops.proc_hidepid` role
 '''''''''''''''''''''''''''''''
