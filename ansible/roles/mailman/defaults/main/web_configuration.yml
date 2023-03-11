@@ -385,7 +385,8 @@ mailman__web_default_configuration:
                 + ((ansible_all_ipv4_addresses | map("regex_replace", "^", "::ffff:") | list)
                    if ansible_all_ipv4_addresses | d([]) else [])
                 + (ansible_all_ipv6_addresses | d([])
-                   | difference(ansible_all_ipv6_addresses | d([]) | ipaddr("link-local"))))
+                   | difference(ansible_all_ipv6_addresses | d([])
+                   | ansible.utils.ipaddr("link-local"))))
                | sort | unique }}'
 
                                                                    # ]]]

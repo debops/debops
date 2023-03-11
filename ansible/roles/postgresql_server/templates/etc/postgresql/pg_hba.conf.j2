@@ -49,14 +49,14 @@
 {%             set element_tpl_address4 = hostvars[host].ansible_all_ipv4_addresses | d([]) %}
 {%             if element_tpl_address4 %}
 {%               for part in element_tpl_address4 %}
-{%                 set _ = element_tpl_address.append(part | ipaddr('cidr')) %}
+{%                 set _ = element_tpl_address.append(part | ansible.utils.ipaddr('cidr')) %}
 {%               endfor %}
 {%             endif %}
 {%             if hostvars[host].ansible_all_ipv6_addresses | d() %}
-{%               set element_tpl_address6 = (hostvars[host].ansible_all_ipv6_addresses | difference(hostvars[host].ansible_all_ipv6_addresses | ipaddr('link-local'))) %}
+{%               set element_tpl_address6 = (hostvars[host].ansible_all_ipv6_addresses | difference(hostvars[host].ansible_all_ipv6_addresses | ansible.utils.ipaddr('link-local'))) %}
 {%               if element_tpl_address6 %}
 {%                 for part in element_tpl_address6 %}
-{%                   set _ = element_tpl_address.append(part | ipaddr('cidr')) %}
+{%                   set _ = element_tpl_address.append(part | ansible.utils.ipaddr('cidr')) %}
 {%                 endfor %}
 {%               endif %}
 {%             endif %}

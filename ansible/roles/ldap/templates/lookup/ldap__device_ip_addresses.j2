@@ -17,7 +17,7 @@
 {%   if hostvars[inventory_hostname][iface].ipv6 | d() %}
 {%     for element in hostvars[inventory_hostname][iface].ipv6 %}
 {%       set address = element.address + '/' + element.prefix %}
-{%       if not address | ipv6('link-local') %}
+{%       if not address | ansible.utils.ipv6('link-local') %}
 {%         set _ = ldap__tpl_device_ip_addresses.append(element.address) %}
 {%       endif %}
 {%     endfor %}
@@ -39,7 +39,7 @@
 {%       if hostvars[inventory_hostname][iface].ipv6 | d() %}
 {%         for element in hostvars[inventory_hostname][iface].ipv6 %}
 {%           set address = element.address + '/' + element.prefix %}
-{%           if not address | ipv6('link-local') %}
+{%           if not address | ansible.utils.ipv6('link-local') %}
 {%             set _ = ldap__tpl_device_ip_addresses.append(element.address) %}
 {%           endif %}
 {%         endfor %}

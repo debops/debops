@@ -30,11 +30,11 @@
 {%       set _ = dhcp_host.append('set:' + entry.tag) %}
 {%     endif %}
 {%     if entry.ip | d() and (entry.host is undefined and entry.a is undefined and entry.aaaa is undefined) %}
-{%       set _ = dhcp_host.extend( ([ entry.ip ] if (entry.ip is string) else entry.ip) | ipwrap ) %}
+{%       set _ = dhcp_host.extend( ([ entry.ip ] if (entry.ip is string) else entry.ip) | ansible.utils.ipwrap ) %}
 {%     elif entry.ipaddr | d() and (entry.host is undefined and entry.a is undefined and entry.aaaa is undefined) %}
-{%       set _ = dhcp_host.extend( ([ entry.ipaddr ] if (entry.ipaddr is string) else entry.ipaddr) | ipwrap ) %}
+{%       set _ = dhcp_host.extend( ([ entry.ipaddr ] if (entry.ipaddr is string) else entry.ipaddr) | ansible.utils.ipwrap ) %}
 {%     elif entry.address | d() and (entry.host is undefined and entry.a is undefined and entry.aaaa is undefined) %}
-{%       set _ = dhcp_host.extend( ([ entry.address ] if (entry.address is string) else entry.address) | ipwrap ) %}
+{%       set _ = dhcp_host.extend( ([ entry.address ] if (entry.address is string) else entry.address) | ansible.utils.ipwrap ) %}
 {%     endif %}
 {%     if entry.name | d() %}
 {%       set _ = dhcp_host.append(entry.name) %}
@@ -57,11 +57,11 @@
 {%       endif %}
 {%       set _ = host_record.append(host_name + '.' + entry.domain) %}
 {%       if entry.ip | d() %}
-{%         set _ = host_record.extend( ([ entry.ip ] if (entry.ip is string) else entry.ip) | ipwrap ) %}
+{%         set _ = host_record.extend( ([ entry.ip ] if (entry.ip is string) else entry.ip) | ansible.utils.ipwrap ) %}
 {%       elif entry.ipaddr | d() %}
-{%         set _ = host_record.extend( ([ entry.ipaddr ] if (entry.ipaddr is string) else entry.ipaddr) | ipwrap ) %}
+{%         set _ = host_record.extend( ([ entry.ipaddr ] if (entry.ipaddr is string) else entry.ipaddr) | ansible.utils.ipwrap ) %}
 {%       elif entry.address | d() %}
-{%         set _ = host_record.extend( ([ entry.address ] if (entry.address is string) else entry.address) | ipwrap ) %}
+{%         set _ = host_record.extend( ([ entry.address ] if (entry.address is string) else entry.address) | ansible.utils.ipwrap ) %}
 {%       endif %}
 {%     endif %}
 {%     if (entry.host | d() or entry.a | d() or entry.aaaa | d()) and (entry.ip | d() or entry.ipaddr | d() or entry.address | d() or entry.target | d()) %}

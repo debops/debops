@@ -21,11 +21,11 @@ esac
 {% for name, interface in dropbear_initramfs__combined_interfaces | dictsort %}
 {%   set interface_name = (interface.iface | d(name)) %}
 {%   set addresses = (debops__tpl_macros.flattened(interface.address, interface.addresses) | from_yaml) | unique %}
-{%   set ipv4_addresses = addresses | ipv4 %}
-{%   set ipv6_addresses = addresses | ipv6 %}
+{%   set ipv4_addresses = addresses | ansible.utils.ipv4 %}
+{%   set ipv6_addresses = addresses | ansible.utils.ipv6 %}
 {%   set gateways = (debops__tpl_macros.flattened(interface.gateway, interface.gateways) | from_yaml) | unique %}
-{%   set ipv4_gateways = gateways | ipv4 %}
-{%   set ipv6_gateways = gateways | ipv6 %}
+{%   set ipv4_gateways = gateways | ansible.utils.ipv4 %}
+{%   set ipv6_gateways = gateways | ansible.utils.ipv6 %}
 
 ip link set dev {{ interface_name | quote }} up
 {%   if interface.inet6 in ['static'] %}

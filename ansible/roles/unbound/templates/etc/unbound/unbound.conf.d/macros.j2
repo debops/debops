@@ -18,9 +18,9 @@
 {%       endif %}
 {%     endif %}
 {%   elif option_values is string %}
-{%     if option_values | ipaddr %}
+{%     if option_values | ansible.utils.ipaddr %}
 {{ ('    {:<' + value_indent + '} {}').format(option_name + ':', option_values) }}
-{%     elif ('@' in option_values and option_values.split('@')[0] | ipaddr and option_values.split('@')[1] | int) %}
+{%     elif ('@' in option_values and option_values.split('@')[0] | ansible.utils.ipaddr and option_values.split('@')[1] | int) %}
 {{ ('    {:<' + value_indent + '} {}').format(option_name + ':', option_values) }}
 {%     elif '"' in option_values %}
 {{ ("    {:<" + value_indent + "} '{}'").format(option_name + ':', option_values) }}
@@ -48,9 +48,9 @@
 {%           endif %}
 {%         endif %}
 {%       elif value.name is string %}
-{%         if value.name | ipaddr %}
+{%         if value.name | ansible.utils.ipaddr %}
 {{ ('    {:<' + value_indent + '} {}{}').format(option_name + ':', value.name, (' ' + option_args) if option_args else '') }}
-{%         elif ('@' in value.name and value.name.split('@')[0] | ipaddr and value.name.split('@')[1] | int) %}
+{%         elif ('@' in value.name and value.name.split('@')[0] | ansible.utils.ipaddr and value.name.split('@')[1] | int) %}
 {{ ('    {:<' + value_indent + '} {}{}').format(option_name + ':', value.name, (' ' + option_args) if option_args else '') }}
 {%         elif '"' in value.name %}
 {{ ("    {:<" + value_indent + "} '{}'{}").format(option_name + ':', value.name, (' ' + option_args) if option_args else '') }}

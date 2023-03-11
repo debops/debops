@@ -12,16 +12,16 @@
 {%     if hostvars[inventory_hostname]["ansible_" + interface.name].ipv4 | d() %}
 {%       set _ = dnsmasq__tpl_ipv4.append(hostvars[inventory_hostname]["ansible_" + interface.name].ipv4.address + '/'
                                           + (hostvars[inventory_hostname]["ansible_" + interface.name].ipv4.address + '/'
-                                             + hostvars[inventory_hostname]["ansible_" + interface.name].ipv4.netmask) | ipaddr('prefix') | string) %}
+                                             + hostvars[inventory_hostname]["ansible_" + interface.name].ipv4.netmask) | ansible.utils.ipaddr('prefix') | string) %}
 {%       if hostvars[inventory_hostname]["ansible_" + interface.name].ipv4_secondaries | d() %}
 {%         for element in hostvars[inventory_hostname]["ansible_" + interface.name].ipv4_secondaries %}
-{%           set _ = dnsmasq__tpl_ipv4.append(element.address + '/' + (element.address + '/' + element.netmask) | ipaddr('prefix') | string) %}
+{%           set _ = dnsmasq__tpl_ipv4.append(element.address + '/' + (element.address + '/' + element.netmask) | ansible.utils.ipaddr('prefix') | string) %}
 {%         endfor %}
 {%       endif %}
 {%     endif %}
 {%     if hostvars[inventory_hostname]["ansible_" + interface.name].ipv6 | d() %}
 {%       for element in hostvars[inventory_hostname]["ansible_" + interface.name].ipv6 %}
-{%         if not element.address | ipv6('link-local') %}
+{%         if not element.address | ansible.utils.ipv6('link-local') %}
 {%           set _ = dnsmasq__tpl_ipv6.append(element.address + '/' + element.prefix) %}
 {%         endif %}
 {%       endfor %}
@@ -29,18 +29,18 @@
 {%   endif %}
 {%   if interface.address | d() %}
 {%     for element in ([ interface.address ] if interface.address is string else interface.address) %}
-{%       if element | ipv4('host/prefix') %}
+{%       if element | ansible.utils.ipv4('host/prefix') %}
 {%         set _ = dnsmasq__tpl_ipv4.append(element) %}
-{%       elif element | ipv6('host/prefix') and not element | ipv6('link-local') %}
+{%       elif element | ansible.utils.ipv6('host/prefix') and not element | ansible.utils.ipv6('link-local') %}
 {%         set _ = dnsmasq__tpl_ipv6.append(element) %}
 {%       endif %}
 {%     endfor %}
 {%   endif %}
 {%   if interface.addresses | d() %}
 {%     for element in ([ interface.addresses ] if interface.addresses is string else interface.addresses) %}
-{%       if element | ipv4('host/prefix') %}
+{%       if element | ansible.utils.ipv4('host/prefix') %}
 {%         set _ = dnsmasq__tpl_ipv4.append(element) %}
-{%       elif element | ipv6('host/prefix') and not element | ipv6('link-local') %}
+{%       elif element | ansible.utils.ipv6('host/prefix') and not element | ansible.utils.ipv6('link-local') %}
 {%         set _ = dnsmasq__tpl_ipv6.append(element) %}
 {%       endif %}
 {%     endfor %}
@@ -51,7 +51,7 @@
 {% endfor %}
 {% set _ = dnsmasq__tpl_tcpwrappers__dependent_allow.append({
   "daemon": "in.tftpd",
-  "client": (dnsmasq__tpl_subnets | ipaddr('subnet')),
+  "client": (dnsmasq__tpl_subnets | ansible.utils.ipaddr('subnet')),
   "weight": 50,
   "filename": "dnsmasq_dependent_allow",
   "comment": "Allow remote connections to TFTP server",

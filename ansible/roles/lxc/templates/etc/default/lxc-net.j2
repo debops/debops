@@ -12,11 +12,11 @@
 USE_LXC_BRIDGE="{{ 'true' if (lxc__net_deploy_state == 'present') else 'false' }}"
 {% if (lxc__net_deploy_state == 'present') %}
 LXC_BRIDGE="{{ lxc__net_bridge }}"
-LXC_ADDR="{{ lxc__net_address | ipaddr('address') }}"
-LXC_NETMASK="{{ lxc__net_address | ipaddr('netmask') }}"
-LXC_NETWORK="{{ lxc__net_address | ipaddr('subnet') }}"
-LXC_DHCP_RANGE="{{ lxc__net_address | ipaddr(lxc__net_dhcp_start | int) | ipaddr('address') + ',' + lxc__net_address | ipaddr(lxc__net_dhcp_end | int) | ipaddr('address') }}"
-LXC_DHCP_MAX="{{ (lxc__net_address | ipaddr('size')) | int - ((lxc__net_dhcp_start | int|abs) + (lxc__net_dhcp_end | int|abs)) }}"
+LXC_ADDR="{{ lxc__net_address | ansible.utils.ipaddr('address') }}"
+LXC_NETMASK="{{ lxc__net_address | ansible.utils.ipaddr('netmask') }}"
+LXC_NETWORK="{{ lxc__net_address | ansible.utils.ipaddr('subnet') }}"
+LXC_DHCP_RANGE="{{ lxc__net_address | ansible.utils.ipaddr(lxc__net_dhcp_start | int) | ansible.utils.ipaddr('address') + ',' + lxc__net_address | ansible.utils.ipaddr(lxc__net_dhcp_end | int) | ansible.utils.ipaddr('address') }}"
+LXC_DHCP_MAX="{{ (lxc__net_address | ansible.utils.ipaddr('size')) | int - ((lxc__net_dhcp_start | int|abs) + (lxc__net_dhcp_end | int|abs)) }}"
 LXC_DHCP_CONFILE="{{ lxc__net_dnsmasq_conf }}"
 LXC_DOMAIN="{{ lxc__net_domain }}"
 {% endif %}

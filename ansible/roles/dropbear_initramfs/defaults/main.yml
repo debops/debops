@@ -105,8 +105,8 @@ dropbear_initramfs__network_gateway: '{{ ansible_default_ipv4.gateway }}'
 # The `ipwrap` filter causes IPv6 address to work on some platforms.
 # Refer to: https://serverfault.com/questions/445296/is-there-a-linux-kernel-boot-parameter-to-configure-an-ipv6-address/701451#701451
 dropbear_initramfs__network_manual: '{{
-  (dropbear_initramfs__network_address | ipwrap) + "::" +
-  (dropbear_initramfs__network_gateway | ipwrap) + ":" +
+  (dropbear_initramfs__network_address | ansible.utils.ipwrap) + "::" +
+  (dropbear_initramfs__network_gateway | ansible.utils.ipwrap) + ":" +
   dropbear_initramfs__network_netmask + "::" +
   dropbear_initramfs__network_device + ":none" }}'
 

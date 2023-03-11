@@ -226,25 +226,32 @@ tinc__host_addresses: '{{ tinc__host_addresses_fqdn +
 #
 # Include the host FQDN if public IP addresses are available.
 tinc__host_addresses_fqdn: '{{ [ansible_fqdn]
-                               if ((ansible_all_ipv4_addresses | d([]) + (ansible_all_ipv6_addresses | d([])
-                                   | difference(ansible_all_ipv6_addresses | d([]) | ipaddr("link-local"))))
-                                  | ipaddr("public")) else [] }}'
+                               if ((ansible_all_ipv4_addresses | d([])
+                                    + (ansible_all_ipv6_addresses | d([])
+                                       | difference(ansible_all_ipv6_addresses | d([])
+                                                    | ansible.utils.ipaddr("link-local"))))
+                                   | ansible.utils.ipaddr("public"))
+                               else [] }}'
 
                                                                    # ]]]
 # .. envvar:: tinc__host_addresses_ip_public [[[
 #
 # Include all public IP addresses, without IPv6 link-local.
-tinc__host_addresses_ip_public: '{{ (ansible_all_ipv4_addresses | d([]) + (ansible_all_ipv6_addresses | d([])
-                                     | difference(ansible_all_ipv6_addresses | d([]) | ipaddr("link-local"))))
-                                    | ipaddr("public") }}'
+tinc__host_addresses_ip_public: '{{ (ansible_all_ipv4_addresses | d([])
+                                     + (ansible_all_ipv6_addresses | d([])
+                                        | difference(ansible_all_ipv6_addresses | d([])
+                                                     | ansible.utils.ipaddr("link-local"))))
+                                    | ansible.utils.ipaddr("public") }}'
 
                                                                    # ]]]
 # .. envvar:: tinc__host_addresses_ip_private [[[
 #
 # Include all private IP addresses, without IPv6 link-local.
-tinc__host_addresses_ip_private: '{{ (ansible_all_ipv4_addresses | d([]) + (ansible_all_ipv6_addresses | d([])
-                                      | difference(ansible_all_ipv6_addresses | d([]) | ipaddr("link-local"))))
-                                     | ipaddr("private") }}'
+tinc__host_addresses_ip_private: '{{ (ansible_all_ipv4_addresses | d([])
+                                      + (ansible_all_ipv6_addresses | d([])
+                                         | difference(ansible_all_ipv6_addresses | d([])
+                                                      | ansible.utils.ipaddr("link-local"))))
+                                     | ansible.utils.ipaddr("private") }}'
 
                                                                    # ]]]
 # .. envvar:: tinc__exclude_addresses [[[

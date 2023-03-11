@@ -73,8 +73,8 @@ postscreen__combined_access: '{{ postscreen__access
 # hosts with public IP addresses.
 postscreen__dnsbl_enabled: '{{ True
                                if ((ansible_all_ipv4_addresses | d([])
-                                   + ansible_all_ipv6_addresses | d([]))
-                                   | ipaddr("public"))
+                                    + ansible_all_ipv6_addresses | d([]))
+                                   | ansible.utils.ipaddr("public"))
                                else False }}'
 
                                                                    # ]]]
