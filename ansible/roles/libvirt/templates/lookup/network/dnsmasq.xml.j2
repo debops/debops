@@ -24,23 +24,23 @@
   <domain name="{{ item.domain }}" localOnly="{{ "yes" if item.domain_local | d() else "no" }}"/>
 {% endif %}
 {% if item.addresses | d() %}
-{% for subnet in item.addresses | ipv4('host/prefix') %}
-  <ip family="ipv4" address="{{ subnet | ipaddr('address') }}" netmask="{{ subnet | ipaddr('netmask') }}">
+{% for subnet in item.addresses | ansible.utils.ipv4('host/prefix') %}
+  <ip family="ipv4" address="{{ subnet | ansible.utils.ipaddr('address') }}" netmask="{{ subnet | ansible.utils.ipaddr('netmask') }}">
 {% if item.dhcp | d() and loop.first %}
     <dhcp>
 {% if item.bootp | d() %}
       <bootp file="{{ item.bootp_file | d('/undionly.kpxe') }}"{% if item.bootp_server | d() %} server="{{ item.bootp_server }}"{% endif %}/>
 {% endif %}
-      <range start="{{ subnet | ipaddr(libvirt__tpl_dhcp_range_start) | ipaddr('address') }}" end="{{ subnet | ipaddr(libvirt__tpl_dhcp_range_end) | ipaddr('address') }}"/>
+      <range start="{{ subnet | ansible.utils.ipaddr(libvirt__tpl_dhcp_range_start) | ansible.utils.ipaddr('address') }}" end="{{ subnet | ansible.utils.ipaddr(libvirt__tpl_dhcp_range_end) | ansible.utils.ipaddr('address') }}"/>
     </dhcp>
 {% endif %}
   </ip>
 {% endfor %}
-{% for subnet in item.addresses | ipv6('host/prefix') %}
-  <ip family="ipv6" address="{{ subnet | ipaddr('address') }}" prefix="{{ subnet | ipaddr('prefix') }}">
+{% for subnet in item.addresses | ansible.utils.ipv6('host/prefix') %}
+  <ip family="ipv6" address="{{ subnet | ansible.utils.ipaddr('address') }}" prefix="{{ subnet | ansible.utils.ipaddr('prefix') }}">
 {% if item.dhcp | d() and loop.first %}
     <dhcp>
-      <range start="{{ subnet | ipaddr(libvirt__tpl_dhcp_range_start) | ipaddr('address') }}" end="{{ subnet | ipaddr(libvirt__tpl_dhcp_range_end) | ipaddr('address') }}"/>
+      <range start="{{ subnet | ansible.utils.ipaddr(libvirt__tpl_dhcp_range_start) | ansible.utils.ipaddr('address') }}" end="{{ subnet | ansible.utils.ipaddr(libvirt__tpl_dhcp_range_end) | ansible.utils.ipaddr('address') }}"/>
     </dhcp>
 {% endif %}
   </ip>

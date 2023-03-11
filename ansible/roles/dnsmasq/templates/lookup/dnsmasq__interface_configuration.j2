@@ -11,16 +11,16 @@
 {%     if hostvars[inventory_hostname]["ansible_" + interface.name].ipv4 | d() %}
 {%       set _ = dnsmasq__tpl_ipv4.append(hostvars[inventory_hostname]["ansible_" + interface.name].ipv4.address + '/'
                                           + (hostvars[inventory_hostname]["ansible_" + interface.name].ipv4.address + '/'
-                                             + hostvars[inventory_hostname]["ansible_" + interface.name].ipv4.netmask) | ipaddr('prefix') | string) %}
+                                             + hostvars[inventory_hostname]["ansible_" + interface.name].ipv4.netmask) | ansible.utils.ipaddr('prefix') | string) %}
 {%       if hostvars[inventory_hostname]["ansible_" + interface.name].ipv4_secondaries | d() %}
 {%         for element in hostvars[inventory_hostname]["ansible_" + interface.name].ipv4_secondaries %}
-{%           set _ = dnsmasq__tpl_ipv4.append(element.address + '/' + (element.address + '/' + element.netmask) | ipaddr('prefix') | string) %}
+{%           set _ = dnsmasq__tpl_ipv4.append(element.address + '/' + (element.address + '/' + element.netmask) | ansible.utils.ipaddr('prefix') | string) %}
 {%         endfor %}
 {%       endif %}
 {%     endif %}
 {%     if hostvars[inventory_hostname]["ansible_" + interface.name].ipv6 | d() %}
 {%       for element in hostvars[inventory_hostname]["ansible_" + interface.name].ipv6 %}
-{%         if not element.address | ipv6('link-local') %}
+{%         if not element.address | ansible.utils.ipv6('link-local') %}
 {%           set _ = dnsmasq__tpl_ipv6.append(element.address + '/' + element.prefix) %}
 {%         endif %}
 {%       endfor %}
@@ -28,18 +28,18 @@
 {%   endif %}
 {%   if interface.address | d() %}
 {%     for element in ([ interface.address ] if interface.address is string else interface.address) %}
-{%       if element | ipv4('host/prefix') %}
+{%       if element | ansible.utils.ipv4('host/prefix') %}
 {%         set _ = dnsmasq__tpl_ipv4.append(element) %}
-{%       elif element | ipv6('host/prefix') and not element | ipv6('link-local') %}
+{%       elif element | ansible.utils.ipv6('host/prefix') and not element | ansible.utils.ipv6('link-local') %}
 {%         set _ = dnsmasq__tpl_ipv6.append(element) %}
 {%       endif %}
 {%     endfor %}
 {%   endif %}
 {%   if interface.addresses | d() %}
 {%     for element in ([ interface.addresses ] if interface.addresses is string else interface.addresses) %}
-{%       if element | ipv4('host/prefix') %}
+{%       if element | ansible.utils.ipv4('host/prefix') %}
 {%         set _ = dnsmasq__tpl_ipv4.append(element) %}
-{%       elif element | ipv6('host/prefix') and not element | ipv6('link-local') %}
+{%       elif element | ansible.utils.ipv6('host/prefix') and not element | ansible.utils.ipv6('link-local') %}
 {%         set _ = dnsmasq__tpl_ipv6.append(element) %}
 {%       endif %}
 {%     endfor %}
@@ -77,14 +77,14 @@
   "name": ("dhcp_range_" + (host_address | replace('.','_') | replace('/','_'))),
   "option": "dhcp-range",
   "separator": True,
-  "value": ("set:" + interface_tag + "," + host_address | ipv4(interface.dhcp_range_start | d(10) | int) | ipv4('address') + ',' + host_address | ipv4(interface.dhcp_range_end | d(-10) | int) | ipv4('address') + ',' + host_address | ipv4('netmask') + ',' + interface.dhcp_lease | d('24h'))
+  "value": ("set:" + interface_tag + "," + host_address | ansible.utils.ipv4(interface.dhcp_range_start | d(10) | int) | ansible.utils.ipv4('address') + ',' + host_address | ansible.utils.ipv4(interface.dhcp_range_end | d(-10) | int) | ansible.utils.ipv4('address') + ',' + host_address | ansible.utils.ipv4('netmask') + ',' + interface.dhcp_lease | d('24h'))
 }) %}
 {%       endfor %}
 {%       for host_address in dnsmasq__tpl_ipv6 %}
 {%         set _ = interface_options.append({
   "name": ("dhcp_range_" + (host_address | replace(':','_') | replace('/','_'))),
   "option": "dhcp-range",
-  "value": ("set:" + interface_tag + "," + host_address | ipv6(interface.dhcp_range_start | d(10) | int) | ipv6('address') + ',' + host_address | ipv6(interface.dhcp_range_end | d(-10) | int) | ipv6('address') + ',' + interface.dhcp_ipv6_mode | d("ra-names,ra-stateless,slaac") + "," + host_address | ipv6('prefix') | string + ',' + interface.dhcp_lease | d('24h'))
+  "value": ("set:" + interface_tag + "," + host_address | ansible.utils.ipv6(interface.dhcp_range_start | d(10) | int) | ansible.utils.ipv6('address') + ',' + host_address | ansible.utils.ipv6(interface.dhcp_range_end | d(-10) | int) | ansible.utils.ipv6('address') + ',' + interface.dhcp_ipv6_mode | d("ra-names,ra-stateless,slaac") + "," + host_address | ansible.utils.ipv6('prefix') | string + ',' + interface.dhcp_lease | d('24h'))
 }) %}
 {%       endfor %}
 {%     endif %}
@@ -116,7 +116,7 @@
   "name": "dhcp_option6_dns_server",
   "option": "dhcp-option",
   "comment": "Advertise RDNSS servers for local IPv6 network",
-  "value": ("tag:" + interface_tag + ",option6:dns-server," + dnsmasq__tpl_ipv6 | ipv6("address") | ipwrap | join(","))
+  "value": ("tag:" + interface_tag + ",option6:dns-server," + dnsmasq__tpl_ipv6 | ansible.utils.ipv6("address") | ansible.utils.ipwrap | join(","))
 }) %}
 {%   endif %}
 {%   set _ = interface_options.append({
@@ -133,7 +133,7 @@
 {%     set _ = interface_options.append({
   "name": ("domain_" + (host_address | replace('.','_') | replace('/','_'))),
   "option": "domain",
-  "value": (interface_domain + "," + host_address | ipaddr('subnet') + (",local" if (host_address | ipaddr('prefix') in [ 8, 16, 24 ]) else ""))
+  "value": (interface_domain + "," + host_address | ansible.utils.ipaddr('subnet') + (",local" if (host_address | ansible.utils.ipaddr('prefix') in [ 8, 16, 24 ]) else ""))
 }) %}
 {%   endfor %}
 {%   if (interface.boot_enabled | d(dnsmasq__boot_enabled)) | bool %}

@@ -6,16 +6,16 @@
 {% set tcpwrappers__tpl_local_ansible_controllers = [] %}
 {% if ansible_local.core.ansible_controllers | d() %}
 {%   for element in ansible_local.core.ansible_controllers %}
-{%     set _ = tcpwrappers__tpl_local_ansible_controllers.append(element | ipwrap) %}
+{%     set _ = tcpwrappers__tpl_local_ansible_controllers.append(element | ansible.utils.ipwrap) %}
 {%   endfor %}
 {% endif %}
 {% if (ansible_local.tcpwrappers.ansible_controllers | d()) %}
 {%   for element in ansible_local.tcpwrappers.ansible_controllers %}
-{%     set _ = tcpwrappers__tpl_local_ansible_controllers.append(element | ipwrap) %}
+{%     set _ = tcpwrappers__tpl_local_ansible_controllers.append(element | ansible.utils.ipwrap) %}
 {%   endfor %}
 {% endif %}
 {% for element in tcpwrappers__ansible_controllers or [] %}
-{%       set _ = tcpwrappers__tpl_local_ansible_controllers.append(element | ipwrap) %}
+{%       set _ = tcpwrappers__tpl_local_ansible_controllers.append(element | ansible.utils.ipwrap) %}
 {% endfor %}
 {% for element in (tcpwrappers__tpl_local_ansible_controllers | unique | sort) %}
 sshd : {{ element }}

@@ -59,17 +59,17 @@ restrict default ignore
 restrict -6 default ignore
 
 {%   if ntp__allow is string %}
-{%     if ntp__allow|ipv4 %}
-restrict {{ ntp__allow|ipaddr('network') }} mask {{ ntp__allow|ipaddr('netmask') }} notrap nomodify nopeer
+{%     if ntp__allow | ansible.utils.ipv4 %}
+restrict {{ ntp__allow | ansible.utils.ipaddr('network') }} mask {{ ntp__allow | ansible.utils.ipaddr('netmask') }} notrap nomodify nopeer
 {%     else %}
-restrict -6 {{ ntp__allow|ipaddr('network') }} mask {{ ntp__allow|ipaddr('netmask') }} notrap nomodify nopeer
+restrict -6 {{ ntp__allow | ansible.utils.ipaddr('network') }} mask {{ ntp__allow | ansible.utils.ipaddr('netmask') }} notrap nomodify nopeer
 {%     endif %}
 {%   else %}
 {%     for address in ntp__allow %}
-{%       if address|ipv4 %}
-restrict {{ address|ipaddr('network') }} mask {{ address|ipaddr('netmask') }} notrap nomodify nopeer
+{%       if address | ansible.utils.ipv4 %}
+restrict {{ address | ansible.utils.ipaddr('network') }} mask {{ address | ansible.utils.ipaddr('netmask') }} notrap nomodify nopeer
 {%       else %}
-restrict -6 {{ address|ipaddr('network') }} mask {{ address|ipaddr('netmask') }} notrap nomodify nopeer
+restrict -6 {{ address | ansible.utils.ipaddr('network') }} mask {{ address | ansible.utils.ipaddr('netmask') }} notrap nomodify nopeer
 {%       endif %}
 {%     endfor %}
 {%   endif %}

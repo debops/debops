@@ -68,12 +68,12 @@
 {%           endif %}
 {%           if element.state | d('present') != 'hidden' %}
 {%             if element_value is not string and element_value is not mapping and element_value is iterable %}
-{%               if element_value | ipwrap | join(', ') | length <= 50 %}
-{{ ('{}{} ={}{}').format(option_commented, element_name, (' ' if (element_value or element_value == 0) else ''), element_value | ipwrap | join(', ')) }}
+{%               if element_value | ansible.utils.ipwrap | join(', ') | length <= 50 %}
+{{ ('{}{} ={}{}').format(option_commented, element_name, (' ' if (element_value or element_value == 0) else ''), element_value | ansible.utils.ipwrap | join(', ')) }}
 {%               else %}
 {{ ('{}{} =').format(option_commented, element_name) }}
 {%                 for thing in element_value %}
-{{ ('{}{:<4}{}').format(option_commented, '', (thing | ipwrap) + ('' if loop.last | bool else ',')) }}
+{{ ('{}{:<4}{}').format(option_commented, '', (thing | ansible.utils.ipwrap) + ('' if loop.last | bool else ',')) }}
 {%                 endfor %}
 
 {%               endif %}
@@ -82,13 +82,13 @@
 {{ ('{}{} =').format(option_commented, element_name) }}
 {%                 set element_value_strip = element_value | regex_replace('\n$','') %}
 {%                 for thing in element_value_strip.split('\n') | list %}
-{{ ('{}{:<4}{}').format(option_commented, '', thing | ipwrap) }}
+{{ ('{}{:<4}{}').format(option_commented, '', thing | ansible.utils.ipwrap) }}
 {%                 endfor %}
 {%                 if not option_commented %}
 
 {%                 endif %}
 {%               else %}
-{{ ('{}{} ={}{}').format(option_commented, element_name, (' ' if (element_value or element_value == 0) else ''), element_value | ipwrap) }}
+{{ ('{}{} ={}{}').format(option_commented, element_name, (' ' if (element_value or element_value == 0) else ''), element_value | ansible.utils.ipwrap) }}
 {%               endif %}
 {%             else %}
 {{ ('{}{} ={}{}').format(option_commented, element_name, (' ' if (element_value or element_value == 0) else ''), element_value) }}

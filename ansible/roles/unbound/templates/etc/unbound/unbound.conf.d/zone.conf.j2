@@ -8,23 +8,23 @@
 {% set unbound__tpl_local_zones = [] %}
 {% set unbound__tpl_nameservers = [] %}
 {% if item.revdns | d() %}
-{%   for entry in ([ item.revdns ] if item.revdns is string else item.revdns) | ipv4('subnet') %}
+{%   for entry in ([ item.revdns ] if item.revdns is string else item.revdns) | ansible.utils.ipv4('subnet') %}
 {#
  # This currently doesn't work properly for subnet sizes < 16
  # due to netaddr library always returning /24 revdns delegation
 #}
-{%     if (entry | ipaddr('prefix') | int <= 15) %}
+{%     if (entry | ansible.utils.ipaddr('prefix') | int <= 15) %}
 {%       set subnet_prefix = '16' %}
-{%     elif (entry | ipaddr('prefix') | int <= 24) %}
+{%     elif (entry | ansible.utils.ipaddr('prefix') | int <= 24) %}
 {%       set subnet_prefix = '24' %}
 {%     else %}
 {%       set subnet_prefix = '24' %}
 {%     endif %}
 {%     for i in range(0, (entry | ipsubnet(subnet_prefix) | int)) %}
-{%       set _ = unbound__tpl_ipv4_revdns_zones.append((entry | ipsubnet(subnet_prefix, i) | ipaddr('revdns')).split('.')[1:-1] | join('.')) %}
+{%       set _ = unbound__tpl_ipv4_revdns_zones.append((entry | ipsubnet(subnet_prefix, i) | ansible.utils.ipaddr('revdns')).split('.')[1:-1] | join('.')) %}
 {%     endfor %}
 {%   endfor %}
-{%   set unbound__tpl_local_zones = item.revdns | ipaddr("private") %}
+{%   set unbound__tpl_local_zones = item.revdns | ansible.utils.ipaddr("private") %}
 {% endif %}
 {% if item.nameserver | d() %}
 {%   for entry in ([ item.nameserver ] if item.nameserver is string else item.nameserver) %}

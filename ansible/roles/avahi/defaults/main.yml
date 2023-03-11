@@ -60,7 +60,8 @@ avahi__use_ipv4: True
 # disabled if there are no IPv6 addresses present.
 avahi__use_ipv6: '{{ True
                      if (ansible_all_ipv6_addresses
-                         | difference(ansible_all_ipv6_addresses | ipv6("link-local")))
+                         | difference(ansible_all_ipv6_addresses
+                         | ansible.utils.ipv6("link-local")))
                      else False }}'
 
                                                                    # ]]]

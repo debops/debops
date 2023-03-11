@@ -299,13 +299,13 @@ pdns__default_configuration:
       Local IP addresses to which we bind. Accepts IPv6 addresses since pdns
       4.3.0.
     value: '{{ (pdns__local_address if ansible_local.pdns.version is version("4.3.0", ">=")
-                else (pdns__local_address | ipv4)) | join(",") }}'
+                else (pdns__local_address | ansible.utils.ipv4)) | join(",") }}'
 
   - name: 'local-ipv6'
     comment: |-
       Local IPv6 addresses to which we bind. Will be deprecated in pdns 4.3.0
       and removed in pdns 4.5.0.
-    value: '{{ pdns__local_address | ipv6 | join(",") }}'
+    value: '{{ pdns__local_address | ansible.utils.ipv6 | join(",") }}'
     state: '{{ "present"
                if ansible_local.pdns.version is version("4.3.0", "<")
                else "absent" }}'

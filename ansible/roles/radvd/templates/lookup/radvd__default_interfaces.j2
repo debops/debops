@@ -3,8 +3,8 @@
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 {% set radvd__tpl_output = [] %}
-{% if (ansible_all_ipv6_addresses | difference(ansible_all_ipv6_addresses | ipv6('link-local'))) %}
-{%   set _ = radvd__tpl_output.append({'addresses': (ansible_all_ipv6_addresses | difference(ansible_all_ipv6_addresses | ipv6('link-local')))}) %}
+{% if (ansible_all_ipv6_addresses | difference(ansible_all_ipv6_addresses | ansible.utils.ipv6('link-local'))) %}
+{%   set _ = radvd__tpl_output.append({'addresses': (ansible_all_ipv6_addresses | difference(ansible_all_ipv6_addresses | ansible.utils.ipv6('link-local')))}) %}
 {%   for interface in ansible_interfaces %}
 {%     if interface != 'lo' %}
 {%       set radvd__tpl_interface = {

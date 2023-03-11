@@ -90,14 +90,14 @@ interface {{ interface.name }} {
 {%     if radvd__tpl_prefixes %}
 {%       for prefix in radvd__tpl_prefixes %}
 {%         if prefix is string %}
-{%           if prefix | ipv6('subnet') %}
+{%           if prefix | ansible.utils.ipv6('subnet') %}
 
-{{ "        prefix {} {{\n        }};".format(prefix | ipv6('subnet')) }}
+{{ "        prefix {} {{\n        }};".format(prefix | ansible.utils.ipv6('subnet')) }}
 {%           endif %}
 {%         elif prefix is mapping %}
 {%           if prefix.name | d() and prefix.state | d('present') != 'absent' %}
 
-{{ "        prefix {} {{".format(prefix.name | ipv6('subnet')) }}
+{{ "        prefix {} {{".format(prefix.name | ansible.utils.ipv6('subnet')) }}
 {%             if prefix.options | d() %}
 {%               for option in prefix.options %}
 {%                 if option.name | d() and option.value | d() and option.state | d('present') != 'absent' %}
@@ -131,14 +131,14 @@ interface {{ interface.name }} {
 {%     if radvd__tpl_routes %}
 {%       for route in radvd__tpl_routes %}
 {%         if route is string %}
-{%           if route | ipv6('subnet') %}
+{%           if route | ansible.utils.ipv6('subnet') %}
 
-{{ "        route {} {{\n        }};".format(route | ipv6('subnet')) }}
+{{ "        route {} {{\n        }};".format(route | ansible.utils.ipv6('subnet')) }}
 {%           endif %}
 {%         elif route is mapping %}
 {%           if route.name | d() and route.state | d('present') != 'absent' %}
 
-{{ "        route {} {{".format(route.name | ipv6('subnet')) }}
+{{ "        route {} {{".format(route.name | ansible.utils.ipv6('subnet')) }}
 {%             if route.options | d() %}
 {%               for option in route.options %}
 {%                 if option.name | d() and option.value | d() and option.state | d('present') != 'absent' %}

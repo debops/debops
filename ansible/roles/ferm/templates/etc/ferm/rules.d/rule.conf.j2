@@ -384,12 +384,12 @@
     @def $PRIVATE_IP = ( @ipfilter( ({{ ferm__tpl_config['private_ip'] | unique | join(' ') }}) ) );
 
 {%       if ferm__tpl_config['public_ip'] | d() %}
-    @def $PUBLIC_IPV4 = "{{ ferm__tpl_config['public_ip'] | unique | ipv4 | first | d('') }}";
-    @def $PUBLIC_IPV6 = "{{ ferm__tpl_config['public_ip'] | unique | ipv6 | first | d('') }}";
+    @def $PUBLIC_IPV4 = "{{ ferm__tpl_config['public_ip'] | unique | ansible.utils.ipv4 | first | d('') }}";
+    @def $PUBLIC_IPV6 = "{{ ferm__tpl_config['public_ip'] | unique | ansible.utils.ipv6 | first | d('') }}";
 
 {%       endif %}
-    @def $PRIVATE_IPV4 = "{{ ferm__tpl_config['private_ip'] | unique | ipv4 | first | d('') }}";
-    @def $PRIVATE_IPV6 = "{{ ferm__tpl_config['private_ip'] | unique | ipv6 | first | d('') }}";
+    @def $PRIVATE_IPV4 = "{{ ferm__tpl_config['private_ip'] | unique | ansible.utils.ipv4 | first | d('') }}";
+    @def $PRIVATE_IPV6 = "{{ ferm__tpl_config['private_ip'] | unique | ansible.utils.ipv6 | first | d('') }}";
 
     {% if ferm__tpl_config['interface'] | d() %}@if @ne($PUBLIC_IF,""){% endif %}{% if ferm__tpl_config['public_ip'] | d() %} @if @ne($PUBLIC_IP,""){% endif %} @if @ne($PRIVATE_IP,"") {
         table filter chain FORWARD {

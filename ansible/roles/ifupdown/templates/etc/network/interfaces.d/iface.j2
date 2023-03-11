@@ -13,11 +13,11 @@
 {% set ifupdown__tpl_ipv6_addresses = [] %}
 {% if interface.no_addresses is undefined or not interface.no_addresses | bool %}
 {%   set ifupdown__tpl_addresses = (debops__tpl_macros.flattened(interface.address, interface.addresses) | from_yaml) | unique %}
-{%   set ifupdown__tpl_ipv4_addresses = ifupdown__tpl_addresses | ipv4 %}
-{%   set ifupdown__tpl_ipv6_addresses = ifupdown__tpl_addresses | ipv6 %}
+{%   set ifupdown__tpl_ipv4_addresses = ifupdown__tpl_addresses | ansible.utils.ipv4 %}
+{%   set ifupdown__tpl_ipv6_addresses = ifupdown__tpl_addresses | ansible.utils.ipv6 %}
 {%   set ifupdown__tpl_gateways = (debops__tpl_macros.flattened(interface.gateway, interface.gateways) | from_yaml) | unique %}
-{%   set ifupdown__tpl_ipv4_gateways = ifupdown__tpl_gateways | unique | ipv4 %}
-{%   set ifupdown__tpl_ipv6_gateways = ifupdown__tpl_gateways | unique | ipv6 %}
+{%   set ifupdown__tpl_ipv4_gateways = ifupdown__tpl_gateways | unique | ansible.utils.ipv4 %}
+{%   set ifupdown__tpl_ipv6_gateways = ifupdown__tpl_gateways | unique | ansible.utils.ipv6 %}
 {% endif %}
 {% if interface.inet | d() and interface.inet in [ 'static', 'tunnel' ] and not ifupdown__tpl_ipv4_addresses %}
 {%   set _ = interface.update({"inet":"manual"}) %}
@@ -62,8 +62,8 @@ allow-{{ thing }} {{ interface_name }}
 {%     endif %}
 iface {{ interface_name }} inet {{ interface.inet }}
 {%     if interface.inet == 'static' and ifupdown__tpl_ipv4_addresses %}
-    address         {{ ifupdown__tpl_ipv4_addresses[0] | ipaddr('address') }}
-    netmask         {{ ifupdown__tpl_ipv4_addresses[0] | ipaddr('netmask') }}
+    address         {{ ifupdown__tpl_ipv4_addresses[0] | ansible.utils.ipaddr('address') }}
+    netmask         {{ ifupdown__tpl_ipv4_addresses[0] | ansible.utils.ipaddr('netmask') }}
 {%       set _ = ifupdown__tpl_separate_stanza.append(True) %}
 {%       if ifupdown__tpl_ipv4_addresses | length > 1 %}
 {%         for address in ifupdown__tpl_ipv4_addresses[1:] %}

@@ -32,15 +32,15 @@ option domain-name "{{ dhcpd__domain_name }}";
 {%      if dhcpd__domain_search %}
 option domain-search "{{ dhcpd__domain_search | join('", "') }}";
 {%      endif %}
-{%      if dhcpd__name_servers|ipv4 %}
-option domain-name-servers {{ dhcpd__name_servers|ipv4 | join(', ') }};
+{%      if dhcpd__name_servers | ansible.utils.ipv4 %}
+option domain-name-servers {{ dhcpd__name_servers | ansible.utils.ipv4 | join(', ') }};
 {%      endif %}
 {%  elif dhcpd__protocol == 'DHCPv6' %}
 {%      if dhcpd__domain_search %}
 option dhcp6.domain-search "{{ dhcpd__domain_search | join('", "') }}";
 {%      endif %}
-{%      if dhcpd__name_servers|ipv6 %}
-option dhcp6.name-servers {{ dhcpd__name_servers|ipv6 | join(', ') }};
+{%      if dhcpd__name_servers | ansible.utils.ipv6 %}
+option dhcp6.name-servers {{ dhcpd__name_servers | ansible.utils.ipv6 | join(', ') }};
 {%      endif %}
 {%  endif %}
 {%  if dhcpd__global_options_map[dhcpd__protocol] | d() %}

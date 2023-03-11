@@ -508,7 +508,7 @@
 {%   set nginx__tpl_hostnames = []                       %}
 {%   for element in ([ item.name ] if (item.name is string) else item.name) %}
 {%     set element_hostname = element | regex_replace(('\.' + (nginx__tpl_hostname_domain | replace('.', '\.')) + '$'), '') %}
-{%     if (not element_hostname | ipaddr and
+{%     if (not element_hostname | ansible.utils.ipaddr and
            element_hostname not in ([ item.name ] if (item.name is string) else item.name) and
            not element_hostname.startswith('www') and
            element_hostname is not search('[^a-zA-Z0-9\-\_\.]+')) and
@@ -704,7 +704,7 @@ server {
         ssl_stapling_verify       on;
         ssl_trusted_certificate   {{ nginx_tpl_ssl_trusted_certificate }};
 {%         endif                                                %}
-        resolver                  {{ (item.ocsp_resolvers | d(nginx_ocsp_resolvers)) | ipwrap | join(" ") }} valid=300s;
+        resolver                  {{ (item.ocsp_resolvers | d(nginx_ocsp_resolvers)) | ansible.utils.ipwrap | join(" ") }} valid=300s;
         resolver_timeout          5s;
 {%     endif                                                        %}
 {%     if (item.ssl_verify_client | d(nginx_default_ssl_verify_client)) | bool      %}

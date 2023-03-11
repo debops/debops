@@ -159,7 +159,7 @@ through the firewall based on source IP addresses and network ranges. This is
 typically done by defining a corresponding ``service_allow`` variable. In case
 of debops.nginx_ this configuration would look as following::
 
-    nginx_allow: [ '{{ ansible_eth1.ipv4.network }}/{{ ("0.0.0.0/" + ansible_eth1.ipv4.netmask) | ipaddr("prefix") }}' ]
+    nginx_allow: [ '{{ ansible_eth1.ipv4.network }}/{{ ("0.0.0.0/" + ansible_eth1.ipv4.netmask) | ansible.utils.ipaddr("prefix") }}' ]
 
 This will restrict access to the HTTP service running on the gateway host to
 the internal IPv4 network which is automatically defined using the ``ansible_eth1``

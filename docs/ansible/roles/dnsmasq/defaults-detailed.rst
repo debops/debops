@@ -339,7 +339,7 @@ Define PTR resource records for hosts:
      - ptr: '40.2.0.192.in-addr.arpa'
        target: 'host1.example.org'
 
-     - ptr: '{{ "192.0.2.50" | ipaddr("revdns") }}'
+     - ptr: '{{ "192.0.2.50" | ansible.utils.ipaddr("revdns") }}'
        target: 'host2.example.org'
 
 Syntax
