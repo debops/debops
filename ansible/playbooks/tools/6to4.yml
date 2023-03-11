@@ -26,7 +26,7 @@
     debops_6to4_var_ipv4_interface: '{{ debops_6to4_ipv4_interface | default(ansible_default_ipv4.interface) }}'
 
     # IPv6 address converted from IPv4 public address
-    debops_6to4_var_ipv6_address: '{{ hostvars[inventory_hostname]["ansible_" + debops_6to4_var_ipv4_interface].ipv4.address | ipv4("6to4") }}'
+    debops_6to4_var_ipv6_address: '{{ hostvars[inventory_hostname]["ansible_" + debops_6to4_var_ipv4_interface].ipv4.address | ansible.utils.ipv4("6to4") }}'
 
 
   pre_tasks:

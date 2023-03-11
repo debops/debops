@@ -108,7 +108,7 @@ netbase__domain: '{{ ""
                                (ansible_local.netbase.self_domain|d()) and
                                (ansible_local.netbase.self_local_hostname|d())|bool)
                            else ((ansible_host | d(ansible_ssh_host | d("0"))).split(".")[1:] | join(".")
-                                 if (not (ansible_host | d(ansible_ssh_host | d("0"))) | ipaddr)
+                                 if (not (ansible_host | d(ansible_ssh_host | d("0"))) | ansible.utils.ipaddr)
                                  else (inventory_hostname.split(".")[1:] | join(".")
                                        if (inventory_hostname.split(".") | count > 1)
                                        else ""))) }}'
