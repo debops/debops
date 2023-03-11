@@ -420,6 +420,11 @@ General
   set and the password length was at least 20 characters, this did not result
   in weak passwords.
 
+- The ``ipaddr`` Ansible filter and its aliases used in various roles were
+  renamed to ``ansible.utils.ipaddr`` and its corresponding alias names because
+  Ansible requires use of FQCNs in filters. The ``ansible.utils`` Ansible
+  Collection is now a dependency of the DebOps Collection.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
