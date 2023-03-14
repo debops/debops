@@ -65,6 +65,8 @@
 - name: Move InfluxDB data files to data directory
   ansible.builtin.shell:
     'mv {{ influxdb_server__default_directory }}/* {{ influxdb_server__directory }}'
+  register: influxdb_server__register_move
+  changed_when: influxdb_server__register_move.changed | bool
   when: (not (ansible_local.influxdb_server.installed | d(false) | bool) and
          influxdb_server__directory != influxdb_server__default_directory)
 

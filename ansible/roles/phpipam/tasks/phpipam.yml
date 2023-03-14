@@ -83,6 +83,7 @@
   become: True
   become_user: '{{ phpipam__user }}'
   register: phpipam__register_checkout
+  changed_when: phpipam__register_checkout.changed | bool
   when: (phpipam__register_source.before is undefined or
          (phpipam__register_source.before is defined and
           phpipam__register_target_branch.stdout is defined and

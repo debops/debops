@@ -223,6 +223,8 @@
 - name: Apply dynamic configuration to Redis instances
   ansible.builtin.command: '/etc/redis/{{ item.item.name }}/ansible-redis-dynamic.conf config'  # noqa no-handler
   with_items: '{{ redis_server__register_config_dynamic.results }}'
+  register: redis_server__register_config_apply
+  changed_when: redis_server__register_config_apply.changed | bool
   when: item is changed
   no_log: '{{ debops__no_log | d(True) }}'
 

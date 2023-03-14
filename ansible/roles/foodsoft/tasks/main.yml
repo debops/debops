@@ -125,6 +125,8 @@
     chdir: '{{ foodsoft__git_dest }}'
   # become: True
   # become_user: '{{ foodsoft__user }}'
+  register: foodsoft__register_db_setup
+  changed_when: foodsoft__register_db_setup.changed | bool
   when: (not (ansible_local.foodsoft[foodsoft__database + "_initialized"] | bool
               if (ansible_local | d() and ansible_local.foodsoft | d() and
                   ansible_local.foodsoft[foodsoft__database + "_initialized"] | d())

@@ -185,6 +185,7 @@
       when: git_item.build_script | d() and
             golang__register_build_source is changed
       register: golang__register_build
+      changed_when: golang__register_build.changed | bool
 
 - name: Install binaries for {{ build.name }}
   ansible.builtin.copy:

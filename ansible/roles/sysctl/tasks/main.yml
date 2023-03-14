@@ -82,6 +82,7 @@
   args:  # noqa no-handler
     executable: 'bash'
   register: sysctl__register_system
+  changed_when: sysctl__register_system.changed | bool
   when: (sysctl__enabled | bool and
          (sysctl__register_config_created is changed or
           sysctl__register_config_removed is changed))
@@ -98,6 +99,8 @@
     {% endif %}
   args:  # noqa no-handler
     executable: 'bash'
+  register: sysctl__register_apply
+  changed_when: sysctl__register_apply.changed | bool
   when: (sysctl__enabled | bool and
          (sysctl__register_config_created is changed or
           sysctl__register_config_removed is changed))

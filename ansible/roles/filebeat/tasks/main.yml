@@ -97,6 +97,8 @@
 
 - name: Create Filebeat keystore if not present
   ansible.builtin.command: 'filebeat keystore create'
+  register: filebeat__register_keystore_create
+  changed_when: filebeat__register_keystore_create.changed | bool
   when: not filebeat__register_keystore.stat.exists
 
 - name: Get the list of keystore contents
@@ -111,6 +113,8 @@
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
   notify: [ 'Test filebeat configuration and restart' ]
+  register: filebeat__register_keystore_remove
+  changed_when: filebeat__register_keystore_remove.changed | bool
   when: (item.state | d('present') == 'absent' and
          item.name in filebeat__register_keys.stdout_lines)
   no_log: '{{ debops__no_log | d(True) }}'
@@ -131,6 +135,8 @@
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
   notify: [ 'Test filebeat configuration and restart' ]
+  register: filebeat__register_keystore_add
+  changed_when: filebeat__register_keystore_add.changed | bool
   when: (item.state | d('present') not in ['absent', 'ignore', 'init'] and
          (item.name not in filebeat__register_keys.stdout_lines or
           (item.force | d(False)) | bool))

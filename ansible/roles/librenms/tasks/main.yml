@@ -141,6 +141,8 @@
     chdir: '{{ librenms__install_path }}'
   become: True
   become_user: '{{ librenms__user }}'
+  register: librenms__register_database_init
+  changed_when: librenms__register_database_init.changed | bool
   when: (librenms__register_database_status | d() and librenms__register_database_status is changed)
   tags: [ 'role::librenms:database' ]
 
@@ -162,6 +164,8 @@
   become: True
   become_user: '{{ librenms__user }}'
   with_items: '{{ librenms__admin_accounts }}'
+  register: librenms__register_admin_accounts
+  changed_when: librenms__register_admin_accounts.changed | bool
   when: (librenms__admin_accounts | d([]) and (item not in librenms__register_users.stdout_lines))
   no_log: '{{ debops__no_log | d(True) }}'
   tags: [ 'role::librenms:config', 'role::librenms:admins' ]
@@ -226,5 +230,7 @@
   become: True
   become_user: '{{ librenms__user }}'
   with_items: '{{ librenms__devices }}'
+  register: librenms__register_addhost
+  changed_when: librenms__register_addhost.changed | bool
   when: (librenms__devices | d([]) and (item not in librenms__register_devices.stdout_lines))
   tags: [ 'role::librenms:config', 'role::librenms:devices' ]

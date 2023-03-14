@@ -32,6 +32,8 @@
 - name: Update roles and playbooks
   become: '{{ controller__install_systemwide | bool }}'
   ansible.builtin.command: debops-update
+  register: controller__register_update
+  changed_when: controller__register_update.changed | bool
   when: controller__update_method == 'sync'
 
 - name: Clone project repository

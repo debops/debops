@@ -58,6 +58,7 @@
   args:  # noqa no-handler
     executable: 'bash'
   register: tzdata__register_services
+  changed_when: tzdata__register_services.changed | bool
   when: (tzdata__enabled | bool and ansible_service_mgr == 'systemd' and
          tzdata__register_timezone is changed)
 

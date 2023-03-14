@@ -217,6 +217,8 @@
   with_together:
     - '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
     - '{{ hashicorp__register_unpack.results }}'
+  register: hashicorp__register_app_install
+  changed_when: hashicorp__register_app_install.changed | bool
   when: (item.1 is changed or (ansible_local | d() and
          (ansible_local.hashicorp is not defined or
           (ansible_local.hashicorp | d() and ansible_local.hashicorp.applications | d() and
@@ -229,6 +231,8 @@
          {{ hashicorp__lib + "/" + item + "/" + hashicorp__combined_version_map[item] + "/web_ui/" }}
          {{ hashicorp__consul_webui_path }} && chown -R root:root {{ hashicorp__consul_webui_path }}'
   with_items: '{{ (hashicorp__applications + hashicorp__dependent_applications) | unique }}'
+  register: hashicorp__register_consul_ui_rsync
+  changed_when: hashicorp__register_consul_ui_sync.changed | bool
   when: (hashicorp__consul_webui | bool and item == 'consul' and hashicorp__register_unpack_webui is changed)
 
 

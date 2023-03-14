@@ -102,6 +102,8 @@
   with_items:  # noqa no-handler
     - '{{ ifupdown__register_interfaces_removed.results }}'
     - '{{ ifupdown__register_interfaces_created.results }}'
+  register: ifupdown__register_iface_cleanup
+  changed_when: ifupdown__register_iface_cleanup.changed | bool
   when: (item.item.key | d() and item is changed)
 
 - name: Mark modified interfaces for processing

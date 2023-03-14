@@ -84,6 +84,8 @@
   loop: '{{ q("flattened", mosquitto__auth_users
                            + mosquitto__auth_group_users
                            + mosquitto__auth_host_users) }}'
+  register: mosquitto__register_passwd_remove
+  changed_when: mosquitto__register_passwd_remove.changed | bool
   when: (mosquitto__password | bool and item.state | d('present') == 'absent' and
          (item.name | d(item) in mosquitto__register_passwd.stdout_lines) and
          mosquitto__version is version_compare('1.4.0', '>='))
@@ -99,6 +101,8 @@
   loop: '{{ q("flattened", mosquitto__auth_users
                            + mosquitto__auth_group_users
                            + mosquitto__auth_host_users) }}'
+  register: mosquitto__register_passwd_create
+  changed_when: mosquitto__register_passwd_create.changed | bool
   when: (mosquitto__password | bool and item.state | d('present') != 'absent' and
          (item.name | d(item) not in mosquitto__register_passwd.stdout_lines) and
          mosquitto__version is version_compare('1.4.0', '>='))

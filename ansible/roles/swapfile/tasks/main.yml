@@ -39,12 +39,15 @@
 - name: Initialize swap files
   ansible.builtin.command: 'mkswap {{ item.item.path | d(item.item) }}'  # noqa no-handler
   register: swapfile__register_init
+  changed_when: swapfile__register_init.changed | bool
   with_items: '{{ swapfile__register_allocation.results | d([]) }}'
   when: (item is changed and item.state | d("present") != 'absent')
 
 - name: Enable swap files
   ansible.builtin.command: 'swapon -p {{ item.item.priority | d(swapfile__priority) }} {{ item.item.path | d(item.item) }}'  # noqa no-handler
   with_items: '{{ swapfile__register_allocation.results | d([]) }}'
+  register: swapfile__register_swapon
+  changed_when: swapfile__register_swapon.changed | bool
   when: (item is changed and item.state | d("present") != 'absent' and
          ((ansible_system_capabilities_enforced | d()) | bool and
           "cap_sys_admin" in ansible_system_capabilities) or

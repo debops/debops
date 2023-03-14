@@ -95,6 +95,7 @@
   become: True
   become_user: '{{ dokuwiki__user }}'
   register: dokuwiki__register_checkout
+  changed_when: dokuwiki__register_checkout.changed | bool
   when: (dokuwiki__register_source.before is undefined or
          (dokuwiki__register_source.before is defined and
           dokuwiki__register_target_branch.stdout is defined and

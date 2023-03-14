@@ -140,6 +140,8 @@
 
 - name: Reload changed profiles
   ansible.builtin.command: 'apparmor_parser --replace "/etc/apparmor.d/{{ item.item.key }}"'  # noqa no-handler
+  register: apparmor__register_reload
+  changed_when: apparmor__register_reload.changed | bool
   when: (item is changed and apparmor__register_tunables is not changed)
   with_items: '{{ apparmor__register_local_config.results }}'
 
@@ -151,6 +153,8 @@
 
 - name: Unload AppArmor profiles
   ansible.builtin.command: service apparmor teardown  # noqa command-instead-of-module
+  register: apparmor__register_teardown
+  changed_when: apparmor__register_teardown.changed | bool
   when: (not (apparmor__enabled | d() | bool))
 
 - name: Ensure AppArmor service is stopped

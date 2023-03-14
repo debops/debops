@@ -111,6 +111,8 @@
 
 - name: Create Metricbeat keystore if not present
   ansible.builtin.command: 'metricbeat keystore create'
+  register: metricbeat__register_keystore_create
+  changed_when: metricbeat__register_keystore_create.changed | bool
   when: not metricbeat__register_keystore.stat.exists
 
 - name: Get the list of keystore contents
@@ -125,6 +127,8 @@
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
   notify: [ 'Test metricbeat configuration and restart' ]
+  register: metricbeat__register_keystore_remove
+  changed_when: metricbeat__register_keystore_remove.changed | bool
   when: (item.state | d('present') == 'absent' and
          item.name in metricbeat__register_keys.stdout_lines)
   no_log: '{{ debops__no_log | d(True) }}'
@@ -145,6 +149,8 @@
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
   notify: [ 'Test metricbeat configuration and restart' ]
+  register: metricbeat__register_keystore_add
+  changed_when: metricbeat__register_keystore_add.changed | bool
   when: (item.state | d('present') not in ['absent', 'ignore', 'init'] and
          (item.name not in metricbeat__register_keys.stdout_lines or
           (item.force | d(False)) | bool))

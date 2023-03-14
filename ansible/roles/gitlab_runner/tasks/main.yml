@@ -186,6 +186,8 @@
 - name: Scan SSH fingerprints of specified hosts
   ansible.builtin.shell: 'ssh-keyscan -H -T 10 {{ item.item }} >> {{ gitlab_runner__home + "/.ssh/known_hosts" }}'
   with_items: '{{ gitlab_runner__register_known_hosts.results }}'
+  register: gitlab_runner__register_keyscan
+  changed_when: gitlab_runner__register_keyscan.changed | bool
   when: gitlab_runner__ssh_known_hosts and item is defined and item.rc > 0
   failed_when: False
 

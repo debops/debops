@@ -23,6 +23,8 @@
   ansible.builtin.command: 'make install'  # noqa no-handler
   args:
     chdir: '{{ phpipam__scripts_git_dest }}'
+  register: phpipam__register_make_install
+  changed_when: phpipam__register_make_install.changed | bool
   when: phpipam__register_scripts_src is defined and
         phpipam__register_scripts_src is changed
 

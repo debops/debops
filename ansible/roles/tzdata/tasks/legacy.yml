@@ -54,6 +54,8 @@
 
 - name: Reconfigure tzdata
   ansible.builtin.command: 'dpkg-reconfigure --frontend noninteractive tzdata'  # noqa no-handler
+  register: tzdata__register_dpkg_reconfigure
+  changed_when: tzdata__register_dpkg_reconfigure.changed | bool
   when: (tzdata__enabled | bool and
          (tzdata__register_debconf_set_area is changed or
           tzdata__register_debconf_set_zone is changed or

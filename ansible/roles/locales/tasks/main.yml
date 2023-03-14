@@ -36,6 +36,8 @@
 
 - name: Update /etc/default/locale
   ansible.builtin.command: 'update-locale LANG={{ locales__system_lang }}'  # noqa no-handler
+  register: locales__register_update_locale
+  changed_when: locales__register_update_locale.changed | bool
   when: ansible_pkg_mgr == 'apt' and locales__register_system_lang is changed
 
 - name: Make sure that Ansible local facts directory exists

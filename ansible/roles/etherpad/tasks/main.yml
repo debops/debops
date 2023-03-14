@@ -106,6 +106,7 @@
   become_user: '{{ etherpad_user }}'
   register: etherpad_register_checkout
   notify: [ 'Restart etherpad-lite' ]
+  changed_when: etherpad_register_checkout.changed | bool
   when: (etherpad_register_source is defined and etherpad_register_source is changed) or
         (etherpad_register_directory is defined and not etherpad_register_directory.stat.exists | bool)
   tags: [ 'role::etherpad:source' ]

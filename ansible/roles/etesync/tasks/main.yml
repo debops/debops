@@ -97,6 +97,8 @@
     chdir: '{{ etesync__git_checkout }}'
   become: True
   become_user: '{{ etesync__user }}'
+  register: etesync__register_cleanup
+  changed_when: etesync__register_cleanup.changed | bool
   when: etesync__register_source is changed
 
 # Configure EteSync server [[[1
@@ -176,6 +178,8 @@
     executable: 'bash'
   become: True
   become_user: '{{ etesync__user }}'
+  register: etesync__register_superuser
+  changed_when: etesync__register_superuser.changed | bool
   when: ("etesync" not in ansible_local)
   no_log: '{{ debops__no_log | d(True) }}'
 

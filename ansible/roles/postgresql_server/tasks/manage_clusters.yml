@@ -65,6 +65,8 @@
   with_items: '{{ postgresql_server__register_createcluster.results }}'
   loop_control:
     label: '{{ item.item }}'
+  register: postgresql_server__register_basebackup
+  changed_when: postgresql_server__register_basebackup.changed | bool
 
 - name: Log directory path
   ansible.builtin.file:
@@ -231,6 +233,8 @@
                            + postgresql_server__register_config_hba.results
                            + postgresql_server__register_config_ident.results
                            + postgresql_server__register_trusted.results) }}'
+  register: postgresql_server__register_pg_cluster_reload
+  changed_when: postgresql_server__register_pg_cluster_reload.changed | bool
   when: (ansible_service_mgr != 'systemd' and
          ((item is changed and
           (item.item.start_conf is undefined or item.item.start_conf == 'auto'))))
