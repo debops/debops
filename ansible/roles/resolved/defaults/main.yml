@@ -71,11 +71,11 @@ resolved__dnssd_enabled: True
 # package is separate from ``systemd`` APT package since Debian Bookworm to
 # allow for conflict resolution with other APT packages that provide the
 # ``resolvconf`` service.
-resolved__base_packages: '{{ [ "libnss-resolve" ]
+resolved__base_packages: '{{ ["libnss-resolve"]
                               if (ansible_distribution_release in
-                                  ([ "stretch", "buster", "bullseye",
-                                     "bionic", "focal", "jammy" ]))
-                              else [ "systemd-resolved", "libnss-resolve" ] }}'
+                                  (["stretch", "buster", "bullseye",
+                                    "bionic", "focal", "jammy"]))
+                              else ["systemd-resolved", "libnss-resolve"] }}'
 
                                                                    # ]]]
 # .. envvar:: resolved__packages [[[
@@ -292,8 +292,8 @@ resolved__dpkg_cleanup__dependent_packages:
     ansible_fact: 'resolved'
     state: '{{ "absent"
                if (ansible_distribution_release in
-                   ([ "stretch", "buster", "bullseye",
-                      "bionic", "focal", "jammy" ]))
+                   (["stretch", "buster", "bullseye",
+                     "bionic", "focal", "jammy"]))
                else "present" }}'
                                                                    # ]]]
                                                                    # ]]]
