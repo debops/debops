@@ -362,12 +362,10 @@ for collection in "${collections[@]}" ; do
         fi
     done
 
-    # Create meta/runtime.yml metadata file
+    # Copy meta/runtime.yml metadata file
     mkdir "${workdir_map[${collection}]}/meta"
-    cat <<EOF > "${workdir_map[${collection}]}/meta/runtime.yml"
----
-requires_ansible: ">=2.10"
-EOF
+    cp ansible/collections/ansible_collections/debops/debops/meta/runtime.yml \
+        "${workdir_map[${collection}]}/meta/runtime.yml"
 
     # Generate the 'galaxy.yml' file
     if [ "${collection}" == "${collections[0]}" ] ; then
