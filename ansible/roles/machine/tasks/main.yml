@@ -129,6 +129,8 @@
             + machine__register_motd_scripts_created.results }}'
   loop_control:
     label: '{{ item.item.name }}'
+  register: machine__register_remove_unknown
+  changed_when: machine__register_remove_unknown.changed | bool
   when: (item.item.name | d() and not item.item.divert | d(False) | bool and
          item.item.filename is undefined and item is changed)
 

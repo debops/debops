@@ -145,6 +145,8 @@
 
 - name: Run initial DebOps API data build
   ansible.builtin.command: '{{ debops_api__cron_script }}'
+  register: debops_api__register_init
+  changed_when: debops_api__register_init.changed | bool
   when: not debops_api__register_public_api_dir.stat.exists
   become: True
   become_user: '{{ debops_api__user }}'

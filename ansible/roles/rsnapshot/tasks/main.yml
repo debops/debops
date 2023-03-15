@@ -183,6 +183,8 @@
   loop: '{{ rsnapshot__register_ssh_keys.results }}'
   loop_control:
     label: '{{ {"name": item.item.name, "state": item.item.state | d("present")} }}'
+  register: rsnapshot__register_keygen_remove
+  changed_when: rsnapshot__register_keygen_remove.changed | bool
   when: (item.item.name | d() and item.item.state | d('present') not in ['absent', 'ignore'] and
          not (item.item.local | d()) | bool and (item.item.ssh_scan | d(True)) | bool and item is changed and
          (not rsnapshot__limit | d() or (item.item.name in rsnapshot__limit)))
@@ -210,6 +212,8 @@
   loop: '{{ rsnapshot__register_known_hosts.results }}'
   loop_control:
     label: '{{ {"name": item.item.name, "state": item.item.state | d("present")} }}'
+  register: rsnapshot__register_ssh_keyscan
+  changed_when: rsnapshot__register_ssh_keyscan.changed | bool
   when: (item.item.name | d() and item.item.state | d('present') not in ['absent', 'ignore'] and
          not (item.item.local | d()) | bool and (item.item.ssh_scan | d(True)) | bool and item.rc | d() > 0 and
          (not rsnapshot__limit | d() or (item.item.name in rsnapshot__limit)))

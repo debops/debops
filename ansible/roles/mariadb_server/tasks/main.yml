@@ -72,6 +72,8 @@
 - name: Move MariaDB data files to data directory
   ansible.builtin.shell:  # noqa no-handler
     'mv {{ mariadb_server__default_datadir }}/* {{ mariadb_server__datadir }}'
+  register: mariadb_server__register_move
+  changed_when: mariadb_server__register_move.changed | bool
   when: ((mariadb_server__register_version | d() and not mariadb_server__register_version.stdout) and
          (mariadb_server__register_install_status | d() and mariadb_server__register_install_status is changed) and
          (mariadb_server__datadir != mariadb_server__default_datadir))

@@ -26,6 +26,8 @@
 - name: Stop saslauthd instance before removal
   ansible.builtin.command: /etc/init.d/saslauthd stop-instance saslauthd-{{ item.name }}
   with_items: '{{ saslauthd__combined_instances | debops.debops.parse_kv_items }}'
+  register: saslauthd__register_stop_instance
+  changed_when: saslauthd__register_stop_instance.changed | bool
   when: item.name | d() and item.socket_path | d() and
         item.state | d('present') == 'absent'
 
@@ -124,6 +126,8 @@
   ansible.builtin.command: dpkg-statoverride --remove {{ item.socket_path }}
   with_items: '{{ saslauthd__combined_instances | debops.debops.parse_kv_items }}'
   notify: [ 'Restart saslauthd' ]
+  register: saslauthd__register_statoverride_remove
+  changed_when: saslauthd__register_statoverride_remove.changed | bool
   when: item.name | d() and item.socket_path | d() and item.state | d('present') == 'absent' and
         item.socket_path in saslauthd__register_statoverride.stdout_lines
 
@@ -135,6 +139,8 @@
            {{ item.socket_path }}
   with_items: '{{ saslauthd__combined_instances | debops.debops.parse_kv_items }}'
   notify: [ 'Restart saslauthd' ]
+  register: saslauthd__register_statoverride_add
+  changed_when: saslauthd__register_statoverride_add.changed | bool
   when: item.name | d() and item.socket_path | d() and item.state | d('present') != 'absent' and
         item.socket_path not in saslauthd__register_statoverride.stdout_lines
 

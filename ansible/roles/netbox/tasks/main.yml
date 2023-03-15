@@ -116,6 +116,7 @@
   become: True
   become_user: '{{ netbox__user }}'
   register: netbox__register_checkout
+  changed_when: netbox__register_checkout.changed | bool
   until: netbox__register_checkout is succeeded
   notify: [ 'Restart gunicorn for netbox', 'Restart netbox internal appserver', 'Restart netbox Request Queue Worker' ]
   when: (netbox__register_source.before is undefined or
@@ -145,6 +146,8 @@
     chdir: '{{ netbox__git_checkout + "/netbox" }}'
   become: True
   become_user: '{{ netbox__user }}'
+  register: netbox__register_cleanup
+  changed_when: netbox__register_cleanup.changed | bool
   when: netbox__register_checkout is changed
 
 - name: Install NetBox requirements in virtualenv
@@ -215,6 +218,7 @@
   become_user: '{{ netbox__user }}'
   when: netbox__register_checkout is changed
   register: netbox__register_migration
+  changed_when: netbox__register_migration.changed | bool
 
 - name: Create Django superuser account
   community.general.django_manage:

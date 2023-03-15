@@ -64,6 +64,8 @@
         rails_deploy_register_repo_status is changed
   become: True
   become_user: '{{ rails_deploy_service }}'  # noqa no-handler
+  register: rails_deploy__register_db_schema_load
+  changed_when: rails_deploy__register_db_schema_load.changed | bool
 
 - name: Store mtime of the config folder
   ansible.builtin.stat:
@@ -87,6 +89,8 @@
   with_items: '{{ rails_deploy_pre_migrate_shell_commands }}'
   become: True
   become_user: '{{ rails_deploy_service }}'  # noqa no-handler
+  register: rails_deploy__register_migration_pre_commands
+  changed_when: rails_deploy__register_migration_pre_commands.changed | bool
 
 - name: Migrate the database
   ansible.builtin.shell: '{{ rails_deploy_env_source }} && bundle exec rake db:migrate chdir={{ rails_deploy_src }}'
@@ -98,6 +102,7 @@
          ansible_local.rails_deploy[rails_deploy_service].mtime.schema) or
         ansible_local.rails_deploy[rails_deploy_service].mtime.schema is undefined))
   register: rails_deploy_register_migration
+  changed_when: rails_deploy_register_migration.changed | bool
   become: True
   become_user: '{{ rails_deploy_service }}'  # noqa no-handler
 
@@ -109,6 +114,8 @@
   with_items: '{{ rails_deploy_post_migrate_shell_commands }}'
   become: True
   become_user: '{{ rails_deploy_service }}'  # noqa no-handler
+  register: rails_deploy__register_migration_post_commands
+  changed_when: rails_deploy__register_migration_post_commands.changed | bool
 
 - name: Reload the backend server
   ansible.builtin.service:
@@ -183,6 +190,8 @@
   with_items: '{{ rails_deploy_post_restart_shell_commands }}'
   become: True
   become_user: '{{ rails_deploy_service }}'
+  register: rails_deploy__register_shell_commands
+  changed_when: rails_deploy__register_shell_commands.changed | bool
 
 - name: Disable the temporary deploy page
   ansible.builtin.file:  # noqa no-handler

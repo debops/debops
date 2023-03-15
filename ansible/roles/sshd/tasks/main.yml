@@ -201,6 +201,8 @@
 - name: Scan SSH fingerprints of specified hosts
   ansible.builtin.shell: '{{ sshd__known_hosts_command }} {{ item.item }} >> {{ sshd__known_hosts_file }}'
   with_items: '{{ sshd__register_known_hosts.results | d([]) }}'
+  register: sshd__register_known_hosts_scan
+  changed_when: sshd__register_known_hosts_scan.changed | bool
   when: item is defined and item.rc > 0
   tags: [ 'role::sshd:known_hosts' ]
 
@@ -214,6 +216,8 @@
   ansible.builtin.shell: awk '$5 >= {{ (sshd__moduli_minimum | int - 1) }}' /etc/ssh/moduli > /etc/ssh/moduli.new ;
          [ -r /etc/ssh/moduli.new -a -s /etc/ssh/moduli.new ] && mv /etc/ssh/moduli.new /etc/ssh/moduli || true
   notify: [ 'Test sshd configuration and restart' ]
+  register: sshd__register_moduli
+  changed_when: sshd__register_moduli.changed | bool
   when: sshd__register_moduli.stdout
 
 - name: Remove block on OpenSSH server startup

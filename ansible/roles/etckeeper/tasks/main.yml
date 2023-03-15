@@ -164,6 +164,8 @@
   ansible.builtin.command: etckeeper commit '{{ etckeeper__commit_message_update
                                 if etckeeper__installed | bool
                                 else etckeeper__commit_message_init }}'  # noqa no-handler
+  register: etckeeper__register_commit
+  changed_when: etckeeper__register_commit.changed | bool
   when: (etckeeper__enabled | bool and
          (etckeeper__register_init is changed or
           etckeeper__register_config is changed or

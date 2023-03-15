@@ -350,6 +350,8 @@
 - name: Configure static MAC addresses for new LXC containers
   ansible.builtin.command: lxc-hwaddr-static {{ item.name | d(item) }}
   loop: '{{ lxc__containers }}'
+  register: lxc__register_hwaddr_static
+  changed_when: lxc__register_hwaddr_static.changed | bool
   when: ansible_local | d() and ansible_local.lxc | d() and
         (item.name | d(item)) not in ansible_local.lxc.containers | d() and
         item.state | d("started") == "started"
@@ -431,6 +433,8 @@
        printf "Waiting for network connection inside container to settle...\n" ; sleep 5
     done
   loop: '{{ lxc__containers }}'
+  register: lxc__register_prepare_ssh
+  changed_when: lxc__register_prepare_ssh.changed | bool
   when: ansible_local | d() and ansible_local.lxc | d() and
         (item.name | d(item)) not in ansible_local.lxc.containers | d() and
         (item.ssh | d(lxc__default_container_ssh)) | bool and item.state | d("started") == "started"

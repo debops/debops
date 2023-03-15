@@ -81,6 +81,8 @@
     chdir: '{{ reprepro__data_root + "/" + repo.name }}'
   become: True
   become_user: '{{ reprepro__user }}'
+  register: reprepro__register_export
+  changed_when: reprepro__register_export.changed | bool
   when: (repo.state | d('present') not in ['absent', 'ignore'] and repo.distributions | d() and
          (reprepro__register_config is changed or reprepro__register_uploaders is changed))
 

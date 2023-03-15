@@ -141,6 +141,8 @@
             + ferm__register_rules_created.results }}'
   loop_control:
     label: '{{ item.item.key }}'
+  register: ferm__register_unknown_rules
+  changed_when: ferm__register_unknown_rules.changed | bool
   when: (item.item.key | d() and item is changed)
   tags: [ 'role::ferm:rules' ]
 

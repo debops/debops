@@ -39,6 +39,8 @@
 
 - name: Move persistent journal to volatile storage if requested
   ansible.builtin.command: 'journalctl --relinquish-var'
+  register: journald__register_relinquish_var
+  changed_when: journald__register_relinquish_var.changed | bool
   when: (journald__enabled | bool and journald__version is version("244", ">=") and
          journald__persistent_state == 'absent' and
          (ansible_local.journald.persistent | d(False)) | bool)

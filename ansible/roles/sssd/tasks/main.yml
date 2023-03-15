@@ -21,6 +21,8 @@
 
 - name: Enable mkhomedir PAM module
   ansible.builtin.shell: 'pam-auth-update --package --remove mkhomedir 2>/dev/null && pam-auth-update --package --enable mkhomedir 2>/dev/null'  # noqa no-handler
+  register: sssd__register_pam_update
+  changed_when: sssd__register_pam_update.changed | bool
   when: sssd__register_mkhomedir is changed
 
 - name: Install packages for sssd support

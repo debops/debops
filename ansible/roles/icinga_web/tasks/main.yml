@@ -196,17 +196,23 @@
 
 - name: Create or migrate Icinga Director database
   ansible.builtin.command: 'icingacli director migration run'
+  register: icinga_web__register_director_migrate
+  changed_when: icinga_web__register_director_migrate.changed | bool
   when: icinga_web__director_enabled | bool and
         icinga_web__director_database_init | bool
 
 - name: Kickstart Icinga Director configuration
   ansible.builtin.command: 'icingacli director kickstart run'
+  register: icinga_web__register_director_kickstart
+  changed_when: icinga_web__register_director_kickstart.changed | bool
   when: icinga_web__director_enabled | bool and
         icinga_web__director_database_init | bool and
         icinga_web__director_kickstart_enabled | bool
 
 - name: Deploy Icinga Director configuration
   ansible.builtin.command: 'icingacli director config deploy'
+  register: icinga_web__register_director_deploy
+  changed_when: icinga_web__register_director_deploy.changed | bool
   when: icinga_web__director_enabled | bool and
         icinga_web__director_database_init | bool and
         icinga_web__director_kickstart_enabled | bool
@@ -264,6 +270,8 @@
 
 - name: Import CA certificates to Icinga Web x509 truststore
   ansible.builtin.command: 'icingacli x509 import --file /etc/ssl/certs/ca-certificates.crt'
+  register: icinga_web__register_import_ca
+  changed_when: icinga_web__register_import_ca.changed | bool
   when: icinga_web__x509_enabled | bool and
         icinga_web__x509_database_init | bool
 

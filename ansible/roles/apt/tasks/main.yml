@@ -80,6 +80,8 @@
   loop: '{{ q("flattened", apt__extra_architectures
                            + apt__group_extra_architectures
                            + apt__host_extra_architectures) }}'
+  register: apt__register_add_architecture
+  changed_when: apt__register_add_architecture.changed | bool
   when: item not in ansible_facts.ansible_local.apt.foreign_architectures | d()
   notify: [ 'Refresh host facts' ]
 

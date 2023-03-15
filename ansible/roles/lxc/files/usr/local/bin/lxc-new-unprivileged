@@ -15,13 +15,18 @@
 
 set -o nounset -o pipefail -o errexit
 
-readonly SCRIPT="$(basename "${0}")"
+SCRIPT="$(basename "${0}")"
+readonly SCRIPT
 readonly CONTAINER="${1:-}"
-readonly CONFIG_FILE="$(grep 'lxc.default_unprivileged_config' /etc/lxc/lxc.conf | awk '{print $3}')"
+CONFIG_FILE="$(grep 'lxc.default_unprivileged_config' /etc/lxc/lxc.conf | awk '{print $3}')"
+readonly CONFIG_FILE
 
-readonly DISTRIBUTION="$(lsb_release -i | awk '{print $NF}' | tr '[:upper:]' '[:lower:]')"
-readonly RELEASE="$(lsb_release -c | awk '{print $NF}' | tr '[:upper:]' '[:lower:]')"
-readonly ARCHITECTURE="$(dpkg --print-architecture)"
+DISTRIBUTION="$(lsb_release -i | awk '{print $NF}' | tr '[:upper:]' '[:lower:]')"
+readonly DISTRIBUTION
+RELEASE="$(lsb_release -c | awk '{print $NF}' | tr '[:upper:]' '[:lower:]')"
+readonly RELEASE
+ARCHITECTURE="$(dpkg --print-architecture)"
+readonly ARCHITECTURE
 
 # The SKS keyservers are deprecated, so we need to provide an alternative
 readonly DOWNLOAD_KEYSERVER="${DOWNLOAD_KEYSERVER:-hkp://keyserver.ubuntu.com}"

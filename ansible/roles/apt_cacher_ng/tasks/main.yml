@@ -70,13 +70,15 @@
          apt_cacher_ng__cache_dir_enforce_permissions == 'lazy')
 
 # Note: doing this using native Ansible tasks is too slow
-- name: Change cache directory permissions  # noqa deprecated-command-syntax
+- name: Change cache directory permissions  # noqa no-free-form
   ansible.builtin.shell: |
     chown --recursive {{ apt_cacher_ng__cache_dir_owner }}:{{ apt_cacher_ng__cache_dir_group }} .
     find . -type d -exec chmod {{ apt_cacher_ng__dir_perms }} {} \;
     find . -type f -exec chmod {{ apt_cacher_ng__file_perms }} {} \;
   args:
     chdir: '{{ apt_cacher_ng__cache_dir }}'
+  register: apt_cacher_ng__register_chmod
+  changed_when: apt_cacher_ng__register_chmod.changed | bool
   when: (apt_cacher_ng__deploy_state == 'present' and
          (apt_cacher_ng__cache_dir_enforce_permissions == "strict" or
           (apt_cacher_ng__cache_dir_enforce_permissions == "lazy" and

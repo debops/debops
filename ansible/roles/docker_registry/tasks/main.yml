@@ -102,6 +102,7 @@
         chdir: '{{ docker_registry__git_dest }}'
       when: docker_registry__register_source is changed
       register: docker_registry__register_build
+      changed_when: docker_registry__register_build.changed | bool
 
 - name: Install Docker Registry binary
   ansible.builtin.copy:  # noqa no-handler

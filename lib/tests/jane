@@ -36,7 +36,8 @@ require_bash_4 () {
 require_bash_4
 
 
-readonly SCRIPTNAME="$( basename "${0}" )"
+SCRIPTNAME="$( basename "${0}" )"
+readonly SCRIPTNAME
 readonly SCRIPTPID="$$"
 readonly ARGS=( "${@:-}" )
 readonly PATH="${PATH}:${HOME}/.local/lib/${SCRIPTNAME}:/vagrant/lib/tests:/usr/local/lib/${SCRIPTNAME}:/usr/lib/${SCRIPTNAME}"
@@ -935,7 +936,7 @@ dynamic_inventory_list () {
                 parsed_hostvars="$(<"${jane_inventory_hostvars[@]}")"
             else
                 local parsed_hostvars
-                # shellcheck disable=SC2086
+                # shellcheck disable=SC2086 disable=SC2048
                 parsed_hostvars="$(jo ${jane_inventory_hostvars[*]})"
             fi
         else

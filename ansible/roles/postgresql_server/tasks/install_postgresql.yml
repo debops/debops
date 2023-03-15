@@ -35,6 +35,8 @@
   # Main cluster will be recreated later, with correct encoding
 - name: Remove default PostgreSQL cluster on first install
   ansible.builtin.command: pg_dropcluster --stop {{ postgresql_server__version }} main
+  register: postgresql_server__register_dropcluster
+  changed_when: postgresql_server__register_dropcluster.changed | bool
   when: ((postgresql_server__register_installed | d() and not postgresql_server__register_installed.stdout) and
          (postgresql_server__register_installed_main | d() and postgresql_server__register_installed_main.stat.exists) and
           (ansible_local is undefined or

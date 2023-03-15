@@ -145,6 +145,8 @@
       ansible.builtin.shell: "set -o nounset -o pipefail -o errexit && grep -lrIZ 'Pin: release .*={{ dist_upgrade_current_release }}-backports' /etc/apt/preferences.d | xargs -0 rm -f -- || true"  # noqa no-handler
       args:
         executable: 'bash'
+      register: dist_upgrade_register_remove
+      changed_when: dist_upgrade_register_remove.changed | bool
       when: dist_upgrade_register_replace is defined and dist_upgrade_register_replace is changed
 
     - name: Create a lockfile

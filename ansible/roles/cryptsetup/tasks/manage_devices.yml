@@ -391,6 +391,8 @@
 - name: Enable swap devices
   ansible.builtin.command: swapon --priority {{ (item.item.priority | d(cryptsetup__swap_priority) | string) | quote }}
            {{ ("/dev/mapper/" + item.item.name) | quote }}
+  register: cryptsetup__register_swapon
+  changed_when: cryptsetup__register_swapon.changed | bool
   when: (item is changed and (item.item.swap | d(False) | bool) and
          (item.item.state | d(cryptsetup__state) in ['mounted', 'ansible_controller_mounted']))
   with_items: '{{ cryptsetup__register_swap_fstab.results | d([]) }}'  # noqa no-handler

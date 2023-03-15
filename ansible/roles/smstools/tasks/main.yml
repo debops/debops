@@ -154,6 +154,8 @@
 
 - name: Fix permissions manually if installed
   ansible.builtin.command: /usr/local/lib/smstools/fix-device-permissions  # noqa no-handler
+  register: smstools__register_fix_perms
+  changed_when: smstools__register_fix_perms.changed | bool
   when: smstools_register_fixpermissions is defined and smstools_register_fixpermissions is changed
 
 - name: Configure SMS gateway test on reboot

@@ -268,7 +268,7 @@ exec 7>&2           # Link file descriptor #7 with stderr.
 exec 2> "$LOGERR"     # stderr replaced with file $LOGERR.
 
 # When a desire is to receive log via e-mail then we close stdout and stderr.
-[ "x$MAILCONTENT" == "xlog" ] && exec 6>&- 7>&-
+[ "$MAILCONTENT" == "log" ] && exec 6>&- 7>&-
 
 # Functions
 
@@ -447,7 +447,7 @@ if [ "$POSTBACKUP" ]; then
 fi
 
 # Clean up IO redirection if we plan not to deliver log via e-mail.
-[ ! "x$MAILCONTENT" == "xlog" ] && exec 1>&6 2>&7 6>&- 7>&-
+[ ! "$MAILCONTENT" == "log" ] && exec 1>&6 2>&7 6>&- 7>&-
 
 if [ "$MAILCONTENT" = "log" ]; then
     mail -s "InfluxDB Backup Log for $DBHOST - $DATE" "$MAILADDR" < "$LOGFILE"

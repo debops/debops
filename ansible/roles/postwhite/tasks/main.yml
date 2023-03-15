@@ -72,6 +72,8 @@
   notify:
     - 'Update Postwhite in the background using async'
     - 'Update Postwhite in the background using batch'
+  register: postwhite__register_scrape_yahoo
+  changed_when: postwhite__register_scrape_yahoo.changed | bool
   when: (ansible_local is undefined or
          (ansible_local | d() and ansible_local.postwhite is undefined or
           (ansible_local.postwhite | d() and

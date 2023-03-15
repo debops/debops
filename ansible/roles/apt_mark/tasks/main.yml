@@ -34,6 +34,8 @@
 - name: Set package state as installed automatically
   ansible.builtin.command: apt-mark auto {{ ((item.packages | d([item.name])) | intersect(apt_mark__fact_installed)) | join(' ') }}
   with_items: '{{ apt_mark__combined_packages | debops.debops.parse_kv_items }}'
+  register: apt_mark__register_auto
+  changed_when: apt_mark__register_auto.changed | bool
   when: (apt_mark__enabled | bool and
          (item.packages | d([item.name]) | intersect(apt_mark__fact_installed))
          | symmetric_difference(apt_mark__fact_manual) and
@@ -45,6 +47,8 @@
   ansible.builtin.command: apt-mark manual {{ ((item.packages | d([item.name]))
                                | intersect(apt_mark__fact_installed)) | join(' ') }}
   with_items: '{{ apt_mark__combined_packages | debops.debops.parse_kv_items }}'
+  register: apt_mark__register_manual
+  changed_when: apt_mark__register_manual.changed | bool
   when: (apt_mark__enabled | bool and
          (item.packages | d([item.name]) | intersect(apt_mark__fact_installed))
          | symmetric_difference(apt_mark__fact_auto) and
@@ -56,6 +60,8 @@
   ansible.builtin.command: apt-mark hold {{ ((item.packages | d([item.name]))
                              | intersect(apt_mark__fact_installed)) | join(' ') }}
   with_items: '{{ apt_mark__combined_packages | debops.debops.parse_kv_items }}'
+  register: apt_mark__register_hold
+  changed_when: apt_mark__register_hold.changed | bool
   when: (apt_mark__enabled | bool and
         (item.packages | d([item.name]) | intersect(apt_mark__fact_installed))
         | difference(apt_mark__fact_hold) and
@@ -65,6 +71,8 @@
   ansible.builtin.command: apt-mark unhold {{ ((item.packages | d([item.name]))
                                | intersect(apt_mark__fact_installed)) | join(' ') }}
   with_items: '{{ apt_mark__combined_packages | debops.debops.parse_kv_items }}'
+  register: apt_mark__register_unhold
+  changed_when: apt_mark__register_unhold.changed | bool
   when: (apt_mark__enabled | bool and
         (item.packages | d([item.name]) | intersect(apt_mark__fact_installed))
         | intersect(apt_mark__fact_hold) and

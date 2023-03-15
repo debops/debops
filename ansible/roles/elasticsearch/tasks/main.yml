@@ -156,6 +156,8 @@
     chdir: '/usr/share/elasticsearch'
   notify: [ 'Restart elasticsearch' ]
   loop: '{{ q("flattened", elasticsearch__combined_plugins) }}'
+  register: elasticsearch__register_plugin_install
+  changed_when: elasticsearch__register_plugin_install.changed | bool
   when: (item.name | d() and item.state | d('present') != 'absent' and
          (item.name if ':' not in item.name else item.name.split(':')[1])
          not in elasticsearch__register_plugins.stdout_lines)
@@ -166,6 +168,8 @@
     chdir: '/usr/share/elasticsearch'
   notify: [ 'Restart elasticsearch' ]
   loop: '{{ q("flattened", elasticsearch__combined_plugins) }}'
+  register: elasticsearch__register_plugin_remove
+  changed_when: elasticsearch__register_plugin_remove.changed | bool
   when: (item.name | d() and item.state | d('present') == 'absent' and
          (item.name if ':' not in item.name else item.name.split(':')[1])
          in elasticsearch__register_plugins.stdout_lines)

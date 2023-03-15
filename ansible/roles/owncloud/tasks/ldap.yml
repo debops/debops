@@ -27,6 +27,7 @@
   become: True
   become_user: '{{ owncloud__app_user }}'
   register: owncloud__register_ldap_config_id
+  changed_when: owncloud__register_ldap_config_id.changed | bool
   when: ((not ansible_check_mode) and 'Invalid configID' in owncloud__register_ldap_default_config_exits.stdout | d(""))
 
 - name: Update ownCloud local facts

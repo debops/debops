@@ -20,6 +20,8 @@
 
 - name: Configure Java environment in R
   ansible.builtin.command: R CMD javareconf
+  register: cran__register_java_reconf
+  changed_when: cran__register_java_reconf.changed | bool
   when: (cran__java_integration | bool and
          (ansible_local | d() and ansible_local.cran is undefined))
 

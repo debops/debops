@@ -89,6 +89,7 @@
   become: True
   become_user: '{{ volkszaehler__user }}'
   register: volkszaehler__register_sql_init_dump
+  changed_when: volkszaehler__register_sql_init_dumo.changed | bool
   when: (not (ansible_local.volkszaehler[volkszaehler__database + "_initialized"] | bool
               if (ansible_local | d() and ansible_local.volkszaehler | d() and
                   ansible_local.volkszaehler[volkszaehler__database + "_initialized"] | d())
@@ -109,6 +110,8 @@
     executable: 'bash'
   become: True
   become_user: '{{ volkszaehler__user }}'
+  register: volkszaehler__register_demo_data
+  changed_when: volkszaehler__register_demo_data.changed | bool
   when: (not (ansible_local.volkszaehler[volkszaehler__database + "_demo_insert"] | bool
               if (ansible_local | d() and ansible_local.volkszaehler | d() and
                   ansible_local.volkszaehler[volkszaehler__database + "_demo_insert"] | d())

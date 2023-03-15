@@ -107,6 +107,8 @@
   become: True
   become_user: '{{ item.user | d(kibana__user) }}'
   loop: '{{ q("flattened", kibana__combined_plugins) }}'
+  register: kibana__register_plugin_install
+  changed_when: kibana__register_plugin_install.changed | bool
   when: (item.name | d() and item.state | d('present') != 'absent' and
          (item.name if ':' not in item.name else item.name.split(':')[1]) not in kibana__register_plugins.stdout_lines)
 
@@ -118,6 +120,8 @@
   become: True
   become_user: '{{ item.user | d(kibana__user) }}'
   loop: '{{ q("flattened", kibana__combined_plugins) }}'
+  register: kibana__register_plugin_remove
+  changed_when: kibana__register_plugin_remove.changed | bool
   when: (item.name | d() and item.state | d('present') == 'absent' and
          (item.name if ':' not in item.name else item.name.split(':')[1]) in kibana__register_plugins.stdout_lines)
 
@@ -132,6 +136,8 @@
   ansible.builtin.command: 'bin/kibana-keystore create'
   args:
     chdir: '/usr/share/kibana'
+  register: kibana__register_keystore_create
+  changed_when: kibana__register_keystore_create.changed | bool
   when: not kibana__register_keystore.stat.exists
 
 - name: Get the list of keystore contents
@@ -150,6 +156,8 @@
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
   notify: [ 'Restart kibana' ]
+  register: kibana__register_keystore_remove
+  changed_when: kibana__register_keystore_remove.changed | bool
   when: (item.state | d('present') == 'absent' and
          item.name in kibana__register_keys.stdout_lines)
   no_log: '{{ debops__no_log | d(True) }}'
@@ -171,6 +179,8 @@
   loop_control:
     label:  '{{ {"name": item.name, "state": item.state} }}'
   notify: [ 'Restart kibana' ]
+  register: kibana__register_keystore_add
+  changed_when: kibana__register_keystore_add.changed | bool
   when: (item.state | d('present') not in ['absent', 'ignore', 'init'] and
          (item.name not in kibana__register_keys.stdout_lines or
           (item.force | d(False)) | bool))

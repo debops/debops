@@ -43,6 +43,8 @@
   args:  # noqa no-handler
     executable: 'bash'
   when: wpcli__register_release_files is changed
+  register: wpcli__register_install_files
+  changed_when: wpcli__register_install_files.changed | bool
 
 - name: Install additional wp-cli scripts
   ansible.builtin.copy:
