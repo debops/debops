@@ -63,6 +63,20 @@ General
   Ansible requires use of FQCNs in filters. The ``ansible.utils`` Ansible
   Collection is now a dependency of the DebOps Collection.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- Use :command:`openssl x509 -inform PEM` command to explicitly check for
+  a PEM-formatted X.509 certificate file because the old :command:`openssl x509
+  -in` option was changed to work with both DER and PEM files. This should fix
+  an issue with Let's Encrypt certificate chains containing a DER-formatted
+  certificate inside of them.
+
+  Users will need to remove existing PKI realms which use ACME/Let's Encrypt CA
+  for the :command:`pki-realm` script to rebuild the certificate chain
+  correctly. After that re-run the :ref:`debops.pki` role on the host to
+  re-create che realms.
+
 :ref:`debops.preseed` role
 ''''''''''''''''''''''''''
 
