@@ -55,11 +55,11 @@ PACKAGETYPE="$3"
 COMPONENT="$4"
 ARCHITECTURE="$5"
 NAME="$6"
-[ x"$PACKAGETYPE" = x"dsc" ] || {
+[ "$PACKAGETYPE" = "dsc" ] || {
 	echo "Should be a DSC package, not $PACKAGETYPE" >&2
 	exit 1
 }
-[ x"$ARCHITECTURE" = x"source" ] || {
+[ "$ARCHITECTURE" = "source" ] || {
 	echo "Should be a source package, not $ARCHITECTURE" >&2
 	exit 1
 }
@@ -68,7 +68,7 @@ shift 6
 case "$ACTION" in
 	add|info)
 		VERSION="$1" ; shift
-		[ x"$1" = x"--" ] || exit 2
+		[ "$1" = "--" ] || exit 2
 		shift
 
 		while [ "$#" -gt 0 ] ; do
@@ -85,7 +85,7 @@ case "$ACTION" in
 		;;
 	remove)
 		OLDVERSION="$1" ; shift
-		[ x"$1" = x"--" ] || exit 2
+		[ "$1" = "--" ] || exit 2
 		shift
 		while [ "$#" -gt 0 ] ; do
 			case "$1" in
@@ -102,7 +102,7 @@ case "$ACTION" in
 	replace)
 		VERSION="$1" ; shift
 		OLDVERSION="$1" ; shift
-		[ x"$1" = x"--" ] || exit 2
+		[ "$1" = "--" ] || exit 2
 		shift
 		while [ "$#" -gt 0 ] && [ x"$1" != x"--" ]; do
 			case "$1" in
@@ -112,7 +112,7 @@ case "$ACTION" in
 			esac
 			shift
 		done
-		[ x"$1" = x"--" ] || exit 2
+		[ "$1" = "--" ] || exit 2
 		# Ignore replaced dsc
 		;;
 esac
