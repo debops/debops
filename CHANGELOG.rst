@@ -33,6 +33,23 @@ Updates of upstream application versions
   has been updated to the next point release, 10.13. Debian Bullseye has been
   updated to the next point release as well, 11.7.
 
+Fixed
+~~~~~
+
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- Use :command:`openssl x509 -inform PEM` command to explicitly check for
+  a PEM-formatted X.509 certificate file because the old :command:`openssl x509
+  -in` option was changed to work with both DER and PEM files. This should fix
+  an issue with Let's Encrypt certificate chains containing a DER-formatted
+  certificate inside of them.
+
+  Users will need to remove existing PKI realms which use ACME/Let's Encrypt CA
+  for the :command:`pki-realm` script to rebuild the certificate chain
+  correctly. After that re-run the :ref:`debops.pki` role on the host to
+  re-create che realms.
+
 
 `debops v2.3.7`_ - 2023-03-09
 -----------------------------
