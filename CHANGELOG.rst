@@ -23,6 +23,16 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.3: https://github.com/debops/debops/compare/v2.3.0...stable-2.3
 
+Added
+~~~~~
+
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The server configuration files can now contain :command:`nginx` configuration
+  outside of the ``server`` and ``upstream`` blocks using the new
+  ``item.toplevel_options`` parameter.
+
 Changed
 ~~~~~~~
 
