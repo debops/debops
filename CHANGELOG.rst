@@ -26,6 +26,13 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- The server configuration files can now contain :command:`nginx` configuration
+  outside of the ``server`` and ``upstream`` blocks using the new
+  ``item.toplevel_options`` parameter.
+
 :ref:`debops.preseed` role
 ''''''''''''''''''''''''''
 
