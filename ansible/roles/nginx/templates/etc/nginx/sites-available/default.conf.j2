@@ -489,6 +489,10 @@
 {%     endif                                                                %}
 
 {% endif                                                                    %}
+{% if item.toplevel_options | d() %}
+{{   item.toplevel_options | regex_replace("(?m)^\s*$", "") | regex_replace("\n$", "") }}
+
+{% endif %}
 {% set nginx__tpl_hostname_domain = item.hostname_domain | d(((item.name if item.name is string else item.name[0]) if item.name | d() else ansible_fqdn).split('.')[1:] | join('.')) %}
 {% set nginx__tpl_final_hostname_domain = [] %}
 {% if item.hostname_domain is undefined %}
