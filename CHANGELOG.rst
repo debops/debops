@@ -51,6 +51,12 @@ Updates of upstream application versions
   has been updated to the next point release, 10.13. Debian Bullseye has been
   updated to the next point release as well, 11.7.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- The role will configure APT to use Debian Security repositories via the
+  http://deb.debian.org/debian-security/ CDN.
+
 :ref:`debops.preseed` role
 ''''''''''''''''''''''''''
 
