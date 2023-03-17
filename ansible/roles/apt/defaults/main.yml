@@ -582,7 +582,9 @@ apt__host_security_sources: []
 # from normal repositories.
 apt__security_sources:
 
-  - uri:          'http://security.debian.org/'
+  - uri:          '{{ "http://security.debian.org/"
+                      if apt__distribution_release in ["stretch"]
+                      else "http://deb.debian.org/debian-security/" }}'
     comment:      'Debian Security repository'
     type:         '{{ apt__source_types }}'
     suite:        '{{ apt__distribution_release
