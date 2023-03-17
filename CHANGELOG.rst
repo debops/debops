@@ -264,6 +264,12 @@ General
   to FQCNs. This is also a test to see if Ansible Galaxy allows >2 MB
   collection tarballs.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- The role will configure APT to use Debian Security repositories via the
+  http://deb.debian.org/debian-security/ CDN.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 
