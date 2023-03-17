@@ -147,6 +147,10 @@ General
 :ref:`debops.resources` role
 ''''''''''''''''''''''''''''
 
+- The :ref:`debops.resources` role can now be used to install pip library
+  dependencies or virtual environments via the ``ansible.builtin.pip``
+  module.
+
 - The :ref:`debops.resources` role can now be used to replace a line via the
   ``ansible.builtin.replace`` module.
 
