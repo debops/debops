@@ -227,6 +227,31 @@
          (item.state | d('present') != 'absent'))
   tags: [ 'role::resources:files' ]
 
+- name: Manage virtual environments
+  ansible.builtin.pip:
+    chdir:        '{{ item.chdir | d(omit) }}'
+    editable:     '{{ item.editable | d(omit) }}'
+    executable:   '{{ item.executable | d(omit) }}'
+    extra_args:   '{{ item.extra_args | d(omit) }}'
+    name:         '{{ item.name | d(omit) }}'
+    requirements: '{{ item.requirements | d(omit) }}'
+    state:        '{{ item.state | d(omit) }}'
+    umask:        '{{ item.umask | d(omit) }}'
+    version:      '{{ item.version | d(omit) }}'
+    virtualenv:   '{{ item.virtualenv | d(omit) }}'
+    virtualenv_command: '{{ item.virtualenv_command | d(omit) }}'
+    virtualenv_python: '{{ item.virtualenv_python | d(omit) }}'
+    virtualenv_site_packages: '{{ item.virtualenv_site_packages | d(omit) }}'
+  loop: '{{ q("flattened", resources__pip
+                           + resources__group_pip
+                           + resources__host_pip) }}'
+  become: True
+  become_user: '{{ item.owner | d("root") }}'
+  when: (resources__enabled | bool and
+         (item.name | d() or item.requirements is defined) and
+         (item.state | d('present') != 'absent'))
+  tags: [ 'role::resources:pip' ]
+
 - name: Manage replacements inside files
   ansible.builtin.replace:
     dest:          '{{ item.dest | d(item.name | d(item.path)) }}'
