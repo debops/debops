@@ -7,6 +7,26 @@
   ansible.builtin.import_role:
     name: 'global_handlers'
 
+- name: Check if any incompatible package is installed
+  environment:
+    LC_MESSAGES: 'C'
+  ansible.builtin.shell: |
+    set -o nounset -o pipefail -o errexit &&
+    dpkg --get-selections | grep -w -E '({{ proc_hidepid__skip_packages | join("|") }})'
+                          | awk '{print $1}' || true
+  args:
+    executable: '/bin/bash'
+  register: proc_hidepid__register_incompatible
+  changed_when: False
+  failed_when: False
+  check_mode: False
+
+- name: Set default enforcement level
+  ansible.builtin.set_fact:
+    proc_hidepid__fact_default_level: '{{ "2"
+                                          if (not proc_hidepid__register_incompatible.stdout | d())
+                                          else "0" }}'
+
 - name: Install required packages
   ansible.builtin.package:
     name: '{{ q("flattened", (proc_hidepid__base_packages
