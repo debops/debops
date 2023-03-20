@@ -49,6 +49,41 @@ opensearch__user: 'opensearch'
 opensearch__group: 'opensearch'
                                                                    # ]]]
                                                                    # ]]]
+# Firewall configuration [[[
+# --------------------------
+
+# .. envvar:: opensearch__allow_http [[[
+#
+# List of IP addresses or CIDR subnets that can connect to the OpenSearch HTTP
+# service. This does not need to be set to allow the nodes to communicate.
+# If this list is empty, nobody can connect to the HTTP server directly.
+opensearch__allow_http: []
+
+                                                                   # ]]]
+# .. envvar:: opensearch__allow_tcp [[[
+#
+# List of IP addresses or CIDR subnets that can connect to the OpenSearch TCP
+# transport port. This variable needs to be set to allow nodes to communicate.
+# If this list is empty, nobody can connect to the transport port and the
+# OpenSearch service is configured in a standalone mode.
+opensearch__allow_tcp: []
+                                                                   # ]]]
+                                                                   # ]]]
+# OpenSearch network options [[[
+# ---------------------------------
+
+# .. envvar:: opensearch__http_port [[[
+#
+# The port on which OpenSearch will listen for HTTP connections.
+opensearch__http_port: '9200'
+
+                                                                   # ]]]
+# .. envvar:: opensearch__transport_tcp_port [[[
+#
+# The port on which OpenSearch will listen for TCP transport connections.
+opensearch__transport_tcp_port: '9300'
+                                                                   # ]]]
+                                                                   # ]]]
 # Memory options [[[
 # ------------------
 
@@ -171,10 +206,10 @@ opensearch__combined_configuration: '{{ opensearch__default_configuration
 opensearch__etc_services__dependent_list:
 
   - name: 'opensearch-http'
-    port: 9200
+    port: '{{ opensearch__http_port }}'
 
   - name: 'opensearch-tcp'
-    port: 9300
+    port: '{{ opensearch__transport_tcp_port }}'
 
                                                                    # ]]]
 # .. envvar:: opensearch__keyring__dependent_gpg_keys [[[
@@ -204,6 +239,24 @@ opensearch__sysctl__dependent_parameters:
           for production workloads, see
           https://opensearch.org/docs/latest/opensearch/install/important-settings/
         value: 262144
+
+                                                                   # ]]]
+# .. envvar:: opensearch__ferm__dependent_rules [[[
+#
+# Configuration for the :ref:`debops.ferm` Ansible role.
+opensearch__ferm__dependent_rules:
+
+  - name: 'opensearch_http'
+    type: 'accept'
+    dport: '{{ opensearch__http_port }}'
+    saddr: '{{ opensearch__allow_http }}'
+    accept_any: False
+
+  - name: 'opensearch_tcp'
+    type: 'accept'
+    dport: '{{ opensearch__transport_tcp_port }}'
+    saddr: '{{ opensearch__allow_tcp }}'
+    accept_any: False
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
