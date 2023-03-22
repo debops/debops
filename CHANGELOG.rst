@@ -56,6 +56,13 @@ Updates of upstream application versions
 - The role will configure APT to use Debian Security repositories via the
   http://deb.debian.org/debian-security/ CDN.
 
+:ref:`debops.proc_hidepid` role
+'''''''''''''''''''''''''''''''
+
+- The role will check if PolicyKit is installed on the host, in which case the
+  default security level for access to the :file:`/proc` filesystem will be
+  more permissive.
+
 Fixed
 ~~~~~
 
