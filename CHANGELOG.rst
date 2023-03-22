@@ -72,6 +72,13 @@ Updates of upstream application versions
   parition layout via LVM due to separate partitions for :file:`/home` and
   :file:`/var` mount points.
 
+:ref:`debops.proc_hidepid` role
+'''''''''''''''''''''''''''''''
+
+- The role will check if PolicyKit is installed on the host, in which case the
+  default security level for access to the :file:`/proc` filesystem will be
+  more permissive.
+
 Fixed
 ~~~~~
 
