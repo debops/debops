@@ -53,7 +53,7 @@
   ansible.builtin.file:
     path: '{{ "/etc/systemd/system/" + item.name }}'
     state: 'absent'
-  loop: '{{ systemd__combined_units | debops.debops.parse_kv_items }}'
+  loop: '{{ systemd__combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   register: systemd__register_units_removed
@@ -65,7 +65,7 @@
   ansible.builtin.file:
     path: '{{ "/etc/systemd/system/" + item.name + ".d" }}'
     state: 'absent'
-  loop: '{{ systemd__combined_units | debops.debops.parse_kv_items }}'
+  loop: '{{ systemd__combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   notify: [ 'Reload systemd daemon' ]
@@ -77,7 +77,7 @@
     path: '{{ "/etc/systemd/system/" + (item.name | dirname) }}'
     state: 'directory'
     mode: '0755'
-  loop: '{{ systemd__combined_units | debops.debops.parse_kv_items }}'
+  loop: '{{ systemd__combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   when: systemd__enabled | bool and item.raw | d() and
@@ -89,7 +89,7 @@
     src: 'etc/systemd/system/template.j2'
     dest: '{{ "/etc/systemd/system/" + item.name }}'
     mode: '0644'
-  loop: '{{ systemd__combined_units | debops.debops.parse_kv_items }}'
+  loop: '{{ systemd__combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   register: systemd__register_units_created
@@ -101,7 +101,7 @@
   ansible.builtin.file:
     path: '{{ "/etc/systemd/user/" + item.name }}'
     state: 'absent'
-  loop: '{{ systemd__user_combined_units | debops.debops.parse_kv_items }}'
+  loop: '{{ systemd__user_combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   notify: [ 'Reload systemd daemon' ]
@@ -112,7 +112,7 @@
   ansible.builtin.file:
     path: '{{ "/etc/systemd/user/" + item.name + ".d" }}'
     state: 'absent'
-  loop: '{{ systemd__user_combined_units | debops.debops.parse_kv_items }}'
+  loop: '{{ systemd__user_combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   notify: [ 'Reload systemd daemon' ]
@@ -124,7 +124,7 @@
     path: '{{ "/etc/systemd/user/" + (item.name | dirname) }}'
     state: 'directory'
     mode: '0755'
-  loop: '{{ systemd__user_combined_units | debops.debops.parse_kv_items }}'
+  loop: '{{ systemd__user_combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   when: systemd__enabled | bool and item.raw | d() and
@@ -136,7 +136,7 @@
     src: 'etc/systemd/user/template.j2'
     dest: '{{ "/etc/systemd/user/" + item.name }}'
     mode: '0644'
-  loop: '{{ systemd__user_combined_units | debops.debops.parse_kv_items }}'
+  loop: '{{ systemd__user_combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   notify: [ 'Reload systemd daemon' ]
@@ -153,7 +153,7 @@
     force: '{{ item.force | d(omit) }}'
     masked: '{{ item.masked | d(omit) }}'
     state: '{{ item.state if (item.state in ["reloaded", "restarted", "started", "stopped"]) else omit }}'
-  loop: '{{ systemd__combined_units | debops.debops.parse_kv_items }}'
+  loop: '{{ systemd__combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   when: systemd__enabled | bool and
@@ -164,7 +164,7 @@
   ansible.builtin.systemd:
     name: '{{ item.restart }}'
     state: 'restarted'
-  loop: '{{ systemd__combined_units | debops.debops.parse_kv_items }}'
+  loop: '{{ systemd__combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"restart": item.restart | d()} }}'
   when: systemd__enabled | bool and item.restart | d() and
@@ -180,7 +180,7 @@
     masked: '{{ item.masked | d(omit) }}'
     state: '{{ item.state if (item.state in ["reloaded", "restarted", "started", "stopped"]) else omit }}'
     scope: 'global'
-  loop: '{{ systemd__user_combined_units | debops.debops.parse_kv_items }}'
+  loop: '{{ systemd__user_combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   when: systemd__enabled | bool and

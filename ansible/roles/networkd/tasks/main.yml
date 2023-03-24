@@ -56,7 +56,7 @@
   ansible.builtin.file:
     path: '{{ "/etc/systemd/network/" + item.name }}'
     state: 'absent'
-  loop: '{{ networkd__combined_units | debops.debops.parse_kv_items }}'
+  loop: '{{ networkd__combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   notify: [ 'Restart systemd-networkd service' ]
@@ -66,7 +66,7 @@
   ansible.builtin.file:
     path: '{{ "/etc/systemd/network/" + item.name + ".d" }}'
     state: 'absent'
-  loop: '{{ networkd__combined_units | debops.debops.parse_kv_items }}'
+  loop: '{{ networkd__combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   notify: [ 'Restart systemd-networkd service' ]
@@ -77,7 +77,7 @@
     path: '{{ "/etc/systemd/network/" + (item.name | dirname) }}'
     state: 'directory'
     mode: '0755'
-  loop: '{{ networkd__combined_units | debops.debops.parse_kv_items }}'
+  loop: '{{ networkd__combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   when: networkd__enabled | bool and item.raw | d() and
@@ -89,7 +89,7 @@
     src: 'etc/systemd/network/template.j2'
     dest: '{{ "/etc/systemd/network/" + item.name }}'
     mode: '0644'
-  loop: '{{ networkd__combined_units | debops.debops.parse_kv_items }}'
+  loop: '{{ networkd__combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   notify: [ 'Restart systemd-networkd service' ]
