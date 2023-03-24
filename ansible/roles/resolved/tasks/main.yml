@@ -94,7 +94,7 @@
   ansible.builtin.file:
     path: '{{ "/etc/systemd/dnssd/" + item.name }}'
     state: 'absent'
-  loop: '{{ resolved__combined_units | debops.debops.parse_kv_items }}'
+  loop: '{{ resolved__combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   notify: [ 'Restart systemd-resolved service' ]
@@ -105,7 +105,7 @@
   ansible.builtin.file:
     path: '{{ "/etc/systemd/dnssd/" + item.name + ".d" }}'
     state: 'absent'
-  loop: '{{ resolved__combined_units | debops.debops.parse_kv_items }}'
+  loop: '{{ resolved__combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   notify: [ 'Restart systemd-resolved service' ]
@@ -117,7 +117,7 @@
     path: '{{ "/etc/systemd/dnssd/" + (item.name | dirname) }}'
     state: 'directory'
     mode: '0755'
-  loop: '{{ resolved__combined_units | debops.debops.parse_kv_items }}'
+  loop: '{{ resolved__combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   when: resolved__enabled | bool and resolved__dnssd_enabled | bool and
@@ -129,7 +129,7 @@
     src: 'etc/systemd/dnssd/template.j2'
     dest: '{{ "/etc/systemd/dnssd/" + item.name }}'
     mode: '0644'
-  loop: '{{ resolved__combined_units | debops.debops.parse_kv_items }}'
+  loop: '{{ resolved__combined_units | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
   notify: [ 'Restart systemd-resolved service' ]
