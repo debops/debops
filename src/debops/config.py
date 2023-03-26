@@ -121,7 +121,7 @@ class Configuration(object):
                 return self._load_config_file(path)
             elif os.path.isdir(path):
                 data = {}
-                for config_file in os.listdir(path):
+                for config_file in sorted(os.listdir(path)):
                     if os.path.isfile(os.path.join(path, config_file)):
                         self._merge_dict(data,
                                          self._load_config_file(
