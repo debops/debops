@@ -50,6 +50,7 @@ class ProjectDir(object):
                                                      ['.debops.cfg'])
         if self._legacy_config_path:
             self.path = os.path.dirname(self._legacy_config_path)
+            self.name = os.path.basename(self.path)
             self.project_type = 'legacy'
         else:
             self.project_type = None
