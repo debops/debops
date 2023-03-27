@@ -456,6 +456,10 @@ General
   Ansible requires use of FQCNs in filters. The ``ansible.utils`` Ansible
   Collection is now a dependency of the DebOps Collection.
 
+- The :command:`debops run` and :command:`debops check` commands should now
+  correctly recognize options of the :command:`ansible-playbook` command which
+  don't expect arguments and expand playbook names specified after them.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
