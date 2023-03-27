@@ -33,6 +33,10 @@ General
   against hosts in the project directory; this is a wrapper for the
   :command:`ansible` command.
 
+- The :command:`debops run`, :command:`debops check` and :command:`debops exec`
+  commands can emit ASCII "bell" at the end of Ansible execution to notify user
+  after long runs. Use the ``-E`` or ``--bell`` option to enable this.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 

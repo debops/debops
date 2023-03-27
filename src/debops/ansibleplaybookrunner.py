@@ -111,6 +111,11 @@ class AnsiblePlaybookRunner(object):
         else:
             return string
 
+    def _ring_bell(self):
+        # Notify user at end of execution
+        if self.kwargs.get('bell', False):
+            print('\a', end='')
+
     def _expand_playbook_paths(self, project):
         playbook_dirs = []
 
@@ -226,11 +231,20 @@ class AnsiblePlaybookRunner(object):
             print('Executing Ansible playbooks:')
             for playbook in self._found_playbooks:
                 print(unexpanduser(playbook))
-            return subprocess.call(' '.join(self._ansible_command), shell=True)
+            executor = subprocess.Popen(' '.join(self._ansible_command),
+                                        shell=True)
+            std_out, std_err = executor.communicate()
+            self._ring_bell()
+            return executor.returncode
+
         except KeyboardInterrupt:
             if unlocked:
                 self.inventory.lock()
             raise SystemExit('... aborted by user')
+
+        else:
+            self._ring_bell()
+
         finally:
             if unlocked:
                 self.inventory.lock()
