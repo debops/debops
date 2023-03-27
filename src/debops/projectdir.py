@@ -74,6 +74,8 @@ class ProjectDir(object):
         project_data['views']['system'].update(
                 self.config.load(os.path.join(self.path, '.debops.cfg')))
 
+        self.config.merge_env(os.path.join(self.path,
+                                           '.debops', 'environment'))
         self.config.merge_env(self.path)
         self.config.merge(project_data)
 

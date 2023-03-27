@@ -27,6 +27,7 @@ class Configuration(object):
     def __init__(self):
 
         self._env_files = []
+        self._env_vars = {}
 
         # Include variables from the system-wide configuration
         self.merge_env(os.path.join('/etc', 'default', 'debops'))
@@ -110,10 +111,12 @@ class Configuration(object):
             if os.path.isfile(os.path.join(path, '.env')):
                 self._env_files.append(os.path.join(path, '.env'))
                 dotenv.load_dotenv(os.path.join(path, '.env'), override=True)
+                self._env_vars.update(dotenv.dotenv_values(os.path.join(path, '.env')))
         elif os.path.exists(path):
             if os.path.isfile(path):
                 self._env_files.append(path)
                 dotenv.load_dotenv(path, override=True)
+                self._env_vars.update(dotenv.dotenv_values(os.path.join(path)))
 
     def load(self, path):
         if os.path.exists(path):
@@ -200,10 +203,6 @@ class Configuration(object):
                              .update({key: value}))
             return self._converted_data
 
-    def show_env(self):
-        for key, value in os.environ.items():
-            print('{}={}'.format(key, value))
-
     def show(self):
         relative_root = os.path.relpath(os.path.abspath('/'))
         if self._env_files:
@@ -217,6 +216,14 @@ class Configuration(object):
             for filename in self._config_files:
                 relative_file = os.path.relpath(unexpanduser(filename))
                 print(relative_file.replace(relative_root, '', 1))
+
+    def config_env(self, scope='local'):
+        if scope == 'local':
+            for key, value in self._env_vars.items():
+                print('{}={}'.format(key, value))
+        elif scope == 'full':
+            for key, value in os.environ.items():
+                print('{}={}'.format(key, value))
 
     def config_get(self, key, format='unix'):
         key_path = ['.']

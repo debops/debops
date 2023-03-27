@@ -14,11 +14,6 @@ Options
 ``-h, --help``
   Display the help and usage information
 
-``--env``
-  Display the current environment variables which will be used by DebOps and
-  passed to Ansible during its execution. This can be used to check if the
-  environment variables configured in various files are correctly initialized.
-
 ``<project_dir>``
   Path to the project directory to work on. If it's not specified, the script
   will use the current directory.
@@ -31,6 +26,37 @@ List currently parsed configuration files:
 .. code-block:: shell
 
    debops config show
+
+
+:command:`debops config env`
+----------------------------
+
+Display the variables which will be present at runtime in the process
+environment.
+
+Options
+~~~~~~~
+
+``-h, --help``
+  Display the help and usage information
+
+``--project-dir <project_dir>``
+  Path to the project directory to work on. If it's not specified, the script
+  will use the current directory.
+
+``--scope full|local``
+  Specify if only the variables defined by DebOps should be displayed
+  (``local``, default), or all variables present in the runtime environment
+  (``full``), similar to the output of the :man:`env(1)` command.
+
+Examples
+~~~~~~~~
+
+Print environment variables defined by DebOps:
+
+.. code-block:: shell
+
+   debops config env
 
 
 :command:`debops config get`
@@ -133,6 +159,8 @@ its execution environment:
 - :file:`/etc/default/debops` (per-system environment)
 
 - :file:`$XDG_CONFIG_HOME/debops/environment` (per-user environment)
+
+- :file:`<project directory>/.debops/environment` (per-project environment)
 
 - :file:`<project directory>/.env` (per-project environment)
 

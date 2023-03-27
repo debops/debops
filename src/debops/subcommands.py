@@ -176,6 +176,7 @@ Commands:
 
 Commands:
     show    list files included in DebOps configuration
+    env     display environment variables set at runtime
     get     return value of a specific configuration option''')
         parser.add_argument('command', help='config command to run')
         self._command = parser.parse_args(self.args[2:3])
@@ -190,13 +191,21 @@ Commands:
         parser = argparse.ArgumentParser(
                 usage='debops config show [<args>] <project_dir>',
                 description='list files included in DebOps configuration')
-        parser.add_argument('--env', default=False,
-                            help='show environment inside DebOps '
-                                 'execution context',
-                            action='store_true')
         parser.add_argument('project_dir', type=str, nargs='?',
                             default=os.getcwd(),
                             help='path to the project directory')
+        self.args = parser.parse_args(self.args[3:])
+
+    def do_config_env(self):
+        parser = argparse.ArgumentParser(
+                parents=[self.global_parser],
+                usage='debops config env [<args>]',
+                description='display environment variables set at runtime')
+        parser.add_argument('--scope', type=str, nargs='?',
+                            choices=['full', 'local'],
+                            default='local',
+                            help='specify which environment '
+                                 'variables to show (default: %(default)s)')
         self.args = parser.parse_args(self.args[3:])
 
     def do_config_get(self):
