@@ -34,7 +34,10 @@ class Interpreter(object):
             self.do_run(self.parsed_args.args)
 
         elif self.parsed_args.section == 'config':
-            self.do_config(self.parsed_args.args)
+            if self.parsed_args.command == 'show':
+                self.do_config_show(self.parsed_args.args)
+            elif self.parsed_args.command == 'get':
+                self.do_config_get(self.parsed_args.args)
 
     def do_project_init(self, args):
         try:
@@ -96,7 +99,7 @@ class Interpreter(object):
         else:
             sys.exit(runner.execute())
 
-    def do_config(self, args):
+    def do_config_show(self, args):
         try:
             project = ProjectDir(path=args.project_dir, config=self.config)
         except (IsADirectoryError, NotADirectoryError) as errmsg:
@@ -107,4 +110,18 @@ class Interpreter(object):
         if args.env:
             self.config.show_env()
         else:
-            self.config.show(format=args.format)
+            self.config.show()
+
+    def do_config_get(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config)
+        except (IsADirectoryError, NotADirectoryError) as errmsg:
+            # This is not a project directory, so no project-dependent
+            # configuration is included
+            pass
+
+        if args.key:
+            for option_name in args.key:
+                self.config.config_get(option_name, format=args.format)
+        else:
+            self.config.config_get('.', format=args.format)

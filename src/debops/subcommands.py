@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2020-2021 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2020-2021 DebOps <https://debops.org/>
+# Copyright (C) 2020-2023 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import argparse
@@ -171,15 +171,45 @@ Commands:
 
     def do_config(self):
         parser = argparse.ArgumentParser(
-                parents=[self.global_parser],
-                usage='debops config [<args>]',
-                description='display DebOps configuration options')
+                description='manage DebOps configuration state',
+                usage='''debops config <command> [<args>]
+
+Commands:
+    show    list files included in DebOps configuration
+    get     return value of a specific configuration option''')
+        parser.add_argument('command', help='config command to run')
+        self._command = parser.parse_args(self.args[2:3])
+        self.command = self._command.command
+        if not hasattr(self, 'do_config_' + self._command.command):
+            print('Error: unrecognized command:', self._command.command)
+            parser.print_help()
+            sys.exit(1)
+        getattr(self, 'do_config_' + self._command.command)()
+
+    def do_config_show(self):
+        parser = argparse.ArgumentParser(
+                usage='debops config show [<args>] <project_dir>',
+                description='list files included in DebOps configuration')
         parser.add_argument('--env', default=False,
                             help='show environment inside DebOps '
                                  'execution context',
                             action='store_true')
+        parser.add_argument('project_dir', type=str, nargs='?',
+                            default=os.getcwd(),
+                            help='path to the project directory')
+        self.args = parser.parse_args(self.args[3:])
+
+    def do_config_get(self):
+        parser = argparse.ArgumentParser(
+                parents=[self.global_parser],
+                usage='debops config get [<args>] [--] <key>',
+                description='return value of specific DebOps option')
         parser.add_argument('--format', type=str, nargs='?',
-                            choices=['json', 'toml'],
-                            default='toml',
+                            choices=['json', 'toml', 'unix', 'yaml'],
+                            default='unix',
                             help='output format (default: %(default)s)')
-        self.args = parser.parse_args(self.args[2:])
+        parser.add_argument('key', type=str,
+                            nargs=argparse.REMAINDER,
+                            help='name of the '
+                                 'configuration option')
+        self.args = parser.parse_args(self.args[3:])

@@ -268,6 +268,10 @@ General
   to FQCNs. This is also a test to see if Ansible Galaxy allows >2 MB
   collection tarballs.
 
+- The :command:`debops config` command has been refactored and split into
+  multiple subcommands to allow easier configuration introspection. See
+  :ref:`it's documentation page <cmd_debops-config>` for more details.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
