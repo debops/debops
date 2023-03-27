@@ -50,6 +50,7 @@ class ProjectDir(object):
                                                      ['.debops.cfg'])
         if self._legacy_config_path:
             self.path = os.path.dirname(self._legacy_config_path)
+            self.name = os.path.basename(self.path)
             self.project_type = 'legacy'
         else:
             self.project_type = None
@@ -73,6 +74,8 @@ class ProjectDir(object):
         project_data['views']['system'].update(
                 self.config.load(os.path.join(self.path, '.debops.cfg')))
 
+        self.config.merge_env(os.path.join(self.path,
+                                           '.debops', 'environment'))
         self.config.merge_env(self.path)
         self.config.merge(project_data)
 
@@ -81,6 +84,7 @@ class ProjectDir(object):
                 os.path.join(self.path, 'ansible.cfg'),
                 project_type=self.project_type)
         self.ansible_cfg.load_config()
+        self.config.set_env('ANSIBLE_CONFIG', self.ansible_cfg.path)
 
     def _find_up_dir(self, path, filenames):
         path = os.path.abspath(path)

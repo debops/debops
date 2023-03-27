@@ -75,6 +75,14 @@ General
   hosts. The :ref:`debops.apache` Ansible role will use this module instead of
   the original one.
 
+- The :command:`debops exec` command can be used to execute Ansible modules
+  against hosts in the project directory; this is a wrapper for the
+  :command:`ansible` command.
+
+- The :command:`debops run`, :command:`debops check` and :command:`debops exec`
+  commands can emit ASCII "bell" at the end of Ansible execution to notify user
+  after long runs. Use the ``-E`` or ``--bell`` option to enable this.
+
 :ref:`debops.avahi` role
 ''''''''''''''''''''''''
 
@@ -268,6 +276,10 @@ General
   to FQCNs. This is also a test to see if Ansible Galaxy allows >2 MB
   collection tarballs.
 
+- The :command:`debops config` command has been refactored and split into
+  multiple subcommands to allow easier configuration introspection. See
+  :ref:`it's documentation page <cmd_debops-config>` for more details.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
@@ -451,6 +463,10 @@ General
   renamed to ``ansible.utils.ipaddr`` and its corresponding alias names because
   Ansible requires use of FQCNs in filters. The ``ansible.utils`` Ansible
   Collection is now a dependency of the DebOps Collection.
+
+- The :command:`debops run` and :command:`debops check` commands should now
+  correctly recognize options of the :command:`ansible-playbook` command which
+  don't expect arguments and expand playbook names specified after them.
 
 :ref:`debops.apt` role
 ''''''''''''''''''''''

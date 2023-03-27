@@ -60,43 +60,61 @@ class AnsiblePlaybookRunner(object):
                             ['--extra-vars',
                              '@' + os.path.relpath(extra_vars_file)])
 
+        # List of ansible-playbook options which don't expect arguments
+        ansible_playbook_flags = ['--ask-vault-password', '--ask-vault-pass',
+                                  '--flush-cache', '--force-handlers',
+                                  '--list-hosts', '--list-tags',
+                                  '--list-tasks', '--step', '--syntax-check',
+                                  '--version', '-C', '--check',
+                                  '-D', '--diff', '-K', '--ask-become-pass',
+                                  '-h', '--help', '-k', '--ask-pass',
+                                  '-v', '-vv', '-vvv', '-vvvv', '-vvvvv',
+                                  '-vvvvvv', '--verbose',
+                                  '-b', '--become']
+
         self._parsed_args = []
         arg_length = len(self.kwargs['ansible_args'])
         for index, argument in enumerate(self.kwargs['ansible_args']):
 
             if argument == '--':
                 continue
-            elif argument in self._parsed_args:
+            elif index in self._parsed_args:
                 continue
             elif (argument.startswith('-') or argument.startswith('--')):
                 # This is an 'ansible-playbook' option which may have an
                 # argument, in which case we need to add both of them in the
                 # preserved order
-                if index + 1 < arg_length:
+                if (index + 1 < arg_length and
+                        argument not in ansible_playbook_flags):
                     next_arg = self.kwargs['ansible_args'][index + 1]
                     if (not next_arg.startswith('-') or
                             not next_arg.startswith('--')):
                         self._ansible_command.extend(
                                 [argument, self._quote_spaces(next_arg)])
-                        self._parsed_args.extend([argument, next_arg])
+                        self._parsed_args.extend([index, index + 1])
                         continue
 
                 # This is an 'ansible-playbook' option without an argument
                 self._ansible_command.append(argument)
-                self._parsed_args.append(argument)
+                self._parsed_args.append(index)
             else:
                 # Most likely a name of a playbook which we can expand
                 self._ansible_command.append(self._quote_spaces(
                     self._expand_playbook(project, argument)))
                 self._found_playbooks.append(self._quote_spaces(
                     self._expand_playbook(project, argument)))
-                self._parsed_args.append(argument)
+                self._parsed_args.append(index)
 
     def _quote_spaces(self, string):
         if ' ' in string:
             return '"{}"'.format(string)
         else:
             return string
+
+    def _ring_bell(self):
+        # Notify user at end of execution
+        if self.kwargs.get('bell', False):
+            print('\a', end='')
 
     def _expand_playbook_paths(self, project):
         playbook_dirs = []
@@ -213,11 +231,20 @@ class AnsiblePlaybookRunner(object):
             print('Executing Ansible playbooks:')
             for playbook in self._found_playbooks:
                 print(unexpanduser(playbook))
-            return subprocess.call(' '.join(self._ansible_command), shell=True)
+            executor = subprocess.Popen(' '.join(self._ansible_command),
+                                        shell=True)
+            std_out, std_err = executor.communicate()
+            self._ring_bell()
+            return executor.returncode
+
         except KeyboardInterrupt:
             if unlocked:
                 self.inventory.lock()
             raise SystemExit('... aborted by user')
+
+        else:
+            self._ring_bell()
+
         finally:
             if unlocked:
                 self.inventory.lock()

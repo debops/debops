@@ -7,6 +7,7 @@
 from .config import Configuration
 from .subcommands import Subcommands
 from .projectdir import ProjectDir
+from .ansiblerunner import AnsibleRunner
 from .ansibleplaybookrunner import AnsiblePlaybookRunner
 import sys
 
@@ -30,11 +31,19 @@ class Interpreter(object):
             elif self.parsed_args.command == 'status':
                 self.do_project_status(self.parsed_args.args)
 
+        elif self.parsed_args.section == 'exec':
+            self.do_exec(self.parsed_args.args)
+
         elif self.parsed_args.section in ['run', 'check']:
             self.do_run(self.parsed_args.args)
 
         elif self.parsed_args.section == 'config':
-            self.do_config(self.parsed_args.args)
+            if self.parsed_args.command == 'list':
+                self.do_config_list(self.parsed_args.args)
+            elif self.parsed_args.command == 'env':
+                self.do_config_env(self.parsed_args.args)
+            elif self.parsed_args.command == 'get':
+                self.do_config_get(self.parsed_args.args)
 
     def do_project_init(self, args):
         try:
@@ -82,6 +91,20 @@ class Interpreter(object):
 
         project.status()
 
+    def do_exec(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config)
+        except (IsADirectoryError, NotADirectoryError) as errmsg:
+            print('Error:', errmsg)
+            sys.exit(1)
+
+        runner = AnsibleRunner(project, **vars(args))
+        if args.eval:
+            runner.eval()
+            sys.exit(0)
+        else:
+            sys.exit(runner.execute())
+
     def do_run(self, args):
         try:
             project = ProjectDir(path=args.project_dir, config=self.config)
@@ -96,7 +119,7 @@ class Interpreter(object):
         else:
             sys.exit(runner.execute())
 
-    def do_config(self, args):
+    def do_config_list(self, args):
         try:
             project = ProjectDir(path=args.project_dir, config=self.config)
         except (IsADirectoryError, NotADirectoryError) as errmsg:
@@ -104,7 +127,28 @@ class Interpreter(object):
             # configuration is included
             pass
 
-        if args.env:
-            self.config.show_env()
+        self.config.config_list()
+
+    def do_config_env(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config)
+        except (IsADirectoryError, NotADirectoryError) as errmsg:
+            # This is not a project directory, so no project-dependent
+            # configuration is included
+            pass
+
+        self.config.config_env(scope=args.scope)
+
+    def do_config_get(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config)
+        except (IsADirectoryError, NotADirectoryError) as errmsg:
+            # This is not a project directory, so no project-dependent
+            # configuration is included
+            pass
+
+        if args.key:
+            for option_name in args.key:
+                self.config.config_get(option_name, format=args.format)
         else:
-            self.config.show(format=args.format)
+            self.config.config_get('.', format=args.format)
