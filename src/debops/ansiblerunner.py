@@ -101,6 +101,11 @@ class AnsibleRunner(object):
         else:
             return string
 
+    def _ring_bell(self):
+        # Notify user at end of execution
+        if self.kwargs.get('bell', False):
+            print('\a', end='')
+
     def eval(self):
         for key, value in self._ansible_env.items():
             print('export', key + '=' + value)
@@ -114,11 +119,20 @@ class AnsibleRunner(object):
         try:
             unlocked = self.inventory.unlock()
 
-            return subprocess.call(' '.join(self._ansible_command), shell=True)
+            executor = subprocess.Popen(' '.join(self._ansible_command),
+                                        shell=True)
+            std_out, std_err = executor.communicate()
+            self._ring_bell()
+            return executor.returncode
+
         except KeyboardInterrupt:
             if unlocked:
                 self.inventory.lock()
             raise SystemExit('... aborted by user')
+
+        else:
+            self._ring_bell()
+
         finally:
             if unlocked:
                 self.inventory.lock()

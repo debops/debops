@@ -28,6 +28,10 @@ effect.
   Path to the project directory to work on. If it's not specified, the script
   will use the current directory.
 
+``-E, --bell``
+  Emit an ASCII "bell" at the end of the :command:`ansible` command execution
+  to notify the user. This might be useful during longer module runs.
+
 ``--eval``
   Do not execute :command:`ansible` command; instead print out all the
   environment variables and the command itself to stdout.
@@ -61,3 +65,10 @@ Perform a full upgrade of a Debian host using APT:
 .. code-block:: shell
 
    debops exec hostname -m apt -a 'upgrade=full' -b
+
+Reboot all webservers with :man:`molly-guard(8)` protection, user will be
+notified at the end of Ansible execution:
+
+.. code-block:: shell
+
+   debops exec -E webservers -b -m reboot -a 'search_paths=/lib/molly-guard'

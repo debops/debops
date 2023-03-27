@@ -1,5 +1,5 @@
-.. Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2021 DebOps <https://debops.org/>
+.. Copyright (C) 2021-2023 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2021-2023 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 :command:`debops run`
@@ -26,6 +26,11 @@ The options below need to be specified before any playbooks to take effect.
 ``--project-dir <project_dir>``
   Path to the project directory to work on. If it's not specified, the script
   will use the current directory.
+
+``-E, --bell``
+  Emit an ASCII "bell" at the end of the :command:`ansible-playbook` command
+  execution to notify the user. This might be useful during longer playbook
+  runs.
 
 ``--eval``
   Do not execute :command:`ansible-playbook` command; instead print out all the
@@ -61,11 +66,19 @@ The options below need to be specified before any playbooks to take effect.
 Examples
 ~~~~~~~~
 
-Execute the :file:`site.yml` DebOps playbook against all hosts in the Ansible inventory:
+Execute the :file:`site.yml` DebOps playbook against all hosts in the Ansible
+inventory:
 
 .. code-block:: shell
 
    debops run site
+
+Run the :file:`layer/common.yml` DebOps playbook against specific hosts in the
+Ansible inventory. User will be notified at the end of playbook execution:
+
+.. code-block:: shell
+
+   debops run -E layer/common -l webserver,dbserver,appserver
 
 Display the commands which will run a DebOps playbook for a specific service on
 specific hosts:
