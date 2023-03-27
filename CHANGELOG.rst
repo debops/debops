@@ -100,6 +100,10 @@ General
 - Extrepo facts file did not detect a disabled repository as being disabled
   due to a change in the extrepo file format.
 
+- The :command:`debops run` and :command:`debops check` commands should now
+  correctly recognize options of the :command:`ansible-playbook` command which
+  don't expect arguments and expand playbook names specified after them.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
