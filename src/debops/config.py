@@ -203,7 +203,7 @@ class Configuration(object):
                              .update({key: value}))
             return self._converted_data
 
-    def show(self):
+    def config_list(self):
         relative_root = os.path.relpath(os.path.abspath('/'))
         if self._env_files:
             print('# Environment files:')

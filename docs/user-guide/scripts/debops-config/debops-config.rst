@@ -2,32 +2,6 @@
 .. Copyright (C) 2021-2023 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
-:command:`debops config show`
------------------------------
-
-List all files which are parsed by the :command:`debops` script to configure
-the runtime and project environment.
-
-Options
-~~~~~~~
-
-``-h, --help``
-  Display the help and usage information
-
-``<project_dir>``
-  Path to the project directory to work on. If it's not specified, the script
-  will use the current directory.
-
-Examples
-~~~~~~~~
-
-List currently parsed configuration files:
-
-.. code-block:: shell
-
-   debops config show
-
-
 :command:`debops config env`
 ----------------------------
 
@@ -116,6 +90,32 @@ the parsing by itself:
    debops config get --format json .views.system.ansible.defaults.inventory | jq .
 
 The dot prefix (``.``) is optional.
+
+
+:command:`debops config list`
+-----------------------------
+
+List all files which are parsed by the :command:`debops` script to configure
+the runtime and project environment.
+
+Options
+~~~~~~~
+
+``-h, --help``
+  Display the help and usage information
+
+``<project_dir>``
+  Path to the project directory to work on. If it's not specified, the script
+  will use the current directory.
+
+Examples
+~~~~~~~~
+
+List currently parsed configuration files:
+
+.. code-block:: shell
+
+   debops config list
 
 
 Configuration files
