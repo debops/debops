@@ -84,6 +84,7 @@ class ProjectDir(object):
                 os.path.join(self.path, 'ansible.cfg'),
                 project_type=self.project_type)
         self.ansible_cfg.load_config()
+        self.config.set_env('ANSIBLE_CONFIG', self.ansible_cfg.path)
 
     def _find_up_dir(self, path, filenames):
         path = os.path.abspath(path)
