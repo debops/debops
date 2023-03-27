@@ -7,6 +7,7 @@
 from .config import Configuration
 from .subcommands import Subcommands
 from .projectdir import ProjectDir
+from .ansiblerunner import AnsibleRunner
 from .ansibleplaybookrunner import AnsiblePlaybookRunner
 import sys
 
@@ -29,6 +30,9 @@ class Interpreter(object):
                 self.do_project_unlock(self.parsed_args.args)
             elif self.parsed_args.command == 'status':
                 self.do_project_status(self.parsed_args.args)
+
+        elif self.parsed_args.section == 'exec':
+            self.do_exec(self.parsed_args.args)
 
         elif self.parsed_args.section in ['run', 'check']:
             self.do_run(self.parsed_args.args)
@@ -86,6 +90,20 @@ class Interpreter(object):
             sys.exit(1)
 
         project.status()
+
+    def do_exec(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config)
+        except (IsADirectoryError, NotADirectoryError) as errmsg:
+            print('Error:', errmsg)
+            sys.exit(1)
+
+        runner = AnsibleRunner(project, **vars(args))
+        if args.eval:
+            runner.eval()
+            sys.exit(0)
+        else:
+            sys.exit(runner.execute())
 
     def do_run(self, args):
         try:

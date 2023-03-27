@@ -19,6 +19,7 @@ playbooks using simple commands against the current environment.
 
    debops
    debops-project/index
+   debops-exec/index
    debops-run/index
    debops-config/index
 
