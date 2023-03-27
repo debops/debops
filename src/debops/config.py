@@ -91,6 +91,7 @@ class Configuration(object):
 
     def set_env(self, key, value):
         os.environ[key] = str(value)
+        self._env_vars[key] = str(value)
 
     def get(self, items=None):
         if items:
