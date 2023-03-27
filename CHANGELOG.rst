@@ -26,6 +26,13 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+General
+'''''''
+
+- The :command:`debops exec` command can be used to execute Ansible modules
+  against hosts in the project directory; this is a wrapper for the
+  :command:`ansible` command.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
