@@ -58,6 +58,13 @@ Updates of upstream application versions
   has been updated to the next point release, 10.13. Debian Bullseye has been
   updated to the next point release as well, 11.7.
 
+General
+'''''''
+
+- The :command:`debops config` command has been refactored and split into
+  multiple subcommands to allow easier configuration introspection. See
+  :ref:`it's documentation page <cmd_debops-config>` for more details.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
