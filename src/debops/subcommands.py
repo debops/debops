@@ -138,7 +138,7 @@ Commands:
     def do_exec(self):
         parser = argparse.ArgumentParser(
                 parents=[self.global_parser],
-                usage='debops exec [<args>] [--] <[ansible_args]',
+                usage='debops exec [<args>] [--] <[ansible_args]>',
                 description='run Ansible commands directly against hosts')
         parser.add_argument('-E', '--bell', default=False,
                             help='notify the user at the end '
