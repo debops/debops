@@ -8,7 +8,7 @@ debops.dropbear_initramfs
 =========================
 
 .. include:: man_description.rst
-   :start-line: 4
+   :start-line: 7
 
 .. toctree::
    :maxdepth: 2
