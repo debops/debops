@@ -66,6 +66,12 @@ Updates of upstream application versions
 Fixed
 ~~~~~
 
+:ref:`debops.etc_aliases` role
+''''''''''''''''''''''''''''''
+
+- Don't save dependent recipients on Ansible Controller if they are not
+  defined. This should avoid creating unnecessary files in AWX job containers.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
