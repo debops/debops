@@ -524,6 +524,12 @@ debops.boxbackup role
 - Fixed issues with preserving environment variables across multiple role
   executions.
 
+:ref:`debops.etc_aliases` role
+''''''''''''''''''''''''''''''
+
+- Don't save dependent recipients on Ansible Controller if they are not
+  defined. This should avoid creating unnecessary files in AWX job containers.
+
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
