@@ -72,6 +72,12 @@ General
 - Extrepo facts file did not detect a disabled repository as being disabled
   due to a change in the extrepo file format.
 
+:ref:`debops.etc_aliases` role
+''''''''''''''''''''''''''''''
+
+- Don't save dependent recipients on Ansible Controller if they are not
+  defined. This should avoid creating unnecessary files in AWX job containers.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
