@@ -115,6 +115,12 @@ General
   correctly recognize options of the :command:`ansible-playbook` command which
   don't expect arguments and expand playbook names specified after them.
 
+:ref:`debops.etc_aliases` role
+''''''''''''''''''''''''''''''
+
+- Don't save dependent recipients on Ansible Controller if they are not
+  defined. This should avoid creating unnecessary files in AWX job containers.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
