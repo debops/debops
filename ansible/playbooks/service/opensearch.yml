@@ -20,15 +20,20 @@
       keyring__dependent_gpg_keys:
         - '{{ opensearch__keyring__dependent_gpg_keys }}'
 
+    - role: etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ opensearch__etc_services__dependent_list }}'
+
     - role: sysctl
       tags: [ 'role::sysctl', 'skip::sysctl' ]
       sysctl__dependent_parameters:
         - '{{ opensearch__sysctl__dependent_parameters }}'
 
-    - role: etc_services
-      tags: [ 'role::etc_services', 'skip::etc_services' ]
-      etc_services__dependent_list:
-        - '{{ opensearch__etc_services__dependent_list }}'
+    - role: ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ opensearch__ferm__dependent_rules }}'
 
     - role: opensearch
       tags: [ 'role::opensearch', 'skip::opensearch' ]
