@@ -118,11 +118,9 @@
 
 - name: Add generic zones to each view
   ansible.builtin.set_fact:
-    bind__tmp_full_views: '{{ bind__tmp_full_views | d([]) +
-                              [ item | combine({ "zones":
-                                                 item["zones"]
-                                                 + bind__tmp_generic_zones })
-                              ] }}'
+    bind__tmp_full_views: '{{ bind__tmp_full_views | d([])
+                              + [item | combine({"zones": item["zones"]
+                                                          + bind__tmp_generic_zones})] }}'
   loop: '{{ bind__tmp_top_views }}'
   loop_control:
     label: '{{ item.view }}'
@@ -130,13 +128,9 @@
 
 - name: Register the view in each zone
   ansible.builtin.set_fact:
-    bind__views: '{{ bind__views | d([]) +
-                     [ item
-                       | combine({ "zones":
-                                   item["zones"]
-                                   | map("combine", { "view": item["view"] })
-                                })
-                     ] }}'
+    bind__views: '{{ bind__views | d([])
+                     + [item | combine({"zones": (item["zones"]
+                                                  | map("combine", {"view": item["view"]}))})] }}'
   loop: '{{ bind__tmp_full_views }}'
   loop_control:
     label: '{{ item.view }}'

@@ -305,7 +305,7 @@ bind__stats_proxy_port: 84
 # List of IP addresses or CIDR ranges which should have access to the
 # DNS statistics web interface exposed using the proxy. Default: all local
 # IP addresses.
-bind__stats_proxy_allow: '{{ [ "127.0.0.1", "::1" ]
+bind__stats_proxy_allow: '{{ ["127.0.0.1", "::1"]
                              + ansible_all_ipv4_addresses | d([])
                              + (ansible_all_ipv6_addresses | d([])
                                 | difference(ansible_all_ipv6_addresses | d([])
@@ -1083,7 +1083,7 @@ bind__default_zones:
       - name: 'file'
         autovalue: 'zone_file_path'
 
-    content: '{{ [ "@	IN NS localhost." ]
+    content: '{{ ["@	IN NS localhost."]
                  + bind__blocked_domains | d([]) | map("regex_replace", "^(.*)$", "\1 CNAME .")
               }}'
 
@@ -1483,7 +1483,7 @@ bind__nginx__dependent_servers:
     type: 'default'
     webroot_create: False
     state: '{{ "present"
-               if bind__features | intersect([ "doh_proxy", "stats_proxy" ])
+               if bind__features | intersect(["doh_proxy", "stats_proxy"])
                else "absent" }}'
     root: False
     maintenance: False

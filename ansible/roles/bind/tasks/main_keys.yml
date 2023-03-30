@@ -6,46 +6,43 @@
 - name: Create sanitised list of keys
   ansible.builtin.set_fact:
     bind__tmp_keys: '{{ bind__tmp_keys | d([])
-                        + [ item | combine({
-                            "state": item.state | d("present") | lower,
-                            "type": item.type | mandatory | upper,
-                            "dir": item.dir | d("/etc/bind/keys/"),
-                            "owner": item.owner | d("root"),
-                            "group": item.group | d("bind"),
-                            "include": (item.include | d(True) | bool)
-                                       if item.type | d("") | upper == "TSIG"
-                                       else False,
-                            "download": item.download | d(True if item.source | d("host") == "host" else False) | bool,
-                            "source": item.source | d("host"),
-                            "source_path": item.source_path | d(""),
-                            "remove_private_key": item.remove_private_key | d(True) | bool,
-                            "algorithm": (item.algorithm | mandatory)
-                                         if item.type | d("") | upper == "TSIG"
-                                         else ("%03d" | format(item.algorithm | mandatory | int))
-                                         if item.type | d("") | upper == "SIG(0)"
-                                         else omit,
-                            "creates": (item.name + ".key")
-                                       if item.type | d("") | upper == "TSIG"
-                                       else ("K" + item.name + "+" + "%03d" | format(item.algorithm | int) + "+*.key")
-                                       if item.type | d("") | upper == "SIG(0)"
-                                       else omit,
-                            "removes": (item.name + ".key")
-                                       if item.type | d("") | upper == "TSIG"
-                                       else ("K" + item.name + "+" + "%03d" | format(item.algorithm | int) + "+*.*")
-                                       if item.type | d("") | upper == "SIG(0)"
-                                       else omit,
-                            "public_key": (item.name + ".key")
-                                          if item.type | d("") | upper == "TSIG"
-                                          else ("K" + item.name + "+" + "%03d" | format(item.algorithm | int) + "+*.key")
-                                          if item.type | d("") | upper == "SIG(0)"
-                                          else omit,
-                            "private_key": (item.name + ".key")
-                                           if item.type | d("") | upper == "TSIG"
-                                           else ("K" + item.name + "+" + "%03d" | format(item.algorithm | int) + "+*.private")
-                                           if item.type | d("") | upper == "SIG(0)"
-                                           else omit,
-                          })]
-                     }}'
+                        + [item | combine({"state": item.state | d("present") | lower,
+                                           "type": item.type | mandatory | upper,
+                                           "dir": item.dir | d("/etc/bind/keys/"),
+                                           "owner": item.owner | d("root"),
+                                           "group": item.group | d("bind"),
+                                           "include": (item.include | d(True) | bool)
+                                                      if item.type | d("") | upper == "TSIG"
+                                                      else False,
+                                           "download": item.download | d(True if item.source | d("host") == "host" else False) | bool,
+                                           "source": item.source | d("host"),
+                                           "source_path": item.source_path | d(""),
+                                           "remove_private_key": item.remove_private_key | d(True) | bool,
+                                           "algorithm": (item.algorithm | mandatory)
+                                                        if item.type | d("") | upper == "TSIG"
+                                                        else ("%03d" | format(item.algorithm | mandatory | int))
+                                                        if item.type | d("") | upper == "SIG(0)"
+                                                        else omit,
+                                           "creates": (item.name + ".key")
+                                                      if item.type | d("") | upper == "TSIG"
+                                                      else ("K" + item.name + "+" + "%03d" | format(item.algorithm | int) + "+*.key")
+                                                      if item.type | d("") | upper == "SIG(0)"
+                                                      else omit,
+                                           "removes": (item.name + ".key")
+                                                      if item.type | d("") | upper == "TSIG"
+                                                      else ("K" + item.name + "+" + "%03d" | format(item.algorithm | int) + "+*.*")
+                                                      if item.type | d("") | upper == "SIG(0)"
+                                                      else omit,
+                                           "public_key": (item.name + ".key")
+                                                         if item.type | d("") | upper == "TSIG"
+                                                         else ("K" + item.name + "+" + "%03d" | format(item.algorithm | int) + "+*.key")
+                                                         if item.type | d("") | upper == "SIG(0)"
+                                                         else omit,
+                                           "private_key": (item.name + ".key")
+                                                          if item.type | d("") | upper == "TSIG"
+                                                          else ("K" + item.name + "+" + "%03d" | format(item.algorithm | int) + "+*.private")
+                                                          if item.type | d("") | upper == "SIG(0)"
+                                                          else omit})] }}'
   when:
     - item.name | d("") | length > 0
     - item.state | d("present") | lower in [ 'present', 'absent' ]
