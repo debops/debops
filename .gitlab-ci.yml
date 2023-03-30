@@ -240,6 +240,25 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/backup2l/.*'
     JANE_LOG_PATTERN: '\[backup2l\]'
 
+'bind role':
+  <<: *test_role_2nd_deps
+  needs:
+    - 'apt_preferences role'
+    - 'ferm role'
+    - 'resolvconf role'
+    - 'cron role'
+    - 'logrotate role'
+    - 'keyring role'
+    - 'etc_services role'
+    - 'python role'
+    - 'nginx role'
+  variables:
+    JANE_TEST_FACT: 'bind.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/bind.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_bind'
+    JANE_DIFF_PATTERN: '.*/roles/bind/.*'
+    JANE_LOG_PATTERN: '\[bind\]'
+
 # At the moment BoxBackup role is broken, needs to be updated.
 #'boxbackup role':
 #  <<: *test_role_1st_deps
