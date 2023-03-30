@@ -65,6 +65,10 @@ New DebOps roles
   playbook by default, replacing the :ref:`debops.resolvconf` role. It manages
   the :command:`systemd-resolved` service, a local DNS resolver.
 
+- The :ref:`debops.bind` role is responsible for installing and managing the
+  ISC BIND nameserver. It supports DNSSEC, key rollovers, multiple DNS zones,
+  views and many more features.
+
 General
 '''''''
 

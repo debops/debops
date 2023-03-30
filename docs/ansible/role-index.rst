@@ -157,6 +157,7 @@ Domain Name System
 It's always DNS.
 
 - :ref:`debops.avahi`
+- :ref:`debops.bind`
 - :ref:`debops.dnsmasq`
 - :ref:`debops.netbase`
 - :ref:`debops.pdns`

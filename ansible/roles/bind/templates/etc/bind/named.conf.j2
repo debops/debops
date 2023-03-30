@@ -1,0 +1,138 @@
+{# Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+ # Copyright (C) 2022 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+//
+// /etc/bind/named.conf - Main configuration file for bind.
+//
+// {{ ansible_managed }}
+//
+{% macro print_zone(zone, commented, loop_first, level) %}
+{%   if zone.state | d('present') not in [ 'absent', 'ignore', 'init' ] %}
+{%     set prefix = ("{:^" + (level * global.indent) | string + "}").format('') %}
+{%     set comment_prefix = (prefix + "// ") %}
+{%     if commented or zone.state | d('present') == 'comment' %}
+{%       set commented = True %}
+{%       set prefix = comment_prefix %}
+{%     endif %}
+{%     if not loop_first %}
+{{       '' }}
+{%     endif %}
+{%     if zone.comment | d() %}
+{{       zone.comment | regex_replace('\n$', '') | comment(prefix='', decoration=comment_prefix, postfix='') -}}
+{%     endif %}
+{{     '{}zone "{}" {{'.format(prefix, zone.name) }}
+{%     for option in zone.options | d([]) %}
+{{       print_option(option, commented, loop.first, level + 1) -}}
+{%     endfor %}
+{{     '{}}};'.format(prefix) }}
+{%   endif %}
+{% endmacro %}
+{##}
+{% macro print_views(commented, level) %}
+{%   for view in bind__views | d([]) %}
+{%     if view.state | d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%       set global.view = view.view | d("<unknown>") %}
+{%       set prefix = ("{:^" + (level * global.indent) | string + "}").format('') %}
+{%       set comment_prefix = (prefix + "// ") %}
+{%       if commented or view.state | d('present') == 'comment' %}
+{%         set commented = True %}
+{%         set prefix = comment_prefix %}
+{%       endif %}
+{%       if not loop.first %}
+{{         '' }}
+{%       endif %}
+{%       if view.comment | d() %}
+{{         view.comment | regex_replace('\n$', '') | comment(prefix='', decoration=comment_prefix, postfix='') -}}
+{%       endif %}
+{%       if view.view | d('_default') != '_default' %}
+{{         '{}view "{}" {{'.format(prefix, view.view) }}
+{%         set level = level + 1 %}
+{%       endif %}
+{%       for option in view.options | d([]) %}
+{{         print_option(option, commented, loop.first, level) -}}
+{%       endfor %}
+{%       for zone in view.zones | d([]) %}
+{%         set global.zone = zone.name | d("<unknown>") %}
+{%         set global.zone_file = '"{}/db.zone"'.format(zone.dir | d("/var/lib/bind/views/" + zone.view + "/" + zone.name)) %}
+{{         print_zone(zone, commented, loop.first, level) -}}
+{%       endfor %}
+{%       if view.view | d('_default') != '_default' %}
+{{         '{}}};'.format(prefix) }}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{% endmacro %}
+{##}
+{% macro print_keys(commented, level) %}
+{%   for key in bind__tmp_keys | d([]) %}
+{%     if key.state | d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%       set prefix = ("{:^" + (level * global.indent) | string + "}").format('') %}
+{%       set comment_prefix = (prefix + "// ") %}
+{%       if commented or key.state | d('present') == 'comment' %}
+{%         set commented = True %}
+{%         set prefix = comment_prefix %}
+{%       endif %}
+{%       if key.include | d(True) | bool and key.dir | d() and key.public_key | d() %}
+{{         '{}include "{}/{}";'.format(prefix, key.dir | regex_replace('/*$', ''), key.public_key) }}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{% endmacro %}
+{##}
+{% macro print_autovalue(option, autovalue, commented, level) %}
+{%   set prefix = ("{:^" + (level * global.indent) | string + "}").format('') %}
+{%   set comment_prefix = (prefix + "// ") %}
+{%   if commented %}
+{%     set commented = True %}
+{%     set prefix = comment_prefix %}
+{%   endif %}
+{%   if autovalue == 'keys' %}
+{{     print_keys(commented, level) -}}
+{%   elif autovalue == 'zones' %}
+{{     print_views(commented, level) -}}
+{%   elif autovalue == 'zone_file_path' %}
+{{     '{}{} {};'.format(prefix, option.option | d(option.name), global.zone_file) }}
+{%   endif %}
+{% endmacro %}
+{##}
+{% macro print_option(option, commented, loop_first, level) %}
+{%   if option.state | d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%     set prefix = ("{:^" + (level * global.indent) | string + "}").format('') %}
+{%     set comment_prefix = (prefix + "// ") %}
+{%     if commented or option.state | d('present') == 'comment' %}
+{%       set commented = True %}
+{%       set prefix = comment_prefix %}
+{%     endif %}
+{%     if option.separator | d(False) or level == 0 or (option.comment | d() and not loop_first) %}
+{{       '' }}
+{%     endif %}
+{%     if option.comment | d() %}
+{{       option.comment | regex_replace('\n$', '') | comment(prefix='', decoration=comment_prefix, postfix='') -}}
+{%     endif %}
+{%     if option.raw | d() and commented %}
+{{       '{}'.format(option.raw | regex_replace('\n$', '') | comment(prefix='', decoration=comment_prefix, postfix='')) -}}
+{%     elif option.raw | d() and not commented %}
+{{       '{}{}'.format(prefix, option.raw | regex_replace('\n$', '')) }}
+{%     elif option.options | d() %}
+{{       '{}{} {{'.format(prefix, option.option | d(option.name) | regex_replace('\n$', '')) }}
+{%       for option in option.options %}
+{{         print_option(option, commented, loop.first, level + 1) -}}
+{%       endfor %}
+{{       '{}}};'.format(prefix) }}
+{%     elif option.autovalue | d() %}
+{{       print_autovalue(option, option.autovalue, commented, level) -}}
+{%     else %}
+{{       '{}{} {};'.format(prefix, option.option | d(option.name), option.value | d("")) }}
+{%     endif %}
+{%   endif %}
+{% endmacro %}
+{##}
+{% set global = namespace() %}
+{% set global.indent = 8 %}
+{% set global.view = "<undefined>" %}
+{% set global.zone = "<undefined>" %}
+{% set global.zone_file = "<undefined>" %}
+{% for option in bind__combined_configuration | debops.debops.parse_kv_config %}
+{{   print_option(option, False, loop.first, 0) -}}
+{% endfor %}

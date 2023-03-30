@@ -1,0 +1,1551 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+# .. Copyright (C) 2022 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _bind__ref_defaults:
+
+# debops.bind default variables
+# =============================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# General configuration [[[
+# -------------------------
+
+# .. envvar:: bind__features [[[
+#
+# List of features which should be installed and enabled (if supported
+# by the installed BIND version and local environment). See
+# :ref:`bind__ref_configuration_features` for details.
+bind__features:
+  - 'dns'
+  - 'dnssec'
+  - '{{ "dot" if bind__pki else [] }}'
+  - '{{ "doh_https"
+        if (bind__pki
+            and not ansible_local.nginx.enabled | d(False)
+            and not ansible_local.apache.enabled | d(False)
+            and "debops_service_nginx" not in group_names
+            and "debops_service_apache" not in group_names)
+        else [] }}'
+  - '{{ "doh_proxy"
+        if (bind__pki and ansible_local.nginx.enabled | d(False)
+            or "debops_service_nginx" in group_names)
+        else [] }}'
+  - '{{ "stats_proxy"
+        if (bind__pki and ansible_local.nginx.enabled | d(False)
+            or "debops_service_nginx" in group_names)
+        else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: bind__version [[[
+#
+# The BIND version which is installed on the host. Obtained from Ansible
+# local facts, but also defined here to simplify the role and to allow
+# the version to be overridden.
+bind__version: '{{ ansible_local.bind.version | d("0.0.0") }}'
+
+                                                                   # ]]]
+# .. envvar:: bind__fqdn [[[
+#
+# The FQDN of the BIND server, used in case DNS over HTTP(S) is configured
+# using :ref:`debops.nginx` as a proxy.
+bind__fqdn: 'dns.{{ bind__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: bind__domain [[[
+#
+# The main domain of the BIND server, used the create the FQDN above.
+bind__domain: '{{ ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: bind__blocked_domains [[[
+#
+# Domains for which BIND should return ``NXDOMAIN`` rather than a proper
+# response. See :ref:`bind__ref_dot_doh_firefox` for an explanation of
+# the default value.
+bind__blocked_domains: [ 'use-application-dns.net' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# UNIX environment [[[
+# --------------------
+
+# .. envvar:: bind__user [[[
+#
+# Name of the UNIX account used by the BIND server.
+bind__user: 'bind'
+
+                                                                   # ]]]
+# .. envvar:: bind__additional_groups [[[
+#
+# List of additional UNIX groups the BIND account should have access to.
+bind__additional_groups: [ 'ssl-cert' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# APT packages [[[
+# ----------------
+
+# .. envvar:: bind__base_packages [[[
+#
+# List of APT packages required for BIND.
+bind__base_packages: [ 'bind9', 'bind9-dnsutils' ]
+
+                                                                   # ]]]
+# .. envvar:: bind__packages [[[
+#
+# List of additional APT packages to install together with BIND.
+bind__packages: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Backup snapshots [[[
+# --------------------
+
+# These variables configure periodic backup snapshots of the BIND
+# configuration and zones. See :ref:`bind__ref_backup_restore`
+# for more details.
+
+# .. envvar:: bind__snapshot_enabled [[[
+#
+# If ``True``, the snapshot :command:`cron` jobs will be configured to run
+# the :command:`debops-bind-snapshot` script periodically to create snapshots
+# of the BIND configuration and zones. If ``False``, the :command:`cron`
+# jobs will be removed.
+bind__snapshot_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: bind__snapshot_cron_jobs [[[
+#
+# List of :command:`cron` periods during which the
+# :command:`debops-bind-snapshot` script should be executed to create BIND
+# snapshots.
+bind__snapshot_cron_jobs: [ 'daily', 'weekly', 'monthly' ]
+                                                                   # ]]]
+                                                                   # ]]]
+# DNSSEC configuration [[[
+# ------------------------
+
+# These variables control the signing of zones. See :ref:`bind__ref_dnssec`
+# for further details.
+
+# .. envvar:: bind__dnssec_use_nsec3 [[[
+#
+# Whether DNSSEC signed zones should, by default, use ``NSEC3`` instead of
+# ``NSEC``. ``NSEC3`` makes it more difficult to enumerate a zone, but with
+# some added computational complexity. See the `DNSSEC Guide`__ for more
+# details.
+#
+# .. __: https://bind9.readthedocs.io/en/latest/dnssec-guide.html#proof-of-non-existence-nsec-and-nsec3
+bind__dnssec_use_nsec3: True
+
+                                                                   # ]]]
+# .. envvar:: bind__dnssec_script_enabled [[[
+#
+# Whether the DNSSEC rollover script should be enabled. See
+# :ref:`bind__ref_dnssec_rollover_script` for details. Note that the default
+# value might change once a majority of registries/registrars support
+# ``CDN``/``CDNSKEY`` based automatic updates
+# (see :ref:`bind__ref_dnssec_rollover`).
+bind__dnssec_script_enabled: '{{ True if "dnssec" in bind__features else False }}'
+
+                                                                   # ]]]
+# .. envvar:: bind__dnssec_script_domains [[[
+#
+# Domains which the DNSSEC rollover script should monitor for key changes.
+# List of strings in the form ``<domain>`` or ``<domain>/<view>``.
+# An empty list means the script will attempt to monitor all domains.
+bind__dnssec_script_domains: []
+
+                                                                   # ]]]
+# .. envvar:: bind__dnssec_script_method [[[
+#
+# The method to use when DNSSEC keys need to be published/withdrawn in
+# the parent zone.
+#
+# Supported values are:
+#
+# log
+#   Key updates will simply be logged to a file.
+# email
+#   Emails will be sent to the admin email address for manual handling.
+# external
+#   An external script will be executed when keys need to be updated.
+bind__dnssec_script_method: 'email'
+
+                                                                   # ]]]
+# .. envvar:: bind__dnssec_script_default_configuration [[[
+#
+# The default configuration for the DNSSEC rollover script.
+bind__dnssec_script_default_configuration:
+  - name: 'method'
+    value: '{{ bind__dnssec_script_method }}'
+
+  - name: 'log_file'
+    value: '/var/log/debops-bind-rollkey.log'
+
+  - name: 'email_to'
+    value: '{{ ansible_local.core.admin_public_email[0]
+               | d("root@" + ansible_domain) }}'
+
+  - name: 'email_from'
+    value: '{{ "noreply@" + ansible_domain }}'
+
+  - name: 'email_host'
+    value: 'localhost'
+
+  - name: 'email_port'
+    value: 25
+
+  - name: 'email_subject'
+    value: 'BIND DNSSEC key updates'
+
+  - name: 'external_script'
+    value: '/usr/local/sbin/debops-bind-rollkey-action'
+
+  - name: 'zones'
+    value: '{{ bind__dnssec_script_domains }}'
+
+                                                                   # ]]]
+# .. envvar:: bind__dnssec_script_configuration [[[
+#
+# The configuration for the DNSSEC rollover script defined for all hosts
+# in the Ansible inventory.
+bind__dnssec_script_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: bind__dnssec_script_group_configuration [[[
+#
+# The configuration for the DNSSEC rollover script defined for all hosts
+# in a specific Ansible inventory group.
+bind__dnssec_script_group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: bind__dnssec_script_host_configuration [[[
+#
+# The configuration for the DNSSEC rollover script defined for a specific
+# host in the Ansible inventory.
+bind__dnssec_script_host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: bind__dnssec_script_combined_configuration [[[
+#
+# The combined configuration for the DNSSEC rollover script. Used to
+# create :file:`/etc/bind/debops-bind-rollkey.json`.
+bind__dnssec_script_combined_configuration: '{{
+  bind__dnssec_script_default_configuration
+  + bind__dnssec_script_configuration
+  + bind__dnssec_script_group_configuration
+  + bind__dnssec_script_host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# DNS over HTTP(S) [[[
+# --------------------
+
+# See :ref:`bind__ref_dot_doh` for further details.
+
+# .. envvar:: bind__doh_endpoints [[[
+#
+# List of HTTP query paths on which to listen if DNS-over-HTTP(S) is
+# enabled.
+bind__doh_endpoints: [ '/dns-query' ]
+
+                                                                   # ]]]
+# .. envvar:: bind__doh_proxy_port [[[
+#
+# Port on the loopback interface to use by :command:`named` in case DNS over
+# HTTP(S) is enabled using a real webserver as a proxy.
+bind__doh_proxy_port: 83
+
+                                                                   # ]]]
+# .. envvar:: bind__doh_proxy_allow [[[
+#
+# List of IP addresses or CIDR ranges which should have access to the
+# DNS over HTTP(S) interface exposed using the proxy via the
+# :envvar:`bind__doh_endpoints` paths. Default: all local networks.
+bind__doh_proxy_allow: >-
+  {%- set cidrs = [] -%}
+  {%- for item in ((ansible_interfaces
+                    | map('extract', ansible_facts, 'ipv4')
+                    | select('defined') | list | flatten) +
+                   (ansible_interfaces
+                    | map('extract', ansible_facts, 'ipv6')
+                    | select('defined') | list | flatten)) | d([]) -%}
+  {%-   if item.address | d() and not item.address | ipaddr('link-local') -%}
+  {%-     set address = item.address -%}
+  {%-     set prefix_or_mask = item.prefix | d(item.netmask) -%}
+  {%-     set cidr = '{}/{}'.format(address, prefix_or_mask) -%}
+  {%-     set _ = cidrs.append(cidr | ipaddr('network/prefix')) -%}
+  {%-   endif -%}
+  {%- endfor -%}
+  {{ cidrs | unique | sort }}
+
+                                                                   # ]]]
+# .. envvar:: bind__doh_proxy_access_policy [[[
+#
+# Name of the nginx access policy to use for the DNS over HTTP(S) proxy.
+# See :ref:`debops.nginx` for more details.
+bind__doh_proxy_access_policy: ''
+
+                                                                   # ]]]
+# .. envvar:: bind__stats_proxy_port [[[
+#
+# Port on the loopback interface to use by :command:`named` in case statistics
+# should be provided over HTTP(S) using a real webserver as a proxy.
+bind__stats_proxy_port: 84
+
+                                                                   # ]]]
+# .. envvar:: bind__stats_proxy_allow [[[
+#
+# List of IP addresses or CIDR ranges which should have access to the
+# DNS statistics web interface exposed using the proxy. Default: all local
+# IP addresses.
+bind__stats_proxy_allow: '{{ ["127.0.0.1", "::1"]
+                             + ansible_all_ipv4_addresses | d([])
+                             + (ansible_all_ipv6_addresses | d([])
+                                | difference(ansible_all_ipv6_addresses | d([])
+                                             | ipaddr("link-local")))
+                             | unique | sort }}'
+
+                                                                   # ]]]
+# .. envvar:: bind__stats_proxy_access_policy [[[
+#
+# Name of the nginx access policy to use for the statistics proxy.
+# See :ref:`debops.nginx` for more details.
+bind__stats_proxy_access_policy: ''
+                                                                   # ]]]
+                                                                   # ]]]
+# Main configuration file [[[
+# ---------------------------
+
+# These variables define the contents of the main :file:`/etc/bind/named.conf`
+# configuration file. See :ref:`bind__ref_configuration` for further details.
+
+# .. envvar:: bind__default_configuration [[[
+#
+# The default configuration defined by the role.
+bind__default_configuration:
+
+  - name: 'debops-tls'
+    option: 'tls "debops-tls"'
+    comment: 'TLS options for DoH and DoT'
+    state: '{{ "present" if bind__features | intersect(["dot", "doh_https"])
+               else "absent" }}'
+    options:
+
+      - name: 'ciphers'
+        value: '"{{ bind__tls_cipher_list }}"'
+
+      - name: 'dhparam-file'
+        value: '"{{ bind__tls_dh_file }}"'
+        state: '{{ "present" if bind__dhparam else "absent" }}'
+
+      - name: 'cert-file'
+        value: '"{{ bind__pki_path + "/" + bind__pki_realm + "/" + bind__pki_crt }}"'
+
+      - name: 'key-file'
+        value: '"{{ bind__pki_path + "/" + bind__pki_realm + "/" + bind__pki_key }}"'
+
+      - name: 'protocols'
+        options:
+
+          - name: 'protocols'
+            raw: '{{ bind__tls_protocols | d([]) | join("; ") }};'
+
+      - name: 'session-tickets'
+        value: 'no'
+
+      - name: 'prefer-server-ciphers'
+        value: 'yes'
+
+      - name: 'ca-file'
+        state: 'absent'
+
+      - name: 'remote-hostname'
+        state: 'absent'
+
+  - name: 'http "debops-http"'
+    comment: 'DoH options'
+    state: '{{ "present"
+               if bind__features | intersect(["doh_https", "doh_proxy", "doh_http"])
+               else "absent" }}'
+    options:
+
+      - name: 'endpoints'
+        options:
+
+          - name: 'endpoints'
+            raw: "{{ bind__doh_endpoints | map('regex_replace', '^(.*)$', '\"\\1\";') | join(' ') }}"
+
+      - name: 'listener-clients'
+        state: 'absent'
+
+      - name: 'streams-per-connection'
+        state: 'absent'
+
+  - name: 'statistics-channels'
+    comment: 'Make stats available via a reverse proxy'
+    state: '{{ "present" if "stats_proxy" in bind__features else "absent" }}'
+    options:
+
+      - name: 'statistics-localhost'
+        raw: 'inet 127.0.0.1 port {{ bind__stats_proxy_port }} allow { any; };'
+
+  - name: 'options'
+    options:
+
+      - name: 'directory'
+        comment: 'For storage of non-authoritative/secondary zones'
+        value: '"/var/cache/bind"'
+
+      - name: 'forwarders'
+        state: 'absent'
+        options:
+
+          - name: 'forwarder-1'
+            raw: '1.1.1.1;'
+
+      - name: 'zone-statistics'
+        comment: 'Collect stats for all zones, available via rndc stats'
+        value: 'yes'
+
+      - name: 'listen-dns-v4'
+        option: 'listen-on'
+        comment: 'Regular DNS (Do53) - IPv4'
+        state: '{{ "present" if "dns" in bind__features else "absent" }}'
+        options:
+
+          - name: 'any'
+            raw: 'any;'
+
+      - name: 'listen-dot-v4'
+        option: 'listen-on port 853 tls debops-tls'
+        comment: 'DNS over TLS (DoT) - IPv4'
+        state: '{{ "present" if "dot" in bind__features else "absent" }}'
+        options:
+
+          - name: 'any'
+            raw: 'any;'
+
+      - name: 'listen-doh-https-v4'
+        option: 'listen-on port 443 tls debops-tls http debops-http'
+        comment: 'DNS over HTTPS (DoH) - IPv4'
+        state: '{{ "present" if "doh_https" in bind__features else "absent" }}'
+        options:
+
+          - name: 'any'
+            raw: 'any;'
+
+      - name: 'listen-doh-http-v4'
+        option: 'listen-on port 80 tls none http debops-http'
+        comment: 'DNS over HTTP (DoH) - IPv4'
+        state: '{{ "present" if "doh_http" in bind__features else "absent" }}'
+        options:
+
+          - name: 'localhost'
+            raw: 'any;'
+
+      - name: 'listen-doh-proxy-v4'
+        option: 'listen-on port {{ bind__doh_proxy_port | d("83") }} tls none http debops-http'
+        comment: 'DNS over HTTP (DoH), behind proxy - IPv4'
+        state: '{{ "present" if "doh_proxy" in bind__features else "absent" }}'
+        options:
+
+          - name: 'localhost'
+            raw: '127.0.0.1;'
+
+      - name: 'listen-dns-v6'
+        option: 'listen-on-v6'
+        comment: 'Regular DNS (Do53) - IPv6'
+        state: '{{ "present" if "dns" in bind__features else "absent" }}'
+        options:
+
+          - name: 'any'
+            raw: 'any;'
+
+      - name: 'listen-dns-dot-v6'
+        option: 'listen-on-v6 port 853 tls debops-tls'
+        comment: 'DNS over TLS (DoT) - IPv6'
+        state: '{{ "present" if "dot" in bind__features else "absent" }}'
+        options:
+
+          - name: 'any'
+            raw: 'any;'
+
+      - name: 'listen-doh-https-v6'
+        option: 'listen-on-v6 port 443 tls debops-tls http debops-http'
+        comment: 'DNS over HTTPS (DoH) - IPv6'
+        state: '{{ "present" if "doh_https" in bind__features else "absent" }}'
+        options:
+
+          - name: 'any'
+            raw: 'any;'
+
+      - name: 'listen-doh-http-v6'
+        option: 'listen-on-v6 port 80 tls none http debops-http'
+        state: '{{ "present" if "doh_http" in bind__features else "absent" }}'
+        comment: 'DNS over HTTP (DoH) - IPv6'
+        options:
+
+          - name: 'localhost'
+            raw: 'any;'
+
+      - name: 'listen-doh-proxy-v6'
+        option: 'listen-on-v6 port {{ bind__doh_proxy_port | d("83") }} tls none http debops-http'
+        comment: 'DNS over HTTP (DoH), behind proxy - IPv6'
+        state: '{{ "present" if "doh_proxy" in bind__features else "absent" }}'
+        options:
+
+          - name: 'localhost'
+            raw: '127.0.0.1;'
+
+      - name: 'qname-minimization'
+        comment: 'Perform strict QNAME minimization (RFC7816)'
+        value: 'strict'
+        state: 'comment'
+
+      - name: 'dnssec-validation'
+        comment: 'This is for when BIND acts as a resolver'
+        value: 'auto'
+
+      - name: 'key-directory'
+        comment: 'For storage of DNSSEC keys'
+        value: '"/var/lib/bind/dnssec-keys"'
+        state: '{{ "present" if "dnssec" in bind__features else "absent" }}'
+
+      - name: 'dnssec-dnskey-kskonly'
+        comment: 'https://gitlab.isc.org/isc-projects/bind9/-/issues/1316'
+        state: '{{ "present" if "dnssec" in bind__features else "absent" }}'
+        value: 'yes'
+
+      - name: 'response-policy-blocked-domains'
+        raw: 'response-policy { zone "rpz.local"; } break-dnssec yes;'
+        state: '{{ "present" if bind__blocked_domains | d([]) | length > 0 else "absent" }}'
+
+      - name: 'max-udp-size'
+        comment: 'https://www.isc.org/blogs/dns-flag-day-2020-2/'
+        value: '1220'
+
+      - name: 'edns-udp-size'
+        comment: 'https://www.isc.org/blogs/dns-flag-day-2020-2/'
+        value: '1220'
+
+      - name: 'serial-update-method'
+        comment: 'Make the serial numbers meaningful to a human admin'
+        value: 'date'
+
+  - name: 'logging'
+    state: 'absent'
+    options:
+
+      - name: 'channel client_spam_channel'
+        options:
+
+          - name: 'file'
+            value: '"/var/log/named/named_recent_client.log" versions 3 size 5m suffix increment'
+
+          - name: 'severity'
+            value: 'info'
+
+          - name: 'print-time'
+            value: 'yes'
+
+          - name: 'print-category'
+            value: 'yes'
+
+          - name: 'print-severity'
+            value: 'yes'
+
+          - name: 'buffered'
+            value: 'no'
+
+      - name: 'channel server_spam_channel'
+        options:
+
+          - name: 'file'
+            value: '"/var/log/named/named_recent_server.log" versions 3 size 5m suffix increment'
+
+          - name: 'severity'
+            value: 'info'
+
+          - name: 'print-time'
+            value: 'yes'
+
+          - name: 'print-category'
+            value: 'yes'
+
+          - name: 'print-severity'
+            value: 'yes'
+
+          - name: 'buffered'
+            value: 'no'
+
+      - name: 'category client'
+        options:
+
+          - name: 'channel-1'
+            raw: 'client_spam_channel;'
+
+      - name: 'category query-errors'
+        options:
+
+          - name: 'channel-1'
+            raw: 'client_spam_channel;'
+
+      - name: 'category resolver'
+        options:
+
+          - name: 'channel-1'
+            raw: 'client_spam_channel;'
+
+      - name: 'category security'
+        options:
+
+          - name: 'channel-1'
+            raw: 'client_spam_channel;'
+
+      - name: 'category spill'
+        options:
+
+          - name: 'channel-1'
+            raw: 'client_spam_channel;'
+
+      - name: 'category cname'
+        options:
+
+          - name: 'channel-1'
+            raw: 'server_spam_channel;'
+
+      - name: 'category edns-disabled'
+        options:
+
+          - name: 'channel-1'
+            raw: 'server_spam_channel;'
+
+      - name: 'category lame-servers'
+        options:
+
+          - name: 'channel-1'
+            raw: 'server_spam_channel;'
+
+  - name: 'generated-keys'
+    comment: 'Keys defined by the Ansible role'
+    state: '{{ "present"
+               if bind__combined_keys
+                  | flatten
+                  | debops.debops.parse_kv_items
+                  | selectattr("state", "equalto", "present")
+                  | length > 0
+               else "absent" }}'
+    autovalue: 'keys'
+
+  - name: 'acl debops-acl'
+    state: '{{ "present"
+               if "debops-key" in (bind__combined_keys
+                                   | flatten
+                                   | debops.debops.parse_kv_items
+                                   | selectattr("state", "equalto", "present")
+                                   | map(attribute="name"))
+               else "absent" }}'
+    options:
+
+      - name: 'debops-key'
+        raw: 'key debops-key;'
+
+  - name: 'dnssec-policy-csk'
+    option: 'dnssec-policy "csk"'
+    comment: 'Single CSK without rollover (BINDs default policy)'
+    state: '{{ "present" if "dnssec" in bind__features else "absent" }}'
+    options:
+
+      - name: 'keys'
+        options:
+
+          - name: 'csk'
+            value: 'key-directory lifetime unlimited algorithm ecdsap256sha256'
+
+      - name: 'nsec3param'
+        comment: |
+          If you consider changing these values, first read:
+          https://datatracker.ietf.org/doc/html/draft-ietf-dnsop-nsec3-guidance-10#section-3.1
+        state: '{{ "present" if bind__dnssec_use_nsec3 | d(False) else "absent" }}'
+        value: 'iterations 0 optout no salt-length 0'
+
+      - name: 'dnskey-ttl'
+        comment: 'Key timings'
+        separator: True
+        value: '3600'
+
+      - name: 'publish-safety'
+        value: '1h'
+
+      - name: 'retire-safety'
+        value: '1h'
+
+      - name: 'purge-keys'
+        value: 'P90D'
+
+      - name: 'signatures-refresh'
+        comment: 'Signature timings'
+        separator: True
+        value: '5d'
+
+      - name: 'signatures-validity'
+        value: '14d'
+
+      - name: 'signatures-validity-dnskey'
+        value: '14d'
+
+      - name: 'max-zone-ttl'
+        comment: 'Zone parameters'
+        separator: True
+        value: '86400'
+
+      - name: 'zone-propagation-delay'
+        value: '300'
+
+      - name: 'parent-ds-ttl'
+        comment: 'Parent parameters'
+        separator: True
+        value: '86400'
+
+      - name: 'parent-propagation-delay'
+        value: '1h'
+
+  - name: 'dnssec-policy-csk-rollover'
+    option: 'dnssec-policy "csk-rollover"'
+    comment: 'Single CSK with rollover'
+    state: '{{ "present" if "dnssec" in bind__features else "absent" }}'
+    options:
+
+      - name: 'keys'
+        options:
+
+          - name: 'csk'
+            value: 'key-directory lifetime 365d algorithm ecdsap256sha256'
+
+      - name: 'nsec3param'
+        comment: |
+          If you consider changing these values, first read:
+          https://datatracker.ietf.org/doc/html/draft-ietf-dnsop-nsec3-guidance-10#section-3.1
+        state: '{{ "present" if bind__dnssec_use_nsec3 | d(False) else "absent" }}'
+        value: 'iterations 0 optout no salt-length 0'
+
+      - name: 'dnskey-ttl'
+        comment: 'Key timings'
+        separator: True
+        value: '3600'
+
+      - name: 'publish-safety'
+        value: '1h'
+
+      - name: 'retire-safety'
+        value: '1h'
+
+      - name: 'purge-keys'
+        value: 'P90D'
+
+      - name: 'signatures-refresh'
+        comment: 'Signature timings'
+        separator: True
+        value: '5d'
+
+      - name: 'signatures-validity'
+        value: '14d'
+
+      - name: 'signatures-validity-dnskey'
+        value: '14d'
+
+      - name: 'max-zone-ttl'
+        comment: 'Zone parameters'
+        separator: True
+        value: '86400'
+
+      - name: 'zone-propagation-delay'
+        value: '300'
+
+      - name: 'parent-ds-ttl'
+        comment: 'Parent parameters'
+        separator: True
+        value: '86400'
+
+      - name: 'parent-propagation-delay'
+        value: '1h'
+
+  - name: 'dnssec-policy-kskzsk'
+    option: 'dnssec-policy "kskzsk"'
+    comment: 'Separate KSK and ZSK without rollover'
+    state: '{{ "present" if "dnssec" in bind__features else "absent" }}'
+    options:
+
+      - name: 'keys'
+        options:
+
+          - name: 'ksk'
+            value: 'key-directory lifetime unlimited algorithm ecdsap256sha256'
+
+          - name: 'zsk'
+            value: 'key-directory lifetime unlimited algorithm ecdsap256sha256'
+
+      - name: 'nsec3param'
+        comment: |
+          If you consider changing these values, first read:
+          https://datatracker.ietf.org/doc/html/draft-ietf-dnsop-nsec3-guidance-10#section-3.1
+        state: '{{ "present" if bind__dnssec_use_nsec3 | d(False) else "absent" }}'
+        value: 'iterations 0 optout no salt-length 0'
+
+      - name: 'dnskey-ttl'
+        comment: 'Key timings'
+        separator: True
+        value: '3600'
+
+      - name: 'publish-safety'
+        value: '1h'
+
+      - name: 'retire-safety'
+        value: '1h'
+
+      - name: 'purge-keys'
+        value: 'P90D'
+
+      - name: 'signatures-refresh'
+        comment: 'Signature timings'
+        separator: True
+        value: '5d'
+
+      - name: 'signatures-validity'
+        value: '14d'
+
+      - name: 'signatures-validity-dnskey'
+        value: '14d'
+
+      - name: 'max-zone-ttl'
+        comment: 'Zone parameters'
+        separator: True
+        value: '86400'
+
+      - name: 'zone-propagation-delay'
+        value: '300'
+
+      - name: 'parent-ds-ttl'
+        comment: 'Parent parameters'
+        separator: True
+        value: '86400'
+
+      - name: 'parent-propagation-delay'
+        value: '1h'
+
+  - name: 'dnssec-policy-kskzsk-rollover'
+    option: 'dnssec-policy "kskzsk-rollover"'
+    comment: 'Separate KSK and ZSK with rollover (the traditional policy)'
+    state: '{{ "present" if "dnssec" in bind__features else "absent" }}'
+    options:
+
+      - name: 'keys'
+        options:
+
+          - name: 'ksk'
+            value: 'key-directory lifetime 365d algorithm ecdsap256sha256'
+
+          - name: 'zsk'
+            value: 'key-directory lifetime 60d algorithm ecdsap256sha256'
+
+      - name: 'nsec3param'
+        comment: |
+          If you consider changing these values, first read:
+          https://datatracker.ietf.org/doc/html/draft-ietf-dnsop-nsec3-guidance-10#section-3.1
+        state: '{{ "present" if bind__dnssec_use_nsec3 | d(False) else "absent" }}'
+        value: 'iterations 0 optout no salt-length 0'
+
+      - name: 'dnskey-ttl'
+        comment: 'Key timings'
+        separator: True
+        value: '3600'
+
+      - name: 'publish-safety'
+        value: '1h'
+
+      - name: 'retire-safety'
+        value: '1h'
+
+      - name: 'purge-keys'
+        value: 'P90D'
+
+      - name: 'signatures-refresh'
+        comment: 'Signature timings'
+        separator: True
+        value: '5d'
+
+      - name: 'signatures-validity'
+        value: '14d'
+
+      - name: 'signatures-validity-dnskey'
+        value: '14d'
+
+      - name: 'max-zone-ttl'
+        comment: 'Zone parameters'
+        separator: True
+        value: '86400'
+
+      - name: 'zone-propagation-delay'
+        value: '300'
+
+      - name: 'parent-ds-ttl'
+        comment: 'Parent parameters'
+        separator: True
+        value: '86400'
+
+      - name: 'parent-propagation-delay'
+        value: '1h'
+
+  - name: 'generated-zones'
+    comment: 'Views/zones defined by the Ansible role'
+    autovalue: 'zones'
+    weight: 10000
+
+                                                                   # ]]]
+# .. envvar:: bind__configuration [[[
+#
+# The configuration defined for all hosts in the Ansible inventory.
+bind__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: bind__group_configuration [[[
+#
+# The configuration options defined for hosts in a specific Ansible inventory
+# group.
+bind__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: bind__host_configuration [[[
+#
+# The configuration defined for a specific host in the Ansible inventory.
+bind__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: bind__combined_configuration [[[
+#
+# This variable combines the other configuration variables for use in the
+# :file:`/etc/bind/named.conf` template.
+bind__combined_configuration: '{{ bind__default_configuration
+                                   + bind__configuration
+                                   + bind__group_configuration
+                                   + bind__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Key configuration [[[
+# ---------------------
+
+# These variables control the automated generation of keys which can be used
+# e.g. by remote hosts for dynamic updates via :command:`nsupdate` and which
+# can be automatically included in the :file:`/etc/bind/named.conf`
+# configuration. See :ref:`bind__ref_keys` for more details.
+
+# .. envvar:: bind__default_keys [[[
+#
+# The default keys defined by the role.
+bind__default_keys:
+
+  - name: 'debops-key'
+    algorithm: 'hmac-sha512'
+    type: 'tsig'
+
+                                                                   # ]]]
+# .. envvar:: bind__keys [[[
+#
+# The keys defined for all hosts in the Ansible inventory.
+bind__keys: []
+
+                                                                   # ]]]
+# .. envvar:: bind__group_keys [[[
+#
+# The keys defined for hosts in a specific Ansible inventory group.
+bind__group_keys: []
+
+                                                                   # ]]]
+# .. envvar:: bind__host_keys [[[
+#
+# The keys defined for a specific host in the Ansible inventory.
+bind__host_keys: []
+
+                                                                   # ]]]
+# .. envvar:: bind__combined_keys [[[
+#
+# The variable that combines all keys for use in the role tasks and
+# templates.
+bind__combined_keys: '{{ bind__default_keys
+                          + bind__keys
+                          + bind__group_keys
+                          + bind__host_keys }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Zone configuration [[[
+# ----------------------
+
+# These variables define zones which are to be controlled via Ansible and which
+# can be automatically included in the configuration. See
+# :ref:`bind__ref_zones` for further details.
+
+# .. envvar:: bind__default_zone_ttl [[[
+#
+# The default TTL value for generated zones.
+bind__default_zone_ttl: '1D'
+
+                                                                   # ]]]
+# .. envvar:: bind__default_zone_soa_primary [[[
+#
+# The default primary server for generated zones, a FQDN with a trailing
+# period. Used in the SOA RR.
+bind__default_zone_soa_primary: '{{ ansible_fqdn | regex_replace("\.*$", ".") }}'
+
+                                                                   # ]]]
+# .. envvar:: bind__default_zone_soa_email [[[
+#
+# The default contact email address for generated zones, with the @ replaced by
+# a period and a trailing period. Periods can be escaped using a backslash.
+#
+# For example:
+#  * ``hostmaster@example.com`` -> ``hostmaster.example.com.``
+#  * ``john.doe@example.com`` -> ``john\.doe.example.com.``
+#
+# Used in the SOA RR.
+bind__default_zone_soa_email: '{{ "hostmaster." + ansible_domain + "." }}'
+
+                                                                   # ]]]
+# .. envvar:: bind__default_zone_soa_serial [[[
+#
+# The default initial serial number for generated zones (may be automatically
+# updated by the :command:`bind` server, e.g. due to automatic `DNSSEC` signing
+# or dynamic DNS updates, which is why the ``YYYYMMDDnn`` is not followed).
+# Used in the SOA RR.
+bind__default_zone_soa_serial: 1
+
+                                                                   # ]]]
+# .. envvar:: bind__default_zone_soa_refresh [[[
+#
+# The default refresh time for generated zones (how often secondary servers
+# should query the master to detect zone changes). This and the following
+# defaults follow the recommendations from `this internet draft`__.
+# Used in the SOA RR.
+#
+# .. __: https://datatracker.ietf.org/doc/html/draft-koch-dns-soa-values-00
+bind__default_zone_soa_refresh: '1D'
+
+                                                                   # ]]]
+# .. envvar:: bind__default_zone_soa_retry [[[
+#
+# The default retry time for generated zones (how often secondary servers
+# should reattempt querying the master to detect zone changes upon failure,
+# must be smaller than the :envvar:`bind__default_zone_soa_refresh` value.
+# Used in the SOA RR.
+bind__default_zone_soa_retry: '2H'
+
+                                                                   # ]]]
+# .. envvar:: bind__default_zone_soa_expire [[[
+#
+# The default expiry time for generated zones (how long before secondary
+# servers should stop answering requests for this zone if the master is
+# unreachable, must be larger than :envvar:`bind__default_zone_soa_refresh`
+# plus :envvar:`bind__default_zone_soa_retry`. Used in the SOA RR.
+bind__default_zone_soa_expire: '1000H'
+
+                                                                   # ]]]
+# .. envvar:: bind__default_zone_neg_ttl [[[
+#
+# The default TTL for negative responses for generated zones.  Used in the SOA
+# RR.
+bind__default_zone_soa_neg_ttl: '2D'
+
+                                                                   # ]]]
+# .. envvar:: bind__default_zones [[[
+#
+# The default :command:`bind` configuration options defined by the role. See
+# :ref:`bind__ref_configuration_syntax` for details. The reason that the
+# blocklist is defined here and not in :envvar:`bind__default_generic_zones`
+# is that it is unlikely to be desirable to have the blocklist present in
+# multiple views (e.g. in a setup with an external/internal view).
+bind__default_zones:
+
+  - name: 'rpz.local'
+    force: True
+    comment: 'Domain blocklist'
+    state: '{{ "present" if bind__blocked_domains | d([]) | length > 0 else "absent" }}'
+    options:
+
+      - name: 'type'
+        value: 'master'
+
+      - name: 'file'
+        autovalue: 'zone_file_path'
+
+    content: '{{ ["@	IN NS localhost."]
+                 + bind__blocked_domains | d([]) | map("regex_replace", "^(.*)$", "\1 CNAME .")
+              }}'
+
+                                                                   # ]]]
+# .. envvar:: bind__zones [[[
+#
+# The :command:`bind` configuration options defined for all hosts in the
+# Ansible inventory.
+bind__zones: []
+
+                                                                   # ]]]
+# .. envvar:: bind__group_zones [[[
+#
+# The :command:`bind` configuration options defined for hosts in a
+# specific Ansible inventory group.
+bind__group_zones: []
+
+                                                                   # ]]]
+# .. envvar:: bind__host_zones [[[
+#
+# The :command:`bind` configuration options defined for a specific host
+# in the Ansible inventory.
+bind__host_zones: []
+
+                                                                   # ]]]
+# .. envvar:: bind__combined_zones [[[
+#
+# The variable that combines other :command:`bind` configuration options for
+# use in the :file:`/etc/bind/named.conf` template.
+bind__combined_zones: '{{ bind__default_zones
+                           + bind__zones
+                           + bind__group_zones
+                           + bind__host_zones }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Generic zone configuration [[[
+# ------------------------------
+
+# These variables definel the zones which are to be included in all views (e.g.
+# root server hints and :rfc:`1912` zones). See :ref:`bind__ref_zones_generic`
+# for further details.
+
+# .. envvar:: bind__default_generic_zones [[[
+#
+# The default generic zones defined by the role.
+bind__default_generic_zones:
+
+  - name: '.'
+    comment: 'prime the server with knowledge of the root servers'
+    options:
+
+      - name: 'type'
+        value: 'hint'
+
+      - name: 'file'
+        value: '"/usr/share/dns/root.hints"'
+
+  - name: 'localhost'
+    comment: be authoritative for the localhost forward zone (RFC1912, 4.1)
+    options:
+
+      - name: 'type'
+        value: 'master'
+
+      - name: 'file'
+        value: '"/etc/bind/db.local"'
+
+  - name: '127.in-addr.arpa'
+    comment: be authoritative for the localhost reverse zone (RFC1912, 4.1)
+    options:
+
+      - name: 'type'
+        value: 'master'
+
+      - name: 'file'
+        value: '"/etc/bind/db.127"'
+
+
+  - name: '0.in-addr.arpa'
+    comment: be authoritative for this network (RFC1912, 4.1)
+    options:
+
+      - name: 'type'
+        value: 'master'
+
+      - name: 'file'
+        value: '"/etc/bind/db.0"'
+
+
+  - name: '255.in-addr.arpa'
+    comment: be authoritative for the broadcast zone (RFC1912, 4.1)
+    options:
+
+      - name: 'type'
+        value: 'master'
+
+      - name: 'file'
+        value: '"/etc/bind/db.255"'
+
+                                                                   # ]]]
+# .. envvar:: bind__generic_zones [[[
+#
+# The generic zones defined for all hosts in the Ansible inventory.
+bind__generic_zones: []
+
+                                                                   # ]]]
+# .. envvar:: bind__group_generic_zones [[[
+#
+# The generic zones defined for hosts in a specific Ansible inventory group.
+bind__group_generic_zones: []
+
+                                                                   # ]]]
+# .. envvar:: bind__host_generic_zones [[[
+#
+# The generic zones defined for a specific host in the Ansible inventory.
+bind__host_generic_zones: []
+
+                                                                   # ]]]
+# .. envvar:: bind__combined_generic_zones [[[
+#
+# This variable combines the other generic zone variables for use in the
+# role tasks and templates.
+bind__combined_generic_zones: '{{ bind__default_generic_zones
+                                   + bind__generic_zones
+                                   + bind__group_generic_zones
+                                   + bind__host_generic_zones }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# PKI / TLS configuration [[[
+# ---------------------------
+
+# .. envvar:: bind__pki [[[
+#
+# Enable or disable support for DNS over HTTPS/TLS using :ref:`debops.pki`.
+bind__pki: '{{ True
+               if (ansible_local.pki.enabled | d(False) | bool
+                   and bind__version is version("9.18.0", ">="))
+               else False }}'
+
+                                                                   # ]]]
+# .. envvar:: bind__pki_path [[[
+#
+# Base PKI directory.
+bind__pki_path: '{{ ansible_local.pki.path | d("/etc/pki/realms") }}'
+
+                                                                   # ]]]
+# .. envvar:: bind__pki_realm [[[
+#
+# Default PKI realm.
+bind__pki_realm: '{{ ansible_local.pki.realm | d("domain") }}'
+
+                                                                   # ]]]
+# .. envvar:: bind__pki_ca [[[
+#
+# Name of the Root Certificate Authority certificate file, relative to the PKI
+# realm directory.
+bind__pki_ca: '{{ ansible_local.pki.ca | d("CA.crt") }}'
+
+                                                                   # ]]]
+# .. envvar:: bind__pki_crt [[[
+#
+# Default certificate, relative to the :envvar:`bind__pki_realm` variable.
+bind__pki_crt: '{{ ansible_local.pki.crt | d("default.crt") }}'
+
+                                                                   # ]]]
+# .. envvar:: bind__pki_key [[[
+#
+# Default private key, relative to the :envvar:`bind__pki_realm` variable.
+bind__pki_key: '{{ ansible_local.pki.key | d("default.key") }}'
+
+                                                                   # ]]]
+# .. envvar:: bind__tls_ca_cert_dir [[[
+#
+# Directory containing X509 Certification Authority certificates.
+bind__tls_ca_cert_dir: '/etc/ssl/certs/'
+
+                                                                   # ]]]
+# .. envvar:: bind__tls_protocols [[[
+#
+# List of TLS cipher(s) to support. TLS version 1.2 and higher are
+# supported by BIND. The default assumes that all clients support
+# recent TLS versions since DoH/DoT/etc are quite recent concepts.
+bind__tls_protocols: [ "TLSv1.3" ]
+
+                                                                   # ]]]
+# .. envvar:: bind__tls_cipher_list [[[
+#
+# SSL ciphers to use.
+bind__tls_cipher_list: 'HIGH:!kRSA:!aNULL:!eNULL:!RC4:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!SHA1:!SHA256:!SHA384'
+
+                                                                   # ]]]
+# .. envvar:: bind__pki_hook_name [[[
+#
+# Name of the :ref:`debops.pki` hook script.
+bind__pki_hook_name: 'bind'
+
+                                                                   # ]]]
+# .. envvar:: bind__pki_hook_path [[[
+#
+# Directory for the :ref:`debops.pki` hooks.
+bind__pki_hook_path: '{{ ansible_local.pki.hooks | d("/etc/pki/hooks") }}'
+
+                                                                   # ]]]
+# .. envvar:: bind__pki_hook_action [[[
+#
+# Specify how changes in PKI should affect BIND, either 'reload' or
+# 'restart'.
+bind__pki_hook_action: 'reload'
+                                                                   # ]]]
+                                                                   # ]]]
+# Diffie-Hellman parameters [[[
+# -----------------------------
+
+# .. envvar:: bind__dhparam [[[
+#
+# Enable or disable support for custom Diffie-Hellman parameters managed by the
+# :ref:`debops.dhparam` Ansible role. Note that having this enabled is
+# essential for enabling perfect forward secrecy capable ciphers in TLSv1.2.
+bind__dhparam: '{{ ansible_local.dhparam.enabled | d(False) }}'
+
+                                                                   # ]]]
+# .. envvar:: bind__dhparam_set [[[
+#
+# Name of the Diffie-Hellman parameter set to use. See the
+# :ref:`debops.dhparam` Ansible role for more details.
+bind__dhparam_set: 'default'
+
+                                                                   # ]]]
+# .. envvar:: bind__tls_dh_file [[[
+#
+# Absolute path to the Diffie-Hellman parameters file which should be used.
+bind__tls_dh_file: '{{ ansible_local.dhparam[bind__dhparam_set] | d("") }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Network access [[[
+# ------------------
+
+# .. envvar:: bind__tcp_ports [[[
+#
+# List of TCP service names of the ports on which BIND will listen for
+# network connections. These ports will be opened in the firewall so that
+# other hosts can contact the DNS service.
+bind__tcp_ports:
+
+  # Regular DNS queries via TCP (used e.g. by :command:`nsupdate` for
+  # large requests and for AXFR/zone transfer requests)
+  - '{{ "domain" if "dns" in bind__features else [] }}'
+
+  # DNS-over-TLS, DoT (RFC7858)
+  - '{{ "domain-s" if "dot" in bind__features else [] }}'
+
+  # DNS-over-HTTP, DoH (RFC8484)
+  - '{{ "http" if "doh_http" in bind__features else [] }}'
+
+  # DNS-over-HTTPS, DoH (RFC8484)
+  - '{{ "https" if "doh_https" in bind__features else [] }}'
+
+                                                                   # ]]]
+# .. envvar:: bind__udp_ports [[[
+#
+# List of UDP service names of the ports on which BIND will listen for
+# network connections. These ports will be opened in the firewall so that
+# other hosts can contact the DNS service.
+bind__udp_ports:
+
+  # Regular DNS queries
+  - '{{ "domain" if "dns" in bind__features else [] }}'
+
+  # DNS-over-DTLS (RFC8094), not supported
+  #- 'domain-s'
+
+  # DNS-over-HTTP3/QUIC, DoH3/DoQ (RFC9250), not supported
+  #- 'https'
+
+                                                                   # ]]]
+# .. envvar:: bind__accept_any [[[
+#
+# If ``True``, the role will configure the firewall to accept connections
+# to the BIND server from any network. Specific IP addresses and/or
+# subnets can be blocked using the ``bind__*_deny`` variables.
+#
+# If ``False``, the role will block connections to the BIND server by
+# default; hosts/subnets which are allowed to connect must be specified
+# via the ``bind__*_allow`` variables.
+bind__accept_any: '{{ True
+                      if bind__features
+                         | intersect(["dns", "dot", "doh_http", "doh_https"])
+                      else False }}'
+
+                                                                   # ]]]
+# .. envvar:: bind__deny [[[
+#
+# List of IP addresses or CIDR subnets which should be blocked from access to
+# the BIND server, defined on all hosts in the Ansible inventory.
+bind__deny: []
+
+                                                                   # ]]]
+# .. envvar:: bind__group_deny [[[
+#
+# List of IP addresses or CIDR subnets which should be blocked from access to
+# the BIND server, defined on hosts in a specific Ansible inventory group.
+bind__group_deny: []
+
+                                                                   # ]]]
+# .. envvar:: bind__host_deny [[[
+#
+# List of IP addresses or CIDR subnets which should be blocked from access to
+# the BIND server, defined on specific hosts in the Ansible inventory.
+bind__host_deny: []
+
+                                                                   # ]]]
+# .. envvar:: bind__allow [[[
+#
+# List of IP addresses or CIDR subnets which should have access to the BIND
+# server, defined on all hosts in the Ansible inventory.
+bind__allow: []
+
+                                                                   # ]]]
+# .. envvar:: bind__group_allow [[[
+#
+# List of IP addresses or CIDR subnets which should have access to the BIND
+# server, defined on hosts in a specific Ansible inventory group.
+bind__group_allow: []
+
+                                                                   # ]]]
+# .. envvar:: bind__host_allow [[[
+#
+# List of IP addresses or CIDR subnets which should have access to the BIND
+# server, defined on specific hosts in the Ansible inventory.
+bind__host_allow: []
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration variables for other Ansible roles [[[
+# ---------------------------------------------------
+
+# .. envvar:: bind__ferm__dependent_rules [[[
+#
+# Firewall configuration managed by the :ref:`debops.ferm` Ansible role.
+bind__ferm__dependent_rules:
+
+  - name: 'reject_bind_tcp'
+    type: 'accept'
+    protocol: 'tcp'
+    dport: '{{ q("flattened", bind__tcp_ports) }}'
+    multiport: True
+    saddr: '{{ bind__deny + bind__group_deny + bind__host_deny }}'
+    weight: '45'
+    by_role: 'debops.bind'
+    target: 'REJECT'
+    rule_state: '{{ "present"
+                    if (bind__deny + bind__group_deny + bind__host_deny)
+                    else "absent" }}'
+
+  - name: 'reject_bind_udp'
+    type: 'accept'
+    protocol: 'udp'
+    dport: '{{ q("flattened", bind__udp_ports) }}'
+    multiport: True
+    saddr: '{{ bind__deny + bind__group_deny + bind__host_deny }}'
+    weight: '45'
+    by_role: 'debops.bind'
+    target: 'REJECT'
+    rule_state: '{{ "present"
+                    if (bind__deny + bind__group_deny + bind__host_deny)
+                    else "absent" }}'
+
+  - name: 'accept_bind_tcp'
+    type: 'accept'
+    protocol: 'tcp'
+    dport: '{{ q("flattened", bind__tcp_ports) }}'
+    multiport: True
+    saddr: '{{ bind__allow + bind__group_allow + bind__host_allow }}'
+    accept_any: '{{ bind__accept_any }}'
+    weight: '50'
+    by_role: 'debops.bind'
+
+  - name: 'accept_bind_udp'
+    type: 'accept'
+    protocol: 'udp'
+    dport: '{{ q("flattened", bind__udp_ports) }}'
+    multiport: True
+    saddr: '{{ bind__allow + bind__group_allow + bind__host_allow }}'
+    accept_any: '{{ bind__accept_any }}'
+    weight: '50'
+    by_role: 'debops.bind'
+
+                                                                   # ]]]
+# .. envvar:: bind__nginx__dependent_servers [[[
+#
+# Server configuration for the :ref:`debops.nginx` role. Used to
+# setup a DNS over HTTPS proxy, if requested.
+bind__nginx__dependent_servers:
+
+  - name: '{{ bind__fqdn }}'
+    filename: 'debops.bind'
+    by_role: 'debops.bind'
+    type: 'default'
+    webroot_create: False
+    state: '{{ "present"
+               if bind__features | intersect(["doh_proxy", "stats_proxy"])
+               else "absent" }}'
+    root: False
+    maintenance: False
+
+    toplevel_options: |-
+      {% if "doh_proxy" in bind__features | d([]) %}
+      # address and port of the DoH server, serving unencrypted HTTP/2
+      upstream http2-doh {
+              server 127.0.0.1:{{ bind__doh_proxy_port }};
+      }{% endif %}
+
+    location_list: >-
+      {%- set locations =  [{
+                "pattern": "/",
+                "options": "proxy_pass http://127.0.0.1:"
+                            + bind__stats_proxy_port | string + ";",
+                "allow": bind__stats_proxy_allow,
+                "access_policy": bind__stats_proxy_access_policy,
+                "enabled": True if "stats_proxy" in bind__features else False
+          }] -%}
+      {%- for endpoint in bind__doh_endpoints | d([]) -%}
+      {%-   set _ = locations.append({
+                      "pattern": endpoint,
+                      "options": "grpc_pass grpc://http2-doh;",
+                      "allow": bind__doh_proxy_allow,
+                      "access_policy": bind__doh_proxy_access_policy,
+                      "enabled": True if "doh_proxy" in bind__features else False
+            }) -%}
+      {%- endfor -%}
+      {{ locations }}
+
+                                                                   # ]]]
+# .. envvar:: bind__logrotate__dependent_config [[[
+#
+# Configuration for the :ref:`debops.logrotate` Ansible role.
+bind__logrotate__dependent_config:
+
+  - filename: 'debops-bind-rollkeys'
+    state: '{{ "present"
+                if ("dnssec" in bind__features and
+                    bind__dnssec_script_enabled | d(False))
+                else "absent" }}'
+    sections:
+
+      - logs: '/var/log/debops-bind-rollkey.log'
+        options: |
+          notifempty
+          missingok
+          yearly
+          rotate 10
+          compress
+        comment: 'BIND DNSSEC key rollover logs'
+
+                                                                   # ]]]
+# .. envvar:: bind__apt_preferences__dependent_list [[[
+#
+# Configuration for the :ref:`debops.apt_preferences` Ansible role.
+bind__apt_preferences__dependent_list:
+
+  - packages: [ 'bind9', 'bind9-dnsutils', 'bind9-libs', 'bind9-utils' ]
+    backports: [ 'bullseye' ]
+    reason: 'Support for DNS-over-TLS/HTTPS'
+    by_role: 'debops.bind'
+                                                                   # ]]]
+                                                                   # ]]]

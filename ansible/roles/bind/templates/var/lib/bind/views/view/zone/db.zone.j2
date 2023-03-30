@@ -1,0 +1,73 @@
+{# Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+ # Copyright (C) 2022 DebOps <https://debops.org>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+;
+{% if item.view | d("_default") == "_default" %}
+; BIND db file for zone {{ item.name }}
+{% else %}
+; BIND db file for zone {{ item.name }} in view {{ item.view }}
+{% endif %}
+;
+{% if item.comment | d() %}
+{{   item.comment | regex_replace('\n$', '') | comment(prefix='', decoration='; ', postfix='') -}}
+;
+{% endif %}
+
+$TTL		{{ item.ttl | d(bind__default_zone_ttl) }}
+$ORIGIN		{{ item.origin | d(item.name) | regex_replace("\.*$", ".") }}
+@	IN	SOA	{{ item.soa_primary | d(bind__default_zone_soa_primary) }} {{ item.soa_email | d(bind__default_zone_soa_email) }} (
+		     	{{ '{:<7}'.format(item.soa_serial | d(bind__default_zone_soa_serial) | int) }} ; Serial
+		     	{{ '{:<7}'.format(item.soa_refresh | d(bind__default_zone_soa_refresh)) }} ; Refresh
+		     	{{ '{:<7}'.format(item.soa_retry | d(bind__default_zone_soa_retry)) }} ; Retry
+		     	{{ '{:<7}'.format(item.soa_expire | d(bind__default_zone_soa_expire)) }} ; Expire
+		     	{{ '{:<7}'.format(item.soa_neg_ttl | d(bind__default_zone_soa_neg_ttl)) }} ; Negative Cache TTL
+			)
+
+{% if item.content is string %}
+{{   item.content }}
+{% elif item.content is iterable and item.content is not mapping and item.content[0] is string %}
+{%   for line in item.content %}
+{{     line }}
+{%   endfor %}
+{% else %}
+{%   set rrs = item.content | d([]) | debops.debops.parse_kv_items(name='name') %}
+{%   set owner_maxlen = { 'value': 21 } %}
+{%   for rr in rrs %}
+{%     if rr.state | d("present") in [ "present", "commented" ] and rr.raw is not defined %}
+{%       if rr.owner | d(rr.name) | d() and rr.type | d() and rr.rdata | d(rr.value) | d() %}
+{%         set owner_len = rr.owner | d(rr.name) | length %}
+{%         if rr.state | d("present") == "commented" %}
+{%           set owner_len = owner_len + 2 %}
+{%         endif %}
+{%         if owner_len > owner_maxlen.value %}
+{%           if owner_maxlen.update({ 'value': owner_len }) %}
+{#             do nothing #}
+{%           endif %}
+{%         endif %}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{%   for rr in rrs %}
+{%     if rr.state | d("present") in [ "present", "commented "] %}
+{%       if rr.comment | d() %}
+{{         rr.comment | regex_replace('\n$', '') | comment(prefix='', decoration='; ', postfix='') -}}
+{%       endif %}
+{%       if rr.state | d("present") == "commented" %}
+{%         set prefix = "; " %}
+{%       else %}
+{%         set prefix = "" %}
+{%       endif %}
+{%       if rr.raw | d() %}
+{{         rr.raw | regex_replace('\n$', '') | comment(prefix='', decoration=prefix, postfix='') -}}
+{%       elif rr.owner | d(rr.name) | d() and rr.type | d() and rr.rdata | d(rr.value) | d() %}
+{%         set owner = rr.owner | d(rr.name) %}
+{%         set ttl = rr.ttl | d("") %}
+{%         set class = rr.class | d("") %}
+{%         set type = rr.type %}
+{%         set rdata = rr.rdata | d(rr.value) %}
+{{         ('{}{:<' + owner_maxlen.value | string + '}   {:<7} {:<7} {:<7} {}').format(prefix, owner, ttl, class, type, rdata) }}
+{%       endif %}
+{%     endif %}
+{%   endfor %}
+{% endif %}
