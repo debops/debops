@@ -8,7 +8,7 @@
 # .. _bind__ref_defaults:
 
 # debops.bind default variables
-# ================================
+# =============================
 
 # .. contents:: Sections
 #    :local:
@@ -72,7 +72,6 @@ bind__domain: '{{ ansible_domain }}'
 # response. See :ref:`bind__ref_dot_doh_firefox` for an explanation of
 # the default value.
 bind__blocked_domains: [ 'use-application-dns.net' ]
-
                                                                    # ]]]
                                                                    # ]]]
 # UNIX environment [[[
@@ -88,7 +87,6 @@ bind__user: 'bind'
 #
 # List of additional UNIX groups the BIND account should have access to.
 bind__additional_groups: [ 'ssl-cert' ]
-
                                                                    # ]]]
                                                                    # ]]]
 # APT packages [[[
@@ -104,7 +102,6 @@ bind__base_packages: [ 'bind9', 'bind9-dnsutils' ]
 #
 # List of additional APT packages to install together with BIND.
 bind__packages: []
-
                                                                    # ]]]
                                                                    # ]]]
 # Backup snapshots [[[
@@ -164,6 +161,7 @@ bind__dnssec_script_enabled: '{{ True if "dnssec" in bind__features else False }
 # List of strings in the form ``<domain>`` or ``<domain>/<view>``.
 # An empty list means the script will attempt to monitor all domains.
 bind__dnssec_script_domains: []
+
                                                                    # ]]]
 # .. envvar:: bind__dnssec_script_method [[[
 #
@@ -244,7 +242,6 @@ bind__dnssec_script_combined_configuration: '{{
   + bind__dnssec_script_configuration
   + bind__dnssec_script_group_configuration
   + bind__dnssec_script_host_configuration }}'
-
                                                                    # ]]]
                                                                    # ]]]
 # DNS over HTTP(S) [[[
@@ -321,7 +318,6 @@ bind__stats_proxy_allow: '{{ [ "127.0.0.1", "::1" ]
 # Name of the nginx access policy to use for the statistics proxy.
 # See :ref:`debops.nginx` for more details.
 bind__stats_proxy_access_policy: ''
-
                                                                    # ]]]
                                                                    # ]]]
 # Main configuration file [[[
@@ -940,7 +936,6 @@ bind__combined_configuration: '{{ bind__default_configuration
                                    + bind__configuration
                                    + bind__group_configuration
                                    + bind__host_configuration }}'
-
                                                                    # ]]]
                                                                    # ]]]
 # Key configuration [[[
@@ -987,7 +982,6 @@ bind__combined_keys: '{{ bind__default_keys
                           + bind__keys
                           + bind__group_keys
                           + bind__host_keys }}'
-
                                                                    # ]]]
                                                                    # ]]]
 # Zone configuration [[[
@@ -1001,6 +995,7 @@ bind__combined_keys: '{{ bind__default_keys
 #
 # The default TTL value for generated zones.
 bind__default_zone_ttl: '1D'
+
                                                                    # ]]]
 # .. envvar:: bind__default_zone_soa_primary [[[
 #
@@ -1122,7 +1117,6 @@ bind__combined_zones: '{{ bind__default_zones
                            + bind__zones
                            + bind__group_zones
                            + bind__host_zones }}'
-
                                                                    # ]]]
                                                                    # ]]]
 # Generic zone configuration [[[
@@ -1216,7 +1210,6 @@ bind__combined_generic_zones: '{{ bind__default_generic_zones
                                    + bind__generic_zones
                                    + bind__group_generic_zones
                                    + bind__host_generic_zones }}'
-
                                                                    # ]]]
                                                                    # ]]]
 # PKI / TLS configuration [[[
@@ -1299,7 +1292,6 @@ bind__pki_hook_path: '{{ ansible_local.pki.hooks | d("/etc/pki/hooks") }}'
 # Specify how changes in PKI should affect BIND, either 'reload' or
 # 'restart'.
 bind__pki_hook_action: 'reload'
-
                                                                    # ]]]
                                                                    # ]]]
 # Diffie-Hellman parameters [[[
@@ -1324,13 +1316,12 @@ bind__dhparam_set: 'default'
 #
 # Absolute path to the Diffie-Hellman parameters file which should be used.
 bind__tls_dh_file: '{{ ansible_local.dhparam[bind__dhparam_set] | d("") }}'
-
                                                                    # ]]]
                                                                    # ]]]
 # Network access [[[
 # ------------------
 
-# .. envvar:: bind__tcp_ports
+# .. envvar:: bind__tcp_ports [[[
 #
 # List of TCP service names of the ports on which BIND will listen for
 # network connections. These ports will be opened in the firewall so that
@@ -1423,7 +1414,6 @@ bind__group_allow: []
 # List of IP addresses or CIDR subnets which should have access to the BIND
 # server, defined on specific hosts in the Ansible inventory.
 bind__host_allow: []
-
                                                                    # ]]]
                                                                    # ]]]
 # Configuration variables for other Ansible roles [[[
@@ -1479,6 +1469,7 @@ bind__ferm__dependent_rules:
     accept_any: '{{ bind__accept_any }}'
     weight: '50'
     by_role: 'debops.bind'
+
                                                                    # ]]]
 # .. envvar:: bind__nginx__dependent_servers [[[
 #
@@ -1556,7 +1547,5 @@ bind__apt_preferences__dependent_list:
     backports: [ 'bullseye' ]
     reason: 'Support for DNS-over-TLS/HTTPS'
     by_role: 'debops.bind'
-
-                                                                   # ]]]
                                                                    # ]]]
                                                                    # ]]]
