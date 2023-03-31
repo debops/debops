@@ -78,6 +78,12 @@ General
 - Don't save dependent recipients on Ansible Controller if they are not
   defined. This should avoid creating unnecessary files in AWX job containers.
 
+:ref:`debops.ntp` role
+''''''''''''''''''''''
+
+- The role will not try to purge installed NTP daemon packages when it is
+  disabled through Ansible inventory.
+
 :ref:`debops.pki` role
 ''''''''''''''''''''''
 
