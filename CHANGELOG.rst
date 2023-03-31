@@ -613,6 +613,9 @@ debops.boxbackup role
   service without it actually being present on the host. This should now be
   avoided by carefully checking the service status.
 
+- The role will not try to purge installed NTP daemon packages when it is
+  disabled through Ansible inventory.
+
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
 
