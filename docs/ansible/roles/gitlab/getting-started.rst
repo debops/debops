@@ -65,7 +65,7 @@ Docker Registry support
 
 The :ref:`debops.docker_registry` Ansible role can be used as a backend to the
 GitLab Container Registry service. The ``debops.gitlab`` playbook will import
-the :ref:`debops.docker_registry` playbook to faciliate configuration
+the :ref:`debops.docker_registry` playbook to facilitate configuration
 synchronization between the two services. The installation process with Docker
 Registry role enabled will be:
 
