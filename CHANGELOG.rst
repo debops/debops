@@ -87,6 +87,14 @@ General
   commands can emit ASCII "bell" at the end of Ansible execution to notify user
   after long runs. Use the ``-E`` or ``--bell`` option to enable this.
 
+- DebOps monorepo now includes configuration for the `pre-commit`__ hook to
+  verify changes before they are committed to the repository. Multiple checks
+  are performed, notably `codespell`__ is used to find spelling mistakes. More
+  checks will be enabled in the future.
+
+  .. __: https://pre-commit.com/
+  .. __: https://github.com/codespell-project/codespell
+
 :ref:`debops.avahi` role
 ''''''''''''''''''''''''
 
