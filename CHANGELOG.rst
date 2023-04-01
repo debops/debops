@@ -390,7 +390,7 @@ General
 
 - The default guided partition recipe used by the Debian Installer is changed
   from ``atomic`` to ``multi``. This should allow for easier changes in the
-  parition layout via LVM due to separate partitions for :file:`/home` and
+  partition layout via LVM due to separate partitions for :file:`/home` and
   :file:`/var` mount points.
 
 :ref:`debops.proc_hidepid` role

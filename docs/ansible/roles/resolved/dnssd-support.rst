@@ -35,7 +35,7 @@ Network configuration for Multicast DNS
 
 For the ``mDNS`` support to work, it needs to be enabled globally in
 :command:`systemd-resolved` (it is enabled by default). Then, support needs to
-be enabled on specifc network interfaces using :command:`systemd-networkd` to
+be enabled on specific network interfaces using :command:`systemd-networkd` to
 tell :command:`systemd-resolved` on which interfaces it should advertise and
 listen for DNS-SD traffic.
 
