@@ -73,7 +73,7 @@ should *not* be defined for a zone.
    lacking such a resource record will result in :command:`named` logging an
    error and not loading the zone. If you want to create an empty zone, you
    should therefore set ``content`` to something like ``@ IN NS localhost.``.
-   If the nameserver is in the zone iteself, it also needs at least one ``A``
+   If the nameserver is in the zone itself, it also needs at least one ``A``
    or ``AAAA`` record.
 
 
