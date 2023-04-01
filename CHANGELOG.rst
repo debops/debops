@@ -76,6 +76,14 @@ General
   multiple subcommands to allow easier configuration introspection. See
   :ref:`it's documentation page <cmd_debops-config>` for more details.
 
+- DebOps monorepo now includes configuration for the `pre-commit`__ hook to
+  verify changes before they are committed to the repository. Multiple checks
+  are performed, notably `codespell`__ is used to find spelling mistakes. More
+  checks will be enabled in the future.
+
+  .. __: https://pre-commit.com/
+  .. __: https://github.com/codespell-project/codespell
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
