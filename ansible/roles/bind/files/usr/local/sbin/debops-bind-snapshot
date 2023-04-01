@@ -110,7 +110,7 @@ create_lock () {
 enable_read_only_mode () {
     local output
 
-    
+
     if ! pidof -q named > /dev/null 2>&1; then
         log_message "Not freezing zones, named isn't running"
     else
@@ -125,7 +125,7 @@ enable_read_only_mode () {
             log_message "Freezing zone updates"
             touch "${FROZEN_FLAG}"
         fi
- 
+
         log_message "Synchronizing all zones"
         "${RNDC}" sync -clean
     fi

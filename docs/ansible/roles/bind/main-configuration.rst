@@ -180,6 +180,6 @@ dictionary uses specific parameters, most of which follow well-known
 
 ``options``
   Optional, list of YAML dicts. This can be used to define a number of
-  sub-options. The YAML dicts of sub-options follow the same syntax as 
+  sub-options. The YAML dicts of sub-options follow the same syntax as
   defined in this section and can be used to create the nested configuration
   hierarchy used in the :file:`/etc/bind/named.conf` syntax.

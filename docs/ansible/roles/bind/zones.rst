@@ -268,7 +268,7 @@ differentiate between the views:
 
          - name: 'any'
            raw: 'any;'
-      
+
    bind__zones:
 
      - view: 'internal-view'
@@ -292,25 +292,25 @@ differentiate between the views:
          - name: 'example.com'
            comment: 'My main domain'
            options:
-    
+
              - name: 'type'
                value: 'master'
-    
+
              - name: 'allow-transfer'
                options:
-    
+
                  - name: 'allow-transfer-1'
                    raw: '192.168.1.2; 192.168.1.3;'
-    
+
              - name: 'update-policy'
                options:
-    
+
                  - name: 'update-policy-local-ddns'
                    raw: 'grant local-ddns zonesub any;'
-    
+
                  - name: 'update-policy-debops'
                    raw: 'grant debops-key zonesub any;'
-    
+
              - name: 'dnssec-policy'
                value: '"kskzsk"'
 

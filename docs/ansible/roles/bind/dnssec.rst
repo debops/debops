@@ -256,7 +256,7 @@ needs to be performed:
   An external script will be executed when keys need to be updated.
   Many registrars provide APIs which allow DNSSEC keys to be added/removed
   in a programmatic manner without user intervention (once suitable scripts
-  have been intially 
+  have been intially
   The script will be called with six arguments:
 
   ``<action> <key-id> <key-alg> <zone> <class> <view>``
@@ -294,9 +294,9 @@ needs to be performed:
   file (see :ref:`configuration`).
 
   For example, if :file:`.debops.cfg` reads:
-  
+
   .. code-block:: none
-  
+
      ...
      [override_paths]
      files_path = ansible/overrides/files
