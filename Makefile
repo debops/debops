@@ -46,6 +46,10 @@ versions: check-versions
 docker:         ## Check Docker image build
 docker: test-docker-build
 
+.PHONY: spell
+spell:          ## Check common misspellings using codespell
+spell: test-spell
+
 .PHONY: docs
 docs:           ## Build Sphinx documentation
 docs: test-docs
@@ -127,7 +131,7 @@ twine-upload:    ## Upload Python packages to PyPI
 	@twine upload dist/*
 
 .PHONY: test-all
-test-all: clean-tests test-spdx test-pep8 test-debops-tools test-debops-ansible_plugins test-docs test-man test-playbook-syntax test-ansible-lint test-yaml test-shell
+test-all: clean-tests test-spdx test-pep8 test-debops-tools test-debops-ansible_plugins test-spell test-docs test-man test-playbook-syntax test-ansible-lint test-yaml test-shell
 
 .PHONY: test-pep8
 test-pep8:
@@ -155,6 +159,11 @@ clean-tests:
 .PHONY: check-versions
 check-versions:
 	@./lib/tests/check-watch
+
+.PHONY: test-spell
+test-spell:
+	@printf "%s\n" "Checking common misspellings using codespell..."
+	@codespell
 
 .PHONY: test-docs
 test-docs:
