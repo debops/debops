@@ -87,7 +87,7 @@ General
 
 - The default guided partition recipe used by the Debian Installer is changed
   from ``atomic`` to ``multi``. This should allow for easier changes in the
-  parition layout via LVM due to separate partitions for :file:`/home` and
+  partition layout via LVM due to separate partitions for :file:`/home` and
   :file:`/var` mount points.
 
 :ref:`debops.proc_hidepid` role
@@ -578,7 +578,7 @@ General
 '''''''
 
 - The "shebang" scripts pointing to ``#!/usr/bin/python`` in various Ansible
-  modules were removed to ensure that the remot host will execute them with the
+  modules were removed to ensure that the remote host will execute them with the
   correct Python 3.x version.
 
 :ref:`debops.apt` role
@@ -836,7 +836,7 @@ Fixed
 General
 '''''''
 
-- Ensure that the :file:`tools/dist-upgrade.yml` playbook works witout the
+- Ensure that the :file:`tools/dist-upgrade.yml` playbook works without the
   ``${SUDO_USER}`` environment variable set, for example if executed directly
   using the ``root`` UNIX account.
 
