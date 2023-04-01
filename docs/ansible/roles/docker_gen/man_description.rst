@@ -7,7 +7,7 @@ Description
 
 `docker-gen`_ generates configuration files for host services to make the
 Dockerized services accessible to them.
-For example this role can create the required configuation
+For example this role can create the required configuration
 for publishing a Dockerized web-service via the host's web-server.
 The configuration is
 based on available Docker container metadata.

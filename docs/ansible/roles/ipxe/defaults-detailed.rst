@@ -151,7 +151,7 @@ boot loader will load the new :file:`iso-image.ipxe` script:
        chain memdisk iso || goto error
 
        :error
-       echo Error occured, press any key to return to menu...
+       echo Error occurred, press any key to return to menu...
        prompt
        set menu main_menu
        chain menu.ipxe

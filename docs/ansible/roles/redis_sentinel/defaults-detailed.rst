@@ -244,7 +244,7 @@ a Redis Sentinel instance using specific parameters:
   specific parameters:
 
   ``name``
-    Redis Sentinel parameter name. Parameter names containing hypens should be
+    Redis Sentinel parameter name. Parameter names containing hyphens should be
     quoted to avoid any issues with YAML parsing.
 
   ``value``

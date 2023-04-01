@@ -27,8 +27,8 @@ To reconfigure an instance from scratch, you can remove it by setting its state
 to ``absent``, and then re-create it again.
 
 
-Access control and autorization
--------------------------------
+Access control and authorization
+--------------------------------
 
 The :ref:`debops.redis_server` role configures Redis Server instances with
 a randomly generated password, the same for all instances in the same domain.

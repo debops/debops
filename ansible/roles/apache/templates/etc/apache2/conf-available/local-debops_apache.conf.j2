@@ -69,7 +69,7 @@
 {% endif %}
 {% endmacro %}
 {% macro get_version_wrapped(content, version, compare_operator, fallback_content=False) %}{# [[[ #}
-{# This macro has not been extensivly tested yet. If it contains bugs please try to debug it if you need it.
+{# This macro has not been extensively tested yet. If it contains bugs please try to debug it if you need it.
 
 Examples:
 
@@ -121,7 +121,7 @@ ServerAlias {{ apache__tpl_names[1:] | map("quote") | join(" ") }}
 {% for item_listen in item_listen_list %}
 {%   if ':' not in item_listen | string %}
 {# {%     if item_listen in server_port_listen_list %}
-## Apperently, this is not even needed for Apache to (re)start without issues. #}
+## Apparently, this is not even needed for Apache to (re)start without issues. #}
 {%     set _ = apache__tpl_listen_sockets.append("*:" + item_listen | string) %}
 {%   else %}
 {%     set _ = apache__tpl_listen_sockets.append(item_listen | string) %}
@@ -226,7 +226,7 @@ DirectoryIndex {{ get_yaml_list_for_elem(item.index) | from_yaml | join(" ") }}
 {% endmacro %}
 {% macro get_default_tls_directives(item) %}{# [[[ #}
 {# Included in server context to provide sane defaults (there might be vhosts
-# not controled by this template) and in virtual host context to ensure those
+# not controlled by this template) and in virtual host context to ensure those
 # settings are appliend and to allow per-vhost changes.
 # Refer to Applied-Crypto-Hardening_bettercrypto/src/configuration/Webservers/Apache/default-ssl for details.
 #}

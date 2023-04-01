@@ -87,6 +87,14 @@ General
   commands can emit ASCII "bell" at the end of Ansible execution to notify user
   after long runs. Use the ``-E`` or ``--bell`` option to enable this.
 
+- DebOps monorepo now includes configuration for the `pre-commit`__ hook to
+  verify changes before they are committed to the repository. Multiple checks
+  are performed, notably `codespell`__ is used to find spelling mistakes. More
+  checks will be enabled in the future.
+
+  .. __: https://pre-commit.com/
+  .. __: https://github.com/codespell-project/codespell
+
 :ref:`debops.avahi` role
 ''''''''''''''''''''''''
 
@@ -390,7 +398,7 @@ General
 
 - The default guided partition recipe used by the Debian Installer is changed
   from ``atomic`` to ``multi``. This should allow for easier changes in the
-  parition layout via LVM due to separate partitions for :file:`/home` and
+  partition layout via LVM due to separate partitions for :file:`/home` and
   :file:`/var` mount points.
 
 :ref:`debops.proc_hidepid` role
@@ -459,7 +467,7 @@ General
 - Fixed all password lookups which used ``chars=ascii`` instead of
   ``chars=ascii_letters``. This resulted in passwords which only contained the
   letters a,c,i,s instead of all lowercase and uppercase ASCII letters. Because
-  all occurences of this bug at least also included all digits in the character
+  all occurrences of this bug at least also included all digits in the character
   set and the password length was at least 20 characters, this did not result
   in weak passwords.
 

@@ -43,7 +43,7 @@ Key Types
 BIND supports two different kinds of key types, ``TSIG`` and ``SIG(0)`` keys.
 
 TSIG keys are symmetric keys, meaning that the BIND server and the client
-each need a copy of the same key. SIG(0) keys are assymetric keys, meaning
+each need a copy of the same key. SIG(0) keys are asymmetric keys, meaning
 that there is a public key (known to the server) and a private key
 (known to the client).
 
@@ -185,7 +185,7 @@ name. Valid options are:
 
 ``source_path``
   Optional, string. If ``source`` is set to "controller", the path to the
-  (public) key on the Ansible controller. A relative path will be intepreted
+  (public) key on the Ansible controller. A relative path will be interpreted
   as relative to the :ref:`debops.secret` directory. The filename used for the
   key file on the remote host will be the same as on the controller.
 

@@ -178,7 +178,7 @@ metricbeat__keys
 ----------------
 
 The ``metricbeat__*_keys`` variables define the contents of the `Metricbeat
-keystore`__ used to keep confidental data like passwords or access tokens. The
+keystore`__ used to keep confidential data like passwords or access tokens. The
 keys can be referenced in the Metricbeat configuration files using the
 ``${secret_key}`` syntax.
 

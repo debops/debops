@@ -188,7 +188,7 @@ in the logs produced by :command:`named`:
 
 In theory, the ``parental-agents`` feature could also be used in conjunction
 with the :ref:`bind__ref_dnssec_rollover_script` to not have to manually notify
-BIND when the requested actions have been perfomed.
+BIND when the requested actions have been performed.
 
 The ``parental-agents`` feature will hopefully be further developed and
 automated in future BIND releases.
@@ -249,14 +249,14 @@ needs to be performed:
      # rndc dnssec -checkds -key <key-id> -alg <key-alg> (published | withdrawn) zone [class [view]]
 
 ``email``
-  Key updates will be requested via email. Like for ``log``, the adminstrator
+  Key updates will be requested via email. Like for ``log``, the administrator
   will have to notify BIND once the requested actions have been performed.
 
 ``external``
   An external script will be executed when keys need to be updated.
   Many registrars provide APIs which allow DNSSEC keys to be added/removed
   in a programmatic manner without user intervention (once suitable scripts
-  have been intially 
+  have been initialized).
   The script will be called with six arguments:
 
   ``<action> <key-id> <key-alg> <zone> <class> <view>``
@@ -294,9 +294,9 @@ needs to be performed:
   file (see :ref:`configuration`).
 
   For example, if :file:`.debops.cfg` reads:
-  
+
   .. code-block:: none
-  
+
      ...
      [override_paths]
      files_path = ansible/overrides/files

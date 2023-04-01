@@ -102,7 +102,7 @@ a ``name`` key. The dictionaries support specific parameters:
            node.data: true
            node.ingest: true
 
-You should make sure that the identation of the YAML parameters is consistent
+You should make sure that the indentation of the YAML parameters is consistent
 through the configuration file.
 
 
@@ -198,7 +198,7 @@ kibana__keys
 ------------
 
 The ``kibana__*_keys`` variables define the contents of the `Kibana keystore`__
-used to keep confidental data like passwords or access tokens. The keys can be
+used to keep confidential data like passwords or access tokens. The keys can be
 referenced in the Kibana configuration files using the ``${secret_key}``
 syntax.
 

@@ -44,7 +44,7 @@ The snapshots are stored in the :file:`/var/backups/bind/` directory as
 compressed tarballs. After finishing the snapshot, the
 :command:`debops-bind-snapshot` script will change ownership of the created
 tarballs to the ``backup:backup`` UNIX account and group. This account can then
-encrypt the tarballs via its own set of scripts, using GnuPG assymetric
+encrypt the tarballs via its own set of scripts, using GnuPG asymmetric
 encryption, to prepare them to be sent to a remote location (this functionality
 is not implemented by the :ref:`debops.bind` role). The
 :command:`debops-bind-snapshot` script will automatically remove periodic

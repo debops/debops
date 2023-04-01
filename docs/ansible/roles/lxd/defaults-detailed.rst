@@ -45,7 +45,7 @@ To see the current LXD configuration on a host, you can run the command:
    lxd init --dump
 
 This will print out the configuration in a YAML format which can then be split
-into separate configuration entires and put under the ``seed`` parameters.
+into separate configuration entries and put under the ``seed`` parameters.
 
 To re-apply the preseed configuration via Ansible you can execute the command:
 

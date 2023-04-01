@@ -91,4 +91,3 @@ specify them separately:
      - name: 'value1'
 
      - value: 'value2'
-

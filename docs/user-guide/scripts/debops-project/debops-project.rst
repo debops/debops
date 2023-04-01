@@ -88,7 +88,7 @@ Options
 When the project directory contains an encrypted :file:`ansible/secret/`
 directory, this command can be used to unlock it and provide access to
 encrypted data. This only works for project directories that have been
-initialized with EncFS or git-crypt support (or that suppor has been configured
+initialized with EncFS or git-crypt support (or that support has been configured
 manually).
 
 Keep in mind that after unlocking the directory manually, DebOps will not lock it

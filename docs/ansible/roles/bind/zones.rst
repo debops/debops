@@ -73,7 +73,7 @@ should *not* be defined for a zone.
    lacking such a resource record will result in :command:`named` logging an
    error and not loading the zone. If you want to create an empty zone, you
    should therefore set ``content`` to something like ``@ IN NS localhost.``.
-   If the nameserver is in the zone iteself, it also needs at least one ``A``
+   If the nameserver is in the zone itself, it also needs at least one ``A``
    or ``AAAA`` record.
 
 
@@ -268,7 +268,7 @@ differentiate between the views:
 
          - name: 'any'
            raw: 'any;'
-      
+
    bind__zones:
 
      - view: 'internal-view'
@@ -292,25 +292,25 @@ differentiate between the views:
          - name: 'example.com'
            comment: 'My main domain'
            options:
-    
+
              - name: 'type'
                value: 'master'
-    
+
              - name: 'allow-transfer'
                options:
-    
+
                  - name: 'allow-transfer-1'
                    raw: '192.168.1.2; 192.168.1.3;'
-    
+
              - name: 'update-policy'
                options:
-    
+
                  - name: 'update-policy-local-ddns'
                    raw: 'grant local-ddns zonesub any;'
-    
+
                  - name: 'update-policy-debops'
                    raw: 'grant debops-key zonesub any;'
-    
+
              - name: 'dnssec-policy'
                value: '"kskzsk"'
 

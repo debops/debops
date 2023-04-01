@@ -206,7 +206,7 @@ filebeat__keys
 --------------
 
 The ``filebeat__*_keys`` variables define the contents of the `Filebeat
-keystore`__ used to keep confidental data like passwords or access tokens. The
+keystore`__ used to keep confidential data like passwords or access tokens. The
 keys can be referenced in the Filebeat configuration files using the
 ``${secret_key}`` syntax.
 

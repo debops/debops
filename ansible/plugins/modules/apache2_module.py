@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright (C) 2013-2014, Christian Berendt <berendt@b1-systems.de>
 # Copyright (C) 2022 Julien Lecomte <julien@lecomte.at>
 # Copyright (C) 2022 DebOps <https://debops.org/>

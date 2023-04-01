@@ -56,7 +56,7 @@ script from quickly retrying the request and potentially hitting a rate limit.
 If this file exists and it was modified less than two days ago, the
 :program:`pki-realm` script will not perform the request. If the file is older
 than two days, it will move the file out of the way and perform the request as
-usual. If you want to retry the request straightaway, you can just move
+usual. If you want to retry the request straight away, you can just move
 :file:`acme/error.log` out of the way yourself.
 
 How ACME certificates are managed
@@ -65,7 +65,7 @@ How ACME certificates are managed
 When a new PKI realm is created and support for ACME Certificate Authority is
 enabled, a separate configuration for a Certificate Request will be created in
 the :file:`acme/` directory. The `acme-tiny` request does not use a wildcard
-certificate, instead the default domain and a set of subdomains will be 
+certificate, instead the default domain and a set of subdomains will be
 requested (see below for configuration variables). The directory structure at
 this time looks like this:
 

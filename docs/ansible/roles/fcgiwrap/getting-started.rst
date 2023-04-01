@@ -68,4 +68,3 @@ dependency. Here's an example configuration::
             - name: 'webapp'
               user: 'webapp'
               group: 'webapp'
-

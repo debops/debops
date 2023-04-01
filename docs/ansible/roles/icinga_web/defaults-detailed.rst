@@ -90,7 +90,7 @@ icinga_web__initial_accounts
 The :envvar:`icinga_web__initial_accounts` variable defines a set of
 administrator accounts added to the Icinga Web database during initialization.
 These accounts allow users to login to the web interface and use the Icinga
-Director REST API. All accounts listed will be added to the account grup with
+Director REST API. All accounts listed will be added to the account group with
 id ``1``, ie. the first one created, usually "Administrators".
 
 Each list entry is a YAML dictionary with specific parameters:

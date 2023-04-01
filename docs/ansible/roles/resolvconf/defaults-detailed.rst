@@ -64,7 +64,7 @@ using specific parameters:
 
 ``copy_id_from``
   Optional. Name of a configuration entry (its ``name`` parameter) from which
-  a given entry should copy its internal "id" value. This can be used to rougly
+  a given entry should copy its internal "id" value. This can be used to roughly
   place a given configuration entry near the specified configuration section
   without the need to modify the order of all of the other entries.
 

@@ -22,7 +22,7 @@ this is because of limitation of YAML and easier representation.
 - prosody__*_config_virtual_hosts
 
 By default there are two components active :envvar:`prosody__http_upload` :envvar:`prosody__muc`
-Set this varables to false to disable the specific component.
+Set this variables to false to disable the specific component.
 
 Domains
 ~~~~~~~
