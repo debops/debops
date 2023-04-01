@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # Copyright (C) 2016 Robin Schneider <ypid@riseup.net>
 # Copyright (C) 2016 DebOps <https://debops.org/>
 # SPDX-License-Identifier: AGPL-3.0-only
@@ -19,6 +18,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+"""
+debops-api - Machine readable metadata about the DebOps Project.
+"""
+
 import os
 import sys
 import json
@@ -36,10 +39,6 @@ from docutils.writers.html4css1 import Writer, HTMLTranslator
 __license__ = 'AGPL-3.0-only'
 __author__ = 'Robin Schneider <ypid@riseup.net>'
 __version__ = '0.1.0'
-
-"""
-debops-api - Machine readable metadata about the DebOps Project.
-"""
 
 
 class NoHeaderHTMLTranslator(HTMLTranslator):

@@ -10,4 +10,4 @@ Telegraf is the open source server agent to help you collect metrics from your s
 
 The ``debops.telegraf`` role installs and configures Telegraf.
 
-.. __: https://www.influxdata.com/time-series-platform/telegraf/ 
+.. __: https://www.influxdata.com/time-series-platform/telegraf/

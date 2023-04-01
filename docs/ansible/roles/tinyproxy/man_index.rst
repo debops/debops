@@ -21,4 +21,3 @@ debops.tinyproxy
  mode: rst
  ispell-local-dictionary: "american"
  End:
-

@@ -49,7 +49,7 @@ Each dictionary value is a dictionary by itself with the following supported opt
 
 ``by_role``
   Optional, string. Name of the Ansible role in the format
-  ``{{ role_owner }}.{{ role_name }}`` which is responsable for the entry.
+  ``{{ role_owner }}.{{ role_name }}`` which is responsible for the entry.
   This option probably only makes sense in the use as dependency role.
 
 Examples

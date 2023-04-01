@@ -65,4 +65,3 @@ either directly or indirectly via a child group::
       roles:
         - role: debops.stunnel
           tags: stunnel
-

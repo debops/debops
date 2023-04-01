@@ -89,7 +89,7 @@ Each entry can contain specific parameters:
   :envvar:`redis_server__bind` variable, by default ``localhost``.
 
 ``dbfilename``
-  Optional. Name of the Redis database file which will contain the persisten
+  Optional. Name of the Redis database file which will contain the persistent
   storage, stored in the :file:`/var/lib/redis/` directory. If not specified,
   the role will generate the name based on the instance name.
 
@@ -201,7 +201,7 @@ a Redis Server instance using specific parameters:
   specific parameters:
 
   ``name``
-    Redis Server parameter name. Parameter names containing hypens should be
+    Redis Server parameter name. Parameter names containing hyphens should be
     quoted to avoid any issues with YAML parsing.
 
   ``value``

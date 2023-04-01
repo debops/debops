@@ -11,7 +11,7 @@ object storage service.
 .. __: https://min.io/
 
 The ``debops.minio`` Ansible role can be used to deploy and configure MinIO in
-various scenarions, either as a single node, single tenant service, or a multi
+various scenarios, either as a single node, single tenant service, or a multi
 node and/or multi tenant distributed storage service. The role relies on other
 DebOps roles to install MinIO binary from upstream URL or build it from source
 code, configure firewall access, provide TLS support and configure web server

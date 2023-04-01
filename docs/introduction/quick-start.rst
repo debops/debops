@@ -69,7 +69,7 @@ support, based on Debian Stretch:
    vagrant up && vagrant ssh
 
 The configuration relies heavily on your Vagrant environment. Having a real
-domain is benefical. The box can be used to manage other Debian hosts as well.
+domain is beneficial. The box can be used to manage other Debian hosts as well.
 
 Vagrant will include contents of the cloned DebOps repository in the
 :file:`/vagrant/` directory on the created VM. This can be useful for project

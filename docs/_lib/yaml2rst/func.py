@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 yaml2rst – A Simple Tool for Documenting YAML Files
 """

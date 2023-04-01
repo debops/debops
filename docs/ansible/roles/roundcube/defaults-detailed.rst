@@ -162,7 +162,7 @@ the final output:
   Optional. Define a `PHP array()`__ data structure using YAML. The ``array``
   parameter is used only when the ``value`` or ``raw`` parameters are not
   present. The ``array`` parameters from multiple configuration entries
-  override each other. See varius examples in the role default variables for
+  override each other. See various examples in the role default variables for
   better idea on how to define the data structures.
 
   .. __: https://www.php.net/manual/en/language.types.array.php

@@ -73,7 +73,7 @@ Each configuration entry is defined using specific parameters:
   Required. Name of the generated configuration file, the role will include the
   :file:`.conf` suffix automatically. Configuration files are read by the
   daemon in alphabetical order so naming is important. Entries with the same
-  ``name`` parameter can be overriden by subsequent entries.
+  ``name`` parameter can be overridden by subsequent entries.
 
 ``comment``
   Optional. String or YAML text block with additional comments included in
@@ -106,7 +106,7 @@ Each configuration entry is defined using specific parameters:
     other.
 
   ``option``
-    If a gien command needs to be specified multiple times with different
+    If a given command needs to be specified multiple times with different
     values, you can use the ``option`` parameter to specify the actual
     :man:`lldpcli(8)` command to be included in the generated configuration
     file.

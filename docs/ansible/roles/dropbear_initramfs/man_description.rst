@@ -10,4 +10,3 @@ to the initramfs prior to the root filesystem being mounted using Dropbear as
 SSH server.
 
 This can be used to unlock a full disk encrypted host remotely via SSH.
-

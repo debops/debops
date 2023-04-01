@@ -259,4 +259,4 @@ specific parameters:
     Optional. Positive or negative number, which can be used to affect the
     position of the rule within the rule file. Positive numbers will force the
     rule to be lower than normal (adding weight), negative numbers will move
-    the role higher on the list (substracting weight).
+    the role higher on the list (subtracting weight).
