@@ -258,6 +258,28 @@ jobs:
           pip3 install --user dist/*
           pip3 list | grep debops
 
+  codespell:
+    runs-on: 'ubuntu-latest'
+    steps:
+
+      - name: Add ~/.local/bin to $PATH
+        run: 'printf "%s/.local/bin\n" "${HOME}" >> ${GITHUB_PATH}'
+
+      - name: Clone the repository
+        uses: 'actions/checkout@v3'
+        with:
+          fetch-depth: 0
+
+      - name: Prepare test environment
+        run: |
+          pip3 install --user --upgrade pip wheel "setuptools==65.7.0"
+          pip3 install --user --upgrade codespell tomli
+
+      - name: Check common misspellings using codespell
+        run: |
+          make clean-tests
+          make test-spell
+
   documentation:
     runs-on: 'ubuntu-20.04'
     steps:
