@@ -1,4 +1,3 @@
-
 # Copyright (c) 2016, Peter Sagerson <psagers@ignorare.net>
 # Copyright (c) 2016, Jiri Tyr <jiri.tyr@gmail.com>
 # Copyright (c) 2017, Alexander Korinek <noles@a3k.net>
