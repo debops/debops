@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 # Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2023 DebOps <https://debops.org/>
