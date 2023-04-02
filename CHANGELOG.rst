@@ -123,6 +123,11 @@ General
   correctly recognize options of the :command:`ansible-playbook` command which
   don't expect arguments and expand playbook names specified after them.
 
+- Installation of the DebOps script from the monorepo will use a version string
+  compatible with `PEP-440`__ specification.
+
+  .. __: https://peps.python.org/pep-0440/
+
 :ref:`debops.etc_aliases` role
 ''''''''''''''''''''''''''''''
 
