@@ -59,9 +59,14 @@ except NameError:
 # Python package
 try:
     with open(os.devnull, 'w') as devnull:
-        RELEASE = subprocess.check_output(
-                ['git', 'describe'], stderr=devnull
-                ).strip().lstrip(b'v').decode('utf-8')
+        GIT_RELEASE = subprocess.check_output(
+                      ['git', 'describe'], stderr=devnull
+                      ).strip().lstrip(b'v').decode('utf-8').split('-')
+        if len(GIT_RELEASE) > 1:
+            RELEASE = (GIT_RELEASE[0] + '.dev' + GIT_RELEASE[1]
+                       + '+' + GIT_RELEASE[2])
+        else:
+            RELEASE = GIT_RELEASE[0]
 except subprocess.CalledProcessError:
     try:
         RELEASE = open('VERSION').read().strip()
