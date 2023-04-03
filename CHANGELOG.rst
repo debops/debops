@@ -350,6 +350,13 @@ General
   existing installations, you should either create this template by hand, or
   run the :ref:`debops.icinga_web` role so that it gets added automatically.
 
+:ref:`debops.icinga_db` role
+''''''''''''''''''''''''''''
+
+- The role will manage Icinga databases directly instead of relying on
+  :command:`dbconfig` Debian subsystem. This improves support for remote Icinga
+  database deployments accessible over TLS.
+
 :ref:`debops.icinga_web` role
 '''''''''''''''''''''''''''''
 
