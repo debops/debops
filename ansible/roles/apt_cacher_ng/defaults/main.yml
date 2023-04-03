@@ -509,20 +509,21 @@ apt_cacher_ng__ferm__dependent_rules:
     rule_state: '{{ apt_cacher_ng__deploy_state }}'
 
                                                                    # ]]]
-# .. envvar:: apt_cacher_ng__apparmor__dependent_config [[[
+# .. envvar:: apt_cacher_ng__apparmor__dependent_locals [[[
 #
-# Configuration for the ``debops-contrib.apparmor`` role.
-apt_cacher_ng__apparmor__dependent_config:
+# Configuration for the :ref:`debops.apparmor` Ansible role.
+apt_cacher_ng__apparmor__dependent_locals:
 
-  'usr.sbin.apt-cacher-ng':
-      ## Seems this change is not possible thought the ``@{APT_CACHE_DIR}``
-      ## variable without changing the profile file directly?
-    - comment: 'Allow Apt-Cacher-Ng access to the cache directory'
-      by_role: 'debops.apt_cacher_ng'
-      delete: '{{ apt_cacher_ng__deploy_state != "present" }}'
-      rules:
-        - '{{ apt_cacher_ng__cache_dir }}/ r'
-        - '{{ apt_cacher_ng__cache_dir }}/** rw'
+  - name: 'usr.sbin.apt-cacher-ng'
+    options:
+
+      - name: '{{ apt_cacher_ng__cache_dir }}/'
+        value: 'r'
+        comment: 'Allow apt-cacher-ng to read the cache directory'
+
+      - name: '{{ apt_cacher_ng__cache_dir }}/**'
+        value: 'rwl'
+        comment: 'Allow apt-cacher-ng to modify the contents of the cache directory'
 
                                                                    # ]]]
 # .. envvar:: apt_cacher_ng__upstream_servers [[[

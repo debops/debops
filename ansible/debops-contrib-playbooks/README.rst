@@ -13,9 +13,9 @@ Here are a few services that are available
 
 **Networking**
 
-+-------------+------+
-| apt_cacher_ | tor_ |
-+-------------+------+
++------+
+| tor_ |
++------+
 
 **Fully loaded ready to go applications**
 
@@ -49,7 +49,6 @@ Here are a few services that are available
 
 .. |debops_logo| image:: http://debops.org/images/debops-small.png
 
-.. _apt_cacher: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/apt_cacher.yml
 .. _tor: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/tor.yml
 
 .. _bitcoind: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/bitcoind.yml
