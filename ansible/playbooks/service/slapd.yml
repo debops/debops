@@ -54,5 +54,10 @@
         - '{{ slapd__saslauthd__dependent_instances }}'
       when: slapd__saslauthd_enabled | bool
 
+    - role: apparmor
+      tags: [ 'role::apparmor', 'skip::apparmor' ]
+      apparmor__dependent_locals:
+        - '{{ slapd__apparmor__dependent_locals }}'
+
     - role: slapd
       tags: [ 'role::slapd', 'skip::slapd' ]
