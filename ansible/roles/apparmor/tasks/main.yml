@@ -1,21 +1,16 @@
 ---
 # Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-# Copyright (C) 2015-2017 DebOps <https://debops.org/>
+# Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2015-2022 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
-- name: Combine variables
-  ansible.builtin.set_fact:
-    apparmor__profile_status: '{{ apparmor__global_profile_status | d({})
-                                  | combine(apparmor__host_group_profile_status | d({}))
-                                  | combine(apparmor__host_profile_status | d({})) }}'
-    apparmor__local_config: '{{ apparmor__local_dependent_config | d({})
-                                | combine(apparmor__local_config_global | d({}))
-                                | combine(apparmor__local_group_config | d({}))
-                                | combine(apparmor__local_host_config | d({})) }}'
-    apparmor__tunables: '{{ (apparmor__tunables_dependent | d([]) | list) +
-                            (apparmor__global_tunables | d([]) | list) +
-                            (apparmor__group_tunables | d([]) | list) +
-                            (apparmor__host_tunables | d([]) | list) }}'
+- name: Import custom Ansible plugins
+  ansible.builtin.import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  ansible.builtin.import_role:
+    name: 'global_handlers'
 
 - name: Install required packages
   ansible.builtin.package:
@@ -24,142 +19,107 @@
     state: 'present'
   register: apparmor__register_packages
   until: apparmor__register_packages is succeeded
+  tags: [ 'role::apparmor:pkg' ]
 
-- name: Setup apparmor=1 security=apparmor as kernel parameter
-  ansible.builtin.lineinfile:
-    dest: '/etc/default/grub'
-    regexp: '{{ item.regexp }}'
-    line: '{{ item.line }}'
-    insertbefore: '{{ item.insertbefore }}'
+- name: Make sure that the Ansible local facts directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Save AppArmor local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/apparmor.fact.j2'
+    dest: '/etc/ansible/facts.d/apparmor.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  tags: [ 'meta::facts' ]
+
+- name: Update Ansible facts if they were modified
+  ansible.builtin.meta: 'flush_handlers'
+
+- name: Add AppArmor kernel parameters to GRUB configuration
+  ansible.builtin.template:
+    src: 'etc/default/grub.d/debops.apparmor.cfg.j2'
+    dest: '/etc/default/grub.d/debops.apparmor.cfg'
     mode: '0644'
-  when: ((apparmor__manage_grub | d() | bool) and (apparmor__enabled | d() | bool))
-  with_items:
-    - regexp: '^GRUB_CMDLINE_LINUX='
-      line: 'GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR {{ apparmor__additional_kernel_parameters }}"'
-      insertbefore: ''
-    - regexp: '^GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR='
-      line: 'GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR="apparmor=1 security=apparmor"'
-      insertbefore: '^GRUB_CMDLINE_LINUX='
-  notify: [ 'Update grub' ]
+  when: >
+    apparmor__enabled | d(False) | bool and
+    apparmor__manage_grub | d(False) | bool
+  notify: [ 'Update GRUB' ]
+  tags: [ 'role::apparmor:grub' ]
 
-- name: Remove apparmor=1 security=apparmor from kernel parameter list
+- name: Remove AppArmor kernel parameters from GRUB configuration
+  ansible.builtin.file:
+    path: '/etc/default/grub.d/debops.apparmor.cfg'
+    state: 'absent'
+  when: >
+    not apparmor__enabled | d(False) | bool or
+    not apparmor__manage_grub | d(False) | bool
+  notify: [ 'Update GRUB' ]
+  tags: [ 'role::apparmor:grub' ]
+
+- name: Remove legacy GRUB configuration options
   ansible.builtin.lineinfile:
     dest: '/etc/default/grub'
     regexp: '^GRUB_CMDLINE_LINUX="(.*?)\$GRUB_CMDLINE_LINUX_ANSIBLE_APPARMOR(.*)"'
     line: 'GRUB_CMDLINE_LINUX="\1 \2"'
     backrefs: yes
     mode: '0644'
-  when: (apparmor__manage_grub and not (apparmor__enabled | d() | bool))
-  notify: [ 'Update grub' ]
+  notify: [ 'Update GRUB' ]
+  tags: [ 'role::apparmor:grub' ]
 
-- name: Check if the running kernel has been started with AppArmor enabled
-  ansible.builtin.set_fact:
-    apparmor__fact_apparmor_enabled_and_loaded: '{{
-      (apparmor__enabled | d() | bool) and
-      (ansible_cmdline.apparmor | d(0) | string == "1") and
-      (ansible_cmdline.security | d("none") == "apparmor") }}'
-  check_mode: False
+- name: Configure tunables
+  ansible.builtin.include_tasks: handle_tunables.yml
+  loop: '{{ apparmor__combined_tunables | debops.debops.parse_kv_items() }}'
+  loop_control:
+    label: '{{ item.name }}'
+  tags: [ 'role::apparmor:tunables' ]
 
-- name: Flush the handlers in case the next tasks fails
-  ansible.builtin.meta: flush_handlers
+- name: Configure local changes to system profiles
+  ansible.builtin.include_tasks: handle_locals.yml
+  loop: '{{ apparmor__combined_locals | debops.debops.parse_kv_items() }}'
+  loop_control:
+    label: '{{ item.name }}'
+  tags: [ 'role::apparmor:locals' ]
 
-- name: Send mail to administrator if reboot is required to enable AppArmor
-  community.general.mail:
-    from: 'root@{{ ansible_fqdn }}'
-    subject: '{{ apparmor__mail_subject }}'
-    to: '{{ apparmor__mail_to | d([]) | list | join(",") }}'
-    charset: 'utf8'
-    body: '{{ apparmor__mail_body }}'
-  when: (apparmor__fact_apparmor_enabled_and_loaded | bool and apparmor__mail_to | d())
+- name: Configure profiles
+  ansible.builtin.include_tasks: handle_profiles.yml
+  loop: '{{ apparmor__combined_profiles | debops.debops.parse_kv_items() }}'
+  loop_control:
+    label: '{{ item.name }}'
+  tags: [ 'role::apparmor:profiles' ]
 
-## Seems that there is currently a bug in the version include in Debian Jessie
-## which throws an exception when AppArmor has not been enabled yet.
-- name: Put all profiles into enforcement mode
-  ansible.builtin.shell: |
-    set -o nounset -o pipefail -o errexit &&
-    find /etc/apparmor.d -maxdepth 1 -type f | while read file
-    do
-      if grep --quiet "flags.*complain" "$file"; then
-        aa-enforce "$file"
-      fi
-    done
-  args:
-    executable: 'bash'
-  register: apparmor__register_enforce_all_profiles
-  changed_when: (apparmor__register_enforce_all_profiles.stdout | d())
-  when: (apparmor__enforce_all_profiles | d() | bool)
-
-- name: Set profile status
-  ansible.builtin.command: aa-{{ item.value }} "{{ item.key }}"
-  register: apparmor__register_profile_status
-  # changed_when: (apparmor__register_profile_status.stdout | d())
-  ## FIXME: Currently changed_when seems to be tricky.
-  changed_when: False
-  failed_when: |
-    apparmor__register_profile_status.rc != 0 and (
-      "Warning: unable to find a suitable fs in /proc/mounts, is it mounted?"
-      not in apparmor__register_profile_status.stderr and
-      apparmor__fact_apparmor_enabled_and_loaded | bool
-    )
-  ## AppArmor tries to load the profile with the new status into the Kernel after changing it.
-  ## This does not work if the Kernel has not been started with AppArmor support.
-  ## But the profile configuration file is updated anyway and will be picked up on next reboot with AppArmor support.
-  with_dict: '{{ apparmor__profile_status }}'
-
-- name: Ensure AppArmor service is started
+- name: Start and enable the AppArmor service
   ansible.builtin.service:
     name: 'apparmor'
     state: 'started'
     enabled: True
-  when: apparmor__fact_apparmor_enabled_and_loaded | bool
+  when:
+    - apparmor__enabled | d(False) | bool
+    - ansible_local.apparmor.installed | d(False) | bool
+  tags: [ 'role::apparmor:service' ]
 
-- name: Ensure tunables directory exists
-  ansible.builtin.file:
-    path: '/etc/apparmor.d/tunables/home.d'
-    state: 'directory'
-    mode: '0755'
+- name: Reload AppArmor profiles if necessary
+  ansible.builtin.meta: 'flush_handlers'
+  tags: [ 'role::apparmor:profiles' ]
 
-- name: Configure tunables
-  ansible.builtin.template:
-    src: 'etc/apparmor.d/tunables/home.d/debops.j2'
-    dest: '/etc/apparmor.d/tunables/home.d/debops'
-    mode: '0640'
-    owner: 'root'
-    group: 'root'
-  register: apparmor__register_tunables
-
-- name: Configure additions or overrides of system profiles
-  ansible.builtin.template:
-    src: 'etc/apparmor.d/local/local.j2'
-    dest: '/etc/apparmor.d/local/{{ item.key }}'
-    mode: '0640'
-    owner: 'root'
-    group: 'root'
-  register: apparmor__register_local_config
-  with_dict: '{{ apparmor__local_config }}'
-
-- name: Reload changed profiles
-  ansible.builtin.command: 'apparmor_parser --replace "/etc/apparmor.d/{{ item.item.key }}"'  # noqa no-handler
-  register: apparmor__register_reload
-  changed_when: apparmor__register_reload.changed | bool
-  when: (item is changed and apparmor__register_tunables is not changed)
-  with_items: '{{ apparmor__register_local_config.results }}'
-
-- name: Reload AppArmor all profiles
-  ansible.builtin.service:  # noqa no-handler
-    name: 'apparmor'
-    state: 'reloaded'
-  when: apparmor__fact_apparmor_enabled_and_loaded | bool and apparmor__register_tunables is changed
-
-- name: Unload AppArmor profiles
-  ansible.builtin.command: service apparmor teardown  # noqa command-instead-of-module
-  register: apparmor__register_teardown
-  changed_when: apparmor__register_teardown.changed | bool
-  when: (not (apparmor__enabled | d() | bool))
-
-- name: Ensure AppArmor service is stopped
+- name: Stop and disable the AppArmor service
   ansible.builtin.service:
     name: 'apparmor'
     state: 'stopped'
     enabled: False
-  when: (not (apparmor__enabled | d() | bool))
+  when:
+    - not apparmor__enabled | d(False) | bool
+    - ansible_local.apparmor.installed | d(False) | bool
+  tags: [ 'role::apparmor:service' ]
+
+- name: Unload all AppArmor profiles
+  ansible.builtin.command: aa-teardown
+  when:
+    - not apparmor__enabled | d(False) | bool
+    - ansible_local.apparmor.installed | d(False) | bool
+  tags: [ 'role::apparmor:profiles' ]

@@ -1,6 +1,6 @@
 .. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
 .. Copyright (C) 2017-2018 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2015-2018 DebOps <https://debops.org/>
+.. Copyright (C) 2015-2022 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 |debops_logo| DebOps Contrib playbooks
@@ -25,9 +25,9 @@ Here are a few services that are available
 
 **Security**
 
-+-----------+-----------+
-| AppArmor_ | Firejail_ |
-+-----------+-----------+
++-----------+
+| Firejail_ |
++-----------+
 
 **Service monitoring and logging**
 
@@ -59,7 +59,6 @@ Here are a few services that are available
 .. _kodi: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/kodi.yml
 .. _volkszaehler: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/volkszaehler.yml
 
-.. _AppArmor: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/apparmor.yml
 .. _Firejail: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/firejail.yml
 
 .. _`CheckMK agent`: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/checkmk_agent.yml

@@ -1,0 +1,54 @@
+{#
+ # Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+ # Copyright (C) 2022 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+#
+# {{ item.name }} - {{ template_title | d('Configuration snippet') }}
+
+{% macro print_option(option, commented, loop_first, level) %}
+{%   if option.state | d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{%     set prefix = ("{:^" + level | string + "}").format('') %}
+{%     set comment_prefix = (prefix + "# ") %}
+{%     if commented or option.state | d('present') == 'comment' %}
+{%       set commented = True %}
+{%       set prefix = comment_prefix %}
+{%     endif %}
+{%     if option.separator | d(False) or level == 0 or (option.comment | d() and not loop_first) %}
+{{       '' }}
+{%     endif %}
+{%     if option.comment | d() %}
+{{       option.comment | regex_replace('\n$', '') | comment(prefix='', decoration=comment_prefix, postfix='') -}}
+{%     endif %}
+{%     if option.raw | d() and commented %}
+{{       '{}'.format(option.raw | regex_replace('\n$', '') | comment(prefix='', decoration=comment_prefix, postfix='')) -}}
+{%     elif option.raw | d() and not commented %}
+{{       '{}{}'.format(prefix, option.raw | regex_replace('\n$', '')) }}
+{%     elif option.options | d() %}
+{{       '{}{} {{'.format(prefix, option.option | d(option.name) | regex_replace('\n$', '')) }}
+{%       for option in option.options %}
+{{         print_option(option, commented, loop.first, level + 1) -}}
+{%       endfor %}
+{{       '{}}}'.format(prefix) }}
+{%     else %}
+{%       if option.operator | d() %}
+{%         set operator = option.operator %}
+{%       elif option.option | d(option.name) == '#include' %}
+{%         set operator = ' ' %}
+{%       else %}
+{%         set operator = template_operator | d('=') %}
+{%       endif %}
+{%       set suffix = option.suffix | d(template_suffix | d('')) %}
+{{       '{}{}{}{}{}'.format(prefix,
+                             option.option | d(option.name),
+                             operator,
+                             option.value | d(""),
+                             suffix) }}
+{%     endif %}
+{%   endif %}
+{% endmacro %}
+{##}
+{% for option in item.options %}
+{{   print_option(option, False, loop.first, 0) -}}
+{% endfor %}
