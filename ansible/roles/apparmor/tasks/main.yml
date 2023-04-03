@@ -122,4 +122,6 @@
   when:
     - not apparmor__enabled | d(False) | bool
     - ansible_local.apparmor.installed | d(False) | bool
+  register: apparmor__register_teardown
+  changed_when: apparmor__register_teardown.changed | bool
   tags: [ 'role::apparmor:profiles' ]
