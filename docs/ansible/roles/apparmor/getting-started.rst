@@ -27,7 +27,7 @@ To do this, you can define the desired AppArmor modifications in your
 .. code-block:: yaml
 
    # Configuration for the ``debops.apparmor`` role, customizing the system
-   # profile for slapd to work in a DebOps envioronment.
+   # profile for slapd to work in a DebOps environment.
    slapd__apparmor__dependent_locals:
 
       - name: 'usr.sbin.slapd'
