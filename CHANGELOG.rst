@@ -69,6 +69,10 @@ New DebOps roles
   ISC BIND nameserver. It supports DNSSEC, key rollovers, multiple DNS zones,
   views and many more features.
 
+- The :ref:`debops.apparmor` role can be used to manage AppArmor configuration
+  and profiles. It will be included in the :file:`layer/common.yml` playbook in
+  the future.
+
 General
 '''''''
 
