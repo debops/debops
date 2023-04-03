@@ -2,18 +2,19 @@
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
 # .. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-# .. Copyright (C) 2015-2017 DebOps <https://debops.org/>
+# .. Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+# .. Copyright (C) 2015-2022 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _apparmor__ref_defaults:
 
-# debops-contrib.apparmor default variables [[[
-# =============================================
-
+# Default variables
+# =================
+#
 # .. contents:: Sections
 #    :local:
 #
-# .. include:: includes/all.rst
+# .. include:: ../../../../includes/global.rst
 
 
 # Packages and installation [[[
@@ -26,235 +27,202 @@ apparmor__base_packages:
   - 'apparmor'
   - 'apparmor-utils'
   - 'apparmor-profiles'
-  - '{{ []
-        if (ansible_distribution == "Ubuntu" and not (ansible_distribution_version is version_compare("15.10", ">=")))
-        else ["apparmor-profiles-extra"] }}'
+  - 'apparmor-profiles-extra'
 
                                                                    # ]]]
 # .. envvar:: apparmor__packages [[[
 #
-# List of additional packages to install with AppArmor.
-#
-# Example::
-#
-#    apparmor__packages:
-#      - 'apparmor-notify'
-#
+# List of additional packages to install.
 apparmor__packages: []
 
                                                                    # ]]]
 # .. envvar:: apparmor__enabled [[[
 #
-# Should AppArmor be enabled?
-apparmor__enabled: True
-
-                                                                   # ]]]
-# .. envvar:: apparmor__kernel_options [[[
-#
-# Default kernel options needed to enable AppArmor.
-# You probably don’t need to change this.
-apparmor__kernel_options:
-  - 'apparmor=1'
-  - 'security=apparmor'
+# Enable or disable support the AppArmor. Since the role is included from the
+# DebOps ``common`` playbook, this allows a manual override of the default
+# behavior.
+apparmor__enabled: '{{ ansible_local.apparmor.enabled
+                       | d(False
+                           if (ansible_distribution_release in ["stretch"] or
+                               (ansible_virtualization_role | d("") == "guest"
+                                and
+                                ansible_virtualization_type | d("") in
+                                  ["container"]))
+                           else True) }}'
 
                                                                    # ]]]
 # .. envvar:: apparmor__manage_grub [[[
 #
-# How should role write the required kernel options into the Grub configuration.
-# The default is delegate this to the debops.grub_ role.
-# If set to False, this role will do that internally without debops.grub_.
-# Note that this role is not as flexible in configuring Grub as debops.grub_ is.
-apparmor__manage_grub: False
+# Enable or disable support for adding kernel parameters via GRUB which cause
+# the AppArmor security module to be enabled at boot. Note that the normal
+# Debian/Ubuntu kernel packages already include and enable this support by
+# default, so this is only necessary for old distributions and/or customized
+# kernel builds.
+apparmor__manage_grub: '{{ ansible_local.apparmor.grub_enabled
+                           | d(True
+                               if (apparmor__enabled | d(False) | bool and
+                                   ansible_distribution_release in ["stretch"])
+                               else False) }}'
 
                                                                    # ]]]
-# .. envvar:: apparmor__additional_kernel_parameters [[[
+# .. envvar:: apparmor__kernel_parameters [[[
 #
-# Legacy:
-# Only considered when `apparmor__manage_grub == True`.
-apparmor__additional_kernel_parameters: ''
+# Kernel parameters needed to enable AppArmor (if not already enabled by
+# default, as in recent Debian/Ubuntu kernel packages). Only relevant if
+# :envvar:`apparmor__manage_grub` is enabled.
+apparmor__kernel_parameters:
+  - 'apparmor=1'
+  - 'security=apparmor'
 
                                                                    # ]]]
-# .. envvar:: apparmor__mail_to [[[
-#
-# List of recipients to which a mail will be send in case a reboot is required.
-apparmor__mail_to: [ 'root@{{ ansible_domain }}' ]
-
                                                                    # ]]]
-# .. envvar:: apparmor__mail_subject [[[
-#
-# Subject of the Email to be send in case a reboot is required to boot into a
-# updated kernel version.
-apparmor__mail_subject: 'Reboot required by AppArmor on {{ ansible_fqdn }}'
-
-                                                                   # ]]]
-# .. envvar:: apparmor__mail_body [[[
-#
-# Body of the Email to be send in case a reboot is required to boot into a
-# updated kernel version.
-apparmor__mail_body: |
-  Ansible has enabled AppArmor thought the boot loader configuration for the
-  Linux kernel parameters on host {{ ansible_fqdn }}.
-  You should check the status of the host and reboot it when convenient.
-
-# ]]]
-# ]]]
 # AppArmor profiles [[[
 # ---------------------
 
-# .. envvar:: apparmor__enforce_all_profiles [[[
+# These variables control the state of individual AppArmor profiles. See
+# :ref:`apparmor__ref_profiles` for more details.
+
+# .. envvar:: apparmor__default_profiles [[[
 #
-# Put all profiles into enforcement mode.
-# Use this only if you know what you are doing.
-apparmor__enforce_all_profiles: False
+# List of profiles to enable/disable, defined by the role.
+apparmor__default_profiles: []
 
                                                                    # ]]]
-# .. envvar:: apparmor__global_profile_status [[[
+# .. envvar:: apparmor__profiles [[[
 #
-# Global configuration of the status of individual profiles.
-# More specific matches overwrite more generic matches (example host overrules
-# global).
-#
-# Choices are:
-#
-# ``enforce``
-#   Result in enforcement of the policy defined in the profile as well as
-#   logging policy violation attempts.
-#
-# ``complain``
-#  This will not enforce the policy.  Instead, it will log policy violations.
-#
-# ``disable``
-#   In this mode, policy violations are neither prevented nor logged.
-#
-# Example::
-#
-#    apparmor__global_profile_status:
-#      'usr.sbin.nmbd': 'complain'
-#
-apparmor__global_profile_status: {}
+# List of profiles to enable/disable, defined for all hosts in the Ansible
+# inventory.
+apparmor__profiles: []
 
                                                                    # ]]]
-# .. envvar:: apparmor__host_group_profile_status [[[
+# .. envvar:: apparmor__group_profiles [[[
 #
-# Host group configuration of the status of individual profiles.
-apparmor__host_group_profile_status: {}
+# List of profiles to enable/disable, defined on hosts in a specific Ansible
+# inventory group.
+apparmor__group_profiles: []
 
                                                                    # ]]]
-# .. envvar:: apparmor__host_profile_status [[[
+# .. envvar:: apparmor__host_profiles [[[
 #
-# Host configuration of the status of individual profiles.
-apparmor__host_profile_status: {}
+# List of profiles to enable/disable, defined on specific hosts in the Ansible
+# inventory.
+apparmor__host_profiles: []
 
                                                                    # ]]]
-# .. envvar:: apparmor__local_config_global [[[
+# .. envvar:: apparmor__dependent_profiles [[[
 #
-# Global additions or overrides of system profiles.
-# Those changes will be configured in :file:`/etc/apparmor.d/local/`.
-# Check :file:`/etc/apparmor.d/local/README` for details.
-# All three dictionaries are merged into one profile configuration.
-#
-# ``comment``
-#   String, optional, default "Uncommented rule group". Comment for the given
-#   rules.
-#
-# ``rules``
-#   List of strings, required. AppArmor rules. Note that the rules are not
-#   comma terminated, this is done by the role template.
-#
-# ``by_role``
-#   Strings, optional, default "". Name of a role which manages the rules.
-#   Useful for using this role as role dependency.
-#
-# ``delete``
-#   Boolean, optional, default ``False``. Delete the given rule(s).
-#
-# Example::
-#
-#    apparmor__local_config_global:
-#
-#      'usr.sbin.dnsmasq':
-#        - comment: 'Allow dnsmasq to read upstream DNS servers'
-#          rules:
-#            - '/etc/resolvconf/upstream.conf r'
-#            - '/etc/hosts.dnsmasq r'
-#          by_role: 'debops.dnsmasq'
-#        - comment: 'Allow dnsmasq to read /usr/share/dnsmasq-base/trust-anchors.conf'
-#          rules:
-#            - '/usr/share/dnsmasq-base/* r'
-#          by_role: 'debops.dnsmasq'
-#
-#      'usr.bin.pidgin':
-#        - comment: 'Allow local Pidgin plugins'
-#          rules:
-#            - '@{HOME}/.purple/plugins/** rm'
-#
-apparmor__local_config_global: {}
+# Variable definitions managed by roles using this role as dependency.
+apparmor__dependent_profiles: []
 
                                                                    # ]]]
-# .. envvar:: apparmor__local_group_config [[[
+# .. envvar:: apparmor__combined_profiles [[[
 #
-# Host group additions or overrides of system profiles.
-apparmor__local_group_config: {}
+# A combination of the profiles to enable/disable, defined by the other
+# variables, used in role tasks.
+apparmor__combined_profiles: '{{ apparmor__default_profiles
+                                 + apparmor__profiles
+                                 + apparmor__group_profiles
+                                 + apparmor__host_profiles
+                                 + apparmor__dependent_profiles }}'
 
                                                                    # ]]]
-# .. envvar:: apparmor__local_host_config [[[
+                                                                   # ]]]
+# AppArmor local profile modifications [[[
+# ----------------------------------------
+
+# These variables control local profile modifications. See
+# :ref:`apparmor__ref_locals` for more details.
+
+# .. envvar:: apparmor__default_locals [[[
 #
-# Host additions or overrides of system profiles.
-apparmor__local_host_config: {}
+# List of default local profile modifications defined by the role.
+apparmor__default_locals: []
 
                                                                    # ]]]
-# .. envvar:: apparmor__local_dependent_config [[[
+# .. envvar:: apparmor__locals [[[
 #
-# System profiles managed by other roles using this role as dependency.
-apparmor__local_dependent_config: {}
+# List of local profile modifications defined for all hosts in the Ansible
+# inventory.
+apparmor__locals: []
 
                                                                    # ]]]
-# .. envvar:: apparmor__global_tunables [[[
+# .. envvar:: apparmor__group_locals [[[
 #
-# Allows you to define or append variables which will be included by most
-# profiles via the tunable concept of AppArmor.
-# See also: https://wiki.ubuntu.com/DebuggingApparmor#Adjusting_Tunables
+# List of local profile modifications defined on hosts in a specific Ansible
+# inventory group.
+apparmor__group_locals: []
+
+                                                                   # ]]]
+# .. envvar:: apparmor__host_locals [[[
 #
-# Examples:
+# List of local profile modifications defined on specific hosts in the Ansible
+# inventory.
+apparmor__host_locals: []
+
+                                                                   # ]]]
+# .. envvar:: apparmor__dependent_locals [[[
 #
-# .. code-block:: yaml
-#    :linenos:
+# Variable definitions managed by roles using this role as dependency.
+apparmor__dependent_locals: []
+
+                                                                   # ]]]
+# .. envvar:: apparmor__combined_locals [[[
 #
-#    apparmor__global_tunables: |
-#      @{HOMEDIRS}+=/exports/home/
+# A combination of the local profile modifications defined by the other
+# variables, used in role tasks.
+apparmor__combined_locals: '{{ apparmor__default_locals
+                               + apparmor__locals
+                               + apparmor__group_locals
+                               + apparmor__host_locals
+                               + apparmor__dependent_locals }}'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# AppArmor tunables [[[
+# ---------------------
+
+# These variables control profile tunables. See :ref:`apparmor__ref_tunables`
+# for more details.
+
+# .. envvar:: apparmor__default_tunables [[[
 #
-apparmor__global_tunables: ''
+# List of default tunables defined by the role.
+apparmor__default_tunables: []
+
+                                                                   # ]]]
+# .. envvar:: apparmor__tunables [[[
+#
+# List of tunables defined for all hosts in the Ansible inventory.
+apparmor__tunables: []
 
                                                                    # ]]]
 # .. envvar:: apparmor__group_tunables [[[
 #
-# Host group definitions or additions to variables.
-apparmor__group_tunables: ''
+# List of tunables defined on hosts in a specific Ansible inventory group.
+apparmor__group_tunables: []
 
                                                                    # ]]]
 # .. envvar:: apparmor__host_tunables [[[
 #
-# Host definitions or additions to variables.
-apparmor__host_tunables: ''
+# List of tunables defined on specific hosts in the Ansible inventory.
+apparmor__host_tunables: []
 
                                                                    # ]]]
-# .. envvar:: apparmor__tunables_dependent [[[
+# .. envvar:: apparmor__dependent_tunables [[[
 #
 # Variable definitions managed by roles using this role as dependency.
-apparmor__tunables_dependent: ''
-                                                                   # ]]]
-                                                                   # ]]]
-# Configuration for other Ansible roles [[[
-# ----------------------------------------
+apparmor__dependent_tunables: []
 
-# .. envvar:: apparmor__grub__dependent_configuration [[[
+                                                                   # ]]]
+# .. envvar:: apparmor__combined_tunables [[[
 #
-# Configuration for the :ref:`debops.grub` Ansible role.
-apparmor__grub__dependent_configuration:
+# A combination of the tunables defined by the other variables, used in
+# role tasks.
+apparmor__combined_tunables: '{{ apparmor__default_tunables
+                                 + apparmor__tunables
+                                 + apparmor__group_tunables
+                                 + apparmor__host_tunables
+                                 + apparmor__dependent_tunables }}'
 
-  - name: 'cmdline_linux_default'
-    value: '{{ apparmor__kernel_options }}'
-
-                                                                   # ]]]
                                                                    # ]]]
                                                                    # ]]]

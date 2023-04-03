@@ -1,0 +1,45 @@
+---
+# Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Ensure a valid state for profile {{ item.name }}
+  ansible.builtin.assert:
+    that: item.state | d() in [ "enforce", "complain", "disable", "ignore" ]
+    quiet: True
+  tags: [ 'role::apparmor:profiles' ]
+
+- name: Check presence of profile {{ item.name }}
+  ansible.builtin.stat:
+    path: '{{ "/etc/apparmor.d/" + item.name }}'
+  register: apparmor__stat_profile
+  when: item.state != "ignore"
+  tags: [ 'role::apparmor:profiles' ]
+
+# Note: the aa-* utils happily exit with 0 even when the profile doesn't exist
+- name: Ensure existence of profile {{ item.name }}
+  ansible.builtin.assert:
+    that: apparmor__stat_profile.stat.exists | d(False)
+    quiet: True
+  when: item.state != "ignore"
+  tags: [ 'apparmor:profiles' ]
+
+- name: Register current AppArmor state
+  ansible.builtin.command: aa-status --json
+  register: apparmor__register_old_status
+  changed_when: False
+  when: item.state != "ignore"
+  tags: [ 'role::apparmor:profiles' ]
+
+# Note: can't use --no-reload here, because aa-status won't show any changes
+- name: Set profile {{ item.name + " to " + item.state }}
+  ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
+         aa-{{ item.state }} {{ ("/etc/apparmor.d/" + item.name) | quote }}
+            > /dev/null 2>&1 &&
+         aa-status --json
+  args:
+    executable: bash
+  register: apparmor__register_new_status
+  changed_when: apparmor__register_new_status.stdout != apparmor__register_old_status.stdout
+  when: item.state != "ignore"
+  tags: [ 'role::apparmor:profiles' ]

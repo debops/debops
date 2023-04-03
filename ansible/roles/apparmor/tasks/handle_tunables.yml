@@ -1,0 +1,50 @@
+---
+# Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Note: these two could be merged, but it makes the output much more confusing
+- name: Remove tunable {{ item.name }}
+  debops.debops.dpkg_divert:
+    path: '{{ "/etc/apparmor.d/tunables/" + item.name }}'
+    state: 'absent'
+    delete: True
+  when: item.state | d("present") == "absent"
+  notify: [ 'Reload all AppArmor profiles' ]
+  tags: [ 'role::apparmor:tunables' ]
+
+- name: Divert tunable {{ item.name }}
+  debops.debops.dpkg_divert:
+    path: '{{ "/etc/apparmor.d/tunables/" + item.name }}'
+    state: 'present'
+    delete: True
+  when: item.state | d("present") == "present"
+  notify: [ 'Reload all AppArmor profiles' ]
+  tags: [ 'role::apparmor:tunables' ]
+
+- name: Create base directory for tunable {{ item.name }}
+  ansible.builtin.file:
+    path: '{{ "/etc/apparmor.d/tunables/" + item.name | dirname }}'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when:
+    - item.state | d("present") == "present"
+    - item.name | dirname != ""
+  tags: [ 'role::apparmor:tunables' ]
+
+- name: Create tunable {{ item.name }}
+  ansible.builtin.template:
+    src: 'etc/apparmor.d/snippet.j2'
+    dest: '{{ "/etc/apparmor.d/tunables/" + item.name }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  vars:
+    template_title: 'AppArmor tunable'
+    template_suffix: ''
+    template_operator: '='
+  when: item.state | d("present") == "present"
+  notify: [ 'Reload all AppArmor profiles' ]
+  tags: [ 'role::apparmor:tunables' ]

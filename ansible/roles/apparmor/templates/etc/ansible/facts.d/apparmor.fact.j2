@@ -1,0 +1,45 @@
+#!{{ ansible_python['executable'] }}
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps, loads
+import os
+
+
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+def read_kernel_bool(path):
+    value = 'N'
+
+    try:
+        with open(path, 'r') as file:
+            value = file.read().strip()
+
+    except Exception:
+        pass
+
+    return value.upper() == 'Y'
+
+
+output = loads('''{{ {
+                       "enabled": apparmor__enabled | d(False) | bool,
+                       "grub_enabled" apparmor__manage_grub | d(False) | bool
+                     } | to_nice_json }}''')
+
+output.append({'installed': (cmd_exists('aa-status') and
+                             cmd_exists('aa-teardown'))})
+output.append({'kernel_enabled':
+               read_kernel_bool('/sys/module/apparmor/parameters/enabled')})
+
+print(dumps(output, sort_keys=True, indent=4))

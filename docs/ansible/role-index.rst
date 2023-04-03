@@ -310,6 +310,7 @@ packages.
 Security
 --------
 
+- :ref:`debops.apparmor`
 - :ref:`debops.auth`
 - :ref:`debops.authorized_keys`
 - :ref:`debops.fail2ban`
@@ -324,7 +325,6 @@ Security
 - :ref:`debops.system_groups`
 - :ref:`debops.system_users`
 - :ref:`debops.tcpwrappers`
-- ``debops-contrib.apparmor``
 - ``debops-contrib.firejail``
 
 

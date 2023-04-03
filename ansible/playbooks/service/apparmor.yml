@@ -1,12 +1,13 @@
 ---
 # Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-# Copyright (C) 2015-2017 DebOps <https://debops.org/>
-# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2015-2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 - name: Install and configure AppArmor
   collections: [ 'debops.debops', 'debops.roles01',
                  'debops.roles02', 'debops.roles03' ]
-  hosts: [ 'debops_service_apparmor' ]
+  hosts: [ 'debops_all_hosts', 'debops_service_apparmor' ]
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -15,12 +16,5 @@
 
   roles:
 
-    - role: grub
-      grub__dependent_configuration:
-        - name: 'cmdline_linux_default'
-          value: '{{ apparmor__kernel_options }}'
-      when: (not (apparmor__manage_grub | d() | bool))
-      tags: [ 'role::grub' ]
-
     - role: apparmor
-      tags: [ 'role::apparmor' ]
+      tags: [ 'role::apparmor', 'skip::apparmor' ]
