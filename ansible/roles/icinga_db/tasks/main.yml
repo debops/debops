@@ -1,45 +1,84 @@
 ---
 # Copyright (C) 2018 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2018 DebOps <https://debops.org/>
+# Copyright (C) 2020 Gabriel Lewertowski <gabriel.lewertowski@trust-in-soft.com>
+# Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2018-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
   ansible.builtin.import_role:
     name: 'global_handlers'
 
-- name: Set dbconfig configuration for Icinga database
-  ansible.builtin.debconf:
-    name: 'icinga2-{{ icinga_db__feature }}'
-    question: '{{ item }}'
-    vtype: 'boolean'
-    value: 'true'
-  with_items:
-    - 'icinga2-{{ icinga_db__feature }}/dbconfig-install'
-    - 'icinga2-{{ icinga_db__feature }}/dbconfig-upgrade'
-  when: icinga_db__icinga_installed | bool and
-        icinga_db__type != 'unknown'
+- name: Import DebOps secret role
+  ansible.builtin.import_role:
+    name: 'secret'
+
+- name: Assert that the DB type is valid
+  ansible.builtin.assert:
+    that:
+      - 'icinga_db__database_map[icinga_db__type] is defined'
+  become: False
+  run_once: True
+  delegate_to: 'localhost'
 
 - name: Install required packages
   ansible.builtin.package:
-    name: '{{ lookup("flattened",
-                     (icinga_db__base_packages + icinga_db__packages),
-                     wantlist=True) }}'
+    name: '{{ q("flattened", icinga_db__base_packages + icinga_db__packages) }}'
     state: 'present'
   register: icinga_db__register_packages
   until: icinga_db__register_packages is succeeded
   notify: [ 'Check icinga2 configuration and restart' ]
-  when: icinga_db__icinga_installed | bool and
-        icinga_db__type != 'unknown'
+  when: icinga_db__icinga_installed | bool
 
-- name: Ensure that IDO feature is enabled
-  ansible.builtin.file:
-    path: '/etc/icinga2/features-enabled/{{ icinga_db__feature }}.conf'
-    src: '../features-available/{{ icinga_db__feature }}.conf'
-    state: 'link'
-    mode: '0600'
+- name: Create Icinga PostgreSQL tables
+  community.postgresql.postgresql_db:
+    name: '{{ icinga_db__database }}'
+    state: 'restore'
+    target: '{{ icinga_db__schema }}'
+    login_host: '{{ icinga_db__host }}'
+    login_user: '{{ icinga_db__user }}'
+    login_password: '{{ icinga_db__password }}'
+    ssl_mode: '{{ "verify-full" if icinga_db__ssl | d(False) | bool else "disable" }}'
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: icinga_db__type == 'postgresql' and
+        icinga_db__init | bool
+
+- name: Create Icinga MariaDB tables
+  community.mysql.mysql_db:
+    name: '{{ icinga_db__database }}'
+    state: 'import'
+    target: '{{ icinga_db__schema }}'
+    login_host: '{{ icinga_db__host }}'
+    login_user: '{{ icinga_db__user }}'
+    login_password: '{{ icinga_db__password }}'
+    check_hostname: '{{ icinga_db__ssl | d(False) | bool }}'
+  no_log: '{{ debops__no_log | d(True) }}'
+  when: icinga_db__type == 'mariadb' and
+        icinga_db__init | bool
+
+- name: Add Icinga database configuration file diversion
+  debops.debops.dpkg_divert:
+    path: '/etc/icinga2/features-available/ido-{{ icinga_db__ido }}.conf'
+    state: 'present'
+  when: icinga_db__icinga_installed | bool
+
+- name: Create Icinga database configuration file
+  ansible.builtin.template:
+    src: 'etc/icinga2/features-available/ido-db.conf.j2'
+    dest: '/etc/icinga2/features-available/ido-{{ icinga_db__ido }}.conf'
+    owner: 'root'
+    group: 'nagios'
+    mode: '0640'
   notify: [ 'Check icinga2 configuration and restart' ]
-  when: icinga_db__icinga_installed | bool and
-        icinga_db__feature != 'unknown'
+  when: icinga_db__icinga_installed | bool
+
+- name: Enable Icinga database support
+  ansible.builtin.file:
+    path: '/etc/icinga2/features-enabled/ido-{{ icinga_db__ido }}.conf'
+    src: '../features-available/ido-{{ icinga_db__ido }}.conf'
+    state: 'link'
+  notify: [ 'Check icinga2 configuration and restart' ]
+  when: icinga_db__icinga_installed | bool
 
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:

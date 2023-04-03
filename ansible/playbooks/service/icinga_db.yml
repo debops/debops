@@ -1,6 +1,7 @@
 ---
 # Copyright (C) 2018 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2018 DebOps <https://debops.org/>
+# Copyright (C) 2020 Gabriel Lewertowski <gabriel.lewertowski@trust-in-soft.com>
+# Copyright (C) 2018-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Configure Icinga database
@@ -14,6 +15,18 @@
                    | combine(inventory__host_environment  | d({})) }}'
 
   roles:
+
+    - role: mariadb
+      tags: [ 'role::mariadb', 'skip::mariadb' ]
+      mariadb__dependent_databases: '{{ icinga_db__mariadb__dependent_databases }}'
+      mariadb__dependent_users: '{{ icinga_db__mariadb__dependent_users }}'
+      when: icinga_db__type == 'mariadb'
+
+    - role: postgresql
+      tags: [ 'role::postgresql', 'skip::postgresql' ]
+      postgresql__dependent_roles: '{{ icinga_db__postgresql__dependent_roles }}'
+      postgresql__dependent_databases: '{{ icinga_db__postgresql__dependent_databases }}'
+      when: icinga_db__type == 'postgresql'
 
     - role: icinga_db
       tags: [ 'role::icinga_db', 'skip::icinga_db' ]

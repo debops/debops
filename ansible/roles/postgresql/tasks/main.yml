@@ -215,6 +215,26 @@
         (item.db | d() and item.priv | d())
   no_log: '{{ debops__no_log | d(True) }}'
 
+- name: Grant or revoke extra privileges
+  community.postgresql.postgresql_privs:
+    database: '{{ item.database }}'
+    port: '{{ item.port | d(postgresql__port if postgresql__port else omit) }}'
+    grant_option: '{{ item.grant_option | d(omit) }}'
+    objs: '{{ item.objs | join(",") }}'
+    privs: '{{ item.public_privs | d(["ALL"]) | join(",") }}'
+    roles: '{{ item.roles | join(",") }}'
+    schema: '{{ item.schema | d(omit) }}'
+    state: '{{ item.state | d("present") }}'
+    target_roles: '{{ item.target_roles | d(omit) }}'
+    type: '{{ item.type }}'
+  loop: '{{ q("flattened", postgresql__privileges
+                           + postgresql__dependent_privileges) }}'
+  become: True
+  become_user: '{{ postgresql__user }}'
+  delegate_to: '{{ postgresql__delegate_to }}'
+  when: (item.state | d('present') == 'present') and
+        item.enabled | d(True) | bool
+
 - name: Make sure required system groups exist
   ansible.builtin.group:
     name: '{{ item.group | d(item.owner) }}'

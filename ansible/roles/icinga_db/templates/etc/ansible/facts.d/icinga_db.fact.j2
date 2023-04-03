@@ -2,66 +2,146 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2018 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2018 DebOps <https://debops.org/>
+# Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2018-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 # {{ ansible_managed }}
 
 from __future__ import print_function
-from json import loads, dumps
+from json import dumps
 from sys import exit
 import os
-
-try:
-    from configparser import ConfigParser
-except ImportError:
-    from ConfigParser import ConfigParser
-
-# Python 2 compatibility
-try:
-    from StringIO import StringIO
-except ImportError:
-    pass
+import re
 
 
-def get_config(config_file):
-    config_data = []
-    if os.path.isfile(config_file):
-        with open(config_file, 'r') as f:
-            config_string = '[global]\n' + f.read()
-            config = ConfigParser()
+# https://stackoverflow.com/questions/241327/remove-c-and-c-comments-using-python
+def remove_comments(text):
+    def replacer(match):
+        s = match.group(0)
+        if s.startswith('/'):
+            return " "
+        else:
+            return s
+    pattern = re.compile(
+        r'//.*?$|/\*.*?\*/|\'(?:\\.|[^\\\'])*\'|"(?:\\.|[^\\"])*"',
+        re.DOTALL | re.MULTILINE
+    )
+    return re.sub(pattern, replacer, text)
+
+
+def splitlines_and_cleanup(text):
+    return [line.strip() for line in text.splitlines() if line.strip()]
+
+
+def parse(it):
+    result = []
+
+    while True:
+        try:
+            line = next(it)
+        except StopIteration:
+            break
+
+        tokens = line.split()
+        cfg_entry = {
+            "raw": line,
+            "tokens": tokens,
+            "parameters": {},
+            "children": []
+        }
+        if len(tokens) == 3 and tokens[1] == '=' and tokens[2] != '{':
+            cfg_entry["parameters"][tokens[0]] = tokens[2]
+
+        token_iter = iter(tokens)
+        while True:
             try:
-                config.read_string(config_string.decode('utf-8'))
-            except AttributeError:
-                try:
-                    config.read_string(config_string)
-                except AttributeError:
-                    # Python 2 compatibility
-                    sbuffer = StringIO(config_string)
-                    config.readfp(sbuffer)
+                tk = next(token_iter)
+            except StopIteration:
+                result.append(cfg_entry)
+                break
 
-            for section in config.sections():
+            if tk == '}':
+                break
+            elif tk == '{':
+                cfg_entry["children"] = parse(it)
+                for child in cfg_entry["children"]:
+                    cfg_entry["parameters"].update(child["parameters"])
+                result.append(cfg_entry)
+                break
 
-                section_options = {}
-                for name, value in config.items(section):
-                    section_options[name] = value.strip("'")
-
-    return section_options
+    return result
 
 
-output = loads('''{{ {"configured": False,
-                      "type": icinga_db__type}
-                     | to_nice_json }}''')
+parameter_map = {
+    'host': 'db_host',
+    'database': 'db_name',
+    'user': 'db_user',
+    'password': 'db_password',
+    'port': 'db_port',
+    'enable_ssl': 'db_ssl',
+    'ssl_mode': 'db_ssl',
+    'ssl_ca': 'db_ssl_ca'
+}
+
+
+def parse_cfg(txt):
+    result = {'configured': False}
+
+    txt = remove_comments(txt)
+    txt = splitlines_and_cleanup(txt)
+    cfg = parse(iter(txt))
+
+    for entry in cfg:
+        if 'tokens' not in entry or len(entry['tokens']) < 3:
+            continue
+        elif entry['tokens'][0].lower() != "object":
+            continue
+        elif entry['tokens'][1].lower() == 'idopgsqlconnection':
+            result = {
+                'configured': True,
+                'ido': 'pgsql',
+                'type': 'postgresql',
+            }
+        elif entry['tokens'][1].lower() == 'idomysqlconnection':
+            result = {
+                'configured': True,
+                'ido': 'mysql',
+                'type': 'mariadb',
+            }
+        else:
+            continue
+
+        for input_key, output_key in parameter_map.items():
+            if input_key not in entry['parameters']:
+                continue
+            val = entry['parameters'][input_key]
+            if val.startswith('"') and val.endswith('"') and len(val) > 1:
+                val = val.strip('"')
+            result[output_key] = val
+
+    return result
+
+
+output = {'configured': True}
 
 db_config_files = [
-    '/etc/dbconfig-common/icinga2-ido-pgsql.conf',
-    '/etc/dbconfig-common/icinga2-ido-mysql.conf'
+    ('/etc/icinga2/features-available/'
+     'ido-{{ icinga_db__database_map[icinga_db__type].ido }}.conf')
 ]
 
 for config_file in db_config_files:
-    if os.path.exists(config_file) and os.path.isfile(config_file):
-        output['configured'] = True
-        if os.access(config_file, os.R_OK):
-            output.update(get_config(config_file))
+    if not os.path.exists(config_file) or not os.path.isfile(config_file):
+        output['configured'] = False
+        break
+
+    try:
+        with open(config_file, 'r') as f:
+            cfg = f.read()
+            output.update(parse_cfg(cfg))
+
+    except Exception:
+        output['configured'] = False
+        break
 
 print(dumps(output, sort_keys=True, indent=4))
