@@ -11,11 +11,11 @@ Ansible playbooks to run `DebOps Contrib <https://github.com/debops-contrib/debo
 Here are a few services that are available
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**DNS and Networking**
+**Networking**
 
-+-------------+----------+------+
-| apt_cacher_ | dnsmasq_ | tor_ |
-+-------------+----------+------+
++-------------+------+
+| apt_cacher_ | tor_ |
++-------------+------+
 
 **Fully loaded ready to go applications**
 
@@ -51,7 +51,6 @@ Here are a few services that are available
 
 .. _apt_cacher: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/apt_cacher.yml
 .. _tor: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/tor.yml
-.. _dnsmasq: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/dnsmasq.yml
 
 .. _bitcoind: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/bitcoind.yml
 .. _foodsoft: https://github.com/debops/debops/tree/master/ansible/debops-contrib-playbooks/service/foodsoft.yml
