@@ -74,21 +74,21 @@
 
 - name: Configure tunables
   ansible.builtin.include_tasks: handle_tunables.yml
-  loop: '{{ apparmor__combined_tunables | debops.debops.parse_kv_items() }}'
+  loop: '{{ q("flattened", apparmor__combined_tunables) | debops.debops.parse_kv_items() }}'
   loop_control:
     label: '{{ item.name }}'
   tags: [ 'role::apparmor:tunables' ]
 
 - name: Configure local changes to system profiles
   ansible.builtin.include_tasks: handle_locals.yml
-  loop: '{{ apparmor__combined_locals | debops.debops.parse_kv_items() }}'
+  loop: '{{ q("flattened", apparmor__combined_locals) | debops.debops.parse_kv_items() }}'
   loop_control:
     label: '{{ item.name }}'
   tags: [ 'role::apparmor:locals' ]
 
 - name: Configure profiles
   ansible.builtin.include_tasks: handle_profiles.yml
-  loop: '{{ apparmor__combined_profiles | debops.debops.parse_kv_items() }}'
+  loop: '{{ q("flattened", apparmor__combined_profiles) | debops.debops.parse_kv_items() }}'
   loop_control:
     label: '{{ item.name }}'
   tags: [ 'role::apparmor:profiles' ]
