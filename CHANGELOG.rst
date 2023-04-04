@@ -128,6 +128,12 @@ General
 
   .. __: https://peps.python.org/pep-0440/
 
+:ref:`debops.dovecot` role
+''''''''''''''''''''''''''
+
+- Fixed a missed ``template_src`` lookup which didn't use a FQCN as a plugin
+  name.
+
 :ref:`debops.etc_aliases` role
 ''''''''''''''''''''''''''''''
 
