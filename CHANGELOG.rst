@@ -56,6 +56,12 @@ General
   Collections during new project creation if the :command:`ansible-galaxy`
   command is not available in the user's ``$PATH``.
 
+:ref:`debops.bind` role
+'''''''''''''''''''''''
+
+- Use the ``::1`` IPv6 address instead of the ``127.0.0.1`` IPv4 address for
+  IPv6 DNS-over-HTTP proxy configuration.
+
 :ref:`debops.debconf` role
 ''''''''''''''''''''''''''
 
