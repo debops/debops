@@ -175,12 +175,11 @@ gitlab__pki_enabled: '{{ (ansible_local.pki.enabled | d(False)) | bool }}'
 gitlab__pki_path: '{{ ansible_local.pki.path | d("/etc/pki/realms") }}'
 
                                                                    # ]]]
-# .. envvar:: gitlab__pki_realm [[[
+# .. envvar:: gitlab__pki_ssl_realm [[[
 #
 # The name of the PKI realm which should be used by GitLab Omnibus installation
-# by default.
-gitlab__pki_realm: '{{ ansible_local.pki.realm | d("domain") }}'
-
+# by default, for private key and X.509 certificates.
+gitlab__pki_ssl_realm: '{{ ansible_local.pki.realm | d("domain") }}'
                                                                    # ]]]
 # .. envvar:: gitlab__ssl_default_symlinks [[[
 #
@@ -190,10 +189,10 @@ gitlab__pki_realm: '{{ ansible_local.pki.realm | d("domain") }}'
 gitlab__ssl_default_symlinks:
 
   - link: '{{ gitlab__fqdn + ".key" }}'
-    src: '{{ gitlab__pki_path + "/" + gitlab__pki_realm + "/private/key.pem" }}'
+    src: '{{ gitlab__pki_path + "/" + gitlab__pki_ssl_realm + "/private/key.pem" }}'
 
   - link: '{{ gitlab__fqdn + ".crt" }}'
-    src: '{{ gitlab__pki_path + "/" + gitlab__pki_realm + "/public/chain.pem" }}'
+    src: '{{ gitlab__pki_path + "/" + gitlab__pki_ssl_realm + "/public/chain.pem" }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab__ssl_symlinks [[[
@@ -204,6 +203,14 @@ gitlab__ssl_default_symlinks:
 gitlab__ssl_symlinks: []
 
                                                                    # ]]]
+# .. envvar:: gitlab__pki_ca_realm [[[
+#
+# The name of the PKI realm which should be used by GitLab Omnibus installation
+# by default, for the Certificate Authority needed to communicate with
+# other hosts.
+gitlab__pki_ca_realm: '{{ ansible_local.pki.realm | d("domain") }}'
+
+                                                                   # ]]]
 # .. envvar:: gitlab__ssl_default_cacerts [[[
 #
 # List of the symlinks to Certificate Authority certificate used by GitLab
@@ -212,8 +219,8 @@ gitlab__ssl_symlinks: []
 # certificates. See :ref:`gitlab__ref_ssl_symlinks` for more details.
 gitlab__ssl_default_cacerts:
 
-  - link: '{{ gitlab__pki_realm + "-root.crt" }}'
-    src: '{{ gitlab__pki_path + "/" + gitlab__pki_realm + "/public/root.pem" }}'
+  - link: '{{ gitlab__pki_ca_realm + "-root.crt" }}'
+    src: '{{ gitlab__pki_path + "/" + gitlab__pki_ca_realm + "/public/root.pem" }}'
 
                                                                    # ]]]
 # .. envvar:: gitlab__ssl_cacerts [[[
