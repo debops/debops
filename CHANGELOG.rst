@@ -23,6 +23,22 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v3.1.0...master
 
+Changed
+~~~~~~~
+
+General
+'''''''
+
+- Harmonize all roles on `role::ROLE:pkgs` Ansible tag. The roles:
+
+  - :ref:`debops.apparmor`
+  - :ref:`debops.imapproxy`
+  - :ref:`debops.owncloud`
+  - :ref:`debops.roundcube`
+  - :ref:`debops.rspamd`
+
+  used `role::ROLE:pkg` previously.
+
 
 `debops v3.1.0`_ - 2023-11-29
 -----------------------------
