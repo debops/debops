@@ -34,7 +34,7 @@ def read_kernel_bool(path):
 
 output = loads('''{{ {
                        "enabled": apparmor__enabled | d(False) | bool,
-                       "grub_enabled": apparmor__manage_grub | d(False) | bool
+                       "grub_enabled": apparmor__manage_grub | d(False) | bool,
                      } | to_nice_json }}''')
 
 output.append({'installed': (cmd_exists('aa-status') and
