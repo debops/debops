@@ -291,7 +291,7 @@ Available role tags:
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
 
-``role::owncloud:pkg``
+``role::owncloud:pkgs``
   Tasks related to system package management like installing, upgrading or
   removing packages.
 
