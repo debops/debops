@@ -112,6 +112,16 @@ General
   :file:`~/.ssh/authorized_keys` files correctly using optional ``follow``
   parameter.
 
+- Harmonize all roles on `role::ROLE:pkgs` Ansible tag. The roles:
+
+  - :ref:`debops.apparmor`
+  - :ref:`debops.imapproxy`
+  - :ref:`debops.owncloud`
+  - :ref:`debops.roundcube`
+  - :ref:`debops.rspamd`
+
+  used `role::ROLE:pkg` previously.
+
 - The DebOps CI pipeline in GitHub Actions is improved and will be executed on
   pull requests and pushes to test changes before merging them.
 
