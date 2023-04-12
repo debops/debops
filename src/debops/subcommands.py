@@ -84,6 +84,14 @@ Commands:
         parser = argparse.ArgumentParser(
                 description='initialize new project directory',
                 usage='debops project init [<args>] <project_dir>')
+        parser.add_argument('--type', type=str, nargs='?',
+                            choices=['legacy', 'modern'],
+                            default='legacy',
+                            help='select project type (default: %(default)s)')
+        parser.add_argument('--default-view', type=str,
+                            default='system',
+                            help='name of the default infrastructure view '
+                                 '(default: %(default)s)')
         self.add_bool_argument(parser, 'git',
                                help='enable git support (default)',
                                no_help='disable git support')

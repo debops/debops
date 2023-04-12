@@ -31,6 +31,7 @@ class AnsibleInventory(object):
 
     def __init__(self, project, name='system', *args, **kwargs):
         self.name = name
+        self.project_type = project.project_type
         self.args = args
         self.kwargs = kwargs
 
@@ -127,17 +128,20 @@ class AnsibleInventory(object):
             pass
 
         skel_dirs = (
-            os.path.join('collections', 'ansible_collections'),
             os.path.join('inventory', 'group_vars', 'all'),
             os.path.join('inventory', 'host_vars'),
-            os.path.join('keyring'),
-            os.path.join('overrides', 'files'),
-            os.path.join('overrides', 'tasks'),
-            os.path.join('overrides', 'templates'),
             os.path.join('playbooks', 'roles'),
             os.path.join('resources'),
             os.path.join('secret'),
         )
+
+        if self.project_type == 'legacy':
+            skel_dirs = skel_dirs + (
+                    os.path.join('collections', 'ansible_collections'),
+                    os.path.join('keyring'),
+                    os.path.join('overrides', 'files'),
+                    os.path.join('overrides', 'tasks'),
+                    os.path.join('overrides', 'templates'),)
 
         for skel_dir in skel_dirs:
             skel_dir = os.path.join(self.root_path, skel_dir)
