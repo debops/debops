@@ -1,6 +1,6 @@
-.. Copyright (C) 2015-2019 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015-2023 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2019      Tasos Alvas <tasos.alvas@qwertyuiopia.com>
-.. Copyright (C) 2015-2019 DebOps <https://debops.org/>
+.. Copyright (C) 2015-2023 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 .. _project_directory:
@@ -9,19 +9,28 @@ Project directories
 ===================
 
 DebOps uses a concept of "project directories" to store the data required to
-manage an IT infrastructure. Each project directory is responsible for a single
-environment, which usually means a single Ansible inventory which may contain
-multiple hosts divided by groups of hosts.
+manage an IT infrastructure. Project directories are kept on the Ansible
+Controller hosts from where Ansible commands are executed. They are designed to
+be tracked using :command:`git` version control and have support for encrypted
+secret storage using `EncFS`__ or `git-crypt`__ projects.
 
-Directory layout
-----------------
+.. __: https://vgough.github.io/encfs/
+.. __: https://www.agwa.name/projects/git-crypt/
 
-Project directories are stored on the Ansible Controller host. They can be
-created using the :command:`debops-init` command:
+There are currently two versions of project directories supported by DebOps
+- "legacy" and "modern".
+
+
+The "legacy" directory layout
+-----------------------------
+
+This was the first directory layout designed for DebOps. This directory layout
+is focused on a single Ansible inventory. To create it, you can run the
+command:
 
 .. code-block:: console
 
-   debops project init ~/src/projects/project1
+   debops project init --type legacy ~/src/projects/project1
 
 The above command will create a base set of subdirectories in specified
 directory and generate an initial Ansible inventory :file:`hosts` file:
@@ -29,14 +38,24 @@ directory and generate an initial Ansible inventory :file:`hosts` file:
 .. code-block:: none
 
    ~/src/projects/project1/
-   ├── ansible/
-   │   ├── inventory/
-   │   │   ├── group_vars/
-   │   │   │   └── all/
-   │   │   ├── host_vars/
-   │   │   └── hosts
-   │   ├── playbooks/
-   │   └── roles/
+   ├── ansible
+   │   ├── collections
+   │   │   └── ansible_collections
+   │   ├── inventory
+   │   │   ├── group_vars
+   │   │   │   └── all
+   │   │   ├── hosts
+   │   │   └── host_vars
+   │   ├── keyring
+   │   ├── overrides
+   │   │   ├── files
+   │   │   ├── tasks
+   │   │   └── templates
+   │   ├── playbooks
+   │   │   └── roles
+   │   ├── resources
+   │   └── secret
+   ├── ansible.cfg
    ├── .debops.cfg
    └── .gitignore
 
@@ -48,6 +67,8 @@ trimmed to make the result easier to read):
 
    ~/src/projects/project1/
    ├── ansible/
+   │   ├── collections
+   │   │   └── ansible_collections
    │   ├── inventory/
    │   │   ├── group_vars/
    │   │   │   ├── all/
@@ -64,16 +85,21 @@ trimmed to make the result easier to read):
    │   │   │   └── host2/
    │   │   │       └── nginx.yml
    │   │   └── hosts
+   │   ├── keyring
+   │   ├── overrides
+   │   │   ├── files
+   │   │   ├── tasks
+   │   │   └── templates
    │   ├── playbooks/
-   │   │   └── deployment.yml
+   │   │   ├── deployment.yml
+   │   │   └── roles/
+   │   │       ├── service1/
+   │   │       └── service2/
    │   ├── resources/
    │   │   ├── res-dir1/
    │   │   │   └── res-file1.zip
    │   │   └── res-dir2/
    │   │       └── res-file2.jpg
-   │   ├── roles/
-   │   │   ├── service1/
-   │   │   └── service2/
    │   │── secret/
    │   │   ├── credentials/
    │   │   │   ├── host1/
@@ -89,13 +115,7 @@ trimmed to make the result easier to read):
    │   │       ├── realms/
    │   │       └── requests/
    │   └── global-vars.yml
-   ├── debops/
    ├── .git/
-   ├── playbooks/
-   │   └── custom_play.yml
-   ├── roles/
-   │   ├── custom_role1/
-   │   └── custom_role2/
    ├── ansible.cfg
    ├── .debops.cfg
    └── .gitignore
@@ -122,8 +142,128 @@ project is essentially this.
 .. __: https://github.com/carlalexander/debops-wordpress/
 
 
-The :file:`ansible/inventory/` directory
-----------------------------------------
+The "modern" directory layout
+-----------------------------
+
+This directory layout was created after a few years of experience with the
+"legacy" layout. The design is based around a concept of "infrastructure
+views", which translates to multiple Ansible inventories with separate secrets
+and custom resources.
+
+To create a project directory with this layout, you can issue the command:
+
+.. code-block:: console
+
+   debops project init --type modern ~/src/projects/project2
+
+This command will create a directory structure with a set of default
+configuration files used by :command:`git` and :command:`ansible`, which looks
+something like this:
+
+.. code-block:: none
+
+   ~/src/projects/project2/
+   ├── ansible/
+   │   ├── collections/
+   │   │   └── ansible_collections/
+   │   ├── keyring/
+   │   ├── overrides/
+   │   │   ├── files/
+   │   │   ├── tasks/
+   │   │   └── templates/
+   │   └── views/
+   │       └── system/
+   │           ├── ansible.cfg
+   │           ├── inventory/
+   │           │   ├── group_vars/
+   │           │   │   └── all/
+   │           │   │       └── keyring.yml
+   │           │   ├── hosts
+   │           │   └── host_vars/
+   │           ├── playbooks/
+   │           │   └── roles/
+   │           ├── resources/
+   │           └── secret/
+   ├── .debops/
+   │   ├── conf.d/
+   │   │   ├── project.yml
+   │   │   └── view-system.yml
+   │   └── environment
+   ├── .gitattributes
+   └── .gitignore
+
+You can compare this with the "legacy" directory structure above. The important
+changes with the previous layout are:
+
+- DebOps configuration is now a :file:`.debops/conf.d/` directory within the
+  project directory instead of a single file. It can contain files in JSON,
+  TOML and YAML formats that are merged into a unified configuration structure.
+
+- Parts of the project directory (Ansible inventory, custom resources, secrets)
+  are moved into :file:`ansible/views/system/` subdirectory. The "system" view
+  is meant to be used as the default privileged view for the infrastructure,
+  with either ``root`` or other UNIX account with full :command:`sudo` access
+  to the host.
+
+Detailed description of each directory and file in the project directory can be
+found further below.
+
+How to use "infrastructure views"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The core concept of "infrastructure views" in a DebOps project directory is
+meant to permit use of multiple Ansible inventories against a single
+infrastructure. There are different ways to implement this in practice.
+
+One example is to have a single Ansible inventory for privileged access to
+hosts (the "system" view in the default configuration). This view is used by
+system administrators to provision hosts, install system-wide software and
+configure different layers of access control in parts of the system (access to
+databases, filesystem ACLs and permissions, authentication services, and so
+on). Other views can then be configured to use unprivileged access to parts of
+the infrastructure, without going through :command:`sudo` which with Ansible
+always requires full privileged access. For example, a deployment UNIX account
+can have proper ACLs in the PostgreSQL service to create its own databases,
+which still can be managed via Ansible tasks without issues.
+
+Another way to utilize infrastructure views is to have a "production" view,
+a "development" view and a "shared" view, which is included as an additional
+inventory in both "production" and "development" inventories. In "production"
+and "development" Ansible inventories users define hosts and access to them,
+and in the "shared" Ansible inventory they define service groups and other
+configuration. With this setup, Ansible configuration can be applied on the
+"development" infrastructure, and when everything works OK, new configuration
+can be deployed on "production" hosts without requiring any changes in
+inventories. There might be more layers of inventories if needed, or
+a blue-green deployment scheme if desired.
+
+
+Contents of the project directory
+---------------------------------
+
+Main Ansible configuration file
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:legacy: :file:`ansible.cfg`
+:modern: :file:`ansible/views/<view>/ansible.cfg`
+
+This is a configuration file read by the :command:`ansible` and
+:command:`ansible-playbook` commands. This file is generated when the project
+is initialized, but it's not stored in the :command:`git` version control to
+avoid conflicts with paths on different Ansible Controllers.
+
+The contents of this file are configured using the DebOps configuration system.
+You can use the :command:`debops project refresh` command to update this file
+or recreate it after the project directory is cloned from a :command:`git`
+repository. Any changes in this file made directly will be lost, so it's best
+to save them in DebOps configuration files after testing them.
+
+
+The Ansible inventory
+~~~~~~~~~~~~~~~~~~~~~
+
+:legacy: :file:`ansible/inventory/`
+:modern: :file:`ansible/views/<view>/inventory/`
 
 This is the directory where Ansible will look for its inventory. In the example
 above, it's a static inventory based on an INI file format, however if you wish
@@ -135,28 +275,39 @@ which might be more convenient if you want to share the same variables across
 project directories using symlinks. Just remember that you cannot mix
 directories and files on the same level of the inventory directory structure.
 
-
-Role and playbook directories
------------------------------
-
-There are two sets of directories that can hold Ansible playbooks and roles in
-the project directory, :file:`playbooks/` and :file:`roles/` as well as
-:file:`ansible/playbooks/` and :file:`ansible/roles/`. They are functionally
-equivalent and you are free to use them as you see fit; common usage could be
-using the subdirectories in the :file:`ansible/` directory for playbooks and
-roles that are in production use in a given environment, and reserve the
-"plain" subdirectories for temporary and/or test code.
+Better way to share variables across inventories might be to create a "shared"
+inventory and specify the path to that inventory in the :file:`ansible.cfg`
+configuration file.
 
 
-The :file:`ansible/resources/` directory
-----------------------------------------
+Playbook and role directory
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:legacy: :file:`ansible/playbooks/roles/`
+:modern: :file:`ansible/views/<view>/playbooks/roles/`
+
+This is a set of directories that can hold Ansible playbooks and roles in the
+project directory which are not part of an Ansible Collection. Each
+"infrastructure view" has its own set of playbook and role directories, since
+they are tied to that particular view's Ansible inventory and resulting access
+control.
+
+
+Data for :ref:`debops.resources` role
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:legacy: :file:`ansible/resources/`
+:modern: :file:`ansible/views/<view>/resources/`
 
 This directory can be used to store various files which can be accessed by the
 :ref:`debops.resources` Ansible role to copy them over to the remote hosts.
 
 
-The :file:`ansible/secret/` directory
--------------------------------------
+Data store for :ref:`debops.secret` role
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:legacy: :file:`ansible/secret/`
+:modern: :file:`ansible/views/<view>/secret/`
 
 This directory is maintained by the :ref:`debops.secret` Ansible role. You can
 find there plaintext passwords, randomly generated by different roles, as well
@@ -167,8 +318,11 @@ Controller.
 
 .. _global_vars:
 
-The :file:`ansible/global-vars.yml` file
-----------------------------------------
+Global variables passed to Ansible
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:legacy: :file:`ansible/global-vars.yml`
+:modern: :file:`ansible/views/<view>/global-vars.yml`
 
 This is an optional YAML file, not created by default. If the :command:`debops`
 script detects this file, it will be provided to the
@@ -201,29 +355,11 @@ need to specify this file manually on the command line, for example:
 .. __: https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#variable-precedence-where-should-i-put-a-variable
 
 
-The :file:`debops/` directory
------------------------------
+DebOps configuration files
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This directory can contain a local copy of the DebOps monorepo, or a symlink to
-it, or even a :command:`git` submodule, scoped to a given environment. This can
-be useful to have a separate development environment where you work on the main
-DebOps roles, separate from the official DebOps monorepo used in production
-environments stored in other project directories.
-
-
-The :file:`ansible.cfg` file
-----------------------------
-
-This is a configuration file read by the :command:`ansible` and
-:command:`ansible-playbook` commands. It's automatically generated and updated
-by the :command:`debops` command to include the DebOps monorepo in various
-configuration variables, so Ansible can correctly find playbooks and roles
-provided by DebOps. You shouldn't modify it manually, it will be overwritten on
-the next execution.
-
-
-The :file:`.debops.cfg` file
-----------------------------
+:legacy: :file:`.debops.cfg`
+:modern: :file:`.debops/conf.d/`
 
 The :command:`debops` command is looking for this file for current directory to
 see if it's a project directory; if it's not found the execution is aborted to
@@ -234,10 +370,21 @@ as well as configuration which should be added to the automatically generated
 :file:`ansible.cfg` configuration file.
 
 
+Persistent environment variables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:both:   :file:`.env`
+:modern: :file:`.debops/environment`
+
+These files can contain environment variables which will be included in the
+runtime environment in various :command:`debops` subcommands.
+
+
 Overriding the ``site`` playbook
 --------------------------------
 
-:file:`debops/ansible/playbooks/site.yml` connects all debops roles.
+The :file:`debops/ansible/playbooks/site.yml` playbook located in the DebOps
+monorepo connects all debops roles.
 
 By creating a playbook named :file:`ansible/playbooks/site.yml` inside your
 project folder, you can override the debops version of :file:`site.yml`

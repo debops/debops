@@ -1,5 +1,5 @@
-.. Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2021 DebOps <https://debops.org/>
+.. Copyright (C) 2021-2023 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2021-2023 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 :command:`debops project init`
@@ -15,6 +15,19 @@ Options
 
 ``-h, --help``
   Display the help and usage information
+
+``--type <legacy|modern>``
+  Select the type of the project directory:
+
+  - ``legacy``: simple directory layout with a single Ansible inventory
+    (default)
+
+  - ``modern``: more complicated directory layout with multiple Ansible
+    inventories separated into "infrastructure views"
+
+``--default-view``
+  Specify the name of the "infrastructure view" used by default. If not
+  specified, "system" will be created automatically.
 
 ``--git``
   Initialize a :command:`git` repository in the project directory (planned)
@@ -51,6 +64,12 @@ Create a basic DebOps project directory:
 .. code-block:: shell
 
    debops project init ~/src/projects/myproject
+
+Create a project directory with multiple infrastructure views:
+
+.. code-block:: shell
+
+   debops project init --type modern ~/src/projects/myproject
 
 Create a project directory with EncFS encryption for secrets:
 
