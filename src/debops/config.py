@@ -216,14 +216,6 @@ class Configuration(object):
                 relative_file = os.path.relpath(unexpanduser(filename))
                 print(relative_file.replace(relative_root, '', 1))
 
-    def config_env(self, scope='local'):
-        if scope == 'local':
-            for key, value in self._env_vars.items():
-                print('{}={}'.format(key, value))
-        elif scope == 'full':
-            for key, value in os.environ.items():
-                print('{}={}'.format(key, value))
-
     def config_get(self, key, format='unix'):
         key_path = ['.']
         if key != '.':
