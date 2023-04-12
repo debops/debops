@@ -31,7 +31,7 @@ class ProjectDir(object):
         try:
             os.chdir(os.path.dirname(os.environ['ANSIBLE_CONFIG']))
             self.path = os.getcwd()
-        except KeyError:
+        except (KeyError, FileNotFoundError):
             try:
                 os.chdir(self.path)
             except FileNotFoundError:
