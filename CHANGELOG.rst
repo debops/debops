@@ -160,9 +160,6 @@ General
   correctly. After that re-run the :ref:`debops.pki` role on the host to
   re-create che realms.
 
-- Path of the Root CA directory on the Ansible Controller is quoted in the
-  :file:`pki-authority` script to prevent wrong directory creation.
-
 :ref:`debops.preseed` role
 ''''''''''''''''''''''''''
 
