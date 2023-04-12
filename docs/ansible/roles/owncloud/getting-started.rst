@@ -154,6 +154,7 @@ If the application complains under ``/settings/admin/overview`` then you might n
 
 .. code-block:: console
 
+   sudo -u www-data php --define apc.enable_cli=1 /srv/www/nextcloud/updater/updater.phar
    occ upgrade; occ db:add-missing-indice; occ db:add-missing-columns; occ db:convert-filecache-bigint; occ db:add-missing-primary-keys && occ maintenance:mode --off
 
 It also does not hurt to run that by default.
