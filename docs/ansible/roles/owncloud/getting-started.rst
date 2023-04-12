@@ -217,7 +217,6 @@ The following Ansible facts are available:
 .. code-block:: json
 
    {
-       "auto_security_updates_enabled": false,
        "datadirectory": "/var/www/owncloud/data",
        "enabled": true,
        "instanceid": "xxxxxxxxxxxx",
@@ -250,7 +249,6 @@ and only the following facts will be available in this case:
 .. code-block:: json
 
    {
-       "auto_security_updates_enabled": true,
        "enabled": true,
        "variant": "owncloud",
        "webserver": "nginx"
