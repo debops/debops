@@ -34,6 +34,7 @@ Sections:
     exec     run Ansible commands directly against hosts
     run      run Ansible playbook(s) against hosts
     check    run Ansible playbook(s) in check mode
+    env      run shell commands in project environment
     config   display DebOps configuration options''')
 
         parser.add_argument('section', help='Section to run')
@@ -194,13 +195,26 @@ Commands:
                             help=argparse.SUPPRESS, action='append_const')
         self.args = parser.parse_args(self.args[2:])
 
+    def do_env(self):
+        parser = argparse.ArgumentParser(
+                parents=[self.global_parser],
+                usage='debops env [<args>] [command_args]',
+                description='run shell commands in project environment')
+        parser.add_argument('--scope', type=str, nargs='?',
+                            choices=['full', 'local'],
+                            default='local',
+                            help='specify which environment '
+                                 'variables to show (default: %(default)s)')
+        parser.add_argument('command_args', type=str, nargs=argparse.REMAINDER,
+                            help='command and arguments to execute')
+        self.args = parser.parse_args(self.args[2:])
+
     def do_config(self):
         parser = argparse.ArgumentParser(
                 description='manage DebOps configuration state',
                 usage='''debops config <command> [<args>]
 
 Commands:
-    env     display environment variables set at runtime
     get     return value of a specific configuration option
     list    list configuration files parsed by DebOps''')
         parser.add_argument('command', help='config command to run')
@@ -219,18 +233,6 @@ Commands:
         parser.add_argument('project_dir', type=str, nargs='?',
                             default=os.getcwd(),
                             help='path to the project directory')
-        self.args = parser.parse_args(self.args[3:])
-
-    def do_config_env(self):
-        parser = argparse.ArgumentParser(
-                parents=[self.global_parser],
-                usage='debops config env [<args>]',
-                description='display environment variables set at runtime')
-        parser.add_argument('--scope', type=str, nargs='?',
-                            choices=['full', 'local'],
-                            default='local',
-                            help='specify which environment '
-                                 'variables to show (default: %(default)s)')
         self.args = parser.parse_args(self.args[3:])
 
     def do_config_get(self):

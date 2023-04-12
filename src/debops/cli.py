@@ -7,6 +7,7 @@ from .subcommands import Subcommands
 from .projectdir import ProjectDir
 from .ansiblerunner import AnsibleRunner
 from .ansibleplaybookrunner import AnsiblePlaybookRunner
+from .envrunner import EnvRunner
 import sys
 
 
@@ -35,11 +36,12 @@ class Interpreter(object):
         elif self.parsed_args.section in ['run', 'check']:
             self.do_run(self.parsed_args.args)
 
+        elif self.parsed_args.section == 'env':
+            self.do_env(self.parsed_args.args)
+
         elif self.parsed_args.section == 'config':
             if self.parsed_args.command == 'list':
                 self.do_config_list(self.parsed_args.args)
-            elif self.parsed_args.command == 'env':
-                self.do_config_env(self.parsed_args.args)
             elif self.parsed_args.command == 'get':
                 self.do_config_get(self.parsed_args.args)
 
@@ -117,6 +119,19 @@ class Interpreter(object):
         else:
             sys.exit(runner.execute())
 
+    def do_env(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config)
+        except (IsADirectoryError, NotADirectoryError) as errmsg:
+            print('Error:', errmsg)
+            sys.exit(1)
+
+        runner = EnvRunner(project, **vars(args))
+        if args.command_args:
+            sys.exit(runner.execute())
+        else:
+            sys.exit(runner.show_env(scope=args.scope))
+
     def do_config_list(self, args):
         try:
             project = ProjectDir(path=args.project_dir, config=self.config)
@@ -126,16 +141,6 @@ class Interpreter(object):
             pass
 
         self.config.config_list()
-
-    def do_config_env(self, args):
-        try:
-            project = ProjectDir(path=args.project_dir, config=self.config)
-        except (IsADirectoryError, NotADirectoryError) as errmsg:
-            # This is not a project directory, so no project-dependent
-            # configuration is included
-            pass
-
-        self.config.config_env(scope=args.scope)
 
     def do_config_get(self, args):
         try:

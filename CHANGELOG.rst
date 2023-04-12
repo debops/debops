@@ -76,6 +76,12 @@ General
   multiple subcommands to allow easier configuration introspection. See
   :ref:`it's documentation page <cmd_debops-config>` for more details.
 
+- The :command:`debops env` command can be used to inspect the runtime
+  environment variables present when other DebOps commands are used, as well as
+  execute external commands inside of that runtime environment. This is handy
+  for using various :command:`ansible-*` commands within DebOps project
+  directories.
+
 - DebOps monorepo now includes configuration for the `pre-commit`__ hook to
   verify changes before they are committed to the repository. Multiple checks
   are performed, notably `codespell`__ is used to find spelling mistakes. More
