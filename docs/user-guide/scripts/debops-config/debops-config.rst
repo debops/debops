@@ -23,6 +23,11 @@ Options
   considered human-friendly. The JSON format can be used to enable easy parsing
   by programs.
 
+``-k, --keys``
+  Instead of returning the entire configuration tree, return a list of
+  configuration keys present at a given configuration level. Empty output or
+  list means that there are no more subkeys present at a given level.
+
 ``key``
   Name of the configuration option key to return. Subkeys are specified using
   dot (``.``) as a separator. If not specified, entire configuration tree will
@@ -37,6 +42,12 @@ Print all configuration options to standard output:
 .. code-block:: shell
 
    debops config get
+
+List known infrastructure views in a given project directory:
+
+.. code-block:: shell
+
+   debops config get -k views
 
 Display the "system view" configuration options in TOML format:
 
