@@ -252,6 +252,10 @@ Commands:
                             choices=['json', 'toml', 'unix', 'yaml'],
                             default='unix',
                             help='output format (default: %(default)s)')
+        parser.add_argument('-k', '--keys', default=False,
+                            help='list configuration keys '
+                                 'at the specified level',
+                            action='store_true')
         parser.add_argument('key', type=str,
                             nargs=argparse.REMAINDER,
                             help='name of the '

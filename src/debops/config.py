@@ -216,7 +216,7 @@ class Configuration(object):
                 relative_file = os.path.relpath(unexpanduser(filename))
                 print(relative_file.replace(relative_root, '', 1))
 
-    def config_get(self, key, format='unix'):
+    def config_get(self, key, format='unix', keys=False):
         key_path = ['.']
         if key != '.':
             key_path = list(filter(None, key.split('.')))
@@ -229,6 +229,17 @@ class Configuration(object):
                     _config = _config[element]
                 except KeyError:
                     key_found = False
+
+        if key_found and keys:
+            try:
+                _config = list(_config.keys())
+            except AttributeError:
+                # The value is present, but we are interested in just the keys,
+                # so let's return an empty list instead of a dictionary to
+                # preserve the output type. This also causes the return code to
+                # be 0 instead of 1 so that the process knows that there was no
+                # error.
+                _config = []
 
         if key_found:
             if isinstance(_config, dict):

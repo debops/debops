@@ -152,6 +152,7 @@ class Interpreter(object):
 
         if args.key:
             for option_name in args.key:
-                self.config.config_get(option_name, format=args.format)
+                self.config.config_get(option_name, format=args.format,
+                                       keys=args.keys)
         else:
-            self.config.config_get('.', format=args.format)
+            self.config.config_get('.', format=args.format, keys=args.keys)
