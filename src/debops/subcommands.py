@@ -67,6 +67,7 @@ Sections:
 
 Commands:
     init    initialize new project directory
+    mkview  create a new infrastructure view
     refresh refresh existing project directory
     unlock  decrypt secrets in project directory
     lock    encrypt secrets in project directory
@@ -140,6 +141,15 @@ Commands:
         parser.add_argument('project_dir', type=str, nargs='?',
                             default=os.getcwd(),
                             help='path to the project directory')
+        self.args = parser.parse_args(self.args[3:])
+
+    def do_project_mkview(self):
+        parser = argparse.ArgumentParser(
+                parents=[self.global_parser],
+                description='create new infrastructure view',
+                usage='debops project mkview [<args>] <view>')
+        parser.add_argument('view', type=str, nargs='?',
+                            help='name of the new infrastructure view')
         self.args = parser.parse_args(self.args[3:])
 
     def do_exec(self):

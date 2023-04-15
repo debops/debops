@@ -80,6 +80,48 @@ Create a project directory with EncFS encryption for secrets:
                        ~/src/projects/example.org
 
 
+:command:`debops project mkview`
+--------------------------------
+
+This command can be used in an existing project directory to create a new
+"infrastructure view", which contains:
+
+- separate :file:`ansible.cfg` configuration file
+
+- separate Ansible inventory
+
+- separate :file:`secret/` directory for the :ref:`debops.secret` role
+
+- separate :file:`resources/` directory for the :ref:`debops.resources` role
+
+- its own set of Ansible playbooks and roles
+
+Each view has its own configuration entry in the DebOps configuration tree.
+
+Options
+~~~~~~~
+
+``-h, --help``
+  Display the help and usage information
+
+``--project-dir <project_dir>``
+  Path to the project directory to work on. If it's not specified, the script
+  will use the current directory.
+
+``<view>``
+  Name of the view to create. It will be used in the file system as well as in
+  the configuration tree.
+
+Examples
+~~~~~~~~
+
+Create a basic DebOps project directory:
+
+.. code-block:: shell
+
+   debops project mkview deployment
+
+
 :command:`debops project refresh`
 ---------------------------------
 

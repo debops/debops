@@ -359,6 +359,68 @@ class ProjectDir(object):
         elif self.project_type == 'legacy':
             self._create_legacy_project(self.path)
 
+    def mkview(self, view):
+        if self.project_type == 'modern':
+            if view:
+                inventory = AnsibleInventory(self, view, **self.kwargs)
+                inventory.create()
+
+                default_view_yml = jinja2.Template(
+                        pkgutil.get_data('debops',
+                                         os.path.join('_data',
+                                                      'templates',
+                                                      'projectdir',
+                                                      'modern',
+                                                      'view.yml.j2'))
+                        .decode('utf-8'), trim_blocks=True)
+
+                default_inventory_keyring = jinja2.Template(
+                        pkgutil.get_data('debops',
+                                         os.path.join('_data',
+                                                      'templates',
+                                                      'projectdir',
+                                                      'modern',
+                                                      'inventory',
+                                                      'group_vars',
+                                                      'all',
+                                                      'keyring.yml.j2'))
+                        .decode('utf-8'), trim_blocks=True)
+
+                # Create .debops/conf.d/view-<name>.yml
+                self._write_file(os.path.join(self.path, '.debops', 'conf.d',
+                                              'view-' + view + '.yml'),
+                                 default_view_yml.render(env=os.environ,
+                                                         view_name=view)
+                                 + '\n')
+
+                # Create view/inventory/group_vars/all/keyring.yml
+                self._write_file(os.path.join(self.path, 'ansible', 'views',
+                                              view, 'inventory',
+                                              'group_vars', 'all', 'keyring.yml'),
+                                 default_inventory_keyring.render()
+                                 + '\n')
+
+                self.config.merge(os.path.join(self.path, '.debops', 'conf.d'))
+
+                self.ansible_cfg = AnsibleConfig(
+                        os.path.join(self.path, 'ansible', 'views',
+                                     view, 'ansible.cfg'),
+                        project_type=self.project_type,
+                        view=view)
+                self.ansible_cfg.load_config()
+                self.ansible_cfg.merge_config(
+                        self.config.raw['views'][view]['ansible'])
+                self.ansible_cfg.write_config()
+                print('Created', view, 'view in DebOps project', self.name)
+
+            else:
+                raise ValueError('You must specify name of the view '
+                                 'as an argument')
+
+        else:
+            raise NotADirectoryError('This functionality only works in '
+                                     '"modern" DebOps project directory')
+
     def refresh(self):
         debops_cfg = {}
         if self.project_type == 'legacy':
