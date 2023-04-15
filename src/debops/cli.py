@@ -1,5 +1,5 @@
-# Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2020 DebOps <https://debops.org/>
+# Copyright (C) 2020-2023 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .config import Configuration
@@ -29,6 +29,8 @@ class Interpreter(object):
                 self.do_project_unlock(self.parsed_args.args)
             elif self.parsed_args.command == 'status':
                 self.do_project_status(self.parsed_args.args)
+            elif self.parsed_args.command == 'mkview':
+                self.do_project_mkview(self.parsed_args.args)
 
         elif self.parsed_args.section == 'exec':
             self.do_exec(self.parsed_args.args)
@@ -90,6 +92,14 @@ class Interpreter(object):
             sys.exit(1)
 
         project.status()
+
+    def do_project_mkview(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config)
+            project.mkview(view=args.view)
+        except (IsADirectoryError, NotADirectoryError, ValueError) as errmsg:
+            print('Error:', errmsg)
+            sys.exit(1)
 
     def do_exec(self, args):
         try:

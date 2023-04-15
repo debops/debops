@@ -125,7 +125,9 @@ class AnsibleInventory(object):
         try:
             os.makedirs(self.root_path)
         except FileExistsError:
-            pass
+            raise IsADirectoryError("Cannot create view in "
+                                    + self.root_path + ", directory "
+                                    "already exists")
 
         skel_dirs = (
             os.path.join('inventory', 'group_vars', 'all'),
