@@ -154,19 +154,8 @@ class ProjectDir(object):
         self.project_type = 'modern'
         default_view = self.kwargs.get('default_view', 'system')
 
-        skel_dirs = (
-            os.path.join(path, '.debops', 'conf.d'),
-            os.path.join(path, 'ansible', 'collections',
-                         'ansible_collections'),
-            os.path.join(path, 'ansible', 'keyring'),
-            os.path.join(path, 'ansible', 'overrides', 'files'),
-            os.path.join(path, 'ansible', 'overrides', 'tasks'),
-            os.path.join(path, 'ansible', 'overrides', 'templates'),
-        )
-
-        for skel_dir in skel_dirs:
-            if not os.path.isdir(skel_dir):
-                os.makedirs(skel_dir)
+        # Create modern project directory structure
+        self.createdirs(path)
 
         inventory = AnsibleInventory(self, default_view, **self.kwargs)
         inventory.create()
@@ -367,6 +356,21 @@ class ProjectDir(object):
         self.ansible_cfg.write_config()
         print('Created new DebOps project in', path)
 
+    def createdirs(self, path):
+        skel_dirs = (
+            os.path.join(path, '.debops', 'conf.d'),
+            os.path.join(path, 'ansible', 'collections',
+                         'ansible_collections'),
+            os.path.join(path, 'ansible', 'keyring'),
+            os.path.join(path, 'ansible', 'overrides', 'files'),
+            os.path.join(path, 'ansible', 'overrides', 'tasks'),
+            os.path.join(path, 'ansible', 'overrides', 'templates'),
+        )
+
+        for skel_dir in skel_dirs:
+            if not os.path.isdir(skel_dir):
+                os.makedirs(skel_dir)
+
     def create(self):
         # First let's make sure that we are not inside another project
         self._modern_config_path = self._find_up_dir(self.path,
@@ -446,14 +450,31 @@ class ProjectDir(object):
                                      '"modern" DebOps project directory')
 
     def refresh(self):
-        debops_cfg = {}
-        if self.project_type == 'legacy':
-            debops_cfg = (self.config.raw['views']['system']['ansible'])
-        self.ansible_cfg = AnsibleConfig(
-                os.path.join(self.path, 'ansible.cfg'),
-                project_type=self.project_type)
-        self.ansible_cfg.merge_config(debops_cfg)
-        self.ansible_cfg.write_config()
+        if self.project_type == 'modern':
+            self.createdirs(self.path)
+
+        project_views = list(self.config.raw['views'].keys())
+        for view in project_views:
+            inventory = AnsibleInventory(self, view, **self.kwargs)
+            inventory.createdirs()
+
+            if self.project_type == 'modern':
+                self.ansible_cfg = AnsibleConfig(
+                        os.path.join(self.path, 'ansible', 'views',
+                                     view, 'ansible.cfg'),
+                        project_type=self.project_type,
+                        view=view)
+                self.ansible_cfg.load_config()
+                self.ansible_cfg.merge_config(
+                        self.config.raw['views'][view]['ansible'])
+                self.ansible_cfg.write_config()
+            elif self.project_type == 'legacy':
+                debops_cfg = (self.config.raw['views']['system']['ansible'])
+                self.ansible_cfg = AnsibleConfig(
+                        os.path.join(self.path, 'ansible.cfg'),
+                        project_type=self.project_type)
+                self.ansible_cfg.merge_config(debops_cfg)
+                self.ansible_cfg.write_config()
         print('Refreshed DebOps project in', self.path)
 
     def unlock(self):
