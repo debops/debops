@@ -88,10 +88,34 @@ class ProjectDir(object):
 
         self.config.merge(os.path.join(self.path, '.debops', 'conf.d'))
 
+        # Set the default view
         try:
             self.view = self.config.raw['project']['default_view']
         except KeyError:
             self.view = 'system'
+
+        # We might be in a project subdirectory, perhaps in a specific view
+        if self.path != os.getcwd():
+            current_dir = os.getcwd()
+            view_dir = None
+
+            while current_dir != '/' and not view_dir:
+                if os.path.dirname(current_dir).endswith('/ansible/views'):
+                    view_dir = current_dir
+                else:
+                    current_dir = os.path.dirname(current_dir)
+
+            # We are in a specific view directory, let's switch to that
+            if view_dir:
+                self.view = os.path.basename(view_dir)
+
+        # Expose current view in configuration tree
+        view_data = {
+            'project': {
+                'view': self.view
+                }
+            }
+        self.config.merge(view_data)
 
         if self.project_type == 'legacy':
             self.ansible_cfg = AnsibleConfig(
