@@ -62,15 +62,16 @@ class AnsibleConfig(object):
                     'ansible/plugins/' + plugin
                 ]
 
-        template = jinja2.Template(
-                pkgutil.get_data('debops',
-                                 os.path.join('_data',
-                                              'templates',
-                                              'projectdir',
-                                              self.project_type,
-                                              'ansible.cfg.j2'))
-                .decode('utf-8'), trim_blocks=True)
-        self.config.read_string(template.render(template_vars))
+        if project_type == 'legacy':
+            template = jinja2.Template(
+                    pkgutil.get_data('debops',
+                                     os.path.join('_data',
+                                                  'templates',
+                                                  'projectdir',
+                                                  'legacy',
+                                                  'ansible.cfg.j2'))
+                    .decode('utf-8'), trim_blocks=True)
+            self.config.read_string(template.render(template_vars))
 
     def get_option(self, option, section='defaults'):
         return self.config.get(section, option)
