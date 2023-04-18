@@ -1072,7 +1072,7 @@ convert_der_to_pem () {
 
     if [ -n "${input_file}" ] && [ -r "${input_file}" ] ; then
         if ! openssl x509 -inform PEM -in "${input_file}" -noout 2>/dev/null ; then
-            openssl x509 -in "${input_file}" -outform PEM -out "${input_file}.tmp"
+            openssl x509 -inform DER -in "${input_file}" -outform PEM -out "${input_file}.tmp"
             mv "${input_file}.tmp" "${input_file}"
         fi
     fi
