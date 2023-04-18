@@ -130,7 +130,13 @@ class AnsiblePlaybookRunner(object):
         known_collections = {}
         playbook_paths = []
 
-        collection_paths = project.ansible_cfg.get_option('collections_paths')
+        try:
+            collection_paths = project.ansible_cfg.get_option(
+                    'collections_paths')
+        except configparser.NoOptionError:
+            collection_paths = project.ansible_cfg.get_option(
+                    'collections_path')
+
         for directory in collection_paths.split(':'):
             directory = os.path.expanduser(directory)
 
