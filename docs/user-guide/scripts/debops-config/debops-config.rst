@@ -128,3 +128,11 @@ format is detected via the file extension (respectively :file:`*.json`,
 :file:`*.toml`, :file:`*.yml` or :file:`*.yaml`). The configuration files are
 interpreted in alphabetical order and their contents are merged together
 recursively.
+
+Values of configuration options can contain environment variables specified as
+``$VARIABLE`` or ``${VARIABLE}`` strings. These variables will be expanded at
+runtime and can be used to augment the final configuration. Variables
+themselves can be defined in the :file:`<project directory>/.debops/environment`
+or the :file:`<project directory>/.env` files and they will be automatically
+incorporated into runtime environment. Users can use the :ref:`cmd_debops-env`
+command to inspect the runtime environment variables.
