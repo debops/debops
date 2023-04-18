@@ -140,6 +140,24 @@ class ProjectDir(object):
         self.ansible_cfg.load_config()
         self.config.set_env('ANSIBLE_CONFIG', self.ansible_cfg.path)
 
+        project_views = list(self.config.raw['views'].keys())
+        for view in project_views:
+            inventory = AnsibleInventory(self, view, **self.kwargs)
+
+            if inventory.encrypted:
+                inventory_data = {
+                    'views': {
+                        view: {
+                          'encryption': {
+                            'enabled': inventory.encrypted,
+                            'mounted': inventory.encfs_mounted,
+                            'type': str(inventory.crypt_method or 'none')
+                          }
+                        }
+                      }
+                    }
+                self.config.merge(inventory_data)
+
     def _find_up_dir(self, path, filenames):
         path = os.path.abspath(path)
         last_path = None
