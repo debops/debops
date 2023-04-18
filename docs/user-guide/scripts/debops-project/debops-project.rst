@@ -108,6 +108,20 @@ Options
   Path to the project directory to work on. If it's not specified, the script
   will use the current directory.
 
+``--encrypt <encfs|git-crypt>``
+  Prepare the new infrastructure view to host encrypted :file:`<view>/secret/`
+  subdirectory, used to store passwords, encryption keys and other confidential
+  information. See the :ref:`debops.secret` Ansible role for more details.
+
+  You need to specify either ``encfs`` or ``git-crypt`` (planned) to select the
+  encryption method. If encryption is enabled, you need to specify the list of
+  GPG recipients as well, using the ``--keys`` option.
+
+``--keys <recipient>[,recipient]``
+  A list of GPG recipients (e-mail addresses or key IDs) which will be allowed
+  to unlock the :file:`<view>/secret/` directory encrypted with EncFS or
+  git-crypt. Separate multiple list entries by commas.
+
 ``<new_view>``
   Name of the view to create. It will be used in the file system as well as in
   the configuration tree.
@@ -115,11 +129,19 @@ Options
 Examples
 ~~~~~~~~
 
-Create a basic DebOps project directory:
+Create a new infrastructure view in the DebOps project directory:
 
 .. code-block:: shell
 
    debops project mkview deployment
+
+Create a new infrastructure view with encrypted secrets:
+
+.. code-block:: shell
+
+   debops project mkview --encrypt encfs \
+                         --keys admin@example.org,otheradmin@example.org \
+                         deployment
 
 
 :command:`debops project refresh`
