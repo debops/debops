@@ -174,6 +174,16 @@ General
   correctly. The default keymap is changed to ``us`` and the option is no
   longer based on the system language which might be incorrect in this case.
 
+Removed
+~~~~~~~
+
+General
+'''''''
+
+- The :command:`debops project status` subcommand has been removed. Its
+  functionality is now incorporated within the DebOps configuration tree
+  accessible using the :ref:`cmd_debops-config` command.
+
 
 `debops v3.0.4`_ - 2023-03-09
 -----------------------------
