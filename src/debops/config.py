@@ -2,6 +2,7 @@
 # Copyright (C) 2020-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from .constants import DEBOPS_PACKAGE_DATA
 from .utils import unexpanduser
 import os
 import sys
@@ -26,6 +27,11 @@ class Configuration(object):
 
         self._env_files = []
         self._env_vars = {}
+
+        # Set default environment variables at runtime
+        self.set_env('DEBOPS_ANSIBLE_COLLECTIONS_PATH',
+                     unexpanduser(os.path.join(DEBOPS_PACKAGE_DATA, 'ansible',
+                                               'collections')))
 
         # Include variables from the system-wide configuration
         self.merge_env(os.path.join('/etc', 'default', 'debops'))
