@@ -216,20 +216,3 @@ Options
 
 ``<project_dir>``
   Path to the project directory to lock.
-
-
-:command:`debops project status`
---------------------------------
-
-This command displays various information about a given project directory known
-to DebOps, for example the type of the project directory, state of encrypted
-:file:`ansible/secret/` directory, and so on.
-
-Options
-~~~~~~~
-
-``-h, --help``
-  Display the help and usage information
-
-``<project_dir>``
-  Path to the project directory to inspect.

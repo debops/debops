@@ -761,6 +761,10 @@ General
 
   .. __: https://blog.google/products/chrome/get-know-new-topics-api-privacy-sandbox/
 
+- The :command:`debops project status` subcommand has been removed. Its
+  functionality is now incorporated within the DebOps configuration tree
+  accessible using the :ref:`cmd_debops-config` command.
+
 :ref:`debops.apt_install` role
 ''''''''''''''''''''''''''''''
 

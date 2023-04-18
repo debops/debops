@@ -16,5 +16,3 @@ Synopsis
 ``debops project unlock`` [-h|--help] [-V|--view <view>] [<project_dir>]
 
 ``debops project lock`` [-h|--help] [-V|--view <view>] [<project_dir>]
-
-``debops project status`` [-h|--help] [<project_dir>]

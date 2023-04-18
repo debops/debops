@@ -512,22 +512,3 @@ class ProjectDir(object):
     def lock(self):
         inventory = AnsibleInventory(self, self.view)
         inventory.lock()
-
-    def status(self):
-        self.ansible_cfg = AnsibleConfig(
-                os.path.join(self.path, 'ansible.cfg'),
-                project_type=self.project_type)
-        self.ansible_cfg.load_config()
-        collections = self.ansible_cfg.get_option(
-                'collections_paths')
-        inventory = AnsibleInventory(self, self.view)
-        print('Project type:', self.project_type)
-        print('Project root:', self.path)
-        if inventory.encrypted:
-            print('Inventory secrets are encrypted using ' + inventory.crypt_method)
-            if inventory.crypt_method == 'encfs':
-                if inventory.encfs_mounted:
-                    print('Secret directory is mounted')
-        print('Ansible Collection paths:')
-        for path in collections.strip('"').split(':'):
-            print('   ', path)

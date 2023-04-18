@@ -27,8 +27,6 @@ class Interpreter(object):
                 self.do_project_lock(self.parsed_args.args)
             elif self.parsed_args.command == 'unlock':
                 self.do_project_unlock(self.parsed_args.args)
-            elif self.parsed_args.command == 'status':
-                self.do_project_status(self.parsed_args.args)
             elif self.parsed_args.command == 'mkview':
                 self.do_project_mkview(self.parsed_args.args)
 
@@ -85,15 +83,6 @@ class Interpreter(object):
                 PermissionError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)
-
-    def do_project_status(self, args):
-        try:
-            project = ProjectDir(path=args.project_dir, config=self.config)
-        except (IsADirectoryError, NotADirectoryError) as errmsg:
-            print('Error:', errmsg)
-            sys.exit(1)
-
-        project.status()
 
     def do_project_mkview(self, args):
         try:
