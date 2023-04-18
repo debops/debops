@@ -54,6 +54,16 @@ class Configuration(object):
         for config_dir in self._config_dirs:
             self.merge(config_dir)
 
+    def _expand_env_vars(self, data):
+        if isinstance(data, str):
+            return os.path.expandvars(data)
+        elif isinstance(data, dict):
+            return {k: self._expand_env_vars(v) for k, v in data.items()}
+        elif isinstance(data, list):
+            return [self._expand_env_vars(v) for v in data]
+        else:
+            return data
+
     def _merge_dict(self, d1, d2):
         """
         Modifies d1 in-place to contain values from d2. If any value
@@ -151,17 +161,20 @@ class Configuration(object):
             self._config_files.append(path)
             with open(path, 'r') as fp:
                 data = toml.loads(fp.read())
+                data = self._expand_env_vars(data)
                 return data
         elif path.endswith('.json'):
             self._config_files.append(path)
             with open(path, 'r') as fp:
                 data = json.loads(fp.read())
+                data = self._expand_env_vars(data)
                 return data
         elif (path.endswith('.yaml') or path.endswith('.yml')):
             self._config_files.append(path)
             with open(path, 'r') as fp:
                 try:
                     data = yaml.safe_load(fp.read())
+                    data = self._expand_env_vars(data)
                     return data
                 except yaml.YAMLError as e:
                     print('Error in configuration file:', path + ':\n', e,
