@@ -19,7 +19,7 @@ class EnvRunner(object):
         self.kwargs = kwargs
 
         self.project = project
-        self.inventory = AnsibleInventory(project)
+        self.inventory = AnsibleInventory(project, name=project.view)
 
         try:
             self._inventory_paths = (

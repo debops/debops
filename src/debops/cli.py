@@ -68,7 +68,8 @@ class Interpreter(object):
 
     def do_project_lock(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config)
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 view=args.view)
             project.lock()
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError) as errmsg:
@@ -77,7 +78,8 @@ class Interpreter(object):
 
     def do_project_unlock(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config)
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 view=args.view)
             project.unlock()
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError) as errmsg:
@@ -95,15 +97,17 @@ class Interpreter(object):
 
     def do_project_mkview(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config)
-            project.mkview(view=args.view)
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 **vars(args))
+            project.mkview(view=args.new_view)
         except (IsADirectoryError, NotADirectoryError, ValueError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)
 
     def do_exec(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config)
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 view=args.view)
         except (IsADirectoryError, NotADirectoryError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)
@@ -117,7 +121,8 @@ class Interpreter(object):
 
     def do_run(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config)
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 view=args.view)
         except (IsADirectoryError, NotADirectoryError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)
@@ -131,7 +136,8 @@ class Interpreter(object):
 
     def do_env(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config)
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 view=args.view)
         except (IsADirectoryError, NotADirectoryError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)

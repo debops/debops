@@ -27,6 +27,12 @@ Options
   Path to the project directory to work on. If it's not specified, the script
   will use the current directory.
 
+``-V <view>, --view <view>``
+  Specify the name of the "infrastructure view" to use for executing commands.
+  If not specified, the default view will be used automatically. Using this
+  option overrides the automatic view detection performed by DebOps based on
+  the current working directory.
+
 ``--scope full|local``
   Specify if only the variables defined by DebOps should be displayed
   (``local``, default), or all variables present in the runtime environment
@@ -58,6 +64,12 @@ Parse Ansible inventory and output its structure in a JSON format:
 .. code-block:: shell
 
    debops env ansible-inventory --list | jq .
+
+Parse Ansible inventory using non-default "infrastructure view":
+
+.. code-block:: shell
+
+   debops env -V deployment ansible-inventory --list
 
 List Ansible collections accessible in the DebOps project directory:
 

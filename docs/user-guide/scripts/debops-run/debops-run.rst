@@ -27,6 +27,12 @@ The options below need to be specified before any playbooks to take effect.
   Path to the project directory to work on. If it's not specified, the script
   will use the current directory.
 
+``-V <view>, --view <view>``
+  Specify the name of the "infrastructure view" to use for running Ansible
+  playbooks. If not specified, the default view will be used automatically.
+  Using this option overrides the automatic view detection performed by DebOps
+  based on the current working directory.
+
 ``-E, --bell``
   Emit an ASCII "bell" at the end of the :command:`ansible-playbook` command
   execution to notify the user. This might be useful during longer playbook
@@ -93,6 +99,14 @@ the playbook:
 .. code-block:: shell
 
    debops run --eval debops.debops/service/mariadb_server -l dbservers
+
+Run a playbook from a custom Ansible Collection in a specific "infrastructure
+view" meant to be used to deploy an application:
+
+.. code-block:: shell
+
+   debops run -V deployment company.collection/app/setup -l appservers
+
 
 :command:`debops check`
 -----------------------

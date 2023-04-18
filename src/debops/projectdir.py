@@ -17,7 +17,7 @@ import pathlib
 class ProjectDir(object):
 
     def __init__(self, path=os.getcwd(), project_type='legacy', create=False,
-                 config=None, *args, **kwargs):
+                 config=None, view=None, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
         self.config = config
@@ -108,6 +108,16 @@ class ProjectDir(object):
             # We are in a specific view directory, let's switch to that
             if view_dir:
                 self.view = os.path.basename(view_dir)
+
+        # User selected the view using command line arguments
+        if view:
+            if self.view != view:
+                if view in list(self.config.raw['views'].keys()):
+                    self.view = view
+                else:
+                    raise NotADirectoryError('The "' + view + '" view is not '
+                                             'present in the "' + self.name
+                                             + '" project')
 
         # Expose current view in configuration tree
         view_data = {
@@ -478,11 +488,11 @@ class ProjectDir(object):
         print('Refreshed DebOps project in', self.path)
 
     def unlock(self):
-        inventory = AnsibleInventory(self, self.name)
+        inventory = AnsibleInventory(self, self.view)
         inventory.unlock()
 
     def lock(self):
-        inventory = AnsibleInventory(self, self.name)
+        inventory = AnsibleInventory(self, self.view)
         inventory.lock()
 
     def status(self):
@@ -492,7 +502,7 @@ class ProjectDir(object):
         self.ansible_cfg.load_config()
         collections = self.ansible_cfg.get_option(
                 'collections_paths')
-        inventory = AnsibleInventory(self, self.name)
+        inventory = AnsibleInventory(self, self.view)
         print('Project type:', self.project_type)
         print('Project root:', self.path)
         if inventory.encrypted:

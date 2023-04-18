@@ -108,7 +108,7 @@ Options
   Path to the project directory to work on. If it's not specified, the script
   will use the current directory.
 
-``<view>``
+``<new_view>``
   Name of the view to create. It will be used in the file system as well as in
   the configuration tree.
 
@@ -162,6 +162,12 @@ Options
 ``-h, --help``
   Display the help and usage information
 
+``-V <view>, --view <view>``
+  Specify the name of the "infrastructure view" to unlock. If not specified,
+  the default view will be used automatically. Using this option overrides the
+  automatic view detection performed by DebOps based on the current working
+  directory.
+
 ``<project_dir>``
   Path to the project directory to unlock.
 
@@ -179,6 +185,12 @@ Options
 
 ``-h, --help``
   Display the help and usage information
+
+``-V <view>, --view <view>``
+  Specify the name of the "infrastructure view" to lock. If not specified, the
+  default view will be used automatically. Using this option overrides the
+  automatic view detection performed by DebOps based on the current working
+  directory.
 
 ``<project_dir>``
   Path to the project directory to lock.

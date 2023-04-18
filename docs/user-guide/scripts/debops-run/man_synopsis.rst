@@ -5,6 +5,6 @@
 Synopsis
 ========
 
-``debops run`` [-h|--help] [--project-dir <project_dir>] [-E|--bell] [--eval] [--] <[<namespace>.<collection>/]playbook> [playbook] ... [<ansible_args>]
+``debops run`` [-h|--help] [--project-dir <project_dir>] [-V|--view <view>] [-E|--bell] [--eval] [--] <[<namespace>.<collection>/]playbook> [playbook] ... [<ansible_args>]
 
-``debops check`` [-h|--help] [--project-dir <project_dir>] [-E|--bell] [--eval] [--] <[<namespace>.<collection>/]playbook> [playbook] ... [<ansible_args>]
+``debops check`` [-h|--help] [--project-dir <project_dir>] [-V|--view <view>] [-E|--bell] [--eval] [--] <[<namespace>.<collection>/]playbook> [playbook] ... [<ansible_args>]
