@@ -16,7 +16,7 @@ Options
 ``-h, --help``
   Display the help and usage information
 
-``--type <legacy|modern>``
+``-t <legacy|modern>``, ``--type <legacy|modern>``
   Select the type of the project directory:
 
   - ``legacy``: simple directory layout with a single Ansible inventory
@@ -25,7 +25,7 @@ Options
   - ``modern``: more complicated directory layout with multiple Ansible
     inventories separated into "infrastructure views"
 
-``--default-view``
+``-v <view>``, ``--default-view <view>``
   Specify the name of the "infrastructure view" used by default. If not
   specified, "system" will be created automatically.
 
