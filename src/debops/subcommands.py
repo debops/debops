@@ -120,6 +120,9 @@ Commands:
         parser = argparse.ArgumentParser(
                 description='encrypt secrets inside project directory',
                 usage='debops project lock [<args>] <project_dir>')
+        parser.add_argument('-V', '--view', type=str,
+                            help='select the infrastructure view '
+                                 'to lock')
         parser.add_argument('project_dir', type=str, nargs='?',
                             default=os.getcwd(),
                             help='path to the project directory')
@@ -129,6 +132,9 @@ Commands:
         parser = argparse.ArgumentParser(
                 description='decrypt secrets inside project directory',
                 usage='debops project unlock [<args>] <project_dir>')
+        parser.add_argument('-V', '--view', type=str,
+                            help='select the infrastructure view '
+                                 'to unlock')
         parser.add_argument('project_dir', type=str, nargs='?',
                             default=os.getcwd(),
                             help='path to the project directory')
@@ -147,8 +153,8 @@ Commands:
         parser = argparse.ArgumentParser(
                 parents=[self.global_parser],
                 description='create new infrastructure view',
-                usage='debops project mkview [<args>] <view>')
-        parser.add_argument('view', type=str, nargs='?',
+                usage='debops project mkview [<args>] <new_view>')
+        parser.add_argument('new_view', type=str, nargs='?',
                             help='name of the new infrastructure view')
         self.args = parser.parse_args(self.args[3:])
 
@@ -157,6 +163,9 @@ Commands:
                 parents=[self.global_parser],
                 usage='debops exec [<args>] [--] <[ansible_args]>',
                 description='run Ansible commands directly against hosts')
+        parser.add_argument('-V', '--view', type=str,
+                            help='select the infrastructure view '
+                                 'to use for the "ansible" command')
         parser.add_argument('-E', '--bell', default=False,
                             help='notify the user at the end '
                                  'of Ansible execution',
@@ -176,6 +185,9 @@ Commands:
                 usage='debops run [<args>] [--] <[<namespace>.<collection>/]'
                       'playbook> [playbook] ... [ansible_args]',
                 description='run Ansible playbook(s) against hosts')
+        parser.add_argument('-V', '--view', type=str,
+                            help='select the infrastructure view '
+                                 'to use for the "ansible-playbook" command')
         parser.add_argument('-E', '--bell', default=False,
                             help='notify the user at the end '
                                  'of Ansible execution',
@@ -195,6 +207,9 @@ Commands:
                 usage='debops check [<args>] [--] <[<namespace>.<collection>/]'
                       'playbook> [playbook] ... [ansible_args]',
                 description='run Ansible playbook(s) in check mode')
+        parser.add_argument('-V', '--view', type=str,
+                            help='select the infrastructure view '
+                                 'to use for the "ansible-playbook" command')
         parser.add_argument('-E', '--bell', default=False,
                             help='notify the user at the end '
                                  'of Ansible execution',
@@ -218,6 +233,9 @@ Commands:
                 parents=[self.global_parser],
                 usage='debops env [<args>] [command_args]',
                 description='run shell commands in project environment')
+        parser.add_argument('-V', '--view', type=str,
+                            help='select the infrastructure view '
+                                 'to use for the command')
         parser.add_argument('--scope', type=str, nargs='?',
                             choices=['full', 'local'],
                             default='local',

@@ -237,6 +237,15 @@ can be deployed on "production" hosts without requiring any changes in
 inventories. There might be more layers of inventories if needed, or
 a blue-green deployment scheme if desired.
 
+The :command:`debops` script tries to automatically detect which
+"infrastructure view" should be used - if the user has changed the current
+directory to one under :file:`ansible/views/<view>/`, that particular view will
+be used in various DebOps commands. Otherwise, the default view for a given
+project will be used automatically. Users can override which view should be
+used by specifying the ``-V <view>`` or ``--view <view>`` option in most of the
+script commands. This also works outside of the project directory, when used
+with the ``--project-dir <path>`` option. See the manual pages of different
+DebOps commands to learn more.
 
 Contents of the project directory
 ---------------------------------

@@ -9,12 +9,12 @@ Synopsis
 
 ``debops project init`` [-h|--help] [--type legacy|modern] [--default-view <view>] [--git|--no-git] [--encrypt encfs|git-crypt --keys <recipient>,[<recipient>]] <project_dir>
 
-``debops project mkview`` [-h|--help] [--project-dir <project_dir>] <view>
+``debops project mkview`` [-h|--help] [--project-dir <project_dir>] <new_view>
 
 ``debops project refresh`` [-h|--help] [<project_dir>]
 
-``debops project unlock`` [-h|--help] [<project_dir>]
+``debops project unlock`` [-h|--help] [-V|--view <view>] [<project_dir>]
 
-``debops project lock`` [-h|--help] [<project_dir>]
+``debops project lock`` [-h|--help] [-V|--view <view>] [<project_dir>]
 
 ``debops project status`` [-h|--help] [<project_dir>]
