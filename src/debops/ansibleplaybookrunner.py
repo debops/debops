@@ -117,12 +117,16 @@ class AnsiblePlaybookRunner(object):
     def _expand_playbook_paths(self, project):
         playbook_dirs = []
 
-        if os.path.exists(os.path.join(project.path, 'ansible', 'playbooks')):
-            playbook_dirs.append(os.path.join(
-                project.path, 'ansible', 'playbooks'))
+        playbooks_paths = [
+            os.path.join(project.path, 'ansible', 'views',
+                         project.view, 'playbooks'),
+            os.path.join(project.path, 'ansible', 'playbooks'),
+            os.path.join(project.path, 'playbooks')
+        ]
 
-        if os.path.exists(os.path.join(project.path, 'playbooks')):
-            playbook_dirs.append(os.path.join(project.path, 'playbooks'))
+        for path in playbooks_paths:
+            if os.path.exists(path) and os.path.isdir(path):
+                playbook_dirs.append(path)
 
         return playbook_dirs
 
