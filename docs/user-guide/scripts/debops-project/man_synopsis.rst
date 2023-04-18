@@ -9,7 +9,7 @@ Synopsis
 
 ``debops project init`` [-h|--help] [--type legacy|modern] [--default-view <view>] [--git|--no-git] [--encrypt encfs|git-crypt --keys <recipient>,[<recipient>]] <project_dir>
 
-``debops project mkview`` [-h|--help] [--project-dir <project_dir>] <new_view>
+``debops project mkview`` [-h|--help] [--project-dir <project_dir>] [--encrypt encfs|git-crypt --keys <recipient>,[<recipient>]] <new_view>
 
 ``debops project refresh`` [-h|--help] [<project_dir>]
 

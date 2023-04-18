@@ -154,6 +154,12 @@ Commands:
                 parents=[self.global_parser],
                 description='create new infrastructure view',
                 usage='debops project mkview [<args>] <new_view>')
+        parser.add_argument('--encrypt', type=str, nargs='?',
+                            choices=['encfs', 'git-crypt'],
+                            help='enable encrypted secrets')
+        parser.add_argument('--keys', type=str,
+                            help='list of GPG recipients with secret access, '
+                                 'delimited by commas')
         parser.add_argument('new_view', type=str, nargs='?',
                             help='name of the new infrastructure view')
         self.args = parser.parse_args(self.args[3:])
