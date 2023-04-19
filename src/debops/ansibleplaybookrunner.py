@@ -130,6 +130,17 @@ class AnsiblePlaybookRunner(object):
 
         return playbook_dirs
 
+    def _walklevel(self, some_dir, level=1):
+        '''A custom os.walk function which can limit recursion to a specific level
+           under a given subdirectory'''
+        some_dir = some_dir.rstrip(os.path.sep)
+        num_sep = some_dir.count(os.path.sep)
+        for root, dirs, files in os.walk(some_dir):
+            yield root, dirs, files
+            num_sep_this = root.count(os.path.sep)
+            if num_sep + level <= num_sep_this:
+                del dirs[:]
+
     def _find_collections(self, project):
         known_collections = {}
         playbook_paths = []
@@ -147,11 +158,35 @@ class AnsiblePlaybookRunner(object):
             # If we are running outside of the project directory, relative
             # paths need to be fixed to absolute paths, otherwise the correct
             # directories won't be found
-            if (not os.path.isdir(directory)
-                    and os.path.isdir(os.path.join(project.path, directory))):
-                directory = os.path.join(project.path, directory)
+            if not os.path.isdir(directory):
 
-            for root, dirs, files in os.walk(os.path.expanduser(directory)):
+                # Path might be relative to the 'ansible.cfg' file in an
+                # infrastructure view
+                if os.path.isdir(os.path.join(project.path, 'ansible',
+                                              'views', project.view,
+                                              directory)):
+                    directory = os.path.join(project.path, 'ansible',
+                                             'views', project.view,
+                                             directory)
+
+                # Path might be relative to the 'ansible.cfg' file in the root
+                # of the project directory
+                elif os.path.isdir(os.path.join(project.path, directory)):
+                    directory = os.path.join(project.path, directory)
+
+                # Normalize path after resolution
+                directory = os.path.realpath(directory)
+
+            # We are looking for the 'playbooks/' subdirectory in Ansible
+            # Collections, which have specific directory structure. We want to
+            # avoid catching subdirectories further down the path, for example
+            # in '<namespace>/<collection>/tests/integration/playbooks/' since
+            # they are not a part of the actual collection Ansible cares about.
+            #
+            # The 'playbooks/' directory we want to find will be 4 levels deep:
+            # ansible_collections/<namespace>/<collection>/playbooks/
+            for root, dirs, files in list(
+                    self._walklevel(os.path.expanduser(directory), 4)):
                 if 'playbooks' in dirs:
                     playbook_paths.append(os.path.join(root, 'playbooks'))
 
