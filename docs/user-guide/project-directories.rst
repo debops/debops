@@ -165,7 +165,8 @@ something like this:
    ~/src/projects/project2/
    ├── ansible/
    │   ├── collections/
-   │   │   └── ansible_collections/
+   │   │   ├── ansible_collections/
+   │   │   └── requirements.yml
    │   ├── keyring/
    │   ├── overrides/
    │   │   ├── files/
@@ -274,6 +275,38 @@ You can use the :command:`debops project refresh` command to update this file
 or recreate it after the project directory is cloned from a :command:`git`
 repository. Any changes in this file made directly will be lost, so it's best
 to save them in DebOps configuration files after testing them.
+
+
+Ansible Collection requirements
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:modern: :file:`ansible/collections/requirements.yml`
+
+This file contains a `list of Ansible Collections`__ which are required by
+DebOps or other parts of a given project. It can be edited and committed to
+version control.
+
+.. __: https://docs.ansible.com/ansible/latest/galaxy/user_guide.html#install-multiple-collections-with-a-requirements-file
+
+If you installed Ansible using just the :command:`ansible-core` Python package,
+without any collections included, you might need to install the listed
+collections manually if they are not already available on your user account or
+system-wide. To install these collections within the project directory, you can
+run the command:
+
+.. code-block:: console
+
+   debops env ansible-galaxy collection install -r ansible/collections/requirements.yml
+
+to download the listed collections and their dependencies. They will be
+unpacked inside of the :file:`ansible/collections/ansible_collections/`
+subdirectory and ignored by version control.
+
+To see a list of installed collections, you can run the command:
+
+.. code-block:: console
+
+   debops env ansible-galaxy collection list
 
 
 The Ansible inventory
