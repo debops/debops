@@ -96,7 +96,8 @@ its execution environment:
 
 - :file:`<project directory>/.debops/environment` (per-project environment)
 
-- :file:`<project directory>/.env` (per-project environment)
+- :file:`<project directory>/.env` (per-project environment ignored by version
+  control)
 
 To see the list of the environment files used for configuration, you can run
 the command:
