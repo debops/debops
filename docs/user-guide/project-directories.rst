@@ -247,6 +247,14 @@ script commands. This also works outside of the project directory, when used
 with the ``--project-dir <path>`` option. See the manual pages of different
 DebOps commands to learn more.
 
+In the :file:`<project_dir>/.debops/conf.d/view-*.yml` configuration file
+created for each "infrastructure view", users can select which Ansible
+Collections will be searched for playbooks if one is specified without
+a :file:`<namespace>.<collection>/`` prefix. This can be used to change the
+default collection for a given "infrastructure view" to one which contains
+unprivileged playbooks and roles, or add more Ansible Collections which should
+be searched for playbooks.
+
 Contents of the project directory
 ---------------------------------
 
