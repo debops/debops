@@ -105,6 +105,16 @@ General
   .. __: https://pre-commit.com/
   .. __: https://github.com/codespell-project/codespell
 
+- New project directory layout called "modern" has been implemented in DebOps
+  scripts. It can be created using the command:
+
+  .. code-block:: console
+
+     debops project init -t modern <project>
+
+  The modern project layout supports multiple Ansible inventories encapsulated
+  into :ref:`infrastructure views <project_infrastructure_views>`.
+
 :ref:`debops.avahi` role
 ''''''''''''''''''''''''
 

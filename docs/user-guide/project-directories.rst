@@ -209,6 +209,8 @@ changes with the previous layout are:
 Detailed description of each directory and file in the project directory can be
 found further below.
 
+.. _project_infrastructure_views:
+
 How to use "infrastructure views"
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
