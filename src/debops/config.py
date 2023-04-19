@@ -2,6 +2,7 @@
 # Copyright (C) 2020-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from .constants import DEBOPS_PACKAGE_DATA
 from .utils import unexpanduser
 import os
 import sys
@@ -26,6 +27,11 @@ class Configuration(object):
 
         self._env_files = []
         self._env_vars = {}
+
+        # Set default environment variables at runtime
+        self.set_env('DEBOPS_ANSIBLE_COLLECTIONS_PATH',
+                     unexpanduser(os.path.join(DEBOPS_PACKAGE_DATA, 'ansible',
+                                               'collections')))
 
         # Include variables from the system-wide configuration
         self.merge_env(os.path.join('/etc', 'default', 'debops'))
@@ -53,6 +59,16 @@ class Configuration(object):
         self._config_files = []
         for config_dir in self._config_dirs:
             self.merge(config_dir)
+
+    def _expand_env_vars(self, data):
+        if isinstance(data, str):
+            return os.path.expandvars(data)
+        elif isinstance(data, dict):
+            return {k: self._expand_env_vars(v) for k, v in data.items()}
+        elif isinstance(data, list):
+            return [self._expand_env_vars(v) for v in data]
+        else:
+            return data
 
     def _merge_dict(self, d1, d2):
         """
@@ -151,17 +167,20 @@ class Configuration(object):
             self._config_files.append(path)
             with open(path, 'r') as fp:
                 data = toml.loads(fp.read())
+                data = self._expand_env_vars(data)
                 return data
         elif path.endswith('.json'):
             self._config_files.append(path)
             with open(path, 'r') as fp:
                 data = json.loads(fp.read())
+                data = self._expand_env_vars(data)
                 return data
         elif (path.endswith('.yaml') or path.endswith('.yml')):
             self._config_files.append(path)
             with open(path, 'r') as fp:
                 try:
                     data = yaml.safe_load(fp.read())
+                    data = self._expand_env_vars(data)
                     return data
                 except yaml.YAMLError as e:
                     print('Error in configuration file:', path + ':\n', e,
@@ -216,15 +235,7 @@ class Configuration(object):
                 relative_file = os.path.relpath(unexpanduser(filename))
                 print(relative_file.replace(relative_root, '', 1))
 
-    def config_env(self, scope='local'):
-        if scope == 'local':
-            for key, value in self._env_vars.items():
-                print('{}={}'.format(key, value))
-        elif scope == 'full':
-            for key, value in os.environ.items():
-                print('{}={}'.format(key, value))
-
-    def config_get(self, key, format='unix'):
+    def config_get(self, key, format='unix', keys=False):
         key_path = ['.']
         if key != '.':
             key_path = list(filter(None, key.split('.')))
@@ -237,6 +248,17 @@ class Configuration(object):
                     _config = _config[element]
                 except KeyError:
                     key_found = False
+
+        if key_found and keys:
+            try:
+                _config = list(_config.keys())
+            except AttributeError:
+                # The value is present, but we are interested in just the keys,
+                # so let's return an empty list instead of a dictionary to
+                # preserve the output type. This also causes the return code to
+                # be 0 instead of 1 so that the process knows that there was no
+                # error.
+                _config = []
 
         if key_found:
             if isinstance(_config, dict):

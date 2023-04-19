@@ -18,7 +18,7 @@ class AnsibleRunner(object):
         self.args = args
         self.kwargs = kwargs
 
-        self.inventory = AnsibleInventory(project)
+        self.inventory = AnsibleInventory(project, name=project.view)
 
         try:
             self._inventory_paths = (

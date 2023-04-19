@@ -1,5 +1,5 @@
-.. Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2021 DebOps <https://debops.org/>
+.. Copyright (C) 2021-2023 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2021-2023 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 :command:`debops project init`
@@ -15,6 +15,19 @@ Options
 
 ``-h, --help``
   Display the help and usage information
+
+``-t <legacy|modern>``, ``--type <legacy|modern>``
+  Select the type of the project directory:
+
+  - ``legacy``: simple directory layout with a single Ansible inventory
+    (default)
+
+  - ``modern``: more complicated directory layout with multiple Ansible
+    inventories separated into "infrastructure views"
+
+``-v <view>``, ``--default-view <view>``
+  Specify the name of the "infrastructure view" used by default. If not
+  specified, "system" will be created automatically.
 
 ``--git``
   Initialize a :command:`git` repository in the project directory (planned)
@@ -52,6 +65,12 @@ Create a basic DebOps project directory:
 
    debops project init ~/src/projects/myproject
 
+Create a project directory with multiple infrastructure views:
+
+.. code-block:: shell
+
+   debops project init --type modern ~/src/projects/myproject
+
 Create a project directory with EncFS encryption for secrets:
 
 .. code-block:: shell
@@ -59,6 +78,70 @@ Create a project directory with EncFS encryption for secrets:
    debops project init --encrypt encfs \
                        --keys admin@example.org,otheradmin@example.org \
                        ~/src/projects/example.org
+
+
+:command:`debops project mkview`
+--------------------------------
+
+This command can be used in an existing project directory to create a new
+"infrastructure view", which contains:
+
+- separate :file:`ansible.cfg` configuration file
+
+- separate Ansible inventory
+
+- separate :file:`secret/` directory for the :ref:`debops.secret` role
+
+- separate :file:`resources/` directory for the :ref:`debops.resources` role
+
+- its own set of Ansible playbooks and roles
+
+Each view has its own configuration entry in the DebOps configuration tree.
+
+Options
+~~~~~~~
+
+``-h, --help``
+  Display the help and usage information
+
+``--project-dir <project_dir>``
+  Path to the project directory to work on. If it's not specified, the script
+  will use the current directory.
+
+``--encrypt <encfs|git-crypt>``
+  Prepare the new infrastructure view to host encrypted :file:`<view>/secret/`
+  subdirectory, used to store passwords, encryption keys and other confidential
+  information. See the :ref:`debops.secret` Ansible role for more details.
+
+  You need to specify either ``encfs`` or ``git-crypt`` (planned) to select the
+  encryption method. If encryption is enabled, you need to specify the list of
+  GPG recipients as well, using the ``--keys`` option.
+
+``--keys <recipient>[,recipient]``
+  A list of GPG recipients (e-mail addresses or key IDs) which will be allowed
+  to unlock the :file:`<view>/secret/` directory encrypted with EncFS or
+  git-crypt. Separate multiple list entries by commas.
+
+``<new_view>``
+  Name of the view to create. It will be used in the file system as well as in
+  the configuration tree.
+
+Examples
+~~~~~~~~
+
+Create a new infrastructure view in the DebOps project directory:
+
+.. code-block:: shell
+
+   debops project mkview deployment
+
+Create a new infrastructure view with encrypted secrets:
+
+.. code-block:: shell
+
+   debops project mkview --encrypt encfs \
+                         --keys admin@example.org,otheradmin@example.org \
+                         deployment
 
 
 :command:`debops project refresh`
@@ -101,6 +184,12 @@ Options
 ``-h, --help``
   Display the help and usage information
 
+``-V <view>, --view <view>``
+  Specify the name of the "infrastructure view" to unlock. If not specified,
+  the default view will be used automatically. Using this option overrides the
+  automatic view detection performed by DebOps based on the current working
+  directory.
+
 ``<project_dir>``
   Path to the project directory to unlock.
 
@@ -119,22 +208,11 @@ Options
 ``-h, --help``
   Display the help and usage information
 
+``-V <view>, --view <view>``
+  Specify the name of the "infrastructure view" to lock. If not specified, the
+  default view will be used automatically. Using this option overrides the
+  automatic view detection performed by DebOps based on the current working
+  directory.
+
 ``<project_dir>``
   Path to the project directory to lock.
-
-
-:command:`debops project status`
---------------------------------
-
-This command displays various information about a given project directory known
-to DebOps, for example the type of the project directory, state of encrypted
-:file:`ansible/secret/` directory, and so on.
-
-Options
-~~~~~~~
-
-``-h, --help``
-  Display the help and usage information
-
-``<project_dir>``
-  Path to the project directory to inspect.

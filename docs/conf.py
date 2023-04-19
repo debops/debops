@@ -390,6 +390,9 @@ man_pages.append(('user-guide/scripts/debops-run/man_index', 'debops-run',
 man_pages.append(('user-guide/scripts/debops-run/man_index', 'debops-check',
                   'Execute Ansible playbooks in DebOps environments in check mode',
                   [author], 1))
+man_pages.append(('user-guide/scripts/debops-env/man_index', 'debops-env',
+                  'Execute external commands in DebOps project environment',
+                  [author], 1))
 man_pages.append(('user-guide/scripts/debops-config/man_index', 'debops-config',
                   'Inspect or manipulate DebOps project configuration', [author], 1))
 

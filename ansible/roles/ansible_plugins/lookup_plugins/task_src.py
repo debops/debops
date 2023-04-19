@@ -90,7 +90,10 @@ if LooseVersion(__ansible_version__) < LooseVersion("2.0"):
                 project_dir = debops.projectdir.ProjectDir(
                         config=project_config)
                 project_root = project_dir.path
-                config = project_dir.config.get(['views', 'system'])
+                if project_dir.config.get(['project', 'type']) == 'modern':
+                    config = project_dir.config.get([])
+                else:
+                    config = project_dir.config.get(['views', 'system'])
             except NameError:
                 try:
                     project_root = find_debops_project(required=False)
@@ -151,7 +154,10 @@ else:
                 project_dir = debops.projectdir.ProjectDir(
                         config=project_config)
                 project_root = project_dir.path
-                config = project_dir.config.get(['views', 'system'])
+                if project_dir.config.get(['project', 'type']) == 'modern':
+                    config = project_dir.config.get([])
+                else:
+                    config = project_dir.config.get(['views', 'system'])
             except NameError:
                 try:
                     project_root = find_debops_project(required=False)

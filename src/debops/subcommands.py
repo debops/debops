@@ -34,6 +34,7 @@ Sections:
     exec     run Ansible commands directly against hosts
     run      run Ansible playbook(s) against hosts
     check    run Ansible playbook(s) in check mode
+    env      run shell commands in project environment
     config   display DebOps configuration options''')
 
         parser.add_argument('section', help='Section to run')
@@ -66,10 +67,10 @@ Sections:
 
 Commands:
     init    initialize new project directory
+    mkview  create a new infrastructure view
     refresh refresh existing project directory
     unlock  decrypt secrets in project directory
-    lock    encrypt secrets in project directory
-    status  display project information''')
+    lock    encrypt secrets in project directory''')
         parser.add_argument('command', help='project command to run')
         self._command = parser.parse_args(self.args[2:3])
         self.command = self._command.command
@@ -83,6 +84,14 @@ Commands:
         parser = argparse.ArgumentParser(
                 description='initialize new project directory',
                 usage='debops project init [<args>] <project_dir>')
+        parser.add_argument('-t', '--type', type=str, nargs='?',
+                            choices=['legacy', 'modern'],
+                            default='legacy',
+                            help='select project type (default: %(default)s)')
+        parser.add_argument('-v', '--default-view', type=str,
+                            default='system',
+                            help='name of the default infrastructure view '
+                                 '(default: %(default)s)')
         self.add_bool_argument(parser, 'git',
                                help='enable git support (default)',
                                no_help='disable git support')
@@ -110,6 +119,9 @@ Commands:
         parser = argparse.ArgumentParser(
                 description='encrypt secrets inside project directory',
                 usage='debops project lock [<args>] <project_dir>')
+        parser.add_argument('-V', '--view', type=str,
+                            help='select the infrastructure view '
+                                 'to lock')
         parser.add_argument('project_dir', type=str, nargs='?',
                             default=os.getcwd(),
                             help='path to the project directory')
@@ -119,18 +131,27 @@ Commands:
         parser = argparse.ArgumentParser(
                 description='decrypt secrets inside project directory',
                 usage='debops project unlock [<args>] <project_dir>')
+        parser.add_argument('-V', '--view', type=str,
+                            help='select the infrastructure view '
+                                 'to unlock')
         parser.add_argument('project_dir', type=str, nargs='?',
                             default=os.getcwd(),
                             help='path to the project directory')
         self.args = parser.parse_args(self.args[3:])
 
-    def do_project_status(self):
+    def do_project_mkview(self):
         parser = argparse.ArgumentParser(
-                usage='debops project status [<args>] <project_dir>',
-                description='display project information')
-        parser.add_argument('project_dir', type=str, nargs='?',
-                            default=os.getcwd(),
-                            help='path to the project directory')
+                parents=[self.global_parser],
+                description='create new infrastructure view',
+                usage='debops project mkview [<args>] <new_view>')
+        parser.add_argument('--encrypt', type=str, nargs='?',
+                            choices=['encfs', 'git-crypt'],
+                            help='enable encrypted secrets')
+        parser.add_argument('--keys', type=str,
+                            help='list of GPG recipients with secret access, '
+                                 'delimited by commas')
+        parser.add_argument('new_view', type=str, nargs='?',
+                            help='name of the new infrastructure view')
         self.args = parser.parse_args(self.args[3:])
 
     def do_exec(self):
@@ -138,6 +159,9 @@ Commands:
                 parents=[self.global_parser],
                 usage='debops exec [<args>] [--] <[ansible_args]>',
                 description='run Ansible commands directly against hosts')
+        parser.add_argument('-V', '--view', type=str,
+                            help='select the infrastructure view '
+                                 'to use for the "ansible" command')
         parser.add_argument('-E', '--bell', default=False,
                             help='notify the user at the end '
                                  'of Ansible execution',
@@ -157,6 +181,9 @@ Commands:
                 usage='debops run [<args>] [--] <[<namespace>.<collection>/]'
                       'playbook> [playbook] ... [ansible_args]',
                 description='run Ansible playbook(s) against hosts')
+        parser.add_argument('-V', '--view', type=str,
+                            help='select the infrastructure view '
+                                 'to use for the "ansible-playbook" command')
         parser.add_argument('-E', '--bell', default=False,
                             help='notify the user at the end '
                                  'of Ansible execution',
@@ -176,6 +203,9 @@ Commands:
                 usage='debops check [<args>] [--] <[<namespace>.<collection>/]'
                       'playbook> [playbook] ... [ansible_args]',
                 description='run Ansible playbook(s) in check mode')
+        parser.add_argument('-V', '--view', type=str,
+                            help='select the infrastructure view '
+                                 'to use for the "ansible-playbook" command')
         parser.add_argument('-E', '--bell', default=False,
                             help='notify the user at the end '
                                  'of Ansible execution',
@@ -194,13 +224,29 @@ Commands:
                             help=argparse.SUPPRESS, action='append_const')
         self.args = parser.parse_args(self.args[2:])
 
+    def do_env(self):
+        parser = argparse.ArgumentParser(
+                parents=[self.global_parser],
+                usage='debops env [<args>] [command_args]',
+                description='run shell commands in project environment')
+        parser.add_argument('-V', '--view', type=str,
+                            help='select the infrastructure view '
+                                 'to use for the command')
+        parser.add_argument('--scope', type=str, nargs='?',
+                            choices=['full', 'local'],
+                            default='local',
+                            help='specify which environment '
+                                 'variables to show (default: %(default)s)')
+        parser.add_argument('command_args', type=str, nargs=argparse.REMAINDER,
+                            help='command and arguments to execute')
+        self.args = parser.parse_args(self.args[2:])
+
     def do_config(self):
         parser = argparse.ArgumentParser(
                 description='manage DebOps configuration state',
                 usage='''debops config <command> [<args>]
 
 Commands:
-    env     display environment variables set at runtime
     get     return value of a specific configuration option
     list    list configuration files parsed by DebOps''')
         parser.add_argument('command', help='config command to run')
@@ -221,18 +267,6 @@ Commands:
                             help='path to the project directory')
         self.args = parser.parse_args(self.args[3:])
 
-    def do_config_env(self):
-        parser = argparse.ArgumentParser(
-                parents=[self.global_parser],
-                usage='debops config env [<args>]',
-                description='display environment variables set at runtime')
-        parser.add_argument('--scope', type=str, nargs='?',
-                            choices=['full', 'local'],
-                            default='local',
-                            help='specify which environment '
-                                 'variables to show (default: %(default)s)')
-        self.args = parser.parse_args(self.args[3:])
-
     def do_config_get(self):
         parser = argparse.ArgumentParser(
                 parents=[self.global_parser],
@@ -242,6 +276,10 @@ Commands:
                             choices=['json', 'toml', 'unix', 'yaml'],
                             default='unix',
                             help='output format (default: %(default)s)')
+        parser.add_argument('-k', '--keys', default=False,
+                            help='list configuration keys '
+                                 'at the specified level',
+                            action='store_true')
         parser.add_argument('key', type=str,
                             nargs=argparse.REMAINDER,
                             help='name of the '

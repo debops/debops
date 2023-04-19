@@ -35,6 +35,12 @@ split into sections.
   automatically adds the ``--diff`` and ``--check`` :command:`ansible-playbook`
   options to ensure that the playbooks are executed in a check mode;
 
+:command:`debops env`
+  This command can be used to inspect the environment variables which will be
+  present when various DebOps commands are executed. It can also be used to run
+  shell commands in DebOps environment, which is a handy shortcut for using
+  Ansible ecosystem with DebOps project directories.
+
 :command:`debops config`
   This command allows the user to inspect and manipulate the DebOps
   configuration options in various formats;
