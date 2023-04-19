@@ -246,9 +246,24 @@ class AnsiblePlaybookRunner(object):
             playbook_path = self._find_playbook_in_collection(playbook_name)
 
         if not playbook_path:
-            # Find playbook in the default Ansible Collection
-            playbook_path = self._find_playbook_in_collection(
-                    'debops.debops/' + playbook_name)
+            try:
+
+                # Find playbook in Ansible Collections specific to the current
+                # infrastructure view
+                collection_names = (
+                        (project.config.raw['views'][project.view]
+                                           ['playbook_collections']))
+                for collection in collection_names:
+                    playbook_path = self._find_playbook_in_collection(
+                            collection + '/' + playbook_name)
+                    if playbook_path:
+                        break
+
+            except KeyError:
+
+                # Find playbook in the default Ansible Collection
+                playbook_path = self._find_playbook_in_collection(
+                        'debops.debops/' + playbook_name)
 
         if playbook_path:
             return playbook_path
