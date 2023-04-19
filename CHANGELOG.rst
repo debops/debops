@@ -91,6 +91,12 @@ General
   commands can emit ASCII "bell" at the end of Ansible execution to notify user
   after long runs. Use the ``-E`` or ``--bell`` option to enable this.
 
+- The :command:`debops env` command can be used to inspect the runtime
+  environment variables present when other DebOps commands are used, as well as
+  execute external commands inside of that runtime environment. This is handy
+  for using various :command:`ansible-*` commands within DebOps project
+  directories.
+
 - DebOps monorepo now includes configuration for the `pre-commit`__ hook to
   verify changes before they are committed to the repository. Multiple checks
   are performed, notably `codespell`__ is used to find spelling mistakes. More
@@ -98,6 +104,16 @@ General
 
   .. __: https://pre-commit.com/
   .. __: https://github.com/codespell-project/codespell
+
+- New project directory layout called "modern" has been implemented in DebOps
+  scripts. It can be created using the command:
+
+  .. code-block:: console
+
+     debops project init -t modern <project>
+
+  The modern project layout supports multiple Ansible inventories encapsulated
+  into :ref:`infrastructure views <project_infrastructure_views>`.
 
 :ref:`debops.avahi` role
 ''''''''''''''''''''''''
@@ -761,6 +777,10 @@ General
   in favor of Topics API in web browsers.
 
   .. __: https://blog.google/products/chrome/get-know-new-topics-api-privacy-sandbox/
+
+- The :command:`debops project status` subcommand has been removed. Its
+  functionality is now incorporated within the DebOps configuration tree
+  accessible using the :ref:`cmd_debops-config` command.
 
 :ref:`debops.apt_install` role
 ''''''''''''''''''''''''''''''

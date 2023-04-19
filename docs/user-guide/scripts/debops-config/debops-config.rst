@@ -2,37 +2,6 @@
 .. Copyright (C) 2021-2023 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
-:command:`debops config env`
-----------------------------
-
-Display the variables which will be present at runtime in the process
-environment.
-
-Options
-~~~~~~~
-
-``-h, --help``
-  Display the help and usage information
-
-``--project-dir <project_dir>``
-  Path to the project directory to work on. If it's not specified, the script
-  will use the current directory.
-
-``--scope full|local``
-  Specify if only the variables defined by DebOps should be displayed
-  (``local``, default), or all variables present in the runtime environment
-  (``full``), similar to the output of the :man:`env(1)` command.
-
-Examples
-~~~~~~~~
-
-Print environment variables defined by DebOps:
-
-.. code-block:: shell
-
-   debops config env
-
-
 :command:`debops config get`
 ----------------------------
 
@@ -54,6 +23,11 @@ Options
   considered human-friendly. The JSON format can be used to enable easy parsing
   by programs.
 
+``-k, --keys``
+  Instead of returning the entire configuration tree, return a list of
+  configuration keys present at a given configuration level. Empty output or
+  list means that there are no more subkeys present at a given level.
+
 ``key``
   Name of the configuration option key to return. Subkeys are specified using
   dot (``.``) as a separator. If not specified, entire configuration tree will
@@ -68,6 +42,12 @@ Print all configuration options to standard output:
 .. code-block:: shell
 
    debops config get
+
+List known infrastructure views in a given project directory:
+
+.. code-block:: shell
+
+   debops config get -k views
 
 Display the "system view" configuration options in TOML format:
 
@@ -149,31 +129,10 @@ format is detected via the file extension (respectively :file:`*.json`,
 interpreted in alphabetical order and their contents are merged together
 recursively.
 
-
-Environment files
------------------
-
-DebOps scripts support multiple configuration files which can be used to affect
-its execution environment:
-
-- :file:`/etc/default/debops` (per-system environment)
-
-- :file:`$XDG_CONFIG_HOME/debops/environment` (per-user environment)
-
-- :file:`<project directory>/.debops/environment` (per-project environment)
-
-- :file:`<project directory>/.env` (per-project environment)
-
-You can use these files to store environment variables which are then added to
-the :command:`ansible-playbook` environment during playbook execution.
-
-Environment files are compatible with the `python-dotenv`__ project. Each
-environment variable is specified as:
-
-.. code-block:: shell
-
-   NAME=value
-
-Empty lines and lines starting with the ``#`` character are ignored.
-
-.. __: https://pypi.org/project/python-dotenv/
+Values of configuration options can contain environment variables specified as
+``$VARIABLE`` or ``${VARIABLE}`` strings. These variables will be expanded at
+runtime and can be used to augment the final configuration. Variables
+themselves can be defined in the :file:`<project directory>/.debops/environment`
+or the :file:`<project directory>/.env` files and they will be automatically
+incorporated into runtime environment. Users can use the :ref:`cmd_debops-env`
+command to inspect the runtime environment variables.

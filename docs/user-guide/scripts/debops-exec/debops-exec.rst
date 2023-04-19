@@ -28,6 +28,12 @@ effect.
   Path to the project directory to work on. If it's not specified, the script
   will use the current directory.
 
+``-V <view>, --view <view>``
+  Specify the name of the "infrastructure view" to use for running Ansible
+  commands. If not specified, the default view will be used automatically.
+  Using this option overrides the automatic view detection performed by DebOps
+  based on the current working directory.
+
 ``-E, --bell``
   Emit an ASCII "bell" at the end of the :command:`ansible` command execution
   to notify the user. This might be useful during longer module runs.
@@ -54,11 +60,12 @@ Send a ping to all hosts in the Ansible inventory:
 
    debops exec all -m ping
 
-Check what UNIX account is used to run Ansible commands:
+Check what UNIX account is used to run Ansible commands using a specific
+"infrastructure view":
 
 .. code-block:: shell
 
-   debops exec hostname -a 'whoami'
+   debops exec -V deployment hostname -a 'whoami'
 
 Perform a full upgrade of a Debian host using APT:
 
