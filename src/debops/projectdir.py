@@ -451,6 +451,23 @@ class ProjectDir(object):
             self._create_legacy_project(self.path)
 
     def mkview(self, view):
+
+        # Make sure that users are not trying to nest the view inside of
+        # another view
+        parent_views = ([path for path
+                         in list(self.config.raw['views'].keys())
+                         if os.path.commonprefix(
+                             [path, view]) == path])
+        if parent_views:
+
+            # We can allow views with common directory prefix, but we need to
+            # catch a case where a view is created inside another view
+            common_prefix = os.path.commonprefix(parent_views)
+            if (view.startswith(common_prefix) and view != common_prefix
+                    and os.path.dirname(view) in parent_views):
+                raise ValueError(f"The '{view}' view cannot be placed inside "
+                                 "another view")
+
         if self.project_type == 'modern':
             if view:
                 inventory = AnsibleInventory(self, view, **self.kwargs)
