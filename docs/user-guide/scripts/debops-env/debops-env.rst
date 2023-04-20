@@ -38,6 +38,9 @@ Options
   (``local``, default), or all variables present in the runtime environment
   (``full``).
 
+``-v, --verbose``
+  Increase output verbosity. More letters means higher verbosity.
+
 ``command args``
   Specify a command to execute inside of the DebOps project environment, with
   all variables set at runtime. Any arguments specified after the command will

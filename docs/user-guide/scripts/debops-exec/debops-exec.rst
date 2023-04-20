@@ -42,6 +42,9 @@ effect.
   Do not execute :command:`ansible` command; instead print out all the
   environment variables and the command itself to stdout.
 
+``-v, --verbose``
+  Increase output verbosity. More letters means higher verbosity.
+
 ``--``
   Mark the end of the :command:`debops exec` options. Any of the options after
   this mark will be passed to the :command:`ansible` command as-is.

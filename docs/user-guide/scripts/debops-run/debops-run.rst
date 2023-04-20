@@ -42,6 +42,9 @@ The options below need to be specified before any playbooks to take effect.
   Do not execute :command:`ansible-playbook` command; instead print out all the
   environment variables and the command itself to stdout.
 
+``-v, --verbose``
+  Increase output verbosity. More letters means higher verbosity.
+
 ``--``
   Mark the end of the :command:`debops run` options. Any of the options after
   this mark will be passed to the :command:`ansible-playbook` command as-is.
