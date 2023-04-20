@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .constants import DEBOPS_USER_HOME_DIR
+from .utils import unexpanduser
 from .ansibleconfig import AnsibleConfig
 from .ansible.inventory import AnsibleInventory
 import os
@@ -80,6 +81,10 @@ class ProjectDir(object):
             project_data['views']['system'].update(
                     self.config.load(os.path.join(self.path,
                                                   '.debops.cfg')))
+
+        # Expose project root directory in runtime environment
+        self.config.set_env('DEBOPS_PROJECT_PATH',
+                            unexpanduser(self.path))
 
         self.config.merge_env(os.path.join(self.path,
                                            '.debops', 'environment'))
