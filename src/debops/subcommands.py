@@ -88,7 +88,7 @@ Commands:
                             choices=['legacy', 'modern'],
                             default='legacy',
                             help='select project type (default: %(default)s)')
-        parser.add_argument('-v', '--default-view', type=str,
+        parser.add_argument('-V', '--default-view', type=str,
                             default='system',
                             help='name of the default infrastructure view '
                                  '(default: %(default)s)')
