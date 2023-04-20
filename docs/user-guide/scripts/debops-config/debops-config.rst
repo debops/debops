@@ -28,6 +28,9 @@ Options
   configuration keys present at a given configuration level. Empty output or
   list means that there are no more subkeys present at a given level.
 
+``-v, --verbose``
+  Increase output verbosity. More letters means higher verbosity.
+
 ``key``
   Name of the configuration option key to return. Subkeys are specified using
   dot (``.``) as a separator. If not specified, entire configuration tree will
@@ -83,6 +86,9 @@ Options
 
 ``-h, --help``
   Display the help and usage information
+
+``-v, --verbose``
+  Increase output verbosity. More letters means higher verbosity.
 
 ``<project_dir>``
   Path to the project directory to work on. If it's not specified, the script

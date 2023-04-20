@@ -5,4 +5,4 @@
 Synopsis
 ========
 
-``debops exec`` [-h|--help] [--project-dir <project_dir>] [-V|--view <view>] [-E|--bell] [--eval] [--] [<ansible_args>]
+``debops exec`` [-h|--help] [--project-dir <project_dir>] [-V|--view <view>] [-E|--bell] [--eval] [-v|--verbose] [--] [<ansible_args>]

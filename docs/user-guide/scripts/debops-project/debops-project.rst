@@ -52,6 +52,9 @@ Options
   to unlock the :file:`ansible/secret/` directory encrypted with EncFS or
   git-crypt. Separate multiple list entries by commas.
 
+``-v, --verbose``
+  Increase output verbosity. More letters means higher verbosity.
+
 ``<project_dir>``
   Path to the DebOps project directory to initialize. If not specified, DebOps
   will try to use the current directory to create a new project directory. The
@@ -124,6 +127,9 @@ Options
   to unlock the :file:`<view>/secret/` directory encrypted with EncFS or
   git-crypt. Separate multiple list entries by commas.
 
+``-v, --verbose``
+  Increase output verbosity. More letters means higher verbosity.
+
 ``<new_view>``
   Name of the view to create. It will be used in the file system as well as in
   the configuration tree. You can use slashes (``/``) to create hierarchical
@@ -164,6 +170,9 @@ Options
 ``-h, --help``
   Display the help and usage information
 
+``-v, --verbose``
+  Increase output verbosity. More letters means higher verbosity.
+
 ``<project_dir>``
   Path to the project directory to refresh.
 
@@ -193,6 +202,9 @@ Options
   automatic view detection performed by DebOps based on the current working
   directory.
 
+``-v, --verbose``
+  Increase output verbosity. More letters means higher verbosity.
+
 ``<project_dir>``
   Path to the project directory to unlock.
 
@@ -216,6 +228,9 @@ Options
   default view will be used automatically. Using this option overrides the
   automatic view detection performed by DebOps based on the current working
   directory.
+
+``-v, --verbose``
+  Increase output verbosity. More letters means higher verbosity.
 
 ``<project_dir>``
   Path to the project directory to lock.
