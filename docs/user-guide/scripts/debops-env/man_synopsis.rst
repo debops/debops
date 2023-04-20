@@ -5,6 +5,6 @@
 Synopsis
 ========
 
-``debops env``  [-h|--help] [--project-dir <project_dir>] [-V|--view <view>] [--scope full|local]
+``debops env`` [-h|--help] [--project-dir <project_dir>] [-V|--view <view>] [--scope full|local] [-v|--verbose]
 
-``debops env``  [--project-dir <project_dir>] [-V|--view <view>] <command [args]>
+``debops env`` [--project-dir <project_dir>] [-V|--view <view>] [-v|--verbose] <command [args]>

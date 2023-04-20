@@ -25,9 +25,11 @@ Options
   - ``modern``: more complicated directory layout with multiple Ansible
     inventories separated into "infrastructure views"
 
-``-v <view>``, ``--default-view <view>``
+``-V <view>``, ``--default-view <view>``
   Specify the name of the "infrastructure view" used by default. If not
-  specified, "system" will be created automatically.
+  specified, "system" will be created automatically. You can use slashes
+  (``/``) to create hierarchical views, but nesting a view inside of another
+  view is not allowed.
 
 ``--git``
   Initialize a :command:`git` repository in the project directory (planned)
@@ -49,6 +51,9 @@ Options
   A list of GPG recipients (e-mail addresses or key IDs) which will be allowed
   to unlock the :file:`ansible/secret/` directory encrypted with EncFS or
   git-crypt. Separate multiple list entries by commas.
+
+``-v, --verbose``
+  Increase output verbosity. More letters means higher verbosity.
 
 ``<project_dir>``
   Path to the DebOps project directory to initialize. If not specified, DebOps
@@ -122,9 +127,13 @@ Options
   to unlock the :file:`<view>/secret/` directory encrypted with EncFS or
   git-crypt. Separate multiple list entries by commas.
 
+``-v, --verbose``
+  Increase output verbosity. More letters means higher verbosity.
+
 ``<new_view>``
   Name of the view to create. It will be used in the file system as well as in
-  the configuration tree.
+  the configuration tree. You can use slashes (``/``) to create hierarchical
+  views, but nesting a view inside of another view is not allowed.
 
 Examples
 ~~~~~~~~
@@ -161,6 +170,9 @@ Options
 ``-h, --help``
   Display the help and usage information
 
+``-v, --verbose``
+  Increase output verbosity. More letters means higher verbosity.
+
 ``<project_dir>``
   Path to the project directory to refresh.
 
@@ -190,6 +202,9 @@ Options
   automatic view detection performed by DebOps based on the current working
   directory.
 
+``-v, --verbose``
+  Increase output verbosity. More letters means higher verbosity.
+
 ``<project_dir>``
   Path to the project directory to unlock.
 
@@ -213,6 +228,9 @@ Options
   default view will be used automatically. Using this option overrides the
   automatic view detection performed by DebOps based on the current working
   directory.
+
+``-v, --verbose``
+  Increase output verbosity. More letters means higher verbosity.
 
 ``<project_dir>``
   Path to the project directory to lock.

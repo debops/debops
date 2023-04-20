@@ -21,6 +21,9 @@ class Subcommands(object):
         self.args = args
 
         self.global_parser = argparse.ArgumentParser(add_help=False)
+        self.global_parser.add_argument('-v', '--verbose', action="count",
+                                        help='increase output verbosity '
+                                             '(e.g., -vv is more than -v)')
         self.global_parser.add_argument('--project-dir', type=str,
                                         nargs='?', default=os.getcwd(),
                                         help='path to the project directory')
@@ -88,7 +91,7 @@ Commands:
                             choices=['legacy', 'modern'],
                             default='legacy',
                             help='select project type (default: %(default)s)')
-        parser.add_argument('-v', '--default-view', type=str,
+        parser.add_argument('-V', '--default-view', type=str,
                             default='system',
                             help='name of the default infrastructure view '
                                  '(default: %(default)s)')
@@ -101,6 +104,9 @@ Commands:
         parser.add_argument('--keys', type=str,
                             help='list of GPG recipients with secret access, '
                                  'delimited by commas')
+        parser.add_argument('-v', '--verbose', action="count",
+                            help='increase output verbosity '
+                                 '(e.g., -vv is more than -v)')
         parser.add_argument('project_dir', type=str, nargs='?',
                             default=os.getcwd(),
                             help='path to the project directory')
@@ -110,6 +116,9 @@ Commands:
         parser = argparse.ArgumentParser(
                 description='refresh existing project directory',
                 usage='debops project refresh [<args>] <project_dir>')
+        parser.add_argument('-v', '--verbose', action="count",
+                            help='increase output verbosity '
+                                 '(e.g., -vv is more than -v)')
         parser.add_argument('project_dir', type=str, nargs='?',
                             default=os.getcwd(),
                             help='path to the project directory')
@@ -122,6 +131,9 @@ Commands:
         parser.add_argument('-V', '--view', type=str,
                             help='select the infrastructure view '
                                  'to lock')
+        parser.add_argument('-v', '--verbose', action="count",
+                            help='increase output verbosity '
+                                 '(e.g., -vv is more than -v)')
         parser.add_argument('project_dir', type=str, nargs='?',
                             default=os.getcwd(),
                             help='path to the project directory')
@@ -134,6 +146,9 @@ Commands:
         parser.add_argument('-V', '--view', type=str,
                             help='select the infrastructure view '
                                  'to unlock')
+        parser.add_argument('-v', '--verbose', action="count",
+                            help='increase output verbosity '
+                                 '(e.g., -vv is more than -v)')
         parser.add_argument('project_dir', type=str, nargs='?',
                             default=os.getcwd(),
                             help='path to the project directory')
@@ -262,6 +277,9 @@ Commands:
         parser = argparse.ArgumentParser(
                 usage='debops config list [<args>] <project_dir>',
                 description='list configuration files parsed by DebOps')
+        parser.add_argument('-v', '--verbose', action="count",
+                            help='increase output verbosity '
+                                 '(e.g., -vv is more than -v)')
         parser.add_argument('project_dir', type=str, nargs='?',
                             default=os.getcwd(),
                             help='path to the project directory')

@@ -184,13 +184,14 @@ something like this:
    │           ├── playbooks/
    │           │   └── roles/
    │           ├── resources/
-   │           └── secret/
+   │           ├── secret/
+   │           ├── .gitattributes
+   │           └── .gitignore
    ├── .debops/
    │   ├── conf.d/
    │   │   ├── project.yml
    │   │   └── view-system.yml
    │   └── environment
-   ├── .gitattributes
    └── .gitignore
 
 You can compare this with the "legacy" directory structure above. The important
@@ -239,6 +240,17 @@ configuration. With this setup, Ansible configuration can be applied on the
 can be deployed on "production" hosts without requiring any changes in
 inventories. There might be more layers of inventories if needed, or
 a blue-green deployment scheme if desired.
+
+Infrastructure views can be defined in a hierarchical directory structure. For
+example, you can have :file:`system` view as default, and then
+:file:`deploy/app1` and :file:`deploy/app2` views for different applications.
+Nesting a view inside of another view is disallowed to avoid security issues
+and unpredictable Ansible behaviour. To see what views are defined in
+a project, you can use the command:
+
+.. code-block:: console
+
+   debops config get -k views
 
 The :command:`debops` script tries to automatically detect which
 "infrastructure view" should be used - if the user has changed the current

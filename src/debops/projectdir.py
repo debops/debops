@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .constants import DEBOPS_USER_HOME_DIR
+from .utils import unexpanduser
 from .ansibleconfig import AnsibleConfig
 from .ansible.inventory import AnsibleInventory
 import os
@@ -81,6 +82,10 @@ class ProjectDir(object):
                     self.config.load(os.path.join(self.path,
                                                   '.debops.cfg')))
 
+        # Expose project root directory in runtime environment
+        self.config.set_env('DEBOPS_PROJECT_PATH',
+                            unexpanduser(self.path))
+
         self.config.merge_env(os.path.join(self.path,
                                            '.debops', 'environment'))
         self.config.merge_env(self.path)
@@ -98,8 +103,10 @@ class ProjectDir(object):
         if self.path != os.getcwd():
             current_dir = os.getcwd()
             view_dir = None
+            view_path = []
 
             while current_dir != '/' and not view_dir:
+                view_path.insert(0, os.path.basename(current_dir))
                 if os.path.dirname(current_dir).endswith('/ansible/views'):
                     view_dir = current_dir
                 else:
@@ -107,7 +114,19 @@ class ProjectDir(object):
 
             # We are in a specific view directory, let's switch to that
             if view_dir:
-                self.view = os.path.basename(view_dir)
+
+                # Just to make sure, let's check if current view path can be
+                # matched to a known view in the configuration tree
+                view_name = os.path.join(*view_path)
+                matching_views = ([path for path
+                                   in list(self.config.raw['views'].keys())
+                                   if os.path.commonprefix(
+                                       [path, view_name]) == path])
+
+                # There should be just one matching view. If there are none or
+                # more than one, stay with the default view
+                if len(matching_views) == 1:
+                    self.view = matching_views[0]
 
         # User selected the view using command line arguments
         if view:
@@ -138,7 +157,8 @@ class ProjectDir(object):
                     project_type=self.project_type,
                     view=self.view)
         self.ansible_cfg.load_config()
-        self.config.set_env('ANSIBLE_CONFIG', self.ansible_cfg.path)
+        self.config.set_env('ANSIBLE_CONFIG',
+                            unexpanduser(self.ansible_cfg.path))
 
         project_views = list(self.config.raw['views'].keys())
         for view in project_views:
@@ -181,6 +201,7 @@ class ProjectDir(object):
     def _create_modern_project(self, path):
         self.project_type = 'modern'
         default_view = self.kwargs.get('default_view', 'system')
+        filename_view = default_view.replace('/', '-')
 
         # Create modern project directory structure
         self.createdirs(path)
@@ -215,15 +236,6 @@ class ProjectDir(object):
                                               'view.yml.j2'))
                 .decode('utf-8'), trim_blocks=True)
 
-        default_gitattributes = jinja2.Template(
-                pkgutil.get_data('debops',
-                                 os.path.join('_data',
-                                              'templates',
-                                              'projectdir',
-                                              'modern',
-                                              'gitattributes.j2'))
-                .decode('utf-8'), trim_blocks=True)
-
         default_gitignore = jinja2.Template(
                 pkgutil.get_data('debops',
                                  os.path.join('_data',
@@ -242,12 +254,33 @@ class ProjectDir(object):
                                               'requirements.yml.j2'))
                 .decode('utf-8'), trim_blocks=True)
 
+        default_view_gitattributes = jinja2.Template(
+                pkgutil.get_data('debops',
+                                 os.path.join('_data',
+                                              'templates',
+                                              'projectdir',
+                                              'modern',
+                                              'view',
+                                              'gitattributes.j2'))
+                .decode('utf-8'), trim_blocks=True)
+
+        default_view_gitignore = jinja2.Template(
+                pkgutil.get_data('debops',
+                                 os.path.join('_data',
+                                              'templates',
+                                              'projectdir',
+                                              'modern',
+                                              'view',
+                                              'gitignore.j2'))
+                .decode('utf-8'), trim_blocks=True)
+
         default_inventory_keyring = jinja2.Template(
                 pkgutil.get_data('debops',
                                  os.path.join('_data',
                                               'templates',
                                               'projectdir',
                                               'modern',
+                                              'view',
                                               'inventory',
                                               'group_vars',
                                               'all',
@@ -263,7 +296,7 @@ class ProjectDir(object):
 
         # Create .debops/conf.d/view-<name>.yml
         self._write_file(os.path.join(path, '.debops', 'conf.d',
-                                      'view-' + default_view + '.yml'),
+                                      'view-' + filename_view + '.yml'),
                          default_view_yml.render(env=os.environ,
                                                  view_name=default_view)
                          + '\n')
@@ -275,25 +308,33 @@ class ProjectDir(object):
 
         encrypted_secrets = self.kwargs.get('encrypt', None)
 
-        # Create .gitattributes
-        self._write_file(os.path.join(path, '.gitattributes'),
-                         default_gitattributes.render(
-                             secret_name='secret',
-                             encrypted_secrets=encrypted_secrets)
-                         + '\n')
-
         # Create .gitignore
         self._write_file(os.path.join(path, '.gitignore'),
-                         default_gitignore.render(
-                             encrypted_secrets=encrypted_secrets,
-                             secret_name='secret',
-                             encfs_prefix='.encfs.')
+                         default_gitignore.render()
                          + '\n')
 
         # Create ansible/collections/requirements.yml
         self._write_file(os.path.join(path, 'ansible', 'collections',
                                       'requirements.yml'),
                          default_requirements.render()
+                         + '\n')
+
+        # Create view/.gitattributes
+        self._write_file(os.path.join(path, 'ansible', 'views',
+                                      default_view, '.gitattributes'),
+                         default_view_gitattributes.render(
+                             encrypted_secrets=encrypted_secrets,
+                             secret_name='secret',
+                             encfs_prefix='.encfs.')
+                         + '\n')
+
+        # Create view/.gitignore
+        self._write_file(os.path.join(path, 'ansible', 'views',
+                                      default_view, '.gitignore'),
+                         default_view_gitignore.render(
+                             encrypted_secrets=encrypted_secrets,
+                             secret_name='secret',
+                             encfs_prefix='.encfs.')
                          + '\n')
 
         # Create view/inventory/group_vars/all/keyring.yml
@@ -431,6 +472,24 @@ class ProjectDir(object):
             self._create_legacy_project(self.path)
 
     def mkview(self, view):
+
+        # Make sure that users are not trying to nest the view inside of
+        # another view
+        parent_views = ([path for path
+                         in list(self.config.raw['views'].keys())
+                         if os.path.commonprefix(
+                             [path, view]) == path])
+        if parent_views:
+
+            # We can allow views with common directory prefix, but we need to
+            # catch a case where a view is created inside another view
+            common_prefix = os.path.commonprefix(parent_views)
+            if (view.startswith(common_prefix) and view != common_prefix
+                    and os.path.dirname(view) in parent_views):
+                raise ValueError(f"The '{view}' view cannot be placed inside "
+                                 "another view")
+
+        filename_view = view.replace('/', '-')
         if self.project_type == 'modern':
             if view:
                 inventory = AnsibleInventory(self, view, **self.kwargs)
@@ -445,12 +504,33 @@ class ProjectDir(object):
                                                       'view.yml.j2'))
                         .decode('utf-8'), trim_blocks=True)
 
+                default_view_gitattributes = jinja2.Template(
+                        pkgutil.get_data('debops',
+                                         os.path.join('_data',
+                                                      'templates',
+                                                      'projectdir',
+                                                      'modern',
+                                                      'view',
+                                                      'gitattributes.j2'))
+                        .decode('utf-8'), trim_blocks=True)
+
+                default_view_gitignore = jinja2.Template(
+                        pkgutil.get_data('debops',
+                                         os.path.join('_data',
+                                                      'templates',
+                                                      'projectdir',
+                                                      'modern',
+                                                      'view',
+                                                      'gitignore.j2'))
+                        .decode('utf-8'), trim_blocks=True)
+
                 default_inventory_keyring = jinja2.Template(
                         pkgutil.get_data('debops',
                                          os.path.join('_data',
                                                       'templates',
                                                       'projectdir',
                                                       'modern',
+                                                      'view',
                                                       'inventory',
                                                       'group_vars',
                                                       'all',
@@ -458,10 +538,30 @@ class ProjectDir(object):
                         .decode('utf-8'), trim_blocks=True)
 
                 # Create .debops/conf.d/view-<name>.yml
-                self._write_file(os.path.join(self.path, '.debops', 'conf.d',
-                                              'view-' + view + '.yml'),
-                                 default_view_yml.render(env=os.environ,
-                                                         view_name=view)
+                self._write_file(
+                        os.path.join(self.path, '.debops', 'conf.d',
+                                     'view-' + filename_view + '.yml'),
+                        default_view_yml.render(env=os.environ,
+                                                view_name=view)
+                        + '\n')
+
+                encrypted_secrets = self.kwargs.get('encrypt', None)
+
+                # Create view/.gitattributes
+                self._write_file(os.path.join(self.path, 'ansible', 'views',
+                                              view, '.gitattributes'),
+                                 default_view_gitattributes.render(
+                                     secret_name='secret',
+                                     encrypted_secrets=encrypted_secrets)
+                                 + '\n')
+
+                # Create view/.gitignore
+                self._write_file(os.path.join(self.path, 'ansible', 'views',
+                                              view, '.gitignore'),
+                                 default_view_gitignore.render(
+                                     encrypted_secrets=encrypted_secrets,
+                                     secret_name='secret',
+                                     encfs_prefix='.encfs.')
                                  + '\n')
 
                 # Create view/inventory/group_vars/all/keyring.yml
