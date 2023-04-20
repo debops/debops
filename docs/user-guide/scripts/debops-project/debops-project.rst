@@ -25,7 +25,7 @@ Options
   - ``modern``: more complicated directory layout with multiple Ansible
     inventories separated into "infrastructure views"
 
-``-v <view>``, ``--default-view <view>``
+``-V <view>``, ``--default-view <view>``
   Specify the name of the "infrastructure view" used by default. If not
   specified, "system" will be created automatically. You can use slashes
   (``/``) to create hierarchical views, but nesting a view inside of another
