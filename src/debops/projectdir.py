@@ -143,7 +143,8 @@ class ProjectDir(object):
                     project_type=self.project_type,
                     view=self.view)
         self.ansible_cfg.load_config()
-        self.config.set_env('ANSIBLE_CONFIG', self.ansible_cfg.path)
+        self.config.set_env('ANSIBLE_CONFIG',
+                            unexpanduser(self.ansible_cfg.path))
 
         project_views = list(self.config.raw['views'].keys())
         for view in project_views:
