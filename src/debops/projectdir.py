@@ -103,8 +103,10 @@ class ProjectDir(object):
         if self.path != os.getcwd():
             current_dir = os.getcwd()
             view_dir = None
+            view_path = []
 
             while current_dir != '/' and not view_dir:
+                view_path.insert(0, os.path.basename(current_dir))
                 if os.path.dirname(current_dir).endswith('/ansible/views'):
                     view_dir = current_dir
                 else:
@@ -112,7 +114,19 @@ class ProjectDir(object):
 
             # We are in a specific view directory, let's switch to that
             if view_dir:
-                self.view = os.path.basename(view_dir)
+
+                # Just to make sure, let's check if current view path can be
+                # matched to a known view in the configuration tree
+                view_name = os.path.join(*view_path)
+                matching_views = ([path for path
+                                   in list(self.config.raw['views'].keys())
+                                   if os.path.commonprefix(
+                                       [path, view_name]) == path])
+
+                # There should be just one matching view. If there are none or
+                # more than one, stay with the default view
+                if len(matching_views) == 1:
+                    self.view = matching_views[0]
 
         # User selected the view using command line arguments
         if view:
