@@ -27,7 +27,9 @@ Options
 
 ``-v <view>``, ``--default-view <view>``
   Specify the name of the "infrastructure view" used by default. If not
-  specified, "system" will be created automatically.
+  specified, "system" will be created automatically. You can use slashes
+  (``/``) to create hierarchical views, but nesting a view inside of another
+  view is not allowed.
 
 ``--git``
   Initialize a :command:`git` repository in the project directory (planned)
@@ -124,7 +126,8 @@ Options
 
 ``<new_view>``
   Name of the view to create. It will be used in the file system as well as in
-  the configuration tree.
+  the configuration tree. You can use slashes (``/``) to create hierarchical
+  views, but nesting a view inside of another view is not allowed.
 
 Examples
 ~~~~~~~~

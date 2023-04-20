@@ -201,6 +201,7 @@ class ProjectDir(object):
     def _create_modern_project(self, path):
         self.project_type = 'modern'
         default_view = self.kwargs.get('default_view', 'system')
+        filename_view = default_view.replace('/', '-')
 
         # Create modern project directory structure
         self.createdirs(path)
@@ -235,15 +236,6 @@ class ProjectDir(object):
                                               'view.yml.j2'))
                 .decode('utf-8'), trim_blocks=True)
 
-        default_gitattributes = jinja2.Template(
-                pkgutil.get_data('debops',
-                                 os.path.join('_data',
-                                              'templates',
-                                              'projectdir',
-                                              'modern',
-                                              'gitattributes.j2'))
-                .decode('utf-8'), trim_blocks=True)
-
         default_gitignore = jinja2.Template(
                 pkgutil.get_data('debops',
                                  os.path.join('_data',
@@ -262,12 +254,33 @@ class ProjectDir(object):
                                               'requirements.yml.j2'))
                 .decode('utf-8'), trim_blocks=True)
 
+        default_view_gitattributes = jinja2.Template(
+                pkgutil.get_data('debops',
+                                 os.path.join('_data',
+                                              'templates',
+                                              'projectdir',
+                                              'modern',
+                                              'view',
+                                              'gitattributes.j2'))
+                .decode('utf-8'), trim_blocks=True)
+
+        default_view_gitignore = jinja2.Template(
+                pkgutil.get_data('debops',
+                                 os.path.join('_data',
+                                              'templates',
+                                              'projectdir',
+                                              'modern',
+                                              'view',
+                                              'gitignore.j2'))
+                .decode('utf-8'), trim_blocks=True)
+
         default_inventory_keyring = jinja2.Template(
                 pkgutil.get_data('debops',
                                  os.path.join('_data',
                                               'templates',
                                               'projectdir',
                                               'modern',
+                                              'view',
                                               'inventory',
                                               'group_vars',
                                               'all',
@@ -283,7 +296,7 @@ class ProjectDir(object):
 
         # Create .debops/conf.d/view-<name>.yml
         self._write_file(os.path.join(path, '.debops', 'conf.d',
-                                      'view-' + default_view + '.yml'),
+                                      'view-' + filename_view + '.yml'),
                          default_view_yml.render(env=os.environ,
                                                  view_name=default_view)
                          + '\n')
@@ -295,25 +308,33 @@ class ProjectDir(object):
 
         encrypted_secrets = self.kwargs.get('encrypt', None)
 
-        # Create .gitattributes
-        self._write_file(os.path.join(path, '.gitattributes'),
-                         default_gitattributes.render(
-                             secret_name='secret',
-                             encrypted_secrets=encrypted_secrets)
-                         + '\n')
-
         # Create .gitignore
         self._write_file(os.path.join(path, '.gitignore'),
-                         default_gitignore.render(
-                             encrypted_secrets=encrypted_secrets,
-                             secret_name='secret',
-                             encfs_prefix='.encfs.')
+                         default_gitignore.render()
                          + '\n')
 
         # Create ansible/collections/requirements.yml
         self._write_file(os.path.join(path, 'ansible', 'collections',
                                       'requirements.yml'),
                          default_requirements.render()
+                         + '\n')
+
+        # Create view/.gitattributes
+        self._write_file(os.path.join(path, 'ansible', 'views',
+                                      default_view, '.gitattributes'),
+                         default_view_gitattributes.render(
+                             encrypted_secrets=encrypted_secrets,
+                             secret_name='secret',
+                             encfs_prefix='.encfs.')
+                         + '\n')
+
+        # Create view/.gitignore
+        self._write_file(os.path.join(path, 'ansible', 'views',
+                                      default_view, '.gitignore'),
+                         default_view_gitignore.render(
+                             encrypted_secrets=encrypted_secrets,
+                             secret_name='secret',
+                             encfs_prefix='.encfs.')
                          + '\n')
 
         # Create view/inventory/group_vars/all/keyring.yml
@@ -468,6 +489,7 @@ class ProjectDir(object):
                 raise ValueError(f"The '{view}' view cannot be placed inside "
                                  "another view")
 
+        filename_view = view.replace('/', '-')
         if self.project_type == 'modern':
             if view:
                 inventory = AnsibleInventory(self, view, **self.kwargs)
@@ -482,12 +504,33 @@ class ProjectDir(object):
                                                       'view.yml.j2'))
                         .decode('utf-8'), trim_blocks=True)
 
+                default_view_gitattributes = jinja2.Template(
+                        pkgutil.get_data('debops',
+                                         os.path.join('_data',
+                                                      'templates',
+                                                      'projectdir',
+                                                      'modern',
+                                                      'view',
+                                                      'gitattributes.j2'))
+                        .decode('utf-8'), trim_blocks=True)
+
+                default_view_gitignore = jinja2.Template(
+                        pkgutil.get_data('debops',
+                                         os.path.join('_data',
+                                                      'templates',
+                                                      'projectdir',
+                                                      'modern',
+                                                      'view',
+                                                      'gitignore.j2'))
+                        .decode('utf-8'), trim_blocks=True)
+
                 default_inventory_keyring = jinja2.Template(
                         pkgutil.get_data('debops',
                                          os.path.join('_data',
                                                       'templates',
                                                       'projectdir',
                                                       'modern',
+                                                      'view',
                                                       'inventory',
                                                       'group_vars',
                                                       'all',
@@ -495,10 +538,30 @@ class ProjectDir(object):
                         .decode('utf-8'), trim_blocks=True)
 
                 # Create .debops/conf.d/view-<name>.yml
-                self._write_file(os.path.join(self.path, '.debops', 'conf.d',
-                                              'view-' + view + '.yml'),
-                                 default_view_yml.render(env=os.environ,
-                                                         view_name=view)
+                self._write_file(
+                        os.path.join(self.path, '.debops', 'conf.d',
+                                     'view-' + filename_view + '.yml'),
+                        default_view_yml.render(env=os.environ,
+                                                view_name=view)
+                        + '\n')
+
+                encrypted_secrets = self.kwargs.get('encrypt', None)
+
+                # Create view/.gitattributes
+                self._write_file(os.path.join(self.path, 'ansible', 'views',
+                                              view, '.gitattributes'),
+                                 default_view_gitattributes.render(
+                                     secret_name='secret',
+                                     encrypted_secrets=encrypted_secrets)
+                                 + '\n')
+
+                # Create view/.gitignore
+                self._write_file(os.path.join(self.path, 'ansible', 'views',
+                                              view, '.gitignore'),
+                                 default_view_gitignore.render(
+                                     encrypted_secrets=encrypted_secrets,
+                                     secret_name='secret',
+                                     encfs_prefix='.encfs.')
                                  + '\n')
 
                 # Create view/inventory/group_vars/all/keyring.yml
