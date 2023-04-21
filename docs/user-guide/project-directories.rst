@@ -38,25 +38,25 @@ directory and generate an initial Ansible inventory :file:`hosts` file:
 .. code-block:: none
 
    ~/src/projects/project1/
-   ├── ansible
-   │   ├── collections
-   │   │   ├── ansible_collections
+   ├── ansible/
+   │   ├── collections/
+   │   │   ├── ansible_collections/
    │   │   └── requirements.yml
-   │   ├── inventory
-   │   │   ├── group_vars
-   │   │   │   └── all
+   │   ├── inventory/
+   │   │   ├── group_vars/
+   │   │   │   └── all/
    │   │   │       └── keyring.yml
    │   │   ├── hosts
-   │   │   └── host_vars
-   │   ├── keyring
-   │   ├── overrides
-   │   │   ├── files
-   │   │   ├── tasks
-   │   │   └── templates
-   │   ├── playbooks
-   │   │   └── roles
-   │   ├── resources
-   │   └── secret
+   │   │   └── host_vars/
+   │   ├── keyring/
+   │   ├── overrides/
+   │   │   ├── files/
+   │   │   ├── tasks/
+   │   │   └── templates/
+   │   ├── playbooks/
+   │   │   └── roles/
+   │   ├── resources/
+   │   └── secret/
    ├── ansible.cfg
    ├── .debops.cfg
    └── .gitignore
@@ -69,8 +69,8 @@ trimmed to make the result easier to read):
 
    ~/src/projects/project1/
    ├── ansible/
-   │   ├── collections
-   │   │   ├── ansible_collections
+   │   ├── collections/
+   │   │   ├── ansible_collections/
    │   │   └── requirements.yml
    │   ├── inventory/
    │   │   ├── group_vars/
@@ -89,11 +89,11 @@ trimmed to make the result easier to read):
    │   │   │   └── host2/
    │   │   │       └── nginx.yml
    │   │   └── hosts
-   │   ├── keyring
-   │   ├── overrides
-   │   │   ├── files
-   │   │   ├── tasks
-   │   │   └── templates
+   │   ├── keyring/
+   │   ├── overrides/
+   │   │   ├── files/
+   │   │   ├── tasks/
+   │   │   └── templates/
    │   ├── playbooks/
    │   │   ├── deployment.yml
    │   │   └── roles/
