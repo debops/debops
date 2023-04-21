@@ -363,6 +363,15 @@ class ProjectDir(object):
         inventory = AnsibleInventory(self, self.name, **self.kwargs)
         inventory.create()
 
+        default_requirements = jinja2.Template(
+                pkgutil.get_data('debops',
+                                 os.path.join('_data',
+                                              'templates',
+                                              'projectdir',
+                                              'modern',
+                                              'requirements.yml.j2'))
+                .decode('utf-8'), trim_blocks=True)
+
         default_debops_cfg = jinja2.Template(
                 pkgutil.get_data('debops',
                                  os.path.join('_data',
@@ -388,6 +397,19 @@ class ProjectDir(object):
                                               'projectdir',
                                               'legacy',
                                               'gitignore.j2'))
+                .decode('utf-8'), trim_blocks=True)
+
+        default_inventory_keyring = jinja2.Template(
+                pkgutil.get_data('debops',
+                                 os.path.join('_data',
+                                              'templates',
+                                              'projectdir',
+                                              'legacy',
+                                              'ansible',
+                                              'inventory',
+                                              'group_vars',
+                                              'all',
+                                              'keyring.yml.j2'))
                 .decode('utf-8'), trim_blocks=True)
 
         try:
@@ -429,6 +451,18 @@ class ProjectDir(object):
                              encrypted_secrets=encrypted_secrets,
                              secret_name='secret',
                              encfs_prefix='.encfs.')
+                         + '\n')
+
+        # Create ansible/collections/requirements.yml
+        self._write_file(os.path.join(path, 'ansible', 'collections',
+                                      'requirements.yml'),
+                         default_requirements.render()
+                         + '\n')
+
+        # Create ansible/inventory/group_vars/all/keyring.yml
+        self._write_file(os.path.join(path, 'ansible', 'inventory',
+                                      'group_vars', 'all', 'keyring.yml'),
+                         default_inventory_keyring.render()
                          + '\n')
 
         debops_cfg = (self.config.raw['views']['system']['ansible'])

@@ -38,23 +38,25 @@ directory and generate an initial Ansible inventory :file:`hosts` file:
 .. code-block:: none
 
    ~/src/projects/project1/
-   ├── ansible
-   │   ├── collections
-   │   │   └── ansible_collections
-   │   ├── inventory
-   │   │   ├── group_vars
-   │   │   │   └── all
+   ├── ansible/
+   │   ├── collections/
+   │   │   ├── ansible_collections/
+   │   │   └── requirements.yml
+   │   ├── inventory/
+   │   │   ├── group_vars/
+   │   │   │   └── all/
+   │   │   │       └── keyring.yml
    │   │   ├── hosts
-   │   │   └── host_vars
-   │   ├── keyring
-   │   ├── overrides
-   │   │   ├── files
-   │   │   ├── tasks
-   │   │   └── templates
-   │   ├── playbooks
-   │   │   └── roles
-   │   ├── resources
-   │   └── secret
+   │   │   └── host_vars/
+   │   ├── keyring/
+   │   ├── overrides/
+   │   │   ├── files/
+   │   │   ├── tasks/
+   │   │   └── templates/
+   │   ├── playbooks/
+   │   │   └── roles/
+   │   ├── resources/
+   │   └── secret/
    ├── ansible.cfg
    ├── .debops.cfg
    └── .gitignore
@@ -67,12 +69,14 @@ trimmed to make the result easier to read):
 
    ~/src/projects/project1/
    ├── ansible/
-   │   ├── collections
-   │   │   └── ansible_collections
+   │   ├── collections/
+   │   │   ├── ansible_collections/
+   │   │   └── requirements.yml
    │   ├── inventory/
    │   │   ├── group_vars/
    │   │   │   ├── all/
    │   │   │   │   ├── apt.yml
+   │   │   │   │   ├── keyring.yml
    │   │   │   │   └── users.yml
    │   │   │   ├── appservers/
    │   │   │   │   ├── php.yml
@@ -85,11 +89,11 @@ trimmed to make the result easier to read):
    │   │   │   └── host2/
    │   │   │       └── nginx.yml
    │   │   └── hosts
-   │   ├── keyring
-   │   ├── overrides
-   │   │   ├── files
-   │   │   ├── tasks
-   │   │   └── templates
+   │   ├── keyring/
+   │   ├── overrides/
+   │   │   ├── files/
+   │   │   ├── tasks/
+   │   │   └── templates/
    │   ├── playbooks/
    │   │   ├── deployment.yml
    │   │   └── roles/
@@ -294,7 +298,7 @@ to save them in DebOps configuration files after testing them.
 Ansible Collection requirements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:modern: :file:`ansible/collections/requirements.yml`
+:both: :file:`ansible/collections/requirements.yml`
 
 This file contains a `list of Ansible Collections`__ which are required by
 DebOps or other parts of a given project. It can be edited and committed to
