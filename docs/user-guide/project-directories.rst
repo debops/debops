@@ -45,6 +45,7 @@ directory and generate an initial Ansible inventory :file:`hosts` file:
    │   ├── inventory
    │   │   ├── group_vars
    │   │   │   └── all
+   │   │   │       └── keyring.yml
    │   │   ├── hosts
    │   │   └── host_vars
    │   ├── keyring
@@ -75,6 +76,7 @@ trimmed to make the result easier to read):
    │   │   ├── group_vars/
    │   │   │   ├── all/
    │   │   │   │   ├── apt.yml
+   │   │   │   │   ├── keyring.yml
    │   │   │   │   └── users.yml
    │   │   │   ├── appservers/
    │   │   │   │   ├── php.yml

@@ -399,6 +399,19 @@ class ProjectDir(object):
                                               'gitignore.j2'))
                 .decode('utf-8'), trim_blocks=True)
 
+        default_inventory_keyring = jinja2.Template(
+                pkgutil.get_data('debops',
+                                 os.path.join('_data',
+                                              'templates',
+                                              'projectdir',
+                                              'legacy',
+                                              'ansible',
+                                              'inventory',
+                                              'group_vars',
+                                              'all',
+                                              'keyring.yml.j2'))
+                .decode('utf-8'), trim_blocks=True)
+
         try:
             os.makedirs(path)
         except FileExistsError:
@@ -444,6 +457,12 @@ class ProjectDir(object):
         self._write_file(os.path.join(path, 'ansible', 'collections',
                                       'requirements.yml'),
                          default_requirements.render()
+                         + '\n')
+
+        # Create ansible/inventory/group_vars/all/keyring.yml
+        self._write_file(os.path.join(path, 'ansible', 'inventory',
+                                      'group_vars', 'all', 'keyring.yml'),
+                         default_inventory_keyring.render()
                          + '\n')
 
         debops_cfg = (self.config.raw['views']['system']['ansible'])
