@@ -40,7 +40,8 @@ directory and generate an initial Ansible inventory :file:`hosts` file:
    ~/src/projects/project1/
    ├── ansible
    │   ├── collections
-   │   │   └── ansible_collections
+   │   │   ├── ansible_collections
+   │   │   └── requirements.yml
    │   ├── inventory
    │   │   ├── group_vars
    │   │   │   └── all
@@ -68,7 +69,8 @@ trimmed to make the result easier to read):
    ~/src/projects/project1/
    ├── ansible/
    │   ├── collections
-   │   │   └── ansible_collections
+   │   │   ├── ansible_collections
+   │   │   └── requirements.yml
    │   ├── inventory/
    │   │   ├── group_vars/
    │   │   │   ├── all/
@@ -294,7 +296,7 @@ to save them in DebOps configuration files after testing them.
 Ansible Collection requirements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:modern: :file:`ansible/collections/requirements.yml`
+:both: :file:`ansible/collections/requirements.yml`
 
 This file contains a `list of Ansible Collections`__ which are required by
 DebOps or other parts of a given project. It can be edited and committed to
