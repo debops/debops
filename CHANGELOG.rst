@@ -782,6 +782,10 @@ General
   functionality is now incorporated within the DebOps configuration tree
   accessible using the :ref:`cmd_debops-config` command.
 
+- The :command:`debops-api` code and Ansible role has been removed from the
+  project, since it's not relevant anymore after separate :command:`git`
+  repositories were merged into a monorepo.
+
 :ref:`debops.apt_install` role
 ''''''''''''''''''''''''''''''
 
