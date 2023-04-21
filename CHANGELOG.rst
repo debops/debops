@@ -92,6 +92,16 @@ Fixed
   correctly. After that re-run the :ref:`debops.pki` role on the host to
   re-create che realms.
 
+Removed
+~~~~~~~
+
+General
+'''''''
+
+- The :command:`debops-api` code and Ansible role has been removed from the
+  project, since it's not relevant anymore after separate :command:`git`
+  repositories were merged into a monorepo.
+
 
 `debops v2.2.9`_ - 2023-03-09
 -----------------------------
