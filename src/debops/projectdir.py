@@ -363,6 +363,15 @@ class ProjectDir(object):
         inventory = AnsibleInventory(self, self.name, **self.kwargs)
         inventory.create()
 
+        default_requirements = jinja2.Template(
+                pkgutil.get_data('debops',
+                                 os.path.join('_data',
+                                              'templates',
+                                              'projectdir',
+                                              'modern',
+                                              'requirements.yml.j2'))
+                .decode('utf-8'), trim_blocks=True)
+
         default_debops_cfg = jinja2.Template(
                 pkgutil.get_data('debops',
                                  os.path.join('_data',
@@ -429,6 +438,12 @@ class ProjectDir(object):
                              encrypted_secrets=encrypted_secrets,
                              secret_name='secret',
                              encfs_prefix='.encfs.')
+                         + '\n')
+
+        # Create ansible/collections/requirements.yml
+        self._write_file(os.path.join(path, 'ansible', 'collections',
+                                      'requirements.yml'),
+                         default_requirements.render()
                          + '\n')
 
         debops_cfg = (self.config.raw['views']['system']['ansible'])
