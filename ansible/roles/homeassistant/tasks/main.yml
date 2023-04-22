@@ -44,6 +44,8 @@
   become: True
   become_user: '{{ homeassistant__user }}'
   register: homeassistant__register_git
+  # If running with --diff, do not output a massive diff.
+  no_log: True
   when: (homeassistant__deploy_state == "present")
 
 - name: Install hass without virtualenv
