@@ -26,6 +26,12 @@ You can read information about required changes between releases in the
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.owncloud` role, Nextcloud now defaults to ``v25.0``.
+  Support for ``v24.0`` has been dropped.
+
 General
 '''''''
 
