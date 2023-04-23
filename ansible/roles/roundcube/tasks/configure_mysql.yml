@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Create Roundcube MySQL/MariaDB database
-  community.general.mysql_db:
+  community.mysql.mysql_db:
     name: '{{ roundcube__database_map[roundcube__database].dbname }}'
     state: 'present'
     login_unix_socket: '/run/mysqld/mysqld.sock'
@@ -12,7 +12,7 @@
   register: roundcube__register_database_status
 
 - name: Import initial database schema
-  community.general.mysql_db:  # noqa no-handler
+  community.mysql.mysql_db:  # noqa no-handler
     name: '{{ roundcube__database_map[roundcube__database].dbname }}'
     state: import
     target: '{{ roundcube__database_schema }}'
