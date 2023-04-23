@@ -19,7 +19,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Grant connect on postgres to PUBLIC
-  community.general.postgresql_privs:
+  community.postgresql.postgresql_privs:
     database: 'postgres'
     port: '{{ item.port }}'
     role: 'PUBLIC'
@@ -35,7 +35,7 @@
   changed_when: False  # Module always reports "changed" for PUBLIC role
 
 - name: Revoke temporary on postgres from PUBLIC
-  community.general.postgresql_privs:
+  community.postgresql.postgresql_privs:
     database: 'postgres'
     port: '{{ item.port }}'
     role: 'PUBLIC'

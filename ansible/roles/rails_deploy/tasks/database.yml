@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Create PostgreSQL user
-  community.general.postgresql_user:
+  community.postgresql.postgresql_user:
     login_host: '{{ rails_deploy_database_host }}'
     port: '{{ rails_deploy_database_port }}'
     login_user: '{{ rails_deploy_postgresql_super_username }}'
@@ -23,7 +23,7 @@
   become_user: '{{ rails_deploy_postgresql_super_username }}'
 
 - name: Create PostgreSQL database if enabled
-  community.general.postgresql_db:
+  community.postgresql.postgresql_db:
     login_host: '{{ rails_deploy_database_host }}'
     port: '{{ rails_deploy_database_port }}'
     login_user: '{{ rails_deploy_postgresql_super_username }}'

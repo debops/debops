@@ -131,7 +131,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Create Icinga Web PostgreSQL tables
-  community.general.postgresql_db:
+  community.postgresql.postgresql_db:
     name: '{{ icinga_web__database_name }}'
     state: 'restore'
     target: '{{ item }}'
@@ -147,7 +147,7 @@
         icinga_web__database_init | bool
 
 - name: Create Icinga Web x509 PostgreSQL tables
-  community.general.postgresql_db:
+  community.postgresql.postgresql_db:
     name: '{{ icinga_web__x509_database_name }}'
     state: 'restore'
     target: '{{ icinga_web__x509_database_schema }}'
