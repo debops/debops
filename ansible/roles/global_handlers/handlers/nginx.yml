@@ -6,10 +6,14 @@
 
 - name: Test nginx and restart
   ansible.builtin.command: nginx -t
+  register: nginx__register_check_restart
+  changed_when: nginx__register_check_restart.changed | bool
   notify: [ 'Restart nginx' ]
 
 - name: Test nginx and reload
   ansible.builtin.command: nginx -t
+  register: nginx__register_check_reload
+  changed_when: nginx__register_check_reload.changed | bool
   notify: [ 'Reload nginx' ]
 
 - name: Restart nginx

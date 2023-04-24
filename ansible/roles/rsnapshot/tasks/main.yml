@@ -123,7 +123,7 @@
     rrsync_source: '{{ item.rrsync_source | d(rsnapshot__rrsync_source) }}'
     rrsync_binary: '{{ item.rrsync_binary | d(rsnapshot__rrsync_binary) }}'
   ansible.builtin.shell: |
-    set -o nounset -o pipefail -o errorexit
+    set -o nounset -o pipefail -o errexit
     if [ -r "${rrsync_source}.gz" ] ; then
         gzip -d -c "${rrsync_source}.gz" > "${rrsync_binary}"
     elif [ -r "${rrsync_source}" ] ; then
@@ -164,7 +164,7 @@
   environment:  # noqa no-handler
     item_fqdn: '{{ item.item.fqdn | d(hostvars[item.item.name].ansible_fqdn if hostvars[item.item.name] | d() else item.item.name) }}'
   ansible.builtin.shell: |
-    set -o nounset -o pipefail -o errorexit
+    set -o nounset -o pipefail -o errexit
     if type dig > /dev/null ; then
         host_names=(
             "${item_fqdn}"

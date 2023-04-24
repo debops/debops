@@ -5,6 +5,8 @@
 
 - name: Test filebeat configuration and restart
   ansible.builtin.command: 'filebeat test config'
+  register: filebeat__register_test_config
+  changed_when: filebeat__register_test_config.changed | bool
   notify:
     - 'Restart filebeat'
     - 'Commit changes in etckeeper'
@@ -12,6 +14,8 @@
 
 - name: Test filebeat output and restart
   ansible.builtin.command: 'filebeat test output'
+  register: filebeat__register_test_output
+  changed_when: filebeat__register_test_output.changed | bool
   notify: [ 'Restart filebeat' ]
   when: (ansible_local.filebeat.installed | d()) | bool
 

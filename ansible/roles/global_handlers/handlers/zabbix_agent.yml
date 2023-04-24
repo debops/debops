@@ -5,11 +5,15 @@
 
 - name: Check zabbix-agent and restart
   ansible.builtin.command: '/usr/sbin/zabbix_agentd --print'
+  register: zabbix_agent__register_config_test_c
+  changed_when: zabbix_agent__register_config_test_c.changed | bool
   when: zabbix_agent__flavor == 'C'
   notify: [ 'Restart zabbix-agent' ]
 
 - name: Check zabbix-agent2 and restart
   ansible.builtin.command: '/usr/sbin/zabbix_agent2 --print'
+  register: zabbix_agent__register_config_test_go
+  changed_when: zabbix_agent__register_config_test_go.changed | bool
   when: zabbix_agent__flavor == 'Go'
   notify: [ 'Restart zabbix-agent2' ]
 

@@ -15,10 +15,14 @@
 
 - name: Check postfix and restart
   ansible.builtin.command: /usr/sbin/postfix -c /etc/postfix check
+  register: postfix__register_check_restart
+  changed_when: postfix__register_check_restart.changed | bool
   notify: [ 'Restart postfix' ]
 
 - name: Check postfix and reload
   ansible.builtin.command: /usr/sbin/postfix -c /etc/postfix check
+  register: postfix__register_check_reload
+  changed_when: postfix__register_check_reload.changed | bool
   notify: [ 'Reload postfix' ]
 
 - name: Restart postfix

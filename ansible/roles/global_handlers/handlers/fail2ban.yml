@@ -20,3 +20,5 @@
 - name: Reload fail2ban jails
   ansible.builtin.shell: type fail2ban-server > /dev/null
          && (fail2ban-client ping > /dev/null && fail2ban-client reload > /dev/null || true) || true
+  register: fail2ban__register_reload
+  changed_when: fail2ban__register_reload.changed | bool

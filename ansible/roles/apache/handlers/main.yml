@@ -5,6 +5,8 @@
 
 - name: Test apache and reload
   ansible.builtin.command: apache2ctl configtest
+  register: apache__register_reload
+  changed_when: apache__register_reload.changed | bool
   notify: [ 'Reload apache' ]
 
 # - name: Test apache and restart

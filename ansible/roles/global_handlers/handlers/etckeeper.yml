@@ -6,4 +6,6 @@
 
 - name: Commit changes in etckeeper
   ansible.builtin.shell: etckeeper unclean && etckeeper commit 'Committed by Ansible "etckeeper" handler' || true
+  register: etckeeper__register_commit
+  changed_when: etckeeper__register_commit.changed | bool
   when: (ansible_local.etckeeper.enabled | d()) | bool

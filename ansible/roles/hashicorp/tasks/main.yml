@@ -154,7 +154,8 @@
       tags: [ 'role::hashicorp:verify' ]
 
     - name: Check file signatures
-      ansible.builtin.shell: grep --file <(find . -type f -printf "%f$\n")
+      ansible.builtin.shell: set -o nounset -o pipefail -o errexit &&
+             grep --file <(find . -type f -printf "%f$\n")
              {{ item + '_' + hashicorp__combined_version_map[item] + '_' + hashicorp__hash_suffix }}
              | sha256sum --check --status
       args:
