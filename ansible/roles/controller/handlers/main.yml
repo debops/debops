@@ -15,6 +15,7 @@
 - name: Update DebOps in the background with batch
   become: '{{ controller__install_systemwide | bool }}'
   ansible.builtin.shell: |
+    set -o nounset -o pipefail -o errexit &&
     type debops-update > /dev/null 2>&1 && (echo 'debops-update' | batch > /dev/null 2>&1) || true
   register: controller__register_update_batch
   changed_when: controller__register_update_batch.changed | bool

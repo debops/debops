@@ -13,6 +13,7 @@
 
 - name: Update Postwhite in the background using batch
   ansible.builtin.shell: |
+    set -o nounset -o pipefail -o errexit &&
     echo '/usr/local/lib/postwhite' | batch > /dev/null 2>&1
   register: postwhite__register_batch
   changed_when: postwhite__register_batch.changed | bool
