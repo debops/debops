@@ -6,6 +6,8 @@
 
 - name: Test sshd configuration and restart
   ansible.builtin.command: sshd -t
+  register: sshd__register_test_config
+  changed_when: sshd__register_test_config.changed | bool
   notify: [ 'Restart sshd' ]
 
 - name: Restart sshd

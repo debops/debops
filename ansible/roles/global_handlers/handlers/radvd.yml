@@ -5,6 +5,8 @@
 
 - name: Test radvd and restart
   ansible.builtin.command: radvd --configtest
+  register: radvd__register_test_config
+  changed_when: radvd__register_test_config.changed | bool
   notify: [ 'Restart radvd' ]
 
 - name: Restart radvd

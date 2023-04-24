@@ -5,3 +5,5 @@
 
 - name: Update initramfs
   ansible.builtin.command: update-initramfs -u {{ dropbear_initramfs__update_options }}
+  register: dropbear_initramfs__register_update
+  changed_when: dropbear_initramfs__register_update.changed | bool

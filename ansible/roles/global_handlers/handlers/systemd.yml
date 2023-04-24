@@ -14,4 +14,6 @@
   ansible.builtin.command: 'systemd-tmpfiles --create'
   listen:
     - 'Create temporary files'
+  register: systemd__register_tmpfiles
+  changed_when: systemd__register_tmpfiles.stdout != ''
   when: ansible_service_mgr == 'systemd'

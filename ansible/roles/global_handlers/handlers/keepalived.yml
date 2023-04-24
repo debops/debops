@@ -5,10 +5,14 @@
 
 - name: Check keepalived configuration and restart
   ansible.builtin.command: keepalived --config-test
+  register: keepalived__register_config_restart
+  changed_when: keepalived__register_config_restart.changed | bool
   notify: [ 'Restart keepalived' ]
 
 - name: Check keepalived configuration and reload
   ansible.builtin.command: keepalived --config-test
+  register: keepalived__register_config_reload
+  changed_when: keepalived__register_config_reload.changed | bool
   notify: [ 'Reload keepalived' ]
 
 - name: Restart keepalived

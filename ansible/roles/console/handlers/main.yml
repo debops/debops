@@ -5,6 +5,8 @@
 
 - name: Reload sysvinit
   ansible.builtin.command: telinit q
+  register: console__register_telinit
+  changed_when: console__register_telinit.changed | bool
 
 # FIXME: To be integrated in the 'nfs' role
 #- name: Restart remote-fs.target

@@ -5,6 +5,8 @@
 
 - name: Check freeradius configuration and restart
   ansible.builtin.command: freeradius -C
+  register: freeradius__register_check_config
+  changed_when: freeradius__register_check_config.changed | bool
   notify: [ 'Restart freeradius' ]
 
 - name: Restart freeradius
