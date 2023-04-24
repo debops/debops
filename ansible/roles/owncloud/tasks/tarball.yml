@@ -103,7 +103,7 @@
       tags: [ 'role::nextcloud:download', 'role::nextcloud:verify' ]
 
     - name: Download application archive
-      ansible.builtin.get_url:
+      ansible.builtin.get_url:  # noqa no-handler
         url: '{{ owncloud__variant_download_url_map[owncloud__variant] + "/" +
                  owncloud__variant + "-" + owncloud__register_full_version.stdout_lines[0] + ".zip" }}'
         dest: '{{ owncloud__src + "/" + owncloud__variant + "/" + owncloud__register_full_version.stdout_lines[0] }}'
