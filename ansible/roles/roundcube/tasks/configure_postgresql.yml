@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Create Roundcube PostgreSQL database
-  community.general.postgresql_db:
+  community.postgresql.postgresql_db:
     name: '{{ roundcube__database_map[roundcube__database].dbname }}'
     owner: '{{ roundcube__database_map[roundcube__database].dbuser }}'
     state: 'present'
@@ -12,7 +12,7 @@
   register: roundcube__register_postgresql_status
 
 - name: Import initial database schema
-  community.general.postgresql_db:  # noqa no-handler
+  community.postgresql.postgresql_db:  # noqa no-handler
     name: '{{ roundcube__database_map[roundcube__database].dbname }}'
     state: 'restore'
     target: '{{ roundcube__database_schema }}'
