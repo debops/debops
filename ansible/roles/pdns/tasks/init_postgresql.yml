@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 - name: Create PostgreSQL database
-  community.general.postgresql_db:
+  community.postgresql.postgresql_db:
     name: '{{ pdns__postgresql_database }}'
     owner: '{{ pdns__postgresql_role }}'
     state: 'present'
@@ -12,7 +12,7 @@
   register: pdns__register_postgresql_status
 
 - name: Import initial database schema
-  community.general.postgresql_db:
+  community.postgresql.postgresql_db:
     login_user: '{{ pdns__postgresql_role }}'
     login_password: '{{ pdns__postgresql_password }}'
     name: '{{ pdns__postgresql_database }}'
