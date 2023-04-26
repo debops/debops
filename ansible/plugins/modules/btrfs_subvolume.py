@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Copyright (c) 2014, Ilya Barsukov <barsukov@selectel.ru>, Selectel LLC
 # SPDX-License-Identifier: GPL-3.0-or-later
 #

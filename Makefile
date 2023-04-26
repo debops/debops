@@ -180,18 +180,26 @@ check-links:
 	@printf "%s\n" "Checking external links in documentation..."
 	@cd docs && sphinx-build -n -b linkcheck -d _build/doctrees . _build/linkcheck
 
+ansible.cfg:
+	@printf "%s\n" "Generating new ansible.cfg file..."
+	@./lib/tests/ansible-cfg-generator
+
+.PHONY: install-collections
+install-collections: ansible.cfg
+	@printf "%s\n" "Installing Ansible Collection dependencies..."
+	@ansible-galaxy collection install -v -r requirements.yml
+
 .PHONY: test-playbook-syntax
-test-playbook-syntax:
+test-playbook-syntax: ansible.cfg install-collections
 	@printf "%s\n" "Testing Ansible playbook syntax..."
-	@ANSIBLE_ROLES_PATH="ansible/roles" ANSIBLE_HOST_PATTERN_MISMATCH=ignore \
-	 ANSIBLE_COLLECTIONS_PATH="ansible/collections:$(HOME)/.ansible/collections:/usr/share/ansible/collections" \
+	@ANSIBLE_HOST_PATTERN_MISMATCH=ignore \
 	 ansible-playbook --syntax-check ansible/playbooks/bootstrap.yml \
 		                         ansible/playbooks/bootstrap-ldap.yml \
 		                         ansible/playbooks/bootstrap-sss.yml \
 		                         ansible/playbooks/site.yml
 
 .PHONY: test-ansible-lint
-test-ansible-lint:
+test-ansible-lint: ansible.cfg
 	@printf "%s\n" "Checking Ansible content using ansible-lint..."
 	@ansible-lint -v
 
