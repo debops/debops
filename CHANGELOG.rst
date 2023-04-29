@@ -53,6 +53,13 @@ New DebOps roles
   with the DebOps template override system and the ``template_src`` lookup
   plugin.
 
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- Starting with NetBox ``v3.4.9``, anonymized reporting of census data is being
+  enabled by default. DebOps respects this upstream default. You can change it
+  using :envvar:`netbox__config_census_reporting`.
+
 :ref:`debops.resolved` role
 '''''''''''''''''''''''''''
 
