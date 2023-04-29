@@ -32,6 +32,13 @@ Added
 - A new local fact, ``ansible_local.core.is_64bits``, can be used to determine
   if the current system supports 32-bit or 64-bit architecture.
 
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- Starting with NetBox ``v3.4.9``, anonymized reporting of census data is being
+  enabled by default. DebOps respects this upstream default. You can change it
+  using :envvar:`netbox__config_census_reporting`.
+
 Changed
 ~~~~~~~
 
