@@ -240,6 +240,10 @@ General
   the :ref:`debops.ldap` role is detected on the host. Currently only user
   authentication and Django ACL system is supported via LDAP groups.
 
+- Starting with NetBox ``v3.4.9``, anonymized reporting of census data is being
+  enabled by default. DebOps respects this upstream default. You can change it
+  using :envvar:`netbox__config_census_reporting`.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
