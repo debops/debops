@@ -469,6 +469,13 @@ General
   through Ansible inventory might need to be converted to the new format. Check
   the changes on existing hosts before applying new configuration.
 
+:ref:`debops.system_users` role
+'''''''''''''''''''''''''''''''
+
+- The role will check remote user databases for local admin information using
+  the :command:`getent passwd` command if the user has not been found in the
+  :file:`/etc/passwd` local database.
+
 Fixed
 ~~~~~
 
