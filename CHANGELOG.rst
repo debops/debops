@@ -63,6 +63,13 @@ Updates of upstream application versions
   default security level for access to the :file:`/proc` filesystem will be
   more permissive.
 
+:ref:`debops.system_users` role
+'''''''''''''''''''''''''''''''
+
+- The role will check remote user databases for local admin information using
+  the :command:`getent passwd` command if the user has not been found in the
+  :file:`/etc/passwd` local database.
+
 Fixed
 ~~~~~
 
