@@ -35,7 +35,7 @@
     state: absent
   when:
     - item.item.standby is defined
-    - item is changed
+    - item is changed  # noqa no-handler
     - item is success
   with_items: '{{ postgresql_server__register_createcluster.results }}'
   loop_control:
@@ -60,7 +60,7 @@
   become_user: '{{ item.user | d(postgresql_server__user) }}'
   when:
     - item.item.standby is defined
-    - item is changed
+    - item is changed  # noqa no-handler
     - item is success
   with_items: '{{ postgresql_server__register_createcluster.results }}'
   loop_control:
