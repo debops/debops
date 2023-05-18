@@ -1,0 +1,74 @@
+{# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2023 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# {{ ansible_managed }}
+
+############# config ##################
+#
+{% for element in item.options %}
+{%   if element.name | d() and element.value is defined and element.state | d('present') not in [ 'absent', 'ignore' ] %}
+{%     set element_comment = ('# ' if (element.state | d('present') in [ 'init', 'comment' ]) else '') %}
+{%     if element.value is string and not element.value | bool %}
+{%       set element_value = element.value %}
+{%     elif element.value | bool and element.value is not iterable %}
+{%       if element.value | string == '1' %}
+{%         set element_value = element.value %}
+{%       else %}
+{%         set element_value = 'yes' %}
+{%       endif %}
+{%     elif not element.value | bool and element.value is not iterable %}
+{%       if element.value is not none %}
+{%         if element.value | int %}
+{%           set element_value = element.value %}
+{%         else %}
+{%           if element.value | string == '0' %}
+{%             set element_value = element.value %}
+{%           else %}
+{%             set element_value = 'no' %}
+{%           endif %}
+{%         endif %}
+{%       endif %}
+{%     endif %}
+{%     if element.state | d('present') == 'dynamic' %}
+{%       if element.name == 'var_path' %}
+{%         set element_value = '$base_path/var/var.' + item.name %}
+{%       endif %}
+{%     endif %}
+{%     if element.comment | d() %}
+{{       '' }}
+{{       element.comment | regex_replace('$\n', '') | comment(prefix='', postfix='') -}}
+{%     endif %}
+{{     '{}set {} {}'.format(element_comment, element.name, element_value) }}
+{%   endif %}
+{% endfor %}
+#
+############# end config ##############
+
+{% for element in item.sources %}
+{%   if element.name | d() and element.state | d('present') not in [ 'absent', 'ignore' ] %}
+{%     set element_comment = ('#' if (element.state | d('present') in [ 'init', 'comment' ]) else '') %}
+{%     if element.raw | d() %}
+{%       set element_value = element.raw %}
+{%     elif element.type | d() and element.uri | d() %}
+{%       set element_entry = [] %}
+{%       set _ = element_entry.append(element.type) %}
+{%       set _ = element_entry.append(element.uri) %}
+{%       if element.suite | d() %}
+{%         set _ = element_entry.append(element.suite) %}
+{%       endif %}
+{%       if element.component | d() %}
+{%         set _ = element_entry.append(element.component) %}
+{%       endif %}
+{%       if element.components | d() %}
+{%         set _ = element_entry.extend(element.components) %}
+{%       endif %}
+{%       set element_value = element_entry | join(' ') %}
+{%     endif %}
+{%     if element.comment | d() %}
+{{       '' }}
+{{       element.comment | regex_replace('$\n', '') | comment(prefix='', postfix='') -}}
+{%     endif %}
+{{     '{}{}'.format(element_comment, element_value) }}
+{%   endif %}
+{% endfor %}

@@ -1,0 +1,226 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+# .. Copyright (C) 2023 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-or-later
+
+# .. _apt_mirror__ref_defaults:
+
+# debops.apt_mirror default variables
+# ===================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# APT packages, UNIX environment, cron defaults [[[
+# -------------------------------------------------
+
+# .. envvar:: apt_mirror__base_packages [[[
+#
+# List of Debian packages required for :command:`apt-mirror` support.
+apt_mirror__base_packages: [ 'apt-mirror' ]
+
+                                                                   # ]]]
+# .. envvar:: apt_mirror__packages [[[
+#
+# List of additional packages to install with :command:`apt-mirror` package.
+apt_mirror__packages: []
+
+                                                                   # ]]]
+# .. envvar:: apt_mirror__cron_environment [[[
+#
+# YAML dictionary which defines the environment variables (keys) and their
+# values which will be defined in the :command:`cron` runtime environment for
+# the :command:`apt-mirror` cron jobs. See :man:`crontab(5)` for details.
+apt_mirror__cron_environment: {}
+
+                                                                   # ]]]
+# .. envvar:: apt_mirror__cron_time [[[
+#
+# The default time specification for :command:`apt-mirror` cron jobs, specified
+# in the :man:`crontab(5)` format. This value can be overridden per-mirror
+# configuration using the ``item.cron_time`` parameter.
+apt_mirror__cron_time: "0 4\t* * *"
+
+                                                                   # ]]]
+# .. envvar:: apt_mirror__user [[[
+#
+# The UNIX account of the :command:`apt-mirror` service.
+apt_mirror__user: 'apt-mirror'
+
+                                                                   # ]]]
+# .. envvar:: apt_mirror__group [[[
+#
+# The UNIX group of the :command:`apt-mirror` service.
+apt_mirror__group: 'apt-mirror'
+                                                                   # ]]]
+                                                                   # ]]]
+# Web server configuration [[[
+# ----------------------------
+
+# .. envvar:: apt_mirror__fqdn [[[
+#
+# The Fully Qualified Domain Name on which mirrored APT repositories will be
+# published.
+apt_mirror__fqdn: '{{ ansible_fqdn }}'
+
+                                                                   # ]]]
+# .. envvar:: apt_mirror__web_root [[[
+#
+# Absolute path to the directory with mirrored APT repositories.
+apt_mirror__web_root: '/var/spool/apt-mirror/mirror'
+                                                                   # ]]]
+                                                                   # ]]]
+# The default :command:`apt-mirror` configuration options [[[
+# -----------------------------------------------------------
+
+# .. envvar:: apt_mirror__default_options [[[
+#
+# List of YAML dictionaries which define default set of :command:`apt-mirror`
+# configuration options. These options can be overridden in specific instances
+# if necessary. See :ref:`apt_mirror__ref_configuration` for more details.
+apt_mirror__default_options:
+
+  - name: 'base_path'
+    value: '/var/spool/apt-mirror'
+    state: 'comment'
+
+  - name: 'mirror_path'
+    value: '$base_path/mirror'
+    state: 'comment'
+
+  - name: 'skel_path'
+    value: '$base_path/skel'
+    state: 'comment'
+
+  - name: 'var_path'
+    value: '$base_path/var'
+    state: 'dynamic'
+
+  - name: 'cleanscript'
+    value: '$var_path/clean.sh'
+    state: 'comment'
+
+  - name: 'defaultarch'
+    value: '<running host architecture>'
+    state: 'comment'
+
+  - name: 'postmirror_script'
+    value: '$var_path/postmirror.sh'
+    state: 'comment'
+
+  - name: 'run_postmirror'
+    value: 0
+    state: 'comment'
+
+  - name: 'nthreads'
+    value: 20
+
+  - name: '_tilde'
+    value: 0
+                                                                   # ]]]
+                                                                   # ]]]
+# The :command:`apt-mirror` instance configuration [[[
+# ----------------------------------------------------
+
+# The variables below define configuration of :command:`apt-mirror`
+# "instances". See :ref:`apt_mirror__ref_configuration` for more details.
+
+# .. envvar:: apt_mirror__default_configuration [[[
+#
+# The default instance configuration defined by the role.
+apt_mirror__default_configuration:
+
+  - name: 'default'
+    filename: 'mirror.list'
+    sources:
+
+      - name: 'debian-stable'
+        type: 'deb'
+        uri: 'http://deb.debian.org/debian'
+        suite: 'stable'
+        components: [ 'main', 'contrib', 'non-free' ]
+        state: 'comment'
+
+      - name: 'debian-stable-src'
+        raw: 'deb-src http://deb.debian.org/debian stable main contrib non-free'
+        state: 'comment'
+
+      - name: 'clean-debian'
+        comment: 'Generate a clean.sh script for Debian mirror'
+        type: 'clean'
+        uri: 'http://deb.debian.org/debian'
+        weight: 1000
+
+                                                                   # ]]]
+# .. envvar:: apt_mirror__configuration [[[
+#
+# The :command:`apt-mirror` instance configuration defined on all hosts in the
+# Ansible inventory.
+apt_mirror__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: apt_mirror__group_configuration [[[
+#
+# The :command:`apt-mirror` instance configuration defined on hosts in
+# a specific Ansible inventory group.
+apt_mirror__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: apt_mirror__host_configuration [[[
+#
+# The :command:`apt-mirror` instance configuration defined on specific hosts in the
+# Ansible inventory.
+apt_mirror__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: apt_mirror__combined_configuration [[[
+#
+# Variable which combines all instance configuration variables and is used in
+# role tasks and templates.
+apt_mirror__combined_configuration: '{{ apt_mirror__default_configuration
+                                        + apt_mirror__configuration
+                                        + apt_mirror__group_configuration
+                                        + apt_mirror__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Configuration for other Ansible roles [[[
+# -----------------------------------------
+
+# .. envvar:: apt_mirror__nginx__servers [[[
+#
+# List of :program:`nginx` server configurations managed by the
+# :ref:`debops.nginx` role.
+apt_mirror__nginx__dependent_servers:
+
+  - by_role: 'debops.apt_mirror'
+    enabled: True
+    ssl: False  # disable port 443
+    filename: 'debops.apt_mirror_http'
+    name: '{{ apt_mirror__fqdn }}'
+    root: '{{ apt_mirror__web_root }}'
+    webroot_create: False
+    location:
+      '/': |
+        try_files $uri $uri/ $uri.html /index.html =404;
+        autoindex on;
+    state: 'present'
+
+  - by_role: 'debops.apt_mirror'
+    enabled: True
+    listen: False  # disable port 80
+    filename: 'debops.apt_mirror_https'
+    name: '{{ apt_mirror__fqdn }}'
+    root: '{{ apt_mirror__web_root }}'
+    webroot_create: False
+    location:
+      '/': |
+        try_files $uri $uri/ $uri.html /index.html =404;
+        autoindex on;
+    state: '{{ "present" if (ansible_local.pki.enabled | d()) | bool else "absent" }}'
+                                                                   # ]]]
+                                                                   # ]]]
