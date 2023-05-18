@@ -1,0 +1,28 @@
+{# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2023 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# {{ ansible_managed }}
+
+#
+# Regular cron jobs for the apt-mirror package
+#
+
+{% if apt_mirror__cron_environment %}
+{{   '# Environment variables' }}
+{%   for key, value in apt_mirror__cron_environment.items() %}
+{{     '{}={}'.format(key, value) }}
+{%   endfor %}
+
+{% endif %}
+{% for element in apt_mirror__combined_configuration | debops.debops.parse_kv_items %}
+{%   if element.name | d() and element.state | d('present') not in [ 'absent', 'ignore' ] %}
+{%     set element_comment = ('#' if (element.state | d('present') in [ 'init', 'comment' ]) else '') %}
+{%     set cron_time = element.cron_time | d(apt_mirror__cron_time) %}
+{%     set cron_user = element.cron_user | d(apt_mirror__user) %}
+{%     set cron_command = element.cron_command | d('/usr/bin/flock /var/spool/apt-mirror/var /usr/bin/apt-mirror /etc/apt/'
+                                                   + (element.filename | d('mirror.' + element.name + '.list'))
+                                                   + ' > /var/spool/apt-mirror/var/cron.' + element.name + '.log') %}
+{{     '{}{}\t{}\t{}'.format(element_comment, cron_time, cron_user, cron_command) }}
+{%   endif %}
+{% endfor %}

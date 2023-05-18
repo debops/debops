@@ -73,6 +73,10 @@ New DebOps roles
   and profiles. It will be included in the :file:`layer/common.yml` playbook in
   the future.
 
+- The :ref:`debops.apt_mirror` role can be used to create a mirror of one or
+  multiple APT repositories and publish them for other hosts to use as package
+  source.
+
 General
 '''''''
 

@@ -90,6 +90,7 @@ are not accessed directly by end users.
 
 - :ref:`debops.ansible`
 - :ref:`debops.apt_cacher_ng`
+- :ref:`debops.apt_mirror`
 - :ref:`debops.controller` - install DebOps on other hosts
 - :ref:`debops.gitlab_runner`
 - :ref:`debops.fcgiwrap`
@@ -297,6 +298,7 @@ packages.
 - :ref:`debops.apt_listchanges`
 - :ref:`debops.apt_install`
 - :ref:`debops.apt_mark`
+- :ref:`debops.apt_mirror`
 - :ref:`debops.apt_preferences`
 - :ref:`debops.apt_proxy`
 - :ref:`debops.debops_legacy`

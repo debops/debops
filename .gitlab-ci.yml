@@ -166,6 +166,21 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/apt_mark/.*'
     JANE_LOG_PATTERN: '\[apt_mark\]'
 
+'apt_mirror role':
+  <<: *test_role_2nd_deps
+  needs:
+    - 'keyring role'
+    - 'apt_preferences role'
+    - 'ferm role'
+    - 'python role'
+    - 'nginx role'
+  variables:
+    JANE_TEST_FACT: 'apt_mirror.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/apt_mirror.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_apt_mirror'
+    JANE_DIFF_PATTERN: '.*/roles/apt_mirror/.*'
+    JANE_LOG_PATTERN: '\[apt_mirror\]'
+
 'apt_preferences role':
   <<: *test_role_no_deps
   variables:
