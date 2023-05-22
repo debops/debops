@@ -33,7 +33,6 @@
 
 - name: Check IP address of current Ansible Controller
   ansible.builtin.set_fact:
-    ansible_controller: '{{ core__active_controller }}'
     core__fact_ansible_controller: '{{ core__active_controller }}'
   when: core__fact_ansible_controller is undefined and ansible_connection != "local"
   tags: [ 'role::core', 'role::ferm', 'role::ferm:config', 'role::tcpwrappers' ]

@@ -5,7 +5,7 @@
  #}
 # {{ ansible_managed }}
 #
-# {{ item.name }} - {{ template_title | d('Configuration snippet') }}
+# {{ item.name }} - {{ appamor__var_template_title | d('Configuration snippet') }}
 
 {% macro print_option(option, commented, loop_first, level) %}
 {%   if option.state | d('present') not in [ 'absent', 'init', 'ignore' ] %}
@@ -37,9 +37,9 @@
 {%       elif option.option | d(option.name) == '#include' %}
 {%         set operator = ' ' %}
 {%       else %}
-{%         set operator = template_operator | d('=') %}
+{%         set operator = apparmor__var_template_operator | d('=') %}
 {%       endif %}
-{%       set suffix = option.suffix | d(template_suffix | d('')) %}
+{%       set suffix = option.suffix | d(apparmor__var_template_suffix | d('')) %}
 {{       '{}{}{}{}{}'.format(prefix,
                              option.option | d(option.name),
                              operator,
