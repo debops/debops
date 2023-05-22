@@ -327,7 +327,7 @@
                                                 in ansible_local.lxc.containers | d())
                                             else "stopped") }}'
     template:            '{{ item.template | d(lxc__default_container_template) }}'
-    template_options:    '{{ item.template_options | d((template_options | join(" "))
+    template_options:    '{{ item.template_options | d((lxc__var_template_options | join(" "))
                                                        if ((item.template
                                                             | d(lxc__default_container_template)) == "download")
                                                        else omit) }}'
@@ -337,7 +337,7 @@
   environment:
     DOWNLOAD_KEYSERVER: '{{ ansible_local.keyring.keyserver | d("hkp://keyserver.ubuntu.com") }}'
   vars:
-    template_options:
+    lxc__var_template_options:
       - '--dist {{ (item.distribution | d(lxc__default_container_distribution)) | lower }}'
       - '--release {{ (item.release | d(lxc__default_container_release)) | lower }}'
       - '--arch {{ (item.architecture | d(lxc__default_container_architecture)) | lower }}'
