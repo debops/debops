@@ -59,21 +59,21 @@
 
 - name: Add/remove diversion of FreeRADIUS configuration files
   vars:
-    divert_path: '{{ freeradius__conf_base_path + "/" + (item.filename | d(item.name)) }}'
-    divert_divert: '{{ freeradius__conf_base_path + "/"
-                       + (item.divert_filename
-                          | d((((item.filename | d(item.name)) | dirname + "/.")
-                               if ((item.filename | d(item.name)) | dirname) else ".")
-                              + (item.filename | d(item.name)) | basename + ".dpkg-divert")) }}'
+    freeradius__var_divert_path: '{{ freeradius__conf_base_path + "/" + (item.filename | d(item.name)) }}'
+    freeradius__var_divert_divert: '{{ freeradius__conf_base_path + "/"
+                                       + (item.divert_filename
+                                          | d((((item.filename | d(item.name)) | dirname + "/.")
+                                               if ((item.filename | d(item.name)) | dirname) else ".")
+                                              + (item.filename | d(item.name)) | basename + ".dpkg-divert")) }}'
   debops.debops.dpkg_divert:
-    path: '{{ divert_path }}'
-    divert: '{{ divert_divert }}'
+    path: '{{ freeradius__var_divert_path }}'
+    divert: '{{ freeradius__var_divert_divert }}'
     state: '{{ item.state | d("present") }}'
     delete: True
   loop: '{{ freeradius__combined_configuration | debops.debops.parse_kv_items }}'
   loop_control:
-    label: '{{ {"path": divert_path,
-                "divert": divert_divert,
+    label: '{{ {"path": freeradius__var_divert_path,
+                "divert": freeradius__var_divert_divert,
                 "state": item.state | d("present")} }}'
   notify: [ 'Check freeradius configuration and restart' ]
   when: (item.name | d() and item.divert | d(False) | bool and
