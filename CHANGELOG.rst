@@ -79,6 +79,13 @@ General
 - Extrepo facts file did not detect a disabled repository as being disabled
   due to a change in the extrepo file format.
 
+:ref:`debops.dnsmasq` role
+''''''''''''''''''''''''''
+
+- Fixed service configuration mistake when DHCPv6 mode is set to an empty
+  string. The configuration template should take this into account and add
+  a correct separator (or omit it) in the generated configuration file.
+
 :ref:`debops.etc_aliases` role
 ''''''''''''''''''''''''''''''
 
