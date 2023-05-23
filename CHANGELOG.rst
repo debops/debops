@@ -79,6 +79,12 @@ Fixed
 - Don't save dependent recipients on Ansible Controller if they are not
   defined. This should avoid creating unnecessary files in AWX job containers.
 
+:ref:`debops.libvirtd` role
+'''''''''''''''''''''''''''
+
+- Fixed ``qemu-kvm`` package installation logic; the KVM packages should now be
+  handled correctly on Debian Bullseye and newer releases.
+
 :ref:`debops.ntp` role
 ''''''''''''''''''''''
 
