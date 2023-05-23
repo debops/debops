@@ -632,6 +632,12 @@ debops.boxbackup role
   will now implicitly trust the Ansible facts to be correct when adding IP and
   prefix details to the LDAP database.
 
+:ref:`debops.libvirtd` role
+'''''''''''''''''''''''''''
+
+- Fixed ``qemu-kvm`` package installation logic; the KVM packages should now be
+  handled correctly on Debian Bullseye and newer releases.
+
 :ref:`debops.logrotate` role
 ''''''''''''''''''''''''''''
 
