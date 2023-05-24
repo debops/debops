@@ -17,6 +17,8 @@
   ansible.builtin.shell: |
     set -o nounset -o pipefail -o errexit &&
     type debops-update > /dev/null 2>&1 && (echo 'debops-update' | batch > /dev/null 2>&1) || true
+  args:
+    executable: 'bash'
   register: controller__register_update_batch
   changed_when: controller__register_update_batch.changed | bool
   when: (not controller__update_method == 'sync' and
