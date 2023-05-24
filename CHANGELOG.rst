@@ -79,6 +79,9 @@ General
 - Extrepo facts file did not detect a disabled repository as being disabled
   due to a change in the extrepo file format.
 
+- Various roles which use the ``shell`` Ansible module will now use
+  :command:`bash` shell as the executable explicitly.
+
 :ref:`debops.dnsmasq` role
 ''''''''''''''''''''''''''
 
