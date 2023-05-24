@@ -73,6 +73,12 @@ Updates of upstream application versions
 Fixed
 ~~~~~
 
+General
+'''''''
+
+- Various roles which use the ``shell`` Ansible module will now use
+  :command:`bash` shell as the executable explicitly.
+
 :ref:`debops.dnsmasq` role
 ''''''''''''''''''''''''''
 
