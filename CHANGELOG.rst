@@ -100,6 +100,9 @@ General
   The modern project layout supports multiple Ansible inventories encapsulated
   into :ref:`infrastructure views <project_infrastructure_views>`.
 
+- Various roles which use the ``shell`` Ansible module will now use
+  :command:`bash` shell as the executable explicitly.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
