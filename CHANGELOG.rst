@@ -167,6 +167,10 @@ General
 - Fixed a missed ``template_src`` lookup which didn't use a FQCN as a plugin
   name.
 
+- Fixed an issue where an empty :envvar:`dovecot__ssl_dh_file` variable
+  resulted in Dovecot service refusing to start due to incorrect configuration
+  value.
+
 :ref:`debops.etc_aliases` role
 ''''''''''''''''''''''''''''''
 
