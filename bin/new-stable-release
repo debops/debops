@@ -1,0 +1,148 @@
+#!/bin/bash
+
+# new-stable-release: make new release of a DebOps stable branch
+
+# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2023 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# This script is used to create new DebOps stable releases on GitHub, PyPI and
+# Ansible Galaxy. To use it, run in the root of the DebOps monorepo:
+#
+#     ./bin/new-stable-release publish
+#
+# Script can be run in a "local", default mode, or in "publish" mode. In local
+# mode no remote operations are performed.
+#
+# Requirements:
+#   - GitHub API token with access to debops/debops repository and ability to
+#     create new releases, stored in configurable location
+#   - PyPI upload credentials, stored in ~/.pypirc
+#   - Ansible Galaxy API token, stored in ~/.ansible/galaxy_token
+
+# Warning: script removes files in /tmp/debops-collections.*
+# Check ./lib/ansible-galaxy/make-collection for details
+
+set -o nounset -o pipefail -o errexit
+
+
+# Constants
+# ---------
+
+readonly CHANGELOG="CHANGELOG.rst"
+readonly GITHUB_TOKEN_FILE="${HOME}/.github_token"
+
+# Either 'local' for local changes only, or 'publish' for publishing releases
+readonly COMMAND="${1:-local}"
+
+
+# Preparation of a new release using the Changelog
+# ------------------------------------------------
+
+if [ ! -f "${CHANGELOG}" ] ; then
+    printf "Error: no Changelog file found.\n"
+    exit 1
+fi
+
+current_branch="$(grep '.. _debops stable-' "${CHANGELOG}" | head -n 1 | awk '{print $3}' | sed -e 's/:$//')"
+previous_version="$(grep '.. _debops v' "${CHANGELOG}" | head -n 1 | awk '{print $3}' | sed -e 's/^v//' -e 's/:$//')"
+new_version="$(printf "%s" "${previous_version}" | awk -F. -v OFS=. '{$NF += 1 ; print}')"
+major_version="$(cut -d '.' -f 1 <<< "${new_version}")"."$(cut -d '.' -f 2 <<< "${new_version}")"
+timestamp="$(date +"%Y-%m-%d")"
+header_string="\`debops v${new_version}\`_ - ${timestamp}"
+header_line="$(printf -- '-%.0s' $(seq "${#header_string}"))"
+header_ref=".. _debops v${new_version}:"
+header_url="https://github.com/debops/debops/compare/v${previous_version}...v${new_version}"
+
+github_description="This is a new DebOps stable release, with various bugfixes and enhancements backported from the \`master\` branch.\n\nYou can check [the changes from the previous release](https://github.com/debops/debops/compare/v${previous_version}...v${new_version}) as well as [the changes since \`v${major_version}.0\` release](https://github.com/debops/debops/compare/v${major_version}.0...${current_branch}) using the GitHub interface. The [changelog for the \`${current_branch}\` branch](https://docs.debops.org/en/${current_branch}/news/changelog.html) in the HTML format is available on the DebOps documentation website."
+
+printf "Preparing new release of DebOps %s branch...\n" "${current_branch}"
+printf "Previous version: %s\nNew version: %s\n" "${previous_version}" "${new_version}"
+
+
+# Apply the changes and commit them in git
+# ----------------------------------------
+
+sed -i "/^\.\. _debops\s${current_branch}.*$/a \
+\\\n\n${header_string}\n${header_line}\n\n${header_ref} ${header_url}" "${CHANGELOG}"
+
+git add "${CHANGELOG}"
+git status
+git --no-pager diff --cached
+
+printf "Preparing to commit changes...\n"
+read -r -n 1 -p "Check git status and press [Enter] or ^C to abort"
+
+printf "Committing changes...\n"
+git commit -m "Prepare v${new_version} release"
+
+printf "Creating new git tag for v%s...\n" "${new_version}"
+git tag -s -m "debops v${new_version}" "v${new_version}"
+
+
+# Publish git changes to GitHub
+# -----------------------------
+
+if [ "${COMMAND}" == "publish" ] ; then
+    printf "Pushing changes to origin repository...\n"
+    git push origin "${current_branch}"
+
+    printf "Pushing tags to origin repository...\n"
+    git push origin "${current_branch}" --tags
+
+    printf "Creating a new draft release on GitHub...\n"
+    github_token="$(<"${GITHUB_TOKEN_FILE}")"
+    curl -L \
+        -X POST \
+        -H "Accept: application/vnd.github+json" \
+        -H "Authorization: Bearer ${github_token}" \
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        -d "{\"tag_name\": \"v${new_version}\", \"name\": \"DebOps v${new_version}\", \"draft\": true, \"body\": \"${github_description}\"}" \
+        https://api.github.com/repos/debops/debops/releases
+else
+    printf "Not pushing changes via git, local operations only.\n"
+fi
+
+
+# Create new Python packages and publish them on PyPI
+# ---------------------------------------------------
+
+printf "Creating Python sdist and wheel packages...\n"
+make sdist-sign wheel-sign
+
+if [ "${COMMAND}" == "publish" ] ; then
+    printf "Publishing Python packages on PyPI...\n"
+    make twine-upload
+else
+    printf "Not publishing Python packages, local operations only.\n"
+fi
+
+
+# Create new DebOps Collection and publish it on Ansible Galaxy
+# -------------------------------------------------------------
+
+printf "Cleaning repository...\n"
+make clean
+
+# Remove any existing collection build directories. Having more than one will
+# cause problems with publishing the tarball on Galaxy
+rm -rf /tmp/debops-collections.*
+
+# Create new DebOps Collection based on the monorepo
+make collection
+
+# Find the generated tarball
+collection_tarball="$(find /tmp/debops-collections.* -maxdepth 1 -type f -name 'debops-debops-*.tar.gz')"
+
+if [ "${COMMAND}" == "publish" ] ; then
+    printf "Publishing DebOps Collection on Ansible Galaxy...\n"
+    ansible-galaxy collection publish "${collection_tarball}"
+else
+    printf "Not publishing DebOps Collection, local operations only.\n"
+fi
+
+
+# Finish
+# ------
+
+printf "\nCreation of a new DebOps release finished. Have a nice day.\n"
