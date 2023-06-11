@@ -23,6 +23,7 @@ ALLOWED_HOSTS = [ '{{ ( [ netbox__config_allowed_hosts ] if netbox__config_allow
 # PostgreSQL database configuration. See the Django documentation for a complete list of available parameters:
 #   https://docs.djangoproject.com/en/stable/ref/settings/#databases
 DATABASE = {
+    'ENGINE': 'django.db.backends.postgresql',     # Database engine
     'NAME': '{{ netbox__database_name }}',         # Database name
     'USER': '{{ netbox__database_user }}',         # PostgreSQL username
     'PASSWORD': '{{ netbox__database_password }}', # PostgreSQL password
@@ -154,7 +155,7 @@ INTERNAL_IPS = ('127.0.0.1', '::1')
 LOGGING = json.loads('''{{ netbox__config_logging | to_nice_json }}''')
 
 # Setting this to True will permit only authenticated users to access any part of NetBox. By default, anonymous users
-# are permitted to access most data in NetBox (excluding secrets) but not make any changes.
+# are permitted to access most data in NetBox but not make any changes.
 LOGIN_REQUIRED = {{ netbox__config_login_required | bool }}
 
 {% if netbox__ldap_enabled | bool -%}
