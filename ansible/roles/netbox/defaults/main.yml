@@ -85,6 +85,19 @@ netbox__gecos: 'NetBox'
 #
 # The default shell set on the NetBox account.
 netbox__shell: '/usr/sbin/nologin'
+
+                                                                   # ]]]
+# .. envvar:: netbox__napalm_ssh_generate [[[
+#
+# Generate :file:`~/.ssh/id_rsa` SSH private and public key if it doesn't
+# exist.
+netbox__napalm_ssh_generate: False
+
+                                                                   # ]]]
+# .. envvar:: netbox__napalm_ssh_generate_bits [[[
+#
+# Size of the generated SSH key.
+netbox__napalm_ssh_generate_bits: '2048'
                                                                    # ]]]
                                                                    # ]]]
 # Directory paths [[[
@@ -143,7 +156,7 @@ netbox__git_repo: 'https://github.com/netbox-community/netbox.git'
 # .. envvar:: netbox__git_version [[[
 #
 # The :command:`git` branch or tag which will be installed.
-netbox__git_version: 'v3.4.2'
+netbox__git_version: 'v3.7.2'
 
                                                                    # ]]]
 # .. envvar:: netbox__git_dest [[[
@@ -196,10 +209,6 @@ netbox__virtualenv_pip_packages:
   - name: 'gunicorn'
     version: '{{ ansible_local.gunicorn.version | d(omit) }}'
   - 'setproctitle'
-  - name: 'napalm'
-    state: '{{ "present"
-               if (netbox__config_napalm_username | d() or netbox__napalm_ssh_generate | bool)
-               else "ignore" }}'
   - name: 'django-auth-ldap'
     state: '{{ "present" if netbox__ldap_enabled | bool else "ignore" }}'
                                                                    # ]]]
@@ -661,49 +670,6 @@ netbox__config_base_path: ''
 # Enable or disable maintenance mode banner.
 # This overwrites potentially existing `dynamic configuration settings <https://netbox.readthedocs.io/en/stable/configuration/dynamic-settings/>`__.
 netbox__config_maintenance_mode: False
-
-                                                                   # ]]]
-# .. envvar:: netbox__config_napalm_username [[[
-#
-# Specify the username which should be used by NetBox to access live devices
-# using the NAPALM library.
-# This overwrites potentially existing `dynamic configuration settings <https://netbox.readthedocs.io/en/stable/configuration/dynamic-settings/>`__.
-netbox__config_napalm_username: ''
-
-                                                                   # ]]]
-# .. envvar:: netbox__config_napalm_password [[[
-#
-# Specify the password which should be used by NetBox to access live devices
-# using the NAPALM library.
-# This overwrites potentially existing `dynamic configuration settings <https://netbox.readthedocs.io/en/stable/configuration/dynamic-settings/>`__.
-netbox__config_napalm_password: ''
-
-                                                                   # ]]]
-# .. envvar:: netbox__napalm_ssh_generate [[[
-#
-# Generate :file:`~/.ssh/id_rsa` SSH private and public key if it doesn't
-# exist.
-netbox__napalm_ssh_generate: False
-
-                                                                   # ]]]
-# .. envvar:: netbox__napalm_ssh_generate_bits [[[
-#
-# Size of the generated SSH key.
-netbox__napalm_ssh_generate_bits: '2048'
-
-                                                                   # ]]]
-# .. envvar:: netbox__config_napalm_timeout [[[
-#
-# NAPALM request timeout, in seconds.
-# This overwrites potentially existing `dynamic configuration settings <https://netbox.readthedocs.io/en/stable/configuration/dynamic-settings/>`__.
-netbox__config_napalm_timeout: '30'
-
-                                                                   # ]]]
-# .. envvar:: netbox__config_napalm_args [[[
-#
-# Optional NAPALM arguments, specified as a YAML dictionary.
-# This overwrites potentially existing `dynamic configuration settings <https://netbox.readthedocs.io/en/stable/configuration/dynamic-settings/>`__.
-netbox__config_napalm_args: {}
 
                                                                    # ]]]
 # .. envvar:: netbox__config_paginate_count [[[
