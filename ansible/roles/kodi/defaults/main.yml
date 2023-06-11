@@ -58,6 +58,11 @@ kodi__base_packages:
   - '{{ ["policykit-1"]
         if (kodi__polkit_action | d())
         else [] }}'
+
+  - '{{ ["polkitd-pkla"]
+        if (kodi__polkit_action | d() and ansible_distribution_release not in ["bullseye"])
+        else [] }}'
+
                                                                    # ]]]
 # .. envvar:: kodi__deploy_state [[[
 #
