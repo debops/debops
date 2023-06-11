@@ -42,6 +42,12 @@ Added
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.netbox` role, the NetBox version has been updated to
+  ``v3.7.2``.
+
 :ref:`debops.rspamd` role
 '''''''''''''''''''''''''
 
@@ -80,6 +86,18 @@ General
 
 - The :file:`50-pid-max.conf` configuration file will be installed only on
   platforms which support 64-bit architecture.
+
+Removed
+~~~~~~~
+
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- The NAPALM integration feature found in NetBox 3.4 and before has been moved
+  to a dedicated plugin. If you want to continue using it, you will have to
+  install the plugin. All role variables about NAPALM except
+  :envvar:`netbox__napalm_ssh_generate` and
+  :envvar:`netbox__napalm_ssh_generate_bits` have been removed.
 
 
 `debops v3.2.3`_ - 2024-10-21
