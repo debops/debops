@@ -197,7 +197,7 @@
   no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Perform database installation or migration
-  ## Commands from upgrade.sh. We cannot directly run this script as of 2.10
+  ## Commands from upgrade.sh. We cannot directly run this script as of 3.5
   ## because it also deals with virtualenv with different directory paths than
   ## this role.
   ansible.builtin.shell:  # noqa no-handler
@@ -258,6 +258,34 @@
     - 'Reload systemd daemon (netbox)'
     - 'Restart netbox Request Queue Worker'
   when: netbox__app_internal_appserver | bool
+
+- name: Generate systemd NetBox Housekeeping service unit
+  ansible.builtin.template:
+    src: 'etc/systemd/system/netbox-housekeeping.service.j2'
+    dest: '/etc/systemd/system/netbox-housekeeping.service'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify:
+    - 'Reload systemd daemon (netbox)'
+
+- name: Generate systemd NetBox Housekeeping timer unit
+  ansible.builtin.template:
+    src: 'etc/systemd/system/netbox-housekeeping.timer.j2'
+    dest: '/etc/systemd/system/netbox-housekeeping.timer'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  notify:
+    - 'Reload systemd daemon (netbox)'
+
+- name: Enable systemd NetBox Housekeeping timer
+  ansible.builtin.systemd:
+    daemon_reload: True
+    name: 'netbox-housekeeping.timer'
+    enabled: True
+    state: 'started'
+  when: ansible_service_mgr == 'systemd' and not ansible_check_mode
 
 - name: Generate NetBox netbox-manage script
   ansible.builtin.template:

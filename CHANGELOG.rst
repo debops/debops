@@ -73,6 +73,12 @@ New DebOps roles
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.netbox` role, the NetBox version has been updated to
+  ``v3.7.2``.
+
 General
 '''''''
 
@@ -172,6 +178,15 @@ General
 
 - The ``bitcoind`` role was removed due to lack of interest by the role
   maintainer.
+
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- The NAPALM integration feature found in NetBox 3.4 and before has been moved
+  to a dedicated plugin. If you want to continue using it, you will have to
+  install the plugin. All role variables about NAPALM except
+  :envvar:`netbox__napalm_ssh_generate` and
+  :envvar:`netbox__napalm_ssh_generate_bits` have been removed.
 
 Security
 ~~~~~~~~
