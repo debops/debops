@@ -243,14 +243,14 @@ reprepro__default_instances:
 
       - name: 'incoming'
         Allow:
+          - 'trixie'
+          - 'testing>trixie'
           - 'bookworm'
-          - 'testing>bookworm'
+          - 'stable>bookworm'
           - 'bullseye'
-          - 'stable>bullseye'
+          - 'oldstable>bullseye'
           - 'buster'
-          - 'oldstable>buster'
-          - 'stretch'
-          - 'oldoldstable>stretch'
+          - 'oldoldstable>buster'
         Options:
           - 'multiple_distributions'
         Cleanup:
@@ -259,14 +259,31 @@ reprepro__default_instances:
 
     distributions:
 
+      - name: 'trixie'
+        Description: 'Packages for Debian GNU/Linux 13 (Trixie)'
+        Origin: '{{ reprepro__origin }}'
+        Codename: 'trixie'
+        Suite: 'testing'
+        Architectures: [ 'source', 'amd64', 'arm64', 'armel', 'armhf', 'i386',
+                         'mips64el', 'mipsel', 'ppc64el', 's390x' ]
+        Components: [ 'main', 'contrib', 'non-free', 'non-free-firmware' ]
+        Uploaders: 'uploaders/anybody'
+        SignWith: 'default'
+        DebIndices: [ 'Packages', 'Release', '.', '.gz', '.xz' ]
+        DscIndices: [ 'Sources', 'Release', '.gz', '.xz' ]
+        Log: |
+          packages.bookworm.log
+          --type=dsc email-changes.sh
+        state: 'present'
+
       - name: 'bookworm'
         Description: 'Packages for Debian GNU/Linux 12 (Bookworm)'
         Origin: '{{ reprepro__origin }}'
         Codename: 'bookworm'
-        Suite: 'testing'
+        Suite: 'stable'
         Architectures: [ 'source', 'amd64', 'arm64', 'armel', 'armhf', 'i386',
                          'mips64el', 'mipsel', 'ppc64el', 's390x' ]
-        Components: [ 'main', 'contrib', 'non-free' ]
+        Components: [ 'main', 'contrib', 'non-free', 'non-free-firmware' ]
         Uploaders: 'uploaders/anybody'
         SignWith: 'default'
         DebIndices: [ 'Packages', 'Release', '.', '.gz', '.xz' ]
@@ -280,7 +297,7 @@ reprepro__default_instances:
         Description: 'Packages for Debian GNU/Linux 11 (Bullseye)'
         Origin: '{{ reprepro__origin }}'
         Codename: 'bullseye'
-        Suite: 'stable'
+        Suite: 'oldstable'
         Architectures: [ 'source', 'amd64', 'arm64', 'armel', 'armhf', 'i386',
                          'mips64el', 'mipsel', 'ppc64el', 's390x' ]
         Components: [ 'main', 'contrib', 'non-free' ]
@@ -297,23 +314,6 @@ reprepro__default_instances:
         Description: 'Packages for Debian GNU/Linux 10 (Buster)'
         Origin: '{{ reprepro__origin }}'
         Codename: 'buster'
-        Suite: 'oldstable'
-        Architectures: [ 'source', 'amd64', 'arm64', 'armel', 'armhf', 'i386',
-                         'mips', 'mips64el', 'mipsel', 'ppc64el', 's390x' ]
-        Components: [ 'main', 'contrib', 'non-free' ]
-        Uploaders: 'uploaders/anybody'
-        SignWith: 'default'
-        DebIndices: [ 'Packages', 'Release', '.', '.gz', '.xz' ]
-        DscIndices: [ 'Sources', 'Release', '.gz', '.xz' ]
-        Log: |
-          packages.buster.log
-          --type=dsc email-changes.sh
-        state: 'present'
-
-      - name: 'stretch'
-        Description: 'Packages for Debian GNU/Linux 9 (Stretch)'
-        Origin: '{{ reprepro__origin }}'
-        Codename: 'stretch'
         Suite: 'oldoldstable'
         Architectures: [ 'source', 'amd64', 'arm64', 'armel', 'armhf', 'i386',
                          'mips', 'mips64el', 'mipsel', 'ppc64el', 's390x' ]
@@ -323,7 +323,7 @@ reprepro__default_instances:
         DebIndices: [ 'Packages', 'Release', '.', '.gz', '.xz' ]
         DscIndices: [ 'Sources', 'Release', '.gz', '.xz' ]
         Log: |
-          packages.stretch.log
+          packages.buster.log
           --type=dsc email-changes.sh
         state: 'present'
 
