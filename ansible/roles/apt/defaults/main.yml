@@ -321,9 +321,9 @@ apt__distribution_release: '{{ ansible_lsb.codename
 # map is used to configure security repositories only on the OS releases that
 # have them available.
 apt__distribution_release_map:
-  'Debian': [ 'wheezy', 'jessie', 'stretch', 'buster', 'bullseye', 'bookworm' ]
-  'Ubuntu': [ 'precise', 'trusty', 'xenial', 'bionic' ]
-  'Devuan': [ 'jessie', 'ascii', 'beowulf' ]
+  'Debian': [ 'stretch', 'buster', 'bullseye', 'bookworm', 'trixie' ]
+  'Ubuntu': [ 'trusty', 'xenial', 'bionic' ]
+  'Devuan': [ 'ascii', 'beowulf' ]
 
                                                                    # ]]]
 # .. envvar:: apt__distribution_suite_map [[[
@@ -333,12 +333,11 @@ apt__distribution_release_map:
 # repository suffixes should be configured on the current host in case the role
 # is used on a Debian Testing system.
 apt__distribution_suite_map:
-  'Debian_wheezy':      'archive'
-  'Debian_jessie':      'archive'
-  'Debian_stretch':     'lts'
-  'Debian_buster':      'oldstable'
-  'Debian_bullseye':    'stable'
-  'Debian_bookworm':    'testing'
+  'Debian_stretch':     'archive'
+  'Debian_buster':      'oldoldstable'
+  'Debian_bullseye':    'oldstable'
+  'Debian_bookworm':    'stable'
+  'Debian_trixie':      'testing'
   'Debian_sid':         'unstable'
   'Raspbian_wheezy':    'archive'
   'Raspbian_jessie':    'lts'
@@ -369,16 +368,17 @@ apt__distribution_suite: '{{ apt__distribution_suite_map[apt__distribution + "_"
 # If the combination of OS distribution and release is not found, the default
 # list of suffixes will be used automatically.
 apt__distribution_suffix_map:
-  'Debian_archive':  [ '', '-backports' ]
-  'Debian_lts':      [ '', '-backports' ]
-  'Debian_stable':   [ '', '-updates', '-backports' ]
-  'Debian_testing':  [ '', '-updates' ]
-  'Debian_unstable': [ '' ]
-  'Raspbian':        [ '' ]
-  'Devuan_stable':   [ '', '-updates', '-backports' ]
-  'Devuan_testing':  [ '', '-updates' ]
-  'Devuan_unstable': [ '' ]
-  'default':         [ '', '-updates', '-backports' ]
+  'Debian_archive':      [ '', '-backports' ]
+  'Debian_oldoldstable': [ '', '-updates', '-backports' ]
+  'Debian_oldstable':    [ '', '-updates', '-backports' ]
+  'Debian_stable':       [ '', '-updates', '-backports' ]
+  'Debian_testing':      [ '', '-updates' ]
+  'Debian_unstable':     [ '' ]
+  'Raspbian':            [ '' ]
+  'Devuan_stable':       [ '', '-updates', '-backports' ]
+  'Devuan_testing':      [ '', '-updates' ]
+  'Devuan_unstable':     [ '' ]
+  'default':             [ '', '-updates', '-backports' ]
 
                                                                    # ]]]
 # .. envvar:: apt__distribution_suffixes [[[
