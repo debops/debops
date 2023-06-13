@@ -177,6 +177,12 @@ preseed__default_definitions:
     options: '{{ preseed__options_interactive_partman
                  + preseed__options_enable_nonfree }}'
 
+  - name: 'debian-bookworm'
+    flavor: 'debian'
+    release: 'bookworm'
+    options: '{{ preseed__options_interactive_partman
+                 + preseed__options_enable_nonfree }}'
+
   - name: 'debian-stretch-user'
     flavor: 'debian-user'
     release: 'stretch'
@@ -201,6 +207,14 @@ preseed__default_definitions:
                  + preseed__options_enable_nonfree }}'
     admin_username: '{{ preseed__admin_name }}'
 
+  - name: 'debian-bookworm-user'
+    flavor: 'debian-user'
+    release: 'bookworm'
+    options: '{{ preseed__options_interactive_partman
+                 + preseed__options_ansible_user
+                 + preseed__options_enable_nonfree }}'
+    admin_username: '{{ preseed__admin_name }}'
+
   - name: 'debian-stretch-vm'
     flavor: 'debian-vm'
     release: 'stretch'
@@ -212,6 +226,10 @@ preseed__default_definitions:
   - name: 'debian-bullseye-vm'
     flavor: 'debian-vm'
     release: 'bullseye'
+
+  - name: 'debian-bookworm-vm'
+    flavor: 'debian-vm'
+    release: 'bookworm'
 
   - name: 'debian-stretch-vm-user'
     flavor: 'debian-vm-user'
@@ -228,6 +246,12 @@ preseed__default_definitions:
   - name: 'debian-bullseye-vm-user'
     flavor: 'debian-vm-user'
     release: 'bullseye'
+    options: '{{ preseed__options_ansible_user }}'
+    admin_username: '{{ preseed__admin_name }}'
+
+  - name: 'debian-bookworm-vm-user'
+    flavor: 'debian-vm-user'
+    release: 'bookworm'
     options: '{{ preseed__options_ansible_user }}'
     admin_username: '{{ preseed__admin_name }}'
 

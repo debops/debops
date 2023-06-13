@@ -316,6 +316,11 @@ General
   multiple subcommands to allow easier configuration introspection. See
   :ref:`it's documentation page <cmd_debops-config>` for more details.
 
+- The Debian 12 (Bookworm) has been released! Multiple DebOps roles have been
+  updated and switched the "stable" release to Bookworm, with Bullseye becoming
+  the "oldstable" release. The new Debian Testing release, "Trixie" has also
+  been added in relevant places.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
