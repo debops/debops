@@ -23,6 +23,17 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.0: https://github.com/debops/debops/compare/v3.0.0...stable-3.0
 
+Changed
+~~~~~~~
+
+General
+'''''''
+
+- The Debian 12 (Bookworm) has been released! Multiple DebOps roles have been
+  updated and switched the "stable" release to Bookworm, with Bullseye becoming
+  the "oldstable" release. The new Debian Testing release, "Trixie" has also
+  been added in relevant places.
+
 
 `debops v3.0.5`_ - 2023-05-25
 -----------------------------
