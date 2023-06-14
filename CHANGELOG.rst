@@ -34,6 +34,15 @@ General
   the "oldstable" release. The new Debian Testing release, "Trixie" has also
   been added in relevant places.
 
+Fixed
+~~~~~
+
+:ref:`debops.auth` role
+'''''''''''''''''''''''
+
+- The ``libpam-cracklib`` APT package will be installed and configured
+  conditionally. It has been removed in Debian Bookworm.
+
 
 `debops v3.0.5`_ - 2023-05-25
 -----------------------------
