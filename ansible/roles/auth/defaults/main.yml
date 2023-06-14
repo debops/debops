@@ -19,7 +19,10 @@
 # .. envvar:: auth_packages [[[
 #
 # List of Debian/Ubuntu packages installed by debops.auth
-auth_packages: [ 'libpam-cracklib' ]
+auth_packages:
+  - '{{ "libpam-cracklib"
+        if (ansible_distribution_release in ["stretch", "buster", "bullseye"])
+        else [] }}'
 
                                                                    # ]]]
 # Local user account configuration [[[
@@ -34,7 +37,9 @@ auth_pwhistory_remember: '5'
 # .. envvar:: auth_cracklib [[[
 #
 # Enable password checking via cracklib
-auth_cracklib: True
+auth_cracklib: '{{ True
+                   if (ansible_distribution_release in ["stretch", "buster", "bullseye"])
+                   else False }}'
                                                                    # ]]]
                                                                    # ]]]
                                                                    # ]]]
