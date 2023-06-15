@@ -34,6 +34,11 @@ General
   the "oldstable" release. The new Debian Testing release, "Trixie" has also
   been added in relevant places.
 
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- The Debian Installer Menu can now install Debian GNU/Linux 12 (Bookworm).
+
 Fixed
 ~~~~~
 
