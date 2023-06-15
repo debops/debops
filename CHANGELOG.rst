@@ -141,6 +141,11 @@ General
   This should improve the initial deployment experience, since users don't need
   to create basic host templates by hand before registering hosts in Icinga.
 
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- The Debian Installer Menu can now install Debian GNU/Linux 12 (Bookworm).
+
 :ref:`debops.java` role
 '''''''''''''''''''''''
 
