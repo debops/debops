@@ -20,6 +20,26 @@ before doing any modification on the system. If such package is detected, the
 role will skip further tasks to avoid messing up existing configuration.
 
 
+Fallback DNS configuration
+--------------------------
+
+Since Debian 12 (Bookworm), the :command:`systemd-resolved` service is provided
+via a separate package, which on installation automatically replaces the
+:file:`/etc/resolv.conf` file with a symlink. The default Debian installation
+still uses the ``ifupdown`` package to configure networking, which results in
+broken DNS resolution on :command:`systemd-resolved` installation because the
+service does not get the relevant nameserver information from ``ifupdown``
+scripts.
+
+To mitigate this, the :ref:`debops.resolved` role will get the current DNS
+configuration from Ansible facts and add it in the
+:file:`/etc/systemd/resolved.conf.d/00fallback-dns.conf` file as "Fallback DNS
+configuration" before installing the service itself. This should avoid issues
+with DNS before the actual configuration is defined. The file can be safely
+removed later, or its configuration will be overridden if specified in the
+subsequent configuration files.
+
+
 Management of the :file:`/etc/resolv.conf` config file
 ------------------------------------------------------
 
