@@ -103,7 +103,7 @@ ipxe__debian_netboot_firmware_mirror: 'https://cdimage.debian.org/cdimage/unoffi
 #
 # Specify which Debian releases will be prepared for iPXE boot on a given host.
 # The releases need to be defined in the OS release map below.
-ipxe__debian_netboot_releases: [ 'stretch', 'buster', 'bullseye' ]
+ipxe__debian_netboot_releases: [ 'stretch', 'buster', 'bullseye', 'bookworm' ]
 
                                                                    # ]]]
 # .. envvar:: ipxe__debian_netboot_architectures [[[
@@ -175,6 +175,23 @@ ipxe__debian_netboot_default_release_map:
     netboot_checksum: 'sha256:6fa4393276e95599a9a6c368f3a402c9b94f79aa3be3468acde4bfae91d0dad9'  # netboot.tar.gz
     firmware_version: '20230429'
     firmware_checksum: 'sha256:af07b888fb8d5153b3448fa84c3a25307a7de9ec643196031dde975d6d8d9bce'  # firmware.cpio.gz
+
+  - name: 'bookworm-amd64'
+    release: 'bookworm'
+    architecture: 'amd64'
+    netboot_version: '20230607'
+    netboot_checksum: 'sha256:b41d766e5389b4e35bac3a664da84822e0990439c9c4df933ddbaff6847a0009'  # netboot.tar.gz
+    firmware_version: '20230612'
+    firmware_checksum: 'sha256:96c1b464eca0487e12fbf48634a5bb13f3a666b10e5ee23b05d0246a36ab423b'  # firmware.cpio.gz
+
+  - name: 'bookworm-amd64-gtk'
+    release: 'bookworm'
+    architecture: 'amd64'
+    netboot_subdir: '/gtk'
+    netboot_version: '20230607'
+    netboot_checksum: 'sha256:31fde25b04c50bf88fe163dc1eae75e831a1f6818c1df9ecdf26966e2af1029d'  # netboot.tar.gz
+    firmware_version: '20230612'
+    firmware_checksum: 'sha256:96c1b464eca0487e12fbf48634a5bb13f3a666b10e5ee23b05d0246a36ab423b'  # firmware.cpio.gz
 
                                                                    # ]]]
 # .. envvar:: ipxe__debian_netboot_release_map [[[
@@ -415,11 +432,12 @@ ipxe__default_scripts:
 
       menu Install Debian GNU/Linux / ${arch_a}
       item --gap Select suite:
-      item --key e bullseye ${space} Debian Stable (Bullseye) [e]
-      # Enable this when Debian Bookworm gets an installer
-      #item bookworm ${space} Debian Testing (Bookworm)
+      item --key e bookworm ${space} Debian Stable (Bookworm) [e]
+      # Enable this when Debian Trixie gets an installer
+      #item trixie ${space} Debian Testing (Trixie)
       item
       item --gap Select release:
+      item bookworm ${space} Debian GNU/Linux 12 (Bookworm)
       item bullseye ${space} Debian GNU/Linux 11 (bullseye)
       item buster ${space} Debian GNU/Linux 10 (buster)
       item stretch ${space} Debian GNU/Linux 9 (stretch)

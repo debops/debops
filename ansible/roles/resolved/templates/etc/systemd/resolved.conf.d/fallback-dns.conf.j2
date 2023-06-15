@@ -1,0 +1,27 @@
+{# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2023 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+# See resolved.conf(5) for details.
+
+# This file can be safely removed once nameserver configuration is defined in
+# systemd-resolved options.
+
+{% set fallback_dns = [] %}
+{% for element in ansible_facts['dns']['nameservers'] | d([]) %}
+{%   if element != '127.0.0.53' %}
+{%     set _ = fallback_dns.append(element) %}
+{%   endif %}
+{% endfor %}
+{% set domains = [] %}
+{% if ansible_facts['dns']['domain'] | d([]) %}
+{%   set _ = domains.append(ansible_facts['dns']['domain']) %}
+{% endif %}
+{% for element in ansible_facts['dns']['search'] | d([]) %}
+{%   set _ = domains.append(element) %}
+{% endfor %}
+[Resolve]
+{{ 'FallbackDNS={}'.format(fallback_dns | join(' ')) }}
+{{ 'Domains={}'.format(domains | join(' ')) }}

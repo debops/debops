@@ -27,6 +27,28 @@
                                        if (not resolved__register_resolvers.stdout | d())
                                        else "absent" }}'
 
+- name: Create systemd-resolved configuration directory for fallback
+  ansible.builtin.file:
+    path: '/etc/systemd/resolved.conf.d'
+    state: 'directory'
+    mode: '0755'
+  when:
+    - resolved__enabled | bool
+    - resolved__fallback_conf != ''
+    - resolved__resolv_conf != '/etc/resolv.conf'
+    - not (ansible_local.resolved.installed | d()) | bool
+
+- name: Save existing nameservers as fallback to ensure connectivity
+  ansible.builtin.template:
+    src: 'etc/systemd/resolved.conf.d/fallback-dns.conf.j2'
+    dest: '{{ "/etc/systemd/resolved.conf.d/" + resolved__fallback_conf }}'
+    mode: '0644'
+  when:
+    - resolved__enabled | bool
+    - resolved__fallback_conf != ''
+    - resolved__resolv_conf != '/etc/resolv.conf'
+    - not (ansible_local.resolved.installed | d()) | bool
+
 - name: Install required resolved packages
   ansible.builtin.package:
     name: '{{ resolved__base_packages + resolved__packages }}'
