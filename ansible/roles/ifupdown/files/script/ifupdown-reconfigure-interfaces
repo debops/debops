@@ -159,17 +159,19 @@ interface_down () {
         local -a if_hotplug_interfaces
         local -a if_boot_interfaces
         local -a systemd_ifup_instances
+        local systemd_escaped_interface
         mapfile -t if_hotplug_interfaces < <(ifquery --list --allow=hotplug)
         mapfile -t if_boot_interfaces < <(ifquery --list --allow=boot)
-        mapfile -t systemd_ifup_instances < <(systemctl list-units --no-legend --state=active 'ifup@*.service' | awk '{print $1}' | sed -e 's/^ifup\@//' -e 's/\.service$//')
+        mapfile -t systemd_ifup_instances < <(systemctl list-units --no-legend --state=active 'ifup@*.service' | awk '{print $1}' | sed -e 's/^ifup\@//' -e 's/\.service$//' | xargs -0 systemd-escape -u)
+        systemd_escaped_interface="$(systemd-escape "${1}")"
 
         if [ ${#if_hotplug_interfaces[@]} -gt 0 ] && containsElement "${1}" "${if_hotplug_interfaces[@]}" ; then
-            systemctl stop "ifup@${1}.service"
+		systemctl stop "ifup@${systemd_escaped_interface}.service"
         elif [ ${#if_boot_interfaces[@]} -gt 0 ] && containsElement "${1}" "${if_boot_interfaces[@]}" ; then
             if [ ${#if_hotplug_interfaces[@]} -gt 0 ] && [ ${#systemd_ifup_instances[@]} -gt 0 ] && containsElement "${1}" "${systemd_ifup_instances[@]}" ; then
-                systemctl stop "ifup@${1}.service"
+                systemctl stop "ifup@${systemd_escaped_interface}.service"
             else
-                systemctl stop "iface@${1}.service"
+                systemctl stop "iface@${systemd_escaped_interface}.service"
             fi
         fi
     else
@@ -183,14 +185,16 @@ interface_up () {
 
     local -a if_hotplug_interfaces
     local -a if_boot_interfaces
+    local systemd_escaped_interface
     mapfile -t if_hotplug_interfaces < <(ifquery --list --allow=hotplug)
     mapfile -t if_boot_interfaces < <(ifquery --list --allow=boot)
+    systemd_escaped_interface="$(systemd-escape "${1}")"
 
     if is_systemd ; then
         if [ ${#if_hotplug_interfaces[@]} -gt 0 ] && containsElement "${1}" "${if_hotplug_interfaces[@]}" ; then
-            systemctl start "ifup@${1}.service"
+            systemctl start "ifup@${systemd_escaped_interface}.service"
         elif [ ${#if_boot_interfaces[@]} -gt 0 ] && containsElement "${1}" "${if_boot_interfaces[@]}" ; then
-            systemctl start "iface@${1}.service"
+            systemctl start "iface@${systemd_escaped_interface}.service"
         fi
     else
         ifup "${1}"
@@ -230,14 +234,18 @@ if [ -d "${interface_request_path}" ] ; then
         declare -a systemd_iface_instances
         declare -a systemd_interface_instances
         if is_systemd ; then
-            mapfile -t systemd_ifup_instances < <(systemctl list-units --no-legend --state=active 'ifup@*.service' | awk '{print $1}' | sed -e 's/^ifup\@//' -e 's/\.service$//')
-            mapfile -t systemd_iface_instances < <(systemctl list-units --no-legend --state=active 'iface@*.service' | awk '{print $1}' | sed -e 's/^iface\@//' -e 's/\.service$//')
+            declare -a systemd_escaped_ifup_instances
+            declare -a systemd_escaped_iface_instances
+            mapfile -t systemd_escaped_ifup_instances < <(systemctl list-units --no-legend --state=active 'ifup@*.service' | awk '{print $1}' | sed -e 's/^ifup\@//' -e 's/\.service$//')
+            mapfile -t systemd_escaped_iface_instances < <(systemctl list-units --no-legend --state=active 'iface@*.service' | awk '{print $1}' | sed -e 's/^iface\@//' -e 's/\.service$//')
+            mapfile -t systemd_ifup_instances < <(for i in "${systemd_escaped_ifup_instances[@]}"; do systemd-escape -u "${i}"; done)
+            mapfile -t systemd_iface_instances < <(for i in "${systemd_escaped_iface_instances[@]}"; do systemd-escape -u "${i}"; done)
 
             if [ ${#systemd_ifup_instances[@]} -gt 0 ]; then
-                log_message -m "Found active systemd ifup@ instances: $(join_by ',' "${systemd_ifup_instances[@]}")"
+                log_message -m "Found active systemd ifup@ instances: $(join_by ',' "${systemd_escaped_ifup_instances[@]}")"
             fi
             if [ ${#systemd_iface_instances[@]} -gt 0 ]; then
-                log_message -m "Found active systemd iface@ instances: $(join_by ',' "${systemd_iface_instances[@]}")"
+                log_message -m "Found active systemd iface@ instances: $(join_by ',' "${systemd_escaped_iface_instances[@]}")"
             fi
         else
             # Prevent issues with unbound variable
