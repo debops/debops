@@ -54,6 +54,13 @@ Fixed
 - The ``libpam-cracklib`` APT package will be installed and configured
   conditionally. It has been removed in Debian Bookworm.
 
+:ref:`debops.ifupdown` role
+'''''''''''''''''''''''''''
+
+- The interface names used in scripts will be escaped using the
+  :command:`systemd-escape` tool. This should fix problems with control over
+  network interfaces which contain the hyphen character(s).
+
 
 `debops v2.3.8`_ - 2023-05-25
 -----------------------------
