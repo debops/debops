@@ -267,7 +267,9 @@ sysctl__default_parameters:
   # original file and regenerate it; the read-only parameters will be
   # automatically commented out in unprivileged LXC containers.
   - name: 'protect-links'
-    filename: 'protect-links.conf'
+    filename: '{{ "protect-links.conf"
+        if (ansible_distribution_release in ["stretch", "buster", "bullseye"])
+        else "99-protect-links.conf" }}'
     divert: True
     comment: |
       Protected links
