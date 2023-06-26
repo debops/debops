@@ -34,6 +34,12 @@ General
   the "oldstable" release. The new Debian Testing release, "Trixie" has also
   been added in relevant places.
 
+:ref:`debops.ifupdown` role
+'''''''''''''''''''''''''''
+
+- Ensure that the :file:`iface@.service` :command:`systemd` unit starts after
+  :file:`apparmor.service` service.
+
 :ref:`debops.ipxe` role
 '''''''''''''''''''''''
 
