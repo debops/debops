@@ -621,6 +621,13 @@ debops.boxbackup role
   Controller instead of directly on the command line, to avoid leaks through
   the process list.
 
+:ref:`debops.ifupdown` role
+'''''''''''''''''''''''''''
+
+- The interface names used in scripts will be escaped using the
+  :command:`systemd-escape` tool. This should fix problems with control over
+  network interfaces which contain the hyphen character(s).
+
 :ref:`debops.kibana` role
 '''''''''''''''''''''''''
 
