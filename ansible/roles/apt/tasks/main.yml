@@ -163,13 +163,15 @@
 
 - name: Configure custom APT deb822 repositories
   ansible.builtin.deb822_repository:
-    name:       '{{ item.name }}'
-    uris:       '{{ item.uris }}'
-    components: '{{ item.components | d("main") }} '
-    suites:     '{{ item.suites | d(ansible_distribution_release) }}'
-    types:      '{{ item.types | d(omit) }}'
-    signed_by:  '{{ item.signed_by | d(omit) }}'
-    state:      '{{ item.state | d("present") }}'
+    name:          '{{ item.name }}'
+    uris:          '{{ item.uris }}'
+    components:    '{{ item.components | d("main") }} '
+    suites:        '{{ item.suites | d(ansible_distribution_release) }}'
+    architectures: '{{ item.architectures | d(omit) }}'
+    mode:          '{{ item.mode | d(omit) }}'
+    signed_by:     '{{ item.signed_by | d(omit) }}'
+    state:         '{{ item.state | d("present") }}'
+    types:         '{{ item.types | d(omit) }}'
   with_flattened:
     - '{{ apt__deb822_repositories }}'
     - '{{ apt__group_deb822_repositories }}'
