@@ -360,6 +360,14 @@ sshd__original_configuration:
     value: True
     state: 'init'
 
+  - name: 'ChallengeResponseAuthentication'
+    comment: |
+      Change to yes to enable challenge-response passwords (beware issues with
+      some PAM modules and threads). From openssh-server version 8.7, this option
+      is deprecated and is an alias of KbdInteractiveAuthentication.
+    value: False
+    state: 'init'
+
   - name: 'KbdInteractiveAuthentication'
     comment: |
       Change to yes to enable challenge-response passwords (beware issues with
@@ -636,6 +644,14 @@ sshd__default_configuration:
                if (ansible_local.root_account.ssh_authorized_keys | d() | bool or
                    ansible_local.system_users.configured | d() | bool)
                else True }}'
+    state: 'present'
+
+  # Disable ChallengeResponseAuthentication by default. Otherwise, setting
+  # PasswordAuthentication to False is not enough to force authentication
+  # by public key. From openssh-server 8.7, ChallengeResponseAuthentication
+  # is deprecated and is an alias for KbdInteractiveAuthentication.
+  - name: 'ChallengeResponseAuthentication'
+    value: False
     state: 'present'
 
   # Disable KbdInteractiveAuthentication (new name of the deprecated
