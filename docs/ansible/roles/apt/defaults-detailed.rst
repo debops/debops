@@ -261,7 +261,7 @@ Configure an Ubuntu PPA on Ubuntu hosts:
 .. _apt__ref_deb822_repositories:
 
 apt__deb822_repositories
------------------
+------------------------
 
 This list, along with ``apt__group_deb822_repositories`` and
 ``apt__host_deb822_repositories`` can be used to manage APT repositories through
