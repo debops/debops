@@ -153,10 +153,10 @@
 - name: Configure custom APT deb822 repositories
   ansible.builtin.deb822_repository:
     name:       '{{ item.name }}'
-    types:      '{{ item.types | d(omit) }}'
     uris:       '{{ item.uris }}'
-    suites:     '{{ item.suites | d(omit) }}'
-    components: '{{ item.components | d(omit) }} '
+    components: '{{ item.components | d("main") }} '
+    suites:     '{{ item.suites | d(ansible_distribution_release) }}'
+    types:      '{{ item.types | d(omit) }}'
     signed_by:  '{{ item.signed_by | d(omit) }}'
     state:      '{{ item.state | d("present") }}'
   with_flattened:
