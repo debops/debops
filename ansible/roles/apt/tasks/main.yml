@@ -160,11 +160,10 @@
     mode:          '{{ item.mode | d(omit) }}'
     signed_by:     '{{ item.signed_by | d(omit) }}'
     state:         '{{ item.state | d("present") }}'
-    types:         '{{ item.types | d(omit) }}'
-  with_flattened:
-    - '{{ apt__deb822_repositories }}'
-    - '{{ apt__group_deb822_repositories }}'
-    - '{{ apt__host_deb822_repositories }}'
+    types:         '{{ item.types | d("deb") }}'         # noqa args
+  loop: '{{ q("flattened", apt__deb822_repositories
+                           + apt__deb822_group_repositories
+                           + apt__deb822_host_repositories) }}'
   register: apt__register_deb822_repositories
   when: (apt__enabled|bool and item.name|d())
 
