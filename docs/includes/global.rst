@@ -119,6 +119,7 @@
 .. _Ansible ansible.builtin.apt module: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_module.html
 .. _Ansible ansible.builtin.apt_key module: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_key_module.html
 .. _Ansible ansible.builtin.apt_repository module: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_repository_module.html
+.. _Ansible ansible.builtin.deb822_repository module: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/deb822_repository_module.html
 .. _Ansible arista.eos.eos_acl_interfaces module: https://docs.ansible.com/ansible/latest/collections/arista/eos/eos_acl_interfaces_module.html
 .. _Ansible arista.eos.eos_acls module: https://docs.ansible.com/ansible/latest/collections/arista/eos/eos_acls_module.html
 .. _Ansible arista.eos.eos_banner module: https://docs.ansible.com/ansible/latest/collections/arista/eos/eos_banner_module.html
