@@ -191,6 +191,8 @@
                else ("--key-size=" + item.0.key_size | d(cryptsetup__key_size) | string) }}
          {{ "" if (item.0.iter_time | d(cryptsetup__iter_time) == "default")
                else ("--iter-time=" + item.0.iter_time | d(cryptsetup__iter_time) | string) }}
+         {{ "" if (item.0.pbkdf | d(cryptsetup__pbkdf) == "default")
+               else ("--pbkdf=" + item.0.pbkdf | d(cryptsetup__pbkdf) | string) }}
          {% if cryptsetup__use_dev_random | d("default") != "default" %}
          {{ "--use-random" if cryptsetup__use_dev_random else "--use-urandom" }}
          {% endif %}

@@ -45,6 +45,12 @@ General
 
   used `role::ROLE:pkg` previously.
 
+:ref:`debops.cryptsetup` role
+'''''''''''''''''''''''''''''
+
+- Make PBKDF configurable and already set Argon2id which is the new default of
+  cryptsetup 2.4.0. See :envvar:`cryptsetup__pbkdf` for details.
+
 
 `debops v3.1.0`_ - 2023-11-29
 -----------------------------
