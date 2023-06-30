@@ -373,9 +373,15 @@ Each item of those lists is a dictionary with the following documented keys:
 .. _cryptsetup__devices_iter_time:
 
 ``iter_time``
-  Optional, int. The number of milliseconds to spend with PBKDF2 passphrase processing.
+  Optional, integer. The number of milliseconds to spend with PBKDF2 passphrase processing.
   This option only has an effect in ``luks`` :ref:`item.mode <cryptsetup__devices_mode>`.
   Defaults to :envvar:`cryptsetup__iter_time`.
+
+.. _cryptsetup__devices_pbkdf:
+
+``pbkdf``
+  Optional, string. PBKDF algorithm.
+  Defaults to :envvar:`cryptsetup__pbkdf`.
 
 Example for encrypting a partition
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

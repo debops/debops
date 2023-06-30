@@ -136,6 +136,12 @@ General
   mirrors. The role will use https://archive.debian.org/debian as the
   repository URL on Debian Buster hosts.
 
+:ref:`debops.cryptsetup` role
+'''''''''''''''''''''''''''''
+
+- Make PBKDF configurable and already set Argon2id which is the new default of
+  cryptsetup 2.4.0. See :envvar:`cryptsetup__pbkdf` for details.
+
 :ref:`debops.gitlab` role
 '''''''''''''''''''''''''
 
