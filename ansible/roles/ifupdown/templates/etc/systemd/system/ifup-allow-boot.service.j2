@@ -24,11 +24,11 @@ ExecStart=/bin/sh -ec '\
   for i in $(ifquery --list --exclude lo --allow boot); do INTERFACES="$INTERFACES$i "; done; \
   [ -n "$INTERFACES" ] || exit 0; \
   for i in $INTERFACES; do \
-  escaped_iface="$(systemd-escape "$i")" \
+  escaped_iface="$(systemd-escape "$i")"; \
   logger -t ifup-allow-boot "Checking state of the $i interface" ; \
-  if ! ifquery --state $i > /dev/null && ! systemctl is-active iface@${escaped_iface} > /dev/null 2>&1 ; then \
+  if ! ifquery --state $i > /dev/null && ! systemctl is-active iface@$${escaped_iface} > /dev/null 2>&1 ; then \
   logger -t ifup-allow-boot "Interface $i is down, bringing it up" ; \
-  systemctl start iface@${escaped_iface} ; sleep 0.5 ; \
+  systemctl start iface@$${escaped_iface} ; sleep 0.5 ; \
   while [ -e /run/network/ifup-$i.pid ] ; do sleep 0.5 ; \
   logger -t ifup-allow-boot "Waiting for $i interface" ; done ; \
   logger -t ifup-allow-boot "Interface $i is up" ; \
