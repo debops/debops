@@ -61,6 +61,13 @@ Fixed
   :command:`systemd-escape` tool. This should fix problems with control over
   network interfaces which contain the hyphen character(s).
 
+:ref:`debops.lxc` role
+''''''''''''''''''''''
+
+- Fixed name of the ``vfs_root`` parameter in the call to the
+  ``community.general.lxc_container`` Ansible module, which was renamed to
+  ``zfs_root``.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 
