@@ -668,6 +668,13 @@ debops.boxbackup role
 - Fixed formatting in the :file:`/etc/logrotate.conf` configuration file to
   avoid adding :command:`vim` fold markers from the DebOps role defaults.
 
+:ref:`debops.lxc` role
+''''''''''''''''''''''
+
+- Fixed name of the ``vfs_root`` parameter in the call to the
+  ``community.general.lxc_container`` Ansible module, which was renamed to
+  ``zfs_root``.
+
 :ref:`debops.netbase` role
 ''''''''''''''''''''''''''
 
