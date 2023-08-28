@@ -119,6 +119,12 @@ General
   The modern project layout supports multiple Ansible inventories encapsulated
   into :ref:`infrastructure views <project_infrastructure_views>`.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- The role now supports management of the "Deb822" format of the APT repository
+  sources.
+
 :ref:`debops.avahi` role
 ''''''''''''''''''''''''
 
