@@ -54,6 +54,12 @@ General
 
 - The Debian Installer Menu can now install Debian GNU/Linux 12 (Bookworm).
 
+:ref:`debops.preseed` role
+''''''''''''''''''''''''''
+
+- The role will install the ``python3-debian`` package by default, to enable
+  support for Deb822-formatted APT repository configuration files.
+
 :ref:`debops.python` role
 '''''''''''''''''''''''''
 
