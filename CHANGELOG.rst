@@ -83,6 +83,11 @@ Fixed
   ``community.general.lxc_container`` Ansible module, which was renamed to
   ``zfs_root``.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- The ``python-apt`` package has been renamed to ``python-apt-common``.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 
