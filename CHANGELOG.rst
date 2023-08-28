@@ -23,6 +23,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.3: https://github.com/debops/debops/compare/v2.3.0...stable-2.3
 
+Added
+~~~~~
+
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- The role now supports management of the "Deb822" format of the APT repository
+  sources.
+
 Changed
 ~~~~~~~
 
