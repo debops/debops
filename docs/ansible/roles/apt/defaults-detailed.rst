@@ -258,6 +258,81 @@ Configure an Ubuntu PPA on Ubuntu hosts:
        distribution: 'Ubuntu'
 
 
+.. _apt__ref_deb822_repositories:
+
+apt__deb822_repositories
+------------------------
+
+This list, along with ``apt__group_deb822_repositories`` and
+``apt__host_deb822_repositories`` can be used to manage APT repositories through
+Ansible inventory. Each entry is a YAML dictionary with parameters that
+correspond to the `Ansible ansible.builtin.deb822_repository module`_. See its
+documentation for parameter advanced usage and syntax.
+
+``name``
+  Required. Name of the repo. Specifically used for ``X-Repolib-Name`` and in
+  naming the repository and signing key files.
+
+``uris``
+  Required. Must specify the base of the Debian distribution archive, from which
+  APT finds the information it needs. Multiple URIs can be specified in a list.
+
+``state``
+  Optional. Either ``present`` for the repository to be present (default), or
+  ``absent`` for the repository to be removed.
+
+``architectures``
+  Optional. Architectures to search within repository, for example ``amd64``
+  (default) or ``i386``.
+
+``components``
+  Optional. Specify different sections of one distribution version present in
+  Suite, such as ``main`` (default), ``contrib``, ``non-free-firmware``…
+
+``mode``
+  Optional. The octal mode for newly created files in
+  :file:`/etc/apt/sources.list.d/` directory.
+
+``suites``
+  Optional. Can take the form of a distribution release name (default).
+
+``signed_by``
+  Optional. Either a URL to a GPG key, absolute path to a keyring file, one or
+  more fingerprints of keys. Keys will be store in :file:`/etc/apt/keyrings/`
+  directory (automatically created if absent).
+
+``types``
+  Optional. Which types of packages to look for from a given source; either
+  binary ``deb`` (default) or source code ``deb-src``.
+
+Examples
+~~~~~~~~
+
+Add an APT repository with several components on all hosts without any
+conditions:
+
+.. code-block:: yaml
+
+   apt__deb822_repositories:
+   - name: debian
+     types: deb
+     uris: http://deb.debian.org/debian
+     suites: bookworm
+     components:
+     - main
+     - contrib
+     - non-free-firmware
+
+Add third-party APT repository with GPG key URL:
+
+.. code-block:: yaml
+
+   apt__deb822_repositories:
+     - name: 'my-repo'
+       uris: 'http://example.com/debian'
+       signed_by: 'http://example.com/debian/example.com.asc'
+
+
 .. _apt__ref_auth_files:
 
 apt__auth_files
@@ -308,7 +383,7 @@ repository is managed by the :ref:`debops.reprepro` role which uses the
 Syntax
 ~~~~~~
 
-THe variables are defined as a list of YAML dictionaries .Each configuration
+The variables are defined as a list of YAML dictionaries .Each configuration
 entry defines a separate file in the :file:`/etc/apt/auth.conf.d/` directory.
 The state and contents of the file are specified using specific parameters:
 
