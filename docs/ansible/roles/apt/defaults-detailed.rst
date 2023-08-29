@@ -263,8 +263,8 @@ Configure an Ubuntu PPA on Ubuntu hosts:
 apt__deb822_repositories
 ------------------------
 
-This list, along with ``apt__group_deb822_repositories`` and
-``apt__host_deb822_repositories`` can be used to manage APT repositories through
+This list, along with ``apt__deb822_group_repositories`` and
+``apt__deb822_host_repositories`` can be used to manage APT repositories through
 Ansible inventory. Each entry is a YAML dictionary with parameters that
 correspond to the `Ansible ansible.builtin.deb822_repository module`_. See its
 documentation for parameter advanced usage and syntax.
@@ -314,14 +314,15 @@ conditions:
 .. code-block:: yaml
 
    apt__deb822_repositories:
-   - name: debian
-     types: deb
-     uris: http://deb.debian.org/debian
-     suites: bookworm
-     components:
-     - main
-     - contrib
-     - non-free-firmware
+     - name: 'debian'
+       types: 'deb'
+       uris: 'http://deb.debian.org/debian'
+       suites: 'bookworm'
+       components:
+         - 'main'
+         - 'non-free-firmware'
+         - 'contrib'
+         - 'non-free'
 
 Add third-party APT repository with GPG key URL:
 
