@@ -105,7 +105,7 @@ for role in "${!debops_role_map[@]}" ; do
     if [ -f "ansible/playbooks/service/${role}.yml" ] ; then
         read -r -a dependencies_in_playbooks <<<"$(git grep -h --word-regexp -e "role::.*" \
                                                             --and --not -e "role::${role}" \
-                                                            ansible/playbooks/service/${role}.yml \
+                                                            "ansible/playbooks/service/${role}.yml" \
                                                    | sed -e "s/^.*role:://" -e "s/'.*$//" \
                                                    | tr '\n' ' ')" || true
         if [ -n "${dependencies_in_playbooks[*]+x}" ] ; then
