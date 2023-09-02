@@ -183,6 +183,9 @@ docker_server__default_pip_packages:
     path: '/usr/local/bin/docker-compose'
     src:  '{{ docker_server__virtualenv + "/bin/docker-compose" }}'
 
+  # docker-compose requires pyyaml. Prevent using broken pyyaml versions https://github.com/yaml/pyyaml/issues/724
+  - name: 'pyyaml!=6.0.0,!=5.4.0,!=5.4.1'
+
                                                                    # ]]]
 # .. envvar:: docker_server__pip_packages [[[
 #
