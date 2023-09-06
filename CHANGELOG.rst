@@ -62,6 +62,9 @@ General
 - Use the ``::1`` IPv6 address instead of the ``127.0.0.1`` IPv4 address for
   IPv6 DNS-over-HTTP proxy configuration.
 
+- Use the correct path to the :file:`/bin/tar` command in the BIND backup
+  script.
+
 
 `debops v3.1.2`_ - 2024-09-23
 -----------------------------
