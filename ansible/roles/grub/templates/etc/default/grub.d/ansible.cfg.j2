@@ -1,7 +1,8 @@
 {# Copyright (C) 2015 Patryk Ściborek <patryk@sciborek.com>
  # Copyright (C) 2015-2018 Maciej Delmanowski <drybjed@gmail.com>
  # Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
- # Copyright (C) 2015-2018 DebOps <https://debops.org/>
+ # Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+ # Copyright (C) 2015-2023 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 # {{ ansible_managed }}
@@ -19,33 +20,38 @@
 {%     set element_export = ('export ' if (element.export | d(False)) | bool else '') %}
 {%     set element_quote = ('"' if (element.quote | d(True)) | bool else '') %}
 {%     set element_name = ('grub_' + (element.name | lower | regex_replace('^grub_',''))) | upper %}
-{%     set element_original = ((('$grub_' + (element.name | lower | regex_replace('^grub_','')) + ' ') | upper) if (element.original | d()) | bool else '')  %}
+{%     set element_original = ((('$grub_' + (element.name | lower | regex_replace('^grub_',''))) | upper) if (element.original | d()) | bool else '')  %}
 {%     set element_value = element.value | d('') %}
+{##}
 {%     if element.comment | d() %}
-{{ element.comment | regex_replace('\n$','') | comment(prefix='\n', postfix='') -}}
+{{       element.comment | regex_replace('\n$','') | comment(prefix='\n', postfix='') -}}
 {%     endif %}
+{##}
 {%     if element_value is string %}
-{{ '{}{}{}={}{}{}{}'.format(element_comment, element_export, element_name, element_quote, element_original, element_value, element_quote) }}
-{%     elif element_value | bool and element_value is not iterable %}
-{%       if element_value | string == '1' %}
-{{ '{}{}{}={}{}{}{}'.format(element_comment, element_export, element_name, element_quote, element_original, element_value, element_quote) }}
-{%       else %}
-{{ '{}{}{}={}{}{}'.format(element_comment, element_export, element_name, element_quote, 'true', element_quote) }}
-{%       endif %}
-{%     elif not element_value | bool and element_value is not iterable %}
-{%       if element_value is not none %}
-{%         if element_value | int %}
-{{ '{}{}{}={}{}{}{}'.format(element_comment, element_export, element_name, element_quote, element_original, element_value, element_quote) }}
+{%       set element_str = element_value %}
+{%     elif element_value is not iterable %}
+{%       if element_value | bool %}
+{%         if element_value | string == '1' %}
+{%           set element_str = element_value %}
 {%         else %}
-{%           if element_value | string == '0' %}
-{{ '{}{}{}={}{}{}{}'.format(element_comment, element_export, element_name, element_quote, element_original, element_value, element_quote) }}
-{%           else %}
-{{ '{}{}{}={}{}{}'.format(element_comment, element_export, element_name, element_quote, 'false', element_quote) }}
-{%           endif %}
+{%           set element_str = 'true' %}
+{%         endif %}
+{%       else %}
+{%         if element_value | int %}
+{%           set element_str = element_value %}
+{%         elif element_value | string == '0' %}
+{%           set element_str = element_value %}
+{%         else %}
+{%           set element_str = 'false' %}
 {%         endif %}
 {%       endif %}
-{%     elif element_value is iterable and element_value is not string and element_value is not mapping %}
-{{ '{}{}{}={}{}{}{}'.format(element_comment, element_export, element_name, element_quote, element_original, element_value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list | join(' '), element_quote) }}
+{%     elif element_value is not mapping %}
+{%       set element_str = element_value | selectattr('state', 'equalto', 'present') | map(attribute='name') | list | join(' ') %}
+{%     else %}
+{%       set element_str = '' %}
 {%     endif %}
+{##}
+{%     set element_str = [ element_original, element_str ] | join(' ') | trim %}
+{{     '{}{}{}={}{}{}'.format(element_comment, element_export, element_name, element_quote, element_str, element_quote) }}
 {%   endif %}
 {% endfor %}
