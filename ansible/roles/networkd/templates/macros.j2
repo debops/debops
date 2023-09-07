@@ -1,0 +1,73 @@
+{# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+ # Copyright (C) 2023 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+{% macro print_ini_option(option, section_comment) %}
+{%   if option.state | d('present') not in ['absent', 'ignore'] %}
+{%     if option.comment | d() %}
+{{       option.comment | regex_replace('\n$', '') | comment(prefix='', decoration='#', postfix='') -}}
+{%     endif %}
+{%     if option.state | d('present') in ['init', 'comment'] %}
+{%       set comment = '#' %}
+{%     else %}
+{%       set comment = section_comment %}
+{%     endif %}
+{%     if option.raw | d() %}
+{{       option.raw | regex_replace('\n$', '') | comment(prefix='', decoration=comment, postfix='') }}
+{%     else %}
+{%       set name = option.option | d(option.name) %}
+{%       if option.value is not defined %}
+{%         set value = "INVALID" %}
+{%       elif option.value is string and option.value == "0" %}
+{%         set value = 0 %}
+{%       elif option.value is string and option.value | int != 0 %}
+{%         set value = option.value | int %}
+{%       elif option.value is string %}
+{%         set value = option.value %}
+{%       elif option.value is sameas true %}
+{%         set value = 'yes' %}
+{%       elif option.value is sameas false %}
+{%         set value = 'no' %}
+{%       elif option.value is number %}
+{%         set value = option.value %}
+{%       elif option.value is iterable and option.value is not mapping %}
+{%         set values = [] %}
+{%         for x in option.value %}
+{%           if x.state | d('present') == 'present' %}
+{{-                  values.append(x.name) -}}
+{%           endif %}
+{%         endfor %}
+{%         set value = values | join(' ') %}
+{%       else %}
+{%         set value = "INVALID" %}
+{%       endif %}
+{%       if option.quote | d(False) | bool %}
+{%         set value = value | quote %}
+{%       endif %}
+{{       '{}{}={}'.format(comment, name, value) }}
+{%     endif %}
+{%   endif %}
+{% endmacro %}
+{##}
+{% macro print_ini_section(section) %}
+{%   if section.state | d('present') not in ['absent', 'ignore'] %}
+{{     '' }}
+{%     if section.comment | d() %}
+{{       section.comment | regex_replace('\n$', '') | comment(prefix='', decoration='#', postfix='') -}}
+{%     endif %}
+{%     if section.state | d('present') in ['init', 'comment'] %}
+{%       set section_comment = '#' %}
+{%     else %}
+{%       set section_comment = '' %}
+{%     endif %}
+{{     '{}[{}]'.format(section_comment, section.option | d(section.name)) }}
+{%     if section.raw | d() %}
+{{       section.raw | regex_replace('\n$', '') | comment(prefix='', decoration=section_comment, postfix='') -}}
+{%     else %}
+{%       for option in section.options | d([]) %}
+{{         print_ini_option(option, section_comment) -}}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{% endmacro %}
