@@ -63,7 +63,10 @@ slapd__default_schemas:
   - '{{ slapd__debops_schema_path + "/orgstructure.schema" }}'
 
   # Password Policy schema, included in the 'slapd' APT package
-  - '/etc/ldap/schema/ppolicy.schema'
+  # This schema is built-in since OpenLDAP 2.5.x
+  - '{{ "/etc/ldap/schema/ppolicy.schema"
+        if ansible_distribution_release in ["buster", "bullseye", "focal"]
+        else [] }}'
 
   # Support for 'host' and 'authorizedService' attributes, useful for granular
   # access control to services and machines
