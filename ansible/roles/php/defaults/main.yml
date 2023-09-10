@@ -3,7 +3,7 @@
 
 # .. Copyright (C) 2016      Mariano Barcia <mariano.barcia@gmail.com>
 # .. Copyright (C) 2016-2019 Maciej Delmanowski <drybjed@gmail.com>
-# .. Copyright (C) 2016-2019 DebOps <https://debops.org/>
+# .. Copyright (C) 2016-2023 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _php__ref_defaults:
@@ -24,7 +24,7 @@
 #
 # List of APT package names which are scanned to check available PHP versions.
 # The first found package wins. The ``php5`` packages are not supported.
-php__version_preference: [ 'php7.4', 'php7.3', 'php', 'php5.6' ]
+php__version_preference: [ 'php8.2', 'php7.4', 'php7.3', 'php' ]
 
                                                                    # ]]]
 # .. envvar:: php__sury [[[
@@ -33,7 +33,7 @@ php__version_preference: [ 'php7.4', 'php7.3', 'php', 'php5.6' ]
 # maintainer. You can enable these repositories to install PHP 7.0 on Debian
 # Jessie. See :ref:`php__ref_sury` for more details.
 php__sury: '{{ ansible_local.php.sury
-                | d(ansible_distribution_release in ["stretch", "trusty", "xenial"]) | bool }}'
+                | d(ansible_distribution_release in ["trusty", "xenial"]) | bool }}'
 
                                                                    # ]]]
 # .. envvar:: php__sury_apt_key_id [[[
@@ -176,9 +176,9 @@ php__included_packages: '{{ php__php_included_packages
 # Configuration dictionary mapping distribution releases to different PHP
 # packaging configurations. Also see :envvar:`php__included_packages`.
 php__release_included_map:
-  stretch:  '{{ php__php_included_packages }}'
   buster:   '{{ php__php_included_packages }}'
   bullseye: '{{ php__php_included_packages }}'
+  bookworm: '{{ php__php_included_packages }}'
   sid:      '{{ php__php_included_packages }}'
   trusty:   '{{ php__php5_included_packages }}'
   xenial:   '{{ php__php_included_packages }}'
@@ -248,7 +248,7 @@ php__common_included_packages:
 # will be installed instead.
 php__composer_upstream_enabled: '{{ True
                                     if (ansible_distribution_release in
-                                        ["stretch", "trusty", "xenial",
+                                        ["trusty", "xenial",
                                          "bionic", "focal"])
                                     else False }}'
 
@@ -755,7 +755,7 @@ php__apt_preferences__dependent_list:
     suffix: '_packages_sury_org'
     state: '{{ "present" if php__sury | bool else "absent" }}'
 
-  - packages: [ 'php', 'php5', 'php5*', 'php7*', 'dh-php', 'php-*',
+  - packages: [ 'php', 'php5', 'php5*', 'php7*', 'php8*', 'dh-php', 'php-*',
                 'libpcre2-8-0', 'libpcre3', 'libzip4', 'libpcre16-3',
                 'libpcre32-3', 'libpcrecpp0v5', 'libpcre3-dev',
                 'libapache2-mod-php', 'libapache2-mod-php*',
