@@ -2,7 +2,8 @@
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
 # .. Copyright (C) 2016-2020 Maciej Delmanowski <drybjed@gmail.com>
-# .. Copyright (C) 2016-2020 DebOps <https://debops.org/>
+# .. Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+# .. Copyright (C) 2016-2023 DebOps <https://debops.org/>
 # .. SPDX-License-Identifier: GPL-3.0-only
 
 # .. _slapd__ref_defaults:
@@ -70,7 +71,7 @@ slapd__default_schemas:
 
   # Support for 'host' and 'authorizedService' attributes, useful for granular
   # access control to services and machines
-  - '/etc/ldap/schema/fusiondirectory/ldapns.schema'
+  - '{{ slapd__debops_schema_path + "/ldapns.schema" }}'
 
   # Custom schema which defines a 'groupOfEntries' LDAP object which can create
   # empty groups
@@ -80,7 +81,7 @@ slapd__default_schemas:
   - '{{ slapd__debops_schema_path + "/openssh-lpk.schema" }}'
 
   # Support for 'sudo' rules in LDAP directory
-  - '/etc/ldap/schema/fusiondirectory/sudo.schema'
+  - '{{ slapd__debops_schema_path + "/sudo.schema" }}'
 
   # Support for 'eduPerson' and 'eduOrg' schema, included in DebOps
   - '{{ slapd__debops_schema_path + "/eduperson.schema" }}'
@@ -157,23 +158,11 @@ slapd__combined_schemas: '{{ slapd__default_schemas
 slapd__base_packages: [ 'slapd', 'ldap-utils', 'ssl-cert', 'libldap-common' ]
 
                                                                    # ]]]
-# .. envvar:: slapd__rfc2307bis_packages [[[
-#
-# List of APT packages to install in preparation to use ``rfc2307bis`` schema
-# instead of the ``nis`` schema.
-slapd__rfc2307bis_packages: [ 'fusiondirectory-schema' ]
-
-                                                                   # ]]]
 # .. envvar:: slapd__schema_packages [[[
 #
-# List of APT packages that contain LDAP schemas loaded into the directory by
-# the server. Debian has multiple ``fusiondirectory-*-schema`` and
-# ``gosa-*-schema`` packages that conflict with each other, therefore the list
-# of packages should be synchronized.
-slapd__schema_packages:
-
-  # Support for 'sudo' rules in LDAP
-  - 'fusiondirectory-plugin-sudo-schema'
+# List of APT packages that contain LDAP schemas to be loaded into the
+# directory by the server.
+slapd__schema_packages: []
 
                                                                    # ]]]
 # .. envvar:: slapd__packages [[[
@@ -1239,7 +1228,7 @@ slapd__ports:
   # Plaintext and StartTLS connections on port 389/tcp
   - 'ldap'
 
-  # Encrypted SSL connections on port 636/tcp (deprecated)
+  # Encrypted SSL connections on port 636/tcp
   - '{{ "ldaps" if slapd__pki | bool else [] }}'
 
                                                                    # ]]]
