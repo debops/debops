@@ -38,8 +38,8 @@ by the role.
 You can use the :ref:`debops.resources` role to copy custom ``*.schema`` or
 ``*.ldif`` files to the remote host before importing them. The ``*.ldif`` files
 can be imported automatically, but the ``*.schema`` import relies on the
-:command:`fusiondirectory-insert-schema` command which is available in the
-``fusiondirectory-schema`` APT package.
+:command:`schema2ldif` tool which is available from the APT package with the
+same name.
 
 If you are using clustered OpenLDAP, for example in N-Way Multi Master
 replication mode, you should import the schemas only on one node at a time.
