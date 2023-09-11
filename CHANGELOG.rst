@@ -147,6 +147,12 @@ General
   This should improve the initial deployment experience, since users don't need
   to create basic host templates by hand before registering hosts in Icinga.
 
+- The module handling has been reworked to work better with Debian GNU/Linux 12
+  (Bookworm). After an upgrade and re-running the role, you might want to
+  verify that there are no leftover modules from previous installations that
+  are not wanted (check :file:`/etc/icingaweb2/enabledModules`,
+  :file:`/usr/share/icingaweb2/modules` and :file:`/usr/local/src/icinga_web`).
+
 :ref:`debops.ipxe` role
 '''''''''''''''''''''''
 
