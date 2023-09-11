@@ -1,0 +1,23 @@
+# $Id: ldapns.schema,v 1.3 2003/05/29 12:57:29 lukeh Exp $
+
+# LDAP Name Service Additional Schema
+
+# http://www.iana.org/assignments/gssapi-service-names
+
+attributetype ( 1.3.6.1.4.1.5322.17.2.1 NAME 'authorizedService'
+	DESC 'IANA GSS-API authorized service name'
+	EQUALITY caseIgnoreMatch
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{256} )
+
+objectclass ( 1.3.6.1.4.1.5322.17.1.1 NAME 'authorizedServiceObject'
+	DESC 'Auxiliary object class for adding authorizedService attribute'
+	SUP top
+	AUXILIARY
+	MAY authorizedService )
+
+objectclass ( 1.3.6.1.4.1.5322.17.1.2 NAME 'hostObject'
+	DESC 'Auxiliary object class for adding host attribute'
+	SUP top
+	AUXILIARY
+	MAY host )
+
