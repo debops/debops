@@ -347,7 +347,7 @@ Create a custom :program:`cron` task that restarts a service daily:
        mode: '0755'
        content: |
          #!/bin/sh
-         # {{ ansible_managed }}
+         # This file is managed remotely, all changes will be lost.
          test -x /usr/bin/service && systemctl restart service
 
 .. _resources__ref_pip:
