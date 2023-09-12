@@ -65,6 +65,8 @@ General
 - Use the correct path to the :file:`/bin/tar` command in the BIND backup
   script.
 
+- Use the full name of the ``ansible.utils.ipaddr`` filter in Jinja templates.
+
 
 `debops v3.1.2`_ - 2024-09-23
 -----------------------------
