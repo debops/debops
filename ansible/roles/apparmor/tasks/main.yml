@@ -1,7 +1,7 @@
 ---
 # Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-# Copyright (C) 2022 David Härdeman <david@hardeman.nu>
-# Copyright (C) 2015-2022 DebOps <https://debops.org/>
+# Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2015-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
@@ -19,6 +19,7 @@
     state: 'present'
   register: apparmor__register_packages
   until: apparmor__register_packages is succeeded
+  when: apparmor__enabled | d(False) | bool
   tags: [ 'role::apparmor:pkg' ]
 
 - name: Make sure that the Ansible local facts directory exists
@@ -28,6 +29,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
+  when: apparmor__enabled | d(False) | bool
 
 - name: Save AppArmor local facts
   ansible.builtin.template:
@@ -36,6 +38,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
+  when: apparmor__enabled | d(False) | bool
   tags: [ 'meta::facts' ]
 
 - name: Update Ansible facts if they were modified
@@ -46,9 +49,8 @@
     src: 'etc/default/grub.d/debops.apparmor.cfg.j2'
     dest: '/etc/default/grub.d/debops.apparmor.cfg'
     mode: '0644'
-  when: >
-    apparmor__enabled | d(False) | bool and
-    apparmor__manage_grub | d(False) | bool
+  when: apparmor__enabled | d(False) | bool and
+        apparmor__manage_grub | d(False) | bool
   notify: [ 'Update GRUB' ]
   tags: [ 'role::apparmor:grub' ]
 
@@ -56,12 +58,12 @@
   ansible.builtin.file:
     path: '/etc/default/grub.d/debops.apparmor.cfg'
     state: 'absent'
-  when: >
-    not apparmor__enabled | d(False) | bool or
-    not apparmor__manage_grub | d(False) | bool
+  when: not apparmor__enabled | d(False) | bool or
+        not apparmor__manage_grub | d(False) | bool
   notify: [ 'Update GRUB' ]
   tags: [ 'role::apparmor:grub' ]
 
+# FIXME: This should be removed at some point
 - name: Remove legacy GRUB configuration options
   ansible.builtin.lineinfile:
     dest: '/etc/default/grub'
@@ -69,6 +71,8 @@
     line: 'GRUB_CMDLINE_LINUX="\1 \2"'
     backrefs: yes
     mode: '0644'
+  # The file might not exist
+  failed_when: False
   notify: [ 'Update GRUB' ]
   tags: [ 'role::apparmor:grub' ]
 
@@ -77,6 +81,8 @@
   loop: '{{ q("flattened", apparmor__combined_tunables) | debops.debops.parse_kv_items() }}'
   loop_control:
     label: '{{ item.name }}'
+  when: apparmor__enabled | d(False) | bool or
+        apparmor__dependent_tunables | d([]) | length > 0
   tags: [ 'role::apparmor:tunables' ]
 
 - name: Configure local changes to system profiles
@@ -84,6 +90,8 @@
   loop: '{{ q("flattened", apparmor__combined_locals) | debops.debops.parse_kv_items() }}'
   loop_control:
     label: '{{ item.name }}'
+  when: apparmor__enabled | d(False) | bool or
+        apparmor__dependent_locals | d([]) | length > 0
   tags: [ 'role::apparmor:locals' ]
 
 - name: Configure profiles
@@ -91,6 +99,8 @@
   loop: '{{ q("flattened", apparmor__combined_profiles) | debops.debops.parse_kv_items() }}'
   loop_control:
     label: '{{ item.name }}'
+  when: apparmor__enabled | d(False) | bool or
+        apparmor__dependent_profiles | d([]) | length > 0
   tags: [ 'role::apparmor:profiles' ]
 
 - name: Start and enable the AppArmor service
@@ -98,9 +108,7 @@
     name: 'apparmor'
     state: 'started'
     enabled: True
-  when:
-    - apparmor__enabled | d(False) | bool
-    - ansible_local.apparmor.installed | d(False) | bool
+  when: apparmor__enabled | d(False) | bool
   tags: [ 'role::apparmor:service' ]
 
 - name: Reload AppArmor profiles if necessary
@@ -112,16 +120,14 @@
     name: 'apparmor'
     state: 'stopped'
     enabled: False
-  when:
-    - not apparmor__enabled | d(False) | bool
-    - ansible_local.apparmor.installed | d(False) | bool
+  when: not apparmor__enabled | d(False) | bool and
+        ansible_local.apparmor.installed | d(False) | bool
   tags: [ 'role::apparmor:service' ]
 
 - name: Unload all AppArmor profiles
   ansible.builtin.command: aa-teardown
-  when:
-    - not apparmor__enabled | d(False) | bool
-    - ansible_local.apparmor.installed | d(False) | bool
+  when: not apparmor__enabled | d(False) | bool and
+        ansible_local.apparmor.installed | d(False) | bool
   register: apparmor__register_teardown
   changed_when: apparmor__register_teardown.changed | bool
   tags: [ 'role::apparmor:profiles' ]
