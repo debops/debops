@@ -536,7 +536,11 @@ slapd__default_tasks:
 
   - name: 'Enable AutoGroup overlay in the main database'
     dn: 'olcOverlay={10}autogroup,olcDatabase={1}mdb,cn=config'
-    objectClass: [ 'olcOverlayConfig', 'olcAutomaticGroups' ]
+    objectClass:
+      - 'olcOverlayConfig'
+      - '{{ "olcAutomaticGroups"
+            if ansible_distribution_release in ["buster", "bullseye", "focal"]
+            else "olcAutoGroupConfig" }}'
     attributes:
       olcOverlay: '{10}autogroup'
 
@@ -645,13 +649,25 @@ slapd__default_tasks:
         - 'mailAlternateAddress set "this/mailAlternateAddress & this/mail"'
     state: 'exact'
 
-  - name: 'Configure AutoGroup overlay in the main database'
+  - name: 'Configure AutoGroup overlay in the main database (old naming)'
     dn: 'olcOverlay={10}autogroup,olcDatabase={1}mdb,cn=config'
     attributes:
       olcAGattrSet:
         - '{0}groupOfURLs memberURL member'
       olcAGmemberOfAd: 'memberOf'
-    state: 'exact'
+    state: '{{ "exact"
+               if ansible_distribution_release in ["buster", "bullseye", "focal"]
+               else "ignore" }}'
+
+  - name: 'Configure AutoGroup overlay in the main database'
+    dn: 'olcOverlay={10}autogroup,olcDatabase={1}mdb,cn=config'
+    attributes:
+      olcAutoGroupAttrSet:
+        - '{0}groupOfURLs memberURL member'
+      olcAutoGroupMemberOfAd: 'memberOf'
+    state: '{{ "exact"
+               if ansible_distribution_release not in ["buster", "bullseye", "focal"]
+               else "ignore" }}'
 
   - name: 'Configure LastBind overlay in the main database'
     dn: 'olcOverlay={11}lastbind,olcDatabase={1}mdb,cn=config'
