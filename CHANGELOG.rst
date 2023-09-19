@@ -338,6 +338,10 @@ General
 - The role will configure APT to use Debian Security repositories via the
   http://deb.debian.org/debian-security/ CDN.
 
+- The role has been refreshed and management of the
+  :file:`/etc/apt/sources.list` file was redesigned to allow for better
+  flexibility in configuration. See role documentation for more details.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 
