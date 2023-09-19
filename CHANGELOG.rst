@@ -43,6 +43,12 @@ General
   the "oldstable" release. The new Debian Testing release, "Trixie" has also
   been added in relevant places.
 
+:ref:`debops.apt` role
+''''''''''''''''''''''
+
+- The role now supports the new ``non-free-firmware`` repository section
+  introduced in Debian Bookworm.
+
 :ref:`debops.ifupdown` role
 '''''''''''''''''''''''''''
 
