@@ -232,7 +232,12 @@ class AnsibleInventory(object):
                     self.encfs_mounted = True
                     return True
         else:
-            return False
+            parent_path = os.path.dirname(self.path)
+            if (os.path.exists(parent_path) and os.path.isdir(parent_path)):
+                return False
+            else:
+                raise NotADirectoryError('Cannot find encrypted secrets '
+                                         'at ' + parent_path)
 
     def lock(self):
         if self.encrypted:
@@ -246,4 +251,9 @@ class AnsibleInventory(object):
                     self.encfs_mounted = False
                     return True
         else:
-            return False
+            parent_path = os.path.dirname(self.path)
+            if (os.path.exists(parent_path) and os.path.isdir(parent_path)):
+                return False
+            else:
+                raise NotADirectoryError('Cannot find encrypted secrets '
+                                         'at ' + parent_path)
