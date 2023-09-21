@@ -112,7 +112,8 @@ class Interpreter(object):
 
         try:
             runner = AnsibleRunner(project, **vars(args))
-        except (NoDefaultViewException) as errmsg:
+        except (NoDefaultViewException, ValueError,
+                FileNotFoundError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)
 
@@ -132,7 +133,8 @@ class Interpreter(object):
 
         try:
             runner = AnsiblePlaybookRunner(project, **vars(args))
-        except (NoDefaultViewException) as errmsg:
+        except (NoDefaultViewException, ValueError,
+                FileNotFoundError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)
 
@@ -152,7 +154,8 @@ class Interpreter(object):
 
         try:
             runner = EnvRunner(project, **vars(args))
-        except (NoDefaultViewException) as errmsg:
+        except (NoDefaultViewException, ValueError,
+                FileNotFoundError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)
 

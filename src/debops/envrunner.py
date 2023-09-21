@@ -24,6 +24,13 @@ class EnvRunner(object):
         try:
             self._inventory_paths = (
                     project.ansible_cfg.get_option('inventory').split(','))
+        except configparser.NoSectionError:
+            path = project.ansible_cfg.path
+            if (os.path.exists(path) and os.path.isfile(path)):
+                raise ValueError("Cannot find [defaults] section in " + path)
+            else:
+                raise FileNotFoundError("Cannot find Ansible "
+                                        "configuration file at " + path)
         except configparser.NoOptionError:
             errmsg = ('Error: No inventory specified in the "ansible.cfg" '
                       'configuration file. You might want to run '
