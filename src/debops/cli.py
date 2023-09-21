@@ -2,6 +2,7 @@
 # Copyright (C) 2020-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from .exceptions import NoDefaultViewException
 from .config import Configuration
 from .subcommands import Subcommands
 from .projectdir import ProjectDir
@@ -68,7 +69,11 @@ class Interpreter(object):
         try:
             project = ProjectDir(path=args.project_dir, config=self.config,
                                  view=args.view)
-            project.lock()
+            try:
+                project.lock()
+            except (NoDefaultViewException) as errmsg:
+                print('Error:', errmsg)
+                sys.exit(1)
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError) as errmsg:
             print('Error:', errmsg)
@@ -78,7 +83,11 @@ class Interpreter(object):
         try:
             project = ProjectDir(path=args.project_dir, config=self.config,
                                  view=args.view)
-            project.unlock()
+            try:
+                project.unlock()
+            except (NoDefaultViewException) as errmsg:
+                print('Error:', errmsg)
+                sys.exit(1)
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError) as errmsg:
             print('Error:', errmsg)
@@ -101,7 +110,12 @@ class Interpreter(object):
             print('Error:', errmsg)
             sys.exit(1)
 
-        runner = AnsibleRunner(project, **vars(args))
+        try:
+            runner = AnsibleRunner(project, **vars(args))
+        except (NoDefaultViewException) as errmsg:
+            print('Error:', errmsg)
+            sys.exit(1)
+
         if args.eval:
             runner.eval()
             sys.exit(0)
@@ -116,7 +130,12 @@ class Interpreter(object):
             print('Error:', errmsg)
             sys.exit(1)
 
-        runner = AnsiblePlaybookRunner(project, **vars(args))
+        try:
+            runner = AnsiblePlaybookRunner(project, **vars(args))
+        except (NoDefaultViewException) as errmsg:
+            print('Error:', errmsg)
+            sys.exit(1)
+
         if args.eval:
             runner.eval()
             sys.exit(0)
@@ -131,7 +150,12 @@ class Interpreter(object):
             print('Error:', errmsg)
             sys.exit(1)
 
-        runner = EnvRunner(project, **vars(args))
+        try:
+            runner = EnvRunner(project, **vars(args))
+        except (NoDefaultViewException) as errmsg:
+            print('Error:', errmsg)
+            sys.exit(1)
+
         if args.command_args:
             sys.exit(runner.execute())
         else:
