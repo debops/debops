@@ -2,6 +2,7 @@
 # Copyright (C) 2020-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from debops.exceptions import NoDefaultViewException
 import pkgutil
 import jinja2
 import platform
@@ -34,6 +35,11 @@ class AnsibleInventory(object):
         self.project_type = project.project_type
         self.args = args
         self.kwargs = kwargs
+
+        if self.project_type == 'modern' and not self.name:
+            raise NoDefaultViewException('No default view defined in DebOps '
+                                         'configuration. Use "-V|--view" '
+                                         'option to select one.')
 
         self.encrypted = False
         self.crypt_method = ''

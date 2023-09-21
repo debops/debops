@@ -26,6 +26,14 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+General
+'''''''
+
+- The :command:`debops` command will correctly handle project directories which
+  don't have a default view defined in the configuration. In such cases, a view
+  can be selected by entering its subdirectory via :command:`cd` command or
+  specifying its name using the ``-V`` or ``--view`` option on the command line.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
