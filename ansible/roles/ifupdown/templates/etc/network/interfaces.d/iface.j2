@@ -47,6 +47,9 @@
 {%   for thing in ifupdown__tpl_allow | unique %}
 allow-{{ thing }} {{ interface_name }}
 {%   endfor %}
+{% if interface.no_auto_down | d() %}
+no-auto-down {{ interface_name }}
+{% endif %}
 {% if interface.comment4 | d() %}
 
 {% endif %}
