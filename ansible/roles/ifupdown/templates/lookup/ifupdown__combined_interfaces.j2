@@ -112,7 +112,7 @@
 {%       set _ = params.update({"inet6":"6to4"}) %}
 {%     endif %}
 {%     if params.options is undefined and params.options6 is undefined and 'local' not in params.keys() %}
-{%       if ansible_default_ipv4.address | ipv4('public') %}
+{%       if ansible_default_ipv4.address | ansible.utils.ipv4('public') %}
 {%         set _ = params.update({"local":ansible_default_ipv4.address}) %}
 {%       else %}
 {%         set _ = params.update({"state":"absent"}) %}

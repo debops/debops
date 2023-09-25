@@ -22,7 +22,7 @@ page of your GitLab installation.
 The registration token is generated randomly on each GitLab startup, and
 unfortunately cannot be accessed using an API. Therefore, the easiest way to
 provide it to the role is to store it in an environment variable. The
-``debops.gitlab_runner`` checks the value ofthe ``$GITLAB_RUNNER_TOKEN`` system
+``debops.gitlab_runner`` checks the value of the ``$GITLAB_RUNNER_TOKEN`` system
 variable and uses the token found there.
 
 The registration token is required to perform changes on the GitLab server
@@ -35,7 +35,7 @@ GitLab CI:
 
 .. code-block:: console
 
-   GITLAB_RUNNER_TOKEN=<random-token> debops service/gitlab_runner
+   GITLAB_RUNNER_TOKEN=<random-token> debops run service/gitlab_runner
 
 To change the environment variable that holds the registration token, or save
 the token in Ansible inventory, you can use the :envvar:`gitlab_runner__token`
@@ -61,7 +61,7 @@ the :envvar:`gitlab_runner__token` variable to your inventory.
 
    gitlab_runner__token: '{{ lookup("password", secret
                            + "/credentials/" + gitlab_runner__api_fqdn
-                           + "/gitlab/runner/token chars=ascii,numbers") }}'
+                           + "/gitlab/runner/token chars=ascii_letters,numbers") }}'
 
 This allows the token to be safely stored outside of the inventory but
 accessible at runtime.

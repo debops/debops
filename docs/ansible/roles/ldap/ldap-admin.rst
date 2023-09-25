@@ -94,7 +94,7 @@ in the DebOps monorepo. All you need to do is run this playbook against one of
 the LDAP servers by following this steps:
 
 1. Make sure you have `GPGv2` and `pass` installed, ie. ``apt-get install gpgv2 pass``
-2. Make sure you have a `GPG keypair <https://alexcabal.com/creating-the-perfect-gpg-keypair/>`_
+2. Make sure you have a `GPG key pair <https://alexcabal.com/creating-the-perfect-gpg-key pair/>`_
 3. Initialize the password store: ``pass init <your-gpg-id>``. Example: ``pass init admin@example.com``
 4. Run the playbook ``debops run ldap/save-credential -l <host>``
 5. Re-run the playbook for each user you want to store a password for

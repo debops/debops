@@ -40,7 +40,7 @@ The snapshots are stored in the :file:`/var/backups/slapd/` directory as
 compressed tarballs. After finishing the snapshot, the
 :command:`slapd-snapshot` script will change ownership of the created tarballs
 to the ``backup:backup`` UNIX account and group. This account can then encrypt
-the tarballs via its own set of scripts, using GnuPG assymetric encryption, to
+the tarballs via its own set of scripts, using GnuPG asymmetric encryption, to
 prepare them to be sent to a remote location (this functionality is not
 implemented by the :ref:`debops.slapd` role). The :command:`slapd-snapshot`
 script will automatically remove periodic :file:`*.gz.asc` or :file:`*.gz.gpg`

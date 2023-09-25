@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
-
 # Copyright (C) 2020-2021 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2020-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from debops.exceptions import NoDefaultViewException
 import pkgutil
 import jinja2
 import platform
@@ -33,8 +32,14 @@ class AnsibleInventory(object):
 
     def __init__(self, project, name='system', *args, **kwargs):
         self.name = name
+        self.project_type = project.project_type
         self.args = args
         self.kwargs = kwargs
+
+        if self.project_type == 'modern' and not self.name:
+            raise NoDefaultViewException('No default view defined in DebOps '
+                                         'configuration. Use "-V|--view" '
+                                         'option to select one.')
 
         self.encrypted = False
         self.crypt_method = ''
@@ -121,30 +126,39 @@ class AnsibleInventory(object):
                 time.sleep(1)
             os.remove(encfs_configfile)
 
-    def create(self):
-
-        try:
-            os.makedirs(self.root_path)
-        except FileExistsError:
-            pass
-
+    def createdirs(self):
         skel_dirs = (
-            os.path.join('collections', 'ansible_collections'),
             os.path.join('inventory', 'group_vars', 'all'),
             os.path.join('inventory', 'host_vars'),
-            os.path.join('keyring'),
-            os.path.join('overrides', 'files'),
-            os.path.join('overrides', 'tasks'),
-            os.path.join('overrides', 'templates'),
             os.path.join('playbooks', 'roles'),
             os.path.join('resources'),
             os.path.join('secret'),
         )
 
+        if self.project_type == 'legacy':
+            skel_dirs = skel_dirs + (
+                    os.path.join('collections', 'ansible_collections'),
+                    os.path.join('keyring'),
+                    os.path.join('overrides', 'files'),
+                    os.path.join('overrides', 'tasks'),
+                    os.path.join('overrides', 'templates'),)
+
         for skel_dir in skel_dirs:
             skel_dir = os.path.join(self.root_path, skel_dir)
             if not os.path.isdir(skel_dir):
                 os.makedirs(skel_dir)
+
+    def create(self):
+
+        try:
+            os.makedirs(self.root_path)
+        except FileExistsError:
+            raise IsADirectoryError("Cannot create view in "
+                                    + self.root_path + ", directory "
+                                    "already exists")
+
+        # Create directory structure around the inventory
+        self.createdirs()
 
         default_hosts = jinja2.Template(
                 pkgutil.get_data('debops',
@@ -218,7 +232,12 @@ class AnsibleInventory(object):
                     self.encfs_mounted = True
                     return True
         else:
-            return False
+            parent_path = os.path.dirname(self.path)
+            if (os.path.exists(parent_path) and os.path.isdir(parent_path)):
+                return False
+            else:
+                raise NotADirectoryError('Cannot find encrypted secrets '
+                                         'at ' + parent_path)
 
     def lock(self):
         if self.encrypted:
@@ -232,4 +251,9 @@ class AnsibleInventory(object):
                     self.encfs_mounted = False
                     return True
         else:
-            return False
+            parent_path = os.path.dirname(self.path)
+            if (os.path.exists(parent_path) and os.path.isdir(parent_path)):
+                return False
+            else:
+                raise NotADirectoryError('Cannot find encrypted secrets '
+                                         'at ' + parent_path)

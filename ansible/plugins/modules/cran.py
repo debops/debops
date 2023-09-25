@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # cran.py: install or remove R packages
 # Homepage: https://github.com/yutannihilation/ansible-module-cran
 

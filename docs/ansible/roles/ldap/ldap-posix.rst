@@ -206,7 +206,7 @@ The selected LDAP UID/GID range (``2000000000-2099999999``) allows for 100 000
 (``2000000000-2001999999``) supports 2 000 000 unique groups. Users can
 increase or decrease the group range inside of the maximum UID/GID range, but
 going beyond that comes with a risk of exceeding the maximum UID/GID supported
-by the operating system and Unforseen Consequences. The UID/GID ranges can be
+by the operating system and Unforeseen Consequences. The UID/GID ranges can be
 divided further between different purposes, but that's beyond the scope of this
 role.
 

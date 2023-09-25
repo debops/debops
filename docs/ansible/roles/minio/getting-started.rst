@@ -23,8 +23,8 @@ To perform an upgrade, you can use the following command:
 
 .. code-block:: yaml
 
-   debops service/minio -l <host|group> -t role::golang \
-                        -e 'minio__upstream_upgrade=true'
+   debops run service/minio -l <host|group> -t role::golang \
+                            -e 'minio__upstream_upgrade=true'
 
 This command will execute the :ref:`debops.golang` Ansible role in the context
 of the :file:`service/minio` playbook and perform the upgrade of MinIO binary

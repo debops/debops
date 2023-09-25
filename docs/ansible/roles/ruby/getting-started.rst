@@ -23,4 +23,3 @@ that uses the ``debops.ruby`` role:
 .. literalinclude:: ../../../../ansible/playbooks/service/ruby.yml
    :language: yaml
    :lines: 1,5-
-

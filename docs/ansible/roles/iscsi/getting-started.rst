@@ -90,4 +90,3 @@ Here's an example playbook which uses ``debops.iscsi`` role::
 
         - role: debops.iscsi
           tags: [ 'role::iscsi' ]
-

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright (C) 2020-2021 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2020-2021 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -20,11 +18,18 @@ class AnsiblePlaybookRunner(object):
         self.args = args
         self.kwargs = kwargs
 
-        self.inventory = AnsibleInventory(project)
+        self.inventory = AnsibleInventory(project, name=project.view)
 
         try:
             self._inventory_paths = (
                     project.ansible_cfg.get_option('inventory').split(','))
+        except configparser.NoSectionError:
+            path = project.ansible_cfg.path
+            if (os.path.exists(path) and os.path.isfile(path)):
+                raise ValueError("Cannot find [defaults] section in " + path)
+            else:
+                raise FileNotFoundError("Cannot find Ansible "
+                                        "configuration file at " + path)
         except configparser.NoOptionError:
             errmsg = ('Error: No inventory specified in the "ansible.cfg" '
                       'configuration file. You might want to run '
@@ -60,37 +65,50 @@ class AnsiblePlaybookRunner(object):
                             ['--extra-vars',
                              '@' + os.path.relpath(extra_vars_file)])
 
+        # List of ansible-playbook options which don't expect arguments
+        ansible_playbook_flags = ['--ask-vault-password', '--ask-vault-pass',
+                                  '--flush-cache', '--force-handlers',
+                                  '--list-hosts', '--list-tags',
+                                  '--list-tasks', '--step', '--syntax-check',
+                                  '--version', '-C', '--check',
+                                  '-D', '--diff', '-K', '--ask-become-pass',
+                                  '-h', '--help', '-k', '--ask-pass',
+                                  '-v', '-vv', '-vvv', '-vvvv', '-vvvvv',
+                                  '-vvvvvv', '--verbose',
+                                  '-b', '--become']
+
         self._parsed_args = []
         arg_length = len(self.kwargs['ansible_args'])
         for index, argument in enumerate(self.kwargs['ansible_args']):
 
             if argument == '--':
                 continue
-            elif argument in self._parsed_args:
+            elif index in self._parsed_args:
                 continue
             elif (argument.startswith('-') or argument.startswith('--')):
                 # This is an 'ansible-playbook' option which may have an
                 # argument, in which case we need to add both of them in the
                 # preserved order
-                if index + 1 < arg_length:
+                if (index + 1 < arg_length and
+                        argument not in ansible_playbook_flags):
                     next_arg = self.kwargs['ansible_args'][index + 1]
                     if (not next_arg.startswith('-') or
                             not next_arg.startswith('--')):
                         self._ansible_command.extend(
                                 [argument, self._quote_spaces(next_arg)])
-                        self._parsed_args.extend([argument, next_arg])
+                        self._parsed_args.extend([index, index + 1])
                         continue
 
                 # This is an 'ansible-playbook' option without an argument
                 self._ansible_command.append(argument)
-                self._parsed_args.append(argument)
+                self._parsed_args.append(index)
             else:
                 # Most likely a name of a playbook which we can expand
                 self._ansible_command.append(self._quote_spaces(
                     self._expand_playbook(project, argument)))
                 self._found_playbooks.append(self._quote_spaces(
                     self._expand_playbook(project, argument)))
-                self._parsed_args.append(argument)
+                self._parsed_args.append(index)
 
     def _quote_spaces(self, string):
         if ' ' in string:
@@ -98,34 +116,84 @@ class AnsiblePlaybookRunner(object):
         else:
             return string
 
+    def _ring_bell(self):
+        # Notify user at end of execution
+        if self.kwargs.get('bell', False):
+            print('\a', end='')
+
     def _expand_playbook_paths(self, project):
         playbook_dirs = []
 
-        if os.path.exists(os.path.join(project.path, 'ansible', 'playbooks')):
-            playbook_dirs.append(os.path.join(
-                project.path, 'ansible', 'playbooks'))
+        playbooks_paths = [
+            os.path.join(project.path, 'ansible', 'views',
+                         project.view, 'playbooks'),
+            os.path.join(project.path, 'ansible', 'playbooks'),
+            os.path.join(project.path, 'playbooks')
+        ]
 
-        if os.path.exists(os.path.join(project.path, 'playbooks')):
-            playbook_dirs.append(os.path.join(project.path, 'playbooks'))
+        for path in playbooks_paths:
+            if os.path.exists(path) and os.path.isdir(path):
+                playbook_dirs.append(path)
 
         return playbook_dirs
+
+    def _walklevel(self, some_dir, level=1):
+        '''A custom os.walk function which can limit recursion to a specific level
+           under a given subdirectory'''
+        some_dir = some_dir.rstrip(os.path.sep)
+        num_sep = some_dir.count(os.path.sep)
+        for root, dirs, files in os.walk(some_dir):
+            yield root, dirs, files
+            num_sep_this = root.count(os.path.sep)
+            if num_sep + level <= num_sep_this:
+                del dirs[:]
 
     def _find_collections(self, project):
         known_collections = {}
         playbook_paths = []
 
-        collection_paths = project.ansible_cfg.get_option('collections_paths')
+        try:
+            collection_paths = project.ansible_cfg.get_option(
+                    'collections_paths')
+        except configparser.NoOptionError:
+            collection_paths = project.ansible_cfg.get_option(
+                    'collections_path')
+
         for directory in collection_paths.split(':'):
             directory = os.path.expanduser(directory)
 
             # If we are running outside of the project directory, relative
             # paths need to be fixed to absolute paths, otherwise the correct
             # directories won't be found
-            if (not os.path.isdir(directory)
-                    and os.path.isdir(os.path.join(project.path, directory))):
-                directory = os.path.join(project.path, directory)
+            if not os.path.isdir(directory):
 
-            for root, dirs, files in os.walk(os.path.expanduser(directory)):
+                # Path might be relative to the 'ansible.cfg' file in an
+                # infrastructure view
+                if os.path.isdir(os.path.join(project.path, 'ansible',
+                                              'views', project.view,
+                                              directory)):
+                    directory = os.path.join(project.path, 'ansible',
+                                             'views', project.view,
+                                             directory)
+
+                # Path might be relative to the 'ansible.cfg' file in the root
+                # of the project directory
+                elif os.path.isdir(os.path.join(project.path, directory)):
+                    directory = os.path.join(project.path, directory)
+
+                # Normalize path after resolution
+                directory = os.path.realpath(directory)
+
+            # We are looking for the 'playbooks/' subdirectory in Ansible
+            # Collections, which have specific directory structure. We want to
+            # avoid catching subdirectories further down the path, for example
+            # in '<namespace>/<collection>/tests/integration/playbooks/' since
+            # they are not a part of the actual collection Ansible cares about.
+            #
+            # The 'playbooks/' directory we want to find will be 4 levels deep:
+            # ansible_collections/<namespace>/<collection>/playbooks/
+            for root, dirs, files in list(
+                    self._walklevel(os.path.expanduser(directory), 4)):
                 if 'playbooks' in dirs:
                     playbook_paths.append(os.path.join(root, 'playbooks'))
 
@@ -185,9 +253,24 @@ class AnsiblePlaybookRunner(object):
             playbook_path = self._find_playbook_in_collection(playbook_name)
 
         if not playbook_path:
-            # Find playbook in the default Ansible Collection
-            playbook_path = self._find_playbook_in_collection(
-                    'debops.debops/' + playbook_name)
+            try:
+
+                # Find playbook in Ansible Collections specific to the current
+                # infrastructure view
+                collection_names = (
+                        (project.config.raw['views'][project.view]
+                                           ['playbook_collections']))
+                for collection in collection_names:
+                    playbook_path = self._find_playbook_in_collection(
+                            collection + '/' + playbook_name)
+                    if playbook_path:
+                        break
+
+            except KeyError:
+
+                # Find playbook in the default Ansible Collection
+                playbook_path = self._find_playbook_in_collection(
+                        'debops.debops/' + playbook_name)
 
         if playbook_path:
             return playbook_path
@@ -213,11 +296,20 @@ class AnsiblePlaybookRunner(object):
             print('Executing Ansible playbooks:')
             for playbook in self._found_playbooks:
                 print(unexpanduser(playbook))
-            return subprocess.call(' '.join(self._ansible_command), shell=True)
+            executor = subprocess.Popen(' '.join(self._ansible_command),
+                                        shell=True)
+            std_out, std_err = executor.communicate()
+            self._ring_bell()
+            return executor.returncode
+
         except KeyboardInterrupt:
             if unlocked:
                 self.inventory.lock()
             raise SystemExit('... aborted by user')
+
+        else:
+            self._ring_bell()
+
         finally:
             if unlocked:
                 self.inventory.lock()

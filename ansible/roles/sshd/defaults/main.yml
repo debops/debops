@@ -53,6 +53,13 @@ sshd__ldap_packages: '{{ [ "ldap-utils" ]
 #
 # List of additional packages to install.
 sshd__packages: []
+
+                                                                   # ]]]
+# .. envvar:: sshd__version [[[
+#
+# The version of the currently installed :command:`sshd` daemon, exposed using
+# Ansible local facts.
+sshd__version: '{{ ansible_local.sshd.version | d("0.0") }}'
                                                                    # ]]]
                                                                    # ]]]
 # Host whitelists and allow lists [[[
@@ -215,7 +222,7 @@ sshd__trusted_user_ca_keys_file: '/etc/ssh/trusted-user-ca-keys.pem'
 # .. envvar:: sshd__scan_for_host_certs [[[
 #
 # Detect, and add, any host certificates found in /etc/ssh/ that match
-# ssh_host_*_key-cert.pub, as long as the key type matches whats in
+# ssh_host_*_key-cert.pub, as long as the key type matches what's in
 # `sshd__host_keys`
 sshd__scan_for_host_certs: False
 

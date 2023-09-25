@@ -41,7 +41,7 @@ Refer to the `Apache module index`_ for a full list of available modules upstrea
 The role provides multiple variables which can be used on different inventory
 levels. The :envvar:`apache__combined_modules` variable combines these YAML
 dictionaries together and determines the order in which module configuration
-"mask" the previous onces.
+"mask" the previous ones.
 
 The dictionary value can be a simple boolean corresponding to the ``enabled``
 option (as described below) or a dictionary by itself with the following
@@ -96,7 +96,7 @@ the role and should be done by the user of the role.
 The role provides multiple variables which can be used on different inventory
 levels. The :envvar:`apache__combined_snippets` variable combines these YAML
 dictionaries together and determine the order in which configuration
-"mask" the previous onces.
+"mask" the previous ones.
 
 The dictionary value can be a simple boolean corresponding to the ``enabled``
 option (as described below) or a dictionary by itself with the following

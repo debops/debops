@@ -24,7 +24,7 @@ Ansible checks the log integrity by running the command:
 
 .. code-block:: console
 
-   debops service/journald --tags role::journald:fss:verify
+   debops run service/journald --tags role::journald:fss:verify
 
 With this tag, only the task that verifies the logs will be executed.
 
@@ -64,5 +64,5 @@ Available role tags:
 
 ``role::journald:fss:verify``
   The role can be used with this tag to use the Forward Secure Sealing
-  funtionality to verify the consistency of the logs stored on the host(s).
+  functionality to verify the consistency of the logs stored on the host(s).
   No other tasks will be performed when this tag is used.

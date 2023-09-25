@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright (c) 2016, Peter Sagerson <psagers@ignorare.net>
 # Copyright (c) 2016, Jiri Tyr <jiri.tyr@gmail.com>
 # Copyright (c) 2017, Alexander Korinek <noles@a3k.net>
@@ -239,7 +237,7 @@ class LdapAttr(object):
         self.connection = self._connect_to_ldap()
 
     def _order_values(self, values):
-        """ Preprend X-ORDERED index numbers to attribute's values. """
+        """ Prepend X-ORDERED index numbers to attribute's values. """
         ordered_values = []
 
         if isinstance(values, list):

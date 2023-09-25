@@ -62,7 +62,7 @@ root_account__packages: []
 root_account__password: '{{ lookup("password", secret
                             + "/credentials/" + inventory_hostname
                             + "/root_account/password encrypt=sha512_crypt length="
-                            + root_account__password_length) }}'
+                            + root_account__password_length | string) }}'
 
                                                                    # ]]]
 # .. envvar:: root_account__password_length [[[
@@ -142,7 +142,7 @@ root_account__shell: ''
 
 # .. envvar:: root_account__dotfiles_enabled [[[
 #
-# Enable or disable dotfiles management, depending on the availablility of the
+# Enable or disable dotfiles management, depending on the availability of the
 # dotfiles repository installed by the :ref:`debops.yadm` role.
 root_account__dotfiles_enabled: '{{ True
                                     if ansible_local.yadm.dotfiles|d()

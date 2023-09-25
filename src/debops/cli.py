@@ -1,13 +1,14 @@
-# -*- coding: utf-8 -*-
-
-# Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2020 DebOps <https://debops.org/>
+# Copyright (C) 2020-2023 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from .exceptions import NoDefaultViewException
 from .config import Configuration
 from .subcommands import Subcommands
 from .projectdir import ProjectDir
+from .ansiblerunner import AnsibleRunner
 from .ansibleplaybookrunner import AnsiblePlaybookRunner
+from .envrunner import EnvRunner
 import sys
 
 
@@ -27,14 +28,23 @@ class Interpreter(object):
                 self.do_project_lock(self.parsed_args.args)
             elif self.parsed_args.command == 'unlock':
                 self.do_project_unlock(self.parsed_args.args)
-            elif self.parsed_args.command == 'status':
-                self.do_project_status(self.parsed_args.args)
+            elif self.parsed_args.command == 'mkview':
+                self.do_project_mkview(self.parsed_args.args)
+
+        elif self.parsed_args.section == 'exec':
+            self.do_exec(self.parsed_args.args)
 
         elif self.parsed_args.section in ['run', 'check']:
             self.do_run(self.parsed_args.args)
 
+        elif self.parsed_args.section == 'env':
+            self.do_env(self.parsed_args.args)
+
         elif self.parsed_args.section == 'config':
-            self.do_config(self.parsed_args.args)
+            if self.parsed_args.command == 'list':
+                self.do_config_list(self.parsed_args.args)
+            elif self.parsed_args.command == 'get':
+                self.do_config_get(self.parsed_args.args)
 
     def do_project_init(self, args):
         try:
@@ -57,8 +67,13 @@ class Interpreter(object):
 
     def do_project_lock(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config)
-            project.lock()
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 view=args.view)
+            try:
+                project.lock()
+            except (NoDefaultViewException) as errmsg:
+                print('Error:', errmsg)
+                sys.exit(1)
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError) as errmsg:
             print('Error:', errmsg)
@@ -66,37 +81,90 @@ class Interpreter(object):
 
     def do_project_unlock(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config)
-            project.unlock()
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 view=args.view)
+            try:
+                project.unlock()
+            except (NoDefaultViewException) as errmsg:
+                print('Error:', errmsg)
+                sys.exit(1)
         except (IsADirectoryError, NotADirectoryError,
                 PermissionError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)
 
-    def do_project_status(self, args):
+    def do_project_mkview(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config)
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 **vars(args))
+            project.mkview(view=args.new_view)
+        except (IsADirectoryError, NotADirectoryError, ValueError) as errmsg:
+            print('Error:', errmsg)
+            sys.exit(1)
+
+    def do_exec(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 view=args.view)
         except (IsADirectoryError, NotADirectoryError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)
 
-        project.status()
-
-    def do_run(self, args):
         try:
-            project = ProjectDir(path=args.project_dir, config=self.config)
-        except (IsADirectoryError, NotADirectoryError) as errmsg:
+            runner = AnsibleRunner(project, **vars(args))
+        except (NoDefaultViewException, ValueError,
+                FileNotFoundError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)
 
-        runner = AnsiblePlaybookRunner(project, **vars(args))
         if args.eval:
             runner.eval()
             sys.exit(0)
         else:
             sys.exit(runner.execute())
 
-    def do_config(self, args):
+    def do_run(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 view=args.view)
+        except (IsADirectoryError, NotADirectoryError) as errmsg:
+            print('Error:', errmsg)
+            sys.exit(1)
+
+        try:
+            runner = AnsiblePlaybookRunner(project, **vars(args))
+        except (NoDefaultViewException, ValueError,
+                FileNotFoundError) as errmsg:
+            print('Error:', errmsg)
+            sys.exit(1)
+
+        if args.eval:
+            runner.eval()
+            sys.exit(0)
+        else:
+            sys.exit(runner.execute())
+
+    def do_env(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config,
+                                 view=args.view)
+        except (IsADirectoryError, NotADirectoryError) as errmsg:
+            print('Error:', errmsg)
+            sys.exit(1)
+
+        try:
+            runner = EnvRunner(project, **vars(args))
+        except (NoDefaultViewException, ValueError,
+                FileNotFoundError) as errmsg:
+            print('Error:', errmsg)
+            sys.exit(1)
+
+        if args.command_args:
+            sys.exit(runner.execute())
+        else:
+            sys.exit(runner.show_env(scope=args.scope))
+
+    def do_config_list(self, args):
         try:
             project = ProjectDir(path=args.project_dir, config=self.config)
         except (IsADirectoryError, NotADirectoryError) as errmsg:
@@ -104,7 +172,19 @@ class Interpreter(object):
             # configuration is included
             pass
 
-        if args.env:
-            self.config.show_env()
+        self.config.config_list()
+
+    def do_config_get(self, args):
+        try:
+            project = ProjectDir(path=args.project_dir, config=self.config)
+        except (IsADirectoryError, NotADirectoryError) as errmsg:
+            # This is not a project directory, so no project-dependent
+            # configuration is included
+            pass
+
+        if args.key:
+            for option_name in args.key:
+                self.config.config_get(option_name, format=args.format,
+                                       keys=args.keys)
         else:
-            self.config.show(format=args.format)
+            self.config.config_get('.', format=args.format, keys=args.keys)

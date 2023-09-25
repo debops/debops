@@ -101,7 +101,7 @@ preseed__debian_postinst_commands: ''
 # List of APT packages to install on the preseeded host, included in all
 # Preseed flavors using the ``pkgsel/include`` Preseed option.
 preseed__debian_packages: [ 'python3', 'python3-apt', 'python3-pip',
-                            'lsb-release', 'git', 'curl' ]
+                            'python3-debian', 'lsb-release', 'git', 'curl' ]
 
                                                                    # ]]]
 # .. envvar:: preseed__debian_kernel_arguments [[[
@@ -189,6 +189,12 @@ preseed__default_definitions:
     options: '{{ preseed__options_interactive_partman
                  + preseed__options_enable_nonfree }}'
 
+  - name: 'debian-bookworm'
+    flavor: 'debian'
+    release: 'bookworm'
+    options: '{{ preseed__options_interactive_partman
+                 + preseed__options_enable_nonfree }}'
+
   - name: 'debian-wheezy-user'
     flavor: 'debian-user'
     release: 'wheezy'
@@ -229,6 +235,14 @@ preseed__default_definitions:
                  + preseed__options_enable_nonfree }}'
     admin_username: '{{ preseed__admin_name }}'
 
+  - name: 'debian-bookworm-user'
+    flavor: 'debian-user'
+    release: 'bookworm'
+    options: '{{ preseed__options_interactive_partman
+                 + preseed__options_ansible_user
+                 + preseed__options_enable_nonfree }}'
+    admin_username: '{{ preseed__admin_name }}'
+
   - name: 'debian-wheezy-vm'
     flavor: 'debian-vm'
     release: 'wheezy'
@@ -248,6 +262,10 @@ preseed__default_definitions:
   - name: 'debian-bullseye-vm'
     flavor: 'debian-vm'
     release: 'bullseye'
+
+  - name: 'debian-bookworm-vm'
+    flavor: 'debian-vm'
+    release: 'bookworm'
 
   - name: 'debian-wheezy-vm-user'
     flavor: 'debian-vm-user'
@@ -276,6 +294,12 @@ preseed__default_definitions:
   - name: 'debian-bullseye-vm-user'
     flavor: 'debian-vm-user'
     release: 'bullseye'
+    options: '{{ preseed__options_ansible_user }}'
+    admin_username: '{{ preseed__admin_name }}'
+
+  - name: 'debian-bookworm-vm-user'
+    flavor: 'debian-vm-user'
+    release: 'bookworm'
     options: '{{ preseed__options_ansible_user }}'
     admin_username: '{{ preseed__admin_name }}'
 
@@ -359,7 +383,7 @@ preseed__original_configuration:
   - name: 'keyboard-configuration/xkb-keymap'
     comment: 'Keyboard selection.'
     type: 'select'
-    value: 'en'
+    value: 'us'
 
   - name: 'keyboard-configuration/toggle'
     type: 'select'
@@ -713,7 +737,7 @@ preseed__original_configuration:
       - home:   separate /home partition
       - multi:  separate /home, /var, and /tmp partitions
     type: 'select'
-    value: 'atomic'
+    value: 'multi'
 
   - name: 'partman-auto/expert_recipe_file'
     comment: |
@@ -1039,7 +1063,7 @@ preseed__original_configuration:
     option: 'grub-installer/only_debian'
     comment: |
       Alternatively, if you want to install to a location other than the UEFI
-      parition/boot record, uncomment and edit these lines:
+      partition/boot record, uncomment and edit these lines:
     value: False
     state: 'comment'
 
@@ -1182,9 +1206,6 @@ preseed__default_configuration:
   - name: 'debian-installer/locale'
     value: '{{ ansible_local.locales.system_locale | d("en_US.UTF-8") }}'
 
-  - name: 'keyboard-configuration/xkb-keymap'
-    value: '{{ ansible_local.locales.system_language | d("en") }}'
-
   - name: 'mirror/http/hostname'
     value: 'deb.debian.org'
 
@@ -1234,6 +1255,10 @@ preseed__default_configuration:
   - name: 'apt-setup/cdrom/set-failed'
     copy_id_from: 'apt-setup/multiarch'
     value: False
+
+  - name: 'apt-setup/disable-cdrom-entries'
+    copy_id_from: 'apt-setup/multiarch'
+    value: True
 
   - name: 'tasksel/first'
     value: 'ssh-server'

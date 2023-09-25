@@ -220,6 +220,30 @@ apt__group_repositories: []
 apt__host_repositories: []
                                                                    # ]]]
                                                                    # ]]]
+# APT deb822 repositories [[[
+# ---------------------------
+
+# These lists define additional APT repositories in deb822 format
+# :file:`/etc/apt/sources.list.d/` directory.
+
+# .. envvar:: apt__deb822_repositories [[[
+#
+# List of additional APT repositories for all hosts in Ansible inventory.
+apt__deb822_repositories: []
+
+                                                                   # ]]]
+# .. envvar:: apt__deb822_group_repositories [[[
+#
+# List of additional APT repositories for all hosts in Ansible inventory.
+apt__deb822_group_repositories: []
+
+                                                                   # ]]]
+# .. envvar:: apt__deb822_host_repositories [[[
+#
+# List of additional APT repositories for all hosts in Ansible inventory.
+apt__deb822_host_repositories: []
+                                                                   # ]]]
+                                                                   # ]]]
 # APT authentication files [[[
 # ----------------------------
 
@@ -321,9 +345,9 @@ apt__distribution_release: '{{ ansible_lsb.codename
 # map is used to configure security repositories only on the OS releases that
 # have them available.
 apt__distribution_release_map:
-  'Debian': [ 'wheezy', 'jessie', 'stretch', 'buster', 'bullseye', 'bookworm' ]
-  'Ubuntu': [ 'precise', 'trusty', 'xenial', 'bionic' ]
-  'Devuan': [ 'jessie', 'ascii', 'beowulf' ]
+  'Debian': [ 'stretch', 'buster', 'bullseye', 'bookworm', 'trixie' ]
+  'Ubuntu': [ 'trusty', 'xenial', 'bionic' ]
+  'Devuan': [ 'ascii', 'beowulf' ]
 
                                                                    # ]]]
 # .. envvar:: apt__distribution_suite_map [[[
@@ -333,12 +357,11 @@ apt__distribution_release_map:
 # repository suffixes should be configured on the current host in case the role
 # is used on a Debian Testing system.
 apt__distribution_suite_map:
-  'Debian_wheezy':      'archive'
-  'Debian_jessie':      'archive'
-  'Debian_stretch':     'lts'
-  'Debian_buster':      'oldstable'
-  'Debian_bullseye':    'stable'
-  'Debian_bookworm':    'testing'
+  'Debian_stretch':     'archive'
+  'Debian_buster':      'oldoldstable'
+  'Debian_bullseye':    'oldstable'
+  'Debian_bookworm':    'stable'
+  'Debian_trixie':      'testing'
   'Debian_sid':         'unstable'
   'Raspbian_wheezy':    'archive'
   'Raspbian_jessie':    'lts'
@@ -369,16 +392,17 @@ apt__distribution_suite: '{{ apt__distribution_suite_map[apt__distribution + "_"
 # If the combination of OS distribution and release is not found, the default
 # list of suffixes will be used automatically.
 apt__distribution_suffix_map:
-  'Debian_archive':  [ '', '-backports' ]
-  'Debian_lts':      [ '', '-backports' ]
-  'Debian_stable':   [ '', '-updates', '-backports' ]
-  'Debian_testing':  [ '', '-updates' ]
-  'Debian_unstable': [ '' ]
-  'Raspbian':        [ '' ]
-  'Devuan_stable':   [ '', '-updates', '-backports' ]
-  'Devuan_testing':  [ '', '-updates' ]
-  'Devuan_unstable': [ '' ]
-  'default':         [ '', '-updates', '-backports' ]
+  'Debian_archive':      [ '', '-backports' ]
+  'Debian_oldoldstable': [ '', '-updates', '-backports' ]
+  'Debian_oldstable':    [ '', '-updates', '-backports' ]
+  'Debian_stable':       [ '', '-updates', '-backports' ]
+  'Debian_testing':      [ '', '-updates' ]
+  'Debian_unstable':     [ '' ]
+  'Raspbian':            [ '' ]
+  'Devuan_stable':       [ '', '-updates', '-backports' ]
+  'Devuan_testing':      [ '', '-updates' ]
+  'Devuan_unstable':     [ '' ]
+  'default':             [ '', '-updates', '-backports' ]
 
                                                                    # ]]]
 # .. envvar:: apt__distribution_suffixes [[[
@@ -410,10 +434,12 @@ apt__distribution_components_free:
 # These components are enabled or disabled by the :envvar:`apt__nonfree`
 # boolean variable.
 apt__distribution_components_nonfree:
-  'Debian':   [ 'contrib', 'non-free' ]
-  'Raspbian': [ 'contrib', 'non-free' ]
-  'Ubuntu':   [ 'restricted', 'multiverse' ]
-  'Devuan':   [ 'contrib', 'non-free' ]
+  'Debian':   '{{ ["contrib", "non-free"] +
+                  (["non-free-firmware"]
+                   if ansible_distribution_major_version | int > 11 else []) }}'
+  'Raspbian':     [ 'contrib', 'non-free' ]
+  'Ubuntu':       [ 'restricted', 'multiverse' ]
+  'Devuan':       [ 'contrib', 'non-free' ]
 
                                                                    # ]]]
 # .. envvar:: apt__distribution_components [[[
@@ -588,7 +614,9 @@ apt__host_security_sources: []
 # from normal repositories.
 apt__security_sources:
 
-  - uri:          'http://security.debian.org/'
+  - uri:          '{{ "http://security.debian.org/"
+                      if apt__distribution_release in ["stretch"]
+                      else "http://deb.debian.org/debian-security/" }}'
     comment:      'Debian Security repository'
     type:         '{{ apt__source_types }}'
     suite:        '{{ apt__distribution_release

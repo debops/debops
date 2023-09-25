@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright (C) 2020 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -17,9 +15,10 @@ except ImportError:
 
 class AnsibleConfig(object):
 
-    def __init__(self, path, project_type=None):
+    def __init__(self, path, project_type=None, view=None):
         self.path = os.path.abspath(path)
         self.project_type = project_type
+        self.view = view
 
         self.config = configparser.ConfigParser()
         self._template_config(project_type=self.project_type)
@@ -30,9 +29,13 @@ class AnsibleConfig(object):
                 '/usr/share/ansible/collections',
                 unexpanduser(os.path.join(DEBOPS_PACKAGE_DATA, 'ansible',
                                           'collections')),
-                '~/.ansible/collections',
-                'ansible/collections'
+                '~/.ansible/collections'
         ]
+
+        if self.project_type == 'legacy':
+            template_vars['collections'].append('ansible/collections')
+        elif self.project_type == 'modern':
+            template_vars['collections'].append('../../collections')
 
         template_vars['roles'] = [
                 '/etc/ansible/roles',
@@ -59,15 +62,16 @@ class AnsibleConfig(object):
                     'ansible/plugins/' + plugin
                 ]
 
-        template = jinja2.Template(
-                pkgutil.get_data('debops',
-                                 os.path.join('_data',
-                                              'templates',
-                                              'projectdir',
-                                              'legacy',
-                                              'ansible.cfg.j2'))
-                .decode('utf-8'), trim_blocks=True)
-        self.config.read_string(template.render(template_vars))
+        if project_type == 'legacy':
+            template = jinja2.Template(
+                    pkgutil.get_data('debops',
+                                     os.path.join('_data',
+                                                  'templates',
+                                                  'projectdir',
+                                                  'legacy',
+                                                  'ansible.cfg.j2'))
+                    .decode('utf-8'), trim_blocks=True)
+            self.config.read_string(template.render(template_vars))
 
     def get_option(self, option, section='defaults'):
         return self.config.get(section, option)

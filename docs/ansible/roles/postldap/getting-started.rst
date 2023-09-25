@@ -65,7 +65,7 @@ It is also possible to attach an email existing entity using the
    mailForwardTo: admin2@mydomain.net
 
 The ``mailAddress`` attribute of the different objects will ensure that the
-addess is unique in the mail system.
+address is unique in the mail system.
 
 This role only works when **LDAP support is explicitly enabled** and the
 environment has a working LDAP infrastructure. See the :ref:`debops.ldap` role
@@ -119,7 +119,7 @@ After making your changes, you can apply them by running the command:
 
 .. code-block:: console
 
-   debops service/postldap -l mail-server -t role::postfix --diff
+   debops run service/postldap -l mail-server -t role::postfix --diff
 
 This will execute the :ref:`debops.postfix` role in the context of the
 :ref:`debops.postldap` role and correct set of variables will be active.

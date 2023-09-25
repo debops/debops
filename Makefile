@@ -7,6 +7,8 @@
 # Use the Bash shell by default
 SHELL := /bin/bash
 
+SPHINXFLAGS ?= -n -W
+
 .PHONY: all
 all: help
 
@@ -43,6 +45,10 @@ versions: check-versions
 .PHONY: docker
 docker:         ## Check Docker image build
 docker: test-docker-build
+
+.PHONY: spell
+spell:          ## Check common misspellings using codespell
+spell: test-spell
 
 .PHONY: docs
 docs:           ## Build Sphinx documentation
@@ -125,7 +131,7 @@ twine-upload:    ## Upload Python packages to PyPI
 	@twine upload dist/*
 
 .PHONY: test-all
-test-all: clean-tests test-spdx test-pep8 test-debops-tools test-debops-ansible_plugins test-docs test-man test-playbook-syntax test-ansible-lint test-yaml test-shell
+test-all: clean-tests test-spdx test-pep8 test-debops-tools test-debops-ansible_plugins test-spell test-docs test-man test-playbook-syntax test-ansible-lint test-yaml test-shell
 
 .PHONY: test-pep8
 test-pep8:
@@ -154,10 +160,15 @@ clean-tests:
 check-versions:
 	@./lib/tests/check-watch
 
+.PHONY: test-spell
+test-spell:
+	@printf "%s\n" "Checking common misspellings using codespell..."
+	@codespell
+
 .PHONY: test-docs
 test-docs:
 	@printf "%s\n" "Testing HTML documentation generation..."
-	@cd docs && sphinx-build -n -W -b html -d _build/doctrees . _build/html
+	@cd docs && sphinx-build $(SPHINXFLAGS) -b html -d _build/doctrees . _build/html
 
 .PHONY: test-man
 test-man:
@@ -202,5 +213,10 @@ test-debops-ansible_plugins:
 .PHONY: fail-if-git-dirty
 fail-if-git-dirty:
 	@git diff --quiet && git diff --cached --quiet || ( \
-		printf "%s\n" "Sanity check: uncommited git changes detected" ; \
+		printf "%s\n" "Sanity check: uncommitted git changes detected" ; \
 		git status --short ; exit 1 )
+
+.PHONY: pc precommit pre-commit
+precommit:      ## Run pre-commit on all files
+pc precommit pre-commit:
+	@pre-commit run --all

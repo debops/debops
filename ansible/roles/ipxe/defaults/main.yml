@@ -103,7 +103,7 @@ ipxe__debian_netboot_firmware_mirror: 'https://cdimage.debian.org/cdimage/unoffi
 #
 # Specify which Debian releases will be prepared for iPXE boot on a given host.
 # The releases need to be defined in the OS release map below.
-ipxe__debian_netboot_releases: [ 'jessie', 'stretch', 'buster', 'bullseye' ]
+ipxe__debian_netboot_releases: [ 'jessie', 'stretch', 'buster', 'bullseye', 'bookworm' ]
 
                                                                    # ]]]
 # .. envvar:: ipxe__debian_netboot_architectures [[[
@@ -162,36 +162,53 @@ ipxe__debian_netboot_default_release_map:
   - name: 'buster-amd64'
     release: 'buster'
     architecture: 'amd64'
-    netboot_version: '20190702+deb10u12'
-    netboot_checksum: 'sha256:75bc3b34c9d0bb33716cd1e35e17a66292325f6d6e3c8fb02a1fac3e5a8c193a'  # netboot.tar.gz
-    firmware_version: '20220326'
-    firmware_checksum: 'sha256:f93e0136dc65616a9b28bd42808f7c3eb87a96643019fdef659618d0781df59f'  # firmware.cpio.gz
+    netboot_version: '20190702+deb10u13'
+    netboot_checksum: 'sha256:b53335ff1737b810f1e963e8e2b248bdf8fb82ee25814566f6e69028fd6404d8'  # netboot.tar.gz
+    firmware_version: '20220910'
+    firmware_checksum: 'sha256:99a0fb05239940e3427ac25ea4ea0bd8a90b029c92facb058d74f9b1cf5a55bf'  # firmware.cpio.gz
 
   - name: 'buster-amd64-gtk'
     release: 'buster'
     architecture: 'amd64'
     netboot_subdir: '/gtk'
-    netboot_version: '20190702+deb10u12'
-    netboot_checksum: 'sha256:6a2a91957a9215e49232f39c4dd534f7369566f602d6b4c84fbff8fc7b65f7a1'  # netboot.tar.gz
-    firmware_version: '20220326'
-    firmware_checksum: 'sha256:f93e0136dc65616a9b28bd42808f7c3eb87a96643019fdef659618d0781df59f'  # firmware.cpio.gz
+    netboot_version: '20190702+deb10u13'
+    netboot_checksum: 'sha256:5ee7c015826be526a354b465359dad7ca5fd403f58bba3279ac4add760ed7336'  # netboot.tar.gz
+    firmware_version: '20220910'
+    firmware_checksum: 'sha256:99a0fb05239940e3427ac25ea4ea0bd8a90b029c92facb058d74f9b1cf5a55bf'  # firmware.cpio.gz
 
   - name: 'bullseye-amd64'
     release: 'bullseye'
     architecture: 'amd64'
-    netboot_version: '20210731+deb11u4'
-    netboot_checksum: 'sha256:abb951979cd220434e0e5debce1616b136d690c4d9ae8606694d1b208aee2c1d'  # netboot.tar.gz
-    firmware_version: '20220709'
-    firmware_checksum: 'sha256:290989bb6d96420f95bcc0c993c462b9cace2afaaf872feb7f00a2ac299ebfe1'  # firmware.cpio.gz
+    netboot_version: '20210731+deb11u8'
+    netboot_checksum: 'sha256:59233e074ff44edf763c0a851a08a163240a97d95118da89210bc77277774bf9'  # netboot.tar.gz
+    firmware_version: '20230429'
+    firmware_checksum: 'sha256:af07b888fb8d5153b3448fa84c3a25307a7de9ec643196031dde975d6d8d9bce'  # firmware.cpio.gz
 
   - name: 'bullseye-amd64-gtk'
     release: 'bullseye'
     architecture: 'amd64'
     netboot_subdir: '/gtk'
-    netboot_version: '20210731+deb11u4'
-    netboot_checksum: 'sha256:c55de914d123ef48169ef0f0cae1b2b28ed8a2349becb876c6263621a7628c8b'  # netboot.tar.gz
-    firmware_version: '20220709'
-    firmware_checksum: 'sha256:290989bb6d96420f95bcc0c993c462b9cace2afaaf872feb7f00a2ac299ebfe1'  # firmware.cpio.gz
+    netboot_version: '20210731+deb11u8'
+    netboot_checksum: 'sha256:6fa4393276e95599a9a6c368f3a402c9b94f79aa3be3468acde4bfae91d0dad9'  # netboot.tar.gz
+    firmware_version: '20230429'
+    firmware_checksum: 'sha256:af07b888fb8d5153b3448fa84c3a25307a7de9ec643196031dde975d6d8d9bce'  # firmware.cpio.gz
+
+  - name: 'bookworm-amd64'
+    release: 'bookworm'
+    architecture: 'amd64'
+    netboot_version: '20230607'
+    netboot_checksum: 'sha256:b41d766e5389b4e35bac3a664da84822e0990439c9c4df933ddbaff6847a0009'  # netboot.tar.gz
+    firmware_version: '20230612'
+    firmware_checksum: 'sha256:96c1b464eca0487e12fbf48634a5bb13f3a666b10e5ee23b05d0246a36ab423b'  # firmware.cpio.gz
+
+  - name: 'bookworm-amd64-gtk'
+    release: 'bookworm'
+    architecture: 'amd64'
+    netboot_subdir: '/gtk'
+    netboot_version: '20230607'
+    netboot_checksum: 'sha256:31fde25b04c50bf88fe163dc1eae75e831a1f6818c1df9ecdf26966e2af1029d'  # netboot.tar.gz
+    firmware_version: '20230612'
+    firmware_checksum: 'sha256:96c1b464eca0487e12fbf48634a5bb13f3a666b10e5ee23b05d0246a36ab423b'  # firmware.cpio.gz
 
                                                                    # ]]]
 # .. envvar:: ipxe__debian_netboot_release_map [[[
@@ -382,7 +399,7 @@ ipxe__default_scripts:
           exit
 
           :error
-          echo Error occured, press any key to return to menu ...
+          echo Error occurred, press any key to return to menu ...
           prompt
           goto main_menu
 
@@ -432,11 +449,12 @@ ipxe__default_scripts:
 
       menu Install Debian GNU/Linux / ${arch_a}
       item --gap Select suite:
-      item --key e bullseye ${space} Debian Stable (Bullseye) [e]
-      # Enable this when Debian Bookworm gets an installer
-      #item bookworm ${space} Debian Testing (Bookworm)
+      item --key e bookworm ${space} Debian Stable (Bookworm) [e]
+      # Enable this when Debian Trixie gets an installer
+      #item trixie ${space} Debian Testing (Trixie)
       item
       item --gap Select release:
+      item bookworm ${space} Debian GNU/Linux 12 (Bookworm)
       item bullseye ${space} Debian GNU/Linux 11 (bullseye)
       item buster ${space} Debian GNU/Linux 10 (buster)
       item stretch ${space} Debian GNU/Linux 9 (stretch)

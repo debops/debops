@@ -68,4 +68,3 @@ Here's an example playbook which uses ``debops.fail2ban`` role to install ``fail
       roles:
         - role: fail2ban
           tags: [ 'role::fail2ban', 'skip::fail2ban' ]
-

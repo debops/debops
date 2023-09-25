@@ -55,8 +55,7 @@
              | sed --silent 's/.*href="nextcloud-\({{ owncloud__release | regex_escape() }}[^"]\+\).zip.asc".*/\1/p'
              | sort --version-sort --reverse
       args:
-        warn: False
-        executable: 'sh'
+        executable: 'bash'
       register: owncloud__register_full_version
       changed_when: False
       check_mode: False
@@ -95,7 +94,7 @@
                     + owncloud__variant + "-" + owncloud__register_full_version.stdout_lines[0]
                     + ".zip.sha512" }} | grep '.zip$'
       args:
-        executable: 'sh'
+        executable: 'bash'
       changed_when: False
       register: owncloud__register_checksum
       when: not ansible_check_mode  # Latest checksum file may not be available

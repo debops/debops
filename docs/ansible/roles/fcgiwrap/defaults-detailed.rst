@@ -60,4 +60,3 @@ List of known parameters:
 
 ``socket_mode``
   File permissions set on this instance's socket.
-

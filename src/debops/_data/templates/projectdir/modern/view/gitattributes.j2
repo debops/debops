@@ -1,0 +1,10 @@
+{# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2023 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+# Encrypt Ansible secrets using git-crypt(1) (incompatible with EncFS)
+{% if encrypted_secrets == 'git-crypt' %}
+/{{ secret_name }}/** filter=git-crypt diff=git-crypt
+{% else %}
+#/{{ secret_name }}/** filter=git-crypt diff=git-crypt
+{% endif %}

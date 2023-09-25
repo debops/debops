@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 # Copyright (C) 2019 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2019 DebOps <https://debops.org/>
@@ -16,6 +15,7 @@ import sys
 import os
 import pwd
 import operator
+import subprocess
 from json import dumps
 
 
@@ -29,14 +29,35 @@ def getent(user):
                             user.pw_dir, user.pw_shell]})
 
 
-if __name__ == "__main__":
-    try:
-        user = sys.argv[1]
-        try:
-            print(dumps(getent(user), sort_keys=True, indent=4))
-        except IndexError:
-            sys.exit(2)
+def getent_bin(user):
+    binoutput = subprocess.check_output(['getent', 'passwd', user])
+    output = binoutput.decode("utf-8")
+    parts = output.strip().split(":")
 
-    except Exception:
+    if len(parts) != 7 or parts[0] != user:
+        raise RuntimeError("Unexpected output from getent")
+
+    return ({parts[0]: ["x", parts[2], parts[3], parts[4], parts[5], parts[6]]})
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
         print("Usage: %s <user>" % os.path.basename(sys.argv[0]))
         sys.exit(1)
+
+    user = sys.argv[1]
+    try:
+        print(dumps(getent(user), sort_keys=True, indent=4))
+        sys.exit(0)
+    except IndexError:
+        pass
+
+    # As an alternative, try the "getent" binary which can get
+    # entries from databases supported by the NSS libraries
+    # (e.g. LDAP users)
+    try:
+        print(dumps(getent_bin(user), sort_keys=True, indent=4))
+        sys.exit(0)
+    except Exception as e:
+        print("Except: " + repr(e))
+        sys.exit(2)

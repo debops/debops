@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # DebOps documentation build configuration file
 # Copyright (C) 2014-2022 DebOps <https://debops.org/>
@@ -47,6 +46,17 @@ for element in os.listdir(rst_ansible_roles):
                         except OSError:
                             print("Creation of the directory %s failed"
                                   % defaults_dir)
+
+                    # Only rebuild files that have changed, thus
+                    # taking avantage of the sphinx cache
+                    dst_file = (
+                            os.path.splitext(defaults_file)[0] + '.rst'
+                        ).lstrip('../')
+                    if os.path.exists(dst_file):
+                        src_stat = os.stat(defaults_file)
+                        dst_stat = os.stat(dst_file)
+                        if dst_stat.st_mtime_ns >= src_stat.st_mtime_ns:
+                            continue
 
                     yaml2rst.convert_file(
                         defaults_file,
@@ -100,6 +110,7 @@ def setup(app):
 extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.graphviz',
+    'sphinx_rtd_theme',
     'autolink'
 ]
 
@@ -186,7 +197,7 @@ highlight_language = 'YAML'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
+html_theme = 'sphinx_rtd_theme'
 
 # Check if build is performed on ReadTheDocs.org infrastructure
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
@@ -380,6 +391,9 @@ man_pages.append(('user-guide/scripts/debops-run/man_index', 'debops-run',
 man_pages.append(('user-guide/scripts/debops-run/man_index', 'debops-check',
                   'Execute Ansible playbooks in DebOps environments in check mode',
                   [author], 1))
+man_pages.append(('user-guide/scripts/debops-env/man_index', 'debops-env',
+                  'Execute external commands in DebOps project environment',
+                  [author], 1))
 man_pages.append(('user-guide/scripts/debops-config/man_index', 'debops-config',
                   'Inspect or manipulate DebOps project configuration', [author], 1))
 
@@ -452,7 +466,7 @@ epub_copyright = u'2014-2019, Maciej Delmanowski'
 # The format is a list of tuples containing the path and title.
 # epub_pre_files = []
 
-# HTML files shat should be inserted after the pages created by sphinx.
+# HTML files that should be inserted after the pages created by sphinx.
 # The format is a list of tuples containing the path and title.
 # epub_post_files = []
 

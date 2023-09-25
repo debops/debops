@@ -1,5 +1,5 @@
-.. Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2021 DebOps <https://debops.org/>
+.. Copyright (C) 2021-2023 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2021-2023 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 .. _cmd_debops:
@@ -16,6 +16,13 @@ split into sections.
   infrastructure, GPG keyring, and other resources used in a particular
   environment.
 
+:command:`debops exec`
+  This command can be used to execute Ansible modules ad-hoc against a given
+  environment. You can use any arguments accepted by the :command:`ansible`
+  command - they will be executed in the DebOps project context, including the
+  runtime environment variables and with the :file:`ansible/secret/` directory
+  unlocked if necessary.
+
 :command:`debops run`
   This command can be used to execute Ansible playbooks against a given
   environment. The playbooks used can come either from the DebOps Python
@@ -27,6 +34,12 @@ split into sections.
   This command is the same as the ``debops run`` command above, but
   automatically adds the ``--diff`` and ``--check`` :command:`ansible-playbook`
   options to ensure that the playbooks are executed in a check mode;
+
+:command:`debops env`
+  This command can be used to inspect the environment variables which will be
+  present when various DebOps commands are executed. It can also be used to run
+  shell commands in DebOps environment, which is a handy shortcut for using
+  Ansible ecosystem with DebOps project directories.
 
 :command:`debops config`
   This command allows the user to inspect and manipulate the DebOps
@@ -51,6 +64,10 @@ Environment variables
 
 These environment variables can be used to affect the environment during script
 execution:
+
+``DEBOPS_CMD_ANSIBLE``
+  Path to the :command:`ansible` binary used by DebOps. Can be overridden by
+  configuration files.
 
 ``DEBOPS_CMD_ANSIBLE_PLAYBOOK``
   Path to the :command:`ansible-playbook` binary used by DebOps. Can be

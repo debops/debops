@@ -42,7 +42,7 @@ To enable Preseeded installation, after starting the Debian Installer, navigate
 the menu to "Advanced options" -> "Automated Install". Next, press the
 ``<Tab>`` key, this will let you enter additional boot options. Now you can
 specify the URL of the Preseed file. The menu system implemented in the
-:ref:`debops.ipxe` role can do this automatically for you when you selet
+:ref:`debops.ipxe` role can do this automatically for you when you select
 preseed installation method.
 
 
@@ -55,13 +55,13 @@ machines. Not all of them are the same however, and to facilitate that, the
 be selected to enable different configuration options. The current set of
 "flavors" available by default is:
 
-+---------------------------------------------------+---------------+---------------------+
-|                                                   | root-only     | administrative user |
-+---------------------------------------------------+---------------+---------------------+
-| hardware, non-free APT repos, manual partitioning | ``debian``    | ``debian-user``     |
-+---------------------------------------------------+---------------+---------------------+
-| virtual machine, guided single LVM parition       | ``debian-vm`` | ``debian-vm-user``  |
-+---------------------------------------------------+---------------+---------------------+
++----------------------------------------------------+---------------+---------------------+
+|                                                    | root-only     | administrative user |
++----------------------------------------------------+---------------+---------------------+
+| hardware, non-free APT repos, manual partitioning  | ``debian``    | ``debian-user``     |
++----------------------------------------------------+---------------+---------------------+
+| virtual machine, guided single LVM partition       | ``debian-vm`` | ``debian-vm-user``  |
++----------------------------------------------------+---------------+---------------------+
 
 If we assume that the DNS domain of the cluster is ``example.org``, the Preseed
 flavors are presented as DNS subdomains of the main server domain by default

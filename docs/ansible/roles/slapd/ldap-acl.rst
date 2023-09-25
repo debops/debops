@@ -266,7 +266,7 @@ Group owners
 
 - The owners of the LDAP groups under the ``ou=Groups,dc=example,dc=org`` LDAP
   subtree, defined by the ``owner`` attribute, can add, modify or remove
-  members in their respecitve groups, using the ``member`` attribute.
+  members in their respective groups, using the ``member`` attribute.
 
 Object owners
 ~~~~~~~~~~~~~
@@ -357,7 +357,7 @@ execute the :ref:`debops.slapd` playbook with a special tag:
 
 .. code-block:: console
 
-   debops service/slapd -l <host> -t role::slapd:slapacl
+   debops run service/slapd -l <host> -t role::slapd:slapacl
 
 This command will regenerate the script and execute it to check the ACL rules.
 

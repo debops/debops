@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright (C) 2022 David Härdeman <david@hardeman.nu>
 # Copyright (C) 2022 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later

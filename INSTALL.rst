@@ -222,7 +222,7 @@ Additional, useful software
   The FUSE-based ``EncFS`` filesystem can be used to manage an encrypted volume
   which holds the contents of the :file:`secret/` directory. This is an optional
   feature, useful if you want to protect your passwords, X.509 certificates and
-  other confidental data while not in use, for example in a :command:`git`
+  other confidential data while not in use, for example in a :command:`git`
   repository.
 
 .. __: https://en.wikipedia.org/wiki/EncFS

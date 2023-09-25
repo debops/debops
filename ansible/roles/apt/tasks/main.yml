@@ -150,6 +150,23 @@
   register: apt__register_repositories
   when: (apt__enabled|bool and item.repo|d())
 
+- name: Configure custom APT deb822 repositories
+  ansible.builtin.deb822_repository:
+    name:          '{{ item.name }}'
+    uris:          '{{ item.uris }}'
+    components:    '{{ item.components | d("main") }} '
+    suites:        '{{ item.suites | d(ansible_distribution_release) }}'
+    architectures: '{{ item.architectures | d(omit) }}'
+    mode:          '{{ item.mode | d(omit) }}'
+    signed_by:     '{{ item.signed_by | d(omit) }}'
+    state:         '{{ item.state | d("present") }}'
+    types:         '{{ item.types | d("deb") }}'         # noqa args
+  loop: '{{ q("flattened", apt__deb822_repositories
+                           + apt__deb822_group_repositories
+                           + apt__deb822_host_repositories) }}'
+  register: apt__register_deb822_repositories
+  when: (apt__enabled|bool and item.name|d())
+
 - name: Remove APT auth configuration if requested
   file:
     path: '{{ "/etc/apt/auth.conf.d/" + (item.name | regex_replace(".conf$","")) + ".conf" }}'

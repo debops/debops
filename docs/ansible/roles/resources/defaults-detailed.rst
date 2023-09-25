@@ -350,6 +350,60 @@ Create a custom :program:`cron` task that restarts a service daily:
          # {{ ansible_managed }}
          test -x /usr/bin/service && systemctl restart service
 
+.. _resources__ref_pip:
+
+Python Virtual Environment management
+-------------------------------------
+
+The :ref:`debops.resources` role can be used to create and manage a Python
+Virtual Environment through the use of the `ansible.builtin.pip`__ Ansible
+module. Users can create new virtual environments and install Python packages
+inside of them.
+
+.. __: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/pip_module.html
+
+Virtual environments are defined using ``resources__*_pip`` default variables.
+Each variable is a list of YAML dictionaries with ``ansible.builtin.pip``
+module parameters (check its documentation for details). Some of the more
+important parameters:
+
+``name``
+  String or a YAML list of Python packages to install in a virtual environment
+  (if defined) or system-wide.
+
+``virtualenv``
+  Absolute path to the directory where Python virtual environment should be
+  deployed and managed. If not specified, the role will install Python packages
+  system-wide in :file:`/usr/local/` subdirectories.
+
+``owner``
+  UNIX account which should be the owner of a given Python environment. If not
+  specified, ``root`` UNIX account will be used by default.
+
+Examples
+~~~~~~~~
+
+Create an unprivileged UNIX account using the :ref:`debops.users` Ansible role.
+Create a virtualenv inside of the home directory and install Ansible and DebOps
+Python packages:
+
+.. code-block:: yaml
+
+   users__host_accounts:
+
+     - name: 'deploy'
+       group: 'deploy'
+       home: '/home/deploy'
+
+   resources__host_pip:
+
+     - owner: 'deploy'
+       virtualenv: '/home/deploy/venv/debops'
+       name:
+         - 'ansible-core'
+         - 'debops'
+
+
 .. _resources__ref_acl:
 
 ACL support
@@ -458,7 +512,7 @@ Syntax
 
 The ``resources__*_replacements`` variables are defined as list of YAML
 dictionary entries with specific parameters. Check the documentation of the
-``ansible.builtin.replace`` module to see the avaiable parameters:
+``ansible.builtin.replace`` module to see the available parameters:
 
 .. code-block:: console
 

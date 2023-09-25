@@ -1,5 +1,5 @@
-.. Copyright (C) 2021 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2021 DebOps <https://debops.org/>
+.. Copyright (C) 2021-2023 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2021-2023 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 :command:`debops run`
@@ -27,9 +27,23 @@ The options below need to be specified before any playbooks to take effect.
   Path to the project directory to work on. If it's not specified, the script
   will use the current directory.
 
+``-V <view>, --view <view>``
+  Specify the name of the "infrastructure view" to use for running Ansible
+  playbooks. If not specified, the default view will be used automatically.
+  Using this option overrides the automatic view detection performed by DebOps
+  based on the current working directory.
+
+``-E, --bell``
+  Emit an ASCII "bell" at the end of the :command:`ansible-playbook` command
+  execution to notify the user. This might be useful during longer playbook
+  runs.
+
 ``--eval``
   Do not execute :command:`ansible-playbook` command; instead print out all the
   environment variables and the command itself to stdout.
+
+``-v, --verbose``
+  Increase output verbosity. More letters means higher verbosity.
 
 ``--``
   Mark the end of the :command:`debops run` options. Any of the options after
@@ -61,11 +75,19 @@ The options below need to be specified before any playbooks to take effect.
 Examples
 ~~~~~~~~
 
-Execute the :file:`site.yml` DebOps playbook against all hosts in the Ansible inventory:
+Execute the :file:`site.yml` DebOps playbook against all hosts in the Ansible
+inventory:
 
 .. code-block:: shell
 
    debops run site
+
+Run the :file:`layer/common.yml` DebOps playbook against specific hosts in the
+Ansible inventory. User will be notified at the end of playbook execution:
+
+.. code-block:: shell
+
+   debops run -E layer/common -l webserver,dbserver,appserver
 
 Display the commands which will run a DebOps playbook for a specific service on
 specific hosts:
@@ -80,6 +102,14 @@ the playbook:
 .. code-block:: shell
 
    debops run --eval debops.debops/service/mariadb_server -l dbservers
+
+Run a playbook from a custom Ansible Collection in a specific "infrastructure
+view" meant to be used to deploy an application:
+
+.. code-block:: shell
+
+   debops run -V deployment company.collection/app/setup -l appservers
+
 
 :command:`debops check`
 -----------------------

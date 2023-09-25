@@ -10,7 +10,7 @@
 from __future__ import print_function
 from json import dumps
 from pwd import getpwuid
-from grp import getgrall
+from grp import getgrgid
 from os import stat
 
 
@@ -44,9 +44,9 @@ with open('/proc/mounts', 'r') as mounts:
                             output['gid'] = option.split('=')[1]
 
 if output['gid']:
-    groups = getgrall()
-    for group in groups:
-        if str(group.gr_gid) == output['gid']:
-            output['group'] = group.gr_name
+    try:
+        output['group'] = getgrgid(int(output['gid'])).gr_name
+    except KeyError:
+        pass
 
 print(dumps(output, sort_keys=True, indent=4))

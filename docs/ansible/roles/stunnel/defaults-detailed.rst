@@ -274,4 +274,3 @@ Other parameters
       stunnel_services:
         - name: 'tunnel'
           pki_realm: 'domain'
-

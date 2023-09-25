@@ -18,6 +18,20 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Debops.  If not, see <https://www.gnu.org/licenses/>.
+'''
+
+This file implements the `template_src` lookup filter for Ansible. In
+difference to the `template` filter, this searches values based on the
+`template-paths` variable (colon separated) as configured in DebOps.
+
+NOTE: This means this filter relies on DebOps.
+
+'''
+
+__author__ = "Robert Chady <rchady@sitepen.com>"
+__copyright__ = "Copyright 2015 by Robert Chady <rchady@sitepen.com>"
+__license__ = "GNU General Public LIcense version 3 (GPL v3) or later"
+
 
 import os
 
@@ -48,20 +62,6 @@ except ImportError:
 from distutils.version import LooseVersion
 from ansible import __version__ as __ansible_version__
 
-'''
-
-This file implements the `template_src` lookup filter for Ansible. In
-difference to the `template` filter, this searches values based on the
-`template-paths` variable (colon separated) as configured in DebOps.
-
-NOTE: This means this filter relies on DebOps.
-
-'''
-
-__author__ = "Robert Chady <rchady@sitepen.com>"
-__copyright__ = "Copyright 2015 by Robert Chady <rchady@sitepen.com>"
-__license__ = "GNU General Public LIcense version 3 (GPL v3) or later"
-
 
 if LooseVersion(__ansible_version__) < LooseVersion("2.0"):
     from ansible import utils, errors
@@ -90,7 +90,10 @@ if LooseVersion(__ansible_version__) < LooseVersion("2.0"):
                 project_dir = debops.projectdir.ProjectDir(
                         config=project_config)
                 project_root = project_dir.path
-                config = project_dir.config.get(['views', 'system'])
+                if project_dir.config.get(['project', 'type']) == 'modern':
+                    config = project_dir.config.get([])
+                else:
+                    config = project_dir.config.get(['views', 'system'])
             except NameError:
                 try:
                     project_root = find_debops_project(required=False)
@@ -152,7 +155,10 @@ else:
                 project_dir = debops.projectdir.ProjectDir(
                         config=project_config)
                 project_root = project_dir.path
-                config = project_dir.config.get(['views', 'system'])
+                if project_dir.config.get(['project', 'type']) == 'modern':
+                    config = project_dir.config.get([])
+                else:
+                    config = project_dir.config.get(['views', 'system'])
             except NameError:
                 try:
                     project_root = find_debops_project(required=False)

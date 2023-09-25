@@ -53,6 +53,11 @@ used, can be defined using specific parameters:
   Multiple entries with the same ``name`` parameter are merged together in
   order of appearance and can affect each other.
 
+``option``
+  Optional. Name of the configuration option, which will be used instead of the
+  ``name`` parameter. This is useful when a Zabbix Agent option can be present
+  multiple times in the configuration file.
+
 ``value``
   The value of a given configuration option. It can be a string, a number,
   or a boolean value - this is used to specify selected
