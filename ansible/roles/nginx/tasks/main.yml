@@ -61,8 +61,10 @@
     path: '/etc/systemd/system/nginx.service.d'
     state: 'directory'
     mode: '0755'
-  when: (nginx__deploy_state in ['present', 'config'] and
-         ansible_service_mgr == 'systemd')
+  when: nginx__deploy_state in ['present', 'config'] and
+        ansible_service_mgr == 'systemd' and
+        ansible_distribution_release in ["stretch", "buster", "bullseye",
+          "trusty", "xenial", "bionic", "focal", "jammy", "lunar"]
 
 - name: Create systemd override configuration for nginx unit
   ansible.builtin.template:
@@ -70,8 +72,26 @@
     dest: '/etc/systemd/system/nginx.service.d/wait-for-network.conf'
     mode: '0644'
   notify: [ 'Reload systemd daemon' ]
-  when: (nginx__deploy_state in ['present', 'config'] and
-         ansible_service_mgr == 'systemd')
+  when: nginx__deploy_state in ['present', 'config'] and
+        ansible_service_mgr == 'systemd' and
+        ansible_distribution_release in ["stretch", "buster", "bullseye",
+          "trusty", "xenial", "bionic", "focal", "jammy", "lunar"]
+
+- name: Remove systemd override configuration for nginx unit
+  ansible.builtin.file:
+    path: '/etc/systemd/system/nginx.service.d/wait-for-network.conf'
+    state: 'absent'
+  notify: [ 'Reload systemd daemon' ]
+  when: ansible_distribution_release not in ["stretch", "buster", "bullseye",
+          "trusty", "xenial", "bionic", "focal", "jammy", "lunar"]
+
+- name: Remove systemd override directory for nginx unit, if empty
+  ansible.builtin.command: 'rmdir /etc/systemd/system/nginx.service.d/'
+  register: nginx__register_rmdir_systemd
+  changed_when: nginx__register_rmdir_systemd.rc == 0
+  failed_when: False
+  when: ansible_distribution_release not in ["stretch", "buster", "bullseye",
+          "trusty", "xenial", "bionic", "focal", "jammy", "lunar"]
 
 - name: Make sure that Ansible local facts directory is present
   ansible.builtin.file:
