@@ -4263,7 +4263,7 @@ General
   with a DNS domain shouldn't be affected, but configuration of standalone
   hosts that deploy webservices might require modifications.
 
-- The :ref:`debops.resolvconf` role has been added as a dpendency in the
+- The :ref:`debops.resolvconf` role has been added as a dependency in the
   Ansible playbooks of the roles that interact with the ``resolvconf`` service
   in some way. The modified roles are: :ref:`debops.dnsmasq`,
   :ref:`debops.docker_server`, :ref:`debops.ifupdown`, :ref:`debops.lxc`,

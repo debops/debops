@@ -85,7 +85,7 @@ specific parameters:
   to define DHCP options for that specific network. If not specified, the
   interface name will be used by default.
 
-``address`` / ``addressess``
+``address`` / ``addresses``
   Optional. List of IPv4 or IPv6 addresses in the "host/prefix" format which
   should be used in the interface configuration.
 

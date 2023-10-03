@@ -120,7 +120,7 @@ fi
 printf "%s\t%s %s %s\n" "${current_default_ip:-127.0.1.1}" "${current_fqdn}" \
        "${current_hostname}" "${node_short}" >> /etc/hosts
 
-# Install Avahi and configure a custom service to help the master host detct
+# Install Avahi and configure a custom service to help the master host detect
 # other nodes in the cluster. Avahi might be blocked later by the firewall, but
 # that is expected; the service is not used for anything in particular beyond
 # initial cluster provisioning.

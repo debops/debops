@@ -52,7 +52,7 @@ To keep things uniform, sections go in the following order:
 The **manpages** follow the same order, however ``defaults/main`` and
 ``ldap-dit`` are omitted. They also have their own special files:
 
-Before eveything else:
+Before everything else:
 
 - ``man_synopsis.rst`` provides a short hint for command line usage
 - ``man_description.rst`` provides a description of the role.
