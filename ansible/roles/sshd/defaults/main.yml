@@ -927,7 +927,10 @@ sshd__authorized_keys_lookup_user: 'sshd'
 # .. envvar:: sshd__authorized_keys_lookup_type [[[
 #
 # List of lookup scripts that should be enabled on a host.
-sshd__authorized_keys_lookup_type: [ 'ldap', 'sss' ]
+sshd__authorized_keys_lookup_type: [ '{{ "sss"
+                                         if "debops_service_sssd" in group_names
+                                         else "ldap" }}' ]
+
                                                                    # ]]]
                                                                    # ]]]
 # LDAP lookup configuration [[[

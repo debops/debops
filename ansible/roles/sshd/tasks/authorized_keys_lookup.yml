@@ -39,6 +39,18 @@
   with_items: '{{ sshd__authorized_keys_lookup_type }}'
   when: sshd__authorized_keys_lookup_type | d()
 
+- name: Remove authorized keys LDAP lookup script
+  ansible.builtin.file:
+    path: '/etc/ssh/authorized_keys_lookup.d/ldap'
+    state: 'absent'
+  when: '"ldap" not in sshd__authorized_keys_lookup_type | d([])'
+
+- name: Remove authorized keys SSS lookup script
+  ansible.builtin.file:
+    path: '/etc/ssh/authorized_keys_lookup.d/sss'
+    state: 'absent'
+  when: '"sss" not in sshd__authorized_keys_lookup_type | d([])'
+
 - name: Generate authorized keys lookup hook
   ansible.builtin.template:
     src: 'etc/ssh/authorized_keys_lookup.j2'
