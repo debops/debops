@@ -48,7 +48,7 @@ for element in os.listdir(rst_ansible_roles):
                                   % defaults_dir)
 
                     # Only rebuild files that have changed, thus
-                    # taking avantage of the sphinx cache
+                    # taking advantage of the sphinx cache
                     dst_file = (
                             os.path.splitext(defaults_file)[0] + '.rst'
                         ).lstrip('../')

@@ -5,7 +5,7 @@
 Introduction
 ============
 
-.. include:: includes/all.rst
+.. include:: includes/role.rst
 
 The ``debops-contrib.foodsoft`` role allows to setup your own Foodsoft_ instance.
 Foodsoft is a web-based software to manage a non-profit food coop (product catalog,

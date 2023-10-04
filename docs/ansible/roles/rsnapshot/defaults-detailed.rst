@@ -333,7 +333,7 @@ dictionaries with specific parameters:
   :file:`/usr/share/doc/rsync/scripts/rrsync`). The role will copy the script
   to the :file:`/usr/local/bin/` directory and make it executable. The role
   will automatically detect any tarballs with the ``.gz`` extension and extract
-  their contents; the ``.gz`` extenion should not be included in the path
+  their contents; the ``.gz`` extension should not be included in the path
   specified in this parameter.
 
 ``rrsync_binary``
@@ -417,7 +417,7 @@ Define a list of file patterns to exclude from backups:
      - '/no-backup'
      - '/scratch'
 
-Include eveyrthing in the backup, barring any excluded files:
+Include everything in the backup, barring any excluded files:
 
 .. code-block:: yaml
 

@@ -99,7 +99,7 @@ List of other useful resources related to the ``debops.extrepo`` Ansible role:
 
 - Manual pages: :man:`extrepo(1p)`, :man:`sources.list(5)`
 
-- `Annoucement about the extrepo package`__
+- `Announcement about the extrepo package`__
 
   .. __: https://grep.be/blog/en/computer/debian/Announcing_extrepo/
 
