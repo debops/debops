@@ -40,6 +40,13 @@ General
 - The role now supports management of the "Deb822" format of the APT repository
   sources.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- The :file:`service/python_raw` playbook used during early bootstrap process
+  can now inject host entries into the :file:`/etc/hosts` configuration file to
+  permit DNS name resolution early during bootstrapping.
+
 Changed
 ~~~~~~~
 

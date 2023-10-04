@@ -32,6 +32,21 @@ python__enabled: True
 # than the specified time in minutes, the role will automatically refresh it.
 # Set to ``0`` to refresh the APT cache on each Ansible run.
 python__raw_apt_cache_valid_time: '-{{ 60 * 60 * 12 }}'
+
+                                                                   # ]]]
+# .. envvar:: python__raw_etc_hosts [[[
+#
+# String or YAML text block with "<ip> <host>" data, injected into the
+# :file:`/etc/hosts` configuration file as-is. This is done only at bootstrap
+# time, the :ref:`debops.netbase` role then takes ownership of the
+# :file:`/etc/hosts` file.
+#
+# Some installations do not have proper DNS services available and rely on
+# :file:`/etc/hosts` for name resolution. This presents a problem during early
+# bootstrap steps, for example if access to the APT repositories is done via
+# a proxy. This variable can be used to add entries in :file:`/etc/hosts` as
+# early as possible, to allow for proper name resolution.
+python__raw_etc_hosts: ''
                                                                    # ]]]
                                                                    # ]]]
 # Python 3 management [[[
