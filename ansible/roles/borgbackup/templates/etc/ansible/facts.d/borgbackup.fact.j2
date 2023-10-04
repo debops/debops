@@ -1,13 +1,25 @@
 #!{{ ansible_python['executable'] }}
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2019-2023 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2019-2023 DebOps https://debops.org/
+# SPDX-License-Identifier: GPL-3.0-only
 
 # {{ ansible_managed }}
 
 from __future__ import print_function
-from json import load, loads, dumps
-from sys import exit
+from json import dumps
+import os
 
-output = loads('''{{ ({
-    "installed": true
-}) | to_nice_json }}''')
 
-print(dumps(output, sort_keys=True, indent=2))
+def cmd_exists(cmd):
+    return any(
+        os.access(os.path.join(path, cmd), os.X_OK)
+        for path in os.environ["PATH"].split(os.pathsep)
+    )
+
+
+output = {'installed': cmd_exists('borgbackup'),
+          'borgmatic_installed': cmd_exists('borgmatic')}
+
+print(dumps(output, sort_keys=True, indent=4))

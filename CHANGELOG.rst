@@ -29,6 +29,11 @@ Added
 New DebOps roles
 ''''''''''''''''
 
+- The :ref:`debops.borgbackup` role can be used to setup cluster-wide backups
+  using `BorgBackup`__.
+
+  .. __: https://www.borgbackup.org/
+
 - The :ref:`debops.metricbeat` role, part of the Elastic stack, can be used to
   install `Metricbeat`__, a service that can gather metrics and other non-log
   data from other services and send them to Elasticsearch for processing.
@@ -4173,9 +4178,6 @@ LDAP
 ''''''''''''''''''''''''
 
 - Read :envvar:`users__default_shell` which was removed in `debops v1.0.0`_.
-
-- [debops.borgbackup] Add ``debops.borgbackup`` which is designed to configure
-  cluster-wide backup for hosts to dedicated backup servers using BorgBackup.
 
 Changed
 ~~~~~~~

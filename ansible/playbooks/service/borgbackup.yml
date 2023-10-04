@@ -1,8 +1,17 @@
 ---
+# Copyright (C) 2019-2023 Robin Schneider <ypid@riseup.net>
+# Copyright (C) 2019-2023 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
 
 - name: Setup backup using borgbackup and borgmatic
-  collections: [ 'debops.debops' ]
-  hosts: [ 'debops_service_borgbackup' ]
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts:
+    - 'debops_service_borgbackup_server'
+    - 'debops_service_borgbackup_client'
+    - 'debops_service_borgbackup_controlled_client'
+    - 'debops_service_borgbackup_controller'
+
   become: True
 
   environment: '{{ inventory__environment | d({})
@@ -11,5 +20,23 @@
 
   roles:
 
+    - role: secret
+      tags: [ 'role::secret', 'role::borgbackup' ]
+
+    - role: users
+      tags: [ 'role::users', 'skip::users' ]
+      users__dependent_accounts:
+        - '{{ borgbackup__users__dependent_accounts }}'
+
+    - role: authorized_keys
+      tags: [ 'role::authorized_keys', 'skip::authorized_keys' ]
+      authorized_keys__dependent_identities:
+        - '{{ borgbackup__authorized_keys__dependent_identities }}'
+
+    - role: sudo
+      tags: [ 'role::sudo', 'skip::sudo' ]
+      sudo__dependent_sudoers:
+        - '{{ borgbackup__sudo__dependent_sudoers }}'
+
     - role: borgbackup
-      tags: [ 'role::borgbackup' ]
+      tags: [ 'role::borgbackup', 'skip::borgbackup' ]

@@ -1,0 +1,17 @@
+{# Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+ # Copyright (C) 2023 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+[Unit]
+Description=Perform a backup using borgmatic/BorgBackup
+Documentation=https://docs.debops.org/en/master/ansible/roles/debops.borgbackup/
+
+[Timer]
+OnCalendar={{ borgbackup__backup_period }}
+RandomizedDelaySec={{ borgbackup__backup_random_delay }}
+FixedRandomDelay=true
+{% if not borgbackup__backup_timer_persistent | d(False) | bool %}
+Persistent=false
+{% endif %}
