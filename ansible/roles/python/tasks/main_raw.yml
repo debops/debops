@@ -3,6 +3,15 @@
 # Copyright (C) 2018 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
+- name: Inject host entries into /etc/hosts
+  ansible.builtin.raw: |
+    if ! grep "{{ python__raw_etc_hosts.split() | first }}" /etc/hosts ; then
+      printf "%s\n" "{{ python__raw_etc_hosts | regex_replace('\n$', '') }}" >> /etc/hosts
+    fi
+  register: python__register_etc_hosts
+  changed_when: python__register_etc_hosts.stdout == ''
+  when: python__enabled | bool and python__raw_etc_hosts | d()
+
 - name: Detect the OS release manually, no Ansible facts available
   ansible.builtin.raw: grep -E '^VERSION=' /etc/os-release | tr -d '(")' | cut -d" " -f2
   register: python__register_raw_release

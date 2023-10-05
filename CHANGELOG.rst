@@ -199,6 +199,13 @@ General
 
 - Support to host the application on a subpath for security reasons.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- The :file:`service/python_raw` playbook used during early bootstrap process
+  can now inject host entries into the :file:`/etc/hosts` configuration file to
+  permit DNS name resolution early during bootstrapping.
+
 :ref:`debops.resources` role
 ''''''''''''''''''''''''''''
 
