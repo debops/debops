@@ -1,0 +1,35 @@
+{# Copyright (C) 2019 Innobyte Bechea Leonardo <https://www.innobyte.com/>
+ # Copyright (C) 2019 Innobyte Alin Alexandru <https://www.innobyte.com/>
+ # Copyright (C) 2021-2023 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+#
+# This is the configuration file for the Grafana daemon, a open source
+# analytics & monitoring solution for every database
+#
+# Commented options show their default value.
+{% for section in grafana__combined_configuration | parse_kv_items %}
+{%   if section.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%     if not loop.first %}
+
+{%     endif %}
+{%     if section.name == "" %}
+{{ section.name }}
+{%     else %}
+[{{ section.name }}]
+{%     endif %}
+{%     if section.options is defined and section.options != None %}
+{%       for item in section.options %}
+{%         set item_prefix = (';' if item.state|d('present') == 'comment' else '') %}
+{%         if item.name|d() and item.state|d('present') not in [ 'absent', 'ignore' ] %}
+{%           if not loop.first %}
+
+{%           endif %}
+{%           if item.comment|d() != '' %}{{ '# {}'.format(item.comment.replace('\n', '\n# ')[:-2]) }}{% endif -%}
+{{           '{}{} = {}'.format(item_prefix, item.name, item.value) }}
+{%         endif %}
+{%       endfor %}
+{%     endif %}
+{%   endif %}
+{% endfor %}

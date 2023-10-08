@@ -1,0 +1,90 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2019 Innobyte Bechea Leonardo <https://www.innobyte.com/>
+# .. Copyright (C) 2019 Innobyte Alin Alexandru <https://www.innobyte.com/>
+# .. Copyright (C) 2021-2023 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import custom Ansible plugins
+  import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  import_role:
+    name: 'global_handlers'
+
+- name: Import DebOps secret role
+  import_role:
+    name: 'secret'
+
+# Package installation [[[1
+- name: Install Grafana packages
+  apt:
+    name: '{{ (grafana__base_packages
+             + grafana__packages)
+             | flatten }}'
+    state: 'present'
+  register: grafana__register_packages
+  until: grafana__register_packages is succeeded
+
+# Grafana configuration [[[1
+- name: Divert the Grafana configuration file
+  command: dpkg-divert --quiet --local --divert /etc/grafana/grafana.ini.dpkg-divert
+                       --rename /etc/grafana/grafana.ini
+  args:
+    creates: '/etc/grafana/grafana.ini.dpkg-divert'
+
+- name: Generate Grafana configuration file
+  template:
+    src: 'etc/grafana/grafana.ini.j2'
+    dest: '/etc/grafana/grafana.ini'
+    owner: 'root'
+    group: 'grafana'
+    mode: '0640'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+  register: grafana__register_configuration
+
+- name: Generate Grafana LDAP configuration file
+  template:
+    src: 'etc/grafana/ldap.toml.j2'
+    dest: '/etc/grafana/ldap.toml'
+    owner: 'root'
+    group: 'grafana'
+    mode: '0640'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+  register: grafana__register_ldap_configuration
+
+# Systemd service [[[1
+- name: Restart Grafana
+  service:  # noqa no-handler
+    name: 'grafana-server'
+    state: 'restarted'
+  when: grafana__register_configuration is changed or grafana__register_ldap_configuration is changed
+
+- name: Start Grafana
+  service:  # noqa no-handler
+    name: 'grafana-server'
+    state: 'started'
+
+# Ansible facts [[[1
+- name: Make sure that Ansible local fact directory exists
+  file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Create local facts of Grafana
+  template:
+    src: 'etc/ansible/facts.d/grafana.fact.j2'
+    dest: '/etc/ansible/facts.d/grafana.fact'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+    unsafe_writes: '{{ True if (core__unsafe_writes|d(ansible_local.core.unsafe_writes|d()) | bool) else omit }}'
+  notify: [ 'Refresh host facts' ]
+
+- name: Reload facts if they were modified
+  meta: 'flush_handlers'

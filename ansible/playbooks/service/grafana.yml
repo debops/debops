@@ -1,0 +1,43 @@
+---
+# .. Copyright (C) 2019 Innobyte Bechea Leonardo <https://www.innobyte.com/>
+# .. Copyright (C) 2019 Innobyte Alin Alexandru <https://www.innobyte.com/>
+# .. Copyright (C) 2021-2023 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+- name: Manage Grafana
+  collections: [ 'debops.debops', 'debops.roles01',
+                 'debops.roles02', 'debops.roles03' ]
+  hosts: [ 'debops_service_grafana' ]
+  become: True
+
+  environment: '{{ inventory__environment | d({})
+                   | combine(inventory__group_environment | d({}))
+                   | combine(inventory__host_environment  | d({})) }}'
+
+  roles:
+
+    - role: etc_services
+      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      etc_services__dependent_list:
+        - '{{ grafana__etc_services__dependent_list }}'
+
+    - role: extrepo
+      tags: [ 'role::extrepo', 'skip::extrepo', 'role::grafana' ]
+      extrepo__dependent_sources:
+        - '{{ grafana__extrepo__dependent_sources }}'
+
+    - role: ferm
+      tags: [ 'role::ferm', 'skip::ferm' ]
+      ferm__dependent_rules:
+        - '{{ grafana__ferm__dependent_rules }}'
+
+    - role: nginx
+      tags: [ 'role::nginx', 'skip::nginx' ]
+      nginx__dependent_upstreams:
+        - '{{ grafana__nginx__dependent_upstreams }}'
+      nginx__dependent_servers:
+        - '{{ grafana__nginx__dependent_servers }}'
+      when: grafana__nginx_enabled|bool
+
+    - role: grafana
+      tags: [ 'role::grafana', 'skip::grafana' ]

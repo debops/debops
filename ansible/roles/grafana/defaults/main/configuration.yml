@@ -1,0 +1,2250 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2021-2023 Julien Lecomte <julien@lecomte.at>
+# .. Copyright (C) 2021-2023 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _grafana__ref_configuration:
+
+# Grafana configuration file [[[
+# ------------------------------
+#
+# .. envvar:: grafana__original_configuration [[[
+#
+# The default configuration options which should be present in the main
+# configuration file.
+grafana__original_configuration:
+
+  - name: ''                                                       # [[[
+    options:
+      - name: 'app_mode'
+        value: 'production'
+        state: 'comment'
+        comment: |
+          possible values : production, development
+
+      - name: 'instance_name'
+        value: '${HOSTNAME}'
+        comment: |
+          instance name, defaults to HOSTNAME environment variable value or hostname if HOSTNAME var is empty
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'paths'                                                  # [[[
+    options:
+      - name: 'data'
+        value: '/var/lib/grafana'
+        state: 'comment'
+        comment: |
+          Path to where grafana can store temp files, sessions, and the sqlite3 db (if that is used)
+
+      - name: 'temp_data_lifetime'
+        value: '24h'
+        state: 'comment'
+        comment: |
+          Temporary files in `data` directory older than given duration will be removed
+
+      - name: 'logs'
+        value: '/var/log/grafana'
+        state: 'comment'
+        comment: |
+          Directory where grafana can store logs
+
+      - name: 'plugins'
+        value: '/var/lib/grafana/plugins'
+        state: 'comment'
+        comment: |
+          Directory where grafana will automatically scan and look for plugins
+
+      - name: 'provisioning'
+        value: 'conf/provisioning'
+        comment: |
+          folder that contains provisioning config files that grafana will apply on startup and while running.
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'server'                                                 # [[[
+    options:
+      - name: 'protocol'
+        value: 'http'
+        state: 'comment'
+        comment: |
+          Protocol (http, https, h2, socket)
+
+      - name: 'http_addr'
+        value: ''
+        state: 'comment'
+        comment: |
+          The ip address to bind to, empty will bind to all interfaces
+
+      - name: 'http_port'
+        value: 3000
+        state: 'comment'
+        comment: |
+          The http port to use
+
+      - name: 'domain'
+        value: 'localhost'
+        state: 'comment'
+        comment: |
+          The public facing domain name used to access grafana from a browser
+
+      - name: 'enforce_domain'
+        value: false
+        state: 'comment'
+        comment: |
+          Redirect to correct domain if host header does not match domain. Prevents DNS rebinding attacks
+
+      - name: 'root_url'
+        value: "%(protocol)s://%(domain)s:%(http_port)s/"
+        state: 'comment'
+        comment: |
+          The full public facing url you use in browser, used for redirects and emails If you use reverse proxy and sub path specify full url (with sub path)
+
+      - name: 'serve_from_sub_path'
+        value: false
+        state: 'comment'
+        comment: |
+          Serve Grafana from subpath specified in `root_url` setting. By default it is set to `false` for compatibility reasons.
+
+      - name: 'router_logging'
+        value: false
+        state: 'comment'
+        comment: |
+          Log web requests
+
+      - name: 'static_root_path'
+        value: 'public'
+        state: 'comment'
+        comment: |
+          the path relative working path
+
+      - name: 'enable_gzip'
+        value: false
+        state: 'comment'
+        comment: |
+          enable gzip
+
+      - name: 'cert_file'
+        value: ''
+        state: 'comment'
+        comment: |
+          https cert file
+
+      - name: 'key_file'
+        value: ''
+        state: 'comment'
+        comment: |
+          https key file
+
+      - name: 'socket'
+        value: ''
+        state: 'comment'
+        comment: |
+          Unix socket path
+
+      - name: 'cdn_url'
+        value: ''
+        state: 'comment'
+        comment: |
+          CDN Url
+
+      - name: 'read_timeout'
+        value: 0
+        comment: |
+          Sets the maximum time using a duration format (5s/5m/5ms) before timing out read of an incoming request and closing idle connections. `0` means there is no timeout for reading the request.
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'database'                                               # [[[
+    options:
+        # You can configure the database connection by specifying type, host, name, user and password
+        # as separate properties or as on string using the url properties.
+      - name: 'type'
+        value: 'sqlite3'
+        state: 'comment'
+        comment: |
+          Either "mysql", "postgres" or "sqlite3", it's your choice
+
+      - name: 'host'
+        value: '127.0.0.1:3306'
+        state: 'comment'
+
+      - name: 'name'
+        value: 'grafana'
+        state: 'comment'
+
+      - name: 'user'
+        value: 'root'
+        state: 'comment'
+
+      - name: 'password'
+        value: ''
+        state: 'comment'
+        comment: |
+          If the password contains # or ; you have to wrap it with triple quotes. Ex ''"#password;"""
+
+      - name: 'url'
+        value: ''
+        state: 'comment'
+        comment: |
+          Use either URL or the previous fields to configure the database.
+          Example: mysql://user:secret@host:port/database
+
+      - name: 'ssl_mode'
+        value: 'disable'
+        state: 'comment'
+        comment: |
+          For "postgres" only, either "disable", "require" or "verify-full"
+
+      - name: 'isolation_level'
+        value: ''
+        state: 'comment'
+        comment: |
+          Database drivers may support different transaction isolation levels.
+          Currently, only "mysql" driver supports isolation levels.
+          If the value is empty - driver's default isolation level is applied.
+          For "mysql" use "READ-UNCOMMITTED", "READ-COMMITTED", "REPEATABLE-READ" or "SERIALIZABLE".
+
+      - name: 'ca_cert_path'
+        value: ''
+        state: 'comment'
+
+      - name: 'client_key_path'
+        value: ''
+        state: 'comment'
+
+      - name: 'client_cert_path'
+        value: ''
+        state: 'comment'
+
+      - name: 'server_cert_name'
+        value: ''
+        state: 'comment'
+
+      - name: 'path'
+        value: 'grafana.db'
+        state: 'comment'
+        comment: |
+          For "sqlite3" only, path relative to data_path setting
+
+      - name: 'max_idle_conn'
+        value: 2
+        state: 'comment'
+        comment: |
+          Max idle conn setting default is 2
+
+      - name: 'max_open_conn'
+        value: ''
+        state: 'comment'
+        comment: |
+          Max conn setting default is 0 (mean not set)
+
+      - name: 'conn_max_lifetime'
+        value: 14400
+        state: 'comment'
+        comment: |
+          Connection Max Lifetime default is 14400 (means 14400 seconds or 4 hours)
+
+      - name: 'log_queries'
+        value: ''
+        state: 'comment'
+        comment: |
+          Set to true to log the sql calls and execution times.
+
+      - name: 'cache_mode'
+        value: 'private'
+        comment: |
+          For "sqlite3" only. cache mode setting used for connecting to the database. (private, shared)
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'datasources'                                            # [[[
+    options:
+      - name: 'datasource_limit'
+        value: 5000
+        comment: |
+          Upper limit of data sources that Grafana will return. This limit is a temporary configuration and it will be deprecated when pagination will be introduced on the list data sources API.
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'remote_cache'                                           # [[[
+    options:
+      - name: 'type'
+        value: 'database'
+        state: 'comment'
+        comment: |
+          Either "redis", "memcached" or "database" default is "database"
+
+      - name: 'connstr'
+        value: ''
+        comment: |
+          cache connectionstring options
+          database: will use Grafana primary database.
+          redis: config like redis server e.g. `addr=127.0.0.1:6379,pool_size=100,db=0,ssl=false`. Only addr is required. ssl may be 'true', 'false', or 'insecure'.
+          memcache: 127.0.0.1:11211
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'data_proxy'                                             # [[[
+    options:
+      - name: 'logging'
+        value: false
+        state: 'comment'
+        comment: |
+          This enables data proxy logging, default is false
+
+      - name: 'timeout'
+        value: 30
+        state: 'comment'
+        comment: |
+          How long the data proxy waits to read the headers of the response before timing out, default is 30 seconds.
+          This setting also applies to core backend HTTP data sources where query requests use an HTTP client with timeout set.
+
+      - name: 'dialTimeout'
+        value: 10
+        state: 'comment'
+        comment: |
+          How long the data proxy waits to establish a TCP connection before timing out, default is 10 seconds.
+
+      - name: 'keep_alive_seconds'
+        value: 30
+        state: 'comment'
+        comment: |
+          How many seconds the data proxy waits before sending a keepalive probe request.
+
+      - name: 'tls_handshake_timeout_seconds'
+        value: 10
+        state: 'comment'
+        comment: |
+          How many seconds the data proxy waits for a successful TLS Handshake before timing out.
+
+      - name: 'expect_continue_timeout_seconds'
+        value: 1
+        state: 'comment'
+        comment: |
+          How many seconds the data proxy will wait for a server's first response headers after
+          fully writing the request headers if the request has an "Expect: 100-continue"
+          header. A value of 0 will result in the body being sent immediately, without
+          waiting for the server to approve.
+
+      - name: 'max_conns_per_host'
+        value: 0
+        state: 'comment'
+        comment: |
+          Optionally limits the total number of connections per host, including connections in the dialing,
+          active, and idle states. On limit violation, dials will block.
+          A value of zero (0) means no limit.
+
+      - name: 'max_idle_connections'
+        value: 100
+        state: 'comment'
+        comment: |
+          The maximum number of idle connections that Grafana will keep alive.
+
+      - name: 'max_idle_connections_per_host'
+        value: 2
+        state: 'comment'
+        comment: |
+          The maximum number of idle connections per host that Grafana will keep alive.
+
+      - name: 'idle_conn_timeout_seconds'
+        value: 90
+        state: 'comment'
+        comment: |
+          How many seconds the data proxy keeps an idle connection open before timing out.
+
+      - name: 'send_user_header'
+        value: false
+        comment: |
+          If enabled and user is not anonymous, data proxy will add X-Grafana-User header with username into the request, default is false.
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'analytics'                                              # [[[
+    options:
+      - name: 'reporting_enabled'
+        value: true
+        state: 'comment'
+        comment: |
+          Server reporting, sends usage counters to stats.grafana.org every 24 hours.
+          No ip addresses are being tracked, only simple counters to track
+          running instances, dashboard and error counts. It is very helpful to us.
+          Change this option to false to disable reporting.
+
+      - name: 'reporting_distributor'
+        value: 'grafana-labs'
+        state: 'comment'
+        comment: |
+          The name of the distributor of the Grafana instance. Ex hosted-grafana, grafana-labs
+
+      - name: 'check_for_updates'
+        value: true
+        state: 'comment'
+        comment: |
+          Set to false to disable all checks to https://grafana.net
+          for new versions (grafana itself and plugins), check is used
+          in some UI views to notify that grafana or plugin update exists
+          This option does not cause any auto updates, nor send any information
+          only a GET request to http://grafana.com to get latest versions
+
+      - name: 'google_analytics_ua_id'
+        value: ''
+        state: 'comment'
+        comment: |
+          Google Analytics universal tracking code, only enabled if you specify an id here
+
+      - name: 'google_tag_manager_id'
+        value: ''
+        comment: |
+          Google Tag Manager ID, only enabled if you specify an id here
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'security'                                               # [[[
+    options:
+      - name: 'disable_initial_admin_creation'
+        value: false
+        state: 'comment'
+        comment: |
+          disable creation of admin user on first start of grafana
+
+      - name: 'admin_user'
+        value: 'admin'
+        state: 'comment'
+        comment: |
+          default admin user, created on startup
+
+      - name: 'admin_password'
+        value: 'admin'
+        state: 'comment'
+        comment: |
+          default admin password, can be changed before first start of grafana,  or in profile settings
+
+      - name: 'secret_key'
+        value: 'SW2YcwTIb9zpOOhoPsMm'
+        state: 'comment'
+        comment: |
+          used for signing
+
+      - name: 'disable_gravatar'
+        value: false
+        state: 'comment'
+        comment: |
+          disable gravatar profile images
+
+      - name: 'data_source_proxy_whitelist'
+        value: ''
+        state: 'comment'
+        comment: |
+          data source proxy whitelist (ip_or_domain:port separated by spaces)
+
+      - name: 'disable_brute_force_login_protection'
+        value: false
+        state: 'comment'
+        comment: |
+          disable protection against brute force login attempts
+
+      - name: 'cookie_secure'
+        value: false
+        state: 'comment'
+        comment: |
+          set to true if you host Grafana behind HTTPS. default is false.
+
+      - name: 'cookie_samesite'
+        value: 'lax'
+        state: 'comment'
+        comment: |
+          set cookie SameSite attribute. defaults to `lax`. can be set to "lax", "strict", "none" and "disabled"
+
+      - name: 'allow_embedding'
+        value: false
+        state: 'comment'
+        comment: |
+          set to true if you want to allow browsers to render Grafana in a <frame>, <iframe>, <embed> or <object>. default is false.
+
+      - name: 'strict_transport_security'
+        value: false
+        state: 'comment'
+        comment: |
+          Set to true if you want to enable http strict transport security (HSTS) response header.
+          This is only sent when HTTPS is enabled in this configuration.
+          HSTS tells browsers that the site should only be accessed using HTTPS.
+
+      - name: 'strict_transport_security_max_age_seconds'
+        value: 86400
+        state: 'comment'
+        comment: |
+          Sets how long a browser should cache HSTS. Only applied if strict_transport_security is enabled.
+
+      - name: 'strict_transport_security_preload'
+        value: false
+        state: 'comment'
+        comment: |
+          Set to true if to enable HSTS preloading option. Only applied if strict_transport_security is enabled.
+
+      - name: 'strict_transport_security_subdomains'
+        value: false
+        state: 'comment'
+        comment: |
+          Set to true if to enable the HSTS includeSubDomains option. Only applied if strict_transport_security is enabled.
+
+      - name: 'x_content_type_options'
+        value: true
+        state: 'comment'
+        comment: |
+          Set to true to enable the X-Content-Type-Options response header.
+          The X-Content-Type-Options response HTTP header is a marker used by the server to indicate that the MIME types advertised
+          in the Content-Type headers should not be changed and be followed.
+
+      - name: 'x_xss_protection'
+        value: true
+        state: 'comment'
+        comment: |
+          Set to true to enable the X-XSS-Protection header, which tells browsers to stop pages from loading
+          when they detect reflected cross-site scripting (XSS) attacks.
+
+      - name: 'content_security_policy'
+        value: false
+        state: 'comment'
+        comment: |
+          Enable adding the Content-Security-Policy header to your requests.
+          CSP allows to control resources the user agent is allowed to load and helps prevent XSS attacks.
+
+      - name: 'content_security_policy_template'
+        value: |
+          """script-src 'self' 'unsafe-eval' 'unsafe-inline' 'strict-dynamic' $NONCE;object-src 'none';font-src 'self';style-src 'self' 'unsafe-inline' blob:;img-src * data:;base-uri 'self';connect-src 'self' grafana.com ws://$ROOT_PATH wss://$ROOT_PATH;manifest-src 'self';media-src 'none';form-action 'self';"""
+        comment: |
+          Set Content Security Policy template used when adding the Content-Security-Policy header to your requests.
+          $NONCE in the template includes a random nonce.
+          $ROOT_PATH is server.root_url without the protocol.
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'snapshots'                                              # [[[
+    options:
+      - name: 'external_enabled'
+        value: true
+        state: 'comment'
+        comment: |
+          snapshot sharing options
+
+      - name: 'external_snapshot_url'
+        value: 'https://snapshots-origin.raintank.io'
+        state: 'comment'
+
+      - name: 'external_snapshot_name'
+        value: 'Publish to snapshot.raintank.io'
+        state: 'comment'
+
+      - name: 'public_mode'
+        value: false
+        state: 'comment'
+        comment: |
+          Set to true to enable this Grafana instance act as an external snapshot server and allow unauthenticated requests for
+          creating and deleting snapshots.
+
+      - name: 'snapshot_remove_expired'
+        value: true
+        comment: |
+          remove expired snapshot
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'dashboards'                                             # [[[
+    options:
+      - name: 'versions_to_keep'
+        value: 20
+        state: 'comment'
+        comment: |
+          Number dashboard versions to keep (per dashboard). Default: 20, Minimum: 1
+
+      - name: 'min_refresh_interval'
+        value: '5s'
+        state: 'comment'
+        comment: |
+          Minimum dashboard refresh interval. When set, this will restrict users to set the refresh interval of a dashboard lower than given interval. Per default this is 5 seconds.
+          The interval string is a possibly signed sequence of decimal numbers, followed by a unit suffix (ms, s, m, h, d), e.g. 30s or 1m.
+
+      - name: 'default_home_dashboard_path'
+        value: ''
+        comment: |
+          Path to the default home dashboard. If this value is empty, then Grafana uses StaticRootPath + "dashboards/home.json"
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'users'                                                  # [[[
+    options:
+      - name: 'allow_sign_up'
+        value: true
+        state: 'comment'
+        comment: |
+          disable user signup / registration
+
+      - name: 'allow_org_create'
+        state: 'comment'
+        value: true
+        comment: |
+          Allow non admin users to create organizations
+
+      - name: 'auto_assign_org'
+        value: true
+        state: 'comment'
+        comment: |
+          Set to true to automatically assign new users to the default organization (id 1)
+
+      - name: 'auto_assign_org_id'
+        value: 1
+        state: 'comment'
+        comment: |
+          Set this value to automatically add new users to the provided organization (if auto_assign_org above is set to true)
+
+      - name: 'auto_assign_org_role'
+        state: 'comment'
+        value: 'Viewer'
+        comment: |
+          Default role new users will be automatically assigned (if disabled above is set to true)
+
+      - name: 'verify_email_enabled'
+        state: 'comment'
+        value: false
+        comment: |
+          Require email validation before sign up completes
+
+      - name: 'login_hint'
+        value: 'email or username'
+        state: 'comment'
+        comment: |
+          Background text for the user field on the login page
+
+      - name: 'password_hint'
+        value: 'password'
+        state: 'comment'
+
+      - name: 'default_theme'
+        state: 'comment'
+        value: 'dark'
+        comment: |
+          Default UI theme ('dark' or 'light')
+
+      - name: 'home_page'
+        state: 'comment'
+        value: ''
+        comment: |
+          Path to a custom home page. Users are only redirected to this if the default home dashboard is used. It should match a frontend route and contain a leading slash.
+
+      - name: 'external_manage_link_url'
+        value: ''
+        state: 'comment'
+        comment: |
+          External user management, these options affect the organization users view
+
+      - name: 'external_manage_link_name'
+        value: ''
+        state: 'comment'
+
+      - name: 'external_manage_info'
+        value: ''
+        state: 'comment'
+
+      - name: 'viewers_can_edit'
+        value: false
+        state: 'comment'
+        comment: |
+          Viewers can edit/inspect dashboard settings in the browser. But not save the dashboard.
+
+      - name: 'editors_can_admin'
+        state: 'comment'
+        value: false
+        comment: |
+          Editors can administrate dashboard, folders and teams they create
+
+      - name: 'user_invite_max_lifetime_duration'
+        value: '24h'
+        state: 'comment'
+        comment: |
+          The duration in time a user invitation remains valid before expiring. This setting should be expressed as a duration.
+          Examples: 6h (hours), 2d (days), 1w (week). Default is 24h (24 hours). The minimum supported duration is 15m (15 minutes).
+
+      - name: 'hidden_users'
+        value: ''
+        comment: |
+          Enter a comma-separated list of users login to hide them in the Grafana UI. These users are shown to Grafana admins and themselves.
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'auth'                                                   # [[[
+    options:
+      - name: 'login_cookie_name'
+        value: 'grafana_session'
+        state: 'comment'
+        comment: |
+          Login cookie name
+
+      - name: 'login_maximum_inactive_lifetime_duration'
+        value: ''
+        state: 'comment'
+        comment: |
+          The maximum lifetime (duration) an authenticated user can be inactive before being required to login at next visit. Default is 7 days (7d). This setting should be expressed as a duration, e.g. 5m (minutes), 6h (hours), 10d (days), 2w (weeks), 1M (month). The lifetime resets at each successful token rotation.
+
+      - name: 'login_maximum_lifetime_duration'
+        value: ''
+        state: 'comment'
+        comment: |
+          The maximum lifetime (duration) an authenticated user can be logged in since login time before being required to login. Default is 30 days (30d). This setting should be expressed as a duration, e.g. 5m (minutes), 6h (hours), 10d (days), 2w (weeks), 1M (month).
+
+      - name: 'token_rotation_interval_minutes'
+        value: 10
+        state: 'comment'
+        comment: |
+          How often should auth tokens be rotated for authenticated users when being active. The default is each 10 minutes.
+
+      - name: 'disable_login_form'
+        value: false
+        state: 'comment'
+        comment: |
+          Set to true to disable (hide) the login form, useful if you use OAuth, defaults to false
+
+      - name: 'disable_signout_menu'
+        value: false
+        state: 'comment'
+        comment: |
+          Set to true to disable the sign out link in the side menu. Useful if you use auth.proxy or auth.jwt, defaults to false
+
+      - name: 'signout_redirect_url'
+        value: ''
+        state: 'comment'
+        comment: |
+          URL to redirect the user to after sign out
+
+      - name: 'oauth_auto_login'
+        value: false
+        state: 'comment'
+        comment: |
+          Set to true to attempt login with OAuth automatically, skipping the login screen.
+          This setting is ignored if multiple OAuth providers are configured.
+
+      - name: 'oauth_state_cookie_max_age'
+        value: 600
+        state: 'comment'
+        comment: |
+          OAuth state max age cookie duration in seconds. Defaults to 600 seconds.
+
+      - name: 'api_key_max_seconds_to_live'
+        value: '-1'
+        state: 'comment'
+        comment: |
+          limit of api_key seconds to live before expiration
+
+      - name: 'sigv4_auth_enabled'
+        value: false
+        comment: |
+          Set to true to enable SigV4 authentication option for HTTP-based datasources.
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'auth.anonymous'                                         # [[[
+    options:
+
+      - name: 'enabled'
+        value: false
+        state: 'comment'
+        comment: |
+          enable anonymous access
+
+      - name: 'org_name'
+        value: 'Main Org.'
+        state: 'comment'
+        comment: |
+          specify organization name that should be used for unauthenticated users
+
+      - name: 'org_role'
+        value: 'Viewer'
+        state: 'comment'
+        comment: |
+          specify role for unauthenticated users
+
+      - name: 'hide_version'
+        value: false
+        comment: |
+          mask the Grafana version number for unauthenticated users
+        state: 'comment'
+                                                                   # ]]]
+  - name: 'auth.github'                                            # [[[
+    options:
+      - name: 'enabled'
+        value: false
+        state: 'comment'
+
+      - name: 'allow_sign_up'
+        value: true
+        state: 'comment'
+
+      - name: 'client_id'
+        value: 'some_id'
+        state: 'comment'
+
+      - name: 'client_secret'
+        value: 'some_secret'
+        state: 'comment'
+
+      - name: 'scopes'
+        value: 'user:email,read:org'
+        state: 'comment'
+
+      - name: 'auth_url'
+        value: 'https://github.com/login/oauth/authorize'
+        state: 'comment'
+
+      - name: 'token_url'
+        value: 'https://github.com/login/oauth/access_token'
+        state: 'comment'
+
+      - name: 'api_url'
+        value: 'https://api.github.com/user'
+        state: 'comment'
+
+      - name: 'allowed_domains'
+        value: ''
+        state: 'comment'
+
+      - name: 'team_ids'
+        value: ''
+        state: 'comment'
+
+      - name: 'allowed_organizations'
+        value: ''
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'auth.gitlab'                                            # [[[
+    options:
+      - name: 'enabled'
+        value: false
+        state: 'comment'
+
+      - name: 'allow_sign_up'
+        value: true
+        state: 'comment'
+
+      - name: 'client_id'
+        value: 'some_id'
+        state: 'comment'
+
+      - name: 'client_secret'
+        value: 'some_secret'
+        state: 'comment'
+
+      - name: 'scopes'
+        value: 'api'
+        state: 'comment'
+
+      - name: 'auth_url'
+        value: 'https://gitlab.com/oauth/authorize'
+        state: 'comment'
+
+      - name: 'token_url'
+        value: 'https://gitlab.com/oauth/token'
+        state: 'comment'
+
+      - name: 'api_url'
+        value: 'https://gitlab.com/api/v4'
+        state: 'comment'
+
+      - name: 'allowed_domains'
+        value: ''
+        state: 'comment'
+
+      - name: 'allowed_groups'
+        value: ''
+        state: 'comment'
+                                                                   # ]]]
+  - name: 'auth.google'                                            # [[[
+    options:
+      - name: 'enabled'
+        value: false
+        state: 'comment'
+
+      - name: 'allow_sign_up'
+        value: true
+        state: 'comment'
+
+      - name: 'client_id'
+        value: 'some_client_id'
+        state: 'comment'
+
+      - name: 'client_secret'
+        value: 'some_client_secret'
+        state: 'comment'
+
+      - name: 'scopes'
+        value: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email'
+        state: 'comment'
+
+      - name: 'auth_url'
+        value: 'https://accounts.google.com/o/oauth2/auth'
+        state: 'comment'
+
+      - name: 'token_url'
+        value: 'https://accounts.google.com/o/oauth2/token'
+        state: 'comment'
+
+      - name: 'api_url'
+        value: 'https://www.googleapis.com/oauth2/v1/userinfo'
+        state: 'comment'
+
+      - name: 'allowed_domains'
+        value: ''
+        state: 'comment'
+
+      - name: 'hosted_domain'
+        value: ''
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'auth.grafana_com'                                       # [[[
+    options:
+      - name: 'enabled'
+        value: false
+        state: 'comment'
+
+      - name: 'allow_sign_up'
+        value: true
+        state: 'comment'
+
+      - name: 'client_id'
+        value: 'some_id'
+        state: 'comment'
+
+      - name: 'client_secret'
+        value: 'some_secret'
+        state: 'comment'
+
+      - name: 'scopes'
+        value: 'user:email'
+        state: 'comment'
+
+      - name: 'allowed_organizations'
+        value: ''
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'auth.azuread'                                           # [[[
+    options:
+      - name: 'name'
+        value: 'Azure AD'
+        state: 'comment'
+
+      - name: 'enabled'
+        value: false
+        state: 'comment'
+
+      - name: 'allow_sign_up'
+        value: true
+        state: 'comment'
+
+      - name: 'client_id'
+        value: 'some_client_id'
+        state: 'comment'
+
+      - name: 'client_secret'
+        value: 'some_client_secret'
+        state: 'comment'
+
+      - name: 'scopes'
+        value: 'openid email profile'
+        state: 'comment'
+
+      - name: 'auth_url'
+        value: 'https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/authorize'
+        state: 'comment'
+
+      - name: 'token_url'
+        value: 'https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/token'
+        state: 'comment'
+
+      - name: 'allowed_domains'
+        value: ''
+        state: 'comment'
+
+      - name: 'allowed_groups'
+        value: ''
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'auth.okta'                                              # [[[
+    options:
+      - name: 'name'
+        value: 'Okta'
+        state: 'comment'
+
+      - name: 'enabled'
+        value: false
+        state: 'comment'
+
+      - name: 'allow_sign_up'
+        value: true
+        state: 'comment'
+
+      - name: 'client_id'
+        value: 'some_id'
+        state: 'comment'
+
+      - name: 'client_secret'
+        value: 'some_secret'
+        state: 'comment'
+
+      - name: 'scopes'
+        value: 'openid profile email groups'
+        state: 'comment'
+
+      - name: 'auth_url'
+        value: 'https://<tenant-id>.okta.com/oauth2/v1/authorize'
+        state: 'comment'
+
+      - name: 'token_url'
+        value: 'https://<tenant-id>.okta.com/oauth2/v1/token'
+        state: 'comment'
+
+      - name: 'api_url'
+        value: 'https://<tenant-id>.okta.com/oauth2/v1/userinfo'
+        state: 'comment'
+
+      - name: 'allowed_domains'
+        value: ''
+        state: 'comment'
+
+      - name: 'allowed_groups'
+        value: ''
+        state: 'comment'
+
+      - name: 'role_attribute_path'
+        value: ''
+        state: 'comment'
+
+      - name: 'role_attribute_strict'
+        value: false
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'auth.generic_oauth'                                     # [[[
+    options:
+      - name: 'enabled'
+        value: false
+        state: 'comment'
+
+      - name: 'name'
+        value: 'OAuth'
+        state: 'comment'
+
+      - name: 'allow_sign_up'
+        value: true
+        state: 'comment'
+
+      - name: 'client_id'
+        value: 'some_id'
+        state: 'comment'
+
+      - name: 'client_secret'
+        value: 'some_secret'
+        state: 'comment'
+
+      - name: 'scopes'
+        value: 'user:email,read:org'
+        state: 'comment'
+
+      - name: 'empty_scopes'
+        value: false
+        state: 'comment'
+
+      - name: 'email_attribute_name'
+        value: 'email:primary'
+        state: 'comment'
+
+      - name: 'email_attribute_path'
+        value: ''
+        state: 'comment'
+
+      - name: 'login_attribute_path'
+        value: ''
+        state: 'comment'
+
+      - name: 'name_attribute_path'
+        value: ''
+        state: 'comment'
+
+      - name: 'id_token_attribute_name'
+        value: ''
+        state: 'comment'
+
+      - name: 'auth_url'
+        value: 'https://foo.bar/login/oauth/authorize'
+        state: 'comment'
+
+      - name: 'token_url'
+        value: 'https://foo.bar/login/oauth/access_token'
+        state: 'comment'
+
+      - name: 'api_url'
+        value: 'https://foo.bar/user'
+        state: 'comment'
+
+      - name: 'allowed_domains'
+        value: ''
+        state: 'comment'
+
+      - name: 'team_ids'
+        value: ''
+        state: 'comment'
+
+      - name: 'allowed_organizations'
+        value: ''
+        state: 'comment'
+
+      - name: 'role_attribute_path'
+        value: ''
+        state: 'comment'
+
+      - name: 'role_attribute_strict'
+        value: false
+        state: 'comment'
+
+      - name: 'tls_skip_verify_insecure'
+        value: false
+        state: 'comment'
+
+      - name: 'tls_client_cert'
+        value: ''
+        state: 'comment'
+
+      - name: 'tls_client_key'
+        value: ''
+        state: 'comment'
+
+      - name: 'tls_client_ca'
+        value: ''
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'auth.basic'                                             # [[[
+    options:
+      - name: 'enabled'
+        value: true
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'auth.proxy'                                             # [[[
+    options:
+      - name: 'enabled'
+        value: false
+        state: 'comment'
+
+      - name: 'header_name'
+        value: 'X-WEBAUTH-USER'
+        state: 'comment'
+
+      - name: 'header_property'
+        value: 'username'
+        state: 'comment'
+
+      - name: 'auto_sign_up'
+        value: true
+        state: 'comment'
+
+      - name: 'sync_ttl'
+        value: 60
+        state: 'comment'
+
+      - name: 'whitelist'
+        value: '192.168.1.1, 192.168.2.1'
+        state: 'comment'
+
+      - name: 'headers'
+        value: 'Email:X-User-Email, Name:X-User-Name'
+        state: 'comment'
+
+      - name: 'enable_login_token'
+        value: false
+        comment: |
+          Read the auth proxy docs for details on what the setting below enables
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'auth.jwt'                                               # [[[
+    options:
+      - name: 'enabled'
+        value: true
+        state: 'comment'
+
+      - name: 'header_name'
+        value: 'X-JWT-Assertion'
+        state: 'comment'
+
+      - name: 'email_claim'
+        value: 'sub'
+        state: 'comment'
+
+      - name: 'username_claim'
+        value: 'sub'
+        state: 'comment'
+
+      - name: 'jwk_set_url'
+        value: 'https://foo.bar/.well-known/jwks.json'
+        state: 'comment'
+
+      - name: 'jwk_set_file'
+        value: '/path/to/jwks.json'
+        state: 'comment'
+
+      - name: 'cache_ttl'
+        value: '60m'
+        state: 'comment'
+
+      - name: 'expected_claims'
+        value: '{"aud": ["foo", "bar"]}'
+        state: 'comment'
+
+      - name: 'key_file'
+        value: '/path/to/key/file'
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'auth.ldap'                                              # [[[
+    options:
+      - name: 'enabled'
+        value: false
+        state: 'comment'
+
+      - name: 'config_file'
+        value: '/etc/grafana/ldap.toml'
+        state: 'comment'
+
+      - name: 'allow_sign_up'
+        value: true
+        state: 'comment'
+
+      - name: 'sync_cron'
+        value: '"0 0 1 * * *"'
+        state: 'comment'
+        comment: |
+          LDAP background sync (Enterprise only)
+          At 1 am every day
+
+      - name: 'active_sync_enabled'
+        value: true
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'aws'                                                    # [[[
+    options:
+      - name: 'allowed_auth_providers'
+        value: 'default,keys,credentials'
+        state: 'comment'
+        comment: |
+          Enter a comma-separated list of allowed AWS authentication providers.
+          Options are: default (AWS SDK Default), keys (Access && secret key), credentials (Credentials field), ec2_iam_role (EC2 IAM Role)
+
+      - name: 'assume_role_enabled'
+        value: true
+        comment: |
+          Allow AWS users to assume a role using temporary security credentials.
+          If true, assume role will be enabled for all AWS authentication providers that are specified in aws_auth_providers
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'azure'                                                  # [[[
+    options:
+      - name: 'cloud'
+        value: 'AzureCloud'
+        state: 'comment'
+        comment: |
+          Azure cloud environment where Grafana is hosted
+          Possible values are AzureCloud, AzureChinaCloud, AzureUSGovernment and AzureGermanCloud
+          Default value is AzureCloud (i.e. public cloud)
+
+      - name: 'managed_identity_enabled'
+        value: false
+        state: 'comment'
+        comment: |
+          Specifies whether Grafana hosted in Azure service with Managed Identity configured (e.g. Azure Virtual Machines instance)
+          If enabled, the managed identity can be used for authentication of Grafana in Azure services
+          Disabled by default, needs to be explicitly enabled
+
+      - name: 'managed_identity_client_id'
+        value: ''
+        comment: |
+          Client ID to use for user-assigned managed identity
+          Should be set for user-assigned identity and should be empty for system-assigned identity
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'smtp'                                                   # [[[
+    options:
+      - name: 'enabled'
+        value: false
+        state: 'comment'
+
+      - name: 'host'
+        value: 'localhost:25'
+        state: 'comment'
+
+      - name: 'user'
+        value: ''
+        state: 'comment'
+
+      - name: 'password'
+        value: ''
+        state: 'comment'
+        comment: |
+          If the password contains # or ; you have to wrap it with triple quotes. Ex """#password;"""
+
+      - name: 'cert_file'
+        value: 'key_file'
+        state: 'comment'
+
+      - name: 'skip_verify'
+        value: false
+        state: 'comment'
+
+      - name: 'from_address'
+        value: 'admin@grafana.localhost'
+        state: 'comment'
+
+      - name: 'from_name'
+        value: 'Grafana'
+        state: 'comment'
+
+      - name: 'ehlo_identity'
+        value: 'dashboard.example.com'
+        state: 'comment'
+        comment: |
+          EHLO identity in SMTP dialog (defaults to instance_name)
+
+      - name: 'startTLS_policy'
+        value: 'NoStartTLS'
+        comment: |
+          SMTP startTLS policy (defaults to 'OpportunisticStartTLS')
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'emails'                                                 # [[[
+    options:
+      - name: 'welcome_email_on_sign_up'
+        value: false
+        state: 'comment'
+
+      - name: 'templates_pattern'
+        value: 'emails/*.html'
+        state: 'comment'
+
+
+                                                                   # ]]]
+  - name: 'log'                                                    # [[[
+    options:
+      - name: 'mode'
+        value: 'console file'
+        comment: |
+          Either "console", "file", "syslog". Default is console and file
+          Use space to separate multiple modes, e.g. "console file"
+        state: 'comment'
+
+      - name: 'level'
+        value: 'info'
+        comment: |
+          Either "debug", "info", "warn", "error", "critical", default is "info"
+        state: 'comment'
+
+      - name: 'filters'
+        value: ''
+        comment: |
+          optional settings to set different levels for specific loggers. Ex filters = sqlstore:debug
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'log.console'                                            # [[[
+    options:
+      - name: 'level'
+        value: ''
+        state: 'comment'
+
+      - name: 'format'
+        value: 'console'
+        comment: |
+          log line format, valid options are text, console and json
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'log.file'                                               # [[[
+    options:
+      - name: 'level'
+        value: ''
+        state: 'comment'
+
+      - name: 'format'
+        value: 'text'
+        state: 'comment'
+        comment: |
+          log line format, valid options are text, console and json
+
+      - name: 'log_rotate'
+        value: true
+        state: 'comment'
+        comment: |
+          This enables automated log rotate(switch of following options), default is true
+
+      - name: 'max_lines'
+        value: 1000000
+        state: 'comment'
+        comment: |
+          Max line number of single file, default is 1000000
+
+      - name: 'max_size_shift'
+        value: 28
+        state: 'comment'
+        comment: |
+          Max size shift of single file, default is 28 means 1 << 28, 256MB
+
+      - name: 'daily_rotate'
+        value: true
+        state: 'comment'
+        comment: |
+          Segment log daily, default is true
+
+      - name: 'max_days'
+        value: 7
+        comment: |
+          Expired days of log file(delete after max days), default is 7
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'log.syslog'                                             # [[[
+    options:
+      - name: 'level'
+        value: ''
+        state: 'comment'
+
+      - name: 'format'
+        value: 'text'
+        state: 'comment'
+        comment: |
+          log line format, valid options are text, console and json
+
+      - name: 'network'
+        value: ''
+        state: 'comment'
+        comment: |
+          Syslog network type and address. This can be udp, tcp, or unix. If left blank, the default unix endpoints will be used.
+
+      - name: 'address'
+        value: ''
+        state: 'comment'
+
+      - name: 'facility'
+        value: ''
+        state: 'comment'
+        comment: |
+          Syslog facility. user, daemon and local0 through local7 are valid.
+
+      - name: 'tag'
+        value: ''
+        comment: |
+          Syslog tag. By default, the process' argv[0] is used.
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'log.frontend'                                           # [[[
+    options:
+      - name: 'enabled'
+        value: false
+        state: 'comment'
+        comment: |
+          Should Sentry javascript agent be initialized
+
+      - name: 'sentry_dsn'
+        value: ''
+        state: 'comment'
+        comment: |
+          Sentry DSN if you want to send events to Sentry.
+
+      - name: 'custom_endpoint'
+        value: '/log'
+        state: 'comment'
+        comment: |
+          Custom HTTP endpoint to send events captured by the Sentry agent to. Default will log the events to stdout.
+
+      - name: 'sample_rate'
+        value: '1.0'
+        state: 'comment'
+        comment: |
+          Rate of events to be reported between 0 (none) and 1 (all), float
+
+      - name: 'log_endpoint_requests_per_second_limit'
+        value: 3
+        state: 'comment'
+        comment: |
+          Requests per second limit enforced an extended period, for Grafana backend log ingestion endpoint (/log).
+
+      - name: 'log_endpoint_burst_limit'
+        value: 15
+        comment: |
+          Max requests accepted per short interval of time for Grafana backend log ingestion endpoint (/log).
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'quota'                                                  # [[[
+    comment: "set quotas to -1 to make unlimited."
+    options:
+      - name: 'enabled'
+        value: false
+        state: 'comment'
+
+      - name: 'org_user'
+        value: 10
+        state: 'comment'
+        comment: |
+          limit number of users per Org.
+
+      - name: 'org_dashboard'
+        value: 100
+        state: 'comment'
+        comment: |
+          limit number of dashboards per Org.
+
+      - name: 'org_data_source'
+        value: 10
+        state: 'comment'
+        comment: |
+          limit number of data_sources per Org.
+
+      - name: 'org_api_key'
+        value: 10
+        state: 'comment'
+        comment: |
+          limit number of api_keys per Org.
+
+      - name: 'org_alert_rule'
+        value: 100
+        state: 'comment'
+        comment: |
+          limit number of alerts per Org.
+
+      - name: 'user_org'
+        value: 10
+        state: 'comment'
+        comment: |
+          limit number of orgs a user can create.
+
+      - name: 'global_user'
+        value: '-1'
+        state: 'comment'
+        comment: |
+          Global limit of users.
+
+      - name: 'global_org'
+        value: '-1'
+        state: 'comment'
+        comment: |
+          global limit of orgs.
+
+      - name: 'global_dashboard'
+        value: '-1'
+        state: 'comment'
+        comment: |
+          global limit of dashboards
+
+      - name: 'global_api_key'
+        value: '-1'
+        state: 'comment'
+        comment: |
+          global limit of api_keys
+
+      - name: 'global_session'
+        value: '-1'
+        state: 'comment'
+        comment: |
+          global limit on number of logged in users.
+
+      - name: 'global_alert_rule'
+        value: '-1'
+        comment: |
+          global limit of alerts
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'alerting'                                               # [[[
+    options:
+      - name: 'enabled'
+        value: true
+        state: 'comment'
+        comment: |
+          Disable alerting engine & UI features
+
+      - name: 'execute_alerts'
+        value: true
+        state: 'comment'
+        comment: |
+          Makes it possible to turn off alert rule execution but alerting UI is visible
+
+      - name: 'error_or_timeout'
+        value: 'alerting'
+        state: 'comment'
+        comment: |
+          Default setting for new alert rules. Defaults to categorize error and timeouts as alerting. (alerting, keep_state)
+
+      - name: 'nodata_or_nullvalues'
+        value: 'no_data'
+        state: 'comment'
+        comment: |
+          Default setting for how Grafana handles nodata or null values in alerting. (alerting, no_data, keep_state, ok)
+
+      - name: 'concurrent_render_limit'
+        value: 5
+        state: 'comment'
+        comment: |
+          Alert notifications can include images, but rendering many images at the same time can overload the server
+          This limit will protect the server from render overloading and make sure notifications are sent out quickly
+
+      - name: 'evaluation_timeout_seconds'
+        value: 30
+        state: 'comment'
+        comment: |
+          Default setting for alert calculation timeout. Default value is 30
+
+      - name: 'notification_timeout_seconds'
+        value: 30
+        state: 'comment'
+        comment: |
+          Default setting for alert notification timeout. Default value is 30
+
+      - name: 'max_attempts'
+        value: 3
+        state: 'comment'
+        comment: |
+          Default setting for max attempts to sending alert notifications. Default value is 3
+
+      - name: 'min_interval_seconds'
+        value: 1
+        state: 'comment'
+        comment: |
+          Makes it possible to enforce a minimal interval between evaluations, to reduce load on the backend
+
+      - name: 'max_annotation_age'
+        value: ''
+        state: 'comment'
+        comment: |
+          Configures for how long alert annotations are stored. Default is 0, which keeps them forever.
+          This setting should be expressed as a duration. Examples: 6h (hours), 10d (days), 2w (weeks), 1M (month).
+
+      - name: 'max_annotations_to_keep'
+        value: ''
+        comment: |
+          Configures max number of alert annotations that Grafana stores. Default value is 0, which keeps all alert annotations.
+        state: 'comment'
+
+
+                                                                   # ]]]
+  - name: 'annotations'                                            # [[[
+    options:
+      - name: 'cleanupjob_batchsize'
+        value: 100
+        comment: |
+          Configures the batch size for the annotation clean-up job. This setting is used for dashboard, API, and alert annotations.
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'annotations.dashboard'                                  # [[[
+    comment: "Dashboard annotations means that annotations are associated with the dashboard they are created on."
+    options:
+      - name: 'max_age'
+        value: ''
+        state: 'comment'
+        comment: |
+          Configures how long dashboard annotations are stored. Default is 0, which keeps them forever.
+          This setting should be expressed as a duration. Examples: 6h (hours), 10d (days), 2w (weeks), 1M (month).
+
+      - name: 'max_annotations_to_keep'
+        value: ''
+        comment: |
+          Configures max number of dashboard annotations that Grafana stores. Default value is 0, which keeps all dashboard annotations.
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'annotations.api'                                        # [[[
+    comment: |
+      API annotations means that the annotations have been created using the API without any
+      association with a dashboard.
+    options:
+      - name: 'max_age'
+        value: ''
+        state: 'comment'
+        comment: |
+          Configures how long Grafana stores API annotations. Default is 0, which keeps them forever.
+          This setting should be expressed as a duration. Examples: 6h (hours), 10d (days), 2w (weeks), 1M (month).
+
+      - name: 'max_annotations_to_keep'
+        value: ''
+        comment: |
+          Configures max number of API annotations that Grafana keeps. Default value is 0, which keeps all API annotations.
+        state: 'comment'
+
+
+                                                                   # ]]]
+  - name: 'explore'                                                # [[[
+    options:
+      - name: 'enabled'
+        value: true
+        comment: |
+          Enable the Explore section
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'metrics'                                                # [[[
+    options:
+      - name: 'enabled'
+        value: true
+        state: 'comment'
+        comment: |
+          Disable / Enable internal metrics
+
+      - name: 'interval_seconds'
+        value: 10
+        state: 'comment'
+        comment: |
+          Graphite Publish interval
+
+      - name: 'disable_total_stats'
+        value: false
+        state: 'comment'
+        comment: |
+          Disable total stats (stat_totals_*) metrics to be generated
+
+      - name: 'basic_auth_username'
+        value: ''
+        state: 'comment'
+        comment: |
+          If both are set, basic auth will be required for the metrics endpoint.
+
+      - name: 'basic_auth_password'
+        value: ''
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'metrics.environment_info'                               # [[[
+    options:
+      - name: 'dummy'
+        value: ''
+        state: 'comment'
+        comment: |
+          Dummy key for proper templating
+                                                                   # ]]]
+  - name: 'metrics.graphite'                                       # [[[
+    options:
+      - name: 'address'
+        value: ''
+        state: 'comment'
+        comment: |
+          Enable by setting the address setting (ex localhost:2003)
+
+      - name: 'prefix'
+        value: 'prod.grafana.%(instance_name)s.'
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'grafana_com'                                            # [[[
+    options:
+      - name: 'url'
+        value: 'https://grafana.com'
+        comment: |
+          Url used to import dashboards directly from Grafana.com
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'tracing.jaeger'                                         # [[[
+    options:
+      - name: 'address'
+        value: 'localhost:6831'
+        state: 'comment'
+        comment: |
+          Enable by setting the address sending traces to jaeger (ex localhost:6831)
+
+      - name: 'always_included_tag'
+        value: 'tag1:value1'
+        state: 'comment'
+        comment: |
+          Tag that will always be included in when creating new spans. ex (tag1:value1,tag2:value2)
+
+      - name: 'sampler_type'
+        value: 'const'
+        state: 'comment'
+        comment: |
+          Type specifies the type of the sampler: const, probabilistic, rateLimiting, or remote
+
+      - name: 'sampler_param'
+        value: 1
+        state: 'comment'
+        comment: |
+          jaeger samplerconfig param
+          for "const" sampler, 0 or 1 for always false/true respectively
+          for "probabilistic" sampler, a probability between 0 and 1
+          for "rateLimiting" sampler, the number of spans per second
+          for "remote" sampler, param is the same as for "probabilistic"
+          and indicates the initial sampling rate before the actual one
+          is received from the mothership
+
+      - name: 'sampling_server_url'
+        value: ''
+        state: 'comment'
+        comment: |
+          sampling_server_url is the URL of a sampling manager providing a sampling strategy.
+
+      - name: 'zipkin_propagation'
+        value: false
+        state: 'comment'
+        comment: |
+          Whether or not to use Zipkin propagation (x-b3- HTTP headers).
+
+      - name: 'disable_shared_zipkin_spans'
+        value: false
+        comment: |
+          Setting this to true disables shared RPC spans.
+          Not disabling is the most common setting when using Zipkin elsewhere in your infrastructure.
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'external_image_storage'                                 # [[[
+    options:
+      - name: 'provider'
+        value: ''
+        comment: |
+          Used for uploading images to public servers so they can be included in slack/email messages.
+          you can choose between (s3, webdav, gcs, azure_blob, local)
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'external_image_storage.s3'                              # [[[
+    options:
+      - name: 'endpoint'
+        value: ''
+        state: 'comment'
+
+      - name: 'path_style_access'
+        value: ''
+        state: 'comment'
+
+      - name: 'bucket'
+        value: ''
+        state: 'comment'
+
+      - name: 'region'
+        value: ''
+        state: 'comment'
+
+      - name: 'path'
+        value: ''
+        state: 'comment'
+
+      - name: 'access_key'
+        value: ''
+        state: 'comment'
+
+      - name: 'secret_key'
+        value: ''
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'external_image_storage.webdav'                          # [[[
+    options:
+      - name: 'url'
+        value: ''
+        state: 'comment'
+
+      - name: 'public_url'
+        value: ''
+        state: 'comment'
+
+      - name: 'username'
+        value: ''
+        state: 'comment'
+
+      - name: 'password'
+        value: ''
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'external_image_storage.gcs'                             # [[[
+    options:
+      - name: 'key_file'
+        value: ''
+        state: 'comment'
+
+      - name: 'bucket'
+        value: ''
+        state: 'comment'
+
+      - name: 'path'
+        value: ''
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'external_image_storage.azure_blob'                      # [[[
+    options:
+      - name: 'account_name'
+        value: ''
+        state: 'comment'
+
+      - name: 'account_key'
+        value: ''
+        state: 'comment'
+
+      - name: 'container_name'
+        value: ''
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'external_image_storage.local'                           # [[[
+    options:
+      - name: 'dummy'
+        value: ''
+        state: 'comment'
+        comment: |
+          Dummy key for proper templating
+
+                                                                   # ]]]
+  - name: 'rendering'                                              # [[[
+    options:
+      - name: 'server_url'
+        value: ''
+        state: 'comment'
+        comment: |
+          Options to configure a remote HTTP image rendering service, e.g. using https://github.com/grafana/grafana-image-renderer.
+          URL to a remote HTTP image renderer service, e.g. http://localhost:8081/render, will enable Grafana to render panels and dashboards to PNG-images using HTTP requests to an external service.
+
+      - name: 'callback_url'
+        value: ''
+        state: 'comment'
+        comment: |
+          If the remote HTTP image renderer service runs on a different server than the Grafana server you may have to configure this to a URL where Grafana is reachable, e.g. http://grafana.domain/.
+
+      - name: 'concurrent_render_request_limit'
+        value: 30
+        comment: |
+          Concurrent render request limit affects when the /render HTTP endpoint is used. Rendering many images at the same time can overload the server,
+          which this setting can help protect against by only allowing a certain amount of concurrent requests.
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'panels'                                                 # [[[
+    options:
+      - name: 'disable_sanitize_html'
+        value: false
+        comment: |
+          If set to true Grafana will allow script tags in text panels. Not recommended as it enable XSS vulnerabilities.
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'plugins'                                                # [[[
+    options:
+      - name: 'enable_alpha'
+        value: false
+        state: 'comment'
+
+      - name: 'app_tls_skip_verify_insecure'
+        value: false
+        state: 'comment'
+
+      - name: 'allow_loading_unsigned_plugins'
+        value: ''
+        state: 'comment'
+        comment: |
+          Enter a comma-separated list of plugin identifiers to identify plugins to load even if they are unsigned. Plugins with modified signatures are never loaded.
+
+      - name: 'plugin_admin_enabled'
+        value: false
+        state: 'comment'
+        comment: |
+          Enable or disable installing plugins directly from within Grafana.
+
+      - name: 'plugin_admin_external_manage_enabled'
+        value: false
+        state: 'comment'
+
+      - name: 'plugin_catalog_url'
+        value: 'https://grafana.com/grafana/plugins/'
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'live'                                                   # [[[
+    options:
+      - name: 'max_connections'
+        value: 100
+        state: 'comment'
+        comment: |
+          max_connections to Grafana Live WebSocket endpoint per Grafana server instance. See Grafana Live docs
+          if you are planning to make it higher than default 100 since this can require some OS and infrastructure
+          tuning. 0 disables Live, -1 means unlimited connections.
+
+      - name: 'allowed_origins'
+        value: ''
+        comment: |
+          allowed_origins is a comma-separated list of origins that can establish connection with Grafana Live.
+          If not set then origin will be matched over root_url. Supports wildcard symbol "*".
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'plugin.grafana-image-renderer'                          # [[[
+    options:
+      - name: 'rendering_timezone'
+        value: ''
+        state: 'comment'
+        comment: |
+          Instruct headless browser instance to use a default timezone when not provided by Grafana, e.g. when rendering panel image of alert.
+          See ICU’s metaZones.txt (https://cs.chromium.org/chromium/src/third_party/icu/source/data/misc/metaZones.txt) for a list of supported
+          timezone IDs. Fallbacks to TZ environment variable if not set.
+
+      - name: 'rendering_language'
+        value: ''
+        state: 'comment'
+        comment: |
+          Instruct headless browser instance to use a default language when not provided by Grafana, e.g. when rendering panel image of alert.
+          Please refer to the HTTP header Accept-Language to understand how to format this value, e.g. 'fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5'.
+
+      - name: 'rendering_viewport_device_scale_factor'
+        value: ''
+        state: 'comment'
+        comment: |
+          Instruct headless browser instance to use a default device scale factor when not provided by Grafana, e.g. when rendering panel image of alert.
+          Default is 1. Using a higher value will produce more detailed images (higher DPI), but will require more disk space to store an image.
+
+      - name: 'rendering_ignore_https_errors'
+        value: ''
+        state: 'comment'
+        comment: |
+          Instruct headless browser instance whether to ignore HTTPS errors during navigation. Per default HTTPS errors are not ignored. Due to
+          the security risk it's not recommended to ignore HTTPS errors.
+
+      - name: 'rendering_verbose_logging'
+        value: ''
+        state: 'comment'
+        comment: |
+          Instruct headless browser instance whether to capture and log verbose information when rendering an image. Default is false and will
+          only capture and log error messages. When enabled, debug messages are captured and logged as well.
+          For the verbose information to be included in the Grafana server log you have to adjust the rendering log level to debug, configure
+          [log].filter = rendering:debug.
+
+      - name: 'rendering_dumpio'
+        value: ''
+        state: 'comment'
+        comment: |
+          Instruct headless browser instance whether to output its debug and error messages into running process of remote rendering service.
+          Default is false. This can be useful to enable (true) when troubleshooting.
+
+        # Additional arguments to pass to the headless browser instance. Default is --no-sandbox. The list of Chromium flags can be found
+      - name: 'rendering_args'
+        value: ''
+        state: 'comment'
+        comment: |
+          here (https://peter.sh/experiments/chromium-command-line-switches/). Multiple arguments is separated with comma-character.
+
+      - name: 'rendering_chrome_bin'
+        value: ''
+        state: 'comment'
+        comment: |
+          You can configure the plugin to use a different browser binary instead of the pre-packaged version of Chromium.
+          Please note that this is not recommended, since you may encounter problems if the installed version of Chrome/Chromium is not
+          compatible with the plugin.
+
+      - name: 'rendering_mode'
+        value: ''
+        state: 'comment'
+        comment: |
+          Instruct how headless browser instances are created. Default is 'default' and will create a new browser instance on each request.
+          Mode 'clustered' will make sure that only a maximum of browsers/incognito pages can execute concurrently.
+          Mode 'reusable' will have one browser instance and will create a new incognito page on each request.
+
+      - name: 'rendering_clustering_mode'
+        value: ''
+        state: 'comment'
+        comment: |
+          When rendering_mode = clustered you can instruct how many browsers or incognito pages can execute concurrently. Default is 'browser'
+          and will cluster using browser instances.
+          Mode 'context' will cluster using incognito pages.
+
+      - name: 'rendering_clustering_max_concurrency'
+        value: ''
+        state: 'comment'
+        comment: |
+          When rendering_mode = clustered you can define maximum number of browser instances/incognito pages that can execute concurrently..
+
+      - name: 'rendering_viewport_max_width'
+        value: ''
+        state: 'comment'
+        comment: |
+          Limit the maximum viewport width, height and device scale factor that can be requested.
+
+      - name: 'rendering_viewport_max_height'
+        value: ''
+        state: 'comment'
+
+      - name: 'rendering_viewport_max_device_scale_factor'
+        value: ''
+        state: 'comment'
+
+      - name: 'grpc_host'
+        value: ''
+        state: 'comment'
+        comment: |
+          Change the listening host and port of the gRPC server. Default host is 127.0.0.1 and default port is 0 and will automatically assign
+          a port not in use.
+
+      - name: 'grpc_port'
+        value: ''
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'enterprise'                                             # [[[
+    options:
+      - name: 'license_path'
+        value: ''
+        comment: |
+          Path to a valid Grafana Enterprise license.jwt file
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'feature_toggles'                                        # [[[
+    options:
+      - name: 'enable'
+        value: ''
+        comment: |
+          enable features, separated by spaces
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'date_formats'                                           # [[[
+    comment: "For information on what formatting patterns that are supported https://momentjs.com/docs/#/displaying/"
+    options:
+      - name: 'full_date'
+        value: 'YYYY-MM-DD HH:mm:ss'
+        state: 'comment'
+        comment: |
+          Default system date format used in time range picker and other places where full time is displayed
+
+      - name: 'interval_second'
+        value: 'HH:mm:ss'
+        state: 'comment'
+        comment: |
+          Used by graph and other places where we only show small intervals
+
+      - name: 'interval_minute'
+        value: 'HH:mm'
+        state: 'comment'
+
+      - name: 'interval_hour'
+        value: 'MM/DD HH:mm'
+        state: 'comment'
+
+      - name: 'interval_day'
+        value: 'MM/DD'
+        state: 'comment'
+
+      - name: 'interval_month'
+        value: 'YYYY-MM'
+        state: 'comment'
+
+      - name: 'interval_year'
+        value: 'YYYY'
+        state: 'comment'
+
+      - name: 'use_browser_locale'
+        value: false
+        state: 'comment'
+        comment: |
+          Experimental feature
+
+      - name: 'default_timezone'
+        value: 'browser'
+        comment: |
+          Default timezone for user preferences. Options are 'browser' for the browser local timezone or a timezone name from IANA Time Zone database, e.g. 'UTC' or 'Europe/Amsterdam' etc.
+        state: 'comment'
+
+                                                                   # ]]]
+  - name: 'expressions'                                            # [[[
+    options:
+      - name: 'enabled'
+        value: true
+        comment: |
+          Enable or disable the expressions functionality.
+        state: 'comment'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# .. envvar:: grafana__default_configuration [[[
+
+# List of the default Grafana configuration options defined by the role.
+grafana__default_configuration:
+
+  - name: 'server'                                                 # [[[
+    options:
+      - name: 'protocol'
+        value: 'http'
+        state: '{{ "present" if grafana__nginx_enabled else "comment" }}'
+
+      - name: 'http_port'
+        value: '{{ grafana__port }}'
+        state: 'present'
+
+      - name: 'domain'
+        value: '{{ grafana__fqdn.split(".")[0] }}'
+        state: 'present'
+
+                                                                   # ]]]
+  - name: 'security'                                               # [[[
+    options:
+      - name: 'cookie_secure'
+        value: '{{ true if grafana__nginx_enabled and pki_enabled else false }}'
+        state: 'present'
+
+      - name: 'secret_key'
+        value: "{{ grafana__secret_key | d('SW2YcwTIb9zpOOhoPsMm') }}"
+        state: 'present'
+
+                                                                   # ]]]
+  - name: 'security'                                               # [[[
+    options:
+      - name: 'admin_password'
+        value: '{{ grafana__admin_password | d("admin") }}'
+        state: 'present'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# .. envvar:: grafana__configuration [[[
+#
+# List of Grafana configuration options defined on all hosts in the Ansible inventory.
+grafana__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: grafana__group_configuration [[[
+#
+# List of Grafana configuration options defined on hosts in a specific Ansible
+# inventory group.
+grafana__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: grafana__host_configuration [[[
+#
+# List of Grafana configuration options defined on specific hosts in the
+# Ansible inventory.
+grafana__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: grafana__combined_configuration [[[
+#
+# Variable which combines Grafana configuration lists and is used in role
+# tasks and templates.
+grafana__combined_configuration: '{{ grafana__original_configuration
+                                     + grafana__default_configuration
+                                     + grafana__configuration
+                                     + grafana__group_configuration
+                                     + grafana__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]

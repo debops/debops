@@ -38,6 +38,7 @@ etc.
 - :ref:`debops.etesync`
 - :ref:`debops.etherpad`
 - :ref:`debops.gitlab`
+- :ref:`debops.grafana`
 - :ref:`debops.icinga`
 - :ref:`debops.kibana`
 - :ref:`debops.librenms`

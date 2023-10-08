@@ -934,6 +934,19 @@ stages:
     JANE_DIFF_PATTERN: '.*/roles/golang/.*'
     JANE_LOG_PATTERN: '\[golang\]'
 
+'grafana role':
+  <<: *test_role_2nd_deps
+  needs:
+    - 'etc_services role'
+    - 'ferm role'
+    - 'nginx role'
+  variables:
+    JANE_TEST_FACT: 'grafana.fact'
+    JANE_TEST_PLAY: '${DEBOPS_PLAYBOOKS}/service/grafana.yml'
+    JANE_INVENTORY_GROUPS: 'debops_service_grafana'
+    JANE_DIFF_PATTERN: '.*/roles/grafana/.*'
+    JANE_LOG_PATTERN: '\[grafana\]'
+
 'grub role':
   <<: *test_role_no_deps
   variables:
@@ -956,7 +969,6 @@ stages:
     JANE_INVENTORY_GROUPS: 'debops_service_gunicorn'
     JANE_DIFF_PATTERN: '.*/roles/gunicorn/.*'
     JANE_LOG_PATTERN: '\[gunicorn\]'
-
 
 # --- h --- [[[2
 

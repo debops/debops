@@ -1,0 +1,91 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2023-2023 Julien Lecomte <julien@lecomte.at>
+# .. Copyright (C) 2023-2023 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _grafana__ref_ldap_configuration:
+
+# Grafana LDAP configuration file [[[
+# -----------------------------------
+#
+# .. envvar:: grafana__original_ldap_configuration [[[
+#
+# The default ldap_configuration options which should be present in the main
+# ldap configuration file.
+#
+# Because of the toml structure, no combining of the keys with the other
+# variables will be performed.
+grafana__original_ldap_configuration:
+  - name: "log"                                                    # [[[
+    config:
+      log:
+        filters: ""
+                                                                   # ]]]
+  - name: "servers"                                                # [[[
+    config:
+      servers:
+        - host: 127.0.0.1
+          port: 389
+          use_ssl: false
+          start_tls: false
+          ssl_skip_verify: false
+          bind_dn: cn=admin,dc=grafana,dc=org
+          bind_password: grafana
+          timeout: 10
+          search_filter: "(cn=%s)"
+          search_base_dns:
+            - dc=grafana,dc=org
+          attributes:
+            name: givenName
+            surname: sn
+            username: cn
+            member_of: memberOf
+            email: email
+          group_mappings:
+            - group_dn: cn=admins,ou=groups,dc=grafana,dc=org
+              org_role: Admin
+            - group_dn: cn=editors,ou=groups,dc=grafana,dc=org
+              org_role: Editor
+            - group_dn: "*"
+              org_role: Viewer
+
+                                                                   # ]]]
+                                                                   # ]]]
+# .. envvar:: grafana__default_ldap_configuration [[[
+
+# List of the default Grafana ldap_configuration options defined by the role.
+grafana__default_ldap_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: grafana__ldap_configuration [[[
+#
+# List of Grafana ldap_configuration options defined on all hosts in the Ansible inventory.
+grafana__ldap_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: grafana__group_ldap_configuration [[[
+#
+# List of Grafana ldap_configuration options defined on hosts in a specific Ansible
+# inventory group.
+grafana__group_ldap_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: grafana__host_ldap_configuration [[[
+#
+# List of Grafana ldap_configuration options defined on specific hosts in the
+# Ansible inventory.
+grafana__host_ldap_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: grafana__combined_ldap_configuration [[[
+#
+# Variable which combines Grafana ldap_configuration lists and is used in role
+# tasks and templates.
+grafana__combined_ldap_configuration: '{{ grafana__original_ldap_configuration
+                                     + grafana__default_ldap_configuration
+                                     + grafana__ldap_configuration
+                                     + grafana__group_ldap_configuration
+                                     + grafana__host_ldap_configuration }}'
+                                                                   # ]]]
