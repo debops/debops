@@ -80,13 +80,35 @@
 
 - name: Install Python packages in virtualenv
   ansible.builtin.pip:
-    name: '{{ item.name | d(item) }}'
-    version: '{{ item.version | d(omit) }}'
+    # Should install all packages in one go as otherwise the current package does not take into account any constraints
+    # of the previous packages
+    name: '{{ docker_server__combined_pip_package_specs }}'
     virtualenv: '{{ docker_server__virtualenv }}'
     state: '{{ item.state | d("present") }}'
-  loop: '{{ q("flattened", docker_server__default_pip_packages
-                           + docker_server__pip_packages) }}'
+  vars:
+    docker_server__combined_pip_packages: >
+      {{ q( "flattened", docker_server__default_pip_packages + docker_server__pip_packages) }}
+    # Create a list like ['foo', 'bar==1', 'baz>2,<3']
+    docker_server__combined_pip_package_specs: |
+      [
+      {% for item in docker_server__combined_pip_packages %}
+      {% if item.state | d("present") == "present" %}
+      '{{ item.name | d(item) }}{% if item.version | d() %}=={{ item.version }}{% endif %}',
+      {% endif %}
+      {% endfor %}
+      ]
   when: docker_server__install_virtualenv
+
+- name: Uninstall Python packages in virtualenv which should be absent
+  ansible.builtin.pip:
+    name: '{{ item.name | d(item) }}'
+    virtualenv: '{{ docker_server__virtualenv }}'
+    state: '{{ item.state }}'
+  loop: '{{ docker_server__combined_pip_packages }}'
+  vars:
+    docker_server__combined_pip_packages: >
+      {{ q( "flattened", docker_server__default_pip_packages + docker_server__pip_packages) }}
+  when: docker_server__install_virtualenv and item.state | d("present") != "present"
 
 - name: Expose Docker virtualenv for Ansible modules
   ansible.builtin.file:
