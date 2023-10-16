@@ -1,7 +1,7 @@
 ---
-# Copyright (C) 2015-2019 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2023 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2019      Imre Jonk <mail@imrejonk.nl>
-# Copyright (C) 2015-2019 DebOps <https://debops.org/>
+# Copyright (C) 2015-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Manage Docker server
@@ -16,17 +16,13 @@
 
   roles:
 
-    - role: resolvconf
-      tags: [ 'role::resolvconf', 'skip::resolvconf' ]
-      resolvconf__enabled: True
-
-    - role: keyring
-      tags: [ 'role::keyring', 'skip::keyring', 'role::docker_server' ]
-      keyring__dependent_apt_keys:
-        - '{{ docker_server__keyring__dependent_apt_keys }}'
+    - role: extrepo
+      tags: [ 'role::extrepo', 'skip::extrepo' ]
+      extrepo__dependent_sources:
+        - '{{ docker_server__extrepo__dependent_sources }}'
 
     - role: etc_services
-      tags: [ 'role::etc_services', 'skip::etc_services' ]
+      tags: [ 'role::etc_services', 'skip::etc_services', 'role::ferm' ]
       etc_services__dependent_list:
         - '{{ docker_server__etc_services__dependent_list }}'
 
@@ -35,12 +31,10 @@
       ferm__dependent_rules:
         - '{{ docker_server__ferm__dependent_rules }}'
 
-    - role: python
-      tags: [ 'role::python', 'skip::python', 'role::docker_server' ]
-      python__dependent_packages3:
-        - '{{ docker_server__python__dependent_packages3 }}'
-      python__dependent_packages2:
-        - '{{ docker_server__python__dependent_packages2 }}'
-
     - role: docker_server
       tags: [ 'role::docker_server', 'skip::docker_server' ]
+
+    - role: systemd
+      tags: [ 'role::systemd', 'skip::systemd' ]
+      systemd__dependent_units:
+        - '{{ docker_server__systemd__dependent_units }}'
