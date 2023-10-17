@@ -14,7 +14,6 @@ debops.docker_server
    man_synopsis
    man_description
    getting-started
-   docker-virtualenv
    defaults-detailed
 
 ..

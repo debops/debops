@@ -364,6 +364,13 @@ General
 
 - The role can now directly handle the daemon ``log-driver`` parameter.
 
+- The role has been redesigned from scratch; Python :command:`virtualenv`
+  support has been removed since the :command:`docker-compose` is included in
+  Debian repositories directly, or is implemented as a Go plugin in upstream
+  repositories. The Docker configuration is now implemented via the
+  :ref:`universal_configuration` system, users will have to modify their
+  Ansible inventories. See the role documentation for details.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
@@ -3294,7 +3301,7 @@ Mail Transport Agents
 ''''''''''''''''''''''''''''''''
 
 - Replace the deprecated `docker_server__graph` variable with the
-  :envvar:`docker_server__data_root` variable.
+  ``docker_server__data_root`` variable.
 
 :ref:`debops.dovecot` role
 ''''''''''''''''''''''''''
@@ -4328,7 +4335,7 @@ User management
   the current configuration on existing installations.
 
   If needed, the storage driver in use can be overridden via the
-  :envvar:`docker_server__storage_driver` variable.
+  ``docker_server__storage_driver`` variable.
 
 :ref:`debops.etckeeper` role
 ''''''''''''''''''''''''''''

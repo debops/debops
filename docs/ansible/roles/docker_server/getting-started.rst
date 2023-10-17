@@ -1,6 +1,6 @@
-.. Copyright (C) 2015-2019 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2015-2023 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2019      Imre Jonk <mail@imrejonk.nl>
-.. Copyright (C) 2015-2019 DebOps <https://debops.org/>
+.. Copyright (C) 2015-2023 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 Getting started
@@ -14,61 +14,65 @@ Getting started
 Initial configuration
 ---------------------
 
-Docker is available in two editions. Community Edition (CE) and Enterprise
-Edition (EE). Docker EE is not supported on Debian distributions. See also:
-`Docker variants`_.
+By default Docker is installed from Debian repositories. Users can enable
+upstream Docker APT repositories using the :envvar:`docker_server__upstream`
+boolean variable. When it's set to ``True``, the :ref:`debops.extrepo` Ansible
+role will be used to configure the repository. Upstream and Debian versions can
+be downgraded and upgraded as needed, but the role doesn't remove packages that
+are no longer needed by either version.
 
-The Docker package from distribution repositories will be installed by default
-(on Jessie it means that the ``jessie-backports`` repository needs to be
-available, which is the default in DebOps). You can install the upstream
-version of Docker by setting the ``docker_server__upstream: True`` variable in
-Ansible’s inventory. Upstream Docker is installed on Debian Stretch by default,
-since this release does not provide included Docker packages.
+The :command:`docker-compose` command doesn't exist when upstream Docker is
+installed. Users can use the :command:`docker compose` subcommand instead,
+since Compose is implemented as a Go plugin.
 
-A Docker server managed by DebOps does not listen on any TCP ports by default.
-You can set :envvar:`docker_server__tcp` to ``True`` if you need remote access
-to the Docker server. You will also need to tweak your firewall in this case,
-which is easily done with :envvar:`docker_server__tcp_allow`. It is recommended
-to use the :ref:`debops.pki` role to secure the connection between the client
-and the Docker server.
+The role can configure :command:`systemd-resolved` service on the host to
+listen for DNS queries on the ``docker0`` interface. This way, Docker
+containers can utilize the host's DNS resolver to resolve hostnames and FQDNs.
+This works with the default network configuration used by Docker.
 
-On hosts with :command:`ferm` firewall support enabled, a special post-hook
-script will be installed that restarts the Docker daemon after :command:`ferm`
-is restarted.
+The role can configure the firewall (via the :ref:`debops.ferm` role) to allow
+connections to ports used in `Docker Swarm`__ mode; this is disabled by
+default. Currently, Swarm setup is not implemented and needs to be performed
+manually.
 
-The :command:`docker-compose` script will be installed on hosts with upstream
-Docker, in a Python virtualenv. It will be automatically available system-wide
-via a symlink in :file:`/usr/local/bin/` directory.
-
-To let the docker daemon trust a private registry with self-signed
-certificates, add the root CA used to sign the registry's certificate through
-the :ref:`debops.pki` role.
-
-This role does not support switching from Docker CE to Docker EE on an already
-installed machine. It does support switching from distribution repository to
-upstream. However, it is recommended to start with a clean machine if possible.
-
-The :ref:`debops.docker_server` role relies on configuration managed by
-:ref:`debops.core`, :ref:`debops.ferm`, and :ref:`debops.pki` Ansible roles.
-
-.. _Docker variants: https://docs.docker.com/install/overview/
+.. __: https://docs.docker.com/engine/swarm/admin_guide/
 
 
-Useful variables
-----------------
+.. _docker_server__ref_systemd:
 
-This is a list of role variables which you most likely want to define in
-Ansible inventory to customize Docker:
+Docker and :command:`systemd` integration
+-----------------------------------------
 
-:envvar:`docker_server__tcp`
-  Enable or disable listening for TLS connections on the Docker TCP port.
+Some of the Docker configuration options need to be configured via
+:command:`systemd` units, to override command line arguments (for example the
+``-H`` or ``--host`` option cannot be modified using the daemon configuration
+file) or define environment variables for the daemon (for example HTTP/HTTPS
+proxy which should be used to access external sites). This can be done using
+the :ref:`debops.systemd` Ansible role, which is included in the
+:file:`service/docker_server.yml` playbook.
 
-:envvar:`docker_server__tcp_allow`
-  List of IP addresses or subnets that can connect to Docker daemon remotely
-  over TLS.
+The :envvar:`docker_server__systemd__dependent_units` variable can be used to
+add :command:`systemd` configuration which will be applied to the host when the
+Docker service is configured. For example, to add HTTP proxy configuration,
+define this in the Ansible inventory:
 
-:envvar:`docker_server__admins`
-  List of UNIX accounts that have access to Docker daemon socket.
+.. code-block:: yaml
+
+   docker_server__systemd__dependent_units:
+
+     - name: 'docker.service.d/proxy.conf'
+       comment: 'Proxy configuration for Docker'
+       raw: |
+         [Service]
+         Environment="http_proxy=http://proxy.example.com:3128"
+         Environment="https_proxy=http://proxy.example.com:3128"
+         Environment="no_proxy=localhost,127.0.0.1,docker-registry.example.com,.corp"
+       state: 'present'
+       restart: 'docker.service'
+
+This will add the :file:`/etc/systemd/system/docker.service.d/proxy.conf` unit
+on the host and restart the :file:`docker.service` unit after the playbook is
+finished.
 
 
 Example inventory
