@@ -30,6 +30,7 @@
       - name: '{{ ("borg_" + client) | replace(".", "_") }}'
         home_mode: '0750'
         shell: '/bin/sh'
+        system: True
         groups: [ '{{ ansible_local.system_groups.local_prefix + "sshusers" }}' ]
   loop: '{{ borgbackup__fact_server_clients }}'
   loop_control:
