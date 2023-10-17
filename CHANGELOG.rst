@@ -50,6 +50,12 @@ General
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.ipxe` role, the Debian Bookworm release has been updated
+  to 12.2.
+
 General
 '''''''
 
