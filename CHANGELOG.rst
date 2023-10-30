@@ -107,6 +107,12 @@ Fixed
 
 - The ``python-apt`` package has been renamed to ``python-apt-common``.
 
+:ref:`debops.secret` role
+'''''''''''''''''''''''''
+
+- Fixed an issue with the :envvar:`secret` variable not being defined in other
+  roles in newer Ansible versions.
+
 :ref:`debops.sysctl` role
 '''''''''''''''''''''''''
 
