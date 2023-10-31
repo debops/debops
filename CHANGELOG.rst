@@ -813,6 +813,12 @@ debops.boxbackup role
 - Locked ``johndoh/contextmenu`` plugin to version 3.2.1 for Roundcube < 1.5
   due to compatibility issues.
 
+:ref:`debops.secret` role
+'''''''''''''''''''''''''
+
+- Fixed an issue with the :envvar:`secret` variable not being defined in other
+  roles in newer Ansible versions.
+
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
 
