@@ -1,6 +1,6 @@
-.. Copyright (C) 2013-2018 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2013-2023 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-.. Copyright (C) 2014-2018 DebOps <https://debops.org/>
+.. Copyright (C) 2014-2023 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 .. _apt__ref_defaults_detailed:
@@ -19,70 +19,77 @@ simple strings or lists, here you can find documentation and examples for them.
       :local:
       :depth: 1
 
-.. _apt__ref_conf:
+.. _apt__ref_configuration:
 
-apt__conf
----------
+apt__configuration
+------------------
 
-This list, along with ``apt__group_conf`` and ``apt__host_conf`` can be used
-to manage APT configuration files through Ansible inventory. Each entry is a
-YAML dictionary with keys and values the same as the ones used by the
-`Ansible ansible.builtin.copy module`_. See its documentation for parameter
-advanced usage and syntax.
-
-Here are some more important parameters:
-
-``item.dest`` or ``item.name`` or ``item.path``
-  Required. Filename on the remote host. The role will automatically prefix it
-  with ``item.priority`` and put it in the right directory.
-
-``item.priority``
-  Optional. Priority that prefix the filename to order the instruction with the
-  different configuration files. If not specified, priority ``60`` is used by
-  default.
-
-``item.src``
-  Path to the source file on the Ansible Controller. Alternatively you can use
-  ``item.content`` to provide the file contents directly in the inventory.
-
-``item.content``
-  String or YAML text block with the file contents to put in the destination
-  file. Alternatively you can use ``item.src`` to provide the path to the
-  source file on Ansible Controller.
-
-``item.state``
-  Optional. If not specified, or if specified and ``present``, the file(s) will
-  be created. If specified and ``absent``, file will be removed.
+The ``apt__*_configuration`` lists defined as the default variables can be used
+to manage APT configuration files located in the :file:`/etc/apt/apt.conf.d/`
+directory through Ansible inventory, using the :ref:`universal_configuration`
+system.
 
 Examples
 ~~~~~~~~
 
-Copy file from the Ansible Controller to all remote hosts:
+Create a configuration file that executes a script before/after the
+:command:`dpkg` command in order to set/unset extras options on some mount
+points:
 
 .. code-block:: yaml
 
-   apt__conf:
-     - name: personal
-       src: 'path/to/apt.conf.d/02personnal.conf'
-       priority: '99'
+   apt__configuration:
 
-
-Create a configuration file that calls script before/after DPKG in order to
-set/unset extras options on some mount points :
-
-.. code-block:: yaml
-
-   apt__host_conf:
-     - name: filesystem
-       priority: '02'
-       content: |
-         # This file is managed remotely, all changes will be lost
-         {% if (ansible_virtualization_type != 'lxc') %}
+     - name: 'filesystem'
+       filename: '02filesystem.conf'
+       comment: 'Remount filesystems for package changes'
+       raw: |
          Dpkg
          {
            Pre-Invoke { "/usr/local/bin/remountrw" };
            Post-Invoke { "/usr/local/bin/remountdefault" };
          };
+       state: '{{ "present"
+                  if (ansible_virtualization_type != "lxc")
+                  else "absent" }}'
+
+You can see other examples in the :envvar:`apt__default_configuration` default
+variable.
+
+Syntax
+~~~~~~
+
+Each configuration entry is a YAML dictionary with specific parameters:
+
+``name``
+  Required. Name of the configuration entry, used as a part of the
+  configuration file name. The role will automatically append the :file:`.conf`
+  suffix if it's not specified (unless the ``filename`` parameter is used).
+
+  Configuration entries with the same ``name`` parameter are merged in order of
+  appearance and can affect each other.
+
+``filename``
+  Optional. Specify the full name of the configuration file which should be
+  managed. This can be useful for diverting existing files which might have
+  unusual names without the :file:`.conf` suffix.
+
+``raw``
+  Optional. String or YAML text block with :man:`apt.conf(5)` configuration
+  options.
+
+``comment``
+  Optional. String or YAML text block with additional comments included with
+  the configuration file.
+
+``state``
+  Optional. If not specified or ``present``, the configuration file will be
+  created in the :file:`/etc/apt/apt.conf.d/` directory. If ``absent``,
+  specified configuration file will be removed from the host. If ``divert``,
+  specified configuration file will be diverted away to not be included in the
+  configuration (this is useful for files included in :file:`.deb` packages).
+  If ``ignore``, a given configuration entry will not be processed at runtime.
+
 
 .. _apt__ref_keys:
 
@@ -90,9 +97,54 @@ apt__keys
 ---------
 
 This list, along with ``apt__group_keys`` and ``apt__host_keys``
-and can be used to manage APT repository keys through Ansible inventory.  Each
-entry is a YAML dictionary with parameters that correspond to the ``apt_key``
-module parameters:
+and can be used to manage APT repository keys through Ansible inventory, using
+the :man:`apt-key(8)` command.
+
+.. warning:: Support for the :command:`apt-key` command is deprecated in Debian
+   and might be removed in future release. Consider using the
+   :ref:`apt__ref_repositories` configuration to set up APT keys with their
+   respective repositories.
+
+Examples
+~~~~~~~~
+
+Add an APT GPG key on all hosts without any conditions:
+
+.. code-block:: yaml
+
+   apt__keys:
+
+     - url: 'http://example.com/apt-key.asc'
+
+Add an APT GPG key only on hosts with Debian OS:
+
+.. code-block:: yaml
+
+   apt__keys:
+
+     - url: 'http://example.com/apt-key.asc'
+       state: '{{ "present"
+                  if (ansible_distribution == "Debian")
+                  else "absent" }}'
+
+Add an APT GPG key only on Ubuntu hosts that have been already configured once
+(delayed key configuration):
+
+.. code-block:: yaml
+
+   apt__keys:
+
+     - url: 'http://example.com/apt-key.asc'
+       state: '{{ "present"
+                  if ((ansible_local.apt.configured | d()) | bool and
+                      ansible_distribution == "Ubuntu")
+                  else "absent" }}'
+
+Syntax
+~~~~~~
+
+Each entry is a YAML dictionary with parameters that correspond to the
+``apt_key`` module parameters:
 
 ``data``
   Optional. GPG key contents provided directly.
@@ -102,6 +154,9 @@ module parameters:
 
 ``id``
   Optional. GPG key identifier.
+
+``url``
+  Optional. The URL of the GPG key to download and install on the host.
 
 ``keyring``
   Optional. Path to the keyring file in :file:`/etc/apt/trusted.gpg.d/` directory.
@@ -113,64 +168,10 @@ module parameters:
   Optional. Either ``present`` for the key to be present (default), or
   ``absent`` for the key to be removed. The ``absent`` state might be ignored
   due to the issues with not enough information provided about the key to
-  remove it. See also ``architecture``, ``distribution`` and
-  ``distribution_release`` parameters.
-
-``url``
-  Optional. The URL of the GPG key to download and install on the host.
-
-If you don't specify the ``state`` parameter directly, you can use additional
-parameters that control how the specified key is managed:
-
-``architecture``
-  Optional. Name of the system architecture, for example ``amd64`` or ``i386``.
-  If the current host has the specified architecture, the key will be
-  installed. Only one architecture can be specified at a time, use the
-  ``state`` parameter for more complex conditions.
-
-``distribution``
-  Optional. Name of the OS distribution. If the current host has the specified
-  distribution, the key will be installed. Only one distribution can be
-  specified at a time, use the ``state`` parameter for more complex conditions.
-
-``distribution_release``
-  Optional. Name of the OS release. If the current host has the specified
-  distribution, the key will be installed. Only one release can be specified at
-  a time, use the ``state`` parameter for more complex conditions.
+  remove it.
 
 You need to specify either an URL, path to the file or key contents for the
 role to install a given GPG key.
-
-Examples
-~~~~~~~~
-
-Add an APT GPG key on all hosts without any conditions:
-
-.. code-block:: yaml
-
-   apt__keys:
-     - url: 'http://example.com/apt-key.asc'
-
-Add an APT GPG key only on hosts with Debian OS:
-
-.. code-block:: yaml
-
-   apt__keys:
-     - url: 'http://example.com/apt-key.asc'
-       distribution: 'Debian'
-
-Add an APT GPG key only on Ubuntu hosts that have been already configured once
-(delayed key configuration):
-
-.. code-block:: yaml
-
-   apt__keys:
-     - url: 'http://example.com/apt-key.asc'
-       state: '{{ "present"
-                  if (ansible_local | d() and ansible_local.apt | d() and
-                      ansible_local.apt.configured | bool and
-                      ansible_distribution == "Ubuntu")
-                  else "absent" }}'
 
 
 .. _apt__ref_repositories:
@@ -178,143 +179,76 @@ Add an APT GPG key only on Ubuntu hosts that have been already configured once
 apt__repositories
 -----------------
 
-This list, along with ``apt__group_repositories`` and
-``apt__host_repositories`` can be used to manage APT repositories through
-Ansible inventory. Each entry is a YAML dictionary with parameters that
-correspond to the ``apt_repository`` module parameters:
-
-``repo``
-  Required. The APT repository to configure, in the :man:`sources.list(5)` format.
-
-``filename``
-  Optional. Name of the source file in :file:`/etc/apt/sources.list.d/` directory.
-  Ansible automatically adds ``.list`` suffix, therefore it's not needed..
-
-``mode``
-  Optional. The file mode in octal. Needs to be quoted to be interpreted
-  correctly by Ansible.
-
-``state``
-  Optional. Either ``present`` for the repository to be present (default), or
-  ``absent`` for the repository to be removed. See also ``architecture``,
-  ``distribution`` and ``distribution_release`` parameters.
-
-If you don't specify the ``state`` parameter directly, you can use additional
-parameters that control how the specified repository is managed:
-
-``architecture``
-  Optional. Name of the system architecture, for example ``amd64`` or ``i386``.
-  If the current host has the specified architecture, the repository will be
-  configured. Only one architecture can be specified at a time, use the
-  ``state`` parameter for more complex conditions.
-
-``distribution``
-  Optional. Name of the OS distribution. If the current host has the specified
-  distribution, the repository will be configured. Only one distribution can be
-  specified at a time, use the ``state`` parameter for more complex conditions.
-
-``distribution_release``
-  Optional. Name of the OS release. If the current host has the specified
-  distribution, the repository will be configured. Only one release can be
-  specified at a time, use the ``state`` parameter for more complex conditions.
+The ``apt__*_repositories`` variables can be used to manage APT sources in the
+:file:`/etc/apt/sources.list.d/` directory. The role supports both one-line
+:file:`*.list` configuration files, as well as Deb822-format :file:`*.sources`
+configuration files (with support for GPG key management), depending on the
+used parameters. Configuration is defined using the
+:ref:`universal_configuration` principles.
 
 Examples
 ~~~~~~~~
 
-Add an APT repository on all hosts without any conditions:
+Add an APT repository on all hosts without any conditions, using the one-line
+style syntax:
 
 .. code-block:: yaml
 
    apt__repositories:
-     - repo: 'deb http://example.com/debian jessie main'
 
-Add an APT repository only on hosts with Debian OS:
+     - name: 'example-repo'
+       filename: 'example-repo.list'
+       repo: 'deb http://example.com/debian jessie main'
+
+Add an APT repository only on hosts with Debian OS, using the one-line syntax:
 
 .. code-block:: yaml
 
    apt__repositories:
-     - repo: 'deb http://example.com/debian jessie main'
-       distribution: 'Debian'
+
+     - name: 'example-repo'
+       filename: 'example-repo.list'
+       repo: 'deb http://example.com/debian jessie main'
+       state: '{{ "present"
+                  if (ansible_distribution == "Debian")
+                  else "ignore" }}'
 
 Add an APT repository only on Ubuntu hosts that have been already configured
-once (delayed repository configuration):
+once, using the one-line syntax (delayed repository configuration):
 
 .. code-block:: yaml
 
    apt__repositories:
-     - repo: 'deb http://example.com/ubuntu xenial main'
+     - name: 'example-repo'
+       filename: 'example-repo.list'
+       repo: 'deb http://example.com/ubuntu xenial main'
        state: '{{ "present"
-                  if (ansible_local | d() and ansible_local.apt | d() and
-                      ansible_local.apt.configured | bool and
+                  if ((ansible_local.apt.configured | d()) | bool and
                       ansible_distribution == "Ubuntu")
-                  else "absent" }}'
+                  else "ignore" }}'
 
 Configure an Ubuntu PPA on Ubuntu hosts:
 
 .. code-block:: yaml
 
    apt__repositories:
-     - repo: 'ppa:nginx/stable'
-       distribution: 'Ubuntu'
 
-
-.. _apt__ref_deb822_repositories:
-
-apt__deb822_repositories
-------------------------
-
-This list, along with ``apt__deb822_group_repositories`` and
-``apt__deb822_host_repositories`` can be used to manage APT repositories through
-Ansible inventory. Each entry is a YAML dictionary with parameters that
-correspond to the `Ansible ansible.builtin.deb822_repository module`_. See its
-documentation for parameter advanced usage and syntax.
-
-``name``
-  Required. Name of the repo. Specifically used for ``X-Repolib-Name`` and in
-  naming the repository and signing key files.
-
-``uris``
-  Required. Must specify the base of the Debian distribution archive, from which
-  APT finds the information it needs. Multiple URIs can be specified in a list.
-
-``state``
-  Optional. Either ``present`` for the repository to be present (default), or
-  ``absent`` for the repository to be removed.
-
-``architectures``
-  Optional. Architectures to search within repository, for example ``amd64``
-  (default) or ``i386``.
-
-``components``
-  Optional. Specify different sections of one distribution version present in
-  Suite, such as ``main`` (default), ``contrib``, ``non-free-firmware``…
-
-``mode``
-  Optional. The octal mode for newly created files in
-  :file:`/etc/apt/sources.list.d/` directory.
-
-``suites``
-  Optional. Can take the form of a distribution release name (default).
-
-``signed_by``
-  Optional. Either a URL to a GPG key, absolute path to a keyring file, one or
-  more fingerprints of keys. Keys will be store in :file:`/etc/apt/keyrings/`
-  directory (automatically created if absent).
-
-``types``
-  Optional. Which types of packages to look for from a given source; either
-  binary ``deb`` (default) or source code ``deb-src``.
-
-Examples
-~~~~~~~~
+     - name: 'nginx-ppa'
+       filename: 'nginx-ppa.list'
+       repo: 'ppa:nginx/stable'
+       state: '{{ "present"
+                  if (ansible_distribution == "Ubuntu")
+                  else "ignore" }}'
 
 Add an APT repository with several components on all hosts without any
-conditions:
+conditions, using Deb822 format:
 
 .. code-block:: yaml
 
-   apt__deb822_repositories:
+   apt__repositories:
+
      - name: 'debian'
+       filename: 'debian.sources'
        types: 'deb'
        uris: 'http://deb.debian.org/debian'
        suites: 'bookworm'
@@ -324,14 +258,123 @@ conditions:
          - 'contrib'
          - 'non-free'
 
-Add third-party APT repository with GPG key URL:
+Add third-party APT repository with GPG key URL, using Deb822 format:
 
 .. code-block:: yaml
 
-   apt__deb822_repositories:
+   apt__repositories:
+
      - name: 'my-repo'
+       filename: 'my-repo.sources'
        uris: 'http://example.com/debian'
        signed_by: 'http://example.com/debian/example.com.asc'
+
+Switch `Proxmox VE`__ APT repositories from the default ones which require
+subscription to community versions (this example is included in documentation
+as a separate file for convenience):
+
+.. __: https://pve.proxmox.com/wiki/Package_Repositories
+
+.. literalinclude:: examples/proxmox-ve.yml
+   :language: yaml
+   :lines: 1,8-
+
+Syntax
+~~~~~~
+
+The configuration entries are defined as YAML dictionaries with specific
+parameters. You can check the documentation of the `apt_repository`__ and
+`deb822_repository`__ Ansible modules for available options.
+
+.. __: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_repository_module.html
+.. __: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/deb822_repository_module.html
+
+The parameters below are used for both one-line and Deb822 formats:
+
+``name``
+  Required. An identifier for a specific APT source configuration, not used
+  otherwise. Entries with the same ``name`` parameter are merged together in
+  order of appearance and can affect each other.
+
+``filename``
+  Required. Name of the configuration file stored in the
+  :file:`/etc/apt/sources.list.d/` directory. The :file:`.list` and
+  :file:`.sources` suffixes are automatically stripped from the specified
+  filename and added as necessary.
+
+  When the Deb822 format is used, this parameter is used in the
+  ``X-Repolib-Name`` field, as well as the name of the keyring with the signing
+  GPG key.
+
+``mode``
+  Optional. The file mode in octal. Needs to be quoted to be interpreted
+  correctly by Ansible.
+
+``state``
+  Optional. If not specified or ``present``, a given APT source will be
+  configured on the host. If ``ignore``, a given configuration entry will not
+  be processed during role execution.
+
+  If ``divert``, an existing configuration file with the specified ``filename``
+  will be diverted to disable it without removing it (this is useful for APT
+  sources included in packages). This only works if the ``repo`` and ``uris``
+  parameters are not specified to avoid conflicts with Ansible modules that
+  manage the APT repositories.
+
+  If ``absent``, the specified APT source will be removed from the host. If the
+  ``repo`` and ``uris`` are not specified, the role assumes that a diverted
+  configuration is present and the diversion will be removed in this case.
+
+The parameters below are used for one-line format APT sources (the
+:file:`*.list` configuration files):
+
+``repo``
+  Required. The APT repository to configure, in the one-line format described
+  in the :man:`sources.list(5)` manual page.
+
+``codename``
+  Optional. Override the distribution codename to use for PPA repositories.
+
+The parameters below are used for Deb822 format APT sources (the
+:file:`*.sources` configuration files):
+
+``uris``
+  Required. Must specify the base of the Debian distribution archive, from which
+  APT finds the information it needs. Multiple URIs can be specified in a list.
+
+``architectures``
+  Optional. Architectures to search within repository, for example ``amd64``
+  (default) or ``i386``.
+
+``components``
+  Optional. Specify different sections of one distribution version present in
+  Suite, such as ``main`` (default), ``non-free-firmware``, ``contrib``,
+  ``non-free``
+
+``suites``
+  Optional. Can take the form of a distribution release name (default).
+
+``signed_by``
+  Optional. Either:
+
+  - a URL to a GPG key
+
+  - absolute path to a keyring file stored in the filesystem
+
+  - one or more fingerprints of keys stored in the :file:`/etc/apt/trusted.gpg`
+    kerying or in one of the keyrings in the :file:`/etc/apt/trusted.gpg.d/`
+    directory
+
+  Keys downloaded via the URL will be stored in :file:`/etc/apt/keyrings/`
+  directory (automatically created if absent), with filenames based on the
+  ``filename`` parameter.
+
+``types``
+  Optional. Which types of packages to look for from a given source; either
+  binary ``deb`` (default) or source code ``deb-src``.
+
+The role supports most of the ``deb822_repository`` options, check its
+documentation for in-depth explanation.
 
 
 .. _apt__ref_auth_files:
@@ -423,127 +466,17 @@ The state and contents of the file are specified using specific parameters:
 apt__sources
 ------------
 
-This list as well as other ``apt__*_sources`` lists are used to configure what
-APT package sources are configure in the :file:`/etc/apt/sources.list` file.
-This file defines the primary OS package sources and indirectly defines the OS
-release that's present on the host. The configuration template will track what
-sources are present and will comment out the duplicates if they show up in more
-than one list.
+The ``apt__*_sources`` lists define the contents of the
+:file:`/etc/apt/sources.list` configuration file. The default configuration is
+composed from multiple entries at runtime; each entry conditionally updates the
+configuration based on the host facts. For convenience, role defaults are split
+into :ref:`multiple variables <apt__ref_sources_defaults>` based on the OS
+distribution.
 
-Apart from the usual inventory lists for all hosts, group of hosts and specific
-hosts, there are additional lists that are included in the finished config
-file:
-
-``apt__original_sources``
-  This list defines the APT sources that are present in the original, diverted
-  :file:`/etc/apt/sources.list` file. The security sources are automatically
-  filtered out based on the contents of the ``apt__security_sources`` list.
-
-``apt__default_sources``
-  The role provides a set of default package sources for each known OS
-  distribution. These sources are usually URLs to mirror redirectors, which
-  will try to point to the closest available mirror. They are provided as
-  a backup in case the host does not have any recognized package sources
-  available.
-
-``apt__security_sources``
-  This is a list of APT sources that provide security updates. This list has
-  a more specific entries than the normal lists since security repositories
-  tend to have different naming scheme than the regular mirrored repositories.
-
-``apt__combined_sources``
-  This list combines all of the above list and is used in the configuration
-  template. It defines the order in which the APT sources are specified in the
-  configuration file.
-
-Each list entry that defines an APT source can have different forms.
-
-The simplest entry is a string. It does not have any conditions and it will be
-added to the :file:`/etc/apt/sources.list` file unless it is a duplicate. The
-string should only contain the URL of the APT mirror, the rest will be added
-automatically according to detected OS distribution and release. Example:
-
-.. code-block:: yaml
-
-   apt__sources:
-     - 'http://ftp.debian.org/debian'
-
-A more advanced alternative is a YAML dictionary, which uses OS distribution
-names as keys and mirror URLs as values. You can specify multiple distributions
-in one entry, they will be filtered according to the current OS. Example:
-
-.. code-block:: yaml
-
-   apt__sources:
-     - Debian: 'http://ftp.debian.org/debian'
-
-The third version of an APT sources entry is similar to the `Ansible
-ansible.builtin.apt_repository module`_, and should be defined as a YAML
-dictionary with ``repo`` as the key and complete APT source specification as the
-value. These entries are not filtered by the role, and they are not checked for
-duplicates. Example:
-
-.. code-block:: yaml
-
-   apt__sources:
-     - repo: 'deb http://ftp.debian.org/debian jessie main contrib non-free'
-
-The last version is a YAML dictionary with multiple keys as parameters. These
-parameters allow for fine control over when a particular APT source is present,
-what source types are used, which components are enabled, etc. Known
-parameters:
-
-``uri`` or ``uris``
-  Required. The URI or other method known by APT (see :man:`sources.list(5)`)
-  for a given APT source. It is possible to specify multiple entries as a list,
-  they will be treated as one.
-
-``type`` or ``types``
-  Optional. What type of the packages are used for this source. It can be
-  either a string of 1 type, or a list of types. Known source types: ``deb``,
-  ``deb-src``. If not set, role will use the ``apt__source_types`` value.
-
-``option`` or ``options``
-  Optional. String or list of strings of APT options. Settings are expected in
-  the form ``setting=value``.  See :man:`sources.list(5)` for details.
-
-``suite`` or ``suites``
-  Optional. Name of the "suite" to use for this source. The suite is usually
-  a release name like ``jessie``, ``xenal``, or a "release class" like
-  ``stable``, ``oldstable``, ``testing``, or a directory path in case of simple
-  repositories (which needs to end with a slash). It can also be a list of
-  releases. If not specified, role will use the ``apt__distribution_suffixes``
-  value to generate a list of default suites for a given OS release.
-
-``component`` or ``components``
-  Optional. Name of a repository component or section to enable, for example
-  ``main``, ``contrib``, ``non-free``, ``universe``, ``restricted``,
-  ``multiverse``. It can also be a list of components. If not specified, role
-  will use the ``apt__distribution_components`` value.
-
-``comment`` or ``comments``
-  Optional. A string or a YAML text block with comments about the given APT
-  source.
-
-``state``
-  Optional. Either ``present`` if a given APT source should be present in the
-  generated config file, or ``absent`` if not.
-
-``architecture``
-  Optional. If ``state`` is not specified, you can specify a system
-  architecture name on which a given APT source is active. Only one
-  architecture can be specified, use the ``state`` parameter for more complex
-  conditions.
-
-``distribution``
-  Optional. If ``state`` is not specified, you can specify an OS distribution
-  name on which a given APT source is active. Only one distribution can be
-  specified, use the ``state`` parameter for more complex conditions.
-
-``distribution_release``
-  Optional. If ``state`` is not specified, you can specify an OS release on
-  which a given APT source is active. Only one release can be specified, use
-  the ``state`` parameter for more complex conditions.
+.. note:: The :file:`/etc/apt/sources.list` should be focused only on the
+   official OS repositories. If you want to add third-party or external APT
+   repositories to your hosts, consider using the :ref:`apt__ref_repositories`
+   variables to put them in the :file:`/etc/apt/sources.list.d/` directory.
 
 Examples
 ~~~~~~~~
@@ -553,23 +486,98 @@ Add an archive repository in :file:`/etc/apt/sources.list` configuration file:
 .. code-block:: yaml
 
    apt__sources:
-     - uri: 'http://archive.debian.org/debian'
+
+     - name: 'debian-archive'
+       uri: 'http://archive.debian.org/debian'
        suite: 'sarge'
-       components: [ 'main', 'contrib' ]
+       components: [ 'main' ]
 
-Enable repository with source packages:
-
-.. code-block:: yaml
-
-   apt__sources:
-     - uri: 'http://ftp.debian.org/debian'
-       types: [ 'deb', 'deb-src' ]
-
-Enable Canonical Partner repositories, only on Ubuntu hosts:
+Add custom options to existing ``debian-release`` APT source configuration (see
+:man:`sources.list(5)` manual page for details):
 
 .. code-block:: yaml
 
    apt__sources:
-     - uri: 'http://archive.canonical.com/ubuntu'
-       component: 'partner'
-       distribution: 'Ubuntu'
+
+     - name: 'debian-release'
+       options:
+         - arch: [ 'amd64', 'i386' ]
+         - signed-by: '{{ "/usr/share/keyrings/debian-archive-"
+                          + ansible_distribution_release
+                          + "-stable.gpg" }}'
+
+To see more examples, you can check the :envvar:`apt__debian_sources`,
+:envvar:`apt__devuan_sources` and :envvar:`apt__ubuntu_sources` default
+variables.
+
+Syntax
+~~~~~~
+
+Configuration is defined using :ref:`universal_configuration` syntax. Each
+entry is a YAML dictionary with specific parameters (singular spelling is for
+strings, plural spelling is for YAML lists):
+
+``name``
+  Required. Repository identifier, not used otherwise. Entries with the same
+  ``name`` parameter are merged together in order of appearance and can affect
+  each other. This is used extensively in the default configuration of the
+  role.
+
+``raw``
+  Optional. String or YAML text block with :man:`sources.list(5)` one-line
+  repository format entries included in the configuration file as-is. If this
+  parameter is specified, it takes precedence over other parameters.
+
+``uri`` or ``uris``
+  Optional. The URI or other method known by APT (see :man:`sources.list(5)`)
+  for a given APT source. It is possible to specify multiple entries as a list,
+  they will be treated as one. The ``uris`` lists from multiple entries with
+  the same ``name`` parameter are combined together.
+
+``type`` or ``types``
+  Optional. What type of the packages are used for this source. It can be
+  either a string of 1 type, or a list of types. Known source types: ``deb``,
+  ``deb-src``. If not set, role will use the ``apt__source_types`` value. The
+  ``types`` lists from multiple entries with the same ``name`` parameter are
+  combined together.
+
+``suite`` or ``suites``
+  Optional. Name of the "suite" to use for this source. The suite is usually
+  a release name like ``jessie``, ``xenal``, or a "release class" like
+  ``stable``, ``oldstable``, ``testing``, or a directory path in case of simple
+  repositories (which needs to end with a slash). It can also be a list of
+  releases. The ``suites`` lists from multiple entries with the same ``name``
+  parameter are combined together.
+
+``component`` or ``components``
+  Optional. Name of a repository component or section to enable, for example
+  ``main``, ``contrib``, ``non-free``, ``universe``, ``restricted``,
+  ``multiverse``. It can also be a list of components. The ``components`` lists
+  from multiple entries with the same ``name`` parameter are combined together.
+
+``options``
+  Optional. List of YAML dictionaries which describe options for a given APT
+  repository. Each dictionary key is an option name, and dictionary value is an
+  option value. Values can be strings or YAML lists. The ``options`` lists in
+  configuration entries with the same ``name`` parameter are combined together.
+
+  Option names will be written in the configuration file as-is. You should use
+  the short option names specified in brackets in the :man:`sources.list(5)`
+  manual page to conform to the one-line format.
+
+``state``
+  Optional. If not specified or ``present``, a given APT source will be
+  included in the generated :file:`/etc/apt/sources.list` configuration file.
+  If ``absent``, a given APT source will not be included in the generated file.
+  If ``comment``, the APT source will be included, but it will be commented
+  out. If ``ignore``, a given entry will not be processed during role
+  execution.
+
+``comment``
+  Optional. A string or a YAML text block with comments about the given APT
+  source.
+
+``separate``
+  Optional, boolean. If ``True`` (default), a given APT source will be visually
+  separated from the next one in the generated configuration file; if
+  ``False``, no separation will be added.

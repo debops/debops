@@ -7,7 +7,7 @@
 Getting started
 ===============
 
-.. include:: includes/all.rst
+.. include:: includes/role.rst
 
 .. contents::
    :local:
@@ -31,9 +31,10 @@ server host as :envvar:`foodsoft__database_server`.
 Webserver support
 -----------------
 
-Currently, only Nginx_ is supported using debops.nginx_.
+Currently, only :command:`nginx` is supported using the :ref:`debops.nginx`
+role.
 
-You will need to install Nginx_ with Passenger support by setting:
+You will need to install :command:`Nginx` with Passenger support by setting:
 
 .. code-block:: yaml
 
@@ -60,7 +61,7 @@ Example playbook
 ----------------
 
 Ansible playbook that uses the ``debops-contrib.foodsoft`` role together
-with debops.nginx_:
+with :ref:`debops.nginx`:
 
 .. literalinclude:: playbooks/foodsoft-nginx.yml
    :language: yaml
@@ -69,8 +70,6 @@ with debops.nginx_:
 The playbook is shipped with this role under
 :file:`./docs/playbooks/` from which you can symlink it to your
 playbook directory.
-In case you use multiple `DebOps Contrib`_ roles, consider using the
-`DebOps Contrib playbooks`_.
 
 Ansible tags
 ------------

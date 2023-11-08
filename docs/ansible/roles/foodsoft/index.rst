@@ -12,9 +12,8 @@ Ansible role: debops-contrib.foodsoft
 
    introduction
    getting-started
-   defaults
+   defaults/main
    copyright
-   changelog
 
 ..
  Local Variables:

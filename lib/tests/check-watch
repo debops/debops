@@ -54,7 +54,7 @@ for watch_file in "${file_list[@]}" ; do
                               --upstream-version "${watch_version}" \
                               --safe --no-download --no-verbose \
                         | grep 'Newest version of' \
-                        | awk '{print $10}' \
+                        | awk '{print $9}' \
                         | sed -e 's/,//' || true)"
     if [ -n "${upstream_version}" ] ; then
         printf "%-20s %-20s %-20s %-10s\\n" "${watch_role}" "${watch_package}" "${role_version}" "${upstream_version}"

@@ -1,22 +1,124 @@
 ---
 # .. vim: foldmarker=[[[,]]]:foldmethod=marker
 
-# Copyright (C) 2013-2018 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2013-2023 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2015-2017 Robin Schneider <ypid@riseup.net>
-# Copyright (C) 2014-2018 DebOps <https://debops.org/>
+# Copyright (C) 2014-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
-
-- name: Import custom Ansible plugins
-  ansible.builtin.import_role:
-    name: 'ansible_plugins'
 
 - name: Import DebOps global handlers
   ansible.builtin.import_role:
-    name: 'global_handlers'
+    name: 'debops.debops.global_handlers'
 
 - name: Import DebOps secret role
   ansible.builtin.import_role:
-    name: 'secret'
+    name: 'debops.debops.secret'
+
+- name: Validate configuration of APT repositories
+  ansible.builtin.assert:
+    that:
+      - 'item.filename is defined'
+      - 'item.repo is defined or item.uris is defined or item.state in ["divert", "absent"]'
+    fail_msg: 'You need to specify "filename" and either "repo" or "uris" as parameters'
+    quiet: True
+  loop: '{{ apt__combined_repositories | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ item.name }}'
+
+- name: Configure custom APT keys
+  ansible.builtin.apt_key:
+    data:      '{{ item.data | d(omit) }}'
+    file:      '{{ item.file | d(omit) }}'
+    id:        '{{ item.id | d(omit) }}'
+    keyring:   '{{ item.keyring | d(omit) }}'
+    keyserver: '{{ item.keyserver | d(omit) }}'
+    url:       '{{ item.url | d(omit) }}'
+    state:     '{{ item.state | d("present") }}'
+  loop: '{{ q("flattened", apt__keys
+                           + apt__group_keys
+                           + apt__host_keys) }}'
+  register: apt__register_apt_key
+  until: apt__register_apt_key is succeeded
+  when: apt__enabled | bool and (item.url | d() or item.data | d() or item.id | d() or item.file | d())
+  tags: [ 'role::apt:keys' ]
+
+- name: Add/remove diversion of repository sources
+  debops.debops.dpkg_divert:
+    path: '/etc/apt/sources.list.d/{{ item.filename }}'
+    state: '{{ "present"
+               if (item.state | d("present") == "divert")
+               else "absent" }}'
+    delete: True
+  loop: '{{ apt__combined_repositories | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  register: apt__register_divert_repositories
+  when: (apt__enabled | bool and item.filename and item.repo is undefined and item.uris is undefined and
+         (item.state | d("present")) in [ "divert", "absent" ])
+
+- name: Configure custom APT repositories
+  ansible.builtin.apt_repository:
+    update_cache: False
+    repo:     '{{ item.repo }}'
+    codename: '{{ item.codename | d(omit) }}'
+    filename: '{{ item.filename | regex_replace(".list$", "") | regex_replace(".sources$", "") }}'
+    mode:     '{{ item.mode | d(omit) }}'
+    state:    '{{ item.state | d("present") }}'
+  loop: '{{ apt__combined_repositories | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  register: apt__register_apt_repositories
+  when: (apt__enabled | bool and item.repo | d() and item.uris is undefined and
+         (item.state | d("present")) not in [ "divert", "ignore", "init" ])
+
+- name: Configure custom APT Deb822 repositories
+  ansible.builtin.deb822_repository:
+    uris:              '{{ item.uris }}'
+    name:              '{{ item.filename | regex_replace(".sources$", "") | regex_replace(".list$", "") }}'
+    allow_downgrade_to_insecure: '{{ item.allow_downgrade_to_insecure | d(omit) }}'
+    allow_insecure:    '{{ item.allow_insecure | d(omit) }}'
+    allow_weak:        '{{ item.allow_weak | d(omit) }}'
+    architectures:     '{{ item.architectures | d(omit) }}'
+    by_hash:           '{{ item.by_hash | d(omit) }}'
+    check_date:        '{{ item.check_date | d(omit) }}'
+    check_valid_until: '{{ item.check_valid_until | d(omit) }}'
+    components:        '{{ item.components | d(omit) }}'
+    data_max_future:   '{{ item.date_max_future | d(omit) }}'
+    enabled:           '{{ item.enabled | d(omit) }}'
+    inrelease_path:    '{{ item.inrelease_path | d(omit) }}'
+    languages:         '{{ item.languages | d(omit) }}'
+    mode:              '{{ item.mode | d(omit) }}'
+    pdiffs:            '{{ item.pdiffs | d(omit) }}'
+    signed_by:         '{{ item.signed_by | d(omit) }}'
+    state:             '{{ item.state | d("present") }}'
+    suites:            '{{ item.suites | d(omit) }}'
+    targets:           '{{ item.targets | d(omit) }}'
+    trusted:           '{{ item.trusted | d(omit) }}'
+    types:             '{{ item.types | d("deb") }}'
+  loop: '{{ apt__combined_repositories | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  register: apt__register_deb822_repositories
+  when: (apt__enabled|bool and item.uris | d() and item.repo is undefined and
+         (item.state | d("present")) not in [ "divert", "ignore", "init" ])
+
+- name: Remove APT auth configuration if requested
+  ansible.builtin.file:
+    path: '{{ "/etc/apt/auth.conf.d/" + (item.filename | d(item.name | regex_replace(".conf$", "") + ".conf")) }}'
+    state: 'absent'
+  loop: '{{ q("flattened", (apt__auth_files + apt__group_auth_files + apt__host_auth_files)) }}'
+  when: apt__enabled | bool and item.state | d('present') == 'absent'
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Generate APT auth configuration
+  ansible.builtin.template:
+    src: 'etc/apt/auth.conf.d/template.conf.j2'
+    dest: '{{ "/etc/apt/auth.conf.d/" + (item.filename | d(item.name | regex_replace(".conf$", "") + ".conf")) }}'
+    mode: '0640'
+  loop: '{{ q("flattened", (apt__auth_files + apt__group_auth_files + apt__host_auth_files)) }}'
+  when: apt__enabled | bool and item.machine | d() and item.login | d() and item.password | d() and
+        item.state | d('present') not in ['absent', 'ignore']
+  no_log: '{{ debops__no_log | d(True) }}'
 
 - name: Update APT cache on first run
   ansible.builtin.apt:
@@ -36,45 +138,6 @@
   until: apt__register_packages is succeeded
   when: apt__enabled | bool
 
-- name: Make sure that Ansible local facts directory exists
-  ansible.builtin.file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  tags: [ 'meta::facts' ]
-
-- name: Save APT local facts
-  ansible.builtin.template:
-    src: 'etc/ansible/facts.d/apt.fact.j2'
-    dest: '/etc/ansible/facts.d/apt.fact'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  notify: [ 'Refresh host facts' ]
-  tags: [ 'meta::facts' ]
-
-- name: Update Ansible facts if they were modified
-  ansible.builtin.meta: 'flush_handlers'
-
-- name: Ensure that APT default configuration is absent
-  ansible.builtin.file:
-    path: '/etc/apt/apt.conf'
-    state: 'absent'
-  when: (apt__enabled | bool and apt__remove_default_configuration | bool)
-
-- name: Generate APT configuration files
-  ansible.builtin.template:
-    src: '{{ item }}.j2'
-    dest: '/{{ item }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  with_items:
-    - 'etc/apt/apt.conf.d/25no-recommends.conf'
-  when: apt__enabled | bool
-
 - name: Enable extra architectures
   ansible.builtin.command: dpkg --add-architecture {{ item }}
   loop: '{{ q("flattened", apt__extra_architectures
@@ -82,136 +145,74 @@
                            + apt__host_extra_architectures) }}'
   register: apt__register_add_architecture
   changed_when: apt__register_add_architecture.changed | bool
-  when: item not in ansible_facts.ansible_local.apt.foreign_architectures | d()
+  when: apt__enabled | bool and item not in ansible_facts.ansible_local.apt.foreign_architectures | d()
   notify: [ 'Refresh host facts' ]
+
+- name: Add/remove diversion of APT configuration files
+  debops.debops.dpkg_divert:
+    path:  '{{ "/etc/apt/apt.conf.d/" + (item.filename | d(item.name | regex_replace(".conf$", "") + ".conf")) }}'
+    state: '{{ "present"
+               if (item.state | d("present") == "divert")
+               else "absent" }}'
+    delete: True
+  loop: '{{ apt__combined_configuration | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  when: apt__enabled | bool and item.state | d("present") in [ "divert", "absent" ]
+
+- name: Delete APT configuration files on remote hosts
+  ansible.builtin.file:
+    path:  '{{ "/etc/apt/apt.conf.d/" + (item.filename | d(item.name | regex_replace(".conf$", "") + ".conf")) }}'
+    state: 'absent'
+  loop: '{{ apt__combined_configuration | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  when: apt__enabled | bool and item.raw | d() and item.state | d('present') == 'absent'
+
+- name: Generate APT configuration files
+  ansible.builtin.template:
+    src: 'etc/apt/apt.conf.d/template.conf.j2'
+    dest: '{{ "/etc/apt/apt.conf.d/" + (item.filename | d(item.name | regex_replace(".conf$", "") + ".conf")) }}'
+    mode: '0644'
+  loop: '{{ apt__combined_configuration | debops.debops.parse_kv_items }}'
+  loop_control:
+    label: '{{ {"name": item.name, "state": item.state | d("present")} }}'
+  when: apt__enabled | bool and item.raw | d() and
+        item.state | d('present') not in [ 'divert', 'absent', 'ignore', 'init' ]
+
+- name: Make sure that Ansible local facts directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+  tags: [ 'meta::facts' ]
+
+- name: Save APT local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/apt.fact.j2'
+    dest: '/etc/ansible/facts.d/apt.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: Update Ansible facts if they were modified
+  ansible.builtin.meta: 'flush_handlers'
 
 - name: Add/remove diversion of /etc/apt/sources.list
   debops.debops.dpkg_divert:
     path: '/etc/apt/sources.list'
-    state: '{{ apt__sources_deploy_state }}'
+    state: '{{ apt__deploy_state }}'
     delete: True
   register: apt__register_sources_diversion
-  when: (apt__enabled | bool and apt__sources_deploy_state in ['absent', 'present'])
+  when: (apt__enabled | bool and apt__deploy_state in ['absent', 'present'])
 
-- name: Configure APT distribution sources
+- name: Configure operating system sources.list
   ansible.builtin.template:
     src: 'etc/apt/sources.list.j2'
     dest: '/etc/apt/sources.list'
-    owner: 'root'
-    group: 'root'
     mode: '0644'
   register: apt__register_sources_template
-  when: (apt__enabled | bool and apt__sources_deploy_state == 'present')
-
-- name: Configure custom APT keys
-  ansible.builtin.apt_key:  # noqa args[module]
-    data:      '{{ item.data | d(omit) }}'
-    file:      '{{ item.file | d(omit) }}'
-    id:        '{{ item.id | d(omit) }}'
-    keyring:   '{{ item.keyring | d(omit) }}'
-    keyserver: '{{ item.keyserver | d(omit) }}'
-    url:       '{{ item.url | d(omit) }}'
-    state:     '{{ item.state | d("present"
-                                  if (item.architecture | d(apt__architecture) == apt__architecture and
-                                      item.distribution | d(apt__distribution) == apt__distribution and
-                                      item.distribution_release | d(apt__distribution_release)
-                                      == apt__distribution_release)
-                                  else omit) }}'
-  loop: '{{ q("flattened", apt__keys
-                           + apt__group_keys
-                           + apt__host_keys) }}'
-  register: apt__register_apt_key
-  until: apt__register_apt_key is succeeded
-  # `item.state`, `item.architecture`, `item.distribution` and `item.distribution_release` need to be checked here.
-  # Ref: https://github.com/debops/ansible-apt/pull/76#pullrequestreview-2529842
-  when: (apt__enabled | bool and (item.url | d() or item.data | d() or item.id | d() or item.file | d()) and
-         (item.state | d("present") == 'present' and
-          (item.architecture | d(apt__architecture) == apt__architecture and
-           item.distribution | d(apt__distribution) == apt__distribution and
-           item.distribution_release | d(apt__distribution_release) == apt__distribution_release)))
-  tags: [ 'role::apt:keys' ]
-
-- name: Configure custom APT repositories
-  ansible.builtin.apt_repository:
-    update_cache: False
-    repo:     '{{ item.repo }}'
-    mode:     '{{ item.mode | d(omit) }}'
-    filename: '{{ item.filename | d(omit) }}'
-    state:    '{{ item.state | d("present"
-                                 if (item.architecture | d(apt__architecture) == apt__architecture and
-                                     item.distribution | d(apt__distribution) == apt__distribution and
-                                     item.distribution_release | d(apt__distribution_release)
-                                     == apt__distribution_release)
-                                 else "absent") }}'
-  loop: '{{ q("flattened", apt__repositories
-                           + apt__group_repositories
-                           + apt__host_repositories) }}'
-  register: apt__register_repositories
-  when: (apt__enabled | bool and item.repo | d())
-
-- name: Configure custom APT deb822 repositories
-  ansible.builtin.deb822_repository:
-    name:          '{{ item.name }}'
-    uris:          '{{ item.uris }}'
-    components:    '{{ item.components | d("main") }} '
-    suites:        '{{ item.suites | d(ansible_distribution_release) }}'
-    architectures: '{{ item.architectures | d(omit) }}'
-    mode:          '{{ item.mode | d(omit) }}'
-    signed_by:     '{{ item.signed_by | d(omit) }}'
-    state:         '{{ item.state | d("present") }}'
-    types:         '{{ item.types | d("deb") }}'         # noqa args
-  loop: '{{ q("flattened", apt__deb822_repositories
-                           + apt__deb822_group_repositories
-                           + apt__deb822_host_repositories) }}'
-  register: apt__register_deb822_repositories
-  when: (apt__enabled|bool and item.name|d())
-
-- name: Remove APT auth configuration if requested
-  ansible.builtin.file:
-    path: '{{ "/etc/apt/auth.conf.d/" + (item.name | regex_replace(".conf$", "")) + ".conf" }}'
-    state: 'absent'
-  loop: '{{ q("flattened", (apt__auth_files + apt__group_auth_files + apt__host_auth_files)) }}'
-  when: apt__enabled | bool and item.state | d('present') == 'absent'
-  no_log: '{{ debops__no_log | d(True) }}'
-
-- name: Generate APT auth configuration
-  ansible.builtin.template:
-    src: 'etc/apt/auth.conf.d/template.conf.j2'
-    dest: '{{ "/etc/apt/auth.conf.d/" + (item.name | regex_replace(".conf$", "")) + ".conf" }}'
-    mode: '0640'
-  loop: '{{ q("flattened", (apt__auth_files + apt__group_auth_files + apt__host_auth_files)) }}'
-  when: apt__enabled | bool and item.machine | d() and item.login | d() and item.password | d() and
-        item.state | d('present') not in ['absent', 'ignore']
-  no_log: '{{ debops__no_log | d(True) }}'
-
-# Manage configuration files [[[
-- name: Generate additional APT configuration files
-  ansible.builtin.copy:
-    dest:     "/etc/apt/apt.conf.d/{{ (item.priority | d('60')) + (item.dest | d(item.path | d(item.name))) }}"
-    src:      '{{ item.src | d(omit) }}'
-    content:  '{{ item.content | d(omit) }}'
-    owner:    'root'
-    group:    'root'
-    mode:     '0644'
-  loop: '{{ q("flattened", apt__conf
-                           + apt__group_conf
-                           + apt__host_conf) }}'
-  when: (apt__enabled | bool and
-         (item.src | d() or item.content | d()) and
-         (item.dest | d() or item.path | d() or item.name | d()) and
-         (item.state | d('present') != 'absent'))
-
-- name: Delete APT configuration files on remote hosts
-  ansible.builtin.file:
-    path:  "/etc/apt/apt.conf.d/{{ (item.priority | d('60')) + (item.dest | d(item.path | d(item.name))) }}"
-    state: 'absent'
-  loop: '{{ q("flattened", apt__conf
-                           + apt__group_conf
-                           + apt__host_conf) }}'
-  when: (apt__enabled | bool and
-         (item.dest | d() or item.path | d() or item.name | d()) and
-         (item.state | d('present') == 'absent'))
-                                                                   # ]]]
+  when: (apt__enabled | bool and apt__deploy_state == 'present')
 
 - name: Update APT cache
   ansible.builtin.apt:
@@ -219,7 +220,7 @@
     cache_valid_time: '{{ omit
                          if (apt__register_sources_template is changed or
                              apt__register_sources_diversion is changed or
-                             apt__register_repositories is changed)
+                             apt__register_apt_repositories is changed)
                          else apt__cache_valid_time }}'
   register: apt__register_apt_update
   until: apt__register_apt_update is succeeded
@@ -236,17 +237,3 @@
   register: apt__register_purge_packages
   until: apt__register_purge_packages is succeeded
   when: apt__enabled | bool
-
-- name: Update the role status in local facts
-  ansible.builtin.lineinfile:
-    dest: '/etc/ansible/facts.d/apt.fact'
-    regexp: '^\s+"configured":\s+'
-    line: '    "configured": true,'
-    state: 'present'
-    mode: '0755'
-  notify: [ 'Refresh host facts' ]
-  when: (apt__enabled | bool and ansible_local | d() and ansible_local.apt | d() and
-         not ansible_local.apt.configured | bool)
-
-- name: Update Ansible facts if they were modified
-  ansible.builtin.meta: 'flush_handlers'

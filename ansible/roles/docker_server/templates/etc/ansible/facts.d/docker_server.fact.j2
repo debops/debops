@@ -1,9 +1,9 @@
 #!{{ ansible_python['executable'] }}
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2015-2019 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2023 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2019      Imre Jonk <mail@imrejonk.nl>
-# Copyright (C) 2015-2019 DebOps <https://debops.org/>
+# Copyright (C) 2015-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 # {{ ansible_managed }}
@@ -15,9 +15,6 @@ import subprocess
 import os
 import re
 
-docker_pkg = loads('''{{ docker_server__packagename | to_nice_json }}''')
-daemon_json = '/etc/docker/daemon.json'
-
 
 def cmd_exists(cmd):
     return any(
@@ -26,45 +23,22 @@ def cmd_exists(cmd):
     )
 
 
-def cmd_abspath(cmd):
-    binaries = (os.path.abspath(os.path.join(path, cmd))
-                for path in os.environ["PATH"].split(os.pathsep))
-    for binary in binaries:
-        if os.access(binary, os.X_OK):
-            return binary
-
-
-output = loads('''{{
-    {"upstream": (ansible_local.docker_server.upstream
-                  if (ansible_local.docker_server.upstream | d())
-                  else docker_server__upstream) | bool
-    } | to_json }}''')
-
+output = {}
 output['installed'] = cmd_exists('docker')
-try:
-    version_stdout = subprocess.check_output(
-        ["dpkg-query", "-W", "-f=${Version}", docker_pkg]
-    ).decode('utf-8').split('+')[0]
 
-    match = re.search(r'^(?:[^:]:)?(?P<docker_version>[^~]+)', version_stdout)
-    if match:
-        output['version'] = match.group('docker_version')
+try:
+    docker_version_stdout = subprocess.check_output(
+            ["docker", "--version"]
+            ).decode('utf-8').strip()
+
+    for line in docker_version_stdout.split('\n'):
+        if line.lower().startswith('docker version '):
+            version_string = line.split()[2]
+            version_string = version_string.split(',')[0]
+            # Strip version tag in Debian packaging
+            output['version'] = version_string.split('+')[0]
 
 except Exception:
     pass
-
-try:
-    output['dockerd_binary'] = cmd_abspath('dockerd')
-except Exception:
-    pass
-
-if os.path.exists(daemon_json) and os.path.isfile(daemon_json):
-    try:
-        with open(daemon_json, 'r') as f:
-            daemon_config = load(f)
-            output['storage_driver'] = daemon_config['storage-driver']
-
-    except Exception:
-        pass
 
 print(dumps(output, sort_keys=True, indent=4))

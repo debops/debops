@@ -266,6 +266,14 @@ script commands. This also works outside of the project directory, when used
 with the ``--project-dir <path>`` option. See the manual pages of different
 DebOps commands to learn more.
 
+The default view used by DebOps in a given project is defined in the
+:file:`<project_dir>/.debops/conf.d/project.yml` configuration file, in the
+``project.default_view`` configuration key. It can be set to an empty string;
+in such case there will be no default view and it will have to be selected
+using the ``-V <view>`` or ``--view <view>`` option on the command line.
+Alternatively, users can :command:`cd` into a view subdirectory before
+executing a :command:`debops` command to use it.
+
 In the :file:`<project_dir>/.debops/conf.d/view-*.yml` configuration file
 created for each "infrastructure view", users can select which Ansible
 Collections will be searched for playbooks if one is specified without

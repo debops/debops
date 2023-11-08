@@ -1,55 +1,16 @@
 ---
-# Copyright (C) 2015-2019 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2015-2023 Maciej Delmanowski <drybjed@gmail.com>
 # Copyright (C) 2019      Imre Jonk <mail@imrejonk.nl>
-# Copyright (C) 2015-2019 DebOps <https://debops.org/>
+# Copyright (C) 2015-2023 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import DebOps global handlers
   ansible.builtin.import_role:
     name: 'global_handlers'
 
-- name: Make sure that docker.service.d override directory exists
-  ansible.builtin.file:
-    path: '/etc/systemd/system/docker.service.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  when: ansible_service_mgr == 'systemd'
-  tags: [ 'role::docker_server:config' ]
-
-- name: Remove other version if upstream is modified
-  ansible.builtin.apt:
-    name: '{{ ((["docker.io"] if docker_server__upstream | d()
-                else [docker_server__upstream_packagename])
-               + (["docker-engine"] if docker_server__upstream | d()
-                 else [])) | flatten }}'
-    state: 'absent'
-    install_recommends: False
-  notify: [ 'Reload service manager' ]
-  register: docker_server__register_other_version_removed
-  until: docker_server__register_other_version_removed is succeeded
-
-- name: Remove startup file(s) if present
-  ansible.builtin.file:  # noqa no-handler
-    path: '{{ item }}'
-    state: 'absent'
-  tags: [ 'role::docker_server:config' ]
-  with_items:
-    - '/etc/systemd/system/docker.service'
-    - '/lib/systemd/system/docker.service'
-    - '/etc/default/docker'
-    - '/etc/docker/daemon.json'
-    - '/etc/systemd/system/docker.service.d/http-proxy.conf'
-    - '/etc/systemd/system/docker.service.d/execstart-override.conf'
-  notify: [ 'Reload service manager' ]
-  when: (docker_server__register_other_version_removed is changed)
-
 - name: Install required packages
   ansible.builtin.apt:
-    name: '{{ (docker_server__mandatory_packages
-               + [docker_server__packagename]
-               + docker_server__base_packages
+    name: '{{ (docker_server__base_packages
                + docker_server__packages) | flatten }}'
     state: 'present'
     install_recommends: False
@@ -57,20 +18,24 @@
   register: docker_server__register_packages
   until: docker_server__register_packages is succeeded
 
+- name: Add specified users to 'docker' group
+  ansible.builtin.user:
+    name: '{{ item }}'
+    groups: 'docker'
+    append: True
+  loop: '{{ docker_server__admins }}'
+  tags: [ 'role::docker_server:config', 'role::docker_server:admins' ]
+
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:
     path: '/etc/ansible/facts.d'
     state: 'directory'
-    owner: 'root'
-    group: 'root'
     mode: '0755'
 
-- name: Save Docker Server local facts
+- name: Save docker_server local facts
   ansible.builtin.template:
     src: 'etc/ansible/facts.d/docker_server.fact.j2'
     dest: '/etc/ansible/facts.d/docker_server.fact'
-    owner: 'root'
-    group: 'root'
     mode: '0755'
   notify: [ 'Refresh host facts' ]
   tags: [ 'meta::facts' ]
@@ -78,88 +43,39 @@
 - name: Update Ansible facts if they were modified
   ansible.builtin.meta: 'flush_handlers'
 
-- name: Install Python packages in virtualenv
-  ansible.builtin.pip:
-    name: '{{ item.name | d(item) }}'
-    version: '{{ item.version | d(omit) }}'
-    virtualenv: '{{ docker_server__virtualenv }}'
-    state: '{{ item.state | d("present") }}'
-  loop: '{{ q("flattened", docker_server__default_pip_packages
-                           + docker_server__pip_packages) }}'
-  when: docker_server__install_virtualenv
-
-- name: Expose Docker virtualenv for Ansible modules
-  ansible.builtin.file:
-    path: '{{ docker_server__virtualenv_python_symlink }}'
-    src:  '{{ docker_server__virtualenv_python_interpreter }}'
-    state: 'link'
-    mode: '0755'
-  when: docker_server__install_virtualenv
-
-- name: Symlink selected Python scripts to /usr/local/bin
-  ansible.builtin.file:
-    path: '{{ item.path }}'
-    src: '{{ item.src }}'
-    state: 'link'
-    mode: '0755'
-  loop: '{{ q("flattened", docker_server__default_pip_packages
-                           + docker_server__pip_packages) }}'
-  when: item.path | d() and item.src | d() and
-        item.state | d('present') != 'absent' and
-        docker_server__install_virtualenv
+- name: Generate Docker configuration file
+  ansible.builtin.template:
+    src: 'etc/docker/daemon.json.j2'
+    dest: '/etc/docker/daemon.json'
+    mode: '0644'
+  notify: [ 'Restart docker' ]
+  tags: [ 'role::docker_server:config' ]
 
 - name: Install ferm post hook
   ansible.builtin.template:
     src: 'etc/ferm/hooks/post.d/restart-docker.j2'
     dest: '/etc/ferm/hooks/post.d/restart-docker'
-    owner: 'root'
-    group: 'root'
     mode: '0755'
   when: docker_server__ferm_post_hook | bool
 
-- name: Configure Docker options
+- name: Create resolved.conf.d override directory
+  ansible.builtin.file:
+    path: '/etc/systemd/resolved.conf.d'
+    state: 'directory'
+    mode: '0755'
+  when: docker_server__resolved_integration | bool
+
+- name: Remove systemd-resolved integration
+  ansible.builtin.file:
+    path: '/etc/systemd/resolved.conf.d/docker.conf'
+    state: 'absent'
+  notify: [ 'Restart systemd-resolved service' ]
+  when: not docker_server__resolved_integration | bool
+
+- name: Configure systemd-resolved integration
   ansible.builtin.template:
-    src: 'etc/default/docker.j2'
-    dest: '/etc/default/docker'
-    owner: 'root'
-    group: 'root'
+    src: 'etc/systemd/resolved.conf.d/docker.conf.j2'
+    dest: '/etc/systemd/resolved.conf.d/docker.conf'
     mode: '0644'
-  notify: [ 'Restart docker' ]
-  tags: [ 'role::docker_server:config' ]
-  when: (ansible_service_mgr != 'systemd' or docker_server__version is version_compare('1.10', '<'))
-
-- name: Configure Docker systemd options
-  ansible.builtin.template:
-    src: 'etc/docker/daemon.json.j2'
-    dest: '/etc/docker/daemon.json'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  notify: [ 'Restart docker' ]
-  tags: [ 'role::docker_server:config' ]
-  when: (ansible_service_mgr == 'systemd' and docker_server__version is version_compare('1.10', '>='))
-
-- name: Configure Docker systemd overrides
-  ansible.builtin.template:
-    src: 'etc/systemd/system/docker.service.d/{{ item }}.j2'
-    dest: '/etc/systemd/system/docker.service.d/{{ item }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  loop: [ 'execstart-override.conf', 'http-proxy.conf' ]
-  register: docker_server__register_systemd_overrides
-  notify: [ 'Reload service manager', 'Restart docker' ]
-  when: ansible_service_mgr == 'systemd'
-  tags: [ 'role::docker_server:config' ]
-
-- name: Add specified users to 'docker' group
-  ansible.builtin.user:
-    name: '{{ item }}'
-    groups: 'docker'
-    append: True
-  with_items: '{{ docker_server__admins }}'
-  when: item | d()
-  tags: [ 'role::docker_server:config', 'role::docker_server:admins' ]
-
-- name: Execute pending handlers
-  ansible.builtin.meta: 'flush_handlers'
+  notify: [ 'Restart systemd-resolved service' ]
+  when: docker_server__resolved_integration | bool

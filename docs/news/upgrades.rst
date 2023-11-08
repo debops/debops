@@ -56,6 +56,50 @@ Changes in inventory variables
   - ``sshd__match_list``
   - ``sshd__match_group_sftponly``
 
+- The :ref:`debops.apt` role has been refreshed and some variables changed
+  their data structures:
+
+  - :envvar:`apt__sources`,
+    :envvar:`apt__group_sources`, :envvar:`apt__host_sources`,
+    :envvar:`apt__combined_sources`
+  - :envvar:`apt__repositories`, :envvar:`apt__group_repositories`,
+    :envvar:`apt__host_repositories`
+  - :envvar:`apt__keys`, :envvar:`apt__group_keys`, :envvar:`apt__host_keys`
+
+  Some of the role variables were also removed:
+
+  - ``apt__sources_deploy_state`` (replaced with :envvar:`apt__deploy_state`)
+  - ``apt__sources_filter_duplicates``
+  - ``apt__source_types`` (replaced with :envvar:`apt__archive_types`)
+  - ``apt__remove_default_configuration``
+  - ``apt__install_recommends``
+  - ``apt__install_suggests``
+  - ``apt__deb822_*_repositories``
+  - ``apt__conf`` (replaced with :envvar:`apt__configuration`)
+  - ``apt__group_conf`` (replaced with :envvar:`apt__group_configuration`)
+  - ``apt__host_conf`` (replaced with :envvar:`apt__host_configuration`)
+  - ``apt__distribution_release_map``
+  - ``apt__distribution_suite_map``
+  - ``apt__distribution_suite``
+  - ``apt__distribution_suffix_map``
+  - ``apt__distribution_suffixes``
+  - ``apt__distribution_components_free``
+  - ``apt__distribution_components_nonfree``
+  - ``apt__distribution_components``
+  - ``apt__archive_source_map``
+  - ``apt__archive_source``
+  - ``apt__original_sources``
+  - ``apt__default_sources``
+  - ``apt__default_sources_state``
+  - ``apt__security_sources_state``
+  - ``apt__security_sources``
+  - ``apt__group_security_sources``
+  - ``apt__host_security_sources``
+
+- THe :ref:`debops.docker_server` role has been redesigned, many variables have
+  been removed and are no longer needed. Check the role documentation for
+  details.
+
 
 v3.0.0 (2022-02-17)
 -------------------
@@ -377,11 +421,11 @@ Inventory variable changes
 
 - Some variables in the :ref:`debops.docker_server` role have been renamed:
 
-  +--------------------------+------------------------------------+---------------+
-  | Old variable name        | New variable name                  | Changed value |
-  +==========================+====================================+===============+
-  | ``docker_server__graph`` | :envvar:`docker_server__data_root` | No            |
-  +--------------------------+------------------------------------+---------------+
+  +--------------------------+------------------------------+---------------+
+  | Old variable name        | New variable name            | Changed value |
+  +==========================+==============================+===============+
+  | ``docker_server__graph`` | ``docker_server__data_root`` | No            |
+  +--------------------------+------------------------------+---------------+
 
 - A few of the default variables in the :ref:`debops.dovecot` role have been
   renamed. Additionally some variables related to the Sieve plugin configuration also

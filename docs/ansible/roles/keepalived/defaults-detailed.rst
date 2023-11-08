@@ -23,7 +23,7 @@ keepalived__configuration
 
 The ``keepalived__*_configuration`` variables define the contents of the
 :file:`/etc/keepalived/keepalived.conf` configuration file. The syntax is
-farily simple and consists of blocks of the :man:`keepalived.conf(5)`
+fairly simple and consists of blocks of the :man:`keepalived.conf(5)`
 configuration data which can be enabled or disabled conditionally and allow use
 of Jinja expressions to generate the desired configuration.
 
