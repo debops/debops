@@ -154,8 +154,8 @@ It's customary to specify this variable directly in the
 .. code-block:: none
 
    [debops_all_hosts]
-   server    ansible_host=server.example.com ansible_user=ansible-admin
-   server    system_users__self_name=ansible-admin
+   server    ansible_host=server.example.com ansible_user=ansible
+   server    system_users__self_name=ansible
 
 On specific platforms you can set this variable to an automatically created
 username to make the remote host administration easier:

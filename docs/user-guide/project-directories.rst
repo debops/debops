@@ -569,7 +569,7 @@ in :file:`ansible/playbooks/your_role.yml`:
 .. code-block:: yaml
 
   ---
-  - name: Manage the your specific setup
+  - name: Manage your specific setup
     hosts: [ 'debops_all_hosts' ]
     roles:
       - role: ansible.your_role
