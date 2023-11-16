@@ -88,6 +88,9 @@ Available role tags:
 Other resources
 ---------------
 
+The :ref:`debops.resources` role can be used to manage pip and virtual 
+environments, see :ref:`resources__ref_pip` documentation for more details.
+
 List of other useful resources related to the ``debops.python`` Ansible role:
 
 - Manual pages: :man:`python(1)`, :man:`pip(1)`, :man:`virtualenv(1)`
