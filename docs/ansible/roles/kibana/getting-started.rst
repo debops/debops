@@ -45,7 +45,7 @@ If the first host used for connections to the Elasticsearch cluster uses
 a ``https://`` connection, Kibana will try to use the ``kibana_system``
 Elasticsearch user account and password stored in the
 :file:`secret/elasticsearch/credentials/` directory (managed by the
-:ref:`debops.secret` role) to autorize itself with the cluster and set up its
+:ref:`debops.secret` role) to authorize itself with the cluster and set up its
 own configuration. After that, you can use other users (notably ``elastic``
 superuser account) to access the web interface.
 

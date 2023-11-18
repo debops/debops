@@ -1,0 +1,12 @@
+{# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2023 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+// {{ ansible_managed }}
+
+{% if item.comment | d() %}
+{{   item.comment | regex_replace('\n$', '') | comment(decoration='// ', prefix='', postfix='') -}}
+{% endif %}
+{% if item.raw | d() %}
+{{   item.raw | regex_replace('\n$', '') -}}
+{% endif %}

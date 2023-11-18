@@ -1,0 +1,36 @@
+---
+# Copyright (C) 2023 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2023 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Switch APT repositories for Proxmox VE to community support
+# Ref: https://pve.proxmox.com/wiki/Package_Repositories
+apt__repositories:
+
+  # Preserve the original configuration since it's packaged in the
+  # 'pve-manager' APT package
+  - name: 'proxmox-enterprise'
+    filename: 'pve-enterprise.list'
+    # repo: 'deb https://enterprise.proxmox.com/debian/pve {{ ansible_distribution_release }} pve-enterprise'
+    state: 'divert'
+
+  - name: 'proxmox-ceph-enterprise'
+    filename: 'ceph.list'
+    repo: 'deb https://enterprise.proxmox.com/debian/ceph-quincy {{ ansible_distribution_release }} enterprise'
+    state: 'absent'
+
+  - name: 'proxmox-no-subscription'
+    filename: 'proxmox-community.sources'
+    uris: 'http://download.proxmox.com/debian/pve'
+    suites: '{{ ansible_distribution_release }}'
+    signed_by: 'https://enterprise.proxmox.com/debian/proxmox-release-{{ ansible_distribution_release }}.gpg'
+    components: 'pve-no-subscription'
+    state: 'present'
+
+  - name: 'proxmox-ceph-no-subscription'
+    filename: 'proxmox-community-ceph.sources'
+    uris: 'http://download.proxmox.com/debian/ceph-quincy'
+    suites: '{{ ansible_distribution_release }}'
+    signed_by: 'https://enterprise.proxmox.com/debian/proxmox-release-{{ ansible_distribution_release }}.gpg'
+    components: 'no-subscription'
+    state: 'present'

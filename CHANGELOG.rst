@@ -199,6 +199,13 @@ General
 
 - Support to host the application on a subpath for security reasons.
 
+:ref:`debops.python` role
+'''''''''''''''''''''''''
+
+- The :file:`service/python_raw` playbook used during early bootstrap process
+  can now inject host entries into the :file:`/etc/hosts` configuration file to
+  permit DNS name resolution early during bootstrapping.
+
 :ref:`debops.resources` role
 ''''''''''''''''''''''''''''
 
@@ -233,7 +240,8 @@ Updates of upstream application versions
 
 - In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
   has been updated to the next point release, 10.13. Debian Bullseye has been
-  updated to the next point release as well, 11.8.
+  updated to the next point release as well, 11.8. The Debian Bookworm release
+  has been updated to 12.2.
 
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
   ``v3.4.2``.
@@ -338,6 +346,10 @@ General
 - The role will configure APT to use Debian Security repositories via the
   http://deb.debian.org/debian-security/ CDN.
 
+- The role has been refreshed and management of the
+  :file:`/etc/apt/sources.list` file was redesigned to allow for better
+  flexibility in configuration. See role documentation for more details.
+
 :ref:`debops.apt_preferences` role
 ''''''''''''''''''''''''''''''''''
 
@@ -352,6 +364,13 @@ General
 ''''''''''''''''''''''''''''''''
 
 - The role can now directly handle the daemon ``log-driver`` parameter.
+
+- The role has been redesigned from scratch; Python :command:`virtualenv`
+  support has been removed since the :command:`docker-compose` is included in
+  Debian repositories directly, or is implemented as a Go plugin in upstream
+  repositories. The Docker configuration is now implemented via the
+  :ref:`universal_configuration` system, users will have to modify their
+  Ansible inventories. See the role documentation for details.
 
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
@@ -793,6 +812,12 @@ debops.boxbackup role
 
 - Locked ``johndoh/contextmenu`` plugin to version 3.2.1 for Roundcube < 1.5
   due to compatibility issues.
+
+:ref:`debops.secret` role
+'''''''''''''''''''''''''
+
+- Fixed an issue with the :envvar:`secret` variable not being defined in other
+  roles in newer Ansible versions.
 
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
@@ -3283,7 +3308,7 @@ Mail Transport Agents
 ''''''''''''''''''''''''''''''''
 
 - Replace the deprecated `docker_server__graph` variable with the
-  :envvar:`docker_server__data_root` variable.
+  ``docker_server__data_root`` variable.
 
 :ref:`debops.dovecot` role
 ''''''''''''''''''''''''''
@@ -4259,7 +4284,7 @@ General
   with a DNS domain shouldn't be affected, but configuration of standalone
   hosts that deploy webservices might require modifications.
 
-- The :ref:`debops.resolvconf` role has been added as a dpendency in the
+- The :ref:`debops.resolvconf` role has been added as a dependency in the
   Ansible playbooks of the roles that interact with the ``resolvconf`` service
   in some way. The modified roles are: :ref:`debops.dnsmasq`,
   :ref:`debops.docker_server`, :ref:`debops.ifupdown`, :ref:`debops.lxc`,
@@ -4317,7 +4342,7 @@ User management
   the current configuration on existing installations.
 
   If needed, the storage driver in use can be overridden via the
-  :envvar:`docker_server__storage_driver` variable.
+  ``docker_server__storage_driver`` variable.
 
 :ref:`debops.etckeeper` role
 ''''''''''''''''''''''''''''

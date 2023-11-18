@@ -5,5 +5,5 @@
 Description
 ===========
 
-The ``debops.reboot`` Ansible role can be used to forcefully or conditionnally
+The ``debops.reboot`` Ansible role can be used to forcefully or conditionally
 reboot a DebOps host.
