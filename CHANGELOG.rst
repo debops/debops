@@ -119,6 +119,11 @@ General
   The modern project layout supports multiple Ansible inventories encapsulated
   into :ref:`infrastructure views <project_infrastructure_views>`.
 
+- DebOps scripts now support management of the project directories using
+  :command:`git` as VCS repositories. New project directories will use
+  :command:`git` by default. This also enables support for secrets encrypted
+  using :command:`git-crypt`.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 

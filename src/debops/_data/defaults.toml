@@ -24,6 +24,14 @@ gpg = "{{ env['DEBOPS_CMD_GPG'] | d('gpg') }}"
 # using 'encfs(1)' tool. By default it will rely on the system's $PATH.
 encfs = "{{ env['DEBOPS_CMD_ENCFS'] | d('encfs') }}"
 
+# Path to binary which will be used to call the 'git(1)' commands to manage git
+# repositories. By default it will rely on the system's $PATH.
+git = "{{ env['DEBOPS_CMD_GIT'] | d('git') }}"
+
+# Path to binary which will be used to manage the secret directories encrypted
+# using 'git-crypt(1)' tool. By default it will rely on the system's $PATH.
+git-crypt = "{{ env['DEBOPS_CMD_GITCRYPT'] | d('git-crypt') }}"
+
 # Path to binary which will be used to unmount the mounted 'encfs(1)' volume on
 # Darwin hosts (macOS). By default it will rely on the system's $PATH.
 umount = "{{ env['DEBOPS_CMD_UMOUNT'] | d('umount') }}"
@@ -31,3 +39,8 @@ umount = "{{ env['DEBOPS_CMD_UMOUNT'] | d('umount') }}"
 # Path to binary which will be used to unmount the mounted 'encfs(1)' volume on
 # hosts with FUSE support. By default it will rely on the system's $PATH.
 fusermount = "{{ env['DEBOPS_CMD_FUSERMOUNT'] | d('fusermount') }}"
+
+[git]
+
+# The default commit message used for new git repositories.
+init_message = "Initialize new DebOps project directory"

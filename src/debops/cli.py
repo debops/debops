@@ -75,7 +75,7 @@ class Interpreter(object):
                 print('Error:', errmsg)
                 sys.exit(1)
         except (IsADirectoryError, NotADirectoryError,
-                PermissionError) as errmsg:
+                PermissionError, ChildProcessError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)
 
@@ -89,7 +89,7 @@ class Interpreter(object):
                 print('Error:', errmsg)
                 sys.exit(1)
         except (IsADirectoryError, NotADirectoryError,
-                PermissionError) as errmsg:
+                PermissionError, ChildProcessError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)
 
@@ -127,14 +127,14 @@ class Interpreter(object):
         try:
             project = ProjectDir(path=args.project_dir, config=self.config,
                                  view=args.view)
-        except (IsADirectoryError, NotADirectoryError) as errmsg:
+        except (IsADirectoryError, NotADirectoryError, ChildProcessError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)
 
         try:
             runner = AnsiblePlaybookRunner(project, **vars(args))
         except (NoDefaultViewException, ValueError,
-                FileNotFoundError) as errmsg:
+                FileNotFoundError, ChildProcessError) as errmsg:
             print('Error:', errmsg)
             sys.exit(1)
 
@@ -142,7 +142,11 @@ class Interpreter(object):
             runner.eval()
             sys.exit(0)
         else:
-            sys.exit(runner.execute())
+            try:
+                sys.exit(runner.execute())
+            except ChildProcessError as errmsg:
+                print('Error:', errmsg)
+                sys.exit(1)
 
     def do_env(self, args):
         try:
