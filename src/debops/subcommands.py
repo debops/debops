@@ -97,6 +97,7 @@ Commands:
                                  '(default: %(default)s)')
         self.add_bool_argument(parser, 'git',
                                help='enable git support (default)',
+                               default='store_true',
                                no_help='disable git support')
         parser.add_argument('--encrypt', type=str, nargs='?',
                             choices=['encfs', 'git-crypt'],

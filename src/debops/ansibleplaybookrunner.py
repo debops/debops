@@ -302,11 +302,14 @@ class AnsiblePlaybookRunner(object):
             self._ring_bell()
             return executor.returncode
 
+        except ChildProcessError:
+            raise ChildProcessError('Cannot unlock project secrets, '
+                                    'git working directory not clean')
+
         except KeyboardInterrupt:
             if unlocked:
                 self.inventory.lock()
             raise SystemExit('... aborted by user')
-
         else:
             self._ring_bell()
 

@@ -13,6 +13,9 @@ import socket
 import distro
 import platform
 import pathlib
+import git
+import subprocess
+import time
 
 
 class ProjectDir(object):
@@ -92,6 +95,10 @@ class ProjectDir(object):
         self.config.merge(project_data)
 
         self.config.merge(os.path.join(self.path, '.debops', 'conf.d'))
+
+        self._commands = {
+            'git-crypt': self.config.raw['binaries']['git-crypt']
+        }
 
         # Set the default view
         try:
@@ -504,6 +511,40 @@ class ProjectDir(object):
             self._create_modern_project(self.path)
         elif self.project_type == 'legacy':
             self._create_legacy_project(self.path)
+
+        create_git_repo = self.kwargs.get('git', None)
+        if create_git_repo:
+            repo = git.Repo.init(self.path)
+            repo.git.add(all=True)
+            repo.index.commit(self.config.raw['git']['init_message'])
+
+            # Set up encryption using git-crypt
+            encrypt_git_repo = self.kwargs.get('encrypt', None)
+            if encrypt_git_repo == 'git-crypt':
+                try:
+                    gpg_keys = list(self.kwargs.get('keys', None).split(','))
+                except AttributeError:
+                    raise ValueError('List of GPG recipients not specified')
+
+                os.chdir(self.path)
+                gitcrypt_cmd = subprocess.Popen([self._commands['git-crypt'],
+                                                 'init'],
+                                                stdin=subprocess.PIPE)
+                gitcrypt_cmd.communicate()
+                while not os.path.exists(
+                        os.path.join('.git', 'git-crypt', 'keys')):
+                    time.sleep(1)
+                for gpg_key in gpg_keys:
+                    gitcrypt_cmd = subprocess.Popen([self._commands['git-crypt'],
+                                                     'add-gpg-user',
+                                                    gpg_key], stdin=subprocess.PIPE)
+                    gitcrypt_cmd.communicate()
+
+                # Lock the repository after setting up git-crypt
+                gitcrypt_cmd = subprocess.Popen([self._commands['git-crypt'],
+                                                 'lock'],
+                                                stdin=subprocess.PIPE)
+                gitcrypt_cmd.communicate()
 
     def mkview(self, view):
 
