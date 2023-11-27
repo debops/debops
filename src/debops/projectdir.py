@@ -157,12 +157,25 @@ class ProjectDir(object):
             self.ansible_cfg = AnsibleConfig(
                     os.path.join(self.path, 'ansible.cfg'),
                     project_type=self.project_type)
+            if not self.config.get_env('DEBOPS_ANSIBLE_INVENTORY'):
+                self.config.set_env('DEBOPS_ANSIBLE_INVENTORY',
+                                    unexpanduser(os.path.join(self.path,
+                                                              'ansible',
+                                                              'inventory')))
+
         elif self.project_type == 'modern':
             self.ansible_cfg = AnsibleConfig(
                     os.path.join(self.path, 'ansible', 'views',
                                  self.view, 'ansible.cfg'),
                     project_type=self.project_type,
                     view=self.view)
+            if not self.config.get_env('DEBOPS_ANSIBLE_INVENTORY'):
+                self.config.set_env('DEBOPS_ANSIBLE_INVENTORY',
+                                    unexpanduser(os.path.join(self.path,
+                                                              'ansible',
+                                                              'views', self.view,
+                                                              'inventory')))
+
         self.ansible_cfg.load_config()
         self.config.set_env('ANSIBLE_CONFIG',
                             unexpanduser(self.ansible_cfg.path))
