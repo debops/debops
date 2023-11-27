@@ -142,7 +142,7 @@ class AnsiblePlaybookRunner(object):
            under a given subdirectory'''
         some_dir = some_dir.rstrip(os.path.sep)
         num_sep = some_dir.count(os.path.sep)
-        for root, dirs, files in os.walk(some_dir):
+        for root, dirs, files in os.walk(some_dir, followlinks=True):
             yield root, dirs, files
             num_sep_this = root.count(os.path.sep)
             if num_sep + level <= num_sep_this:
