@@ -39,6 +39,12 @@ General
   :command:`git` by default. This also enables support for secrets encrypted
   using :command:`git-crypt`.
 
+- The path to the default Ansible inventory located in the DebOps project
+  directory is now exposed in environment variables as
+  ``$DEBOPS_ANSIBLE_INVENTORY``. This variable can be used for integration with
+  third-party software, for example to automatically generate Ansible inventory
+  contents based on data from external sources.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
