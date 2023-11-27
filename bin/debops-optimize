@@ -92,19 +92,21 @@ git ls-files -z "$(git rev-parse --show-toplevel)" | xargs --null -I '{}' find '
 
 
 ## TODO: I need to bring yaml4rst back to speed again.
-exit
-
-for role_dir in ./ansible/roles/*; do
-    role_full_name="$(basename "$role_dir")"
-    # role_name="${role_full_name#*.}"
-    # role_owner="${role_full_name%.*}"
-    # is_ansible_role=true
-
-    echo "Role: ${role_full_name}"
-    echo "Defaults file: ${role_dir}/defaults/main.yml"
-
-    if command -v yaml4rst
-    then
-        test -e "${role_dir}/defaults/main.yml" && yaml4rst --config-kv "ansible_full_role_name=${role_full_name}" "${role_dir}/defaults/main.yml" -i
-    fi
-done
+# The shellcheck script complains about commands below being unreachable, so
+# let's comment them out for now
+#exit
+#
+#for role_dir in ./ansible/roles/*; do
+#    role_full_name="$(basename "$role_dir")"
+#    # role_name="${role_full_name#*.}"
+#    # role_owner="${role_full_name%.*}"
+#    # is_ansible_role=true
+#
+#    echo "Role: ${role_full_name}"
+#    echo "Defaults file: ${role_dir}/defaults/main.yml"
+#
+#    if command -v yaml4rst
+#    then
+#        test -e "${role_dir}/defaults/main.yml" && yaml4rst --config-kv "ansible_full_role_name=${role_full_name}" "${role_dir}/defaults/main.yml" -i
+#    fi
+#done
