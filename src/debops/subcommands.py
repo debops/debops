@@ -71,6 +71,7 @@ Sections:
 Commands:
     init    initialize new project directory
     mkview  create a new infrastructure view
+    commit  commit current changes in git repository
     refresh refresh existing project directory
     unlock  decrypt secrets in project directory
     lock    encrypt secrets in project directory''')
@@ -168,6 +169,18 @@ Commands:
                                  'delimited by commas')
         parser.add_argument('new_view', type=str, nargs='?',
                             help='name of the new infrastructure view')
+        self.args = parser.parse_args(self.args[3:])
+
+    def do_project_commit(self):
+        parser = argparse.ArgumentParser(
+                description='commit current changes in git repository',
+                usage='debops project commit [<args>] <project_dir>')
+        parser.add_argument('-v', '--verbose', action="count",
+                            help='increase output verbosity '
+                                 '(e.g., -vv is more than -v)')
+        parser.add_argument('project_dir', type=str, nargs='?',
+                            default=os.getcwd(),
+                            help='path to the project directory')
         self.args = parser.parse_args(self.args[3:])
 
     def do_exec(self):

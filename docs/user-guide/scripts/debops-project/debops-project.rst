@@ -153,6 +153,28 @@ Create a new infrastructure view with encrypted secrets:
                          deployment
 
 
+:command:`debops project commit`
+--------------------------------
+
+This command can be used to commit current contents of the project directory
+into the :command:`git` repository. Any modifications to the existing files as
+well as any untracked files will be committed automatically. The commit message
+is taken from the DebOps configuration; users can use :command:`git commit
+--amend` command to edit the commit message afterwards.
+
+Options
+~~~~~~~
+
+``-h, --help``
+  Display the help and usage information
+
+``-v, --verbose``
+  Increase output verbosity. More letters means higher verbosity.
+
+``<project_dir>``
+  Path to the project directory to refresh.
+
+
 :command:`debops project refresh`
 ---------------------------------
 

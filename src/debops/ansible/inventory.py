@@ -32,6 +32,7 @@ class AnsibleInventory(object):
 
     def __init__(self, project, name='system', *args, **kwargs):
         self.name = name
+        self.project = project
         self.project_type = project.project_type
         self.args = args
         self.kwargs = kwargs
@@ -230,6 +231,12 @@ class AnsibleInventory(object):
                     self.encfs_mounted = True
                     return False
                 else:
+                    try:
+                        if self.project.config.raw['project']['git']['auto_commit']:
+                            self.project.commit()
+                    except KeyError:
+                        # The configuration option might not exist at this time
+                        pass
                     if not os.path.isdir(self.secret_path):
                         os.makedirs(self.secret_path)
 
@@ -258,6 +265,12 @@ class AnsibleInventory(object):
                     return True
             elif self.crypt_method == 'git-crypt':
                 if self._git_crypt_locked():
+                    try:
+                        if self.project.config.raw['project']['git']['auto_commit']:
+                            self.project.commit()
+                    except KeyError:
+                        # The configuration option might not exist at this time
+                        pass
                     gitcrypt_cmd = subprocess.Popen([self._commands['git-crypt'],
                                                      'unlock'],
                                                     stderr=subprocess.PIPE)
@@ -283,6 +296,12 @@ class AnsibleInventory(object):
 
     def lock(self):
         if self.encrypted:
+            try:
+                if self.project.config.raw['project']['git']['auto_commit']:
+                    self.project.commit()
+            except KeyError:
+                # The configuration option might not exist at this time
+                pass
             if self.crypt_method == 'encfs':
                 if os.path.ismount(self.secret_path):
                     if sys.platform == 'darwin':

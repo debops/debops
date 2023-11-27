@@ -345,6 +345,11 @@ General
   the "oldstable" release. The new Debian Testing release, "Trixie" has also
   been added in relevant places.
 
+- DebOps now supports using :command:`git` in project directories - new
+  projects will be initialized as :command:`git` repositories by default. The
+  :command:`git-crypt` command is also supported, and can encrypt project
+  secrets.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
