@@ -97,6 +97,7 @@ class ProjectDir(object):
         self.config.merge(os.path.join(self.path, '.debops', 'conf.d'))
 
         self._commands = {
+            'ansible-galaxy': self.config.raw['binaries']['ansible-galaxy'],
             'git-crypt': self.config.raw['binaries']['git-crypt']
         }
 
@@ -566,6 +567,18 @@ class ProjectDir(object):
                                                  'lock'],
                                                 stdin=subprocess.PIPE)
                 gitcrypt_cmd.communicate()
+
+            # Install Ansible Collections after the project is initialized
+            install_requirements = self.kwargs.get('requirements', None)
+            if install_requirements:
+                os.chdir(self.path)
+                galaxy_cmd = subprocess.Popen([self._commands['ansible-galaxy'],
+                                               'collection', 'install', '-r',
+                                               os.path.join('ansible',
+                                                            'collections',
+                                                            'requirements.yml')],
+                                              stdin=subprocess.PIPE)
+                galaxy_cmd.communicate()
 
     def mkview(self, view):
 

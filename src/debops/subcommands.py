@@ -100,6 +100,11 @@ Commands:
                                help='enable git support (default)',
                                default='store_true',
                                no_help='disable git support')
+        self.add_bool_argument(parser, 'requirements',
+                               help='install Ansible Collections after '
+                                    'initialization (default)',
+                               default='store_true',
+                               no_help="don't install Ansible Collections")
         parser.add_argument('--encrypt', type=str, nargs='?',
                             choices=['encfs', 'git-crypt'],
                             help='enable encrypted secrets')

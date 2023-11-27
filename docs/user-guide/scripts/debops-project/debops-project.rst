@@ -37,6 +37,15 @@ Options
 ``--no-git``
   Do not initialize a :command:`git` repository by default
 
+``--requirements``
+  After the project directory is initialized, install Ansible Collections
+  specified in the :file:`ansible/collections/requirements.yml` file using the
+  :command:`ansible-galaxy` command. This will be done by default in new DebOps
+  projects.
+
+``--no-requirements``
+  Don't install Ansible Collections after the project directory is initialized.
+
 ``--encrypt <encfs|git-crypt>``
   Prepare the project directory to host encrypted :file:`ansible/secret/`
   subdirectory, used to store passwords, encryption keys and other confidential

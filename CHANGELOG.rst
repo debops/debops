@@ -80,6 +80,10 @@ General
   :command:`git-crypt` command is also supported, and can encrypt project
   secrets.
 
+- When a new DebOps project is created, the :command:`debops` script will
+  install Ansible Collections automatically by default. This can be controlled
+  using the ``--requirements`` or ``--no-requirements`` options.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
