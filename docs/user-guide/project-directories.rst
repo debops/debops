@@ -282,6 +282,31 @@ default collection for a given "infrastructure view" to one which contains
 unprivileged playbooks and roles, or add more Ansible Collections which should
 be searched for playbooks.
 
+DebOps and :command:`git` integration
+-------------------------------------
+
+Project directories are designed to be stored in :command:`git` repositories.
+The repository will be initialized by default when a new project is created; to
+avoid this users can use the `--no-git` parameter during project creation.
+
+When :command:`git` repositories are configured with encrypted secrets, using
+either EncFS or :command:`git-crypt`, the :command:`debops` script will by
+default commit current contents of the project repository when certain actions
+are performed. Currently, this happens when project secrets are unlocked or
+locked - this is required by :command:`git-crypt` to work correctly (the
+:command:`git` repository needs to be clean), but DebOps will do this for EncFS
+as well, for consistency.
+
+If the project secrets were unlocked manually, using the :command:`debops
+project unlock` command, any changes done afterwards will be committed when the
+secrets are locked again. This allows users to perform multiple changes in the
+project directory and commit them by hand as they see fit.
+
+Any commits done by DebOps automatically can be updated, for example to provide
+a more extensive commit message. Users can use :command:`git rebase -i` command
+to edit older commits; latest commit can be modified using the :command:`git
+commit --amend` command.
+
 Contents of the project directory
 ---------------------------------
 

@@ -196,6 +196,14 @@ class ProjectDir(object):
             path = os.path.dirname(last_path)
         return None
 
+    def _is_git_repo(self, path):
+        try:
+            _ = git.Repo(path).git_dir
+            return True
+        except (git.exc.InvalidGitRepositoryError,
+                git.exc.NoSuchPathError):
+            return False
+
     def _write_file(self, filename, *content):
         """
         If file:`filename` does not exist, create it and write
@@ -666,6 +674,28 @@ class ProjectDir(object):
         else:
             raise NotADirectoryError('This functionality only works in '
                                      '"modern" DebOps project directory')
+
+    def commit(self, interactive=False):
+        """Commit the current contents of the project directory to the git
+        repository automatically."""
+        if self._is_git_repo(self.path):
+            repo = git.Repo(self.path)
+            repo.git.add(all=True)
+
+            # Check if there are any differences between the current HEAD and
+            # the index. If there are, we need to commit them.
+            diff_list = repo.head.commit.diff()
+            if diff_list:
+                try:
+                    repo.index.commit(
+                        self.config.raw['project']['git']['auto_commit_message'])
+                except KeyError:
+                    # There was an issue in the configuration, unstage any
+                    # changes in git index
+                    repo.git.reset()
+                    if interactive:
+                        print('The "project.git.auto_commit_message" option is '
+                              'not defined. Not committing any changes.')
 
     def refresh(self):
         if self.project_type == 'modern':
