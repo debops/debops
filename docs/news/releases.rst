@@ -135,29 +135,29 @@ you can install DebOps in various ways.
 Current release schedule
 ------------------------
 
-- Latest "stable" release: ``stable-3.0`` (`GitHub branch`__, `differences from
+- Latest "stable" release: ``stable-3.1`` (`GitHub branch`__, `differences from
   master`__, `Changelog`__)
 
-.. __: https://github.com/debops/debops/tree/stable-3.0
-.. __: https://github.com/debops/debops/compare/stable-3.0
-.. __: https://docs.debops.org/en/stable-3.0/news/changelog.html
+.. __: https://github.com/debops/debops/tree/stable-3.1
+.. __: https://github.com/debops/debops/compare/stable-3.1
+.. __: https://docs.debops.org/en/stable-3.1/news/changelog.html
 
 =============== ============ =============== ================
  Branch/Tag      Status       First release   End of support
 --------------- ------------ --------------- ----------------
-``stable-4.0``  Planned LTS  2023-06-xx      2028-06-xx
+``stable-4.0``  Planned LTS  2024-06-xx      2028-06-xx
 --------------- ------------ --------------- ----------------
 ...             ...          ...             ...
 --------------- ------------ --------------- ----------------
-``stable-3.2``  Planned      2023-01-xx      2024-01-xx
+``stable-3.2``  Planned      2024-01-xx      2026-01-xx
 --------------- ------------ --------------- ----------------
-``stable-3.1``  Planned      2022-06-xx      2023-06-xx
+``stable-3.1``  Supported    2023-11-29      2025-11-xx
 --------------- ------------ --------------- ----------------
-``stable-3.0``  Supported    2022-02-17      2023-02-17
+``stable-3.0``  Supported    2022-02-17      2025-02-17
 --------------- ------------ --------------- ----------------
-``stable-2.3``  Supported    2021-06-04      2022-06-04
+``stable-2.3``  Supported    2021-06-04      2024-06-04
 --------------- ------------ --------------- ----------------
-``stable-2.2``  Supported    2021-01-31      2022-06-31
+``stable-2.2``  Retired      2021-01-31      2023-11-29
 --------------- ------------ --------------- ----------------
 ``stable-2.1``  Retired      2020-06-21      2022-02-17
 --------------- ------------ --------------- ----------------
