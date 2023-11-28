@@ -32,6 +32,7 @@ class AnsibleInventory(object):
 
     def __init__(self, project, name='system', *args, **kwargs):
         self.name = name
+        self.project = project
         self.project_type = project.project_type
         self.args = args
         self.kwargs = kwargs
@@ -47,10 +48,14 @@ class AnsibleInventory(object):
         self.encfs_keyfile = '.encfs6.keyfile'
         self.encfs_configfile = '.encfs6.xml'
         self.encfs_mounted = False
+        self.git_crypt_path = os.path.join(project.path, '.git', 'git-crypt',
+                                           'keys')
 
         self._commands = {
             'gpg': project.config.raw['binaries']['gpg'],
             'encfs': project.config.raw['binaries']['encfs'],
+            'git': project.config.raw['binaries']['git'],
+            'git-crypt': project.config.raw['binaries']['git-crypt'],
             'umount': project.config.raw['binaries']['umount'],
             'fusermount': project.config.raw['binaries']['fusermount']
         }
@@ -71,6 +76,23 @@ class AnsibleInventory(object):
             self.crypt_method = 'encfs'
             if os.path.ismount(self.secret_path):
                 self.encfs_mounted = True
+        elif os.path.exists(self.git_crypt_path):
+            self.encrypted = True
+            self.crypt_method = 'git-crypt'
+            if not self._git_crypt_locked():
+                self.encfs_mounted = True
+
+    def _git_crypt_locked(self):
+        """Detect if git-crypt is locked or not"""
+        # Based on solution from https://github.com/AGWA/git-crypt/issues/69
+        git_cmd = subprocess.Popen([self._commands['git'], 'config', '--local',
+                                    '--get', 'filter.git-crypt.smudge'],
+                                   stdout=subprocess.PIPE)
+        out, err = git_cmd.communicate()
+        if out:
+            return False
+        else:
+            return True
 
     def _get_random_string(self):
         all_chars = string.digits + string.ascii_letters + string.punctuation
@@ -192,6 +214,10 @@ class AnsibleInventory(object):
         if encrypted_secrets is not None:
             if encrypted_secrets == 'encfs':
                 self._encrypt_secrets_encfs()
+            elif encrypted_secrets == 'git-crypt':
+                # git-crypt is handled at the root of the repository,
+                # not in a specific inventory
+                pass
 
     def unlock(self):
         if self.encrypted:
@@ -205,6 +231,12 @@ class AnsibleInventory(object):
                     self.encfs_mounted = True
                     return False
                 else:
+                    try:
+                        if self.project.config.raw['project']['git']['auto_commit']:
+                            self.project.commit()
+                    except KeyError:
+                        # The configuration option might not exist at this time
+                        pass
                     if not os.path.isdir(self.secret_path):
                         os.makedirs(self.secret_path)
 
@@ -231,6 +263,29 @@ class AnsibleInventory(object):
                     os.remove(configfile)
                     self.encfs_mounted = True
                     return True
+            elif self.crypt_method == 'git-crypt':
+                if self._git_crypt_locked():
+                    try:
+                        if self.project.config.raw['project']['git']['auto_commit']:
+                            self.project.commit()
+                    except KeyError:
+                        # The configuration option might not exist at this time
+                        pass
+                    gitcrypt_cmd = subprocess.Popen([self._commands['git-crypt'],
+                                                     'unlock'],
+                                                    stderr=subprocess.PIPE)
+                    out, err = gitcrypt_cmd.communicate()
+                    rc = gitcrypt_cmd.returncode
+                    if rc == 0:
+                        self.encfs_mounted = True
+                        return True
+                    else:
+                        raise ChildProcessError('Cannot unlock project secrets, '
+                                                'git working directory not clean')
+                else:
+                    self.encfs_mounted = True
+                    return False
+
         else:
             parent_path = os.path.dirname(self.path)
             if (os.path.exists(parent_path) and os.path.isdir(parent_path)):
@@ -241,6 +296,12 @@ class AnsibleInventory(object):
 
     def lock(self):
         if self.encrypted:
+            try:
+                if self.project.config.raw['project']['git']['auto_commit']:
+                    self.project.commit()
+            except KeyError:
+                # The configuration option might not exist at this time
+                pass
             if self.crypt_method == 'encfs':
                 if os.path.ismount(self.secret_path):
                     if sys.platform == 'darwin':
@@ -250,6 +311,20 @@ class AnsibleInventory(object):
                                          '-u', self.secret_path])
                     self.encfs_mounted = False
                     return True
+            elif self.crypt_method == 'git-crypt':
+                if not self._git_crypt_locked():
+                    gitcrypt_cmd = subprocess.Popen([self._commands['git-crypt'],
+                                                     'lock'],
+                                                    stderr=subprocess.PIPE)
+                    out, err = gitcrypt_cmd.communicate()
+                    rc = gitcrypt_cmd.returncode
+                    if rc == 0:
+                        self.encfs_mounted = False
+                        return True
+                    else:
+                        raise ChildProcessError('Cannot lock project secrets, '
+                                                'git working directory not clean')
+
         else:
             parent_path = os.path.dirname(self.path)
             if (os.path.exists(parent_path) and os.path.isdir(parent_path)):

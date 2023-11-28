@@ -119,6 +119,11 @@ General
   The modern project layout supports multiple Ansible inventories encapsulated
   into :ref:`infrastructure views <project_infrastructure_views>`.
 
+- DebOps scripts now support management of the project directories using
+  :command:`git` as VCS repositories. New project directories will use
+  :command:`git` by default. This also enables support for secrets encrypted
+  using :command:`git-crypt`.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
@@ -339,6 +344,11 @@ General
   updated and switched the "stable" release to Bookworm, with Bullseye becoming
   the "oldstable" release. The new Debian Testing release, "Trixie" has also
   been added in relevant places.
+
+- DebOps now supports using :command:`git` in project directories - new
+  projects will be initialized as :command:`git` repositories by default. The
+  :command:`git-crypt` command is also supported, and can encrypt project
+  secrets.
 
 :ref:`debops.apt` role
 ''''''''''''''''''''''

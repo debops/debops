@@ -32,20 +32,29 @@ Options
   view is not allowed.
 
 ``--git``
-  Initialize a :command:`git` repository in the project directory (planned)
+  Initialize a :command:`git` repository in the project directory (default)
 
 ``--no-git``
-  Do not initialize a :command:`git` repository, if it's created by default
-  (planned)
+  Do not initialize a :command:`git` repository by default
+
+``--requirements``
+  After the project directory is initialized, install Ansible Collections
+  specified in the :file:`ansible/collections/requirements.yml` file using the
+  :command:`ansible-galaxy` command. This will be done by default in new DebOps
+  projects.
+
+``--no-requirements``
+  Don't install Ansible Collections after the project directory is initialized.
 
 ``--encrypt <encfs|git-crypt>``
   Prepare the project directory to host encrypted :file:`ansible/secret/`
   subdirectory, used to store passwords, encryption keys and other confidential
   information. See the :ref:`debops.secret` Ansible role for more details.
 
-  You need to specify either ``encfs`` or ``git-crypt`` (planned) to select the
-  encryption method. If encryption is enabled, you need to specify the list of
-  GPG recipients as well, using the ``--keys`` option.
+  You need to specify either ``encfs`` or ``git-crypt`` to select the encryption
+  method (``git-crypt`` requires an initialized ``git`` repository). If
+  encryption is enabled, you need to specify the list of GPG recipients as well,
+  using the ``--keys`` option.
 
 ``--keys <recipient>[,recipient]``
   A list of GPG recipients (e-mail addresses or key IDs) which will be allowed
@@ -118,9 +127,9 @@ Options
   subdirectory, used to store passwords, encryption keys and other confidential
   information. See the :ref:`debops.secret` Ansible role for more details.
 
-  You need to specify either ``encfs`` or ``git-crypt`` (planned) to select the
-  encryption method. If encryption is enabled, you need to specify the list of
-  GPG recipients as well, using the ``--keys`` option.
+  You need to specify either ``encfs`` or ``git-crypt`` to select the encryption
+  method. If encryption is enabled, you need to specify the list of GPG
+  recipients as well, using the ``--keys`` option.
 
 ``--keys <recipient>[,recipient]``
   A list of GPG recipients (e-mail addresses or key IDs) which will be allowed
@@ -151,6 +160,28 @@ Create a new infrastructure view with encrypted secrets:
    debops project mkview --encrypt encfs \
                          --keys admin@example.org,otheradmin@example.org \
                          deployment
+
+
+:command:`debops project commit`
+--------------------------------
+
+This command can be used to commit current contents of the project directory
+into the :command:`git` repository. Any modifications to the existing files as
+well as any untracked files will be committed automatically. The commit message
+is taken from the DebOps configuration; users can use :command:`git commit
+--amend` command to edit the commit message afterwards.
+
+Options
+~~~~~~~
+
+``-h, --help``
+  Display the help and usage information
+
+``-v, --verbose``
+  Increase output verbosity. More letters means higher verbosity.
+
+``<project_dir>``
+  Path to the project directory to refresh.
 
 
 :command:`debops project refresh`
@@ -190,6 +221,11 @@ Keep in mind that after unlocking the directory manually, DebOps will not lock i
 on subsequent Ansible runs. In such case you should use the :command:`debops
 project lock` command to secure the secrets.
 
+When ``git-crypt`` is used to encrypt secrets, unlocking them will fail if the
+``git`` working directory contains uncommitted changes. This is expected
+behavior. Easiest way to mitigate this is to unlock the project before making
+any changes.
+
 Options
 ~~~~~~~
 
@@ -216,6 +252,11 @@ This command can be used to lock and secure the :file:`ansible/secret/`
 directory after it has been unlocked using the :command:`debops project unlock`
 command. This only works in project directories that have been configured with
 either EncFS or git-crypt encryption during initialization.
+
+When ``git-crypt`` is used to encrypt secrets, locking them will fail if the
+``git`` working directory contains uncommitted changes. This is expected
+behavior. Easiest way to mitigate this is to commit any changes before locking
+the project directory.
 
 Options
 ~~~~~~~

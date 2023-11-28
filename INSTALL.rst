@@ -79,6 +79,14 @@ Ansible:
 
 .. __: http://www.dnspython.org/
 
+`gitpython`__
+  This is a Python library which provides an interface to the :command:`git`
+  command and git repositories. In DebOps, it is used to manage project
+  directories, and enables support for encrypting secrets using the
+  :command:`git-crypt` command.
+
+.. __: https://gitpython.readthedocs.io/en/stable/index.html
+
 `python-ldap`__
   This is a Python library which can be used to interface with the LDAP
   servers. The `Ansible community.general.ldap_attr module`_ and
