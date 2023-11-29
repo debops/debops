@@ -26,6 +26,20 @@ You can read information about required changes between releases in the
 .. _debops stable-2.2: https://github.com/debops/debops/compare/v2.2.0...stable-2.2
 
 
+`debops v2.2.12`_ - 2023-11-29
+------------------------------
+
+.. _debops v2.2.12: https://github.com/debops/debops/compare/v2.2.11...v2.2.12
+
+Fixed
+~~~~~
+
+General
+'''''''
+
+- Fixed the ReadTheDocs deployment configuration file.
+
+
 `debops v2.2.11`_ - 2023-11-29
 ------------------------------
 
