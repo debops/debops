@@ -905,7 +905,7 @@ Updates of upstream application versions
   ``v24.0`` and ``v25.0``.
 
 General
-~~~~~~~
+'''''''
 
 - Tasks which use modules and plugins from the ``ansible.builtin`` Ansible
   Collection have been updated to refer to them via their Fully Qualified
