@@ -315,11 +315,7 @@ owncloud__variant_name_map:
 #
 # Supported releases:
 #
-# * Nextcloud ``24.0``
-#
-# Upcoming:
-#
-# * Nextcloud ``25.0`` (Implemented based on documentation changes but untested).
+# * Nextcloud ``25.0``
 #
 # Unsupported:
 #
@@ -332,7 +328,7 @@ owncloud__variant_name_map:
 # and the `package index <https://download.owncloud.org/download/repositories/>`_ for more details.
 owncloud__release: '{{ "10"
                        if (owncloud__variant == "owncloud")
-                       else "24.0" }}'
+                       else "25.0" }}'
 
 
 # .. envvar:: owncloud__distribution
@@ -1753,12 +1749,18 @@ owncloud__theme_conf_map:
 #
 # Whether the application should be deployed on a random subpath that acts as a
 # protection of the web app/API from people not knowing this PSK.
+#
+# .. warning:: Do not use this feature to host multiple services under the same
+#    domain because of cookie validity (security issue)!
+#
 # For a discussion in which scenarios this can make sense, refer to
 # `RFC: Support subpath/subdir hosting for additional security`__.
 #
 # .. __: https://github.com/debops/debops/issues/1233
 #
 # .. warning:: This breaks the ``/.well-known`` URIs intentionally.
+#    It breaks the web updater unintentionally, probably due to a bug in
+#    Nextcloud.
 #
 # Hint for migration: Nextcloud is able to auto detect the webroot that it is
 # being accessed. This means that it can be accessed by subpath and without, with

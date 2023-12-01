@@ -23,6 +23,34 @@ You can read information about required changes between releases in the
 
 .. _debops master: https://github.com/debops/debops/compare/v3.1.0...master
 
+Changed
+~~~~~~~
+
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.owncloud` role, Nextcloud now defaults to ``v25.0``.
+  Support for ``v24.0`` has been dropped.
+
+General
+'''''''
+
+- Harmonize all roles on `role::ROLE:pkgs` Ansible tag. The roles:
+
+  - :ref:`debops.apparmor`
+  - :ref:`debops.imapproxy`
+  - :ref:`debops.owncloud`
+  - :ref:`debops.roundcube`
+  - :ref:`debops.rspamd`
+
+  used `role::ROLE:pkg` previously.
+
+:ref:`debops.cryptsetup` role
+'''''''''''''''''''''''''''''
+
+- Make PBKDF configurable and already set Argon2id which is the new default of
+  cryptsetup 2.4.0. See :envvar:`cryptsetup__pbkdf` for details.
+
 
 `debops v3.1.0`_ - 2023-11-29
 -----------------------------
@@ -264,7 +292,7 @@ Updates of upstream application versions
   ``v24.0`` and ``v25.0``.
 
 General
-~~~~~~~
+'''''''
 
 - Tasks which use modules and plugins from the ``ansible.builtin`` Ansible
   Collection have been updated to refer to them via their Fully Qualified
