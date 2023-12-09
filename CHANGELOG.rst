@@ -23,6 +23,16 @@ You can read information about required changes between releases in the
 
 .. _debops stable-3.0: https://github.com/debops/debops/compare/v3.0.0...stable-3.0
 
+Added
+~~~~~
+
+General
+'''''''
+
+- The :command:`debops` script can now log its operation to standard error and
+  to the :command:`syslog` service. Use the ``--verbose`` or ``-v`` flag to
+  enable log output on the console.
+
 
 `debops v3.0.6`_ - 2023-11-29
 -----------------------------
