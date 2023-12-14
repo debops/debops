@@ -13,7 +13,10 @@ playbook on disk.
 
 The :command:`debops run` command will automatically unlock and lock the
 encrypted :file:`ansible/secret/` directory as needed, to give the playbooks
-and roles access to secrets.
+and roles access to secrets. If ``git-crypt`` is used for secret encryption,
+this process might fail if the project directory contains uncommitted changes.
+Easiest way to mitigate this is to unlock the project directory using the
+``debops project unlock`` command before making any changes.
 
 Options
 ~~~~~~~

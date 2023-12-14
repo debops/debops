@@ -101,7 +101,10 @@ class Configuration(object):
         return self._config
 
     def get_env(self, key):
-        return os.environ[key]
+        try:
+            return os.environ[key]
+        except KeyError:
+            return None
 
     def set_env(self, key, value):
         os.environ[key] = str(value)
