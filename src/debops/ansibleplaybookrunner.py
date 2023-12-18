@@ -8,8 +8,11 @@ from .ansible.inventory import AnsibleInventory
 import subprocess
 import configparser
 import textwrap
+import logging
 import os
 import sys
+
+logger = logging.getLogger(__name__)
 
 
 class AnsiblePlaybookRunner(object):
@@ -26,6 +29,7 @@ class AnsiblePlaybookRunner(object):
         except configparser.NoSectionError:
             path = project.ansible_cfg.path
             if (os.path.exists(path) and os.path.isfile(path)):
+                logger.error('Cannot find [defaults] section in {}.format(path)')
                 raise ValueError("Cannot find [defaults] section in " + path)
             else:
                 raise FileNotFoundError("Cannot find Ansible "
@@ -293,12 +297,28 @@ class AnsiblePlaybookRunner(object):
         try:
             unlocked = self.inventory.unlock()
 
+            if ('--check' in self._ansible_command or
+                    '-C' in self._ansible_command):
+                logger.info('Checking Ansible playbooks: {}'.format(
+                        ','.join(self._found_playbooks)),
+                        extra={'block': 'stderr'})
+            else:
+                logger.info('Running Ansible playbooks: {}'.format(
+                        ','.join(self._found_playbooks)),
+                        extra={'block': 'stderr'})
             print('Executing Ansible playbooks:')
             for playbook in self._found_playbooks:
                 print(unexpanduser(playbook))
+            logger.debug('Ansible command: {}'.format(
+                    ' '.join(self._ansible_command)))
             executor = subprocess.Popen(' '.join(self._ansible_command),
                                         shell=True)
+            logger.debug('Starting playbook execution')
             std_out, std_err = executor.communicate()
+            logger.debug('Playbook execution finished')
+            if executor.returncode != 0:
+                logger.error('Ansible finished with '
+                             'return code {}'.format(executor.returncode))
             self._ring_bell()
             return executor.returncode
 
@@ -307,6 +327,8 @@ class AnsiblePlaybookRunner(object):
                                     'git working directory not clean')
 
         except KeyboardInterrupt:
+            logger.notice('Playbook execution interrupted by user',
+                          extra={'block': 'stderr'})
             if unlocked:
                 self.inventory.lock()
             raise SystemExit('... aborted by user')

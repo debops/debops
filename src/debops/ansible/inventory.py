@@ -16,6 +16,7 @@ import string
 import itertools
 import random
 import time
+import logging
 
 try:
     # shlex.quote is new in Python 3.3
@@ -26,6 +27,8 @@ except ImportError:
         if not s:
             return "''"
         return "'" + s.replace("'", "'\"'\"'") + "'"
+
+logger = logging.getLogger(__name__)
 
 
 class AnsibleInventory(object):
@@ -81,17 +84,21 @@ class AnsibleInventory(object):
             self.crypt_method = 'git-crypt'
             if not self._git_crypt_locked():
                 self.encfs_mounted = True
+        logger.debug('Ansible inventory initialized')
 
     def _git_crypt_locked(self):
         """Detect if git-crypt is locked or not"""
         # Based on solution from https://github.com/AGWA/git-crypt/issues/69
+        logger.debug('Checking git-crypt state')
         git_cmd = subprocess.Popen([self._commands['git'], 'config', '--local',
                                     '--get', 'filter.git-crypt.smudge'],
                                    stdout=subprocess.PIPE)
         out, err = git_cmd.communicate()
         if out:
+            logger.debug('git-crypt is in unlocked state')
             return False
         else:
+            logger.debug('git-crypt is in locked state')
             return True
 
     def _get_random_string(self):
@@ -101,6 +108,7 @@ class AnsibleInventory(object):
         return random_string
 
     def _encrypt_secrets_encfs(self):
+        logger.debug('Preparing to encrypt secrets using EncFS')
         encfs_keyfile = os.path.join(self.encfs_path, '.encfs6.keyfile')
         encfs_configfile = os.path.join(self.encfs_path, '.encfs6.xml')
         encfs_password = self._get_random_string()
@@ -111,11 +119,14 @@ class AnsibleInventory(object):
                     itertools.chain.from_iterable(['-r', r]
                                                   for r in gpg_keys))
         except AttributeError:
+            logger.error('List of GPG recipients not specified',
+                         extra={'block': 'stderr'})
             raise ValueError('List of GPG recipients not specified')
 
         if not os.path.exists(self.encfs_path):
             print('Encrypting Ansible secrets using EncFS...')
             os.makedirs(self.encfs_path)
+            logger.debug('Encrypting EncFS keyfile')
             gpg_cmd = subprocess.Popen([self._commands['gpg'], '--encrypt', '--armor',
                                         '--output', encfs_keyfile] + gpg_recipients,
                                        stdin=subprocess.PIPE)
@@ -123,6 +134,7 @@ class AnsibleInventory(object):
             while not os.path.exists(encfs_keyfile):
                 time.sleep(1)
 
+            logger.debug('Creating EncFS filesystem')
             encfs_cmd = subprocess.Popen([
                 self._commands['encfs'], self.encfs_path, self.secret_path,
                 '--extpass',
@@ -141,12 +153,14 @@ class AnsibleInventory(object):
                 self.encfs_mounted = True
             self.lock()
 
+            logger.debug('Encrypting EncFS configuration file')
             gpg_cmd = subprocess.Popen([self._commands['gpg'], '--encrypt', '--armor',
                                         '--output', encfs_configfile + '.asc']
                                        + gpg_recipients + [encfs_configfile])
             while not os.path.exists(encfs_configfile + '.asc'):
                 time.sleep(1)
             os.remove(encfs_configfile)
+            logger.debug('EncFS configuration complete')
 
     def createdirs(self):
         skel_dirs = (
@@ -172,9 +186,13 @@ class AnsibleInventory(object):
 
     def create(self):
 
+        logger.info('Creating inventory in {} directory'.format(self.root_path))
         try:
             os.makedirs(self.root_path)
         except FileExistsError:
+            logger.error('Cannot create view in {}, directory already '
+                         'exists'.format(self.root_path),
+                         extra={'block': 'stderr'})
             raise IsADirectoryError("Cannot create view in "
                                     + self.root_path + ", directory "
                                     "already exists")
@@ -209,6 +227,7 @@ class AnsibleInventory(object):
                         host_as_controller=host_as_controller,
                         hostname=socket.gethostname(),
                         fqdn=socket.getfqdn()))
+            logger.debug('Default hosts file created in Ansible inventory')
 
         encrypted_secrets = self.kwargs.get('encrypt', None)
         if encrypted_secrets is not None:
@@ -218,10 +237,13 @@ class AnsibleInventory(object):
                 # git-crypt is handled at the root of the repository,
                 # not in a specific inventory
                 pass
+        logger.debug('Ansible inventory created')
 
     def unlock(self):
         if self.encrypted:
+            logger.debug('Ansible secrets are encrypted, unlocking')
             if self.crypt_method == 'encfs':
+                logger.debug('Detected EncFS as encryption method')
                 keyfile = os.path.join(self.encfs_path, self.encfs_keyfile)
                 configfile = os.path.join(self.encfs_path, self.encfs_configfile)
                 crypted_configfile = os.path.join(self.encfs_path,
@@ -229,6 +251,8 @@ class AnsibleInventory(object):
 
                 if os.path.ismount(self.secret_path):
                     self.encfs_mounted = True
+                    logger.debug('EncFS filesystem is already mounted, '
+                                 'state not changed')
                     return False
                 else:
                     try:
@@ -246,6 +270,7 @@ class AnsibleInventory(object):
                         raise IOError(17, configfile + ' exists but is not a fifo')
 
                     subprocess_env = os.environ.copy()
+                    logger.debug('Decrypting and mounting EncFS filesystem')
                     encfs = subprocess.Popen([
                         self._commands['encfs'], self.encfs_path, self.secret_path,
                         '--extpass',
@@ -262,8 +287,10 @@ class AnsibleInventory(object):
                     encfs.communicate()
                     os.remove(configfile)
                     self.encfs_mounted = True
+                    logger.debug('EncFS filesystem mounted')
                     return True
             elif self.crypt_method == 'git-crypt':
+                logger.debug('Detected git-crypt as encryption method')
                 if self._git_crypt_locked():
                     try:
                         if self.project.config.raw['project']['git']['auto_commit']:
@@ -271,6 +298,7 @@ class AnsibleInventory(object):
                     except KeyError:
                         # The configuration option might not exist at this time
                         pass
+                    logger.debug('Unlocking secrets using git-crypt')
                     gitcrypt_cmd = subprocess.Popen([self._commands['git-crypt'],
                                                      'unlock'],
                                                     stderr=subprocess.PIPE)
@@ -278,12 +306,18 @@ class AnsibleInventory(object):
                     rc = gitcrypt_cmd.returncode
                     if rc == 0:
                         self.encfs_mounted = True
+                        logger.debug('Files encrypted with git-crypt are '
+                                     'decrypted')
                         return True
                     else:
+                        logger.error('Cannot unlock project secrets, '
+                                     'git working directory not clean',
+                                     extra={'block': 'stderr'})
                         raise ChildProcessError('Cannot unlock project secrets, '
                                                 'git working directory not clean')
                 else:
                     self.encfs_mounted = True
+                    logger.debug('git-crypt is already unlocked')
                     return False
 
         else:
@@ -296,6 +330,7 @@ class AnsibleInventory(object):
 
     def lock(self):
         if self.encrypted:
+            logger.debug('Ansible secrets are encrypted, locking')
             try:
                 if self.project.config.raw['project']['git']['auto_commit']:
                     self.project.commit()
@@ -303,16 +338,21 @@ class AnsibleInventory(object):
                 # The configuration option might not exist at this time
                 pass
             if self.crypt_method == 'encfs':
+                logger.debug('Detected EncFS as encryption method')
                 if os.path.ismount(self.secret_path):
+                    logger.debug('EncFS filesystem is mounted, unmounting')
                     if sys.platform == 'darwin':
                         subprocess.call([self._commands['umount'], self.secret_path])
                     else:
                         subprocess.call([self._commands['fusermount'],
                                          '-u', self.secret_path])
                     self.encfs_mounted = False
+                    logger.debug('EncFS filesystem has been unmounted')
                     return True
             elif self.crypt_method == 'git-crypt':
+                logger.debug('Detected git-crypt as encryption method')
                 if not self._git_crypt_locked():
+                    logger.debug('Encrypted files are unlocked, locking')
                     gitcrypt_cmd = subprocess.Popen([self._commands['git-crypt'],
                                                      'lock'],
                                                     stderr=subprocess.PIPE)
@@ -320,8 +360,12 @@ class AnsibleInventory(object):
                     rc = gitcrypt_cmd.returncode
                     if rc == 0:
                         self.encfs_mounted = False
+                        logger.debug('Encrypted files are locked')
                         return True
                     else:
+                        logger.error('Cannot lock project secrets, '
+                                     'git working directory not clean',
+                                     extra={'block': 'stderr'})
                         raise ChildProcessError('Cannot lock project secrets, '
                                                 'git working directory not clean')
 

@@ -143,4 +143,6 @@ if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
+        logger.notice('User interrupted execution',
+                      extra={'block': 'stderr'})
         raise SystemExit('... aborted by user')
