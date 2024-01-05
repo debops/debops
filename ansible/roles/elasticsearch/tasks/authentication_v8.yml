@@ -1,0 +1,30 @@
+---
+# Copyright (C) 2024 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2024 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Check status of built-in users via Elasticsearch API
+  ansible.builtin.uri:
+    url: '{{ elasticsearch__api_base_url + "/_security/user/elastic" }}'
+    user: "{{ elasticsearch__api_username }}"
+    password: "{{ elasticsearch__api_password }}"
+    force_basic_auth: True
+    method: 'GET'
+    status_code: [ '200', '401' ]
+  register: elasticsearch__register_api_builtin_users
+  until: elasticsearch__register_api_builtin_users.status in [200, 401]
+  retries: 10
+  delay: 5
+  no_log: '{{ debops__no_log | d(True) }}'
+
+- name: Set passwords for built-in Elasticsearch user accounts
+  ansible.builtin.include_tasks: 'reset_password.yml'
+  loop:
+    - 'elastic'
+    - 'kibana_system'
+    - 'logstash_system'
+    - 'beats_system'
+    - 'apm_system'
+    - 'remote_monitoring_user'
+  when: ((not (ansible_local.elasticsearch.configured | d()) | bool) or
+         elasticsearch__register_api_builtin_users.status == 401)

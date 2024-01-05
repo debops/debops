@@ -185,7 +185,19 @@
 - name: Ensure that Elasticsearch is restarted
   meta: 'flush_handlers'
 
-- name: Manage Elasticsearch authentication
+- name: Manage Elasticsearch authentication (old)
   import_tasks: 'authentication.yml'
   run_once: True
-  when: elasticsearch__xpack_enabled|bool and elasticsearch__pki_enabled|bool
+  when: elasticsearch__version is version("8.0", "<") and
+        elasticsearch__xpack_enabled | bool and elasticsearch__pki_enabled | bool
+
+- name: Manage Elasticsearch authentication (new)
+  import_tasks: 'authentication_v8.yml'
+  run_once: True
+  when: elasticsearch__version is version("8.0", ">=") and
+        elasticsearch__xpack_enabled | bool and elasticsearch__pki_enabled | bool
+
+- name: Manage Elasticsearch roles and users
+  import_tasks: 'roles_users.yml'
+  run_once: True
+  when: elasticsearch__xpack_enabled | bool and elasticsearch__pki_enabled | bool
