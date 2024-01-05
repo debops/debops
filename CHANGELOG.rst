@@ -33,6 +33,14 @@ General
   to the :command:`syslog` service. Use the ``--verbose`` or ``-v`` flag to
   enable log output on the console.
 
+Changed
+~~~~~~~
+
+:ref:`debops.elasticsearch` role
+''''''''''''''''''''''''''''''''
+
+- The role now supports new Elasticsearch v8.x password management mechanism.
+
 
 `debops v3.1.0`_ - 2023-11-29
 -----------------------------
