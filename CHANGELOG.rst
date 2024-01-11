@@ -41,6 +41,15 @@ Changed
 
 - The role now supports new Elasticsearch v8.x password management mechanism.
 
+- The role can now manage passwords in separate Elasticsearch clusters defined
+  in one Ansible inventory.
+
+  .. warning:: Due to this change, Elasticsearch passwords stored in the
+               :file:`ansible/secret/` subdirectory will be read from a different
+               location. If passwords are not moved to the new location, role
+               will reset the Elasticsearch built-in users passwords
+               automatically. This might result in data loss.
+
 
 `debops v3.1.0`_ - 2023-11-29
 -----------------------------

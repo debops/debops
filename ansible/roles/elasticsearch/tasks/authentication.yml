@@ -31,7 +31,7 @@
 
 - name: Create required directories on Ansible Controller
   ansible.builtin.file:
-    path: '{{ secret + "/elasticsearch/credentials/built-in/" + item.split()[0] }}'
+    path: '{{ secret + "/" + elasticsearch__secret_path + "/" + item.split()[0] }}'
     state: 'directory'
     mode: '0755'
   loop: '{{ elasticsearch__register_builtin_users.stdout_lines }}'
@@ -43,7 +43,7 @@
 - name: Save generated user passwords on Ansible Controller
   ansible.builtin.copy:
     content: '{{ item.split()[1] }}'
-    dest: '{{ secret + "/elasticsearch/credentials/built-in/" + item.split()[0] + "/password" }}'
+    dest: '{{ secret + "/" + elasticsearch__secret_path + "/" + item.split()[0] + "/password" }}'
     mode: '0644'
   loop: '{{ elasticsearch__register_builtin_users.stdout_lines }}'
   become: False
