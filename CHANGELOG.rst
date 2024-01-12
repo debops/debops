@@ -50,6 +50,17 @@ Changed
                will reset the Elasticsearch built-in users passwords
                automatically. This might result in data loss.
 
+:ref:`debops.kibana` role
+'''''''''''''''''''''''''
+
+- The path to the password file stored in :file:`ansible/secret/` subdirectory
+  is now configurable using a variable.
+
+- The role uses new per-cluster Elasticsearch passwords by default. This is
+  done using a separate :envvar:`kibana__elasticsearch_cluster_name` variable,
+  which needs to be synchronized with the Elasticsearch configuration via
+  Ansible inventory (Kibana can be installed separately from Elasticsearch).
+
 
 `debops v3.1.0`_ - 2023-11-29
 -----------------------------
