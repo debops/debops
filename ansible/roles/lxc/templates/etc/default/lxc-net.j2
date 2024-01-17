@@ -19,4 +19,6 @@ LXC_DHCP_RANGE="{{ lxc__net_address | ansible.utils.ipaddr(lxc__net_dhcp_start |
 LXC_DHCP_MAX="{{ (lxc__net_address | ansible.utils.ipaddr('size')) | int - ((lxc__net_dhcp_start | int|abs) + (lxc__net_dhcp_end | int|abs)) }}"
 LXC_DHCP_CONFILE="{{ lxc__net_dnsmasq_conf }}"
 LXC_DOMAIN="{{ lxc__net_domain }}"
+# make lxc-net use iptables as long as ferm uses iptables
+LXC_USE_NFT="false"
 {% endif %}
