@@ -1,0 +1,292 @@
+#!/usr/bin/env bash
+
+# This file is managed remotely, all changes will be lost
+
+# Copyright (C) 2022 David Härdeman
+# Copyright (C) 2015-2022 DebOps <https://debops.org/>
+#
+# Partially based on the slapd-snapshot script, which is
+# Copyright (C) 2015-2019 Maciej Delmanowski <drybjed@gmail.com>
+#
+# SPDX-License-Identifier: GPL-3.0-only
+
+# This script creates backups of user mailboxes managed by Dovecot.
+# The mailboxes will be backed up using "doveadm" rather than creating
+# archives of the live filesystem. This avoids issues such as indexes
+# being updated halfway through the backup, creating an invalid archive.
+
+
+set -o nounset -o pipefail -o errexit
+
+umask 027
+
+SCRIPT="$(basename "${0}")"
+readonly SCRIPT
+readonly PID="$$"
+readonly PIDFILE="/run/${SCRIPT}.pid"
+readonly SUBCOMMAND="${1:-}"
+readonly DOVEADM="/usr/bin/doveadm"
+
+BACKUP_USER="backup"
+BACKUP_GROUP="backup"
+BACKUP_ROOT="$(getent passwd "${BACKUP_USER}" | cut -f6 -d:)/dovecot"
+BACKUP_LOGIN_PATTERNS=("*")
+DOVEADM_USER="vmail"
+DOVEADM_GROUP="vmail"
+
+if [ -f "/etc/default/debops-dovecot-snapshot" ] ; then
+    # shellcheck disable=SC1091
+    . "/etc/default/debops-dovecot-snapshot"
+fi
+
+print_usage () {
+    cat <<EOF
+Usage: ${SCRIPT} <daily|weekly|monthly|latest|now>
+
+Create periodic backup snapshots of Dovecot mailboxes
+EOF
+}
+
+
+get_logins () {
+    local -a login_patterns
+    local doveadm
+    local -a result
+    local -a logins
+
+    login_patterns=( "${BACKUP_LOGIN_PATTERNS[@]}" )
+    doveadm="${DOVEADM}"
+
+    # Given an array of search patterns, find all matching user login names
+    # Doveadm only supports simple wildcards ("*" and "?")
+    for pattern in "${login_patterns[@]}" ; do
+        if [ "${pattern}" != "${pattern//[*?]/}" ]; then
+            readarray -t result < <("${doveadm}" user -f user "${pattern}")
+            logins+=("${result[@]}")
+        else
+            logins+=("${pattern}")
+        fi
+    done
+
+    # Now make sure we only have unique login names
+    printf "%s\n" "${logins[@]}" | sort -u
+}
+readarray -t BACKUP_LOGINS < <(get_logins)
+
+
+log_message () {
+    # Display a message if script is used interactively, otherwise send it to syslog
+    local msg="${1:-}"
+
+    if [ -n "${msg}" ] ; then
+        if tty -s > /dev/null 2>&1 ; then
+            echo "${SCRIPT}: ${msg}" 1>&2
+        elif type logger > /dev/null 2>&1 ; then
+            logger -t "${SCRIPT}[${PID}]" "${msg}"
+        fi
+    fi
+}
+
+
+clean_up () {
+    # Clean up pidfile
+    local pidfile="${1}"
+
+    if [ -n "${pidfile}" ] && [ -r "${pidfile}" ] ; then
+        rm -f "${pidfile}"
+    fi
+    exit 0
+}
+
+
+wait_for_pid () {
+    # Wait for the specified process to exit
+    local pidfile="${1}"
+
+    if [ -n "${pidfile}" ] && [ -r "${pidfile}" ] ; then
+        local wait_pid
+        wait_pid="$(< "${pidfile}")"
+        while kill -0 "${wait_pid}" > /dev/null 2>&1 ; do
+            log_message "Waiting for PID ${wait_pid} to finish"
+            sleep $(( ( RANDOM % 30 ) + 5 ))
+        done
+        if [ -f "${pidfile}" ] ; then
+            rm -f "${pidfile}"
+        fi
+    fi
+}
+
+
+create_lock () {
+    local pidfile="${1}"
+    local pid="${PID}"
+
+    # Try and lock the script operation
+    echo "${pid}" > "${pidfile}"
+    sleep 0.5
+
+    # Exclusive lock failed
+    if [ "x$(cat "${pidfile}")" != "x${pid}" ] ; then
+        log_message "Dovecot snapshot procedure started by $(< "${pidfile}")"
+        exit 0
+    fi
+
+    # Exclusive lock succeeded
+    # shellcheck disable=SC2064
+    trap "clean_up ${pidfile}" EXIT
+}
+
+
+create_snapshot () {
+    local -a backup_logins
+    local backup_user
+    local backup_group
+    local backup_root
+    local doveadm
+    local doveadm_user
+    local doveadm_group
+    local backup_base
+    local backup_dir
+    local backup_file
+
+    backup_logins=( "${BACKUP_LOGINS[@]}" )
+    backup_user="${BACKUP_USER}"
+    backup_group="${BACKUP_GROUP}"
+    backup_root="${BACKUP_ROOT}"
+    doveadm="${DOVEADM}"
+    doveadm_user="${DOVEADM_USER}"
+    doveadm_group="${DOVEADM_GROUP}"
+    backup_base="${1}"
+    backup_dir="$(dirname "${backup_base}")"
+    backup_file="$(basename "${backup_base}")"
+
+    # Note: doveadm writes data as the user it would normally use when writing
+    #       to a mailbox (e.g. "vmail"), and also overrides umask. So we need
+    #       a directory which is writeable for "vmail", while at the same time
+    #       not being world-readable
+    umask 022
+    mkdir -p "${backup_base}"
+
+    umask 077
+    for user in "${backup_logins[@]}"; do
+        mkdir -p "${backup_base}/${user}"
+    done
+
+    umask 027
+    chown -R "${backup_user}:${backup_group}" "${backup_root}"
+    chown -R "${doveadm_user}:${doveadm_group}" "${backup_base}"
+
+    log_message "Backing up ${#backup_logins[@]} users to ${backup_base}"
+    for user in "${backup_logins[@]}"; do
+        "${doveadm}" \
+            -o mail_fsync=never \
+            -o plugin/quota= \
+            -o plugin/zlib_save= \
+            backup -f \
+            -u "${user}" \
+            "mdbox:${backup_base}/${user}"
+        chmod -R go-rwx "${backup_base}/${user}"
+        nice tar -acf "${backup_base}/${user}.tar.zst" \
+            -C "${backup_base}" "${user}" \
+            --force-local --atime-preserve --preserve-permissions
+        rm -rf "${backup_base:?}/${user}"
+        chown "${doveadm_user}:${doveadm_group}" "${backup_base}/${user}.tar.zst"
+    done
+
+    rm -f "${backup_base}.tar.gpg"
+    rm -f "${backup_base}.tar.asc"
+
+    nice tar -cf "${backup_base}.tar" \
+        -C "${backup_dir}" "${backup_file}" --force-local
+    chown "${backup_user}:${backup_group}" "${backup_base}.tar"
+    rm -rf "${backup_base}"
+}
+
+
+snapshot_daily () {
+    local backup_root
+    local day
+    local weekday
+    local backup_base
+
+    backup_root="${BACKUP_ROOT}"
+    day="$(date +%w)"
+    weekday="$(date +%A)"
+
+    log_message "Creating a daily snapshot of Dovecot mailboxes"
+    backup_base="${backup_root}/daily/dovecot_day${day}_${weekday}"
+    create_snapshot "${backup_base}"
+    log_message "Daily snapshot of the Dovecot mailboxes created successfully"
+}
+
+
+snapshot_weekly () {
+    local backup_root
+    local week
+    local backup_base
+
+    backup_root="${BACKUP_ROOT}"
+    # Find out the week number in the current month
+    week="$(( ( $(date +%_d) - 1 ) / 7 + 1 ))"
+
+    log_message "Creating a weekly snapshot of Dovecot mailboxes"
+    backup_base="${backup_root}/weekly/dovecot_week${week}"
+    create_snapshot "${backup_base}"
+    log_message "Weekly snapshot of the Dovecot mailboxes created successfully"
+}
+
+
+snapshot_monthly () {
+    local backup_root
+    local month
+    local month_name
+    local backup_base
+
+    backup_root="${BACKUP_ROOT}"
+    month="$(date +%m)"
+    month_name="$(date +%B)"
+
+    log_message "Creating a monthly snapshot of Dovecot mailboxes"
+    backup_base="${backup_root}/monthly/dovecot_month${month}_${month_name}"
+    create_snapshot "${backup_base}"
+    log_message "Monthly snapshot of the Dovecot mailboxes created successfully"
+}
+
+
+snapshot_latest () {
+    local backup_root
+    local current_date
+    local backup_base
+
+    backup_root="${BACKUP_ROOT}"
+    current_date="$(date +%F_%H%M)"
+
+    if [ -d "${backup_root}/latest" ] ; then
+        # Remove old set of database backups
+        find "${backup_root}/latest" -type f -name "dovecot_*.tar" -delete
+    fi
+
+    log_message "Creating a snapshot of Dovecot mailboxes"
+    backup_base="${backup_root}/latest/dovecot_${current_date}"
+    create_snapshot "${backup_base}"
+    log_message "Snapshot of the Dovecot mailboxes created successfully"
+}
+
+
+main () {
+    local pidfile="${PIDFILE}"
+    local subcommand="${SUBCOMMAND}"
+
+    wait_for_pid "${pidfile}"
+    create_lock "${pidfile}"
+
+    case "${subcommand}" in
+        daily)      snapshot_daily  ;;
+        weekly)     snapshot_weekly ;;
+        monthly)    snapshot_monthly ;;
+        now|latest) snapshot_latest ;;
+        *)          print_usage && exit 1 ;;
+    esac
+}
+
+main
