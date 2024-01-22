@@ -33,6 +33,10 @@ General
   to the :command:`syslog` service. Use the ``--verbose`` or ``-v`` flag to
   enable log output on the console.
 
+- Users can define "playbook sets" on the view level of the "modern" project
+  directories. Playbook sets can be used as aliases to call multiple playbooks
+  using a custom name. See :ref:`playbook_sets` documentation for more details.
+
 Changed
 ~~~~~~~
 
