@@ -282,6 +282,70 @@ default collection for a given "infrastructure view" to one which contains
 unprivileged playbooks and roles, or add more Ansible Collections which should
 be searched for playbooks.
 
+.. _playbook_sets:
+
+Per-view playbook sets
+~~~~~~~~~~~~~~~~~~~~~~
+
+Users can define "playbook sets" at the view level, using the
+`views.<name>.playbook_sets` configuration option. This option is a YAML
+dictionary with lists of playbooks to execute when a particular "playbook set"
+is specified on the command line. An example configuration:
+
+.. code-block:: yaml
+
+   ---
+   views:
+     system:
+       playbook_sets:
+         'webservice':
+           - 'layer/common'
+           - 'service/nginx'
+           - 'custom-app'
+
+With the above configuration, users can execute a set of playbooks using the
+command:
+
+.. code-block:: console
+
+   debops run webservice -l webserver
+
+which will be internally expanded to:
+
+.. code-block:: console
+
+   debops run layer/common service/nginx custom-app -l webserver
+
+After that, the usual playbook expansion will take place. The first two
+playbooks will be found in the DebOps collection, and the :file:`custom-app`
+playbook will be presumably in the :file:`ansible/views/system/playbooks/`
+subdirectory of the project directory. If a potential playbook set is not found,
+the argument will be expanded into a playbook if possible, or passed to the
+:command:`ansible-playbook` command as-is.
+
+This mechanism can be used to redefine existing playbooks into playbook sets.
+For example, if users want to include additional playbooks in the "site"
+playbook, they can:
+
+.. code-block:: yaml
+
+   ---
+   views:
+     system:
+       playbook_sets:
+         'site':
+           - 'site'
+           - '<namespace>.<collection>.custom_playbook'
+
+Now calling the "site" playbook will execute the DebOps own :file:`site.yml`
+playbook, and an additional playbook from a specific Ansible Collection.
+
+Please remember that this feature does not modify the actual playbooks, just the
+way they are called from the command line. This means that including the
+:file:`site.yml` playbook in another playbook will run just that one playbook,
+not all the playbooks defined in a playbook set.
+
+
 DebOps and :command:`git` integration
 -------------------------------------
 
