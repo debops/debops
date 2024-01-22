@@ -1,5 +1,5 @@
-# Copyright (C) 2020-2021 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2020-2021 DebOps <https://debops.org/>
+# Copyright (C) 2020-2024 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020-2024 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .utils import unexpanduser
@@ -108,17 +108,45 @@ class AnsiblePlaybookRunner(object):
                 self._parsed_args.append(index)
             else:
                 # Most likely a name of a playbook which we can expand
-                self._ansible_command.append(self._quote_spaces(
-                    self._expand_playbook(project, argument)))
-                self._found_playbooks.append(self._quote_spaces(
-                    self._expand_playbook(project, argument)))
-                self._parsed_args.append(index)
+
+                # Check the arguments for possible playbook sets and expand them
+                # if they're found
+                parsed_set = self._expand_playbook_set(project, argument)
+
+                for element in parsed_set:
+                    self._ansible_command.append(self._quote_spaces(
+                        self._expand_playbook(project, element)))
+                    self._found_playbooks.append(self._quote_spaces(
+                        self._expand_playbook(project, element)))
+                    self._parsed_args.append(index)
 
     def _quote_spaces(self, string):
         if ' ' in string:
             return '"{}"'.format(string)
         else:
             return string
+
+    def _expand_playbook_set(self, project, argument):
+        logger.debug('Checking if playbook "{}" is a playbook set'
+                     .format(argument))
+        try:
+            playbook_set = (project.config.raw['views']
+                                              [project.view]
+                                              ['playbook_sets']
+                                              [argument])
+            logger.notice('Found playbook set "{}" in view "{}"'
+                          .format(argument, project.view))
+            if isinstance(playbook_set, list):
+                logger.debug('Playbook set "{}" expanded to: {}'
+                             .format(argument, ' '.join(playbook_set)))
+                return playbook_set
+            else:
+                logger.error('Incorrect definition of playbook set',
+                             extra={'block': 'stderr'})
+                raise ValueError('Incorrect definition of playbook set')
+        except KeyError:
+            logger.debug('No playbook set found')
+            return [argument]
 
     def _ring_bell(self):
         # Notify user at end of execution
