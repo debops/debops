@@ -45,6 +45,15 @@ Changed
 
 - The role now supports new Elasticsearch v8.x password management mechanism.
 
+Fixed
+~~~~~
+
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- Fixed issue with ``role::nginx:servers` Ansible tag not working correctly by
+  adding tags to tasks included dynamically.
+
 
 `debops v3.0.6`_ - 2023-11-29
 -----------------------------

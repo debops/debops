@@ -11,6 +11,7 @@
     owner: 'root'
     group: 'root'
     mode: '0755'
+  tags: [ 'role::nginx:servers' ]
 
 - name: Remove nginx maps if requested
   file:
@@ -27,6 +28,7 @@
   when: (item.name|d() and
          ((item.state|d() and item.state == 'absent') or
           (item.delete|d() and item.delete|bool)))
+  tags: [ 'role::nginx:servers' ]
 
 - name: Configure nginx maps
   template:
@@ -45,6 +47,7 @@
   notify: [ 'Test nginx and reload' ]
   when: (item.name|d() and item.state|d('present') != 'absent' and
          (item.delete is undefined or not item.delete|bool))
+  tags: [ 'role::nginx:servers' ]
 
 - name: Remove nginx upstreams if requested
   file:
@@ -61,6 +64,7 @@
   when: (item.name|d() and
          ((item.state|d('present') == 'absent') or
           (item.delete|d() and item.delete|bool)))
+  tags: [ 'role::nginx:servers' ]
 
 - name: Configure nginx upstreams
   template:
@@ -79,6 +83,7 @@
   notify: [ 'Test nginx and reload' ]
   when: (item.name|d() and item.state|d('present') != 'absent' and
          (item.delete is undefined or not item.delete|bool))
+  tags: [ 'role::nginx:servers' ]
 
 - name: Remove nginx log_format if requested
   file:
@@ -91,6 +96,7 @@
   when: (item.name|d() and
          ((item.state|d('present') == 'absent') or
           (item.delete|d() and item.delete|bool)))
+  tags: [ 'role::nginx:servers' ]
 
 - name: Configure nginx log_format
   template:
@@ -105,6 +111,7 @@
   notify: [ 'Test nginx and reload' ]
   when: (item.name|d() and item.state|d('present') != 'absent' and
          (item.delete is undefined or not item.delete|bool))
+  tags: [ 'role::nginx:servers' ]
 
 - name: Remove custom nginx configuration if requested
   file:
@@ -117,6 +124,7 @@
   when: (item.name|d() and
          ((item.state|d() and item.state == 'absent') or
           (item.delete|d() and item.delete|bool)))
+  tags: [ 'role::nginx:servers' ]
 
 - name: Add custom nginx configuration
   template:
@@ -131,3 +139,4 @@
   notify: [ 'Test nginx and reload' ]
   when: (item.name|d() and item.state|d('present') != 'absent' and
          (item.delete is undefined or not item.delete|bool))
+  tags: [ 'role::nginx:servers' ]
