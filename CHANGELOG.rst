@@ -23,6 +23,15 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.3: https://github.com/debops/debops/compare/v2.3.0...stable-2.3
 
+Fixed
+~~~~~
+
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- Fixed issue with ``role::nginx:servers` Ansible tag not working correctly by
+  adding tags to tasks included dynamically.
+
 
 `debops v2.3.9`_ - 2023-11-29
 -----------------------------

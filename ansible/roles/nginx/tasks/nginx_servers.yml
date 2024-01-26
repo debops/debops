@@ -27,6 +27,7 @@
     - '{{ nginx_dependent_servers | d([]) }}'
   when: ((item.webroot_create|d(nginx_webroot_create)|bool) and
          item.state|d('present') != 'absent')
+  tags: [ 'role::nginx:servers' ]
 
 - name: Create default welcome page if enabled
   template:
@@ -55,6 +56,7 @@
          item.state|d('present') != 'absent' and
          (item.delete is undefined or not item.delete|bool) and
          (item.welcome|d() | bool))
+  tags: [ 'role::nginx:servers' ]
 
 - name: Copy 'normalize.css' CSS file for welcome page
   template:
@@ -83,6 +85,7 @@
          item.state|d('present') != 'absent' and
          (item.delete is undefined or not item.delete|bool) and
          (item.welcome|d() | bool))
+  tags: [ 'role::nginx:servers' ]
 
 - name: Remove nginx server configuration if requested
   file:
@@ -101,28 +104,33 @@
     - '{{ nginx_dependent_servers | d([]) }}'
   when: (item.name is defined and
          ((item.state|d("present") == 'absent') or (item.delete|d()|bool)))
+  tags: [ 'role::nginx:servers' ]
 
 - name: Get last used HTTP default_server for default_server roulette
   set_fact:
     nginx_register_default_server_saved: '{{ ansible_local.nginx.default_server }}'
   when: (ansible_local is defined and ansible_local.nginx is defined and
          ansible_local.nginx.default_server is defined)
+  tags: [ 'role::nginx:servers' ]
 
 - name: Get last used HTTPS default_server for default_server roulette
   set_fact:
     nginx_register_default_server_ssl_saved: '{{ ansible_local.nginx.default_server_ssl }}'
   when: (ansible_local is defined and ansible_local.nginx is defined and
          ansible_local.nginx.default_server_ssl is defined)
+  tags: [ 'role::nginx:servers' ]
 
 - name: Get HTTP server from nginx defaults for default_server roulette
   set_fact:
     nginx_register_default_server_name: '{{ nginx_default_name }}'
   when: nginx_default_name is defined and nginx_default_name
+  tags: [ 'role::nginx:servers' ]
 
 - name: Get HTTPS server from nginx defaults for default_server roulette
   set_fact:
     nginx_register_default_server_ssl_name: '{{ nginx_default_ssl_name }}'
   when: nginx_default_ssl_name is defined and nginx_default_ssl_name
+  tags: [ 'role::nginx:servers' ]
 
 - name: Get first server that listens on http port for default_server roulette
   set_fact:
@@ -134,6 +142,7 @@
          (item.enabled|d(True)|bool) and
          (item.listen|d(True)) and
          ((item.ssl is undefined or not item.ssl | bool) or not nginx_pki | bool))
+  tags: [ 'role::nginx:servers' ]
 
 - name: Get first server that listens on https port for default_server roulette
   set_fact:
@@ -145,6 +154,7 @@
          (item.listen_ssl is undefined or item.listen_ssl|d()) and
          ((item.ssl|d() and item.ssl | bool) or
           (item.ssl is undefined and nginx_pki | bool)))
+  tags: [ 'role::nginx:servers' ]
 
 - name: Spin the HTTP default_server roulette!
   set_fact:
@@ -152,6 +162,7 @@
                                          default(nginx_register_default_server_name |
                                            default(nginx_register_default_server_http |
                                              default(""))) }}'
+  tags: [ 'role::nginx:servers' ]
 
 - name: Spin the HTTPS default_server roulette!
   set_fact:
@@ -159,6 +170,7 @@
                                              default(nginx_register_default_server_ssl_name |
                                                default(nginx_register_default_server_https |
                                                  default(""))) }}'
+  tags: [ 'role::nginx:servers' ]
 
 - name: Generate nginx server configuration
   template:
@@ -181,6 +193,7 @@
   notify: [ 'Test nginx and reload' ]
   when: (item.state|d('present') != 'absent' and
          (item.delete is undefined or not item.delete|bool))
+  tags: [ 'role::nginx:servers' ]
 
 - name: Disable nginx server configuration
   file:
@@ -201,16 +214,19 @@
          ((item.state|d("present") == 'absent') or
           (item.enabled|d() and not item.enabled|bool) or
           (item.delete|d()|bool)))
+  tags: [ 'role::nginx:servers' ]
 
   ## https://stackoverflow.com/a/28888474
 - name: Test if Ansible is running in check mode
   command: /bin/true
   changed_when: False
   register: nginx__register_check_mode
+  tags: [ 'role::nginx:servers' ]
 
 - name: Save fact if Ansible is running in check mode in variable
   set_fact:
     nginx__fact_check_mode: '{{ nginx__register_check_mode is skipped }}'
+  tags: [ 'role::nginx:servers' ]
 
 - name: Enable nginx server configuration
   file:
@@ -236,3 +252,4 @@
          (item.enabled|d(True)|bool) and
          (item.delete is undefined or not item.delete|bool) and
          not nginx__fact_check_mode|bool)
+  tags: [ 'role::nginx:servers' ]
