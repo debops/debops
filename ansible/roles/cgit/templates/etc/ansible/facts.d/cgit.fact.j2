@@ -1,0 +1,22 @@
+#!{{ ansible_python['executable'] }}
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# {{ ansible_managed }}
+
+from __future__ import print_function
+from json import dumps, loads
+from sys import exit
+import os
+
+
+def exe_exists(path):
+    return os.access(path, os.X_OK)
+
+
+output = {'installed': exe_exists('/usr/lib/cgit/cgit.cgi')}
+
+print(dumps(output, sort_keys=True, indent=4))

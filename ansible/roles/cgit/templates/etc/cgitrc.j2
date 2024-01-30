@@ -1,0 +1,46 @@
+{# Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+ # Copyright (C) 2022 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+#
+# {{ ansible_managed }}
+#
+# /etc/cgitrc		Configuration file for cgit
+#			For more information, see cgitrc(5)
+#
+{% for option in cgit__combined_configuration | debops.debops.parse_kv_config %}
+{%   if option.state | d('present') not in [ 'absent', 'init', 'ignore' ] %}
+{{     '' }}
+{%     if option.comment | d() %}
+{{       option.comment | regex_replace('\n$', '') | comment(prefix='', decoration='# ', postfix='') -}}
+{%     endif %}
+{%     if option.raw | d() %}
+{%       if option.state | d('present') == 'comment' %}
+{{         '{}'.format(option.raw | regex_replace('\n$', '') | comment(prefix='', decoration='#', postfix='')) -}}
+{%       else %}
+{{         '{}'.format(option.raw | regex_replace('\n$', '')) }}
+{%       endif %}
+{%     else %}
+{%       set prefix = '# ' if (option.state | d('present') == 'comment') else '' %}
+{%       set key = option.option | d(option.name) %}
+{%       set value = option.value | d("") %}
+{%       if value is boolean %}
+{%         set value = value | int | string %}
+{%       elif value is string and value | lower in [ '1', 'yes', 'true' ] %}
+{%         set value = '1' %}
+{%       elif value is string and value | lower in [ '0', 'no', 'false' ] %}
+{%         set value = '0' %}
+{%       elif value is string %}
+{%         set value = value %}
+{%       elif value is iterable %}
+{%         set value = value | selectattr("name", "defined") | map(attribute="name") | list | join(' ') %}
+{#         set value = value | list | join(' ') #}
+{%       elif value is number %}
+{%         set value = value | string %}
+{%       else %}
+{%         set value = value | string %}
+{%       endif %}
+{{       '{}{}={}'.format(prefix, key, value) }}
+{%     endif %}
+{%   endif %}
+{% endfor %}
