@@ -7,6 +7,10 @@
   collections: [ 'debops.debops', 'debops.roles01',
                  'debops.roles02', 'debops.roles03' ]
   hosts: [ 'debops_service_icinga' ]
+  # Each run of the icinga role will kick the icinga director, if it is already
+  # busy updating the configuration, it will return HTTP 500, which will cause
+  # the role to fail. Hence the "serial" setting below.
+  serial: 1
   become: True
 
   environment: '{{ inventory__environment | d({})
