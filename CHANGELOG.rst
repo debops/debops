@@ -26,6 +26,17 @@ You can read information about required changes between releases in the
 Added
 ~~~~~
 
+New DebOps roles
+''''''''''''''''
+
+- The :ref:`debops.debconf` Ansible role can be used to pre-configure APT
+  packages which use the `debconf`__ configuration database and install them
+  afterwards. The role is included near the end of the :file:`site.yml`
+  playbook to allow of configuration of other needed services before the actual
+  package installation.
+
+  .. __: https://en.wikipedia.org/wiki/Debian_configuration_system
+
 General
 '''''''
 
