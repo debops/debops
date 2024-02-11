@@ -230,6 +230,10 @@
     DJANGO_SUPERUSER_PASSWORD: '{{ netbox__superuser_password }}'
   become: True
   become_user: '{{ netbox__user }}'
+  register: netbox__register_django_superuser
+  failed_when: ('error' in netbox__register_django_superuser.msg.lower() and
+                'that username is already taken.' not in netbox__register_django_superuser.msg.lower()) or
+               ('error' not in netbox__register_django_superuser.msg.lower())
   when: (not netbox__register_installed.stat.exists | bool and
          not netbox__register_migration.stdout is search('No migrations to apply.'))
   no_log: '{{ debops__no_log | d(True) }}'
