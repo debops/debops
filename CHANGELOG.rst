@@ -76,6 +76,15 @@ Changed
   which needs to be synchronized with the Elasticsearch configuration via
   Ansible inventory (Kibana can be installed separately from Elasticsearch).
 
+Removed
+~~~~~~~
+
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- Debian 9 (Stretch) has been removed from Debian mirrors, therefore the role
+  will no longer offer support for installing Debian Stretch via PXE boot.
+
 
 `debops v3.1.0`_ - 2023-11-29
 -----------------------------
