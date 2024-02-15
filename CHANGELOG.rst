@@ -54,6 +54,16 @@ Fixed
 - Fixed issue with ``role::nginx:servers` Ansible tag not working correctly by
   adding tags to tasks included dynamically.
 
+Removed
+~~~~~~~
+
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- Debian 8 (Jessie) and Debian 9 (Stretch) have been removed from Debian
+  mirrors, therefore the role will no longer offer support for installing
+  Debian Jessie and Stretch via PXE boot.
+
 
 `debops v3.0.6`_ - 2023-11-29
 -----------------------------
