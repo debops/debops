@@ -23,6 +23,16 @@ You can read information about required changes between releases in the
 
 .. _debops stable-2.3: https://github.com/debops/debops/compare/v2.3.0...stable-2.3
 
+Changed
+~~~~~~~
+
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.ipxe` role, support for the Debian Bullseye netboot
+  installer has been updated to v11.10; the Debian Bookworm installer has been
+  updated to v12.5.
+
 Fixed
 ~~~~~
 
