@@ -1,0 +1,24 @@
+{# Copyright (C) 2024 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2024 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+{% set filtered_entries = [] %}
+{% for element in debconf__combined_entries | debops.debops.parse_kv_items %}
+{%   for option in element.options %}
+{%     set entry = {} %}
+{%     set _ = entry.update({'name': element.name}) %}
+{%     if '/' in option.name %}
+{%       set _ = entry.update({'question': option.name}) %}
+{%     else %}
+{%       set _ = entry.update({'question': element.name + '/' + option.name}) %}
+{%     endif %}
+{%     if option.unseen | d() %}
+{%       set _ = entry.update({'unseen': option.unseen}) %}
+{%     endif %}
+{%     set _ = entry.update({'value': option.value}) %}
+{%     set _ = entry.update({'vtype': option.vtype | d('string')}) %}
+{%     set _ = entry.update({'reconfigure': element.reconfigure | d(True) }) %}
+{%     set _ = filtered_entries.append(entry) %}
+{%   endfor %}
+{% endfor %}
+{{ filtered_entries | to_yaml }}
