@@ -66,7 +66,7 @@
 
 - name: Create systemd override configuration for nginx unit
   ansible.builtin.template:
-    src: 'etc/systemd/system/nginx.service.d/wait-for-network.conf.j2'
+    src: '{{ lookup("debops.debops.template_src", "etc/systemd/system/nginx.service.d/wait-for-network.conf.j2") }}'
     dest: '/etc/systemd/system/nginx.service.d/wait-for-network.conf'
     mode: '0644'
   notify: [ 'Reload systemd daemon' ]
@@ -84,7 +84,7 @@
 
 - name: Save nginx local facts
   ansible.builtin.template:
-    src: 'etc/ansible/facts.d/nginx.fact.j2'
+    src: '{{ lookup("debops.debops.template_src", "etc/ansible/facts.d/nginx.fact.j2") }}'
     dest: '/etc/ansible/facts.d/nginx.fact'
     owner: 'root'
     group: 'root'
@@ -163,7 +163,7 @@
 
 - name: Allow webadmins to control nginx system service using sudo
   ansible.builtin.template:
-    src: 'etc/sudoers.d/nginx_webadmins.j2'
+    src: '{{ lookup("debops.debops.template_src", "etc/sudoers.d/nginx_webadmins.j2") }}'
     dest: '/etc/sudoers.d/nginx_webadmins'
     owner: 'root'
     group: 'root'
@@ -179,7 +179,7 @@
 
 - name: Setup /etc/nginx/nginx.conf
   ansible.builtin.template:
-    src: 'etc/nginx/nginx.conf.j2'
+    src: '{{ lookup("debops.debops.template_src", "etc/nginx/nginx.conf.j2") }}'
     dest: '/etc/nginx/nginx.conf'
     owner: 'root'
     group: 'root'
@@ -189,7 +189,7 @@
 
 - name: Generate custom nginx snippets
   ansible.builtin.template:
-    src: 'etc/nginx/snippets/{{ item }}.conf.j2'
+    src: '{{ lookup("debops.debops.template_src", "etc/nginx/snippets/" + item + ".conf.j2") }}'
     dest: '/etc/nginx/snippets/{{ item }}.conf'
     owner: 'root'
     group: 'root'
@@ -260,7 +260,7 @@
 
 - name: Manage PKI nginx hook
   ansible.builtin.template:
-    src: 'etc/pki/hooks/nginx.j2'
+    src: '{{ lookup("debops.debops.template_src", "etc/pki/hooks/nginx.j2") }}'
     dest: '{{ nginx_pki_hook_path + "/" + nginx_pki_hook_name }}'
     owner: 'root'
     group: 'root'
@@ -275,7 +275,7 @@
 
 - name: Save nginx local facts
   ansible.builtin.template:
-    src: 'etc/ansible/facts.d/nginx.fact.j2'
+    src: '{{ lookup("debops.debops.template_src", "etc/ansible/facts.d/nginx.fact.j2") }}'
     dest: '/etc/ansible/facts.d/nginx.fact'
     owner: 'root'
     group: 'root'

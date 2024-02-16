@@ -31,7 +31,7 @@
 
 - name: Configure nginx maps
   ansible.builtin.template:
-    src: 'etc/nginx/conf.d/map.conf.j2'
+    src: '{{ lookup("debops.debops.template_src", "etc/nginx/conf.d/map.conf.j2") }}'
     dest: '/etc/nginx/conf.d/map_{{ item.name }}.conf'
     owner: 'root'
     group: 'root'
@@ -65,7 +65,7 @@
 
 - name: Configure nginx upstreams
   ansible.builtin.template:
-    src: 'etc/nginx/conf.d/upstream_{{ item.type | d("default") }}.conf.j2'
+    src: '{{ lookup("debops.debops.template_src", "'etc/nginx/conf.d/upstream_" + (item.type | d("default")) + ".conf.j2") }}'
     dest: '/etc/nginx/conf.d/upstream_{{ item.name }}.conf'
     owner: 'root'
     group: 'root'
@@ -95,7 +95,7 @@
 
 - name: Configure nginx log_format
   ansible.builtin.template:
-    src: 'etc/nginx/conf.d/log_format.conf.j2'
+    src: '{{ lookup("debops.debops.template_src", "etc/nginx/conf.d/log_format.conf.j2") }}'
     dest: '/etc/nginx/conf.d/log_{{ item.name }}.conf'
     owner: 'root'
     group: 'root'
@@ -121,7 +121,7 @@
 
 - name: Add custom nginx configuration
   ansible.builtin.template:
-    src: 'etc/nginx/conf.d/custom.conf.j2'
+    src: '{{ lookup("debops.debops.template_src", "etc/nginx/conf.d/custom.conf.j2") }}'
     dest: '/etc/nginx/conf.d/{{ item.filename | d("custom_" + item.name + ".conf") }}'
     owner: 'root'
     group: 'root'
