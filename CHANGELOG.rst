@@ -51,6 +51,13 @@ General
 Changed
 ~~~~~~~
 
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.ipxe` role, support for the Debian Bullseye netboot
+  installer has been updated to v11.10; the Debian Bookworm installer has been
+  updated to v12.5.
+
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
 
@@ -75,6 +82,15 @@ Changed
   done using a separate :envvar:`kibana__elasticsearch_cluster_name` variable,
   which needs to be synchronized with the Elasticsearch configuration via
   Ansible inventory (Kibana can be installed separately from Elasticsearch).
+
+Removed
+~~~~~~~
+
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- Debian 9 (Stretch) has been removed from Debian mirrors, therefore the role
+  will no longer offer support for installing Debian Stretch via PXE boot.
 
 
 `debops v3.1.0`_ - 2023-11-29
