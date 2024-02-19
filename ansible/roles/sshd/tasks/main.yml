@@ -90,14 +90,31 @@
     state: 'directory'
     mode: '0755'
 
+  # molly-guard + dracut means that the system can't reboot anymore, see:
+  # https://bugs.debian.org/992351
+- name: Ensure that dracut directory exists before installing molly-guard fix
+  ansible.builtin.file:
+    path: '/etc/dracut.conf.d'
+    state: 'directory'
+    mode: '0755'
+  when: '"molly-guard" in q("flattened", sshd__combined_packages)'
+
+- name: Install molly-guard fix for dracut
+  ansible.builtin.template:
+    src: 'etc/dracut.conf.d/20-debops-molly-guard.conf.j2'
+    dest: '/etc/dracut.conf.d/20-debops-molly-guard.conf'
+    mode: '0644'
+  when: '"molly-guard" in q("flattened", sshd__combined_packages)'
+
+- name: Remove molly-guard fix for dracut
+  ansible.builtin.file:
+    path: '/etc/dracut.conf.d/20-debops-molly-guard.conf'
+    state: 'absent'
+  when: '"molly-guard" not in q("flattened", sshd__combined_packages)'
+
 - name: Ensure OpenSSH support is installed
   ansible.builtin.apt:
-    name: '{{ (sshd__base_packages
-             + sshd__recommended_packages
-             + sshd__optional_packages
-             + sshd__ldap_packages
-             + sshd__packages)
-             | flatten }}'
+    name: '{{ q("flattened", sshd__combined_packages) }}'
     state: '{{ "present"
                if (ansible_local | d() and ansible_local.sshd | d())
                else "latest" }}'
