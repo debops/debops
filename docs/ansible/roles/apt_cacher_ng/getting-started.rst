@@ -65,15 +65,5 @@ that uses the ``debops.apt_cacher_ng`` role:
    :language: yaml
    :lines: 1,5-
 
-If you make extensive use of the flexibility of this role and are using
-AppArmor you might need to use the following playbook instead:
-
-.. literalinclude:: examples/apt_cacher_ng-apparmor.yml
-   :language: yaml
-   :lines: 1,5-
-
-The playbook is shipped with this role under
-:file:`./docs/playbooks/apt_cacher_ng-apparmor.yml` from which you can symlink it to your
-playbook directory.
-In case you use multiple `DebOps Contrib`_ roles, consider
-using the `DebOps Contrib playbooks`_.
+This playbook is also shipped with DebOps as
+:file:`ansible/playbooks/service/apt_cacher_ng.yml`.

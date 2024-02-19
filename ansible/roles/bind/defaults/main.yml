@@ -1548,4 +1548,17 @@ bind__apt_preferences__dependent_list:
     reason: 'Support for DNS-over-TLS/HTTPS'
     by_role: 'debops.bind'
                                                                    # ]]]
+# .. envvar:: bind__apparmor__dependent_locals [[[
+#
+# Configuration for the :ref:`debops.apparmor` Ansible role.
+bind__apparmor__dependent_locals:
+
+  - name: 'usr.sbin.named'
+    options:
+
+      - name: '/etc/pki/**'
+        value: 'r'
+        comment: 'Allow named/bind access to DebOps PKI data'
+
+                                                                   # ]]]
                                                                    # ]]]

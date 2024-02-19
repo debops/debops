@@ -637,19 +637,25 @@ dnsmasq__tcpwrappers__dependent_allow: '{{ lookup("template", "lookup/dnsmasq__t
                                              convert_data=False) | from_yaml }}'
 
                                                                    # ]]]
-# .. envvar:: dnsmasq__apparmor__local_dependent_config [[[
+# .. envvar:: dnsmasq__apparmor__dependent_locals [[[
 #
-# Configuration for the ``debops-contrib.apparmor`` Ansible role.
-dnsmasq__apparmor__local_dependent_config:
+# Configuration for the :ref:`debops.apparmor` Ansible role.
+dnsmasq__apparmor__dependent_locals:
 
-  'usr.sbin.dnsmasq':
-    - comment: 'Allow dnsmasq to read upstream DNS servers'
-      rules:
-        - '/etc/resolvconf/upstream.conf r'
-        - '/etc/hosts.dnsmasq r'
-    - comment: 'Allow dnsmasq to read /usr/share/dnsmasq-base/trust-anchors.conf provided by dnsmasq-base'
-      rules:
-        - '/usr/share/dnsmasq-base/* r'
+  - name: 'usr.sbin.dnsmasq'
+    options:
+
+      - name: '/etc/resolvconf/upstream.conf'
+        value: 'r'
+        comment: 'Allow dnsmasq to read upstream DNS servers'
+
+      - name: '/etc/hosts.dnsmasq'
+        value: 'r'
+        comment: 'Allow dnsmasq to read custom hosts file'
+
+      - name: '/usr/share/dnsmasq-base/*'
+        value: 'r'
+        comment: 'Allow dnsmasq to read /usr/share/dnsmasq-base/trust-anchors.conf provided by dnsmasq-base'
 
                                                                    # ]]]
 # .. envvar:: dnsmasq__persistent_paths__dependent_paths [[[

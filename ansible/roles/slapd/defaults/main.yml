@@ -1710,5 +1710,19 @@ slapd__saslauthd__dependent_instances:
     socket_path: '/var/lib/slapd/saslauthd'
     socket_group: '{{ slapd__group }}'
     ldap_profile: 'slapd'
+
+                                                                   # ]]]
+# .. envvar:: slapd__apparmor__dependent_locals [[[
+#
+# Configuration for the :ref:`debops.apparmor` Ansible role.
+slapd__apparmor__dependent_locals:
+
+  - name: 'usr.sbin.slapd'
+    options:
+
+      - name: '/etc/pki/**'
+        value: 'r'
+        comment: 'Allow slapd access to DebOps PKI data'
+
                                                                    # ]]]
                                                                    # ]]]
