@@ -299,7 +299,7 @@ dovecot__checkpassword_userdb_command: '/usr/bin/checkpassword'
 
 # .. envvar:: dovecot__pki [[[
 #
-# Enable or disable support for TLS/SSL using :ref:`debops.pki`.
+# Enable or disable support for TLS using :ref:`debops.pki`.
 dovecot__pki: '{{ ansible_local.pki.enabled | d() | bool }}'
 
                                                                    # ]]]
@@ -341,8 +341,8 @@ dovecot__tls_ca_cert_dir: '/etc/ssl/certs/'
                                                                    # ]]]
 # .. envvar:: dovecot__ssl_required [[[
 #
-# Requires SSL/TLS also for non-plaintext authentication. For more
-# information check ``ssl_required`` in the `Dovecot SSL Configuration`__.
+# Whether to require TLS for non-plaintext authentication. For more information
+# check ``ssl=required`` in the `Dovecot SSL Configuration`__.
 #
 # .. __: https://doc.dovecot.org/configuration_manual/dovecot_ssl_configuration/
 dovecot__ssl_required: True
@@ -350,8 +350,10 @@ dovecot__ssl_required: True
                                                                    # ]]]
 # .. envvar:: dovecot__ssl_min_protocol [[[
 #
-# SSL ciphers to use.
-dovecot__ssl_min_protocol: '{{ "TLSv1.2" }}'
+# The minimum TLS version to use.
+dovecot__ssl_min_protocol: '{{ "TLSv1.3"
+                               if (dovecot__version is version("2.3.15", ">="))
+                               else "TLSv1.2" }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__ssl_dh_parameters_length [[[
@@ -360,15 +362,24 @@ dovecot__ssl_min_protocol: '{{ "TLSv1.2" }}'
 dovecot__ssl_dh_parameters_length: 4096
 
                                                                    # ]]]
+# .. envvar:: dovecot__ssl_cipher_suites [[[
+#
+# Cipher suites to use for TLSv1.3 and later. See the `OpenSSL wiki`__ for more
+# details.
+#
+# .. __: https://wiki.openssl.org/index.php/TLS1.3#Ciphersuites
+dovecot__ssl_cipher_suites: 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256'
+
+                                                                   # ]]]
 # .. envvar:: dovecot__ssl_cipher_list [[[
 #
-# SSL ciphers to use.
+# Ciphers to use for TLSv1.2 and earlier.
 dovecot__ssl_cipher_list: '{{ dovecot__ssl_cipher_list_default }}'
 
                                                                    # ]]]
 # .. envvar:: dovecot__ssl_cipher_list_default [[[
 #
-# Default SSL ciphers.
+# Default ciphers for TLSv1.2 and earlier.
 dovecot__ssl_cipher_list_default: 'ALL:!kRSA:!SRP:!kDHd:!DSS:!aNULL:!eNULL:!EXPORT:!DES:!3DES:!MD5:!PSK:!RC4:!ADH:!LOW@STRENGTH'
 
                                                                    # ]]]
@@ -659,7 +670,7 @@ dovecot__default_configuration:
 
       - name: 'ssl_prefer_server_ciphers'
         value: 'yes'
-        comment: 'Prefer the server''s order of ciphers over the client''s. (dovecot >= 2.2.6)'
+        comment: 'Prefer the server''s order of ciphers over the client''s.'
 
       - name: 'ssl_cert'
         value: '<{{ dovecot__pki_path ~ "/" ~ dovecot__pki_realm ~ "/" ~ dovecot__pki_crt }}'
@@ -667,25 +678,27 @@ dovecot__default_configuration:
       - name: 'ssl_key'
         value: '<{{ dovecot__pki_path ~ "/" ~ dovecot__pki_realm ~ "/" ~ dovecot__pki_key }}'
 
-      - name: 'ssl_protocols'
-        value: '{{ dovecot__ssl_min_protocol }}'
-        state: '{{ "present" if dovecot__version is version("2.3.0", "<") else "absent" }}'
-
       - name: 'ssl_dh_parameters_length'
         value: '{{ dovecot__ssl_dh_parameters_length }}'
-        state: '{{ "present" if dovecot__version is version("2.3.0", "<") else "absent" }}'
-        comment: 'Diffie-Hellman parameters length (default 1024, dovecot >= 2.2.7, optional in dovecot >= 2.3.3)'
+        comment: 'Diffie-Hellman parameters length (default 1024, optional in dovecot >= 2.3.3)'
 
       - name: 'ssl_min_protocol'
         value: '{{ dovecot__ssl_min_protocol }}'
-        state: '{{ "present" if dovecot__version is version("2.3.0", ">=") else "absent" }}'
 
       - name: 'ssl_dh'
         value: '{{ "" if (dovecot__ssl_dh_file == "") else ("<" + dovecot__ssl_dh_file) }}'
-        state: '{{ "present" if dovecot__version is version("2.3.0", ">=") else "absent" }}'
 
       - name: 'ssl_cipher_list'
         value: '{{ dovecot__ssl_cipher_list }}'
+        comment: 'The list of ciphers to use for TLS <= 1.2'
+
+      - name: 'ssl_cipher_suites'
+        value: '{{ dovecot__ssl_cipher_suites }}'
+        state: '{{ "present"
+                   if ((dovecot__version is version("2.3.15", ">=")) and
+                       (dovecot__ssl_cipher_suites | d("") | length > 0))
+                   else "absent" }}'
+        comment: 'The list of ciphers to use for TLS >= 1.3'
 
       - name: 'ssl_client_ca_dir'
         value: '/etc/ssl/certs'
