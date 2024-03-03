@@ -1,0 +1,13 @@
+{# Copyright (C) 2024 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2024 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-or-later
+ #}
+{% set filtered_results = [] %}
+{% for element in debconf__register_entries.results %}
+{%   if element.changed | bool %}
+{%     if element.item.reconfigure | bool %}
+{%       set _ = filtered_results.append(element.item.name) %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+{{ filtered_results | unique | to_yaml }}

@@ -1,6 +1,6 @@
-.. Copyright (C) 2017-2022 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2017-2023 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2018-2022 Robin Schneider <ypid@riseup.net>
-.. Copyright (C) 2017-2022 DebOps <https://debops.org/>
+.. Copyright (C) 2017-2023 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 .. _changelog:
@@ -21,7 +21,82 @@ You can read information about required changes between releases in the
 `debops master`_ - unreleased
 -----------------------------
 
-.. _debops master: https://github.com/debops/debops/compare/v3.0.0...master
+.. _debops master: https://github.com/debops/debops/compare/v3.1.0...master
+
+Added
+~~~~~
+
+New DebOps roles
+''''''''''''''''
+
+- The :ref:`debops.debconf` Ansible role can be used to pre-configure APT
+  packages which use the `debconf`__ configuration database and install them
+  afterwards. The role is included near the end of the :file:`site.yml`
+  playbook to allow of configuration of other needed services before the actual
+  package installation.
+
+  .. __: https://en.wikipedia.org/wiki/Debian_configuration_system
+
+General
+'''''''
+
+- The :command:`debops` script can now log its operation to standard error and
+  to the :command:`syslog` service. Use the ``--verbose`` or ``-v`` flag to
+  enable log output on the console.
+
+- Users can define "playbook sets" on the view level of the "modern" project
+  directories. Playbook sets can be used as aliases to call multiple playbooks
+  using a custom name. See :ref:`playbook_sets` documentation for more details.
+
+Changed
+~~~~~~~
+
+Updates of upstream application versions
+''''''''''''''''''''''''''''''''''''''''
+
+- In the :ref:`debops.ipxe` role, support for the Debian Bullseye netboot
+  installer has been updated to v11.10; the Debian Bookworm installer has been
+  updated to v12.5.
+
+:ref:`debops.elasticsearch` role
+''''''''''''''''''''''''''''''''
+
+- The role now supports new Elasticsearch v8.x password management mechanism.
+
+- The role can now manage passwords in separate Elasticsearch clusters defined
+  in one Ansible inventory.
+
+  .. warning:: Due to this change, Elasticsearch passwords stored in the
+               :file:`ansible/secret/` subdirectory will be read from a different
+               location. If passwords are not moved to the new location, role
+               will reset the Elasticsearch built-in users passwords
+               automatically. This might result in data loss.
+
+:ref:`debops.kibana` role
+'''''''''''''''''''''''''
+
+- The path to the password file stored in :file:`ansible/secret/` subdirectory
+  is now configurable using a variable.
+
+- The role uses new per-cluster Elasticsearch passwords by default. This is
+  done using a separate :envvar:`kibana__elasticsearch_cluster_name` variable,
+  which needs to be synchronized with the Elasticsearch configuration via
+  Ansible inventory (Kibana can be installed separately from Elasticsearch).
+
+Removed
+~~~~~~~
+
+:ref:`debops.ipxe` role
+'''''''''''''''''''''''
+
+- Debian 9 (Stretch) has been removed from Debian mirrors, therefore the role
+  will no longer offer support for installing Debian Stretch via PXE boot.
+
+
+`debops v3.1.0`_ - 2023-11-29
+-----------------------------
+
+.. _debops v3.1.0: https://github.com/debops/debops/compare/v3.0.0...v3.1.0
 
 Added
 ~~~~~
@@ -118,6 +193,11 @@ General
 
   The modern project layout supports multiple Ansible inventories encapsulated
   into :ref:`infrastructure views <project_infrastructure_views>`.
+
+- DebOps scripts now support management of the project directories using
+  :command:`git` as VCS repositories. New project directories will use
+  :command:`git` by default. This also enables support for secrets encrypted
+  using :command:`git-crypt`.
 
 :ref:`debops.apt` role
 ''''''''''''''''''''''
@@ -240,7 +320,8 @@ Updates of upstream application versions
 
 - In the :ref:`debops.ipxe` role, the Debian Buster netboot installer version
   has been updated to the next point release, 10.13. Debian Bullseye has been
-  updated to the next point release as well, 11.8.
+  updated to the next point release as well, 11.8. The Debian Bookworm release
+  has been updated to 12.2.
 
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
   ``v3.4.2``.
@@ -339,6 +420,11 @@ General
   the "oldstable" release. The new Debian Testing release, "Trixie" has also
   been added in relevant places.
 
+- DebOps now supports using :command:`git` in project directories - new
+  projects will be initialized as :command:`git` repositories by default. The
+  :command:`git-crypt` command is also supported, and can encrypt project
+  secrets.
+
 :ref:`debops.apt` role
 ''''''''''''''''''''''
 
@@ -363,6 +449,13 @@ General
 ''''''''''''''''''''''''''''''''
 
 - The role can now directly handle the daemon ``log-driver`` parameter.
+
+- The role has been redesigned from scratch; Python :command:`virtualenv`
+  support has been removed since the :command:`docker-compose` is included in
+  Debian repositories directly, or is implemented as a Go plugin in upstream
+  repositories. The Docker configuration is now implemented via the
+  :ref:`universal_configuration` system, users will have to modify their
+  Ansible inventories. See the role documentation for details.
 
 :ref:`debops.elasticsearch` role
 ''''''''''''''''''''''''''''''''
@@ -804,6 +897,12 @@ debops.boxbackup role
 
 - Locked ``johndoh/contextmenu`` plugin to version 3.2.1 for Roundcube < 1.5
   due to compatibility issues.
+
+:ref:`debops.secret` role
+'''''''''''''''''''''''''
+
+- Fixed an issue with the :envvar:`secret` variable not being defined in other
+  roles in newer Ansible versions.
 
 :ref:`debops.sshd` role
 '''''''''''''''''''''''
@@ -3294,7 +3393,7 @@ Mail Transport Agents
 ''''''''''''''''''''''''''''''''
 
 - Replace the deprecated `docker_server__graph` variable with the
-  :envvar:`docker_server__data_root` variable.
+  ``docker_server__data_root`` variable.
 
 :ref:`debops.dovecot` role
 ''''''''''''''''''''''''''
@@ -4328,7 +4427,7 @@ User management
   the current configuration on existing installations.
 
   If needed, the storage driver in use can be overridden via the
-  :envvar:`docker_server__storage_driver` variable.
+  ``docker_server__storage_driver`` variable.
 
 :ref:`debops.etckeeper` role
 ''''''''''''''''''''''''''''

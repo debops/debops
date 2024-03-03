@@ -13,7 +13,10 @@ playbook on disk.
 
 The :command:`debops run` command will automatically unlock and lock the
 encrypted :file:`ansible/secret/` directory as needed, to give the playbooks
-and roles access to secrets.
+and roles access to secrets. If ``git-crypt`` is used for secret encryption,
+this process might fail if the project directory contains uncommitted changes.
+Easiest way to mitigate this is to unlock the project directory using the
+``debops project unlock`` command before making any changes.
 
 Options
 ~~~~~~~
@@ -110,6 +113,17 @@ view" meant to be used to deploy an application:
 
    debops run -V deployment company.collection/app/setup -l appservers
 
+Run a playbook with DebOps in a verbose debug mode:
+
+.. code-block:: shell
+
+   debops run -vvv service/sshd -l webserver
+
+Same as above, but also enable verbose debug mode in Ansible itself:
+
+.. code-block:: shell
+
+   debops run -vvv service/sshd -l webserver -vvv
 
 :command:`debops check`
 -----------------------

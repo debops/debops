@@ -252,12 +252,21 @@ elasticsearch__api_base_url: '{{ "https://" + ansible_fqdn + ":9200" }}'
 elasticsearch__api_username: 'elastic'
 
                                                                    # ]]]
+# .. envvar:: elasticsearch__secret_path [[[
+#
+# Path to the directory in the :ref:`debops.secret` storage where passwords of
+# Elastcisearch built-in users will be stored.
+elasticsearch__secret_path: '{{ "elasticsearch/credentials/"
+                                + elasticsearch__cluster_name + "/built-in" }}'
+
+                                                                   # ]]]
 # .. envvar:: elasticsearch__api_password [[[
 #
 # The password used to access the Elasticsearch API, stored in the
 # :file:`secret/` directory, managed by the :ref:`debops.secret` Ansible role.
-elasticsearch__api_password: '{{ lookup("password", secret + "/elasticsearch/credentials/"
-                                       + "built-in/" + elasticsearch__api_username + "/password") }}'
+elasticsearch__api_password: '{{ lookup("password", secret + "/"
+                                 + elasticsearch__secret_path + "/"
+                                 + elasticsearch__api_username + "/password") }}'
 
                                                                    # ]]]
 # .. envvar:: elasticsearch__native_roles [[[

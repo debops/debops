@@ -59,6 +59,26 @@ Options
   Display the version of the :command:`debops` scripts
 
 
+Verbose mode and logging
+------------------------
+
+The :command:`debops` script can send log messages about its operation to the
+:command:`syslog` service. Using configuration options, users can specify where
+to send the log messages, default log level and facility.
+
+Users can specify the ``--verbose`` or ``-v`` flag in the :command:`debops`
+subcommands to increase the script verbosity. The flag enables log output to the
+standard error (stderr) stream. Multiple uses of the flag increase the log level
+from the default ``WARNING`` to ``NOTICE``, ``INFO`` and ``DEBUG`` with ``-vvv``
+respectively.
+
+To view the logs from :command:`debops` using :command:`journald` service, run the command:
+
+.. code-block:: console
+
+   journalctl -f _COMM=debops
+
+
 Environment variables
 ---------------------
 

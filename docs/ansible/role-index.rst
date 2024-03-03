@@ -301,6 +301,7 @@ packages.
 - :ref:`debops.apt_mirror`
 - :ref:`debops.apt_preferences`
 - :ref:`debops.apt_proxy`
+- :ref:`debops.debconf`
 - :ref:`debops.debops_legacy`
 - :ref:`debops.extrepo`
 - :ref:`debops.keyring`

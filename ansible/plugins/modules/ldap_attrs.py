@@ -126,7 +126,7 @@ EXAMPLES = """
   ldap_attrs:
     dn: olcDatabase={1}hdb,cn=config
     attributes:
-        olcSuffix: dc=example,dc=com
+      olcSuffix: dc=example,dc=com
     state: exact
 
 # The complex argument format is required here to pass a list of ACL strings.
@@ -134,17 +134,17 @@ EXAMPLES = """
   ldap_attrs:
     dn: olcDatabase={1}hdb,cn=config
     attributes:
-        olcAccess:
-          - >-
-            {0}to attrs=userPassword,shadowLastChange
-            by self write
-            by anonymous auth
-            by dn="cn=admin,dc=example,dc=com" write
-            by * none'
-          - >-
-            {1}to dn.base="dc=example,dc=com"
-            by dn="cn=admin,dc=example,dc=com" write
-            by * read
+      olcAccess:
+        - >-
+          {0}to attrs=userPassword,shadowLastChange
+          by self write
+          by anonymous auth
+          by dn="cn=admin,dc=example,dc=com" write
+          by * none'
+        - >-
+          {1}to dn.base="dc=example,dc=com"
+          by dn="cn=admin,dc=example,dc=com" write
+          by * read
     state: exact
 
 # An alternative approach with automatic X-ORDERED numbering
@@ -152,17 +152,17 @@ EXAMPLES = """
   ldap_attrs:
     dn: olcDatabase={1}hdb,cn=config
     attributes:
-        olcAccess:
-          - >-
-            to attrs=userPassword,shadowLastChange
-            by self write
-            by anonymous auth
-            by dn="cn=admin,dc=example,dc=com" write
-            by * none'
-          - >-
-            to dn.base="dc=example,dc=com"
-            by dn="cn=admin,dc=example,dc=com" write
-            by * read
+      olcAccess:
+        - >-
+          to attrs=userPassword,shadowLastChange
+          by self write
+          by anonymous auth
+          by dn="cn=admin,dc=example,dc=com" write
+          by * none'
+        - >-
+          to dn.base="dc=example,dc=com"
+          by dn="cn=admin,dc=example,dc=com" write
+          by * read
     ordered: yes
     state: exact
 
@@ -170,23 +170,23 @@ EXAMPLES = """
   ldap_attrs:
     dn: olcDatabase={1}hdb,cn=config
     attributes:
-        olcDbIndex:
-            - objectClass eq
-            - uid eq
+      olcDbIndex:
+        - objectClass eq
+        - uid eq
 
 - name: Set up a root user, which we can use later to bootstrap the directory
   ldap_attrs:
     dn: olcDatabase={1}hdb,cn=config
     attributes:
-        olcRootDN: cn=root,dc=example,dc=com
-        olcRootPW: "{SSHA}tabyipcHzhwESzRaGA7oQ/SDoBZQOGND"
+      olcRootDN: cn=root,dc=example,dc=com
+      olcRootPW: "{SSHA}tabyipcHzhwESzRaGA7oQ/SDoBZQOGND"
     state: exact
 
 - name: Get rid of an unneeded attribute
   ldap_attrs:
     dn: uid=jdoe,ou=people,dc=example,dc=com
     attributes:
-        shadowExpire: ""
+      shadowExpire: ""
     state: exact
     server_uri: ldap://localhost/
     bind_dn: cn=admin,dc=example,dc=com
@@ -204,7 +204,7 @@ EXAMPLES = """
   ldap_attrs:
     dn: uid=jdoe,ou=people,dc=example,dc=com
     attributes:
-        shadowExpire: ""
+      shadowExpire: ""
     state: exact
     params: "{{ ldap_auth }}"
 """

@@ -1,5 +1,5 @@
-.. Copyright (C) 2017-2021 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2017-2021 DebOps <https://debops.org/>
+.. Copyright (C) 2017-2023 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2017-2023 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-or-later
 
 .. _upgrade_notes:
@@ -14,6 +14,10 @@ perform the upgrades between different stable releases.
 
 Unreleased
 ----------
+
+
+v3.1.0 (2023-11-29)
+-------------------
 
 Changes in inventory variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -95,6 +99,10 @@ Changes in inventory variables
   - ``apt__security_sources``
   - ``apt__group_security_sources``
   - ``apt__host_security_sources``
+
+- THe :ref:`debops.docker_server` role has been redesigned, many variables have
+  been removed and are no longer needed. Check the role documentation for
+  details.
 
 
 v3.0.0 (2022-02-17)
@@ -417,11 +425,11 @@ Inventory variable changes
 
 - Some variables in the :ref:`debops.docker_server` role have been renamed:
 
-  +--------------------------+------------------------------------+---------------+
-  | Old variable name        | New variable name                  | Changed value |
-  +==========================+====================================+===============+
-  | ``docker_server__graph`` | :envvar:`docker_server__data_root` | No            |
-  +--------------------------+------------------------------------+---------------+
+  +--------------------------+------------------------------+---------------+
+  | Old variable name        | New variable name            | Changed value |
+  +==========================+==============================+===============+
+  | ``docker_server__graph`` | ``docker_server__data_root`` | No            |
+  +--------------------------+------------------------------+---------------+
 
 - A few of the default variables in the :ref:`debops.dovecot` role have been
   renamed. Additionally some variables related to the Sieve plugin configuration also

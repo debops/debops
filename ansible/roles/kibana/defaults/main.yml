@@ -157,6 +157,14 @@ kibana__elasticsearch_url: 'http://localhost:9200'
 kibana__elasticsearch_hosts: [ 'http://localhost:9200' ]
 
                                                                    # ]]]
+# .. envvar:: kibana__elasticsearch_cluster_name [[[
+#
+# Name of the Elasticsearch cluster, used to lookup passwords in the
+# :ref:`debops.secret` subdirectory. This variable should be synchronized with
+# the :envvar:`elasticsearch__cluster_name` variable using Ansible inventory.
+kibana__elasticsearch_cluster_name: '{{ kibana__domain | replace(".", "-") }}'
+
+                                                                   # ]]]
 # .. envvar:: kibana__elasticsearch_username [[[
 #
 # The username used by Kibana for internal maintenance on password-protected
@@ -168,14 +176,25 @@ kibana__elasticsearch_username: '{{ ""
                                           else "kibana_system") }}'
 
                                                                    # ]]]
+# .. envvar:: kibana__elasticsearch_secret_path [[[
+#
+# Path to the Elasticsearch passwords stored in the :ref:`debops.secret`
+# directory. It should be synchronized with :envvar:`elasticsearch__secret_path`
+# variable for best results.
+kibana__elasticsearch_secret_path: '{{ "elasticsearch/credentials/"
+                                       + kibana__elasticsearch_cluster_name
+                                       + "/built-in" }}'
+
+                                                                   # ]]]
 # .. envvar:: kibana__elasticsearch_password [[[
 #
 # The password used by Kibana for internal maintenance on password-protected
 # Elasticsearch clusters.
 kibana__elasticsearch_password: '{{ ""
                                     if (kibana__elasticsearch_hosts[0].startswith("http://"))
-                                    else (lookup("password", secret + "/elasticsearch/credentials/"
-                                          + "built-in/" + kibana__elasticsearch_username
+                                    else (lookup("password", secret + "/"
+                                          + kibana__elasticsearch_secret_path + "/"
+                                          + kibana__elasticsearch_username
                                           + "/password")) }}'
 
                                                                    # ]]]
