@@ -1,0 +1,39 @@
+{# Copyright (C) 2015-2017,2024 Robin Schneider <ypid@riseup.net>
+ # Copyright (C) 2017 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+#
+# Configuration options for the dropbear-initramfs boot scripts.
+# Variable assignment follow shell semantics and escaping/quoting rules.
+# You must run update-initramfs(8) to effect changes to this file (like
+# for other files in the '{{ dropbear_initramfs__config_path }}' directory).
+
+#
+# Command line options to pass to dropbear(8)
+#
+DROPBEAR_OPTIONS="{{ dropbear_initramfs__dropbear_options }}"
+
+#
+# On local (non-NFS) mounts, interfaces matching this pattern are
+# brought down before exiting the ramdisk to avoid dirty network
+# configuration in the normal kernel.
+# The special value 'none' keeps all interfaces up and preserves routing
+# tables and addresses.
+#
+#IFDOWN="*"
+
+#
+# On local (non-NFS) mounts, the network stack and dropbear are started
+# asynchronously at init-premount stage.  This value specifies the
+# maximum number of seconds to wait (while the network/dropbear are
+# being configured) at init-bottom stage before terminating dropbear and
+# bringing the network down.
+# If the timeout is too short, and if the boot process is not blocking
+# on user input supplied via SSHd (ie no remote unlocking), then the
+# initrd might pivot to init(1) too early, thereby causing a race
+# condition between network configuration from initramfs vs from the
+# normal system.
+#
+#DROPBEAR_SHUTDOWN_TIMEOUT=60
