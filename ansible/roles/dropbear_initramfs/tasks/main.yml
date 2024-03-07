@@ -53,7 +53,7 @@
     user: '{{ item.user | d("root") }}'
     path: '{{ "/etc/initramfs-tools/root/.ssh/authorized_keys"
               if ("dropbear" in dropbear_initramfs__base_packages)
-              else "{{ dropbear_initramfs__config_path }}/authorized_keys" }}'
+              else dropbear_initramfs__config_path + "/authorized_keys" }}'
     key_options: '{{ (item.key_options if item.key_options is string else item.key_options | join(","))
                        if item.key_options is defined
                        else ((dropbear_initramfs__authorized_keys_key_options
