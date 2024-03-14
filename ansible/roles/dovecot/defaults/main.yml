@@ -1219,6 +1219,26 @@ dovecot__ldap_user_filter: '(&
                               )
                             )'
 
+# .. envvar:: dovecot__ldap_user_list_filter [[[
+#
+# The LDAP filter used to look list user accounts in the directory. This allows
+# commands like :command:`doveadm users '*'` or :command:`doveadm purge -A` to
+# work.
+# See :ref:`ldap__ref_admin` for more information.
+dovecot__ldap_user_list_filter: '(&
+                              (objectClass=mailRecipient)
+                              (|
+                                (authorizedService=all)
+                                (authorizedService=mail:access)
+                              )
+                            )'
+
+# .. envvar:: dovecot__ldap_user_list_filter_attribute [[[
+#
+# The attribute used by :ref:`dovecot__ldap_user_list_filter_attribute` as
+# the identifier of the user.
+# See :ref:`ldap__ref_admin` for more information.
+dovecot__ldap_user_list_filter_attribute: 'mail'
                                                                    # ]]]
 # .. envvar:: dovecot__ldap_quota_attribute [[[
 #

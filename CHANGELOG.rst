@@ -528,6 +528,14 @@ General
 - The role will configure APT to use Debian Security repositories via the
   http://deb.debian.org/debian-security/ CDN.
 
+:ref:`debops.dovecot` role
+''''''''''''''''''''''''''
+
+- The role now supports `iterate_filter` for its LDAP configuration, allowing
+  :command:`doveadm` commands to iterate over all users. Note that you might
+  have to adjust the defaults for `dovecot__ldap_user_list_filter` if you use 
+  `dovecot__ldap_user_filter`.
+
 :ref:`debops.preseed` role
 ''''''''''''''''''''''''''
 
