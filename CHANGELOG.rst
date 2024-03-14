@@ -212,6 +212,14 @@ General
   DNS support is disabled to avoid conflict with the :command:`avahi-daemon`
   service.
 
+:ref:`debops.dovecot` role
+''''''''''''''''''''''''''
+
+- The role now supports `iterate_filter` for its LDAP configuration, allowing
+  :command:`doveadm` commands to iterate over all users. Note that you might
+  have to adjust the defaults for `dovecot__ldap_user_list_filter` if you use 
+  `dovecot__ldap_user_filter`.
+
 :ref:`debops.ferm` role
 '''''''''''''''''''''''
 
