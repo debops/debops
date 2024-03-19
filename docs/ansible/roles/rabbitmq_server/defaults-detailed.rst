@@ -1,5 +1,5 @@
-.. Copyright (C) 2017 Maciej Delmanowski <drybjed@gmail.com>
-.. Copyright (C) 2017 DebOps <https://debops.org/>
+.. Copyright (C) 2017-2024 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2017-2024 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 Default variable details
@@ -277,6 +277,52 @@ Create an administrator account and a regular user account:
        write_priv: '.*'
 
 
+.. _rabbitmq_server__ref_user_limits:
+
+rabbitmq_server__user_limits
+-----------------------------
+
+The ``rabbitmq_server__*_user_limits`` list variables can be used to configure
+`RabbitMQ per-user connection limits`__ using Ansible. Each list entry is a YAML
+dictionary with specific parameters. The parameter names are the same as the
+``community.rabbitmq.rabbitmq_user_limits`` Ansible module.
+
+.. __: https://www.rabbitmq.com/docs/user-limits
+
+The available parameters:
+
+``user``
+  Required. Name of the RabbitMQ user to configure.
+
+``node``
+  Optional. Limit the user limits to a specific RabbitMQ node.
+
+``max_connections``
+  Optional. The maximum number of connections that can be open to a given
+  RabbitMQ user.
+
+``max_channels``
+  Optional. The maximum number of channels that can be open to a given RabbitMQ
+  user.
+
+``state``
+  Optional. If not specified or ``present``, the user limit will be created.
+  If ``absent``, the user limit will be removed.
+
+Examples
+~~~~~~~~
+
+Define limits for a specific user account:
+
+.. code-block:: yaml
+
+   rabbitmq_server__user_limits:
+
+     - user: 'admin_account'
+       max_connections: 1000
+       max_channels: 100
+
+
 .. _rabbitmq_server__ref_vhosts:
 
 rabbitmq_server__vhosts
@@ -313,6 +359,344 @@ Create a set of virtual hosts:
 
      - name: 'vhost3'
        state: 'absent'
+
+
+.. _rabbitmq_server__ref_vhost_limits:
+
+rabbitmq_server__vhost_limits
+-----------------------------
+
+The ``rabbitmq_server__*_vhost_limits`` list variables can be used to configure
+`RabbitMQ virtual host limits`__ using Ansible. Each list entry is a YAML
+dictionary with specific parameters. The parameter names are the same as the
+``community.rabbitmq.rabbitmq_vhost_limits`` Ansible module. Available
+parameters:
+
+``vhost``
+  Required. Name of the RabbitMQ virtual host to configure. The default virtual
+  host is named ``/``.
+
+``node``
+  Optional. Limit the virtual host limits to a specific RabbitMQ node.
+
+``max_connections``
+  Optional. The maximum number of connections that can be open to a given
+  RabbitMQ virtual host.
+
+``max_queues``
+  Optional. The maximum number of queues that can be created in a given RabbitMQ
+  virtual host.
+
+``state``
+  Optional. If not specified or ``present``, the virtual host limit will be
+  created. If ``absent``, the virtual host limit will be removed.
+
+.. __: https://www.rabbitmq.com/docs/vhosts#limits
+
+Examples
+~~~~~~~~
+
+Define virtual host limits for the default vhost:
+
+.. code-block:: yaml
+
+   rabbitmq_server__vhost_limits:
+
+     - vhost: '/'
+       max_connections: 1000
+       max_queues: 100
+
+Reset limists on the default vrrtual host:
+
+.. code-block:: yaml
+
+   rabbitmq_server__vhost_limits:
+
+     - vhost: '/'
+       state: 'absent'
+
+
+.. _rabbitmq_server__ref_exchanges:
+
+rabbitmq_server__exchanges
+--------------------------
+
+The ``rabbitmq_server__*_exchanges`` list variables can be used to manage
+`RabbitMQ exchanges`__. Each list entry is a YAML dictionary with specific
+parameters. The parameter names are the same as the
+``community.rabbitmq.rabbitmq_exchange`` Ansible module.
+
+.. __: https://www.rabbitmq.com/tutorials/amqp-concepts.html#exchanges
+
+List of supported parameters:
+
+``name``
+  Required. The name of a given RabbitMQ exchange.
+
+``vhost``
+  Optional. Specify the RabbitMQ virtual host to which a given exchange applies.
+
+``exchange_type``
+  Optional. The type of a given RabbitMQ exchange. Supported choices:
+  ``direct``, ``fanout``, ``topic``, ``headers``, ``x-consistent-hash``,
+  ``x-delayed-message``, ``x-random``, ``x-recent-history``.
+
+``durable``
+  Optional. If not specified or ``True``, the exchange will be durable. If
+  ``False``, the exchange will be transient.
+
+``auto_delete``
+  Optional. If not specified or ``False``, the exchange will not be deleted
+  when the last queue is unbound from it. If ``True``, the exchange will be
+  deleted when the last queue is unbound from it.
+
+``internal``
+  Optional. If not specified or ``False``, the exchange will be a regular
+  exchange. If ``True``, the exchange will be an internal exchange, only
+  available for other exchanges.
+
+``arguments``
+  Optional. A YAML dictionary with additional arguments to set for a given
+  exchange.
+
+``state``
+  Optional. If not specified or ``present``, the exchange will be created. If
+  ``absent``, the exchange will be removed.
+
+Examples
+~~~~~~~~
+
+Create a set of RabbitMQ exchanges:
+
+.. code-block:: yaml
+
+   rabbitmq_server__exchanges:
+
+     - name: 'exchange1'
+       exchange_type: 'fanout'
+       durable: False
+       auto_delete: True
+
+     - name: 'exchange2'
+       exchange_type: 'topic'
+       durable: True
+       auto_delete: False
+
+
+.. _rabbitmq_server__ref_queues:
+
+rabbitmq_server__queues
+-----------------------
+
+The ``rabbitmq_server__*_queues`` list variables can be used to manage `RabbitMQ
+queues`__. Each list entry is a YAML dictionary with specific parameters. The
+parameter names are the same as the ``community.rabbitmq.rabbitmq_queue``
+Ansible module.
+
+.. __: https://www.rabbitmq.com/tutorials/amqp-concepts.html#queues
+
+List of supported parameters:
+
+``name``
+  Required. The name of a given RabbitMQ queue.
+
+``vhost``
+  Optional. Specify the RabbitMQ virtual host to which a given queue applies.
+
+``durable``
+  Optional. If not specified or ``True``, the queue will be durable. If
+  ``False``, the queue will be transient.
+
+``auto_delete``
+  Optional. If not specified or ``False``, the queue will not be deleted when
+  the last consumer is removed. If ``True``, the queue will be deleted when the
+  last consumer is removed.
+
+``auto_expires``
+  Optional. The time in milliseconds after which the queue will be deleted if
+  it is not used.
+
+``dead_letter_exchange``
+  Optional. The name of a dead-letter exchange to which messages will be
+  republished if they are rejected or expire.
+
+``dead_letter_routing_key``
+  Optional. The routing key to use when republishing messages to the dead-letter
+  exchange.
+
+``max_length``
+  Optional. The maximum number of messages that the queue will hold.
+
+``max_priority``
+  Optional. The maximum priority of messages that the queue will hold.
+
+``message_ttl``
+  Optional. The time in milliseconds after which a message will be removed from
+  the queue if it is not consumed.
+
+``arguments``
+  Optional. A YAML dictionary with additional arguments to set for a given
+  queue.
+
+``state``
+  Optional. If not specified or ``present``, the queue will be created. If
+  ``absent``, the queue will be removed.
+
+Examples
+~~~~~~~~
+
+Create a set of RabbitMQ queues:
+
+.. code-block:: yaml
+
+   rabbitmq_server__queues:
+
+     - name: 'queue1'
+       durable: False
+       auto_delete: True
+       state: 'present'
+
+     - name: 'queue2'
+       durable: True
+       auto_delete: False
+       state: 'present'
+
+
+.. _rabbitmq_server__ref_bindings:
+
+rabbitmq_server__bindings
+-------------------------
+
+The ``rabbitmq_server__*_bindings`` list variables can be used to manage
+`RabbitMQ bindings`__. Each list entry is a YAML dictionary with specific
+parameters. The parameter names are the same as the
+``community.rabbitmq.rabbitmq_binding`` Ansible module.
+
+.. __: https://www.rabbitmq.com/tutorials/amqp-concepts.html#bindings
+
+List of parameters:
+
+``name``
+  Required. The name of a given RabbitMQ exchange which will be the source of a
+  given binding.
+
+``destination``
+  Required. The name of a given RabbitMQ queue or another exchange which will be
+  a destination of a given binding.
+
+``destination_type``
+  Required. The type of a given destination. Supported choices: ``queue``,
+  ``exchange``.
+
+``vhost``
+  Optional. Specify the RabbitMQ virtual host to which a given binding applies.
+
+``routing_key``
+  Optional. The routing key to use when binding a queue to an exchange.
+
+``arguments``
+  Optional. A YAML dictionary with additional arguments to set for a given
+  binding.
+
+``state``
+  Optional. If not specified or ``present``, the binding will be created. If
+  ``absent``, the binding will be removed.
+
+Examples
+~~~~~~~~
+
+Create a set of RabbitMQ bindings:
+
+.. code-block:: yaml
+
+   rabbitmq_server__bindings:
+
+     - name: 'exchange1'
+       destination: 'queue1'
+       destination_type: 'queue'
+       routing_key: 'example'
+       state: 'present'
+
+     - name: 'exchange2'
+       destination: 'exchange1'
+       destination_type: 'exchange'
+       state: 'present'
+
+
+.. _rabbitmq_server__ref_feature_flags:
+
+rabbitmq_server__feature_flags
+------------------------------
+
+The ``rabbitmq_server__*_feature_flags`` list variables can be used to manage
+`RabbitMQ feature flags`__. Each list entry is a YAML dictionary with specific
+parameters. The parameter names are the same as the
+``community.rabbitmq.rabbitmq_feature_flag`` Ansible module.
+
+.. __: https://www.rabbitmq.com/feature-flags.html
+
+Supported parameters:
+
+``name``
+  Required. The name of a given RabbitMQ feature flag.
+
+``node``
+  Optional. The name of a RabbitMQ node to which a given feature flag applies.
+
+Examples
+~~~~~~~~
+
+Enable the ``maintenance_mode_status`` feature flag on a specific Erlang node:
+
+.. code-block:: yaml
+
+   rabbitmq_server__feature_flags:
+
+     - name: 'maintenance_mode_status'
+       node: 'rabbit@node1'
+
+
+.. _rabbitmq_server__ref_global_parameters:
+
+rabbitmq_server__global_parameters
+----------------------------------
+
+The ``rabbitmq_server__*_global_parameters`` list variables can be used to
+manage `RabbitMQ global parameters`__, defined for the entire cluster. Each list
+entry is a YAML dictionary with specific global parameters. The parameter names
+are the same as the ``community.rabbitmq.rabbitmq_global_parameter`` Ansible
+module.
+
+.. __: https://www.rabbitmq.com/docs/parameters#parameter-management
+
+Configuration entry parameters:
+
+``name``
+  Required. The name of a given RabbitMQ parameter being set.
+
+``value``
+  The value of a given parameter in a JSON format. The values are usually
+  quoted using single quotes and contain double-quotes.
+
+``node``
+  Optional. The name of a RabbitMQ node to which a given parameter applies.
+
+``state``
+  Optional. If not specified or ``present``, the parameter will be created.
+  If ``absent``, the parameter will be removed.
+
+Examples
+~~~~~~~~
+
+Set the value of the ``cluster_name`` global parameter:
+
+.. code-block:: yaml
+
+   rabbitmq_server__global_parameters:
+
+     - name: 'cluster_name'
+       value: '"my-cluster"'
+       state: 'present'
 
 
 .. _rabbitmq_server__ref_parameters:
