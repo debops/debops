@@ -48,6 +48,12 @@ General
   directories. Playbook sets can be used as aliases to call multiple playbooks
   using a custom name. See :ref:`playbook_sets` documentation for more details.
 
+:ref:`debops.rabbitmq_server` role
+''''''''''''''''''''''''''''''''''
+
+- The role can manage much more RabbitMQ internal structures - exchanges,
+  queues, bindings between them, as well as vhost and user limits.
+
 Changed
 ~~~~~~~
 
