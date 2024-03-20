@@ -645,8 +645,8 @@ ferm__default_rules:
     comment: 'Reload fail2ban rules'
     rule_state: '{{ "present" if (ferm__fail2ban | bool) else "absent" }}'
     rules: |
-      @hook post "type fail2ban-server > /dev/null && (fail2ban-client ping > /dev/null && fail2ban-client reload > /dev/null || true) || true";
-      @hook flush "type fail2ban-server > /dev/null && (fail2ban-client ping > /dev/null && fail2ban-client reload > /dev/null || true) || true";
+      @hook post "type fail2ban-server > /dev/null && (fail2ban-client ping > /dev/null && systemctl restart fail2ban > /dev/null || true) || true";
+      @hook flush "type fail2ban-server > /dev/null && (fail2ban-client ping > /dev/null && systemctl restart fail2ban > /dev/null || true) || true";
     weight_class: 'post-hook'
 
     # Remove obsolete forwarding rules
