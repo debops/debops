@@ -1,13 +1,16 @@
 {# Copyright (C) 2016 Jeremy Stretch <stretch@packetlife.net>
  # Copyright (C) 2016 Maciej Delmanowski <drybjed@gmail.com>
- # Copyright (C) 2016 DebOps <https://debops.org/>
+ # Copyright (C) 2023 Robin Schneider <ypid@riseup.net>
+ # Copyright (C) 2016,2023 DebOps <https://debops.org/>
  # SPDX-License-Identifier: Apache-2.0
  #}
 # {{ ansible_managed }}
 # -*- coding: utf-8 -*-
+# vim: foldmarker=[[[,]]]:foldmethod=marker
 
 import json
 
+# NetBox required settings [[[1
 #########################
 #                       #
 #   Required settings   #
@@ -23,6 +26,7 @@ ALLOWED_HOSTS = [ '{{ ( [ netbox__config_allowed_hosts ] if netbox__config_allow
 # PostgreSQL database configuration. See the Django documentation for a complete list of available parameters:
 #   https://docs.djangoproject.com/en/stable/ref/settings/#databases
 DATABASE = {
+    'ENGINE': 'django.db.backends.postgresql',     # Database engine
     'NAME': '{{ netbox__database_name }}',         # Database name
     'USER': '{{ netbox__database_user }}',         # PostgreSQL username
     'PASSWORD': '{{ netbox__database_password }}', # PostgreSQL password
@@ -38,16 +42,34 @@ REDIS = {
     'tasks': {
         'HOST': '{{ netbox__redis_host }}',
         'PORT': {{ netbox__redis_port }},
+        # Comment out `HOST` and `PORT` lines and uncomment the following if using Redis Sentinel
+        # 'SENTINELS': [('mysentinel.redis.example.com', 6379)],
+        # 'SENTINEL_SERVICE': 'netbox',
+        'USERNAME': '',
         'PASSWORD': '{{ netbox__redis_password }}',
         'DATABASE': {{ netbox__redis_database }},
         'SSL': {{ netbox__redis_ssl }},
+        # Set this to True to skip TLS certificate verification
+        # This can expose the connection to attacks, be careful
+        # 'INSECURE_SKIP_TLS_VERIFY': False,
+        # Set a path to a certificate authority, typically used with a self signed certificate.
+        # 'CA_CERT_PATH': '/etc/ssl/certs/ca.crt',
     },
     'caching': {
         'HOST': '{{ netbox__redis_host }}',
         'PORT': {{ netbox__redis_port }},
+        # Comment out `HOST` and `PORT` lines and uncomment the following if using Redis Sentinel
+        # 'SENTINELS': [('mysentinel.redis.example.com', 6379)],
+        # 'SENTINEL_SERVICE': 'netbox',
+        'USERNAME': '',
         'PASSWORD': '{{ netbox__redis_password }}',
         'DATABASE': {{ netbox__redis_cache_database }},
         'SSL': {{ netbox__redis_ssl }},
+        # Set this to True to skip TLS certificate verification
+        # This can expose the connection to attacks, be careful
+        # 'INSECURE_SKIP_TLS_VERIFY': False,
+        # Set a path to a certificate authority, typically used with a self signed certificate.
+        # 'CA_CERT_PATH': '/etc/ssl/certs/ca.crt',
     }
 }
 
@@ -57,7 +79,7 @@ REDIS = {
 # https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-SECRET_KEY
 SECRET_KEY = '{{ netbox__config_secret_key }}'
 
-
+# NetBox optional settings [[[1
 #########################
 #                       #
 #   Optional settings   #
@@ -75,20 +97,23 @@ ADMINS = [
 {% endif %}
 ]
 
-# Optionally display a persistent banner at the top and/or bottom of every page. HTML is allowed. To display the same
-# content in both banners, define BANNER_TOP and set BANNER_BOTTOM = BANNER_TOP.
-BANNER_TOP = '{{ netbox__config_banner_top }}'
-BANNER_BOTTOM = '{{ netbox__config_banner_bottom }}'
+# Permit the retrieval of API tokens after their creation.
+ALLOW_TOKEN_RETRIEVAL = False
 
-# Text to include on the login page above the login form. HTML is allowed.
-BANNER_LOGIN = '{{ netbox__config_banner_login }}'
+# Enable any desired validators for local account passwords below. For a list of included validators, please see the
+# Django documentation at https://docs.djangoproject.com/en/stable/topics/auth/passwords/#password-validation.
+AUTH_PASSWORD_VALIDATORS = [
+    # {
+    #     'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    #     'OPTIONS': {
+    #         'min_length': 10,
+    #     }
+    # },
+]
 
 # Base URL path if accessing NetBox within a directory. For example, if installed at https://example.com/netbox/, set:
 # BASE_PATH = 'netbox/'
 BASE_PATH = '{{ netbox__config_base_path }}'
-
-# Maximum number of days to retain logged changes. Set to 0 to retain changes indefinitely. (Default: 90)
-CHANGELOG_RETENTION = {{ netbox__config_changelog_retention }}
 
 # API Cross-Origin Resource Sharing (CORS) settings. If CORS_ORIGIN_ALLOW_ALL is set to True, all origins will be
 # allowed. Otherwise, define a list of allowed origins using either CORS_ORIGIN_WHITELIST or
@@ -111,10 +136,16 @@ CORS_ORIGIN_REGEX_WHITELIST = [
 {% endif %}
 ]
 
+# The name to use for the CSRF token cookie.
+CSRF_COOKIE_NAME = 'csrftoken'
+
 # Set to True to enable server debugging. WARNING: Debugging introduces a substantial performance penalty and may reveal
 # sensitive information about your installation. Only enable debugging while performing testing. Never enable debugging
 # on a production system.
 DEBUG = False
+
+# Set the default preferred language/locale
+DEFAULT_LANGUAGE = '{{ netbox__config_default_language }}'
 
 # Email settings
 EMAIL = {
@@ -127,13 +158,16 @@ EMAIL = {
     'FROM_EMAIL': '{{ netbox__config_email_from }}',
 }
 
-# Enforcement of unique IP space can be toggled on a per-VRF basis. To enforce unique IP space within the global table
-# (all prefixes and IP addresses not assigned to a VRF), set ENFORCE_GLOBAL_UNIQUE to True.
-ENFORCE_GLOBAL_UNIQUE = {{ netbox__config_enforce_global_unique | bool }}
+# Localization
+# This should only be enabled for development or testing purposes as netbox is not yet fully localized.
+ENABLE_LOCALIZATION = False
 
 # Exempt certain models from the enforcement of view permissions. Models listed here will be viewable by all users and
 # by anonymous users. List models in the form `<app>.<model>`. Add '*' to this list to exempt all models.
 EXEMPT_VIEW_PERMISSIONS = [
+    # 'dcim.site',
+    # 'dcim.region',
+    # 'ipam.prefix',
 {% for element in netbox__config_exempt_view_permissions %}
     '{{ element }}',
 {% endfor %}
@@ -153,28 +187,20 @@ INTERNAL_IPS = ('127.0.0.1', '::1')
 #   https://docs.djangoproject.com/en/stable/topics/logging/
 LOGGING = json.loads('''{{ netbox__config_logging | to_nice_json }}''')
 
-# Setting this to True will permit only authenticated users to access any part of NetBox. By default, anonymous users
-# are permitted to access most data in NetBox (excluding secrets) but not make any changes.
-LOGIN_REQUIRED = {{ netbox__config_login_required | bool }}
+# Automatically reset the lifetime of a valid session upon each authenticated request. Enables users to remain
+# authenticated to NetBox indefinitely.
+LOGIN_PERSISTENCE = False
 
-{% if netbox__ldap_enabled | bool -%}
-REMOTE_AUTH_BACKEND = 'netbox.authentication.LDAPBackend'
-{% endif %}
+# Setting this to True will permit only authenticated users to access any part of NetBox. By default, anonymous users
+# are permitted to access most data in NetBox but not make any changes.
+LOGIN_REQUIRED = {{ netbox__config_login_required | bool }}
 
 # The length of time (in seconds) for which a user will remain logged into the web UI before being prompted to
 # re-authenticate. (Default: 1209600 [14 days])
 LOGIN_TIMEOUT = {{ netbox__config_login_timeout }}
 
-# Setting this to True will display a "maintenance mode" banner at the top of every page.
-MAINTENANCE_MODE = {{ netbox__config_maintenance_mode | bool }}
-
-# The URL to use when mapping physical addresses or GPS coordinates.
-MAPS_URL = '{{ netbox__config_maps_url }}'
-
-# An API consumer can request an arbitrary number of objects =by appending the "limit" parameter to the URL (e.g.
-# "?limit=1000"). This setting defines the maximum limit. Setting it to 0 or None will allow an API consumer to request
-# all objects by specifying "?limit=0".
-MAX_PAGE_SIZE = {{ netbox__config_max_page_size }}
+# The view name or URL to which users are redirected after logging out.
+LOGOUT_REDIRECT_URL = 'home'
 
 # The file path where uploaded media such as image attachments are stored. A trailing slash is not needed. Note that
 # the default value of this setting is derived from the installed location.
@@ -193,20 +219,6 @@ MEDIA_ROOT = '{{ netbox__config_media_root }}'
 # Expose Prometheus monitoring metrics at the HTTP endpoint '/metrics'
 METRICS_ENABLED = {{ netbox__config_metrics_enabled }}
 
-# Credentials that NetBox will uses to authenticate to devices when connecting via NAPALM.
-NAPALM_USERNAME = '{{ netbox__config_napalm_username }}'
-NAPALM_PASSWORD = '{{ netbox__config_napalm_password }}'
-
-# NAPALM timeout (in seconds). (Default: 30)
-NAPALM_TIMEOUT = {{ netbox__config_napalm_timeout }}
-
-# NAPALM optional arguments (see https://napalm.readthedocs.io/en/latest/support/#optional-arguments). Arguments must
-# be provided as a dictionary.
-NAPALM_ARGS = json.loads('''{{ netbox__config_napalm_args | to_nice_json }}''')
-
-# Determine how many objects to display per page within a list. (Default: 50)
-PAGINATE_COUNT = {{ netbox__config_paginate_count }}
-
 # Enable installed plugins. Add the name of each plugin to the list.
 PLUGINS = json.loads('''{{ netbox__config_plugins | to_nice_json }}''')
 
@@ -218,6 +230,19 @@ PLUGINS_CONFIG = json.loads('''{{ netbox__config_plugins_config | to_nice_json }
 # prefer IPv4 instead.
 PREFER_IPV4 = {{ netbox__config_prefer_ipv4 | bool }}
 
+# Remote authentication support
+REMOTE_AUTH_ENABLED = {{ netbox__ldap_enabled | bool }}
+{% if netbox__ldap_enabled | bool -%}
+REMOTE_AUTH_BACKEND = 'netbox.authentication.LDAPBackend'
+REMOTE_AUTH_HEADER = 'HTTP_REMOTE_USER'
+REMOTE_AUTH_USER_FIRST_NAME = 'HTTP_REMOTE_USER_FIRST_NAME'
+REMOTE_AUTH_USER_LAST_NAME = 'HTTP_REMOTE_USER_LAST_NAME'
+REMOTE_AUTH_USER_EMAIL = 'HTTP_REMOTE_USER_EMAIL'
+REMOTE_AUTH_AUTO_CREATE_USER = True
+REMOTE_AUTH_DEFAULT_GROUPS = []
+REMOTE_AUTH_DEFAULT_PERMISSIONS = {}
+{% endif %}
+
 # The file path where custom reports will be stored. A trailing slash is not needed. Note that the default value of
 # this setting is derived from the installed location.
 REPORTS_ROOT = '{{ netbox__config_reports_root }}'
@@ -228,6 +253,9 @@ RQ_DEFAULT_TIMEOUT = 300
 # The file path where custom scripts will be stored. A trailing slash is not needed. Note that the default value of
 # this setting is derived from the installed location.
 SCRIPTS_ROOT = '{{ netbox__config_scripts_root }}'
+
+# The name to use for the session cookie.
+SESSION_COOKIE_NAME = 'sessionid'
 
 # By default, NetBox will store session data in the database. Alternatively, a file path can be specified here to use
 # local file storage instead. (This can be useful for enabling authentication on a standby instance with read-only
@@ -245,7 +273,43 @@ TIME_FORMAT = '{{ netbox__config_time_format }}'
 SHORT_TIME_FORMAT = '{{ netbox__config_short_time_format }}'
 DATETIME_FORMAT = '{{ netbox__config_datetime_format }}'
 SHORT_DATETIME_FORMAT = '{{ netbox__config_short_datetime_format }}'
+
+# DebOps settings that are not in the configuration_example.py file [[[1
+
+CENSUS_REPORTING_ENABLED = {{ netbox__config_census_reporting | bool }}
+
+# Dynamic Configuration Parameters [[[1
+
+# Optionally display a persistent banner at the top and/or bottom of every page. HTML is allowed. To display the same
+# content in both banners, define BANNER_TOP and set BANNER_BOTTOM = BANNER_TOP.
+BANNER_TOP = '{{ netbox__config_banner_top }}'
+BANNER_BOTTOM = '{{ netbox__config_banner_bottom }}'
+
+# Text to include on the login page above the login form. HTML is allowed.
+BANNER_LOGIN = '{{ netbox__config_banner_login }}'
+
+# Maximum number of days to retain logged changes. Set to 0 to retain changes indefinitely. (Default: 90)
+CHANGELOG_RETENTION = {{ netbox__config_changelog_retention }}
+
+# Enforcement of unique IP space can be toggled on a per-VRF basis. To enforce unique IP space within the global table
+# (all prefixes and IP addresses not assigned to a VRF), set ENFORCE_GLOBAL_UNIQUE to True.
+ENFORCE_GLOBAL_UNIQUE = {{ netbox__config_enforce_global_unique | bool }}
+
+# Setting this to True will display a "maintenance mode" banner at the top of every page.
+MAINTENANCE_MODE = {{ netbox__config_maintenance_mode | bool }}
+
+# The URL to use when mapping physical addresses or GPS coordinates.
+MAPS_URL = '{{ netbox__config_maps_url }}'
+
+# An API consumer can request an arbitrary number of objects =by appending the "limit" parameter to the URL (e.g.
+# "?limit=1000"). This setting defines the maximum limit. Setting it to 0 or None will allow an API consumer to request
+# all objects by specifying "?limit=0".
+MAX_PAGE_SIZE = {{ netbox__config_max_page_size }}
+
+# Determine how many objects to display per page within a list. (Default: 50)
+PAGINATE_COUNT = {{ netbox__config_paginate_count }}
 {% if netbox__config_custom != '' %}
 
+# DebOps netbox__config_custom settings [[[1
 {{ netbox__config_custom }}
 {% endif %}
