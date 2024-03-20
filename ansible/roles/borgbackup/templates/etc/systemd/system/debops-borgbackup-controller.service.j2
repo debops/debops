@@ -1,0 +1,16 @@
+{# Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+ # Copyright (C) 2023 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+[Unit]
+Description=Trigger remote backups using BorgBackup
+Documentation=https://docs.debops.org/en/master/ansible/roles/debops.borgbackup/
+
+[Service]
+User=backup-controller
+Type=oneshot
+ExecStart=/usr/local/bin/debops_backup_controller
+StandardOutput=append:/var/local/backup-controller/backups.log
+StandardError=append:/var/local/backup-controller/backups.log
