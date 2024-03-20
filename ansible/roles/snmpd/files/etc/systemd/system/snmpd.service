@@ -12,6 +12,8 @@ Description=Simple Network Management Protocol (SNMP) Daemon
 Documentation=man:snmpd(8)
 Documentation=man:snmpcmd(1)
 After=network.target
+StartLimitIntervalSec=500
+StartLimitBurst=5
 
 [Service]
 Environment="MIBDIRS=/usr/share/snmp/mibs:/usr/share/mibs/iana:/usr/share/mibs/ietf"
@@ -19,6 +21,8 @@ EnvironmentFile=-/etc/default/snmpd
 PIDFile=/run/snmpd.pid
 TimeoutStartSec=0
 ExecStart=/usr/sbin/snmpd $SNMPDOPTS -f
+Restart=on-failure
+RestartSec=5s
 
 [Install]
 WantedBy=multi-user.target
