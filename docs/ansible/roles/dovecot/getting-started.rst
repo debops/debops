@@ -83,7 +83,7 @@ Available role tags:
 ``role::dovecot:conf``
   Main configuration tag, should be used in the playbook to execute all of
   the role tasks relates to configuration creation.
-``role::covecot:conf:sql``
+``role::dovecot:conf:sql``
   `SQL` specific configuration subtag.
 ``role::dovecot:conf:ldap``
   `LDAP` specific configuration subtag.
