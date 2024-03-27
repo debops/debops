@@ -298,6 +298,10 @@ Parameters related to public SSH keys
   ``~/.ssh/authorized_keys`` file that are not specified in the ``sshkeys``
   parameter.
 
+``sshkeys_follow``
+  Optional, boolean. If ``True``, the role will follow symlinks to the user's
+  ``~/.ssh/authorized_keys`` file instead of replacing them.
+
 ``sshkeys_state``
   Optional. If not specified or ``present``, the SSH keys will be set on the
   user's account. If ``absent``, the ``~/.ssh/authorized_keys`` file will be
