@@ -212,6 +212,7 @@
     state: 'present'
     user: '{{ item.name }}'
     exclusive: '{{ item.sshkeys_exclusive | d(omit) }}'
+    follow: '{{ item.sshkeys_follow | d(omit) }}'
   loop: '{{ users__combined_accounts | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name,

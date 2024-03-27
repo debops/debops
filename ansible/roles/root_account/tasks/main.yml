@@ -84,6 +84,7 @@
     exclusive: '{{ root_account__authorized_keys_exclusive|bool }}'
     state: 'present'
     user: 'root'
+    follow: '{{ root_account__authorized_keys_follow | bool }}'
   when: root_account__enabled|bool and root_account__authorized_keys_state != 'absent'
 
 - name: Remove /root/.ssh/authorized_keys file if requested

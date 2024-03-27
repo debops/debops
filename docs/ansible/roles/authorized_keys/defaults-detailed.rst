@@ -317,6 +317,10 @@ Each list entry is a YAML dictionary with specific parameters:
     this option can break idempotency if multiple entries with the same
     ``name`` parameter are used.
 
+  ``follow``
+    Optional, boolean. If defined and ``True``, the role will follow symlinks to
+    the :file:`authorized_keys` file instead of replacing them.
+
   ``home``
     Optional, boolean. If not specified or ``False``, the SSH keys will be
     managed in the :file:`/etc/ssh/authorized_keys/` directory, with custom
