@@ -67,6 +67,16 @@ Fixed
 - Fixed issue with ``role::nginx:servers` Ansible tag not working correctly by
   adding tags to tasks included dynamically.
 
+Fixed
+~~~~~
+
+:ref:`debops.gitlab` role
+'''''''''''''''''''''''''
+
+- Fixed an issue with the :file:`/etc/gitlab/ssl/` directory changing its mode
+  from 0775 set by the role to 0755 set by the :command:`gitlab-ctl
+  reconfigure` command, making the role not idempotent.
+
 Removed
 ~~~~~~~
 
