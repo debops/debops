@@ -89,6 +89,16 @@ Updates of upstream application versions
   which needs to be synchronized with the Elasticsearch configuration via
   Ansible inventory (Kibana can be installed separately from Elasticsearch).
 
+Fixed
+~~~~~
+
+:ref:`debops.gitlab` role
+'''''''''''''''''''''''''
+
+- Fixed an issue with the :file:`/etc/gitlab/ssl/` directory changing its mode
+  from 0775 set by the role to 0755 set by the :command:`gitlab-ctl
+  reconfigure` command, making the role not idempotent.
+
 Removed
 ~~~~~~~
 
