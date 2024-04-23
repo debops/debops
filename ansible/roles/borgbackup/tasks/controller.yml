@@ -1,0 +1,80 @@
+---
+# Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2023 DebOps https://debops.org/
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Create a list of per-controller clients
+  ansible.builtin.set_fact:
+    borgbackup__fact_controller_clients: '{{ borgbackup__fact_controller_clients | d([])
+                                             + [ item ] }}'
+  loop: '{{ groups["debops_service_borgbackup_controlled_client"] | d([]) }}'
+  when: inventory_hostname == hostvars[item]["borgbackup__controller"] | d("")
+  tags: [ 'role::borgbackup:config' ]
+
+- name: Gather known public SSH keys from clients
+  ansible.builtin.setup:
+    gather_subset:
+      - '!all'
+      - 'ssh_host_pub_keys'
+  delegate_to: '{{ item }}'
+  delegate_facts: true
+  loop: '{{ borgbackup__fact_controller_clients | d([]) }}'
+  tags: [ 'role::borgbackup:config' ]
+
+- name: Create a list of known SSH hosts (clients)
+  ansible.builtin.template:
+    src: 'etc/ssh/ssh_known_hosts.j2'
+    dest: '/etc/ssh/ssh_known_hosts'
+    mode: '0644'
+  vars:
+    borgbackup__template_hosts: '{{ borgbackup__fact_controller_clients | d([]) }}'
+  tags: [ 'role::borgbackup:config' ]
+
+- name: Install debops_backup_controller script
+  ansible.builtin.template:
+    src: 'usr/local/bin/debops_backup_controller.j2'
+    dest: '/usr/local/bin/debops_backup_controller'
+    mode: '0755'
+  tags: [ 'role::borgbackup:config' ]
+
+- name: Store a copy of the backup-controller SSH key on the Ansible controller
+  ansible.builtin.fetch:
+    src: '/var/local/backup-controller/.ssh/id_ed25519.pub'
+    dest: '{{ borgbackup__secret_base_path + "/controller_id_ed25519.pub" }}'
+    flat: yes
+  tags: [ 'role::borgbackup:config' ]
+
+- name: Enable periodic remote backup jobs via cron
+  ansible.builtin.cron:
+    name: 'Trigger remote backups using BorgBackup'
+    job: 'bash -c "/usr/local/bin/backup_controller_nightly >> /var/local/backup-controller/backups.log 2>&1"'
+    cron_file: 'debops-borgbackup-controller'
+    user: 'backup-controller'
+    special_time: '{{ borgbackup__controller_backup_period }}'
+    state: '{{ "present" if ansible_service_mgr != "systemd" else "absent" }}'
+  when: not ansible_check_mode
+  tags: [ 'role::borgbackup:config' ]
+
+- name: Setup systemd timer for remote backup jobs
+  ansible.builtin.template:
+    src: '{{ item }}.j2'
+    dest: '/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  loop:
+    - 'etc/systemd/system/debops-borgbackup-controller.service'
+    - 'etc/systemd/system/debops-borgbackup-controller.timer'
+  register: borgbackup__register_systemd
+  when: ansible_service_mgr == 'systemd'
+  tags: [ 'role::borgbackup:config' ]
+
+- name: Enable systemd timer for remote backup jobs
+  ansible.builtin.systemd:
+    daemon_reload: True
+    name: 'debops-borgbackup-controller.timer'
+    enabled: True
+    state: 'started'
+  when: ansible_service_mgr == 'systemd'
+        and not ansible_check_mode
+  tags: [ 'role::borgbackup:config' ]
