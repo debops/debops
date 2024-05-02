@@ -42,7 +42,7 @@
     name: '{{ q("flattened", debconf__packages
                              + debconf__group_packages
                              + debconf__host_packages) }}'
-    state: 'present'
+    state: '{{ debconf__apt_state }}'
   register: debconf__register_packages
   until: debconf__register_packages is succeeded
 
