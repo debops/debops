@@ -12,196 +12,386 @@ Getting started
       :local:
 
 
-Setup order
------------
+Initial Setup
+-------------
 
-1. Run the :file:`common.yml` playbook on all controllers/servers/clients.
-2. Configure controllers (optional).
-3. Configure server(s).
-4. Configure client(s), i.e. hosts to backup.
+This role configures hosts for four different functionalities in the backup process.
 
+First of all, the ``common`` playbook needs to have ran on all clients,
+as it relies on the :ref:`debops.root_account` role to have generated SSH keys.
 
-Setting up backup server(s)
----------------------------
+**Servers** are SSH-accessible repositories for backup archives.
+They run ``borg``, and backups happen on them without intermediate storage.
+They need to be in place before clients initialize any repositories on them.
 
-To setup a backup server, add it to the ``[debops_service_borgbackup]`` and
-``[debops_service_borgbackup_server]`` groups. You also need to add all
-clients to the ``[debops_service_borgbackup]`` and
-``[debops_service_borgbackup_client]`` groups:
+**Clients** are the hosts that produce recurring backups.
+They run ``borgmatic``, a ``borg`` configuration tool, to host repository definitions.
+They can host local backups, although borg recommends syncing to multiple repositories
+directly over copying a local one.
 
-.. code-block:: none
+**Controllers** allow centralizing the timing on backups by initiating them via a
+control user. They have nothing to do with borg, they just tell a client to back up to
+its servers.
 
-   [debops_all_hosts]
-   ...
+**Controlled** Clients are configured to allow access to control users to start
+their ``borgmatic`` service.
 
-   [debops_service_borgbackup]
-   backup.example.net
-   client1.example.net
-   client2.example.net
+The control groups can be used as mix-ins on existing client-server configuration.
+If you're setting it up all at once, the right order is:
 
-   [debops_service_borgbackup_server]
-   backup.example.net
+1. Running the debops ``common`` playbook on everything, so clients generate keypairs
+2. **Controllers**, so they can generate keypairs for their control user
+3. **Servers**, so clients can initialize repos on them
+4. **Clients**
 
-   [debops_service_borgbackup_client]
-   client1.example.net
-   client2.example.net
+Since borg backups happen over ssh, any hosts that initiate connections need to
+know each other first.
 
-Then make sure that the backup server to use is defined in
-:file:`inventory/group_vars/debops_service_borgbackup/servers.yml`:
+* Clients connect to servers
+* Controllers connect to (controlled) clients
 
-.. code-block:: yaml
-
-   borgbackup__servers: [ 'backup.example.net' ]
-
-   # This should be uncommented if using a controller
-   #borgbackup__controller: 'controller.example.net'
-
-Note that if you use aliases or short names in your inventory, the above
-variables will have to use the alias or short name instead so that the
-role can find the server in the Ansible inventory:
-
-On each backup server, per-client accounts will be created, each with their
-own BorgBackup repository.
-
-With this, the backup server should be ready after you run the
-``debops.borgbackup`` playbook against it.
-
-
-Setting up backup client(s)
----------------------------
-
-Look at the :envvar:`borgbackup__original_configuration` and
-:envvar:`borgbackup__default_configuration` variables, and then make
-changes to suit your environment via the :envvar:`borgbackup__configuration`,
-:envvar:`borgbackup__group_configuration` and
-:envvar:`borgbackup__host_configuration` variables in the Ansible inventory.
-
-You will probably also want to fine-tune the
-:envvar:`borgbackup__default_source_directories` and
-:envvar:`borgbackup__default_exclude_patterns` variables via the
-via the corresponding variables (``borgbackup__host_*``,
-``borgbackup__group_*``, etc).
-
-After running the role against a given client, the ``root`` account on that
-client will be able to connect to the backup server(s) via SSH and run the
-:command:`borg serve` command. The SSH key of the ``root`` account is managed
-by the :ref:`debops.root_account` role (which is executed as part of the
-:file:`common.yml` playbook).
-
-The per-client encryption keys will be backed up to the Ansible controller
-and a :man:`systemd.timer(5)` unit or a :man:`cron(8)` script will be installed
-which will trigger regular backups. By default, the backups will be triggered
-at a random (per-client specific) time between midnight and 6AM.
-
-
-Backup trigger via centralized control
---------------------------------------
-
-In case you configure multiple hosts to backup to one backup server, you might
-want to run the backups one after each other for example when the WAN bandwidth
-is your limiting factor.
-
-This is an alternative to the previously shown client-triggered backups.
-For this you will need a controller server from which the backups are
-triggered. The backup server could also act as the controller server but for
-security reasons a dedicated controller server is recommended.
-
-The clients need to be added to the
-``[debops_service_borgbackup_controlled_client]`` group instead of the
-``[debops_service_borgbackup_client]`` group and the the host which should act
-as a controller need to be added to the ``[debops_service_borgbackup]`` and
-``[debops_service_borgbackup_controller]`` groups:
-
-.. code-block:: none
-
-   [debops_all_hosts]
-   ...
-
-   [debops_service_borgbackup]
-   controller.example.net
-   backup.example.net
-   client1.example.net
-   client2.example.net
-
-   [debops_service_borgbackup_controller]
-   controller.example.net
-
-   [debops_service_borgbackup_server]
-   backup.example.net
-
-   [debops_service_borgbackup_controlled_client]
-   client1.example.net
-   client2.example.net
-
-Also make sure that the :envvar:`borgbackup__controller` variable from the
-example provided in the server section above is uncommented before executing
-the role playbook against the controller.
-
-The role will create the user ``backup-contoller`` on the controller and each
-client. Using a :man:`systemd.timer(5)` unit or a :man:`cron(8)` script, the
-controller user will connect periodically to the clients (sequentially) via SSH
-and trigger backup jobs via :command:`sudo`. This ensures that only one client
-will be performing a backup job at any given time.
-
-
-Multiple sites
---------------
-
-The above examples assume that you are running a single "site" or cluster with
-a controller (optional), server(s) and client(s). If you instead want to
-configure separate logical clusters, each with their own controller and
-server(s), you need to create separate inventory groups for each cluster:
-
-.. code-block:: none
-
-   [debops_all_hosts]
-   ...
-
-   [debops_service_borgbackup_site_a]
-   controller.a.example.net
-   backup.a.example.net
-   client1.a.example.net
-   client2.a.example.net
-
-   [debops_service_borgbackup_site_b]
-   controller.b.example.net
-   backup.b.example.net
-   client1.b.example.net
-   client2.b.example.net
-
-   [debops_service_borgbackup_controller]
-   controller.a.example.net
-   controller.b.example.net
-
-   [debops_service_borgbackup_server]
-   backup.a.example.net
-   backup.b.example.net
-
-   [debops_service_borgbackup_controlled_client]
-   client1.a.example.net
-   client2.b.example.net
-   client1.a.example.net
-   client2.b.example.net
-
-Then make sure that the :envvar:`borgbackup__controller` and
-:envvar:`borgbackup__servers` variables are correctly defined for each
-inventory group, e.g. in
-:file:`inventory/group_vars/debops_service_borgbackup_site_a/servers.yml`:
+This can be achieved in inventory ``host_vars`` with the :ref:`debops.sshd` role:
 
 .. code-block:: yaml
 
-   borgbackup__servers: [ 'backup.a.example.net' ]
+   sshd__host_known_hosts:
+     # host fqdn
+     - myclient.example.com
 
-   borgbackup__controller: 'controller.a.example.net'
 
-And in
-:file:`inventory/group_vars/debops_service_borgbackup_site_b/servers.yml`:
+Borg Clients
+------------
+
+A **borg client** generates backups and dumps them to local or remote repositories.
+
+To set up a host as a client, add it to the ``debops_service_borgbackup`` group.
+
+The client will be running :command:`borgmatic` as ``root``, and will be able to
+connect to backup servers via SSH to run :command:`borg serve` with the SSH key
+generated by default by the :ref:`debops.root_account` role
+(which is executed as part of the :file:`common.yml` playbook).
+
+Repository passwords and per-client encryption keys are stored on the Ansible
+controller in :file:`secret/borgbackup/clients/{hostname}/`.
+
+:command:`systemd` will be configured to trigger regular backups and securely
+store repository passphrases as systemd credentials.
+
+On systems that do not support systemd, :man:`cron(8)` will be configured instead,
+reading its credentials directly from a plaintext file (only readable by ``root``).
+
+A few key service-related client variables:
 
 .. code-block:: yaml
 
-   borgbackup__servers: [ 'backup.b.example.net' ]
+   # This would keep the recurring backup service disabled
+   # Credentials at /etc/borgmatic/passphrases will still be generated
+   borgbackup__service_enabled: False # Defaults to True
 
-   borgbackup__controller: 'controller.b.example.net'
+   # This prevents the systemd job from accessing the real /root
+   borgbackup__service_protect_root: False # If you need to back up /root
+
+   # The systemd job only has write access to specific directories
+   # Syncing remote repositories requires none
+   # Local repositories (or their parent directory) need to be listed here
+   borgbackup__service_rw_directories:
+     - /mnt/backup
+
+
+.. _borgbackup__ref_configuration_examples:
+
+Borgmatic
+~~~~~~~~~
+
+Client configuration is done with :command:`borgmatic`,
+following its `per-application backups`__ documentation to allow inventory and
+dependent roles to add configuration files of their own in :file:`/etc/borgmatic.d/`.
+
+.. __: https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/
+
+The role uses :ref:`universal_configuration` to deploy config files on a host via
+``borgbackup__*_configuration`` variables.
+See :ref:`borgbackup__ref_configuration` for its full usage reference.
+
+Each configuration item templates a ``yaml`` document.
+* files in :file:`/etc/borgmatic/includes/` hold configuration fragments, such as common defaults
+* files in :file:`/etc/borgmatic/repos/` contain base debops repo configuration
+* units in :file:`/etc/borgmatic.d/` are read in sequence by default
+* :file:`/etc/borgmatic/config.yaml` is also read as a unit, if it exists
+
+This setup takes advantage of borgmatic's deep merging to allow the role to lay out
+defaults and credentials while allowing inventory configuration to override any of it.
+
+By default, the role generates a :file:`/etc/borgmatic/includes/common.yaml`,
+which you *may* include in your configuration.
+
+The ``repo`` config ``type`` provides repository initialization and configuration.
+
+.. code-block:: yaml
+
+   borgbackup__group_configuration:
+     # Configures backups for my documents
+     - name: documents
+       comment: Top of the file comment for the documents.yaml unit
+
+       # The repo type templates an include at /etc/borgmatic/repos/[name].yaml
+       type: repo
+       # It holds the configuration debops needs to manage to set it up
+       # It's also future-proofed for the syntax changes between 1.7.7 and 1.8.1
+
+       # These were a list of paths before version 1.7.10. On older versions,
+       # the role will accept the new syntax but silently ditch the labels.
+       repositories:
+         # local repositories will be included to the paths systemd can edit
+         - path: /mnt/backup/documents.repo
+         # SSH access needs to work already, as repo init happens directly there
+         - path: 'ssh://{{ my__user }}@{{ my__server }}/{{ ansible_hostname }}.repo'
+         - path: ssh://user@external-server/./documents.borg
+           label: backup-box
+
+       # Include the includes/common.yaml, defined by debops by default
+       include: common # repos/documents.yaml will be automatically appended
+
+       # This will be rendered in the final unit file | to_nice_yaml
+       yaml:
+         # This is the /etc/borgmatic.d/documents.yaml unit, starting with:
+         # <<: !include ['includes/common.yaml', 'repos/documents.yaml']
+
+         # The actual work to do is up to you
+         # Before 1.8.0, this would belong in a "location" section.
+         source_directories:
+           - '/home/{{ my__user }}/My Documents'
+
+         # These comments will be lost, only (nice) yaml will remain.
+         exclude_patterns:
+           - '*.pyc'
+           - '*/.vim*.tmp'
+           - '/home/{{ my__user }}/My Documents/*/.cache'
+
+
+The above will initialize all local and remote repositories with a generated
+passphrase stored in :file:`secret/[hostname]/[repo]_passphrase.txt`, and back up
+the host's borg keys at :file:`secret/[hostname]/borg_config_[hostname].tar` on the
+ansible controller.
+
+
+.. attention::
+
+   The role is designed for compatibility with borgmatic version ``1.7.7``,
+   currently in Debian ``bookworm`` at the time of writing.
+
+   As there are significant differences between bookworm's ``1.7.7`` and ``1.8.0``,
+   that can deeply affect your whole approach to your specific configuration.
+   The role aims to accommodate either version in inventory, by doing version
+   checks for the minimal code it templates itself, and leaving the rest up to you.
+
+   Examples are in the post ``1.8.0`` syntax. If you are on ``bookworm``,
+   you **will need** a configuration reference for your version.
+   Get it with :command:`borgmatic config generate --destination [file]`.
+   Prior to version ``1.7.15`` that's :command:`generate-borgmatic-config`.
+
+
+The ``unit`` (default) and ``include`` types allow arbitrary hot and cold configs.
+
+.. code-block:: yaml
+
+   borgbackup__configuration:
+
+     # This will output /etc/borgmatic/includes/constants.yaml
+     - name: constants
+       type: include # It will not try to validate until included
+       comment: Lucky users over version 1.7.10 get to use these
+       raw: |
+         # This will be rendered as it is.
+         # After the yaml field, if it exists, but why use both.
+         constants:
+           our_company: example.com
+
+     - name: manual
+       type: unit # default, will try to validate
+       comment: This is a backup I want to run manually with --config
+       # Manually set path: anything but config.yaml in /etc/borgmatic is safe
+       path: /etc/borgmatic/manual.yaml
+       include:
+         - constants
+         - common
+       # Imagine an example config, but prettier
+       raw: '{{ lookup("template", "my__template.yaml.j2") }}'
+
+
+And these conclude the tour.
+
+As a demonstration, let's implement soft failures from borgmatic's
+`How to backup to a removable drive or an intermittent server`__
+on our previous ``documents`` repo.
+
+.. __: https://torsion.org/borgmatic/docs/how-to/backup-to-a-removable-drive-or-an-intermittent-server/
+
+
+.. code-block:: yaml
+
+   borgbackup__host_configuration:
+
+     # This will output a documents-removable.yaml unit next to our documents.yaml
+     # Using the previous config as a starting point
+     - name: documents-removable
+       type: unit
+       comment: Also back up to my removable cassette
+
+       include:
+         # Versions before ``1.8.1`` may only include the repo string,
+         # But, as defined in the example above, it will chain "common" along with it
+         - common
+         # Including shortnames would resolve them to ``includes/[name].yaml``
+         - /etc/borgmatic/repos/documents.yaml
+
+       yaml:
+         # This will be merged into the repositories list defined by the repo config
+         # Different versions of borgmatic have different options to control merging
+         repositories:
+           - path: /mnt/removable/documents.borg
+
+         before_backup:
+           - findmnt /mnt/removable > /dev/null || exit 75
+
+
+Now this unit will soft-fail if my cassette is not mounted, then borgmatic will
+log it and continue processing the rest of the configuration.
+
+
+Borg Servers
+------------
+
+A **borg server** allows backup-generating clients to connect to it with limited
+SSH user accounts, and act on repositories hosted there.
+
+To set up a server, add it to the ``[debops_service_borgbackup_server]`` group.
+
+A server must be running the same version of borg as the clients syncing to it.
+
+The role uses :ref:`universal_configuration` to deploy backup user accounts
+with ``borgbackup__server_*_accounts`` variables.
+
+See :ref:`borgbackup__ref_server_accounts` for its full usage reference.
+
+.. code-block:: yaml
+
+   borgbackup__server_host_accounts:
+
+     # This user will allow access to an inventory-configured client
+     - name: 'borg-{{ my__client }}'
+       # The inventory shortname will pull the pubkey from the host
+       clients:
+         - '{{ my__client }}'
+
+     # All we really need is a username and a public key
+     - name: borg-manual
+       home: /mnt/manual
+       append_only: True # I like to prune
+
+       # Manually entered ssh keys are passed to debops.authorized_keys
+       sshkeys:
+         - '{{ lookup("file", secret + "/manual.rsa" ) }}'
+
+       # The users_extra and authorized_keys_extra variables
+       # can be used to tweak the underlying debops role configuration.
+       users_extra:
+         home_mode: '750'
+       # Will be passed to both underlying roles.
+       state: present
+
+
+The above config will generate two user accounts on the server, allowing them
+access *to a fixed invocation* of the :command:`borg` command.
+
+These can then be used **in client configuration** to initialize repositories in
+the users home directories:
+
+.. code-block:: yaml
+
+   repositories:
+     - path: 'ssh://borg-{{ my__client }}@{{ my__fqdn }}/./my_backup.repo'
+       label: My automagically configured cloud
+
+     - path: 'ssh://borg-manual@{{ my__fqdn }}/./my_documents.repo'
+       label: Document storage for my friend, Manual # Thx codespell
+
+
+Controlled Synchronization
+--------------------------
+
+Orchestrating backups from a single controller may be preferable for availability or
+resource allocation reasons.
+To accommodate this, the role can configure a *control user* to connect on a list of
+client hosts in sequence, restricted to running the borgmatic service unit.
+
+This is not borg's `pull mode`__.
+This feature does not modify any part of the *client* and *server* configuration,
+it works on top of it.
+
+.. __: https://borgbackup.readthedocs.io/en/stable/deployment/pull-backup.html
+
+Configuring the behavior on a single network with the default control user requires:
+
+* adding **one** controller to the ``debops_service_borgbackup_controller`` group
+* all clients to the ``debops_service_borgbackup_controlled`` group
+* setting ``borgmatic__service_enabled`` to ``False`` for all hosts
+
+
+Controllers
+~~~~~~~~~~~
+
+A controller is configured by adding it to the ``[debops_service_borgbackup_controller]``
+group. It doesn't even need to have :command:`borg`.
+
+It runs a ``borg-controller`` service, which in turn connects via SSH to all clients
+in sequence as ``borgbackup__control_user`` (Defaults to ``borg-control``).
+
+The borg controller's public key is stored in :file:`secret/borgbackup/control/[user]_id_ed25519.pub`
+
+.. code-block:: yaml
+
+   # A list of hosts to call in sequence
+   # It defaults to the whole _controlled group
+   borgbackup__controlled_clients:
+     - brie
+     - cheddar
+     # Anything not matching a shortname in the _controlled group
+     # Will be used as a connection string to a non-inventory host
+     - peckish@gorgonzola.example.com
+
+
+The controller will simply :command:`ssh -T` to all addresses on this list,
+relying on each client to run a specific command through a ``command=`` directive in
+its SSH configuration. In theory you could add your teapot to it.
+
+The role keeps track of control users only by name, so do use different
+usernames (or change the :envvar:`borgbackup__controller_public_key` lookup)
+if setting up multiple clusters.
+
+The role only has access to explicitly defined variables of the clients when
+setting up the controller, so if you're using a non-default control user,
+make sure it is set in inventory on all clients, too.
+
+
+Controlled Clients
+~~~~~~~~~~~~~~~~~~
+
+The ``debops_service_borgbackup_controlled`` group adds the **control user** to
+clients configured by the ``debops_service_borgbackup`` group.
+
+Configuring a controlled client requires its controller to have generated its
+keypair first.
+
+.. code-block:: yaml
+
+  # Disable the locally running service on the client
+  borgbackup__service_enabled: False
+
+
+The role will create the ``borgbackup__control_user`` and allow the controller
+to connect to it and run the borgmatic one shot service, or borgmatic directly
+on non-systemd hosts.
 
 
 Example playbook
@@ -229,8 +419,23 @@ Available role tags:
   Main role tag, should be used in the playbook to execute all of the role
   tasks as well as role dependencies.
 
-``role::borgbackup:config``
-  Performs tasks related to creating/updating various configuration files.
-
 ``role::borgbackup:install``
   Performs tasks related to software installation.
+
+``role::borgbackup:service``
+  Tasks related to configuring and enabling recurring backups with
+  :command:`systemd` or :command:`cron` on the ``pull`` and ``client`` sections
+  of the role.
+
+``role::borgbackup:config``
+  Performs tasks related to templating borgmatic configuration files on clients.
+
+``role::borgbackup:server``
+  Server configuration section.
+
+``role::borgbackup:control``
+  Control configuration section, covering controller and controlled client
+  functionality.
+
+``role::borgbackup:client``
+  Client configuration section.

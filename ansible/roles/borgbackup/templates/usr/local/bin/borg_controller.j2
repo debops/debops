@@ -1,0 +1,24 @@
+{# Copyright (C) 2019-2023 Robin Schneider <ypid@riseup.net>
+ # Copyright (C) 2019-2023 DebOps https://debops.org/
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+#!/bin/bash
+# {{ ansible_managed }}
+
+set -o nounset -o pipefail -o errexit
+
+{% for host in borgbackup__controller_clients | d([]) %}
+{%   if host in hostvars %}
+{# Note: only explicitly set variables (not role defaults) are available as hostvars #}
+{%     set host_user = hostvars[host].borgbackup__control_user | d(borgbackup__control_user) %}
+{%     set host_fqdn = hostvars[host].borgbackup__fqdn | d(hostvars[host].ansible_host) %}
+{% 	   set host_connection = host_user + "@" + host_fqdn %}
+{%   endif %}
+echo "Instructing {{ host_connection | d(host) }} to make a backup."
+if ssh -T {{ host_connection | d(host) }}; then
+	echo "Success"
+else
+	echo "Failure"
+fi
+echo ""
+{% endfor %}

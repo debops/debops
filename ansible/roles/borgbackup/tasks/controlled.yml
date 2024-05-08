@@ -1,0 +1,25 @@
+---
+# Copyright (C) 2024 Tasos Alvas <tasos.alvas@qwertyuiopia.com>
+# Copyright (C) 2024 DebOps https://debops.org/
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Create the control user on the controlled client
+  ansible.builtin.import_role:
+    name: users
+  vars:
+    users__dependent_accounts: '{{ borgbackup__control_user_accounts }}'
+  tags: [ 'role::borgbackup:control' ]
+
+- name: Enable SSH access to the controlled client for its controller
+  ansible.builtin.import_role:
+    - name: authorized_keys
+  vars:
+    authorized_keys__dependent_identities: '{{ borgbackup__controlled_authorized_keys }}'
+  tags: [ 'role::borgbackup:ssh' ]
+
+- name: Enable limited sudo access on the controlled client
+  ansible.builtin.import_role:
+    - name: sudo
+  vars:
+    sudo__dependent_sudoers: '{{ borgbackup__controlled_sudoers }}'
+  tags: [ 'role::borgbackup:ssh' ]

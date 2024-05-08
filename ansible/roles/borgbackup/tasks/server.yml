@@ -1,60 +1,32 @@
 ---
 # Copyright (C) 2023 David Härdeman <david@hardeman.nu>
-# Copyright (C) 2023 DebOps https://debops.org/
+# Copyright (C) 2024 Tasos Alvas <tasos.alvas@qwertyuiopia.com>
+# Copyright (C) 2023-2024 DebOps https://debops.org/
 # SPDX-License-Identifier: GPL-3.0-only
 
-- name: Create a list of per-server clients
-  ansible.builtin.set_fact:
-    borgbackup__fact_server_clients: '{{ borgbackup__fact_server_clients | d([])
-                                         + [ item ] }}'
-  loop: '{{ groups["debops_service_borgbackup_client"] | d([])
-            + groups["debops_service_borgbackup_controller_client"] | d([]) }}'
-  when: inventory_hostname in hostvars[item]["borgbackup__servers"] | d([])
-  tags: [ 'role::borgbackup:config' ]
-
-- name: Collect client facts
+- name: Collect public keys from all borgbackup clients in inventory
   ansible.builtin.setup:
     gather_subset:
       - '!all'
+      - '!min'
       - 'local'
   delegate_to: '{{ item }}'
   delegate_facts: true
-  loop: '{{ borgbackup__fact_server_clients }}'
-  tags: [ 'role::borgbackup:config' ]
+  loop: '{{ groups["debops_service_borgbackup"] | d([]) }}'
+  tags: [ 'role::borgbackup:server' ]
 
-- name: Create per-host backup users on the server
+- name: Create borg server user accounts
   ansible.builtin.include_role:
     name: 'users'
   vars:
-    users__dependent_accounts:
-      - name: '{{ ("borg_" + client) | replace(".", "_") }}'
-        home_mode: '0750'
-        shell: '/bin/sh'
-        system: True
-        groups: [ '{{ ansible_local.system_groups.local_prefix + "sshusers" }}' ]
-  loop: '{{ borgbackup__fact_server_clients }}'
-  loop_control:
-    loop_var: 'client'
-  when: hostvars[client].ansible_facts.ansible_local.root_account.ssh_public_key | d()
-  tags: [ 'role::borgbackup:config' ]
+    users__dependent_accounts: '{{ lookup("template", "borgbackup__server__users.yml.j2") | from_yaml }}'
+  when: borgbackup__server_combined_accounts | d([])
+  tags: [ 'role::borgbackup:server' ]
 
-- name: Setup per-host backup user authorized_keys on the server
+- name: Configure borg server user authorized_keys
   ansible.builtin.include_role:
     name: 'authorized_keys'
   vars:
-    authorized_keys__dependent_identities:
-      - name: '{{ ("borg_" + client) | replace(".", "_") }}'
-        accounts: [ '{{ ("borg_" + client) | replace(".", "_") }}' ]
-        exclusive: True
-        command: 'borg serve{{ "--append-only"
-                               if borgbackup__append_only | d(False)
-                               else ""}} --restrict-to-path $HOME'
-        options:
-          - 'restrict'
-        sshkeys:
-          - '{{ hostvars[client].ansible_facts.ansible_local.root_account.ssh_public_key }}'
-  loop: '{{ borgbackup__fact_server_clients }}'
-  loop_control:
-    loop_var: 'client'
-  when: hostvars[client].ansible_facts.ansible_local.root_account.ssh_public_key | d()
-  tags: [ 'role::borgbackup:config' ]
+    authorized_keys__dependent_identities: '{{ lookup("template", "borgbackup__server__authorized_keys.yml.j2") | from_yaml }}'
+  when: borgbackup__server_combined_accounts | d([])
+  tags: [ 'role::borgbackup:server' ]

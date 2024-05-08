@@ -3,6 +3,7 @@
 
 # .. Copyright (C) 2019-2023 Robin Schneider <ypid@riseup.net>
 # .. Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+# .. Copyright (C) 2024 Tasos Alvas <tasos.alvas@qwertyuiopia.com>
 # .. Copyright (C) 2019-2023 DebOps https://debops.org/
 # .. SPDX-License-Identifier: GPL-3.0-only
 
@@ -18,146 +19,212 @@
 
 
 # Software installation [[[
-# ------------------------
+# -------------------------
 
 # .. envvar:: borgbackup__base_packages [[[
 #
 # List of base APT packages to install.
 borgbackup__base_packages:
-  - '{{ "borgbackup" if borgbackup__type in ["client", "controlled_client", "server"] else [] }}'
-  - '{{ "borgmatic" if borgbackup__type in ["client", "controlled_client"] else [] }}'
+  - borgbackup
+                                                                     # ]]]
 
-                                                                   # ]]]
+# .. envvar:: borgbackup__borgmatic_packages [[[
+#
+# List of base APT packages to install on hosts with archive definitions.
+borgbackup__client_packages:
+  - borgmatic
+
 # .. envvar:: borgbackup__packages [[[
 #
 # List of additional APT packages to install.
 borgbackup__packages: []
 
                                                                    # ]]]
+# .. envvar:: borgbackup__borgmatic_binary [[[
+#
+# Location of the borgmatic binary on the host.
+borgbackup__borgmatic_binary: /usr/bin/borgmatic
+
                                                                    # ]]]
+# .. envvar:: borgbackup__cmd_validate [[[
+#
+# Version check for the borgmatic :command:`validate` command.
+borgbackup__cmd_validate: '{{
+    "validate-borgmatic-config"
+    if ansible_local.borgbackup.borgmatic_version is version("1.7.15", "<")
+    else "borgmatic config validate" }}'
+                                                                   # ]]]
+                                                                   # ]]]
+
 # Basic configuration [[[
 # -----------------------
 
 # .. envvar:: borgbackup__fqdn [[[
 #
-# FQDN of the host.
+# Fully Qualified Domain Name of the host.
+#
+# If defined in inventory (not defaults), the role will use it in
+# **controller** configuration (as ``hostvars[host].borgbackup__fqdn``).
+# Otherwise it will fall back to using ``hostvars[client].ansible_host``
+# to connect to clients in inventory.
 borgbackup__fqdn: '{{ ansible_fqdn }}'
 
                                                                    # ]]]
-# .. envvar:: borgbackup__type [[[
+
+# .. envvar:: borgbackup__secret_base_path [[[
 #
-# The type of the borgbackup installation on a given host. Currently
-# valid values include ``server`` (for a server hosting repositories),
-# ``client`` (for a client which performs backups to a remote server),
-# ``controlled_client`` (for a client which performs backups to a remote
-# server when instructed to do so by a controller) and ``controller``
-# (for a host which controls clients).
-borgbackup__type: '{{ "server"
-                      if "debops_service_borgbackup_server" in group_names
-                      else
-                      ("client"
-                       if "debops_service_borgbackup_client" in group_names
-                       else
-                       ("controlled_client"
-                        if "debops_service_borgbackup_controlled_client" in group_names
-                        else
-                        ("controller"
-                         if "debops_service_borgbackup_controller" in group_names
-                         else "unknown"))) }}'
+# Base secret path of this role on the Ansible controller.
+#
+# * :file:`clients/[host]` contains key backups and repo passphrases
+# * :file:`control/` contains the public keys of controllers
+borgbackup__secret_base_path: '{{ secret + "/borgbackup" }}'
 
                                                                    # ]]]
-# .. envvar:: borgbackup__configuration_base_path [[[
+                                                                   # ]]]
+
+# Service configuration [[[
+# ------------------------
+
+# These variables apply to hosts in the ``[debops_service_borgmatic]`` group.
+
+# Variables in this section are used to configure the :command:``systemd``
+# timer and service running on clients to make backups.
 #
-# Base path for borgmatic configuration file on the remote machine.
-borgbackup__configuration_base_path: '/etc/borgmatic'
+# An equivalent cron job is configured on hosts that don't support ``systemd``
+#
+# .. envvar:: borgbackup__service_enabled [[[
+#
+# Enables or disables the recurring backup job on the host.
+borgbackup__service_enabled: True
 
                                                                    # ]]]
-# .. envvar:: borgbackup__servers [[[
-#
-# List of Borgbackup repository servers. Use the same hostnames as
-# in the inventory (i.e. the Ansible ``inventory_hostname``).
-borgbackup__servers: []
-
-                                                                   # ]]]
-# .. envvar:: borgbackup__backup_period [[[
+# .. envvar:: borgbackup__service_period [[[
 #
 # Time interval between performing backups. See the :man:`systemd.time(7)`
 # documentation for possible ``OnCalendar=`` values. If you are not using
 # :command:`systemd`, the time units recognized by the :program:`cron`
 # Ansible module ``special_time`` parameter can be used instead.
-borgbackup__backup_period: 'daily'
+borgbackup__service_period: 'daily'
 
                                                                    # ]]]
-# .. envvar:: borgbackup__backup_random_delay [[[
+# .. envvar:: borgbackup__service_random_delay [[[
 #
 # Random delay for the above time interval. See the :man:`systemd.time(7)`
 # documentation for possible ``RandomizedDelaySec=`` values and note that
 # the ``FixedRandomDelay=`` parameter is set to ``true``. The default
 # value means that backups will be triggered between midnight and 6AM.
-borgbackup__backup_random_delay: '6h'
+borgbackup__service_random_delay: '3h'
 
                                                                    # ]]]
-# .. envvar:: borgbackup__backup_timer_persistent [[[
+# .. envvar:: borgbackup__service_persistent [[[
 #
 # Should the :command:`systemd` timer which triggers backups be persistent? If
 # true, a powered-down host will trigger a backup within
-# :envvar:`borgbackup__backup_random_delay` after booting. If false, backups
+# :envvar:`borgbackup__service_random_delay` after booting. If false, backups
 # will only be performed at the scheduled period/delay (see the ``Persistent=``
 # parameter in :man:`systemd.time(7)`). This has no effect on non-systemd
 # installations.
-borgbackup__backup_timer_persistent: True
+borgbackup__service_persistent: True
 
                                                                    # ]]]
-# .. envvar:: borgbackup__protect_root [[[
+# .. envvar:: borgbackup__service_ac_power [[[
 #
-# Should the :file:`/root` directory be protected by the command:`systemd`
-# service? If true, you cannot backup the directory. This has no effect on
-# non-systemd installations.
-borgbackup__protect_root: True
+# Sets `ConditionACPower` for the service, so it only runs when the
+# machine is plugged into power.
+borgbackup__service_ac_power: True
 
                                                                    # ]]]
-# .. envvar:: borgbackup__append_only [[[
+# .. envvar:: borgbackup__service_protect_system [[[
 #
-# Should clients have "append only" access to the repositories stored on the
-# remote server(s)? If yes, clients cannot delete old archives, see
-# :ref:`borgbackup__ref_append_only` before changing this.
-borgbackup__append_only: False
-
-                                                                   # ]]]
-# .. envvar:: borgbackup__controller [[[
+# Sets ``ProtectSystem`` in the systemd service.
 #
-# The controller for a given host (optional). Use the same hostname as
-# in the inventory (i.e. the Ansible ``inventory_hostname``).
-borgbackup__controller: ''
-
-                                                                   # ]]]
-# .. envvar:: borgbackup__controller_public_key [[[
+# ``full`` disallows write access to :file:`/etc/`.
 #
-# The public part of the key the controller will use to connect to clients.
-borgbackup__controller_public_key: '{{ lookup("ansible.builtin.file",
-                                              secret
-                                              + "/borgbackup/"
-                                              + borgbackup__controller
-                                              + "/controller_id_ed25519.pub",
-                                              errors="ignore") }}'
+# ``strict`` disallows all write access and enables security features
+# configured in :envvar:`borgbackup__service_protect_root`,
+# :envvar:`borgbackup__service_rw_directories`, and
+# :envvar:`borgbackup__service_capabilities`.
+borgbackup__service_protect_system: 'full'
 
                                                                    # ]]]
-# .. envvar:: borgbackup__controller_backup_period [[[
+# .. envvar:: borgbackup__service_protect_root [[[
 #
-# Same as :envvar:`borgbackup__backup_period`, but for controllers.
-borgbackup__controller_backup_period: 'daily'
-
-                                                                   # ]]]
-# .. envvar:: borgbackup__controller_backup_random_delay [[[
+# Protects the :file:`/root` directory from the :command:`borgmatic` command
+# when ran by :command:`systemd` by mounting a tmpfs on top of /root and
+# allowing it access to a subset of directories.
 #
-# Same as :envvar:`borgbackup__backup_random_delay`, but for controllers.
-borgbackup__controller_backup_random_delay: '6h'
+# If true, you cannot backup the :file:`/root` directory.
+#
+# This only applies to systemd installations with
+# :envvar:`borgbackup__service_protect_system` set to ``strict``.
+borgbackup__service_protect_root: True
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__service_rw_directories [[[
+#
+# List of directories which should be readable and writeable by
+# :command:`borgmatic` on clients when ran by :command:`systemd`.
+#
+# This is necessary if you configure local repositories with
+# :envvar:`borgbackup__service_protect_system` set to ``strict``.
+borgbackup__service_rw_directories: []
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__service_capabilities [[[
+#
+# Configures ``CapabilityBoundingSet`` in the systemd service.
+# May interfere with running external programs within borgmatic hooks.
+#
+# :man:`capabilities(7)` to tweak it further, or set it to "" to disable.
+#
+# This only applies to systemd installations with
+# :envvar:`borgbackup__service_protect_system` set to ``strict``.
+borgbackup__service_capabilities: 'CAP_DAC_READ_SEARCH CAP_NET_RAW'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__service_systemd_units [[[
+#
+# Configures the :ref:`debops.systemd` role as ``systemd__dependent_units``
+# to add the borgmatic timer and service on systemd clients.
+#
+# The configuration is based on the `borgmatic systemd service sample`__,
+# and parametrized to use the variables above.
+# If you template your own, you can safely ignore them.
+#
+# .. __: https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/sample/systemd/borgmatic.service
+borgbackup__service_systemd_units:
+  - name: borgmatic.service
+    raw: '{{ lookup("template", "borgbackup__service__systemd.j2") }}'
+    state: present
+
+  - name: borgmatic.timer
+    raw: |
+      [Unit]
+      Description=Perform a backup using borgmatic/BorgBackup
+      Documentation=https://docs.debops.org/en/master/ansible/roles/debops.borgbackup/
+
+      [Timer]
+      OnCalendar={{ borgbackup__service_period }}
+      RandomizedDelaySec={{ borgbackup__service_random_delay }}
+      FixedRandomDelay=true
+      {% if not borgbackup__service_persistent | d(False) | bool %}
+      Persistent=false
+      {% endif %}
+
+      [Install]
+      WantedBy=timers.target
+    enabled: '{{ borgbackup__service_enabled }}'
+    state: '{{ "started" if borgbackup__service_enabled else "stopped" }}'
 
                                                                    # ]]]
                                                                    # ]]]
-# Repository encryption [[[
-# -------------------------
 
+# Archive encryption [[[
+# ----------------------
+
+# ``repo`` configuration entries initialize borgbackup repositories with passkeys
+# stored as :file:`secret/{hostname}/{item.name}_passphrase.txt` on the controller.
+#
 # .. envvar:: borgbackup__encryption [[[
 #
 # The encryption mode to use when creating a new repository. See
@@ -174,12 +241,6 @@ borgbackup__encryption: 'keyfile-blake2'
 borgbackup__passphrase_length: 48
 
                                                                    # ]]]
-# .. envvar:: borgbackup__secret_base_path [[[
-#
-# Base secret path of this role on the Ansible controller.
-borgbackup__secret_base_path: '{{ secret + "/borgbackup/" + inventory_hostname }}'
-
-                                                                   # ]]]
 # .. envvar:: borgbackup__passphrase_base_path [[[
 #
 # Passphrase base path on the remote machine.
@@ -187,1607 +248,91 @@ borgbackup__passphrase_base_path: '{{ borgbackup__configuration_base_path + "/pa
 
                                                                    # ]]]
                                                                    # ]]]
-# Paths to backup or exclude [[[
-# ------------------------------
 
-# .. envvar:: borgbackup__rw_directories [[[
-#
-# List of directories which should be readable and writeable by
-# :command:`borgmatic` on clients. This is only necessary if you configure
-# local repositories and has no effect on non-systemd installations.
-borgbackup__rw_directories: []
-
-                                                                   # ]]]
-# .. envvar:: borgbackup__default_source_directories [[[
-#
-# List of default source directories to backup. This list is intentionally kept
-# very simple, see the :envvar:`borgbackup__example_source_directories`
-# variable for a more complex example.
-borgbackup__default_source_directories:
-  - '/home'
-  - '/srv'
-
-                                                                   # ]]]
-# .. envvar:: borgbackup__source_directories [[[
-#
-# List of source directories to backup on all hosts in the Ansible inventory.
-borgbackup__source_directories: []
-
-                                                                   # ]]]
-# .. envvar:: borgbackup__group_source_directories [[[
-#
-# List of source directories to backup on hosts in a specific group in the
-# Ansible inventory.
-borgbackup__group_source_directories: []
-
-                                                                   # ]]]
-# .. envvar:: borgbackup__host_source_directories [[[
-#
-# List of source directories to backup on specific hosts in the Ansible
-# inventory.
-borgbackup__host_source_directories: []
-
-                                                                   # ]]]
-# .. envvar:: borgbackup__combined_source_directories [[[
-#
-# Variable which combines all source lists and is used in the role tasks and
-# templates.
-borgbackup__combined_source_directories: '{{ borgbackup__default_source_directories
-                                             + borgbackup__source_directories
-                                             + borgbackup__group_source_directories
-                                             + borgbackup__host_source_directories }}'
-
-                                                                   # ]]]
-# .. envvar:: borgbackup__example_source_directories [[[
-#
-# Example for a more expansive list of source directories to backup. This is
-# meant to adhere to the Filesystem Hierarchy Standard (FHS) and to DebOps
-# conventions and to serve as an inspiration for local customizations but
-# is not used by default.
-borgbackup__example_source_directories:
-  - '/etc'
-  - '/home'
-  - '/opt'
-  - '/root'
-  - '/srv'
-  - '/usr/local'
-  - '/var/backups'
-  - '/var/lib'
-  - '/var/local'
-  - '/var/mail'
-  - '/var/opt'
-  - '/var/spool/cron/crontabs'
-
-  # debops.core: Ensure directories are included even if the admin is using
-  # non-default location.
-  # The default locations are still included (see above) and will be
-  # deduplicated from this list automatically if ``debops.core`` is
-  # configured with the same paths.
-  - '{{ ansible_local.root.bin    | d("/usr/local/bin") }}'
-  - '{{ ansible_local.root.etc    | d("/usr/local/etc") }}'
-  - '{{ ansible_local.root.lib    | d("/usr/local/lib") }}'
-  - '{{ ansible_local.root.sbin   | d("/usr/local/sbin") }}'
-  - '{{ ansible_local.root.share  | d("/usr/local/share") }}'
-  - '{{ ansible_local.root.src    | d("/usr/local/src") }}'
-  - '{{ ansible_local.root.data   | d("/srv") }}'
-  - '{{ ansible_local.root.srv    | d("/srv") }}'
-  - '{{ ansible_local.root.backup | d("/var/backups") }}'
-  - '{{ ansible_local.root.var    | d("/var/local") }}'
-  - '{{ ansible_local.root.home   | d("/var/local") }}'
-  - '{{ ansible_local.root.app    | d("/var/local") }}'
-
-  # According to FHS this is used for removable media so we don’t back it up
-  # by default. You might still want to include in your global inventory.
-  # - '/media'
-
-  # Not included by default: We assume you run a dedicated, append-only log
-  # server which already archives your logs.
-  # - '{{ ansible_local.root.log | d("/var/log") }}'
-
-  # Don’t backup spool data which is waiting to be processed.
-  # - '{{ ansible_local.root.spool | d("/var/spool") }}'
-
-  # Don’t backup cache data which application must be able to regenerate or
-  # restore the data themselves.
-  # - '{{ ansible_local.root.cache | d("/var/cache") }}'
-
-                                                                   # ]]]
-# .. envvar:: borgbackup__default_exclude_patterns [[[
-#
-# List of default source patterns to exclude. This list is intentionally kept
-# very simple, see the :envvar:`borgbackup__example_exclude_patterns`
-# variable for a more complex example.
-borgbackup__default_exclude_patterns:
-  - '*.pyc'
-  - '/home/*/.cache'
-  - '*/.vim*.tmp'
-
-                                                                   # ]]]
-# .. envvar:: borgbackup__exclude_patterns [[[
-#
-# List of source patterns to exclude on all hosts in the Ansible inventory.
-borgbackup__exclude_patterns: []
-
-                                                                   # ]]]
-# .. envvar:: borgbackup__group_exclude_patterns [[[
-#
-# List of source patterns to exclude on hosts in a specific group in the
-# Ansible inventory.
-borgbackup__group_exclude_patterns: []
-
-                                                                   # ]]]
-# .. envvar:: borgbackup__host_exclude_patterns [[[
-#
-# List of source patterns to exclude on specific hosts in the Ansible
-# inventory.
-borgbackup__host_exclude_patterns: []
-
-                                                                   # ]]]
-# .. envvar:: borgbackup__combined_exclude_patterns [[[
-#
-# Variable which combines all source patterns and is used in the role tasks and
-# templates.
-borgbackup__combined_exclude_patterns: '{{ borgbackup__default_exclude_patterns
-                                           + borgbackup__exclude_patterns
-                                           + borgbackup__group_exclude_patterns
-                                           + borgbackup__host_exclude_patterns }}'
-
-                                                                   # ]]]
-# .. envvar:: borgbackup__example_exclude_patterns [[[
-#
-# Example for a more expansive list of source patterns to exclude. This is
-# meant to adhere to the Filesystem Hierarchy Standard (FHS) and to DebOps
-# conventions and to serve as an inspiration for local customizations but
-# is not used by default.
-borgbackup__example_exclude_patterns:
-  # Ref: debops.etckeeper.
-  - '/etc/ssh/ssh_host_*_key'
-  - '/etc/tor/keys'
-
-  # No user application caches.
-  - '/home/*/.cache'
-  - '/root/.cache'
-  - '/var/local/*/.cache'
-
-  # In case you have decided to backup /media, you probably don’t want cdrom
-  # drives backed up by default.
-  - '/media/cdrom'
-  - '/media/cdrom0'
-
-  # No Borg secrets or local installation files.
-  # Insensitive Borg configuration is fine to include.
-  - '/usr/local/lib/borgbackup'
-  - '/etc/borgmatic/passphrases'
-  - '/root/.config/borg'
-
-  # debops.owncloud: Exclude download cache as it can be easily
-  # re-downloaded and is only used for application updates (not necessary to
-  # run the application once it is installed).
-  - '/usr/local/src/nextcloud'
-
-  # It is assumed that we use configuration management to install/remove
-  # packages.
-  - '/var/lib/apt'
-  - '/var/lib/aptitude'
-
-  # Is it safe to exclude this path from backup? Unsure for now so we leave
-  # it included.
-  - '/var/lib/nginx'
-
-  # Use database dumps instead of trying to backup a running database
-  # server. See below.
-  - '/var/lib/mysql'
-  - '/var/lib/postgresql'
-
-  # debops.cryptsetup: Managed and backed up by the role.
-  - '/var/local/keyfiles'
-
-  # debops-contrib.checkmk_server: No caches.
-  - '/opt/omd/sites/*/var/rrdcached'
-
-                                                                   # ]]]
-                                                                   # ]]]
 # Borgmatic configuration [[[
 # ---------------------------
 
-# These variables define the content of the configuration files in the
-# :file:`/etc/borgmatic/` directory. See :ref:`borgbackup__ref_configuration`
-# for details.
-
-# .. envvar:: borgbackup__original_configuration [[[
+# The role configures no repositories by default,
+# See :ref:`borgbackup__ref_configuration` for usage examples.
 #
-# The original configuration as generated by
-# :command:`generate-borgmatic-config` (version 1.7.7-1, Bookworm) which shows
-# all the supported options and their documentation.
-borgbackup__original_configuration:
-
-  # NOTE: parameters which take lists have been initialized as empty as
-  #       overriding lists with universal configuration isn't ergonomic
-  - name: 'config'
-    options:
-
-      - name: 'location'
-        comment: |-
-          Where to look for files to backup, and where to store those backups.
-          See https://borgbackup.readthedocs.io/en/stable/quickstart.html and
-          https://borgbackup.readthedocs.io/en/stable/usage/create.html
-          for details.
-        options:
-
-          - name: 'source_directories'
-            comment: |-
-              List of source directories to backup. Globs and tildes are
-              expanded. Do not backslash spaces in path names.
-
-              Examples:
-                - '/home'
-                - '/etc'
-                - '/var/log/syslog*'
-                - '/home/user/path with spaces'
-            value: []
-
-          - name: 'repositories'
-            comment: |-
-              Paths to local or remote repositories (required). Tildes are
-              expanded. Multiple repositories are backed up to in
-              sequence. Borg placeholders can be used. See the output of
-              "borg help placeholders" for details. See ssh_command for
-              SSH options like identity file or port. If systemd service
-              is used, then add local repository paths in the systemd
-              service file to the ReadWritePaths list.
-
-              Examples:
-                - 'ssh://user@backupserver/./sourcehostname.borg'
-                - 'ssh://user@backupserver/./{fqdn}'
-                - '/var/local/backups/local.borg'
-            value: []
-
-          - name: 'working_directory'
-            comment: |-
-              Working directory for the "borg create" command. Tildes are
-              expanded. Useful for backing up using relative paths. See
-              http://borgbackup.readthedocs.io/en/stable/usage/create.html
-              for details. Defaults to not set.
-            value: '/path/to/working/directory'
-            state: 'init'
-
-          - name: 'one_file_system'
-            comment: |-
-              Stay in same file system: do not cross mount points beyond
-              the given source directories. Defaults to false. But when a
-              database hook is used, the setting here is ignored and
-              one_file_system is considered true.
-            value: True
-            state: 'init'
-
-          - name: 'numeric_ids'
-            comment: |-
-              Only store/extract numeric user and group identifiers.
-              Defaults to false.
-            value: True
-            state: 'init'
-
-          - name: 'atime'
-            comment: |-
-              Store atime into archive. Defaults to true in Borg < 1.2,
-              false in Borg 1.2+.
-            value: False
-            state: 'init'
-
-          - name: 'ctime'
-            comment: |-
-              Store ctime into archive. Defaults to true.
-            value: False
-            state: 'init'
-
-          - name: 'birthtime'
-            comment: |-
-              Store birthtime (creation date) into archive. Defaults to
-              true.
-            value: False
-            state: 'init'
-
-          - name: 'read_special'
-            comment: |-
-              Use Borg's --read-special flag to allow backup of block and
-              other special devices. Use with caution, as it will lead to
-              problems if used when backing up special devices such as
-              /dev/zero. Defaults to false. But when a database hook is
-              used, the setting here is ignored and read_special is
-              considered true.
-            value: False
-            state: 'init'
-
-          - name: 'flags'
-            comment: |-
-              Record filesystem flags (e.g. NODUMP, IMMUTABLE) in archive.
-              Defaults to true.
-            value: True
-            state: 'init'
-
-          - name: 'files_cache'
-            comment: |-
-              Mode in which to operate the files cache. See
-              http://borgbackup.readthedocs.io/en/stable/usage/create.html
-              for details. Defaults to "ctime,size,inode".
-            value: 'ctime,size,inode'
-            state: 'init'
-
-          - name: 'local_path'
-            comment: |-
-              Alternate Borg local executable. Defaults to "borg".
-            value: 'borg1'
-            state: 'init'
-
-          - name: 'remote_path'
-            comment: |-
-              Alternate Borg remote executable. Defaults to "borg".
-            value: 'borg1'
-            state: 'init'
-
-          - name: 'patterns'
-            comment: |-
-              Any paths matching these patterns are included/excluded from
-              backups. Globs are expanded. (Tildes are not.) See the
-              output of "borg help patterns" for more details. Quote any
-              value if it contains leading punctuation, so it parses
-              correctly. Note that only one of "patterns" and
-              "source_directories" may be used.
-
-              Examples:
-                - 'R /'
-                - '- /home/*/.cache'
-                - '+ /home/susan'
-                - '- /home/*'
-            value: []
-            state: 'init'
-
-          - name: 'patterns_from'
-            comment: |-
-              Read include/exclude patterns from one or more separate
-              named files, one pattern per line. Note that Borg considers
-              this option experimental. See the output of "borg help
-              patterns" for more details.
-
-              Examples:
-                - '/etc/borgmatic/patterns'
-            value: []
-            state: 'init'
-
-          - name: 'exclude_patterns'
-            comment: |-
-              Any paths matching these patterns are excluded from backups.
-              Globs and tildes are expanded. Note that a glob pattern must
-              either start with a glob or be an absolute path. Do not
-              backslash spaces in path names. See the output of "borg help
-              patterns" for more details.
-
-              Examples:
-                - '*.pyc'
-                - '/home/*/.cache'
-                - '*/.vim*.tmp'
-                - '/etc/ssl'
-                - '/home/user/path with spaces'
-            value: []
-            state: 'init'
-
-          - name: 'exclude_from'
-            comment: |-
-              Read exclude patterns from one or more separate named files,
-              one pattern per line. See the output of "borg help patterns"
-              for more details.
-
-              Examples:
-                - /etc/borgmatic/excludes
-            value: []
-            state: 'init'
-
-          - name: 'exclude_caches'
-            comment: |-
-              Exclude directories that contain a CACHEDIR.TAG file. See
-              http://www.brynosaurus.com/cachedir/spec.html for details.
-              Defaults to false.
-            value: True
-            state: 'init'
-
-          - name: 'exclude_if_present'
-            comment: |-
-              Exclude directories that contain a file with the given
-              filenames. Defaults to not set.
-
-              Examples:
-                - '.nobackup'
-            value: []
-            state: 'init'
-
-          - name: 'keep_exclude_tags'
-            comment: |-
-              If true, the exclude_if_present filename is included in
-              backups. Defaults to false, meaning that the
-              exclude_if_present filename is omitted from backups.
-            value: True
-            state: 'init'
-
-          - name: 'exclude_nodump'
-            comment: |-
-              Exclude files with the NODUMP flag. Defaults to false.
-            value: True
-            state: 'init'
-
-          - name: 'borgmatic_source_directory'
-            comment: |-
-              Path for additional source files used for temporary internal
-              state like borgmatic database dumps. Note that changing this
-              path prevents "borgmatic restore" from finding any database
-              dumps created before the change. Defaults to ~/.borgmatic
-            value: '/tmp/borgmatic'
-            state: 'init'
-
-      - name: 'storage'
-        comment: |-
-          Repository storage options. See
-          https://borgbackup.readthedocs.io/en/stable/usage/create.html and
-          https://borgbackup.readthedocs.io/en/stable/usage/general.html for
-          details.
-        state: 'init'
-        options:
-
-          - name: 'encryption_passcommand'
-            comment: |-
-              The standard output of this command is used to unlock the
-              encryption key. Only use on repositories that were
-              initialized with passcommand/repokey/keyfile encryption.
-              Note that if both encryption_passcommand and
-              encryption_passphrase are set, then encryption_passphrase
-              takes precedence. Defaults to not set.
-            value: 'secret-tool lookup borg-repository repo-name'
-            state: 'init'
-
-          - name: 'encryption_passphrase'
-            comment: |-
-              Passphrase to unlock the encryption key with. Only use on
-              repositories that were initialized with
-              passphrase/repokey/keyfile encryption. Quote the value if it
-              contains punctuation, so it parses correctly. And backslash
-              any quote or backslash literals as well. Defaults to not
-              set.
-            value: "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
-            state: 'init'
-
-          - name: 'checkpoint_interval'
-            comment: |-
-              Number of seconds between each checkpoint during a
-              long-running backup. See
-              https://borgbackup.readthedocs.io/en/stable/faq.html
-              for details. Defaults to checkpoints every 1800 seconds (30
-              minutes).
-            value: 1800
-            state: 'init'
-
-          - name: 'chunker_params'
-            comment: |-
-              Specify the parameters passed to then chunker
-              (CHUNK_MIN_EXP, CHUNK_MAX_EXP, HASH_MASK_BITS,
-              HASH_WINDOW_SIZE). See
-              https://borgbackup.readthedocs.io/en/stable/internals.html
-              for details. Defaults to "19,23,21,4095".
-            value: '19,23,21,4095'
-            state: 'init'
-
-          - name: 'compression'
-            comment: |-
-              Type of compression to use when creating archives. See
-              http://borgbackup.readthedocs.io/en/stable/usage/create.html
-              for details. Defaults to "lz4".
-            value: 'lz4'
-            state: 'init'
-
-          - name: 'upload_rate_limit'
-            comment: |-
-              Remote network upload rate limit in kiBytes/second. Defaults
-              to unlimited.
-            value: 100
-            state: 'init'
-
-          - name: 'retries'
-            comment: |-
-              Number of times to retry a failing backup before giving up.
-              Defaults to 0 (i.e., does not attempt retry).
-            value: 3
-            state: 'init'
-
-          - name: 'retry_wait'
-            comment: |-
-              Wait time between retries (in seconds) to allow transient
-              issues to pass. Increases after each retry as a form of
-              backoff. Defaults to 0 (no wait).
-            value: 10
-            state: 'init'
-
-          - name: 'temporary_directory'
-            comment: |-
-              Directory where temporary files are stored. Defaults to
-              $TMPDIR
-            value: '/path/to/tmpdir'
-            state: 'init'
-
-          - name: 'ssh_command'
-            comment: |-
-              Command to use instead of "ssh". This can be used to specify
-              ssh options.  Defaults to not set.
-            value: 'ssh -i /path/to/private/key'
-            state: 'init'
-
-          - name: 'borg_base_directory'
-            comment: |-
-              Base path used for various Borg directories. Defaults to
-              $HOME, ~$USER, or ~.
-            value: '/path/to/base'
-            state: 'init'
-
-          - name: 'borg_config_directory'
-            comment: |-
-              Path for Borg configuration files. Defaults to
-              $borg_base_directory/.config/borg
-            value: '/path/to/base/config'
-            state: 'init'
-
-          - name: 'borg_cache_directory'
-            comment: |-
-              Path for Borg cache files. Defaults to
-              $borg_base_directory/.cache/borg
-            value: '/path/to/base/cache'
-            state: 'init'
-
-          - name: 'borg_security_directory'
-            comment: |-
-              Path for Borg security and encryption nonce files. Defaults
-              to $borg_base_directory/.config/borg/security
-            value: '/path/to/base/config/security'
-            state: 'init'
-
-          - name: 'borg_keys_directory'
-            comment: |-
-              Path for Borg encryption key files. Defaults to
-              $borg_base_directory/.config/borg/keys
-            value: '/path/to/base/config/keys'
-            state: 'init'
-
-          - name: 'umask'
-            comment: |-
-              Umask to be used for borg create. Defaults to 0077.
-            value: '0077'
-            state: 'init'
-
-          - name: 'lock_wait'
-            comment: |-
-              Maximum seconds to wait for acquiring a repository/cache
-              lock. Defaults to 1.
-            value: 5
-            state: 'init'
-
-          - name: 'archive_name_format'
-            comment: |-
-              Name of the archive. Borg placeholders can be used. See the
-              output of "borg help placeholders" for details. Defaults to
-              "{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}". If you specify this
-              option, consider also specifying a prefix in the retention
-              and consistency sections to avoid accidental
-              pruning/checking of archives with different archive name
-              formats.
-            value: '{hostname}-documents-{now}'
-            state: 'init'
-
-          - name: 'relocated_repo_access_is_ok'
-            comment: |-
-              Bypass Borg error about a repository that has been moved.
-              Defaults to false.
-            value: True
-            state: 'init'
-
-          - name: 'unknown_unencrypted_repo_access_is_ok'
-            comment: |-
-              Bypass Borg error about a previously unknown unencrypted
-              repository. Defaults to false.
-            value: True
-            state: 'init'
-
-          - name: 'extra_borg_options'
-            comment: |-
-              Additional options to pass directly to particular Borg
-              commands, handy for Borg options that borgmatic does not yet
-              support natively. Note that borgmatic does not perform any
-              validation on these options. Running borgmatic with
-              "--verbosity 2" shows the exact Borg command-line
-              invocation.
-            state: 'init'
-            options:
-
-              - name: 'init'
-                comment: |-
-                  Extra command-line options to pass to "borg init".
-                value: '--extra-option'
-                state: 'init'
-
-              - name: 'prune'
-                comment: |-
-                  Extra command-line options to pass to "borg prune".
-                value: '--extra-option'
-                state: 'init'
-
-              - name: 'compact'
-                comment: |-
-                  Extra command-line options to pass to "borg compact".
-                value: '--extra-option'
-                state: 'init'
-
-              - name: 'create'
-                comment: |-
-                  Extra command-line options to pass to "borg create".
-                value: '--extra-option'
-                state: 'init'
-
-              - name: 'check'
-                comment: |-
-                  Extra command-line options to pass to "borg check".
-                value: '--extra-option'
-                state: 'init'
-
-      - name: 'retention'
-        comment: |-
-          Retention policy for how many backups to keep in each category. See
-          https://borgbackup.readthedocs.io/en/stable/usage/prune.html for
-          details. At least one of the "keep" options is required for pruning
-          to work. To skip pruning entirely, run "borgmatic create" or "check"
-          without the "prune" action. See borgmatic documentation for details.
-        options:
-
-          - name: 'keep_within'
-            comment: |-
-              Keep all archives within this time interval.
-            value: '3H'
-            state: 'init'
-
-          - name: 'keep_secondly'
-            comment: |-
-              Number of secondly archives to keep.
-            value: 60
-            state: 'init'
-
-          - name: 'keep_minutely'
-            comment: |-
-              Number of minutely archives to keep.
-            value: 60
-            state: 'init'
-
-          - name: 'keep_hourly'
-            comment: |-
-              Number of hourly archives to keep.
-            value: 24
-            state: 'init'
-
-          - name: 'keep_daily'
-            comment: |-
-              Number of daily archives to keep.
-            value: 7
-
-          - name: 'keep_weekly'
-            comment: |-
-              Number of weekly archives to keep.
-            value: 4
-            state: 'init'
-
-          - name: 'keep_monthly'
-            comment: |-
-              Number of monthly archives to keep.
-            value: 6
-            state: 'init'
-
-          - name: 'keep_yearly'
-            comment: |-
-              Number of yearly archives to keep.
-            value: 1
-            state: 'init'
-
-          - name: 'prefix'
-            comment: |-
-              When pruning, only consider archive names starting with this
-              prefix.  Borg placeholders can be used. See the output of
-              "borg help placeholders" for details. Defaults to
-              "{hostname}-". Use an empty value to disable the default.
-            value: 'sourcehostname'
-            state: 'init'
-
-      - name: 'consistency'
-        comment: |-
-          Consistency checks to run after backups. See
-          https://borgbackup.readthedocs.io/en/stable/usage/check.html and
-          https://borgbackup.readthedocs.io/en/stable/usage/extract.html for
-          details.
-        state: 'init'
-        options:
-
-          - name: 'checks'
-            comment: |-
-              List of one or more consistency checks to run on a periodic
-              basis (if "frequency" is set) or every time borgmatic runs
-              checks (if "frequency" is omitted).
-            state: 'init'
-            options:
-
-              - name: 'name'
-                comment: |-
-                  Name of consistency check to run: "repository",
-                  "archives", "data", and/or "extract". Set to
-                  "disabled" to disable all consistency checks.
-                  "repository" checks the consistency of the
-                  repository, "archives" checks all of the
-                  archives, "data" verifies the integrity of the
-                  data within the archives, and "extract" does an
-                  extraction dry-run of the most recent archive.
-                  Note that "data" implies "archives".
-                value: 'repository'
-                state: 'init'
-
-              - name: 'frequency'
-                comment: |-
-                  How frequently to run this type of consistency
-                  check (as a best effort). The value is a number
-                  followed by a unit of time. E.g., "2 weeks" to
-                  run this consistency check no more than every
-                  two weeks for a given repository or "1 month" to
-                  run it no more than monthly. Defaults to
-                  "always": running this check every time checks
-                  are run.
-                value: '2 weeks'
-                state: 'init'
-
-          - name: 'check_repositories'
-            comment: |-
-              Paths to a subset of the repositories in the location
-              section on which to run consistency checks. Handy in case
-              some of your repositories are very large, and so running
-              consistency checks on them would take too long. Defaults to
-              running consistency checks on all repositories configured in
-              the location section.
-
-              Examples:
-                - 'user@backupserver:sourcehostname.borg'
-            value: []
-            state: 'init'
-
-          - name: 'check_last'
-            comment: |-
-              Restrict the number of checked archives to the last n.
-              Applies only to the "archives" check. Defaults to checking
-              all archives.
-            value: 3
-            state: 'init'
-
-          - name: 'prefix'
-            comment: |-
-              When performing the "archives" check, only consider archive
-              names starting with this prefix. Borg placeholders can be
-              used. See the output of "borg help placeholders" for
-              details. Defaults to "{hostname}-". Use an empty value to
-              disable the default.
-            value: 'sourcehostname'
-            state: 'init'
-
-      - name: 'output'
-        comment: |-
-          Options for customizing borgmatic's own output and logging.
-        state: 'init'
-        options:
-
-          - name: 'color'
-            comment: |-
-              Apply color to console output. Can be overridden with
-              --no-color command-line flag. Defaults to true.
-            value: False
-            state: 'init'
-
-      - name: 'hooks'
-        comment: |-
-          Shell commands, scripts, or integrations to execute at various
-          points during a borgmatic run. IMPORTANT: All provided commands and
-          scripts are executed with user permissions of borgmatic. Do not
-          forget to set secure permissions on this configuration file (chmod
-          0600) as well as on any script called from a hook (chmod 0700) to
-          prevent potential shell injection or privilege escalation.
-        state: 'init'
-        options:
-
-          - name: 'before_actions'
-            comment: |-
-              List of one or more shell commands or scripts to execute
-              before all the actions for each repository.
-            value: []
-            state: 'init'
-
-          - name: 'before_backup'
-            comment: |-
-              List of one or more shell commands or scripts to execute
-              before creating a backup, run once per repository.
-            value: []
-            state: 'init'
-
-          - name: 'before_prune'
-            comment: |-
-              List of one or more shell commands or scripts to execute
-              before pruning, run once per repository.
-            value: []
-            state: 'init'
-
-          - name: 'before_compact'
-            comment: |-
-              List of one or more shell commands or scripts to execute
-              before compaction, run once per repository.
-            value: []
-            state: 'init'
-
-          - name: 'before_check'
-            comment: |-
-              List of one or more shell commands or scripts to execute
-              before consistency checks, run once per repository.
-            value: []
-            state: 'init'
-
-          - name: 'before_extract'
-            comment: |-
-              List of one or more shell commands or scripts to execute
-              before extracting a backup, run once per repository.
-            value: []
-            state: 'init'
-
-          - name: 'after_backup'
-            comment: |-
-              List of one or more shell commands or scripts to execute
-              after creating a backup, run once per repository.
-            value: []
-            state: 'init'
-
-          - name: 'after_compact'
-            comment: |-
-              List of one or more shell commands or scripts to execute
-              after compaction, run once per repository.
-            value: []
-            state: 'init'
-
-          - name: 'after_prune'
-            comment: |-
-              List of one or more shell commands or scripts to execute
-              after pruning, run once per repository.
-            value: []
-            state: 'init'
-
-          - name: 'after_check'
-            comment: |-
-              List of one or more shell commands or scripts to execute
-              after consistency checks, run once per repository.
-            value: []
-            state: 'init'
-
-          - name: 'after_extract'
-            comment: |-
-              List of one or more shell commands or scripts to execute
-              after extracting a backup, run once per repository.
-            value: []
-            state: 'init'
-
-          - name: 'after_actions'
-            comment: |-
-              List of one or more shell commands or scripts to execute
-              after all actions for each repository.
-            value: []
-            state: 'init'
-
-          - name: 'on_error'
-            comment: |-
-              List of one or more shell commands or scripts to execute
-              when an exception occurs during a "prune", "compact",
-              "create", or "check" action or an associated before/after
-              hook.
-            value: []
-            state: 'init'
-
-          - name: 'before_everything'
-            comment: |-
-              List of one or more shell commands or scripts to execute
-              before running all actions (if one of them is "create").
-              These are collected from all configuration files and then
-              run once before all of them (prior to all actions).
-            value: []
-            state: 'init'
-
-          - name: 'after_everything'
-            comment: |-
-              List of one or more shell commands or scripts to execute
-              after running all actions (if one of them is "create").
-              These are collected from all configuration files and then
-              run once after all of them (after any action).
-            value: []
-            state: 'init'
-
-          - name: 'postgresql_databases'
-            comment: |-
-              List of one or more PostgreSQL databases to dump before
-              creating a backup, run once per configuration file. The
-              database dumps are added to your source directories at
-              runtime, backed up, and removed afterwards. Requires
-              pg_dump/pg_dumpall/pg_restore commands. See
-              https://www.postgresql.org/docs/current/app-pgdump.html and
-              https://www.postgresql.org/docs/current/libpq-ssl.html for
-              details.
-            state: 'init'
-            options:
-
-              - name: 'name'
-                comment: |-
-                  Database name (required if using this hook). Or
-                  "all" to dump all databases on the host. (Also
-                  set the "format" to dump each database to a
-                  separate file instead of one combined file.)
-                  Note that using this database hook implicitly
-                  enables both read_special and one_file_system
-                  (see above) to support dump and restore
-                  streaming.
-                value: 'users'
-                state: 'init'
-                options:
-
-                  - name: 'hostname'
-                    comment: |-
-                      Database hostname to connect to. Defaults to
-                      connecting via local Unix socket.
-                    value: 'database.example.org'
-                    state: 'init'
-
-                  - name: 'port'
-                    comment: |-
-                      Port to connect to. Defaults to 5432.
-                    value: 5433
-                    state: 'init'
-
-                  - name: 'username'
-                    comment: |-
-                      Username with which to connect to the database.
-                      Defaults to the username of the current user.
-                      You probably want to specify the "postgres"
-                      superuser here when the database name is "all".
-                    value: 'dbuser'
-                    state: 'init'
-
-                  - name: 'password'
-                    comment: |-
-                      Password with which to connect to the database.
-                      Omitting a password will only work if PostgreSQL
-                      is configured to trust the configured username
-                      without a password or you create a ~/.pgpass
-                      file.
-                    value: 'trustsome1'
-                    state: 'init'
-
-                  - name: 'format'
-                    comment: |-
-                      Database dump output format. One of "plain",
-                      "custom", "directory", or "tar". Defaults to
-                      "custom" (unlike raw pg_dump) for a single
-                      database. Or, when database name is "all" and
-                      format is blank, dumps all databases to a single
-                      file. But if a format is specified with an "all"
-                      database name, dumps each database to a separate
-                      file of that format, allowing more convenient
-                      restores of individual databases. See the
-                      pg_dump documentation for more about formats.
-                    value: 'directory'
-                    state: 'init'
-
-                  - name: 'ssl_mode'
-                    comment: |-
-                      SSL mode to use to connect to the database
-                      server. One of "disable", "allow", "prefer",
-                      "require", "verify-ca" or "verify-full".
-                      Defaults to "disable".
-                    value: 'require'
-                    state: 'init'
-
-                  - name: 'ssl_cert'
-                    comment: |-
-                      Path to a client certificate.
-                    value: '/root/.postgresql/postgresql.crt'
-                    state: 'init'
-
-                  - name: 'ssl_key'
-                    comment: |-
-                      Path to a private client key.
-                    value: '/root/.postgresql/postgresql.key'
-                    state: 'init'
-
-                  - name: 'ssl_root_cert'
-                    comment: |-
-                      Path to a root certificate containing a list of
-                      trusted certificate authorities.
-                    value: '/root/.postgresql/root.crt'
-                    state: 'init'
-
-                  - name: 'ssl_crl'
-                    comment: |-
-                      Path to a certificate revocation list.
-                    value: '/root/.postgresql/root.crl'
-                    state: 'init'
-
-                  - name: 'pg_dump_command'
-                    comment: |-
-                      Command to use instead of "pg_dump" or
-                      "pg_dumpall". This can be used to run a specific
-                      pg_dump version (e.g., one inside a running
-                      docker container). Defaults to "pg_dump" for
-                      single database dump or "pg_dumpall" to dump
-                      all databases.
-                    value: 'docker exec my_pg_container pg_dump'
-                    state: 'init'
-
-                  - name: 'pg_restore_command'
-                    comment: |-
-                      Command to use instead of "pg_restore". This
-                      can be used to run a specific pg_restore
-                      version (e.g., one inside a running docker
-                      container). Defaults to "pg_restore".
-                    value: 'docker exec my_pg_container pg_restore'
-                    state: 'init'
-
-                  - name: 'psql_command'
-                    comment: |-
-                      Command to use instead of "psql". This can be
-                      used to run a specific psql version (e.g.,
-                      one inside a running docker container).
-                      Defaults to "psql".
-                    value: 'docker exec my_pg_container psql'
-                    state: 'init'
-
-                  - name: 'options'
-                    comment: |-
-                      Additional pg_dump/pg_dumpall options to pass
-                      directly to the dump command, without performing
-                      any validation on them. See pg_dump
-                      documentation for details.
-                    value: '--role=someone'
-                    state: 'init'
-
-                  - name: 'list_options'
-                    comment: |-
-                      Additional psql options to pass directly to the
-                      psql command that lists available databases,
-                      without performing any validation on them. See
-                      psql documentation for details.
-                    value: '--role=someone'
-                    state: 'init'
-
-                  - name: 'restore_options'
-                    comment: |-
-                      Additional pg_restore/psql options to pass
-                      directly to the restore command, without
-                      performing any validation on them. See
-                      pg_restore/psql documentation for details.
-                    value: '--role=someone'
-                    state: 'init'
-
-                  - name: 'analyze_options'
-                    comment: |-
-                      Additional psql options to pass directly to the
-                      analyze command run after a restore, without
-                      performing any validation on them. See psql
-                      documentation for details.
-                    value: '--role=someone'
-                    state: 'init'
-
-          - name: 'mysql_databases'
-            comment: |-
-              List of one or more MySQL/MariaDB databases to dump before
-              creating a backup, run once per configuration file. The
-              database dumps are added to your source directories at
-              runtime, backed up, and removed afterwards. Requires
-              mysqldump/mysql commands (from either MySQL or MariaDB). See
-              https://dev.mysql.com/doc/refman/8.0/en/mysqldump.html or
-              https://mariadb.com/kb/en/library/mysqldump/ for details.
-            state: 'init'
-            options:
-
-              - name: 'name'
-                comment: |-
-                  Database name (required if using this hook). Or
-                  "all" to dump all databases on the host. Note
-                  that using this database hook implicitly enables
-                  both read_special and one_file_system (see
-                  above) to support dump and restore streaming.
-                value: 'users'
-                state: 'init'
-                options:
-
-                  - name: 'hostname'
-                    comment: |-
-                      Database hostname to connect to. Defaults to
-                      connecting via local Unix socket.
-                    value: 'database.example.org'
-                    state: 'init'
-
-                  - name: 'port'
-                    comment: |-
-                      Port to connect to. Defaults to 3306.
-                    value: 3307
-                    state: 'init'
-
-                  - name: 'username'
-                    comment: |-
-                      Username with which to connect to the database.
-                      Defaults to the username of the current user.
-                    value: 'dbuser'
-                    state: 'init'
-
-                  - name: 'password'
-                    comment: |-
-                      Password with which to connect to the database.
-                      Omitting a password will only work if MySQL is
-                      configured to trust the configured username
-                      without a password.
-                    value: 'trustsome1'
-                    state: 'init'
-
-                  - name: 'format'
-                    comment: |-
-                      Database dump output format. Currently only "sql"
-                      is supported. Defaults to "sql" for a single
-                      database. Or, when database name is "all" and
-                      format is blank, dumps all databases to a single
-                      file. But if a format is specified with an "all"
-                      database name, dumps each database to a separate
-                      file of that format, allowing more convenient
-                      restores of individual databases.
-                    value: 'directory'
-                    state: 'init'
-
-                  - name: 'add_drop_database'
-                    comment: |-
-                      Use the "--add-drop-database" flag with
-                      mysqldump, causing the database to be dropped
-                      right before restore. Defaults to true.
-                    value: False
-                    state: 'init'
-
-                  - name: 'options'
-                    comment: |-
-                      Additional mysqldump options to pass directly to
-                      the dump command, without performing any
-                      validation on them. See mysqldump documentation
-                      for details.
-                    value: '--skip-comments'
-                    state: 'init'
-
-                  - name: 'list_options'
-                    comment: |-
-                      Additional mysql options to pass directly to
-                      the mysql command that lists available
-                      databases, without performing any validation on
-                      them. See mysql documentation for details.
-                    value: '--defaults-extra-file=my.cnf'
-                    state: 'init'
-
-                  - name: 'restore_options'
-                    comment: |-
-                      Additional mysql options to pass directly to
-                      the mysql command that restores database dumps,
-                      without performing any validation on them. See
-                      mysql documentation for details.
-                    value: '--defaults-extra-file=my.cnf'
-                    state: 'init'
-
-          - name: 'mongodb_databases'
-            comment: |-
-              List of one or more MongoDB databases to dump before
-              creating a backup, run once per configuration file. The
-              database dumps are added to your source directories at
-              runtime, backed up, and removed afterwards. Requires
-              mongodump/mongorestore commands. See
-              https://docs.mongodb.com/database-tools/mongodump/ and
-              https://docs.mongodb.com/database-tools/mongorestore/ for
-              details.
-            state: 'init'
-            options:
-
-              - name: 'name'
-                comment: |-
-                  Database name (required if using this hook). Or
-                  "all" to dump all databases on the host. Note
-                  that using this database hook implicitly enables
-                  both read_special and one_file_system (see
-                  above) to support dump and restore streaming.
-                value: 'users'
-                state: 'init'
-                options:
-
-                  - name: 'hostname'
-                    comment: |-
-                      Database hostname to connect to. Defaults to
-                      connecting to localhost.
-                    value: 'database.example.org'
-                    state: 'init'
-
-                  - name: 'port'
-                    comment: |-
-                      Port to connect to. Defaults to 27017.
-                    value: 27018
-                    state: 'init'
-
-                  - name: 'username'
-                    comment: |-
-                      Username with which to connect to the database.
-                      Skip it if no authentication is needed.
-                    value: 'dbuser'
-                    state: 'init'
-
-                  - name: 'password'
-                    comment: |-
-                      Password with which to connect to the database.
-                      Skip it if no authentication is needed.
-                    value: 'trustsome1'
-                    state: 'init'
-
-                  - name: 'authentication_database'
-                    comment: |-
-                      Authentication database where the specified
-                      username exists. If no authentication database
-                      is specified, the database provided in "name"
-                      is used. If "name" is "all", the "admin"
-                      database is used.
-                    value: 'admin'
-                    state: 'init'
-
-                  - name: 'format'
-                    comment: |-
-                      Database dump output format. One of "archive",
-                      or "directory". Defaults to "archive". See
-                      mongodump documentation for details. Note that
-                      format is ignored when the database name is
-                      "all".
-                    value: 'directory'
-                    state: 'init'
-
-                  - name: 'options'
-                    comment: |-
-                      Additional mongodump options to pass
-                      directly to the dump command, without performing
-                      any validation on them. See mongodump
-                      documentation for details.
-                    value: '--dumpDbUsersAndRoles'
-                    state: 'init'
-
-                  - name: 'restore_options'
-                    comment: |-
-                      Additional mongorestore options to pass
-                      directly to the dump command, without performing
-                      any validation on them. See mongorestore
-                      documentation for details.
-                    value: '--restoreDbUsersAndRoles'
-                    state: 'init'
-
-          - name: 'ntfy'
-            state: 'init'
-            options:
-
-              - name: 'topic'
-                comment: |-
-                  The topic to publish to.
-                  (https://ntfy.sh/docs/publish/)
-                value: 'topic'
-                state: 'init'
-
-              - name: 'server'
-                comment: |-
-                  The address of your self-hosted ntfy.sh instance.
-                value: 'https://ntfy.your-domain.com'
-                state: 'init'
-
-              - name: 'start'
-                state: 'init'
-                options:
-
-                  - name: 'title'
-                    comment: |-
-                      The title of the message
-                    state: 'init'
-                    value: 'Ping!'
-
-                  - name: 'message'
-                    comment: |-
-                      The message body to publish.
-                    value: 'Your backups have failed.'
-                    state: 'init'
-
-                  - name: 'priority'
-                    comment: |-
-                      The priority to set.
-                    value: 'urgent'
-                    state: 'init'
-
-                  - name: 'tags'
-                    comment: |-
-                      Tags to attach to the message.
-                    value: 'incoming_envelope'
-                    state: 'init'
-
-              - name: 'finish'
-                state: 'init'
-                options:
-
-                  - name: 'title'
-                    comment: |-
-                      The title of the message
-                    state: 'init'
-                    value: 'Ping!'
-
-                  - name: 'message'
-                    comment: |-
-                      The message body to publish.
-                    value: 'Your backups have failed.'
-                    state: 'init'
-
-                  - name: 'priority'
-                    comment: |-
-                      The priority to set.
-                    value: 'urgent'
-                    state: 'init'
-
-                  - name: 'tags'
-                    comment: |-
-                      Tags to attach to the message.
-                    value: 'incoming_envelope'
-                    state: 'init'
-
-              - name: 'fail'
-                state: 'init'
-                options:
-
-                  - name: 'title'
-                    comment: |-
-                      The title of the message
-                    state: 'init'
-                    value: 'Ping!'
-
-                  - name: 'message'
-                    comment: |-
-                      The message body to publish.
-                    value: 'Your backups have failed.'
-                    state: 'init'
-
-                  - name: 'priority'
-                    comment: |-
-                      The priority to set.
-                    value: 'urgent'
-                    state: 'init'
-
-                  - name: 'tags'
-                    comment: |-
-                      Tags to attach to the message.
-                    value: 'incoming_envelope'
-                    state: 'init'
-
-              - name: 'states'
-                comment: |-
-                  List of one or more monitoring states to ping for:
-                  "start", "finish", and/or "fail". Defaults to
-                  pinging for failure only.
-                value: []
-                state: 'init'
-
-          - name: 'healthchecks'
-            comment: |-
-              Configuration for a monitoring integration with
-              Healthchecks. Create an account at https://healthchecks.io
-              (or self-host Healthchecks) if you'd like to use this
-              service. See borgmatic monitoring documentation for details.
-            state: 'init'
-            options:
-
-              - name: 'ping_url'
-                comment: |-
-                  Healthchecks ping URL or UUID to notify when a
-                  backup begins, ends, or errors.
-                value: 'https://hc-ping.com/your-uuid-here'
-                state: 'init'
-
-              - name: 'verify_tls'
-                comment: |-
-                  Verify the TLS certificate of the ping URL host.
-                  Defaults to true.
-                value: False
-                state: 'init'
-
-              - name: 'send_logs'
-                comment: |-
-                  Send borgmatic logs to Healthchecks as part the
-                  "finish" state. Defaults to true.
-                value: False
-                state: 'init'
-
-              - name: 'ping_body_limit'
-                comment: |-
-                  Number of bytes of borgmatic logs to send to
-                  Healthchecks, ideally the same as PING_BODY_LIMIT
-                  configured on the Healthchecks server. Set to 0 to
-                  send all logs and disable this truncation. Defaults
-                  to 100000.
-                value: 200000
-                state: 'init'
-
-              - name: 'states'
-                comment: |-
-                  List of one or more monitoring states to ping for:
-                  "start", "finish", and/or "fail". Defaults to
-                  pinging for all states.
-                value: []
-                state: 'init'
-
-          - name: 'cronitor'
-            comment: |-
-              Configuration for a monitoring integration with Cronitor.
-              Create an account at https://cronitor.io if you'd
-              like to use this service. See borgmatic monitoring
-              documentation for details.
-            state: 'init'
-            options:
-
-              - name: 'ping_url'
-                comment: |-
-                  Cronitor ping URL to notify when a backup begins,
-                  ends, or errors.
-                value: 'https://cronitor.link/d3x0c1'
-                state: 'init'
-
-          - name: 'pagerduty'
-            comment: |-
-              Configuration for a monitoring integration with PagerDuty.
-              Create an account at https://www.pagerduty.com/ if you'd
-              like to use this service. See borgmatic monitoring
-              documentation for details.
-            state: 'init'
-            options:
-
-              - name: 'integration_key'
-                comment: |-
-                  PagerDuty integration key used to notify PagerDuty
-                  when a backup errors.
-                value: 'a177cad45bd374409f78906a810a3074'
-
-          - name: 'cronhub'
-            comment: |-
-              Configuration for a monitoring integration with Crunhub.
-              Create an account at https://cronhub.io if you'd like to
-              use this service. See borgmatic monitoring documentation
-              for details.
-            state: 'init'
-            options:
-
-              - name: 'ping_url'
-                comment: |-
-                  Cronhub ping URL to notify when a backup begins,
-                  ends, or errors.
-                value: 'https://cronhub.io/ping/1f5e3410-254c-5587'
-                state: 'init'
-
-          - name: 'umask'
-            comment: |-
-              Umask used when executing hooks. Defaults to the umask that
-              borgmatic is run with.
-            value: '0077'
-            state: 'init'
+# .. envvar:: borgbackup__configuration_base_path [[[
+#
+# Main configuration directory for borgmatic on the remote machine.
+borgbackup__configuration_base_path: '/etc/borgmatic'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__configuration_include_path [[[
+#
+# Directory for borgmatic configuration includes on the remote machine.
+borgbackup__configuration_include_path: '{{ borgbackup__configuration_base_path }}/includes'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__configuration_repo_path [[[
+#
+# Directory for debops repository definition includes on the remote machine.
+borgbackup__configuration_repo_path: '{{ borgbackup__configuration_base_path }}/repos'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__configuration_unit_path [[[
+#
+# Directory for borgmatic configuration units on the remote machine.
+borgbackup__configuration_unit_path: '/etc/borgmatic.d'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__legacy_common_yaml [[[
+#
+# Common configuration include content for borgmatic, legacy syntax version.
+#
+# If debian's borgmatic version is ``1.8.0`` or later, feel free to remove this
+# and incorporate ``borgbackup__common_yaml`` in the default configuration.
+borgbackup__legacy_common_yaml:
+  retention:
+    # Retention policy for how many backups to keep.
+    keep_daily: 7
+    keep_weekly: 4
+    keep_monthly: 6
+
+  consistency:
+    # List of checks to run to validate your backups.
+    checks:
+      - name: repository
+      - name: archives
+        frequency: 2 weeks
+
+  storage:
+    # Only rely on system-wide knows hosts, disable user interaction, no multiple sessions
+    ssh_command: 'ssh -o CheckHostIP=no -o ControlMaster=no -o UserKnownHostsFile=none -o BatchMode=yes -o ServerAliveInterval=120'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__common_yaml [[[
+#
+# Common configuration include content for borgmatic version ``1.8.0`` or later.
+borgbackup__common_yaml:
+  # Retention policy for how many backups to keep.
+  keep_daily: 7
+  keep_weekly: 4
+  keep_monthly: 6
+
+  # List of checks to run to validate your backups.
+  checks:
+    - name: repository
+    - name: archives
+      frequency: 2 weeks
+
+  # Only rely on system-wide knows hosts, disable user interaction, no multiple sessions
+  ssh_command: 'ssh -o CheckHostIP=no -o ControlMaster=no -o UserKnownHostsFile=none -o BatchMode=yes -o ServerAliveInterval=120'
 
                                                                    # ]]]
 # .. envvar:: borgbackup__default_configuration [[[
 #
-# List of the default borgmatic/borgbackup configuration options.
+# List of the default borgmatic configuration options.
 borgbackup__default_configuration:
-
-  - name: 'config'
-    options:
-
-      - name: 'location'
-        options:
-
-          - name: 'source_directories'
-            value: '{{ borgbackup__combined_source_directories | flatten | unique }}'
-
-          - name: 'repositories'
-            value: |
-              {% set borg_repos = [] %}
-              {% set user = "borg_" + (inventory_hostname | replace(".", "_")) %}
-              {% set path = "/./borgbackup-repo" %}
-              {% for server in borgbackup__servers %}
-              {%   set server_fqdn = hostvars[server].borgbackup__fqdn | d(hostvars[server].ansible_fqdn) %}
-              {%   set _ = borg_repos.append("ssh://" + user + "@" + server_fqdn + path) %}
-              {% endfor %}
-              {{ borg_repos | sort | unique }}
-
-          - name: 'exclude_patterns'
-            state: '{{ "present" if
-                       borgbackup__combined_exclude_patterns | d([]) | flatten | length > 0
-                       else "absent" }}'
-            value: '{{ borgbackup__combined_exclude_patterns | d([]) | flatten | unique }}'
-
-          - name: 'exclude_caches'
-            value: True
-
-          - name: 'exclude_if_present'
-            value: [ '.nobackup' ]
-
-          - name: 'exclude_nodump'
-            value: True
-
-      - name: 'storage'
-        options:
-
-          - name: 'encryption_passcommand_regular'
-            option: 'encryption_passcommand'
-            value: 'cat {{ borgbackup__passphrase_base_path + "/config.txt" }}'
-            state: '{{ "present" if ansible_service_mgr != "systemd" else "absent" }}'
-
-          - name: 'encryption_passcommand_systemd'
-            option: 'encryption_passcommand'
-            value: 'systemd-creds decrypt --name=config {{
-                      borgbackup__passphrase_base_path + "/config.cred" }} -'
-            state: '{{ "present" if ansible_service_mgr == "systemd" else "absent" }}'
-
-          - name: 'compression'
-            value: 'zstd'
-
-          - name: 'retries'
-            value: 3
-
-          - name: 'retry_wait'
-            value: 10
-
-          - name: 'ssh_command'
-            comment: |-
-              Only rely on system-wide knows hosts,
-              disable user interaction, no multiple sessions
-            value: 'ssh -o CheckHostIP=no -o ControlMaster=no -o UserKnownHostsFile=none -o BatchMode=yes -o ServerAliveInterval=120'
-
-          - name: 'archive_name_format'
-            comment: 'Should match the prefix in the retention and pruning sections'
-            value: '{{ inventory_hostname }}-config-{now:%Y-%m-%dT%H:%M:%S.%f}'
-
-          - name: 'extra_borg_options'
-            options:
-
-              - name: 'create'
-                value: '--stats'
-
-      - name: 'retention'
-        options:
-
-          - name: 'keep_within'
-            value: '7d'
-
-          - name: 'keep_daily'
-            value: 30
-
-          - name: 'keep_weekly'
-            value: 4
-
-          - name: 'keep_monthly'
-            value: 12
-
-          - name: 'keep_yearly'
-            value: 1
-
-          - name: 'prefix'
-            value: '{{ inventory_hostname }}-config-'
-
-      - name: 'consistency'
-        options:
-
-          - name: 'prefix'
-            value: '{{ inventory_hostname }}-config-'
+  - name: common
+    type: include
+    comment: "Common defaults included in repo definitions"
+    yaml: '{{ borgbackup__legacy_common_yaml
+              if ansible_local.borgbackup.borgmatic_version is version("1.8.0", "<")
+              else borgbackup__common_yaml }}'
 
                                                                    # ]]]
 # .. envvar:: borgbackup__configuration [[[
@@ -1811,53 +356,186 @@ borgbackup__group_configuration: []
 borgbackup__host_configuration: []
 
                                                                    # ]]]
+# .. envvar:: borgbackup__dependent_configuration [[[
+#
+# Allows configuration as a dependent role.
+borgbackup__dependent_configuration: []
+
+                                                                   # ]]]
 # .. envvar:: borgbackup__combined_configuration [[[
 #
 # The variable which combines all other system-wide configuration variables and
 # is used in the Ansible tasks and templates.
-borgbackup__combined_configuration: '{{ borgbackup__original_configuration
-                                        + borgbackup__default_configuration
+borgbackup__combined_configuration: '{{ borgbackup__default_configuration
                                         + borgbackup__configuration
                                         + borgbackup__group_configuration
-                                        + borgbackup__host_configuration }}'
+                                        + borgbackup__host_configuration
+                                        + borgbackup__dependent_configuration }}'
 
                                                                    # ]]]
                                                                    # ]]]
-# Configuration variables for other Ansible roles [[[
-# ---------------------------------------------------
 
-# .. envvar:: borgbackup__users__dependent_accounts [[[
+# Server configuration [[[
+# ------------------------
+
+# These variables apply to hosts in the ``[debops_service_borgmatic_server]`` group.
+
+# .. envvar:: borgbackup__server_accounts [[[
 #
-# Configuration for the :ref:`debops.users` Ansible role.
-borgbackup__users__dependent_accounts:
+# Borg user accounts to create on the server.
+borgbackup__server_accounts: []
 
-  - name: 'backup-controller'
-    home: '/var/local/backup-controller'
+                                                                   # ]]]
+# .. envvar:: borgbackup__server_group_accounts [[[
+#
+# List of the configuration options for system-wide borgbackup support, defined on
+# hosts in a specific Ansible inventory group.
+borgbackup__server_group_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__server_host_accounts [[[
+#
+# List of the configuration options for system-wide borgbackup support, defined on
+# specific hosts in the Ansible inventory.
+borgbackup__server_host_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__server_dependent_accounts [[[
+#
+# Allows configuration as a dependent role.
+borgbackup__server_dependent_accounts: []
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__server_combined_accounts [[[
+#
+# The variable which combines all other system-wide configuration variables and
+# is used in the Ansible tasks and templates.
+borgbackup__server_combined_accounts: '{{ borgbackup__server_accounts
+                                        + borgbackup__server_group_accounts
+                                        + borgbackup__server_host_accounts
+                                        + borgbackup__server_dependent_accounts }}'
+                                                                   # ]]]
+                                                                   # ]]]
+
+# Control configuration [[[
+# -------------------------
+
+# These variables apply to hosts in the ``[debops_service_borgmatic_controlled]``
+# and ``[debops_service_borgmatic_controller]`` groups.
+#
+# The controller needs to run before the controlled clients
+# in order to generate its key.
+
+# .. envvar:: borgbackup__control_user [[[
+#
+# The username of the control user pulling the backups.
+# Control users are generated on controllers, then allowed access with their
+# public keys to all controlled clients.
+borgbackup__control_user: 'borg-control'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__controlled_clients [[[
+#
+# List of client hosts the controller will be connecting to in sequence.
+borgbackup__control_clients: '{{ groups["debops_service_borgbackup_controlled"] | d([]) }}'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__controller_public_key [[[
+#
+# The public part of the key the controller will use to connect to clients.
+#
+# The keys are in :file:`secret/borgbackup/control/[user]_id_ed25519.pub`.
+# Don't initialize a second controller with the same username in inventory.
+borgbackup__controller_public_key: '{{ lookup("ansible.builtin.file",
+                                              secret
+                                              + "/borgbackup/control/"
+                                              + borgbackup__control_user + "_id_ed25519.pub",
+                                              errors="ignore") }}'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__controller_service_enabled [[[
+#
+# Enables or disables the recurring job on the controller.
+borgbackup__controller_service_enabled: True
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__controller_service_period [[[
+#
+# Same as :envvar:`borgbackup__service_period`, but for controllers.
+borgbackup__controller_service_period: 'daily'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__controller_service_random_delay [[[
+#
+# Same as :envvar:`borgbackup__service_random_delay`, but for controllers.
+borgbackup__controller_service_random_delay: '3h'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__controller_systemd_units [[[
+#
+# Configures the :ref:`debops.systemd` role as ``systemd__dependent_units``
+# to add the timer and service running the borg-controller script on systemd controllers.
+borgbackup__controller_systemd_units:
+  - name: borg-controller.service
+    raw: |
+      [Unit]
+      Description=Trigger remote backups using Borg Backup
+      Documentation=https://docs.debops.org/en/master/ansible/roles/debops.borgbackup/
+
+      [Service]
+      User={{ borgbackup__control_user }}
+      Type=oneshot
+      ExecStart=/usr/local/bin/borg_controller
+      StandardOutput=append:/var/local/{{ borgbackup__control_user }}/borg_controller.log
+      StandardError=append:/var/local/{{ borgbackup__control_user }}/borg_controller.log
+    state: present
+
+  - name: borg-controller.timer
+    raw: |
+      [Unit]
+      Description=Trigger remote backups using Borg Backup
+      Documentation=https://docs.debops.org/en/master/ansible/roles/debops.borgbackup/
+
+      [Timer]
+      OnCalendar={{ borgbackup__controller_service_period }}
+      RandomizedDelaySec={{ borgbackup__controller_service_random_delay }}
+      FixedRandomDelay=true
+      Persistent=true
+
+      [Install]
+      WantedBy=timers.target
+    enabled: '{{ borgbackup__controller_service_enabled }}'
+    state: '{{ "started" if borgbackup__controller_service_enabled else "stopped" }}'
+
+                                                                   # ]]]
+# .. envvar:: borgbackup__control_user_accounts [[[
+#
+# The control user is shared between controlled clients and controllers.
+# This is the definition passed to the ref:`debops.users` role
+# as ``users__dependent_accounts`` to create it.
+borgbackup__control_user_accounts:
+  - name: '{{ borgbackup__control_user }}'
+    home: '/var/local/{{ borgbackup__control_user }}'
     shell: '/bin/bash'
     system: True
     home_mode: '0750'
-    groups: '{{ [ ansible_local.system_groups.local_prefix + "sshusers" ]
-                if "debops_service_borgbackup_controlled_client" in group_names
+    groups: '{{ [ansible_local.system_groups.local_prefix + "sshusers"]
+                if "debops_service_borgbackup_controlled" in group_names
                 else [] }}'
     generate_ssh_key: '{{ True
                           if "debops_service_borgbackup_controller" in group_names
                           else False }}'
-    ssh_key_comment: 'backup-controller'
+    ssh_key_comment: '{{ borgbackup__control_user }}'
     ssh_key_type: 'ed25519'
     state: '{{ "present"
                if ("debops_service_borgbackup_controller" in group_names or
-                   "debops_service_borgbackup_controlled_client" in group_names)
+                   "debops_service_borgbackup_controlled" in group_names)
                else "ignore" }}'
     resources:
 
       - path: '.ssh/config'
-        state: '{{ "file"
-                   if "debops_service_borgbackup_controller" in group_names
-                   else "absent" }}'
-        mode: '0644'
-        parent_mode: '0750'
         content: |
-          # This file is managed remotely, all changes will be lost
+          # {{ ansible_managed }}
 
           # We only want to use the Ansible managed /etc/ssh/ssh_known_hosts file.
           CheckHostIP no
@@ -1871,50 +549,53 @@ borgbackup__users__dependent_accounts:
 
           # Prevent timeouts during checks of large repos
           ServerAliveInterval 120
+        state: '{{ "file"
+                   if "debops_service_borgbackup_controller" in group_names
+                   else "absent" }}'
+        mode: '0644'
+        parent_mode: '0750'
 
                                                                    # ]]]
-# .. envvar:: borgbackup__authorized_keys__dependent_identities [[[
+# .. envvar:: borgbackup__controlled_authorized_keys [[[
 #
-# Configuration for the :ref:`debops.authorized_keys` Ansible role.
-borgbackup__authorized_keys__dependent_identities:
+# Configures the :ref:`debops.authorized_keys` role as ``authorized_keys__dependent_identities``
+# to add SSH keys restricted to the :command:`borgmatic` command on the controlled host.
+borgbackup__controlled_authorized_keys:
 
-  - name: 'backup-controller'
-    accounts: [ 'backup-controller' ]
-    state: '{{ "present"
-               if "debops_service_borgbackup_controlled_client" in group_names
-               else "absent" }}'
-    file_state: '{{ "present"
-                    if "debops_service_borgbackup_controlled_client" in group_names
-                    else "absent" }}'
+  - name: '{{ borgbackup__control_user }}'
+    accounts: [ '{{ borgbackup__control_user }}' ]
+    state: 'present'
+    file_state: 'present'
     sshkeys: '{{ borgbackup__controller_public_key | d(omit) }}'
     exclusive: True
     command: '{{ "sudo /bin/systemctl start borgmatic"
                  if ansible_service_mgr == "systemd"
-                 else "sudo /usr/bin/borgmatic" }}'
+                 else "sudo " + borgbackup__borgmatic_binary }}'
     options:
       - 'restrict'
 
                                                                    # ]]]
-# .. envvar:: borgbackup__sudo__dependent_config [[[
+# .. envvar:: borgbackup__controlled_sudo [[[
 #
-# Configuration for the :ref:`debops.sudo` Ansible role.
-borgbackup__sudo__dependent_sudoers:
+# Configures the :ref:`debops.sudo` role as ``sudo__dependent_sudoers``
+# to allow the :envvar:`borgbackup__control_user` to run :command:`borgmatic` as root.
+borgbackup__controlled_sudo:
 
-  - name: 'backup-controller-borgmatic-systemd'
-    comment: 'Allow the backup-controller user to trigger backups'
+  - name: '{{ borgbackup__control_user }}-borgmatic-systemd'
+    comment: 'Allow the {{ borgbackup__control_user }} user to trigger backups'
     raw: |
-      backup-controller ALL = (ALL) NOPASSWD: /bin/systemctl start borgmatic
+      {{ borgbackup__control_user }} ALL = (ALL) NOPASSWD: /bin/systemctl start borgmatic
     state: '{{ "present"
-               if ("debops_service_borgbackup_controlled_client" in group_names
+               if ("debops_service_borgbackup_controlled" in group_names
                    and ansible_service_mgr == "systemd")
                else "ignore" }}'
 
-  - name: 'backup-controller-borgmatic-direct'
-    comment: 'Allow the backup-controller user to trigger backups'
+  - name: '{{ borgbackup__control_user }}-borgmatic-direct'
+    comment: 'Allow the {{ borgbackup__control_user }} user to trigger backups'
     raw: |
-      backup-controller ALL = (ALL) NOPASSWD: /usr/bin/borgmatic
+      {{ borgbackup__control_user }} ALL = (ALL) NOPASSWD: {{ borgbackup__borgmatic_binary }}
     state: '{{ "present"
-               if ("debops_service_borgbackup_controlled_client" in group_names
+               if ("debops_service_borgbackup_controlled" in group_names
                    and ansible_service_mgr != "systemd")
                else "ignore" }}'
 

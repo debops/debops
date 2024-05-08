@@ -4,38 +4,25 @@
 # Copyright (C) 2019-2023 DebOps https://debops.org/
 # SPDX-License-Identifier: GPL-3.0-only
 
-- name: Gather facts and known public SSH keys from servers
-  ansible.builtin.setup:
-    gather_subset:
-      - '!all'
-      - 'ssh_host_pub_keys'
-  delegate_to: '{{ item }}'
-  delegate_facts: true
-  loop: '{{ borgbackup__servers }}'
-  tags: [ 'role::borgbackup:config' ]
-
-- name: Create directories
+- name: Create borgmatic configuration directories
   ansible.builtin.file:
     path: '{{ item }}'
     state: 'directory'
     mode: '0700'
   loop:
-    - '{{ borgbackup__configuration_base_path }}'
+    - '{{ borgbackup__configuration_include_path }}'
+    - '{{ borgbackup__configuration_repo_path }}'
+    - '{{ borgbackup__configuration_unit_path }}'
     - '{{ borgbackup__passphrase_base_path }}'
   tags: [ 'role::borgbackup:config' ]
 
-- name: Create a list of known SSH hosts (servers)
-  ansible.builtin.template:
-    src: 'etc/ssh/ssh_known_hosts.j2'
-    dest: '/etc/ssh/ssh_known_hosts'
-    mode: '0644'
-  vars:
-    borgbackup__template_hosts: '{{ borgbackup__servers }}'
-  tags: [ 'role::borgbackup:config' ]
-
-- name: Delete borgmatic configuration files
+- name: Delete obsolete borgmatic configuration
   ansible.builtin.file:
-    path: '{{ borgbackup__configuration_base_path + "/" + item.name + ".yaml" }}'
+    path: '{{ item.path | d(borgbackup__configuration_include_path + "/" + item.name + ".yaml"
+              if item.type | d("unit") == "include"
+              else borgbackup__configuration_repo_path
+                if item.type | d("unit") == "repo"
+                else borgbackup__configuration_unit_path + "/" + item.name + ".yaml") }}'
     state: 'absent'
   loop: '{{ borgbackup__combined_configuration | debops.debops.parse_kv_config }}'
   loop_control:
@@ -43,104 +30,55 @@
   when: item.name | d() and item.state | d('present') == 'absent'
   tags: [ 'role::borgbackup:config' ]
 
-- name: Create borgmatic configuration
+- name: Create borgmatic configuration includes, deferring validation
   ansible.builtin.template:
     src: 'etc/borgmatic/config.yaml.j2'
-    dest: '{{ borgbackup__configuration_base_path + "/" + item.name + ".yaml" }}'
+    dest: '{{ item.path | d(borgbackup__configuration_include_path + "/" + item.name + ".yaml") }}'
     mode: '0600'
-    validate: 'validate-borgmatic-config --config %s'
   loop: '{{ borgbackup__combined_configuration | debops.debops.parse_kv_config }}'
   loop_control:
     label: '{{ item.name + ".yaml" }}'
   when: item.name | d()
-        and item.state | d('present') not in [ 'absent', 'ignore', 'init' ]
+        and item.type | d("unit") == "include"
+        and item.state | d('present') not in [ 'absent', 'ignore' ]
+  tags: [ 'role::borgbackup:config' ]
+
+- name: Create borgmatic repo includes, deferring validation
+  ansible.builtin.template:
+    src: 'etc/borgmatic/repos/repo.yaml.j2'
+    dest: '{{ item.path | d(borgbackup__configuration_repo_path + "/" + item.name + ".yaml") }}'
+    mode: '0600'
+  loop: '{{ borgbackup__combined_configuration | debops.debops.parse_kv_config }}'
+  loop_control:
+    label: '{{ item.name + ".yaml" }}'
+  when: item.name | d()
+        and item.type | d("unit") == "repo"
+        and item.state | d('present') not in [ 'absent', 'ignore' ]
+  tags: [ 'role::borgbackup:config' ]
+
+- name: Create borgmatic configuration units
+  ansible.builtin.template:
+    src: 'etc/borgmatic/config.yaml.j2'
+    dest: '{{ item.path | d(borgbackup__configuration_unit_path + "/" + item.name + ".yaml") }}'
+    mode: '0600'
+    validate: '{{ borgbackup__cmd_validate }} --config %s'
+  loop: '{{ borgbackup__combined_configuration | debops.debops.parse_kv_config }}'
+  loop_control:
+    label: '{{ item.name + ".yaml" }}'
+  when: item.name | d()
+        and item.type | d("unit") != "include"
+        and item.state | d('present') not in [ 'absent', 'ignore', ]
   tags: [ 'role::borgbackup:config' ]
 
 - name: Manage borgbackup passphrases/credentials
-  ansible.builtin.include_tasks: 'client_passphrase.yml'
+  ansible.builtin.include_tasks: 'passphrase.yml'
   loop: '{{ borgbackup__combined_configuration | debops.debops.parse_kv_config }}'
   loop_control:
     label: '{{ item.name + "_passphrase" }}'
   when: item.name | d()
-        and item.state | d('present') not in [ 'ignore', 'init' ]
+        and item.type | d("unit") == "repo"
+        and item.state | d('present') not in [ 'ignore' ]
   no_log: '{{ debops__no_log | d(True) }}'
-  tags: [ 'role::borgbackup:config' ]
-
-- name: Enable periodic backup jobs via cron
-  ansible.builtin.cron:
-    name: 'Perform a backup using BorgBackup'
-    job: '/usr/bin/borgmatic prune compact create --stats check >> /var/log/borgbackup.log 2>&1'
-    cron_file: 'debops-borgbackup'
-    user: 'root'
-    special_time: '{{ borgbackup__backup_period }}'
-    state: 'present'
-  when: ansible_service_mgr != 'systemd'
-        and borgbackup__type == 'client'
-        and not ansible_check_mode
-  tags: [ 'role::borgbackup:config' ]
-
-- name: Disable periodic backup jobs via cron
-  ansible.builtin.cron:
-    name: 'Perform a backup using BorgBackup'
-    cron_file: 'debops-borgbackup'
-    state: 'absent'
-  when: ansible_service_mgr == 'systemd'
-        or borgbackup__type != 'client'
-  tags: [ 'role::borgbackup:config' ]
-
-- name: Create systemd borgmatic timer/service drop-in directories
-  ansible.builtin.file:
-    path: '{{ item }}'
-    state: 'directory'
-    mode: '0700'
-  loop:
-    - '/etc/systemd/system/borgmatic.service.d'
-    - '/etc/systemd/system/borgmatic.timer.d'
-  when: ansible_service_mgr == 'systemd'
-  tags: [ 'role::borgbackup:config' ]
-
-- name: Create systemd borgmatic timer/service drop-ins
-  ansible.builtin.template:
-    src: '{{ item }}.j2'
-    dest: '/{{ item }}'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  loop:
-    - 'etc/systemd/system/borgmatic.service.d/debops.conf'
-    - 'etc/systemd/system/borgmatic.timer.d/debops.conf'
-  when: ansible_service_mgr == 'systemd'
-  notify: [ 'Reload service manager' ]
-  tags: [ 'role::borgbackup:config' ]
-
-- name: Enable systemd borgmatic timer
-  ansible.builtin.systemd:
-    daemon_reload: True
-    name: 'borgmatic.timer'
-    enabled: True
-    state: 'started'
-  when: ansible_service_mgr == 'systemd'
-        and borgbackup__type == 'client'
-        and not ansible_check_mode
-  tags: [ 'role::borgbackup:config' ]
-
-- name: Disable systemd borgmatic timer
-  ansible.builtin.systemd:
-    name: 'borgmatic.timer'
-    enabled: False
-    state: 'stopped'
-  when: ansible_service_mgr == 'systemd'
-        and borgbackup__type != 'client'
-  tags: [ 'role::borgbackup:config' ]
-
-- name: Remove systemd borgmatic timer/service drop-ins
-  ansible.builtin.file:
-    path: '{{ item }}'
-    state: 'absent'
-  loop:
-    - 'etc/systemd/system/borgmatic.service.d'
-    - 'etc/systemd/system/borgmatic.timer.d'
-  when: ansible_service_mgr != 'systemd'
   tags: [ 'role::borgbackup:config' ]
 
 - name: Create a backup of /root/.config/borg/keys on the remote host
@@ -158,6 +96,24 @@
 - name: Fetch backup of /root/.config/borg to the Ansible controller
   ansible.builtin.fetch:
     src: '/root/.config/borg_config_{{ inventory_hostname }}.tar'
-    dest: '{{ borgbackup__secret_base_path + "/" }}'
+    dest: '{{ borgbackup__secret_base_path + "/clients/" + inventory_hostname }}'
     flat: True
   tags: [ 'role::borgbackup:config' ]
+
+- name: Enable periodic backup jobs via cron
+  ansible.builtin.cron:
+    name: 'Perform a backup using borgmatic'
+    job: '{{ borgbackup__borgmatic_binary }} --verbosity -1 --syslog-verbosity 1'
+    cron_file: 'borgmatic'
+    user: 'root'
+    special_time: '{{ borgbackup__backup_period }}'
+    state: '{{ "present" if borgbackup__service_enabled else "absent" }}'
+  when: ansible_service_mgr != 'systemd' and not ansible_check_mode
+  tags: [ 'role::borgbackup:service' ]
+
+- name: Configure systemd with the debops.systemd role
+  ansible.builtin.include_role:
+    name: systemd
+  vars:
+    systemd__dependent_units: '{{ borgbackup__service_systemd_units }}'
+  tags: [ 'role::borgbackup:service' ]

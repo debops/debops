@@ -1,34 +1,39 @@
-{# Copyright (C) 2019-2023 Robin Schneider <ypid@riseup.net>
- # Copyright (C) 2019-2023 DebOps https://debops.org/
+{# Copyright (C) 2024 Tasos Alvas <tasos.alvas@qwertyuiopia.com>
+ # Copyright (C) 2024 DebOps https://debops.org/
  # SPDX-License-Identifier: GPL-3.0-only
  #}
+{% if item.comment | d() %}
+# {{ item.comment }}
+{% endif %}
 # {{ ansible_managed }}
-{% macro print_item(options, indent=0) %}
-{%   for option in (options | rejectattr("state", "in", ["absent", "ignore", "init"])) %}
 
-{%     if option.comment | d() %}
-{{       option.comment | comment(prefix='', postfix='') | indent(indent, True) -}}
-{%     endif %}
-{%     if option.option | d(option.name) %}
-{{       (option.option | d(option.name) + ":") | indent(indent, True) -}}
-{%     endif %}
-{%     if option.value | d() %}
-{%       if (option.value is string) %}
-{{-        " '" + (option.value|string) + "'" }}
-{%       elif (option.value is number) or (option.value is sameas True) or (option.value is sameas False) %}
-{{-        " " + (option.value|string) }}
-{%       elif option.value is iterable %}
-{%         for value in (option.value | map(attribute="name") | sort | unique) %}
-{%           if loop.first %}
+{# Accept absolute paths or item names #}
+{% set i_defs = [ item.include ] if item.include | d([]) is string else item.include | d([]) %}
+{% set include_paths = [] %}
+{% for def in i_defs %}
+{%   set include_paths = include_paths.append(
+       def if def[0] == "/"
+       else borgbackup__configuration_include_path + "/" + def + ".yaml")
+%}
+{% endfor %}
+{% if item.type | d("unit") == "repo" and ansible_local.borgbackup.borgmatic_version is version("1.8.1", "<") %}
+{# The repo definition will take care of daisy-chaining the intended include. #}
+<<: !include {{ borgbackup__configuration_repo_path + "/" + item.name + ".yaml" }}
 
-{%           endif %}
-{{           ("- '" + value + "'") | indent(indent + 2, True) }}
-{%         endfor %}
-{%       endif %}
-{%     endif %}
-{%     if option.options | d() and option.options is iterable %}
-{{       print_item(option.options, indent=indent + 2) }}
-{%     endif %}
-{%   endfor %}
-{% endmacro %}
-{{ print_item(item.options) }}
+{% elif item.type | d("unit") == "repo" %}
+{%   set include_paths = include_paths.append(borgbackup__configuration_repo_path + "/" + item.name + ".yaml") %}
+{% endif %}
+{# This checks for !repo only because the legacy code above templates the include #}
+{% if item.type | d("unit") != "repo" and include_paths | d() %}
+{# This can be simplified to always be a list after borgmatic 1.8.1 #}
+<<: !include {{ include_paths[0] if include_paths | length == 1 else include_paths }}
+
+{% endif %}
+{% if item.yaml | d() %}
+{{ item.yaml | to_nice_yaml(indent=2) }}
+
+{% endif %}
+{% if item.raw | d() %}
+{{ item.raw }}
+
+{% endif %}

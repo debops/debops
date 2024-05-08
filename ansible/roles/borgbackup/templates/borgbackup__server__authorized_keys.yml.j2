@@ -1,0 +1,25 @@
+{# Copyright (C) 2024 Tasos Alvas <tasos.alvas@qwertyuiopia.com>
+ # Copyright (C) 2024 DebOps https://debops.org/
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+{% for item in borgbackup__server_combined_accounts | debops.debops.parse_kv_config %}
+- name: '{{ item.name }}'
+  state: '{{ item.state | d("present") }}'
+  accounts: [ '{{ item.name }}' ]
+  exclusive: True
+  command: 'borg serve{{ "--append-only"
+                          if item.append_only | d(False)
+                          else ""}} --restrict-to-path $HOME'
+  options:
+    - 'restrict'
+  sshkeys:
+{%   for box in item.clients | d([]) %}
+    - '{{ hostvars[box].ansible_facts.ansible_local.root_account.ssh_public_key }}'
+{%   endfor %}
+{%   for key in item.sshkeys | d([]) %}
+    - '{{ key }}'
+{%   endfor %}
+{%   for extra in item.authorized_keys_extra | d({}) | dict2items %}
+  {{ extra.key }}: {{ extra.value }}
+{%   endfor %}
+{% endfor %}

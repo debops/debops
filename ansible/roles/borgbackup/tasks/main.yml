@@ -1,7 +1,8 @@
 ---
 # Copyright (C) 2019-2023 Robin Schneider <ypid@riseup.net>
 # Copyright (C) 2023 David Härdeman <david@hardeman.nu>
-# Copyright (C) 2019-2023 DebOps https://debops.org/
+# Copyright (C) 2024 Tasos Alvas <tasos.alvas@qwertyuiopia.com>
+# Copyright (C) 2019-2024 DebOps https://debops.org/
 # SPDX-License-Identifier: GPL-3.0-only
 
 - name: Import custom Ansible plugins
@@ -16,59 +17,24 @@
   ansible.builtin.import_role:
     name: 'secret'
 
-- name: Assert that basic variables have been defined
-  ansible.builtin.assert:
-    that:
-      - borgbackup__type | d("") in ["server", "client", "controlled_client", "controller"]
-      - borgbackup__servers | d([]) | length > 0
-
-- name: Assert that client settings have been defined
-  ansible.builtin.assert:
-    that:
-      - borgbackup__combined_source_directories | d([]) | flatten | length > 0
-      - borgbackup__encryption | d("") != ""
-  when: borgbackup__type in ["client", "controlled_client"]
-
-- name: Assert that source directories don't include /root
-  ansible.builtin.assert:
-    that:
-      - not "/root" in borgbackup__combined_source_directories | flatten
-  when: borgbackup__protect_root | d(True) and borgbackup__type in ["client", "controlled_client"]
-
-- name: Assert that a controller has been defined
-  ansible.builtin.assert:
-    that:
-      - borgbackup__controller | d("") != ""
-  when: borgbackup__type in ["controller", "controlled_client"]
-
-- name: Install required borgbackup packages
+- name: Install borgbackup base packages
   ansible.builtin.package:
     name: '{{ (borgbackup__base_packages + borgbackup__packages) | flatten }}'
     state: 'present'
   register: borgbackup__register_packages
   until: borgbackup__register_packages is succeeded
+  when: ("debops_service_borgbackup" in group_names or
+         "debops_service_borgbackup_server" in group_names)
   tags: [ 'role::borgbackup:install' ]
 
-- name: Import borgbackup controller tasks
-  ansible.builtin.include_tasks: 'controller.yml'
-  when: borgbackup__type == "controller"
-  tags: [ 'role::borgbackup:config' ]
-
-- name: Import borgbackup server tasks
-  ansible.builtin.include_tasks: 'server.yml'
-  when: borgbackup__type == "server"
-  tags: [ 'role::borgbackup:config' ]
-
-- name: Import borgbackup client tasks
-  ansible.builtin.include_tasks: 'client.yml'
-  when: borgbackup__type in ["client", "controlled_client"]
-  tags: [ 'role::borgbackup:config' ]
-
-- name: Make sure that Ansible local facts directory exists
-  ansible.builtin.file:
-    path: '/etc/ansible/facts.d'
-    state: 'directory'
-    mode: '0755'
+- name: Install borgmatic
+  ansible.builtin.package:
+    name: '{{ borgbackup__client_packages }}'
+    state: 'present'
+  register: borgbackup__register_client_packages
+  until: borgbackup__register_client_packages is succeeded
+  when: ("debops_service_borgbackup" in group_names)
+  tags: [ 'role::borgbackup:install' ]
 
 - name: Save borgbackup local facts
   ansible.builtin.template:
@@ -80,3 +46,23 @@
 
 - name: Update Ansible facts if they were modified
   ansible.builtin.meta: 'flush_handlers'
+
+- name: Import borgbackup server tasks
+  ansible.builtin.include_tasks: 'server.yml'
+  when: ("debops_service_borgbackup_server" in group_names)
+  tags: [ 'role::borgbackup:server' ]
+
+- name: Import borgbackup client tasks
+  ansible.builtin.include_tasks: 'client.yml'
+  when: ("debops_service_borgbackup" in group_names)
+  tags: [ 'role::borgbackup:client' ]
+
+- name: Import borgbackup controller tasks
+  ansible.builtin.include_tasks: 'controller.yml'
+  when: ("debops_service_borgbackup_controller" in group_names)
+  tags: [ 'role::borgbackup:control' ]
+
+- name: Import borgbackup controlled tasks
+  ansible.builtin.include_tasks: 'controlled.yml'
+  when: ("debops_service_borgbackup_controlled" in group_names)
+  tags: [ 'role::borgbackup:control' ]

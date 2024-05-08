@@ -16,7 +16,8 @@
   ansible.builtin.copy:
     dest: '{{ borgbackup__passphrase_base_path + "/" + item.name + ".txt" }}'
     mode: '0400'
-    content: '{{ lookup("password", borgbackup__secret_base_path + "/"
+    content: '{{ lookup("password", borgbackup__secret_base_path
+                 + "/clients/" + inventory_hostname + "/"
                  + item.name + "_passphrase.txt"
                  + " length=" + borgbackup__passphrase_length | string
                  + " chars=ascii_letters,digits") }}'
@@ -72,7 +73,7 @@
       - '--encryption'
       - '{{ borgbackup__encryption }}'
       - '--config'
-      - '{{ item.name + ".yaml" }}'
+      - '{{ item.path | d("/etc/borgmatic.d/" + item.name + ".yaml") }}'
       - '--override'
       - 'storage.encryption_passcommand="cat {{
            borgbackup__passphrase_base_path + "/" + item.name + ".txt" }}"'

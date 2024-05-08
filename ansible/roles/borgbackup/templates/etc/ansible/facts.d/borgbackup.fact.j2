@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2019-2023 Robin Schneider <ypid@riseup.net>
-# Copyright (C) 2019-2023 DebOps https://debops.org/
+# Copyright (C) 2024 Tasos Alvas <tasos.alvas@qwertyuiopia.com>
+# Copyright (C) 2019-2024 DebOps https://debops.org/
 # SPDX-License-Identifier: GPL-3.0-only
 
 # {{ ansible_managed }}
@@ -10,6 +11,7 @@
 from __future__ import print_function
 from json import dumps
 import os
+import subprocess
 
 
 def cmd_exists(cmd):
@@ -19,7 +21,16 @@ def cmd_exists(cmd):
     )
 
 
-output = {'installed': cmd_exists('borgbackup'),
-          'borgmatic_installed': cmd_exists('borgmatic')}
+def borgmatic_version():
+    if not cmd_exists('borgmatic'):
+        return ''
+
+    result = subprocess.run(['borgmatic', '--version'], stdout=subprocess.PIPE)
+    return result.stdout.decode('utf-8').strip()
+
+
+output = {'borgbackup_installed': cmd_exists('borgbackup'),
+          'borgmatic_installed': cmd_exists('borgmatic'),
+          'borgmatic_version': borgmatic_version()}
 
 print(dumps(output, sort_keys=True, indent=4))
