@@ -39,8 +39,8 @@ their ``borgmatic`` service.
 The control groups can be used as mix-ins on existing client-server configuration.
 If you're setting it up all at once, the right order is:
 
-1. Running the debops ``common`` playbook on everything, so clients generate keypairs
-2. **Controllers**, so they can generate keypairs for their control user
+1. Running the debops ``common`` playbook on everything, so clients generate key pairs
+2. **Controllers**, so they can generate key pairs for their control user
 3. **Servers**, so clients can initialize repos on them
 4. **Clients**
 
@@ -364,7 +364,7 @@ The ``debops_service_borgbackup_controlled`` group adds the **control user** to
 clients configured by the ``debops_service_borgbackup`` group.
 
 Configuring a controlled client requires its controller to have generated its
-keypair first.
+key pair first.
 
 .. code-block:: yaml
 
