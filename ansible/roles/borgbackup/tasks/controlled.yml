@@ -10,16 +10,16 @@
     users__dependent_accounts: '{{ borgbackup__control_user_accounts }}'
   tags: [ 'role::borgbackup:control' ]
 
-- name: Enable SSH access to the controlled client for its controller
+- name: Enable access to the controlled client for its controller
   ansible.builtin.import_role:
-    - name: authorized_keys
+    name: authorized_keys
   vars:
     authorized_keys__dependent_identities: '{{ borgbackup__controlled_authorized_keys }}'
   tags: [ 'role::borgbackup:ssh' ]
 
 - name: Enable limited sudo access on the controlled client
   ansible.builtin.import_role:
-    - name: sudo
+    name: sudo
   vars:
-    sudo__dependent_sudoers: '{{ borgbackup__controlled_sudoers }}'
+    sudo__dependent_sudoers: '{{ borgbackup__controlled_sudo }}'
   tags: [ 'role::borgbackup:ssh' ]

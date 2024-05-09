@@ -527,15 +527,11 @@ borgbackup__control_user_accounts:
                           else False }}'
     ssh_key_comment: '{{ borgbackup__control_user }}'
     ssh_key_type: 'ed25519'
-    state: '{{ "present"
-               if ("debops_service_borgbackup_controller" in group_names or
-                   "debops_service_borgbackup_controlled" in group_names)
-               else "ignore" }}'
     resources:
 
       - path: '.ssh/config'
         content: |
-          # {{ ansible_managed }}
+          # Borg controller config
 
           # We only want to use the Ansible managed /etc/ssh/ssh_known_hosts file.
           CheckHostIP no
@@ -585,19 +581,13 @@ borgbackup__controlled_sudo:
     comment: 'Allow the {{ borgbackup__control_user }} user to trigger backups'
     raw: |
       {{ borgbackup__control_user }} ALL = (ALL) NOPASSWD: /bin/systemctl start borgmatic
-    state: '{{ "present"
-               if ("debops_service_borgbackup_controlled" in group_names
-                   and ansible_service_mgr == "systemd")
-               else "ignore" }}'
+    state: '{{ "present" if ansible_service_mgr == "systemd" else "ignore" }}'
 
   - name: '{{ borgbackup__control_user }}-borgmatic-direct'
     comment: 'Allow the {{ borgbackup__control_user }} user to trigger backups'
     raw: |
       {{ borgbackup__control_user }} ALL = (ALL) NOPASSWD: {{ borgbackup__borgmatic_binary }}
-    state: '{{ "present"
-               if ("debops_service_borgbackup_controlled" in group_names
-                   and ansible_service_mgr != "systemd")
-               else "ignore" }}'
+    state: '{{ "present" if ansible_service_mgr != "systemd" else "ignore" }}'
 
                                                                    # ]]]
                                                                    # ]]]
