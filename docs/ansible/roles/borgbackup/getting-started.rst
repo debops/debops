@@ -80,23 +80,6 @@ store repository passphrases as systemd credentials.
 On systems that do not support systemd, :man:`cron(8)` will be configured instead,
 reading its credentials directly from a plaintext file (only readable by ``root``).
 
-A few key service-related client variables:
-
-.. code-block:: yaml
-
-   # This would keep the recurring backup service disabled
-   # Credentials at /etc/borgmatic/passphrases will still be generated
-   borgbackup__service_enabled: False # Defaults to True
-
-   # This prevents the systemd job from accessing the real /root
-   borgbackup__service_protect_root: False # If you need to back up /root
-
-   # The systemd job only has write access to specific directories
-   # Syncing remote repositories requires none
-   # Local repositories (or their parent directory) need to be listed here
-   borgbackup__service_rw_directories:
-     - /mnt/backup
-
 
 .. _borgbackup__ref_configuration_examples:
 
