@@ -153,8 +153,8 @@ The ``repo`` config ``type`` provides repository initialization and configuratio
 
 
 The above will initialize all local and remote repositories with a generated
-passphrase stored in :file:`secret/[hostname]/[repo]_passphrase.txt`, and back up
-the host's borg keys at :file:`secret/[hostname]/borg_config_[hostname].tar` on the
+passphrase stored in :file:`secret/borgbackup/clients/[hostname]/[repo]_passphrase.txt`,
+and back up the host's borg keys at :file:`[hostname]/borg_config_[hostname].tar` on the
 ansible controller.
 
 
@@ -318,7 +318,7 @@ Configuring the behavior on a single network with the default control user requi
 
 * adding **one** controller to the ``debops_service_borgbackup_controller`` group
 * all clients to the ``debops_service_borgbackup_controlled`` group
-* setting ``borgmatic__service_enabled`` to ``False`` for all hosts
+* setting ``borgmatic__service_enabled`` to ``False`` for all clients to be controlled
 
 
 Controllers

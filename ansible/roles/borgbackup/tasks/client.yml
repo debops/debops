@@ -98,6 +98,7 @@
     src: '/root/.config/borg_config_{{ inventory_hostname }}.tar'
     dest: '{{ borgbackup__secret_base_path + "/clients/" + inventory_hostname + "/" }}'
     flat: True
+    fail_on_missing: false
   tags: [ 'role::borgbackup:config' ]
 
 - name: Enable periodic backup jobs via cron
