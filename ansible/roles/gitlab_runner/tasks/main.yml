@@ -78,14 +78,6 @@
   register: gitlab_runner__register_packages
   until: gitlab_runner__register_packages is succeeded
 
-- name: Check if GitLab service is available
-  ansible.builtin.uri:
-    url: '{{ gitlab_runner__api_url }}'
-  register: gitlab_runner__register_api
-  when: gitlab_runner__api_url | d() and gitlab_runner__api_url
-  failed_when: False
-  no_log: '{{ debops__no_log | d(True) }}'
-
 - name: Register new GitLab Runners
   ansible.builtin.uri:
     url: '{{ (item.api_url | d(gitlab_runner__api_url)) + "api/v4/user/runners" }}'
@@ -115,8 +107,7 @@
                            + gitlab_runner__instances
                            + gitlab_runner__group_instances
                            + gitlab_runner__host_instances) }}'
-  when: (gitlab_runner__register_api.status | d() and gitlab_runner__register_api.status == 200 and
-         (item.api_token | d() or gitlab_runner__api_token) and item.name and
+  when: ((item.api_token | d() or gitlab_runner__api_token) and item.name and
          (item.state is undefined or item.state != 'absent') and
          (ansible_local is undefined or
           (ansible_local | d() and (ansible_local.gitlab_runner is undefined or
@@ -142,8 +133,7 @@
     - '{{ gitlab_runner__default_instances + gitlab_runner__instances
           + gitlab_runner__group_instances + gitlab_runner__host_instances }}'
     - '{{ ansible_local.gitlab_runner.instance_tokens | d([]) }}'
-  when: (gitlab_runner__register_api.status | d() and gitlab_runner__register_api.status == 200 and
-         (item.0.api_token | d() or gitlab_runner__api_token)
+  when: ((item.0.api_token | d() or gitlab_runner__api_token)
          and item.0.name | d() and item.1.name | d() and item.0.name == item.1.name and
          (item.0.state | d() and item.0.state == 'absent'))
   failed_when: False
