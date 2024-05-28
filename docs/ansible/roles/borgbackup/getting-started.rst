@@ -242,6 +242,39 @@ Now this unit will soft-fail if my cassette is not mounted, then borgmatic will
 log it and continue processing the rest of the configuration.
 
 
+Restore Mode
+~~~~~~~~~~~~
+
+Restore mode will configure a client normally, but will refrain from initializing
+new repositories and will restore the host's backed up keys and passphrases from
+`secret/` instead, making it ready to run :command:`borgmatic restore`.
+
+The rest of the configuration remains identical and a host that was backed up with
+that same configuration can simply restore its original data.
+
+This can be done by setting :envvar:`borgbackup__restore_mode` to ``True`` in your
+inventory, at runtime, or when calling the role from your restore playbook.
+
+.. code-block:: yaml
+
+   # Enable restore mode for a client
+   # This will also disable recurring backups until turned back off
+   borgbackup__restore_mode: True
+
+
+Once the playbook runs, :command:`borgmatic rlist` should correctly list your existing archives,
+:command:`borgmatic extract --repository [repo] --archive latest` should put your data back in
+place as long as you mind your paths, and :command:`borgmatic restore [...]` should be able to
+repopulate your databases as long as the config that backed them up is in place.
+
+Local repos should have their files in place before the role runs, databases should
+exist before borgmatic tries to populate them.
+
+Once the host is the source of truth for that live data, run the playbook once again
+with the setting set to ``False`` to (re)enable the backup timer and get the controller
+to back up the host's live borg keys.
+
+
 Borg Servers
 ------------
 
@@ -318,7 +351,7 @@ Configuring the behavior on a single network with the default control user requi
 
 * adding **one** controller to the ``debops_service_borgbackup_controller`` group
 * all clients to the ``debops_service_borgbackup_controlled`` group
-* setting ``borgmatic__service_enabled`` to ``False`` for all clients to be controlled
+* setting :envvar:`borgbackup__service_enabled` to ``False`` for all clients to be controlled
 
 
 Controllers
@@ -386,6 +419,55 @@ that uses the ``debops.borgbackup`` role:
 .. literalinclude:: ../../../../ansible/playbooks/service/borgbackup.yml
    :language: yaml
    :lines: 1,5-
+
+
+Example restore playbook
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is an example playbook to restore ``my`` service configured with ``debops.borgbackup``.
+
+.. code-block:: yaml
+
+   roles:
+     # A database and the .pgpass required for borg/root to access it
+     - role: postgresql
+       postgresql__dependent_roles: '{{ my__postgresql__roles }}'
+       postgresql__dependent_databases: '{{ my__postgresql__databases }}'
+       postgresql__dependent_pgpass: '{{ my__postgresql__pgpass }}'
+       tags: [ 'role::postgresql', 'skip::postgresql' ]
+
+     - role: myservice
+       # Live data is not a source of truth for this run
+       # So my role might want a restore flag too, to avoid using it
+       my__restore_mode: True
+       tags: [ 'role::myservice', 'skip::myservice' ]
+
+     # borgbackup ran this way will refrain from starting the service
+     #
+     - role: borgbackup
+       borgbackup__restore_mode: True
+       borgbackup__dependent_configuration: '{{ my__borgbackup__configuration }}'
+       tags: [ 'role::borgbackup', 'skip::borgbackup' ]
+
+   tasks:
+
+     - name: Restore the instance's files from backup
+       ansible.builtin.shell:
+         # The expression below strips /srv/my from the extracted path
+         # To have the files end up in /srv/my/data.
+         # Extracting in / might be a cleaner option if it doesn't scare you.
+         cmd: '{{ "borgmatic extract"
+               + " --repository " + my__restore_repo
+               + " --restore-path /srv/my/data"
+               + " --strip-components 2"
+               + " --archive latest" }}'
+
+     - name: Restore the instance's database from backup
+       ansible.builtin.shell:
+         # Notice how we don't need to provide a repo,
+         # borgmatic will happily restore all units in borgmatic.d
+         cmd: '{{ "borgmatic restore"
+               + " --archive latest" }}'
 
 
 Ansible tags

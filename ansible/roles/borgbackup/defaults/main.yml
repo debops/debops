@@ -59,6 +59,30 @@ borgbackup__cmd_validate: '{{
 # Basic configuration [[[
 # -----------------------
 
+# .. envvar:: borgbackup__restore_mode  [[[
+#
+# Restore mode will restore a client's borg encryption keys from the
+# controller's secrets and place the system into a state to be repopulated
+# from backup.
+#
+# :envvar:`borgbackup__service_enabled` has no effect on a restore mode
+# run and the service will be left disabled either way, to allow populating
+# the host's live data.
+#
+# New repository initialization still happens in restore mode, as borgmatic
+# will skip creating existing repositories on its own. However, if you are
+# restoring from a *local* repository, you will want those local files to be
+# available *before* the role runs.
+#
+# You can then restore your live data by manually running
+# :command:`sudo borgmatic restore --repository [repo unit] --archive latest`
+# or calling it from your dedicated service deployment playbook.
+#
+# Once your data is restored, run the role again with this off to resume
+# normal operation
+borgbackup__restore_mode: False
+
+                                                                   # ]]]
 # .. envvar:: borgbackup__fqdn [[[
 #
 # Fully Qualified Domain Name of the host.
@@ -214,7 +238,9 @@ borgbackup__service_systemd_units:
       [Install]
       WantedBy=timers.target
     enabled: '{{ borgbackup__service_enabled }}'
-    state: '{{ "started" if borgbackup__service_enabled else "stopped" }}'
+    state: '{{ "started"
+            if (borgbackup__service_enabled and not borgbackup__restore_mode)
+            else "stopped" }}'
 
                                                                    # ]]]
                                                                    # ]]]

@@ -14,6 +14,7 @@
     - '{{ borgbackup__configuration_repo_path }}'
     - '{{ borgbackup__configuration_unit_path }}'
     - '{{ borgbackup__passphrase_base_path }}'
+    - '/root/.config/borg'
   tags: [ 'role::borgbackup:config' ]
 
 - name: Delete obsolete borgmatic configuration
@@ -91,6 +92,7 @@
     mode: '0600'
     # Compression (e.g. gzip) includes a timestamp, which breaks idempotency
     format: 'tar'
+  when: not borgbackup__restore_mode
   tags: [ 'role::borgbackup:config' ]
 
 - name: Fetch backup of /root/.config/borg to the Ansible controller
@@ -99,7 +101,18 @@
     dest: '{{ borgbackup__secret_base_path + "/clients/" + inventory_hostname + "/" }}'
     flat: True
     fail_on_missing: false
+  when: not borgbackup__restore_mode
   tags: [ 'role::borgbackup:config' ]
+
+- name: Restore /root/.config/borg/keys from secret
+  ansible.builtin.unarchive:
+    src: '{{ borgbackup__secret_base_path
+          + "/clients/" + inventory_hostname
+          + "/borg_config_" + inventory_hostname + ".tar" }}'
+    dest: '/root/.config/borg'
+    mode: '0600'
+  when: borgbackup__restore_mode
+  tags: [ 'role::borgbackup:config']
 
 - name: Enable periodic backup jobs via cron
   ansible.builtin.cron:
@@ -108,7 +121,10 @@
     cron_file: 'borgmatic'
     user: 'root'
     special_time: '{{ borgbackup__backup_period }}'
-    state: '{{ "present" if borgbackup__service_enabled else "absent" }}'
+    state: '{{ "present" if
+            (borgbackup__service_enabled
+            and not borgbackup__restore_mode)
+            else "absent" }}'
   when: ansible_service_mgr != 'systemd' and not ansible_check_mode
   tags: [ 'role::borgbackup:service' ]
 
