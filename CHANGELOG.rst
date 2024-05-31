@@ -48,6 +48,12 @@ General
   directories. Playbook sets can be used as aliases to call multiple playbooks
   using a custom name. See :ref:`playbook_sets` documentation for more details.
 
+:ref:`debops.rabbitmq_server` role
+''''''''''''''''''''''''''''''''''
+
+- The role can manage much more RabbitMQ internal structures - exchanges,
+  queues, bindings between them, as well as vhost and user limits.
+
 Changed
 ~~~~~~~
 
@@ -82,6 +88,16 @@ Updates of upstream application versions
   done using a separate :envvar:`kibana__elasticsearch_cluster_name` variable,
   which needs to be synchronized with the Elasticsearch configuration via
   Ansible inventory (Kibana can be installed separately from Elasticsearch).
+
+Fixed
+~~~~~
+
+:ref:`debops.gitlab` role
+'''''''''''''''''''''''''
+
+- Fixed an issue with the :file:`/etc/gitlab/ssl/` directory changing its mode
+  from 0775 set by the role to 0755 set by the :command:`gitlab-ctl
+  reconfigure` command, making the role not idempotent.
 
 Removed
 ~~~~~~~
