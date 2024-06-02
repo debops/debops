@@ -27,76 +27,19 @@
 #
 # - ``mariadb_upstream``: use MariaDB engine from upstream repository
 #
-# - ``mysql-5.6_galera-3``: use MySQL 5.6 engine with Galera from Codership
-#   repository
-#
-# - ``mysql-5.7_galera-3``: use MySQL 5.7 engine with Galera from Codership
-#   repository
-#
 # - ``percona-8.0``: use Percona 8.0 from its upstream repository, it includes
-#   XtraDB and optionally TokuDB and MyRocks engines
-#
-# - ``percona-5.7``: use Percona 5.7 from its upstream repository, it includes
 #   XtraDB and optionally TokuDB and MyRocks engines
 #
 # Percona needs to be selected explicitly.
 mariadb_server__flavor: '{{ ansible_local.mariadb.flavor | d("mariadb") }}'
 
-                                                                   # ]]]
-# .. envvar:: mariadb_server__apt_key [[[
-#
-# String or list of GPG keys which should be added to the APT key database to
-# authenticate the external repositories.
-mariadb_server__apt_key: '{{ mariadb_server__apt_key_map[mariadb_server__flavor] | d() }}'
 
-                                                                   # ]]]
-# .. envvar:: mariadb_server__apt_key_map [[[
-#
-# A YAML dictionary map which keeps GPG key ids for APT repository keys of
-# different MariaDB/MySQL/Percona APT repositories. These GPG keys will be
-# downloaded if any of the listed flavors is selected.
-mariadb_server__apt_key_map:
-
-  'mariadb': []
-
-  'mariadb_upstream':
-    - id: '199369E5404BD5FC7D2FE43BCBCB082A1BB943DB'
-    - id: '177F4010FE56CA3336300305F1656F24C74CD1D8'
-    - repo: 'deb {{ mariadb_server__upstream_mirror }} {{ ansible_distribution_release }} main'
-
-  'mysql-5.6_galera-3':
-    - id: '44B7345738EBDE52594DAD80D669017EBC19DDBA'
-    - repo: 'deb http://releases.galeracluster.com/mysql-wsrep-5.6/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
-    - repo: 'deb http://releases.galeracluster.com/galera-3/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
-
-  'mysql-5.7_galera-3':
-    - id: '44B7345738EBDE52594DAD80D669017EBC19DDBA'
-    - repo: 'deb http://releases.galeracluster.com/mysql-wsrep-5.7/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
-    - repo: 'deb http://releases.galeracluster.com/galera-3/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} main'
-
-  'percona-8.0':
-    - id: '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
-    - repo: 'deb http://repo.percona.com/tools/apt {{ ansible_distribution_release }} main'
-    - repo: 'deb http://repo.percona.com/ps-80/apt {{ ansible_distribution_release }} main'
-
-  'percona-5.7':
-    - id: '4D1BB29D63D98E422B2113B19334A25F8507EFA5'
-    - repo: 'deb http://repo.percona.com/tools/apt {{ ansible_distribution_release }} main'
-    - repo: 'deb http://repo.percona.com/ps-57/apt {{ ansible_distribution_release }} main'
-
-                                                                   # ]]]
 # .. envvar:: mariadb_server__upstream_version [[[
 #
 # Version of the MariaDB upstream.
-mariadb_server__upstream_version: '10.1'
+mariadb_server__upstream_version: '10.11'
 
-                                                                   # ]]]
-# .. envvar:: mariadb_server__upstream_mirror [[[
-#
-# URL of the MariaDB upstream mirror.
-mariadb_server__upstream_mirror: 'http://nyc2.mirrors.digitalocean.com/mariadb/repo/{{ mariadb_server__upstream_version }}/{{ ansible_distribution | lower }}'
 
-                                                                   # ]]]
 # .. envvar:: mariadb_server__base_packages [[[
 #
 # List of APT packages that should be installed with any database engine
@@ -118,10 +61,7 @@ mariadb_server__packages_map:
   'mariadb': [ 'mariadb-server' ]
   'mariadb_upstream': [ 'mariadb-server' ]
   'mysql': [ 'mysql-server' ]
-  'mysql-5.6_galera-3': [ 'mysql-wsrep-server-5.6', 'galera-3', 'galera-arbitrator-3' ]
-  'mysql-5.7_galera-3': [ 'mysql-wsrep-server-5.7', 'galera-3', 'galera-arbitrator-3' ]
   'percona-8.0': [ 'percona-server-server' ]
-  'percona-5.7': [ 'percona-server-server-5.7' ]
                                                                    # ]]]
                                                                    # ]]]
 # Network configuration [[[
