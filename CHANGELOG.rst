@@ -247,6 +247,12 @@ General
   checked reliably to decide if NTP support should be enabled. The role should
   now correctly detect when Linux capabilities are enforced.
 
+:ref:`debops.pam_access` role
+'''''''''''''''''''''''''''''
+
+- Renamed a variable in the :command:`dpkg-divert` task forgotten during a mass
+  rename.
+
 :ref:`debops.rsyslog` role
 ''''''''''''''''''''''''''
 
