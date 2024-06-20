@@ -51,5 +51,10 @@
       nginx_upstreams:
         - '{{ apt_cacher_ng__nginx__upstream }}'
 
+    - role: apparmor
+      tags: [ 'role::apparmor', 'skip::apparmor' ]
+      apparmor__dependent_locals:
+        - '{{ apt_cacher_ng__apparmor__dependent_locals }}'
+
     - role: apt_cacher_ng
       tags: [ 'role::apt_cacher_ng', 'skip::apt_cacher_ng' ]

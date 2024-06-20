@@ -39,6 +39,11 @@
       tcpwrappers__dependent_allow:
         - '{{ dnsmasq__env_tcpwrappers__dependent_allow }}'
 
+    - role: apparmor
+      tags: [ 'role::apparmor', 'skip::apparmor' ]
+      apparmor__dependent_locals:
+        - '{{ dnsmasq__apparmor__dependent_locals }}'
+
     - role: dnsmasq
       tags: [ 'role::dnsmasq', 'skip::dnsmasq' ]
 

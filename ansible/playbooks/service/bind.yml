@@ -44,6 +44,11 @@
         - '"dnssec" in bind__features'
         - bind__dnssec_script_enabled | d(False)
 
+    - role: apparmor
+      tags: [ 'role::apparmor', 'skip::apparmor' ]
+      apparmor__dependent_locals:
+        - '{{ bind__apparmor__dependent_locals }}'
+
     - role: bind
       tags: [ 'role::bind', 'skip::bind' ]
 
