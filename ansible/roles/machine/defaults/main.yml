@@ -128,6 +128,26 @@ machine__etc_issue_state: 'present'
 machine__etc_issue_template: 'etc/issue.j2'
                                                                    # ]]]
                                                                    # ]]]
+# Configuration of the :file:`/etc/issue.net` file [[[
+# ------------------------------------------------
+
+# .. envvar:: machine__etc_issue_net_state [[[
+#
+# This variable controls if the role should manage the :file:`/etc/issue.net`
+# configuration file. If ``present``, the role will divert the distribution file
+# and generate a custom one; if ``absent``, the role will revert the diverted
+# version and will not modify it.
+machine__etc_issue_net_state: 'present'
+
+                                                                   # ]]]
+# .. envvar:: machine__etc_issue_net_template [[[
+#
+# Path to the Jinja2 template used to generate the :file:`/etc/issue.net`
+# configuration file, relative to the :file:`templates/` directory of this role.
+# Defaults to :file:`machine__etc_issue_template`.
+machine__etc_issue_net_template: "{{ machine__etc_issue_template }}"
+                                                                   # ]]]
+                                                                   # ]]]
 # Dynamic Message Of The Day [[[
 # ------------------------------
 
