@@ -34,6 +34,22 @@ netbox__domain: '{{ ansible_domain }}'
 
                                                                    # ]]]
                                                                    # ]]]
+# Primary/Standby configuration [[[
+# -----------------------------
+
+# .. envvar:: netbox__primary [[[
+#
+# Boolean to define if the instance of NetBox will be primary or not.
+# True: This instance will become primary and needs read and write
+# database access.
+# False: This instance will become standby,
+# "netbox__config_maintenance_mode" will be set to True and
+# "netbox__config_session_file_path" will be populated.
+netbox__primary: True
+
+                                                                   # ]]]
+                                                                   # ]]]
+
 # APT packages [[[
 # ----------------
 
@@ -660,7 +676,7 @@ netbox__config_base_path: ''
 #
 # Enable or disable maintenance mode banner.
 # This overwrites potentially existing `dynamic configuration settings <https://netbox.readthedocs.io/en/stable/configuration/dynamic-settings/>`__.
-netbox__config_maintenance_mode: False
+netbox__config_maintenance_mode: '{{ not netbox__primary | bool }}'
 
                                                                    # ]]]
 # .. envvar:: netbox__config_napalm_username [[[
@@ -833,7 +849,7 @@ netbox__config_metrics_enabled: False
 # can be useful for enabling authentication on a standby instance with
 # read-only database access.) Note that the user as which NetBox runs must have
 # read and write permissions to this path.
-netbox__config_session_file_path: False
+netbox__config_session_file_path: '{{ "" if netbox__primary | bool else netbox__data + "/sessions" }}'
 
                                                                    # ]]]
 # .. envvar:: netbox__config_media_root [[[
