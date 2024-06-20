@@ -15,7 +15,7 @@
 
 - name: Remove nginx maps if requested
   ansible.builtin.file:
-    dest: '/etc/nginx/conf.d/map_{{ item.name }}.conf'
+    dest: '/etc/nginx/conf.d/{{ item.type | d("map") }}_{{ item.name }}.conf'
     state: 'absent'
   loop: '{{ q("flattened", nginx__maps
                            + nginx__default_maps
@@ -32,7 +32,7 @@
 - name: Configure nginx maps
   ansible.builtin.template:
     src: 'etc/nginx/conf.d/map.conf.j2'
-    dest: '/etc/nginx/conf.d/map_{{ item.name }}.conf'
+    dest: '/etc/nginx/conf.d/{{ item.type | d("map") }}_{{ item.name }}.conf'
     owner: 'root'
     group: 'root'
     mode: '0644'
