@@ -110,6 +110,18 @@ lxc__net_deploy_state: '{{ "absent"
                            else "present" }}'
 
                                                                    # ]]]
+# .. envvar:: lxc__net_resolver [[[
+#
+# Specify the system-wide DNS resolver in use, detected automatically. The role
+# will integrate the internal LXC network with the system resolver to permit
+# resolution of container hostnames.
+lxc__net_resolver: '{{ "resolvconf"
+                       if ((ansible_local.resolvconf.deploy_state | d("absent")) == "present")
+                       else ("systemd-resolved"
+                             if ((ansible_local.resolved.state | d("disabled")) == "enabled")
+                             else "none") }}'
+
+                                                                   # ]]]
 # .. envvar:: lxc__net_bridge [[[
 #
 # Name of the network bridge which will be configured for the internal LXC

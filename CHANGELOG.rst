@@ -42,6 +42,13 @@ Updates of upstream application versions
   installer has been updated to v11.10; the Debian Bookworm installer has been
   updated to v12.5.
 
+:ref:`debops.lxc` role
+''''''''''''''''''''''
+
+- The role supports integration with the :command:`systemd-resolved` DNS
+  resolver. This permits use of the :command:`systemd-networkd` service to
+  manage networking on the LXC host.
+
 Fixed
 ~~~~~
 
