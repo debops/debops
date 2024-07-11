@@ -58,6 +58,13 @@ Updates of upstream application versions
 
 - The role now supports new Elasticsearch v8.x password management mechanism.
 
+:ref:`debops.lxc` role
+''''''''''''''''''''''
+
+- The role supports integration with the :command:`systemd-resolved` DNS
+  resolver. This permits use of the :command:`systemd-networkd` service to
+  manage networking on the LXC host.
+
 Fixed
 ~~~~~
 
@@ -66,9 +73,6 @@ Fixed
 
 - Fixed issue with ``role::nginx:servers` Ansible tag not working correctly by
   adding tags to tasks included dynamically.
-
-Fixed
-~~~~~
 
 :ref:`debops.gitlab` role
 '''''''''''''''''''''''''

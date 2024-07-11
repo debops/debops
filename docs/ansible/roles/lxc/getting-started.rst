@@ -1,6 +1,6 @@
-.. Copyright (C) 2014-2018 Maciej Delmanowski <drybjed@gmail.com>
+.. Copyright (C) 2014-2024 Maciej Delmanowski <drybjed@gmail.com>
 .. Copyright (C) 2015-2016 Robin Schneider <ypid@riseup.net>
-.. Copyright (C) 2014-2018 DebOps <https://debops.org/>
+.. Copyright (C) 2014-2024 DebOps <https://debops.org/>
 .. SPDX-License-Identifier: GPL-3.0-only
 
 Getting started
@@ -21,12 +21,16 @@ other DebOps roles to manage additional required subsystems.
 The role will configure an internal ``lxcbr0`` bridge for the local Linux
 Containers, using the ``lxc-net`` service. The internal network will have its
 own DHCP/DNS server with ``lxc.{{ ansible_domain }}`` DNS domain by default.
+
 You can configure a DNS proxy on the LXC host to be able to access the LXC
 containers by their DNS names instead of their IP addresses. The
 :ref:`debops.dnsmasq` and :ref:`debops.unbound` Ansible roles will
 automatically integrate with the LXC host configuration using Ansible local
 facts and will generate the configuration necessary to access the
-``lxc.{{ ansible_domain }}`` DNS domain.
+``lxc.{{ ansible_domain }}`` DNS domain. The role will detect presence of the
+:command:`resolvconf` or the :command:`systemd-resolved` service on the host
+using Ansible local facts provided by their respective DebOps roles and will
+integrate the LXC network with the available resolver.
 
 If the LXD support is also configured on the host (detected by the inventory
 host being included in the ``[debops_service_lxd]`` Ansible inventory group),
