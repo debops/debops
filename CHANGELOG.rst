@@ -89,6 +89,13 @@ Updates of upstream application versions
   which needs to be synchronized with the Elasticsearch configuration via
   Ansible inventory (Kibana can be installed separately from Elasticsearch).
 
+:ref:`debops.lxc` role
+''''''''''''''''''''''
+
+- The role supports integration with the :command:`systemd-resolved` DNS
+  resolver. This permits use of the :command:`systemd-networkd` service to
+  manage networking on the LXC host.
+
 Fixed
 ~~~~~
 
