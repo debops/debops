@@ -106,6 +106,14 @@ Fixed
   from 0775 set by the role to 0755 set by the :command:`gitlab-ctl
   reconfigure` command, making the role not idempotent.
 
+:ref:`debops.lxc` role
+''''''''''''''''''''''
+
+- The role will by default disable NFtables integration within the
+  :command:`lxc-net` script, configurable via a default variable. This fixes
+  usage of LXC containers on Debian Bookworm with the :command:`ferm` service
+  used by DebOps.
+
 Removed
 ~~~~~~~
 
