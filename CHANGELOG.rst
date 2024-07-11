@@ -58,6 +58,14 @@ Fixed
 - Fixed issue with ``role::nginx:servers` Ansible tag not working correctly by
   adding tags to tasks included dynamically.
 
+:ref:`debops.lxc` role
+''''''''''''''''''''''
+
+- The role will by default disable NFtables integration within the
+  :command:`lxc-net` script, configurable via a default variable. This fixes
+  usage of LXC containers on Debian Bookworm with the :command:`ferm` service
+  used by DebOps.
+
 Removed
 ~~~~~~~
 
