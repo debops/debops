@@ -96,6 +96,10 @@ Updates of upstream application versions
   resolver. This permits use of the :command:`systemd-networkd` service to
   manage networking on the LXC host.
 
+- LXC containers will be configured with AppArmor "unconfined" profile by
+  default. This change allows startup of various services inside of the
+  container without errors on Debian Bookwrom hosts.
+
 Fixed
 ~~~~~
 
