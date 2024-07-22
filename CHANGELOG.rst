@@ -82,6 +82,9 @@ Fixed
   usage of LXC containers on Debian Bookworm with the :command:`ferm` service
   used by DebOps.
 
+- The role will use the ``br0`` bridge when :command:`systemd-networkd` service
+  is detected. This worked previously only with the :command:`ifupdown` service.
+
 Removed
 ~~~~~~~
 
