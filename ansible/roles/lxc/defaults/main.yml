@@ -263,8 +263,9 @@ lxc__default_configuration:
                   if (lxc__version is version("2.1.0", "<"))
                   else "lxc.net.0.link" }}'
         value: '{{ "br0"
-                   if (ansible_local | d() and ansible_local.ifupdown | d() and
-                       (ansible_local.ifupdown.configured | d()) | bool)
+                   if ((ansible_local | d() and ansible_local.ifupdown | d() and
+                        (ansible_local.ifupdown.configured | d()) | bool) or
+                       (ansible_local.networkd.state | d("disabled")) == "enabled")
                    else (lxc__net_bridge
                          if (lxc__net_deploy_state == "present")
                          else "br0") }}'
@@ -351,8 +352,9 @@ lxc__default_configuration:
                   if (lxc__version is version("2.1.0", "<"))
                   else "lxc.net.0.link" }}'
         value: '{{ "br0"
-                   if (ansible_local | d() and ansible_local.ifupdown | d() and
-                       (ansible_local.ifupdown.configured | d()) | bool)
+                   if ((ansible_local | d() and ansible_local.ifupdown | d() and
+                        (ansible_local.ifupdown.configured | d()) | bool) or
+                       (ansible_local.networkd.state | d("disabled")) == "enabled")
                    else (lxc__net_bridge
                          if (lxc__net_deploy_state == "present")
                          else "br0") }}'
@@ -474,8 +476,9 @@ lxc__default_configuration:
                    if (lxc__version is version("2.1.0", "<"))
                    else "lxc.net.0.link" }}'
         value: '{{ "br0"
-                   if (ansible_local | d() and ansible_local.ifupdown | d() and
-                       (ansible_local.ifupdown.configured | d()) | bool)
+                   if ((ansible_local | d() and ansible_local.ifupdown | d() and
+                        (ansible_local.ifupdown.configured | d()) | bool) or
+                       (ansible_local.networkd.state | d("disabled")) == "enabled")
                    else (lxc__net_bridge
                          if (lxc__net_deploy_state == "present")
                          else "br0") }}'
