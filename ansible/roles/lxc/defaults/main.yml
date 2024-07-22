@@ -323,12 +323,10 @@ lxc__default_configuration:
       # inside of the LXC unprivileged containers.
       # See also: https://bugs.debian.org/916644,
       # https://bugs.debian.org/918839, https://bugs.debian.org/911806
+      # https://github.com/lxc/lxc/issues/4333
       - name: 'lxc.apparmor.profile'
-        value: 'generated'
-        state: '{{ "absent"
-                   if (lxc__version is version("3.0.0", "<") or
-                       lxc__version is version("4.1.0", ">="))
-                   else "present" }}'
+        value: 'unconfined'
+        state: 'present'
 
       # Required in AppArmor environment to allow systemd services to start
       # inside of the LXC unprivileged containers.
@@ -444,12 +442,10 @@ lxc__default_configuration:
       # inside of the LXC unprivileged containers.
       # See also: https://bugs.debian.org/916644,
       # https://bugs.debian.org/918839, https://bugs.debian.org/911806
+      # https://github.com/lxc/lxc/issues/4333
       - name: 'lxc.apparmor.profile'
-        value: 'generated'
-        state: '{{ "absent"
-                   if (lxc__version is version("3.0.0", "<") or
-                       lxc__version is version("4.1.0", ">="))
-                   else "present" }}'
+        value: 'unconfined'
+        state: 'present'
 
       # Required in AppArmor environment to allow systemd services to start
       # inside of the LXC unprivileged containers.
