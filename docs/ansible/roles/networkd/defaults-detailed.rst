@@ -123,6 +123,13 @@ variable):
    :language: yaml
    :lines: 1,9-
 
+Configure a network bridge using DHCP and connect a physical Ethernet interface
+to it:
+
+.. literalinclude:: examples/wired-bridge-dhcp.yml
+   :language: yaml
+   :lines: 1,9-
+
 Configure a network interface with static IP address:
 
 .. literalinclude:: examples/static-ip.yml
