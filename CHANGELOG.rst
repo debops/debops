@@ -103,6 +103,10 @@ Fixed
   the unsupported ``managed`` parameter. This should allow the LXD daemon to be
   initialized correctly.
 
+- Fixed an issue with the role trying to copy the source-built libraries when
+  an APT-based installation is used. The role will check if the libraries exist
+  before trying to copy them.
+
 Removed
 ~~~~~~~
 
