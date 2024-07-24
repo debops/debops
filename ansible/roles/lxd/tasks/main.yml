@@ -57,7 +57,7 @@
     src: 'etc/systemd/system/{{ item }}.j2'
     dest: '/etc/systemd/system/{{ item }}'
     mode: '0644'
-  loop: [ 'lxd.socket', 'lxd.service', 'lxd-containers.service' ]
+  loop: [ 'lxd.socket', 'lxd.service', 'lxd-containers.service', 'lxd-net.service' ]
   register: lxd__register_systemd
   when: lxd__upstream_enabled | bool and ansible_service_mgr == 'systemd'
 
@@ -67,7 +67,7 @@
     name: '{{ item }}'
     state: 'started'
     enabled: True
-  loop: [ 'lxd.socket', 'lxd-containers.service' ]
+  loop: [ 'lxd.socket', 'lxd-containers.service', 'lxd-net.service' ]
   when: lxd__register_systemd is changed
 
 - name: Apply preseed configuration
