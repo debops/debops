@@ -12,6 +12,13 @@ bridge_if: 'bridge0'
 
 networkd__group_units:
 
+  - name: 'bridge0.netdev'
+    raw: |
+      [NetDev]
+      Name={{ bridge_if }}
+      Kind=bridge
+    state: 'present'
+
   - name: '25-bridge-static.network'
     raw: |
       [Match]
