@@ -125,6 +125,13 @@ Fixed
   usage of LXC containers on Debian Bookworm with the :command:`ferm` service
   used by DebOps.
 
+:ref:`debops.lxd` role
+''''''''''''''''''''''
+
+- Fixed an issue with the default LXD daemon preseed configuration by removing
+  the unsupported ``managed`` parameter. This should allow the LXD daemon to be
+  initialized correctly.
+
 Removed
 ~~~~~~~
 
