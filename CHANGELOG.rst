@@ -103,6 +103,13 @@ Fixed
 - The role will use the ``br0`` bridge when :command:`systemd-networkd` service
   is detected. This worked previously only with the :command:`ifupdown` service.
 
+:ref:`debops.lxd` role
+''''''''''''''''''''''
+
+- Fixed an issue with the default LXD daemon preseed configuration by removing
+  the unsupported ``managed`` parameter. This should allow the LXD daemon to be
+  initialized correctly.
+
 Removed
 ~~~~~~~
 
