@@ -114,6 +114,10 @@ Fixed
   an APT-based installation is used. The role will check if the libraries exist
   before trying to copy them.
 
+- Fixed an issue on Debian Bookworm where the :command:`lxd-apparmor-load`
+  binary is not present where the APT-based LXD daemon expects it. The role
+  will create a symlink for this binary when needed.
+
 Removed
 ~~~~~~~
 
