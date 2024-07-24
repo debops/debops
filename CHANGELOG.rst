@@ -100,6 +100,13 @@ Updates of upstream application versions
   default. This change allows startup of various services inside of the
   container without errors on Debian Bookwrom hosts.
 
+:ref:`debops.lxd` role
+''''''''''''''''''''''
+
+- The role supports integration with the :command:`systemd-resolved` DNS
+  resolver. This permits use of the :command:`systemd-networkd` service to
+  manage networking on the LXD host.
+
 Fixed
 ~~~~~
 

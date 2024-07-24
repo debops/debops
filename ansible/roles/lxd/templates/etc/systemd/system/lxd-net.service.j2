@@ -1,0 +1,20 @@
+{# Copyright (C) 2024 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2024 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+[Unit]
+Description=LXD - systemd-resolved internal domain configuration
+After=lxd.socket lxd.service
+Requires=lxd.socket
+ConditionPathExists=/usr/local/lib/lxc/lxc-net-systemd-resolved
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/lib/lxc/lxc-net-systemd-resolved start
+ExecStop=/usr/local/lib/lxc/lxc-net-systemd-resolved stop
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
