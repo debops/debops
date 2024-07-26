@@ -77,7 +77,10 @@ proc_hidepid__remount: '{{ True
 # - ``2``: the ``/proc`` contents are invisible to non-owners, only ``root``
 #          and users in the specific UNIX system group can see everything
 #
-proc_hidepid__level: '{{ proc_hidepid__fact_default_level | d("2") }}'
+proc_hidepid__level: '{{ "0"
+                          if (("debops_service_libvirtd" in group_names) or
+                              (ansible_local.libvirtd.installed | d() | bool))
+                          else (proc_hidepid__fact_default_level | d("2")) }}'
 
                                                                    # ]]]
 # .. envvar:: proc_hidepid__group [[[
