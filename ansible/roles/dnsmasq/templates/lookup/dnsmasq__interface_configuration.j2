@@ -7,7 +7,7 @@
 {% for interface in (dnsmasq__combined_interfaces | flatten | debops.debops.parse_kv_items) %}
 {%   set dnsmasq__tpl_ipv4 = [] %}
 {%   set dnsmasq__tpl_ipv6 = [] %}
-{%   if hostvars[inventory_hostname]["ansible_" + interface.name] | d() %}
+{%   if not interface.ignore_interface_addresses|d(False) and hostvars[inventory_hostname]["ansible_" + interface.name] | d() %}
 {%     if hostvars[inventory_hostname]["ansible_" + interface.name].ipv4 | d() %}
 {%       set _ = dnsmasq__tpl_ipv4.append(hostvars[inventory_hostname]["ansible_" + interface.name].ipv4.address + '/'
                                           + (hostvars[inventory_hostname]["ansible_" + interface.name].ipv4.address + '/'
