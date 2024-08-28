@@ -17,7 +17,7 @@ This role was written in 2018 to change ``hidepid`` for the whole system. On
 2020-11-26 systemd 247 was released which introduced the ``ProtectProc``
 setting. Setting ``hidepid`` for the whole system has drawbacks. Read
 `Is mounting /proc with "hidepid=2" recommended with RHEL7 and later?`__ and
-`Why is the mount option "hidepid=2" not used by default, is there a danger in using it?`_.
+`Why is the mount option "hidepid=2" not used by default, is there a danger in using it?`__.
 
 .. __: https://www.influxdata.com/blog/package-repository-for-linux/
 .. __: https://security.stackexchange.com/questions/259134/why-is-the-mount-option-hidepid-2-not-used-by-default-is-there-a-danger-in-us
@@ -30,7 +30,7 @@ things.
 Handling of polkit
 ------------------
 
-> Confirmed, giving access to /proc to polkitd user (running polkitd) is not
+> `Confirmed`__, giving access to /proc to polkitd user (running polkitd) is not
 > enough, the authentication agent seems to requires that as well (and granting
 > my user access to /proc denies the interest of hidepid).
 
