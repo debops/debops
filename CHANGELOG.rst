@@ -48,6 +48,14 @@ General
   directories. Playbook sets can be used as aliases to call multiple playbooks
   using a custom name. See :ref:`playbook_sets` documentation for more details.
 
+:ref:`debops.dnsmasq` role
+''''''''''''''''''''''''''
+
+- The role can optionally ignore IP addresses on a network interface and use
+  only specified ones for :command:`dnsmasq` configuration. This can help with
+  Routing Advertisements issues on internal networks. See role documentation
+  for more details.
+
 :ref:`debops.rabbitmq_server` role
 ''''''''''''''''''''''''''''''''''
 
