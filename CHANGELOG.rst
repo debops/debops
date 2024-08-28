@@ -76,6 +76,14 @@ Updates of upstream application versions
   resolver. This permits use of the :command:`systemd-networkd` service to
   manage networking on the LXD host.
 
+:ref:`proc_hidepid` role
+''''''''''''''''''''''''
+
+- The role will check if the host is in the ``debops_service_libvirtd`` Ansible
+  inventory group, or if the :ref:`debops.libvirtd` role was applied on the
+  host and will change the ``hidepid=`` value to ``0`` to avoid issues with
+  Polkit subsystem.
+
 Fixed
 ~~~~~
 
