@@ -92,6 +92,13 @@ Updates of upstream application versions
   host and will change the ``hidepid=`` value to ``0`` to avoid issues with
   Polkit subsystem.
 
+:ref:`debops.sshd` role
+'''''''''''''''''''''''
+
+- The :file:`/etc/pam.d/sshd` configuration file can be templated using the
+  DebOps override system via the ``template_src`` lookup plugin. This allows
+  users to provide their own template for the generated file.
+
 Fixed
 ~~~~~
 
