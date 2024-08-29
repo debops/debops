@@ -236,7 +236,7 @@
 
 - name: Generate /etc/pam.d/sshd configuration
   ansible.builtin.template:
-    src: 'etc/pam.d/sshd.j2'
+    src: '{{ lookup("debops.debops.template_src", "etc/pam.d/sshd.j2") }}'
     dest: '/etc/pam.d/sshd'
     mode: '0644'
   when: sshd__pam_deploy_state == 'present'
