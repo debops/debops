@@ -156,6 +156,15 @@ Fixed
   binary is not present where the APT-based LXD daemon expects it. The role
   will create a symlink for this binary when needed.
 
+:ref:`debops.swapfile` role
+'''''''''''''''''''''''''''
+
+- Fixed an issue in the :command:`swapon` task conditional logic where the task
+  could not be executed correctly when the swap file was missing.
+
+- Ensure that the swap file is correctly disabled by the :command:`swapoff`
+  command before being removed with the ``absent`` state.
+
 Removed
 ~~~~~~~
 
