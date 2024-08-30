@@ -7,6 +7,9 @@
 # Copyright (C) 2014-2020 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+# Installation in development mode:
+#   pipx install --editable .
+
 from setuptools import setup, find_packages
 from glob import glob
 import os
