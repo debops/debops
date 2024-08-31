@@ -1,0 +1,34 @@
+{# Copyright (C) 2019-2023 Robin Schneider <ypid@riseup.net>
+ # Copyright (C) 2019-2023 DebOps https://debops.org/
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+{% macro print_item(options, indent=0) %}
+{%   for option in (options | rejectattr("state", "in", ["absent", "ignore", "init"])) %}
+
+{%     if option.comment | d() %}
+{{       option.comment | comment(prefix='', postfix='') | indent(indent, True) -}}
+{%     endif %}
+{%     if option.option | d(option.name) %}
+{{       (option.option | d(option.name) + ":") | indent(indent, True) -}}
+{%     endif %}
+{%     if option.value | d() %}
+{%       if (option.value is string) %}
+{{-        " '" + (option.value|string) + "'" }}
+{%       elif (option.value is number) or (option.value is sameas True) or (option.value is sameas False) %}
+{{-        " " + (option.value|string) }}
+{%       elif option.value is iterable %}
+{%         for value in (option.value | map(attribute="name") | sort | unique) %}
+{%           if loop.first %}
+
+{%           endif %}
+{{           ("- '" + value + "'") | indent(indent + 2, True) }}
+{%         endfor %}
+{%       endif %}
+{%     endif %}
+{%     if option.options | d() and option.options is iterable %}
+{{       print_item(option.options, indent=indent + 2) }}
+{%     endif %}
+{%   endfor %}
+{% endmacro %}
+{{ print_item(item.options) }}

@@ -35,7 +35,7 @@
     gid:    '{{ item.gid | d(omit) }}'
     state: 'present'
     local: '{{ item.local | d(True if (item.user | d(True)) | bool else False) }}'
-  loop: '{{ users__combined_accounts | debops.debops.parse_kv_items }}'
+  loop: '{{ users__combined_accounts | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.group | d(item.name)),
                 "state": item.state | d("present")} }}'
@@ -80,7 +80,7 @@
     ssh_key_passphrase: '{{ item.ssh_key_passphrase | d(omit) }}'
     ssh_key_type:       '{{ item.ssh_key_type | d(omit) }}'
     local:              '{{ item.local | d(True) }}'
-  loop: '{{ users__combined_accounts | debops.debops.parse_kv_items }}'
+  loop: '{{ users__combined_accounts | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name,
                 "state": item.state | d("present"), "gecos": item.comment | d()} }}'
@@ -111,7 +111,7 @@
     append:       '{{ item.append | d(True) }}'
     state:        '{{ item.state | d("present") }}'
     create_home:  '{{ item.create_home | d(omit) }}'
-  loop: '{{ users__combined_accounts | debops.debops.parse_kv_items }}'
+  loop: '{{ users__combined_accounts | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name,
                 "state": item.state | d("present"), "gecos": item.comment | d(),
@@ -134,7 +134,7 @@
     owner: '{{ item.home_owner | d("root" if ((item.chroot | d()) | bool) else omit) }}'
     group: '{{ item.home_group | d(omit) }}'
     mode:  '{{ item.home_mode | d(users__default_home_mode if (item.local | d(True)) | bool else omit) }}'
-  loop: '{{ users__combined_accounts | debops.debops.parse_kv_items }}'
+  loop: '{{ users__combined_accounts | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name,
                 "state": item.state | d("present"),
@@ -165,7 +165,7 @@
     follow:      '{{ item.1.follow | d(omit) }}'
     recursive:   '{{ item.1.recursive | d(omit) }}'
     state:       '{{ item.1.state | d("present") }}'
-  loop: '{{ users__combined_accounts | debops.debops.parse_kv_items
+  loop: '{{ users__combined_accounts | flatten | debops.debops.parse_kv_items
             | selectattr("home_acl", "defined") | list
             | subelements("home_acl") }}'
   loop_control:
@@ -182,7 +182,7 @@
   ansible.builtin.command: loginctl enable-linger {{ item.name }}
   args:
     creates: '/var/lib/systemd/linger/{{ item.name }}'
-  loop: '{{ users__combined_accounts | debops.debops.parse_kv_items }}'
+  loop: '{{ users__combined_accounts | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name,
                 "state": item.state | d("present"), "linger": item.linger | d(False)} }}'
@@ -196,7 +196,7 @@
   ansible.builtin.command: loginctl disable-linger {{ item.name }}
   args:
     removes: '/var/lib/systemd/linger/{{ item.name }}'
-  loop: '{{ users__combined_accounts | debops.debops.parse_kv_items }}'
+  loop: '{{ users__combined_accounts | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name,
                 "state": item.state | d("present"), "linger": item.linger | d(False)} }}'
@@ -212,7 +212,7 @@
     state: 'present'
     user: '{{ item.name }}'
     exclusive: '{{ item.sshkeys_exclusive | d(omit) }}'
-  loop: '{{ users__combined_accounts | debops.debops.parse_kv_items }}'
+  loop: '{{ users__combined_accounts | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name,
                 "state": item.state | d("present"), "sshkeys": item.sshkeys | d()} }}'
@@ -226,7 +226,7 @@
   ansible.builtin.file:
     path: '~{{ item.name }}/.ssh/authorized_keys'
     state: 'absent'
-  loop: '{{ users__combined_accounts | debops.debops.parse_kv_items }}'
+  loop: '{{ users__combined_accounts | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name,
                 "state": item.state | d("present"),
@@ -248,7 +248,7 @@
     mode: '0644'
   become: True
   become_user: '{{ "root" if ((item.chroot | d()) | bool) else item.name }}'
-  loop: '{{ users__combined_accounts | debops.debops.parse_kv_items }}'
+  loop: '{{ users__combined_accounts | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name,
                 "state": item.state | d("present"),
@@ -268,7 +268,7 @@
     else
         yadm pull
     fi
-  loop: '{{ users__combined_accounts | debops.debops.parse_kv_items }}'
+  loop: '{{ users__combined_accounts | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": item.name,
                 "state": item.state | d("present"),
@@ -299,7 +299,7 @@
     mode:    '{{ item.1.mode | d(omit) }}'
     force:   '{{ item.1.force | d(omit) }}'
     recurse: '{{ item.1.recurse | d(omit) }}'
-  loop: '{{ users__combined_accounts | debops.debops.parse_kv_items
+  loop: '{{ users__combined_accounts | flatten | debops.debops.parse_kv_items
             | selectattr("resources", "defined") | list
             | subelements("resources") }}'
   loop_control:
@@ -322,7 +322,7 @@
     mode:    '{{ item.1.parent_mode | d(omit) }}'
     force:   '{{ item.1.force | d(omit) }}'
     recurse: '{{ item.1.parent_recurse | d(omit) }}'
-  loop: '{{ users__combined_accounts | debops.debops.parse_kv_items
+  loop: '{{ users__combined_accounts | flatten | debops.debops.parse_kv_items
             | selectattr("resources", "defined") | list
             | subelements("resources") }}'
   loop_control:
@@ -344,7 +344,7 @@
     group:   '{{ item.1.group | d(item.0.group | d(item.0.name)) }}'
     mode:    '{{ item.1.mode | d(omit) }}'
     force:   '{{ item.1.force | d(omit) }}'
-  loop: '{{ users__combined_accounts | debops.debops.parse_kv_items
+  loop: '{{ users__combined_accounts | flatten | debops.debops.parse_kv_items
             | selectattr("resources", "defined") | list
             | subelements("resources") }}'
   loop_control:
@@ -362,7 +362,7 @@
   ansible.builtin.file:
     path:  '{{ "~" + item.0.name + "/" + (item.1.path | d(item.1.dest | d(item.1))) }}'
     state: 'absent'
-  loop: '{{ users__combined_accounts | debops.debops.parse_kv_items
+  loop: '{{ users__combined_accounts | flatten | debops.debops.parse_kv_items
             | selectattr("resources", "defined") | list
             | subelements("resources") }}'
   loop_control:
@@ -380,7 +380,7 @@
     name: '{{ item.group | d(item.name) }}'
     state: 'absent'
     local: '{{ item.local | d(True if (item.user | d(True)) | bool else False) }}'
-  loop: '{{ users__combined_accounts | debops.debops.parse_kv_items }}'
+  loop: '{{ users__combined_accounts | flatten | debops.debops.parse_kv_items }}'
   loop_control:
     label: '{{ {"name": (item.group | d(item.name)),
                 "state": item.state | d("present")} }}'

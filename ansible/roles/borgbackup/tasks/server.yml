@@ -1,0 +1,60 @@
+---
+# Copyright (C) 2023 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2023 DebOps https://debops.org/
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Create a list of per-server clients
+  ansible.builtin.set_fact:
+    borgbackup__fact_server_clients: '{{ borgbackup__fact_server_clients | d([])
+                                         + [ item ] }}'
+  loop: '{{ groups["debops_service_borgbackup_client"] | d([])
+            + groups["debops_service_borgbackup_controller_client"] | d([]) }}'
+  when: inventory_hostname in hostvars[item]["borgbackup__servers"] | d([])
+  tags: [ 'role::borgbackup:config' ]
+
+- name: Collect client facts
+  ansible.builtin.setup:
+    gather_subset:
+      - '!all'
+      - 'local'
+  delegate_to: '{{ item }}'
+  delegate_facts: true
+  loop: '{{ borgbackup__fact_server_clients }}'
+  tags: [ 'role::borgbackup:config' ]
+
+- name: Create per-host backup users on the server
+  ansible.builtin.include_role:
+    name: 'users'
+  vars:
+    users__dependent_accounts:
+      - name: '{{ ("borg_" + client) | replace(".", "_") }}'
+        home_mode: '0750'
+        shell: '/bin/sh'
+        system: True
+        groups: [ '{{ ansible_local.system_groups.local_prefix + "sshusers" }}' ]
+  loop: '{{ borgbackup__fact_server_clients }}'
+  loop_control:
+    loop_var: 'client'
+  when: hostvars[client].ansible_facts.ansible_local.root_account.ssh_public_key | d()
+  tags: [ 'role::borgbackup:config' ]
+
+- name: Setup per-host backup user authorized_keys on the server
+  ansible.builtin.include_role:
+    name: 'authorized_keys'
+  vars:
+    authorized_keys__dependent_identities:
+      - name: '{{ ("borg_" + client) | replace(".", "_") }}'
+        accounts: [ '{{ ("borg_" + client) | replace(".", "_") }}' ]
+        exclusive: True
+        command: 'borg serve{{ "--append-only"
+                               if borgbackup__append_only | d(False)
+                               else ""}} --restrict-to-path $HOME'
+        options:
+          - 'restrict'
+        sshkeys:
+          - '{{ hostvars[client].ansible_facts.ansible_local.root_account.ssh_public_key }}'
+  loop: '{{ borgbackup__fact_server_clients }}'
+  loop_control:
+    loop_var: 'client'
+  when: hostvars[client].ansible_facts.ansible_local.root_account.ssh_public_key | d()
+  tags: [ 'role::borgbackup:config' ]
