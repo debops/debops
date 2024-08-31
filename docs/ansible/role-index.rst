@@ -34,6 +34,7 @@ DebOps are used to provide useful services in the data center environment, and
 act as integration tests for other roles that manage webservers, databases,
 etc.
 
+- :ref:`debops.cgit`
 - :ref:`debops.dokuwiki`
 - :ref:`debops.etesync`
 - :ref:`debops.etherpad`

@@ -1,0 +1,62 @@
+---
+# Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+# Copyright (C) 2022 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+- name: Import custom Ansible plugins
+  ansible.builtin.import_role:
+    name: 'ansible_plugins'
+
+- name: Import DebOps global handlers
+  ansible.builtin.import_role:
+    name: 'global_handlers'
+
+- name: Install pre-requisite packages for cgit
+  ansible.builtin.package:
+    name: '{{ q("flattened", (cgit__base_packages
+                              + cgit__packages)) }}'
+    state: 'present'
+  register: cgit__register_packages
+  until: cgit__register_packages is succeeded
+  tags: [ 'role::cgit:pkg' ]
+
+- name: Create directory for public git repositories
+  ansible.builtin.file:
+    path: '{{ cgit__git_dir }}'
+    state: 'directory'
+    owner: '{{ cgit__git_dir_owner }}'
+    group: '{{ cgit__git_dir_group }}'
+    mode: '{{ cgit__git_dir_mode }}'
+  when: cgit__git_dir_create | d(False) | bool
+  tags: [ 'role::cgit:dir' ]
+
+- name: Divert the cgit configuration file
+  debops.debops.dpkg_divert:
+    path: '/etc/cgitrc'
+  tags: [ 'role::cgit:config' ]
+
+- name: Generate cgit configuration
+  ansible.builtin.template:
+    src: 'etc/cgitrc.j2'
+    dest: '/etc/cgitrc'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  tags: [ 'role::cgit:config' ]
+
+- name: Make sure that Ansible local facts directory exists
+  ansible.builtin.file:
+    path: '/etc/ansible/facts.d'
+    state: 'directory'
+    mode: '0755'
+
+- name: Save cgit local facts
+  ansible.builtin.template:
+    src: 'etc/ansible/facts.d/cgit.fact.j2'
+    dest: '/etc/ansible/facts.d/cgit.fact'
+    mode: '0755'
+  notify: [ 'Refresh host facts' ]
+  tags: [ 'meta::facts' ]
+
+- name: Update Ansible facts if they were modified
+  ansible.builtin.meta: 'flush_handlers'

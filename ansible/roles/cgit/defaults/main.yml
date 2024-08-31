@@ -1,0 +1,222 @@
+---
+# .. vim: foldmarker=[[[,]]]:foldmethod=marker
+
+# .. Copyright (C) 2022 David Härdeman <david@hardeman.nu>
+# .. Copyright (C) 2022 DebOps <https://debops.org/>
+# .. SPDX-License-Identifier: GPL-3.0-only
+
+# .. _cgit__ref_defaults:
+
+# debops.cgit default variables [[[
+# =================================
+
+# .. contents:: Sections
+#    :local:
+#
+# .. include:: ../../../../includes/global.rst
+
+
+# Packages and installation [[[
+# -----------------------------
+
+# .. envvar:: cgit__base_packages [[[
+#
+# APT packages required for the cgit installation.
+cgit__base_packages: [ 'cgit', 'fcgiwrap' ]
+                                                                   # ]]]
+# .. envvar:: cgit__packages [[[
+#
+# List of additional APT packages that should be installed with cgit.
+cgit__packages: []
+
+                                                                   # ]]]
+                                                                   # ]]]
+# cgit options [[[
+# ----------------
+
+# .. envvar:: cgit__root_title [[[
+#
+# Text printed as heading on the repository index page.
+cgit__root_title: '{{ ansible_local.machine.organization | d("cgit") + " Git Repository Browser" }}'
+
+                                                                   # ]]]
+# .. envvar:: cgit__root_desc [[[
+#
+# Text printed below the heading on the repository index page.
+cgit__root_desc: 'a fast webinterface for the git dscm'
+
+                                                                   # ]]]
+# .. envvar:: cgit__fqdn [[[
+#
+# The default DNS address of the cgit installation, used in the web
+# server configuration.
+cgit__fqdn: 'cgit.{{ cgit__domain }}'
+
+                                                                   # ]]]
+# .. envvar:: cgit__domain [[[
+#
+# The DNS domain of the cgit installation.
+cgit__domain: '{{ ansible_domain }}'
+
+                                                                   # ]]]
+# .. envvar:: cgit__use_tls [[[
+#
+# Whether cgit should generate ``https`` links.
+cgit__use_tls: '{{ ansible_local.pki.enabled | d(False) | bool }}'
+
+                                                                   # ]]]
+# .. envvar:: cgit__git_dir [[[
+#
+# Path to the directory holding public git repos.
+cgit__git_dir: '/srv/git/public/'
+
+                                                                   # ]]]
+# .. envvar:: cgit__git_dir_create [[[
+#
+# Whether :envvar:`cgit__git_dir` should be created if it doesn't exist.
+# This also means that the below permissions will be enforced if the
+# directory already exists.
+cgit__git_dir_create: True
+
+                                                                   # ]]]
+# .. envvar:: cgit__git_dir_owner [[[
+#
+# The owner of :envvar:`cgit__git_dir`.
+cgit__git_dir_owner: 'root'
+
+                                                                   # ]]]
+# .. envvar:: cgit__git_dir_group [[[
+#
+# The group of :envvar:`cgit__git_dir`.
+cgit__git_dir_group: 'root'
+
+                                                                   # ]]]
+# .. envvar:: cgit__git_dir_mode [[[
+#
+# The permissions of :envvar:`cgit__git_dir`.
+cgit__git_dir_mode: '0755'
+
+                                                                   # ]]]
+                                                                   # ]]]
+# cgit configuration file [[[
+# ---------------------------
+
+# These variables define the contents of the :file:`/etc/cgitrc` configuration
+# file. See :ref:`cgit__ref_configuration` and :man:`cgitrc(5)` for more
+# details.
+
+# .. envvar:: cgit__default_configuration [[[
+#
+# The default :command:`cgit` configuration options defined by the role.
+cgit__default_configuration:
+
+  - name: 'css'
+    value: '/cgit.css'
+
+  - name: 'logo'
+    value: '/cgit.png'
+
+  - name: 'virtual-root'
+    value: '/'
+
+  - name: 'scan-path'
+    value: '{{ cgit__git_dir }}'
+
+  - name: 'cache-size'
+    value: 1000
+
+  - name: 'clone-url'
+    value: '{{ ("https://" if cgit__use_tls else "http://")
+               + cgit__fqdn + "/git/$CGIT_REPO_URL" }}'
+
+                                                                   # ]]]
+# .. envvar:: cgit__configuration [[[
+#
+# The :command:`cgit` configuration options defined on all hosts in the Ansible
+# inventory.
+cgit__configuration: []
+
+                                                                   # ]]]
+# .. envvar:: cgit__group_configuration [[[
+#
+# The :command:`cgit` configuration options defined on hosts in a specific
+# Ansible inventory group.
+cgit__group_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: cgit__host_configuration [[[
+#
+# The :command:`cgit` configuration options defined on specific hosts in the
+# Ansible inventory.
+cgit__host_configuration: []
+
+                                                                   # ]]]
+# .. envvar:: cgit__combined_configuration [[[
+#
+# This variable combines all the other :command:`cgit` configuration options
+# and is used in the role template.
+cgit__combined_configuration: '{{ cgit__default_configuration
+                                  + cgit__configuration
+                                  + cgit__group_configuration
+                                  + cgit__host_configuration }}'
+                                                                   # ]]]
+                                                                   # ]]]
+# Role-dependent configuration [[[
+# --------------------------------
+
+# .. envvar:: cgit__python__dependent_packages3 [[[
+#
+# Configuration for the :ref:`debops.python` Ansible role.
+cgit__python__dependent_packages3:
+
+  - 'python3-docutils'
+  - 'python3-markdown'
+  - 'python3-pygments'
+
+                                                                   # ]]]
+# .. envvar:: cgit__nginx__dependent_servers [[[
+#
+# Server configuration for the :ref:`debops.nginx` Ansible role.
+cgit__nginx__dependent_servers:
+
+  - name: '{{ cgit__fqdn }}'
+    filename: 'debops.cgit'
+    by_role: 'debops.cgit'
+    type: 'default'
+    root: '/usr/share/cgit/'
+    csp: "default-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self';"
+    csp_enabled: True
+    webroot_create: False
+    access_policy: '{{ cgit__nginx_access_policy }}'
+    index: False
+    favicon: False
+    location:
+      '/': 'try_files $uri @cgit;'
+
+      '@cgit': |
+        include             fastcgi_params;
+
+        # Path to the CGI script that comes with cgit
+        fastcgi_param       SCRIPT_FILENAME /usr/lib/cgit/cgit.cgi;
+
+        fastcgi_param       PATH_INFO       $uri;
+        fastcgi_param       QUERY_STRING    $args;
+        fastcgi_param       HTTP_HOST       $server_name;
+        #fastcgi_param      PATH_TRANSLATED $document_root$path_info;
+
+        # Path to the socket file that is created/used by fcgiwrap
+        fastcgi_pass        unix:/run/fcgiwrap.socket;
+
+        # Mitigate HTTPOXY attacks (https://httpoxy.org/)
+        fastcgi_param       HTTP_PROXY "";
+
+                                                                   # ]]]
+# .. envvar:: cgit__nginx_access_policy [[[
+#
+# The :command:`nginx` access policy for the :command:`cgit` installation.
+# See :ref:`debops.nginx` for more details.
+cgit__nginx_access_policy: ''
+
+                                                                   # ]]]
+                                                                   # ]]]
+                                                                   # ]]]
