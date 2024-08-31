@@ -61,6 +61,17 @@ sshd__packages: []
 # Ansible local facts.
 sshd__version: '{{ ansible_local.sshd.version | d("0.0") }}'
                                                                    # ]]]
+# .. envvar:: sshd__combined_packages [[[
+#
+# Combined list of packages to install. This variable is used in the role
+# tasks.
+sshd__combined_packages: '{{ sshd__base_packages
+                             + sshd__recommended_packages
+                             + sshd__optional_packages
+                             + sshd__ldap_packages
+                             + sshd__packages }}'
+
+                                                                   # ]]]
                                                                    # ]]]
 # Host whitelists and allow lists [[[
 # -----------------------------------
