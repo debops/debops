@@ -7,15 +7,22 @@
 #    ==== nginx map template for debops.nginx role ====
 #
 # More information about maps: https://nginx.org/en/docs/http/ngx_http_map_module.html
+# More information about geo: https://nginx.org/en/docs/http/ngx_http_geo_module.html
 # List of parameters supported by this template:
 #
 #   - item.name: ''
 #       Name of the map configuration file. Required.
 #
+#   - item.type: ''
+#       Type of the map. Options: map(default) or geo.
+#
 #   - item.map: ''
 #       Lookup string and variable name to set, for example:
 #         '$http_host $name'
 #         '$http_user_agent $mobile'
+#       For type geo, the FIRST variable is $remote_addr by default, examples:
+#         '$health_allowed'
+#         '$realip_remote_addr $proxy_allowed'
 #
 #   - item.default: ''
 #       Default value to set if no mapping can be selected
@@ -41,7 +48,7 @@
 # {{ ansible_managed }}
 
 {% if item.name is defined and item.name                                          %}
-map {{ item.map }} {
+{{ item.type | d("map") }} {{ item.map }} {
 {%     if item.hostnames is defined and item.hostnames                            %}
         hostnames;
 {%     endif                                                                      %}
