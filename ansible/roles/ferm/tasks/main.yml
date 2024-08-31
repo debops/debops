@@ -122,7 +122,7 @@
     owner: 'root'
     group: 'adm'
     mode: '0644'
-  loop: '{{ ferm__parsed_rules | dict2items }}'
+  loop: '{{ ferm__parsed_rules | d({}) | dict2items }}'
   loop_control:
     label: '{{ item.key }}'
   register: ferm__register_rules_created
