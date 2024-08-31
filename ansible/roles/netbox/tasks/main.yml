@@ -216,9 +216,61 @@
     PATH: '{{ netbox__virtualenv_env_path }}'
   become: True
   become_user: '{{ netbox__user }}'
-  when: netbox__register_checkout is changed
+  when: (netbox__register_checkout is changed and
+         netbox__primary | bool)
   register: netbox__register_migration
   changed_when: netbox__register_migration.changed | bool
+
+- name: Generate static content
+  ## Since we do not run the manage.py file on secondary sites
+  ## we need to generate those files in an extra task.
+  shell:  # noqa no-handler
+    cmd: |
+      set -o nounset -o pipefail -o errexit
+      ./manage.py collectstatic --no-input
+    chdir: '{{ netbox__git_checkout + "/netbox" }}'
+    executable: 'bash'
+  environment:
+    VIRTUAL_ENV: '{{ netbox__virtualenv }}'
+    PATH: '{{ netbox__virtualenv_env_path }}'
+  become: True
+  become_user: '{{ netbox__user }}'
+  when: (netbox__register_checkout is changed and
+         not netbox__primary | bool)
+  register: netbox__register_collectstatic
+  changed_when: not netbox__register_collectstatic.stdout is search('0 static files copied')
+
+- name: Create local session directory
+  file:
+    path: '{{ netbox__data + "/sessions" }}'
+    owner: '{{ netbox__user }}'
+    group: '{{ netbox__group }}'
+    mode: '0770'
+    access_time: preserve
+    modification_time: preserve
+    state: directory
+  become: True
+  become_user: '{{ netbox__user }}'
+  when: (not netbox__primary | bool)
+
+- name: Cleanup stale contenttypes and sessions
+  ## Since we do not run the manage.py file on secondary sites
+  ## we need to run the cleanup in an extra task.
+  shell:  # noqa no-handler
+    cmd: |
+      set -o nounset -o pipefail -o errexit
+      ./manage.py remove_stale_contenttypes --no-input
+      ./manage.py clearsessions
+    chdir: '{{ netbox__git_checkout + "/netbox" }}'
+    executable: 'bash'
+  environment:
+    VIRTUAL_ENV: '{{ netbox__virtualenv }}'
+    PATH: '{{ netbox__virtualenv_env_path }}'
+  become: True
+  become_user: '{{ netbox__user }}'
+  when: (netbox__register_checkout is changed and
+         not netbox__primary | bool)
+  changed_when: false
 
 - name: Create Django superuser account
   community.general.django_manage:
@@ -229,7 +281,8 @@
     DJANGO_SUPERUSER_PASSWORD: '{{ netbox__superuser_password }}'
   become: True
   become_user: '{{ netbox__user }}'
-  when: (not netbox__register_installed.stat.exists | bool and
+  when: (netbox__primary | bool and
+         not netbox__register_installed.stat.exists | bool and
          not netbox__register_migration.stdout is search('No migrations to apply.'))
   no_log: '{{ debops__no_log | d(True) }}'
 
