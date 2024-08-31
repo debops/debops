@@ -349,6 +349,10 @@ General
   the :ref:`debops.ldap` role is detected on the host. Currently only user
   authentication and Django ACL system is supported via LDAP groups.
 
+- Starting with NetBox ``v3.4.9``, anonymized reporting of census data is being
+  enabled by default. DebOps respects this upstream default. You can change it
+  using :envvar:`netbox__config_census_reporting`.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
@@ -406,7 +410,7 @@ Updates of upstream application versions
   has been updated to 12.2.
 
 - In the :ref:`debops.netbox` role, the NetBox version has been updated to
-  ``v3.4.2``.
+  ``v3.7.2``.
 
 - In the :ref:`debops.owncloud` role, the ownCloud support has been updated to
   ``v10.10``.
@@ -1044,6 +1048,15 @@ General
 - The ``ranger`` APT package will not be installed by default. The ``mc``
   package can be used as an alternative. Or you can consider installing
   ``nnn``.
+
+:ref:`debops.netbox` role
+'''''''''''''''''''''''''
+
+- The NAPALM integration feature found in NetBox 3.4 and before has been moved
+  to a dedicated plugin. If you want to continue using it, you will have to
+  install the plugin. All role variables about NAPALM except
+  :envvar:`netbox__napalm_ssh_generate` and
+  :envvar:`netbox__napalm_ssh_generate_bits` have been removed.
 
 :ref:`debops.owncloud` role
 '''''''''''''''''''''''''''
