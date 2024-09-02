@@ -102,12 +102,6 @@ Updates of upstream application versions
 Fixed
 ~~~~~
 
-:ref:`debops.nginx` role
-''''''''''''''''''''''''
-
-- Fixed issue with ``role::nginx:servers` Ansible tag not working correctly by
-  adding tags to tasks included dynamically.
-
 :ref:`debops.gitlab` role
 '''''''''''''''''''''''''
 
@@ -145,6 +139,12 @@ Fixed
 - Fixed an issue on Debian Bookworm where the :command:`lxd-apparmor-load`
   binary is not present where the APT-based LXD daemon expects it. The role
   will create a symlink for this binary when needed.
+
+:ref:`debops.nginx` role
+''''''''''''''''''''''''
+
+- Fixed issue with ``role::nginx:servers` Ansible tag not working correctly by
+  adding tags to tasks included dynamically.
 
 :ref:`debops.swapfile` role
 '''''''''''''''''''''''''''
