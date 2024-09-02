@@ -66,6 +66,12 @@ General
 - The role can manage much more RabbitMQ internal structures - exchanges,
   queues, bindings between them, as well as vhost and user limits.
 
+:ref:`debops.reprepro` role
+'''''''''''''''''''''''''''
+
+- The :command:`reprepro` internal repository path can be configured
+  per-instance using the ``basedir`` parameter.
+
 Changed
 ~~~~~~~
 
