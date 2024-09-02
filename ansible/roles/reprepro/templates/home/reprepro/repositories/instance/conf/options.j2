@@ -5,7 +5,7 @@
 # This file is managed by Ansible, all changes will be lost
 
 {% set default_options = [
-  {'basedir': (reprepro__data_root + '/' + repo.name)},
+  {'basedir': (repo.basedir | d(reprepro__data_root + '/' + repo.name))},
   {'outdir': (repo.outdir | d(reprepro__public_root + '/sites/' + repo.name + '/public/' + (repo.os | d('debian'))))},
   {'waitforlock': 3},
   {'verbose': ''}
