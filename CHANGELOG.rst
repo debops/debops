@@ -115,6 +115,11 @@ Fixed
   from 0775 set by the role to 0755 set by the :command:`gitlab-ctl
   reconfigure` command, making the role not idempotent.
 
+:ref:`debops.icinga` role
+'''''''''''''''''''''''''
+
+- Fixed a variable name typo in one of the role's handlers.
+
 :ref:`debops.lxc` role
 ''''''''''''''''''''''
 
