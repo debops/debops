@@ -48,6 +48,14 @@ General
   directories. Playbook sets can be used as aliases to call multiple playbooks
   using a custom name. See :ref:`playbook_sets` documentation for more details.
 
+:ref:`debops.dnsmasq` role
+''''''''''''''''''''''''''
+
+- The role can optionally ignore IP addresses on a network interface and use
+  only specified ones for :command:`dnsmasq` configuration. This can help with
+  Routing Advertisements issues on internal networks. See role documentation
+  for more details.
+
 :ref:`debops.rabbitmq_server` role
 ''''''''''''''''''''''''''''''''''
 
@@ -89,6 +97,32 @@ Updates of upstream application versions
   which needs to be synchronized with the Elasticsearch configuration via
   Ansible inventory (Kibana can be installed separately from Elasticsearch).
 
+:ref:`debops.lxc` role
+''''''''''''''''''''''
+
+- The role supports integration with the :command:`systemd-resolved` DNS
+  resolver. This permits use of the :command:`systemd-networkd` service to
+  manage networking on the LXC host.
+
+- LXC containers will be configured with AppArmor "unconfined" profile by
+  default. This change allows startup of various services inside of the
+  container without errors on Debian Bookwrom hosts.
+
+:ref:`debops.lxd` role
+''''''''''''''''''''''
+
+- The role supports integration with the :command:`systemd-resolved` DNS
+  resolver. This permits use of the :command:`systemd-networkd` service to
+  manage networking on the LXD host.
+
+:ref:`debops.proc_hidepid` role
+'''''''''''''''''''''''''''''''
+
+- The role will check if the host is in the ``debops_service_libvirtd`` Ansible
+  inventory group, or if the :ref:`debops.libvirtd` role was applied on the
+  host and will change the ``hidepid=`` value to ``0`` to avoid issues with
+  Polkit subsystem.
+
 Fixed
 ~~~~~
 
@@ -98,6 +132,38 @@ Fixed
 - Fixed an issue with the :file:`/etc/gitlab/ssl/` directory changing its mode
   from 0775 set by the role to 0755 set by the :command:`gitlab-ctl
   reconfigure` command, making the role not idempotent.
+
+:ref:`debops.lxc` role
+''''''''''''''''''''''
+
+- The role will by default disable NFtables integration within the
+  :command:`lxc-net` script, configurable via a default variable. This fixes
+  usage of LXC containers on Debian Bookworm with the :command:`ferm` service
+  used by DebOps.
+
+:ref:`debops.lxd` role
+''''''''''''''''''''''
+
+- Fixed an issue with the default LXD daemon preseed configuration by removing
+  the unsupported ``managed`` parameter. This should allow the LXD daemon to be
+  initialized correctly.
+
+- Fixed an issue with the role trying to copy the source-built libraries when
+  an APT-based installation is used. The role will check if the libraries exist
+  before trying to copy them.
+
+- Fixed an issue on Debian Bookworm where the :command:`lxd-apparmor-load`
+  binary is not present where the APT-based LXD daemon expects it. The role
+  will create a symlink for this binary when needed.
+
+:ref:`debops.swapfile` role
+'''''''''''''''''''''''''''
+
+- Fixed an issue in the :command:`swapon` task conditional logic where the task
+  could not be executed correctly when the swap file was missing.
+
+- Ensure that the swap file is correctly disabled by the :command:`swapoff`
+  command before being removed with the ``absent`` state.
 
 Removed
 ~~~~~~~

@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+
+# Copyright (C) 2024 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2024 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Script installed by the 'debops.lxc' Ansible role
+
+# Hook script executed by the 'lxc-net' systemd service on start and stop,
+# which configures nameserver and domain for the LXC containers in the
+# systemd-resolved resolver.
+
+set -o nounset -o pipefail -o errexit
+
+readonly COMMAND="${1:-}"
+
+if [ -f "/etc/default/lxc-net" ] ; then
+
+    # shellcheck disable=SC1091
+    source /etc/default/lxc-net
+
+    if [ "${USE_LXC_BRIDGE}" == "true" ] ; then
+        # Configuration for LXC-based network
+
+        readonly RESOLVE_ENABLED="${USE_LXC_BRIDGE}"
+        readonly RESOLVE_BRIDGE="${LXC_BRIDGE:-}"
+        readonly RESOLVE_NAMESERVER="${LXC_ADDR:-}"
+
+        # Use route-only domains with tilde, otherwise DNS queries for host's own
+        # name will result in returning its LXC subdomain name and break DNS
+        # resolution
+        readonly RESOLVE_DOMAIN="~${LXC_DOMAIN:-}"
+
+    else
+        # Configuration for LXD-based network
+
+        readonly LXD_BRIDGE="lxdbr0"
+
+        # Wait for the network interface to be configured
+        TIMEOUT_COUNT="0"
+        until (( TIMEOUT_COUNT == 5 )) || ip addr show dev "${LXD_BRIDGE}" 2>/dev/null | grep "state UP" > /dev/null ; do
+            sleep "$(( TIMEOUT_COUNT++ ))"
+        done
+
+        if ip link show "${LXD_BRIDGE}" up > /dev/null 2>&1 ; then
+
+            readonly RESOLVE_ENABLED="true"
+            readonly RESOLVE_BRIDGE="${LXD_BRIDGE}"
+            RESOLVE_NAMESERVER="$(ip addr show "${LXD_BRIDGE}" | grep -Po 'inet \K[\d.]+')"
+
+            # Use route-only domains with tilde, otherwise DNS queries for host's own
+            # name will result in returning its LXC subdomain name and break DNS
+            # resolution
+            readonly RESOLVE_DOMAIN="~lxd"
+        else
+            readonly RESOLVE_ENABLED="false"
+            readonly RESOLVE_NAMESERVER=""
+        fi
+    fi
+
+    RESOLVE_REVDNS="$(printf "%s\n" "${RESOLVE_NAMESERVER}" | awk -F'.' '{print "~"$3"."$2"."$1".in-addr.arpa"}')"
+    RESOLVED_SERVICE="$(systemctl is-active systemd-resolved.service)"
+
+    if [ "${RESOLVE_ENABLED}" == "true" ] && [ "${RESOLVED_SERVICE}" == "active" ] ; then
+        case "${COMMAND}" in
+            start)
+                resolvectl dns "${RESOLVE_BRIDGE}" "${RESOLVE_NAMESERVER}"
+                resolvectl domain "${RESOLVE_BRIDGE}" "${RESOLVE_DOMAIN}" "${RESOLVE_REVDNS}"
+                ;;
+            stop)
+                resolvectl revert "${RESOLVE_BRIDGE}"
+                ;;
+            *)
+                printf "This script shouldn't be used as standalone. Exiting\\n"
+                exit 1
+                ;;
+        esac
+    fi
+fi

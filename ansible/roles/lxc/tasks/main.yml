@@ -172,7 +172,18 @@
     group: 'root'
     mode: '0644'
   register: lxc__register_net_systemd
-  when: lxc__net_deploy_state == 'present'
+  when: lxc__net_deploy_state == 'present' and lxc__net_resolver == "resolvconf"
+  tags: [ 'role::lxc:net' ]
+
+- name: Hook lxc-net-systemd-resolved script to the lxc-net service
+  ansible.builtin.template:
+    src: 'etc/systemd/system/lxc-net.service.d/systemd-resolved.conf.j2'
+    dest: '/etc/systemd/system/lxc-net.service.d/systemd-resolved.conf'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  register: lxc__register_net_systemd
+  when: lxc__net_deploy_state == 'present' and lxc__net_resolver == "systemd-resolved"
   tags: [ 'role::lxc:net' ]
 
 - name: Reconfigure systemd services when modified

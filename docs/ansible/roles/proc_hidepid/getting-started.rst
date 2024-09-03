@@ -10,6 +10,38 @@ Getting started
    .. contents::
       :local:
 
+Word of precaution
+------------------
+
+This role was written in 2018 to change ``hidepid`` for the whole system. On
+2020-11-26 systemd 247 was released which introduced the ``ProtectProc``
+setting. Setting ``hidepid`` for the whole system has drawbacks. Read
+`Is mounting /proc with "hidepid=2" recommended with RHEL7 and later?`__ and
+`Why is the mount option "hidepid=2" not used by default, is there a danger in using it?`__.
+
+.. __: https://www.influxdata.com/blog/package-repository-for-linux/
+.. __: https://security.stackexchange.com/questions/259134/why-is-the-mount-option-hidepid-2-not-used-by-default-is-there-a-danger-in-us
+
+The way to move forward is to contribute ``ProtectProc`` to all upstream
+projects, wait until Debian releases them and then potentially deprecate this
+role. Until then, this role provides hardening with the potential of breaking
+things.
+
+Handling of polkit
+------------------
+
+> `Confirmed`__, giving access to /proc to polkitd user (running polkitd) is not
+> enough, the authentication agent seems to requires that as well (and granting
+> my user access to /proc denies the interest of hidepid).
+
+.. __: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=860040
+
+https://github.com/Kicksecure/security-misc/issues/173
+
+https://github.com/systemd/systemd/issues/29893
+
+So if polkit is detected or planned to be installed on a host, this hardening
+on a system level will not be enabled.
 
 Static GID assignment
 ---------------------
