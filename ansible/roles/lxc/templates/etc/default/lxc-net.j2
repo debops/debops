@@ -1,6 +1,6 @@
-{# Copyright (C) 2014-2018 Maciej Delmanowski <drybjed@gmail.com>
+{# Copyright (C) 2014-2024 Maciej Delmanowski <drybjed@gmail.com>
  # Copyright (C) 2015-2016 Robin Schneider <ypid@riseup.net>
- # Copyright (C) 2014-2018 DebOps <https://debops.org/>
+ # Copyright (C) 2014-2024 DebOps <https://debops.org/>
  # SPDX-License-Identifier: GPL-3.0-only
  #}
 # {{ ansible_managed }}
@@ -19,4 +19,5 @@ LXC_DHCP_RANGE="{{ lxc__net_address | ansible.utils.ipaddr(lxc__net_dhcp_start |
 LXC_DHCP_MAX="{{ (lxc__net_address | ansible.utils.ipaddr('size')) | int - ((lxc__net_dhcp_start | int|abs) + (lxc__net_dhcp_end | int|abs)) }}"
 LXC_DHCP_CONFILE="{{ lxc__net_dnsmasq_conf }}"
 LXC_DOMAIN="{{ lxc__net_domain }}"
+LXC_USE_NFT="{{ lxc__net_use_nft }}"
 {% endif %}

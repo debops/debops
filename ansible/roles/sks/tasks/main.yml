@@ -42,7 +42,10 @@
 - name: Build SKS Keyserver database
   become: True
   become_user: 'debian-sks'
-  ansible.builtin.command: /usr/sbin/sks build chdir=/var/lib/sks creates=/var/lib/sks/DB/key
+  ansible.builtin.command: /usr/sbin/sks build
+  args:
+    chdir: '/var/lib/sks'
+    creates: '/var/lib/sks/DB/key'
   when: sks_autoinit is defined and sks_autoinit
 
 - name: Check if SKS Keyserver database exists
