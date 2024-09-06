@@ -141,6 +141,13 @@ Fixed
 - Fixed issue with ``role::nginx:servers` Ansible tag not working correctly by
   adding tags to tasks included dynamically.
 
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- List of log files which should be managed by the :command:`logrotate` service
+  will be sorted to avoid constant reordering during role execution, which
+  fixes role idempotency.
+
 :ref:`debops.swapfile` role
 '''''''''''''''''''''''''''
 
