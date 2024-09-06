@@ -1,0 +1,12 @@
+{# Copyright (C) 2024 Maciej Delmanowski <drybjed@gmail.com>
+ # Copyright (C) 2024 DebOps <https://debops.org/>
+ # SPDX-License-Identifier: GPL-3.0-only
+ #}
+# {{ ansible_managed }}
+
+# Custom environment variables for a PKI realm
+{% if item.environment | d() %}
+{%   for key, value in item.environment.items() %}
+{{     '{}={}'.format(key, value) }}
+{%   endfor %}
+{% endif %}
