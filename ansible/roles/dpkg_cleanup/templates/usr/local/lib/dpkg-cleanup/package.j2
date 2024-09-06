@@ -20,7 +20,7 @@ readarray -t revert_files << EOF
 {%   for path in (([ item.revert_files ]
                    if (item.revert_files is string)
                    else item.revert_files)
-                 | flatten) %}
+                 | flatten | sort) %}
 {%     if path.startswith("/") %}
 {{       path }}
 {%     endif %}
@@ -34,7 +34,7 @@ readarray -t remove_files << EOF
 {%   for path in (([ item.remove_files ]
                    if (item.remove_files is string)
                    else item.remove_files)
-                 | flatten) %}
+                 | flatten | sort) %}
 {%     if path.startswith("/") %}
 {{       path }}
 {%     endif %}
@@ -51,7 +51,7 @@ readarray -t remove_directories << EOF
 {%   for path in (([ item.remove_directories ]
                    if (item.remove_directories is string)
                    else item.remove_directories)
-                 | flatten) %}
+                 | flatten | sort) %}
 {%     if path.startswith("/") %}
 {{       path }}
 {%     endif %}
@@ -65,7 +65,7 @@ readarray -t reload_services << EOF
 {%   for service in (([ item.reload_services ]
                       if (item.reload_services is string)
                       else item.reload_services)
-                    | flatten) %}
+                    | flatten | sort) %}
 {{     service }}
 {%   endfor %}
 {% endif %}
@@ -77,7 +77,7 @@ readarray -t restart_services << EOF
 {%   for service in (([ item.restart_services ]
                       if (item.restart_services is string)
                       else item.restart_services)
-                    | flatten) %}
+                    | flatten | sort) %}
 {{     service }}
 {%   endfor %}
 {% endif %}

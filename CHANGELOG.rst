@@ -86,6 +86,13 @@ Updates of upstream application versions
 Fixed
 ~~~~~
 
+:ref:`debops.dpkg_cleanup` role
+'''''''''''''''''''''''''''''''
+
+- Various YAML lists used in the package removal script will be sorted at Jinja
+  level to avoid constand reordering of list elements during Ansible execution
+  which makes the role not idempotent.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 
