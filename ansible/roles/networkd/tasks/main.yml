@@ -7,12 +7,6 @@
   ansible.builtin.import_role:
     name: 'global_handlers'
 
-- name: Ensure that systemd-networkd service is enabled
-  ansible.builtin.systemd:
-    name: 'systemd-networkd.service'
-    enabled: True
-  when: networkd__enabled | bool
-
 - name: Make sure that Ansible local facts directory exists
   ansible.builtin.file:
     path: '/etc/ansible/facts.d'
@@ -29,6 +23,14 @@
 
 - name: Update Ansible facts if they were modified
   ansible.builtin.meta: 'flush_handlers'
+
+  # Enable the service after checking the facts for the first time, to capture
+  # the state change and not restart the service on the first run
+- name: Ensure that systemd-networkd service is enabled
+  ansible.builtin.systemd:
+    name: 'systemd-networkd.service'
+    enabled: True
+  when: networkd__enabled | bool
 
 - name: Remove systemd-networkd configuuration if requested
   ansible.builtin.file:
