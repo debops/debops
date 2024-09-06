@@ -63,6 +63,14 @@ General
   Routing Advertisements issues on internal networks. See role documentation
   for more details.
 
+:ref:`debops.pki` role
+''''''''''''''''''''''
+
+- Add support for defining per-realm UNIX environment variables set during
+  :command:`pki-realm` script execution. These variables can be used to augment
+  runtime environment, for example to define HTTP proxy to use inside internal
+  networks with restricted access to the outside world.
+
 :ref:`debops.rabbitmq_server` role
 ''''''''''''''''''''''''''''''''''
 
