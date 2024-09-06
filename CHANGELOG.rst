@@ -125,6 +125,13 @@ Fixed
   binary is not present where the APT-based LXD daemon expects it. The role
   will create a symlink for this binary when needed.
 
+:ref:`debops.rsyslog` role
+''''''''''''''''''''''''''
+
+- List of log files which should be managed by the :command:`logrotate` service
+  will be sorted to avoid constant reordering during role execution, which
+  fixes role idempotency.
+
 :ref:`debops.swapfile` role
 '''''''''''''''''''''''''''
 

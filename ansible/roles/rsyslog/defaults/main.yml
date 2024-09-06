@@ -1181,7 +1181,7 @@ rsyslog__logrotate__dependent_config:
 
       - logs: '{{ (rsyslog__default_logfiles
                    + rsyslog__logfiles)
-                  | difference(["/var/log/syslog"]) }}'
+                  | difference(["/var/log/syslog"]) | sort }}'
         options: |
           rotate {{ rsyslog__rotation_count_system }}
           {{ rsyslog__rotation_period_system }}
