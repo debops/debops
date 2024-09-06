@@ -162,6 +162,14 @@ Fixed
   binary is not present where the APT-based LXD daemon expects it. The role
   will create a symlink for this binary when needed.
 
+:ref:`debops.networkd` role
+'''''''''''''''''''''''''''
+
+- Do not restart the :command:`systemd-networkd` service if the role detects
+  that the network stack is not managed by it. This should avoid the issue
+  where the role playbook hanged on first run of the role on a host not managed
+  by :command:`systemd-networkd` service.
+
 :ref:`debops.nginx` role
 ''''''''''''''''''''''''
 

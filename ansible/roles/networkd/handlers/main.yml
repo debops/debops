@@ -7,4 +7,4 @@
   ansible.builtin.systemd:
     name: 'systemd-networkd.service'
     state: 'restarted'
-  when: ansible_service_mgr == 'systemd'
+  when: (ansible_service_mgr == 'systemd' and networkd__unattended_restart | bool)
