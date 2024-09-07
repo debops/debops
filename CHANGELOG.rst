@@ -99,6 +99,14 @@ Updates of upstream application versions
   resolver. This permits use of the :command:`systemd-networkd` service to
   manage networking on the LXD host.
 
+:ref:`debops.postgresql_server` role
+''''''''''''''''''''''''''''''''''''
+
+- The :command:`autopostgresqlbackup` script was modified to have separate set
+  of options for the :command:`psql` command and the :command:`pg_dump`
+  command. This permits the use of the ``--format=custom`` option in
+  :command:`pg_dump` command, enabling more efficient database dumps.
+
 :ref:`debops.proc_hidepid` role
 '''''''''''''''''''''''''''''''
 
