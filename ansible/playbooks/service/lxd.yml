@@ -15,10 +15,6 @@
 
   roles:
 
-    - role: resolvconf
-      tags: [ 'role::resolvconf', 'skip::resolvconf' ]
-      resolvconf__enabled: True
-
     - role: root_account
       tags: [ 'role::root_account', 'skip::root_account' ]
 
@@ -27,7 +23,7 @@
       keyring__dependent_gpg_user: '{{ golang__keyring__dependent_gpg_user }}'
       keyring__dependent_gpg_keys:
         - '{{ golang__keyring__dependent_gpg_keys }}'
-      golang__dependent_packages:
+      golang__dependent_packages:  # noqa var-naming[no-role-prefix]
         - '{{ lxd__golang__dependent_packages }}'
 
     - role: apt_preferences

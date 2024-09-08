@@ -12,6 +12,10 @@
 # By default it will rely on the system's $PATH.
 ansible = "{{ env['DEBOPS_CMD_ANSIBLE'] | d('ansible') }}"
 
+# Path to binary which will be used to execute 'ansible-galaxy' command.
+# By default it will rely on the system's $PATH.
+ansible-galaxy = "{{ env['DEBOPS_CMD_ANSIBLE_GALAXY'] | d('ansible-galaxy') }}"
+
 # Path to binary which will be used to execute 'ansible-playbook' command.
 # By default it will rely on the system's $PATH.
 ansible-playbook = "{{ env['DEBOPS_CMD_ANSIBLE_PLAYBOOK'] | d('ansible-playbook') }}"
@@ -24,6 +28,14 @@ gpg = "{{ env['DEBOPS_CMD_GPG'] | d('gpg') }}"
 # using 'encfs(1)' tool. By default it will rely on the system's $PATH.
 encfs = "{{ env['DEBOPS_CMD_ENCFS'] | d('encfs') }}"
 
+# Path to binary which will be used to call the 'git(1)' commands to manage git
+# repositories. By default it will rely on the system's $PATH.
+git = "{{ env['DEBOPS_CMD_GIT'] | d('git') }}"
+
+# Path to binary which will be used to manage the secret directories encrypted
+# using 'git-crypt(1)' tool. By default it will rely on the system's $PATH.
+git-crypt = "{{ env['DEBOPS_CMD_GITCRYPT'] | d('git-crypt') }}"
+
 # Path to binary which will be used to unmount the mounted 'encfs(1)' volume on
 # Darwin hosts (macOS). By default it will rely on the system's $PATH.
 umount = "{{ env['DEBOPS_CMD_UMOUNT'] | d('umount') }}"
@@ -31,3 +43,27 @@ umount = "{{ env['DEBOPS_CMD_UMOUNT'] | d('umount') }}"
 # Path to binary which will be used to unmount the mounted 'encfs(1)' volume on
 # hosts with FUSE support. By default it will rely on the system's $PATH.
 fusermount = "{{ env['DEBOPS_CMD_FUSERMOUNT'] | d('fusermount') }}"
+
+[git]
+
+# The default commit message used for new git repositories.
+init_message = "Initialize new DebOps project directory"
+
+[syslog]
+
+# Hostname or IP address of a syslog server where messages should be sent.
+# If address starts with a slash (/), it's assumed to be an UNIX socket.
+address = "/dev/log"
+
+# UDP port of a remote syslog server where messages will be sent.
+port = 514
+
+# Syslog facility to use when sending messages. Supported facilities:
+# kern, user, mail, daemon, auth, syslog, lpr, news, uucp, authpriv, ftp,
+# cron, local0, local1, local2, local3, local4, local5, local6, local7
+facility = "user"
+
+# Syslog level to use for syslog messages. Using '-v' argument
+# at the command line increases log level. Supported levels are:
+# DEBUG, INFO, NOTICE, WARNING, ERROR, CRITICAL
+level = "WARNING"

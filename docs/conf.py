@@ -48,7 +48,7 @@ for element in os.listdir(rst_ansible_roles):
                                   % defaults_dir)
 
                     # Only rebuild files that have changed, thus
-                    # taking avantage of the sphinx cache
+                    # taking advantage of the sphinx cache
                     dst_file = (
                             os.path.splitext(defaults_file)[0] + '.rst'
                         ).lstrip('../')
@@ -110,6 +110,7 @@ def setup(app):
 extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.graphviz',
+    'sphinx_rtd_theme',
     'autolink'
 ]
 
@@ -196,7 +197,7 @@ highlight_language = 'YAML'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
+html_theme = 'sphinx_rtd_theme'
 
 # Check if build is performed on ReadTheDocs.org infrastructure
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'

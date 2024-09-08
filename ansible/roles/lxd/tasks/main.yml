@@ -11,6 +11,11 @@
   ansible.builtin.import_role:
     name: 'global_handlers'
 
+- name: Check if custom libraries exist
+  ansible.builtin.stat:
+    path: '{{ lxd__golang_gosrc + "/../deps/raft/.libs" }}'
+  register: lxd__register_libraries
+
 # The custom libraries were built during LXD installation via the
 # 'debops.golang' role and need to be installed system-wide for the lxc/lxd
 # binaries to work correctly.
@@ -26,7 +31,8 @@
     chdir: '{{ lxd__golang_gosrc }}'
     creates: '/usr/local/lib/x86_64-linux-gnu/libraft.so.0'
     executable: 'bash'
-  when: lxd__upstream_enabled | bool and lxd__upstream_type == 'git'
+  when: lxd__upstream_enabled | bool and lxd__upstream_type == 'git' and
+        lxd__register_libraries.stat.exists | bool
 
 - name: Install required packages
   ansible.builtin.package:
@@ -52,12 +58,26 @@
     path: '/var/log/lxd'
     mode: '0700'
 
+- name: Check if lxc-apparmor-load binary exists
+  ansible.builtin.stat:
+    path: '/usr/lib/x86_64-linux-gnu/lxc/lxc-apparmor-load'
+  register: lxd__register_apparmor_load
+
+  # Without this, lxd daemon in Debian Bookworm doesn't start correctly
+- name: Create lxc-apparmor-load symlink if needed
+  ansible.builtin.file:
+    path: '/usr/lib/x86_64-linux-gnu/lxc/lxc-apparmor-load'
+    src: '/usr/libexec/lxc/lxc-apparmor-load'
+    state: 'link'
+  when: not lxd__register_apparmor_load.stat.exists | bool and
+        ansible_distribution_release in [ 'bookworm' ]
+
 - name: Generate systemd units
   ansible.builtin.template:
     src: 'etc/systemd/system/{{ item }}.j2'
     dest: '/etc/systemd/system/{{ item }}'
     mode: '0644'
-  loop: [ 'lxd.socket', 'lxd.service', 'lxd-containers.service' ]
+  loop: [ 'lxd.socket', 'lxd.service', 'lxd-containers.service', 'lxd-net.service' ]
   register: lxd__register_systemd
   when: lxd__upstream_enabled | bool and ansible_service_mgr == 'systemd'
 
@@ -67,7 +87,7 @@
     name: '{{ item }}'
     state: 'started'
     enabled: True
-  loop: [ 'lxd.socket', 'lxd-containers.service' ]
+  loop: [ 'lxd.socket', 'lxd-containers.service', 'lxd-net.service' ]
   when: lxd__register_systemd is changed
 
 - name: Apply preseed configuration

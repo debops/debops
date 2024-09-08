@@ -35,6 +35,7 @@
     - name: Verify release tarball
       ansible.builtin.command: >-
         gpg --verify /var/tmp/{{ opensearch__tarball }}.sig
+      become: True
       become_user: '{{ opensearch__user }}'
       changed_when: False
 

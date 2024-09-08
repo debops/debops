@@ -237,14 +237,14 @@ Each configuration option is defined as a YAML dictionary with specific paramete
   Optional. Specify the ``name`` parameter of a different configuration option;
   the configuration entry with this parameter will copy the internal "id" value
   of the specified configuration entry. This can be used to reorder
-  configuration entries in the finial generated configuration file.
+  configuration entries in the final generated configuration file.
 
 ``weight``
   Optional. Positive or negative number which can be used to affect the
   position of a given configuration option in the generated file. Specifying
   a positive number will lower the option within the file (more weight),
   specifying a negative number will raise the option (less weight). This can be
-  used to reorder configuration entries in the finial generated configuration
+  used to reorder configuration entries in the final generated configuration
   file.
 
 

@@ -7,7 +7,7 @@ Introduction
 
 .. include:: includes/all.rst
 
-The ``debops-contrib.x2go_server`` role allows you to setup and mange
+The ``debops-contrib.x2go_server`` role allows you to setup and manage
 `X2Go`_ on the server-side.
 X2Go enables you to access a graphical desktop of a computer over a low
 bandwidth (or high bandwidth) connection.

@@ -32,7 +32,7 @@ then be modified as needed through Ansible inventory.
 Many roles support usage as "role dependencies" - other roles, either those in
 DebOps or written by its users, can request certain configuration to be defined
 on their behalf. This design principle allows for the DebOps roles to be
-focused on specific services or applications and encourages re-use of existing
+focused on specific services or applications and encourages reuse of existing
 roles when writing custom ones by users.
 
 For example, when you write a role that deploys a web application, you don't

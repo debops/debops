@@ -341,7 +341,7 @@ Common webserver options
 ``custom_log_condition``
   Optional, string.
   Allows to specify condition which controls whether or not to log a particular
-  request in access log. You can use it for exampe to skip logging health
+  request in access log. You can use it for example to skip logging health
   checks from your load balancer.
 
 Redirects

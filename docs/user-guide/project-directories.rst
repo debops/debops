@@ -266,6 +266,14 @@ script commands. This also works outside of the project directory, when used
 with the ``--project-dir <path>`` option. See the manual pages of different
 DebOps commands to learn more.
 
+The default view used by DebOps in a given project is defined in the
+:file:`<project_dir>/.debops/conf.d/project.yml` configuration file, in the
+``project.default_view`` configuration key. It can be set to an empty string;
+in such case there will be no default view and it will have to be selected
+using the ``-V <view>`` or ``--view <view>`` option on the command line.
+Alternatively, users can :command:`cd` into a view subdirectory before
+executing a :command:`debops` command to use it.
+
 In the :file:`<project_dir>/.debops/conf.d/view-*.yml` configuration file
 created for each "infrastructure view", users can select which Ansible
 Collections will be searched for playbooks if one is specified without
@@ -273,6 +281,95 @@ a :file:`<namespace>.<collection>/`` prefix. This can be used to change the
 default collection for a given "infrastructure view" to one which contains
 unprivileged playbooks and roles, or add more Ansible Collections which should
 be searched for playbooks.
+
+.. _playbook_sets:
+
+Per-view playbook sets
+~~~~~~~~~~~~~~~~~~~~~~
+
+Users can define "playbook sets" at the view level, using the
+`views.<name>.playbook_sets` configuration option. This option is a YAML
+dictionary with lists of playbooks to execute when a particular "playbook set"
+is specified on the command line. An example configuration:
+
+.. code-block:: yaml
+
+   ---
+   views:
+     system:
+       playbook_sets:
+         'webservice':
+           - 'layer/common'
+           - 'service/nginx'
+           - 'custom-app'
+
+With the above configuration, users can execute a set of playbooks using the
+command:
+
+.. code-block:: console
+
+   debops run webservice -l webserver
+
+which will be internally expanded to:
+
+.. code-block:: console
+
+   debops run layer/common service/nginx custom-app -l webserver
+
+After that, the usual playbook expansion will take place. The first two
+playbooks will be found in the DebOps collection, and the :file:`custom-app`
+playbook will be presumably in the :file:`ansible/views/system/playbooks/`
+subdirectory of the project directory. If a potential playbook set is not found,
+the argument will be expanded into a playbook if possible, or passed to the
+:command:`ansible-playbook` command as-is.
+
+This mechanism can be used to redefine existing playbooks into playbook sets.
+For example, if users want to include additional playbooks in the "site"
+playbook, they can:
+
+.. code-block:: yaml
+
+   ---
+   views:
+     system:
+       playbook_sets:
+         'site':
+           - 'site'
+           - '<namespace>.<collection>.custom_playbook'
+
+Now calling the "site" playbook will execute the DebOps own :file:`site.yml`
+playbook, and an additional playbook from a specific Ansible Collection.
+
+Please remember that this feature does not modify the actual playbooks, just the
+way they are called from the command line. This means that including the
+:file:`site.yml` playbook in another playbook will run just that one playbook,
+not all the playbooks defined in a playbook set.
+
+
+DebOps and :command:`git` integration
+-------------------------------------
+
+Project directories are designed to be stored in :command:`git` repositories.
+The repository will be initialized by default when a new project is created; to
+avoid this users can use the `--no-git` parameter during project creation.
+
+When :command:`git` repositories are configured with encrypted secrets, using
+either EncFS or :command:`git-crypt`, the :command:`debops` script will by
+default commit current contents of the project repository when certain actions
+are performed. Currently, this happens when project secrets are unlocked or
+locked - this is required by :command:`git-crypt` to work correctly (the
+:command:`git` repository needs to be clean), but DebOps will do this for EncFS
+as well, for consistency.
+
+If the project secrets were unlocked manually, using the :command:`debops
+project unlock` command, any changes done afterwards will be committed when the
+secrets are locked again. This allows users to perform multiple changes in the
+project directory and commit them by hand as they see fit.
+
+Any commits done by DebOps automatically can be updated, for example to provide
+a more extensive commit message. Users can use :command:`git rebase -i` command
+to edit older commits; latest commit can be modified using the :command:`git
+commit --amend` command.
 
 Contents of the project directory
 ---------------------------------

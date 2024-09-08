@@ -1,0 +1,40 @@
+---
+# Copyright (C) 2024 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2024 DebOps <https://debops.org/>
+# SPDX-License-Identifier: GPL-3.0-only
+
+# Example network configuration for a network bridge configured via DHCP with
+# connected physical interface. The host will use search domains provided
+# remotely in DNS configuration.
+
+# File: ansible/inventory/group_vars/all/networkd.yml
+
+networkd__units:
+
+  - name: 'br0.netdev'
+    raw: |
+      [NetDev]
+      Name=br0
+      Kind=bridge
+    state: 'present'
+
+  - name: 'br0.network'
+    raw: |
+      [Match]
+      Name=br0
+
+      [Network]
+      DHCP=yes
+
+      [DHCPv4]
+      UseDomains=true
+    state: 'present'
+
+  - name: 'enp1s0.network'
+    raw: |
+      [Match]
+      Name=enp1s0
+
+      [Network]
+      Bridge=br0
+    state: 'present'

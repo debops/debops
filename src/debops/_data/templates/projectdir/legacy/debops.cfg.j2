@@ -54,3 +54,10 @@ always = {{ env["ANSIBLE_DIFF_ALWAYS"] | d("false") }}
 # defined in a playbook. This warning message is very common in DebOps
 # playbooks and disabling it is recommended.
 host_pattern_mismatch = {{ env['ANSIBLE_HOST_PATTERN_MISMATCH'] | d('ignore') }}
+
+[ansible privilege_escalation]
+
+# Tell Ansible to always ask for the '--become' password. This might be
+# useful in environments where "sudo" password is required on each
+# execution.
+become_ask_pass = {{ env["ANSIBLE_BECOME_ASK_PASS"] | d("false") }}

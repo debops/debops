@@ -1,5 +1,5 @@
-# Copyright (C) 2020-2021 Maciej Delmanowski <drybjed@gmail.com>
-# Copyright (C) 2020-2021 DebOps <https://debops.org/>
+# Copyright (C) 2020-2024 Maciej Delmanowski <drybjed@gmail.com>
+# Copyright (C) 2020-2024 DebOps <https://debops.org/>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .utils import unexpanduser
@@ -8,8 +8,11 @@ from .ansible.inventory import AnsibleInventory
 import subprocess
 import configparser
 import textwrap
+import logging
 import os
 import sys
+
+logger = logging.getLogger(__name__)
 
 
 class AnsiblePlaybookRunner(object):
@@ -23,6 +26,14 @@ class AnsiblePlaybookRunner(object):
         try:
             self._inventory_paths = (
                     project.ansible_cfg.get_option('inventory').split(','))
+        except configparser.NoSectionError:
+            path = project.ansible_cfg.path
+            if (os.path.exists(path) and os.path.isfile(path)):
+                logger.error('Cannot find [defaults] section in {}.format(path)')
+                raise ValueError("Cannot find [defaults] section in " + path)
+            else:
+                raise FileNotFoundError("Cannot find Ansible "
+                                        "configuration file at " + path)
         except configparser.NoOptionError:
             errmsg = ('Error: No inventory specified in the "ansible.cfg" '
                       'configuration file. You might want to run '
@@ -97,17 +108,45 @@ class AnsiblePlaybookRunner(object):
                 self._parsed_args.append(index)
             else:
                 # Most likely a name of a playbook which we can expand
-                self._ansible_command.append(self._quote_spaces(
-                    self._expand_playbook(project, argument)))
-                self._found_playbooks.append(self._quote_spaces(
-                    self._expand_playbook(project, argument)))
-                self._parsed_args.append(index)
+
+                # Check the arguments for possible playbook sets and expand them
+                # if they're found
+                parsed_set = self._expand_playbook_set(project, argument)
+
+                for element in parsed_set:
+                    self._ansible_command.append(self._quote_spaces(
+                        self._expand_playbook(project, element)))
+                    self._found_playbooks.append(self._quote_spaces(
+                        self._expand_playbook(project, element)))
+                    self._parsed_args.append(index)
 
     def _quote_spaces(self, string):
         if ' ' in string:
             return '"{}"'.format(string)
         else:
             return string
+
+    def _expand_playbook_set(self, project, argument):
+        logger.debug('Checking if playbook "{}" is a playbook set'
+                     .format(argument))
+        try:
+            playbook_set = (project.config.raw['views']
+                                              [project.view]
+                                              ['playbook_sets']
+                                              [argument])
+            logger.notice('Found playbook set "{}" in view "{}"'
+                          .format(argument, project.view))
+            if isinstance(playbook_set, list):
+                logger.debug('Playbook set "{}" expanded to: {}'
+                             .format(argument, ' '.join(playbook_set)))
+                return playbook_set
+            else:
+                logger.error('Incorrect definition of playbook set',
+                             extra={'block': 'stderr'})
+                raise ValueError('Incorrect definition of playbook set')
+        except KeyError:
+            logger.debug('No playbook set found')
+            return [argument]
 
     def _ring_bell(self):
         # Notify user at end of execution
@@ -135,7 +174,7 @@ class AnsiblePlaybookRunner(object):
            under a given subdirectory'''
         some_dir = some_dir.rstrip(os.path.sep)
         num_sep = some_dir.count(os.path.sep)
-        for root, dirs, files in os.walk(some_dir):
+        for root, dirs, files in os.walk(some_dir, followlinks=True):
             yield root, dirs, files
             num_sep_this = root.count(os.path.sep)
             if num_sep + level <= num_sep_this:
@@ -286,20 +325,41 @@ class AnsiblePlaybookRunner(object):
         try:
             unlocked = self.inventory.unlock()
 
+            if ('--check' in self._ansible_command or
+                    '-C' in self._ansible_command):
+                logger.info('Checking Ansible playbooks: {}'.format(
+                        ','.join(self._found_playbooks)),
+                        extra={'block': 'stderr'})
+            else:
+                logger.info('Running Ansible playbooks: {}'.format(
+                        ','.join(self._found_playbooks)),
+                        extra={'block': 'stderr'})
             print('Executing Ansible playbooks:')
             for playbook in self._found_playbooks:
                 print(unexpanduser(playbook))
+            logger.debug('Ansible command: {}'.format(
+                    ' '.join(self._ansible_command)))
             executor = subprocess.Popen(' '.join(self._ansible_command),
                                         shell=True)
+            logger.debug('Starting playbook execution')
             std_out, std_err = executor.communicate()
+            logger.debug('Playbook execution finished')
+            if executor.returncode != 0:
+                logger.error('Ansible finished with '
+                             'return code {}'.format(executor.returncode))
             self._ring_bell()
             return executor.returncode
 
+        except ChildProcessError:
+            raise ChildProcessError('Cannot unlock project secrets, '
+                                    'git working directory not clean')
+
         except KeyboardInterrupt:
+            logger.notice('Playbook execution interrupted by user',
+                          extra={'block': 'stderr'})
             if unlocked:
                 self.inventory.lock()
             raise SystemExit('... aborted by user')
-
         else:
             self._ring_bell()
 
